@@ -40,10 +40,10 @@ haxby_dataset = datasets.fetch_haxby_simple()
 
 # print basic information on the dataset
 print('Mask nifti image (3D) is located at: %s' % haxby_dataset.mask)
-print('Functional nifti image (4D) are located at: %s' % haxby_dataset.func)
+print('Functional nifti image (4D) are located at: %s' % haxby_dataset.func[0])
 
-y, session = np.loadtxt(haxby_dataset.session_target).astype('int').T
-conditions = np.recfromtxt(haxby_dataset.conditions_target)['f0']
+y, session = np.loadtxt(haxby_dataset.session_target[0]).astype('int').T
+conditions = np.recfromtxt(haxby_dataset.conditions_target[0])['f0']
 
 ### Preprocess data ###########################################################
 
@@ -60,7 +60,7 @@ mask_filename = haxby_dataset.mask
 nifti_masker = NiftiMasker(mask_img=mask_filename, sessions=session,
                            smoothing_fwhm=4, standardize=True,
                            memory="nilearn_cache", memory_level=1)
-func_filename = haxby_dataset.func
+func_filename = haxby_dataset.func[0]
 X = nifti_masker.fit_transform(func_filename)
 # Restrict to non rest data
 X = X[condition_mask]
@@ -68,7 +68,7 @@ session = session[condition_mask]
 
 ### Prediction function #######################################################
 
-### Define the prediction function to be used.
+# Define the prediction function to be used.
 # Here we use a Support Vector Classification, with a linear kernel
 from sklearn.svm import SVC
 svc = SVC(kernel='linear')
@@ -77,7 +77,7 @@ svc = SVC(kernel='linear')
 
 from sklearn.feature_selection import SelectKBest, f_classif
 
-### Define the dimension reduction to be used.
+# Define the dimension reduction to be used.
 # Here we use a classical univariate feature selection based on F-test,
 # namely Anova. We set the number of features to be selected to 500
 feature_selection = SelectKBest(f_classif, k=500)

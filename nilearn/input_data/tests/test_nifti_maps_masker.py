@@ -10,7 +10,6 @@ import numpy as np
 
 import nibabel
 
-from nilearn.input_data.nifti_labels_masker import NiftiLabelsMasker
 from nilearn.input_data.nifti_maps_masker import NiftiMapsMasker
 from nilearn._utils import testing, as_ndarray
 from nilearn._utils.exceptions import DimensionError
@@ -21,7 +20,7 @@ def generate_random_img(shape, length=1, affine=np.eye(4),
                         rand_gen=np.random.RandomState(0)):
     data = rand_gen.randn(*(shape + (length,)))
     return nibabel.Nifti1Image(data, affine), nibabel.Nifti1Image(
-                    as_ndarray(data[..., 0] > 0.2, dtype=np.int8), affine)
+        as_ndarray(data[..., 0] > 0.2, dtype=np.int8), affine)
 
 
 def test_nifti_maps_masker():
@@ -43,7 +42,7 @@ def test_nifti_maps_masker():
                                                  length=length)
 
     labels11_img, labels_mask_img = \
-                  testing.generate_maps(shape1, n_regions, affine=affine1)
+        testing.generate_maps(shape1, n_regions, affine=affine1)
 
     # No exception raised here
     for create_files in (True, False):
@@ -110,7 +109,7 @@ def test_nifti_maps_masker():
     affine2[-1, -1] = 1
 
     fmri22_img, _ = generate_random_img(shape22, affine=affine2,
-                                                 length=length)
+                                        length=length)
     masker = NiftiMapsMasker(labels11_img, mask_img=mask21_img)
 
     masker.fit_transform(fmri22_img)
@@ -131,12 +130,12 @@ def test_nifti_maps_masker_2():
     length = 3
 
     fmri11_img, _ = generate_random_img(shape1, affine=affine,
-                                                 length=length)
+                                        length=length)
     _, mask22_img = generate_random_img(shape2, affine=affine,
-                                                 length=length)
+                                        length=length)
 
     maps33_img, _ = \
-                  testing.generate_maps(shape3, n_regions, affine=affine)
+        testing.generate_maps(shape3, n_regions, affine=affine)
 
     mask_img_4d = nibabel.Nifti1Image(np.ones((2, 2, 2, 2), dtype=np.int8),
                                       affine=np.diag((4, 4, 4, 1)))
@@ -210,7 +209,7 @@ def test_nifti_maps_masker_2():
                                                affine=affine2)
     # Target: maps
     maps33_img, _ = \
-                  testing.generate_maps(shape3, n_regions, affine=affine1)
+        testing.generate_maps(shape3, n_regions, affine=affine1)
 
     masker = NiftiMapsMasker(maps33_img, mask_img=mask22_img,
                              resampling_target="maps")

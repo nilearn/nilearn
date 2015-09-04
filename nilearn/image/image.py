@@ -7,19 +7,21 @@ See also nilearn.signal.
 # License: simplified BSD
 
 import collections
+import operator
+from distutils.version import LooseVersion
 
 import numpy as np
 from scipy import ndimage
+import copy
+import nibabel
 from sklearn.externals.joblib import Parallel, delayed
 
 from .. import signal
-from .resampling import reorder_img
 from .._utils import (check_niimg_4d, check_niimg_3d, check_niimg, as_ndarray,
                       _repr_niimgs)
 from .._utils.niimg_conversions import _index_img
-from .._utils.niimg import new_img_like, _safe_get_data
+from .._utils.niimg import _safe_get_data
 from .._utils.compat import _basestring
-from .. import masking
 
 
 def high_variance_confounds(imgs, n_confounds=5, percentile=2.,
@@ -71,6 +73,7 @@ def high_variance_confounds(imgs, n_confounds=5, percentile=2.,
         ========
         nilearn.signal.high_variance_confounds
     """
+    from .. import masking
 
     if mask_img is not None:
         sigs = masking.apply_mask(imgs, mask_img)
@@ -368,26 +371,32 @@ def _compute_mean(imgs, target_affine=None,
     input_repr = _repr_niimgs(imgs)
 
     imgs = check_niimg(imgs)
-    mean_img = _safe_get_data(imgs)
-    if not mean_img.ndim in (3, 4):
+    mean_data = _safe_get_data(imgs)
+    affine = imgs.get_affine()
+    # Free memory ASAP
+    imgs = None
+    if not mean_data.ndim in (3, 4):
         raise ValueError('Computation expects 3D or 4D '
                          'images, but %i dimensions were given (%s)'
-                         % (mean_img.ndim, input_repr))
-    if mean_img.ndim == 4:
-        mean_img = mean_img.mean(axis=-1)
-    mean_img = resampling.resample_img(
-        new_img_like(imgs, mean_img, imgs.get_affine()),
-        target_affine=target_affine, target_shape=target_shape)
-    affine = mean_img.get_affine()
-    mean_img = mean_img.get_data()
+                         % (mean_data.ndim, input_repr))
+    if mean_data.ndim == 4:
+        mean_data = mean_data.mean(axis=-1)
+    else:
+        mean_data = mean_data.copy()
+    mean_data = resampling.resample_img(
+        nibabel.Nifti1Image(mean_data, affine),
+        target_affine=target_affine, target_shape=target_shape,
+        copy=False)
+    affine = mean_data.get_affine()
+    mean_data = mean_data.get_data()
 
     if smooth:
-        nan_mask = np.isnan(mean_img)
-        mean_img = _smooth_array(mean_img, affine=np.eye(4), fwhm=smooth,
-                                 ensure_finite=True, copy=False)
-        mean_img[nan_mask] = np.nan
+        nan_mask = np.isnan(mean_data)
+        mean_data = _smooth_array(mean_data, affine=np.eye(4), fwhm=smooth,
+                                  ensure_finite=True, copy=False)
+        mean_data[nan_mask] = np.nan
 
-    return mean_img, affine
+    return mean_data, affine
 
 
 def mean_img(imgs, target_affine=None, target_shape=None,
@@ -440,6 +449,7 @@ def mean_img(imgs, target_affine=None, target_shape=None,
     running_mean, first_affine = _compute_mean(first_img,
                 target_affine=target_affine,
                 target_shape=target_shape)
+
     if target_affine is None or target_shape is None:
         target_affine = first_affine
         target_shape = running_mean.shape[:3]
@@ -451,10 +461,7 @@ def mean_img(imgs, target_affine=None, target_shape=None,
         n_imgs += 1
         # _compute_mean returns (mean_img, affine)
         this_mean = this_mean[0]
-        if running_mean is None:
-            running_mean = this_mean
-        else:
-            running_mean += this_mean
+        running_mean += this_mean
 
     running_mean = running_mean / float(n_imgs)
     return new_img_like(first_img, running_mean, target_affine)
@@ -485,6 +492,7 @@ def swap_img_hemispheres(img):
 
     Note that this does not require a change of the affine matrix.
     """
+    from .resampling import reorder_img
 
     # Check input is really a path to a nifti file or a nifti object
     img = check_niimg_3d(img)
@@ -535,3 +543,56 @@ def iter_img(imgs):
     output: iterator of 3D nibabel.Nifti1Image
     """
     return check_niimg_4d(imgs, return_iterator=True)
+
+
+def new_img_like(ref_niimg, data, affine=None, copy_header=False):
+    """Create a new image of the same class as the reference image
+
+    Parameters
+    ----------
+    ref_niimg: image
+        Reference image. The new image will be of the same type.
+
+    data: numpy array
+        Data to be stored in the image
+
+    affine: 4x4 numpy array, optional
+        Transformation matrix
+
+    copy_header: boolean, optional
+        Indicated if the header of the reference image should be used to
+        create the new image
+
+    Returns
+    -------
+    new_img: image
+        A loaded image with the same type (and header) as the reference image.
+    """
+    # Hand-written loading code to avoid too much memory consumption
+    if not (hasattr(ref_niimg, 'get_data')
+              and hasattr(ref_niimg,'get_affine')):
+        if isinstance(ref_niimg, _basestring):
+            ref_niimg = nibabel.load(ref_niimg)
+        elif operator.isSequenceType(ref_niimg):
+            ref_niimg = nibabel.load(ref_niimg[0])
+        else:
+            raise TypeError(('The reference image should be a niimg, %r '
+                            'was passed') % ref_niimg )
+
+    if affine is None:
+        affine = ref_niimg.get_affine()
+    if data.dtype == bool:
+        default_dtype = np.int8
+        if (LooseVersion(nibabel.__version__) >= LooseVersion('1.2.0') and
+                isinstance(ref_niimg, nibabel.freesurfer.mghformat.MGHImage)):
+            default_dtype = np.uint8
+        data = as_ndarray(data, dtype=default_dtype)
+    header = None
+    if copy_header:
+        header = copy.copy(ref_niimg.get_header())
+        header['scl_slope'] = 0.
+        header['scl_inter'] = 0.
+        header['glmax'] = 0.
+        header['cal_max'] = np.max(data) if data.size > 0 else 0.
+        header['cal_max'] = np.min(data) if data.size > 0 else 0.
+    return ref_niimg.__class__(data, affine, header=header)

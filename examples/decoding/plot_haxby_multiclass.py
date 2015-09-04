@@ -16,13 +16,13 @@ haxby_dataset = datasets.fetch_haxby_simple()
 
 # print basic information on the dataset
 print('Mask nifti images are located at: %s' % haxby_dataset.mask)
-print('Functional nifti images are located at: %s' % haxby_dataset.func)
+print('Functional nifti images are located at: %s' % haxby_dataset.func[0])
 
-func_filename = haxby_dataset.func
+func_filename = haxby_dataset.func[0]
 mask_filename = haxby_dataset.mask
 
-y, session = np.loadtxt(haxby_dataset.session_target).astype('int').T
-conditions = np.recfromtxt(haxby_dataset.conditions_target)['f0']
+y, session = np.loadtxt(haxby_dataset.session_target[0]).astype('int').T
+conditions = np.recfromtxt(haxby_dataset.conditions_target[0])['f0']
 
 # Remove the rest condition, it is not very interesting
 non_rest = conditions != b'rest'
@@ -46,7 +46,7 @@ session = session[non_rest]
 
 ### Predictor #################################################################
 
-### Define the prediction function to be used.
+# Define the prediction function to be used.
 # Here we use a Support Vector Classification, with a linear kernel
 from sklearn.svm import SVC
 from sklearn.feature_selection import SelectKBest, f_classif
@@ -54,14 +54,14 @@ from sklearn.multiclass import OneVsOneClassifier, OneVsRestClassifier
 from sklearn.pipeline import Pipeline
 
 svc_ovo = OneVsOneClassifier(Pipeline([
-                ('anova', SelectKBest(f_classif, k=500)),
-                ('svc', SVC(kernel='linear'))
-                ]))
+    ('anova', SelectKBest(f_classif, k=500)),
+    ('svc', SVC(kernel='linear'))
+]))
 
 svc_ova = OneVsRestClassifier(Pipeline([
-                ('anova', SelectKBest(f_classif, k=500)),
-                ('svc', SVC(kernel='linear'))
-                ]))
+    ('anova', SelectKBest(f_classif, k=500)),
+    ('svc', SVC(kernel='linear'))
+]))
 
 ### Cross-validation scores ###################################################
 from sklearn.cross_validation import cross_val_score

@@ -7,7 +7,7 @@ basic nilearn functionalities.
 """
 
 import os
-from nilearn import data
+from nilearn.datasets import data
 
 # This is just a Nifti file that is shipped with nilearn
 anat_filename = os.path.join(os.path.dirname(data.__file__),
@@ -44,5 +44,4 @@ plotting.plot_anat(smooth_anat_img,
 smooth_anat_img.to_filename('smooth_anat_img.nii.gz')
 
 # Showing plots ###############################################################
-import matplotlib.pyplot as plt
-plt.show()
+plotting.show()

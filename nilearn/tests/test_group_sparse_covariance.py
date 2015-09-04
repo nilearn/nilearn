@@ -3,9 +3,9 @@ from nose.tools import assert_equal, assert_true, assert_raises
 import numpy as np
 from nilearn._utils.testing import generate_group_sparse_gaussian_graphs
 from nilearn.group_sparse_covariance import (group_sparse_covariance,
-                                       group_sparse_scores,
-                                       GroupSparseCovariance,
-                                       GroupSparseCovarianceCV)
+                                             group_sparse_scores,
+                                             GroupSparseCovariance,
+                                             GroupSparseCovarianceCV)
 
 
 def test_group_sparse_covariance():
@@ -28,6 +28,7 @@ def test_group_sparse_covariance():
     np.testing.assert_almost_equal(omega, omega2, decimal=4)
 
     class Probe(object):
+
         def __init__(self):
             self.objective = []
 

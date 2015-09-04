@@ -13,17 +13,18 @@ the fMRI (see the generated figures).
 import numpy as np
 import nibabel
 from nilearn import datasets
+from nilearn.image import new_img_like
 
 haxby_dataset = datasets.fetch_haxby_simple()
 
 # print basic information on the dataset
 print('Anatomical nifti image (3D) is located at: %s' % haxby_dataset.mask)
-print('Functional nifti image (4D) is located at: %s' % haxby_dataset.func)
+print('Functional nifti image (4D) is located at: %s' % haxby_dataset.func[0])
 
-fmri_filename = haxby_dataset.func
+fmri_filename = haxby_dataset.func[0]
 fmri_img = nibabel.load(fmri_filename)
-y, session = np.loadtxt(haxby_dataset.session_target).astype('int').T
-conditions = np.recfromtxt(haxby_dataset.conditions_target)['f0']
+y, session = np.loadtxt(haxby_dataset.session_target[0]).astype('int').T
+conditions = np.recfromtxt(haxby_dataset.conditions_target[0])['f0']
 
 ### Restrict to faces and houses ##############################################
 from nilearn.image import index_img
@@ -47,7 +48,7 @@ picked_slice = 27
 process_mask[..., (picked_slice + 1):] = 0
 process_mask[..., :picked_slice] = 0
 process_mask[:, 30:] = 0
-process_mask_img = nibabel.Nifti1Image(process_mask, mask_img.get_affine())
+process_mask_img = new_img_like(mask_img, process_mask)
 
 ### Searchlight computation ###################################################
 
@@ -56,7 +57,7 @@ process_mask_img = nibabel.Nifti1Image(process_mask, mask_img.get_affine())
 #     information output.
 n_jobs = 1
 
-### Define the cross-validation scheme used for validation.
+# Define the cross-validation scheme used for validation.
 # Here we use a KFold cross-validation on the session, which corresponds to
 # splitting the samples in 4 folds and make 4 runs using each fold as a test
 # set once and the others as learning sets
@@ -88,23 +89,20 @@ p_values[p_values > 10] = 10
 p_unmasked = nifti_masker.inverse_transform(p_values).get_data()
 
 ### Visualization #############################################################
-import matplotlib.pyplot as plt
 
 # Use the fmri mean image as a surrogate of anatomical data
 from nilearn import image
-from nilearn.plotting import plot_stat_map
+from nilearn.plotting import plot_stat_map, show
 mean_fmri = image.mean_img(fmri_img)
 
-plot_stat_map(nibabel.Nifti1Image(searchlight.scores_,
-                                  mean_fmri.get_affine()), mean_fmri,
+plot_stat_map(new_img_like(mean_fmri, searchlight.scores_), mean_fmri,
               title="Searchlight", display_mode="z", cut_coords=[-16],
               colorbar=False)
 
-### F_score results
+# F_score results
 p_ma = np.ma.array(p_unmasked, mask=np.logical_not(process_mask))
-plot_stat_map(nibabel.Nifti1Image(p_ma,
-                                  mean_fmri.get_affine()), mean_fmri,
-              title="F-scores", display_mode="z", cut_coords=[-16],
-              colorbar=False)
+plot_stat_map(new_img_like(mean_fmri, p_ma), mean_fmri,
+              title="F-scores", display_mode="z",
+              cut_coords=[-16], colorbar=False)
 
-plt.show()
+show()

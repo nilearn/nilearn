@@ -13,7 +13,6 @@ import scipy
 from scipy import ndimage, linalg
 
 from .. import _utils
-from .._utils import new_img_like
 from .._utils.compat import _basestring
 
 ###############################################################################
@@ -340,6 +339,8 @@ def resample_img(img, target_affine=None, target_shape=None,
     This function handles gracefully NaNs and infinite values in the input
     data, however they make the execution of the function much slower.
     """
+    from .image import new_img_like  # avoid circular imports
+
     # Do as many checks as possible before loading data, to avoid potentially
     # costly calls before raising an exception.
     if target_shape is not None and target_affine is None:
@@ -452,27 +453,27 @@ def resample_img(img, target_affine=None, target_shape=None,
     if isinstance(target_shape, np.ndarray):
         target_shape = target_shape.tolist()
     target_shape = tuple(target_shape)
-    # For images with dimensions larger than 3D:
-    if len(data_shape) > 3:
-        # Iter in a set of 3D volumes, as the interpolation problem is
-        # separable in the extra dimensions. This reduces the
-        # computational cost
-        other_shape = data_shape[3:]
-        resampled_data = np.ndarray(list(target_shape) + other_shape,
-                                    order=order)
 
-        all_img = (slice(None), ) * 3
-
-        for ind in np.ndindex(*other_shape):
-            _resample_one_img(data[all_img + ind], A, A_inv, b, target_shape,
-                      interpolation_order,
-                      out=resampled_data[all_img + ind],
-                      copy=not input_img_is_string)
+    if interpolation == 'continuous' and data.dtype.kind == 'i':
+        resampled_data_dtype = np.dtype(
+            data.dtype.name.replace('int', 'float'))
     else:
-        resampled_data = np.empty(target_shape, data.dtype)
-        _resample_one_img(data, A, A_inv, b, target_shape,
+        resampled_data_dtype = data.dtype
+
+    # Code is generic enough to work for both 3D and 4D images
+    other_shape = data_shape[3:]
+    resampled_data = np.empty(list(target_shape) + other_shape,
+                              order=order, dtype=resampled_data_dtype)
+
+    all_img = (slice(None), ) * 3
+
+    # Iter over a set of 3D volumes, as the interpolation problem is
+    # separable in the extra dimensions. This reduces the
+    # computational cost
+    for ind in np.ndindex(*other_shape):
+        _resample_one_img(data[all_img + ind], A, A_inv, b, target_shape,
                           interpolation_order,
-                          out=resampled_data,
+                          out=resampled_data[all_img + ind],
                           copy=not input_img_is_string)
 
     return new_img_like(img, resampled_data, target_affine)
@@ -498,6 +499,8 @@ def reorder_img(img, resample=None):
             resample_img.
 
     """
+    from .image import new_img_like
+
     img = _utils.check_niimg(img)
     # The copy is needed in order not to modify the input img affine
     # see https://github.com/nilearn/nilearn/issues/325 for a concrete bug

@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 def plot_matrix(m, ylabel=""):
     abs_max = abs(m).max()
     plt.imshow(m, cmap=plt.cm.RdBu_r, interpolation="nearest",
-              vmin=-abs_max, vmax=abs_max)
+               vmin=-abs_max, vmax=abs_max)
 
 
 # Generate synthetic data

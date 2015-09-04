@@ -7,12 +7,10 @@ Neuroimaging file input and output.
 import copy
 import gc
 import collections
-from distutils.version import LooseVersion
 
 import numpy as np
 import nibabel
 
-from .numpy_conversions import as_ndarray
 from .compat import _basestring
 
 
@@ -95,6 +93,8 @@ def load_niimg(niimg, dtype=None):
     img: image
         A loaded image object.
     """
+    from ..image import new_img_like  # avoid circular imports
+
     if isinstance(niimg, _basestring):
         # data is a filename, we load it
         niimg = nibabel.load(niimg)
@@ -111,47 +111,6 @@ def load_niimg(niimg, dtype=None):
     return niimg
 
 
-def new_img_like(ref_img, data, affine, copy_header=False):
-    """Create a new image of the same class as the reference image
-
-    Parameters
-    ----------
-    ref_img: image
-        Reference image. The new image will be of the same type.
-
-    data: numpy array
-        Data to be stored in the image
-
-    affine: 4x4 numpy array
-        Transformation matrix
-
-    copy_header: boolean, optional
-        Indicated if the header of the reference image should be used to
-        create the new image
-
-    Returns
-    -------
-
-    new_img: image
-        An image which has the same type as the reference image.
-    """
-    if data.dtype == bool:
-        default_dtype = np.int8
-        if (LooseVersion(nibabel.__version__) >= LooseVersion('1.2.0') and
-                isinstance(ref_img, nibabel.freesurfer.mghformat.MGHImage)):
-            default_dtype = np.uint8
-        data = as_ndarray(data, dtype=default_dtype)
-    header = None
-    if copy_header:
-        header = copy.copy(ref_img.get_header())
-        header['scl_slope'] = 0.
-        header['scl_inter'] = 0.
-        header['glmax'] = 0.
-        header['cal_max'] = np.max(data) if data.size > 0 else 0.
-        header['cal_max'] = np.min(data) if data.size > 0 else 0.
-    return ref_img.__class__(data, affine, header=header)
-
-
 def copy_img(img):
     """Copy an image to a nibabel.Nifti1Image.
 
@@ -165,6 +124,8 @@ def copy_img(img):
     img_copy: image
         copy of input (data, affine and header)
     """
+    from ..image import new_img_like  # avoid circular imports
+
     if not isinstance(img, nibabel.spatialimages.SpatialImage):
         raise ValueError("Input value is not an image")
     return new_img_like(img, img.get_data().copy(), img.get_affine().copy(),

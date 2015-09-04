@@ -62,7 +62,7 @@ def _make_canica_test_data(rng=None, n_subjects=8):
 
 def test_canica_square_img():
     data, mask_img, components, rng = _make_canica_test_data()
- 
+
     # We do a large number of inits to be sure to find the good match
     canica = CanICA(n_components=4, random_state=rng, mask=mask_img,
                     smoothing_fwhm=0., n_init=50)
@@ -74,7 +74,7 @@ def test_canica_square_img():
     # Find pairs of matching components
     # compute the cross-correlation matrix between components
     K = np.corrcoef(components, maps.reshape(4, 400))[4:, :4]
-    # K should be a permutation matrix, hence its coefficients 
+    # K should be a permutation matrix, hence its coefficients
     # should all be close to 0 1 or -1
     K_abs = np.abs(K)
     assert_true(np.sum(K_abs > .9) == 4)

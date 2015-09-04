@@ -36,6 +36,7 @@ uses.
    fetch_atlas_power_2011
    fetch_atlas_smith_2009
    fetch_atlas_yeo_2011
+   fetch_atlas_aal_spm_12
    fetch_abide_pcp
    fetch_adhd
    fetch_haxby
@@ -64,11 +65,13 @@ uses.
    :toctree: generated/
    :template: class.rst
 
+   SpaceNetClassifier
+   SpaceNetRegressor
    SearchLight
 
 .. _decomposition_ref:
 
-:mod:`nilearn.decompositon`: Multivariate decompositions
+:mod:`nilearn.decomposition`: Multivariate decompositions
 =========================================================
 
 .. automodule:: nilearn.decomposition
@@ -107,6 +110,7 @@ uses.
    iter_img
    high_variance_confounds
    mean_img
+   new_img_like
    resample_img
    reorder_img
    smooth_img
@@ -236,7 +240,9 @@ uses.
    plot_stat_map
    plot_glass_brain
    plot_connectome
+   plot_prob_atlas
    find_xyz_cut_coords
+   show
 
 **Classes**:
 

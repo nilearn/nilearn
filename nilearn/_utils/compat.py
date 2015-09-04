@@ -44,7 +44,8 @@ else:
                     attr = getattr(module, name)
                     if not isinstance(attr, types.ModuleType):
                         return attr
-            raise NotImplemented('This function has not be imported properly')
+            raise NotImplementedError(
+                'This function has not be imported properly')
 
     module_lookup = _module_lookup()
 

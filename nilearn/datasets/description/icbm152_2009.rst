@@ -1,0 +1,44 @@
+ICBM 152 Atlas
+
+
+Notes
+-----
+References atlases intended for spatial normalization, registration, and
+segmentation of MRI data. These atlases were generated from large ensembles
+of MRI data in an unbiased fashion. MRI data from templates are derived from
+"a truly normal, well characterized population."
+
+
+Content
+-------
+    :'csf': probabilistic map for cerebrospinal fluid
+    :'gm': probabilistic map for gray matter
+    :'wm': probabilistic map for white matter
+    :'pd': proton density-weighted anatomical templates (non-linear average)
+    :'t1': T1-weighted anatomical template (non-linear average)
+    :'t2': T2-weighted anatomical template (non-linear average)
+    :'t2_relax': T2-weighted/relaxed anatomical template
+    :'eye_mask': average mask for eyes
+    :'face_mask': average mask for face
+    :'mask': average mask for brain
+
+
+References
+----------
+For more information see:
+http://www.bic.mni.mcgill.ca/ServicesAtlases/ICBM152NLin2009
+
+VS Fonov, AC Evans, K Botteron, CR Almli, RC McKinstry, DL Collins
+and BDCG, "Unbiased average age-appropriate atlases for pediatric studies",
+NeuroImage,Volume 54, Issue 1, January 2011
+
+VS Fonov, AC Evans, RC McKinstry, CR Almli and DL Collins,
+"Unbiased nonlinear average age-appropriate brain templates from birth
+to adulthood", NeuroImage, Volume 47, Supplement 1, July 2009, Page S102
+Organization for Human Brain Mapping 2009 Annual Meeting.
+
+DL Collins, AP Zijdenbos, WFC Baaré and AC Evans,
+"ANIMAL+INSECT: Improved Cortical Structure Segmentation",
+IPMI Lecture Notes in Computer Science, 1999, Volume 1613/1999, 210–223
+
+Licence: unknown.

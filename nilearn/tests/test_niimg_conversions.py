@@ -128,23 +128,23 @@ def test_check_niimg_4d():
 
     # Tests with return_iterator=True
     img_3d_iterator = _utils.check_niimg_4d([img_3d, img_3d],
-                                          return_iterator=True)
+                                            return_iterator=True)
     img_3d_iterator_length = sum(1 for _ in img_3d_iterator)
     assert_true(img_3d_iterator_length == 2)
 
     img_3d_iterator_1 = _utils.check_niimg_4d([img_3d, img_3d],
-                                            return_iterator=True)
+                                              return_iterator=True)
     img_3d_iterator_2 = _utils.check_niimg_4d(img_3d_iterator_1,
-                                            return_iterator=True)
+                                              return_iterator=True)
     for img_1, img_2 in zip(img_3d_iterator_1, img_3d_iterator_2):
         assert_true(img_1.get_data().shape == (10, 10, 10))
         assert_array_equal(img_1.get_data(), img_2.get_data())
         assert_array_equal(img_1.get_affine(), img_2.get_affine())
 
     img_3d_iterator_1 = _utils.check_niimg_4d([img_3d, img_3d],
-                                            return_iterator=True)
+                                              return_iterator=True)
     img_3d_iterator_2 = _utils.check_niimg_4d(img_4d_1,
-                                            return_iterator=True)
+                                              return_iterator=True)
     for img_1, img_2 in zip(img_3d_iterator_1, img_3d_iterator_2):
         assert_true(img_1.get_data().shape == (10, 10, 10))
         assert_array_equal(img_1.get_data(), img_2.get_data())
@@ -152,7 +152,7 @@ def test_check_niimg_4d():
 
     # This should raise an error: a 3D img is given and we want a 4D
     assert_raises_regex(DimensionError, 'Data must be a 4D Niimg-like object but '
-                        'you provided',
+                        'you provided a 3D',
                         _utils.check_niimg_4d, img_3d)
 
     # Test a Niimg-like object that does not hold a shape attribute
@@ -246,7 +246,7 @@ def test_concat_niimgs():
 
     # smoke-test auto_resample
     concatenated = _utils.concat_niimgs((img1, img1b, img1c),
-        auto_resample=True)
+                                        auto_resample=True)
     assert_true(concatenated.shape == img1.shape + (3, ))
 
     # check error for non-forced but necessary resampling
@@ -268,6 +268,11 @@ def test_concat_niimgs():
     finally:
         _remove_if_exists(tmpimg1)
         _remove_if_exists(tmpimg2)
+
+    img5d = Nifti1Image(np.ones((2, 2, 2, 2, 2)), affine)
+    assert_raises_regex(TypeError, 'Concatenated images must be 3D or 4D. '
+                        'You gave a list of 5D images', _utils.concat_niimgs,
+                        [img5d, img5d])
 
 
 def nifti_generator(buffer):

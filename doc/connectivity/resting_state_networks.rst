@@ -53,20 +53,26 @@ object.
 Visualizing the results
 ========================
 
-We can visualize the components as in the previous examples.
+We can visualize the components as in the previous examples. The first plot
+shows a map generated from all the components. Then we plot an axial cut for
+each component separately.
 
 .. literalinclude:: ../../examples/connectivity/plot_canica_resting_state.py
     :start-after: ### Visualize the results #####################################################
 
-.. |left_img| image:: ../auto_examples/connectivity/images/plot_canica_resting_state_002.png
+.. image :: ../auto_examples/connectivity/images/plot_canica_resting_state_001.png
+   :align: center
    :target: ../auto_examples/connectivity/plot_canica_resting_state.html
-   :width: 48%
 
-.. |right_img| image:: ../auto_examples/connectivity/images/plot_canica_resting_state_003.png
+.. |left_img| image:: ../auto_examples/connectivity/images/plot_canica_resting_state_003.png
    :target: ../auto_examples/connectivity/plot_canica_resting_state.html
-   :width: 48%
+   :width: 33%
 
-|left_img| |right_img|
+.. |right_img| image:: ../auto_examples/connectivity/images/plot_canica_resting_state_004.png
+   :target: ../auto_examples/connectivity/plot_canica_resting_state.html
+   :width: 33%
+
+.. centered:: |left_img| |right_img|
 
 .. seealso::
 

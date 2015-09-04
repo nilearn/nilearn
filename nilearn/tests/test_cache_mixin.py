@@ -70,7 +70,7 @@ def test__safe_cache_flush():
         assert_false(os.path.exists(nibabel_dir))
     finally:
         pass
-        #if os.path.exists(temp_dir):
+        # if os.path.exists(temp_dir):
         #    shutil.rmtree(temp_dir)
 
 

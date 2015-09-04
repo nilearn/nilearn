@@ -34,14 +34,14 @@ Brain parcellations
 Regions used to extract the signal can be defined by a "hard"
 parcellation. For instance, the :mod:`nilearn.datasets` has functions to
 download atlases forming reference parcellation, eg
-:func:`fetch_craddock_2011_atlas`, :func:`fetch_harvard_oxford`,
-:func:`fetch_yeo_2011_atlas`.
+:func:`fetch_atlas_craddock_2011`, :func:`fetch_atlas_harvard_oxford`,
+:func:`fetch_atlas_yeo_2011`.
 
 For instance to retrieve the Harvard-Oxford cortical parcelation, sampled
 at 2mm, and with a threshold of a probability of .25::
 
   from nilearn import datasets
-  dataset = datasets.fetch_harvard_oxford('cort-maxprob-thr25-2mm')
+  dataset = datasets.fetch_atlas_harvard_oxford('cort-maxprob-thr25-2mm')
   atlas_filename, labels = dataset.maps, dataset.labels
 
 Plotting can then be done as::
@@ -130,15 +130,15 @@ The definition of regions as by a continuous probability map captures
 better our imperfect knowledge of boundaries in brain images (notably
 because of inter-subject registration errors). One example of such an
 atlas well suited to resting-state data analysis is the `MSDL atlas
-<https://team.inria.fr/parietal/research/spatial_patterns/spatial-patterns-in-resting-state/>`_ (:func:`nilearn.datasets.fetch_msdl_atlas`).
+<https://team.inria.fr/parietal/research/spatial_patterns/spatial-patterns-in-resting-state/>`_ (:func:`nilearn.datasets.fetch_atlas_msdl`).
 
 Probabilistic atlases are represented as a set of continuous maps, in a
 4D nifti image. Visualization the atlas thus requires to visualize each
 of these maps, which requires accessing them with
 :func:`nilearn.image.index_img` (see the :ref:`corresponding example <example_manipulating_visualizing_plot_probabilistic_atlas.py>`).
 
-.. image:: ../auto_examples/manipulating_visualizing/images/plot_probabilistic_atlas_001.png
-   :target: ../auto_examples/manipulating_visualizing/plot_probabilistic_atlas.html
+.. image:: ../auto_examples/manipulating_visualizing/images/plot_overlay_001.png
+   :target: ../auto_examples/manipulating_visualizing/plot_overlay.html
    :scale: 60
 
 
@@ -181,7 +181,7 @@ the same considerations on using confounds regressors apply.
    Try to compute the correlation matrix of the first subject of the ADHD
    dataset downloaded with :func:`nilearn.datasets.fetch_adhd`
    with the MSDL atlas downloaded via
-   :func:`nilearn.datasets.fetch_msdl_atlas`
+   :func:`nilearn.datasets.fetch_atlas_msdl`
 
    **Hint:** The example above has the solution
 
@@ -206,7 +206,7 @@ with MNI coordinates for each region (see for instance example:
     For doctesting
     
     >>> from nilearn import datasets
-    >>> atlas_filename = datasets.fetch_msdl_atlas().maps
+    >>> atlas_filename = datasets.fetch_atlas_msdl().maps # doctest: +SKIP
 
 For another atlas this information can be computed for each region with
 the :func:`nilearn.plotting.find_xyz_cut_coords` function
@@ -214,7 +214,8 @@ the :func:`nilearn.plotting.find_xyz_cut_coords` function
 :ref:`example_connectivity_plot_multi_subject_connectome.py`)::
 
  >>> from nilearn import image, plotting
- >>> atlas_region_coords = [plotting.find_xyz_cut_coords(img) for img in image.iter_img(atlas_filename)]
+ >>> atlas_region_coords = [plotting.find_xyz_cut_coords(img) for img in image.iter_img(atlas_filename)] # doctest: +SKIP
+
 
 
 .. image:: ../auto_examples/connectivity/images/plot_probabilistic_atlas_extraction_002.png

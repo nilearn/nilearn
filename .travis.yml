@@ -20,7 +20,7 @@ env:
     # still having the package version available through conda
     - DISTRIB="conda" PYTHON_VERSION="2.6"
       NUMPY_VERSION="1.6.2" SCIPY_VERSION="0.11.0"
-      SCIKIT_LEARN_VERSION="0.12.1" MATPLOTLIB_VERSION="1.1.1"
+      SCIKIT_LEARN_VERSION="0.13" MATPLOTLIB_VERSION="1.1.1"
       NIBABEL_VERSION="1.1.0"
     # Most recent versions
     - DISTRIB="conda" PYTHON_VERSION="3.4"
@@ -44,6 +44,7 @@ script:
     # Parentheses (run in a subshell) are used to leave
     # the current directory unchanged
     - (cd "$TEST_RUN_FOLDER" && make -f $OLDPWD/Makefile test-code)
+    - test "$MATPLOTLIB_VERSION" == "" || make test-doc
 
 after_success:
     # Ignore coveralls failures as the coveralls server is not very reliable

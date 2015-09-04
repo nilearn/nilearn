@@ -10,9 +10,10 @@ import itertools
 from sklearn.externals.joblib import Memory
 
 from .cache_mixin import cache
-from .niimg import _safe_get_data, load_niimg, new_img_like
+from .niimg import _safe_get_data, load_niimg
 from .compat import _basestring, izip
-from .exceptions import DimensionError
+
+from nilearn._utils.exceptions import DimensionError
 
 
 def _check_fov(img, affine, shape):
@@ -45,6 +46,8 @@ def _check_same_fov(*args, **kwargs):
     raise_error: boolean, optional
         If True, an error will be raised in case of error.
     """
+    from ..image import new_img_like  # avoid circular imports
+
     raise_error = kwargs.pop('raise_error', False)
     for i, arg in enumerate(args):
         kwargs['img_#%i' % i] = arg
@@ -63,6 +66,8 @@ def _check_same_fov(*args, **kwargs):
 
 
 def _index_img(img, index):
+    from ..image import new_img_like  # avoid circular imports
+
     """Helper function for check_niimg_4d."""
     return new_img_like(
         img, img.get_data()[:, :, :, index], img.get_affine(),
@@ -133,6 +138,10 @@ def _iter_check_niimg(niimgs, ensure_ndim=None, atleast_4d=False,
                         % (i, ref_fov[0], niimg.get_affine(), ref_fov[1],
                            niimg.shape))
             yield niimg
+        except DimensionError as exc:
+            # Keep track of the additional dimension in the error
+            exc.increment_stack_counter()
+            raise
         except TypeError as exc:
             img_name = ''
             if isinstance(niimg, _basestring):
@@ -140,10 +149,6 @@ def _iter_check_niimg(niimgs, ensure_ndim=None, atleast_4d=False,
 
             exc.args = (('Error encountered while loading image #%d%s'
                          % (i, img_name),) + exc.args)
-            raise
-        except DimensionError as exc:
-            # Keep track of the additional dimension in the error
-            exc.increment_stack_counter()
             raise
 
 
@@ -186,6 +191,7 @@ def check_niimg(niimg, ensure_ndim=None, atleast_4d=False, dtype=None,
 
     Its application is idempotent.
     """
+    from ..image import new_img_like  # avoid circular imports
 
     # in case of an iterable
     if hasattr(niimg, "__iter__") and not isinstance(niimg, _basestring):
@@ -330,6 +336,7 @@ def concat_niimgs(niimgs, dtype=np.float32, ensure_ndim=None,
     concatenated: nibabel.Nifti1Image
         A single image.
     """
+    from ..image import new_img_like  # avoid circular imports
 
     target_fov = 'first' if auto_resample else None
 
@@ -355,6 +362,10 @@ def concat_niimgs(niimgs, dtype=np.float32, ensure_ndim=None,
     # first image
     if ndim is None:
         ndim = len(first_niimg.shape)
+
+    if ndim not in [3, 4]:
+        raise TypeError('Concatenated images must be 3D or 4D. You gave a '
+                        'list of %dD images' % ndim)
 
     lengths = [first_niimg.shape[-1] if ndim == 4 else 1]
     for niimg in literator:

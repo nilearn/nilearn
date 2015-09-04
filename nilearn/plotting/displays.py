@@ -11,7 +11,7 @@ import numbers
 import numpy as np
 from scipy import sparse, stats
 
-from .._utils import new_img_like
+from ..image import new_img_like
 from .._utils.compat import _basestring
 from .. import _utils
 
@@ -29,9 +29,9 @@ from ..image.resampling import (get_bounds, reorder_img, coord_transform,
                                 get_mask_bounds)
 
 
-################################################################################
+###############################################################################
 # class BaseAxes
-################################################################################
+###############################################################################
 
 class BaseAxes(object):
     """ An MPL axis-like object that displays a 2D view of 3D volumes
@@ -137,9 +137,10 @@ class BaseAxes(object):
         raise NotImplementedError("'draw_position' should be implemented "
                                   "in derived classes")
 
-################################################################################
+
+###############################################################################
 # class CutAxes
-################################################################################
+###############################################################################
 
 class CutAxes(BaseAxes):
     """ An MPL axis-like object that displays a cut of 3D volumes
@@ -336,9 +337,9 @@ class GlassBrainAxes(BaseAxes):
             self.ax.add_line(line)
 
 
-################################################################################
+###############################################################################
 # class BaseSlicer
-################################################################################
+###############################################################################
 
 class BaseSlicer(object):
     """ The main purpose of these class is to have auto adjust of axes size
@@ -404,14 +405,14 @@ class BaseSlicer(object):
         if not isinstance(figure, plt.Figure):
             # Make sure that we have a figure
             figsize = cls._default_figsize[:]
-            
+
             # Adjust for the number of axes
             figsize[0] *= len(cut_coords)
-            
+
             # Make space for the colorbar
             if colorbar:
                 figsize[0] += .7
-                
+
             facecolor = 'k' if black_bg else 'w'
 
             if leave_space:
@@ -433,7 +434,6 @@ class BaseSlicer(object):
         axes.axis('off')
         return cls(cut_coords, axes, black_bg, **kwargs)
 
-
     def title(self, text, x=0.01, y=0.99, size=15, color=None, bgcolor=None,
               alpha=1, **kwargs):
         """ Write a title to the view.
@@ -443,10 +443,10 @@ class BaseSlicer(object):
             text: string
                 The text of the title
             x: float, optional
-                The horizontal position of the title on the frame in 
+                The horizontal position of the title on the frame in
                 fraction of the frame width.
             y: float, optional
-                The vertical position of the title on the frame in 
+                The vertical position of the title on the frame in
                 fraction of the frame height.
             size: integer, optional
                 The size of the title text.
@@ -479,7 +479,6 @@ class BaseSlicer(object):
                 zorder=1000,
                 **kwargs)
         ax.set_zorder(1000)
-
 
     def add_overlay(self, img, threshold=1e-6, colorbar=False, **kwargs):
         """ Plot a 3D map in all the views.
@@ -518,7 +517,7 @@ class BaseSlicer(object):
 
         plt.draw_if_interactive()
 
-    def add_contours(self, img, **kwargs):
+    def add_contours(self, img, filled=False, **kwargs):
         """ Contour a 3D map in all the views.
 
             Parameters
@@ -526,6 +525,8 @@ class BaseSlicer(object):
             img: Niimg-like object
                 See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
                 Provides image to plot.
+            filled: boolean, optional
+                If filled=True, contours are displayed with color fillings.
             kwargs:
                 Extra keyword arguments are passed to contour, see the
                 documentation of pylab.contour
@@ -535,6 +536,15 @@ class BaseSlicer(object):
                 these contours.
         """
         self._map_show(img, type='contour', **kwargs)
+        if filled:
+            colors = kwargs['colors']
+            levels = kwargs['levels']
+            # Append lower boundary value to '0' for contour fillings
+            levels.append(0.)
+            alpha = kwargs['alpha']
+            self._map_show(img, type='contourf', levels=levels, alpha=alpha,
+                           colors=colors[:3])
+
         plt.draw_if_interactive()
 
     def _map_show(self, img, type='imshow',
@@ -734,9 +744,10 @@ class BaseSlicer(object):
                                        facecolor=facecolor,
                                        edgecolor=edgecolor)
 
-################################################################################
+
+###############################################################################
 # class OrthoSlicer
-################################################################################
+###############################################################################
 
 class OrthoSlicer(BaseSlicer):
     """ A class to create 3 linked axes for plotting orthogonal
@@ -765,8 +776,8 @@ class OrthoSlicer(BaseSlicer):
             if img is None or img is False:
                 cut_coords = (0, 0, 0)
             else:
-                cut_coords = find_xyz_cut_coords(img,
-                                                 activation_threshold=threshold)
+                cut_coords = find_xyz_cut_coords(
+                    img, activation_threshold=threshold)
             cut_coords = [cut_coords['xyz'.find(c)]
                           for c in sorted(self._cut_displayed)]
         return cut_coords
@@ -782,11 +793,12 @@ class OrthoSlicer(BaseSlicer):
         self.axes = dict()
         for index, direction in enumerate(self._cut_displayed):
             fh = self.frame_axes.get_figure()
-            ax = fh.add_axes([0.3*index*(x1 - x0) + x0, y0,
-                              .3*(x1 - x0), y1 - y0],
+            ax = fh.add_axes([0.3 * index * (x1 - x0) + x0, y0,
+                              .3 * (x1 - x0), y1 - y0],
                              axisbg=axisbg, aspect='equal')
             ax.axis('off')
-            coord = self.cut_coords[sorted(self._cut_displayed).index(direction)]
+            coord = self.cut_coords[
+                sorted(self._cut_displayed).index(direction)]
             display_ax = self._axes_class(ax, direction, coord, **kwargs)
             self.axes[direction] = display_ax
             ax.set_axes_locator(self._locator)
@@ -865,7 +877,8 @@ class OrthoSlicer(BaseSlicer):
         for direction in 'xyz':
             coord = None
             if direction in self._cut_displayed:
-                coord = cut_coords[sorted(self._cut_displayed).index(direction)]
+                coord = cut_coords[
+                    sorted(self._cut_displayed).index(direction)]
             coords[direction] = coord
         x, y, z = coords['x'], coords['y'], coords['z']
 
@@ -898,9 +911,9 @@ class OrthoSlicer(BaseSlicer):
                 ax.axhline(y, **kwargs)
 
 
-################################################################################
+###############################################################################
 # class BaseStackedSlicer
-################################################################################
+###############################################################################
 
 class BaseStackedSlicer(BaseSlicer):
     """ A class to create linked axes for plotting stacked
@@ -942,12 +955,12 @@ class BaseStackedSlicer(BaseSlicer):
         x0, y0, x1, y1 = self.rect
         # Create our axes:
         self.axes = dict()
-        fraction = 1./len(self.cut_coords)
+        fraction = 1. / len(self.cut_coords)
         for index, coord in enumerate(self.cut_coords):
             coord = float(coord)
             fh = self.frame_axes.get_figure()
-            ax = fh.add_axes([fraction*index*(x1-x0) + x0, y0,
-                              fraction*(x1-x0), y1-y0])
+            ax = fh.add_axes([fraction * index * (x1 - x0) + x0, y0,
+                              fraction * (x1 - x0), y1 - y0])
             ax.axis('off')
             display_ax = self._axes_class(ax, self._direction,
                                           coord, **kwargs)
@@ -967,7 +980,6 @@ class BaseStackedSlicer(BaseSlicer):
                                    zorder=-500, aspect='auto')
             self.frame_axes.set_zorder(-1000)
 
-
     def _locator(self, axes, renderer):
         """ The locator function used by matplotlib to position axes.
             Here we put the logic used to adjust the size of the axes.
@@ -977,7 +989,7 @@ class BaseStackedSlicer(BaseSlicer):
         display_ax_dict = self.axes
 
         if self._colorbar:
-            adjusted_width = self._colorbar_width/len(self.axes)
+            adjusted_width = self._colorbar_width / len(self.axes)
             right_margin = self._colorbar_margin['right'] / len(self.axes)
             ticks_margin = self._colorbar_margin['left'] / len(self.axes)
             x1 = x1 - (adjusted_width + right_margin + ticks_margin)
@@ -1003,7 +1015,6 @@ class BaseStackedSlicer(BaseSlicer):
             left += this_width
         return transforms.Bbox([[left_dict[axes], y0],
                                 [left_dict[axes] + width_dict[axes], y1]])
-
 
     def draw_cross(self, cut_coords=None, **kwargs):
         """ Draw a crossbar on the plot to show where the cut is
@@ -1174,32 +1185,17 @@ class OrthoProjector(OrthoSlicer):
             adjacency_matrix = adjacency_matrix.filled(0)
 
         if edge_threshold is not None:
-            if isinstance(edge_threshold, _basestring):
-                message = ("If 'edge_threshold' is given as a string it "
-                           'should be a number followed by the percent sign, '
-                           'e.g. "25.3%"')
-                if not edge_threshold.endswith('%'):
-                    raise ValueError(message)
-
-                try:
-                    percentile = float(edge_threshold[:-1])
-                except ValueError as exc:
-                    exc.args += (message, )
-                    raise
-
-                # Keep a percentile of edges with the highest absolute
-                # values, so only need to look at the covariance
-                # coefficients below the diagonal
-                lower_diagonal_indices = np.tril_indices_from(adjacency_matrix,
-                                                              k=-1)
-                lower_diagonal_values = adjacency_matrix[
-                    lower_diagonal_indices]
-                edge_threshold = stats.scoreatpercentile(
-                    np.abs(lower_diagonal_values), percentile)
-
-            elif not isinstance(edge_threshold, numbers.Real):
-                raise TypeError('edge_threshold should be either a number '
-                                'or a string finishing with a percent sign')
+            # Keep a percentile of edges with the highest absolute
+            # values, so only need to look at the covariance
+            # coefficients below the diagonal
+            lower_diagonal_indices = np.tril_indices_from(adjacency_matrix,
+                                                          k=-1)
+            lower_diagonal_values = adjacency_matrix[
+                lower_diagonal_indices]
+            edge_threshold = check_threshold(edge_threshold,
+                                             np.abs(lower_diagonal_values),
+                                             stats.scoreatpercentile,
+                                             'edge_threshold')
 
             adjacency_matrix = adjacency_matrix.copy()
             threshold_mask = np.abs(adjacency_matrix) < edge_threshold
@@ -1264,7 +1260,7 @@ def get_create_display_fun(display_mode, class_dict):
     except KeyError:
         message = ('{0} is not a valid display_mode. '
                    'Valid options are {1}').format(
-                       display_mode, sorted(class_dict.keys()))
+                        display_mode, sorted(class_dict.keys()))
         raise ValueError(message)
 
 
@@ -1276,3 +1272,45 @@ def get_slicer(display_mode):
 def get_projector(display_mode):
     "Internal function to retrieve a projector"
     return get_create_display_fun(display_mode, PROJECTORS)
+
+
+def check_threshold(threshold, data, percentile_calculate, name):
+    """ Checks if the given threshold is in correct format
+
+    Parameters
+    ----------
+    threshold: a real value or a percentage in string.
+        if threshold is a percentage expressed in a string
+        it must finish with a percent sign like "99.7%".
+    data: ndarray
+        an array of the input masked data
+    percentile_calculate: a percentile function
+        define the name of a specific percentile function
+        to calculate the score on the data.
+
+    Returns
+    -------
+    value: a number
+        returns the score of the percentile on the data or
+        returns threshold as it is if input threshold is not
+        a percentile.
+    """
+    if isinstance(threshold, _basestring):
+        message = ('If "{0}" is given as string it '
+                   'should be a number followed by the percent '
+                   'sign, e.g. "25.3%"').format(name)
+        if not threshold.endswith('%'):
+            raise ValueError(message)
+
+        try:
+            percentile = float(threshold[:-1])
+        except ValueError as exc:
+            exc.args += (message, )
+            raise
+
+        threshold = percentile_calculate(data, percentile)
+
+    elif not isinstance(threshold, numbers.Real):
+        raise TypeError('%s should be either a number '
+                        'or a string finishing with a percent sign' % (name, ))
+    return threshold

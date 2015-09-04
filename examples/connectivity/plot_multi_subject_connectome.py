@@ -111,4 +111,4 @@ plotting.plot_connectome(-gsc.precisions_[..., 0],
 plot_matrices(gsc.covariances_[..., 0],
               gsc.precisions_[..., 0], title)
 
-plt.show()
+plotting.show()

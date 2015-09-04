@@ -1,0 +1,25 @@
+dependencies:
+  cache_directories:
+    - "~/nilearn_data"
+  override:
+    - pip install --upgrade pip
+    - pip install sphinx matplotlib coverage Pillow
+    - pip install scipy
+    - pip install scikit-learn
+    - pip install -e .
+    # we need to do this here so the datasets will be cached
+    # pipefail is necessary to propagate exit codes
+    - set -o pipefail && cd doc && make html 2>&1 | tee ~/log.txt
+
+test:
+  override:
+    - make clean test test-coverage
+    # workaround - make html returns 0 even if examples fail to build
+    # (see https://github.com/sphinx-gallery/sphinx-gallery/issues/45)
+    - cat ~/log.txt && if grep -q "Traceback (most recent call last):" ~/log.txt; then false; else true; fi
+
+general:
+  artifacts:
+    - "doc/_build/html"
+    - "coverage"
+    - "~/log.txt"

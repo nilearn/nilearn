@@ -42,7 +42,7 @@ func_filename = adhd_dataset.func[0]
 confound_filename = adhd_dataset.confounds[0]
 
 time_series = masker.fit_transform(func_filename,
-                             confounds=[confound_filename])
+                                   confounds=[confound_filename])
 
 
 # Computing precision matrices ################################################
@@ -67,4 +67,4 @@ plt.tight_layout()
 # Display connectome
 title = "Default Mode Network Connectivity"
 plotting.plot_connectome(cve.precision_, dmn_coords, title=title)
-plt.show()
+plotting.show()
