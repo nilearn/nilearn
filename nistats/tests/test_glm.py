@@ -12,7 +12,7 @@ import numpy as np
 from nibabel import load, Nifti1Image, save
 
 from ..glm import (
-    data_scaling, session_glm, FirstLevelGLM, compute_contrast)
+    percent_mean_scaling, session_glm, FirstLevelGLM, compute_contrast)
 
 from nose.tools import assert_true, assert_equal, assert_raises
 from numpy.testing import (assert_array_almost_equal, assert_almost_equal,
@@ -242,7 +242,7 @@ def test_scaling():
     u = np.random.randn(*shape)
     mean = 100 * np.random.rand(shape[1]) + 1
     Y = u + mean
-    Y_, mean_ = data_scaling(Y)
+    Y_, mean_ = percent_mean_scaling(Y)
     assert_almost_equal(Y_.mean(0), 0, 5)
     assert_almost_equal(mean_, mean, 0)
     assert_true(Y.std() > 1)

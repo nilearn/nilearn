@@ -35,7 +35,7 @@ DEF_TINY = 1e-50
 DEF_DOFMAX = 1e10
 
 
-def data_scaling(Y):
+def percent_mean_scaling(Y):
     """Scaling of the data to have percent of baseline change columnwise
 
     Parameters
@@ -218,11 +218,15 @@ class FirstLevelGLM(BaseEstimator, TransformerMixin, CacheMixin):
         If standardize is True, the time-series are centered and normed:
         their variance is put to 1 in the time dimension.
 
-    n_jobs: integer, optional
+    percent_signal_change: bool, optional,
+        If True, fMRI signals is scaled to percent of the mean value
+        Incompatible with standardize (overrides standardize).
+
+    n_jobs : integer, optional
         The number of CPUs to use to do the computation. -1 means
         'all CPUs', -2 'all CPUs but one', and so on.
 
-    verbose: integer, optional
+    verbose : integer, optional
         Indicate the level of verbosity. By default, nothing is printed.
 
     noise_model : {'ar1', 'ols'}, optional
@@ -243,7 +247,8 @@ class FirstLevelGLM(BaseEstimator, TransformerMixin, CacheMixin):
     def __init__(self, mask=None, target_affine=None, target_shape=None,
              low_pass=None, high_pass=None, t_r=None, smoothing_fwhm=None,
              memory=Memory(None), memory_level=1, standardize=False,
-             verbose=1, n_jobs=1, noise_model='ar1'):
+             percent_signal_change=True, verbose=1, n_jobs=1,
+             noise_model='ar1'):
         self.mask = mask
         self.memory = memory
         self.memory_level = memory_level
@@ -257,6 +262,9 @@ class FirstLevelGLM(BaseEstimator, TransformerMixin, CacheMixin):
         self.target_shape = target_shape
         self.smoothing_fwhm = smoothing_fwhm
         self.noise_model = noise_model
+        self.percent_signal_change = percent_signal_change
+        if self.percent_signal_change:
+            self.standardize = False
 
     def fit(self, imgs, design_matrices):
         """ Note: design_matrices is the design matrix !
@@ -271,7 +279,7 @@ class FirstLevelGLM(BaseEstimator, TransformerMixin, CacheMixin):
             See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
             Data on which the GLM will be fitted. If this is a list,
             the affine is considered the same for all.
-            
+
         design_matrices: array or list of arrays
             Models of the temporal events considered in the analysis.
             the arrays have shape (n_time_points, n_regressors)
@@ -327,8 +335,8 @@ class FirstLevelGLM(BaseEstimator, TransformerMixin, CacheMixin):
         self.masker_.fit(imgs)
         for X, img in zip(design_matrices, imgs):
             Y = self.masker_.transform(img)
-            if self.standardize is False:
-                Y, _ = data_scaling(Y)
+            if self.percent_signal_change:
+                Y, _ = percent_mean_scaling(Y)
             labels_, results_ = session_glm(
                 Y, X, noise_model=self.noise_model, bins=100)
             self.labels_.append(labels_)
