@@ -317,7 +317,8 @@ def test_filter_and_mask():
     assert_raises_regex(DimensionError, "Data must be a 3D", filter_and_mask,
                          data_img, mask_img, params)
 
-
+# This test check that transform effectively caches its results, even with fit
+# is called several time
 def test_transform_cache():
     data = np.zeros((40, 40, 40, 2))
     data[20:30, 20:30, 20:30] = 1

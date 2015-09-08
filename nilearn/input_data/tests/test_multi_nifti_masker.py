@@ -132,7 +132,8 @@ def test_joblib_cache():
         masker.mask_img_.get_data()
         assert_true(mask_hash == hash(masker.mask_img_))
 
-
+# This test check that transform effectively caches its results, even with fit
+# is called several time
 def test_transform_cache():
     data = np.zeros((40, 40, 40, 2))
     data[20:30, 20:30, 20:30] = 1
