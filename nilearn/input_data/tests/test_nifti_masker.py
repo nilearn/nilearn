@@ -325,13 +325,14 @@ def test_transform_cache():
     data_img = Nifti1Image(data, np.eye(4))
     mask_img = Nifti1Image(mask, np.eye(4))
     with write_tmp_imgs(data_img, mask_img) as (data_filename, mask_filename):
-        temp_dir = mkdtemp()
         for fit_img, data_img, mask_img in [(data_img, data_img, None),
                                             (None, data_img, mask_img),
                                             (None, data_filename,
-                                             mask_filename),
+                                            mask_filename),
                                             (data_filename, data_filename,
-                                             None)]:
+                                            None)
+                                            ]:
+            temp_dir = mkdtemp()
             masker = NiftiMasker(memory=temp_dir, memory_level=1,
                                  verbose=10, mask_img=mask_img)
             for _ in range(2):
@@ -348,3 +349,4 @@ def test_transform_cache():
                 pass
             assert_equal(len(l), 1)
             shutil.rmtree(temp_dir)
+

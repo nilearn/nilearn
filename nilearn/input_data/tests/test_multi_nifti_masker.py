@@ -132,6 +132,7 @@ def test_joblib_cache():
         masker.mask_img_.get_data()
         assert_true(mask_hash == hash(masker.mask_img_))
 
+
 def test_transform_cache():
     data = np.zeros((40, 40, 40, 2))
     data[20:30, 20:30, 20:30] = 1
@@ -139,15 +140,16 @@ def test_transform_cache():
     data_img = Nifti1Image(data, np.eye(4))
     mask_img = Nifti1Image(mask, np.eye(4))
     with write_tmp_imgs(data_img, mask_img) as (data_filename, mask_filename):
-        temp_dir = mkdtemp()
         data_img = [data_img]
         data_filename = [data_filename]
         for fit_img, data_img, mask_img in [(data_img, data_img, None),
                                             (None, data_img, mask_img),
                                             (None, data_filename,
-                                             mask_filename),
+                                            mask_filename),
                                             (data_filename, data_filename,
-                                             None)]:
+                                            None)
+                                            ]:
+            temp_dir = mkdtemp()
             masker = MultiNiftiMasker(memory=temp_dir, memory_level=1,
                                       verbose=10, mask_img=mask_img)
             for _ in range(2):
