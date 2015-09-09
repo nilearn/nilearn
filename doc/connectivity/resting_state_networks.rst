@@ -1,26 +1,30 @@
 .. _extracting_rsn:
 
-===========================================
-Extracting resting-state networks with ICA
-===========================================
+==================================================
+Extracting resting-state networks: ICA and related
+==================================================
 
 .. topic:: **Page summary**
 
    This page demonstrates the use of multi-subject Independent Component
    Analysis (ICA) of resting-state fMRI data to extract brain networks in
    an data-driven way. Here we use the 'CanICA' approach, that implements
-   a multivariate random effects model across subjects.
+   a multivariate random effects model across subjects. A newer technique,
+   based on dictionary learning, is then described.
+
+
+.. currentmodule:: nilearn.decomposition
+
+Multi-subject ICA: CanICA
+=========================
 
 .. topic:: **References**
 
     * G. Varoquaux et al. "A group model for stable multi-subject ICA on
       fMRI datasets", `NeuroImage Vol 51 (2010) <http://www.sciencedirect.com/science/article/pii/S1053811910001618>`_, p. 288-299
 
-
-.. currentmodule:: nilearn.decomposition
-
 Data preparation: retrieving example data
-==========================================
+-----------------------------------------
 
 We will use sample data from the `ADHD 200 resting-state dataset
 <http://fcon_1000.projects.nitrc.org/indi/adhd200/>`_ has been
@@ -33,9 +37,8 @@ on data loading <loading_data>`):
     :start-after: # First we load the ADHD200 data
     :end-before: # Here we apply CanICA on the data
 
-
 Applying CanICA
-================
+---------------
 
 :class:`CanICA` is a ready-to-use object that can be applied to
 multi-subject Nifti data, for instance presented as filenames, and will
@@ -51,7 +54,7 @@ The components estimated are found as the `components_` attribute of the
 object.
 
 Visualizing the results
-========================
+-----------------------
 
 We can visualize the components as in the previous examples. The first plot
 shows a map generated from all the components. Then we plot an axial cut for
@@ -91,3 +94,60 @@ Finally, we can plot the map for different ICA components separately:
    displayed on your computer might not match those of the documentation. For
    a fair representation, you should display all components and
    investigate which one resemble those displayed above.
+
+Beyond ICA : Dictionary learning
+================================
+
+Recent work has shown that dictionary learning based techniques.
+Dictionary learning in neuro-imaging seek to extract a few representative
+temporal elements along with their sparse spatial loadings, which constitutes
+good extracted maps, that are usually less noisy and better localized than ICA
+extracted maps.
+
+.. topic:: **References**
+
+   * Gael Varoquaux et al. `Multi-subject dictionary learning to segment an atlas of brain spontaneous activity <http://hal.inria.fr/inria-00588898/en/>`_,
+   Information Processing in Medical Imaging, 2011, pp. 562-573, Lecture Notes
+   in Computer Science,
+
+Applying DictLearning
+---------------------
+
+DictLearning is a ready-to-use class that is used just like CanICA. Sparsity of
+output map is controlled by a penalty parameter alpha (using a larger alpha
+yields sparser maps)
+
+.. literalinclude:: ../../examples/connectivity/compare_resting_state_decomposition.py
+    :start-after: ### Dictionary learning #######################################################
+    :end-before: ### CanICA ####################################################################
+
+We can fit both estimators to compare them
+
+.. literalinclude:: ../../examples/connectivity/compare_resting_state_decomposition.py
+    :start-after: ### Fitting both estimators ###################################################
+    :end-before: ### Visualize the results #####################################################
+
+Visualizing the results
+-----------------------
+
+4D plotting offers an efficient way to compare both resulting outputs
+
+.. literalinclude:: ../../examples/connectivity/compare_resting_state_decomposition.py
+    :start-after: ### Visualize the results #####################################################
+
+        .. |img| image:: ../auto_examples/connectivity/images/compare_resting_state_decomposition.png
+   :target: ../auto_examples/compare_resting_state_decomposition.html
+   :width: 50%
+
+.. centered:: |img|
+
+Maps obtained with dictionary leaning are often easier to exploit as they are
+less noisy than ICA maps, with blobs usually well defined.
+While dictionary learning computation time is comparable to CanICA, obtained
+atlases have been shown to outperform ICA in a variety of
+classification tasks.
+
+.. seealso::
+
+   The full code can be found as an example:
+   :ref:`example_compare_resting_state_decomposition.py`

@@ -6,9 +6,9 @@ CanICA
 # License: BSD 3 clause
 
 from operator import itemgetter
+
 import numpy as np
 from scipy.stats import scoreatpercentile
-
 from sklearn.decomposition import fastica
 from sklearn.externals.joblib import Memory, delayed, Parallel
 from sklearn.utils import check_random_state
@@ -53,7 +53,8 @@ class CanICA(MultiPCA, CacheMixin):
         then we apply a thresholding that will keep the n_voxels,
         more intense voxels across all the maps, n_voxels being the number
         of voxels in a brain volume. A float value indicates the
-        ratio of voxels to keep (2. means keeping 2 x n_voxels voxels).
+        ratio of voxels to keep (2. means that the maps will together
+        have 2 x n_voxels non-zero voxels ).
 
     n_init: int, optional
         The number of times the fastICA algorithm is restarted
@@ -106,52 +107,42 @@ class CanICA(MultiPCA, CacheMixin):
       datasets", IEEE ISBI 2010, p. 1177
     """
 
-    def __init__(self, mask=None, n_components=20,
-                 smoothing_fwhm=6, do_cca=True,
-                 threshold='auto', n_init=10,
-                 standardize=True,
-                 random_state=0,
-                 target_affine=None, target_shape=None,
+    def __init__(self, n_init=10, threshold='auto', n_components=20,
+                 do_cca=True,
+                 random_state=None,
+                 mask=None, smoothing_fwhm=None,
+                 standardize=True, detrend=True,
                  low_pass=None, high_pass=None, t_r=None,
-                 # Common options
+                 target_affine=None, target_shape=None,
+                 mask_strategy='epi', mask_args=None,
                  memory=Memory(cachedir=None), memory_level=0,
-                 n_jobs=1, verbose=0,
+                 n_jobs=1, verbose=0
                  ):
+
         super(CanICA, self).__init__(
-            mask=mask, memory=memory, memory_level=memory_level,
-            n_jobs=n_jobs, verbose=verbose, do_cca=do_cca,
-            n_components=n_components, smoothing_fwhm=smoothing_fwhm,
-            target_affine=target_affine, target_shape=target_shape)
+            n_components=n_components,
+            do_cca=do_cca,
+            random_state=random_state,
+            # feature_compression=feature_compression,
+            mask=mask, smoothing_fwhm=smoothing_fwhm,
+            standardize=standardize, detrend=detrend,
+            low_pass=low_pass, high_pass=high_pass, t_r=t_r,
+            target_affine=target_affine, target_shape=target_shape,
+            mask_strategy=mask_strategy, mask_args=mask_args,
+            memory=memory, memory_level=memory_level,
+            n_jobs=n_jobs, verbose=verbose)
         self.threshold = threshold
-        self.random_state = random_state
-        self.low_pass = low_pass
-        self.high_pass = high_pass
-        self.t_r = t_r
         self.n_init = n_init
-        self.standardize = standardize
 
-    def fit(self, imgs, y=None, confounds=None):
-        """Compute the mask and the ICA maps across subjects
-
-        Parameters
-        ----------
-        imgs: list of Niimg-like objects
-            See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
-            Data on which PCA must be calculated. If this is a list,
-            the affine is considered the same for all.
-
-        confounds: CSV file path or 2D matrix
-            This parameter is passed to nilearn.signal.clean. Please see the
-            related documentation for details
-        """
-        MultiPCA.fit(self, imgs, y=y, confounds=confounds)
+    def _unmix_components(self):
         random_state = check_random_state(self.random_state)
 
         seeds = random_state.randint(np.iinfo(np.int32).max, size=self.n_init)
         results = Parallel(n_jobs=self.n_jobs, verbose=self.verbose)(
-                delayed(fastica)(self.components_.T,
-                    whiten=True, fun='cube', random_state=seed)
-                for seed in seeds)
+            delayed(self._cache(fastica, func_memory_level=2))
+            (self.components_.T, whiten=True, fun='cube',
+             random_state=seed)
+            for seed in seeds)
 
         ica_maps_gen_ = (result[2].T for result in results)
         ica_maps_and_sparsities = ((ica_map,
@@ -182,4 +173,37 @@ class CanICA(MultiPCA, CacheMixin):
             if component.max() < -component.min():
                 component *= -1
 
+    def fit(self, imgs, y=None, confounds=None):
+        """Compute the mask and the ICA maps across subjects
+
+        Parameters
+        ----------
+        imgs: list of Niimg-like objects
+            See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+            Data on which PCA must be calculated. If this is a list,
+            the affine is considered the same for all.
+
+        confounds: CSV file path or 2D matrix
+            This parameter is passed to nilearn.signal.clean. Please see the
+            related documentation for details
+        """
+        if self.verbose:
+            print('[CanICA] Learning mask')
+        MultiPCA.fit(self, imgs, y=y, confounds=confounds)
+        self._unmix_components()
+        return self
+
+    def _raw_fit(self, data):
+        """Helper function that direcly process unmasked data.
+
+        Useful when called by another estimator that has already
+        unmasked data.
+
+        Parameters
+        ----------
+        data: ndarray or memmap
+            Unmasked data to process
+        """
+        MultiPCA._raw_fit(self, data)
+        self._unmix_components()
         return self
