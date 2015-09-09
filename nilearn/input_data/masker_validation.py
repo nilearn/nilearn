@@ -50,16 +50,16 @@ def check_embedded_nifti_masker(estimator, multi_subject=True):
         # For MultiNiftiMasker only
         new_masker_params['n_jobs'] = estimator.n_jobs
     new_masker_params['memory'] = estimator.memory
-    new_masker_params['memory_level'] = estimator.memory_level
+    new_masker_params['memory_level'] = max(0, estimator.memory_level - 1)
     new_masker_params['verbose'] = estimator.verbose
 
     # Raising warning if masker override parameters
     conflict_string = ""
     for param_key in sorted(estimator_params):
         if new_masker_params[param_key] != estimator_params[param_key]:
-            conflict_string += ("Parameter {0:s} :\n"
-                                "    Masker parameter {1:s}"
-                                " - overriding estimator parameter {2:s}\n"
+            conflict_string += ("Parameter {0} :\n"
+                                "    Masker parameter {1}"
+                                " - overriding estimator parameter {2}\n"
                                 ).format(param_key,
                                          new_masker_params[param_key],
                                          estimator_params[param_key])
