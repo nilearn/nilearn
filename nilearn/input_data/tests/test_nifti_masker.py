@@ -15,16 +15,17 @@ from distutils.version import LooseVersion
 from nose.tools import assert_true, assert_false, assert_raises
 from nose import SkipTest
 import numpy as np
-from numpy.testing import assert_array_equal
+from numpy.testing import assert_array_equal, assert_equal
 
 from nibabel import Nifti1Image
 import nibabel
+from os.path import join
 
 from nilearn.input_data.nifti_masker import NiftiMasker, filter_and_mask
 from nilearn._utils import testing
 from nilearn._utils.exceptions import DimensionError
 from nilearn.image import index_img
-from nilearn._utils.testing import assert_raises_regex
+from nilearn._utils.testing import assert_raises_regex, write_tmp_imgs
 from nilearn._utils.exceptions import DimensionError
 from nilearn._utils.class_inspect import get_params
 
@@ -315,3 +316,38 @@ def test_filter_and_mask():
 
     assert_raises_regex(DimensionError, "Data must be a 3D", filter_and_mask,
                          data_img, mask_img, params)
+
+# This test check that transform effectively caches its results, even with fit
+# is called several time
+def test_transform_cache():
+    data = np.zeros((40, 40, 40, 2))
+    data[20:30, 20:30, 20:30] = 1
+    mask = np.ones((40, 40, 40))
+    data_img = Nifti1Image(data, np.eye(4))
+    mask_img = Nifti1Image(mask, np.eye(4))
+    with write_tmp_imgs(data_img, mask_img) as (data_filename, mask_filename):
+        for fit_img, data_img, mask_img in [(data_img, data_img, None),
+                                            (None, data_img, mask_img),
+                                            (None, data_filename,
+                                            mask_filename),
+                                            (data_filename, data_filename,
+                                            None)
+                                            ]:
+            temp_dir = mkdtemp()
+            masker = NiftiMasker(memory=temp_dir, memory_level=1,
+                                 verbose=10, mask_img=mask_img)
+            for _ in range(2):
+                masker.fit(data_img) if data_img is not None else masker.fit()
+                masker.transform(data_img)
+            l = os.listdir(join(temp_dir, 'joblib', 'nilearn', 'input_data',
+                                'nifti_masker',
+                                'filter_and_mask'))
+            try:
+                # Sometimes 'func_code.py' does not appear,
+                #  there is a bug there
+                l.remove('func_code.py')
+            except ValueError:
+                pass
+            assert_equal(len(l), 1)
+            shutil.rmtree(temp_dir)
+
