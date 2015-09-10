@@ -199,7 +199,7 @@ uses.
    compute_multi_epi_mask
    compute_background_mask
    compute_multi_background_mask
-   intersect_mask
+   intersect_masks
    apply_mask
    unmask
 
@@ -309,5 +309,6 @@ uses.
    :template: function.rst
 
    clean
-
+   butterworth
+   high_variance_confounds
 
