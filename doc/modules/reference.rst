@@ -138,6 +138,7 @@ uses.
    smooth_img
    swap_img_hemispheres
    coord_transform
+   get_bounds
 
 .. _io_ref:
 
@@ -163,6 +164,17 @@ uses.
    NiftiLabelsMasker
    NiftiMapsMasker
    NiftiSpheresMasker
+
+**Functions**:
+
+.. currentmodule:: nilearn.input_data
+
+.. autosummary::
+   :toctree: generated/
+   :template: function.rst
+
+   filter_and_extract
+   filter_and_mask
 
 .. _masking_ref:
 
