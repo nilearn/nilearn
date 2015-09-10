@@ -100,6 +100,16 @@ uses.
 
    CanICA
 
+**Functions**:
+
+.. currentmodule:: nilearn.decomposition
+
+.. autosummary::
+   :toctree: generated/
+   :template: function.rst
+
+   session_pca
+
 .. _image_ref:
 
 :mod:`nilearn.image`: Image processing and resampling utilities
@@ -127,7 +137,7 @@ uses.
    reorder_img
    smooth_img
    swap_img_hemispheres
-
+   coord_transform
 
 .. _io_ref:
 
