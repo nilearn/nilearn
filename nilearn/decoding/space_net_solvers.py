@@ -13,7 +13,7 @@ Regression with spatial priors like TV-L1 and Graph-Net.
 
 from math import sqrt
 import numpy as np
-from .objective_functions import (spectral_norm_squared,
+from .objective_functions import (_spectral_norm_squared,
                                   _gradient_id,
                                   _logistic_loss_lipschitz_constant,
                                   _squared_loss, _squared_loss_grad, _unmask,
@@ -512,7 +512,7 @@ def tvl1_solver(X, y, alpha, l1_ratio, mask, loss=None, max_iter=100,
     # Lipschitz constant of f1_grad
     if lipschitz_constant is None:
         if loss == "mse":
-            lipschitz_constant = 1.05 * spectral_norm_squared(X)
+            lipschitz_constant = 1.05 * _spectral_norm_squared(X)
         else:
             lipschitz_constant = 1.1 * _logistic_loss_lipschitz_constant(X)
 

@@ -69,6 +69,18 @@ uses.
    SpaceNetRegressor
    SearchLight
 
+**Functions**:
+
+.. currentmodule:: nilearn.decoding
+
+.. autosummary::
+   :toctree: generated/
+   :template: function.rst
+
+   search_light
+   mfista
+   tvl1_solver
+
 .. _decomposition_ref:
 
 :mod:`nilearn.decomposition`: Multivariate decompositions
