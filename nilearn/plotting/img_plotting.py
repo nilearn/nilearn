@@ -722,11 +722,11 @@ def plot_prob_atlas(maps_img, anat_img=MNI152TEMPLATE, view_type='auto',
     n_maps = maps_img.shape[3]
 
     valid_view_types = ['auto', 'contours', 'filled_contours', 'continuous']
-    if not (isinstance(view_type, _basestring) or
-            view_type not in valid_view_types):
-        message = ('view_type option should be given '
-                   'either of these {0}').format(valid_view_types)
-        raise ValueError(message)
+    if view_type not in valid_view_types:
+        raise ValueError(
+            'Unknown view type: %s. Valid view types are %s' %
+            (str(view_type), str(valid_view_types))
+        )
 
     cmap = plt.cm.get_cmap(cmap)
     color_list = cmap(np.linspace(0, 1, n_maps))
@@ -756,17 +756,13 @@ def plot_prob_atlas(maps_img, anat_img=MNI152TEMPLATE, view_type='auto',
         if len(threshold) != n_maps:
             raise TypeError('The list of values to threshold '
                             'should be equal to number of maps')
-
     else:
         threshold = [threshold] * n_maps
 
-    if view_type == 'contours':
-        filled = False
-    elif view_type == 'filled_contours':
-        filled = True
+    filled = view_type.startswith('filled')
 
-    for i, (map_img, color, thr) in enumerate(zip(iter_img(maps_img),
-                                                  color_list, threshold)):
+    for (map_img, color, thr) in zip(iter_img(maps_img), color_list,
+                                     threshold):
         data = map_img.get_data()
         # To threshold or choose the level of the contours
         thr = check_threshold(thr, data,
