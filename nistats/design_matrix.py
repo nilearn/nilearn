@@ -29,7 +29,6 @@ Design matrices contain three different types of regressors:
 
 Author: Bertrand Thirion, 2009-2015
 """
-from warnings import warn
 import numpy as np
 from scipy import linalg
 from pandas import DataFrame
