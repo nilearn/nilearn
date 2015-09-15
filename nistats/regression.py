@@ -25,10 +25,11 @@ import warnings
 import numpy as np
 import scipy.linalg as spl
 from scipy import stats
+from numpy.linalg import matrix_rank
 
 from nibabel.onetime import setattr_on_read
 
-from .utils import matrix_rank, pos_recipr
+from .utils import pos_recipr
 
 from .model import LikelihoodModelResults
 

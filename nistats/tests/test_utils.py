@@ -7,7 +7,7 @@ from numpy.testing import assert_almost_equal, assert_array_almost_equal
 from nose.tools import assert_true, assert_equal
 
 from ..utils import (multiple_mahalanobis, z_score, multiple_fast_inv,
-                     matrix_rank, pos_recipr, full_rank)
+                     pos_recipr, full_rank)
 
 
 def test_full_rank():
