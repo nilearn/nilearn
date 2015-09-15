@@ -7,7 +7,7 @@ from numpy.testing import assert_almost_equal, assert_array_almost_equal
 from nose.tools import assert_true, assert_equal
 
 from ..utils import (multiple_mahalanobis, z_score, multiple_fast_inv,
-                     matrix_rank, full_rank, pos_recipr)
+                     matrix_rank, pos_recipr)
 
 
 def test_z_score():
@@ -51,25 +51,6 @@ def test_multiple_fast_inv():
         X_inv_ref[i] = spl.inv(X[i])
     X_inv = multiple_fast_inv(X)
     assert_almost_equal(X_inv_ref, X_inv)
-
-
-def test_full_rank():
-    rng = np.random.RandomState(20110831)
-    X = rng.standard_normal((40, 5))
-    # A quick rank check
-    assert_equal(matrix_rank(X), 5)
-    X[:, 0] = X[:, 1] + X[:, 2]
-    assert_equal(matrix_rank(X), 4)
-    Y1 = full_rank(X)
-    assert_equal(Y1.shape, (40, 4))
-    Y2 = full_rank(X, r=3)
-    assert_equal(Y2.shape, (40, 3))
-    Y3 = full_rank(X, r=4)
-    assert_equal(Y3.shape, (40, 4))
-    # Windows - there seems to be some randomness in the SVD result;
-    # standardize column signs before comparison
-    flipper = np.sign(Y1[0]) * np.sign(Y3[0])
-    assert_almost_equal(Y1, Y3 * flipper)
 
 
 def test_pos_recipr():

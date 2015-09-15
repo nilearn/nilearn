@@ -185,39 +185,6 @@ def matrix_rank(M, tol=None):
     return np.sum(S > tol)
 
 
-def full_rank(X, r=None):
-    """ Return full-rank matrix whose column span is the same as X
-
-    Uses an SVD decomposition.
-
-    If the rank of `X` is known it can be specified by `r` -- no check is made
-    to ensure that this really is the rank of X.
-
-    Parameters
-    ----------
-    X : array-like
-        2D array which may not be of full rank.
-    r : None or int
-        Known rank of `X`.  r=None results in standard matrix rank calculation.
-        We do not check `r` is really the rank of X; it is to speed up
-        calculations when the rank is already known.
-
-    Returns
-    -------
-    fX : array
-        Full-rank matrix with column span matching that of `X`
-    """
-    if r is None:
-        r = matrix_rank(X)
-    V, D, U = spl.svd(X, full_matrices=0)
-    order = np.argsort(D)
-    order = order[::-1]
-    value = []
-    for i in range(r):
-        value.append(V[:, order[i]])
-    return np.asarray(value).T.astype(np.float64)
-
-
 def pos_recipr(X):
     """ Return element-wise reciprocal of array, setting `X`>=0 to 0
 
