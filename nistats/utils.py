@@ -6,6 +6,7 @@ import sys
 import scipy.linalg as spl
 import numpy as np
 from scipy.stats import norm
+from warnings import warn
 
 py3 = sys.version_info[0] >= 3
 
@@ -183,6 +184,38 @@ def matrix_rank(M, tol=None):
     if tol is None:
         tol = S.max() * np.finfo(S.dtype).eps * max(M.shape)
     return np.sum(S > tol)
+
+
+def full_rank(X, cmax=1e15):
+    """ Computes the condition number of X and if it is larger than cmax,
+    returns a matrix with a condition number smaller than cmax.
+
+    Parameters
+    ----------
+    X : array of shape(nrows, ncols)
+        input array
+
+    cmax : float, optional (default:1.e-15),
+        tolerance for condition number
+
+    Returns
+    -------
+    X : array of shape(nrows, ncols)
+        output array
+
+    cond : float,
+        actual condition number
+    """
+    U, s, V = spl.svd(X, 0)
+    smax, smin = s.max(), s.min()
+    cond = smax / smin
+    if cond < cmax:
+        return X, cond
+
+    warn('Matrix is singular at working precision, regularizing...')
+    lda = (smax - cmax * smin) / (cmax - 1)
+    X = np.dot(U, np.dot(np.diag(s + lda), V))
+    return X, cmax
 
 
 def pos_recipr(X):

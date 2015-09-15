@@ -7,7 +7,18 @@ from numpy.testing import assert_almost_equal, assert_array_almost_equal
 from nose.tools import assert_true, assert_equal
 
 from ..utils import (multiple_mahalanobis, z_score, multiple_fast_inv,
-                     matrix_rank, pos_recipr)
+                     matrix_rank, pos_recipr, full_rank)
+
+
+def test_full_rank():
+    n, p = 10, 5
+    X = np.random.randn(n, p)
+    X_, _ = full_rank(X)
+    assert_array_almost_equal(X, X_)
+    X[:, -1] = X[:, :-1].sum(1)
+    X_, cond = full_rank(X)
+    assert_true(cond > 1.e10)
+    assert_array_almost_equal(X, X_)
 
 
 def test_z_score():
