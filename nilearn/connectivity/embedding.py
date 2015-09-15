@@ -33,7 +33,7 @@ def _check_mat(mat, prop):
             raise ValueError('Expected a symmetric positive definite matrix.')
 
 
-def _map_eig(function, vals, vecs):
+def _map_eig(function, eigen_values, eigen_vectors):
     """Return the symmetric matrix with eigenvectors vecs and eigenvalues
     obtained by applying the function to vals.
 
@@ -42,10 +42,10 @@ def _map_eig(function, vals, vecs):
     function : function
         The function to apply.
 
-    vals : numpy.ndarray, shape (n_features, )
+    eigen_values : numpy.ndarray, shape (n_features, )
         Input argument of the function.
 
-    vecs : numpy.ndarray, shape (n_features, n_features)
+    eigen_vectors : numpy.ndarray, shape (n_features, n_features)
         Unitary matrix.
 
     Returns
@@ -54,7 +54,7 @@ def _map_eig(function, vals, vecs):
         The symmetric matrix obtained after transforming the eigenvalues, with
         eigenvectors the columns of vecs.
     """
-    return np.dot(vecs * function(vals), vecs.T)
+    return np.dot(eigen_vectors * function(eigen_values), eigen_vectors.T)
 
 
 def _map_sym(function, sym):
@@ -79,8 +79,8 @@ def _map_sym(function, sym):
     If input matrix is not real symmetric, no error is reported but result will
     be wrong.
     """
-    vals, vecs = linalg.eigh(sym)
-    return _map_eig(function, vals, vecs)
+    eigen_values, eigen_vectors = linalg.eigh(sym)
+    return _map_eig(function, eigen_values, eigen_vectors)
 
 
 def _geometric_mean(mats, init=None, max_iter=10, tol=1e-7):

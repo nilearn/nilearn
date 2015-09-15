@@ -31,8 +31,8 @@ measures = ['tangent', 'partial correlation', 'precision', 'correlation',
 mean_connectivity = {}
 from sklearn.covariance import EmpiricalCovariance
 for measure in measures:
-    estimator = {'measure': measure, 'cov_estimator': EmpiricalCovariance()}
-    cov_embedding = nilearn.connectivity.CovEmbedding(**estimator)
+    cov_embedding = nilearn.connectivity.CovEmbedding(
+        measure=measure, cov_estimator=EmpiricalCovariance())
     subjects_connectivity[measure] = nilearn.connectivity.vec_to_sym(
         cov_embedding.fit_transform(subjects))
     # Compute the mean connectivity across all subjects
@@ -46,7 +46,7 @@ for measure in measures:
 import numpy as np
 import nilearn.plotting
 labels = np.recfromcsv(atlas.labels)
-region_coords = np.vstack((labels['x'], labels['y'], labels['z'])).T
+region_coords = labels[['x', 'y', 'z']].tolist()
 for measure in ['tangent', 'correlation', 'partial correlation']:
     nilearn.plotting.plot_connectome(mean_connectivity[measure], region_coords,
                                      edge_threshold='98%',
