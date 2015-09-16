@@ -24,19 +24,52 @@ from nilearn._utils.niimg_conversions import concat_niimgs
 from nilearn._utils.compat import _basestring
 
 
-def extract_regions(map_data, label_data, min_size):
+def apply_threshold_to_maps(maps, threshold, threshold_strategy):
+    """ This function uses the specific type of threshold strategy
+    and keeps the most prominent features of the maps which lies
+    above a certain threshold.
+    """
+    abs_maps = np.abs(maps)
+    ratio = None
+    if isinstance(threshold, float):
+        ratio = threshold
+    elif threshold == 'auto':
+        ratio = 1.
+    elif threshold is not None:
+        raise ValueError("Threshold must be None, "
+                         "'auto' or float. You provided %s." %
+                         str(threshold))
+    if ratio is not None and threshold_strategy == 'percentile':
+        percentile = 100. - (100. / len(maps)) * ratio
+        cutoff_threshold = scoreatpercentile(abs_maps, percentile)
+    elif ratio is not None and threshold_strategy == 'voxelratio':
+        raveled = abs_maps.ravel()
+        argsort = np.argsort(raveled)
+        n_voxels = (ratio * maps.size)
+        cutoff_threshold = raveled[argsort[- n_voxels]]
+    maps[abs_maps < cutoff_threshold] = 0.
+    threshold_maps = maps
+
+    return threshold_maps
+
+
+def extract_regions(actual_map_data, process_map_data, min_size):
     """ This function takes the connected components of the
     maps data and automatically segments each component into
-    a seperate region.
+    a seperated region.
 
     Parameters
     ----------
-    map_data: a numpy array
-        a data array of the decomposed maps.
+    actual_map_data: a numpy array
+        an original raw data array of the decomposed maps without
+        being transformed to mask image space. This is generally
+        used to get same voxel intensities as a raw data which quite
+        helps in differentiating between negative and positive
+        statistical values of the maps.
 
-    label_data: a numpy array
-        a data array same as map_data but here each unique data point
-        is labelled/assigned with a unique number.
+    process_map_data: a numpy array
+        a data array same as actual_map_data which is further used
+        for segementation processing.
 
     min_size: int
         An integer which actually limits the size of the regions to
@@ -48,16 +81,17 @@ def extract_regions(map_data, label_data, min_size):
     -------
     regions: a numpy array
         contains the data array of each extracted region appended in a
-        one by one form for each of its input data.
+        one by one form for each of its input process data.
     """
     regions = []
+    label_maps, n_labels = label(process_map_data)
     # Takes the size of each labelized region data
-    labels_size = np.bincount(label_data.ravel())
+    labels_size = np.bincount(label_maps.ravel())
     labels_size[0] = 0.
 
     for label_id, label_size in enumerate(labels_size):
         if label_size > min_size:
-            region_data = (label_data == label_id) * map_data
+            region_data = (label_maps == label_id) * actual_map_data
             regions.append(region_data)
 
     return regions
@@ -134,7 +168,7 @@ class region_signal_extractor(NiftiMapsMasker):
         If 'voxelratio' or 'percentile', the regions which are survived above an
         estimated threshold are kept as more intense foreground voxels to segment.
 
-    extractor: string {'voxel_wise', 'local_regions'}, optional
+    extractor: string {'auto', 'local_regions'}, optional
         A string which selects between the type of extractor. If 'voxel_wise',
         regions are segmented using labelling assignment to each unique object.
         If 'local_regions', regions are segmented using a seed points assigned by
@@ -165,7 +199,7 @@ class region_signal_extractor(NiftiMapsMasker):
                  target_shape=None, standardize=False, low_pass=None,
                  high_pass=None, t_r=None, memory=Memory(cachedir=None),
                  min_size=20, threshold_strategy='voxelratio', threshold='auto',
-                 extractor='voxel_wise', smooth_fwhm=6., verbose=0):
+                 extractor='auto', smooth_fwhm=6., verbose=0):
         self.n_regions = n_regions
         self.mask = mask
         self.target_affine = target_affine
@@ -193,10 +227,9 @@ class region_signal_extractor(NiftiMapsMasker):
             the image which consists of atlas maps or statistically
             estimated maps.
         """
-        maps_img = check_niimg(maps_img)
-        len_maps = maps_img.shape[3]
-        maps_data = maps_img.get_data()
-        self.maps_data = maps_data
+        maps_img = check_niimg_4d(maps_img)
+        actual_maps_data = maps_img.get_data()
+        self.maps_data = actual_maps_data
         affine = maps_img.get_affine()
         min_size = self.min_size
 
@@ -218,77 +251,61 @@ class region_signal_extractor(NiftiMapsMasker):
         else:
             self.masker_.fit()
         self.mask_img_ = self.masker_.mask_img_
-        transformed_maps = self.masker_.transform(maps_img)
+        # Maps which are transformed to mask image space and
+        # therefore used for further processing simply denoted as "maps"
+        maps = self.masker_.transform(maps_img)
 
         threshold_strategy = ['voxelratio', 'percentile']
         if self.threshold_strategy not in threshold_strategy:
-            message = ('"threshold_strategy" should be given '
-                       'either of these {0}').format(threshold_strategy)
+            message = ("'threshold_strategy' should be given "
+                       "either of these {0}").format(threshold_strategy)
             raise ValueError(message)
 
-        extractor_methods = ['voxel_wise', 'local_regions']
+        extractor_methods = ['auto', 'local_regions']
         if self.extractor not in extractor_methods:
             message = ('"extractor" should be given '
                        'either of these {0}').format(extractor_methods)
             raise ValueError(message)
 
-        if isinstance(self.threshold, float):
-            ratio = self.threshold
-        elif self.threshold == 'auto':
-            ratio = 0.8
-        elif self.threshold is not None:
-            raise ValueError('Threshold must be given as '
-                             '"auto" or float. You have given %s. '
-                             % str(self.threshold))
-
-        if self.threshold_strategy == 'voxelratio':
-            raveled = np.abs(transformed_maps).ravel()
-            argsort = np.argsort(raveled)
-            n_voxels = (ratio * transformed_maps.size)
-            threshold = raveled[argsort[- n_voxels]]
-            transformed_maps[np.abs(transformed_maps) < threshold] = 0.
-        elif self.threshold_strategy == 'percentile':
-            percentile = 100 - (100 / len_maps) * ratio
-            threshold = scoreatpercentile(
-                np.abs(transformed_maps), percentile)
-            transformed_maps[np.abs(transformed_maps) < threshold] = 0.
+        maps_thresholded = apply_threshold_to_maps(
+            maps, self.threshold, self.threshold_strategy)
 
         all_regions_accumulated = []
         index_of_each_map = []
         all_regions_toimgs = []
 
-        for i, trans_map in enumerate(transformed_maps):
-            each_map_data = maps_data[..., i]
-            trans_map_img = self.masker_.inverse_transform(trans_map)
-            trans_map_data = trans_map_img.get_data()
+        for index, map_process in enumerate(maps_thresholded):
+            each_map_data = actual_maps_data[..., index]
+            process_map_img = self.masker_.inverse_transform(map_process)
+            process_map_data = process_map_img.get_data()
 
-            if self.extractor == 'voxel_wise':
-                label_maps, n_labels = label(trans_map_data)
-                regions_of_each_map = extract_regions(each_map_data,
-                                                      label_maps, min_size)
-                len_regions_of_each_map = len(regions_of_each_map)
-                index_of_each_map.extend([i] * len_regions_of_each_map)
-                all_regions_accumulated.extend(regions_of_each_map)
+            if self.extractor == 'auto':
+                regions_of_each_map = extract_regions(
+                    each_map_data, process_map_data, min_size)
             elif self.extractor == 'local_regions':
                 smooth_fwhm = self.smooth_fwhm
-                smooth_data = _smooth_array(trans_map_data,
+                smooth_data = _smooth_array(process_map_data,
                                             affine, fwhm=smooth_fwhm)
                 seeds = peak_local_max(smooth_data, indices=False,
                                        exclude_border=False)
                 seeds_label, seeds_id = label(seeds)
                 # Assigning "-1" as ignored area to random walker
-                seeds_label[trans_map_data == 0] = -1
-                seeds_map = random_walker(trans_map_data, seeds_label,
+                seeds_label[process_map_data == 0] = -1
+                max_value_process_data = np.max(process_map_data)
+                # Values are normalized with max value to not exceed 1.
+                if max_value_process_data > 1.:
+                    process_map_data /= max_value_process_data
+                seeds_map = random_walker(process_map_data, seeds_label,
                                           mode='cg_mg')
                 # Again replace "-1" values with "0" for an expected behaviour
                 # to region seperation
                 seeds_map[seeds_map == -1] = 0
-                seeds_label_maps, n_seeds_labels = label(seeds_map)
-                regions_of_each_map = extract_regions(each_map_data,
-                                                      seeds_label_maps, min_size)
-                len_regions_of_each_map = len(regions_of_each_map)
-                index_of_each_map.extend([i] * len_regions_of_each_map)
-                all_regions_accumulated.append(regions_of_each_map)
+                regions_of_each_map = extract_regions(
+                    each_map_data, seeds_map, min_size)
+
+            len_regions_of_each_map = len(regions_of_each_map)
+            index_of_each_map.extend([index] * len_regions_of_each_map)
+            all_regions_accumulated.extend(regions_of_each_map)
         # Converting all regions which are accumulated to Nifti Image
         n_regions_accumulated = len(all_regions_accumulated)
         for n in range(n_regions_accumulated):
@@ -302,7 +319,7 @@ class region_signal_extractor(NiftiMapsMasker):
         self.regions_ = all_regions_toimgs
         return self
 
-    def transform(self, imgs):
+    def transform(self, imgs, confounds):
         """ Transform region signals to voxel timeseries signals.
 
         Parameters
@@ -310,6 +327,15 @@ class region_signal_extractor(NiftiMapsMasker):
         imgs: a Niimg-like images/objects
             Data on which regions signals are transformed to voxel
             time series signals.
+
+        confounds: CSV file path or 2D matrix
+            This parameter cleans each subject data prior to timeseries
+            signal extraction. It is recommended parameter especially
+            in learning funtional connectomes in seperate brain regions.
+            The most confounds such as high variance confounds or
+            white matter or csf signals or motion regressors are regressed
+            by passing to nilearn.signal.clean. Please see the related
+            documentation for more details.
 
         Returns
         -------
@@ -328,8 +354,9 @@ class region_signal_extractor(NiftiMapsMasker):
         nifti_maps_masker = NiftiMapsMasker(regions_extracted_,
                                             self.masker_.mask_img_)
         nifti_maps_masker.fit()
-        for img in imgs:
-            each_subject_signals = nifti_maps_masker.transform(img)
+        for img, confound in zip(imgs, confounds):
+            each_subject_signals = nifti_maps_masker.transform(
+                img, confounds=confound)
             signals.append(each_subject_signals)
 
         return signals
