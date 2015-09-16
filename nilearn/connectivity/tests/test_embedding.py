@@ -9,8 +9,9 @@ from nose.tools import assert_raises, assert_equal, assert_true
 from sklearn.utils import check_random_state
 
 from nilearn._utils.extmath import is_spd
-from nilearn.connectivity.embedding import _check_mat, _map_sym, _map_eig, \
-    _geometric_mean, sym_to_vec, vec_to_sym, _prec_to_partial, CovEmbedding
+from nilearn.connectivity.embedding import _check_matrix, _map_eigenvalues, \
+    _form_symmetric, _geometric_mean, sym_to_vec, vec_to_sym, \
+    _prec_to_partial, ConnectivityMatrix
 
 
 def grad_geometric_mean(mats, init=None, max_iter=10, tol=1e-7):
@@ -38,10 +39,10 @@ def grad_geometric_mean(mats, init=None, max_iter=10, tol=1e-7):
     for n in range(max_iter):
         # Computation of the gradient
         vals_gmean, vecs_gmean = linalg.eigh(gmean)
-        gmean_inv_sqrt = _map_eig(np.sqrt, 1. / vals_gmean, vecs_gmean)
+        gmean_inv_sqrt = _form_symmetric(np.sqrt, 1. / vals_gmean, vecs_gmean)
         whitened_mats = [gmean_inv_sqrt.dot(mat).dot(gmean_inv_sqrt)
                          for mat in mats]
-        logs = [_map_sym(np.log, w_mat) for w_mat in whitened_mats]
+        logs = [_map_eigenvalues(np.log, w_mat) for w_mat in whitened_mats]
         logs_mean = np.mean(logs, axis=0)  # Covariant derivative is
                                            # - gmean.dot(logms_mean)
         norm = np.linalg.norm(logs_mean)  # Norm of the covariant derivative on
@@ -49,9 +50,9 @@ def grad_geometric_mean(mats, init=None, max_iter=10, tol=1e-7):
 
         # Update of the minimizer
         vals_log, vecs_log = linalg.eigh(logs_mean)
-        gmean_sqrt = _map_eig(np.sqrt, vals_gmean, vecs_gmean)
+        gmean_sqrt = _form_symmetric(np.sqrt, vals_gmean, vecs_gmean)
         gmean = gmean_sqrt.dot(
-            _map_eig(np.exp, vals_log * step, vecs_log)).dot(gmean_sqrt)
+            _form_symmetric(np.exp, vals_log * step, vecs_log)).dot(gmean_sqrt)
 
         # Update the norm and the step size
         if norm < norm_old:
@@ -67,34 +68,34 @@ def grad_geometric_mean(mats, init=None, max_iter=10, tol=1e-7):
     return grad_norm
 
 
-def test_check_mat():
-    """Test check_mat function"""
+def test_check_matrix():
+    """Test check_matrix function"""
     non_square = np.ones((2, 3))
-    assert_raises(ValueError, _check_mat, non_square, 'square')
+    assert_raises(ValueError, _check_matrix, non_square, 'square')
 
     non_sym = np.array([[0, 1], [0, 0]])
-    assert_raises(ValueError, _check_mat, non_sym, 'symmetric')
+    assert_raises(ValueError, _check_matrix, non_sym, 'symmetric')
 
     non_spd = np.ones((3, 3))
-    assert_raises(ValueError, _check_mat, non_spd, 'spd')
+    assert_raises(ValueError, _check_matrix, non_spd, 'spd')
 
 
-def test_map_sym():
+def test_map_eigenvalues():
     """Test map_sym function"""
     # Test on exp map
     sym = np.ones((2, 2))
     sym_exp = exp(1.) * np.array([[cosh(1.), sinh(1.)], [sinh(1.), cosh(1.)]])
-    assert_array_almost_equal(_map_sym(np.exp, sym), sym_exp)
+    assert_array_almost_equal(_map_eigenvalues(np.exp, sym), sym_exp)
 
     # Test on sqrt map
     spd_sqrt = np.array([[2., -1., 0.], [-1., 2., -1.], [0., -1., 2.]])
     spd = spd_sqrt.dot(spd_sqrt)
-    assert_array_almost_equal(_map_sym(np.sqrt, spd), spd_sqrt)
+    assert_array_almost_equal(_map_eigenvalues(np.sqrt, spd), spd_sqrt)
 
     # Test on log map
     spd = np.array([[1.25, 0.75], [0.75, 1.25]])
     spd_log = np.array([[0., log(2.)], [log(2.), 0.]])
-    assert_array_almost_equal(_map_sym(np.log, spd), spd_log)
+    assert_array_almost_equal(_map_eigenvalues(np.log, spd), spd_log)
 
 
 def test_geometric_mean_couple():
@@ -105,9 +106,9 @@ def test_geometric_mean_couple():
     spd2 = np.tril(np.ones((n_features, n_features)))
     spd2 = spd2.dot(spd2.T)
     vals_spd2, vecs_spd2 = np.linalg.eigh(spd2)
-    spd2_sqrt = _map_eig(np.sqrt, vals_spd2, vecs_spd2)
-    spd2_inv_sqrt = _map_eig(np.sqrt, 1. / vals_spd2, vecs_spd2)
-    geo = spd2_sqrt.dot(_map_sym(np.sqrt, spd2_inv_sqrt.dot(spd1).dot(
+    spd2_sqrt = _form_symmetric(np.sqrt, vals_spd2, vecs_spd2)
+    spd2_inv_sqrt = _form_symmetric(np.sqrt, 1. / vals_spd2, vecs_spd2)
+    geo = spd2_sqrt.dot(_map_eigenvalues(np.sqrt, spd2_inv_sqrt.dot(spd1).dot(
                         spd2_inv_sqrt))).dot(spd2_sqrt)
     assert_array_almost_equal(_geometric_mean([spd1, spd2]), geo)
 
@@ -138,9 +139,9 @@ def test_geometric_mean_geodesic():
     non_singular[1:3, 1:3] = np.array([[-1, -.5], [-.5, -1]])
     spds = []
     for time in times:
-        spds.append(non_singular.dot(_map_sym(np.exp, time * sym)).dot(
+        spds.append(non_singular.dot(_map_eigenvalues(np.exp, time * sym)).dot(
             non_singular.T))
-    gmean = non_singular.dot(_map_sym(np.exp, times.mean() * sym)).dot(
+    gmean = non_singular.dot(_map_eigenvalues(np.exp, times.mean() * sym)).dot(
         non_singular.T)
     assert_array_almost_equal(_geometric_mean(spds), gmean)
 
@@ -377,7 +378,7 @@ def test_prec_to_partial():
 
 
 def test_fit_transform():
-    """Test fit_transform method for class CovEmbedding"""
+    """Test fit_transform method for class ConnectivityMatrix"""
     n_subjects = 10
     n_features = 49
     n_samples = 200
@@ -393,10 +394,11 @@ def test_fit_transform():
         covs.append((signal.T).dot(signal) / n_samples)
 
     input_covs = copy.copy(covs)
-    measures = ["correlation", "tangent", "precision", "partial correlation"]
+    measures = ["correlation", "robust dispersion", "precision",
+                "partial correlation"]
     for measure in measures:
         estimators = {'measure': measure}
-        cov_embedding = CovEmbedding(**estimators)
+        cov_embedding = ConnectivityMatrix(**estimators)
         covs_transformed = cov_embedding.fit_transform(signals)
 
         # Generic
@@ -410,15 +412,18 @@ def test_fit_transform():
             assert(is_spd(covs[k], decimal=7))
 
             # Positive definiteness if expected and output value checks
-            if estimators["measure"] == "tangent":
+            if estimators["measure"] == "robust dispersion":
                 assert_array_almost_equal(cov_new, cov_new.T)
-                gmean_sqrt = _map_sym(np.sqrt, cov_embedding.tangent_mean_)
+                gmean_sqrt = _map_eigenvalues(np.sqrt,
+                                              cov_embedding.robust_mean_)
                 assert(is_spd(gmean_sqrt, decimal=7))
                 assert(is_spd(cov_embedding.whitening_, decimal=7))
                 assert_array_almost_equal(cov_embedding.whitening_.dot(
                     gmean_sqrt), np.eye(n_features))
                 assert_array_almost_equal(gmean_sqrt.dot(
-                    _map_sym(np.exp, cov_new)).dot(gmean_sqrt), covs[k])
+                    _map_eigenvalues(np.exp, cov_new)).dot(gmean_sqrt),
+                    covs[k])
+
             if estimators["measure"] == "precision":
                 assert(is_spd(cov_new, decimal=7))
                 assert_array_almost_equal(cov_new.dot(covs[k]),
@@ -431,5 +436,4 @@ def test_fit_transform():
                 prec = linalg.inv(covs[k])
                 d = np.sqrt(np.diag(np.diag(prec)))
                 assert_array_almost_equal(d.dot(cov_new).dot(d), -prec +
-                    2 * np.diag(np.diag(prec)))
-    
+                                          2 * np.diag(np.diag(prec)))    

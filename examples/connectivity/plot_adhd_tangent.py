@@ -26,18 +26,17 @@ for func_file in dataset.func:
 # Estimate connectivity matrices
 import nilearn.connectivity
 subjects_connectivity = {}
-measures = ['tangent', 'partial correlation', 'precision', 'correlation',
-            'covariance']
+measures = ['robust dispersion', 'partial correlation', 'precision',
+            'correlation', 'covariance']
 mean_connectivity = {}
-from sklearn.covariance import EmpiricalCovariance
 for measure in measures:
-    cov_embedding = nilearn.connectivity.CovEmbedding(
-        measure=measure, cov_estimator=EmpiricalCovariance())
+    cov_embedding = nilearn.connectivity.ConnectivityMatrix(
+        measure=measure)
     subjects_connectivity[measure] = nilearn.connectivity.vec_to_sym(
         cov_embedding.fit_transform(subjects))
     # Compute the mean connectivity across all subjects
-    if measure == 'tangent':
-        mean_connectivity[measure] = cov_embedding.tangent_mean_
+    if measure == 'robust dispersion':
+        mean_connectivity[measure] = cov_embedding.robust_mean_
     else:
         mean_connectivity[measure] = \
             subjects_connectivity[measure].mean(axis=0)
@@ -47,7 +46,7 @@ import numpy as np
 import nilearn.plotting
 labels = np.recfromcsv(atlas.labels)
 region_coords = labels[['x', 'y', 'z']].tolist()
-for measure in ['tangent', 'correlation', 'partial correlation']:
+for measure in ['robust dispersion', 'correlation', 'partial correlation']:
     nilearn.plotting.plot_connectome(mean_connectivity[measure], region_coords,
                                      edge_threshold='98%',
                                      title='mean %s' % measure)
@@ -86,7 +85,7 @@ for measure in measures:
 plt.figure()
 positions = np.arange(len(measures)) * .5 + .5
 plt.barh(positions, mean_scores, align='center', height=0.2)
-measures[1] = 'partial\ncorrelation'
+measures = [measure.replace(' ', '\n') for measure in measures]
 plt.yticks(positions, measures)
 plt.xlabel('Classification accuracy')
 plt.grid(True)

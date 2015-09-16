@@ -9,31 +9,31 @@ from sklearn.covariance import EmpiricalCovariance
 from .._utils.extmath import is_spd
 
 
-def _check_mat(mat, prop):
+def _check_matrix(matrix, prop):
     """Raise a ValueError if the input matrix does not satisfy the property.
 
     Parameters
     ----------
-    mat : numpy.ndarray
+    matrix : numpy.ndarray
         Input array.
 
     prop : {'square', 'symmetric', 'spd'}
         Property to check.
     """
     if prop == 'square':
-        if mat.ndim != 2 or (mat.shape[0] != mat.shape[-1]):
+        if matrix.ndim != 2 or (matrix.shape[0] != matrix.shape[-1]):
             raise ValueError('Expected a square matrix, got array of shape' +
-                             ' {0}.'.format(mat.shape))
+                             ' {0}.'.format(matrix.shape))
     if prop == 'symmetric':
-        if not np.allclose(mat, mat.T):
+        if not np.allclose(matrix, matrix.T):
             raise ValueError('Expected a symmetric matrix.')
 
     if prop == 'spd':
-        if not is_spd(mat, decimal=7):
+        if not is_spd(matrix, decimal=7):
             raise ValueError('Expected a symmetric positive definite matrix.')
 
 
-def _map_eig(function, eigen_values, eigen_vectors):
+def _form_symmetric(function, eigen_values, eigen_vectors):
     """Return the symmetric matrix with eigenvectors vecs and eigenvalues
     obtained by applying the function to vals.
 
@@ -51,22 +51,22 @@ def _map_eig(function, eigen_values, eigen_vectors):
     Returns
     -------
     output : numpy.ndarray, shape (n_features, n_features)
-        The symmetric matrix obtained after transforming the eigenvalues, with
-        eigenvectors the columns of vecs.
+        The symmetric matrix obtained after transforming the eigenvalues, while
+        keeping the same eigenvectors.
     """
     return np.dot(eigen_vectors * function(eigen_values), eigen_vectors.T)
 
 
-def _map_sym(function, sym):
+def _map_eigenvalues(function, symmetric):
     """Matrix function, for real symmetric matrices. The function is applied
-    to the eigenvalues of sym.
+    to the eigenvalues of symmetric.
 
     Parameters
     ----------
     function : function
         The function to apply.
 
-    sym : numpy.ndarray, shape (n_features, n_features)
+    symmetric : numpy.ndarray, shape (n_features, n_features)
         The matrix to be transformed.
 
     Returns
@@ -79,11 +79,11 @@ def _map_sym(function, sym):
     If input matrix is not real symmetric, no error is reported but result will
     be wrong.
     """
-    eigen_values, eigen_vectors = linalg.eigh(sym)
-    return _map_eig(function, eigen_values, eigen_vectors)
+    eigen_values, eigen_vectors = linalg.eigh(symmetric)
+    return _form_symmetric(function, eigen_values, eigen_vectors)
 
 
-def _geometric_mean(mats, init=None, max_iter=10, tol=1e-7):
+def _geometric_mean(matrices, init=None, max_iter=10, tol=1e-7):
     """Compute the geometric mean of symmetric positive definite matrices.
 
     The geometric mean of n positive definite matrices
@@ -104,14 +104,14 @@ def _geometric_mean(mats, init=None, max_iter=10, tol=1e-7):
 
     Parameters
     ----------
-    mats : list of numpy.ndarray, shape of each (n_features, n_features)
+    matrices : list of numpy.ndarray, shape of each (n_features, n_features)
         List of matrices whose geometric mean to compute. Raise an error if the
         arrays are not all symmetric positive definite of the same shape.
 
     init : numpy.ndarray, shape (n_features, n_features) or None, optional
         Initialization matrix. Raise an error if the array is not symmetric
-        positive definite of the same shape as the elements of mats. Set to the
-        arithmetic mean of mats if None.
+        positive definite of the same shape as the elements of matrices. Set to
+        the arithmetic mean of matrices if None.
 
     max_iter : int, optional (default to 10)
         Maximal number of iterations.
@@ -125,22 +125,22 @@ def _geometric_mean(mats, init=None, max_iter=10, tol=1e-7):
         Geometric mean of the matrices.
     """
     # Shape and symmetry positive definiteness checks
-    n_features = mats[0].shape[0]
-    for mat in mats:
-        _check_mat(mat, 'square')
-        if mat.shape[0] != n_features:
+    n_features = matrices[0].shape[0]
+    for matrix in matrices:
+        _check_matrix(matrix, 'square')
+        if matrix.shape[0] != n_features:
             raise ValueError("Matrices are not of the same shape.")
-        _check_mat(mat, 'spd')
+        _check_matrix(matrix, 'spd')
 
     # Initialization
-    mats = np.array(mats)
+    matrices = np.array(matrices)
     if init is None:
-        gmean = np.mean(mats, axis=0)
+        gmean = np.mean(matrices, axis=0)
     else:
-        _check_mat(init, 'square')
+        _check_matrix(init, 'square')
         if init.shape[0] != n_features:
             raise ValueError("Initialization has not the correct shape.")
-        _check_mat(init, 'spd')
+        _check_matrix(init, 'spd')
         gmean = init
 
     norm_old = np.inf
@@ -150,10 +150,10 @@ def _geometric_mean(mats, init=None, max_iter=10, tol=1e-7):
     for n in range(max_iter):
         # Computation of the gradient
         vals_gmean, vecs_gmean = linalg.eigh(gmean)
-        gmean_inv_sqrt = _map_eig(np.sqrt, 1. / vals_gmean, vecs_gmean)
-        whitened_mats = [gmean_inv_sqrt.dot(mat).dot(gmean_inv_sqrt)
-                         for mat in mats]
-        logs = [_map_sym(np.log, w_mat) for w_mat in whitened_mats]
+        gmean_inv_sqrt = _form_symmetric(np.sqrt, 1. / vals_gmean, vecs_gmean)
+        whitened_matrices = [gmean_inv_sqrt.dot(matrix).dot(gmean_inv_sqrt)
+                             for matrix in matrices]
+        logs = [_map_eigenvalues(np.log, w_mat) for w_mat in whitened_matrices]
         logs_mean = np.mean(logs, axis=0)  # Covariant derivative is
                                            # - gmean.dot(logms_mean)
         if np.any(np.isnan(logs_mean)):
@@ -164,10 +164,10 @@ def _geometric_mean(mats, init=None, max_iter=10, tol=1e-7):
 
         # Update of the minimizer
         vals_log, vecs_log = linalg.eigh(logs_mean)
-        gmean_sqrt = _map_eig(np.sqrt, vals_gmean, vecs_gmean)
+        gmean_sqrt = _form_symmetric(np.sqrt, vals_gmean, vecs_gmean)
         # Move along the geodesic
         gmean = gmean_sqrt.dot(
-            _map_eig(np.exp, vals_log * step, vecs_log)).dot(gmean_sqrt)
+            _form_symmetric(np.exp, vals_log * step, vecs_log)).dot(gmean_sqrt)
 
         # Update the norm and the step size
         if norm < norm_old:
@@ -185,45 +185,45 @@ def _geometric_mean(mats, init=None, max_iter=10, tol=1e-7):
     return gmean
 
 
-def sym_to_vec(sym):
+def sym_to_vec(symmetric):
     """Return the flattened lower triangular part of an array.
 
     Acts on the last two dimensions of the array if not 2-dimensional.
 
     Parameters
     ----------
-    sym : numpy.ndarray, shape (..., n_features, n_features)
+    symmetric : numpy.ndarray, shape (..., n_features, n_features)
         Input array.
 
     Returns
     -------
     output : numpy.ndarray, shape (..., n_features * (n_features + 1) / 2)
-        The output flattened lower triangular part of sym.
+        The output flattened lower triangular part of symmetric.
     """
-    tril_mask = np.tril(np.ones(sym.shape[-2:]), -1).astype(np.bool)
-    sym = sym.copy()
-    sym[..., tril_mask] *= sqrt(2)
-    tril_mask.flat[::sym.shape[-1] + 1] = True
-    return sym[..., tril_mask]
+    tril_mask = np.tril(np.ones(symmetric.shape[-2:]), -1).astype(np.bool)
+    symmetric = symmetric.copy()
+    symmetric[..., tril_mask] *= sqrt(2)
+    tril_mask.flat[::symmetric.shape[-1] + 1] = True
+    return symmetric[..., tril_mask]
 
 
-def vec_to_sym(vec):
+def vec_to_sym(vector):
     """Return the symmetric array given its flattened lower triangular part.
 
     Acts on the last dimension of the array if not 1-dimensional.
 
     Parameters
     ----------
-    vec : numpy.ndarray, shape (..., n_features * (n_features + 1) /2)
+    vector : numpy.ndarray, shape (..., n_features * (n_features + 1) /2)
         The input array.
 
     Returns
     -------
-    sym : numpy.ndarray, shape (..., n_features, n_features)
-        The output symmetric array.
+    symmetric : numpy.ndarray, shape (..., n_features, n_features)
+        The output symmetric matrix.
     """
-    n = vec.shape[-1]
-    # solve p * (p + 1) / 2 = n subj. to p > 0
+    n = vector.shape[-1]
+    # solve p * (p + 1) / 2 = n subject to p > 0
     # p ** 2 + p - 2n = 0 & p > 0
     # p = - 1 / 2 + sqrt( 1 + 8 * n) / 2
     n_features = (sqrt(8 * n + 1) - 1.) / 2
@@ -233,53 +233,53 @@ def vec_to_sym(vec):
 
     n_features = int(n_features)
     mask = np.tril(np.ones((n_features, n_features))).astype(np.bool)
-    sym = np.zeros(vec.shape[:-1] + (n_features, n_features))
-    sym[..., mask] = vec
-    sym.swapaxes(-1, -2)[..., mask] = vec
+    symmetric = np.zeros(vector.shape[:-1] + (n_features, n_features))
+    symmetric[..., mask] = vector
+    symmetric.swapaxes(-1, -2)[..., mask] = vector
     mask.flat[::n_features + 1] = False
     mask = mask + mask.T
-    sym[..., mask] /= sqrt(2)
+    symmetric[..., mask] /= sqrt(2)
 
-    return sym
+    return symmetric
 
 
-def _cov_to_corr(cov):
+def _cov_to_corr(covariance):
     """Return correlation matrix for a given covariance matrix.
 
     Parameters
     ----------
-    cov : 2D numpy.ndarray
+    covariance : 2D numpy.ndarray
         The input covariance matrix.
 
     Returns
     -------
-    corr : 2D numpy.ndarray
+    correlation : 2D numpy.ndarray
         The ouput correlation matrix.
     """
-    d = np.atleast_2d(1. / np.sqrt(np.diag(cov)))
-    corr = cov * d * d.T
-    return corr
+    diagonal = np.atleast_2d(1. / np.sqrt(np.diag(covariance)))
+    correlation = covariance * diagonal * diagonal.T
+    return correlation
 
 
-def _prec_to_partial(prec):
+def _prec_to_partial(precision):
     """Return partial correlation matrix for a given precision matrix.
 
     Parameters
     ----------
-    prec : 2D numpy.ndarray
+    precision : 2D numpy.ndarray
         The input precision matrix.
 
     Returns
     -------
-    partial : 2D numpy.ndarray
+    partial_correlation : 2D numpy.ndarray
         The 2D ouput partial correlation matrix.
     """
-    partial = -_cov_to_corr(prec)
-    np.fill_diagonal(partial, 1.)
-    return partial
+    partial_correlation = -_cov_to_corr(precision)
+    np.fill_diagonal(partial_correlation, 1.)
+    return partial_correlation
 
 
-class CovEmbedding(BaseEstimator, TransformerMixin):
+class ConnectivityMatrix(BaseEstimator, TransformerMixin):
     """Tranformer that computes connectivity coefficients.
 
     Parameters
@@ -287,7 +287,7 @@ class CovEmbedding(BaseEstimator, TransformerMixin):
     cov_estimator : estimator object, optional
         The covariance estimator.
 
-    measure : {"correlation", "partial correlation", "tangent", "covariance",
+    measure : {"correlation", "partial correlation", "robust dispersion", "covariance",
                "precision"}, optional
         The connectivity measure.
 
@@ -296,15 +296,15 @@ class CovEmbedding(BaseEstimator, TransformerMixin):
     `cov_estimator_` : estimator object
         A new covariance estimator with the same parameters as cov_estimator.
 
-    `gmean_` : numpy.ndarray
-        The geometric mean of the covariance matrices.
+    `robust_mean_` : numpy.ndarray
+        The mean connectivity for the robust dispersion measure.
 
     `whitening_` : numpy.ndarray
         The inverted square-rooted geometric mean of the covariance matrices.
 
     Note
     ----
-    For the use of "tangent" measure, see the paper:
+    For the use of "robust dispersion" measure, see the paper:
     G. Varoquaux et al. "Detection of brain functional-connectivity difference
     in post-stroke patients using group-level covariance modeling, MICCAI 2010.
     """
@@ -329,24 +329,25 @@ class CovEmbedding(BaseEstimator, TransformerMixin):
             A new covariance estimator with the same parameters as
             cov_estimator.
 
-        `tangent_mean_` : numpy.ndarray
-            The mean connectivity for the tangent measure.
+        `robust_mean_` : numpy.ndarray
+            The mean connectivity for the robust dispersion measure.
 
         `whitening_` : numpy.ndarray
-            The inverted square-rooted mean for the tangent measure.
+            The inverted square-rooted mean for the robust dispersion measure.
 
         Returns
         -------
-        self : CovEmbedding instance
+        self : ConnectivityMatrix instance
             The object itself. Useful for chaining operations.
         """
         self.cov_estimator_ = clone(self.cov_estimator)
 
-        if self.measure == 'tangent':
-            covs = [self.cov_estimator_.fit(x).covariance_ for x in X]
-            self.tangent_mean_ = _geometric_mean(covs, max_iter=30, tol=1e-7)
-            self.whitening_ = _map_sym(lambda x: 1. / np.sqrt(x),
-                                       self.tangent_mean_)
+        if self.measure == 'robust dispersion':
+            covariances = [self.cov_estimator_.fit(x).covariance_ for x in X]
+            self.robust_mean_ = _geometric_mean(covariances, max_iter=30,
+                                                 tol=1e-7)
+            self.whitening_ = _map_eigenvalues(lambda x: 1. / np.sqrt(x),
+                                               self.robust_mean_)
 
         return self
 
@@ -365,21 +366,24 @@ class CovEmbedding(BaseEstimator, TransformerMixin):
                                        n_features * (n_features + 1) / 2)
              The transformed covariance matrices.
         """
-        covs = [self.cov_estimator_.fit(x).covariance_ for x in X]
-        covs = np.array(covs)
+        covariances = [self.cov_estimator_.fit(x).covariance_ for x in X]
+        covariances = np.array(covariances)
         if self.measure == 'covariance':
             pass
-        elif self.measure == 'tangent':
-            covs = [_map_sym(np.log, self.whitening_.dot(c).dot(
-                             self.whitening_)) for c in covs]
+        elif self.measure == 'robust dispersion':
+            covariances = [_map_eigenvalues(np.log, self.whitening_.dot(
+                                            cov).dot(self.whitening_))
+                           for cov in covariances]
         elif self.measure == 'precision':
-            covs = [_map_sym(lambda x: 1. / x, g) for g in covs]
+            covariances = [_map_eigenvalues(lambda x: 1. / x, cov)
+                           for cov in covariances]
         elif self.measure == 'partial correlation':
-            covs = [_prec_to_partial(_map_sym(lambda x: 1. / x, g))
-                    for g in covs]
+            covariances = [_prec_to_partial(_map_eigenvalues(
+                                            lambda x: 1. / x, cov))
+                           for cov in covariances]
         elif self.measure == 'correlation':
-            covs = [_cov_to_corr(g) for g in covs]
+            covariances = [_cov_to_corr(cov) for cov in covariances]
         else:
             raise ValueError("Unknown connectivity measure.")
 
-        return np.array([sym_to_vec(c) for c in covs])
+        return np.array([sym_to_vec(cov) for cov in covariances])

@@ -1,1 +1,1 @@
-from .embedding import vec_to_sym, CovEmbedding
+from .embedding import vec_to_sym, ConnectivityMatrix
