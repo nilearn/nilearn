@@ -244,7 +244,7 @@ def _prec_to_partial(precision):
 
 
 class ConnectivityMeasure(BaseEstimator, TransformerMixin):
-    """Tranformer that computes connectivity coefficients.
+    """Tranformer that computes connectivity matrices.
 
     Parameters
     ----------
@@ -253,7 +253,7 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
 
     kind : {"correlation", "partial correlation", "robust dispersion",
             "covariance", "precision"}, optional
-        The connectivity type.
+        The matrix kind.
 
     Attributes
     ----------
@@ -261,14 +261,14 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
         A new covariance estimator with the same parameters as cov_estimator.
 
     `robust_mean_` : numpy.ndarray
-        The mean connectivity for the robust dispersion measure.
+        The mean connectivity for the robust dispersion kind.
 
     `whitening_` : numpy.ndarray
         The inverted square-rooted geometric mean of the covariance matrices.
 
     Note
     ----
-    For the use of "robust dispersion" measure, see the paper:
+    For the use of "robust dispersion", see the paper:
     G. Varoquaux et al. "Detection of brain functional-connectivity difference
     in post-stroke patients using group-level covariance modeling, MICCAI 2010.
     """
@@ -317,7 +317,7 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
 
     def transform(self, X):
         """Apply transform to covariances matrices to get the connectivity
-        coefficients for the chosen kind.
+        matrices for the chosen kind.
 
         Parameters
         ----------
@@ -325,9 +325,8 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
             The input subjects time series.
 
         Returns
-        -------# TODO update
-        output : numpy.ndarray, shape (len(X), \
-                                       n_features * (n_features + 1) / 2)
+        -------
+        output : numpy.ndarray, shape (n_samples, n_features, n_features)
              The transformed covariance matrices.
         """
         covariances = [self.cov_estimator_.fit(x).covariance_ for x in X]
