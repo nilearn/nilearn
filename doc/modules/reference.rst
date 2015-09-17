@@ -288,21 +288,20 @@ uses.
 
 **Classes**:
 
-.. currentmodule:: nilearn.connectivity.embedding
+.. currentmodule:: nilearn.connectivity.matrix_operations
 
 .. autosummary::
    :toctree: generated/
    :template: class.rst
    
-   CovEmbedding
+   ConnectivityMeasure
 
 **Functions**:
 
-.. currentmodule:: nilearn.connectivity.embedding
+.. currentmodule:: nilearn.connectivity.matrix_operations
 
 .. autosummary::
    :toctree: generated/
    :template: function.rst
 
-   vec_to_sym
    sym_to_vec
