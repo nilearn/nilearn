@@ -9,9 +9,9 @@ from nose.tools import assert_raises, assert_equal, assert_true
 from sklearn.utils import check_random_state
 
 from nilearn._utils.extmath import is_spd
-from nilearn.connectivity.embedding import _check_matrix, _map_eigenvalues, \
-    _form_symmetric, _geometric_mean, sym_to_vec, vec_to_sym, \
-    _prec_to_partial, ConnectivityMatrix
+from nilearn.connectivity.matrix_operations import (
+    _check_matrix, _map_eigenvalues, _form_symmetric, _geometric_mean,
+    sym_to_vec, _prec_to_partial, ConnectivityMeasure)
 
 
 def grad_geometric_mean(mats, init=None, max_iter=10, tol=1e-7):
@@ -69,7 +69,7 @@ def grad_geometric_mean(mats, init=None, max_iter=10, tol=1e-7):
 
 
 def test_check_matrix():
-    """Test check_matrix function"""
+    """Test _check_matrix function"""
     non_square = np.ones((2, 3))
     assert_raises(ValueError, _check_matrix, non_square, 'square')
 
@@ -81,7 +81,7 @@ def test_check_matrix():
 
 
 def test_map_eigenvalues():
-    """Test map_sym function"""
+    """Test _map_eigenvalues function"""
     # Test on exp map
     sym = np.ones((2, 2))
     sym_exp = exp(1.) * np.array([[cosh(1.), sinh(1.)], [sinh(1.), cosh(1.)]])
@@ -99,7 +99,7 @@ def test_map_eigenvalues():
 
 
 def test_geometric_mean_couple():
-    """Test geometric_mean function for two matrices"""
+    """Test _geometric_mean function for two matrices"""
     n_features = 7
     spd1 = np.ones((n_features, n_features))
     spd1 = spd1.dot(spd1) + n_features * np.eye(n_features)
@@ -114,7 +114,7 @@ def test_geometric_mean_couple():
 
 
 def test_geometric_mean_diagonal():
-    """Test geometric_mean function for diagonal matrices"""
+    """Test _geometric_mean function for diagonal matrices"""
     n_matrices = 20
     n_features = 5
     diags = []
@@ -242,7 +242,7 @@ def random_non_singular(p, sing_min=1., sing_max=2., random_state=0):
 
 
 def test_geometric_mean_properties():
-    """Test geometric_mean function for random spd matrices
+    """Test _geometric_mean function for random spd matrices
     """
     n_matrices = 40
     n_features = 15
@@ -311,6 +311,8 @@ def test_geometric_mean_properties():
 
 
 def test_geometric_mean_checks():
+    """Errors check for _geometric_mean function
+    """
     n_features = 5
 
     # Non square input matrix
@@ -328,45 +330,9 @@ def test_geometric_mean_checks():
 
 def test_sym_to_vec():
     """Test sym_to_vec function"""
-    # Check output value is correct
     sym = np.ones((3, 3))
     vec = np.array([1., sqrt(2), 1., sqrt(2),  sqrt(2), 1.])
     assert_array_almost_equal(sym_to_vec(sym), vec)
-
-    # Check vec_to_sym is the inverse function of sym_to_vec
-    n_features = 19
-    random_state = check_random_state(0)
-    m = random_state.rand(n_features, n_features)
-    sym = m + m.T
-    vec = sym_to_vec(sym)
-    assert_array_almost_equal(vec_to_sym(vec), sym)
-    syms = np.asarray([sym, 2. * sym, 0.5 * sym])
-    vecs = sym_to_vec(syms)
-    assert_array_almost_equal(vec_to_sym(vecs), syms)
-
-
-def test_vec_to_sym():
-    """Test vec_to_sym function"""
-    # Check error if unsuitable size
-    vec = np.ones(31)
-    assert_raises(ValueError, vec_to_sym, vec)
-
-    # Check output value is correct
-    vec = np.ones(6, )
-    sym = np.array([[sqrt(2), 1., 1.], [1., sqrt(2), 1.],
-                    [1., 1., sqrt(2)]]) / sqrt(2)
-    assert_array_almost_equal(vec_to_sym(vec), sym)
-
-    # Check sym_to_vec is the inverse function of vec_to_sym
-    n = 41
-    p = n * (n + 1) / 2
-    random_state = check_random_state(0)
-    vec = random_state.rand(p)
-    sym = vec_to_sym(vec)
-    assert_array_almost_equal(sym_to_vec(sym), vec)
-    vecs = np.asarray([vec, 2. * vec, 0.5 * vec])
-    syms = vec_to_sym(vecs)
-    assert_array_almost_equal(sym_to_vec(syms), vecs)
 
 
 def test_prec_to_partial():
@@ -378,7 +344,7 @@ def test_prec_to_partial():
 
 
 def test_fit_transform():
-    """Test fit_transform method for class ConnectivityMatrix"""
+    """Test fit_transform method for class ConnectivityMeasure"""
     n_subjects = 10
     n_features = 49
     n_samples = 200
@@ -394,46 +360,42 @@ def test_fit_transform():
         covs.append((signal.T).dot(signal) / n_samples)
 
     input_covs = copy.copy(covs)
-    measures = ["correlation", "robust dispersion", "precision",
-                "partial correlation"]
-    for measure in measures:
-        estimators = {'measure': measure}
-        cov_embedding = ConnectivityMatrix(**estimators)
-        covs_transformed = cov_embedding.fit_transform(signals)
+    kinds = ["correlation", "robust dispersion", "precision",
+             "partial correlation"]
+    for kind in kinds:
+        conn_measure = ConnectivityMeasure(kind=kind)
+        connectivities = conn_measure.fit_transform(signals)
 
         # Generic
-        assert_true(isinstance(covs_transformed, np.ndarray))
-        assert_equal(len(covs_transformed), len(covs))
+        assert_true(isinstance(connectivities, np.ndarray))
+        assert_equal(len(connectivities), len(covs))
 
-        for k, vec in enumerate(covs_transformed):
-            assert_equal(vec.size, n_features * (n_features + 1) / 2)
+        for k, cov_new in enumerate(connectivities):
             assert_array_equal(input_covs[k], covs[k])
-            cov_new = vec_to_sym(vec)
             assert(is_spd(covs[k], decimal=7))
 
             # Positive definiteness if expected and output value checks
-            if estimators["measure"] == "robust dispersion":
+            if kind == "robust dispersion":
                 assert_array_almost_equal(cov_new, cov_new.T)
                 gmean_sqrt = _map_eigenvalues(np.sqrt,
-                                              cov_embedding.robust_mean_)
+                                              conn_measure.robust_mean_)
                 assert(is_spd(gmean_sqrt, decimal=7))
-                assert(is_spd(cov_embedding.whitening_, decimal=7))
-                assert_array_almost_equal(cov_embedding.whitening_.dot(
+                assert(is_spd(conn_measure.whitening_, decimal=7))
+                assert_array_almost_equal(conn_measure.whitening_.dot(
                     gmean_sqrt), np.eye(n_features))
                 assert_array_almost_equal(gmean_sqrt.dot(
                     _map_eigenvalues(np.exp, cov_new)).dot(gmean_sqrt),
                     covs[k])
-
-            if estimators["measure"] == "precision":
+            elif kind == "precision":
                 assert(is_spd(cov_new, decimal=7))
                 assert_array_almost_equal(cov_new.dot(covs[k]),
                                           np.eye(n_features))
-            if estimators["measure"] == "correlation":
+            elif kind == "correlation":
                 assert(is_spd(cov_new, decimal=7))
                 d = np.sqrt(np.diag(np.diag(covs[k])))
                 assert_array_almost_equal(d.dot(cov_new).dot(d), covs[k])
-            if estimators["measure"] == "partial correlation":
+            elif kind == "partial correlation":
                 prec = linalg.inv(covs[k])
                 d = np.sqrt(np.diag(np.diag(prec)))
                 assert_array_almost_equal(d.dot(cov_new).dot(d), -prec +
-                                          2 * np.diag(np.diag(prec)))    
+                                          2 * np.diag(np.diag(prec)))

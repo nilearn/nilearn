@@ -207,42 +207,6 @@ def sym_to_vec(symmetric):
     return symmetric[..., tril_mask]
 
 
-def vec_to_sym(vector):
-    """Return the symmetric array given its flattened lower triangular part.
-
-    Acts on the last dimension of the array if not 1-dimensional.
-
-    Parameters
-    ----------
-    vector : numpy.ndarray, shape (..., n_features * (n_features + 1) /2)
-        The input array.
-
-    Returns
-    -------
-    symmetric : numpy.ndarray, shape (..., n_features, n_features)
-        The output symmetric matrix.
-    """
-    n = vector.shape[-1]
-    # solve p * (p + 1) / 2 = n subject to p > 0
-    # p ** 2 + p - 2n = 0 & p > 0
-    # p = - 1 / 2 + sqrt( 1 + 8 * n) / 2
-    n_features = (sqrt(8 * n + 1) - 1.) / 2
-    if n_features > floor(n_features):
-        raise ValueError("Vector size unsuitable, can not transform vector to "
-                         "symmetric matrix.")
-
-    n_features = int(n_features)
-    mask = np.tril(np.ones((n_features, n_features))).astype(np.bool)
-    symmetric = np.zeros(vector.shape[:-1] + (n_features, n_features))
-    symmetric[..., mask] = vector
-    symmetric.swapaxes(-1, -2)[..., mask] = vector
-    mask.flat[::n_features + 1] = False
-    mask = mask + mask.T
-    symmetric[..., mask] /= sqrt(2)
-
-    return symmetric
-
-
 def _cov_to_corr(covariance):
     """Return correlation matrix for a given covariance matrix.
 
@@ -279,7 +243,7 @@ def _prec_to_partial(precision):
     return partial_correlation
 
 
-class ConnectivityMatrix(BaseEstimator, TransformerMixin):
+class ConnectivityMeasure(BaseEstimator, TransformerMixin):
     """Tranformer that computes connectivity coefficients.
 
     Parameters
@@ -287,9 +251,9 @@ class ConnectivityMatrix(BaseEstimator, TransformerMixin):
     cov_estimator : estimator object, optional
         The covariance estimator.
 
-    measure : {"correlation", "partial correlation", "robust dispersion", "covariance",
-               "precision"}, optional
-        The connectivity measure.
+    kind : {"correlation", "partial correlation", "robust dispersion",
+            "covariance", "precision"}, optional
+        The connectivity type.
 
     Attributes
     ----------
@@ -310,9 +274,9 @@ class ConnectivityMatrix(BaseEstimator, TransformerMixin):
     """
 
     def __init__(self, cov_estimator=EmpiricalCovariance(assume_centered=True),
-                 measure='covariance'):
+                 kind='covariance'):
         self.cov_estimator = cov_estimator
-        self.measure = measure
+        self.kind = kind
 
     def fit(self, X, y=None):
         """Fit the covariance estimator to the given time series for each
@@ -330,10 +294,10 @@ class ConnectivityMatrix(BaseEstimator, TransformerMixin):
             cov_estimator.
 
         `robust_mean_` : numpy.ndarray
-            The mean connectivity for the robust dispersion measure.
+            The mean connectivity for the robust dispersion kind.
 
         `whitening_` : numpy.ndarray
-            The inverted square-rooted mean for the robust dispersion measure.
+            The inverted square-rooted mean for the robust dispersion kind.
 
         Returns
         -------
@@ -342,10 +306,10 @@ class ConnectivityMatrix(BaseEstimator, TransformerMixin):
         """
         self.cov_estimator_ = clone(self.cov_estimator)
 
-        if self.measure == 'robust dispersion':
+        if self.kind == 'robust dispersion':
             covariances = [self.cov_estimator_.fit(x).covariance_ for x in X]
             self.robust_mean_ = _geometric_mean(covariances, max_iter=30,
-                                                 tol=1e-7)
+                                                tol=1e-7)
             self.whitening_ = _map_eigenvalues(lambda x: 1. / np.sqrt(x),
                                                self.robust_mean_)
 
@@ -353,7 +317,7 @@ class ConnectivityMatrix(BaseEstimator, TransformerMixin):
 
     def transform(self, X):
         """Apply transform to covariances matrices to get the connectivity
-        coefficients for the chosen measure.
+        coefficients for the chosen kind.
 
         Parameters
         ----------
@@ -361,29 +325,29 @@ class ConnectivityMatrix(BaseEstimator, TransformerMixin):
             The input subjects time series.
 
         Returns
-        -------
+        -------# TODO update
         output : numpy.ndarray, shape (len(X), \
                                        n_features * (n_features + 1) / 2)
              The transformed covariance matrices.
         """
         covariances = [self.cov_estimator_.fit(x).covariance_ for x in X]
         covariances = np.array(covariances)
-        if self.measure == 'covariance':
-            pass
-        elif self.measure == 'robust dispersion':
-            covariances = [_map_eigenvalues(np.log, self.whitening_.dot(
-                                            cov).dot(self.whitening_))
-                           for cov in covariances]
-        elif self.measure == 'precision':
-            covariances = [_map_eigenvalues(lambda x: 1. / x, cov)
-                           for cov in covariances]
-        elif self.measure == 'partial correlation':
-            covariances = [_prec_to_partial(_map_eigenvalues(
-                                            lambda x: 1. / x, cov))
-                           for cov in covariances]
-        elif self.measure == 'correlation':
-            covariances = [_cov_to_corr(cov) for cov in covariances]
+        if self.kind == 'covariance':
+            connectivities = covariances
+        elif self.kind == 'robust dispersion':
+            connectivities = [_map_eigenvalues(np.log, self.whitening_.dot(
+                                               cov).dot(self.whitening_))
+                              for cov in covariances]
+        elif self.kind == 'precision':
+            connectivities = [_map_eigenvalues(lambda x: 1. / x, cov)
+                              for cov in covariances]
+        elif self.kind == 'partial correlation':
+            connectivities = [_prec_to_partial(_map_eigenvalues(
+                                               lambda x: 1. / x, cov))
+                              for cov in covariances]
+        elif self.kind == 'correlation':
+            connectivities = [_cov_to_corr(cov) for cov in covariances]
         else:
-            raise ValueError("Unknown connectivity measure.")
+            raise ValueError("Unknown connectivity kind.")
 
-        return np.array([sym_to_vec(cov) for cov in covariances])
+        return np.array(connectivities)

@@ -1,1 +1,1 @@
-from .embedding import vec_to_sym, ConnectivityMatrix
+from .matrix_operations import sym_to_vec, ConnectivityMeasure
