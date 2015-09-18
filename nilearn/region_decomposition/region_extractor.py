@@ -1,5 +1,5 @@
 """
-region_signal_extractor
+Better brain parcellations for Region of Interest analysis
 """
 
 import nibabel
@@ -16,8 +16,10 @@ from skimage.segmentation import random_walker
 
 from nilearn import plotting
 from nilearn.input_data import NiftiMasker, NiftiMapsMasker
+from nilearn.input_data.nifti_masker import filter_and_mask
 from nilearn._utils import check_niimg, check_niimg_3d, check_niimg_4d
 from nilearn._utils.extmath import fast_abs_percentile
+from nilearn._utils.class_inspect import get_params
 from nilearn.image import iter_img, new_img_like
 from nilearn.image.image import _smooth_array
 from nilearn._utils.niimg_conversions import concat_niimgs
@@ -25,9 +27,22 @@ from nilearn._utils.compat import _basestring
 
 
 def apply_threshold_to_maps(maps, threshold, threshold_strategy):
-    """ This function uses the specific type of threshold strategy
-    and keeps the most prominent features of the maps which lies
-    above a certain threshold.
+    """ A function uses the specific strategy of threshold to keep the
+    prominent features of the maps which lies above a certain threshold value.
+
+    Parameters
+    ----------
+    maps: a numpy array
+        a data consists of statistical maps or atlas maps.
+    threshold: an integer
+        a value which is used to threshold the maps.
+    threshold_strategy: string {"voxelratio", "percentile"}
+        a strategy which is used to select the way threshold should be done.
+
+    Returns
+    -------
+    threshold_maps: a numpy array
+        a thresholded maps in a numpy array format.
     """
     abs_maps = np.abs(maps)
     ratio = None
@@ -53,52 +68,78 @@ def apply_threshold_to_maps(maps, threshold, threshold_strategy):
     return threshold_maps
 
 
-def extract_regions(actual_map_data, process_map_data, min_size):
-    """ This function takes the connected components of the
-    maps data and automatically segments each component into
-    a seperated region.
+def extract_regions(map_img, min_size, extract_type, smooth_fwhm, mask_img=None):
+    """ This function takes the connected components which lies in a 3D brain
+    map and automatically segments each component into a seperate region.
 
     Parameters
     ----------
-    actual_map_data: a numpy array
-        an original raw data array of the decomposed maps without
-        being transformed to mask image space. This is generally
-        used to get same voxel intensities as a raw data which quite
-        helps in differentiating between negative and positive
-        statistical values of the maps.
-
-    process_map_data: a numpy array
-        a data array same as actual_map_data which is further used
-        for segementation processing.
-
+    map_img: a Nifti-like image/object
+        a 3D image of the activation maps which should be segmented.
     min_size: int
-        An integer which actually limits the size of the regions to
-        segment. Only the size of the voxels in the regions which
-        are more than this number are selected and less than this
-        number are ignored.
+        An integer which denotes the size of voxels in the regions.
+        Only the size of the regions which are more than this number
+        are kept.
+    extract_type: string {"auto", "local_regions"}
+        If "auto", each unique component in the image is assigned with each
+        a unique label point and then decomposed each into a seperate region.
+        If "local_regions", smoothing is applied to the image and peak maximum
+        value of each unique component is assigned with a unique seed points by
+        random walker procedure and then decomposed into each assigned into a
+        each a seperate region.
+    smooth_fwhm: scalar
+        a value in millimetres which is used to smooth an image to locate seed
+        points.
+    mask_img: Nifti-like image/object, default is None, optional
+        an option used to mask the input brain map image.
 
     Returns
     -------
-    regions: a numpy array
-        contains the data array of each extracted region appended in a
-        one by one form for each of its input process data.
+    regions: a Nifti-like images
+        contains the images of segmented regions each 3D image appended as a
+        seperate brain activated image.
     """
-    regions = []
-    label_maps, n_labels = label(process_map_data)
+    regions_accumulated = []
+    map_data = map_img.get_data()
+    affine = map_img.get_affine()
+    # Mark the seeds using random walker
+    if extract_type == 'local_regions':
+        smooth_map_data = _smooth_array(map_data, affine, smooth_fwhm)
+        seeds = peak_local_max(smooth_map_data, indices=False,
+                               exclude_border=False)
+        seeds_label, seeds_id = label(seeds)
+        # Assign integer "-1" to ignore
+        seeds_label[map_data == 0.] = -1
+        # Take the maximum value of the data and
+        # normalize to be between -1 and 1
+        max_value_map = np.max(map_data)
+        if max_value_map > 1.:
+            map_data /= max_value_map
+        rw_maps = random_walker(map_data, seeds_label, mode='cg_mg')
+        # Now simply replace "-1" with "0" for regions seperation
+        rw_maps[rw_maps == -1] = 0.
+        maps_assigned = rw_maps
+    else:
+        # Taking directly the input data which is the case in 'auto' type
+        maps_assigned = map_data
+    # Region seperation
+    label_maps, n_labels = label(maps_assigned)
     # Takes the size of each labelized region data
     labels_size = np.bincount(label_maps.ravel())
     labels_size[0] = 0.
-
     for label_id, label_size in enumerate(labels_size):
         if label_size > min_size:
-            region_data = (label_maps == label_id) * actual_map_data
-            regions.append(region_data)
+            region_data = (label_maps == label_id) * map_data
+            region_img = new_img_like(map_img, region_data)
+            regions_accumulated.append(region_img)
 
-    return regions
+    return regions_accumulated
 
 
-class region_signal_extractor(NiftiMapsMasker):
-    """ Region Extraction is a post processing technique which
+class RegionExtractor(NiftiMapsMasker):
+    """ Class to decompose maps into seperated brain regions.
+
+    Region Extraction is a post processing technique which
     is implemented to automatically segment each brain atlas maps
     into different set of seperated brain activated region.
     Particularly, to show that each decomposed brain maps can be
@@ -106,12 +147,16 @@ class region_signal_extractor(NiftiMapsMasker):
 
     Parameters
     ----------
-    n_regions: int, default is None
-        An integer which limits the number of regions to extract
-        from the set of brain maps.
+    maps_img: Niimg-like object or path to the Niimg
+       an image or a filename of the image which contains a set of brain
+       atlas maps or statistically decomposed brain maps.
 
-    mask: filename, Niimg, instance of NiftiMasker, default None, optional
-        Mask to be used on data. If an instance of masker is passed,
+    n_regions: int, default is None
+        An integer which limits the number of regions to extract from the
+        set of brain maps.
+
+    mask: Niimg-like object, instance of NiftiMasker, default is None, optional
+        Mask to be applied on the input data. If an instance of masker is passed,
         then its mask is used. If no mask is provided, this class/function
         will automatically computes mask by NiftiMasker from the input data.
 
@@ -160,8 +205,8 @@ class region_signal_extractor(NiftiMapsMasker):
         multiplying the ratio with total size of the voxels, denoted as
         (0.8 * n_voxels) or it can be estimated by multiplying the ratio with
         the total number of maps to get in a percentile. If given as float,
-        this value is replaced directly by the pre-defined set ratio 0.8
-        in both cases of threshold estimation.
+        this value is replaced directly by the pre-defined set ratio 0.8 and
+        the same is applied which is there is in no need of estimation.
 
     threshold_strategy: string {'voxelratio', 'percentile'}, default is 'voxelratio', optional
         This parameter selects the way it applies the estimated threshold onto the data.
@@ -169,7 +214,7 @@ class region_signal_extractor(NiftiMapsMasker):
         estimated threshold are kept as more intense foreground voxels to segment.
 
     extractor: string {'auto', 'local_regions'}, optional
-        A string which selects between the type of extractor. If 'voxel_wise',
+        A string which selects between the type of extractor. If 'auto',
         regions are segmented using labelling assignment to each unique object.
         If 'local_regions', regions are segmented using a seed points assigned by
         its peak max value of that particular local regions and then labelling
@@ -195,11 +240,12 @@ class region_signal_extractor(NiftiMapsMasker):
       brain parcellations from rest fMRI", Sparsity Techniques in Medical Imaging,
       Sep 2014, Boston, United States. pp.8
     """
-    def __init__(self, n_regions=None, mask=None, target_affine=None,
+    def __init__(self, maps_img, n_regions=None, mask=None, target_affine=None,
                  target_shape=None, standardize=False, low_pass=None,
                  high_pass=None, t_r=None, memory=Memory(cachedir=None),
                  min_size=20, threshold_strategy='voxelratio', threshold='auto',
                  extractor='auto', smooth_fwhm=6., verbose=0):
+        self.maps_img = maps_img
         self.n_regions = n_regions
         self.mask = mask
         self.target_affine = target_affine
@@ -210,28 +256,20 @@ class region_signal_extractor(NiftiMapsMasker):
         self.t_r = t_r
         self.memory = memory
 
+        # parameters for region extraction
         self.min_size = min_size
         self.threshold_strategy = threshold_strategy
         self.threshold = threshold
         self.extractor = extractor
         self.smooth_fwhm = smooth_fwhm
+
         self.verbose = verbose
 
-    def fit(self, maps_img):
-        """ Compute the mask and fit the mask to the maps data and
-        extract or seperate the regions into region from the maps.
+    def fit(self, X=None, y=None):
+        """ Prepare or set up the data for the region extraction
 
-        Parameters
-        ----------
-        maps_img: a Niimg-like image/object.
-            the image which consists of atlas maps or statistically
-            estimated maps.
         """
-        maps_img = check_niimg_4d(maps_img)
-        actual_maps_data = maps_img.get_data()
-        self.maps_data = actual_maps_data
-        affine = maps_img.get_affine()
-        min_size = self.min_size
+        self.maps_img_ = check_niimg_4d(self.maps_img)
 
         if isinstance(self.mask, NiftiMasker):
             self.masker_ = clone(self.mask)
@@ -247,13 +285,10 @@ class region_signal_extractor(NiftiMapsMasker):
                                        memory=self.memory)
 
         if self.masker_.mask_img is None:
-            self.masker_.fit(maps_img)
+            self.masker_.fit(self.maps_img_)
         else:
             self.masker_.fit()
         self.mask_img_ = self.masker_.mask_img_
-        # Maps which are transformed to mask image space and
-        # therefore used for further processing simply denoted as "maps"
-        maps = self.masker_.transform(maps_img)
 
         threshold_strategy = ['voxelratio', 'percentile']
         if self.threshold_strategy not in threshold_strategy:
@@ -267,97 +302,76 @@ class region_signal_extractor(NiftiMapsMasker):
                        'either of these {0}').format(extractor_methods)
             raise ValueError(message)
 
-        maps_thresholded = apply_threshold_to_maps(
-            maps, self.threshold, self.threshold_strategy)
+        return self
+
+    def fit_transform(self, imgs, confounds=None):
+        return self.fit().transform(imgs, confounds=confounds)
+
+    def transform(self, imgs, confounds=None):
+        """ Extract the region time series signals from the list
+        of 4D Nifti like images.
+
+        Parameters
+        ----------
+        imgs: 4D Nifti-like images/objects.
+            Data on which region signals are transformed to voxel
+            timeseries signals.
+
+        confounds: CSV file path or 2D matrix, optional
+            This parameter cleans each subject data prior to region
+            signals extraction. It is recommended parameter especially
+            in learning functional connectomes in brain regions. The
+            most common confounds such as high variance or white matter or
+            csf signals or motion regressors are regressed out by passsing
+            to nilearn.signal.clean. Please see the related documentation
+            for more details.
+
+        Returns
+        -------
+        region_signals: a numpy array
+            a list of averaged timeseries signals extracted from each region.
+
+        """
+        if hasattr(self, 'maps_img_') and hasattr(self, 'mask_img_'):
+            parameters = get_params(NiftiMasker, self)
+            parameters['detrend'] = True
+            maps, affine = filter_and_mask(
+                self.maps_img_, self.mask_img_, parameters)
+            maps_threshold = apply_threshold_to_maps(
+                maps, self.threshold, self.threshold_strategy)
+        else:
+            raise ValueError('Images of the maps are missing. '
+                             'You must load the images by calling fit() '
+                             'followed by a transform() or '
+                             'call fit_transform() directly.')
+        maps_threshold_img = self.masker_.inverse_transform(maps_threshold)
 
         all_regions_accumulated = []
         index_of_each_map = []
         all_regions_toimgs = []
+        region_signals = []
 
-        for index, map_process in enumerate(maps_thresholded):
-            each_map_data = actual_maps_data[..., index]
-            process_map_img = self.masker_.inverse_transform(map_process)
-            process_map_data = process_map_img.get_data()
-
-            if self.extractor == 'auto':
-                regions_of_each_map = extract_regions(
-                    each_map_data, process_map_data, min_size)
-            elif self.extractor == 'local_regions':
-                smooth_fwhm = self.smooth_fwhm
-                smooth_data = _smooth_array(process_map_data,
-                                            affine, fwhm=smooth_fwhm)
-                seeds = peak_local_max(smooth_data, indices=False,
-                                       exclude_border=False)
-                seeds_label, seeds_id = label(seeds)
-                # Assigning "-1" as ignored area to random walker
-                seeds_label[process_map_data == 0] = -1
-                max_value_process_data = np.max(process_map_data)
-                # Values are normalized with max value to not exceed 1.
-                if max_value_process_data > 1.:
-                    process_map_data /= max_value_process_data
-                seeds_map = random_walker(process_map_data, seeds_label,
-                                          mode='cg_mg')
-                # Again replace "-1" values with "0" for an expected behaviour
-                # to region seperation
-                seeds_map[seeds_map == -1] = 0
-                regions_of_each_map = extract_regions(
-                    each_map_data, seeds_map, min_size)
-
-            len_regions_of_each_map = len(regions_of_each_map)
+        for index, map_ in enumerate(iter_img(maps_threshold_img)):
+            regions_imgs_of_each_map = extract_regions(
+                map_, self.min_size, self.extractor, self.smooth_fwhm)
+            len_regions_of_each_map = len(regions_imgs_of_each_map)
             index_of_each_map.extend([index] * len_regions_of_each_map)
-            all_regions_accumulated.extend(regions_of_each_map)
-        # Converting all regions which are accumulated to Nifti Image
-        n_regions_accumulated = len(all_regions_accumulated)
-        for n in range(n_regions_accumulated):
-            each_region_toimg = new_img_like(maps_img,
-                                             all_regions_accumulated[n])
-            all_regions_toimgs.append(each_region_toimg)
+            all_regions_accumulated.extend(regions_imgs_of_each_map)
 
-        all_regions_toimgs = concat_niimgs(all_regions_toimgs)
+        all_regions_toimgs = concat_niimgs(all_regions_accumulated)
+        regions_extracted = all_regions_toimgs
 
-        self.index_ = index_of_each_map
-        self.regions_ = all_regions_toimgs
-        return self
-
-    def transform(self, imgs, confounds):
-        """ Transform region signals to voxel timeseries signals.
-
-        Parameters
-        ----------
-        imgs: a Niimg-like images/objects
-            Data on which regions signals are transformed to voxel
-            time series signals.
-
-        confounds: CSV file path or 2D matrix
-            This parameter cleans each subject data prior to timeseries
-            signal extraction. It is recommended parameter especially
-            in learning funtional connectomes in seperate brain regions.
-            The most confounds such as high variance confounds or
-            white matter or csf signals or motion regressors are regressed
-            by passing to nilearn.signal.clean. Please see the related
-            documentation for more details.
-
-        Returns
-        -------
-        signals: a numpy array
-            a list of averaged timeseries signals of each of the region.
-        """
-        signals = []
-        if hasattr(self, "regions_"):
-            regions_extracted_ = self.regions_
-        else:
-            raise ValueError('Regions are not extracted by calling fit(). '
-                             'You must call fit() then followed by transform() '
-                             'to extract the timeseries signals from those '
-                             'extracted regions. ')
-
-        nifti_maps_masker = NiftiMapsMasker(regions_extracted_,
+        nifti_maps_masker = NiftiMapsMasker(regions_extracted,
                                             self.masker_.mask_img_)
         nifti_maps_masker.fit()
         for img, confound in zip(imgs, confounds):
             each_subject_signals = nifti_maps_masker.transform(
                 img, confounds=confound)
-            signals.append(each_subject_signals)
+            region_signals.append(each_subject_signals)
 
-        return signals
+        self.index_ = index_of_each_map
+        self.regions_ = regions_extracted
+        self.signals_ = region_signals
+
+        return self
 
