@@ -1,1 +1,1 @@
-from .matrix_operations import sym_to_vec, ConnectivityMeasure
+from .connectivity_matrices import sym_to_vec, ConnectivityMeasure

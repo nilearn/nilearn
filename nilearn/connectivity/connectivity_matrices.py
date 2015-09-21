@@ -1,5 +1,5 @@
 import warnings
-from math import floor, sqrt
+from math import sqrt
 
 import numpy as np
 from scipy import linalg
@@ -34,13 +34,13 @@ def _check_matrix(matrix, prop):
 
 
 def _form_symmetric(function, eigen_values, eigen_vectors):
-    """Return the symmetric matrix with eigenvectors vecs and eigenvalues
-    obtained by applying the function to vals.
+    """Return the symmetric matrix with eigenvectors eigen_vectors and
+    eigenvalues obtained by applying the function to eigen_values.
 
     Parameters
     ----------
-    function : function
-        The function to apply.
+    function : function numpy.ndarray -> numpy.ndarray
+        The transform to apply to the eigenvalues.
 
     eigen_values : numpy.ndarray, shape (n_features, )
         Input argument of the function.
@@ -63,16 +63,17 @@ def _map_eigenvalues(function, symmetric):
 
     Parameters
     ----------
-    function : function
-        The function to apply.
+    function : function numpy.ndarray -> numpy.ndarray
+        The transform to apply to the eigenvalues.
 
     symmetric : numpy.ndarray, shape (n_features, n_features)
-        The matrix to be transformed.
+        The input symmetric matrix.
 
     Returns
     -------
     output : numpy.ndarray, shape (n_features, n_features)
-        The new symmetric matrix obtained after transforming the eigenvalues.
+        The new symmetric matrix obtained after transforming the eigenvalues,
+        while keeping the same eigenvectors.
 
     Note
     ----
@@ -139,7 +140,7 @@ def _geometric_mean(matrices, init=None, max_iter=10, tol=1e-7):
     else:
         _check_matrix(init, 'square')
         if init.shape[0] != n_features:
-            raise ValueError("Initialization has not the correct shape.")
+            raise ValueError("Initialization has incorrect shape.")
         _check_matrix(init, 'spd')
         gmean = init
 
@@ -244,15 +245,17 @@ def _prec_to_partial(precision):
 
 
 class ConnectivityMeasure(BaseEstimator, TransformerMixin):
-    """Tranformer that computes connectivity matrices.
+    """A class that computes different kinds of functional connectivity
+    matrices.
 
     Parameters
     ----------
-    cov_estimator : estimator object, optional
+    cov_estimator : estimator object, optional (default to
+        sklearn.covariance.EmpiricalCovariance()).
         The covariance estimator.
 
     kind : {"correlation", "partial correlation", "robust dispersion",
-            "covariance", "precision"}, optional
+            "covariance", "precision"}, optional (default to 'covariance')
         The matrix kind.
 
     Attributes
@@ -266,8 +269,8 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
     `whitening_` : numpy.ndarray
         The inverted square-rooted geometric mean of the covariance matrices.
 
-    Note
-    ----
+    References
+    ----------
     For the use of "robust dispersion", see the paper:
     G. Varoquaux et al. "Detection of brain functional-connectivity difference
     in post-stroke patients using group-level covariance modeling, MICCAI 2010.
@@ -286,18 +289,6 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
         ----------
         X : list of numpy.ndarray, shapes (n_samples, n_features)
             The input subjects time series.
-
-        Attributes
-        ----------
-        `cov_estimator_` : estimator object
-            A new covariance estimator with the same parameters as
-            cov_estimator.
-
-        `robust_mean_` : numpy.ndarray
-            The mean connectivity for the robust dispersion kind.
-
-        `whitening_` : numpy.ndarray
-            The inverted square-rooted mean for the robust dispersion kind.
 
         Returns
         -------
@@ -327,7 +318,7 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
         Returns
         -------
         output : numpy.ndarray, shape (n_samples, n_features, n_features)
-             The transformed covariance matrices.
+             The transformed connectivity matrices.
         """
         covariances = [self.cov_estimator_.fit(x).covariance_ for x in X]
         covariances = np.array(covariances)
@@ -338,11 +329,9 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
                                                cov).dot(self.whitening_))
                               for cov in covariances]
         elif self.kind == 'precision':
-            connectivities = [_map_eigenvalues(lambda x: 1. / x, cov)
-                              for cov in covariances]
+            connectivities = [linalg.inv(cov) for cov in covariances]
         elif self.kind == 'partial correlation':
-            connectivities = [_prec_to_partial(_map_eigenvalues(
-                                               lambda x: 1. / x, cov))
+            connectivities = [_prec_to_partial(linalg.inv(cov))
                               for cov in covariances]
         elif self.kind == 'correlation':
             connectivities = [_cov_to_corr(cov) for cov in covariances]

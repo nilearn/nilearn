@@ -9,7 +9,7 @@ from nose.tools import assert_raises, assert_equal, assert_true
 from sklearn.utils import check_random_state
 
 from nilearn._utils.extmath import is_spd
-from nilearn.connectivity.matrix_operations import (
+from nilearn.connectivity.connectivity_matrices import (
     _check_matrix, _map_eigenvalues, _form_symmetric, _geometric_mean,
     sym_to_vec, _prec_to_partial, ConnectivityMeasure)
 
