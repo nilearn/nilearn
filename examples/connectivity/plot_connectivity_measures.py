@@ -1,9 +1,10 @@
 """
-Comparing different connectivity measures
-=========================================
+Comparing different functional connectivity measures
+====================================================
 
 This example compares different measures of functional connectivity between
-regions of interest.
+regions of interest : correlation, partial correlation, as well as a robust
+dispersion measure.
 
 """
 
@@ -12,21 +13,26 @@ import nilearn.datasets
 atlas = nilearn.datasets.fetch_atlas_msdl()
 dataset = nilearn.datasets.fetch_adhd()
 
-# Extract regions time series
+# Extract regions time series signals
 import nilearn.input_data
 masker = nilearn.input_data.NiftiMapsMasker(
     atlas.maps, resampling_target="maps", detrend=True,
     low_pass=None, high_pass=None, t_r=2.5, standardize=False,
     memory='nilearn_cache', memory_level=1)
 subjects = []
-for func_file in dataset.func:
-    time_series = masker.fit_transform(func_file)
-    subjects.append(time_series)
+sites = []
+adhds = []
+for func_file, phenotypic in zip(dataset.func, dataset.phenotypic):
+    # keep only 3 sites, to save computation time
+    if phenotypic['site'] in ['"NYU"', '"OHSU"', '"NeuroImage"']:
+        time_series = masker.fit_transform(func_file)
+        subjects.append(time_series)
+        sites.append(phenotypic['site'])
+        adhds.append(phenotypic['adhd'])  # ADHD/control label
 
 # Estimate connectivity
 import nilearn.connectivity
-kinds = ['robust dispersion', 'partial correlation', 'precision',
-         'correlation', 'covariance']
+kinds = ['robust dispersion', 'partial correlation', 'correlation']
 individual_connectivity_matrices = {}
 mean_connectivity_matrix = {}
 for kind in kinds:
@@ -41,27 +47,22 @@ for kind in kinds:
             individual_connectivity_matrices[kind].mean(axis=0)
 
 # Plot the correlation matrix for one subject
-subject_n = 28
+subject_id = 21
 import matplotlib.pyplot as plt
 plt.figure()
-plt.imshow(individual_connectivity_matrices['correlation'][subject_n],
+plt.imshow(individual_connectivity_matrices['correlation'][subject_id],
            interpolation="nearest", vmin=-1., vmax=1.)
-plt.title('subject %d, correlation' % subject_n)
+plt.title('subject %d, correlation' % subject_id)
 
 # Plot the mean connectome
 import numpy as np
 import nilearn.plotting
 labels = np.recfromcsv(atlas.labels)
 region_coords = labels[['x', 'y', 'z']].tolist()
-for kind in ['robust dispersion', 'correlation', 'partial correlation']:
+for kind in kinds:
     nilearn.plotting.plot_connectome(mean_connectivity_matrix[kind],
                                      region_coords, edge_threshold='98%',
                                      title=kind)
-
-# Get site and ADHD/control label for each subject
-adhds = dataset.phenotypic['adhd']
-sites = ['"Peking"' if 'Peking' in site else site for site in
-         dataset.phenotypic['site']]  # Group Peking sites
 
 # Use the connectivity coefficients to classify ADHD vs controls
 from sklearn.svm import LinearSVC
@@ -83,8 +84,8 @@ for kind in kinds:
 
 # Display the classification scores
 plt.figure()
-positions = np.arange(len(kinds)) * .5 + .5
-plt.barh(positions, mean_scores, align='center', height=0.2)
+positions = np.arange(len(kinds)) * .1 + .1
+plt.barh(positions, mean_scores, align='center', height=.05)
 yticks = [kind.replace(' ', '\n') for kind in kinds]
 plt.yticks(positions, yticks)
 plt.xlabel('Classification accuracy')
