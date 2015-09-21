@@ -4,7 +4,9 @@ Comparing different functional connectivity measures
 
 This example compares different measures of functional connectivity between
 regions of interest : correlation, partial correlation, as well as a robust
-dispersion measure.
+dispersion measure. The resulting connectivity coefficients are used to
+classify ADHD vs control subjects and the robust dispersion outperforms the
+standard measures.
 
 """
 
