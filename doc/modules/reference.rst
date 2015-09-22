@@ -288,7 +288,7 @@ uses.
 
 **Classes**:
 
-.. currentmodule:: nilearn.connectivity.matrix_operations
+.. currentmodule:: nilearn.connectivity.connectivity_matrices
 
 .. autosummary::
    :toctree: generated/
@@ -298,7 +298,7 @@ uses.
 
 **Functions**:
 
-.. currentmodule:: nilearn.connectivity.matrix_operations
+.. currentmodule:: nilearn.connectivity.connectivity_matrices
 
 .. autosummary::
    :toctree: generated/
