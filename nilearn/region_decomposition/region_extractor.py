@@ -54,6 +54,13 @@ def apply_threshold_to_maps(maps, threshold, threshold_strategy):
         raise ValueError("Threshold must be None, "
                          "'auto' or float. You provided %s." %
                          str(threshold))
+    # check if the input strategy is a valid
+    list_strategies = ['percentile', 'voxelratio']
+    if threshold_strategy not in list_strategies:
+        message = ("'threshold_strategy' should be given as "
+                   "either of these {0}").format(list_strategies)
+        raise ValueError(message)
+
     if ratio is not None and threshold_strategy == 'percentile':
         percentile = 100. - (100. / len(maps)) * ratio
         cutoff_threshold = scoreatpercentile(abs_maps, percentile)
@@ -100,6 +107,17 @@ def extract_regions(map_img, min_size, extract_type, smooth_fwhm, mask_img=None)
         seperate brain activated image.
     """
     regions_accumulated = []
+    map_img = check_niimg(map_img)
+    if len(map_img.shape) == 0 or len(map_img.shape) == 4:
+        raise ValueError('A 3D Nifti image or path to a 3D image should '
+                         'be submitted.')
+
+    extract_methods = ['auto', 'local_regions']
+    if extract_type not in extract_methods:
+        message = ("'extract_type' should be given "
+                   "either of these {0}").format(extract_methods)
+        raise ValueError(message)
+
     map_data = map_img.get_data()
     affine = map_img.get_affine()
     # Mark the seeds using random walker
@@ -290,18 +308,6 @@ class RegionExtractor(NiftiMapsMasker):
             self.masker_.fit()
         self.mask_img_ = self.masker_.mask_img_
 
-        threshold_strategy = ['voxelratio', 'percentile']
-        if self.threshold_strategy not in threshold_strategy:
-            message = ("'threshold_strategy' should be given "
-                       "either of these {0}").format(threshold_strategy)
-            raise ValueError(message)
-
-        extractor_methods = ['auto', 'local_regions']
-        if self.extractor not in extractor_methods:
-            message = ('"extractor" should be given '
-                       'either of these {0}').format(extractor_methods)
-            raise ValueError(message)
-
         return self
 
     def fit_transform(self, imgs, confounds=None):
@@ -339,11 +345,7 @@ class RegionExtractor(NiftiMapsMasker):
                 self.maps_img_, self.mask_img_, parameters)
             maps_threshold = apply_threshold_to_maps(
                 maps, self.threshold, self.threshold_strategy)
-        else:
-            raise ValueError('Images of the maps are missing. '
-                             'You must load the images by calling fit() '
-                             'followed by a transform() or '
-                             'call fit_transform() directly.')
+
         maps_threshold_img = self.masker_.inverse_transform(maps_threshold)
 
         all_regions_accumulated = []
@@ -364,6 +366,8 @@ class RegionExtractor(NiftiMapsMasker):
         nifti_maps_masker = NiftiMapsMasker(regions_extracted,
                                             self.masker_.mask_img_)
         nifti_maps_masker.fit()
+        if confounds is None:
+            confounds = [None] * len(imgs)
         for img, confound in zip(imgs, confounds):
             each_subject_signals = nifti_maps_masker.transform(
                 img, confounds=confound)
