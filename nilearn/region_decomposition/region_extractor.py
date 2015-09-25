@@ -11,9 +11,6 @@ from scipy.stats import scoreatpercentile
 from sklearn.base import clone
 from sklearn.externals.joblib import Memory
 
-from skimage.feature import peak_local_max
-from skimage.segmentation import random_walker
-
 from nilearn import plotting
 from nilearn.input_data import NiftiMasker, NiftiMapsMasker
 from nilearn.input_data.nifti_masker import filter_and_mask
@@ -24,6 +21,7 @@ from nilearn.image import iter_img, new_img_like
 from nilearn.image.image import _smooth_array
 from nilearn._utils.niimg_conversions import concat_niimgs
 from nilearn._utils.compat import _basestring
+from nilearn.externals.skimage import peak_local_max, random_walker
 
 
 def apply_threshold_to_maps(maps, threshold, threshold_strategy):
@@ -32,8 +30,9 @@ def apply_threshold_to_maps(maps, threshold, threshold_strategy):
 
     Parameters
     ----------
-    maps: a numpy array
-        a data consists of statistical maps or atlas maps.
+    maps: a numpy array, [n_samples, n_features]
+        a data consists of statistical maps or atlas maps preferably transformed
+        to a 2D matrix with shape [n_samples, n_features].
     threshold: an integer
         a value which is used to threshold the maps.
     threshold_strategy: string {"voxelratio", "percentile"}
@@ -287,7 +286,7 @@ class RegionExtractor(NiftiMapsMasker):
         """ Prepare or set up the data for the region extraction
 
         """
-        self.maps_img_ = check_niimg_4d(self.maps_img)
+        self.maps_img_ = check_niimg(self.maps_img)
 
         if isinstance(self.mask, NiftiMasker):
             self.masker_ = clone(self.mask)
@@ -345,6 +344,11 @@ class RegionExtractor(NiftiMapsMasker):
                 self.maps_img_, self.mask_img_, parameters)
             maps_threshold = apply_threshold_to_maps(
                 maps, self.threshold, self.threshold_strategy)
+        else:
+            message = ("It seems like mask_img is missing. "
+                       "You must call fit() before calling a transform(). "
+                       "or You must call fit_transform()")
+            raise ValueError(message)
 
         maps_threshold_img = self.masker_.inverse_transform(maps_threshold)
 

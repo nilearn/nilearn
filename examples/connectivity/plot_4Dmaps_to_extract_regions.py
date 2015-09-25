@@ -1,14 +1,19 @@
-# This example specifically shows how to segment each ICA maps (a 4D Nifti
-# image/object) into each a seperated region and then extracts timeseries
-# signals from those seperated regions. Both can be done at the same time
-# using "region_extractor". Please see the related documentation for more details.
+"""
+Regions and Timeseries signal extraction using Canonical ICA maps
+=================================================================
 
-# This example is also extended to show how to use "region_extractor" to study
-# functional connectomes using correlation and partial correlation matrices and
-# finally displaying the classification scores predictions between
-# ADHD and healthy subjects. For this, we used a total of 40 resting state
-# functional datasets which has both ADHD and healthy categories.
+This example specifically shows how to segment each ICA map (a 4D Nifti
+image/object) into a distinct seperated brain region and extracts timeseries
+signals from each seperated region. Both can be done at the same time
+using module "region_extractor".
+Please see the related documentation for more details.
 
+This example is also motivated to show how to use module "region_extractor"
+to study functional connectomes using correlation and partial correlation
+matrices and finally displaying the classification scores predictions between
+ADHD and healthy subjects. For this, we used a total of 40 resting state
+functional datasets which has both ADHD and healthy categories.
+"""
 import numpy as np
 
 
