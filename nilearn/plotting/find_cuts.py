@@ -210,7 +210,15 @@ def find_cut_slices(img, direction='z', n_cuts=12, spacing='auto'):
     data = _smooth_array(data, affine, fwhm='fast')
 
     if spacing == 'auto':
-        spacing = max(int(.5 / n_cuts * data.shape[axis]), 1)
+        if n_cuts > 0.:
+            spacing = max(int(.5 / n_cuts * data.shape[axis]), 1)
+        else:
+            message = ("If the input 'cut_coords' is an integer, it only "
+                       "represents the number of slices to display. It should "
+                       "be given with value more than 0. or If you want to "
+                       "display in a coordinates of each direction, it should "
+                       "be given as scalar represented as [%.0f]." % n_cuts)
+            raise ValueError(message)
 
     slices = [slice(None, None), slice(None, None), slice(None, None)]
 
