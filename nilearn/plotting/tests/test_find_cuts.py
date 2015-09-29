@@ -1,5 +1,5 @@
 import numpy as np
-from nose.tools import assert_equal, assert_true
+from nose.tools import assert_equal, assert_true, assert_raises
 import nibabel
 from nilearn.plotting.find_cuts import (find_xyz_cut_coords, find_cut_slices,
                                         _transform_cut_coords)
@@ -63,6 +63,10 @@ def test_find_cut_slices():
                 elif direction == 'z':
                     cut_value = data[..., cut]
                 assert_equal(cut_value.max(), 1)
+
+    for n_cuts in (0, -2):
+        assert_raises(ValueError, find_cut_slices, img,
+                      direction='x', n_cuts=n_cuts, spacing=2)
 
     # Now ask more cuts than it is possible to have with a given spacing
     n_cuts = 15

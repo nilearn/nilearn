@@ -6,6 +6,7 @@ Tools to find activations and cut on maps
 # License: BSD
 
 import warnings
+import numbers
 import numpy as np
 from scipy import ndimage
 
@@ -209,16 +210,15 @@ def find_cut_slices(img, direction='z', n_cuts=12, spacing='auto'):
 
     data = _smooth_array(data, affine, fwhm='fast')
 
+    if (isinstance(n_cuts, numbers.Number) and n_cuts > 0):
+        pass
+    else:
+        message = ("The number of cuts in the direction '%s' must be "
+                   "an integer between 0 and %d" % (direction, this_shape))
+        raise ValueError(message)
+
     if spacing == 'auto':
-        if n_cuts > 0.:
-            spacing = max(int(.5 / n_cuts * data.shape[axis]), 1)
-        else:
-            message = ("If the input 'cut_coords' is an integer, it only "
-                       "represents the number of slices to display. It should "
-                       "be given with value more than 0. or If you want to "
-                       "display in a coordinates of each direction, it should "
-                       "be given as scalar represented as [%.0f]." % n_cuts)
-            raise ValueError(message)
+        spacing = max(int(.5 / n_cuts * data.shape[axis]), 1)
 
     slices = [slice(None, None), slice(None, None), slice(None, None)]
 
