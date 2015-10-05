@@ -13,7 +13,7 @@ Content
 -------
     :'func': Nifti images of the neural activity maps
     :'cmaps': Nifti images of contrast maps
-    :'tmaps' Nifti images of corresponding t-maps
+    :'tmaps': Nifti images of corresponding t-maps
     :'masks': Structural images of the mask used for each subject.
     :'anats': Structural images of anatomy of each subject
 
