@@ -210,11 +210,11 @@ def find_cut_slices(img, direction='z', n_cuts=12, spacing='auto'):
 
     data = _smooth_array(data, affine, fwhm='fast')
 
-    if (isinstance(n_cuts, numbers.Number) and n_cuts > 0):
-        pass
-    else:
+    if not ((isinstance(n_cuts, numbers.Number) and
+             abs(round(n_cuts) - n_cuts) < np.finfo(np.float32).eps * n_cuts)):
         message = ("The number of cuts in the direction '%s' must be "
-                   "an integer between 0 and %d" % (direction, this_shape))
+                   "an 'integer' between 0 and %d. You provided n_cuts=%s " % (
+                       direction, this_shape, n_cuts))
         raise ValueError(message)
 
     if spacing == 'auto':
@@ -223,6 +223,11 @@ def find_cut_slices(img, direction='z', n_cuts=12, spacing='auto'):
     slices = [slice(None, None), slice(None, None), slice(None, None)]
 
     cut_coords = list()
+
+    if type(n_cuts) is float:
+        warnings.warn("'integer' is expected but given as float value='%s' "
+                      "Converting to integer." % n_cuts)
+        n_cuts = int(n_cuts)
 
     for _ in range(n_cuts):
         # Find a peak

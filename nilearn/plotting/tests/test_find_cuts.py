@@ -3,6 +3,7 @@ from nose.tools import assert_equal, assert_true, assert_raises
 import nibabel
 from nilearn.plotting.find_cuts import (find_xyz_cut_coords, find_cut_slices,
                                         _transform_cut_coords)
+from nilearn._utils.testing import assert_raises_regex
 
 
 def test_find_cut_coords():
@@ -64,16 +65,31 @@ def test_find_cut_slices():
                     cut_value = data[..., cut]
                 assert_equal(cut_value.max(), 1)
 
-    for n_cuts in (0, -2):
-        assert_raises(ValueError, find_cut_slices, img,
-                      direction='x', n_cuts=n_cuts, spacing=2)
-
     # Now ask more cuts than it is possible to have with a given spacing
     n_cuts = 15
     for direction in 'xz':
         # Only a smoke test
         cuts = find_cut_slices(img, direction=direction,
                                n_cuts=n_cuts, spacing=2)
+
+
+def test_n_cuts():
+    data = np.zeros((50, 50, 50))
+    affine = np.eye(4)
+    x_map, y_map, z_map = 25, 5, 20
+    data[x_map - 15:x_map + 15, y_map - 3:y_map + 3, z_map - 10:z_map + 10] = 1
+    img = nibabel.Nifti1Image(data, affine)
+    # Test whether if it raises a right error if the input "n_cuts" is
+    # less than or equal to 0
+    for direction, n_cuts in zip('xyz', (0, -2,)):
+        message = ("The number of cuts in the direction '%s' must be an "
+                   "'integer' between 0 and %d. You provided n_cuts=%s" % (
+                       direction, data.shape[0], n_cuts))
+        assert_raises_regex(ValueError,
+                            message,
+                            find_cut_slices,
+                            img, direction=direction,
+                            n_cuts=n_cuts, spacing=2)
 
 
 def test_singleton_ax_dim():
