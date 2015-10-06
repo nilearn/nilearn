@@ -121,8 +121,10 @@ def _geometric_mean(matrices, init=None, max_iter=10, tol=1e-7):
     max_iter : int, optional
         Maximal number of iterations.
 
-    tol : float, optional
-        Tolerance.
+    tol : positive float or None, optional
+        The tolerance to declare convergence: if the gradient norm goes below
+        this value, the gradient descent is stopped. If None, no  check is
+        performed.
 
     Returns
     -------
@@ -177,7 +179,7 @@ def _geometric_mean(matrices, init=None, max_iter=10, tol=1e-7):
         # Update the norm and the step size
         if norm < norm_old:
             norm_old = norm
-        if norm > norm_old:
+        elif norm > norm_old:
             step = step / 2.
             norm = norm_old
         if tol is not None and norm / gmean.size < tol:
