@@ -9,43 +9,45 @@ from sklearn.covariance import EmpiricalCovariance
 from .._utils.extmath import is_spd
 
 
-def _check_matrix(matrix, prop):
-    """Raise a ValueError if the input matrix does not satisfy the property.
+def _check_square(matrix):
+    """Raise a ValueError if the input matrix is square.
 
     Parameters
     ----------
     matrix : numpy.ndarray
         Input array.
-
-    prop : {'square', 'symmetric', 'spd'}
-        Property to check.
     """
-    if prop == 'square':
-        if matrix.ndim != 2 or (matrix.shape[0] != matrix.shape[-1]):
-            raise ValueError('Expected a square matrix, got array of shape' +
-                             ' {0}.'.format(matrix.shape))
-    if prop == 'symmetric':
-        if not np.allclose(matrix, matrix.T):
-            raise ValueError('Expected a symmetric matrix.')
-
-    if prop == 'spd':
-        if not is_spd(matrix, decimal=7):
-            raise ValueError('Expected a symmetric positive definite matrix.')
+    if matrix.ndim != 2 or (matrix.shape[0] != matrix.shape[-1]):
+        raise ValueError('Expected a square matrix, got array of shape'
+                         ' {0}.'.format(matrix.shape))
 
 
-def _form_symmetric(function, eigen_values, eigen_vectors):
-    """Return the symmetric matrix with eigenvectors eigen_vectors and
-    eigenvalues obtained by applying the function to eigen_values.
+def _check_spd(matrix):
+    """Raise a ValueError if the input matrix is not symmetric positive
+    definite.
+
+    Parameters
+    ----------
+    matrix : numpy.ndarray
+        Input array.
+    """
+    if not is_spd(matrix, decimal=7):
+        raise ValueError('Expected a symmetric positive definite matrix.')
+
+
+def _form_symmetric(function, eigenvalues, eigenvectors):
+    """Return the symmetric matrix with the given eigenvectors and
+    eigenvalues transformed by function.
 
     Parameters
     ----------
     function : function numpy.ndarray -> numpy.ndarray
         The transform to apply to the eigenvalues.
 
-    eigen_values : numpy.ndarray, shape (n_features, )
+    eigenvalues : numpy.ndarray, shape (n_features, )
         Input argument of the function.
 
-    eigen_vectors : numpy.ndarray, shape (n_features, n_features)
+    eigenvectors : numpy.ndarray, shape (n_features, n_features)
         Unitary matrix.
 
     Returns
@@ -54,7 +56,7 @@ def _form_symmetric(function, eigen_values, eigen_vectors):
         The symmetric matrix obtained after transforming the eigenvalues, while
         keeping the same eigenvectors.
     """
-    return np.dot(eigen_vectors * function(eigen_values), eigen_vectors.T)
+    return np.dot(eigenvectors * function(eigenvalues), eigenvectors.T)
 
 
 def _map_eigenvalues(function, symmetric):
@@ -80,8 +82,8 @@ def _map_eigenvalues(function, symmetric):
     If input matrix is not real symmetric, no error is reported but result will
     be wrong.
     """
-    eigen_values, eigen_vectors = linalg.eigh(symmetric)
-    return _form_symmetric(function, eigen_values, eigen_vectors)
+    eigenvalues, eigenvectors = linalg.eigh(symmetric)
+    return _form_symmetric(function, eigenvalues, eigenvectors)
 
 
 def _geometric_mean(matrices, init=None, max_iter=10, tol=1e-7):
@@ -99,25 +101,27 @@ def _geometric_mean(matrices, init=None, max_iter=10, tol=1e-7):
 
     In case of positive numbers, this mean is the usual geometric mean.
 
+    References
+    ----------
     See Algorithm 3 of:
         P. Thomas Fletcher, Sarang Joshi. Riemannian Geometry for the
         Statistical Analysis of Diffusion Tensor Data. Signal Processing, 2007.
 
     Parameters
     ----------
-    matrices : list of numpy.ndarray, shape of each (n_features, n_features)
+    matrices : list of numpy.ndarray, all of shape (n_features, n_features)
         List of matrices whose geometric mean to compute. Raise an error if the
-        arrays are not all symmetric positive definite of the same shape.
+        matrices are not all symmetric positive definite of the same shape.
 
-    init : numpy.ndarray, shape (n_features, n_features) or None, optional
-        Initialization matrix. Raise an error if the array is not symmetric
-        positive definite of the same shape as the elements of matrices. Set to
-        the arithmetic mean of matrices if None.
+    init : numpy.ndarray, shape (n_features, n_features), optional
+        Initialization matrix, default to the arithmetic mean of matrices.
+        Raise an error if the matrix is not symmetric positive definite of the
+        same shape as the elements of matrices.
 
-    max_iter : int, optional (default to 10)
+    max_iter : int, optional
         Maximal number of iterations.
 
-    tol : float, optional (default to 1e-7)
+    tol : float, optional
         Tolerance.
 
     Returns
@@ -128,20 +132,20 @@ def _geometric_mean(matrices, init=None, max_iter=10, tol=1e-7):
     # Shape and symmetry positive definiteness checks
     n_features = matrices[0].shape[0]
     for matrix in matrices:
-        _check_matrix(matrix, 'square')
+        _check_square(matrix)
         if matrix.shape[0] != n_features:
             raise ValueError("Matrices are not of the same shape.")
-        _check_matrix(matrix, 'spd')
+        _check_spd(matrix)
 
     # Initialization
     matrices = np.array(matrices)
     if init is None:
         gmean = np.mean(matrices, axis=0)
     else:
-        _check_matrix(init, 'square')
+        _check_square(init)
         if init.shape[0] != n_features:
             raise ValueError("Initialization has incorrect shape.")
-        _check_matrix(init, 'spd')
+        _check_spd(init)
         gmean = init
 
     norm_old = np.inf
@@ -187,7 +191,8 @@ def _geometric_mean(matrices, init=None, max_iter=10, tol=1e-7):
 
 
 def sym_to_vec(symmetric):
-    """Return the flattened lower triangular part of an array.
+    """Return the flattened lower triangular part of an array, after
+    multiplying above the diagonal elements by sqrt(2).
 
     Acts on the last two dimensions of the array if not 2-dimensional.
 
@@ -201,11 +206,10 @@ def sym_to_vec(symmetric):
     output : numpy.ndarray, shape (..., n_features * (n_features + 1) / 2)
         The output flattened lower triangular part of symmetric.
     """
-    tril_mask = np.tril(np.ones(symmetric.shape[-2:]), -1).astype(np.bool)
-    symmetric = symmetric.copy()
-    symmetric[..., tril_mask] *= sqrt(2)
-    tril_mask.flat[::symmetric.shape[-1] + 1] = True
-    return symmetric[..., tril_mask]
+    scaling = sqrt(2) * np.ones(symmetric.shape[-2:])
+    np.fill_diagonal(scaling, 1.)
+    tril_mask = np.tril(np.ones(symmetric.shape[-2:])).astype(np.bool)
+    return symmetric[..., tril_mask] * scaling[tril_mask]
 
 
 def _cov_to_corr(covariance):
@@ -250,12 +254,11 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
 
     Parameters
     ----------
-    cov_estimator : estimator object, optional (default to
-        sklearn.covariance.EmpiricalCovariance()).
+    cov_estimator : estimator object, optional.
         The covariance estimator.
 
-    kind : {"correlation", "partial correlation", "robust dispersion",
-            "covariance", "precision"}, optional (default to 'covariance')
+    kind : {"correlation", "partial correlation", "robust dispersion",\
+            "covariance", "precision"}, optional
         The matrix kind.
 
     Attributes
@@ -336,6 +339,9 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
         elif self.kind == 'correlation':
             connectivities = [_cov_to_corr(cov) for cov in covariances]
         else:
-            raise ValueError("Unknown connectivity kind.")
+            raise ValueError('Allowed connectivity kinds are "correlation", '
+                             '"partial correlation", "robust dispersion", '
+                             '"covariance" and "precision", got kind '
+                             '"{}"'.format(self.kind))
 
         return np.array(connectivities)

@@ -10,8 +10,8 @@ from sklearn.utils import check_random_state
 
 from nilearn._utils.extmath import is_spd
 from nilearn.connectivity.connectivity_matrices import (
-    _check_matrix, _map_eigenvalues, _form_symmetric, _geometric_mean,
-    sym_to_vec, _prec_to_partial, ConnectivityMeasure)
+    _check_square, _check_spd, _map_eigenvalues, _form_symmetric,
+    _geometric_mean, sym_to_vec, _prec_to_partial, ConnectivityMeasure)
 
 
 def grad_geometric_mean(mats, init=None, max_iter=10, tol=1e-7):
@@ -68,16 +68,19 @@ def grad_geometric_mean(mats, init=None, max_iter=10, tol=1e-7):
     return grad_norm
 
 
-def test_check_matrix():
-    """Test _check_matrix function"""
+def test_check_square():
+    """Test _check_square function"""
     non_square = np.ones((2, 3))
-    assert_raises(ValueError, _check_matrix, non_square, 'square')
+    assert_raises(ValueError, _check_square, non_square)
 
+
+def test_check_spd():
+    """Test _check_spd function"""
     non_sym = np.array([[0, 1], [0, 0]])
-    assert_raises(ValueError, _check_matrix, non_sym, 'symmetric')
+    assert_raises(ValueError, _check_spd, non_sym)
 
     non_spd = np.ones((3, 3))
-    assert_raises(ValueError, _check_matrix, non_spd, 'spd')
+    assert_raises(ValueError, _check_spd, non_spd)
 
 
 def test_map_eigenvalues():
