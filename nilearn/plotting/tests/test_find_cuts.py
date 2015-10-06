@@ -1,5 +1,5 @@
 import numpy as np
-from nose.tools import assert_equal, assert_true, assert_raises
+from nose.tools import assert_equal, assert_true
 import nibabel
 from nilearn.plotting.find_cuts import (find_xyz_cut_coords, find_cut_slices,
                                         _transform_cut_coords)
@@ -73,23 +73,26 @@ def test_find_cut_slices():
                                n_cuts=n_cuts, spacing=2)
 
 
-def test_n_cuts():
+def test_validity_of_ncuts_error_in_find_cut_slices():
     data = np.zeros((50, 50, 50))
     affine = np.eye(4)
     x_map, y_map, z_map = 25, 5, 20
     data[x_map - 15:x_map + 15, y_map - 3:y_map + 3, z_map - 10:z_map + 10] = 1
     img = nibabel.Nifti1Image(data, affine)
-    # Test whether if it raises a right error if the input "n_cuts" is
-    # less than or equal to 0
-    for direction, n_cuts in zip('xyz', (0, -2,)):
-        message = ("The number of cuts in the direction '%s' must be an "
-                   "'integer' between 0 and %d. You provided n_cuts=%s" % (
+    for direction, n_cuts in zip('xyz', (0, -2, -10.00034)):
+        message = ("The number of cuts in the given direction %s must be an "
+                   "integer which should be greater than 0 and less than "
+                   "or equal to %d. You provided n_cuts=%s" % (
                        direction, data.shape[0], n_cuts))
         assert_raises_regex(ValueError,
                             message,
                             find_cut_slices,
                             img, direction=direction,
-                            n_cuts=n_cuts, spacing=2)
+                            n_cuts=n_cuts)
+    # smoke test to check if it rounds the floating point inputs
+    n_cuts = [0.999999, 9.99999, 1, 5., 10.0000045]
+    for n_cut in n_cuts:
+        find_cut_slices(img, direction='x', n_cuts=n_cut)
 
 
 def test_singleton_ax_dim():
