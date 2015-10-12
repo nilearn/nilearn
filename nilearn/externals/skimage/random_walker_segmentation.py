@@ -38,8 +38,8 @@ try:
 except ImportError:
     amg_loaded = False
 from scipy.sparse.linalg import cg
-from dtype import img_as_float
-from _rank_order import rank_order
+from .dtype import img_as_float
+from ._rank_order import rank_order
 
 #-----------Laplacian--------------------
 
