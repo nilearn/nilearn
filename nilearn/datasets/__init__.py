@@ -1,3 +1,7 @@
+"""
+Helper functions to download NeuroImaging datasets
+"""
+
 from .struct import (fetch_icbm152_2009, load_mni152_template, fetch_oasis_vbm)
 from .func import (fetch_haxby_simple, fetch_haxby, fetch_nyu_rest,
                    fetch_adhd, fetch_miyawaki2008,

@@ -1,6 +1,5 @@
 """
 Massively Univariate Linear Model estimated with OLS and permutation test.
-
 """
 # Author: Benoit Da Mota, <benoit.da_mota@inria.fr>, sept. 2011
 #         Virgile Fritsch, <virgile.fritsch@inria.fr>, jan. 2014
