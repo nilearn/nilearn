@@ -116,7 +116,7 @@ def testlogistic_path_scores():
     alphas = [1., .1, .01]
     test_scores, best_w = logistic_path_scores(
         _graph_net_logistic, X, y, mask, alphas, .5,
-        range(len(X)), range(len(X)), {})[:2]
+        np.arange(len(X)), np.arange(len(X)), {})[:2]
     test_scores = test_scores[0]
     assert_equal(len(test_scores), len(alphas))
     assert_equal(X.shape[1] + 1, len(best_w))
@@ -130,7 +130,7 @@ def test_squared_loss_path_scores():
     alphas = [1., .1, .01]
     test_scores, best_w = squared_loss_path_scores(
         _graph_net_squared_loss, X, y, mask, alphas, .5,
-        range(len(X)), range(len(X)), {})[:2]
+        np.arange(len(X)), np.arange(len(X)), {})[:2]
     test_scores = test_scores[0]
     assert_equal(len(test_scores), len(alphas))
     assert_equal(X.shape[1] + 1, len(best_w))
