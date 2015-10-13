@@ -30,11 +30,6 @@ plotting                --- Plotting code for nilearn
 region                  --- Set of functions for extracting region-defined
                             signals
 signal                  --- Set of preprocessing functions for time series
-
-Utilities
----------
-nosetests --- Run nilearn tests suite
-
 """
 
 import gzip
