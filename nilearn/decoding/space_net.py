@@ -792,7 +792,7 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
                                      classifier=self.is_classif))
         else:
             # no cross-validation needed, user supplied all params
-            self.cv_ = [(range(n_samples), [])]
+            self.cv_ = [(np.arange(n_samples), [])]
         n_folds = len(self.cv_)
 
         # scores & mean weights map over all folds
