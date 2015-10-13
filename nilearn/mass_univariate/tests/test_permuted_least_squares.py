@@ -137,7 +137,7 @@ def test_permuted_ols_check_h0_noeffect_labelswap(random_state=0):
     n_samples = 100
     # create dummy design with no effect
     target_var = rng.randn(n_samples, 1)
-    tested_var = np.arange(n_samples).reshape((-1, 1))
+    tested_var = np.arange(n_samples, dtype='f8').reshape((-1, 1))
     tested_var_not_centered = tested_var.copy()
     tested_var -= tested_var.mean(0)  # centered
     # permuted OLS
