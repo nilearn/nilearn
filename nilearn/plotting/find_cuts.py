@@ -197,7 +197,7 @@ def find_cut_slices(img, direction='z', n_cuts=12, spacing='auto'):
     this_shape = orig_data.shape[axis]
 
     if not isinstance(n_cuts, numbers.Number):
-        raise ValueError("The number of cuts should be an integer. "
+        raise ValueError("The number of cuts should be a strictly positive integer. "
                          "You provided n_cuts=%s " % n_cuts)
 
     # BF issue #575: Return all the slices along and axis if this axis
@@ -218,7 +218,7 @@ def find_cut_slices(img, direction='z', n_cuts=12, spacing='auto'):
     # during given input value "n_cuts"
     epsilon = np.finfo(np.float32).eps
     difference = abs(round(n_cuts) - n_cuts)
-    if round(n_cuts) < 0.5 or difference > epsilon:
+    if round(n_cuts) < 1. or difference > epsilon:
         message = ("The number of cuts in the given direction %s must be "
                    "an integer which should be greater than 0 and "
                    "less than or equal to %d. You provided n_cuts=%s " % (
