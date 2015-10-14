@@ -52,4 +52,4 @@ if hasattr(gzip.GzipFile, 'max_read_chunk'):
 # does not respect the backward compatibility in some of its internal
 # structures
 # This  is used in nilearn._utils.cache_mixin
-check_cache_version = True
+CHECK_CACHE_VERSION = True

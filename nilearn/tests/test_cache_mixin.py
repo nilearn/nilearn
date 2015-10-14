@@ -55,12 +55,12 @@ def test__safe_cache_flush():
         os.makedirs(nibabel_dir)
 
         # First turn off version checking
-        nilearn.check_cache_version = False
+        nilearn.CHECK_CACHE_VERSION = False
         cache_mixin._safe_cache(mem, f)
         assert_true(os.path.exists(nibabel_dir))
 
         # Second turn on version checking
-        nilearn.check_cache_version = True
+        nilearn.CHECK_CACHE_VERSION = True
         # Make sure that the check will run again
         cache_mixin.__cache_checked = {}
         with open(version_file, 'w') as f:
