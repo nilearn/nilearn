@@ -196,6 +196,10 @@ def find_cut_slices(img, direction='z', n_cuts=12, spacing='auto'):
     orig_data = np.abs(img.get_data())
     this_shape = orig_data.shape[axis]
 
+    if not isinstance(n_cuts, numbers.Number):
+        raise ValueError("The number of cuts should be an integer. "
+                         "You provided n_cuts=%s " % n_cuts)
+
     # BF issue #575: Return all the slices along and axis if this axis
     # is the display mode and there are at least as many requested
     # n_slices as there are slices.
@@ -214,15 +218,13 @@ def find_cut_slices(img, direction='z', n_cuts=12, spacing='auto'):
     # during given input value "n_cuts"
     epsilon = np.finfo(np.float32).eps
     difference = abs(round(n_cuts) - n_cuts)
-    message = ("The number of cuts in the given direction %s must be "
-               "an integer which should be greater than 0 and "
-               "less than or equal to %d. You provided n_cuts=%s " % (
-                   direction, this_shape, n_cuts))
-    if not isinstance(n_cuts, numbers.Number) or n_cuts < epsilon:
+    if round(n_cuts) < 0.5 or difference > epsilon:
+        message = ("The number of cuts in the given direction %s must be "
+                   "an integer which should be greater than 0 and "
+                   "less than or equal to %d. You provided n_cuts=%s " % (
+                       direction, this_shape, n_cuts))
         raise ValueError(message)
-    elif not isinstance(n_cuts, int) or difference != 0.:
-        warnings.warn("'n_cuts' is expected as integer but given as "
-                      "float value=%s. Rounding to integer." % n_cuts)
+    else:
         n_cuts = int(round(n_cuts))
 
     if spacing == 'auto':
