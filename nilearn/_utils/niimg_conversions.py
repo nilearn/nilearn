@@ -14,7 +14,7 @@ from .niimg import _safe_get_data, load_niimg
 from .compat import _basestring, izip
 
 from nilearn._utils.exceptions import DimensionError
-
+from nilearn import NILEARN_USE_GLOB
 
 def _check_fov(img, affine, shape):
     """ Return True if img's field of view correspond to given
@@ -153,7 +153,8 @@ def _iter_check_niimg(niimgs, ensure_ndim=None, atleast_4d=False,
 
 
 def check_niimg(niimg, ensure_ndim=None, atleast_4d=False, dtype=None,
-                return_iterator=False):
+                return_iterator=False,
+                glob=NILEARN_USE_GLOB):
     """Check that niimg is a proper 3D/4D niimg. Turn filenames into objects.
 
     Parameters
@@ -175,6 +176,15 @@ def check_niimg(niimg, ensure_ndim=None, atleast_4d=False, dtype=None,
         Data type toward which the data should be converted. If "auto", the
         data will be converted to int32 if dtype is discrete and float32 if it
         is continuous.
+
+    return_iterator: boolean, optional
+        Returns an iterator on the content of the niimg file input
+
+    glob: boolean, optional
+        Use glob module to list the input images. If multiple files
+        matches and return iterator, the returned matching list of objects
+        is sorted (ascending order), otherwise the first object in the list is
+        returned
 
     Returns
     -------
@@ -199,6 +209,34 @@ def check_niimg(niimg, ensure_ndim=None, atleast_4d=False, dtype=None,
             return _iter_check_niimg(niimg, ensure_ndim=ensure_ndim,
                                      dtype=dtype)
         return concat_niimgs(niimg, ensure_ndim=ensure_ndim, dtype=dtype)
+
+    # Use glob module to list the matching filenames
+    if glob:
+        import glob
+        filenames = glob.glob(niimg).sort()
+
+        # processing filenames matching globbing expression
+        if len(filenames)>1:
+            # Multiple files matching:
+            # 1. return an iterator of images if return_iterator is set
+            # 2. concatenate images otherwise
+            if return_iterator:
+                return _iter_check_niimg(filenames,
+                                         ensure_ndim=ensure_ndim,
+                                         dtype=dtype)
+            return concat_niimgs(filenames,
+                                 ensure_ndim=ensure_ndim,
+                                 dtype=dtype)
+        elif len(filenames) == 1:
+            # Only one file matching => loading it as is
+            niimg = filenames[0]
+        else:
+            # No files matching the glob expression, warn the user
+            raise ValueError("No files matching the entered niimg "
+                             "expression : %s.\n You may have left glob "
+                             "module activated, please set global variable "
+                             "NILEARN_USE_GLOB to False in order to "
+                             "deactivate globbing")
 
     # Otherwise, it should be a filename or a SpatialImage, we load it
     niimg = load_niimg(niimg, dtype=dtype)
@@ -231,7 +269,7 @@ def check_niimg_3d(niimg, dtype=None):
         If niimg is a string, consider it as a path to Nifti image and
         call nibabel.load on it. If it is an object, check if get_data()
         and get_affine() methods are present, raise TypeError otherwise.
-    
+
     dtype: {dtype, "auto"}
         Data type toward which the data should be converted. If "auto", the
         data will be converted to int32 if dtype is discrete and float32 if it
@@ -272,7 +310,7 @@ def check_niimg_4d(niimg, return_iterator=False, dtype=None):
         Data type toward which the data should be converted. If "auto", the
         data will be converted to int32 if dtype is discrete and float32 if it
         is continuous.
-    
+
     return_iterator: boolean
         If True, an iterator of 3D images is returned. This reduces the memory
         usage when `niimgs` contains 3D images.
