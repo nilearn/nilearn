@@ -19,7 +19,7 @@ from distutils.version import LooseVersion
 from ._utils.compat import _basestring
 from ._utils.numpy_conversions import csv_to_array
 
-np_version = distutils.version.LooseVersion(np.version.short_version).version
+NP_VERSION = distutils.version.LooseVersion(np.version.short_version).version
 
 
 def _standardize(signals, detrend=False, normalize=True):
@@ -427,7 +427,7 @@ def clean(signals, sessions=None, detrend=True, standardize=True,
                 confound = csv_to_array(filename)
                 if np.isnan(confound.flat[0]):
                     # There may be a header
-                    if np_version >= [1, 4, 0]:
+                    if NP_VERSION >= [1, 4, 0]:
                         confound = csv_to_array(filename, skip_header=1)
                     else:
                         confound = csv_to_array(filename, skiprows=1)
