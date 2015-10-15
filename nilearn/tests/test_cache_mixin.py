@@ -62,7 +62,7 @@ def test__safe_cache_flush():
         # Second turn on version checking
         nilearn.CHECK_CACHE_VERSION = True
         # Make sure that the check will run again
-        cache_mixin.__cache_checked = {}
+        cache_mixin.__CACHE_CHECKED = {}
         with open(version_file, 'w') as f:
             json.dump({"nibabel": [0, 0]}, f)
         cache_mixin._safe_cache(mem, f)
