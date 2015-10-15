@@ -81,10 +81,9 @@ def test_validity_of_ncuts_error_in_find_cut_slices():
     img = nibabel.Nifti1Image(data, affine)
     direction = 'z'
     for n_cuts in (0, -2, -10.00034, 0.999999, 0.4, 0.11111111):
-        message = ("The number of cuts in the given direction %s must be an "
-                   "integer which should be greater than 0 and less than "
-                   "or equal to %d. You provided n_cuts=%s" % (
-                       direction, data.shape[0], n_cuts))
+        message = ("Image has %d slices in direction %s. Therefore, the number "
+                   "of cuts must be between 1 and %d. You provided n_cuts=%s " % (
+                       data.shape[0], direction, data.shape[0], n_cuts))
         assert_raises_regex(ValueError,
                             message,
                             find_cut_slices,

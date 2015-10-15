@@ -158,7 +158,7 @@ def _transform_cut_coords(cut_coords, direction, affine):
     return np.atleast_1d(cut_coords)
 
 
-def find_cut_slices(img, direction='z', n_cuts=12, spacing='auto'):
+def find_cut_slices(img, direction='z', n_cuts=7, spacing='auto'):
     """ Find 'good' cross-section slicing positions along a given axis.
 
     Parameters
@@ -167,7 +167,7 @@ def find_cut_slices(img, direction='z', n_cuts=12, spacing='auto'):
         the brain map
     direction: string, optional (default "z")
         sectional direction; possible values are "x", "y", or "z"
-    n_cuts: int, optional (default 12)
+    n_cuts: int, optional (default 7)
         number of cuts in the plot
     spacing: 'auto' or int, optional (default 'auto')
         minimum spacing between cuts (in voxels, not milimeters)
@@ -197,8 +197,9 @@ def find_cut_slices(img, direction='z', n_cuts=12, spacing='auto'):
     this_shape = orig_data.shape[axis]
 
     if not isinstance(n_cuts, numbers.Number):
-        raise ValueError("The number of cuts should be a strictly positive integer. "
-                         "You provided n_cuts=%s " % n_cuts)
+        raise ValueError("The number of cuts (n_cuts) must be an integer "
+                         "greater than or equal to 1. "
+                         "You provided a value of n_cuts=%s. " % n_cuts)
 
     # BF issue #575: Return all the slices along and axis if this axis
     # is the display mode and there are at least as many requested
@@ -219,10 +220,10 @@ def find_cut_slices(img, direction='z', n_cuts=12, spacing='auto'):
     epsilon = np.finfo(np.float32).eps
     difference = abs(round(n_cuts) - n_cuts)
     if round(n_cuts) < 1. or difference > epsilon:
-        message = ("The number of cuts in the given direction %s must be "
-                   "an integer which should be greater than 0 and "
-                   "less than or equal to %d. You provided n_cuts=%s " % (
-                       direction, this_shape, n_cuts))
+        message = ("Image has %d slices in direction %s. "
+                   "Therefore, the number of cuts must be between 1 and %d. "
+                   "You provided n_cuts=%s " % (
+                       this_shape, direction, this_shape, n_cuts))
         raise ValueError(message)
     else:
         n_cuts = int(round(n_cuts))
