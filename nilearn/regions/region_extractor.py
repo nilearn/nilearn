@@ -26,7 +26,7 @@ from ..externals.skimage import peak_local_max, random_walker
 
 def estimate_apply_threshold_to_maps(maps_img, mask_img=None, parameters=None,
                                      threshold='auto',
-                                     estimate_threshold_value='percentile'):
+                                     thresholding_strategy='percentile'):
     """ A function which keeps the most prominent regions of the maps. Can also
     be denoted as foreground objects/regions extraction.
 
@@ -61,7 +61,7 @@ def estimate_apply_threshold_to_maps(maps_img, mask_img=None, parameters=None,
         If default 'auto', pre-defined ratio 0.8 is used, which means 80%
         of the voxels which are survived are kept.
 
-    estimate_threshold_value: string {None, 'ratio_n_voxels', 'percentile'} \
+    thresholding_strategy: string {None, 'ratio_n_voxels', 'percentile'} \
         default 'percentile'
         a parameter to select between the type of determining a threshold value.
         It can be either based on number of voxels or score of the data based
@@ -81,10 +81,8 @@ def estimate_apply_threshold_to_maps(maps_img, mask_img=None, parameters=None,
         a thresholded image of the input.
     """
     maps_img = check_niimg(maps_img)
-    if len(maps_img.shape) > 3:
-        single_map = False
-    else:
-        single_map = True
+
+    single_map = (len(maps_img.shape) == 3)
 
     if mask_img is not None:
         mask_img = check_niimg_3d(mask_img)
@@ -100,7 +98,7 @@ def estimate_apply_threshold_to_maps(maps_img, mask_img=None, parameters=None,
 
     ratio = None
     if isinstance(threshold, float):
-        if estimate_threshold_value is None:
+        if thresholding_strategy is None:
             # When threshold is needed to apply directly based on
             # statistical values which should not be more than maximum
             value_check = abs(maps).max()
@@ -109,8 +107,7 @@ def estimate_apply_threshold_to_maps(maps_img, mask_img=None, parameters=None,
                                  "statistical maps must not exceed %d. "
                                  "You provided threshold=%s " % (value_check,
                                                                  threshold))
-            else:
-                cutoff_threshold = threshold
+            cutoff_threshold = threshold
         else:
             ratio = threshold
     elif threshold == 'auto':
@@ -121,8 +118,8 @@ def estimate_apply_threshold_to_maps(maps_img, mask_img=None, parameters=None,
                          str(threshold))
     # check if the input strategy is a valid
     list_of_estimators = [None, 'percentile', 'ratio_n_voxels']
-    if estimate_threshold_value not in list_of_estimators:
-        message = ("'threshold_strategy' should be given as "
+    if thresholding_strategy not in list_of_estimators:
+        message = ("'thresholding_strategy' should be given as "
                    "either of these {0}").format(list_of_estimators)
         raise ValueError(message)
 
@@ -132,10 +129,10 @@ def estimate_apply_threshold_to_maps(maps_img, mask_img=None, parameters=None,
                          "is expected between 0. and 1. "
                          "You provided %s" % threshold)
 
-    if estimate_threshold_value == 'percentile':
+    if thresholding_strategy == 'percentile':
         percentile = 100. - (100. / len(maps)) * ratio
         cutoff_threshold = scoreatpercentile(np.abs(maps), percentile)
-    elif ratio is not None and estimate_threshold_value == 'ratio_n_voxels':
+    elif ratio is not None and thresholding_strategy == 'ratio_n_voxels':
         raveled = np.abs(maps).ravel()
         argsort = np.argsort(raveled)
         n_voxels = (ratio * maps.size)
@@ -359,7 +356,7 @@ class RegionExtractor(NiftiMapsMasker):
     def __init__(self, maps_img, mask=None, target_affine=None,
                  target_shape=None, standardize=False, low_pass=None,
                  high_pass=None, t_r=None, memory=Memory(cachedir=None),
-                 min_size=20, threshold_strategy='ratio_n_voxels',
+                 min_size=20, thresholding_strategy='ratio_n_voxels',
                  threshold='auto', extractor='connected_components',
                  peak_local_smooth=6., verbose=0):
         self.maps_img = maps_img
@@ -374,7 +371,7 @@ class RegionExtractor(NiftiMapsMasker):
 
         # parameters for region extraction
         self.min_size = min_size
-        self.threshold_strategy = threshold_strategy
+        self.thresholding_strategy = thresholding_strategy
         self.threshold = threshold
         self.extractor = extractor
         self.peak_local_smooth = peak_local_smooth
@@ -411,7 +408,7 @@ class RegionExtractor(NiftiMapsMasker):
         # foreground extraction of input data "maps_img"
         self.threshold_maps_img_ = estimate_apply_threshold_to_maps(
             self.maps_img_, mask_img=self.mask_img_, parameters=parameters,
-            threshold=self.threshold, estimate_threshold_value=self.threshold_strategy)
+            threshold=self.threshold, thresholding_strategy=self.thresholding_strategy)
 
         return self
 

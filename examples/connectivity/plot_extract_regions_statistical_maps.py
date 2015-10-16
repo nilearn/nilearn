@@ -23,7 +23,7 @@ this example shows only for single subject.
 # Load localizer datasets - contrast/t maps
 from nilearn import datasets
 from nilearn._utils import check_niimg_3d
-print " -- Fetching t-statistic image from localizer datasets -- "
+print (" -- Fetching t-statistic image from localizer datasets -- ")
 n_subjects = 1
 localizer_path = datasets.fetch_localizer_contrasts(
     ['calculation (auditory cue)'], n_subjects=n_subjects, get_tmaps=True)
@@ -31,17 +31,17 @@ localizer_img = check_niimg_3d(localizer_path.tmaps[0])
 
 # Thresholding the input image
 from nilearn.regions import region_extractor
-print " -- Thresholding the image-- "
+print (" -- Thresholding the image -- ")
 # Thresholding based on (ratio * n_voxels) named as "ratio_n_voxels"
 localizer_threshold_img = region_extractor.estimate_apply_threshold_to_maps(
-    localizer_img, threshold=0.1, estimate_threshold_value='ratio_n_voxels')
+    localizer_img, threshold=0.1, thresholding_strategy='ratio_n_voxels')
 
 # Thresholding based on raw t-statistical values
 localizer_threshold_tstat_img = region_extractor.estimate_apply_threshold_to_maps(
-    localizer_img, threshold=4., estimate_threshold_value=None)
+    localizer_img, threshold=4., thresholding_strategy=None)
 
 # Region extraction/seperation
-print " -- Region Extraction/Seperation -- "
+print (" -- Region Extraction/Seperation -- ")
 # Region extraction based on only labelling named as "connected_components"
 regions_cc = region_extractor.break_connected_components(
     localizer_threshold_img, min_size=200, extract_type='connected_components')
@@ -59,7 +59,7 @@ regions_tstat = region_extractor.break_connected_components(
 n_regions_tstat = len(regions_tstat)
 
 # Visualization
-print " -- Showing the results -- "
+print (" -- Showing the results -- ")
 import matplotlib.pyplot as plt
 from nilearn import plotting
 # Visualize input t map

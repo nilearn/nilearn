@@ -16,20 +16,20 @@ Please see the related documentation of `RegionExtractor` for more details.
 """
 import numpy as np
 from nilearn import datasets
-print " -- Fetching ADHD resting state functional datasets -- "
-adhd_dataset = datasets.fetch_adhd(n_subjects=40)
+print (" -- Fetching ADHD resting state functional datasets -- ")
+adhd_dataset = datasets.fetch_adhd(n_subjects=20)
 func_filenames = adhd_dataset.func
 confounds = adhd_dataset.confounds
 
 from nilearn.input_data import NiftiMasker
-print " -- Computing the mask from the data-- "
+print (" -- Computing the mask from the data -- ")
 func_filename = func_filenames[0]
 masker = NiftiMasker(standardize=False, mask_strategy='epi')
 masker.fit(func_filename)
 mask_img = masker.mask_img_
 
 from nilearn.decomposition.canica import CanICA
-print " -- Canonical ICA decomposition of functional datasets -- "
+print (" -- Canonical ICA decomposition of functional datasets -- ")
 # Initialize canica parameters
 n_components = 20
 canica = CanICA(n_components=n_components, smoothing_fwhm=6.,
@@ -43,23 +43,21 @@ components_img = canica.masker_.inverse_transform(canica.components_)
 # Signals step: Average timeseries signal extraction
 # Both are done by calling fit_transform()
 from nilearn.regions import region_extractor
-print " -- Extracting regions from ICA maps and timeseries signals -- "
-reg_ext = region_extractor.RegionExtractor(components_img,
-                                           standardize=True,
-                                           threshold=0.5, min_size=300,
-                                           threshold_strategy='ratio_n_voxels',
-                                           extractor='local_regions')
-reg_ext.fit_transform(func_filenames, confounds=confounds)
+print (" -- Extracting regions from ICA maps and timeseries signals -- ")
+extractor = region_extractor.RegionExtractor(
+    components_img, standardize=True, threshold=0.3, min_size=300,
+    thresholding_strategy='ratio_n_voxels', extractor='local_regions')
+extractor.fit_transform(func_filenames, confounds=confounds)
 # Regions extracted
-regions_extracted_from_ica = reg_ext.regions_
+regions_extracted_from_ica = extractor.regions_
 n_regions = regions_extracted_from_ica.shape[3]
-print " ====== Regions extracted ====== "
-print " -- Number of regions extracted from %d ICA components are %d -- " % (
-    n_components, n_regions)
+print (" ====== Regions extracted ====== ")
+print (" -- Number of regions extracted from %d ICA components are %d -- " % (
+    n_components, n_regions))
 # Index of each region to identify its corresponding ICA map
-index_of_each_extracted_region = reg_ext.index_
+index_of_each_extracted_region = extractor.index_
 # Timeseries signals extracted from all subjects
-subjects_timeseries = reg_ext.signals_
+subjects_timeseries = extractor.signals_
 
 # Computing correlation coefficients of the timeseries signals
 correlation = []
