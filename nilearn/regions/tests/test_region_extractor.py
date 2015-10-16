@@ -37,13 +37,13 @@ def test_validity_threshold_types_in_estimate_apply_threshold_to_maps():
                         "You provided threshold=%s " % t_value,
                         estimate_apply_threshold_to_maps,
                         map_0, threshold=t_value,
-                        estimate_threshold_value=None)
+                        thresholding_strategy=None)
 
     invalid_threshold_estimates = ['percent', 'ratio', 'auto']
     for invalid_estimate in invalid_threshold_estimates:
         assert_raises(ValueError, estimate_apply_threshold_to_maps,
                       map_0, threshold='auto',
-                      estimate_threshold_value=invalid_estimate)
+                      thresholding_strategy=invalid_estimate)
 
     invalid_threshold_value = ['10', 'some_value']
     for thr in invalid_threshold_value:
@@ -60,14 +60,14 @@ def test_passing_estimate_apply_threshold_to_maps():
     valid_threshold_estimates = ['percentile', 'ratio_n_voxels']
     for map_, strategy in zip(iter_img(map_0), valid_threshold_estimates):
         thr_maps = estimate_apply_threshold_to_maps(map_, threshold='auto',
-                                                    estimate_threshold_value=strategy)
+                                                    thresholding_strategy=strategy)
 
     # smoke test to check whether function estimate_apply_threshold_to_maps
     # passes through input t-value
     t_value_thresholds = [0.5, 0.8]
     for t_val in t_value_thresholds:
         thr_maps = estimate_apply_threshold_to_maps(map_0, threshold=t_val,
-                                                    estimate_threshold_value=None)
+                                                    thresholding_strategy=None)
 
 
 def test_validity_extract_types_in_break_connected_components():
