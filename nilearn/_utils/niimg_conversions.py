@@ -4,6 +4,7 @@ Conversion utilities.
 # Author: Gael Varoquaux, Alexandre Abraham, Philippe Gervais
 # License: simplified BSD
 import warnings
+import os.path
 
 import numpy as np
 import itertools
@@ -13,8 +14,11 @@ from .cache_mixin import cache
 from .niimg import _safe_get_data, load_niimg
 from .compat import _basestring, izip
 
-from nilearn._utils.exceptions import DimensionError
-from nilearn import NILEARN_USE_GLOB
+from .exceptions import DimensionError
+from .. import EXPAND_PATH_WILDCARDS
+
+if EXPAND_PATH_WILDCARDS:
+    import glob
 
 def _check_fov(img, affine, shape):
     """ Return True if img's field of view correspond to given
@@ -37,7 +41,7 @@ def _check_same_fov(*args, **kwargs):
 
     args: images
         Images to be checked. Images passed without keywords will be labelled
-        as img_#1 in the error message (replace 1 with the appropriate index)
+        as img_#1 in the error message (replace 1 with the appropriate index).
 
     kwargs: images
         Images to be checked. In case of error, images will be reference by
@@ -154,7 +158,7 @@ def _iter_check_niimg(niimgs, ensure_ndim=None, atleast_4d=False,
 
 def check_niimg(niimg, ensure_ndim=None, atleast_4d=False, dtype=None,
                 return_iterator=False,
-                glob=NILEARN_USE_GLOB):
+                wildcards=True):
     """Check that niimg is a proper 3D/4D niimg. Turn filenames into objects.
 
     Parameters
@@ -180,11 +184,11 @@ def check_niimg(niimg, ensure_ndim=None, atleast_4d=False, dtype=None,
     return_iterator: boolean, optional
         Returns an iterator on the content of the niimg file input
 
-    glob: boolean, optional
-        Use glob module to list the input images. If multiple files
-        matches and return iterator, the returned matching list of objects
+    widlcard: boolean, optional
+        Use wildcards to list matching input images. If multiple files
+        matches and return iterator is set, the returned list of objects
         is sorted (ascending order), otherwise the first object in the list is
-        returned
+        returned.
 
     Returns
     -------
@@ -203,40 +207,28 @@ def check_niimg(niimg, ensure_ndim=None, atleast_4d=False, dtype=None,
     """
     from ..image import new_img_like  # avoid circular imports
 
-    # in case of an iterable
-    if hasattr(niimg, "__iter__") and not isinstance(niimg, _basestring):
-        if return_iterator:
-            return _iter_check_niimg(niimg, ensure_ndim=ensure_ndim,
-                                     dtype=dtype)
-        return concat_niimgs(niimg, ensure_ndim=ensure_ndim, dtype=dtype)
-
-    # Use glob module to list the matching filenames
-    if glob:
-        import glob
-        filenames = glob.glob(niimg).sort()
+    if isinstance(niimg, _basestring) and wildcards and EXPAND_PATH_WILDCARDS:
+        filenames = sorted(glob.glob(niimg))  # Ascending sorting
 
         # processing filenames matching globbing expression
-        if len(filenames)>1:
-            # Multiple files matching:
-            # 1. return an iterator of images if return_iterator is set
-            # 2. concatenate images otherwise
-            if return_iterator:
-                return _iter_check_niimg(filenames,
-                                         ensure_ndim=ensure_ndim,
-                                         dtype=dtype)
-            return concat_niimgs(filenames,
-                                 ensure_ndim=ensure_ndim,
-                                 dtype=dtype)
+        if len(filenames) > 1:
+            niimg = filenames # iterable case
         elif len(filenames) == 1:
             # Only one file matching => loading it as is
             niimg = filenames[0]
         else:
             # No files matching the glob expression, warn the user
             raise ValueError("No files matching the entered niimg "
-                             "expression : %s.\n You may have left glob "
-                             "module activated, please set global variable "
-                             "NILEARN_USE_GLOB to False in order to "
-                             "deactivate globbing")
+                             "expression : %s.\n You may have left wildcards "
+                             "usage activated, please set global constants"
+                             "EXPAND_PATH_WILDCARDS to False to deactivate")
+
+    # in case of an iterable
+    if hasattr(niimg, "__iter__") and not isinstance(niimg, _basestring):
+        if return_iterator:
+            return _iter_check_niimg(niimg, ensure_ndim=ensure_ndim,
+                                     dtype=dtype)
+        return concat_niimgs(niimg, ensure_ndim=ensure_ndim, dtype=dtype)
 
     # Otherwise, it should be a filename or a SpatialImage, we load it
     niimg = load_niimg(niimg, dtype=dtype)

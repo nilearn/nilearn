@@ -47,10 +47,10 @@ _check_module_dependencies()
 if hasattr(gzip.GzipFile, 'max_read_chunk'):
     gzip.GzipFile.max_read_chunk = 100 * 1024 * 1024  # 100Mb
 
-# Boolean controlling the default globing technique when using check_niimg
+# Boolean controlling the default globbing technique when using check_niimg
 # Default value it True, set it to False to completely deactivate use of glob
 # module
-NILEARN_USE_GLOB = True
+EXPAND_PATH_WILDCARDS = True
 
 # Boolean controlling whether the joblib caches should be
 # flushed if the version of certain modules changes (eg nibabel, as it
