@@ -212,7 +212,7 @@ def check_niimg(niimg, ensure_ndim=None, atleast_4d=False, dtype=None,
 
         # processing filenames matching globbing expression
         if len(filenames) > 1:
-            niimg = filenames # iterable case
+            niimg = filenames  # iterable case
         elif len(filenames) == 1:
             # Only one file matching => loading it as is
             niimg = filenames[0]
@@ -220,8 +220,8 @@ def check_niimg(niimg, ensure_ndim=None, atleast_4d=False, dtype=None,
             # No files matching the glob expression, warn the user
             raise ValueError("No files matching the entered niimg "
                              "expression : %s.\n You may have left wildcards "
-                             "usage activated, please set global constants"
-                             "EXPAND_PATH_WILDCARDS to False to deactivate")
+                             "usage activated, please set global constants "
+                             "EXPAND_PATH_WILDCARDS to False to deactivate.")
 
     # in case of an iterable
     if hasattr(niimg, "__iter__") and not isinstance(niimg, _basestring):

@@ -95,6 +95,10 @@ def write_tmp_imgs(*imgs, **kwargs):
         useful to test the two cases (filename / Nifti1Image) in the same
         loop.
 
+    use_wildcards: bool
+        if True, and create_files is True, imgs are written on disk and a
+        matching regexp is returned.
+
     Returns
     =======
     filenames: string or list of
@@ -102,7 +106,7 @@ def write_tmp_imgs(*imgs, **kwargs):
         has been given as input, a single string is returned. Otherwise, a
         list of string is returned.
     """
-    valid_keys = set(("create_files",))
+    valid_keys = set(("create_files", "use_wildcards"))
     input_keys = set(kwargs.keys())
     invalid_keys = input_keys - valid_keys
     if len(invalid_keys) > 0:
@@ -110,14 +114,18 @@ def write_tmp_imgs(*imgs, **kwargs):
                         (sys._getframe().f_code.co_name,
                          " ".join(invalid_keys)))
     create_files = kwargs.get("create_files", True)
+    use_wildcards = kwargs.get("use_wildcards", False)
+
+    prefix = "nilearn_"
+    suffix = ".nii"
 
     if create_files:
         filenames = []
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", RuntimeWarning)
             for img in imgs:
-                _, filename = tempfile.mkstemp(prefix="nilearn_",
-                                               suffix=".nii",
+                _, filename = tempfile.mkstemp(prefix=prefix,
+                                               suffix=suffix,
                                                dir=None)
                 filenames.append(filename)
                 img.to_filename(filename)
@@ -125,7 +133,10 @@ def write_tmp_imgs(*imgs, **kwargs):
         if len(imgs) == 1:
             yield filenames[0]
         else:
-            yield filenames
+            if use_wildcards:
+                yield prefix + "*" + suffix
+            else:
+                yield filenames
 
         for filename in filenames:
             os.remove(filename)

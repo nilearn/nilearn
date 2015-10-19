@@ -98,6 +98,14 @@ def test_check_niimg_3d():
     assert_raises_regex(TypeError, 'Data must be a 3D',
                         _utils.check_niimg_3d, [img, img])
 
+    # Non matching wildcards (######) raise a value error exception
+    assert_raises_regex(ValueError, "No files matching the entered niimg "
+                                    "expression : %s.\n You may have left "
+                                    "wildcards usage activated, please set "
+                                    "global constants EXPAND_PATH_WILDCARDS "
+                                    "to False to deactivate.",
+                                    _utils.check_niimg, '######')
+
     # Check that a filename does not raise an error
     data = np.zeros((40, 40, 40, 1))
     data[20, 20, 20] = 1
@@ -105,6 +113,11 @@ def test_check_niimg_3d():
 
     with testing.write_tmp_imgs(data_img, create_files=True) as filename:
         _utils.check_niimg_3d(filename)
+
+    with testing.write_tmp_imgs(data_img,
+                                create_files=True,
+                                use_wildcards=True) as globs:
+        _utils.check_niimg_3d(globs)
 
 
 def test_check_niimg_4d():
@@ -151,9 +164,9 @@ def test_check_niimg_4d():
         assert_array_equal(img_1.get_affine(), img_2.get_affine())
 
     # This should raise an error: a 3D img is given and we want a 4D
-    assert_raises_regex(DimensionError, 'Data must be a 4D Niimg-like object but '
-                        'you provided a 3D',
-                        _utils.check_niimg_4d, img_3d)
+    assert_raises_regex(DimensionError, 'Data must be a 4D Niimg-like object '
+                                        'but you provided a 3D',
+                                        _utils.check_niimg_4d, img_3d)
 
     # Test a Niimg-like object that does not hold a shape attribute
     phony_img = PhonyNiimage()
