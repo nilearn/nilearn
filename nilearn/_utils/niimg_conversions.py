@@ -184,7 +184,7 @@ def check_niimg(niimg, ensure_ndim=None, atleast_4d=False, dtype=None,
     return_iterator: boolean, optional
         Returns an iterator on the content of the niimg file input
 
-    widlcard: boolean, optional
+    widlcards: boolean, optional
         Use wildcards to list matching input images. If multiple files
         matches and return iterator is set, the returned list of objects
         is sorted (ascending order), otherwise the first object in the list is
