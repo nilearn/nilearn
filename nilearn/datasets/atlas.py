@@ -626,7 +626,7 @@ def fetch_atlas_aal_spm_12(data_dir=None, url=None, resume=True, verbose=1):
     """
     spm_version = 12
     if url is None:
-        baseurl = "http://www.gin.cnrs.fr/AAL/aal_for_SPM%i.tar.gz"
+        baseurl = "http://www.gin.cnrs.fr/AAL_files/aal_for_SPM%i.tar.gz"
         url = baseurl % spm_version
     opts = {'uncompress': True}
 
