@@ -130,11 +130,11 @@ def write_tmp_imgs(*imgs, **kwargs):
                 filenames.append(filename)
                 img.to_filename(filename)
 
-        if len(imgs) == 1:
-            yield filenames[0]
+        if use_wildcards:
+            yield prefix + "*" + suffix
         else:
-            if use_wildcards:
-                yield prefix + "*" + suffix
+            if len(imgs) == 1:
+                yield filenames[0]
             else:
                 yield filenames
 

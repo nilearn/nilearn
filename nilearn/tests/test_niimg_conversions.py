@@ -18,6 +18,7 @@ from numpy.testing import assert_array_equal, assert_array_almost_equal
 import nibabel
 from nibabel import Nifti1Image
 
+import nilearn as ni
 from nilearn import _utils, image
 from nilearn._utils.exceptions import DimensionError
 from nilearn._utils import testing, niimg_conversions
@@ -98,14 +99,6 @@ def test_check_niimg_3d():
     assert_raises_regex(TypeError, 'Data must be a 3D',
                         _utils.check_niimg_3d, [img, img])
 
-    # Non matching wildcards (######) raise a value error exception
-    assert_raises_regex(ValueError, "No files matching the entered niimg "
-                                    "expression : %s.\n You may have left "
-                                    "wildcards usage activated, please set "
-                                    "global constants EXPAND_PATH_WILDCARDS "
-                                    "to False to deactivate.",
-                                    _utils.check_niimg, '######')
-
     # Check that a filename does not raise an error
     data = np.zeros((40, 40, 40, 1))
     data[20, 20, 20] = 1
@@ -113,11 +106,6 @@ def test_check_niimg_3d():
 
     with testing.write_tmp_imgs(data_img, create_files=True) as filename:
         _utils.check_niimg_3d(filename)
-
-    with testing.write_tmp_imgs(data_img,
-                                create_files=True,
-                                use_wildcards=True) as globs:
-        _utils.check_niimg_3d(globs)
 
 
 def test_check_niimg_4d():
@@ -202,6 +190,93 @@ def test_check_niimg():
         DimensionError,
         'Data must be a 4D Niimg-like object but you provided a list of list '
         'of 4D images.', _utils.check_niimg, img_2_4d, ensure_ndim=4)
+
+
+def test_check_niimg_wildcards():
+    tmp_dir = tempfile.tempdir + os.sep
+    nofile_path = "/tmp/nofile"
+    wildcards_msg = ("No files matching the entered niimg expression: "
+                     "'%s'.\n You may have left wildcards usage activated: "
+                     "please set the global constant 'EXPAND_PATH_WILDCARDS' "
+                     "to False or use option 'wildcards=False' to deactivate "
+                     "this behavior.") % nofile_path
+
+    file_not_found_msg = "No files found for niimg"
+
+    assert_equal(ni.EXPAND_PATH_WILDCARDS, True)
+    # Check bad filename
+    # Non matching wildcards (######) raise a value error exception
+    assert_raises_regex(ValueError, wildcards_msg,
+                        _utils.check_niimg, nofile_path)
+
+    # Testing the behavior is expected
+    # First create some testing data
+    data = np.zeros((40, 40, 40, 1))
+    data[20, 20, 20] = 1
+    data_img = Nifti1Image(data, np.eye(4))
+
+    #######
+    # Testing with an existing filename
+    with testing.write_tmp_imgs(data_img, create_files=True) as filename:
+        assert_array_equal(_utils.check_niimg(filename).get_data(),
+                           data_img.get_data())
+    # No globbing behavior
+    with testing.write_tmp_imgs(data_img, create_files=True) as filename:
+        assert_array_equal(_utils.check_niimg(filename,
+                                              wildcards=False).get_data(),
+                           data_img.get_data())
+
+    #######
+    # Testing with a regexp matching exactly one filename
+    with testing.write_tmp_imgs(data_img,
+                                create_files=True,
+                                use_wildcards=True) as globs:
+        assert_array_equal(_utils.check_niimg(tmp_dir + globs).get_data(),
+                           data_img.get_data())
+    # Disabled globbing behavior should raise an error
+    with testing.write_tmp_imgs(data_img,
+                                create_files=True,
+                                use_wildcards=True) as globs:
+        assert_raises_regex(ValueError, file_not_found_msg,
+                            _utils.check_niimg,
+                            tmp_dir + globs,
+                            wildcards=False)
+
+    #######
+    # Testing with a regexp matching multiple filenames
+    img_4d = _utils.check_niimg_4d((data_img, data_img))
+    with testing.write_tmp_imgs(data_img, data_img,
+                                create_files=True,
+                                use_wildcards=True) as globs:
+        assert_array_equal(_utils.check_niimg(tmp_dir + globs).get_data(),
+                           img_4d.get_data())
+
+    #######
+    # Test when global variable is set to False => no globbing allowed
+    ni.EXPAND_PATH_WILDCARDS = False
+    assert_equal(ni.EXPAND_PATH_WILDCARDS, False)
+
+    # Non existing filename (/tmp/nofile) could match an existing one through
+    # globbing but global wildcards variable overrides this feature => raises
+    # an ImageFileError from nibabel as the input file doesn't exist
+    message = "Cannot work out file type of \"%s\"" % nofile_path
+    assert_raises_regex(ValueError,
+                        file_not_found_msg,
+                        _utils.check_niimg, nofile_path)
+
+    # Verify wildcards function parameter has no effect
+    assert_raises_regex(ValueError,
+                        file_not_found_msg,
+                        _utils.check_niimg, nofile_path, wildcards=False)
+
+    # Testing with an exact filename
+    with testing.write_tmp_imgs(data_img, create_files=True) as filename:
+        assert_array_equal(_utils.check_niimg(filename).get_data(),
+                           data_img.get_data())
+
+    # Reverting to default behavior
+    ni.EXPAND_PATH_WILDCARDS = True
+    assert_equal(ni.EXPAND_PATH_WILDCARDS, True)
 
 
 def test_repr_niimgs():
