@@ -5,6 +5,7 @@ Conversion utilities.
 # License: simplified BSD
 import warnings
 import os.path
+import glob
 
 import numpy as np
 import itertools
@@ -16,9 +17,6 @@ from .compat import _basestring, izip
 
 from .exceptions import DimensionError
 from .. import EXPAND_PATH_WILDCARDS
-
-if EXPAND_PATH_WILDCARDS:
-    import glob
 
 def _check_fov(img, affine, shape):
     """ Return True if img's field of view correspond to given
