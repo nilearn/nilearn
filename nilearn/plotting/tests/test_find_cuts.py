@@ -98,9 +98,9 @@ def test_passing_of_ncuts_in_find_cut_slices():
     img = nibabel.Nifti1Image(data, affine)
     # smoke test to check if it rounds the floating point inputs
     for n_cuts in (1, 5., 0.9999999, 2.000000004):
-        cut1 = find_cut_slices(img, direction='x', n_cuts=n_cuts),
+        cut1 = find_cut_slices(img, direction='x', n_cuts=n_cuts)
         cut2 = find_cut_slices(img, direction='x', n_cuts=round(n_cuts))
-        np.testing.assert_array_equal(cut1[0], cut2)
+        np.testing.assert_array_equal(cut1, cut2)
 
 
 def test_singleton_ax_dim():
