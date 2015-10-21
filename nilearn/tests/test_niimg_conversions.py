@@ -209,7 +209,6 @@ def test_check_niimg_wildcards():
     assert_raises_regex(ValueError, wildcards_msg,
                         _utils.check_niimg, nofile_path)
 
-    # Testing the behavior is expected
     # First create some testing data
     data = np.zeros((40, 40, 40, 1))
     data[20, 20, 20] = 1
@@ -258,8 +257,7 @@ def test_check_niimg_wildcards():
 
     # Non existing filename (/tmp/nofile) could match an existing one through
     # globbing but global wildcards variable overrides this feature => raises
-    # an ImageFileError from nibabel as the input file doesn't exist
-    message = "Cannot work out file type of \"%s\"" % nofile_path
+    # a ValueError
     assert_raises_regex(ValueError,
                         file_not_found_msg,
                         _utils.check_niimg, nofile_path)

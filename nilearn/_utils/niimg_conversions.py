@@ -207,25 +207,27 @@ def check_niimg(niimg, ensure_ndim=None, atleast_4d=False, dtype=None,
     """
     from ..image import new_img_like  # avoid circular imports
 
-    if (isinstance(niimg, _basestring) and
-        wildcards and
-        ni.EXPAND_PATH_WILDCARDS):
-        filenames = sorted(glob.glob(niimg))  # Ascending sorting
+    if isinstance(niimg, _basestring):
+        if (wildcards and
+            ni.EXPAND_PATH_WILDCARDS):
+            filenames = sorted(glob.glob(niimg))  # Ascending sorting
 
-        # processing filenames matching globbing expression
-        if len(filenames) > 1:
-            niimg = filenames  # iterable case
-        elif len(filenames) == 1:
-            # Only one file matching => loading it as is
-            niimg = filenames[0]
-        else:
-            # No files matching the glob expression, warn the user
-            message = ("No files matching the entered niimg expression: "
+            # processing filenames matching globbing expression
+            if len(filenames) > 1:
+                niimg = filenames  # iterable case
+            elif len(filenames) == 1:
+                # Only one file matching => loading it as is
+                niimg = filenames[0]
+            else:
+                # No files matching the glob expression, warn the user
+                message = ("No files matching the entered niimg expression: "
                        "'%s'.\n You may have left wildcards usage activated: "
                        "please set the global constant 'EXPAND_PATH_WILDCARDS' "
                        "to False or use option 'wildcards=False' to deactivate "
                        "this behavior.") % niimg
-            raise ValueError(message)
+                raise ValueError(message)
+        elif not os.path.exists(niimg):
+            raise ValueError("No files found for niimg")
 
     # in case of an iterable
     if hasattr(niimg, "__iter__") and not isinstance(niimg, _basestring):
