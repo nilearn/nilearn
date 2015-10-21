@@ -7,6 +7,7 @@ import warnings
 import os.path
 import glob
 
+import nilearn as ni
 import numpy as np
 import itertools
 from sklearn.externals.joblib import Memory
@@ -16,7 +17,6 @@ from .niimg import _safe_get_data, load_niimg
 from .compat import _basestring, izip
 
 from .exceptions import DimensionError
-from .. import EXPAND_PATH_WILDCARDS
 
 def _check_fov(img, affine, shape):
     """ Return True if img's field of view correspond to given
@@ -207,7 +207,9 @@ def check_niimg(niimg, ensure_ndim=None, atleast_4d=False, dtype=None,
     """
     from ..image import new_img_like  # avoid circular imports
 
-    if isinstance(niimg, _basestring) and wildcards and EXPAND_PATH_WILDCARDS:
+    if (isinstance(niimg, _basestring) and
+        wildcards and
+        ni.EXPAND_PATH_WILDCARDS):
         filenames = sorted(glob.glob(niimg))  # Ascending sorting
 
         # processing filenames matching globbing expression
@@ -218,10 +220,12 @@ def check_niimg(niimg, ensure_ndim=None, atleast_4d=False, dtype=None,
             niimg = filenames[0]
         else:
             # No files matching the glob expression, warn the user
-            raise ValueError("No files matching the entered niimg "
-                             "expression : %s.\n You may have left wildcards "
-                             "usage activated, please set global constants "
-                             "EXPAND_PATH_WILDCARDS to False to deactivate.")
+            message = ("No files matching the entered niimg expression: "
+                       "'%s'.\n You may have left wildcards usage activated: "
+                       "please set the global constant 'EXPAND_PATH_WILDCARDS' "
+                       "to False or use option 'wildcards=False' to deactivate "
+                       "this behavior.") % niimg
+            raise ValueError(message)
 
     # in case of an iterable
     if hasattr(niimg, "__iter__") and not isinstance(niimg, _basestring):
