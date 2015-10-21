@@ -184,11 +184,13 @@ def check_niimg(niimg, ensure_ndim=None, atleast_4d=False, dtype=None,
     return_iterator: boolean, optional
         Returns an iterator on the content of the niimg file input
 
-    widlcards: boolean, optional
-        Use wildcards to list matching input images. If multiple files
-        matches and return iterator is set, the returned list of objects
-        is sorted (ascending order), otherwise the first object in the list is
-        returned.
+    wildcards: boolean, optional
+        Use niimg as a regular expression to get a list of matching input
+        filenames.
+        If multiple files match, the returned list is sorted using an ascending
+        order.
+        If no file matches the regular expression, a ValueError exception is
+        raised.
 
     Returns
     -------
