@@ -8,6 +8,7 @@ whose name starts with an underscore
 # License: simplified BSD
 
 import os
+import re
 import tempfile
 
 from nose.tools import assert_equal, assert_true
@@ -201,7 +202,7 @@ def test_check_niimg_wildcards():
                      "to False or use option 'wildcards=False' to deactivate "
                      "this behavior.") % nofile_path
 
-    file_not_found_msg = "No files found for niimg"
+    file_not_found_msg = "File not found: '%s'"
 
     assert_equal(ni.EXPAND_PATH_WILDCARDS, True)
     # Check bad filename
@@ -236,7 +237,8 @@ def test_check_niimg_wildcards():
     with testing.write_tmp_imgs(data_img,
                                 create_files=True,
                                 use_wildcards=True) as globs:
-        assert_raises_regex(ValueError, file_not_found_msg,
+        assert_raises_regex(ValueError,
+                            file_not_found_msg % re.escape(tmp_dir + globs),
                             _utils.check_niimg,
                             tmp_dir + globs,
                             wildcards=False)
@@ -259,12 +261,12 @@ def test_check_niimg_wildcards():
     # globbing but global wildcards variable overrides this feature => raises
     # a ValueError
     assert_raises_regex(ValueError,
-                        file_not_found_msg,
+                        file_not_found_msg % nofile_path,
                         _utils.check_niimg, nofile_path)
 
     # Verify wildcards function parameter has no effect
     assert_raises_regex(ValueError,
-                        file_not_found_msg,
+                        file_not_found_msg % nofile_path,
                         _utils.check_niimg, nofile_path, wildcards=False)
 
     # Testing with an exact filename

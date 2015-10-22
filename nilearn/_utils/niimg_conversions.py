@@ -227,7 +227,7 @@ def check_niimg(niimg, ensure_ndim=None, atleast_4d=False, dtype=None,
                        "this behavior.") % niimg
                 raise ValueError(message)
         elif not os.path.exists(niimg):
-            raise ValueError("No files found for niimg")
+            raise ValueError("File not found: '%s'" % niimg)
 
     # in case of an iterable
     if hasattr(niimg, "__iter__") and not isinstance(niimg, _basestring):
