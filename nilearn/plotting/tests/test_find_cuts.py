@@ -79,20 +79,28 @@ def test_validity_of_ncuts_error_in_find_cut_slices():
     x_map, y_map, z_map = 25, 5, 20
     data[x_map - 15:x_map + 15, y_map - 3:y_map + 3, z_map - 10:z_map + 10] = 1
     img = nibabel.Nifti1Image(data, affine)
-    for direction, n_cuts in zip('xyz', (0, -2, -10.00034)):
-        message = ("The number of cuts in the given direction %s must be an "
-                   "integer which should be greater than 0 and less than "
-                   "or equal to %d. You provided n_cuts=%s" % (
-                       direction, data.shape[0], n_cuts))
+    direction = 'z'
+    for n_cuts in (0, -2, -10.00034, 0.999999, 0.4, 0.11111111):
+        message = ("Image has %d slices in direction %s. Therefore, the number "
+                   "of cuts must be between 1 and %d. You provided n_cuts=%s " % (
+                       data.shape[0], direction, data.shape[0], n_cuts))
         assert_raises_regex(ValueError,
                             message,
                             find_cut_slices,
-                            img, direction=direction,
-                            n_cuts=n_cuts)
+                            img, n_cuts=n_cuts)
+
+
+def test_passing_of_ncuts_in_find_cut_slices():
+    data = np.zeros((50, 50, 50))
+    affine = np.eye(4)
+    x_map, y_map, z_map = 25, 5, 20
+    data[x_map - 15:x_map + 15, y_map - 3:y_map + 3, z_map - 10:z_map + 10] = 1
+    img = nibabel.Nifti1Image(data, affine)
     # smoke test to check if it rounds the floating point inputs
-    n_cuts = [0.999999, 9.99999, 1, 5., 10.0000045]
-    for n_cut in n_cuts:
-        find_cut_slices(img, direction='x', n_cuts=n_cut)
+    for n_cuts in (1, 5., 0.9999999, 2.000000004):
+        cut1 = find_cut_slices(img, direction='x', n_cuts=n_cuts)
+        cut2 = find_cut_slices(img, direction='x', n_cuts=round(n_cuts))
+        np.testing.assert_array_equal(cut1, cut2)
 
 
 def test_singleton_ax_dim():
