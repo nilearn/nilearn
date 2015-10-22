@@ -102,7 +102,7 @@ expression:
     >>> # dataset/subject_*.nii is a regular expression matching all filenames.
     >>> # Example with a smoothing process:
     >>> from nilearn.image import smooth_img
-    >>> result_img = smooth_img("dataset/subject_*", fwhm='fast')
+    >>> result_img = smooth_img("dataset/subject_*", fwhm='fast') # doctest: +SKIP
 
 
 For more complicated use cases, Python also provides helper functions to work
