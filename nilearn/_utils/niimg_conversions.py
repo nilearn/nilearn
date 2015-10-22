@@ -218,14 +218,16 @@ def check_niimg(niimg, ensure_ndim=None, atleast_4d=False, dtype=None,
             elif len(filenames) == 1:
                 # Only one file matching => loading it as is
                 niimg = filenames[0]
-            else:
+            elif glob.has_magic(niimg):
                 # No files matching the glob expression, warn the user
                 message = ("No files matching the entered niimg expression: "
-                       "'%s'.\n You may have left wildcards usage activated: "
-                       "please set the global constant 'EXPAND_PATH_WILDCARDS' "
-                       "to False or use option 'wildcards=False' to deactivate "
-                       "this behavior.") % niimg
+                            "'%s'.\n You may have left wildcards usage "
+                           "activated: please set the global constant "
+                           "'EXPAND_PATH_WILDCARDS' to False to deactivate "
+                           "this behavior.") % niimg
                 raise ValueError(message)
+            else:
+                raise ValueError("File not found: '%s'" % niimg)
         elif not os.path.exists(niimg):
             raise ValueError("File not found: '%s'" % niimg)
 

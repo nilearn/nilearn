@@ -196,19 +196,24 @@ def test_check_niimg():
 def test_check_niimg_wildcards():
     tmp_dir = tempfile.tempdir + os.sep
     nofile_path = "/tmp/nofile"
+    nofile_path_wildcards = "/tmp/no*file"
     wildcards_msg = ("No files matching the entered niimg expression: "
-                     "'%s'.\n You may have left wildcards usage activated: "
-                     "please set the global constant 'EXPAND_PATH_WILDCARDS' "
-                     "to False or use option 'wildcards=False' to deactivate "
-                     "this behavior.") % nofile_path
+                     "'%s'.\n You may have left wildcards usage "
+                     "activated: please set the global constant "
+                     "'EXPAND_PATH_WILDCARDS' to False to deactivate "
+                     "this behavior.")
 
     file_not_found_msg = "File not found: '%s'"
 
     assert_equal(ni.EXPAND_PATH_WILDCARDS, True)
     # Check bad filename
-    # Non matching wildcards (######) raise a value error exception
-    assert_raises_regex(ValueError, wildcards_msg,
+    # Non existing file (with no magic) raise a value error exception
+    assert_raises_regex(ValueError, file_not_found_msg % nofile_path,
                         _utils.check_niimg, nofile_path)
+    # Non matching wildcards raise a value error exception
+    assert_raises_regex(ValueError,
+                        wildcards_msg % re.escape(nofile_path_wildcards),
+                        _utils.check_niimg, nofile_path_wildcards)
 
     # First create some testing data
     data = np.zeros((40, 40, 40, 1))
