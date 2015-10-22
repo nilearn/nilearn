@@ -260,7 +260,6 @@ def test_check_niimg_wildcards():
     #######
     # Test when global variable is set to False => no globbing allowed
     ni.EXPAND_PATH_WILDCARDS = False
-    assert_equal(ni.EXPAND_PATH_WILDCARDS, False)
 
     # Non existing filename (/tmp/nofile) could match an existing one through
     # globbing but global wildcards variable overrides this feature => raises
@@ -281,7 +280,6 @@ def test_check_niimg_wildcards():
 
     # Reverting to default behavior
     ni.EXPAND_PATH_WILDCARDS = True
-    assert_equal(ni.EXPAND_PATH_WILDCARDS, True)
 
 
 def test_repr_niimgs():
