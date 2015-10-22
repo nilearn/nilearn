@@ -636,9 +636,10 @@ def fetch_atlas_aal(version='SPM12', data_dir=None, url=None, resume=True,
     Licence: unknown.
     """
     versions = ['SPM5', 'SPM8', 'SPM12']
-    if version not in version:
+    if version not in versions:
         raise ValueError('The version of AAL requested "%s" does not exist.'
-                         'Please chose one among %s.' % str(versions))
+                         'Please choose one among %s.' %
+                         (version, str(versions)))
 
     if url is None:
         baseurl = "http://www.gin.cnrs.fr/AAL_files/aal_for_%s.tar.gz"

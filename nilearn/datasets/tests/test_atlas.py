@@ -281,3 +281,7 @@ def test_fetch_atlas_aal():
     assert_true(isinstance(dataset.regions, _basestring))
     assert_true(isinstance(dataset.labels, dict))
     assert_equal(len(mock_url_request.urls), 1)
+
+    assert_raises_regex(ValueError, 'The version of AAL requested "FLS33"',
+                        atlas.fetch_atlas_aal, version="FLS33",
+                        data_dir=tmpdir, verbose=0)
