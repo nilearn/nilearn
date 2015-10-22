@@ -651,7 +651,7 @@ except ImportError:
             raise AssertionError("%f is not less than %f" % (a, b))
 
 
-def MemoryLimit(limit):
+def memory_limit(limit):
     def decorator(func):
         @wraps(func)
         def wrapper_func(*args, **kwargs):
