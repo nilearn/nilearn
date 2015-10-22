@@ -17,8 +17,8 @@ from .. import masking
 from .base_masker import filter_and_extract, BaseMasker
 
 
-def _iter_signals_from_spheres(seeds, niimg, radius, mask_img=None,
-                               allow_overlap=False):
+def _iter_signals_from_spheres(seeds, niimg, radius, allow_overlap,
+                               mask_img=None):
     seeds = list(seeds)
     affine = niimg.get_affine()
 
@@ -85,8 +85,8 @@ class _ExtractionFunctor(object):
 
         signals = np.empty((imgs.shape[3], n_seeds))
         for i, sphere in enumerate(_iter_signals_from_spheres(
-                self.seeds_, imgs, self.radius, mask_img=self.mask_img,
-                allow_overlap=self.allow_overlap)):
+                self.seeds_, imgs, self.radius, self.allow_overlap,
+                mask_img=self.mask_img)):
             signals[:, i] = np.mean(sphere, axis=1)
 
         return signals, None
