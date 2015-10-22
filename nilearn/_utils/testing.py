@@ -10,6 +10,8 @@ import re
 import sys
 import tempfile
 import warnings
+import resource
+from functools import wraps
 
 import numpy as np
 import scipy.signal
@@ -647,3 +649,20 @@ except ImportError:
     def assert_less(a, b):
         if a >= b:
             raise AssertionError("%f is not less than %f" % (a, b))
+
+
+def MemoryLimit(limit):
+    def decorator(func):
+        @wraps(func)
+        def wrapper_func(*args, **kwargs):
+            # Save previous limit
+            prev_rlimit_as = resource.getrlimit(resource.RLIMIT_AS)
+            # Set new limit
+            resource.setrlimit(resource.RLIMIT_AS, (limit, prev_rlimit_as[1]))
+            # Call the function
+            retval = func(*args, **kwargs)
+            # Set previous limit back
+            resource.setrlimit(resource.RLIMIT_AS, prev_rlimit_as)
+            return retval
+        return wrapper_func
+    return decorator
