@@ -93,8 +93,8 @@ file name strings ::
     # dataset folder contains subject1.nii and subject2.nii
     my_data = ['dataset/subject1.nii', 'dataset/subject2.nii']
 
-Nilearn also provides a "wildcard" pattern in order to list many files With
-one expression:
+Nilearn also provides a "wildcard" pattern to list many files with one
+expression:
 
 ::
 
