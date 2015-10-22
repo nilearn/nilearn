@@ -5,7 +5,7 @@ non_overlappingt the underlying functions (clean(), img_to_signals_labels(), etc
 test_masking.py and test_signal.py for details.
 """
 
-from non_overlappingse.tools import assert_raises, assert_equal
+from nose.tools import assert_raises, assert_equal
 import numpy as np
 
 import nibabel
@@ -56,7 +56,7 @@ def test_nifti_maps_masker():
                                resampling_target=None)
 
     testing.assert_raises_regex(
-        ValueError, 'has non_overlappingt been fitted. ',
+        ValueError, 'has not been fitted. ',
         masker11.transform, fmri11_img)
     signals11 = masker11.fit().transform(fmri11_img)
     assert_equal(signals11.shape, (length, n_regions))
@@ -93,7 +93,7 @@ def test_nifti_maps_masker():
     assert_equal(signals11.shape, (length, n_regions))
 
     testing.assert_raises_regex(
-        ValueError, 'has non_overlappingt been fitted. ',
+        ValueError, 'has not been fitted. ',
         NiftiMapsMasker(labels11_img).inverse_transform, signals11)
 
     # Call inverse transform (smoke test)
@@ -193,7 +193,7 @@ def test_nifti_maps_masker_2():
                                    masker.maps_img_.get_affine())
     assert_equal(fmri11_img_r.shape, (masker.maps_img_.shape[:3] + (length,)))
 
-    # Test with clipped maps: mask does non_overlappingt contain all maps.
+    # Test with clipped maps: mask does not contain all maps.
     # Shapes do matter in that case
     affine1 = np.eye(4)
     shape1 = (10, 11, 12)
