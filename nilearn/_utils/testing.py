@@ -10,8 +10,11 @@ import re
 import sys
 import tempfile
 import warnings
-import resource
 from functools import wraps
+try:
+    import resource
+except:
+    resource = None
 
 import numpy as np
 import scipy.signal
@@ -655,14 +658,31 @@ def memory_limit(limit):
     def decorator(func):
         @wraps(func)
         def wrapper_func(*args, **kwargs):
-            # Save previous limit
-            prev_rlimit_as = resource.getrlimit(resource.RLIMIT_AS)
-            # Set new limit
-            resource.setrlimit(resource.RLIMIT_AS, (limit, prev_rlimit_as[1]))
+            if resource is None:
+                import nose
+                raise nose.SkipTest('Test skipped because resource package is '
+                                    'not available.')
+            try:
+                # Save previous limit
+                prev_rlimit_as = resource.getrlimit(resource.RLIMIT_AS)
+                # Set new limit
+                resource.setrlimit(resource.RLIMIT_AS, (limit,
+                                                        prev_rlimit_as[1]))
+            except:
+                import nose
+                raise nose.SkipTest('Test skipped because nilearn was not '
+                                    'able to set resource limitation.')
+
             # Call the function
             retval = func(*args, **kwargs)
-            # Set previous limit back
-            resource.setrlimit(resource.RLIMIT_AS, prev_rlimit_as)
+
+            try:
+                # Set previous limit back
+                resource.setrlimit(resource.RLIMIT_AS, prev_rlimit_as)
+            except:
+                import nose
+                raise nose.SkipTest('Test skipped because nilearn was not '
+                                    'able to set resource limitation.')
             return retval
         return wrapper_func
     return decorator
