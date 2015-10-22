@@ -36,7 +36,7 @@ uses.
    fetch_atlas_power_2011
    fetch_atlas_smith_2009
    fetch_atlas_yeo_2011
-   fetch_atlas_aal_spm_12
+   fetch_atlas_aal
    fetch_abide_pcp
    fetch_adhd
    fetch_haxby
