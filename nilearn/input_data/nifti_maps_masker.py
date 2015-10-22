@@ -47,7 +47,7 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
         See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
         Mask to apply to regions before extracting signals.
 
-    allow_overlap: boolean
+    allow_overlap: boolean, optional
         If False, an error is raised if the maps overlaps (ie at least two
         maps have a non-zero value for the same voxel). Default is True.
 

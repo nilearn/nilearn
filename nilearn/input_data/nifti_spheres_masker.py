@@ -19,6 +19,31 @@ from .base_masker import filter_and_extract, BaseMasker
 
 def _iter_signals_from_spheres(seeds, niimg, radius, allow_overlap,
                                mask_img=None):
+    """Utility function to iterate over spheres.
+
+    Parameters
+    ==========
+    seeds: List of triplet of coordinates in native space
+        Seed definitions. List of coordinates of the seeds in the same space
+        as the images (typically MNI or TAL).
+
+    imgs: 3D/4D Niimg-like object
+        See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+        Images to process. It must boil down to a 4D image with scans
+        number as last dimension.
+
+    radius: float, optional
+        Indicates, in millimeters, the radius for the sphere around the seed.
+        Default is None (signal is extracted on a single voxel).
+
+    allow_overlap: boolean
+        If False, an error is raised if the maps overlaps (ie at least two
+        maps have a non-zero value for the same voxel). Default is False.
+
+    mask_img: Niimg-like object, optional
+        See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+        Mask to apply to regions before extracting signals.
+    """
     seeds = list(seeds)
     affine = niimg.get_affine()
 
@@ -113,7 +138,7 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
         See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
         Mask to apply to regions before extracting signals.
 
-    allow_overlap: boolean
+    allow_overlap: boolean, optional
         If False, an error is raised if the maps overlaps (ie at least two
         maps have a non-zero value for the same voxel). Default is False.
 
