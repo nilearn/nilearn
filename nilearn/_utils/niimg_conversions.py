@@ -208,16 +208,16 @@ def check_niimg(niimg, ensure_ndim=None, atleast_4d=False, dtype=None,
     from ..image import new_img_like  # avoid circular imports
 
     if isinstance(niimg, _basestring):
-        if (wildcards and
-            ni.EXPAND_PATH_WILDCARDS):
+        if wildcards and ni.EXPAND_PATH_WILDCARDS:
             filenames = sorted(glob.glob(niimg))  # Ascending sorting
 
             # processing filenames matching globbing expression
-            if len(filenames) > 1:
+            if len(filenames) >= 1 and glob.has_magic(niimg):
                 niimg = filenames  # iterable case
-            elif len(filenames) == 1:
-                # Only one file matching => loading it as is
+            # niimg is an existing filename
+            elif [niimg] == filenames:
                 niimg = filenames[0]
+            # No files found by glob
             elif glob.has_magic(niimg):
                 # No files matching the glob expression, warn the user
                 message = ("No files matching the entered niimg expression: "
