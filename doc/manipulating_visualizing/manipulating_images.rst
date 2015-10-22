@@ -93,9 +93,21 @@ file name strings ::
     # dataset folder contains subject1.nii and subject2.nii
     my_data = ['dataset/subject1.nii', 'dataset/subject2.nii']
 
-Python also provides helper functions to work with file paths. In particular,
-:func:`glob.glob` is useful to automatically search and
-list many files with a "wild-card" pattern: \*.nii
+Nilearn also provides a "wildcard" pattern in order to list many files With
+one expression:
+
+::
+
+    >>> # dataset folder contains subject_01.nii to subject_03.nii
+    >>> # dataset/subject_*.nii is a regular expression matching all filenames.
+    >>> # Example with a smoothing process:
+    >>> from nilearn.image import smooth_img
+    >>> result_img = smooth_img("dataset/subject_*", fwhm='fast')
+
+
+For more complicated use cases, Python also provides helper functions to work
+with file paths. In particular, :func:`glob.glob` is useful to automatically
+search and list many files with a "wild-card" pattern: \*.nii
 
 .. warning::
    The result of :func:`glob.glob` is not sorted. In the neuroimaging domain,
