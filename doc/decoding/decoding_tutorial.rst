@@ -36,28 +36,28 @@ activity recorded in masks of the ventral stream. Significant prediction
 shows that the signal in the region contains information on the
 corresponding category.
 
-.. figure:: ../auto_examples/decoding/images/plot_haxby_stimuli_004.png
+.. figure:: ../auto_examples/decoding/images/sphx_glr_plot_haxby_stimuli_004.png
    :target: ../auto_examples/decoding/plot_haxby_stimuli.html
    :scale: 30
    :align: left
 
    Face stimuli
 
-.. figure:: ../auto_examples/decoding/images/plot_haxby_stimuli_002.png
+.. figure:: ../auto_examples/decoding/images/sphx_glr_plot_haxby_stimuli_002.png
    :target: ../auto_examples/decoding/plot_haxby_stimuli.html
    :scale: 30
    :align: left
 
    Cat stimuli
 
-.. figure:: ../auto_examples/manipulating_visualizing/images/plot_haxby_masks_001.png
+.. figure:: ../auto_examples/manipulating_visualizing/images/sphx_glr_plot_haxby_masks_001.png
    :target: ../auto_examples/manipulating_visualizing/plot_haxby_masks.html
    :scale: 30
    :align: left
 
    Masks
 
-.. figure:: ../auto_examples/decoding/images/plot_haxby_full_analysis_001.png
+.. figure:: ../auto_examples/decoding/images/sphx_glr_plot_haxby_full_analysis_001.png
    :target: ../auto_examples/decoding/plot_haxby_full_analysis.html
    :scale: 35
    :align: left
@@ -328,7 +328,7 @@ permutation testing on the labels, with
     scores.
 
 
-.. figure:: ../auto_examples/manipulating_visualizing/images/plot_haxby_masks_001.png
+.. figure:: ../auto_examples/manipulating_visualizing/images/sphx_glr_plot_haxby_masks_001.png
    :target: ../auto_examples/manipulating_visualizing/plot_haxby_masks.html
    :scale: 55
    :align: left
@@ -336,7 +336,7 @@ permutation testing on the labels, with
    Masks
 
 
-.. figure:: ../auto_examples/decoding/images/plot_haxby_full_analysis_001.png
+.. figure:: ../auto_examples/decoding/images/sphx_glr_plot_haxby_full_analysis_001.png
    :target: ../auto_examples/decoding/plot_haxby_full_analysis.html
    :scale: 70
    :align: left
@@ -357,7 +357,7 @@ We can visualize the weights of the decoder:
     :start-after: ### Unmasking #################################################################
     :end-before: ### Visualize the mask ########################################################
 
-.. figure:: ../auto_examples/images/plot_haxby_simple_001.png
+.. figure:: ../auto_examples/images/sphx_glr_plot_haxby_simple_001.png
    :target: ../auto_examples/plot_haxby_simple.html
    :scale: 65
 
@@ -404,7 +404,7 @@ To visualize the results, we need to:
 - then, as before, inverse the masking process to retrieve the weights
   and plot them.
 
-.. figure:: ../auto_examples/decoding/images/plot_haxby_anova_svm_001.png
+.. figure:: ../auto_examples/decoding/images/sphx_glr_plot_haxby_anova_svm_001.png
    :target: ../auto_examples/decoding/plot_haxby_anova_svm.html
    :align: right
    :scale: 65

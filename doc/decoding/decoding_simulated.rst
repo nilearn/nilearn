@@ -24,7 +24,7 @@ a linear model with a random design matrix **X**:
   brain regions. Here, in the simulations, they form a 3D image with 5, four
   of which in opposite corners and one in the middle. 
 
-.. figure:: ../auto_examples/decoding/images/plot_simulated_data_001.png
+.. figure:: ../auto_examples/decoding/images/sphx_glr_plot_simulated_data_001.png
     :target: auto_examples/decoding/plot_simulated_data.html
     :align: center
     :scale: 90
@@ -69,19 +69,19 @@ models, a `coef_` attribute that stores the coefficients **w** estimated
 
 .. note:: All parameters estimated from the data end with an underscore
 
-.. |estimator1| image:: ../auto_examples/decoding/images/plot_simulated_data_002.png
+.. |estimator1| image:: ../auto_examples/decoding/images/sphx_glr_plot_simulated_data_002.png
     :target: ../auto_examples/decoding/plot_simulated_data.html
     :scale: 60
 
-.. |estimator2| image:: ../auto_examples/decoding/images/plot_simulated_data_003.png
+.. |estimator2| image:: ../auto_examples/decoding/images/sphx_glr_plot_simulated_data_003.png
     :target: ../auto_examples/decoding/plot_simulated_data.html
     :scale: 60
 
-.. |estimator3| image:: ../auto_examples/decoding/images/plot_simulated_data_004.png
+.. |estimator3| image:: ../auto_examples/decoding/images/sphx_glr_plot_simulated_data_004.png
     :target: ../auto_examples/decoding/plot_simulated_data.html
     :scale: 60
 
-.. |estimator4| image:: ../auto_examples/decoding/images/plot_simulated_data_005.png
+.. |estimator4| image:: ../auto_examples/decoding/images/sphx_glr_plot_simulated_data_005.png
     :target: ../auto_examples/decoding/plot_simulated_data.html
     :scale: 60
 

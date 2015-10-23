@@ -197,7 +197,7 @@ the file name::
 
     >>> plotting.plot_glass_brain("/home/user/t_map000.nii")   # doctest: +SKIP
 
-.. image:: auto_examples/manipulating_visualizing/images/plot_demo_glass_brain_001.png
+.. image:: auto_examples/manipulating_visualizing/images/sphx_glr_plot_demo_glass_brain_001.png
     :target: auto_examples/manipulating_visualizing/plot_demo_glass_brain.html
     :align: center
     :scale: 60
@@ -307,7 +307,7 @@ Basic numerics
 
 :Plotting and figures:
 
- .. figure:: auto_examples/images/plot_python_101_001.png
+ .. figure:: auto_examples/images/sphx_glr_plot_python_101_001.png
    :target: auto_examples/plot_python_101.html
    :align: right
    :scale: 30

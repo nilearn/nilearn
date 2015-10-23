@@ -49,7 +49,7 @@ Plotting can then be done as::
     from nilearn import plotting
     plotting.plot_roi(atlas_filename)
 
-.. image:: ../auto_examples/manipulating_visualizing/images/plot_atlas_001.png
+.. image:: ../auto_examples/manipulating_visualizing/images/sphx_glr_plot_atlas_001.png
    :target: ../auto_examples/manipulating_visualizing/plot_atlas.html
    :scale: 60
 
@@ -86,10 +86,10 @@ obtain time series that capture well the functional interactions between
 regions, regressing out noise sources is indeed very important
 `[Varoquaux & Craddock 2013] <https://hal.inria.fr/hal-00812911/>`_. 
 
-.. image:: ../auto_examples/connectivity/images/plot_signal_extraction_001.png
+.. image:: ../auto_examples/connectivity/images/sphx_glr_plot_signal_extraction_001.png
    :target: ../auto_examples/connectivity/plot_signal_extraction.html
    :scale: 40
-.. image:: ../auto_examples/connectivity/images/plot_signal_extraction_002.png
+.. image:: ../auto_examples/connectivity/images/sphx_glr_plot_signal_extraction_002.png
    :target: ../auto_examples/connectivity/plot_signal_extraction.html
    :scale: 40
 
@@ -137,7 +137,7 @@ Probabilistic atlases are represented as a set of continuous maps, in a
 of these maps, which requires accessing them with
 :func:`nilearn.image.index_img` (see the :ref:`corresponding example <example_manipulating_visualizing_plot_probabilistic_atlas.py>`).
 
-.. image:: ../auto_examples/manipulating_visualizing/images/plot_overlay_001.png
+.. image:: ../auto_examples/manipulating_visualizing/images/sphx_glr_plot_overlay_001.png
    :target: ../auto_examples/manipulating_visualizing/plot_overlay.html
    :scale: 60
 
@@ -164,7 +164,7 @@ The procedure is the same as with `brain parcellations
 <parcellation_time_series>`_ but using the :class:`NiftiMapsMasker`, and
 the same considerations on using confounds regressors apply.
 
-.. image:: ../auto_examples/connectivity/images/plot_probabilistic_atlas_extraction_001.png
+.. image:: ../auto_examples/connectivity/images/sphx_glr_plot_probabilistic_atlas_extraction_001.png
    :target: ../auto_examples/connectivity/plot_probabilistic_atlas_extraction.html
    :scale: 30
 
@@ -218,7 +218,7 @@ the :func:`nilearn.plotting.find_xyz_cut_coords` function
 
 
 
-.. image:: ../auto_examples/connectivity/images/plot_probabilistic_atlas_extraction_002.png
+.. image:: ../auto_examples/connectivity/images/sphx_glr_plot_probabilistic_atlas_extraction_002.png
    :target: ../auto_examples/connectivity/plot_probabilistic_atlas_extraction.html
 
 As you can see, the correlation matrix gives a very "full" graph: every

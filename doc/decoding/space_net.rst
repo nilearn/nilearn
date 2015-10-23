@@ -66,11 +66,11 @@ technical details regarding the implementation of SpaceNet.
 Mixed gambles
 .............
 
-.. figure:: ../auto_examples/decoding/images/plot_mixed_gambles_space_net_001.png
+.. figure:: ../auto_examples/decoding/images/sphx_glr_plot_mixed_gambles_space_net_001.png
    :align: right
    :scale: 60
 
-.. figure:: ../auto_examples/decoding/images/plot_mixed_gambles_space_net_002.png
+.. figure:: ../auto_examples/decoding/images/sphx_glr_plot_mixed_gambles_space_net_002.png
    :scale: 60
 
 .. topic:: **Code**
@@ -82,11 +82,11 @@ Mixed gambles
 Haxby
 .....
 
-.. figure:: ../auto_examples/decoding/images/plot_haxby_space_net_001.png
+.. figure:: ../auto_examples/decoding/images/sphx_glr_plot_haxby_space_net_001.png
    :align: right
    :scale: 60
 
-.. figure:: ../auto_examples/decoding/images/plot_haxby_space_net_002.png
+.. figure:: ../auto_examples/decoding/images/sphx_glr_plot_haxby_space_net_002.png
    :scale: 60
 
 .. topic:: **Code**

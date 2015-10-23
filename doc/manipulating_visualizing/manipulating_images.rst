@@ -235,7 +235,7 @@ can be easily extracted from the fMRI data by the
 
    compute_epi_mask
 
-.. figure:: ../auto_examples/manipulating_visualizing/images/plot_visualization_002.png
+.. figure:: ../auto_examples/manipulating_visualizing/images/sphx_glr_plot_visualization_002.png
     :target: ../auto_examples/manipulating_visualizing/plot_visualization.html
     :align: right
     :scale: 50%
@@ -265,7 +265,7 @@ brain. It is thus convenient to apply a brain mask in order to convert the
      :start-after: ### Applying the mask #########################################################
      :end-before: ### Find voxels of interest ###################################################
 
-.. figure:: ../auto_examples/manipulating_visualizing/images/plot_visualization_003.png
+.. figure:: ../auto_examples/manipulating_visualizing/images/sphx_glr_plot_visualization_003.png
     :target: ../auto_examples/manipulating_visualizing/plot_visualization.html
     :align: center
     :scale: 50
@@ -338,7 +338,7 @@ it can also use file names as input parameters.
     :start-after: # Smooth the data
     :end-before: # Run a T-test for face and houses
 
-.. figure:: ../auto_examples/manipulating_visualizing/images/plot_roi_extraction_001.png
+.. figure:: ../auto_examples/manipulating_visualizing/images/sphx_glr_plot_roi_extraction_001.png
     :target: ../auto_examples/manipulating_visualizing/plot_roi_extraction.html
     :align: center
     :scale: 50%
@@ -369,7 +369,7 @@ more discriminative is the voxel in distinguishing the two conditions.
     :start-after: # Run a T-test for face and houses
     :end-before: ### Build a mask ##############################################################
 
-.. figure:: ../auto_examples/manipulating_visualizing/images/plot_roi_extraction_002.png
+.. figure:: ../auto_examples/manipulating_visualizing/images/sphx_glr_plot_roi_extraction_002.png
     :target: ../auto_examples/manipulating_visualizing/plot_roi_extraction.html
     :align: center
     :scale: 50%
@@ -390,7 +390,7 @@ is easy thanks to numpy indexing à la Matlab.
     :start-after: # Thresholding
     :end-before: # Binarization and intersection with VT mask
 
-.. figure:: ../auto_examples/manipulating_visualizing/images/plot_roi_extraction_003.png
+.. figure:: ../auto_examples/manipulating_visualizing/images/sphx_glr_plot_roi_extraction_003.png
     :target: ../auto_examples/manipulating_visualizing/plot_roi_extraction.html
     :align: center
     :scale: 50%
@@ -412,7 +412,7 @@ called an "AND conjunction."
     :start-after: # Binarization and intersection with VT mask
     :end-before: # Dilation
 
-.. figure:: ../auto_examples/manipulating_visualizing/images/plot_roi_extraction_004.png
+.. figure:: ../auto_examples/manipulating_visualizing/images/sphx_glr_plot_roi_extraction_004.png
     :target: ../auto_examples/manipulating_visualizing/plot_roi_extraction.html
     :align: center
     :scale: 50%
@@ -432,7 +432,7 @@ representations.
     :start-after: # Dilation
     :end-before: # Identification of connected components
 
-.. figure:: ../auto_examples/manipulating_visualizing/images/plot_roi_extraction_005.png
+.. figure:: ../auto_examples/manipulating_visualizing/images/sphx_glr_plot_roi_extraction_005.png
     :target: ../auto_examples/manipulating_visualizing/plot_roi_extraction.html
     :align: center
     :scale: 50%
@@ -449,7 +449,7 @@ one of them.
     :start-after: # Identification of connected components
     :end-before: # use the new ROIs to extract data maps in both ROIs
 
-.. figure:: ../auto_examples/manipulating_visualizing/images/plot_roi_extraction_006.png
+.. figure:: ../auto_examples/manipulating_visualizing/images/sphx_glr_plot_roi_extraction_006.png
     :target: ../auto_examples/manipulating_visualizing/plot_roi_extraction.html
     :align: center
     :scale: 50%

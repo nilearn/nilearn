@@ -68,18 +68,18 @@ of the estimator::
     >>> estimator.precision_  # doctest: +SKIP
 
 
-.. |covariance| image:: ../auto_examples/connectivity/images/plot_inverse_covariance_connectome_001.png
+.. |covariance| image:: ../auto_examples/connectivity/images/sphx_glr_plot_inverse_covariance_connectome_001.png
     :target: ../auto_examples/connectivity/plot_inverse_covariance_connectome.html
     :scale: 40
-.. |precision| image:: ../auto_examples/connectivity/images/plot_inverse_covariance_connectome_003.png
+.. |precision| image:: ../auto_examples/connectivity/images/sphx_glr_plot_inverse_covariance_connectome_003.png
     :target: ../auto_examples/connectivity/plot_inverse_covariance_connectome.html
     :scale: 40
 
-.. |covariance_graph| image:: ../auto_examples/connectivity/images/plot_inverse_covariance_connectome_002.png
+.. |covariance_graph| image:: ../auto_examples/connectivity/images/sphx_glr_plot_inverse_covariance_connectome_002.png
     :target: ../auto_examples/connectivity/plot_inverse_covariance_connectome.html
     :scale: 55
 
-.. |precision_graph| image:: ../auto_examples/connectivity/images/plot_inverse_covariance_connectome_004.png
+.. |precision_graph| image:: ../auto_examples/connectivity/images/sphx_glr_plot_inverse_covariance_connectome_004.png
     :target: ../auto_examples/connectivity/plot_inverse_covariance_connectome.html
     :scale: 55
 
@@ -171,11 +171,11 @@ group analysis only on the non zero coefficients.
 
 
 ..
-    .. |covariance| image:: ../auto_examples/connectivity/images/plot_adhd_covariance_002.png
+    .. |covariance| image:: ../auto_examples/connectivity/images/sphx_glr_plot_adhd_covariance_002.png
     :target: ../auto_examples/connectivity/plot_adhd_covariance.html
     :scale: 55
 
-    .. |precision| image:: ../auto_examples/connectivity/images/plot_adhd_covariance_001.png
+    .. |precision| image:: ../auto_examples/connectivity/images/sphx_glr_plot_adhd_covariance_001.png
     :target: ../auto_examples/connectivity/plot_adhd_covariance.html
     :scale: 55
 
@@ -208,7 +208,7 @@ Finally, we use the
 
 The results are the following:
 
-.. image:: ../auto_examples/connectivity/images/plot_simulated_connectome_001.png
+.. image:: ../auto_examples/connectivity/images/sphx_glr_plot_simulated_connectome_001.png
     :target: ../auto_examples/connectivity/plot_simulated_connectome.html
     :scale: 60
 

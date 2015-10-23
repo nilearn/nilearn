@@ -81,17 +81,17 @@ whereas the former is linear with the number of classes.
 :func:`sklearn.metrics.confusion_matrix` is a useful tool to 
 understand the classifier's errors in a multiclass problem.
 
-.. figure:: ../auto_examples/decoding/images/plot_haxby_multiclass_001.png
+.. figure:: ../auto_examples/decoding/images/sphx_glr_plot_haxby_multiclass_001.png
    :target: ../auto_examples/decoding/plot_haxby_multiclass.html
    :align: left
    :scale: 60
 
-.. figure:: ../auto_examples/decoding/images/plot_haxby_multiclass_002.png
+.. figure:: ../auto_examples/decoding/images/sphx_glr_plot_haxby_multiclass_002.png
    :target: ../auto_examples/decoding/plot_haxby_multiclass.html
    :align: left
    :scale: 40
 
-.. figure:: ../auto_examples/decoding/images/plot_haxby_multiclass_003.png
+.. figure:: ../auto_examples/decoding/images/sphx_glr_plot_haxby_multiclass_003.png
    :target: ../auto_examples/decoding/plot_haxby_multiclass.html
    :align: left
    :scale: 40
@@ -109,7 +109,7 @@ will have bumps and peaks due to this noise. These will not generalize to
 new data and chances are that the corresponding choice of parameter will
 not perform as well on new data.
 
-.. figure:: ../auto_examples/decoding/images/plot_haxby_grid_search_001.png
+.. figure:: ../auto_examples/decoding/images/sphx_glr_plot_haxby_grid_search_001.png
    :target: ../auto_examples/decoding/plot_haxby_grid_search.html
    :align: center
    :scale: 60
@@ -163,7 +163,7 @@ Here we apply a few linear models to fMRI data:
      in every situation.
 
 
-.. figure:: ../auto_examples/decoding/images/plot_haxby_different_estimators_001.png
+.. figure:: ../auto_examples/decoding/images/sphx_glr_plot_haxby_different_estimators_001.png
    :target: ../auto_examples/decoding/plot_haxby_different_estimators.html
    :align: center
    :scale: 80
@@ -181,47 +181,47 @@ the other, although the prediction scores are fairly similar. In other
 terms, a well-performing estimator in terms of prediction error gives us
 little guarantee on the brain maps.
 
-.. figure:: ../auto_examples/decoding/images/plot_haxby_different_estimators_007.png
+.. figure:: ../auto_examples/decoding/images/sphx_glr_plot_haxby_different_estimators_007.png
    :target: ../auto_examples/decoding/plot_haxby_different_estimators.html
    :align: left
    :scale: 70
 
-.. figure:: ../auto_examples/decoding/images/plot_haxby_different_estimators_008.png
+.. figure:: ../auto_examples/decoding/images/sphx_glr_plot_haxby_different_estimators_008.png
    :target: ../auto_examples/decoding/plot_haxby_different_estimators.html
    :align: left
    :scale: 70
 
-.. figure:: ../auto_examples/decoding/images/plot_haxby_different_estimators_005.png
+.. figure:: ../auto_examples/decoding/images/sphx_glr_plot_haxby_different_estimators_005.png
    :target: ../auto_examples/decoding/plot_haxby_different_estimators.html
    :align: left
    :scale: 70
 
-.. figure:: ../auto_examples/decoding/images/plot_haxby_different_estimators_006.png
+.. figure:: ../auto_examples/decoding/images/sphx_glr_plot_haxby_different_estimators_006.png
    :target: ../auto_examples/decoding/plot_haxby_different_estimators.html
    :align: left
    :scale: 70
 
-.. figure:: ../auto_examples/decoding/images/plot_haxby_different_estimators_004.png
+.. figure:: ../auto_examples/decoding/images/sphx_glr_plot_haxby_different_estimators_004.png
    :target: ../auto_examples/decoding/plot_haxby_different_estimators.html
    :align: left
    :scale: 70
 
-.. figure:: ../auto_examples/decoding/images/plot_haxby_different_estimators_002.png
+.. figure:: ../auto_examples/decoding/images/sphx_glr_plot_haxby_different_estimators_002.png
    :target: ../auto_examples/decoding/plot_haxby_different_estimators.html
    :align: left
    :scale: 70
 
-.. figure:: ../auto_examples/decoding/images/plot_haxby_different_estimators_003.png
+.. figure:: ../auto_examples/decoding/images/sphx_glr_plot_haxby_different_estimators_003.png
    :target: ../auto_examples/decoding/plot_haxby_different_estimators.html
    :align: left
    :scale: 70
 
-.. figure:: ../auto_examples/decoding/images/plot_haxby_different_estimators_009.png
+.. figure:: ../auto_examples/decoding/images/sphx_glr_plot_haxby_different_estimators_009.png
    :target: ../auto_examples/decoding/plot_haxby_different_estimators.html
    :align: left
    :scale: 70
 
-.. figure:: ../auto_examples/decoding/images/plot_haxby_different_estimators_010.png
+.. figure:: ../auto_examples/decoding/images/sphx_glr_plot_haxby_different_estimators_010.png
    :target: ../auto_examples/decoding/plot_haxby_different_estimators.html
    :align: left
    :scale: 70

@@ -161,7 +161,7 @@ The first step is to generate a mask with default parameters and visualize it.
     :end-before: # Generate mask with strong opening
 
 
-.. figure:: ../auto_examples/manipulating_visualizing/images/plot_mask_computation_002.png
+.. figure:: ../auto_examples/manipulating_visualizing/images/sphx_glr_plot_mask_computation_002.png
     :target: ../auto_examples/plot_mask_computation.html
     :scale: 50%
 
@@ -177,7 +177,7 @@ skull parts in the image.
     :end-before: # Generate mask with a high lower cutoff
 
 
-.. figure:: ../auto_examples/manipulating_visualizing/images/plot_mask_computation_003.png
+.. figure:: ../auto_examples/manipulating_visualizing/images/sphx_glr_plot_mask_computation_003.png
     :target: ../auto_examples/plot_mask_computation.html
     :scale: 50%
 
@@ -196,7 +196,7 @@ voxels that appear as bright in the EPI image.
     :end-before: ################################################################################
 
 
-.. figure:: ../auto_examples/manipulating_visualizing/images/plot_mask_computation_004.png
+.. figure:: ../auto_examples/manipulating_visualizing/images/sphx_glr_plot_mask_computation_004.png
     :target: ../auto_examples/plot_mask_computation.html
     :scale: 50%
 
@@ -242,13 +242,13 @@ In this case, nilearn
 computes automatically the translation part of the transformation
 matrix (i.e., affine).
 
-.. image:: ../auto_examples/manipulating_visualizing/images/plot_affine_transformation_002.png
+.. image:: ../auto_examples/manipulating_visualizing/images/sphx_glr_plot_affine_transformation_002.png
     :target: ../auto_examples/plot_affine_transformation.html
     :scale: 36%
-.. image:: ../auto_examples/manipulating_visualizing/images/plot_affine_transformation_004.png
+.. image:: ../auto_examples/manipulating_visualizing/images/sphx_glr_plot_affine_transformation_004.png
     :target: ../auto_examples/plot_affine_transformation.html
     :scale: 36%
-.. image:: ../auto_examples/manipulating_visualizing/images/plot_affine_transformation_003.png
+.. image:: ../auto_examples/manipulating_visualizing/images/sphx_glr_plot_affine_transformation_003.png
     :target: ../auto_examples/plot_affine_transformation.html
     :scale: 36%
 
