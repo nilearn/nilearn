@@ -76,7 +76,7 @@ Mixed gambles
 .. topic:: **Code**
 
     The complete script can be found
-    :ref:`here <example_decoding_plot_mixed_gambles_space_net.py>`.
+    :ref:`here <sphx_glr_auto_examples_decoding_plot_mixed_gambles_space_net.py>`.
 
 
 Haxby
@@ -92,11 +92,11 @@ Haxby
 .. topic:: **Code**
 
     The complete script can be found
-    :ref:`here <example_decoding_plot_haxby_space_net.py>`.
+    :ref:`here <sphx_glr_auto_examples_decoding_plot_haxby_space_net.py>`.
 
 .. seealso::
 
-     * :ref:`Age prediction on OASIS dataset with SpaceNet <example_decoding_plot_oasis_vbm_space_net.py>`.
+     * :ref:`Age prediction on OASIS dataset with SpaceNet <sphx_glr_auto_examples_decoding_plot_oasis_vbm_space_net.py>`.
 
      * The `scikit-learn documentation <http://scikit-learn.org>`_
        has very detailed explanations on a large variety of estimators and

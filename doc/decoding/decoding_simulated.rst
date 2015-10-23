@@ -36,7 +36,7 @@ a linear model with a random design matrix **X**:
 * **e** is random normal noise.
 
 We provide a black-box function to create the data in the 
-:ref:`example script <example_decoding_plot_simulated_data.py>`.
+:ref:`example script <sphx_glr_auto_examples_decoding_plot_simulated_data.py>`.
 
 
 Running various estimators
@@ -65,7 +65,7 @@ a for loop: they all have a `fit` method for fitting the data, a `score`
 method to retrieve the prediction score, and because they are all linear
 models, a `coef_` attribute that stores the coefficients **w** estimated
 (see the :ref:`code of the simulation
-<example_decoding_plot_simulated_data.py>`).
+<sphx_glr_auto_examples_decoding_plot_simulated_data.py>`).
 
 .. note:: All parameters estimated from the data end with an underscore
 
@@ -103,7 +103,7 @@ models, a `coef_` attribute that stores the coefficients **w** estimated
 .. topic:: **Source code to run the simulation**
 
    The full file to run the simulation can be found in
-   :ref:`example_decoding_plot_simulated_data.py`
+   :ref:`sphx_glr_auto_examples_decoding_plot_simulated_data.py`
 
 .. seealso::
 

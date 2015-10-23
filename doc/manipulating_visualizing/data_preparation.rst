@@ -319,7 +319,7 @@ before conversion to voxel signals.
 .. topic:: **Exercise**
 
    You can, more as a training than as an exercise, try to play with
-   the parameters in :ref:`example_plot_haxby_simple.py`. Try to enable detrending
+   the parameters in :ref:`sphx_glr_auto_examples_plot_haxby_simple.py`. Try to enable detrending
    and run the script: does it have a big impact on the result?
 
 
@@ -336,7 +336,7 @@ images after unmasking (masked-reduced data transformed back into
 the original whole-brain space). This step is present in almost all
 the :ref:`examples <examples-index>` provided in nilearn. Below you will find
 an excerpt of :ref:`the example performing Anova-SVM on the Haxby data
-<example_decoding_plot_haxby_anova_svm.py>`):
+<sphx_glr_auto_examples_decoding_plot_haxby_anova_svm.py>`):
 
 .. literalinclude:: ../../examples/decoding/plot_haxby_anova_svm.py
     :start-after: ### Look at the SVC's discriminating weights

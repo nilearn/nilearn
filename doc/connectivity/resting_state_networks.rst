@@ -77,7 +77,7 @@ each component separately.
 .. seealso::
 
    The full code can be found as an example:
-   :ref:`example_connectivity_plot_canica_resting_state.py`
+   :ref:`sphx_glr_auto_examples_connectivity_plot_canica_resting_state.py`
 
 .. note::
 

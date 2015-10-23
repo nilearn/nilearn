@@ -99,7 +99,7 @@ of the estimator::
 .. topic:: **Full example**
 
     See the following example for a full file running the analysis:
-    :ref:`example_connectivity_plot_inverse_covariance_connectome.py`
+    :ref:`sphx_glr_auto_examples_connectivity_plot_inverse_covariance_connectome.py`
 
 .. topic:: **Exercise: computing sparse inverse covariance**
    :class: green
@@ -157,7 +157,7 @@ group analysis only on the non zero coefficients.
 .. topic:: **Full example**
 
     See the following example for a full file running the analysis:
-    :ref:`example_connectivity_plot_multi_subject_connectome.py`
+    :ref:`sphx_glr_auto_examples_connectivity_plot_multi_subject_connectome.py`
 
 
 .. topic:: **Exercise: computing the correlation matrix of rest fmri**
@@ -223,7 +223,7 @@ information.
 .. topic::  **Full Example**
 
    The complete source code for this example can be found here:
-   :ref:`example_connectivity_plot_simulated_connectome.py`
+   :ref:`sphx_glr_auto_examples_connectivity_plot_simulated_connectome.py`
 
 
 .. [#] A lot of technical details on the algorithm used for group-sparse

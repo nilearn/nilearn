@@ -125,7 +125,7 @@ CPUs.
    * `The scikit-learn documentation on parameter selection
      <http://scikit-learn.org/stable/modules/grid_search.html>`_
 
-   * The example :ref:`example_decoding_plot_haxby_grid_search.py`
+   * The example :ref:`sphx_glr_auto_examples_decoding_plot_haxby_grid_search.py`
 
 Different linear models
 =======================
