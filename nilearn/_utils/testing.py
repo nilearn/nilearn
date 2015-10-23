@@ -121,25 +121,27 @@ def write_tmp_imgs(*imgs, **kwargs):
 
     if create_files:
         filenames = []
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore", RuntimeWarning)
-            for img in imgs:
-                _, filename = tempfile.mkstemp(prefix=prefix,
-                                               suffix=suffix,
-                                               dir=None)
-                filenames.append(filename)
-                img.to_filename(filename)
+        try:
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore", RuntimeWarning)
+                for img in imgs:
+                    _, filename = tempfile.mkstemp(prefix=prefix,
+                                                   suffix=suffix,
+                                                   dir=None)
+                    filenames.append(filename)
+                    img.to_filename(filename)
 
-        if use_wildcards:
-            yield prefix + "*" + suffix
-        else:
-            if len(imgs) == 1:
-                yield filenames[0]
-            else:
-                yield filenames
-
-        for filename in filenames:
-            os.remove(filename)
+                if use_wildcards:
+                    yield prefix + "*" + suffix
+                else:
+                    if len(imgs) == 1:
+                        yield filenames[0]
+                    else:
+                        yield filenames
+        finally:
+            # Ensure all created files are removed
+            for filename in filenames:
+                os.remove(filename)
     else:  # No-op
         if len(imgs) == 1:
             yield imgs[0]
