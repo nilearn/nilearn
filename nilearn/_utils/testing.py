@@ -97,7 +97,7 @@ def write_tmp_imgs(*imgs, **kwargs):
 
     use_wildcards: bool
         if True, and create_files is True, imgs are written on disk and a
-        matching regexp is returned.
+        matching glob is returned.
 
     Returns
     =======

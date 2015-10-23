@@ -99,7 +99,7 @@ expression:
 ::
 
     >>> # dataset folder contains subject_01.nii to subject_03.nii
-    >>> # dataset/subject_*.nii is a regular expression matching all filenames.
+    >>> # dataset/subject_*.nii is a glob expression matching all filenames.
     >>> # Example with a smoothing process:
     >>> from nilearn.image import smooth_img
     >>> result_img = smooth_img("dataset/subject_*", fwhm='fast') # doctest: +SKIP
