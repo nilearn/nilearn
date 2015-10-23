@@ -18,6 +18,7 @@ div.sphx-glr-thumbContainer {
     position: absolute;
     padding: 150px 10px 0px 10px;
     top: 0px;
+    right: 0px;
     bottom: 0px;
     left: 0px; }
   div.sphx-glr-thumbContainer p {
@@ -53,7 +54,7 @@ div.sphx-glr-thumbContainer {
     bottom: 58%; }
 
 .sphx-glr-script-out pre {
-  overflow-y: scroll;
+  overflow-y: auto;
   max-height: 30em; }
 
 ul.sphx-glr-horizontal {

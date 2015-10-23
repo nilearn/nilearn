@@ -10,7 +10,6 @@ import ast
 import os
 
 
-
 # Try Python 2 first, otherwise load from Python 3
 try:
     import cPickle as pickle
@@ -80,7 +79,7 @@ def get_short_module_name(module_name, obj_name):
 
 
 def identify_names(code):
-    """Builds a codeobj summary by identifying and resovles used names
+    """Builds a codeobj summary by identifying and resolving used names
 
     >>> code = '''
     ... from a.b import c
@@ -124,29 +123,37 @@ def scan_used_functions(example_file, gallery_conf):
     return backrefs
 
 
-def _thumbnail_div(full_dir, fname, snippet):
-    """Generates RST to place a thumbnail in a gallery"""
-    thumb = os.path.join(full_dir, 'images', 'thumb',
-                         'sphx_glr_%s_thumb.png' % fname[:-3])
-    ref_name = os.path.join(full_dir, fname).replace(os.path.sep, '_')
-    if ref_name.startswith('._'):
-        ref_name = ref_name[2:]
-
-    out = """
+THUMBNAIL_TEMPLATE = """
 .. raw:: html
 
-    <div class="sphx-glr-thumbContainer" tooltip="{}">
+    <div class="sphx-glr-thumbContainer" tooltip="{snippet}">
 
-.. figure:: /{}
+.. only:: html
 
-    :ref:`example_{}`
+    .. figure:: /{thumbnail}
+
+        :ref:`sphx_glr_{ref_name}`
 
 .. raw:: html
 
     </div>
-""".format(snippet, thumb, ref_name)
+"""
 
-    return out
+BACKREF_THUMBNAIL_TEMPLATE = THUMBNAIL_TEMPLATE + """
+.. only:: not html
+
+    * :ref:`sphx_glr_{ref_name}`
+"""
+
+
+def _thumbnail_div(full_dir, fname, snippet, is_backref=False):
+    """Generates RST to place a thumbnail in a gallery"""
+    thumb = os.path.join(full_dir, 'images', 'thumb',
+                         'sphx_glr_%s_thumb.png' % fname[:-3])
+    ref_name = os.path.join(full_dir, fname).replace(os.path.sep, '_')
+
+    template = BACKREF_THUMBNAIL_TEMPLATE if is_backref else THUMBNAIL_TEMPLATE
+    return template.format(snippet=snippet, thumbnail=thumb, ref_name=ref_name)
 
 
 def write_backreferences(seen_backrefs, gallery_conf,
@@ -164,5 +171,6 @@ def write_backreferences(seen_backrefs, gallery_conf,
                 heading = 'Examples using ``%s``' % backref
                 ex_file.write(heading + '\n')
                 ex_file.write('-' * len(heading) + '\n')
-            ex_file.write(_thumbnail_div(target_dir, fname, snippet))
+            ex_file.write(_thumbnail_div(target_dir, fname, snippet,
+                                         is_backref=True))
             seen_backrefs.add(backref)

@@ -70,6 +70,64 @@ def get_data(url, gallery_dir):
     return data
 
 
+def _select_block(str_in, start_tag, end_tag):
+    """Select first block delimited by start_tag and end_tag"""
+    start_pos = str_in.find(start_tag)
+    if start_pos < 0:
+        raise ValueError('start_tag not found')
+    depth = 0
+    for pos in range(start_pos, len(str_in)):
+        if str_in[pos] == start_tag:
+            depth += 1
+        elif str_in[pos] == end_tag:
+            depth -= 1
+
+        if depth == 0:
+            break
+    sel = str_in[start_pos + 1:pos]
+    return sel
+
+
+def _parse_dict_recursive(dict_str):
+    """Parse a dictionary from the search index"""
+    dict_out = dict()
+    pos_last = 0
+    pos = dict_str.find(':')
+    while pos >= 0:
+        key = dict_str[pos_last:pos]
+        if dict_str[pos + 1] == '[':
+            # value is a list
+            pos_tmp = dict_str.find(']', pos + 1)
+            if pos_tmp < 0:
+                raise RuntimeError('error when parsing dict')
+            value = dict_str[pos + 2: pos_tmp].split(',')
+            # try to convert elements to int
+            for i in range(len(value)):
+                try:
+                    value[i] = int(value[i])
+                except ValueError:
+                    pass
+        elif dict_str[pos + 1] == '{':
+            # value is another dictionary
+            subdict_str = _select_block(dict_str[pos:], '{', '}')
+            value = _parse_dict_recursive(subdict_str)
+            pos_tmp = pos + len(subdict_str)
+        else:
+            raise ValueError('error when parsing dict: unknown elem')
+
+        key = key.strip('"')
+        if len(key) > 0:
+            dict_out[key] = value
+
+        pos_last = dict_str.find(',', pos_tmp)
+        if pos_last < 0:
+            break
+        pos_last += 1
+        pos = dict_str.find(':', pos_last)
+
+    return dict_out
+
+
 def parse_sphinx_searchindex(searchindex):
     """Parse a Sphinx search index
 
@@ -85,62 +143,6 @@ def parse_sphinx_searchindex(searchindex):
     objects : dict
         The objects parsed from the search index.
     """
-    def _select_block(str_in, start_tag, end_tag):
-        """Select first block delimited by start_tag and end_tag"""
-        start_pos = str_in.find(start_tag)
-        if start_pos < 0:
-            raise ValueError('start_tag not found')
-        depth = 0
-        for pos in range(start_pos, len(str_in)):
-            if str_in[pos] == start_tag:
-                depth += 1
-            elif str_in[pos] == end_tag:
-                depth -= 1
-
-            if depth == 0:
-                break
-        sel = str_in[start_pos + 1:pos]
-        return sel
-
-    def _parse_dict_recursive(dict_str):
-        """Parse a dictionary from the search index"""
-        dict_out = dict()
-        pos_last = 0
-        pos = dict_str.find(':')
-        while pos >= 0:
-            key = dict_str[pos_last:pos]
-            if dict_str[pos + 1] == '[':
-                # value is a list
-                pos_tmp = dict_str.find(']', pos + 1)
-                if pos_tmp < 0:
-                    raise RuntimeError('error when parsing dict')
-                value = dict_str[pos + 2: pos_tmp].split(',')
-                # try to convert elements to int
-                for i in range(len(value)):
-                    try:
-                        value[i] = int(value[i])
-                    except ValueError:
-                        pass
-            elif dict_str[pos + 1] == '{':
-                # value is another dictionary
-                subdict_str = _select_block(dict_str[pos:], '{', '}')
-                value = _parse_dict_recursive(subdict_str)
-                pos_tmp = pos + len(subdict_str)
-            else:
-                raise ValueError('error when parsing dict: unknown elem')
-
-            key = key.strip('"')
-            if len(key) > 0:
-                dict_out[key] = value
-
-            pos_last = dict_str.find(',', pos_tmp)
-            if pos_last < 0:
-                break
-            pos_last += 1
-            pos = dict_str.find(':', pos_last)
-
-        return dict_out
-
     # Make sure searchindex uses UTF-8 encoding
     if hasattr(searchindex, 'decode'):
         searchindex = searchindex.decode('UTF-8')
@@ -313,28 +315,17 @@ class SphinxDocLinkResolver(object):
         return link
 
 
-def embed_code_links(app, exception):
-    """Embed hyperlinks to documentation into example code"""
-    if exception is not None:
-        return
-    print('Embedding documentation hyperlinks in examples..')
-
-    if app.builder.name == 'latex':
-        # Don't embed hyperlinks when a latex builder is used.
-        return
-
-    gallery_conf = app.config.sphinxgallery_conf
+def _embed_code_links(app, gallery_conf, gallery_dir):
     # Add resolvers for the packages for which we want to show links
     doc_resolvers = {}
 
-    gallery_dir = os.path.join(app.builder.srcdir, gallery_conf['gallery_dir'])
     for this_module, url in gallery_conf['reference_url'].items():
         try:
             if url is None:
                 doc_resolvers[this_module] = SphinxDocLinkResolver(
-                                                            app.builder.outdir,
-                                                            gallery_dir,
-                                                            relative=True)
+                    app.builder.outdir,
+                    gallery_dir,
+                    relative=True)
             else:
                 doc_resolvers[this_module] = SphinxDocLinkResolver(url,
                                                                    gallery_dir)
@@ -345,13 +336,13 @@ def embed_code_links(app, exception):
         except URLError as e:
             print("\n...\n"
                   "Warning: Embedding the documentation hyperlinks requires "
-                  "internet access.\nPlease check your network connection.\n"
+                  "Internet access.\nPlease check your network connection.\n"
                   "Unable to continue embedding `{0}` links due to a URL "
                   "Error:\n".format(this_module))
             print(e.args)
 
     html_gallery_dir = os.path.abspath(os.path.join(app.builder.outdir,
-                                                    gallery_conf['gallery_dir']))
+                                                    gallery_dir))
 
     # patterns for replacement
     link_pattern = '<a href="%s">%s</a>'
@@ -412,3 +403,34 @@ def embed_code_links(app, exception):
                             line = expr.sub(substitute_link, line)
                             fid.write(line.encode('utf-8'))
     print('[done]')
+
+
+def embed_code_links(app, exception):
+    """Embed hyperlinks to documentation into example code"""
+    if exception is not None:
+        return
+
+    # No need to waste time embedding hyperlinks when not running the examples
+    # XXX: also at the time of writing this fixes make html-noplot
+    # for some reason I don't fully understand
+    if not app.builder.config.plot_gallery:
+        return
+
+    # XXX: Whitelist of builders for which it makes sense to embed
+    # hyperlinks inside the example html. Note that the link embedding
+    # require searchindex.js to exist for the links to the local doc
+    # and there does not seem to be a good way of knowing which
+    # builders creates a searchindex.js.
+    if app.builder.name not in ['html', 'readthedocs']:
+        return
+
+    print('Embedding documentation hyperlinks in examples..')
+
+    gallery_conf = app.config.sphinxgallery_conf
+
+    gallery_dirs = gallery_conf['gallery_dirs']
+    if not isinstance(gallery_dirs, list):
+        gallery_dirs = [gallery_dirs]
+
+    for gallery_dir in gallery_dirs:
+        _embed_code_links(app, gallery_conf, gallery_dir)

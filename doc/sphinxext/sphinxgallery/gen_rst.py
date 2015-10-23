@@ -10,15 +10,16 @@ Files that generate images should start with 'plot'
 """
 from __future__ import division, print_function, absolute_import
 from time import time
+import ast
 import os
 import re
 import shutil
 import traceback
-import glob
 import sys
 import subprocess
 import warnings
-from . import path_static as glr_path_static
+from textwrap import dedent
+from . import glr_path_static
 from .backreferences import write_backreferences, _thumbnail_div
 
 
@@ -28,40 +29,50 @@ try:
 except ImportError:
     from io import StringIO
 
-
-try:
-    # Python 2 built-in
-    execfile
-except NameError:
-    def execfile(filename, global_vars=None, local_vars=None):
-        with open(filename) as f:
-            code = compile(f.read(), filename, 'exec')
-            exec(code, global_vars, local_vars)
-
 try:
     basestring
 except NameError:
     basestring = str
-
-import token
-import tokenize
-import numpy as np
 
 try:
     # make sure that the Agg backend is set before importing any
     # matplotlib
     import matplotlib
     matplotlib.use('Agg')
+    import matplotlib.pyplot as plt
 except ImportError:
     # this script can be imported by nosetest to find tests to run: we should
     # not impose the matplotlib requirement in that case.
     pass
 
 
+try:
+    # textwrap indent only exists in python 3
+    from textwrap import indent
+except ImportError:
+    def indent(text, prefix, predicate=None):
+        """Adds 'prefix' to the beginning of selected lines in 'text'.
+
+        If 'predicate' is provided, 'prefix' will only be added to the lines
+        where 'predicate(line)' is True. If 'predicate' is not provided,
+        it will default to adding 'prefix' to all non-empty lines that do not
+        consist solely of whitespace characters.
+        """
+        if predicate is None:
+            def predicate(line):
+                return line.strip()
+
+        def prefixed_lines():
+            for line in text.splitlines(True):
+                yield (prefix + line if predicate(line) else line)
+        return ''.join(prefixed_lines())
+
 ###############################################################################
+
 
 class Tee(object):
     """A tee object to redirect streams to multiple outputs"""
+
     def __init__(self, file1, file2):
         self.file1 = file1
         self.file2 = file2
@@ -76,36 +87,9 @@ class Tee(object):
 
 
 ###############################################################################
-rst_template = """
-
-.. _example_%(short_fname)s:
-
-%(docstring)s
-
-**Python source code:** :download:`%(fname)s <%(fname)s>`
-
-.. literalinclude:: %(fname)s
-    :lines: %(end_row)s-
-    """
-
-plot_rst_template = """
-
-.. _example_%(short_fname)s:
-
-%(docstring)s
-
-%(image_list)s
-
-%(stdout)s
-
-**Python source code:** :download:`%(fname)s <%(fname)s>`
-
-.. literalinclude:: %(fname)s
-    :lines: %(end_row)s-
-
-**Total running time of the example:** %(time_elapsed) .2f seconds
-(%(time_m) .0f minutes %(time_s) .2f seconds)
-    """
+CODE_DOWNLOAD = """**Total running time of the script:**
+({0:.0f} minutes {1:.3f} seconds)\n\n
+\n**Download Python source code:** :download:`{2} <{2}>`\n"""
 
 # The following strings are used when we have several pictures: we use
 # an html div tag that our CSS uses to turn the lists into horizontal
@@ -118,133 +102,187 @@ HLIST_HEADER = """
 HLIST_IMAGE_TEMPLATE = """
     *
 
-      .. image:: images/%s
+      .. image:: /%s
             :scale: 47
 """
 
 SINGLE_IMAGE = """
-.. image:: images/%s
+.. image:: /%s
     :align: center
 """
 
+CODE_OUTPUT = """**Script output**:\n
+.. rst-class:: sphx-glr-script-out
 
-def extract_docstring(filename, ignore_heading=False):
-    """ Extract a module-level docstring, if any
+  ::
+
+{0}\n"""
+
+
+def get_docstring_and_rest(filename):
+    """Separate `filename` content between docstring and the rest
+
+    Strongly inspired from ast.get_docstring.
+
+    Returns
+    -------
+    docstring: str
+        docstring of `filename`
+    rest: str
+        `filename` content without the docstring
     """
-    lines = open(filename).readlines()
-    start_row = 0
-    if lines[0].startswith('#!'):
-        lines.pop(0)
-        start_row = 1
-    docstring = ''
-    first_par = ''
-    line_iterator = iter(lines)
-    tokens = tokenize.generate_tokens(lambda: next(line_iterator))
-    for tok_type, tok_content, _, (erow, _), _ in tokens:
-        tok_type = token.tok_name[tok_type]
-        if tok_type in ('NEWLINE', 'COMMENT', 'NL', 'INDENT', 'DEDENT'):
-            continue
-        elif tok_type == 'STRING':
-            docstring = eval(tok_content)
-            # If the docstring is formatted with several paragraphs, extract
-            # the first one:
-            paragraphs = '\n'.join(
-                line.rstrip() for line
-                in docstring.split('\n')).split('\n\n')
-            if paragraphs:
-                if ignore_heading:
-                    if len(paragraphs) > 1:
-                        first_par = re.sub('\n', ' ', paragraphs[1])
-                        first_par = ((first_par[:95] + '...')
-                                     if len(first_par) > 95 else first_par)
-                    else:
-                        raise ValueError("Docstring not found by gallery.\n"
-                                         "Please check the layout of your"
-                                         " example file:\n {}\n and make sure"
-                                         " it's correct".format(filename))
-                else:
-                    first_par = paragraphs[0]
+    with open(filename) as f:
+        content = f.read()
 
-        break
-    return docstring, first_par, erow + 1 + start_row
+    node = ast.parse(content)
+    if not isinstance(node, ast.Module):
+        raise TypeError("This function only supports modules. "
+                        "You provided {0}".format(node.__class__.__name__))
+    if node.body and isinstance(node.body[0], ast.Expr) and \
+       isinstance(node.body[0].value, ast.Str):
+        docstring_node = node.body[0]
+        docstring = docstring_node.value.s
+        # This get the content of the file after the docstring last line
+        # Note: 'maxsplit' argument is not a keyword argument in python2
+        rest = content.split('\n', docstring_node.lineno)[-1]
+        return docstring, rest
+    else:
+        raise ValueError(('Could not find docstring in file "{0}". '
+                          'A docstring is required by sphinx-gallery')
+                         .format(filename))
 
 
-def extract_line_count(filename, target_dir):
-    """Extract the line count of a file"""
-    example_file = os.path.join(target_dir, filename)
-    lines = open(example_file).readlines()
-    start_row = 0
-    if lines and lines[0].startswith('#!'):
-        lines.pop(0)
-        start_row = 1
-    line_iterator = iter(lines)
-    tokens = tokenize.generate_tokens(lambda: next(line_iterator))
-    check_docstring = True
-    erow_docstring = 0
-    for tok_type, _, _, (erow, _), _ in tokens:
-        tok_type = token.tok_name[tok_type]
-        if tok_type in ('NEWLINE', 'COMMENT', 'NL', 'INDENT', 'DEDENT'):
-            continue
-        elif (tok_type == 'STRING') and check_docstring:
-            erow_docstring = erow
-            check_docstring = False
-    return erow_docstring+1+start_row, erow+1+start_row
+def split_code_and_text_blocks(source_file):
+    """Return list with source file separated into code and text blocks.
+
+    Returns
+    -------
+    blocks : list of (label, content)
+        List where each element is a tuple with the label ('text' or 'code'),
+        and content string of block.
+    """
+    docstring, rest_of_content = get_docstring_and_rest(source_file)
+
+    blocks = [('text', docstring)]
+
+    pattern = re.compile(
+        r'(?P<header_line>^#{20,}.*)\s(?P<text_content>(?:^#.*\s)*)',
+        flags=re.M)
+
+    pos_so_far = 0
+    for match in re.finditer(pattern, rest_of_content):
+        match_start_pos, match_end_pos = match.span()
+        code_block_content = rest_of_content[pos_so_far:match_start_pos]
+        text_content = match.group('text_content')
+        sub_pat = re.compile('^#', flags=re.M)
+        text_block_content = dedent(re.sub(sub_pat, '', text_content))
+        if code_block_content.strip():
+            blocks.append(('code', code_block_content))
+        if text_block_content.strip():
+            blocks.append(('text', text_block_content))
+        pos_so_far = match_end_pos
+
+    remaining_content = rest_of_content[pos_so_far:]
+    if remaining_content.strip():
+        blocks.append(('code', remaining_content))
+
+    return blocks
 
 
-def line_count_sort(file_list, target_dir):
-    """Sort the list of examples by line-count"""
-    new_list = [x for x in file_list if x.endswith('.py')]
-    unsorted = np.zeros(shape=(len(new_list), 2))
-    unsorted = unsorted.astype(np.object)
-    for count, exmpl in enumerate(new_list):
-        docstr_lines, total_lines = extract_line_count(exmpl, target_dir)
-        unsorted[count][1] = total_lines - docstr_lines
-        unsorted[count][0] = exmpl
-    index = np.lexsort((unsorted[:, 0].astype(np.str),
-                        unsorted[:, 1].astype(np.float)))
-    if not len(unsorted):
-        return []
-    return np.array(unsorted[index][:, 0]).tolist()
+def codestr2rst(codestr):
+    """Return reStructuredText code block from code string"""
+    code_directive = "\n.. code-block:: python\n\n"
+    indented_block = indent(codestr, ' ' * 4)
+    return code_directive + indented_block
 
 
-def generate_dir_rst(src_dir, target_dir, gallery_conf,
-                     plot_gallery, seen_backrefs):
-    """Generate the rst file for an example directory"""
-    if not os.path.exists(os.path.join(src_dir, 'README.txt')):
-        print(80 * '_')
-        print('Example directory %s does not have a README.txt file' %
-              src_dir)
-        print('Skipping this directory')
-        print(80 * '_')
-        return ""  # because string is an expected return type
-
-    fhindex = open(os.path.join(src_dir, 'README.txt')).read()
-    if not os.path.exists(target_dir):
-        os.makedirs(target_dir)
-    sorted_listdir = line_count_sort(os.listdir(src_dir),
-                                     src_dir)
-    for fname in sorted_listdir:
-        if fname.endswith('py'):
-            generate_file_rst(fname, target_dir, src_dir, plot_gallery)
-            new_fname = os.path.join(src_dir, fname)
-            _, snippet, _ = extract_docstring(new_fname, True)
-            write_backreferences(seen_backrefs, gallery_conf,
-                               target_dir, fname, snippet)
-
-            fhindex += _thumbnail_div(target_dir, fname, snippet)
-            fhindex += """
-
-.. toctree::
-   :hidden:
-
-   /%s/%s\n""" % (target_dir, fname[:-3])
+def text2string(content):
+    """Returns a string without the extra triple quotes"""
+    try:
+        return ast.literal_eval(content) + '\n'
+    except Exception:
+        return content
 
 
-# clear at the end of the section
-    fhindex += """.. raw:: html\n
-    <div style='clear:both'></div>\n\n"""
+def extract_intro(filename):
+    """ Extract the first paragraph of module-level docstring. max:95 char"""
 
-    return fhindex
+    docstring, _ = get_docstring_and_rest(filename)
+
+    # lstrip is just in case docstring has a '\n\n' at the beginning
+    paragraphs = docstring.lstrip().split('\n\n')
+    if len(paragraphs) > 1:
+        first_paragraph = re.sub('\n', ' ', paragraphs[1])
+        first_paragraph = (first_paragraph[:95] + '...'
+                           if len(first_paragraph) > 95 else first_paragraph)
+    else:
+        raise ValueError(
+            "Example docstring should have a header for the example title "
+            "and at least a paragraph explaining what the example is about. "
+            "Please check the example file:\n {}\n".format(filename))
+
+    return first_paragraph
+
+
+def _plots_are_current(src_file, image_file):
+    """Test existence of image file and later touch time to source script"""
+
+    first_image_file = image_file.format(1)
+    needs_replot = (
+        not os.path.exists(first_image_file) or
+        os.stat(first_image_file).st_mtime <= os.stat(src_file).st_mtime)
+    return not needs_replot
+
+
+def save_figures(image_path, fig_count, gallery_conf):
+    """Save all open matplotlib figures of the example code-block
+
+    Parameters
+    ----------
+    image_path : str
+        Path where plots are saved (format string which accepts figure number)
+    fig_count : int
+        Previous figure number count. Figure number add from this number
+
+    Returns
+    -------
+    list of strings containing the full path to each figure
+    """
+    figure_list = []
+
+    fig_managers = matplotlib._pylab_helpers.Gcf.get_all_fig_managers()
+    for fig_mngr in fig_managers:
+        # Set the fig_num figure as the current figure as we can't
+        # save a figure that's not the current figure.
+        fig = plt.figure(fig_mngr.num)
+        kwargs = {}
+        to_rgba = matplotlib.colors.colorConverter.to_rgba
+        for attr in ['facecolor', 'edgecolor']:
+            fig_attr = getattr(fig, 'get_' + attr)()
+            default_attr = matplotlib.rcParams['figure.' + attr]
+            if to_rgba(fig_attr) != to_rgba(default_attr):
+                kwargs[attr] = fig_attr
+
+        current_fig = image_path.format(fig_count + fig_mngr.num)
+        fig.savefig(current_fig, **kwargs)
+        figure_list.append(current_fig)
+
+    if gallery_conf.get('find_mayavi_figures', False):
+        from mayavi import mlab
+        e = mlab.get_engine()
+        last_matplotlib_fig_num = len(figure_list)
+        total_fig_num = last_matplotlib_fig_num + len(e.scenes)
+        mayavi_fig_nums = range(last_matplotlib_fig_num, total_fig_num)
+
+        for scene, mayavi_fig_num in zip(e.scenes, mayavi_fig_nums):
+            current_fig = image_path.format(mayavi_fig_num)
+            mlab.savefig(current_fig, figure=scene)
+            # make sure the image is not too large
+            scale_image(current_fig, current_fig, 850, 999)
+            figure_list.append(current_fig)
+        mlab.close(all=True)
+
+    return figure_list
 
 
 def scale_image(in_fname, out_fname, max_width, max_height):
@@ -292,157 +330,188 @@ def scale_image(in_fname, out_fname, max_width, max_height):
                           generated images')
 
 
-def execute_script(image_dir, thumb_file, image_fname, base_image_name,
-                   src_file, fname):
-    image_path = os.path.join(image_dir, image_fname)
-    stdout_path = os.path.join(image_dir,
-                               'stdout_%s.txt' % base_image_name)
-    time_path = os.path.join(image_dir,
-                             'time_%s.txt' % base_image_name)
-    # The following is a list containing all the figure names
-    time_elapsed = 0
-    figure_list = []
-    first_image_file = image_path % 1
-    if os.path.exists(stdout_path):
-        stdout = open(stdout_path).read()
-    else:
-        stdout = ''
-    if os.path.exists(time_path):
-        time_elapsed = float(open(time_path).read())
+def save_thumbnail(image_path, base_image_name, gallery_conf):
+    """Save the thumbnail image"""
+    first_image_file = image_path.format(1)
+    thumb_dir = os.path.join(os.path.dirname(first_image_file), 'thumb')
+    if not os.path.exists(thumb_dir):
+        os.makedirs(thumb_dir)
 
-    if not os.path.exists(first_image_file) or \
-       os.stat(first_image_file).st_mtime <= os.stat(src_file).st_mtime:
-        # We need to execute the code
-        print('plotting %s' % fname)
-        t0 = time()
-        import matplotlib.pyplot as plt
-        plt.close('all')
-        cwd = os.getcwd()
-        try:
-            # First CD in the original example dir, so that any file
-            # created by the example get created in this directory
-            orig_stdout = sys.stdout
-            os.chdir(os.path.dirname(src_file))
-            my_buffer = StringIO()
-            my_stdout = Tee(sys.stdout, my_buffer)
-            sys.stdout = my_stdout
-            my_globals = {'pl': plt, '__name__': 'gallery'}
-            execfile(os.path.basename(src_file), my_globals)
-            time_elapsed = time() - t0
-            sys.stdout = orig_stdout
-            my_stdout = my_buffer.getvalue()
+    thumb_file = os.path.join(thumb_dir,
+                              'sphx_glr_%s_thumb.png' % base_image_name)
 
-            if '__doc__' in my_globals:
-                # The __doc__ is often printed in the example, we
-                # don't with to echo it
-                my_stdout = my_stdout.replace(
-                    my_globals['__doc__'],
-                    '')
-            my_stdout = my_stdout.strip().expandtabs()
-            if my_stdout:
-                stdout = """**Script output**:\n
-.. rst-class:: sphx-glr-script-out
-
-  ::
-
-    {}\n""".format('\n    '.join(my_stdout.split('\n')))
-            os.chdir(cwd)
-            open(stdout_path, 'w').write(stdout)
-            open(time_path, 'w').write('%f' % time_elapsed)
-
-            # In order to save every figure we have two solutions :
-            # * iterate from 1 to infinity and call plt.fignum_exists(n)
-            #   (this requires the figures to be numbered
-            #    incrementally: 1, 2, 3 and not 1, 2, 5)
-            # * iterate over [fig_mngr.num for fig_mngr in
-            #   matplotlib._pylab_helpers.Gcf.get_all_fig_managers()]
-            fig_managers = matplotlib._pylab_helpers.Gcf.get_all_fig_managers()
-            for fig_mngr in fig_managers:
-                # Set the fig_num figure as the current figure as we can't
-                # save a figure that's not the current figure.
-                fig = plt.figure(fig_mngr.num)
-                kwargs = {}
-                to_rgba = matplotlib.colors.colorConverter.to_rgba
-                for attr in ['facecolor', 'edgecolor']:
-                    fig_attr = getattr(fig, 'get_' + attr)()
-                    default_attr = matplotlib.rcParams['figure.' + attr]
-                    if to_rgba(fig_attr) != to_rgba(default_attr):
-                        kwargs[attr] = fig_attr
-
-                fig.savefig(image_path % fig_mngr.num, **kwargs)
-                figure_list.append(image_fname % fig_mngr.num)
-        except:
-            print(80 * '_')
-            print('%s is not compiling:' % fname)
-            traceback.print_exc()
-            print(80 * '_')
-        finally:
-            os.chdir(cwd)
-            sys.stdout = orig_stdout
-
-        print(" - time elapsed : %.2g sec" % time_elapsed)
-    else:
-        figure_list = [f[len(image_dir):]
-                       for f in glob.glob(image_path.replace("%03d",
-                                            '[0-9][0-9][0-9]'))]
-    figure_list.sort()
-
-    # generate thumb file
     if os.path.exists(first_image_file):
         scale_image(first_image_file, thumb_file, 400, 280)
-
-    # Depending on whether we have one or more figures, we're using a
-    # horizontal list or a single rst call to 'image'.
-    if len(figure_list) == 1:
-        figure_name = figure_list[0]
-        image_list = SINGLE_IMAGE % figure_name.lstrip('/')
-    else:
-        image_list = HLIST_HEADER
-        for figure_name in figure_list:
-            image_list += HLIST_IMAGE_TEMPLATE % figure_name.lstrip('/')
-
-    return image_list, time_elapsed, stdout
+    elif not os.path.exists(thumb_file):
+        # create something to replace the thumbnail
+        default_thumb_file = os.path.join(glr_path_static(), 'no_image.png')
+        default_thumb_file = gallery_conf.get("default_thumb_file",
+                                              default_thumb_file)
+        scale_image(default_thumb_file, thumb_file, 200, 140)
 
 
-def generate_file_rst(fname, target_dir, src_dir, plot_gallery):
+def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
+    """Generate the gallery reStructuredText for an example directory"""
+    if not os.path.exists(os.path.join(src_dir, 'README.txt')):
+        print(80 * '_')
+        print('Example directory %s does not have a README.txt file' %
+              src_dir)
+        print('Skipping this directory')
+        print(80 * '_')
+        return ""  # because string is an expected return type
+
+    fhindex = open(os.path.join(src_dir, 'README.txt')).read()
+    if not os.path.exists(target_dir):
+        os.makedirs(target_dir)
+    sorted_listdir = [fname for fname in sorted(os.listdir(src_dir))
+                      if fname.endswith('.py')]
+    for fname in sorted_listdir:
+        generate_file_rst(fname, target_dir, src_dir, gallery_conf)
+        new_fname = os.path.join(src_dir, fname)
+        intro = extract_intro(new_fname)
+        write_backreferences(seen_backrefs, gallery_conf,
+                             target_dir, fname, intro)
+
+        fhindex += _thumbnail_div(target_dir, fname, intro)
+        fhindex += """
+
+.. toctree::
+   :hidden:
+
+   /%s/%s\n""" % (target_dir, fname[:-3])
+
+    # clear at the end of the section
+    fhindex += """.. raw:: html\n
+    <div style='clear:both'></div>\n\n"""
+
+    return fhindex
+
+
+def execute_script(code_block, example_globals, image_path, fig_count,
+                   src_file, gallery_conf):
+    """Executes the code block of the example file"""
+    time_elapsed = 0
+    stdout = ''
+
+    # We need to execute the code
+    print('plotting code blocks in %s' % src_file)
+
+    plt.close('all')
+    cwd = os.getcwd()
+    # Redirect output to stdout and
+    orig_stdout = sys.stdout
+
+    try:
+        # First cd in the original example dir, so that any file
+        # created by the example get created in this directory
+        os.chdir(os.path.dirname(src_file))
+        my_buffer = StringIO()
+        my_stdout = Tee(sys.stdout, my_buffer)
+        sys.stdout = my_stdout
+
+        t_start = time()
+        exec(code_block, example_globals)
+        time_elapsed = time() - t_start
+
+        sys.stdout = orig_stdout
+
+        my_stdout = my_buffer.getvalue().strip().expandtabs()
+        if my_stdout:
+            stdout = CODE_OUTPUT.format(indent(my_stdout, ' ' * 4))
+        os.chdir(cwd)
+        figure_list = save_figures(image_path, fig_count, gallery_conf)
+
+        # Depending on whether we have one or more figures, we're using a
+        # horizontal list or a single rst call to 'image'.
+        if len(figure_list) == 1:
+            figure_name = figure_list[0]
+            image_list = SINGLE_IMAGE % figure_name.lstrip('/')
+        else:
+            image_list = HLIST_HEADER
+            for figure_name in figure_list:
+                image_list += HLIST_IMAGE_TEMPLATE % figure_name.lstrip('/')
+
+    except Exception:
+        figure_list = []
+        image_list = '%s is not compiling:' % src_file
+        print(80 * '_')
+        print(image_list)
+        traceback.print_exc()
+        print(80 * '_')
+    finally:
+        os.chdir(cwd)
+        sys.stdout = orig_stdout
+
+    print(" - time elapsed : %.2g sec" % time_elapsed)
+    code_output = "\n{0}\n\n{1}\n\n".format(image_list, stdout)
+
+    return code_output, time_elapsed, fig_count + len(figure_list)
+
+
+def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
     """ Generate the rst file for a given example."""
-    base_image_name = os.path.splitext(fname)[0]
-    image_fname = 'sphx_glr_%s_%%03d.png' % base_image_name
 
-    this_template = rst_template
-    short_fname = target_dir.replace(os.path.sep, '_') + '_' + fname
     src_file = os.path.join(src_dir, fname)
     example_file = os.path.join(target_dir, fname)
     shutil.copyfile(src_file, example_file)
 
     image_dir = os.path.join(target_dir, 'images')
-    thumb_dir = os.path.join(image_dir, 'thumb')
-    thumb_file = os.path.join(thumb_dir, 'sphx_glr_%s_thumb.png' % base_image_name)
     if not os.path.exists(image_dir):
         os.makedirs(image_dir)
-    if not os.path.exists(thumb_dir):
-        os.makedirs(thumb_dir)
+
+    base_image_name = os.path.splitext(fname)[0]
+    image_fname = 'sphx_glr_' + base_image_name + '_{0:03}.png'
+    image_path = os.path.join(image_dir, image_fname)
+
+    if _plots_are_current(src_file, image_path):
+        return
 
     time_elapsed = 0
-    if plot_gallery and fname.startswith('plot'):
-        # generate the plot as png image if file name
-        # starts with plot and if it is more recent than an
-        # existing image.
-        image_list, time_elapsed, stdout = execute_script(image_dir,
-                                                          thumb_file,
-                                                          image_fname,
-                                                          base_image_name,
-                                                          src_file, fname)
-        this_template = plot_rst_template
+    script_blocks = split_code_and_text_blocks(example_file)
 
-    if not os.path.exists(thumb_file):
-        # create something to replace the thumbnail
-        scale_image(os.path.join(glr_path_static(), 'no_image.png'),
-                    thumb_file, 200, 140)
+    ref_fname = example_file.replace(os.path.sep, '_')
+    example_rst = """\n\n.. _sphx_glr_{0}:\n\n""".format(ref_fname)
 
-    docstring, short_desc, end_row = extract_docstring(example_file)
+    if not fname.startswith('plot'):
+        convert_func = dict(code=codestr2rst, text=text2string)
+        for blabel, bcontent in script_blocks:
+            example_rst += convert_func[blabel](bcontent) + '\n'
+    else:
+        # A lot of examples contains 'print(__doc__)' for example in
+        # scikit-learn so that running the example prints some useful
+        # information. Because the docstring has been separated from
+        # the code blocks in sphinx-gallery, __doc__ is actually
+        # __builtin__.__doc__ in the execution context and we do not
+        # want to print it
+        example_globals = {'__doc__': ''}
+        fig_count = 0
+        # A simple example has two blocks: one for the
+        # example introduction/explanation and one for the code
+        is_example_notebook_like = len(script_blocks) > 2
+        for blabel, bcontent in script_blocks:
+            if blabel == 'code':
+                code_output, rtime, fig_count = execute_script(bcontent,
+                                                               example_globals,
+                                                               image_path,
+                                                               fig_count,
+                                                               src_file,
+                                                               gallery_conf)
+
+                time_elapsed += rtime
+
+                if is_example_notebook_like:
+                    example_rst += codestr2rst(bcontent) + '\n'
+                    example_rst += code_output
+                else:
+                    example_rst += code_output
+                    example_rst += codestr2rst(bcontent) + '\n'
+
+            else:
+                example_rst += text2string(bcontent) + '\n'
+
+    save_thumbnail(image_path, base_image_name, gallery_conf)
 
     time_m, time_s = divmod(time_elapsed, 60)
-    f = open(os.path.join(target_dir, base_image_name + '.rst'), 'w')
-    f.write(this_template % locals())
-    f.flush()
+    with open(os.path.join(target_dir, base_image_name + '.rst'), 'w') as f:
+        example_rst += CODE_DOWNLOAD.format(time_m, time_s, fname)
+        f.write(example_rst)
