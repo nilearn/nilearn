@@ -218,46 +218,46 @@ def test_check_niimg_wildcards():
     # First create some testing data
     data_3d = np.zeros((40, 40, 40))
     data_3d[20, 20, 20] = 1
-    data_3d_img = Nifti1Image(data_3d, np.eye(4))
+    img_3d = Nifti1Image(data_3d, np.eye(4))
 
     data_4d = np.zeros((40, 40, 40, 3))
     data_4d[20, 20, 20] = 1
-    data_4d_img = Nifti1Image(data_4d, np.eye(4))
+    img_4d = Nifti1Image(data_4d, np.eye(4))
 
     #######
     # Testing with an existing filename
-    with testing.write_tmp_imgs(data_3d_img, create_files=True) as filename:
+    with testing.write_tmp_imgs(img_3d, create_files=True) as filename:
         assert_array_equal(_utils.check_niimg(filename).get_data(),
-                           data_3d_img.get_data())
+                           img_3d.get_data())
     # No globbing behavior
-    with testing.write_tmp_imgs(data_3d_img, create_files=True) as filename:
+    with testing.write_tmp_imgs(img_3d, create_files=True) as filename:
         assert_array_equal(_utils.check_niimg(filename,
                                               wildcards=False).get_data(),
-                           data_3d_img.get_data())
+                           img_3d.get_data())
 
     #######
     # Testing with an existing filename
-    with testing.write_tmp_imgs(data_4d_img, create_files=True) as filename:
+    with testing.write_tmp_imgs(img_4d, create_files=True) as filename:
         assert_array_equal(_utils.check_niimg(filename).get_data(),
-                           data_4d_img.get_data())
+                           img_4d.get_data())
     # No globbing behavior
-    with testing.write_tmp_imgs(data_4d_img, create_files=True) as filename:
+    with testing.write_tmp_imgs(img_4d, create_files=True) as filename:
         assert_array_equal(_utils.check_niimg(filename,
                                               wildcards=False).get_data(),
-                           data_4d_img.get_data())
+                           img_4d.get_data())
 
     #######
     # Testing with a glob matching exactly one filename
     # Using a glob matching one file containing a 3d image returns a 4d image
     # with 1 as last dimension.
-    with testing.write_tmp_imgs(data_3d_img,
+    with testing.write_tmp_imgs(img_3d,
                                 create_files=True,
                                 use_wildcards=True) as globs:
         glob_input = tmp_dir + globs
         assert_array_equal(_utils.check_niimg(glob_input).get_data()[..., 0],
-                           data_3d_img.get_data())
+                           img_3d.get_data())
     # Disabled globbing behavior should raise an ValueError exception
-    with testing.write_tmp_imgs(data_3d_img,
+    with testing.write_tmp_imgs(img_3d,
                                 create_files=True,
                                 use_wildcards=True) as globs:
         glob_input = tmp_dir + globs
@@ -269,8 +269,8 @@ def test_check_niimg_wildcards():
 
     #######
     # Testing with a glob matching multiple filenames
-    img_4d = _utils.check_niimg_4d((data_3d_img, data_3d_img))
-    with testing.write_tmp_imgs(data_3d_img, data_3d_img,
+    img_4d = _utils.check_niimg_4d((img_3d, img_3d))
+    with testing.write_tmp_imgs(img_3d, img_3d,
                                 create_files=True,
                                 use_wildcards=True) as globs:
         assert_array_equal(_utils.check_niimg(glob_input).get_data(),
@@ -293,14 +293,14 @@ def test_check_niimg_wildcards():
                         _utils.check_niimg, nofile_path, wildcards=False)
 
     # Testing with an exact filename matching (3d case)
-    with testing.write_tmp_imgs(data_3d_img, create_files=True) as filename:
+    with testing.write_tmp_imgs(img_3d, create_files=True) as filename:
         assert_array_equal(_utils.check_niimg(filename).get_data(),
-                           data_3d_img.get_data())
+                           img_3d.get_data())
 
     # Testing with an exact filename matching (4d case)
-    with testing.write_tmp_imgs(data_4d_img, create_files=True) as filename:
+    with testing.write_tmp_imgs(img_4d, create_files=True) as filename:
         assert_array_equal(_utils.check_niimg(filename).get_data(),
-                           data_4d_img.get_data())
+                           img_4d.get_data())
 
     # Reverting to default behavior
     ni.EXPAND_PATH_WILDCARDS = True
