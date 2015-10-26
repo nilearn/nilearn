@@ -10,7 +10,7 @@ import numpy as np
 from tempfile import mkdtemp
 
 from nose import with_setup
-from nose.tools import assert_true, assert_equal
+from nose.tools import assert_true, assert_equal, assert_not_equal
 
 from nilearn.datasets import utils, struct
 from nilearn._utils.testing import (mock_request, wrap_chunk_read_,
@@ -149,6 +149,7 @@ def test_fetch_icbm152_2009():
     assert_true(isinstance(dataset.t2_relax, _basestring))
     assert_true(isinstance(dataset.wm, _basestring))
     assert_equal(len(mock_url_request.urls), 1)
+    assert_not_equal(dataset.description, '')
 
 
 @with_setup(setup_mock, teardown_mock)
