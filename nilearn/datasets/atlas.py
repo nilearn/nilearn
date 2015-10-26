@@ -598,7 +598,8 @@ def fetch_atlas_aal(version='SPM12', data_dir=None, url=None, resume=True,
     Parameters
     ----------
     version: string, optional
-        The version of the AAL atlas. Must be SPM5, SPM8 or SPM12.
+        The version of the AAL atlas. Must be SPM5, SPM8 or SPM12. Default is
+        SPM12.
 
     data_dir: string
         directory where data should be downloaded and unpacked.
@@ -650,7 +651,7 @@ def fetch_atlas_aal(version='SPM12', data_dir=None, url=None, resume=True,
     # keys and basenames would need to be handled for each spm_version
     # for now spm_version 12 is hardcoded.
     basenames = ("AAL.nii", "AAL.xml")
-    filenames = [(os.path.join("aal_for_%s" % version, f), url, opts)
+    filenames = [(os.path.join('aal', 'atlas', f), url, opts)
                  for f in basenames]
 
     data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
