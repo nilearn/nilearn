@@ -579,7 +579,15 @@ def fetch_yeo_2011_atlas(data_dir=None, url=None, resume=True, verbose=1):
         verbose=verbose)
 
 
+@deprecated('it has been replace by fetch_atlas_aal and '
+            'will be removed in nilearn 0.1.5')
 def fetch_atlas_aal_spm_12(data_dir=None, url=None, resume=True, verbose=1):
+    return fetch_atlas_aal(version='SPM12', data_dir=data_dir, url=url,
+                           resume=resume, verbose=verbose)
+
+
+def fetch_atlas_aal(version='SPM12', data_dir=None, url=None, resume=True,
+                    verbose=1):
     """Downloads and returns the AAL template for SPM 12.
 
     This atlas is the result of an automated anatomical parcellation of the
@@ -589,6 +597,10 @@ def fetch_atlas_aal_spm_12(data_dir=None, url=None, resume=True, verbose=1):
 
     Parameters
     ----------
+    version: string, optional
+        The version of the AAL atlas. Must be SPM5, SPM8 or SPM12. Default is
+        SPM12.
+
     data_dir: string
         directory where data should be downloaded and unpacked.
 
@@ -624,17 +636,22 @@ def fetch_atlas_aal_spm_12(data_dir=None, url=None, resume=True, verbose=1):
 
     Licence: unknown.
     """
-    spm_version = 12
+    versions = ['SPM5', 'SPM8', 'SPM12']
+    if version not in versions:
+        raise ValueError('The version of AAL requested "%s" does not exist.'
+                         'Please choose one among %s.' %
+                         (version, str(versions)))
+
     if url is None:
-        baseurl = "http://www.gin.cnrs.fr/AAL_files/aal_for_SPM%i.tar.gz"
-        url = baseurl % spm_version
+        baseurl = "http://www.gin.cnrs.fr/AAL_files/aal_for_%s.tar.gz"
+        url = baseurl % version
     opts = {'uncompress': True}
 
-    dataset_name = "aal_spm_12"
+    dataset_name = "aal_" + version
     # keys and basenames would need to be handled for each spm_version
     # for now spm_version 12 is hardcoded.
     basenames = ("AAL.nii", "AAL.xml")
-    filenames = [(os.path.join("aal_for_SPM%i" % spm_version, f), url, opts)
+    filenames = [(os.path.join('aal', 'atlas', f), url, opts)
                  for f in basenames]
 
     data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,

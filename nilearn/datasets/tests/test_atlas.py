@@ -12,7 +12,7 @@ from tempfile import mkdtemp
 import nibabel
 
 from nose import with_setup
-from nose.tools import assert_true, assert_equal
+from nose.tools import assert_true, assert_equal, assert_not_equal
 
 from nilearn._utils.testing import (mock_request, wrap_chunk_read_,
                                     FetchFilesMock, assert_raises_regex)
@@ -189,6 +189,7 @@ def test_fetch_atlas_craddock_2012():
     assert_equal(len(mock_url_request.urls), 1)
     for key, fn in zip(keys, filenames):
         assert_equal(bunch[key], os.path.join(tmpdir, 'craddock_2012', fn))
+    assert_not_equal(bunch.description, '')
 
 
 @with_setup(setup_mock, teardown_mock)
@@ -210,11 +211,13 @@ def test_fetch_atlas_smith_2009():
     assert_equal(len(mock_url_request.urls), 6)
     for key, fn in zip(keys, filenames):
         assert_equal(bunch[key], os.path.join(tmpdir, 'smith_2009', fn))
+    assert_not_equal(bunch.description, '')
 
 
 def test_fetch_atlas_power_2011_atlas():
     bunch = atlas.fetch_atlas_power_2011()
     assert_equal(len(bunch.rois), 264)
+    assert_not_equal(bunch.description, '')
 
 
 @with_setup(setup_mock, teardown_mock)
@@ -252,6 +255,7 @@ def test_fetch_atlas_msdl():
     assert_true(isinstance(dataset.labels, _basestring))
     assert_true(isinstance(dataset.maps, _basestring))
     assert_equal(len(mock_url_request.urls), 1)
+    assert_not_equal(dataset.description, '')
 
 
 @with_setup(setup_mock, teardown_mock)
@@ -266,18 +270,25 @@ def test_fetch_atlas_yeo_2011():
     assert_true(isinstance(dataset.thin_17, _basestring))
     assert_true(isinstance(dataset.thin_7, _basestring))
     assert_equal(len(mock_url_request.urls), 1)
+    assert_not_equal(dataset.description, '')
 
 
 @with_setup(setup_mock, teardown_mock)
 @with_setup(setup_tmpdata, teardown_tmpdata)
-def test_fetch_atlas_aal_spm_12():
-    ho_dir = os.path.join(tmpdir, 'aal_spm_12', 'aal_for_SPM12')
+def test_fetch_atlas_aal():
+    ho_dir = os.path.join(tmpdir, 'aal_SPM12', 'aal', 'atlas')
     os.makedirs(ho_dir)
     with open(os.path.join(ho_dir, 'AAL.xml'), 'w') as xml_file:
         xml_file.write("<?xml version='1.0' encoding='us-ascii'?> "
                        "<metadata>"
                        "</metadata>")
-    dataset = atlas.fetch_atlas_aal_spm_12(data_dir=tmpdir, verbose=0)
+    dataset = atlas.fetch_atlas_aal(data_dir=tmpdir, verbose=0)
     assert_true(isinstance(dataset.regions, _basestring))
     assert_true(isinstance(dataset.labels, dict))
     assert_equal(len(mock_url_request.urls), 1)
+
+    assert_raises_regex(ValueError, 'The version of AAL requested "FLS33"',
+                        atlas.fetch_atlas_aal, version="FLS33",
+                        data_dir=tmpdir, verbose=0)
+
+    assert_not_equal(dataset.description, '')
