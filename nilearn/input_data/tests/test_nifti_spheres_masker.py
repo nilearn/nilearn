@@ -82,13 +82,13 @@ def test_nifti_spheres_masker_overlap():
 
     seeds = [(0, 0, 0), (2, 2, 2)]
 
-    o_masker = NiftiSpheresMasker(seeds, radius=1, allow_overlap=True)
-    o_masker.fit_transform(fmri_img)
-    o_masker = NiftiSpheresMasker(seeds, radius=2, allow_overlap=True)
-    o_masker.fit_transform(fmri_img)
+    overlapping_masker = NiftiSpheresMasker(seeds, radius=1, allow_overlap=True)
+    overlapping_masker.fit_transform(fmri_img)
+    overlapping_masker = NiftiSpheresMasker(seeds, radius=2, allow_overlap=True)
+    overlapping_masker.fit_transform(fmri_img)
 
-    no_masker = NiftiSpheresMasker(seeds, radius=1, allow_overlap=False)
-    no_masker.fit_transform(fmri_img)
-    no_masker = NiftiSpheresMasker(seeds, radius=2, allow_overlap=False)
+    noverlapping_masker = NiftiSpheresMasker(seeds, radius=1, allow_overlap=False)
+    noverlapping_masker.fit_transform(fmri_img)
+    noverlapping_masker = NiftiSpheresMasker(seeds, radius=2, allow_overlap=False)
     assert_raises_regex(ValueError, 'Overlap detected',
-                        no_masker.fit_transform, fmri_img)
+                        noverlapping_masker.fit_transform, fmri_img)
