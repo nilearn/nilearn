@@ -46,13 +46,13 @@ def test_generate_fake_fmri():
 
 @memory_limit(10000000)
 def test_memory_limit():
-    # memory usage : 8000, this should be fine
+    # memory usage : 4000, this should be fine
     a = np.zeros((10, 10, 10), dtype=np.float32)
     del a
 
 
 @memory_limit(10000000)
 def test_memory_limit_raise():
-    # memory usage : 80000000, this should be fine
+    # memory usage : 40000000, this should be fine
     assert_raises_regex(
-        MemoryError, '', np.zeros, (1000, 100, 100), dtype=np.float32)
+        MemoryError, '', np.zeros, (500, 100, 60), dtype=np.float32)
