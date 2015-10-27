@@ -2,10 +2,12 @@
 Transformer for computing ROI signals.
 """
 
+import numpy as np
 from sklearn.externals.joblib import Memory
 
 from .. import _utils
 from .._utils import logger, CacheMixin
+from .._utils.niimg import _get_data_dtype
 from .._utils.class_inspect import get_params
 from .._utils.niimg_conversions import _check_same_fov
 from .. import region
@@ -44,6 +46,10 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
     mask_img: 3D niimg-like object, optional
         See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
         Mask to apply to regions before extracting signals.
+
+    allow_overlap: boolean, optional
+        If False, an error is raised if the maps overlaps (ie at least two
+        maps have a non-zero value for the same voxel). Default is True.
 
     smoothing_fwhm: float, optional
         If smoothing_fwhm is not None, it gives the full-width half maximum in
@@ -102,6 +108,7 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
     # memory and memory_level are used by CacheMixin.
 
     def __init__(self, maps_img, mask_img=None,
+                 allow_overlap=True,
                  smoothing_fwhm=None, standardize=False, detrend=False,
                  low_pass=None, high_pass=None, t_r=None,
                  resampling_target="data",
@@ -109,6 +116,9 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
                  verbose=0):
         self.maps_img = maps_img
         self.mask_img = mask_img
+
+        # Maps Masker parameter
+        self.allow_overlap = allow_overlap
 
         # Parameters for image.smooth
         self.smoothing_fwhm = smoothing_fwhm
@@ -257,6 +267,23 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
                         self.mask_img_, interpolation="nearest",
                         target_shape=ref_img.shape[:3],
                         target_affine=ref_img.get_affine())
+
+        if not self.allow_overlap:
+            # Check if there is an overlap.
+
+            # If float, we set low values to 0
+            dtype = _get_data_dtype(self._resampled_maps_img_)
+            data = self._resampled_maps_img_.get_data()
+            if dtype.kind == 'f':
+                data[data < np.finfo(dtype).eps] = 0.
+
+            # Check the overlaps
+            if np.any(np.sum(data > 0., axis=3) > 1):
+                raise ValueError(
+                    'Overlap detected in the maps. The overlap may be '
+                    'due to the atlas itself or possibly introduced by '
+                    'resampling'
+                )
 
         target_shape = None
         target_affine = None
