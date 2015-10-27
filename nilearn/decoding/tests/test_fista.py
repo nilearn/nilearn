@@ -7,7 +7,7 @@ from nilearn.decoding.objective_functions import (
     _logistic,
     _squared_loss_grad,
     _logistic_loss_lipschitz_constant,
-    spectral_norm_squared)
+    _spectral_norm_squared)
 from nilearn.decoding.fista import _check_lipschitz_continuous
 
 
@@ -32,7 +32,7 @@ def test_squared_loss_lipschitz(n_samples=4, n_features=2, random_state=42):
         y = rng.randn(n_samples)
         n_features = X.shape[1]
 
-        L = spectral_norm_squared(X)
+        L = _spectral_norm_squared(X)
         _check_lipschitz_continuous(lambda w: _squared_loss_grad(
             X, y, w), n_features, L)
 

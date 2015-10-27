@@ -69,6 +69,18 @@ uses.
    SpaceNetRegressor
    SearchLight
 
+**Functions**:
+
+.. currentmodule:: nilearn.decoding
+
+.. autosummary::
+   :toctree: generated/
+   :template: function.rst
+
+   search_light
+   mfista
+   tvl1_solver
+
 .. _decomposition_ref:
 
 :mod:`nilearn.decomposition`: Multivariate decompositions
@@ -87,6 +99,16 @@ uses.
    :template: class.rst
 
    CanICA
+
+**Functions**:
+
+.. currentmodule:: nilearn.decomposition
+
+.. autosummary::
+   :toctree: generated/
+   :template: function.rst
+
+   session_pca
 
 .. _image_ref:
 
@@ -115,7 +137,8 @@ uses.
    reorder_img
    smooth_img
    swap_img_hemispheres
-
+   coord_transform
+   get_bounds
 
 .. _io_ref:
 
@@ -142,6 +165,17 @@ uses.
    NiftiMapsMasker
    NiftiSpheresMasker
 
+**Functions**:
+
+.. currentmodule:: nilearn.input_data
+
+.. autosummary::
+   :toctree: generated/
+   :template: function.rst
+
+   filter_and_extract
+   filter_and_mask
+
 .. _masking_ref:
 
 :mod:`nilearn.masking`: Data Masking Utilities
@@ -165,7 +199,7 @@ uses.
    compute_multi_epi_mask
    compute_background_mask
    compute_multi_background_mask
-   intersect_mask
+   intersect_masks
    apply_mask
    unmask
 
@@ -275,5 +309,6 @@ uses.
    :template: function.rst
 
    clean
-
+   butterworth
+   high_variance_confounds
 
