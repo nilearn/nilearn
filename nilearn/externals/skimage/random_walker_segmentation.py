@@ -12,6 +12,8 @@ import warnings
 import numpy as np
 from scipy import sparse, ndimage as ndi
 
+from sklearn.utils import as_float_array
+
 # executive summary for next code block: try to import umfpack from
 # scipy, but make sure not to raise a fuss if it fails since it's only
 # needed to speed up a few cases.
@@ -38,7 +40,6 @@ try:
 except ImportError:
     amg_loaded = False
 from scipy.sparse.linalg import cg
-from .dtype import img_as_float
 from ._rank_order import rank_order
 
 #-----------Laplacian--------------------
@@ -382,13 +383,13 @@ def random_walker(data, labels, beta=130, mode='bf', tol=1.e-3, copy=True,
             raise ValueError('For non-multichannel input, data must be of '
                              'dimension 2 or 3.')
         dims = data.shape  # To reshape final labeled result
-        data = np.atleast_3d(img_as_float(data))[..., np.newaxis]
+        data = as_float_array(data)[..., np.newaxis]
     else:
         if data.ndim < 3:
             raise ValueError('For multichannel input, data must have 3 or 4 '
                              'dimensions.')
         dims = data[..., 0].shape  # To reshape final labeled result
-        data = img_as_float(data)
+        data = as_float_array(data)
         if data.ndim == 3:  # 2D multispectral, needs singleton in 3rd axis
             data = data[:, :, np.newaxis, :]
 

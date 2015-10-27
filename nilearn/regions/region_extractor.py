@@ -24,11 +24,11 @@ from .._utils.compat import _basestring
 from ..externals.skimage import peak_local_max, random_walker
 
 
-def estimate_apply_threshold_to_maps(maps_img, mask_img=None, parameters=None,
-                                     threshold='auto',
-                                     thresholding_strategy='percentile'):
-    """ A function which keeps the most prominent regions of the maps. Can also
-    be denoted as foreground objects/regions extraction.
+def foreground_extraction(maps_img, mask_img=None, parameters=None,
+                          threshold='auto',
+                          thresholding_strategy='percentile'):
+    """ A function which keeps the most prominent regions of the maps,
+    denoted as foreground objects/regions extraction.
 
     Parameters
     ----------
@@ -152,9 +152,9 @@ def estimate_apply_threshold_to_maps(maps_img, mask_img=None, parameters=None,
     return threshold_maps_img
 
 
-def break_connected_components(map_img, min_size=20,
-                               extract_type='connected_components',
-                               peak_local_smooth=6, mask_img=None):
+def connected_component_extraction(map_img, min_size=20,
+                                   extract_type='connected_components',
+                                   peak_local_smooth=6, mask_img=None):
     """ A function takes the connected components of the brain activation
     maps/regions and breaks each component into a seperate brain regions.
 
@@ -188,15 +188,12 @@ def break_connected_components(map_img, min_size=20,
 
     Returns
     -------
-    regions_accumulated: a Nifti-like images
+    regions: a Nifti-like images
         contains the images of segmented regions each 3D image appended as a
         seperate brain activated region.
     """
-    regions_accumulated = []
-    map_img = check_niimg(map_img)
-    if len(map_img.shape) == 0 or len(map_img.shape) == 4:
-        raise ValueError('A 3D Nifti image or path to a 3D image should '
-                         'be submitted.')
+    regions = []
+    map_img = check_niimg_3d(map_img)
 
     extract_methods = ['connected_components', 'local_regions']
     if extract_type not in extract_methods:
@@ -235,9 +232,9 @@ def break_connected_components(map_img, min_size=20,
         if label_size > min_size:
             region_data = (label_maps == label_id) * map_data
             region_img = new_img_like(map_img, region_data)
-            regions_accumulated.append(region_img)
+            regions.append(region_img)
 
-    return regions_accumulated
+    return regions
 
 
 class RegionExtractor(NiftiMapsMasker):
@@ -406,7 +403,7 @@ class RegionExtractor(NiftiMapsMasker):
         parameters = get_params(NiftiMasker, self)
         parameters['detrend'] = True
         # foreground extraction of input data "maps_img"
-        self.threshold_maps_img_ = estimate_apply_threshold_to_maps(
+        self.threshold_maps_img_ = foreground_extraction(
             self.maps_img_, mask_img=self.mask_img_, parameters=parameters,
             threshold=self.threshold, thresholding_strategy=self.thresholding_strategy)
 
@@ -452,7 +449,7 @@ class RegionExtractor(NiftiMapsMasker):
         region_signals = []
 
         for index, map_ in enumerate(iter_img(self.threshold_maps_img_)):
-            regions_imgs_of_each_map = break_connected_components(
+            regions_imgs_of_each_map = connected_component_extraction(
                 map_, self.min_size, self.extractor, self.peak_local_smooth)
             len_regions_of_each_map = len(regions_imgs_of_each_map)
             index_of_each_map.extend([index] * len_regions_of_each_map)

@@ -2,38 +2,31 @@
 Regions extraction using Canonical ICA maps
 ===========================================
 
-This example specifically shows how to segment each ICA map (a 4D Nifti
-image/object) into a distinct seperated brain region and extracts timeseries
+This example shows how to extract each connected ICA map (mostly a 4D Nifti
+image/object) into a seperate brain activation regions and extracts timeseries
 signals from each seperated region. Both can be done at the same time
 using `RegionExtractor`.
 
-We used 40 resting state functional datasets and `CanICA` for 4D components.
+We used 20 resting state functional datasets and `CanICA` for 4D components.
 
-This example motivates, how to use `RegionExtractor` to study
-functional connectomes using correlation and partial correlation
-matrices.
+This example in particular can be used to study functional connectomes using
+correlation network matrices between regions.
+
 Please see the related documentation of `RegionExtractor` for more details.
 """
 import numpy as np
 from nilearn import datasets
-print (" -- Fetching ADHD resting state functional datasets -- ")
+print(" -- Fetching ADHD resting state functional datasets -- ")
 adhd_dataset = datasets.fetch_adhd(n_subjects=20)
 func_filenames = adhd_dataset.func
 confounds = adhd_dataset.confounds
 
-from nilearn.input_data import NiftiMasker
-print (" -- Computing the mask from the data -- ")
-func_filename = func_filenames[0]
-masker = NiftiMasker(standardize=False, mask_strategy='epi')
-masker.fit(func_filename)
-mask_img = masker.mask_img_
-
 from nilearn.decomposition.canica import CanICA
-print (" -- Canonical ICA decomposition of functional datasets -- ")
+print(" -- Canonical ICA decomposition of functional datasets -- ")
 # Initialize canica parameters
 n_components = 20
 canica = CanICA(n_components=n_components, smoothing_fwhm=6.,
-                memory="nilearn_cache", memory_level=5,
+                memory="nilearn_cache", memory_level=1,
                 threshold=3., random_state=0)
 
 canica.fit(func_filenames)
@@ -43,19 +36,18 @@ components_img = canica.masker_.inverse_transform(canica.components_)
 # Signals step: Average timeseries signal extraction
 # Both are done by calling fit_transform()
 from nilearn.regions import region_extractor
-print (" -- Extracting regions from ICA maps and timeseries signals -- ")
+print(" -- Extracting regions from ICA maps and timeseries signals -- ")
 extractor = region_extractor.RegionExtractor(
     components_img, standardize=True, threshold=0.3, min_size=300,
     thresholding_strategy='ratio_n_voxels', extractor='local_regions')
 extractor.fit_transform(func_filenames, confounds=confounds)
-# Regions extracted
-regions_extracted_from_ica = extractor.regions_
-n_regions = regions_extracted_from_ica.shape[3]
-print (" ====== Regions extracted ====== ")
-print (" -- Number of regions extracted from %d ICA components are %d -- " % (
+
+regions_extracted = extractor.regions_
+n_regions = regions_extracted.shape[3]
+print(" ====== Regions extracted ====== ")
+print(" -- Number of regions extracted from %d ICA components are %d -- " % (
     n_components, n_regions))
-# Index of each region to identify its corresponding ICA map
-index_of_each_extracted_region = extractor.index_
+
 # Timeseries signals extracted from all subjects
 subjects_timeseries = extractor.signals_
 
@@ -69,13 +61,13 @@ for each_signal in subjects_timeseries:
 import matplotlib.pyplot as plt
 from nilearn import plotting
 from nilearn.image import iter_img
-regions_imgs = iter_img(regions_extracted_from_ica)
+regions_imgs = iter_img(regions_extracted)
 coords = [plotting.find_xyz_cut_coords(img) for img in regions_imgs]
 # Show ICA results
 plotting.plot_prob_atlas(components_img, view_type='filled_contours',
                          title='ICA components')
 # Show region extraction results
-plotting.plot_prob_atlas(regions_extracted_from_ica, view_type='filled_contours',
+plotting.plot_prob_atlas(regions_extracted, view_type='filled_contours',
                          title='Regions extracted from ICA components.'
                          ' \nEach color identifies a segmented region')
 

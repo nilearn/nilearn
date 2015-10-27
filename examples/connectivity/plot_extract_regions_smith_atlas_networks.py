@@ -2,11 +2,9 @@
 Regions Extraction of Default Mode Networks using Smith Atlas
 =============================================================
 
-This example shows how to extract regions within default mode
-networks DMN using ICA maps of Smith Atlas.
+This example shows how to extract regions which also includes
+default mode networks using ICA maps of Smith Atlas.
 
-This is done by visually identifying the DMN index and using
-`index_img` to get an image.
 """
 # Fetch the datasets and atlas maps
 from nilearn import datasets
@@ -19,7 +17,6 @@ atlas_networks = smith_atlas.rsn10
 
 adhd_dataset = datasets.fetch_adhd(n_subjects=1)
 func_filenames = adhd_dataset.func
-confounds = adhd_dataset.confounds
 
 # Region Extraction
 from nilearn.regions import region_extractor
@@ -28,9 +25,10 @@ extraction = region_extractor.RegionExtractor(atlas_networks, threshold=0.5,
                                               thresholding_strategy='percentile',
                                               extractor='local_regions',
                                               min_size=200)
-extraction.fit_transform(func_filenames, confounds=confounds)
+extraction.fit_transform(func_filenames)
 
 regions = extraction.regions_
+# Index of each region to identify its corresponding ICA network
 index = extraction.index_
 
 # Visualize the region extraction results

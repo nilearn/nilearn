@@ -5,8 +5,8 @@ import nibabel
 
 from nose.tools import assert_raises
 
-from nilearn.regions.region_extractor import (estimate_apply_threshold_to_maps,
-                                              break_connected_components,
+from nilearn.regions.region_extractor import (foreground_extraction,
+                                              connected_component_extraction,
                                               RegionExtractor)
 from nilearn.image import iter_img
 
@@ -22,7 +22,7 @@ def _make_random_data(shape):
     return img, data
 
 
-def test_validity_threshold_types_in_estimate_apply_threshold_to_maps():
+def test_validity_threshold_types_in_foreground_extraction():
 
     shape = (6, 8, 10)
     maps = generate_maps(shape, n_regions=2)
@@ -35,23 +35,23 @@ def test_validity_threshold_types_in_estimate_apply_threshold_to_maps():
                         "The value given to threshold "
                         "statistical maps must not exceed 1. "
                         "You provided threshold=%s " % t_value,
-                        estimate_apply_threshold_to_maps,
+                        foreground_extraction,
                         map_0, threshold=t_value,
                         thresholding_strategy=None)
 
     invalid_threshold_estimates = ['percent', 'ratio', 'auto']
     for invalid_estimate in invalid_threshold_estimates:
-        assert_raises(ValueError, estimate_apply_threshold_to_maps,
+        assert_raises(ValueError, foreground_extraction,
                       map_0, threshold='auto',
                       thresholding_strategy=invalid_estimate)
 
     invalid_threshold_value = ['10', 'some_value']
     for thr in invalid_threshold_value:
-        assert_raises(ValueError, estimate_apply_threshold_to_maps,
+        assert_raises(ValueError, foreground_extraction,
                       map_0, threshold=thr)
 
 
-def test_passing_estimate_apply_threshold_to_maps():
+def test_passing_foreground_extraction():
     # smoke test for function estimate_apply_threshold_to_maps to check
     # whether passes through valid threshold inputs
     shape = (10, 20, 30)
@@ -59,18 +59,18 @@ def test_passing_estimate_apply_threshold_to_maps():
     map_0 = maps[0]
     valid_threshold_estimates = ['percentile', 'ratio_n_voxels']
     for map_, strategy in zip(iter_img(map_0), valid_threshold_estimates):
-        thr_maps = estimate_apply_threshold_to_maps(map_, threshold='auto',
-                                                    thresholding_strategy=strategy)
+        thr_maps = foreground_extraction(map_, threshold='auto',
+                                         thresholding_strategy=strategy)
 
     # smoke test to check whether function estimate_apply_threshold_to_maps
     # passes through input t-value
     t_value_thresholds = [0.5, 0.8]
     for t_val in t_value_thresholds:
-        thr_maps = estimate_apply_threshold_to_maps(map_0, threshold=t_val,
-                                                    thresholding_strategy=None)
+        thr_maps = foreground_extraction(map_0, threshold=t_val,
+                                         thresholding_strategy=None)
 
 
-def test_validity_extract_types_in_break_connected_components():
+def test_validity_extract_types_in_connected_component_extraction():
     shape = (91, 109, 91)
     n_regions = 2
     maps = generate_maps(shape, n_regions)
@@ -84,20 +84,20 @@ def test_validity_extract_types_in_break_connected_components():
     for img in iter_img(map_0):
         assert_raises_regex(ValueError,
                             message,
-                            break_connected_components,
+                            connected_component_extraction,
                             img, min_size=40,
                             extract_type='connect_regions')
 
     # test whether same error raises as expected when you submit 4D image
     assert_raises_regex(ValueError,
                         "A 3D Nifti image or path to a 3D image should be submitted.",
-                        break_connected_components,
+                        connected_component_extraction,
                         map_0, extract_type='local_regions')
 
     # test whether error raises when there is an invalid inputs to extract
     invalid_extract_type = ['local', 'asdf', 10]
     for type_ in invalid_extract_type:
-        assert_raises(ValueError, break_connected_components,
+        assert_raises(ValueError, connected_component_extraction,
                       img, extract_type=type_)
 
 
@@ -110,9 +110,8 @@ def test_passing_break_connected_components():
     valid_extract_types = ['connected_components', 'local_regions']
     # smoke test for function extract_regions
     for map_, type_ in zip(iter_img(map_0), valid_extract_types):
-        regions_extracted = break_connected_components(map_, min_size=30,
-                                                       extract_type=type_,
-                                                       peak_local_smooth=3)
+        regions_extracted = connected_component_extraction(
+            map_, min_size=30, extract_type=type_, peak_local_smooth=3)
 
 
 def test_passing_RegionExtractor_object():
