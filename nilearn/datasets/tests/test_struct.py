@@ -180,6 +180,7 @@ def test_fetch_oasis_vbm():
     assert_true(isinstance(dataset.ext_vars, np.recarray))
     assert_true(isinstance(dataset.data_usage_agreement, _basestring))
     assert_equal(len(mock_url_request.urls), 4)
+    assert_not_equal(dataset.description, '')
 
 
 def test_load_mni152_template():
