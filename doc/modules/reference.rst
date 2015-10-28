@@ -80,6 +80,7 @@ uses.
    fetch_miyawaki2008
    fetch_nyu_rest
    fetch_oasis_vbm
+   fetch_megatrawls_netmats
 
 .. _decoding_ref:
 

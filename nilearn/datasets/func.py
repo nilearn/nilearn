@@ -1279,3 +1279,174 @@ def fetch_mixed_gambles(n_subjects=1, data_dir=None, url=None, resume=True,
         X, y, mask_img = _load_mixed_gambles(map(nibabel.load, data.zmaps))
         data.zmaps, data.gain, data.mask_img = X, y, mask_img
     return data
+
+
+def fetch_megatrawls_netmats(data_dir=None, choice_dimensionality=None,
+                             choice_timeseries=None,
+                             resume=True, verbose=1):
+    """Downloads and fetches Network Matrices data from MegaTrawls release in HCP.
+
+    This data can be used to predict relationships between imaging data (functional
+    connectivity) and non-imaging behavioural measures such as age, sex, education, etc.
+    The network matrices are estimated between 461 functional connectivity subjects.
+
+    The network matrices denoted as 'netmats' are estimated using full correlation
+    denoted as 'Znet1' or partial correlation with limited L2 regularisation
+    denoted as 'Znet2'.
+
+    .. versionadded:: 0.1.5
+
+    Parameters
+    ----------
+    data_dir: string, default is None, optional
+        Path of the data directory. Used to force data storage in a specified
+        location.
+
+    choice_dimensionality: a string or list of strings or None, Default is None
+        Possibile options are {'d25', 'd50', 'd100', 'd200', 'd300'}
+        'd25' - Group ICA brain parcellations with dimensionality = 25
+        'd50' - Group ICA brain parcellations with dimensionality = 50
+        'd100' - Group ICA brain parcellations with dimensionality = 100
+        'd200' - Group ICA brain parcellations with dimensionality = 200
+        'd300' - Group ICA brain parcellations with dimensionality = 300
+
+        If chosen to be default, network matrices data estimated from all
+        dimensionalities ['d25', 'd50', 'd100', 'd200', 'd300'] of brian
+        parcellations are fetched.
+
+        If chosen a string or list of strings as choices, network matrices
+        of particular choice of dimensionality of brain parcellations
+        are fetched. For example, if chosen as a string 'd25' only data
+        corresponding to d=25 is fetched.
+
+    choice_timeseries: a string or list of strings or None, Default is None
+        Possible options are {'ts2', 'ts3'}
+        'ts2' - choice denotes the timeseries signals which were extracted using
+                mutiple spatial regression.
+        'ts3' - choice denoted the timeseries signals which were extracted using
+                eigen regression.
+
+        If chosen to be default, network matrices data estimated using all
+        timeseries extraction method ['ts2', 'ts3'] are fetched.
+
+        If chosen a string, network matrices estimated using particular type
+        of timeseries extraction method is fetched.
+
+    resume: boolean, Default is True
+        This parameter is required if a partly downloaded file is needed to be
+        resumed to download again.
+
+    verbose: int, Default is 1
+        This parameter is used to set the verbosity level to print the message
+        to give information about the processing.
+        0 indicates no information will be given.
+
+    Returns
+    -------
+    data: sklearn.datasets.base.Bunch
+        Dictionary-like object, attributes are:
+
+        'Znet1': Full correlation matrices
+
+        'Znet2': Partial correlation matrices
+
+    References
+    ----------
+    For more details:
+    Stephen Smith et al, HCP beta-release of the Functional Connectivity MegaTrawl.
+    April 2015 "HCP500-MegaTrawl" release.
+
+    https://db.humanconnectome.org/megatrawl/
+
+    Disclaimer
+    ----------
+    IMPORTANT: This is open access data. You must agree to Terms and conditions
+    of using this data before using it,
+    available at: http://humanconnectome.org/data/data-use-terms/open-access.html
+    Open Access Data (all imaging data and most of the behavioral data)
+    is available to those who register an account at ConnectomeDB and agree to
+    the Open Access Data Use Terms. This includes agreement to comply with
+    institutional rules and regulations. This means you may need the approval
+    of your IRB or Ethics Committee to use the data. The released HCP data are
+    not considered de-identified, since certain combinations of HCP Restricted
+    Data (available through a separate process) might allow identification of
+    individuals. Different national, state and local laws may apply and be
+    interpreted differently, so it is important that you consult with your IRB
+    or Ethics Committee before beginning your research. If needed and upon request,
+    the HCP will provide a certificate stating that you have accepted the
+    HCP Open Access Data Use Terms. Please note that everyone who works with
+    HCP open access data must review and agree to these terms, including those
+    who are accessing shared copies of this data. If you are sharing
+    HCP Open Access data, please advise your co-researchers that they must
+    register with ConnectomeDB and agree to these terms.
+    Register and sign the Open Access Data Use Terms at
+    ConnectomeDB: https://db.humanconnectome.org/
+    """
+    # Data is manually uploaded in NITRC
+    url = "https://www.nitrc.org/frs/download.php/8037/Megatrawls.tgz"
+    opts = {'uncompress': True}
+
+    # dataset terms
+    dimensionalities = ['d25', 'd50', 'd100', 'd200', 'd300']
+    timeseries_methods = ['ts2', 'ts3']
+
+    message = ("The %s you have given '%s' is invalid. Please choose either "
+               "of them %s or list of specific choices.")
+
+    names = ['choice_dimensionality', 'choice_timeseries']
+    inputs = [choice_dimensionality, choice_timeseries]
+    assign_names = ['dimensionalities', 'timeseries_methods']
+    standard_inputs = [dimensionalities, timeseries_methods]
+
+    for name_, input_, assign_, standard_ in zip(names, inputs, assign_names,
+                                                 standard_inputs):
+        if input_ is not None:
+            if isinstance(input_, list):
+                for n_input_ in input_:
+                    if n_input_ not in standard_:
+                        raise ValueError(message % (
+                            name_, input_, str(standard_)))
+                if assign_ == 'dimensionalities':
+                    dimensionalities = input_
+                else:
+                    timeseries_methods = input_
+            elif not isinstance(input_, list):
+                if input_ not in standard_:
+                    raise ValueError(message % (
+                        name_, input_, str(standard_)))
+
+                if assign_ == 'dimensionalities':
+                    dimensionalities = [input_]
+                else:
+                    timeseries_methods = [input_]
+
+    n_combinations = len(dimensionalities) * len(timeseries_methods)
+    dataset_name = 'Megatrawls'
+
+    files_netmats1 = []
+    files_netmats2 = []
+    for dim_ in dimensionalities:
+        filename_ = os.path.join('3T_Q1-Q6related468_MSMsulc_' + str(dim_))
+        for timeserie_ in timeseries_methods:
+            each_files_netmats1 = [(os.path.join(
+                filename_ + '_' + str(timeserie_), 'Znet1.txt'), url, opts)]
+            each_files_netmats2 = [(os.path.join(
+                filename_ + '_' + str(timeserie_), 'Znet2.txt'), url, opts)]
+            files_netmats1.append(each_files_netmats1)
+            files_netmats2.append(each_files_netmats2)
+
+    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir, verbose=verbose)
+    network_matrices1 = []
+    network_matrices2 = []
+    for n_ in range(n_combinations):
+        netmats1 = _fetch_files(
+            data_dir, files_netmats1[n_], resume=resume, verbose=verbose)
+        network_matrices1.extend(netmats1)
+        netmats2 = _fetch_files(
+            data_dir, files_netmats2[n_], resume=resume, verbose=verbose)
+        network_matrices2.extend(netmats2)
+
+    Znet1 = network_matrices1
+    Znet2 = network_matrices2
+
+    return Znet1, Znet2

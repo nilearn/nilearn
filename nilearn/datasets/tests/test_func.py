@@ -16,6 +16,7 @@ from nose.tools import (assert_true, assert_equal, assert_raises,
 from . import test_utils as tst
 
 from nilearn.datasets import utils, func
+from nilearn._utils.testing import assert_raises_regex
 
 from nilearn._utils.compat import _basestring, _urllib
 
@@ -362,3 +363,44 @@ def test_fetch_mixed_gambles():
         assert_equal(mgambles["zmaps"][0], os.path.join(datasetdir, "zmaps",
                                                         "sub001_zmaps.nii.gz"))
         assert_equal(len(mgambles["zmaps"]), n_subjects)
+
+
+def test_right_choices_dimensionality_timeseriesmethods():
+    message = ("The %s you have given '%s' is invalid. ")
+    for dim_ in ['a10', 'd15', 'd30']:
+        assert_raises_regex(ValueError,
+                            (message % ('choice_dimensionality', dim_)),
+                            func.fetch_megatrawls_netmats,
+                            choice_dimensionality=dim_)
+
+    for timeserie_ in ['tt1', 'ts4', 'st2']:
+        assert_raises_regex(ValueError,
+                            (message % ('choice_timeseries', timeserie_)),
+                            func.fetch_megatrawls_netmats,
+                            choice_timeseries=timeserie_)
+
+
+@with_setup(setup_tmpdata, teardown_tmpdata)
+def test_fetch_megatrawls_netmats():
+    net1, net2 = func.fetch_megatrawls_netmats(data_dir=tmpdir)
+    dataset_name_path = os.path.join(tmpdir, 'Megatrawls')
+
+    assert_equal(net1[0], os.path.join(
+        dataset_name_path, '3T_Q1-Q6related468_MSMsulc_d25_ts2', 'Znet1.txt'))
+
+    assert_equal(net1[9], os.path.join(
+        dataset_name_path, '3T_Q1-Q6related468_MSMsulc_d300_ts3', 'Znet1.txt'))
+
+    assert_equal(net2[5], os.path.join(
+        dataset_name_path, '3T_Q1-Q6related468_MSMsulc_d100_ts3', 'Znet2.txt'))
+
+    # test if number of possible combinations of output are correct
+    net_1, net_2 = func.fetch_megatrawls_netmats(
+        data_dir=tmpdir, choice_dimensionality=['d25', 'd200'])
+
+    expected_n_combinations = len(['d25', 'd200']) * len(['ts2', 'ts3'])
+    n_output_combinations_net1 = len(net_1)
+    n_output_combinations_net2 = len(net_2)
+
+    assert_equal(expected_n_combinations, n_output_combinations_net1)
+    assert_equal(expected_n_combinations, n_output_combinations_net2)
