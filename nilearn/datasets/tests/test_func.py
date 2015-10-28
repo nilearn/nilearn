@@ -382,25 +382,27 @@ def test_right_choices_dimensionality_timeseriesmethods():
 
 @with_setup(setup_tmpdata, teardown_tmpdata)
 def test_fetch_megatrawls_netmats():
-    net1, net2 = func.fetch_megatrawls_netmats(data_dir=tmpdir)
+    correlations = func.fetch_megatrawls_netmats(data_dir=tmpdir)
     dataset_name_path = os.path.join(tmpdir, 'Megatrawls')
 
-    assert_equal(net1[0], os.path.join(
+    assert_equal(correlations.FullCorrelation[0], os.path.join(
         dataset_name_path, '3T_Q1-Q6related468_MSMsulc_d25_ts2', 'Znet1.txt'))
 
-    assert_equal(net1[9], os.path.join(
+    assert_equal(correlations.FullCorrelation[9], os.path.join(
         dataset_name_path, '3T_Q1-Q6related468_MSMsulc_d300_ts3', 'Znet1.txt'))
 
-    assert_equal(net2[5], os.path.join(
+    assert_equal(correlations.PartialCorrelation[5], os.path.join(
         dataset_name_path, '3T_Q1-Q6related468_MSMsulc_d100_ts3', 'Znet2.txt'))
 
     # test if number of possible combinations of output are correct
-    net_1, net_2 = func.fetch_megatrawls_netmats(
+    correlation_ = func.fetch_megatrawls_netmats(
         data_dir=tmpdir, choice_dimensionality=['d25', 'd200'])
 
     expected_n_combinations = len(['d25', 'd200']) * len(['ts2', 'ts3'])
-    n_output_combinations_net1 = len(net_1)
-    n_output_combinations_net2 = len(net_2)
+    n_output_combinations_net1 = len(correlation_.FullCorrelation)
+    n_output_combinations_net2 = len(correlation_.PartialCorrelation)
 
     assert_equal(expected_n_combinations, n_output_combinations_net1)
     assert_equal(expected_n_combinations, n_output_combinations_net2)
+
+    assert_not_equal(correlation_.description, '')

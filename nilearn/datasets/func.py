@@ -1346,9 +1346,9 @@ def fetch_megatrawls_netmats(data_dir=None, choice_dimensionality=None,
     data: sklearn.datasets.base.Bunch
         Dictionary-like object, attributes are:
 
-        'Znet1': Full correlation matrices
+        'FullCorrelation': Full correlation matrices
 
-        'Znet2': Partial correlation matrices
+        'PartialCorrelation': Partial correlation matrices
 
     References
     ----------
@@ -1382,7 +1382,6 @@ def fetch_megatrawls_netmats(data_dir=None, choice_dimensionality=None,
     Register and sign the Open Access Data Use Terms at
     ConnectomeDB: https://db.humanconnectome.org/
     """
-    # Data is manually uploaded in NITRC
     url = "https://www.nitrc.org/frs/download.php/8037/Megatrawls.tgz"
     opts = {'uncompress': True}
 
@@ -1436,6 +1435,8 @@ def fetch_megatrawls_netmats(data_dir=None, choice_dimensionality=None,
             files_netmats2.append(each_files_netmats2)
 
     data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir, verbose=verbose)
+    description = _get_dataset_descr(dataset_name)
+
     network_matrices1 = []
     network_matrices2 = []
     for n_ in range(n_combinations):
@@ -1446,7 +1447,6 @@ def fetch_megatrawls_netmats(data_dir=None, choice_dimensionality=None,
             data_dir, files_netmats2[n_], resume=resume, verbose=verbose)
         network_matrices2.extend(netmats2)
 
-    Znet1 = network_matrices1
-    Znet2 = network_matrices2
-
-    return Znet1, Znet2
+    return Bunch(FullCorrelation=network_matrices1,
+                 PartialCorrelation=network_matrices2,
+                 description=description)
