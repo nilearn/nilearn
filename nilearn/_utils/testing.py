@@ -666,8 +666,13 @@ def memory_limit(limit):
                 # Save previous limit
                 prev_rlimit_as = resource.getrlimit(resource.RLIMIT_AS)
                 # Set new limit
-                resource.setrlimit(resource.RLIMIT_AS, (limit,
-                                                        prev_rlimit_as[1]))
+                resource.setrlimit(resource.RLIMIT_AS,
+                                   (limit, prev_rlimit_as[1]))
+                # Check that limits are properly set
+                new_rlimit_as = resource.getrlimit(resource.RLIMIT_AS)
+                if new_rlimit_as != (limit, prev_rlimit_as[1]):
+                    raise SystemError()
+
             except:
                 import nose
                 raise nose.SkipTest('Test skipped because nilearn was not '
@@ -681,8 +686,8 @@ def memory_limit(limit):
                 resource.setrlimit(resource.RLIMIT_AS, prev_rlimit_as)
             except:
                 import nose
-                raise nose.SkipTest('Test skipped because nilearn was not '
-                                    'able to set resource limitation.')
+                raise nose.SystemError('Unable to restore resource context.'
+                                       'Aborting.')
             return retval
         return wrapper_func
     return decorator
