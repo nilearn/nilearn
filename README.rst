@@ -4,6 +4,10 @@
    :target: https://travis-ci.org/nilearn/nilearn
    :alt: Build Status
 
+.. image:: https://ci.appveyor.com/api/projects/status/dn3b752wboo83taw?svg=true
+   :target: https://ci.appveyor.com/project/aabadie/nilearn
+   :alt: Build Status
+   
 .. image:: https://coveralls.io/repos/nilearn/nilearn/badge.svg?branch=master
    :target: https://coveralls.io/r/nilearn/nilearn
 
