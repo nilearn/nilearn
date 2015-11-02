@@ -19,8 +19,7 @@ from nilearn.datasets import utils, func
 from nilearn._utils.testing import (mock_request, wrap_chunk_read_,
                                     FetchFilesMock)
 
-from nilearn._utils.compat import _basestring
-
+from nilearn._utils.compat import _basestring, _urllib
 
 original_fetch_files = None
 original_url_request = None
@@ -81,7 +80,8 @@ def teardown_tmpdata():
 
 @with_setup(setup_tmpdata, teardown_tmpdata)
 def test_fetch_haxby_simple():
-    local_url = "file://" + os.path.join(datadir, "pymvpa-exampledata.tar.bz2")
+    local_url = "file:" + _urllib.request.pathname2url(os.path.join(datadir,
+        "pymvpa-exampledata.tar.bz2"))
     haxby = func.fetch_haxby_simple(data_dir=tmpdir, url=local_url,
                                     verbose=0)
     datasetdir = os.path.join(tmpdir, 'haxby2001_simple', 'pymvpa-exampledata')
@@ -98,7 +98,8 @@ def test_fetch_haxby_simple():
 @with_setup(setup_tmpdata, teardown_tmpdata)
 def test_fail_fetch_haxby_simple():
     # Test a dataset fetching failure to validate sandboxing
-    local_url = "file://" + os.path.join(datadir, "pymvpa-exampledata.tar.bz2")
+    local_url = "file:" + _urllib.request.pathname2url(os.path.join(datadir,
+        "pymvpa-exampledata.tar.bz2"))
     datasetdir = os.path.join(tmpdir, 'haxby2001_simple', 'pymvpa-exampledata')
     os.makedirs(datasetdir)
     # Create a dummy file. If sandboxing is successful, it won't be overwritten
@@ -407,7 +408,7 @@ def test_fetch_mixed_gambles():
         mgambles = func.fetch_mixed_gambles(n_subjects=n_subjects,
                                             data_dir=tmpdir, url=local_url,
                                             verbose=0, return_raw_data=True)
-        datasetdir = os.path.join(tmpdir, "jimura_poldrack_2012_zmaps/")
+        datasetdir = os.path.join(tmpdir, "jimura_poldrack_2012_zmaps" + os.sep)
         assert_equal(mgambles["zmaps"][0], os.path.join(datasetdir, "zmaps",
                                                         "sub001_zmaps.nii.gz"))
         assert_equal(len(mgambles["zmaps"]), n_subjects)

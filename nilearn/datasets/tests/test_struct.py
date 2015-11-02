@@ -123,13 +123,14 @@ def test_get_dataset_dir():
     # Non writeable dir is returned because dataset may be in there.
     assert_equal(data_dir, no_write)
     assert os.path.exists(data_dir)
+    os.chmod(no_write, 0o600)
     shutil.rmtree(data_dir)
 
     # Verify exception for a path which exists and is a file
     test_file = os.path.join(tmpdir, 'some_file')
     with open(test_file, 'w') as out:
         out.write('abcfeg')
-    assert_raises_regex(OSError, 'Not a directory',
+    assert_raises_regex(OSError, 'Not a directory|introuvable',
                         utils._get_dataset_dir, 'test', test_file,
                         verbose=0)
 

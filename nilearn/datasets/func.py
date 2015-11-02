@@ -1138,7 +1138,7 @@ def fetch_abide_pcp(data_dir=None, n_subjects=None, pipeline='cpac',
 
     # Go into specific data folder and url
     data_dir = os.path.join(data_dir, pipeline, strategy)
-    url = '/'.join([url, 'Outputs', pipeline, strategy])
+    url = os.sep.join([url, 'Outputs', pipeline, strategy])
 
     # Get the files
     results = {}
@@ -1152,7 +1152,7 @@ def fetch_abide_pcp(data_dir=None, n_subjects=None, pipeline='cpac',
     for derivative in derivatives:
         ext = '.1D' if derivative.startswith('rois') else '.nii.gz'
         files = [(file_id + '_' + derivative + ext,
-                  '/'.join([url, derivative,
+                  os.sep.join([url, derivative,
                             file_id + '_' + derivative + ext]),
                   {}) for file_id in file_ids]
         files = _fetch_files(data_dir, files, verbose=verbose)
@@ -1266,7 +1266,7 @@ def fetch_mixed_gambles(n_subjects=1, data_dir=None, url=None, resume=True,
         url = ("https://www.nitrc.org/frs/download.php/7229/"
                "jimura_poldrack_2012_zmaps.zip")
     opts = dict(uncompress=True)
-    files = [("zmaps/sub%03i_zmaps.nii.gz" % (j + 1), url, opts)
+    files = [("zmaps%ssub%03i_zmaps.nii.gz" % (os.sep, (j + 1)), url, opts)
              for j in range(n_subjects)]
     data_dir = _get_dataset_dir('jimura_poldrack_2012_zmaps',
                                 data_dir=data_dir)

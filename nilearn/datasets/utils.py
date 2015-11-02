@@ -16,6 +16,11 @@ import warnings
 import zipfile
 from .._utils.compat import _basestring, cPickle, _urllib, md5_hash
 
+# Environment variables splitter is different on Windows
+if sys.platform == 'win32':
+    ENV_SPLITTER = ';'
+else:
+    ENV_SPLITTER = ':'
 
 def _format_time(t):
     if t > 60:
@@ -209,19 +214,19 @@ def _get_dataset_dir(dataset_name, data_dir=None, default_paths=None,
     # Search given environment variables
     if default_paths is not None:
         for default_path in default_paths:
-            paths.extend([(d, True) for d in default_path.split(':')])
+            paths.extend([(d, True) for d in default_path.split(ENV_SPLITTER)])
 
     # Check data_dir which force storage in a specific location
     if data_dir is not None:
-        paths.extend([(d, False) for d in data_dir.split(':')])
+        paths.extend([(d, False) for d in data_dir.split(ENV_SPLITTER)])
     else:
         global_data = os.getenv('NILEARN_SHARED_DATA')
         if global_data is not None:
-            paths.extend([(d, False) for d in global_data.split(':')])
+            paths.extend([(d, False) for d in global_data.split(ENV_SPLITTER)])
 
         local_data = os.getenv('NILEARN_DATA')
         if local_data is not None:
-            paths.extend([(d, False) for d in local_data.split(':')])
+            paths.extend([(d, False) for d in local_data.split(ENV_SPLITTER)])
 
         paths.append((os.path.expanduser('~/nilearn_data'), False))
 
