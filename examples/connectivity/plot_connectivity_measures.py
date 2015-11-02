@@ -3,9 +3,9 @@ Comparing different functional connectivity measures
 ====================================================
 
 This example compares different measures of functional connectivity between
-regions of interest : correlation, partial correlation, as well as a robust
-dispersion measure. The resulting connectivity coefficients are used to
-classify ADHD vs control subjects and the robust dispersion outperforms the
+regions of interest : correlation, partial correlation, as well as a measure
+called tangent. The resulting connectivity coefficients are used to
+classify ADHD vs control subjects and the tangent measure outperforms the
 standard measures.
 
 """
@@ -33,17 +33,17 @@ for func_file, phenotypic in zip(dataset.func, dataset.phenotypic):
         adhds.append(phenotypic['adhd'])  # ADHD/control label
 
 # Estimate connectivity
-import nilearn.connectivity
-kinds = ['robust dispersion', 'partial correlation', 'correlation']
+import nilearn.connectome
+kinds = ['tangent', 'partial correlation', 'correlation']
 individual_connectivity_matrices = {}
 mean_connectivity_matrix = {}
 for kind in kinds:
-    conn_measure = nilearn.connectivity.ConnectivityMeasure(kind=kind)
+    conn_measure = nilearn.connectome.ConnectivityMeasure(kind=kind)
     individual_connectivity_matrices[kind] = conn_measure.fit_transform(
         subjects)
     # Compute the mean connectivity
-    if kind == 'robust dispersion':
-        mean_connectivity_matrix[kind] = conn_measure.robust_mean_
+    if kind == 'tangent':
+        mean_connectivity_matrix[kind] = conn_measure.mean_
     else:
         mean_connectivity_matrix[kind] = \
             individual_connectivity_matrices[kind].mean(axis=0)
@@ -76,7 +76,7 @@ cv = StratifiedKFold(classes, n_folds=3)
 for kind in kinds:
     svc = LinearSVC()
     # Transform the connectivity matrices to 1D arrays
-    coonectivity_coefs = nilearn.connectivity.sym_to_vec(
+    coonectivity_coefs = nilearn.connectome.sym_to_vec(
         individual_connectivity_matrices[kind])
     cv_scores = cross_val_score(svc, coonectivity_coefs,
                                 adhds, cv=cv, scoring='accuracy')

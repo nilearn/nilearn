@@ -7,9 +7,10 @@ from scipy import linalg
 from numpy.testing import assert_array_almost_equal, assert_array_equal
 from nose.tools import assert_raises, assert_equal, assert_true
 from sklearn.utils import check_random_state
+from sklearn.covariance import EmpiricalCovariance
 
 from nilearn._utils.extmath import is_spd
-from nilearn.connectivity.connectivity_matrices import (
+from nilearn.connectome.connectivity_matrices import (
     _check_square, _check_spd, _map_eigenvalues, _form_symmetric,
     _geometric_mean, sym_to_vec, _prec_to_partial, ConnectivityMeasure)
 
@@ -363,10 +364,11 @@ def test_fit_transform():
         covs.append((signal.T).dot(signal) / n_samples)
 
     input_covs = copy.copy(covs)
-    kinds = ["correlation", "robust dispersion", "precision",
+    kinds = ["correlation", "tangent", "precision",
              "partial correlation"]
     for kind in kinds:
-        conn_measure = ConnectivityMeasure(kind=kind)
+        conn_measure = ConnectivityMeasure(kind=kind,
+                                           cov_estimator=EmpiricalCovariance())
         connectivities = conn_measure.fit_transform(signals)
 
         # Generic
@@ -378,10 +380,10 @@ def test_fit_transform():
             assert(is_spd(covs[k], decimal=7))
 
             # Positive definiteness if expected and output value checks
-            if kind == "robust dispersion":
+            if kind == "tangent":
                 assert_array_almost_equal(cov_new, cov_new.T)
                 gmean_sqrt = _map_eigenvalues(np.sqrt,
-                                              conn_measure.robust_mean_)
+                                              conn_measure.mean_)
                 assert(is_spd(gmean_sqrt, decimal=7))
                 assert(is_spd(conn_measure.whitening_, decimal=7))
                 assert_array_almost_equal(conn_measure.whitening_.dot(

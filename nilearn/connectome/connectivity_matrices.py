@@ -5,7 +5,7 @@ import numpy as np
 from scipy import linalg
 
 from sklearn.base import BaseEstimator, TransformerMixin, clone
-from sklearn.covariance import EmpiricalCovariance
+from sklearn.covariance import LedoitWolf
 from .._utils.extmath import is_spd
 
 
@@ -259,29 +259,29 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
     cov_estimator : estimator object, optional.
         The covariance estimator.
 
-    kind : {"correlation", "partial correlation", "robust dispersion",\
+    kind : {"correlation", "partial correlation", "tangent",\
             "covariance", "precision"}, optional
         The matrix kind.
 
     Attributes
     ----------
-    `cov_estimator_` : estimator object
+    cov_estimator_ : estimator object
         A new covariance estimator with the same parameters as cov_estimator.
 
-    `robust_mean_` : numpy.ndarray
-        The mean connectivity for the robust dispersion kind.
+    mean_ : numpy.ndarray
+        The mean connectivity for the tangent kind.
 
-    `whitening_` : numpy.ndarray
+    whitening_ : numpy.ndarray
         The inverted square-rooted geometric mean of the covariance matrices.
 
     References
     ----------
-    For the use of "robust dispersion", see the paper:
+    For the use of "tangent", see the paper:
     G. Varoquaux et al. "Detection of brain functional-connectivity difference
     in post-stroke patients using group-level covariance modeling, MICCAI 2010.
     """
 
-    def __init__(self, cov_estimator=EmpiricalCovariance(assume_centered=True),
+    def __init__(self, cov_estimator=LedoitWolf(),
                  kind='covariance'):
         self.cov_estimator = cov_estimator
         self.kind = kind
@@ -302,12 +302,11 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
         """
         self.cov_estimator_ = clone(self.cov_estimator)
 
-        if self.kind == 'robust dispersion':
+        if self.kind == 'tangent':
             covariances = [self.cov_estimator_.fit(x).covariance_ for x in X]
-            self.robust_mean_ = _geometric_mean(covariances, max_iter=30,
-                                                tol=1e-7)
+            self.mean_ = _geometric_mean(covariances, max_iter=30, tol=1e-7)
             self.whitening_ = _map_eigenvalues(lambda x: 1. / np.sqrt(x),
-                                               self.robust_mean_)
+                                               self.mean_)
 
         return self
 
@@ -329,7 +328,7 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
         covariances = np.array(covariances)
         if self.kind == 'covariance':
             connectivities = covariances
-        elif self.kind == 'robust dispersion':
+        elif self.kind == 'tangent':
             connectivities = [_map_eigenvalues(np.log, self.whitening_.dot(
                                                cov).dot(self.whitening_))
                               for cov in covariances]
@@ -342,7 +341,7 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
             connectivities = [_cov_to_corr(cov) for cov in covariances]
         else:
             raise ValueError('Allowed connectivity kinds are "correlation", '
-                             '"partial correlation", "robust dispersion", '
+                             '"partial correlation", "tangent", '
                              '"covariance" and "precision", got kind '
                              '"{}"'.format(self.kind))
 

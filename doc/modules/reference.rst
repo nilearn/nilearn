@@ -279,16 +279,16 @@ uses.
 
 .. _connectivity_ref:
 
-:mod:`nilearn.connectivity`: Functional Connectivity
+:mod:`nilearn.connectome`: Functional Connectivity
 ====================================================
 
-.. automodule:: nilearn.connectivity
+.. automodule:: nilearn.connectome
    :no-members:
    :no-inherited-members:
 
 **Classes**:
 
-.. currentmodule:: nilearn.connectivity.connectivity_matrices
+.. currentmodule:: nilearn.connectome.connectivity_matrices
 
 .. autosummary::
    :toctree: generated/
@@ -298,7 +298,7 @@ uses.
 
 **Functions**:
 
-.. currentmodule:: nilearn.connectivity.connectivity_matrices
+.. currentmodule:: nilearn.connectome.connectivity_matrices
 
 .. autosummary::
    :toctree: generated/
