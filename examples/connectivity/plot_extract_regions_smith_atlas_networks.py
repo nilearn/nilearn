@@ -29,7 +29,7 @@ extraction.fit_transform(func_filenames)
 
 regions = extraction.regions_
 # Index of each region to identify its corresponding ICA network
-index = extraction.index_
+index = extraction.identity_
 
 # Visualize the region extraction results
 import matplotlib.pyplot as plt

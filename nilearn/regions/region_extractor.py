@@ -17,15 +17,14 @@ from ..input_data.nifti_masker import filter_and_mask
 from .._utils import check_niimg, check_niimg_3d, check_niimg_4d
 from .._utils.extmath import fast_abs_percentile
 from .._utils.class_inspect import get_params
-from ..image import iter_img, new_img_like
+from ..image import iter_img, new_img_like, resample_img
 from ..image.image import _smooth_array
-from .._utils.niimg_conversions import concat_niimgs
+from .._utils.niimg_conversions import concat_niimgs, _check_same_fov
 from .._utils.compat import _basestring
 from ..externals.skimage import peak_local_max, random_walker
 
 
-def foreground_extraction(maps_img, mask_img=None, parameters=None,
-                          threshold='auto',
+def foreground_extraction(maps_img, mask_img=None, threshold='auto',
                           thresholding_strategy='percentile'):
     """ A function which keeps the most prominent regions of the maps,
     denoted as foreground objects/regions extraction.
@@ -33,74 +32,78 @@ def foreground_extraction(maps_img, mask_img=None, parameters=None,
     Parameters
     ----------
     maps_img: a 3D/4D Nifti like image/object
-        a path or filename or an image consists of statistical maps.
+        a path or filename or an image consists of statistical maps or atlas
+        maps.
 
     mask_img: a Nifti like image/object, default is None
-        a path or filename or a mask image. To make sure that we keep regions
-        which are within the brain volume.
-        If given, maps are masked with this image or if not given, maps are
-        masked automatically estimated by a `NiftiMasker`.
+        If given, mask image is applied directly on the input data 'maps_img'.
+        For example, if interested to consider only one particular brain region
+        then mask image to that particular brain region should be provided.
+        If none, masking will not be applied.
 
-    parameters: list of parameters, default is None
-        If given, parameters are passed to `filter_and_mask` along with
-        the provided input mask image.
+    threshold: a float (t-value or ratio [0., 100.]), 'auto', default is 'auto'
+        a value used to threshold the maps to keep the most meaningful voxels.
 
-    threshold: a float (t-value, ratio), 'auto', default is 'auto'
-        a value used to threshold the maps.
+        If float representing as a t-value, a t-statistic value should be submitted
+        to keep the voxel intensities which are above than this value.
+        Mostly suitable, if user wants to keep the voxels based on raw statistic value.
+        In this case, user should know exactly which are the voxels to be kept by
+        visually checking the intensity value.
 
-        If float, a t-statistic threshold value of maps, the intensities
-        which are survived above this value are kept. Most suitable if user
-        knows exactly the values to keep.
+        If float representing as a ratio, this value is used to keep the more intense
+        voxels across all maps. The most meaningful voxels are kept by multiplying
+        this value with the total size of the voxels.
 
-        If float, a ratio value between [0. and 1.], is used to multiply
-        with the total size of voxels (ratio * n_voxels = some_voxels).
-        The most intense voxels (some_voxels) which are survived will be kept.
-        Most suitable for the case, if the concept of threshold should be
-        according to total count of voxels inside the brain volume.
+        If default 'auto', a pre-defined float value set to 0.8 will be used
+        in representing as a ratio.
 
-        If default 'auto', pre-defined ratio 0.8 is used, which means 80%
-        of the voxels which are survived are kept.
+    thresholding_strategy: string {None, 'ratio_n_voxels', 'percentile'}, \
+        default 'percentile'.
+        a string used to select between two different types of thresholding strategies.
+        This strategy takes the given threshold value and thresholds the data.
 
-    thresholding_strategy: string {None, 'ratio_n_voxels', 'percentile'} \
-        default 'percentile'
-        a parameter to select between the type of determining a threshold value.
-        It can be either based on number of voxels or score of the data based
-        on a percentile.
+        If ratio_n_voxels, most meaningful voxels which are survived above the
+        value which is determined by ratio * n_voxels will be kept.
 
-        If None, threshold value will not be determined.
+        If percentile, most meaningful voxels which are survived above the
+        value determined by (percentile = ratio * 100) of the total voxels.
 
-        If ratio_n_voxels, threshold value is estimated based on total size of the
-        voxels.
-
-        If percentile, threshold value is determined based on the percentage
-        score of the input data of the maps.
+        If None, neither of the strategy is used which means no thresholding will
+        be done.
 
     Returns
     -------
     threshold_maps_img: a Nifti like image/object
         a thresholded image of the input.
     """
-    maps_img = check_niimg(maps_img)
-
-    single_map = (len(maps_img.shape) == 3)
+    maps_img = check_niimg(maps_img, atleast_4d=True)
+    maps = maps_img.get_data()
+    len_of_maps = maps.shape[-1]
+    affine = maps_img.get_affine()
 
     if mask_img is not None:
-        mask_img = check_niimg_3d(mask_img)
-        if parameters is not None:
-            maps, affine = filter_and_mask(maps_img, mask_img, parameters)
-        else:
-            nifti_masker = NiftiMasker(mask_img=mask_img)
-            maps = nifti_masker.fit_transform(maps_img)
-    elif mask_img is None:
-        nifti_masker = NiftiMasker(mask_img=mask_img)
-        maps = nifti_masker.fit_transform(maps_img)
-        mask_img = nifti_masker.mask_img_
+        if not _check_same_fov(maps_img, mask_img):
+            mask_img = resample_img(mask_img,
+                                    target_affine=maps_img.get_affine(),
+                                    target_shape=maps_img.shape[:3],
+                                    interpolation="nearest")
+
+        mask = masking._load_mask_img(mask_img)
+
+        # Set as 0 for the values which are outside of the mask
+        maps[mask == 0.] = 0.
+
+    list_of_strategies = [None, 'percentile', 'ratio_n_voxels']
+    if thresholding_strategy not in list_of_strategies:
+        message = ("'thresholding_strategy' should be given as "
+                   "either of these {0}").format(list_of_strategies)
+        raise ValueError(message)
 
     ratio = None
     if isinstance(threshold, float):
         if thresholding_strategy is None:
             # When threshold is needed to apply directly based on
-            # statistical values which should not be more than maximum
+            # statistical values, the given value should not be more than maximum
             value_check = abs(maps).max()
             if abs(threshold) > value_check:
                 raise ValueError("The value given to threshold "
@@ -110,27 +113,15 @@ def foreground_extraction(maps_img, mask_img=None, parameters=None,
             cutoff_threshold = threshold
         else:
             ratio = threshold
-    elif threshold == 'auto':
+    elif threshold == 'auto' and ratio is None:
         ratio = 0.8
     elif threshold is not None:
-        raise ValueError("Threshold must be either "
+        raise ValueError("Threshold must be None "
                          "'auto' or float. You provided %s." %
                          str(threshold))
-    # check if the input strategy is a valid
-    list_of_estimators = [None, 'percentile', 'ratio_n_voxels']
-    if thresholding_strategy not in list_of_estimators:
-        message = ("'thresholding_strategy' should be given as "
-                   "either of these {0}").format(list_of_estimators)
-        raise ValueError(message)
-
     # Thresholding
-    if ratio is not None and ratio > 1.:
-        raise ValueError("threshold given for a 'percentile' or 'ratio_n_voxels' "
-                         "is expected between 0. and 1. "
-                         "You provided %s" % threshold)
-
-    if thresholding_strategy == 'percentile':
-        percentile = 100. - (100. / len(maps)) * ratio
+    if ratio is not None and thresholding_strategy == 'percentile':
+        percentile = 100. - (100. / len_of_maps) * ratio
         cutoff_threshold = scoreatpercentile(np.abs(maps), percentile)
     elif ratio is not None and thresholding_strategy == 'ratio_n_voxels':
         raveled = np.abs(maps).ravel()
@@ -140,29 +131,23 @@ def foreground_extraction(maps_img, mask_img=None, parameters=None,
 
     maps[np.abs(maps) < cutoff_threshold] = 0.
     threshold_maps = maps
-    threshold_maps_img = masking.unmask(threshold_maps, mask_img)
-    # squeeze the image if input maps given as 3D is converted to
-    # 4D after thresholding
-    if single_map:
-        data = threshold_maps_img.get_data()
-        affine = threshold_maps_img.get_affine()
-        threshold_maps_img = new_img_like(
-            threshold_maps_img, data[:, :, :, 0], affine)
+
+    threshold_maps_img = new_img_like(maps_img, threshold_maps, affine)
 
     return threshold_maps_img
 
 
-def connected_component_extraction(map_img, min_size=20,
-                                   extract_type='connected_components',
+def connected_component_extraction(maps_img, min_size=20,
+                                   extract_type='local_regions',
                                    peak_local_smooth=6, mask_img=None):
     """ A function takes the connected components of the brain activation
     maps/regions and breaks each component into a seperate brain regions.
 
     Parameters
     ----------
-    map_img: a Nifti-like image/object
-        a 3D image of the activation maps which should be breaked into a set
-        of regions.
+    maps_img: a Nifti-like image/object
+        an image of the activation or atlas maps which should be extracted
+        into a set of regions.
 
     min_size: int, default is 20
         An integer which denotes the size of voxels in the each region.
@@ -170,12 +155,11 @@ def connected_component_extraction(map_img, min_size=20,
         are kept.
 
     extract_type: string {"connected_components", "local_regions"} \
-        default is connected_components
+        default is local_regions
         A method used to segment/seperate the regions.
 
         If connected_components, each component in the input image is assigned
-        a unique label point and then seperated based on the uniqueness of those
-        label points.
+        a unique label point and then seperated based on only label points.
 
         If local_regions, smoothing followed by random walker procedure is
         used to split into each a seperate regions.
@@ -184,16 +168,26 @@ def connected_component_extraction(map_img, min_size=20,
         a value in mm which is used to smooth an image to locate seed points.
 
     mask_img: Nifti-like image/object, default is None
-        an option used to mask the input brain map image.
+        If given, mask image is applied directly on the input data 'maps_img'.
+        For example, if interested to consider only one particular brain region
+        then mask image to that particular brain region should be provided.
+        If none, masking will not be applied.
 
     Returns
     -------
-    regions: a Nifti-like images
-        contains the images of segmented regions each 3D image appended as a
-        seperate brain activated region.
+    regions_extracted: a 4D Nifti-like image
+        contains the images of segmented regions each 3D image is a
+        seperate brain activated region or atlas region.
+
+    indentity_id_of_maps: a numpy array
+        an array of list of indices where each index value is assigned to
+        each seperate region of its corresponding family of brain maps.
     """
-    regions = []
-    map_img = check_niimg_3d(map_img)
+    all_regions_imgs = []
+    identity_id_of_maps = []
+    maps_img = check_niimg(maps_img, atleast_4d=True)
+    maps = maps_img.get_data()
+    affine = maps_img.get_affine()
 
     extract_methods = ['connected_components', 'local_regions']
     if extract_type not in extract_methods:
@@ -201,40 +195,64 @@ def connected_component_extraction(map_img, min_size=20,
                    "either of these {0}").format(extract_methods)
         raise ValueError(message)
 
-    map_data = map_img.get_data()
-    affine = map_img.get_affine()
-    # Mark the seeds using random walker
-    if extract_type == 'local_regions':
-        smooth_map_data = _smooth_array(map_data, affine, peak_local_smooth)
-        seeds = peak_local_max(smooth_map_data, indices=False,
-                               exclude_border=False)
-        seeds_label, seeds_id = label(seeds)
-        # Assign integer "-1" to ignore
-        seeds_label[map_data == 0.] = -1
-        # Take the maximum value of the data and
-        # normalize to be between -1 and 1
-        max_value_map = max(map_data.max(), -map_data.min())
-        if max_value_map > 1.:
-            map_data /= max_value_map
-        rw_maps = random_walker(map_data, seeds_label, mode='cg_mg')
-        # Now simply replace "-1" with "0" for regions seperation
-        rw_maps[rw_maps == -1] = 0.
-        maps_assigned = rw_maps
-    else:
-        # Taking directly the input data which is the case in 'auto' type
-        maps_assigned = map_data
-    # Region seperation
-    label_maps, n_labels = label(maps_assigned)
-    # Takes the size of each labelized region data
-    labels_size = np.bincount(label_maps.ravel())
-    labels_size[0] = 0.
-    for label_id, label_size in enumerate(labels_size):
-        if label_size > min_size:
-            region_data = (label_maps == label_id) * map_data
-            region_img = new_img_like(map_img, region_data)
-            regions.append(region_img)
+    if mask_img is not None:
+        if not _check_same_fov(maps_img, mask_img):
+            mask_img = resample_img(mask_img,
+                                    target_affine=maps_img.get_affine(),
+                                    target_shape=maps_img.shape[:3],
+                                    interpolation="nearest")
+            mask = masking._load_mask_img(mask_img)
+            # Set as 0 to the values which are outside of the mask
+            maps[mask == 0.] = 0.
 
-    return regions
+    for index in range(maps.shape[-1]):
+        regions = []
+        map_ = maps[..., index]
+        # Mark the seeds using random walker
+        if extract_type == 'local_regions':
+            smooth_map = _smooth_array(map_, affine, peak_local_smooth)
+            seeds = peak_local_max(smooth_map, indices=False,
+                                   exclude_border=False)
+            seeds_label, seeds_id = label(seeds)
+            # Assign -1 to values which are 0. to indicate to ignore
+            seeds_label[map_ == 0.] = -1
+            # Take the maximum value of the data and
+            # normalize to be between -1 and 1 for random walker compatibility
+            max_value_map = max(map_.max(), -map_.min())
+            if max_value_map > 1.:
+                map_ /= max_value_map
+
+            try:
+                mode = 'cg_mg'
+                rw_maps = random_walker(map_, seeds_label, mode=mode)
+            except Exception as e:
+                print "Random Walker algorithm failed for mode:%s, %s" % (mode, str(e))
+                rw_maps = random_walker(map_, seeds_label, mode='bf')
+
+            # Now simply replace "-1" with "0" for regions seperation
+            rw_maps[rw_maps == -1] = 0.
+            maps_assigned = rw_maps
+        else:
+            # Taking directly the input data which is the case in 'auto' type
+            maps_assigned = map_
+
+        # Region seperation block
+        label_maps, n_labels = label(maps_assigned)
+        # Takes the size of each labelized region data
+        labels_size = np.bincount(label_maps.ravel())
+        labels_size[0] = 0.
+        for label_id, label_size in enumerate(labels_size):
+            if label_size > min_size:
+                region_data = (label_maps == label_id) * map_
+                region_img = new_img_like(maps_img, region_data)
+                regions.append(region_img)
+
+        identity_id_of_maps.extend([index] * len(regions))
+        all_regions_imgs.extend(regions)
+        del regions
+    regions_extracted = concat_niimgs(all_regions_imgs)
+
+    return regions_extracted, identity_id_of_maps
 
 
 class RegionExtractor(NiftiMapsMasker):
@@ -248,14 +266,15 @@ class RegionExtractor(NiftiMapsMasker):
 
     Parameters
     ----------
-    maps_img: Niimg-like object or path to the Niimg
+    maps_img: 4D Niimg-like object or path to the 4D Niimg
        an image or a filename of the image which contains a set of brain
        atlas maps or statistically decomposed brain maps.
 
-    mask: Niimg-like object, instance of NiftiMasker, default is None, optional
-        Mask to be applied on the input data. If an instance of masker is passed,
-        then its mask is used. If no mask is provided, this class/function
-        will automatically computes mask by NiftiMasker from the input data.
+    mask_img: Niimg-like object or None,  default is None, optional
+        Mask to be applied on the input data.
+        If given, mask_img is submitted to an instance of NiftiMapsMasker to
+        for a mask preparation to input data.
+        If None, no mask will be applied on the data.
 
     target_affine: 3x3 or 4x4 matrix, default is None, optional
         If given, while masking the image is resampled to this affine by
@@ -295,29 +314,34 @@ class RegionExtractor(NiftiMapsMasker):
         the regions having the size of the voxels which are more than this
         integer.
 
-    threshold: float or 'auto', default is 'auto', optional
-        If default 'auto', we estimate a threshold with pre-defined ratio set as 0.8.
-        The estimated threshold tells us to keep the more intense voxels within
-        the brain volume across all maps. The threshold value is estimated by
-        multiplying the ratio with total size of the voxels, denoted as
-        (0.8 * n_voxels) or it can be estimated by multiplying the ratio with
-        the total number of maps to get in a percentile.
+    threshold: float (t-value or ratio [0., 100.]), 'auto', default is 'auto'
+        a value used to threshold the maps to keep the most meaningful voxels.
+        If float representing as a t-value, a t-statistic value should be submitted
+        to keep the voxel intensities which are above than this value.
+        Mostly suitable, if user wants to keep the voxels based on raw statistic value.
+        In this case, user should know exactly which are the voxels to be kept by
+        visually checking the intensity value.
 
-        If given as float, this value is replaced directly by the pre-defined
-        set ratio 0.8.
+        If float representing as a ratio, this value is used to keep the more intense
+        voxels across all maps. The most meaningful voxels are kept by multiplying
+        this value with the total size of the voxels.
+
+        If default 'auto', a pre-defined float value set to 0.8 will be used
+        in representing as a ratio.
 
     threshold_strategy: string {'ratio_n_voxels', 'percentile'}, \
-        default is 'ratio_n_voxels', optional
-        This parameter is to select between the type of estimating the threshold.
+        default is 'percentile', optional
+        a string used to select between two different types of thresholding strategies.
+        This strategy takes the given threshold value and thresholds the data.
 
-        If 'ratio_n_voxels', the threshold value is estimated based on total
-        size of voxels in the brain volume. This option tells us to keep the
-        percentage of more intense voxels.
+        If ratio_n_voxels, most meaningful voxels which are survived above the
+        value which is determined by ratio * n_voxels will be kept.
 
-        If 'percentile', the percentile threshold value is estimated by the
-        percentage of the score to the number of maps.
+        If percentile, most meaningful voxels which are survived above the
+        value determined by (percentile = ratio * 100) of the total voxels will be kept.
 
     extractor: string {'connected_components', 'local_regions'}, optional
+        default is 'local_regions'
         A string which chooses between the type of extractor.
 
         If 'connected_components', regions are segmented using only a labels
@@ -332,15 +356,15 @@ class RegionExtractor(NiftiMapsMasker):
 
     Attributes
     ----------
-    `regions_`: Niimg-like image/object
+    regions_: Niimg-like image/object
         a list of seperated regions with each region lying on a 3D volume
         concatenated into a 4D Nifti like object.
 
-    `index_`: a numpy array
+    indentity_: a numpy array
         an array of list of indices where each index value is assigned to
         each seperate region of its corresponding family of brain maps.
 
-    `signals_`: a numpy array
+    signals_: a numpy array
         a list of averaged timeseries signals of the subjects extracted from
         each region.
 
@@ -350,14 +374,14 @@ class RegionExtractor(NiftiMapsMasker):
       brain parcellations from rest fMRI", Sparsity Techniques in Medical Imaging,
       Sep 2014, Boston, United States. pp.8
     """
-    def __init__(self, maps_img, mask=None, target_affine=None,
+    def __init__(self, maps_img, mask_img=None, target_affine=None,
                  target_shape=None, standardize=False, low_pass=None,
                  high_pass=None, t_r=None, memory=Memory(cachedir=None),
-                 min_size=20, thresholding_strategy='ratio_n_voxels',
-                 threshold='auto', extractor='connected_components',
+                 min_size=20, thresholding_strategy='percentile',
+                 threshold='auto', extractor='local_regions',
                  peak_local_smooth=6., verbose=0):
         self.maps_img = maps_img
-        self.mask = mask
+        self.mask_img = mask_img
         self.target_affine = target_affine
         self.target_shape = target_shape
         self.standardize = standardize
@@ -379,33 +403,35 @@ class RegionExtractor(NiftiMapsMasker):
         """ Prepare or set up the data for the region extraction
 
         """
-        self.maps_img_ = check_niimg(self.maps_img)
+        maps_img = check_niimg_4d(self.maps_img)
 
-        if isinstance(self.mask, NiftiMasker):
-            self.masker_ = clone(self.mask)
+        # Asking NiftiMapsMasker to prepare the data for regions extraction
+        # only if mask_img is provided
+        if self.mask_img is not None:
+            nifti_maps_masker = NiftiMapsMasker(maps_img, mask_img=self.mask_img,
+                                                resampling_target="maps")
+            nifti_maps_masker.fit()
+            self.maps_img_ = nifti_maps_masker.maps_img_
+            self.mask_img_ = nifti_maps_masker.mask_img_
         else:
-            self.masker_ = NiftiMasker(mask_img=self.mask,
-                                       target_affine=self.target_affine,
-                                       target_shape=self.target_shape,
-                                       standardize=False,
-                                       low_pass=self.low_pass,
-                                       high_pass=self.high_pass,
-                                       mask_strategy='background',
-                                       t_r=self.t_r,
-                                       memory=self.memory)
+            self.mask_img_ = None
+            self.maps_img_ = maps_img
 
-        if self.masker_.mask_img is None:
-            self.masker_.fit(self.maps_img_)
-        else:
-            self.masker_.fit()
-        self.mask_img_ = self.masker_.mask_img_
-
-        parameters = get_params(NiftiMasker, self)
-        parameters['detrend'] = True
-        # foreground extraction of input data "maps_img"
+        # foreground extraction
         self.threshold_maps_img_ = foreground_extraction(
-            self.maps_img_, mask_img=self.mask_img_, parameters=parameters,
-            threshold=self.threshold, thresholding_strategy=self.thresholding_strategy)
+            self.maps_img_,
+            mask_img=self.mask_img_,
+            threshold=self.threshold,
+            thresholding_strategy=self.thresholding_strategy)
+
+        # connected component extraction
+        all_regions = []
+        index_each_map = []
+        self.regions_, self.identity_ = connected_component_extraction(
+            self.threshold_maps_img_,
+            self.min_size,
+            self.extractor,
+            self.peak_local_smooth)
 
         return self
 
@@ -436,30 +462,16 @@ class RegionExtractor(NiftiMapsMasker):
         region_signals: a numpy array
             an averaged time series signals of the subjects.
         """
-        if not hasattr(self, 'threshold_maps_img_') \
+        region_signals = []
+        if not hasattr(self, 'regions_') \
                 and not hasattr(self, 'mask_img_'):
-            message = ("It seems like either threshold_maps_img or mask_img "
+            message = ("It seems like either extracted regions or mask_img "
                        " is missing. You must call fit() before calling a "
                        "transform(). or You must call fit_transform() directly")
             raise ValueError(message)
 
-        all_regions_accumulated = []
-        index_of_each_map = []
-        all_regions_toimgs = []
-        region_signals = []
-
-        for index, map_ in enumerate(iter_img(self.threshold_maps_img_)):
-            regions_imgs_of_each_map = connected_component_extraction(
-                map_, self.min_size, self.extractor, self.peak_local_smooth)
-            len_regions_of_each_map = len(regions_imgs_of_each_map)
-            index_of_each_map.extend([index] * len_regions_of_each_map)
-            all_regions_accumulated.extend(regions_imgs_of_each_map)
-
-        all_regions_toimgs = concat_niimgs(all_regions_accumulated)
-        regions_extracted = all_regions_toimgs
-
-        nifti_maps_masker = NiftiMapsMasker(regions_extracted,
-                                            self.mask_img_,
+        nifti_maps_masker = NiftiMapsMasker(self.regions_,
+                                            mask_img=self.mask_img_,
                                             standardize=self.standardize)
         nifti_maps_masker.fit()
         if confounds is None:
@@ -469,8 +481,6 @@ class RegionExtractor(NiftiMapsMasker):
                 img, confounds=confound)
             region_signals.append(each_subject_signals)
 
-        self.index_ = index_of_each_map
-        self.regions_ = regions_extracted
         self.signals_ = region_signals
 
         return self

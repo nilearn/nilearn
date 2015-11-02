@@ -88,12 +88,6 @@ def test_validity_extract_types_in_connected_component_extraction():
                             img, min_size=40,
                             extract_type='connect_regions')
 
-    # test whether same error raises as expected when you submit 4D image
-    assert_raises_regex(ValueError,
-                        "A 3D Nifti image or path to a 3D image should be submitted.",
-                        connected_component_extraction,
-                        map_0, extract_type='local_regions')
-
     # test whether error raises when there is an invalid inputs to extract
     invalid_extract_type = ['local', 'asdf', 10]
     for type_ in invalid_extract_type:
@@ -101,7 +95,7 @@ def test_validity_extract_types_in_connected_component_extraction():
                       img, extract_type=type_)
 
 
-def test_passing_break_connected_components():
+def test_passing_connected_component_extraction():
     shape = (91, 109, 91)
     n_regions = 4
     maps = generate_maps(shape, n_regions)
@@ -126,7 +120,7 @@ def test_passing_RegionExtractor_object():
     mask_img = nibabel.Nifti1Image(np.ones((shape), dtype=np.int8), affine)
 
     # smoke test fit() and fit_transform() with giving inputs
-    region_extractor = RegionExtractor(map_0, mask=mask_img)
+    region_extractor = RegionExtractor(map_0, mask_img=mask_img)
     # smoke test fit() function
     region_extractor.fit()
 

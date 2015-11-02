@@ -5,14 +5,16 @@ Regions extraction using Canonical ICA maps
 This example shows how to extract each connected ICA map (mostly a 4D Nifti
 image/object) into a seperate brain activation regions and extracts timeseries
 signals from each seperated region. Both can be done at the same time
-using `RegionExtractor`.
+using :class:`nilearn.regions.region_extractor`.
 
-We used 20 resting state functional datasets and `CanICA` for 4D components.
+We used 20 resting state functional datasets and
+:class:`nilearn.decomposition.canica` for 4D components.
 
 This example in particular can be used to study functional connectomes using
 correlation network matrices between regions.
 
-Please see the related documentation of `RegionExtractor` for more details.
+Please see the related documentation of :class:`nilearn.regions.region_extractor`
+for more details.
 """
 import numpy as np
 from nilearn import datasets
@@ -24,9 +26,9 @@ confounds = adhd_dataset.confounds
 from nilearn.decomposition.canica import CanICA
 print(" -- Canonical ICA decomposition of functional datasets -- ")
 # Initialize canica parameters
-n_components = 20
+n_components = 10
 canica = CanICA(n_components=n_components, smoothing_fwhm=6.,
-                memory="nilearn_cache", memory_level=1,
+                memory="nilearn_cache", memory_level=2,
                 threshold=3., random_state=0)
 
 canica.fit(func_filenames)
@@ -38,8 +40,7 @@ components_img = canica.masker_.inverse_transform(canica.components_)
 from nilearn.regions import region_extractor
 print(" -- Extracting regions from ICA maps and timeseries signals -- ")
 extractor = region_extractor.RegionExtractor(
-    components_img, standardize=True, threshold=0.3, min_size=300,
-    thresholding_strategy='ratio_n_voxels', extractor='local_regions')
+    components_img, standardize=True, threshold=0.5, min_size=400)
 extractor.fit_transform(func_filenames, confounds=confounds)
 
 regions_extracted = extractor.regions_
