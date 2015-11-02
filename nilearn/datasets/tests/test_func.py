@@ -12,7 +12,8 @@ import nibabel
 from sklearn.utils import check_random_state
 
 from nose import with_setup
-from nose.tools import assert_true, assert_equal, assert_raises
+from nose.tools import (assert_true, assert_equal, assert_raises,
+                        assert_not_equal)
 
 from nilearn.datasets import utils, func
 from nilearn._utils.testing import (mock_request, wrap_chunk_read_,
@@ -142,6 +143,7 @@ def test_fetch_haxby():
         assert_equal(len(haxby.mask_face_little), i)
         assert_equal(len(haxby.mask_house_little), i)
         mock_url_request.reset()
+        assert_not_equal(haxby.description, '')
 
 
 @with_setup(setup_mock, teardown_mock)
@@ -168,6 +170,7 @@ def test_fetch_nyu_rest():
     assert_true(np.all(s[:12] == 1))
     assert_true(np.all(s[12:24] == 2))
     assert_true(np.all(s[24:] == 3))
+    assert_not_equal(nyu.description, '')
 
 
 @with_setup(setup_mock, teardown_mock)
@@ -199,6 +202,7 @@ def test_fetch_adhd():
     assert_equal(len(adhd.func), 12)
     assert_equal(len(adhd.confounds), 12)
     assert_equal(len(mock_url_request.urls), 13)  # Subjects + phenotypic
+    assert_not_equal(adhd.description, '')
 
 
 @with_setup(setup_mock, teardown_mock)
@@ -210,6 +214,7 @@ def test_miyawaki2008():
     assert_true(isinstance(dataset.mask, _basestring))
     assert_equal(len(dataset.mask_roi), 38)
     assert_equal(len(mock_url_request.urls), 1)
+    assert_not_equal(dataset.description, '')
 
 
 @with_setup(setup_mock, teardown_mock)
@@ -326,6 +331,7 @@ def test_fetch_localizer_contrasts():
     assert_equal(len(dataset.cmaps), 94)
     assert_equal(len(dataset.masks), 94)
     assert_equal(len(dataset.tmaps), 94)
+    assert_not_equal(dataset.description, '')
 
 
 @with_setup(setup_mock, teardown_mock)
@@ -356,6 +362,7 @@ def test_fetch_localizer_calculation_task():
     assert_true(isinstance(dataset.cmaps[0], _basestring))
     assert_equal(dataset.ext_vars.size, 20)
     assert_equal(len(dataset.cmaps), 20)
+    assert_not_equal(dataset.description, '')
 
 
 @with_setup(setup_mock, teardown_mock)
@@ -374,6 +381,7 @@ def test_fetch_abide_pcp():
     dataset = func.fetch_abide_pcp(data_dir=tmpdir, url=local_url,
                                    quality_checked=False, verbose=0)
     assert_equal(len(dataset.func_preproc), 400)
+    assert_not_equal(dataset.description, '')
 
 
 def test__load_mixed_gambles():

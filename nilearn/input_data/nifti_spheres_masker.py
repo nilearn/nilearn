@@ -17,7 +17,33 @@ from .. import masking
 from .base_masker import filter_and_extract, BaseMasker
 
 
-def _iter_signals_from_spheres(seeds, niimg, radius, mask_img=None):
+def _iter_signals_from_spheres(seeds, niimg, radius, allow_overlap,
+                               mask_img=None):
+    """Utility function to iterate over spheres.
+
+    Parameters
+    ==========
+    seeds: List of triplet of coordinates in native space
+        Seed definitions. List of coordinates of the seeds in the same space
+        as the images (typically MNI or TAL).
+
+    imgs: 3D/4D Niimg-like object
+        See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+        Images to process. It must boil down to a 4D image with scans
+        number as last dimension.
+
+    radius: float, optional
+        Indicates, in millimeters, the radius for the sphere around the seed.
+        Default is None (signal is extracted on a single voxel).
+
+    allow_overlap: boolean
+        If False, an error is raised if the maps overlaps (ie at least two
+        maps have a non-zero value for the same voxel). Default is False.
+
+    mask_img: Niimg-like object, optional
+        See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+        Mask to apply to regions before extracting signals.
+    """
     seeds = list(seeds)
     affine = niimg.get_affine()
 
@@ -58,6 +84,10 @@ def _iter_signals_from_spheres(seeds, niimg, radius, mask_img=None):
             pass
     del mask_coords
 
+    if not allow_overlap:
+        if np.any(A.sum(axis=0) >= 2):
+            raise ValueError('Overlap detected between spheres')
+
     for i, row in enumerate(A.rows):
         if len(row) == 0:
             raise ValueError('Sphere around seed #%i is empty' % i)
@@ -68,10 +98,11 @@ class _ExtractionFunctor(object):
 
     func_name = 'nifti_spheres_masker_extractor'
 
-    def __init__(self, seeds_, radius, mask_img):
+    def __init__(self, seeds_, radius, mask_img, allow_overlap):
         self.seeds_ = seeds_
         self.radius = radius
         self.mask_img = mask_img
+        self.allow_overlap = allow_overlap
 
     def __call__(self, imgs):
         n_seeds = len(self.seeds_)
@@ -79,7 +110,8 @@ class _ExtractionFunctor(object):
 
         signals = np.empty((imgs.shape[3], n_seeds))
         for i, sphere in enumerate(_iter_signals_from_spheres(
-                self.seeds_, imgs, self.radius, mask_img=self.mask_img)):
+                self.seeds_, imgs, self.radius, self.allow_overlap,
+                mask_img=self.mask_img)):
             signals[:, i] = np.mean(sphere, axis=1)
 
         return signals, None
@@ -105,6 +137,10 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
     mask_img: Niimg-like object, optional
         See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
         Mask to apply to regions before extracting signals.
+
+    allow_overlap: boolean, optional
+        If False, an error is raised if the maps overlaps (ie at least two
+        maps have a non-zero value for the same voxel). Default is False.
 
     smoothing_fwhm: float, optional
         If smoothing_fwhm is not None, it gives the full-width half maximum in
@@ -148,7 +184,7 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
     """
     # memory and memory_level are used by CacheMixin.
 
-    def __init__(self, seeds, radius=None, mask_img=None,
+    def __init__(self, seeds, radius=None, mask_img=None, allow_overlap=False,
                  smoothing_fwhm=None, standardize=False, detrend=False,
                  low_pass=None, high_pass=None, t_r=None,
                  memory=Memory(cachedir=None, verbose=0), memory_level=1,
@@ -156,6 +192,7 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
         self.seeds = seeds
         self.mask_img = mask_img
         self.radius = radius
+        self.allow_overlap = allow_overlap
 
         # Parameters for _smooth_array
         self.smoothing_fwhm = smoothing_fwhm
@@ -250,7 +287,8 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
                 filter_and_extract,
                 ignore=['verbose', 'memory', 'memory_level'])(
             # Images
-            imgs, _ExtractionFunctor(self.seeds_, self.radius, self.mask_img),
+            imgs, _ExtractionFunctor(self.seeds_, self.radius, self.mask_img,
+                                     self.allow_overlap),
             # Pre-processing
             params,
             confounds=confounds,

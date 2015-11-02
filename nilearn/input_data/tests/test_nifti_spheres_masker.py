@@ -70,3 +70,25 @@ def test_anisotropic_sphere_extraction():
 def test_errors():
     masker = NiftiSpheresMasker(([1, 2]), radius=.2)
     assert_raises_regex(ValueError, 'Seeds must be a list .+', masker.fit)
+
+
+def test_nifti_spheres_masker_overlap():
+    # Test resampling in NiftiMapsMasker
+    affine = np.eye(4)
+    shape = (5, 5, 5)
+
+    data = np.random.random(shape + (5,))
+    fmri_img = nibabel.Nifti1Image(data, affine)
+
+    seeds = [(0, 0, 0), (2, 2, 2)]
+
+    overlapping_masker = NiftiSpheresMasker(seeds, radius=1, allow_overlap=True)
+    overlapping_masker.fit_transform(fmri_img)
+    overlapping_masker = NiftiSpheresMasker(seeds, radius=2, allow_overlap=True)
+    overlapping_masker.fit_transform(fmri_img)
+
+    noverlapping_masker = NiftiSpheresMasker(seeds, radius=1, allow_overlap=False)
+    noverlapping_masker.fit_transform(fmri_img)
+    noverlapping_masker = NiftiSpheresMasker(seeds, radius=2, allow_overlap=False)
+    assert_raises_regex(ValueError, 'Overlap detected',
+                        noverlapping_masker.fit_transform, fmri_img)
