@@ -68,16 +68,25 @@ def test_plot_anat():
 
     # Test saving with empty plot
     z_slicer = plot_anat(anat_img=False, display_mode='z')
-    with tempfile.NamedTemporaryFile(suffix='.png') as fp:
-        z_slicer.savefig(fp.name)
+    filename = tempfile.mktemp(suffix='.png')
+    try:
+        z_slicer.savefig(filename)
+    finally:
+        os.remove(filename)
+
     z_slicer = plot_anat(display_mode='z')
-    with tempfile.NamedTemporaryFile(suffix='.png') as fp:
-        z_slicer.savefig(fp.name)
+    filename = tempfile.mktemp(suffix='.png')
+    try:
+        z_slicer.savefig(filename)
+    finally:
+        os.remove(filename)
 
     ortho_slicer = plot_anat(img, dim=True)
-    with tempfile.NamedTemporaryFile(suffix='.png') as fp:
-        ortho_slicer.savefig(fp.name)
-
+    filename = tempfile.mktemp(suffix='.png')
+    try:
+        ortho_slicer.savefig(filename)
+    finally:
+        os.remove(filename)
 
 def test_plot_functions():
     img = _generate_img()
@@ -85,16 +94,21 @@ def test_plot_functions():
     # smoke-test for each plotting function with default arguments
     for plot_func in [plot_anat, plot_img, plot_stat_map, plot_epi,
                       plot_glass_brain]:
-        with tempfile.NamedTemporaryFile(suffix='.png') as fp:
-            plot_func(img, output_file=fp.name)
+        filename = tempfile.mktemp(suffix='.png')
+        try:
+            plot_func(img, output_file=filename)
+        finally:
+            os.remove(filename)
 
     # test for bad input arguments (cf. #510)
     ax = plt.subplot(111, rasterized=True)
-    with tempfile.NamedTemporaryFile(suffix='.png') as fp:
-        plot_stat_map(
-            img, symmetric_cbar=True,
-            output_file=fp.name,
-            axes=ax, vmax=np.nan)
+    filename = tempfile.mktemp(suffix='.png')
+    try:
+        plot_stat_map(img, symmetric_cbar=True,
+                      output_file=filename,
+                      axes=ax, vmax=np.nan)
+    finally:
+        os.remove(filename)
     plt.close()
 
 
@@ -206,13 +220,19 @@ def test_save_plot():
     kwargs_list = [{}, {'display_mode': 'x', 'cut_coords': 3}]
 
     for kwargs in kwargs_list:
-        with tempfile.NamedTemporaryFile(suffix='.png') as fp:
-            display = plot_stat_map(img, output_file=fp.name, **kwargs)
-            assert_true(display is None)
+        filename = tempfile.mktemp(suffix='.png')
+        try:
+            display = plot_stat_map(img, output_file=filename, **kwargs)
+        finally:
+            os.remove(filename)
+        assert_true(display is None)
 
         display = plot_stat_map(img, **kwargs)
-        with tempfile.NamedTemporaryFile(suffix='.png') as fp:
-            display.savefig(fp.name)
+        filename = tempfile.mktemp(suffix='.png')
+        try:
+            display.savefig(filename)
+        finally:
+            os.remove(filename)
 
 
 def test_display_methods():
@@ -335,12 +355,14 @@ def test_plot_connectome():
                     [tuple(each) for each in node_coords],
                     **kwargs)
     # saving to file
-    with tempfile.NamedTemporaryFile(suffix='.png') as fp:
-        display = plot_connectome(*args, output_file=fp.name,
-                                  **kwargs)
+    filename = tempfile.mktemp(suffix='.png')
+    try:
+        display = plot_connectome(*args, output_file=filename, **kwargs)
         assert_true(display is None)
-        assert_true(os.path.isfile(fp.name) and
-                    os.path.getsize(fp.name) > 0)
+        assert_true(os.path.isfile(filename) and
+                    os.path.getsize(filename) > 0)
+    finally:
+        os.remove(filename)
 
     # with node_kwargs, edge_kwargs and edge_cmap arguments
     plot_connectome(*args,
