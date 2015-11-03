@@ -455,8 +455,13 @@ def resample_img(img, target_affine=None, target_shape=None,
     target_shape = tuple(target_shape)
 
     if interpolation == 'continuous' and data.dtype.kind == 'i':
-        resampled_data_dtype = np.dtype(
-            data.dtype.name.replace('int', 'float'))
+        # cast unsupported data types to closest support dtype
+        aux = data.dtype.name.replace('int', 'float')
+        aux = aux.replace("ufloat", "float").replace("floatc", "float")
+        if aux in ["float8", "float16"]:
+            aux = "float32"
+        warnings.warn("Casting data from %s to %s" % (data.dtype.name, aux))
+        resampled_data_dtype = np.dtype(aux)
     else:
         resampled_data_dtype = data.dtype
 
@@ -467,7 +472,7 @@ def resample_img(img, target_affine=None, target_shape=None,
 
     all_img = (slice(None), ) * 3
 
-    # Iter over a set of 3D volumes, as the interpolation problem is
+    # Iter overr a set of 3D volumes, as the interpolation problem is
     # separable in the extra dimensions. This reduces the
     # computational cost
     for ind in np.ndindex(*other_shape):

@@ -558,3 +558,14 @@ def test_resample_img_segmentation_fault():
     resample_img(img_in,
                  target_affine=aff_out,
                  interpolation='nearest')
+
+
+def test_resampling_with_int_types_no_crash():
+    affine = np.eye(4)
+    data = np.zeros((2, 2, 2))
+
+    for dtype in [np.int, np.int8, np.int16, np.int32, np.int64,
+                  np.uint, np.uint8, np.uint16, np.uint32, np.uint64,
+                  np.float32, np.float64, np.float]:
+        img = Nifti1Image(data.astype(dtype), affine)
+        resample_img(img, target_affine=2. * affine)
