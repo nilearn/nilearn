@@ -26,7 +26,7 @@ sites = []
 adhds = []
 for func_file, phenotypic in zip(dataset.func, dataset.phenotypic):
     # keep only 3 sites, to save computation time
-    if phenotypic['site'] in ['"NYU"', '"OHSU"', '"NeuroImage"']:
+    if phenotypic['site'] in [b'"NYU"', b'"OHSU"', b'"NeuroImage"']:
         time_series = masker.fit_transform(func_file)
         subjects.append(time_series)
         sites.append(phenotypic['site'])
