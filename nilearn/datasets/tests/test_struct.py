@@ -130,9 +130,11 @@ def test_get_dataset_dir():
     test_file = os.path.join(tmpdir, 'some_file')
     with open(test_file, 'w') as out:
         out.write('abcfeg')
-    assert_raises_regex(OSError, 'Not a directory|introuvable',
-                        utils._get_dataset_dir, 'test', test_file,
-                        verbose=0)
+    assert_raises_regex(OSError,
+                        'Nilearn tried to store the dataset '
+                        'in the following directories, but',
+                        utils._get_dataset_dir,
+                        'test', test_file, verbose=0)
 
 
 @with_setup(setup_mock, teardown_mock)

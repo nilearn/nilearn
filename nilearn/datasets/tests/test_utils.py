@@ -16,7 +16,6 @@ from tempfile import mkdtemp, mkstemp
 from nose import with_setup
 from nose.tools import assert_true, assert_false, assert_equal
 
-
 from nilearn import datasets
 from nilearn._utils.testing import (mock_request, wrap_chunk_read_,
                                     FetchFilesMock, assert_raises_regex)
@@ -106,9 +105,12 @@ def test_get_dataset_dir():
     test_file = os.path.join(tmpdir, 'some_file')
     with open(test_file, 'w') as out:
         out.write('abcfeg')
-    assert_raises_regex(OSError, 'Not a directory|introuvable',
-                        datasets.utils._get_dataset_dir, 'test', test_file,
-                        verbose=0)
+
+    assert_raises_regex(OSError,
+                        'Nilearn tried to store the dataset in the following '
+                        'directories, but',
+                        datasets.utils._get_dataset_dir,
+                        'test', test_file, verbose=0)
 
 
 def test_md5_sum_file():

@@ -1138,7 +1138,7 @@ def fetch_abide_pcp(data_dir=None, n_subjects=None, pipeline='cpac',
 
     # Go into specific data folder and url
     data_dir = os.path.join(data_dir, pipeline, strategy)
-    url = os.sep.join([url, 'Outputs', pipeline, strategy])
+    url = '/'.join([url, 'Outputs', pipeline, strategy])
 
     # Get the files
     results = {}
@@ -1152,8 +1152,7 @@ def fetch_abide_pcp(data_dir=None, n_subjects=None, pipeline='cpac',
     for derivative in derivatives:
         ext = '.1D' if derivative.startswith('rois') else '.nii.gz'
         files = [(file_id + '_' + derivative + ext,
-                  os.sep.join([url, derivative,
-                            file_id + '_' + derivative + ext]),
+                  '/'.join([url, derivative, file_id + '_' + derivative + ext]),
                   {}) for file_id in file_ids]
         files = _fetch_files(data_dir, files, verbose=verbose)
         # Load derivatives if needed
