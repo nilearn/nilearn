@@ -226,7 +226,7 @@ def connected_component_extraction(maps_img, min_size=20,
                 mode = 'cg_mg'
                 rw_maps = random_walker(map_, seeds_label, mode=mode)
             except Exception as e:
-                print "Random Walker algorithm failed for mode:%s, %s" % (mode, str(e))
+                print("Random Walker algorithm failed for mode:%s, %s" % (mode, str(e)))
                 rw_maps = random_walker(map_, seeds_label, mode='bf')
 
             # Now simply replace "-1" with "0" for regions seperation
