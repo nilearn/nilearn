@@ -459,7 +459,7 @@ def fetch_adhd(n_subjects=None, data_dir=None, url=None, resume=True,
     phenotypic = _fetch_files(data_dir, [phenotypic], resume=resume,
                               verbose=verbose)[0]
 
-    ## Load the csv file
+    # Load the csv file
     phenotypic = np.genfromtxt(phenotypic, names=True, delimiter=',',
                                dtype=None)
 
@@ -1288,11 +1288,12 @@ def fetch_megatrawls_netmats(data_dir=None, choice_dimensionality=None,
 
     This data can be used to predict relationships between imaging data (functional
     connectivity) and non-imaging behavioural measures such as age, sex, education, etc.
-    The network matrices are estimated between 461 functional connectivity subjects.
+    The network matrices are estimated from functional connectivity datasets of 461
+    subjects [1]. Full technical details in [2].
 
     The network matrices denoted as 'netmats' are estimated using full correlation
     denoted as 'Znet1' or partial correlation with limited L2 regularisation
-    denoted as 'Znet2'.
+    denoted as 'Znet2'. [1]
 
     .. versionadded:: 0.1.5
 
@@ -1302,41 +1303,45 @@ def fetch_megatrawls_netmats(data_dir=None, choice_dimensionality=None,
         Path of the data directory. Used to force data storage in a specified
         location.
 
-    choice_dimensionality: a string or list of strings or None, Default is None
-        Possibile options are {'d25', 'd50', 'd100', 'd200', 'd300'}
+    choice_dimensionality: a string or list of strings or None, default is None
+        Possible options are {'d25', 'd50', 'd100', 'd200', 'd300'}
         'd25' - Group ICA brain parcellations with dimensionality = 25
         'd50' - Group ICA brain parcellations with dimensionality = 50
         'd100' - Group ICA brain parcellations with dimensionality = 100
         'd200' - Group ICA brain parcellations with dimensionality = 200
         'd300' - Group ICA brain parcellations with dimensionality = 300
 
-        If chosen to be default, network matrices data estimated from all
+        By default, network matrices data estimated from all
         dimensionalities ['d25', 'd50', 'd100', 'd200', 'd300'] of brian
         parcellations are fetched.
 
-        If chosen a string or list of strings as choices, network matrices
-        of particular choice of dimensionality of brain parcellations
+        If given as string or list of specific strings, network matrices
+        related to that particular dimensionality of brain parcellations
         are fetched. For example, if chosen as a string 'd25' only data
         corresponding to d=25 is fetched.
 
-    choice_timeseries: a string or list of strings or None, Default is None
+    choice_timeseries: a string or list of strings or None, default is None
         Possible options are {'ts2', 'ts3'}
-        'ts2' - choice denotes the timeseries signals which were extracted using
-                mutiple spatial regression.
-        'ts3' - choice denoted the timeseries signals which were extracted using
-                eigen regression.
+        'ts2' - choice denotes the averaged timeseries signals which were extracted
+                using mutiple spatial regression, in which full set of ICA maps was
+                used as spatial regressors against the subjects datasets resulting
+                a subject specific timeseries signals. [3]
+        'ts3' - choice denoted the principal eigen timeseries signals which were
+                extracted using multiple spatial regression, but the subject
+                specific timeseries signals are extracted using SVD. The first
+                eigen timeseries of each subject rather than simple averaging [4] [5].
 
-        If chosen to be default, network matrices data estimated using all
-        timeseries extraction method ['ts2', 'ts3'] are fetched.
+        By default, network matrices data estimated using both timeseries extraction
+        method ['ts2', 'ts3'] are fetched.
 
-        If chosen a string, network matrices estimated using particular type
+        If given a string, network matrices estimated using particular type
         of timeseries extraction method is fetched.
 
-    resume: boolean, Default is True
+    resume: boolean, default is True
         This parameter is required if a partly downloaded file is needed to be
         resumed to download again.
 
-    verbose: int, Default is 1
+    verbose: int, default is 1
         This parameter is used to set the verbosity level to print the message
         to give information about the processing.
         0 indicates no information will be given.
@@ -1346,17 +1351,30 @@ def fetch_megatrawls_netmats(data_dir=None, choice_dimensionality=None,
     data: sklearn.datasets.base.Bunch
         Dictionary-like object, attributes are:
 
-        'FullCorrelation': Full correlation matrices
+        'Fullcorrelation': Full correlation matrices
 
-        'PartialCorrelation': Partial correlation matrices
+        'Partialcorrelation': Partial correlation matrices
 
     References
     ----------
     For more details:
-    Stephen Smith et al, HCP beta-release of the Functional Connectivity MegaTrawl.
+    [1] Stephen Smith et al, HCP beta-release of the Functional Connectivity MegaTrawl.
     April 2015 "HCP500-MegaTrawl" release.
-
     https://db.humanconnectome.org/megatrawl/
+
+    Technical details:
+    [2] Smith, S.M. et al. Nat. Neurosci. 18, 1565-1567 (2015).
+
+    [3] N.Filippini, et al. Distinct patterns of brain activity in young carriers
+    of the APOE-e4 allele.
+    Proc Natl Acad Sci USA (PNAS), 106:7209-7214, 2009.
+
+    [4] S.Smith, et al. Methods for network modelling from high quality rfMRI data.
+    Meeting of the Organization for Human Brain Mapping. 2014
+
+    [5] J.X. O'Reilly et al. Distinct and overlapping functional zones in the cerebellum
+    defined by resting state functional connectivity.
+    Cerebral Cortex, 2009.
 
     Disclaimer
     ----------
@@ -1393,44 +1411,44 @@ def fetch_megatrawls_netmats(data_dir=None, choice_dimensionality=None,
                "of them %s or list of specific choices.")
 
     names = ['choice_dimensionality', 'choice_timeseries']
-    inputs = [choice_dimensionality, choice_timeseries]
+    user_inputs = [choice_dimensionality, choice_timeseries]
     assign_names = ['dimensionalities', 'timeseries_methods']
-    standard_inputs = [dimensionalities, timeseries_methods]
+    standard_variables = [dimensionalities, timeseries_methods]
 
-    for name_, input_, assign_, standard_ in zip(names, inputs, assign_names,
-                                                 standard_inputs):
-        if input_ is not None:
-            if isinstance(input_, list):
-                for n_input_ in input_:
-                    if n_input_ not in standard_:
+    for name, check_in, assign, standard in zip(names, user_inputs,
+                                                assign_names, standard_variables):
+        if check_in is not None:
+            if isinstance(check_in, list):
+                for each_str in check_in:
+                    if each_str not in standard:
                         raise ValueError(message % (
-                            name_, input_, str(standard_)))
-                if assign_ == 'dimensionalities':
-                    dimensionalities = input_
+                            name, check_in, str(standard)))
+                if assign == 'dimensionalities':
+                    dimensionalities = check_in
                 else:
-                    timeseries_methods = input_
-            elif not isinstance(input_, list):
-                if input_ not in standard_:
+                    timeseries_methods = check_in
+            elif not isinstance(check_in, list):
+                if check_in not in standard:
                     raise ValueError(message % (
-                        name_, input_, str(standard_)))
+                        name, check_in, str(standard)))
 
-                if assign_ == 'dimensionalities':
-                    dimensionalities = [input_]
+                if assign == 'dimensionalities':
+                    dimensionalities = [check_in]
                 else:
-                    timeseries_methods = [input_]
+                    timeseries_methods = [check_in]
 
     n_combinations = len(dimensionalities) * len(timeseries_methods)
     dataset_name = 'Megatrawls'
 
     files_netmats1 = []
     files_netmats2 = []
-    for dim_ in dimensionalities:
-        filename_ = os.path.join('3T_Q1-Q6related468_MSMsulc_' + str(dim_))
-        for timeserie_ in timeseries_methods:
+    for dim in dimensionalities:
+        filename = os.path.join('3T_Q1-Q6related468_MSMsulc_' + str(dim))
+        for timeseries in timeseries_methods:
             each_files_netmats1 = [(os.path.join(
-                filename_ + '_' + str(timeserie_), 'Znet1.txt'), url, opts)]
+                filename + '_' + str(timeseries), 'Znet1.txt'), url, opts)]
             each_files_netmats2 = [(os.path.join(
-                filename_ + '_' + str(timeserie_), 'Znet2.txt'), url, opts)]
+                filename + '_' + str(timeseries), 'Znet2.txt'), url, opts)]
             files_netmats1.append(each_files_netmats1)
             files_netmats2.append(each_files_netmats2)
 
@@ -1439,14 +1457,14 @@ def fetch_megatrawls_netmats(data_dir=None, choice_dimensionality=None,
 
     network_matrices1 = []
     network_matrices2 = []
-    for n_ in range(n_combinations):
+    for n in range(n_combinations):
         netmats1 = _fetch_files(
-            data_dir, files_netmats1[n_], resume=resume, verbose=verbose)
+            data_dir, files_netmats1[n], resume=resume, verbose=verbose)
         network_matrices1.extend(netmats1)
         netmats2 = _fetch_files(
-            data_dir, files_netmats2[n_], resume=resume, verbose=verbose)
+            data_dir, files_netmats2[n], resume=resume, verbose=verbose)
         network_matrices2.extend(netmats2)
 
-    return Bunch(FullCorrelation=network_matrices1,
-                 PartialCorrelation=network_matrices2,
+    return Bunch(Fullcorrelation=network_matrices1,
+                 Partialcorrelation=network_matrices2,
                  description=description)

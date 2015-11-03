@@ -367,17 +367,17 @@ def test_fetch_mixed_gambles():
 
 def test_right_choices_dimensionality_timeseriesmethods():
     message = ("The %s you have given '%s' is invalid. ")
-    for dim_ in ['a10', 'd15', 'd30']:
+    for dim in ['a10', 'd15', 'd30']:
         assert_raises_regex(ValueError,
-                            (message % ('choice_dimensionality', dim_)),
+                            message % ('choice_dimensionality', dim),
                             func.fetch_megatrawls_netmats,
-                            choice_dimensionality=dim_)
+                            choice_dimensionality=dim)
 
-    for timeserie_ in ['tt1', 'ts4', 'st2']:
+    for timeseries in ['tt1', 'ts4', 'st2']:
         assert_raises_regex(ValueError,
-                            (message % ('choice_timeseries', timeserie_)),
+                            message % ('choice_timeseries', timeseries),
                             func.fetch_megatrawls_netmats,
-                            choice_timeseries=timeserie_)
+                            choice_timeseries=timeseries)
 
 
 @with_setup(setup_tmpdata, teardown_tmpdata)
@@ -385,13 +385,13 @@ def test_fetch_megatrawls_netmats():
     correlations = func.fetch_megatrawls_netmats(data_dir=tmpdir)
     dataset_name_path = os.path.join(tmpdir, 'Megatrawls')
 
-    assert_equal(correlations.FullCorrelation[0], os.path.join(
+    assert_equal(correlations.Fullcorrelation[0], os.path.join(
         dataset_name_path, '3T_Q1-Q6related468_MSMsulc_d25_ts2', 'Znet1.txt'))
 
-    assert_equal(correlations.FullCorrelation[9], os.path.join(
+    assert_equal(correlations.Fullcorrelation[9], os.path.join(
         dataset_name_path, '3T_Q1-Q6related468_MSMsulc_d300_ts3', 'Znet1.txt'))
 
-    assert_equal(correlations.PartialCorrelation[5], os.path.join(
+    assert_equal(correlations.Partialcorrelation[5], os.path.join(
         dataset_name_path, '3T_Q1-Q6related468_MSMsulc_d100_ts3', 'Znet2.txt'))
 
     # test if number of possible combinations of output are correct
@@ -399,8 +399,8 @@ def test_fetch_megatrawls_netmats():
         data_dir=tmpdir, choice_dimensionality=['d25', 'd200'])
 
     expected_n_combinations = len(['d25', 'd200']) * len(['ts2', 'ts3'])
-    n_output_combinations_net1 = len(correlation_.FullCorrelation)
-    n_output_combinations_net2 = len(correlation_.PartialCorrelation)
+    n_output_combinations_net1 = len(correlation_.Fullcorrelation)
+    n_output_combinations_net2 = len(correlation_.Partialcorrelation)
 
     assert_equal(expected_n_combinations, n_output_combinations_net1)
     assert_equal(expected_n_combinations, n_output_combinations_net2)
