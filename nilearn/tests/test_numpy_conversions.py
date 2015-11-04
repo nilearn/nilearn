@@ -165,31 +165,31 @@ def test_as_ndarray():
     assert(not are_arrays_identical(arr1, arr2))
 
     # same dtype, copy requested
-    arr1 = np.memmap(filename, dtype='float32', mode='w+', shape=(5,))
+    arr1 = np.memmap(filename, dtype='float32', mode='readwrite', shape=(5,))
     arr2 = as_ndarray(arr1, copy=True)
     assert(not are_arrays_identical(arr1, arr2))
 
     # different dtype
-    arr1 = np.memmap(filename, dtype='float32', mode='w+', shape=(5,))
+    arr1 = np.memmap(filename, dtype='float32', mode='readwrite', shape=(5,))
     arr2 = as_ndarray(arr1, dtype=np.int)
     assert(arr2.dtype == np.int)
     assert(not are_arrays_identical(arr1, arr2))
 
     # same dtype, explicitly provided: must copy
-    arr1 = np.memmap(filename, dtype='float32', mode='w+', shape=(5,))
+    arr1 = np.memmap(filename, dtype='float32', mode='readwrite', shape=(5,))
     arr2 = as_ndarray(arr1, dtype=np.float32)
     assert(arr2.dtype == np.float32)
     assert(not are_arrays_identical(arr1, arr2))
 
     # same dtype, order provided
-    arr1 = np.memmap(filename, dtype='float32', mode='w+', shape=(10, 10))
+    arr1 = np.memmap(filename, dtype='float32', mode='readwrite', shape=(10, 10))
     arr2 = as_ndarray(arr1, order="F")
     assert(arr2.flags["F_CONTIGUOUS"] and not arr2.flags["C_CONTIGUOUS"])
     assert(arr2.dtype == arr1.dtype)
     assert(not are_arrays_identical(arr1[0], arr2[0]))
 
     # same dtype, order unchanged but provided
-    arr1 = np.memmap(filename, dtype='float32', mode='w+',
+    arr1 = np.memmap(filename, dtype='float32', mode='readwrite',
                      shape=(10, 10), order="F")
     arr2 = as_ndarray(arr1, order="F")
     assert(arr2.flags["F_CONTIGUOUS"] and not arr2.flags["C_CONTIGUOUS"])
@@ -197,7 +197,7 @@ def test_as_ndarray():
     assert(not are_arrays_identical(arr1[0], arr2[0]))
 
     # dtype and order specified
-    arr1 = np.memmap(filename, dtype='float32', mode='w+',
+    arr1 = np.memmap(filename, dtype='float32', mode='readwrite',
                      shape=(10, 10), order="F")
     arr2 = as_ndarray(arr1, order="F", dtype=np.int32)
     assert(arr2.flags["F_CONTIGUOUS"] and not arr2.flags["C_CONTIGUOUS"])
