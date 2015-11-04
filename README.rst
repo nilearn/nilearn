@@ -5,7 +5,7 @@
    :alt: Travis Build Status
 
 .. image:: https://ci.appveyor.com/api/projects/status/github/nilearn/nilearn?branch=master&svg=true
-   :target: https://ci.appveyor.com/project/nilearnci/nilearn
+   :target: https://ci.appveyor.com/project/nilearn-ci/nilearn
    :alt: AppVeyor Build Status
 
 .. image:: https://coveralls.io/repos/nilearn/nilearn/badge.svg?branch=master
