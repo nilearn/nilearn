@@ -60,6 +60,11 @@ def _crop_mask(mask):
     """Crops input mask to produce tighter (i.e smaller) bounding box with
     the same support (active voxels)"""
     idx = np.where(mask)
+    if idx[0].size == 0:
+        raise ValueError(("Empty mask: if you have given a mask, it is "
+                          "empty, and if you have not given a mask, the "
+                          "mask-extraction routines have failed. Please "
+                          "provide an appropriate mask."))
     i_min = max(idx[0].min() - 1, 0)
     i_max = idx[0].max()
     j_min = max(idx[1].min() - 1, 0)
