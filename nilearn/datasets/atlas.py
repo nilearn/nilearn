@@ -210,7 +210,7 @@ def fetch_atlas_harvard_oxford(atlas_name, data_dir=None,
                          "among:\n{1}".format(
                              atlas_name, '\n'.join(atlas_items)))
 
-    url = 'https://www.nitrc.org/frs/download.php/7700/HarvardOxford.tgz'
+    url = 'http://www.nitrc.org/frs/download.php/7700/HarvardOxford.tgz'
 
     # For practical reasons, we mimic the FSL data directory here.
     dataset_name = 'fsl'
