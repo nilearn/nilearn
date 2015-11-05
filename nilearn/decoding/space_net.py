@@ -531,9 +531,9 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
     default 20)
         Percentile value for ANOVA univariate feature selection. A value of
         100 means 'keep all features'. This percentile is is expressed
-        w.r.t the volume of a standard (MNI152) brain, and so is corrected
-        at runtime to correspond to the volume of the user-supplied mask
-        (which is typically smaller).
+        w.r.t the volume of the subject's brain.
+
+    screening_percentile_standard_brain: bool, optim
 
     standardize : bool, optional (default True):
         If set, then the data (X, y) are centered to have mean zero along
@@ -603,10 +603,6 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
     `cv_scores_` : ndarray, shape (n_alphas, n_folds) or
     (n_l1_ratios, n_alphas, n_folds)
         Scores (misclassification) for each alpha, and on each fold
-
-    `screening_percentile_` : float
-        Screening percentile corrected according to volume of mask,
-        relative to the volume of standard brain.
     """
     SUPPORTED_PENALTIES = ["graph-net", "tv-l1"]
     SUPPORTED_LOSSES = ["mse", "logistic"]
@@ -802,23 +798,6 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
         w = np.zeros((n_problems, X.shape[1] + 1))
         self.all_coef_ = np.ndarray((n_problems, n_folds, X.shape[1]))
 
-        # correct screening_percentile according to the volume of the data mask
-        mask_volume = _get_mask_volume(self.mask_img_)
-        if mask_volume > MNI152_BRAIN_VOLUME:
-            warnings.warn(
-                "Brain mask is bigger than volume of standard brain!")
-        self.screening_percentile_ = self.screening_percentile * (
-            mask_volume / MNI152_BRAIN_VOLUME)
-        if self.verbose > 1:
-            print("Mask volume = %gmm^3 = %gcm^3" % (
-                mask_volume, mask_volume / 1.e3))
-            print("Standard brain volume = %gmm^3 = %gcm^3" % (
-                MNI152_BRAIN_VOLUME, MNI152_BRAIN_VOLUME / 1.e3))
-            print("Original screening-percentile: %g" % (
-                self.screening_percentile))
-            print("Volume-corrected screening-percentile: %g" % (
-                self.screening_percentile_))
-
         # main loop: loop on classes and folds
         solver_params = dict(tol=self.tol, max_iter=self.max_iter)
         self.best_model_params_ = []
@@ -832,7 +811,7 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
                 solver_params, n_alphas=self.n_alphas, eps=self.eps,
                 is_classif=self.loss == "logistic", key=(cls, fold),
                 debias=self.debias, verbose=self.verbose,
-                screening_percentile=self.screening_percentile_
+                screening_percentile=self.screening_percentile
                 ) for cls in range(n_problems) for fold in range(n_folds)):
             self.best_model_params_.append((best_alpha, best_l1_ratio))
             self.alpha_grids_.append(alphas)
@@ -1005,9 +984,7 @@ class SpaceNetClassifier(BaseSpaceNet):
     default 20)
         Percentile value for ANOVA univariate feature selection. A value of
         100 means 'keep all features'. This percentile is is expressed
-        w.r.t the volume of a standard (MNI152) brain, and so is corrected
-        at runtime by premultiplying it with the ratio of the volume of the
-        mask of the data and volume of a standard brain.
+        w.r.t the volume of the subject's brain.
 
     standardize : bool, optional (default True):
         If set, then we'll center the data (X, y) have mean zero along axis 0.
@@ -1075,10 +1052,6 @@ class SpaceNetClassifier(BaseSpaceNet):
 
     `cv_scores_` : 2d array of shape (n_alphas, n_folds)
         Scores (misclassification) for each alpha, and on each fold
-
-    `screening_percentile_` : float
-        Screening percentile corrected according to volume of mask,
-        relative to the volume of standard brain.
     """
 
     def __init__(self, penalty="graph-net", loss="logistic",
@@ -1177,9 +1150,7 @@ class SpaceNetRegressor(BaseSpaceNet):
     default 20)
         Percentile value for ANOVA univariate feature selection. A value of
         100 means 'keep all features'. This percentile is is expressed
-        w.r.t the volume of a standard (MNI152) brain, and so is corrected
-        at runtime to correspond to the volume of the user-supplied mask
-        (which is typically smaller).
+        w.r.t the volume of the subject's brain.
 
     standardize : bool, optional (default True):
         If set, then we'll center the data (X, y) have mean zero along axis 0.
@@ -1243,10 +1214,6 @@ class SpaceNetRegressor(BaseSpaceNet):
 
     `cv_scores_` : 2d array of shape (n_alphas, n_folds)
         Scores (misclassification) for each alpha, and on each fold
-
-    `screening_percentile_` : float
-        Screening percentile corrected according to volume of mask,
-        relative to the volume of standard brain.
     """
 
     def __init__(self, penalty="graph-net", l1_ratios=.5, alphas=None,
