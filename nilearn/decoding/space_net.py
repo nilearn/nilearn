@@ -56,6 +56,40 @@ def _get_mask_volume(mask_img):
     return 1. * np.prod(vox_dims) * mask_img.get_data().astype(np.bool).sum()
 
 
+def _adjust_screening_percentile(screening_percentile, mask_img,
+                                 verbose=0):
+    original_screening_percentile = screening_percentile
+    # correct screening_percentile according to the volume of the data mask
+    mask_volume = _get_mask_volume(mask_img)
+    if mask_volume > MNI152_BRAIN_VOLUME:
+        warnings.warn(
+            "Brain mask is bigger than the volume of a standard "
+            "humain brain. SpaceNet is probably not tuned to"
+            "be used on such data.", stacklevel=2)
+    elif mask_volume < .005 * MNI152_BRAIN_VOLUME:
+        warnings.warn(
+            "Brain mask is smaller than .5% of the volume "
+            "humain brain. SpaceNet is probably not tuned to"
+            "be used on such data.", stacklevel=2)
+
+    if screening_percentile < 100:
+        screening_percentile = screening_percentile * (
+            MNI152_BRAIN_VOLUME / mask_volume)
+        screening_percentile = min(screening_percentile, 100)
+    # if screening_percentile is 100, we don't do anything
+
+    if verbose > 1:
+        print("Mask volume = %gmm^3 = %gcm^3" % (
+            mask_volume, mask_volume / 1.e3))
+        print("Standard brain volume = %gmm^3 = %gcm^3" % (
+            MNI152_BRAIN_VOLUME, MNI152_BRAIN_VOLUME / 1.e3))
+        print("Original screening-percentile: %g" % (
+            original_screening_percentile))
+        print("Volume-corrected screening-percentile: %g" % (
+            screening_percentile))
+    return screening_percentile
+
+
 def _crop_mask(mask):
     """Crops input mask to produce tighter (i.e smaller) bounding box with
     the same support (active voxels)"""
@@ -534,7 +568,7 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
         w.r.t the volume of a standard (MNI152) brain, and so is corrected
         at runtime to correspond to the volume of the user-supplied mask
         (which is typically smaller). If '100' is given, all the features
-        are used, regardless of voxel size.
+        are used, regardless of the number of voxels.
 
     standardize : bool, optional (default True):
         If set, then the data (X, y) are centered to have mean zero along
@@ -803,37 +837,9 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
         w = np.zeros((n_problems, X.shape[1] + 1))
         self.all_coef_ = np.ndarray((n_problems, n_folds, X.shape[1]))
 
-        # correct screening_percentile according to the volume of the data mask
-        mask_volume = _get_mask_volume(self.mask_img_)
-        if mask_volume > MNI152_BRAIN_VOLUME:
-            warnings.warn(
-                "Brain mask is bigger than the volume of a standard "
-                "humain brain. Strange things might happen.",
-                stacklevel=2)
-        elif mask_volume < .005 * MNI152_BRAIN_VOLUME:
-            warnings.warn(
-                "Brain mask is smaller than .5% of the volume "
-                "of a standard human brain. Strange things might happen.",
-                stacklevel=2)
-
-        screening_percentile = self.screening_percentile
-        if screening_percentile < 100:
-            screening_percentile = screening_percentile * (
-                MNI152_BRAIN_VOLUME / mask_volume)
-            screening_percentile = max(self.screening_percentile, 100)
-        # if screening_percentile is 100, we don't do anything
-
-        if self.verbose > 1:
-            print("Mask volume = %gmm^3 = %gcm^3" % (
-                mask_volume, mask_volume / 1.e3))
-            print("Standard brain volume = %gmm^3 = %gcm^3" % (
-                MNI152_BRAIN_VOLUME, MNI152_BRAIN_VOLUME / 1.e3))
-            print("Original screening-percentile: %g" % (
-                self.screening_percentile))
-            print("Volume-corrected screening-percentile: %g" % (
-                screening_percentile))
-
-        self.screening_percentile_ = screening_percentile
+        self.screening_percentile_ = _adjust_screening_percentile(
+                self.screening_percentile, self.mask_img_,
+                verbose=self.verbose)
 
         # main loop: loop on classes and folds
         solver_params = dict(tol=self.tol, max_iter=self.max_iter)
@@ -848,7 +854,7 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
                 solver_params, n_alphas=self.n_alphas, eps=self.eps,
                 is_classif=self.loss == "logistic", key=(cls, fold),
                 debias=self.debias, verbose=self.verbose,
-                screening_percentile=screening_percentile
+                screening_percentile=self.screening_percentile_,
                 ) for cls in range(n_problems) for fold in range(n_folds)):
             self.best_model_params_.append((best_alpha, best_l1_ratio))
             self.alpha_grids_.append(alphas)
@@ -1024,7 +1030,7 @@ class SpaceNetClassifier(BaseSpaceNet):
         w.r.t the volume of a standard (MNI152) brain, and so is corrected
         at runtime by premultiplying it with the ratio of the volume of the
         mask of the data and volume of a standard brain.  If '100' is given,
-        all the features are used, regardless of voxel size.
+        all the features are used, regardless of the number of voxels.
 
     standardize : bool, optional (default True):
         If set, then we'll center the data (X, y) have mean zero along axis 0.

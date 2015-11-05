@@ -16,7 +16,8 @@ from nilearn._utils.testing import assert_raises_regex, assert_warns
 from nilearn.decoding.space_net import (
     _EarlyStoppingCallback, _space_net_alpha_grid, MNI152_BRAIN_VOLUME,
     path_scores, BaseSpaceNet, _crop_mask, _univariate_feature_screening,
-    _get_mask_volume, SpaceNetClassifier, SpaceNetRegressor)
+    _get_mask_volume, SpaceNetClassifier, SpaceNetRegressor,
+    _adjust_screening_percentile)
 from nilearn.decoding.space_net_solvers import (_graph_net_logistic,
                                                 _graph_net_squared_loss)
 
@@ -110,26 +111,12 @@ def test_params_correctly_propagated_in_constructors():
 
 
 def test_screening_space_net():
-    rng = check_random_state(42)
-    dim = (3, 4, 5)
-    W_init = np.zeros(dim)
-    W_init[2:3, 3:, 1:3] = 1
-
-    n = 10
-    p = dim[0] * dim[1] * dim[2]
-    X = np.ones((n, 1)) + W_init.ravel().T
-    X += rng.randn(n, p)
-    y = np.dot(X, W_init.ravel())
-    X, mask = to_niimgs(X, dim)
-
-    clf = BaseSpaceNet(mask=mask, alphas=1.,
-                 penalty="graph-net", is_classif=False, max_iter=10)
-
-    assert_warns(UserWarning, clf.fit, X, y)
+    screening_percentile = assert_warns(UserWarning,
+        _adjust_screening_percentile, 10, mask)
     # We gave here a very small mask, judging by standards of brain size
     # thus the screening_percentile_ corrected for brain size should
     # be 100%
-    assert_equal(clf.screening_percentile_, 100)
+    assert_equal(screening_percentile, 100)
 
 
 def test_logistic_path_scores():
