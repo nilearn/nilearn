@@ -3,7 +3,9 @@ Test the resampling code.
 """
 import copy
 import math
+import os
 
+from nose import SkipTest
 from nose.tools import assert_equal, assert_raises, \
     assert_false, assert_true, assert_almost_equal
 from numpy.testing import assert_array_equal, assert_array_almost_equal
@@ -544,6 +546,9 @@ def test_coord_transform_trivial():
 
 
 def test_resample_img_segmentation_fault():
+    if 'APPVEYOR_TEST' in os.environ:
+        raise(SkipTest('Skipped on appveyor due to not enough memory on image'))
+
     # see https://github.com/nilearn/nilearn/issues/346
     shape_in = (64, 64, 64)
     aff_in = np.diag([2., 2., 2., 1.])
