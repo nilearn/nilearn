@@ -339,9 +339,6 @@ def path_scores(solver, X, y, mask, alphas, l1_ratios, train, test,
     if l1_ratios is None:
         raise ValueError("l1_ratios must be specified!")
 
-    # make local copy of mask
-    mask = mask.copy()
-
     # misc
     _, n_features = X.shape
     verbose = int(verbose if verbose is not None else 0)
