@@ -228,27 +228,28 @@ def test_joblib_cache():
     mask[20, 20, 20] = 1
     mask_img = Nifti1Image(mask, np.eye(4))
 
-    with testing.write_tmp_imgs(mask_img, create_files=True)\
-            as filename:
+    with testing.write_tmp_imgs(mask_img, create_files=True) as filename:
         masker = NiftiMasker(mask_img=filename)
         masker.fit()
         mask_hash = hash(masker.mask_img_)
         masker.mask_img_.get_data()
         assert_true(mask_hash == hash(masker.mask_img_))
 
-    # Test a tricky issue with memmapped joblib.memory that makes
-    # imgs return by inverse_transform impossible to save
-    cachedir = mkdtemp()
-    try:
-        masker.memory = Memory(cachedir=cachedir, mmap_mode='r',
-                               verbose=0)
-        X = masker.transform(mask_img)
-        # inverse_transform a first time, so that the result is cached
-        out_img = masker.inverse_transform(X)
-        out_img = masker.inverse_transform(X)
-        out_img.to_filename(os.path.join(cachedir, 'test.nii'))
-    finally:
-        shutil.rmtree(cachedir, ignore_errors=True)
+        # Test a tricky issue with memmapped joblib.memory that makes
+        # imgs return by inverse_transform impossible to save
+        cachedir = mkdtemp()
+        try:
+            masker.memory = Memory(cachedir=cachedir, mmap_mode='r',
+                                   verbose=0)
+            X = masker.transform(mask_img)
+            # inverse_transform a first time, so that the result is cached
+            out_img = masker.inverse_transform(X)
+            out_img = masker.inverse_transform(X)
+            out_img.to_filename(os.path.join(cachedir, 'test.nii'))
+        finally:
+            # enables to delete "filename" on windows
+            del masker
+            shutil.rmtree(cachedir, ignore_errors=True)
 
 
 def test_mask_init_errors():

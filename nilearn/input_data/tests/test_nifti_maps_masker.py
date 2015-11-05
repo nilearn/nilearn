@@ -51,6 +51,8 @@ def test_nifti_maps_masker():
             masker11 = NiftiMapsMasker(labels11, resampling_target=None)
             signals11 = masker11.fit().transform(fmri11_img)
             assert_equal(signals11.shape, (length, n_regions))
+            # enables to delete "labels11" on windows
+            del masker11
 
     masker11 = NiftiMapsMasker(labels11_img, mask_img=mask11_img,
                                resampling_target=None)

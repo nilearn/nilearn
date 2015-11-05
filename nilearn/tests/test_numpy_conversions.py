@@ -237,12 +237,8 @@ def test_csv_to_array():
     # Create a phony CSV file
     filename = tempfile.mktemp(suffix='.csv')
     try:
-        with open(filename, mode = 'wt') as fp:
+        with open(filename, mode='wt') as fp:
             fp.write('1.,2.,3.,4.,5.\n')
-            fp.flush()
-    except:
-        pass
-    else:
         assert_true(np.allclose(csv_to_array(filename),
                     np.asarray([1., 2., 3., 4., 5.])))
         assert_raises(TypeError, csv_to_array, filename, delimiters='?!')

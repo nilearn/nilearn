@@ -370,8 +370,8 @@ def test_concat_niimgs():
                         auto_resample=False)
 
     # test list of 4D niimgs as input
-    _, tmpimg1 = tempfile.mkstemp(suffix='.nii')
-    _, tmpimg2 = tempfile.mkstemp(suffix='.nii')
+    tmpimg1 = tempfile.mktemp(suffix='.nii')
+    tmpimg2 = tempfile.mktemp(suffix='.nii')
     try:
         nibabel.save(img1, tmpimg1)
         nibabel.save(img3, tmpimg2)
