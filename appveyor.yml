@@ -26,7 +26,7 @@ install:
   - "conda install pip numpy scipy scikit-learn nose wheel -y -q"
 
   # Install other nilearn dependencies
-  - "pip install nibabel coverage matplotlib"
+  - "pip install nibabel coverage"
   - "python setup.py bdist_wheel"
   - ps: "ls dist"
 
