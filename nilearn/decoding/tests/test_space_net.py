@@ -12,10 +12,11 @@ from sklearn.utils import extmath
 from sklearn.linear_model import Lasso
 from sklearn.utils import check_random_state
 from sklearn.linear_model import LogisticRegression
+from nilearn._utils.testing import assert_raises_regex
 from nilearn.decoding.space_net import (
     _EarlyStoppingCallback, _space_net_alpha_grid, MNI152_BRAIN_VOLUME,
     path_scores, BaseSpaceNet, _crop_mask, _univariate_feature_screening,
-    _get_mask_volume, SpaceNetClassifier, SpaceNetRegressor)
+    _get_mask_volume, SpaceNetClassifier, SpaceNetRegressor, _crop_mask)
 from nilearn.decoding.space_net_solvers import (_graph_net_logistic,
                                                 _graph_net_squared_loss)
 
@@ -302,6 +303,8 @@ def test_string_params_case():
     assert_raises(ValueError, BaseSpaceNet, penalty='TV-L1')
     assert_raises(ValueError, BaseSpaceNet, penalty='Graph-Net')
 
-    # loss
-    assert_raises(ValueError, SpaceNetClassifier, loss="MSE")
-    assert_raises(ValueError, SpaceNetClassifier, loss="Logistic")
+
+def test_crop_mask_empty_mask():
+    assert_raises_regex(ValueError, "Empty mask:.", _crop_mask, np.array([]))
+    assert_raises_regex(ValueError, "Empty mask:", _crop_mask,
+                        np.zeros((2, 2, 2)))
