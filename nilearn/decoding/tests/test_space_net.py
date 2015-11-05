@@ -12,8 +12,7 @@ from sklearn.utils import extmath
 from sklearn.linear_model import Lasso
 from sklearn.utils import check_random_state
 from sklearn.linear_model import LogisticRegression
-from sklearn.utils.testing import assert_warns
-from nilearn._utils.testing import assert_raises_regex
+from nilearn._utils.testing import assert_raises_regex, assert_warns
 from nilearn.decoding.space_net import (
     _EarlyStoppingCallback, _space_net_alpha_grid, MNI152_BRAIN_VOLUME,
     path_scores, BaseSpaceNet, _crop_mask, _univariate_feature_screening,
