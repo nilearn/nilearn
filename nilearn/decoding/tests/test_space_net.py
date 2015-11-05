@@ -12,11 +12,12 @@ from sklearn.utils import extmath
 from sklearn.linear_model import Lasso
 from sklearn.utils import check_random_state
 from sklearn.linear_model import LogisticRegression
-from nilearn._utils.testing import assert_raises_regex
+from nilearn._utils.testing import assert_raises_regex, assert_warns
 from nilearn.decoding.space_net import (
     _EarlyStoppingCallback, _space_net_alpha_grid, MNI152_BRAIN_VOLUME,
     path_scores, BaseSpaceNet, _crop_mask, _univariate_feature_screening,
-    _get_mask_volume, SpaceNetClassifier, SpaceNetRegressor, _crop_mask)
+    _get_mask_volume, SpaceNetClassifier, SpaceNetRegressor,
+    _adjust_screening_percentile)
 from nilearn.decoding.space_net_solvers import (_graph_net_logistic,
                                                 _graph_net_squared_loss)
 
@@ -109,7 +110,16 @@ def test_params_correctly_propagated_in_constructors():
         assert_equal(cvobj.screening_percentile, perc)
 
 
-def testlogistic_path_scores():
+def test_screening_space_net():
+    screening_percentile = assert_warns(UserWarning,
+        _adjust_screening_percentile, 10, mask)
+    # We gave here a very small mask, judging by standards of brain size
+    # thus the screening_percentile_ corrected for brain size should
+    # be 100%
+    assert_equal(screening_percentile, 100)
+
+
+def test_logistic_path_scores():
     iris = load_iris()
     X, y = iris.data, iris.target
     _, mask = to_niimgs(X, [2, 2, 2])
