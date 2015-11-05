@@ -315,7 +315,7 @@ def test_repr_niimgs():
     shape = (10, 10, 10)
     img1 = Nifti1Image(np.ones(shape), affine)
     assert_equal(
-        _utils._repr_niimgs(img1),
+        _utils._repr_niimgs(img1).replace("10L","10"),
         ("%s(\nshape=%s,\naffine=%s\n)" %
             (img1.__class__.__name__,
              repr(shape), repr(affine))))
