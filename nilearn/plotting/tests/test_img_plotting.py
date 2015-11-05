@@ -436,17 +436,17 @@ def test_plot_connectome_exceptions():
 
     # wrong shapes for node_coords or adjacency_matrix
     assert_raises_regex(ValueError,
-                        r'supposed to have shape \(n, n\).+\(1, 2\)',
+                        r'supposed to have shape \(n, n\).+\(1L?, 2L?\)',
                         plot_connectome, adjacency_matrix[:1, :],
                         node_coords,
                         **kwargs)
 
-    assert_raises_regex(ValueError, r'shape \(2, 3\).+\(2,\)',
+    assert_raises_regex(ValueError, r'shape \(2L?, 3L?\).+\(2L?,\)',
                         plot_connectome, adjacency_matrix, node_coords[:, 2],
                         **kwargs)
 
     wrong_adjacency_matrix = np.zeros((3, 3))
-    assert_raises_regex(ValueError, r'Shape mismatch.+\(3, 3\).+\(2, 3\)',
+    assert_raises_regex(ValueError, r'Shape mismatch.+\(3L?, 3L?\).+\(2L?, 3L?\)',
                         plot_connectome,
                         wrong_adjacency_matrix, node_coords, **kwargs)
 

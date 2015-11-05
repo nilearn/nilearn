@@ -315,7 +315,7 @@ def test_repr_niimgs():
     shape = (10, 10, 10)
     img1 = Nifti1Image(np.ones(shape), affine)
     assert_equal(
-        _utils._repr_niimgs(img1),
+        _utils._repr_niimgs(img1).replace("10L","10"),
         ("%s(\nshape=%s,\naffine=%s\n)" %
             (img1.__class__.__name__,
              repr(shape), repr(affine))))
@@ -370,8 +370,8 @@ def test_concat_niimgs():
                         auto_resample=False)
 
     # test list of 4D niimgs as input
-    _, tmpimg1 = tempfile.mkstemp(suffix='.nii')
-    _, tmpimg2 = tempfile.mkstemp(suffix='.nii')
+    tmpimg1 = tempfile.mktemp(suffix='.nii')
+    tmpimg2 = tempfile.mktemp(suffix='.nii')
     try:
         nibabel.save(img1, tmpimg1)
         nibabel.save(img3, tmpimg2)

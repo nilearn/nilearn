@@ -342,6 +342,8 @@ def test_iter_img():
                                expected_data_3d)
             assert_array_equal(img.get_affine(),
                                img_4d.get_affine())
+        # enables to delete "img_4d_filename" on windows
+        del img
 
     img_3d_list = list(image.iter_img(img_4d))
     for i, img in enumerate(image.iter_img(img_3d_list)):
@@ -358,6 +360,8 @@ def test_iter_img():
                                expected_data_3d)
             assert_array_equal(img.get_affine(),
                                img_4d.get_affine())
+        # enables to delete "img_3d_filename" on windows
+        del img
 
 
 def test_new_img_like_mgz():
