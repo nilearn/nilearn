@@ -25,7 +25,6 @@ from nilearn._utils import testing
 from nilearn._utils.exceptions import DimensionError
 from nilearn.image import index_img
 from nilearn._utils.testing import assert_raises_regex
-from nilearn._utils.exceptions import DimensionError
 from nilearn._utils.class_inspect import get_params
 
 
