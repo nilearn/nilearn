@@ -35,7 +35,7 @@ def test_multi_pca():
     components1 = multi_pca.fit(data).components_
     components2 = multi_pca.fit(data).components_
     components3 = multi_pca.fit(2 * data).components_
-    np.testing.assert_array_almost_equal(components1, components2)
+    np.testing.assert_array_equal(components1, components2)
     np.testing.assert_array_almost_equal(components1, components3)
 
     # Smoke test fit with 'confounds' argument

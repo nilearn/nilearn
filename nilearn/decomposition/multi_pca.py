@@ -116,7 +116,7 @@ class MultiPCA(BaseEstimator, TransformerMixin, CacheMixin):
         PCA.
 
     random_state: int or RandomState
-        Pseudo number generator state used for random SVD.
+        Pseudo number generator state used for randomized SVD.
 
     standardize : boolean, optional
         If standardize is True, the time-series are centered and normed:
