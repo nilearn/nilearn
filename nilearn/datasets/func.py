@@ -1,10 +1,17 @@
 """
 Downloading NeuroImaging datasets: functional datasets (task + resting-state)
 """
-import warnings
+
+import collections
+import json
 import os
 import re
+<<<<<<< 5fc87592a64cf4ab9cd60fe4388493889b191481
 import json
+=======
+import warnings
+
+>>>>>>> ENH: First pass on neurovault downloader.
 import numpy as np
 import nibabel
 from sklearn.datasets.base import Bunch
@@ -1424,6 +1431,7 @@ def fetch_megatrawls_netmats(dimensionality=100, timeseries='eigen_regression',
         correlation_matrices=correlation_matrices,
         description=description)
 
+<<<<<<< 5fc87592a64cf4ab9cd60fe4388493889b191481
 
 def fetch_cobre(n_subjects=10, data_dir=None, url=None, verbose=1):
     """Fetch COBRE datasets preprocessed using NIAK 0.12.4 pipeline.
@@ -1462,10 +1470,58 @@ def fetch_cobre(n_subjects=10, data_dir=None, url=None, verbose=1):
 
     verbose: int, optional
        Verbosity level (0 means no message).
+=======
+def fetch_neurovault(max_images=100,
+                     collection_filters=None, image_filters=None,
+                     data_dir=None, url=None, resume=True,
+                     refresh=False, verbose=1):
+    """Fetch statistical maps.
+
+    Parameters
+    ----------
+    max_images: int, optional (default 100)
+        Total # of images to download from the database.
+        -1 to download with no restriction.
+
+    collection_filters: dict, optional (default None)
+        filters to send to neurovault API
+        (see http://neurovault.org/api-docs#collapseCollections)
+
+    image_filters: dict, optional (default None)
+        filters to send to neurovault API
+        (see http://neurovault.org/api-docs#collapseImages)
+
+    data_dir: string, optional (default None)
+        Path of the data directory. Used to force data storage in a specified
+        location. Default: None.
+
+    url: string, optional (default None)
+        Override download URL. Used for test only (or if you setup a mirror of
+        the data).
+
+    refresh: bool, optional (default False)
+        If true, try requerying the database for new results.
+
+    resume: bool, optional (default True)
+        If true, try resuming download if possible.
+
+    verbose: int, optional (default 0)
+        Defines the level of verbosity of the output.
+
+    return_raw_data: bool, optional (default True)
+        If false, then the data will transformed into and (X, y) pair, suitable
+        for machine learning routines. X is a list of n_subjects * 48
+        Nifti1Image objects (where 48 is the number of trials),
+        and y is an array of shape (n_subjects * 48,).
+
+    smooth: float, or list of 3 floats, optional (default 0.)
+        Size of smoothing kernel to apply to the loaded zmaps.
+>>>>>>> ENH: First pass on neurovault downloader.
 
     Returns
     -------
     data: Bunch
+<<<<<<< 5fc87592a64cf4ab9cd60fe4388493889b191481
         Dictionary-like object, the attributes are:
 
         - 'func': string list
@@ -1559,3 +1615,163 @@ def fetch_cobre(n_subjects=10, data_dir=None, url=None, verbose=1):
 
     return Bunch(func=func, mat_files=mat, phenotypic=csv_array,
                  description=fdescr)
+=======
+        Dictionary-like object, the interest attributes are :
+        'func_files': list of strings
+            Paths to betamaps.
+        'images_meta': list of dicts
+            Metadata of image; parallel array to func_files
+        'collections': dict of dicts (one per collection)
+            Metadata about each collection (key: collection ID)
+
+    References
+    ----------
+    [1] Gorgolewski KJ, Varoquaux G, Rivera G, Schwartz Y, Ghosh SS, Maumet C,
+        Sochat VV, Nichols TE, Poldrack RA, Poline J-B, Yarkoni T and
+        Margulies DS (2015) NeuroVault.org: a web-based repository for
+        collecting and sharing unthresholded statistical maps of the human
+        brain. Front. Neuroinform. 9:8.
+        doi: 10.3389/fninf.2015.00008
+    """
+    import requests
+    import pandas
+
+    if url is None:
+        url = "http://neurovault.org/api"
+    if collection_filters is None:
+        collection_filters = {}
+    if image_filters is None:
+        image_filters = {}
+    data_dir = _get_dataset_dir('neurovault',
+                                data_dir=data_dir)
+
+    def build_url(base_url, filts):
+        # Build a URL with the given filters.
+        url = base_url + '?'
+        if isinstance(filts, dict):
+            for filt_name, filt_val in filts.items():
+                if filt_name.startswith('~'):
+                    continue
+                elif filt_val is None:
+                    raise ValueError('Cannot filter with None')
+                url += '&%s=%s' % (filt_name, filt_val)
+        return url
+
+    def get_json(url, local_file=None):
+        # Download json metadata; load/save locally if local_file
+        if local_file and os.path.exists(local_file):
+            try:
+                with open(local_file, 'r') as fp:
+                    return json.load(fp)
+            except Exception as e:
+                if verbose > 0:
+                    print("Error loading local json; fetching from Internet"
+                          " instead. %s" % local_file)
+        if verbose > 0:
+            print("Fetching metadata from %s" % url)
+        resp = requests.get(url)
+        resp.raise_for_status()
+        meta = json.loads(resp.text)
+
+        # Make the directory
+        if local_file:
+            local_dir = os.path.dirname(local_file)
+            if not os.path.exists(local_dir):
+                os.makedirs(local_dir)
+            with open(local_file, 'w') as fp:
+                json.dump(meta, fp)
+
+        return meta
+
+    def filter_results(results, filts):
+        # Filter after retreiving results, for negative filters
+        if isinstance(filts, dict):
+            for filt_name, filt_val in filts.items():
+                if not filt_name.startswith('~'):
+                    continue
+                filt_name = filt_name[1:]
+                if filt_val is None:
+                    results = [r for r in results if r[filt_name] is not None]
+                else:
+                    results = [r for r in results if r[filt_name] != filt_val]
+        elif isinstance(filts, collections.Iterable):
+            for filt in filts:
+                results = [r for r in results if filt(r)]
+        return results
+
+    collects = dict()
+    images_meta = []
+    func_files = []
+
+    # Retrieve the relevant collects
+    collections_url = build_url(base_url=url + '/collections',
+                                filts=collection_filters)
+    coll_meta = dict(next=collections_url)
+    while len(func_files) < max_images and coll_meta['next'] is not None:
+        coll_meta = get_json(coll_meta['next'])
+        good_coll = filter_results(results=coll_meta['results'],
+                                   filts=collection_filters)
+
+        # Retrieve image metadata
+        for coll in good_coll:
+            collections_dir = os.path.join(data_dir, str(coll['id']))
+            base_url = url + '/collections/%d/images' % coll['id']
+            images_url = build_url(base_url=base_url,
+                                   filts=image_filters)
+
+            imgs_meta_url = images_url
+            while len(func_files) < max_images and imgs_meta_url is not None:
+                prefix = re.sub('[\?=]', '_', os.path.basename(imgs_meta_url))
+                filename = '%s_metadata.json' % prefix
+                local_path = os.path.join(collections_dir, filename)
+
+                tmp_meta = get_json(imgs_meta_url, local_path)
+                all_images, imgs_meta_url = tmp_meta['results'], tmp_meta['next']
+
+                good_images = filter_results(results=all_images,
+                                             filts=image_filters)
+                if len(good_images) == 0:
+                    continue
+
+                # Finally, we have images to download.
+                # 2. Save off collection and image metadata.
+                # 3. Download the image.
+
+                # Save collection metadata
+                coll_meta_path = os.path.join(collections_dir,
+                                              'collection_metadata.json')
+                with open(coll_meta_path, 'w') as fp:  # dir made by json save
+                    json.dump(coll, fp)
+
+                for img_meta in good_images:
+                    img_url = img_meta['file']
+                    img_filename = os.path.basename(img_meta['file'])
+
+                    # Download file
+                    img_path = _fetch_files(collections_dir,
+                                            files=[(img_filename, img_url, {})],
+                                            verbose=verbose)[0]
+                    # Save metadata
+                    img_basename = os.path.splitext(img_filename)[0]
+                    img_meta_name = img_basename + '_metadata.json'
+                    img_meta_path = os.path.join(collections_dir, img_meta_name)
+                    with open(img_meta_path, 'w') as fp:
+                        json.dump(img_meta, fp)
+
+                    # Add to output struct
+                    img_meta.update(dict(collection_id=coll['id'],
+                                         local_path=img_path))  # keep copy
+                    collects[coll['id']] = coll
+                    images_meta.append(img_meta)
+                    func_files.append(img_path)
+
+                    # Stopping criterion
+                    if len(func_files) >= max_images:
+                        break
+    if verbose > 0:
+        print('Done.')
+
+    # Flatten the struct
+    return Bunch(func_files=func_files, images_meta=images_meta,
+                 collections=collects)
+>>>>>>> ENH: First pass on neurovault downloader.
