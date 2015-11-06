@@ -1,5 +1,5 @@
 """
-Visualizing Megatrawls Network Matrices from Human Connectome Project
+NeuroVault meta-analysis of stop-go paradigm studies.
 =====================================================================
 
 This example shows how to download statistical maps from
