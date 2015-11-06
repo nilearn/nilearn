@@ -1683,9 +1683,9 @@ def fetch_neurovault(max_images=100,
             url = base_url
         return url
 
-    def _get_nv_json(url, local_file=None):
+    def _get_nv_json(url, local_file=None, refresh=False):
         # Download json metadata; load/save locally if local_file
-        if local_file and os.path.exists(local_file):
+        if local_file and not refresh and os.path.exists(local_file):
             try:
                 with open(local_file, 'r') as fp:
                     return json.load(fp)
@@ -1725,7 +1725,7 @@ def fetch_neurovault(max_images=100,
                                     filts=collection_filters)
     coll_meta = dict(next=collections_url)
     while len(func_files) < max_images and coll_meta['next'] is not None:
-        coll_meta = _get_nv_json(coll_meta['next'])
+        coll_meta = _get_nv_json(coll_meta['next'], refresh=refresh)
         good_coll = _filter_nv_results(results=coll_meta['results'],
                                        filts=collection_filters)
 
@@ -1742,7 +1742,8 @@ def fetch_neurovault(max_images=100,
                 filename = '%s_metadata.json' % prefix
                 local_path = os.path.join(collections_dir, filename)
 
-                tmp_meta = _get_nv_json(imgs_meta_url, local_path)
+                tmp_meta = _get_nv_json(imgs_meta_url, local_path,
+                                        refresh=refresh)
                 all_images, imgs_meta_url = tmp_meta['results'], tmp_meta['next']
 
                 good_images = _filter_nv_results(results=all_images,
