@@ -51,7 +51,7 @@ def percent_mean_scaling(Y):
     mean : array of shape (n_voxels,)
         the data mean
     """
-    mean = Y.mean(0)
+    mean = Y.mean(axis=0)
     if (mean == 0).any():
         warn('Mean values of 0 observed.'
              'The data have probably been centered.'
@@ -81,24 +81,30 @@ def session_glm(Y, X, noise_model='ar1', bins=100):
     Returns
     -------
     labels : array of shape (n_voxels),
-        a map of values on voxels used to identify the correseponding the model
+        a map of values on voxels used to identify the corresponding model
 
-    results : dictionary,
+    results : dict,
         keys correspond to the different labels values
         values are RegressionResults instances corresponding to the voxels
     """
-    if noise_model not in ['ar1', 'ols']:
-        raise ValueError(' %s Unknown noise model' % noise_model)
+    acceptable_noise_models = ['ar1', 'ols']
+    if noise_model not in acceptable_noise_models:
+        raise ValueError(
+            "Acceptable noise models are {0}. You provided 'noise_model={1}'".\
+                format(acceptable_noise_models, noise_model))
 
     if Y.shape[0] != X.shape[0]:
-        raise ValueError('Response and predictors are inconsistent')
+        raise ValueError(
+            'The number of rows of Y should match the number of rows of X.'
+            ' You provided X with shape {0} and Y with shape {1}'.\
+                format(X.shape, Y.shape))
 
     # fit the OLS model
     ols_result = OLSModel(X).fit(Y)
 
     # compute and discretize the AR1 coefs
-    ar1 = ((ols_result.resid[1:] * ols_result.resid[:-1]).sum(0) /
-           (ols_result.resid ** 2).sum(0))
+    ar1 = ((ols_result.resid[1:] * ols_result.resid[:-1]).sum(axis=0) /
+           (ols_result.resid ** 2).sum(axis=0))
     ar1 = (ar1 * bins).astype(np.int) * 1. / bins
 
     # Fit the AR model acccording to current AR(1) estimates
@@ -116,21 +122,21 @@ def session_glm(Y, X, noise_model='ar1', bins=100):
 
 
 def compute_contrast(labels, regression_result, con_val, contrast_type=None):
-    """ compute the specified contrast given an estimated glm
+    """ Compute the specified contrast given an estimated glm
 
     Parameters
     ----------
     labels : array of shape (n_voxels),
-        a map of values on voxels used to identify the correseponding the model
+        a map of values on voxels used to identify the corresponding model
 
-    results : dictionary,
-        keys correspond to the differnt labels
+    results : dict,
+        with keys corresponding to the different labels
         values are RegressionResults instances corresponding to the voxels
 
     con_val : numpy.ndarray of shape (p) or (q, p)
         where q = number of contrast vectors and p = number of regressors
 
-    contrast_type : {None, 't', 'F' or 'tmin-conjunction'}, optional
+    contrast_type : {None, 't', 'F', 'tmin-conjunction'}, optional
         type of the contrast.  If None, then defaults to 't' for 1D
         `con_val` and 'F' for 2D `con_val`
 
@@ -145,26 +151,28 @@ def compute_contrast(labels, regression_result, con_val, contrast_type=None):
         dim = con_val.shape[0]
 
     if contrast_type is None:
-        if dim == 1:
-            contrast_type = 't'
-        else:
-            contrast_type = 'F'
+        contrast_type = 't' if dim == 1 else 'F'
 
-    if contrast_type not in ['t', 'F']:
-        raise ValueError('Unknown contrast type: %s' % contrast_type)
+    acceptable_contrast_types = ['t', 'F']
+    if contrast_type not in acceptable_contrast_types:
+        raise ValueError(
+            '"{0}" is not a known contrast type. Allowed types are {1}'.
+            format(contrast_type, acceptable_contrast_types))
 
-    effect_ = np.zeros((dim, labels.size), dtype=np.float)
-    var_ = np.zeros((dim, dim, labels.size), dtype=np.float)
+    effect_ = np.zeros((dim, labels.size))
+    var_ = np.zeros((dim, dim, labels.size))
     if contrast_type == 't':
-        for label_ in regression_result.keys():
+        for label_ in regression_result:
+            label_mask = labels == label_
             resl = regression_result[label_].Tcontrast(con_val)
-            effect_[:, labels == label_] = resl.effect.T
-            var_[:, :, labels == label_] = (resl.sd ** 2).T
+            effect_[:, label_mask] = resl.effect.T
+            var_[:, :, label_mask] = (resl.sd ** 2).T
     else:
-        for label_ in regression_result.keys():
+        for label_ in regression_result:
+            label_mask = labels == label_
             resl = regression_result[label_].Fcontrast(con_val)
-            effect_[:, labels == label_] = resl.effect
-            var_[:, :, labels == label_] = resl.covariance
+            effect_[:, label_mask] = resl.effect
+            var_[:, :, label_mask] = resl.covariance
 
     dof_ = regression_result[label_].df_resid
     return Contrast(effect=effect_, variance=var_, dof=dof_,
@@ -174,32 +182,31 @@ def compute_contrast(labels, regression_result, con_val, contrast_type=None):
 class FirstLevelGLM(BaseEstimator, TransformerMixin, CacheMixin):
     """ Implementation of the General Linear Model for Single-session fMRI data
 
-    mask: Niimg-like object, instance of NiftiMasker or MultiNiftiMasker,
-     optional
+    mask: Niimg-like, NiftiMasker or MultiNiftiMasker object, optional,
         Mask to be used on data. If an instance of masker is passed,
         then its mask will be used. If no mask is given,
         it will be computed automatically by a MultiNiftiMasker with default
         parameters.
 
     target_affine: 3x3 or 4x4 matrix, optional
-        This parameter is passed to image.resample_img. Please see the
+        This parameter is passed to nilear.image.resample_img. Please see the
         related documentation for details.
 
     target_shape: 3-tuple of integers, optional
-        This parameter is passed to image.resample_img. Please see the
+        This parameter is passed to nilearn.image.resample_img. Please see the
         related documentation for details.
 
     low_pass: False or float, optional
-        This parameter is passed to signal.clean. Please see the related
-        documentation for details
+        This parameter is passed to nilearn.signal.clean.
+        Please see the related documentation for details.
 
     high_pass: False or float, optional
-        This parameter is passed to signal.clean. Please see the related
-        documentation for details
+        This parameter is passed to nilearn.signal.clean.
+        Please see the related documentation for details.
 
     t_r: float, optional
-        This parameter is passed to signal.clean. Please see the related
-        documentation for details
+        This parameter is passed to nilearn.signal.clean.
+        Please see the related documentation for details.
 
     smoothing_fwhm: float, optional
         If smoothing_fwhm is not None, it gives the size in millimeters of the
@@ -219,8 +226,9 @@ class FirstLevelGLM(BaseEstimator, TransformerMixin, CacheMixin):
         their variance is put to 1 in the time dimension.
 
     percent_signal_change: bool, optional,
-        If True, fMRI signals is scaled to percent of the mean value
-        Incompatible with standardize (overrides standardize).
+        If True, fMRI signals are scaled to percent of the mean value
+        Incompatible with standardize (standardize=False is enforced when\
+        percent_signal_change is True).
 
     n_jobs : integer, optional
         The number of CPUs to use to do the computation. -1 means
@@ -235,13 +243,11 @@ class FirstLevelGLM(BaseEstimator, TransformerMixin, CacheMixin):
     Attributes
     ----------
     labels : array of shape (n_voxels),
-        a map of values on voxels used to identify the correseponding the model
+        a map of values on voxels used to identify the corresponding model
 
-    results : dictionary,
-        keys correspond to the different labels values
+    results : dict,
+        with keys corresponding to the different labels values
         values are RegressionResults instances corresponding to the voxels
-
-    
     """
 
     def __init__(self, mask=None, target_affine=None, target_shape=None,
@@ -267,7 +273,8 @@ class FirstLevelGLM(BaseEstimator, TransformerMixin, CacheMixin):
             self.standardize = False
 
     def fit(self, imgs, design_matrices):
-        """ Note: design_matrices is the design matrix !
+        """ Fit the GLM
+
         1. does a masker job: fMRI_data -> Y
         2. fit an ols regression to (Y, X)
         3. fit an AR(1) regression of require
@@ -309,9 +316,10 @@ class FirstLevelGLM(BaseEstimator, TransformerMixin, CacheMixin):
                 setattr(self.masker_, param_name, our_param)
 
         # make design_matrices a list of arrays
-        design_matrices_ = [X for X in design_matrices]
         if isinstance(design_matrices, (_basestring, np.ndarray)):
             design_matrices_ = [design_matrices]
+        else:
+            design_matrices_ = [X for X in design_matrices]
 
         design_matrices = []
         for design_matrix in design_matrices_:
@@ -431,7 +439,8 @@ class FirstLevelGLM(BaseEstimator, TransformerMixin, CacheMixin):
         self, design_matrices, fmri_images, con_vals, contrast_type=None,
         contrast_name='', output_z=True, output_stat=False,
         output_effects=False, output_variance=False):
-        """ Fit then transform"""
+        """ Fit then transform. For more details,
+        see FirstLevelGLM.fit and FirstLevelGLM.transform documentation"""
         return self.fit(design_matrices, fmri_images).transform(
             con_vals, contrast_type, contrast_name, output_z=True,
             output_stat=False, output_effects=False, output_variance=False)
