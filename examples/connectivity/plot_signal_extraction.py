@@ -51,7 +51,12 @@ correlation_matrix = np.corrcoef(time_series.T)
 # Plot the correlation matrix
 from matplotlib import pyplot as plt
 plt.figure(figsize=(10, 10))
-plt.imshow(correlation_matrix, interpolation="nearest")
+# Mask the main diagonal for visualization:
+correlation_matrix[range(correlation_matrix.shape[-1]),
+                   range(correlation_matrix.shape[-1])] = 0
+
+plt.imshow(correlation_matrix, interpolation="nearest", cmap="RdBu_r",
+           vmax=0.8, vmin=-0.8)
 
 # Add labels and adjust margins
 x_ticks = plt.xticks(range(len(labels) - 1), labels[1:], rotation=90)
@@ -67,8 +72,13 @@ time_series = masker.fit_transform(data.func[0])
 
 correlation_matrix = np.corrcoef(time_series.T)
 
+# Mask the main diagonal for visualization:
+correlation_matrix[range(correlation_matrix.shape[-1]),
+                   range(correlation_matrix.shape[-1])] = 0
+
 plt.figure(figsize=(10, 10))
-plt.imshow(correlation_matrix, interpolation="nearest")
+plt.imshow(correlation_matrix, interpolation="nearest", cmap="RdBu_r",
+           vmax=0.8, vmin=-0.8)
 
 x_ticks = plt.xticks(range(len(labels) - 1), labels[1:], rotation=90)
 y_ticks = plt.yticks(range(len(labels) - 1), labels[1:])
