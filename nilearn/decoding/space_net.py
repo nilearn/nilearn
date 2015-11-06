@@ -26,6 +26,7 @@ from sklearn.feature_selection import (SelectPercentile, f_regression,
 from sklearn.externals.joblib import Memory, Parallel, delayed
 from sklearn.cross_validation import check_cv
 from sklearn.preprocessing import LabelBinarizer
+from sklearn.metrics import accuracy_score
 from .._utils.compat import _basestring
 from .._utils.fixes import atleast2d_or_csr
 from .._utils.cache_mixin import CacheMixin
@@ -970,8 +971,8 @@ class SpaceNetClassifier(BaseSpaceNet):
     penalty : string, optional (default 'graph-net')
         Penalty to used in the model. Can be 'graph-net' or 'tv-l1'.
 
-    loss : string, optional (default "mse")
-        Loss to be used in the model. Must be an one of "mse", or "logistic".
+    loss : string, optional (default "logistic")
+        Loss to be used in the classifier. Must be one of "mse", or "logistic".
 
     l1_ratios : float or list of floats in the interval [0, 1];
     optional (default .5)
@@ -989,10 +990,6 @@ class SpaceNetClassifier(BaseSpaceNet):
     n_alphas : int, optional (default 10).
         Generate this number of alphas per regularization path.
         This parameter is mutually exclusive with the `alphas` parameter.
-
-    loss: string, optional (default "logistic"):
-        Loss to use in the classification problems. Must be one of "mse" and
-        "logistic".
 
     eps : float, optional (default 1e-3)
         Length of the path. For example, ``eps=1e-3`` means that
@@ -1133,6 +1130,27 @@ class SpaceNetClassifier(BaseSpaceNet):
         self.classes_ = self._enc.classes_
         self.n_classes_ = len(self.classes_)
         return y
+
+    def score(self, X, y, sample_weight=None):
+        """Returns the mean accuracy on the given test data and labels.
+
+        Parameters
+        ----------
+        X : list of Niimg-like objects
+            See http://nilearn.github.io/building_blocks/
+            manipulating_mr_images.html#niimg.
+            Data on which model is to be fitted. If this is a list,
+            the affine is considered the same for all.
+
+        y : array or list of length n_samples
+            Labels
+
+        Returns
+        -------
+        score : float
+            Mean accuracy of self.predict(X) wrt. y.
+        """
+        return accuracy_score(y, self.predict(X), sample_weight=sample_weight)
 
 
 class SpaceNetRegressor(BaseSpaceNet):

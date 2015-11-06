@@ -4,7 +4,7 @@ import itertools
 from functools import partial
 from nose import SkipTest
 from nose.tools import (assert_equal, assert_true, assert_false,
-                        assert_raises)
+                        assert_raises, assert_greater_equal)
 import numpy as np
 import nibabel
 from sklearn.datasets import load_iris
@@ -185,6 +185,20 @@ def test_tv_regression_3D_image_doesnt_crash():
     for l1_ratio in [0., .5, 1.]:
         BaseSpaceNet(mask=mask, alphas=alpha, l1_ratios=l1_ratio,
                      penalty="tv-l1", is_classif=False, max_iter=10).fit(X, y)
+
+
+def test_graph_net_classifier_score(C=.01, tol=1e-10, zero_thr=1e-4):
+    iris = load_iris()
+    X, y = iris.data, iris.target
+    y = 2 * (y > 0) - 1
+    X_, mask = to_niimgs(X, (2, 2, 2))
+    gnc = SpaceNetClassifier(mask=mask, alphas=1. / C / X.shape[0],
+                             l1_ratios=1., tol=tol, verbose=0,
+                             max_iter=1000, penalty="graph-net",
+                             standardize=False, loss='logistic',
+                             screening_percentile=100.).fit(X_, y)
+    accuracy = gnc.score(X_, y)
+    assert_greater_equal(accuracy, 0, msg='Negative score %.2f' % accuracy)
 
 
 def test_log_reg_vs_graph_net_two_classes_iris(C=.01, tol=1e-10,
