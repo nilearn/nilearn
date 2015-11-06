@@ -1674,19 +1674,16 @@ def fetch_neurovault(max_images=100,
     data_dir = _get_dataset_dir('neurovault',
                                 data_dir=data_dir)
 
-    def build_url(base_url, filts):
+    def _build_nv_url(base_url, filts=None):
         # Build a URL with the given filters.
-        url = base_url + '?'
-        if isinstance(filts, dict):
-            for filt_name, filt_val in filts.items():
-                if filt_name.startswith('~'):
-                    continue
-                elif filt_val is None:
-                    raise ValueError('Cannot filter with None')
-                url += '&%s=%s' % (filt_name, filt_val)
+        if filts and isinstance(filts, dict):
+            url = '?'.join(base_url,
+                           '&'.join(['='.join(it) for it in filts.items()]))
+        else:
+            url = base_url
         return url
 
-    def get_json(url, local_file=None):
+    def _get_nv_json(url, local_file=None):
         # Download json metadata; load/save locally if local_file
         if local_file and os.path.exists(local_file):
             try:
@@ -1712,18 +1709,9 @@ def fetch_neurovault(max_images=100,
 
         return meta
 
-    def filter_results(results, filts):
+    def _filter_nv_results(results, filts):
         # Filter after retreiving results, for negative filters
-        if isinstance(filts, dict):
-            for filt_name, filt_val in filts.items():
-                if not filt_name.startswith('~'):
-                    continue
-                filt_name = filt_name[1:]
-                if filt_val is None:
-                    results = [r for r in results if r[filt_name] is not None]
-                else:
-                    results = [r for r in results if r[filt_name] != filt_val]
-        elif isinstance(filts, collections.Iterable):
+        if isinstance(filts, collections.Iterable):
             for filt in filts:
                 results = [r for r in results if filt(r)]
         return results
@@ -1733,20 +1721,20 @@ def fetch_neurovault(max_images=100,
     func_files = []
 
     # Retrieve the relevant collects
-    collections_url = build_url(base_url=url + '/collections',
-                                filts=collection_filters)
+    collections_url = _build_nv_url(base_url=url + '/collections',
+                                    filts=collection_filters)
     coll_meta = dict(next=collections_url)
     while len(func_files) < max_images and coll_meta['next'] is not None:
-        coll_meta = get_json(coll_meta['next'])
-        good_coll = filter_results(results=coll_meta['results'],
-                                   filts=collection_filters)
+        coll_meta = _get_nv_json(coll_meta['next'])
+        good_coll = _filter_nv_results(results=coll_meta['results'],
+                                       filts=collection_filters)
 
         # Retrieve image metadata
         for coll in good_coll:
             collections_dir = os.path.join(data_dir, str(coll['id']))
             base_url = url + '/collections/%d/images' % coll['id']
-            images_url = build_url(base_url=base_url,
-                                   filts=image_filters)
+            images_url = _build_nv_url(base_url=base_url,
+                                       filts=image_filters)
 
             imgs_meta_url = images_url
             while len(func_files) < max_images and imgs_meta_url is not None:
@@ -1754,11 +1742,11 @@ def fetch_neurovault(max_images=100,
                 filename = '%s_metadata.json' % prefix
                 local_path = os.path.join(collections_dir, filename)
 
-                tmp_meta = get_json(imgs_meta_url, local_path)
+                tmp_meta = _get_nv_json(imgs_meta_url, local_path)
                 all_images, imgs_meta_url = tmp_meta['results'], tmp_meta['next']
 
-                good_images = filter_results(results=all_images,
-                                             filts=image_filters)
+                good_images = _filter_nv_results(results=all_images,
+                                                 filts=image_filters)
                 if len(good_images) == 0:
                     continue
 
