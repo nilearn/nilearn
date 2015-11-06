@@ -321,7 +321,7 @@ class MultiPCA(BaseEstimator, TransformerMixin, CacheMixin):
                      (index + 1) * self.n_components] = subject_pca
             data, variance, _ = self._cache(
                 randomized_svd, func_memory_level=3)(
-                    data.T, n_components=self.n_components, transpose=False,
+                    data.T, n_components=self.n_components, transpose=True,
                     random_state=self.random_state)
             # as_ndarray is to get rid of memmapping
             data = as_ndarray(data.T)
