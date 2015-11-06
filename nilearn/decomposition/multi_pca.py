@@ -54,7 +54,7 @@ def session_pca(imgs, mask_img, parameters,
         Number of components to be extracted by the PCA
 
     random_state: int or RandomState
-        Pseudo number generator state used for random SVD.
+        Pseudo number generator state used for randomized SVD.
 
     memory_level: integer, optional
         Integer indicating the level of memorization. The higher, the more
