@@ -1131,7 +1131,7 @@ class SpaceNetClassifier(BaseSpaceNet):
         self.n_classes_ = len(self.classes_)
         return y
 
-    def score(self, X, y, sample_weight=None):
+    def score(self, X, y):
         """Returns the mean accuracy on the given test data and labels.
 
         Parameters
@@ -1150,7 +1150,7 @@ class SpaceNetClassifier(BaseSpaceNet):
         score : float
             Mean accuracy of self.predict(X) wrt. y.
         """
-        return accuracy_score(y, self.predict(X), sample_weight=sample_weight)
+        return accuracy_score(y, self.predict(X))
 
 
 class SpaceNetRegressor(BaseSpaceNet):
