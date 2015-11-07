@@ -136,7 +136,7 @@ def compute_contrast(labels, regression_result, con_val, contrast_type=None):
     con_val : numpy.ndarray of shape (p) or (q, p)
         where q = number of contrast vectors and p = number of regressors
 
-    contrast_type : {None, 't', 'F', 'tmin-conjunction'}, optional
+    contrast_type : {None, 't', 'F'}, optional
         type of the contrast.  If None, then defaults to 't' for 1D
         `con_val` and 'F' for 2D `con_val`
 
@@ -364,7 +364,7 @@ class FirstLevelGLM(BaseEstimator, TransformerMixin, CacheMixin):
             where ``n_col`` is the number of columns of the design matrix,
             numerical definition of the contrast (one array per run)
 
-        contrast_type : {'t', 'F', 'tmin-conjunction'}, optional
+        contrast_type : {'t', 'F'}, optional
             type of the contrast
 
         contrast_name : str, optional
@@ -448,21 +448,13 @@ class FirstLevelGLM(BaseEstimator, TransformerMixin, CacheMixin):
 
 class Contrast(object):
     """ The contrast class handles the estimation of statistical contrasts
-    on a given model: student (t), Fisher (F), conjunction (tmin-conjunction).
+    on a given model: student (t) or Fisher (F).
     The important feature is that it supports addition,
     thus opening the possibility of fixed-effects models.
 
     The current implementation is meant to be simple,
     and could be enhanced in the future on the computational side
     (high-dimensional F constrasts may lead to memory breakage).
-
-    Notes
-    -----
-    The 'tmin-conjunction' test is the valid conjunction test discussed in:
-    Nichols T, Brett M, Andersson J, Wager T, Poline JB. Valid conjunction
-    inference with the minimum statistic. Neuroimage. 2005 Apr 15;25(3):653-60.
-    This test gives the p-value of the z-values under the conjunction null,
-    i.e. the union of the null hypotheses for all terms.
     """
 
     def __init__(self, effect, variance, dof=DEF_DOFMAX, contrast_type='t',
@@ -538,14 +530,6 @@ class Contrast(object):
                 self.variance = self.variance[np.newaxis, np.newaxis]
             stat = (multiple_mahalanobis(
                     self.effect - baseline, self.variance) / self.dim)
-        # Case: tmin (conjunctions)
-        elif self.contrast_type == 'tmin-conjunction':
-            vdiag = self.variance.reshape([self.dim ** 2] + list(
-                    self.variance.shape[2:]))[:: self.dim + 1]
-            stat = (self.effect - baseline) / np.sqrt(
-                np.maximum(vdiag, self.tiny))
-            stat = stat.min(0)
-
         # Unknwon stat
         else:
             raise ValueError('Unknown statistic type')
@@ -569,7 +553,7 @@ class Contrast(object):
         if self.stat_ is None or not self.baseline == baseline:
             self.stat_ = self.stat(baseline)
         # Valid conjunction as in Nichols et al, Neuroimage 25, 2005.
-        if self.contrast_type in ['t', 'tmin-conjunction']:
+        if self.contrast_type == 't':
             p_values = sps.t.sf(self.stat_, np.minimum(self.dof, self.dofmax))
         elif self.contrast_type == 'F':
             p_values = sps.f.sf(self.stat_, self.dim, np.minimum(
