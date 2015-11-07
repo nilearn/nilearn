@@ -1645,14 +1645,14 @@ def fetch_neurovault(max_images=100,
             Metadata about each collection (key: collection ID)
             See http://neurovault.org/api-docs#collapseCollections
             for all available fields.
-        'func_files': list of strings
-            Paths to betamaps.
-        'images_meta': list of dicts
+        'images': list of dicts
             Metadata of image; parallel array to func_files.
             See http://neurovault.org/api-docs#collapseImages
             for available fields.
             Also includes `local_path` (path to downloaded image)
             and `collection_id` (which indexes into `collections`)
+        'func_files': list of strings
+            Paths to betamaps.
 
     References
     ----------
@@ -1717,7 +1717,7 @@ def fetch_neurovault(max_images=100,
         return results
 
     collects = dict()
-    images_meta = []
+    images = []
     func_files = []
 
     # Retrieve the relevant collects
@@ -1761,27 +1761,27 @@ def fetch_neurovault(max_images=100,
                 with open(coll_meta_path, 'w') as fp:  # dir made by json save
                     json.dump(coll, fp)
 
-                for img_meta in good_images:
-                    img_url = img_meta['file']
-                    img_filename = os.path.basename(img_meta['file'])
+                for im in good_images:
+                    im_url = im['file']
+                    im_filename = os.path.basename(im['file'])
 
                     # Download file
-                    img_path = _fetch_files(collections_dir,
-                                            files=[(img_filename, img_url, {})],
-                                            verbose=verbose)[0]
+                    real_image_path = _fetch_files(collections_dir,
+                                                   files=[(im_filename, im_url, {})],
+                                                   verbose=verbose)[0]
                     # Save metadata
-                    img_basename = os.path.splitext(img_filename)[0]
-                    img_meta_name = img_basename + '_metadata.json'
-                    img_meta_path = os.path.join(collections_dir, img_meta_name)
-                    with open(img_meta_path, 'w') as fp:
-                        json.dump(img_meta, fp)
+                    im_basename = os.path.splitext(im_filename)[0]
+                    im_name = im_basename + '_metadata.json'
+                    im_path = os.path.join(collections_dir, im_name)
+                    with open(im_path, 'w') as fp:
+                        json.dump(im, fp)
 
                     # Add to output struct
-                    img_meta.update(dict(collection_id=coll['id'],
-                                         local_path=img_path))  # keep copy
+                    im.update(dict(collection_id=coll['id'],
+                                   local_path=real_image_path))  # keep copy
                     collects[coll['id']] = coll
-                    images_meta.append(img_meta)
-                    func_files.append(img_path)
+                    images.append(im)
+                    func_files.append(im['local_path'])
 
                     # Stopping criterion
                     if len(func_files) >= max_images:
@@ -1790,6 +1790,6 @@ def fetch_neurovault(max_images=100,
         print('Done.')
 
     # Flatten the struct
-    return Bunch(func_files=func_files, images_meta=images_meta,
+    return Bunch(func_files=func_files, images=images,
                  collections=collects)
 

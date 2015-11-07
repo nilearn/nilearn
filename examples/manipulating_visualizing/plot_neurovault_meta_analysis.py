@@ -23,21 +23,21 @@ imfilts = [lambda im: "stop signal" in (im.get('cognitive_paradigm_cogatlas') or
 # Download up to 100 matches
 ss_all = datasets.fetch_neurovault(collection_filters=cfilts,
                                    image_filters=imfilts)
-images_meta, collections = ss_all['images_meta'], ss_all['collections']
+images, collections = ss_all['images'], ss_all['collections']
 print("Paradigms we've downloaded:")
-for img_meta in images_meta:
-    print("\t%04d: %s" % (img_meta['id'],
-                          img_meta['cognitive_paradigm_cogatlas']))
+for im in images:
+    print("\t%04d: %s" % (im['id'],
+                          im['cognitive_paradigm_cogatlas']))
 
 # Show all contrast definitions
 print("Contrast definitions for downloaded images:")
-for cd in np.unique([im['contrast_definition'] for im in images_meta]):
+for cd in np.unique([im['contrast_definition'] for im in images]):
     print("\t%s" % cd)
 
 # Visualize the content
 from nilearn.plotting import plot_glass_brain
-for img_meta in images_meta:
-    plot_glass_brain(img_meta['local_path'], title='%04d' % img_meta['id'])
+for im in images:
+    plot_glass_brain(im['local_path'], title='%04d' % im['id'])
 plt.show()
 
 # Convert t values to z values
@@ -55,19 +55,19 @@ analysis_dir = '.'
 mean_maps = []
 p_datas = []
 z_datas = []
-all_collection_ids = np.unique([im['collection_id'] for im in images_meta])
+all_collection_ids = np.unique([im['collection_id'] for im in images])
 for collection_id in all_collection_ids:
     print("Collection %d" % collection_id)
     df = collections[collection_id]['number_of_subjects'] - 2
     print("Degrees of freedom = %d" % df)
 
     # convert t to z
-    metas = [im for im in images_meta if im['collection_id'] == collection_id]
+    cur_imgs = [im for im in images if im['collection_id'] == collection_id]
     image_z_niis = []
-    for img_meta in metas:
+    for im in cur_imgs:
         # Load and validate the downloaded image.
-        nii = nb.load(img_meta['local_path'])
-        assert img_meta['map_type'] == 'T map', "We assume T-maps"
+        nii = nb.load(im['local_path'])
+        assert im['map_type'] == 'T map', "We assume T-maps"
         if image_z_niis:
             assert np.allclose(image_z_niis[0].get_affine(),
                                nii.get_affine()), \
