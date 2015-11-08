@@ -51,8 +51,7 @@ correlation_matrix = np.corrcoef(time_series.T)
 from matplotlib import pyplot as plt
 plt.figure(figsize=(10, 10))
 # Mask out the major diagonal
-correlation_matrix[range(correlation_matrix.shape[-1]),
-                   range(correlation_matrix.shape[-1])] = 0
+np.fill_diagonal(correlation_matrix, 0)
 plt.imshow(correlation_matrix, interpolation="nearest", cmap="RdBu_r",
            vmax=0.8, vmin=-0.8)
 plt.colorbar()
@@ -69,4 +68,4 @@ coords = labels[['x', 'y', 'z']].tolist()
 plotting.plot_connectome(correlation_matrix, coords,
                          edge_threshold="80%")
 
-plt.show()
+plotting.show()
