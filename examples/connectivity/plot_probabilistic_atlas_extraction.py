@@ -50,7 +50,11 @@ correlation_matrix = np.corrcoef(time_series.T)
 # Display the correlation matrix
 from matplotlib import pyplot as plt
 plt.figure(figsize=(10, 10))
-plt.imshow(correlation_matrix, interpolation="nearest")
+# Mask out the major diagonal
+np.fill_diagonal(correlation_matrix, 0)
+plt.imshow(correlation_matrix, interpolation="nearest", cmap="RdBu_r",
+           vmax=0.8, vmin=-0.8)
+plt.colorbar()
 # And display the labels
 x_ticks = plt.xticks(range(len(names)), names, rotation=90)
 y_ticks = plt.yticks(range(len(names)), names)
