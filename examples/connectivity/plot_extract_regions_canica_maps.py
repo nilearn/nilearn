@@ -25,7 +25,7 @@ print(" -- Canonical ICA decomposition of functional datasets -- ")
 n_components = 5
 canica = CanICA(n_components=n_components, smoothing_fwhm=6.,
                 memory="nilearn_cache", memory_level=2,
-                threshold=3., random_state=0, n_jobs=-1)
+                threshold=3., random_state=0)
 
 canica.fit(func_filenames)
 components_img = canica.masker_.inverse_transform(canica.components_)
