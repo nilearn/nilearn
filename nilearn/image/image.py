@@ -7,11 +7,13 @@ See also nilearn.signal.
 # License: simplified BSD
 
 import collections
+import numbers
 import operator
 from distutils.version import LooseVersion
 
 import numpy as np
 from scipy import ndimage
+from scipy.stats import scoreatpercentile
 import copy
 import nibabel
 from sklearn.externals.joblib import Parallel, delayed
@@ -19,7 +21,7 @@ from sklearn.externals.joblib import Parallel, delayed
 from .. import signal
 from .._utils import (check_niimg_4d, check_niimg_3d, check_niimg, as_ndarray,
                       _repr_niimgs)
-from .._utils.niimg_conversions import _index_img
+from .._utils.niimg_conversions import _index_img, _check_same_fov
 from .._utils.niimg import _safe_get_data
 from .._utils.compat import _basestring
 
@@ -596,3 +598,100 @@ def new_img_like(ref_niimg, data, affine=None, copy_header=False):
         header['cal_max'] = np.max(data) if data.size > 0 else 0.
         header['cal_max'] = np.min(data) if data.size > 0 else 0.
     return ref_niimg.__class__(data, affine, header=header)
+
+
+def threshold_img(img, threshold, mask_img=None,
+                  thresholding_strategy='img_value'):
+    """ A function keeps the most prominent regions of the input image,
+    also can be called as foreground extraction.
+
+    Parameters
+    ----------
+    img: a 3D/4D Nifti like image/object
+        a nifti image consists of statistical or atlas maps which needs
+        to be used in the thresholding process.
+
+    threshold: a float or a string or a number
+        A value used to threshold the image.
+        If given as float, this intensity value will be directly used to
+        threshold the image. The value should be within the range of minimum
+        intensity and maximum intensity of the given image.
+        Mostly suitable, if you exactly know which part of the brain regions
+        are to be kept. This value is used in thresholding_strategy='img_value'.
+        or
+        If given as string, it should finish with percent sign e.g. "80%" and
+        should be within the range of "0%" to "100%".
+        If given as number, it should be a real number of range between 0 and 100.
+        Both string and real number are used in thresholding_strategy='percentile'.
+
+    thresholding_strategy: string {'percentile', 'img_value'}, \
+        default 'percentile', optional
+        A strategy which takes the value and thresholds the image.
+        If 'percentile', image is thresholded based on the percentage of the
+        score on the image data. The scores which are survived above this
+        percentile are kept.
+        or
+        If 'img_value', voxels which have intensities greater than given float
+        value are kept.
+
+    mask_img: a Nifti like image/object, default is None, optional
+        A mask image used to mask the input image data. For example, if mask image
+        of one particular brain region is given then only those region will be
+        used for processing and rest of the regions are masked out to zero.
+        If None, no masking will be applied. Processing will be done on whole brain.
+
+    Returns
+    -------
+    threshold_img: a Nifti like image/object
+        a thresholded image of the given input image.
+    """
+    from . import resampling
+    from .. import masking
+    from ..plotting.displays import check_threshold
+
+    img = check_niimg(img, atleast_4d=True)
+    img_data = img.get_data()
+    affine = img.get_affine()
+
+    if mask_img is not None:
+        if not _check_same_fov(img, mask_img):
+            mask_img = resampling.resample_img(mask_img, target_affine=affine,
+                                               target_shape=img.shape[:3],
+                                               interpolation="nearest")
+
+        mask_data, _ = masking._load_mask_img(mask_img)
+        # Set as 0 for the values which are outside of the mask
+        img_data[mask_data == 0.] = 0.
+
+    if threshold is not None:
+        if isinstance(threshold, float):
+            # When float value is given to threshold the image directly,
+            # the value will be checking if it is more than maximum.
+            value_check = abs(img_data).max()
+            if abs(threshold) > value_check:
+                raise ValueError("The float value given to threshold directly "
+                                 "must not exceed %d. "
+                                 "You provided threshold=%s " % (value_check,
+                                                                 threshold))
+            cutoff_threshold = threshold
+        elif isinstance(threshold, _basestring) or isinstance(threshold, numbers.Real):
+            if isinstance(threshold, numbers.Number):
+                threshold = ("{0}%").format(threshold)
+            cutoff_threshold = check_threshold(threshold, img_data,
+                                               percentile_calculate=scoreatpercentile,
+                                               name='threshold')
+    else:
+        raise ValueError("The input parameter 'threshold' is empty. "
+                         "Please submit value which should be either float or "
+                         "a string e.g. '90%' or simply number 90.")
+
+    list_of_strategies = ['percentile', 'img_value']
+    if thresholding_strategy not in list_of_strategies:
+        message = ("'thresholding_strategy' should be given as "
+                   "either of these {0}").format(list_of_strategies)
+        raise ValueError(message)
+
+    img_data[np.abs(img_data) < cutoff_threshold] = 0.
+    threshold_img = new_img_like(img, img_data, affine)
+
+    return threshold_img

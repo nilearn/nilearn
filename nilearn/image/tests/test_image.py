@@ -4,6 +4,7 @@ Test image pre-processing functions
 from nose.tools import assert_true, assert_false
 from distutils.version import LooseVersion
 from nose import SkipTest
+from nose import tools
 
 import platform
 import os
@@ -16,6 +17,8 @@ from nilearn.image import resampling
 from nilearn.image import concat_imgs
 from nilearn._utils import testing, niimg_conversions
 from nilearn.image import new_img_like
+from nilearn.image import threshold_img
+from nilearn.image import iter_img
 
 X64 = (platform.architecture()[0] == '64bit')
 
@@ -390,3 +393,58 @@ def test_new_img_like_mgz():
     data = np.ones(ref_img.get_data().shape, dtype=np.bool)
     affine = ref_img.get_affine()
     new_img_like(ref_img, data, affine, copy_header=False)
+
+
+def test_validity_threshold_value_and_strategy_in_threshold_img():
+    shape = (6, 8, 10)
+    maps = testing.generate_maps(shape, n_regions=2)
+    map_0 = maps[0]
+
+    # Test whether function raises the same error by providing value
+    # higher than the max value of input image
+    float_value = 2.
+    testing.assert_raises_regex(ValueError,
+                                "The float value given to threshold "
+                                "directly must not exceed 1. "
+                                "You provided threshold=%s " % float_value,
+                                threshold_img,
+                                map_0, threshold=float_value,
+                                thresholding_strategy='img_value')
+
+    invalid_thresholds = ['percent', 'float', 'value']
+    for invalid_thr in invalid_thresholds:
+        tools.assert_raises(ValueError, threshold_img,
+                            map_0, threshold=0.5,
+                            thresholding_strategy=invalid_thr)
+
+    # testing to raise same error when threshold=None case
+    testing.assert_raises_regex(ValueError,
+                        "The input parameter 'threshold' is empty. "
+                        "Please submit value which should be either float or "
+                        "a string e.g. '90%' or simply number 90.",
+                        threshold_img, map_0, threshold=None)
+
+    invalid_threshold_values = ['90t%', 's%', 't', '0.1']
+    name = 'threshold'
+    for thr in invalid_threshold_values:
+        testing.assert_raises_regex(ValueError,
+                                    '{0}.+should be a number followed by '
+                                    'the percent sign'.format(name),
+                                    threshold_img, map_0, threshold=thr)
+
+
+def test_passing_threshold_img():
+    # to check whether passes with valid threshold inputs
+    shape = (10, 20, 30)
+    maps = testing.generate_maps(shape, n_regions=4)
+    map_0 = maps[0]
+    affine = np.eye(4)
+    mask_img = nibabel.Nifti1Image(np.ones((shape), dtype=np.int8), affine)
+
+    for img in iter_img(map_0):
+        thr_maps_img = threshold_img(img, threshold=0.8,
+                                     thresholding_strategy='img_value', mask_img=mask_img)
+        thr_maps_percent = threshold_img(img, threshold=1,
+                                         thresholding_strategy='percentile')
+        thr_maps_percent2 = threshold_img(img, threshold='2%',
+                                          thresholding_strategy='percentile')
