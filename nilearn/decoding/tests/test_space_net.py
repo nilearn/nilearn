@@ -9,11 +9,11 @@ import numpy as np
 import nibabel
 from sklearn.datasets import load_iris
 from sklearn.utils import extmath
-from sklearn.utils.testing import assert_greater_equal
 from sklearn.linear_model import Lasso
 from sklearn.utils import check_random_state
 from sklearn.linear_model import LogisticRegression
-from nilearn._utils.testing import assert_raises_regex, assert_warns
+from nilearn._utils.testing import (assert_raises_regex, assert_warns,
+                                    assert_less_equal)
 from nilearn.decoding.space_net import (
     _EarlyStoppingCallback, _space_net_alpha_grid, MNI152_BRAIN_VOLUME,
     path_scores, BaseSpaceNet, _crop_mask, _univariate_feature_screening,
@@ -199,7 +199,7 @@ def test_graph_net_classifier_score():
                              standardize=False, verbose=0,
                              screening_percentile=100.).fit(X_, y)
     accuracy = gnc.score(X_, y)
-    assert_greater_equal(accuracy, 0, msg='Negative score %.2f' % accuracy)
+    assert_less_equal(0, accuracy, msg='Negative score %.2f' % accuracy)
 
 
 def test_log_reg_vs_graph_net_two_classes_iris(C=.01, tol=1e-10,
