@@ -139,6 +139,22 @@ def test_spacing_0():
     assert (labels_aniso[13:17, 13:17, 7:9] == 2).all()
 
 
+def test_trivial_cases():
+    # When all voxels are labeled
+    img = np.ones((10, 10))
+    labels = np.ones((10, 10))
+
+    pass_through = random_walker(img, labels)
+    np.testing.assert_array_equal(pass_through, labels)
+
+    # When all voxels are labeled AND return_full_prob is True
+    labels[:, :5] = 3
+    expected = np.concatenate(((labels == 1)[..., np.newaxis],
+                               (labels == 3)[..., np.newaxis]), axis=2)
+    test = random_walker(img, labels, return_full_prob=True)
+    np.testing.assert_array_equal(test, expected)
+
+
 def test_bad_inputs():
     # Too few dimensions
     img = np.ones(10)
