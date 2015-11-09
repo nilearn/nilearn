@@ -4,11 +4,12 @@ import itertools
 from functools import partial
 from nose import SkipTest
 from nose.tools import (assert_equal, assert_true, assert_false,
-                        assert_raises, assert_greater_equal)
+                        assert_raises)
 import numpy as np
 import nibabel
 from sklearn.datasets import load_iris
 from sklearn.utils import extmath
+from sklearn.utils.testing import assert_greater_equal
 from sklearn.linear_model import Lasso
 from sklearn.utils import check_random_state
 from sklearn.linear_model import LogisticRegression
@@ -187,15 +188,15 @@ def test_tv_regression_3D_image_doesnt_crash():
                      penalty="tv-l1", is_classif=False, max_iter=10).fit(X, y)
 
 
-def test_graph_net_classifier_score(C=.01, tol=1e-10, zero_thr=1e-4):
+def test_graph_net_classifier_score():
     iris = load_iris()
     X, y = iris.data, iris.target
     y = 2 * (y > 0) - 1
     X_, mask = to_niimgs(X, (2, 2, 2))
-    gnc = SpaceNetClassifier(mask=mask, alphas=1. / C / X.shape[0],
-                             l1_ratios=1., tol=tol, verbose=0,
-                             max_iter=1000, penalty="graph-net",
-                             standardize=False, loss='logistic',
+    gnc = SpaceNetClassifier(mask=mask, alphas=1. / .01 / X.shape[0],
+                             l1_ratios=1., tol=1e-10,
+                             penalty="graph-net", loss='logistic',
+                             standardize=False, verbose=0,
                              screening_percentile=100.).fit(X_, y)
     accuracy = gnc.score(X_, y)
     assert_greater_equal(accuracy, 0, msg='Negative score %.2f' % accuracy)

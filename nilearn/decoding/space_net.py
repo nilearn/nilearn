@@ -196,11 +196,11 @@ def _space_net_alpha_grid(X, y, eps=1e-3, n_alphas=10, l1_ratio=1.,
         For ``l1_ratio = 0`` the penalty is purely a spatial prior
         (Graph-Net, TV, etc.). ``For l1_ratio = 1`` it is an L1 penalty.
         For ``0 < l1_ratio < 1``, the penalty is a combination of L1
-        and a spatial prior
+        and a spatial prior.
 
     eps : float, optional
         Length of the path. ``eps=1e-3`` means that
-        ``alpha_min / alpha_max = 1e-3``
+        ``alpha_min / alpha_max = 1e-3``.
 
     n_alphas : int, optional
         Number of alphas along the regularization path.
@@ -314,7 +314,7 @@ class _EarlyStoppingCallback(object):
         correlation, which captures ordering between input and
         output, but tends to have 'flat' regions. The other
         is the Pearson correlation, that we can use to disambiguate
-        between regions of equivalent Spearman correlations
+        between regions of equivalent Spearman correlations.
 
         """
         if self.is_classif:
@@ -353,10 +353,10 @@ def path_scores(solver, X, y, mask, alphas, l1_ratios, train, test,
         List of regularization parameters being considered.
 
     train : array or list of integers
-        List of indices for the train samples
+        List of indices for the train samples.
 
     test : array or list of integers
-        List of indices for the test samples
+        List of indices for the test samples.
 
     l1_ratio : float in the interval [0, 1]; optional (default .5)
         Constant that mixes L1 and TV (resp. Graph-Net) penalization.
@@ -364,7 +364,7 @@ def path_scores(solver, X, y, mask, alphas, l1_ratios, train, test,
 
     eps : float, optional (default 1e-3)
         Length of the path. For example, ``eps=1e-3`` means that
-        ``alpha_min / alpha_max = 1e-3``
+        ``alpha_min / alpha_max = 1e-3``.
 
     n_alphas : int, optional (default 10).
         Generate this number of alphas per regularization path.
@@ -501,7 +501,7 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
     `SpaceNet` implements Graph-Net and TV-L1 priors /
     penalties. Thus, the penalty is a sum an L1 term and a spatial term. The
     aim of such a hybrid prior is to obtain weights maps which are structured
-    (due to the spatial prior) and sparse (enforced by L1 norm)
+    (due to the spatial prior) and sparse (enforced by L1 norm).
 
     Parameters
     ----------
@@ -552,15 +552,15 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
 
     low_pass : False or float, optional, (default None)
         This parameter is passed to signal.clean. Please see the related
-        documentation for details
+        documentation for details.
 
     high_pass : False or float, optional (default None)
         This parameter is passed to signal. Clean. Please see the related
-        documentation for details
+        documentation for details.
 
     t_r : float, optional (default None)
         This parameter is passed to signal.clean. Please see the related
-        documentation for details
+        documentation for details.
 
     screening_percentile : float in the interval [0, 100]; Optional (
     default 20)
@@ -579,8 +579,8 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
     fit_intercept : bool, optional (default True)
         Fit or not an intercept.
 
-    max_iter : int
-        Defines the iterations for the solver. Defaults to 1000
+    max_iter : int (default 1000)
+        Defines the iterations for the solver.
 
     tol : float, optional (default 1e-4)
         Defines the tolerance for convergence for the backend fista solver.
@@ -612,7 +612,7 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
     Attributes
     ----------
     `alpha_` : float
-         Best alpha found by cross-validation
+         Best alpha found by cross-validation.
 
     `coef_` : ndarray, shape (n_classes-1, n_features)
         Coefficient of the features in the decision function.
@@ -745,7 +745,7 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
             the affine is considered the same for all.
 
         y : array or list of length n_samples
-            The dependent variable (age, sex, QI, etc.)
+            The dependent variable (age, sex, QI, etc.).
 
         Notes
         -----
@@ -993,7 +993,7 @@ class SpaceNetClassifier(BaseSpaceNet):
 
     eps : float, optional (default 1e-3)
         Length of the path. For example, ``eps=1e-3`` means that
-        ``alpha_min / alpha_max = 1e-3``
+        ``alpha_min / alpha_max = 1e-3``.
 
     mask : filename, niimg, NiftiMasker instance, optional default None)
         Mask to be used on data. If an instance of masker is passed,
@@ -1037,8 +1037,8 @@ class SpaceNetClassifier(BaseSpaceNet):
     fit_intercept : bool, optional (default True)
         Fit or not an intercept.
 
-    max_iter : int
-        Defines the iterations for the solver. Defaults to 1000.
+    max_iter : int (default 1000)
+        Defines the iterations for the solver.
 
     tol : float
         Defines the tolerance for convergence. Defaults to 1e-4.
@@ -1094,7 +1094,7 @@ class SpaceNetClassifier(BaseSpaceNet):
          samples for the corresponding fold.
 
     `cv_scores_` : 2d array of shape (n_alphas, n_folds)
-        Scores (misclassification) for each alpha, and on each fold
+        Scores (misclassification) for each alpha, and on each fold.
 
     `screening_percentile_` : float
         Screening percentile corrected according to volume of mask,
@@ -1121,7 +1121,7 @@ class SpaceNetClassifier(BaseSpaceNet):
             target_affine=target_affine, verbose=verbose)
 
     def _binarize_y(self, y):
-        """Helper function invoked just before fitting a classifier"""
+        """Helper function invoked just before fitting a classifier."""
         y = np.array(y)
 
         # encode target classes as -1 and 1
@@ -1142,13 +1142,13 @@ class SpaceNetClassifier(BaseSpaceNet):
             Data on which model is to be fitted. If this is a list,
             the affine is considered the same for all.
 
-        y : array or list of length n_samples
-            Labels
+        y : array or list of length n_samples.
+            Labels.
 
         Returns
         -------
         score : float
-            Mean accuracy of self.predict(X) wrt. y.
+            Mean accuracy of self.predict(X)  w.r.t y.
         """
         return accuracy_score(y, self.predict(X))
 
@@ -1230,8 +1230,8 @@ class SpaceNetRegressor(BaseSpaceNet):
     fit_intercept : bool, optional (default True)
         Fit or not an intercept.
 
-    max_iter : int
-        Defines the iterations for the solver. Defaults to 1000
+    max_iter : int (default 1000)
+        Defines the iterations for the solver.
 
     tol : float
         Defines the tolerance for convergence. Defaults to 1e-4.
