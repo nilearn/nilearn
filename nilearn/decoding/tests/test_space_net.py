@@ -199,7 +199,7 @@ def test_graph_net_classifier_score():
                              standardize=False, verbose=0,
                              screening_percentile=100.).fit(X_, y)
     accuracy = gnc.score(X_, y)
-    assert_less_equal(0, accuracy, msg='Negative score %.2f' % accuracy)
+    assert_less_equal(0, accuracy)
 
 
 def test_log_reg_vs_graph_net_two_classes_iris(C=.01, tol=1e-10,
