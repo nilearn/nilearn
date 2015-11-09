@@ -6,7 +6,10 @@ import nose
 
 import numpy as np
 
-from nilearn._utils.extmath import fast_abs_percentile, is_spd
+from nose.tools import assert_true
+
+from nilearn._utils.testing import assert_raises_regex
+from nilearn._utils.extmath import fast_abs_percentile, is_spd, check_threshold
 
 
 def test_fast_abs_percentile():
@@ -50,3 +53,30 @@ def test_is_spd_with_symmetrical_matrix():
     matrix = np.array([[2, 1],
                        [1, 1]])
     assert is_spd(matrix, verbose=0)
+
+
+def test_check_threshold():
+    matrix = np.array([[1., 2.],
+                       [2., 1.]])
+
+    name = 'threshold'
+    # few not correctly formatted strings for 'threshold'
+    wrong_thresholds = ['0.1', '10', '10.2.3%', 'asdf%']
+    for wrong_threshold in wrong_thresholds:
+        assert_raises_regex(ValueError,
+                            '{0}.+should be a number followed by '
+                            'the percent sign'.format(name),
+                            check_threshold,
+                            wrong_threshold, matrix,
+                            'fast_abs_percentile', name)
+
+    threshold = object()
+    assert_raises_regex(TypeError,
+                        '{0}.+should be either a number or a string'.format(name),
+                        check_threshold, threshold, matrix,
+                        'fast_abs_percentile', name)
+
+    # To check if it also gives the expected score to given threshold
+    assert_true(1. < check_threshold("50%", matrix,
+                                     percentile_calculate=fast_abs_percentile,
+                                     name=name) <= 2.)

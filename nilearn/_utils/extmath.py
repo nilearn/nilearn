@@ -4,7 +4,10 @@ Extended math utilities
 # Author: Gael Varoquaux
 # License: BSD
 
+import numbers
 import numpy as np
+
+from .compat import _basestring
 
 try:
     # partition is available only in numpy >= 1.8.0
@@ -75,3 +78,45 @@ def is_spd(M, decimal=15, verbose=1):
     if not ispd and verbose > 0:
         print("matrix has a negative eigenvalue: %.3f" % eigvalsh.min())
     return ispd
+
+
+def check_threshold(threshold, data, percentile_calculate, name):
+    """ Checks if the given threshold is in correct format
+
+    Parameters
+    ----------
+    threshold: a real value or a percentage in string.
+        if threshold is a percentage expressed in a string
+        it must finish with a percent sign like "99.7%".
+    data: ndarray
+        an array of the input masked data
+    percentile_calculate: a percentile function
+        define the name of a specific percentile function
+        to calculate the score on the data.
+
+    Returns
+    -------
+    threshold: a number
+        returns the score of the percentile on the data or
+        returns threshold as it is if given threshold is not
+        a percentile.
+    """
+    if isinstance(threshold, _basestring):
+        message = ('If "{0}" is given as string it '
+                   'should be a number followed by the percent '
+                   'sign, e.g. "25.3%"').format(name)
+        if not threshold.endswith('%'):
+            raise ValueError(message)
+
+        try:
+            percentile = float(threshold[:-1])
+        except ValueError as exc:
+            exc.args += (message, )
+            raise
+
+        threshold = percentile_calculate(data, percentile)
+
+    elif not isinstance(threshold, numbers.Real):
+        raise TypeError('%s should be either a number '
+                        'or a string finishing with a percent sign' % (name, ))
+    return threshold

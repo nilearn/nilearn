@@ -12,7 +12,6 @@ import numpy as np
 from scipy import sparse, stats
 
 from ..image import new_img_like
-from .._utils.compat import _basestring
 from .. import _utils
 
 import matplotlib.pyplot as plt
@@ -1192,10 +1191,10 @@ class OrthoProjector(OrthoSlicer):
                                                           k=-1)
             lower_diagonal_values = adjacency_matrix[
                 lower_diagonal_indices]
-            edge_threshold = check_threshold(edge_threshold,
-                                             np.abs(lower_diagonal_values),
-                                             stats.scoreatpercentile,
-                                             'edge_threshold')
+            edge_threshold = _utils.extmath.check_threshold(edge_threshold,
+                                                            np.abs(lower_diagonal_values),
+                                                            stats.scoreatpercentile,
+                                                            'edge_threshold')
 
             adjacency_matrix = adjacency_matrix.copy()
             threshold_mask = np.abs(adjacency_matrix) < edge_threshold
@@ -1272,45 +1271,3 @@ def get_slicer(display_mode):
 def get_projector(display_mode):
     "Internal function to retrieve a projector"
     return get_create_display_fun(display_mode, PROJECTORS)
-
-
-def check_threshold(threshold, data, percentile_calculate, name):
-    """ Checks if the given threshold is in correct format
-
-    Parameters
-    ----------
-    threshold: a real value or a percentage in string.
-        if threshold is a percentage expressed in a string
-        it must finish with a percent sign like "99.7%".
-    data: ndarray
-        an array of the input masked data
-    percentile_calculate: a percentile function
-        define the name of a specific percentile function
-        to calculate the score on the data.
-
-    Returns
-    -------
-    value: a number
-        returns the score of the percentile on the data or
-        returns threshold as it is if input threshold is not
-        a percentile.
-    """
-    if isinstance(threshold, _basestring):
-        message = ('If "{0}" is given as string it '
-                   'should be a number followed by the percent '
-                   'sign, e.g. "25.3%"').format(name)
-        if not threshold.endswith('%'):
-            raise ValueError(message)
-
-        try:
-            percentile = float(threshold[:-1])
-        except ValueError as exc:
-            exc.args += (message, )
-            raise
-
-        threshold = percentile_calculate(data, percentile)
-
-    elif not isinstance(threshold, numbers.Real):
-        raise TypeError('%s should be either a number '
-                        'or a string finishing with a percent sign' % (name, ))
-    return threshold

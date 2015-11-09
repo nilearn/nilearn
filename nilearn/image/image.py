@@ -24,6 +24,7 @@ from .._utils import (check_niimg_4d, check_niimg_3d, check_niimg, as_ndarray,
 from .._utils.niimg_conversions import _index_img, _check_same_fov
 from .._utils.niimg import _safe_get_data
 from .._utils.compat import _basestring
+from .._utils.extmath import check_threshold
 
 
 def high_variance_confounds(imgs, n_confounds=5, percentile=2.,
@@ -647,7 +648,6 @@ def threshold_img(img, threshold, mask_img=None,
     """
     from . import resampling
     from .. import masking
-    from ..plotting.displays import check_threshold
 
     img = check_niimg(img, atleast_4d=True)
     img_data = img.get_data()
