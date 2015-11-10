@@ -146,9 +146,9 @@ def _chunk_read_(response, local_file, chunk_size=8192, report_hook=None,
             total_size = response.info().get('Content-Length').strip()
         total_size = int(total_size) + initial_size
     except Exception as e:
-        if verbose > 1:
+        if verbose > 2:
             print("Warning: total size could not be determined.")
-            if verbose > 2:
+            if verbose > 3:
                 print("Full stack trace: %s" % e)
         total_size = None
     bytes_so_far = initial_size
