@@ -412,9 +412,9 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False,
     url: string
         Contains the url of the file to be downloaded.
 
-    data_dir: string, optional
-        Path of the data directory. Used to force data storage in a specified
-        location. Default: None
+    data_dir: string
+        Path of the data directory. Used for data storage in the specified
+        location.
 
     resume: bool, optional
         If true, try to resume partially downloaded files
@@ -612,8 +612,9 @@ def _fetch_files(data_dir, files, resume=True, mock=False, verbose=1):
 
     Parameters
     ----------
-    dataset_name: string
-        Unique dataset name
+    data_dir: string
+        Path of the data directory. Used for data storage in a specified
+        location.
 
     files: list of (string, string, dict)
         List of files and their corresponding url with dictionary that contains
@@ -623,10 +624,6 @@ def _fetch_files(data_dir, files, resume=True, mock=False, verbose=1):
         Options supported are 'uncompress' to indicate that the file is an
         archive, 'md5sum' to check the md5 sum of the file and 'move' if
         renaming the file or moving it to a subfolder is needed.
-
-    data_dir: string, optional
-        Path of the data directory. Used to force data storage in a specified
-        location. Default: None
 
     resume: bool, optional
         If true, try resuming download if possible
