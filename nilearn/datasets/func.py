@@ -1696,7 +1696,7 @@ def fetch_neurovault(max_images=100,
 
         fil = _fetch_files(data_dir=data_dir,
                            files=[(filename, url, opts)],
-                           verbose=2)  # necessary to get proper url print
+                           verbose=verbose)  # necessary to get proper url print
         with open(fil[0], 'r') as fp:
             meta = json.load(fp)
 
