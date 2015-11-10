@@ -299,7 +299,7 @@ class FirstLevelGLM(BaseEstimator, TransformerMixin, CacheMixin):
                 target_affine=self.target_affine,
                 standardize=self.standardize, low_pass=self.low_pass,
                 high_pass=self.high_pass, mask_strategy='epi',
-                mask_args={'opening': 0}, t_r=self.t_r, memory=self.memory,
+                t_r=self.t_r, memory=self.memory,
                 verbose=max(0, self.verbose - 1),
                 target_shape=self.target_shape,
                 memory_level=self.memory_level)

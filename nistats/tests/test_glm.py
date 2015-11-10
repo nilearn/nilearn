@@ -54,7 +54,7 @@ def generate_fake_fmri_data(shapes, rk=3, affine=np.eye(4)):
 
 def test_high_level_glm_one_session():
     # New API
-    shapes, rk = [(5, 6, 7, 20)], 3
+    shapes, rk = [(7, 8, 9, 15)], 3
     mask, fmri_data, design_matrices = generate_fake_fmri_data(shapes, rk)
 
     single_session_model = FirstLevelGLM(mask=None).fit(
@@ -70,7 +70,7 @@ def test_high_level_glm_one_session():
 
 def test_high_level_glm_with_data():
     # New API
-    shapes, rk = ((7, 6, 5, 20), (7, 6, 5, 19)), 3
+    shapes, rk = ((7, 8, 7, 15), (7, 8, 7, 16)), 3
     mask, fmri_data, design_matrices = write_fake_fmri_data(shapes, rk)
 
     multi_session_model = FirstLevelGLM(mask=None).fit(
@@ -92,7 +92,7 @@ def test_high_level_glm_with_data():
 
 def test_high_level_glm_with_paths():
     # New API
-    shapes, rk = ((5, 6, 4, 20), (5, 6, 4, 19)), 3
+    shapes, rk = ((7, 8, 7, 15), (7, 8, 7, 14)), 3
     with InTemporaryDirectory():
         mask_file, fmri_files, design_files = write_fake_fmri_data(shapes, rk)
         multi_session_model = FirstLevelGLM(mask=None).fit(
@@ -108,7 +108,7 @@ def test_high_level_glm_with_paths():
 def test_high_level_glm_null_contrasts():
     # test that contrast computation is resilient to 0 values.
     # new API
-    shapes, rk = ((5, 6, 7, 20), (5, 6, 7, 19)), 3
+    shapes, rk = ((7, 8, 7, 15), (7, 8, 7, 19)), 3
     mask, fmri_data, design_matrices = generate_fake_fmri_data(shapes, rk)
 
     multi_session_model = FirstLevelGLM(mask=None).fit(
@@ -250,19 +250,22 @@ def test_scaling():
 
 def test_fmri_inputs():
     # Test processing of FMRI inputs
-    func_img = load(FUNCFILE)
-    T = func_img.shape[-1]
-    des = np.ones((T, 1))
-    des_fname = 'design.npz'
     with InTemporaryDirectory():
+        shapes = ((7, 8, 9, 10),)
+        mask, FUNCFILE, _ = write_fake_fmri_data(shapes)
+        FUNCFILE = FUNCFILE[0]
+        func_img = load(FUNCFILE)
+        T = func_img.shape[-1]
+        des = np.ones((T, 1))
+        des_fname = 'design.npz'
         np.savez(des_fname, des)
         for fi in func_img, FUNCFILE:
             for d in des, des_fname:
                 FirstLevelGLM().fit(fi, d)
                 FirstLevelGLM(mask=None).fit([fi], d)
-                FirstLevelGLM(mask=None).fit(fi, [d])
-                FirstLevelGLM(mask=None).fit([fi], [d])
-                FirstLevelGLM(mask=None).fit([fi, fi], [d, d])
+                FirstLevelGLM(mask=mask).fit(fi, [d])
+                FirstLevelGLM(mask=mask).fit([fi], [d])
+                FirstLevelGLM(mask=mask).fit([fi, fi], [d, d])
                 FirstLevelGLM(mask=None).fit((fi, fi), (d, d))
                 assert_raises(
                     ValueError, FirstLevelGLM(mask=None).fit, [fi, fi], d)
