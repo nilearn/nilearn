@@ -1281,9 +1281,8 @@ def fetch_mixed_gambles(n_subjects=1, data_dir=None, url=None, resume=True,
     return data
 
 
-def fetch_megatrawls_netmats(data_dir=None, choice_dimensionality=None,
-                             choice_timeseries=None,
-                             resume=True, verbose=1):
+def fetch_megatrawls_netmats(data_dir=None, dimensionality=[25, 50, 100, 200, 300],
+                             timeseries='eigen_regression', resume=True, verbose=1):
     """Downloads and fetches Network Matrices data from MegaTrawls release in HCP.
 
     This data can be used to predict relationships between imaging data (functional
@@ -1303,39 +1302,32 @@ def fetch_megatrawls_netmats(data_dir=None, choice_dimensionality=None,
         Path of the data directory. Used to force data storage in a specified
         location.
 
-    choice_dimensionality: a string or list of strings or None, default is None
-        Possible options are {'d25', 'd50', 'd100', 'd200', 'd300'}
-        'd25' - Group ICA brain parcellations with dimensionality = 25
-        'd50' - Group ICA brain parcellations with dimensionality = 50
-        'd100' - Group ICA brain parcellations with dimensionality = 100
-        'd200' - Group ICA brain parcellations with dimensionality = 200
-        'd300' - Group ICA brain parcellations with dimensionality = 300
+    dimensionality: integer or list of integers, optional
+        Possible options are [25, 50, 100, 200, 300]
+        25 - Group ICA brain parcellations with dimensionality = 25
+        50 - Group ICA brain parcellations with dimensionality = 50
+        100 - Group ICA brain parcellations with dimensionality = 100
+        200 - Group ICA brain parcellations with dimensionality = 200
+        300 - Group ICA brain parcellations with dimensionality = 300
 
-        By default, network matrices data estimated from all
-        dimensionalities ['d25', 'd50', 'd100', 'd200', 'd300'] of brian
-        parcellations are fetched.
+        By default, network matrices data estimated from brain parcellations
+        of all dimensionalities are fetched as a seperate list.
 
-        If given as string or list of specific strings, network matrices
+        If given an integer or list of specific integers, network matrices
         related to that particular dimensionality of brain parcellations
-        are fetched. For example, if chosen as a string 'd25' only data
-        corresponding to d=25 is fetched.
+        are fetched. For example, if given as an integer 25 only data
+        corresponding to dimensionality=25 will be fetched.
 
-    choice_timeseries: a string or list of strings or None, default is None
-        Possible options are {'ts2', 'ts3'}
-        'ts2' - choice denotes the averaged timeseries signals which were extracted
-                using mutiple spatial regression, in which full set of ICA maps was
-                used as spatial regressors against the subjects datasets resulting
-                a subject specific timeseries signals. [3]
-        'ts3' - choice denoted the principal eigen timeseries signals which were
-                extracted using multiple spatial regression, but the subject
-                specific timeseries signals are extracted using SVD. The first
-                eigen timeseries of each subject rather than simple averaging [4] [5].
-
-        By default, network matrices data estimated using both timeseries extraction
-        method ['ts2', 'ts3'] are fetched.
-
-        If given a string, network matrices estimated using particular type
-        of timeseries extraction method is fetched.
+    timeseries: a string or list ['mutiple_spatial_regression', 'eigen_regression'] \
+        default is 'eigen_regression', optional
+        'multiple_spatial_regression' - denotes the averaged timeseries signals
+        which were extracted using mutiple spatial regression, in which full set
+        of ICA maps were used as spatial regressors against the subjects datasets
+        resulting a subject specific timeseries signals. [3]
+        'eigen_regression' - denotes the principal eigen timeseries signals which were
+        extracted using multiple spatial regression, but the subject
+        specific timeseries signals are extracted using SVD. The first
+        eigen timeseries of each subject rather than simple averaging. [4] [5]
 
     resume: boolean, default is True
         This parameter is required if a partly downloaded file is needed to be
@@ -1350,10 +1342,12 @@ def fetch_megatrawls_netmats(data_dir=None, choice_dimensionality=None,
     -------
     data: sklearn.datasets.base.Bunch
         Dictionary-like object, attributes are:
+        'Fullcorrelation': Full correlation matrices (Znet1)
+        'Partialcorrelation': Partial correlation matrices (Znet2)
 
-        'Fullcorrelation': Full correlation matrices
-
-        'Partialcorrelation': Partial correlation matrices
+    Note: In output namings, 'eigen_regression' can be seen fetched as 'ts3' and
+          'multiple_spatial_regression' fetched as 'ts2'. To keep them with standard
+          Megatrawls notations.
 
     References
     ----------
@@ -1404,18 +1398,18 @@ def fetch_megatrawls_netmats(data_dir=None, choice_dimensionality=None,
     opts = {'uncompress': True}
 
     # dataset terms
-    dimensionalities = ['d25', 'd50', 'd100', 'd200', 'd300']
-    timeseries_methods = ['ts2', 'ts3']
+    dimensionalities = [25, 50, 100, 200, 300]
+    timeseries_methods = ['multiple_spatial_regression', 'eigen_regression']
 
     message = ("The %s you have given '%s' is invalid. Please choose either "
                "of them %s or list of specific choices.")
 
-    names = ['choice_dimensionality', 'choice_timeseries']
-    user_inputs = [choice_dimensionality, choice_timeseries]
+    error_correcting_names = ['dimensionality', 'timeseries']
+    user_inputs = [dimensionality, timeseries]
     assign_names = ['dimensionalities', 'timeseries_methods']
     standard_variables = [dimensionalities, timeseries_methods]
 
-    for name, check_in, assign, standard in zip(names, user_inputs,
+    for name, check_in, assign, standard in zip(error_correcting_names, user_inputs,
                                                 assign_names, standard_variables):
         if check_in is not None:
             if isinstance(check_in, list):
@@ -1439,12 +1433,15 @@ def fetch_megatrawls_netmats(data_dir=None, choice_dimensionality=None,
 
     n_combinations = len(dimensionalities) * len(timeseries_methods)
     dataset_name = 'Megatrawls'
-
     files_netmats1 = []
     files_netmats2 = []
     for dim in dimensionalities:
-        filename = os.path.join('3T_Q1-Q6related468_MSMsulc_' + str(dim))
+        filename = os.path.join('3T_Q1-Q6related468_MSMsulc_d' + str(dim))
         for timeseries in timeseries_methods:
+            if timeseries == 'multiple_spatial_regression':
+                timeseries = 'ts2'
+            elif timeseries == 'eigen_regression':
+                timeseries = 'ts3'
             each_files_netmats1 = [(os.path.join(
                 filename + '_' + str(timeseries), 'Znet1.txt'), url, opts)]
             each_files_netmats2 = [(os.path.join(

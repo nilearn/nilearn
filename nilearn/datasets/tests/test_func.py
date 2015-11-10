@@ -369,15 +369,15 @@ def test_right_choices_dimensionality_timeseriesmethods():
     message = ("The %s you have given '%s' is invalid. ")
     for dim in ['a10', 'd15', 'd30']:
         assert_raises_regex(ValueError,
-                            message % ('choice_dimensionality', dim),
+                            message % ('dimensionality', dim),
                             func.fetch_megatrawls_netmats,
-                            choice_dimensionality=dim)
+                            dimensionality=dim)
 
-    for timeseries in ['tt1', 'ts4', 'st2']:
+    for ts in ['ts4', 'st2', 'eigen_regresion', 'mutiple_sptial_regression']:
         assert_raises_regex(ValueError,
-                            message % ('choice_timeseries', timeseries),
+                            message % ('timeseries', ts),
                             func.fetch_megatrawls_netmats,
-                            choice_timeseries=timeseries)
+                            timeseries=ts)
 
 
 @with_setup(setup_tmpdata, teardown_tmpdata)
@@ -386,19 +386,20 @@ def test_fetch_megatrawls_netmats():
     dataset_name_path = os.path.join(tmpdir, 'Megatrawls')
 
     assert_equal(correlations.Fullcorrelation[0], os.path.join(
-        dataset_name_path, '3T_Q1-Q6related468_MSMsulc_d25_ts2', 'Znet1.txt'))
+        dataset_name_path, '3T_Q1-Q6related468_MSMsulc_d25_ts3', 'Znet1.txt'))
 
-    assert_equal(correlations.Fullcorrelation[9], os.path.join(
+    assert_equal(correlations.Fullcorrelation[4], os.path.join(
         dataset_name_path, '3T_Q1-Q6related468_MSMsulc_d300_ts3', 'Znet1.txt'))
 
-    assert_equal(correlations.Partialcorrelation[5], os.path.join(
+    assert_equal(correlations.Partialcorrelation[2], os.path.join(
         dataset_name_path, '3T_Q1-Q6related468_MSMsulc_d100_ts3', 'Znet2.txt'))
 
     # test if number of possible combinations of output are correct
-    correlation_ = func.fetch_megatrawls_netmats(
-        data_dir=tmpdir, choice_dimensionality=['d25', 'd200'])
+    timeseries = ['multiple_spatial_regression', 'eigen_regression']
+    correlation_ = func.fetch_megatrawls_netmats(data_dir=tmpdir, dimensionality=[25, 200],
+                                                 timeseries=timeseries)
 
-    expected_n_combinations = len(['d25', 'd200']) * len(['ts2', 'ts3'])
+    expected_n_combinations = len([25, 200]) * len(timeseries)
     n_output_combinations_net1 = len(correlation_.Fullcorrelation)
     n_output_combinations_net2 = len(correlation_.Partialcorrelation)
 
