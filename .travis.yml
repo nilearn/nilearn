@@ -2,7 +2,7 @@ language: python
 
 sudo: required
 
-virtualenv
+virtualenv:
   system_site_packages: true
 
 env:
