@@ -2,8 +2,7 @@ language: python
 
 sudo: required
 
-virtualenv:from nilearn import datasets
-from nilearn import plotting
+virtualenv
   system_site_packages: true
 
 env:
