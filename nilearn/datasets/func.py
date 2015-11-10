@@ -1759,6 +1759,20 @@ def fetch_neurovault(max_images=100,
             images_url = _build_nv_url(base_url=base_url,
                                        filts=image_filters)
 
+            # Save collection metadata for all matching collections,
+            #   even if no images are matched / downloaded,
+            coll_meta_path = os.path.join(collections_dir,
+                                          'collection_metadata.json')
+            if not os.path.exists(collections_dir):
+                os.makedirs(collections_dir)
+            with open(coll_meta_path, 'w') as fp:  # dir made by json save
+                json.dump(coll, fp)
+
+            # Return the collections metadata for all matching collections,
+            #   even if no images are matched.
+            collects[coll['id']] = coll
+
+            # Search for matching images
             imgs_meta_url = images_url
             while len(func_files) < max_images and imgs_meta_url is not None:
                 prefix = re.sub('[\?=]', '_', os.path.basename(imgs_meta_url))
@@ -1777,12 +1791,6 @@ def fetch_neurovault(max_images=100,
                 # Finally, we have images to download.
                 # 2. Save off collection and image metadata.
                 # 3. Download the image.
-
-                # Save collection metadata
-                coll_meta_path = os.path.join(collections_dir,
-                                              'collection_metadata.json')
-                with open(coll_meta_path, 'w') as fp:  # dir made by json save
-                    json.dump(coll, fp)
 
                 for im in good_images:
                     im_url = im['file']
@@ -1808,7 +1816,6 @@ def fetch_neurovault(max_images=100,
                     # Add to output struct
                     im.update(dict(collection_id=coll['id'],
                                    local_path=real_image_path))  # keep copy
-                    collects[coll['id']] = coll
                     images.append(im)
                     func_files.append(im['local_path'])
 
