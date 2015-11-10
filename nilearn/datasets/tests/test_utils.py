@@ -301,3 +301,69 @@ def test_uncompress():
     shutil.rmtree(dtemp)
 
     os.remove(temp)
+
+
+@with_setup(setup_mock, teardown_mock)
+@with_setup(setup_tmpdata, teardown_tmpdata)
+def test_fetch_file_overwrite():
+    # overwrite non-exiting file.
+    fil = datasets.utils._fetch_file(url='http://foo/', data_dir=tmpdir,
+                                     verbose=0, overwrite=True)
+    assert_equal(len(mock_url_request.urls), 1)
+    assert_true(os.path.exists(fil))
+    with open(fil, 'r') as fp:
+        assert_equal(fp.read(), '')
+
+    # Modify content
+    with open(fil, 'w') as fp:
+        fp.write('some content')
+
+    # Don't overwrite existing file.
+    fil = datasets.utils._fetch_file(url='http://foo/', data_dir=tmpdir,
+                                     verbose=0, overwrite=False)
+    assert_equal(len(mock_url_request.urls), 1)
+    assert_true(os.path.exists(fil))
+    with open(fil, 'r') as fp:
+        assert_equal(fp.read(), 'some content')
+
+    # Overwrite existing file.
+    fil = datasets.utils._fetch_file(url='http://foo/', data_dir=tmpdir,
+                                     verbose=0, overwrite=True)
+    assert_equal(len(mock_url_request.urls), 1)
+    assert_true(os.path.exists(fil))
+    with open(fil, 'r') as fp:
+        assert_equal(fp.read(), '')
+
+
+
+@with_setup(setup_mock, teardown_mock)
+@with_setup(setup_tmpdata, teardown_tmpdata)
+def test_fetch_files_overwrite():
+    # overwrite non-exiting file.
+    files = ('1.txt', 'http://foo/1.txt')
+    fil = datasets.utils._fetch_files(data_dir=tmpdir, verbose=0,
+                                      files=[files + (dict(overwrite=True),)])
+    assert_equal(len(mock_url_request.urls), 1)
+    assert_true(os.path.exists(fil[0]))
+    with open(fil[0], 'r') as fp:
+        assert_equal(fp.read(), '')
+
+    # Modify content
+    with open(fil[0], 'w') as fp:
+        fp.write('some content')
+
+    # Don't overwrite existing file.
+    fil = datasets.utils._fetch_files(data_dir=tmpdir, verbose=0,
+                                      files=[files + (dict(overwrite=False),)])
+    assert_equal(len(mock_url_request.urls), 1)
+    assert_true(os.path.exists(fil[0]))
+    with open(fil[0], 'r') as fp:
+        assert_equal(fp.read(), 'some content')
+
+    # Overwrite existing file.
+    fil = datasets.utils._fetch_files(data_dir=tmpdir, verbose=0,
+                                      files=[files + (dict(overwrite=True),)])
+    assert_equal(len(mock_url_request.urls), 1)
+    assert_true(os.path.exists(fil[0]))
+    with open(fil[0], 'r') as fp:
+        assert_equal(fp.read(), '')
