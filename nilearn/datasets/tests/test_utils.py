@@ -34,14 +34,35 @@ def setup_tmpdata():
     tmpdir = mkdtemp()
 
 
-def setup_mock():
-    global url_request
-    url_request = mock_request()
-    datasets.utils._urllib.request = url_request
-    datasets.utils._chunk_read_ = wrap_chunk_read_(datasets.utils._chunk_read_)
-    global file_mock
-    file_mock = FetchFilesMock()
-    datasets.utils._fetch_files = file_mock  # overwrite the actual function
+def setup_mock(utils_mod=datasets.utils, dataset_mod=datasets.utils):
+    global original_url_request
+    global mock_url_request
+    mock_url_request = mock_request()
+    original_url_request = utils_mod._urllib.request
+    utils_mod._urllib.request = mock_url_request
+
+    global original_chunk_read
+    global mock_chunk_read
+    mock_chunk_read = wrap_chunk_read_(utils_mod._chunk_read_)
+    original_chunk_read = utils_mod._chunk_read_
+    utils_mod._chunk_read_ = mock_chunk_read
+
+    global original_fetch_files
+    global mock_fetch_files
+    mock_fetch_files = FetchFilesMock()
+    original_fetch_files = dataset_mod._fetch_files
+    dataset_mod._fetch_files = mock_fetch_files
+
+
+def teardown_mock(utils_mod=datasets.utils, dataset_mod=datasets.utils):
+    global original_url_request
+    utils_mod._urllib.request = original_url_request
+
+    global original_chunk_read
+    utils_mod.chunk_read_ = original_chunk_read
+
+    global original_fetch_files
+    dataset_mod._fetch_files = original_fetch_files
 
 
 def teardown_tmpdata():
