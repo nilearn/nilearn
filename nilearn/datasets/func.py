@@ -1663,7 +1663,6 @@ def fetch_neurovault(max_images=100,
         brain. Front. Neuroinform. 9:8.
         doi: 10.3389/fninf.2015.00008
     """
-    import requests
 
     if url is None:
         url = "http://neurovault.org/api"
@@ -1685,28 +1684,30 @@ def fetch_neurovault(max_images=100,
 
     def _get_nv_json(url, local_file=None, refresh=False):
         # Download json metadata; load/save locally if local_file
-        if local_file and not refresh and os.path.exists(local_file):
-            try:
-                with open(local_file, 'r') as fp:
-                    return json.load(fp)
-            except Exception as e:
-                if verbose > 0:
-                    print("Error loading local json; fetching from Internet"
-                          " instead. %s" % local_file)
-        if verbose > 0:
-            print("Fetching metadata from %s" % url)
-        resp = requests.get(url)
-        resp.raise_for_status()
-        meta = json.loads(resp.text)
+        opts = dict(overwrite=refresh)
 
-        # Make the directory
-        if local_file:
-            local_dir = os.path.dirname(local_file)
-            if not os.path.exists(local_dir):
-                os.makedirs(local_dir)
-            with open(local_file, 'w') as fp:
-                json.dump(meta, fp)
+        if not local_file:
+            import tempfile
+            fp, filepath = tempfile.mkstemp()
+            data_dir = os.path.dirname(filepath)
+            filename = os.path.basename(filepath)
+            os.close(fp)  # Avoid any potential conflict
+            opts['overwrite'] = True
+            opts['move'] = filepath
+        else:
+            data_dir = os.path.dirname(local_file)
+            filename = os.path.basename(local_file)
+            opts['move'] = local_file  # make sure
 
+        fil = _fetch_files(data_dir=data_dir,
+                           files=[(filename, url, opts)],
+                           verbose=2)  # necessary to get proper url print
+        with open(fil[0], 'r') as fp:
+            meta = json.load(fp)
+
+        # Cleanup
+        if local_file is None:
+            os.remove(os.path.join(data_dir, filename))
         return meta
 
     def _get_nv_collections_json(url, data_dir, refresh=False):
@@ -1716,10 +1717,11 @@ def fetch_neurovault(max_images=100,
         try:
             # Online
             return _get_nv_json(url, refresh=refresh)
-        except requests.exceptions.ConnectionError as e:
-            # Offline
+        except _urllib.error.URLError as ue:
+            if ue.reason[0] != 8:  # connection error
+                raise
             print('Working offline...')
-            pass
+
         coll_meta = dict(results=[], next=None)
         for _, collection_dirs, _ in os.walk(data_dir):
             for cdir in collection_dirs:
