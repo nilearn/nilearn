@@ -556,7 +556,12 @@ def test_resample_img_segmentation_fault():
     # fourth_dim = 1024 works fine but for 1025 creates a segmentation
     # fault with scipy < 0.14.1
     fourth_dim = 1025
-    data = np.ones(shape_in + (fourth_dim, ), dtype=np.float64)
+
+    try:
+        data = np.ones(shape_in + (fourth_dim, ), dtype=np.float64)
+    except MemoryError:
+        # This can happen on AppVeyor and for 32-bit Python on Windows
+        raise SkipTest('Not enough RAM to run this test')
 
     img_in = Nifti1Image(data, aff_in)
 

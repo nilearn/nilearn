@@ -16,7 +16,6 @@ environment:
 install:
   # Prepend miniconda installed Python to the PATH of this build
   - "SET PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
-  - "SET APPVEYOR_TEST=Test"
 
   # Check that we have the expected version and architecture for Python
   - "python --version"
