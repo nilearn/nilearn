@@ -1709,6 +1709,27 @@ def fetch_neurovault(max_images=100,
 
         return meta
 
+    def _get_nv_collections_json(url, data_dir, refresh=False):
+        # Get remote list of collections (uncacheable),
+        #   or amalgamate from local results (if offline).
+        #   Result is unfiltered.
+        try:
+            # Online
+            return _get_nv_json(url, refresh=refresh)
+        except requests.exceptions.ConnectionError as e:
+            # Offline
+            print('Working offline...')
+            pass
+        coll_meta = dict(results=[], next=None)
+        for _, collection_dirs, _ in os.walk(data_dir):
+            for cdir in collection_dirs:
+                coll_meta_path = os.path.join(data_dir, cdir,
+                                              'collection_metadata.json')
+                if os.path.exists(coll_meta_path):
+                    with open(coll_meta_path, 'r') as fp:
+                        coll_meta['results'].append(json.load(fp))
+        return coll_meta
+
     def _filter_nv_results(results, filts):
         # Filter after retreiving results, for negative filters
         if isinstance(filts, collections.Iterable):
@@ -1725,7 +1746,10 @@ def fetch_neurovault(max_images=100,
                                     filts=collection_filters)
     coll_meta = dict(next=collections_url)
     while len(func_files) < max_images and coll_meta['next'] is not None:
-        coll_meta = _get_nv_json(coll_meta['next'], refresh=refresh)
+        # GET up to 100 collections, but without caching, and filter results.
+        coll_meta = _get_nv_collections_json(coll_meta['next'],
+                                             data_dir=data_dir,
+                                             refresh=refresh)
         good_coll = _filter_nv_results(results=coll_meta['results'],
                                        filts=collection_filters)
 
@@ -1766,9 +1790,15 @@ def fetch_neurovault(max_images=100,
                     im_filename = os.path.basename(im['file'])
 
                     # Download file
-                    real_image_path = _fetch_files(collections_dir,
-                                                   files=[(im_filename, im_url, {})],
-                                                   verbose=verbose)[0]
+                    try:
+                        real_image_path = _fetch_files(collections_dir,
+                                                       files=[(im_filename, im_url, {})],
+                                                       verbose=verbose)[0]
+                    except Exception as e:
+                        print("ERROR: failed to download image %d (col=%d): %s" % (
+                            im['id'], coll['id'], e))
+                        continue
+
                     # Save metadata
                     im_basename = os.path.splitext(im_filename)[0]
                     im_name = im_basename + '_metadata.json'
