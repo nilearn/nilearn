@@ -1567,7 +1567,7 @@ def fetch_cobre(n_subjects=10, data_dir=None, url=None, verbose=1):
 def fetch_neurovault(max_images=100,
                      collection_filters=None, image_filters=None,
                      data_dir=None, url=None, resume=True,
-                     refresh=False, verbose=1):
+                     overwrite=False, verbose=2):
     """Fetch public statistical maps from NeuroVault.org.
 
        Image data downloaded is matched by `collection_filters` and
@@ -1581,7 +1581,7 @@ def fetch_neurovault(max_images=100,
        Currently, no check is done to see if a collection or image has
        changed. To invalidate the cache and download new data, use the
        `resume=True` flag, with appropriate filters to limit the amount
-       of data being refreshed.
+       of metadata being downloaded.
 
     Parameters
     ----------
@@ -1623,9 +1623,8 @@ def fetch_neurovault(max_images=100,
         Override download URL. Used for test only (or if you setup a mirror of
         the data).
 
-    refresh: bool, optional (default False)
-        All metadata
-        If True, try requerying the database for new results.
+    overwrite: bool, optional (default False)
+        If True, re-download cached image metadata and data.
 
     resume: bool, optional (default True)
         If True, try resuming download if possible.
@@ -1678,9 +1677,9 @@ def fetch_neurovault(max_images=100,
             url = base_url
         return url
 
-    def _get_nv_json(url, local_file=None, refresh=False):
+    def _get_nv_json(url, local_file=None, overwrite=False):
         # Download json metadata; load/save locally if local_file
-        opts = dict(overwrite=refresh)
+        opts = dict(overwrite=overwrite)
 
         if not local_file:
             import tempfile
@@ -1706,15 +1705,17 @@ def fetch_neurovault(max_images=100,
             os.remove(os.path.join(data_dir, filename))
         return meta
 
-    def _get_nv_collections_json(url, data_dir, refresh=False):
+    def _get_nv_collections_json(url, data_dir, overwrite=False):
         # Get remote list of collections (uncacheable),
         #   or amalgamate from local results (if offline).
         #   Result is unfiltered.
         try:
             # Online
-            return _get_nv_json(url, refresh=refresh)
-        except _urllib.error.URLError as ue:
+            return _get_nv_json(url, overwrite=overwrite)
+        except (_urllib.error.URLError, _urllib.error.HTTPError) as ue:
             if ue.reason[0] != 8:  # connection error
+                raise
+            elif overwrite:  # must requery... fail.
                 raise
             print('Working offline...')
 
@@ -1747,7 +1748,7 @@ def fetch_neurovault(max_images=100,
         # GET up to 100 collections, but without caching, and filter results.
         coll_meta = _get_nv_collections_json(coll_meta['next'],
                                              data_dir=data_dir,
-                                             refresh=refresh)
+                                             overwrite=overwrite)
         good_coll = _filter_nv_results(results=coll_meta['results'],
                                        filts=collection_filters)
 
@@ -1765,7 +1766,7 @@ def fetch_neurovault(max_images=100,
                 local_path = os.path.join(collections_dir, filename)
 
                 tmp_meta = _get_nv_json(imgs_meta_url, local_path,
-                                        refresh=refresh)
+                                        overwrite=overwrite)
                 all_images, imgs_meta_url = tmp_meta['results'], tmp_meta['next']
 
                 good_images = _filter_nv_results(results=all_images,
