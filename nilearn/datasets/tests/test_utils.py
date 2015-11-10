@@ -34,14 +34,35 @@ def setup_tmpdata():
     tmpdir = mkdtemp()
 
 
-def setup_mock():
-    global url_request
-    url_request = mock_request()
-    datasets.utils._urllib.request = url_request
-    datasets.utils._chunk_read_ = wrap_chunk_read_(datasets.utils._chunk_read_)
-    global file_mock
-    file_mock = FetchFilesMock()
-    datasets.utils._fetch_files = file_mock  # overwrite the actual function
+def setup_mock(utils_mod=datasets.utils, dataset_mod=datasets.utils):
+    global original_url_request
+    global mock_url_request
+    mock_url_request = mock_request()
+    original_url_request = utils_mod._urllib.request
+    utils_mod._urllib.request = mock_url_request
+
+    global original_chunk_read
+    global mock_chunk_read
+    mock_chunk_read = wrap_chunk_read_(utils_mod._chunk_read_)
+    original_chunk_read = utils_mod._chunk_read_
+    utils_mod._chunk_read_ = mock_chunk_read
+
+    global original_fetch_files
+    global mock_fetch_files
+    mock_fetch_files = FetchFilesMock()
+    original_fetch_files = dataset_mod._fetch_files
+    dataset_mod._fetch_files = mock_fetch_files
+
+
+def teardown_mock(utils_mod=datasets.utils, dataset_mod=datasets.utils):
+    global original_url_request
+    utils_mod._urllib.request = original_url_request
+
+    global original_chunk_read
+    utils_mod.chunk_read_ = original_chunk_read
+
+    global original_fetch_files
+    dataset_mod._fetch_files = original_fetch_files
 
 
 def teardown_tmpdata():
@@ -280,3 +301,69 @@ def test_uncompress():
     shutil.rmtree(dtemp)
 
     os.remove(temp)
+
+
+@with_setup(setup_mock, teardown_mock)
+@with_setup(setup_tmpdata, teardown_tmpdata)
+def test_fetch_file_overwrite():
+    # overwrite non-exiting file.
+    fil = datasets.utils._fetch_file(url='http://foo/', data_dir=tmpdir,
+                                     verbose=0, overwrite=True)
+    assert_equal(len(mock_url_request.urls), 1)
+    assert_true(os.path.exists(fil))
+    with open(fil, 'r') as fp:
+        assert_equal(fp.read(), '')
+
+    # Modify content
+    with open(fil, 'w') as fp:
+        fp.write('some content')
+
+    # Don't overwrite existing file.
+    fil = datasets.utils._fetch_file(url='http://foo/', data_dir=tmpdir,
+                                     verbose=0, overwrite=False)
+    assert_equal(len(mock_url_request.urls), 1)
+    assert_true(os.path.exists(fil))
+    with open(fil, 'r') as fp:
+        assert_equal(fp.read(), 'some content')
+
+    # Overwrite existing file.
+    fil = datasets.utils._fetch_file(url='http://foo/', data_dir=tmpdir,
+                                     verbose=0, overwrite=True)
+    assert_equal(len(mock_url_request.urls), 1)
+    assert_true(os.path.exists(fil))
+    with open(fil, 'r') as fp:
+        assert_equal(fp.read(), '')
+
+
+
+@with_setup(setup_mock, teardown_mock)
+@with_setup(setup_tmpdata, teardown_tmpdata)
+def test_fetch_files_overwrite():
+    # overwrite non-exiting file.
+    files = ('1.txt', 'http://foo/1.txt')
+    fil = datasets.utils._fetch_files(data_dir=tmpdir, verbose=0,
+                                      files=[files + (dict(overwrite=True),)])
+    assert_equal(len(mock_url_request.urls), 1)
+    assert_true(os.path.exists(fil[0]))
+    with open(fil[0], 'r') as fp:
+        assert_equal(fp.read(), '')
+
+    # Modify content
+    with open(fil[0], 'w') as fp:
+        fp.write('some content')
+
+    # Don't overwrite existing file.
+    fil = datasets.utils._fetch_files(data_dir=tmpdir, verbose=0,
+                                      files=[files + (dict(overwrite=False),)])
+    assert_equal(len(mock_url_request.urls), 1)
+    assert_true(os.path.exists(fil[0]))
+    with open(fil[0], 'r') as fp:
+        assert_equal(fp.read(), 'some content')
+
+    # Overwrite existing file.
+    fil = datasets.utils._fetch_files(data_dir=tmpdir, verbose=0,
+                                      files=[files + (dict(overwrite=True),)])
+    assert_equal(len(mock_url_request.urls), 1)
+    assert_true(os.path.exists(fil[0]))
+    with open(fil[0], 'r') as fp:
+        assert_equal(fp.read(), '')

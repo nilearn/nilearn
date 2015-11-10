@@ -621,9 +621,11 @@ def _fetch_files(data_dir, files, resume=True, mock=False, verbose=1):
         options regarding the files. Eg. (file_path, url, opt). If a file_path
         is not found in data_dir, as in data_dir/file_path the download will
         be immediately cancelled and any downloaded files will be deleted.
-        Options supported are 'uncompress' to indicate that the file is an
-        archive, 'md5sum' to check the md5 sum of the file and 'move' if
-        renaming the file or moving it to a subfolder is needed.
+        Options supported are:
+            * 'move' if renaming the file or moving it to a subfolder is needed
+            * 'uncompress' to indicate that the file is an archive
+            * 'md5sum' to check the md5 sum of the file
+            * 'overwrite' if the file should be re-downloaded even if it exists
 
     resume: bool, optional
         If true, try resuming download if possible
@@ -670,8 +672,10 @@ def _fetch_files(data_dir, files, resume=True, mock=False, verbose=1):
         target_file = os.path.join(data_dir, file_)
         # Target file in temp dir
         temp_target_file = os.path.join(temp_dir, file_)
-        if (abort is None and not os.path.exists(target_file) and not
-                os.path.exists(temp_target_file)):
+        # Whether to keep existing files
+        overwrite = opts.get('overwrite', False)
+        if (abort is None and (overwrite or (not os.path.exists(target_file) and not
+                os.path.exists(temp_target_file)))):
 
             # We may be in a global read-only repository. If so, we cannot
             # download files.
@@ -688,7 +692,8 @@ def _fetch_files(data_dir, files, resume=True, mock=False, verbose=1):
                                   verbose=verbose, md5sum=md5sum,
                                   username=opts.get('username', None),
                                   password=opts.get('password', None),
-                                  handlers=opts.get('handlers', []))
+                                  handlers=opts.get('handlers', []),
+                                  overwrite=overwrite)
             if 'move' in opts:
                 # XXX: here, move is supposed to be a dir, it can be a name
                 move = os.path.join(temp_dir, opts['move'])
@@ -705,13 +710,15 @@ def _fetch_files(data_dir, files, resume=True, mock=False, verbose=1):
                         os.remove(dl_file)
                 except Exception as e:
                     abort = str(e)
+
         if (abort is None and not os.path.exists(target_file) and not
                 os.path.exists(temp_target_file)):
             if not mock:
                 warnings.warn('An error occured while fetching %s' % file_)
                 abort = ("Dataset has been downloaded but requested file was "
-                         "not provided:\nURL:%s\nFile:%s" %
-                         (url, target_file))
+                         "not provided:\nURL: %s\n"
+                         "Target file: %s\nDownloaded: %s" %
+                         (url, target_file, dl_file))
             else:
                 if not os.path.exists(os.path.dirname(temp_target_file)):
                     os.makedirs(os.path.dirname(temp_target_file))
