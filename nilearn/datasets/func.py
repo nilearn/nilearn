@@ -6,12 +6,8 @@ import collections
 import json
 import os
 import re
-<<<<<<< 5fc87592a64cf4ab9cd60fe4388493889b191481
-import json
-=======
 import warnings
 
->>>>>>> ENH: First pass on neurovault downloader.
 import numpy as np
 import nibabel
 from sklearn.datasets.base import Bunch
