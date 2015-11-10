@@ -355,7 +355,7 @@ def test__load_mixed_gambles():
         assert_equal(len(zmaps), len(gain))
 
 
-@with_setup(setup_mock)
+@with_setup(setup_mock, teardown_mock)
 @with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
 def test_fetch_mixed_gambles():
     local_url = "file://" + os.path.join(tst.datadir,
