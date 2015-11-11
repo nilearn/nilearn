@@ -6,6 +6,7 @@ See also nilearn.signal.
 # Authors: Philippe Gervais, Alexandre Abraham
 # License: simplified BSD
 
+import platform
 import collections
 import operator
 from distutils.version import LooseVersion
@@ -23,6 +24,7 @@ from .._utils.niimg_conversions import _index_img
 from .._utils.niimg import _safe_get_data
 from .._utils.compat import _basestring
 
+X64 = (platform.architecture()[0] == '64bit')
 
 def high_variance_confounds(imgs, n_confounds=5, percentile=2.,
                             detrend=True, mask_img=None):
@@ -380,7 +382,12 @@ def _compute_mean(imgs, target_affine=None,
                          'images, but %i dimensions were given (%s)'
                          % (mean_data.ndim, input_repr))
     if mean_data.ndim == 4:
-        mean_data = mean_data.mean(axis=-1)
+        if X64:
+            mean_data = mean_data.mean(axis=-1)
+        else:
+            # On 32bit platform, ensure to compute the mean 
+            # on contiguous values
+            mean_data = np.ascontiguousarray(mean_data).mean(axis=-1)
     else:
         mean_data = mean_data.copy()
     mean_data = resampling.resample_img(

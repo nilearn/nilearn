@@ -244,6 +244,7 @@ def test_mean_img():
             assert_array_equal(mean_img.get_data(), truth)
 
 
+
 def test_mean_img_resample():
     # Test resampling in mean_img with a permutation of the axes
     rng = np.random.RandomState(42)
