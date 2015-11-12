@@ -5,10 +5,11 @@ from nose.tools import assert_true, assert_false
 from distutils.version import LooseVersion
 from nose import SkipTest
 
+import platform
 import os
 import nibabel
 import numpy as np
-from numpy.testing import assert_array_equal
+from numpy.testing import assert_array_equal, assert_allclose
 
 from nilearn.image import image
 from nilearn.image import resampling
@@ -16,6 +17,7 @@ from nilearn.image import concat_imgs
 from nilearn._utils import testing, niimg_conversions
 from nilearn.image import new_img_like
 
+X64 = (platform.architecture()[0] == '64bit')
 
 currdir = os.path.dirname(os.path.abspath(__file__))
 datadir = os.path.join(currdir, 'data')
@@ -241,7 +243,12 @@ def test_mean_img():
         with testing.write_tmp_imgs(*imgs) as imgs:
             mean_img = image.mean_img(imgs)
             assert_array_equal(mean_img.get_affine(), affine)
-            assert_array_equal(mean_img.get_data(), truth)
+            if X64:
+                assert_array_equal(mean_img.get_data(), truth)
+            else:
+                assert_allclose(mean_img.get_data(), truth,
+                                rtol=np.finfo(truth.dtype).resolution,
+                                atol=0)
 
 
 
