@@ -40,13 +40,13 @@ def multiple_fast_inv(a):
 
     Notes
     -----
-    This function is borrowed from scipy.linalg.inv, 
+    This function is borrowed from scipy.linalg.inv,
     but with some customizations for speed-up.
     """
     if a.shape[1] != a.shape[2]:
-        raise ValueError('a must have shape(n_samples, n_dim, n_dim)')
+        raise ValueError('a must have shape (n_samples, n_dim, n_dim)')
     from scipy.linalg import calc_lwork
-    from scipy.linalg.lapack import  get_lapack_funcs
+    from scipy.linalg.lapack import get_lapack_funcs
     a1, n = a[0], a.shape[0]
     getrf, getri = get_lapack_funcs(('getrf', 'getri'), (a1,))
     for i in range(n):
@@ -79,7 +79,7 @@ def multiple_fast_inv(a):
 
 def multiple_mahalanobis(effect, covariance):
     """Returns the squared Mahalanobis distance for a given set of samples
-    
+
     Parameters
     ----------
     effect: array of shape (n_features, n_samples),
@@ -120,21 +120,21 @@ def full_rank(X, cmax=1e15):
 
     Parameters
     ----------
-    X : array of shape(nrows, ncols)
+    X : array of shape (nrows, ncols)
         input array
 
-    cmax : float, optional (default:1.e-15),
+    cmax : float, optional (default:1.e15),
         tolerance for condition number
 
     Returns
     -------
-    X : array of shape(nrows, ncols)
+    X : array of shape (nrows, ncols)
         output array
 
     cond : float,
         actual condition number
     """
-    U, s, V = spl.svd(X, 0)
+    U, s, V = spl.svd(X, full_matrices=False)
     smax, smin = s.max(), s.min()
     cond = smax / smin
     if cond < cmax:
