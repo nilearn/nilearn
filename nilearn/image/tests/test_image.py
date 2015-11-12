@@ -246,6 +246,10 @@ def test_mean_img():
             if X64:
                 assert_array_equal(mean_img.get_data(), truth)
             else:
+                # We don't really understand but arrays are not
+                # exactly equal on 32bit. Given that you can not do
+                # much real world data analysis with nilearn on a
+                # 32bit machine it is not worth investigating more
                 assert_allclose(mean_img.get_data(), truth,
                                 rtol=np.finfo(truth.dtype).resolution,
                                 atol=0)
