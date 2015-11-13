@@ -25,20 +25,19 @@ def plot_mats(netmats, title):
 # timeseries method ts3
 print(" -- Fetching Network Matrices -- ")
 netmats = datasets.fetch_megatrawls_netmats(dimensionality=[100, 300],
-                                            timeseries='eigen_regression')
+                                            timeseries='eigen_regression',
+                                            matrices=['correlation', 'partial_correlation'])
+correlation_matrices_100 = netmats.d100_eigen_regression_correlation
+correlation_matrices_300 = netmats.d300_eigen_regression_correlation
 
-# Converting netmats text files to numpy arrays
-full_correlation_matrices_100 = np.genfromtxt(netmats.Fullcorrelation[0])
-full_correlation_matrices_300 = np.genfromtxt(netmats.Fullcorrelation[1])
-
-partial_correlation_matrices_100 = np.genfromtxt(netmats.Partialcorrelation[0])
-partial_correlation_matrices_300 = np.genfromtxt(netmats.Partialcorrelation[1])
+partial_correlation_matrices_100 = netmats.d100_eigen_regression_partial_correlation
+partial_correlation_matrices_300 = netmats.d300_eigen_regression_partial_correlation
 
 # Visualization
 print(" -- Plotting correlation matrices -- ")
 correlation_matrices = {
-    'Full correlation matrices of dimensionality d=100': full_correlation_matrices_100,
-    'Full correlation matrices of dimensionality d=300': full_correlation_matrices_300,
+    'Correlation matrices of dimensionality d=100': correlation_matrices_100,
+    'Correlation matrices of dimensionality d=300': correlation_matrices_300,
     'Partial correlation matrices of dimensionality d=100': partial_correlation_matrices_100,
     'Partial correlation matrices of dimensionality d=300': partial_correlation_matrices_300
     }

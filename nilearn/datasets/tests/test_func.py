@@ -365,7 +365,7 @@ def test_fetch_mixed_gambles():
         assert_equal(len(mgambles["zmaps"]), n_subjects)
 
 
-def test_right_choices_dimensionality_timeseriesmethods():
+def test_wrong_inputs_of_dimensionality_timeseriesmethods_matrices():
     message = ("The %s you have given '%s' is invalid. ")
     for dim in ['a10', 'd15', 'd30']:
         assert_raises_regex(ValueError,
@@ -378,32 +378,37 @@ def test_right_choices_dimensionality_timeseriesmethods():
                             message % ('timeseries', ts),
                             func.fetch_megatrawls_netmats,
                             timeseries=ts)
+    for matrices in ['partal_correlation', 'corelation']:
+        assert_raises_regex(ValueError,
+                            message % ('matrices', matrices),
+                            func.fetch_megatrawls_netmats,
+                            matrices=matrices)
 
 
 @with_setup(setup_tmpdata, teardown_tmpdata)
 def test_fetch_megatrawls_netmats():
-    correlations = func.fetch_megatrawls_netmats(data_dir=tmpdir)
+    correlations = func.fetch_megatrawls_netmats(data_dir=tmpdir,
+                                                 dimensionality=[25, 100, 200, 300],
+                                                 timeseries='eigen_regression',
+                                                 matrices='partial_correlation')
     dataset_name_path = os.path.join(tmpdir, 'Megatrawls')
 
-    assert_equal(correlations.Fullcorrelation[0], os.path.join(
-        dataset_name_path, '3T_Q1-Q6related468_MSMsulc_d25_ts3', 'Znet1.txt'))
+    # test whether the shapes of each dimensionality are equal
+    # expected shapes
+    d25_expected_shape = (25, 25)
+    d100_expected_shape = (100, 100)
+    d200_expected_shape = (200, 200)
+    d300_expected_shape = (300, 300)
 
-    assert_equal(correlations.Fullcorrelation[4], os.path.join(
-        dataset_name_path, '3T_Q1-Q6related468_MSMsulc_d300_ts3', 'Znet1.txt'))
+    # output shapes
+    d25_output_shape = correlations.d25_eigen_regression_partial_correlation.shape
+    d100_output_shape = correlations.d100_eigen_regression_partial_correlation.shape
+    d200_output_shape = correlations.d200_eigen_regression_partial_correlation.shape
+    d300_output_shape = correlations.d300_eigen_regression_partial_correlation.shape
 
-    assert_equal(correlations.Partialcorrelation[2], os.path.join(
-        dataset_name_path, '3T_Q1-Q6related468_MSMsulc_d100_ts3', 'Znet2.txt'))
+    assert_equal(d25_expected_shape, d25_output_shape)
+    assert_equal(d100_expected_shape, d100_output_shape)
+    assert_equal(d200_expected_shape, d200_output_shape)
+    assert_equal(d300_expected_shape, d300_output_shape)
 
-    # test if number of possible combinations of output are correct
-    timeseries = ['multiple_spatial_regression', 'eigen_regression']
-    correlation_ = func.fetch_megatrawls_netmats(data_dir=tmpdir, dimensionality=[25, 200],
-                                                 timeseries=timeseries)
-
-    expected_n_combinations = len([25, 200]) * len(timeseries)
-    n_output_combinations_net1 = len(correlation_.Fullcorrelation)
-    n_output_combinations_net2 = len(correlation_.Partialcorrelation)
-
-    assert_equal(expected_n_combinations, n_output_combinations_net1)
-    assert_equal(expected_n_combinations, n_output_combinations_net2)
-
-    assert_not_equal(correlation_.description, '')
+    assert_not_equal(correlations.description, '')

@@ -11,7 +11,8 @@ from sklearn.datasets.base import Bunch
 from .utils import (_get_dataset_dir, _fetch_files, _get_dataset_descr,
                     _read_md5_sum_file, _tree, _filter_columns)
 
-from .._utils.compat import BytesIO, _basestring, _urllib
+from .._utils.compat import BytesIO, _basestring, _urllib, izip
+from .._utils.numpy_conversions import csv_to_array
 
 
 def fetch_haxby_simple(data_dir=None, url=None, resume=True, verbose=1):
@@ -1282,7 +1283,8 @@ def fetch_mixed_gambles(n_subjects=1, data_dir=None, url=None, resume=True,
 
 
 def fetch_megatrawls_netmats(data_dir=None, dimensionality=[25, 50, 100, 200, 300],
-                             timeseries='eigen_regression', resume=True, verbose=1):
+                             timeseries='eigen_regression', matrices='partial_correlation',
+                             resume=True, verbose=1):
     """Downloads and fetches Network Matrices data from MegaTrawls release in HCP.
 
     This data can be used to predict relationships between imaging data (functional
@@ -1329,6 +1331,12 @@ def fetch_megatrawls_netmats(data_dir=None, dimensionality=[25, 50, 100, 200, 30
         specific timeseries signals are extracted using SVD. The first
         eigen timeseries of each subject rather than simple averaging. [4] [5]
 
+    matrices: a string ['correlation', 'partial_correlation'], optional
+        By default, only 'partial_correlation' data matrices will be fetched.
+        or If given as only 'correlation', data matrices of its type will be
+        fetched. If given as both ['correlation', 'partial_correlation'], then
+        data matrices of both types will be fetched.
+
     resume: boolean, default is True
         This parameter is required if a partly downloaded file is needed to be
         resumed to download again.
@@ -1341,13 +1349,15 @@ def fetch_megatrawls_netmats(data_dir=None, dimensionality=[25, 50, 100, 200, 30
     Returns
     -------
     data: sklearn.datasets.base.Bunch
-        Dictionary-like object, attributes are:
-        'Fullcorrelation': Full correlation matrices (Znet1)
-        'Partialcorrelation': Partial correlation matrices (Znet2)
+        Dictionary-like object, contains:
+        - an array of full correlation matrices
+        - an array of partial correlation matrices
+        - Data description
 
-    Note: In output namings, 'eigen_regression' can be seen fetched as 'ts3' and
-          'multiple_spatial_regression' fetched as 'ts2'. To keep them with standard
-          Megatrawls notations.
+    Note: output can be seen according to the user given inputs.
+        For example: If dimensionality=25 and timeseries='eigen_regression' and
+        matrices='partial_correlation', then output can be seen fetched as an array
+        matrix of size(25,25) assigned to name as "d25_eigen_regression_partial_correlation".
 
     References
     ----------
@@ -1394,7 +1404,7 @@ def fetch_megatrawls_netmats(data_dir=None, dimensionality=[25, 50, 100, 200, 30
     Register and sign the Open Access Data Use Terms at
     ConnectomeDB: https://db.humanconnectome.org/
     """
-    url = "https://www.nitrc.org/frs/download.php/8037/Megatrawls.tgz"
+    url = "http://www.nitrc.org/frs/download.php/8037/Megatrawls.tgz"
     opts = {'uncompress': True}
 
     # dataset terms
@@ -1409,59 +1419,74 @@ def fetch_megatrawls_netmats(data_dir=None, dimensionality=[25, 50, 100, 200, 30
     assign_names = ['dimensionalities', 'timeseries_methods']
     standard_variables = [dimensionalities, timeseries_methods]
 
-    for name, check_in, assign, standard in zip(error_correcting_names, user_inputs,
-                                                assign_names, standard_variables):
-        if check_in is not None:
-            if isinstance(check_in, list):
-                for each_str in check_in:
-                    if each_str not in standard:
-                        raise ValueError(message % (
-                            name, check_in, str(standard)))
+    for name, check_in, assign, standard in izip(error_correcting_names,
+                                                 user_inputs, assign_names,
+                                                 standard_variables
+                                                 ):
+        if isinstance(check_in, list):
+            for each_str in check_in:
+                if each_str not in standard:
+                    raise ValueError(message % (
+                        name, check_in, str(standard)))
                 if assign == 'dimensionalities':
                     dimensionalities = check_in
                 else:
                     timeseries_methods = check_in
-            elif not isinstance(check_in, list):
-                if check_in not in standard:
-                    raise ValueError(message % (
-                        name, check_in, str(standard)))
+        elif not isinstance(check_in, list):
+            if check_in not in standard:
+                raise ValueError(message % (
+                    name, check_in, str(standard)))
 
-                if assign == 'dimensionalities':
-                    dimensionalities = [check_in]
-                else:
-                    timeseries_methods = [check_in]
+            if assign == 'dimensionalities':
+                dimensionalities = [check_in]
+            else:
+                timeseries_methods = [check_in]
 
-    n_combinations = len(dimensionalities) * len(timeseries_methods)
+    output_matrices = ['correlation', 'partial_correlation']
+    if isinstance(matrices, list):
+        for each_type in matrices:
+            if each_type not in output_matrices:
+                raise ValueError(message % ('matrices', matrices,
+                                            output_matrices))
+            output_matrices = matrices
+    elif not isinstance(matrices, list):
+        if matrices not in output_matrices:
+            raise ValueError(message % ('matrices', matrices, output_matrices))
+        output_matrices = [matrices]
+
+    n_combinations = len(dimensionalities) * len(timeseries_methods) * len(output_matrices)
     dataset_name = 'Megatrawls'
-    files_netmats1 = []
-    files_netmats2 = []
+    files_netmats = []
+    names = []
     for dim in dimensionalities:
         filename = os.path.join('3T_Q1-Q6related468_MSMsulc_d' + str(dim))
         for timeseries in timeseries_methods:
+            dim_timeseries = os.path.join('d' + str(dim) + '_' + str(timeseries))
             if timeseries == 'multiple_spatial_regression':
                 timeseries = 'ts2'
             elif timeseries == 'eigen_regression':
                 timeseries = 'ts3'
-            each_files_netmats1 = [(os.path.join(
-                filename + '_' + str(timeseries), 'Znet1.txt'), url, opts)]
-            each_files_netmats2 = [(os.path.join(
-                filename + '_' + str(timeseries), 'Znet2.txt'), url, opts)]
-            files_netmats1.append(each_files_netmats1)
-            files_netmats2.append(each_files_netmats2)
+            for matrices in output_matrices:
+                dim_timeseries_matrices = os.path.join(dim_timeseries + '_' + matrices)
+                if matrices == 'correlation':
+                    matrices = 'Znet1.txt'
+                elif matrices == 'partial_correlation':
+                    matrices = 'Znet2.txt'
+                each_files_netmats = [(os.path.join(
+                    filename + '_' + str(timeseries), matrices), url, opts)]
+                files_netmats.append(each_files_netmats)
+                names.append(dim_timeseries_matrices)
 
     data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir, verbose=verbose)
     description = _get_dataset_descr(dataset_name)
 
-    network_matrices1 = []
-    network_matrices2 = []
+    network_matrices = []
     for n in range(n_combinations):
-        netmats1 = _fetch_files(
-            data_dir, files_netmats1[n], resume=resume, verbose=verbose)
-        network_matrices1.extend(netmats1)
-        netmats2 = _fetch_files(
-            data_dir, files_netmats2[n], resume=resume, verbose=verbose)
-        network_matrices2.extend(netmats2)
+        netmats = _fetch_files(
+            data_dir, files_netmats[n], resume=resume, verbose=verbose)
+        arr = csv_to_array(netmats[0])
+        network_matrices.append(arr)
 
-    return Bunch(Fullcorrelation=network_matrices1,
-                 Partialcorrelation=network_matrices2,
-                 description=description)
+    params = dict([('description', description)] + list(zip(names, network_matrices)))
+
+    return Bunch(**params)

@@ -3,12 +3,13 @@ MegaTrawls Network Matrices HCP
 
 Notes
 -----
-Network Matrices data of two sets, Full Correlation and Partial Correlation
+Network Matrices data of two types, Full correlation and Partial correlation
 matrices estimated by a timeseries signals extracted from a nodes of Group ICA
 parcellations. In total, 461 functional connectivity datasets were used.
 
 Data is available for all dimensionalities (d=25, d=50, d=100, d=200, d=300)
-of Group ICA and for all timeseries methods (ts2 and ts3)
+of Group ICA and for all timeseries methods multiple spatial regression and
+eigen regression (ts2 and ts3).
 
 These matrices can be used to predict the relationships between subjects
 functional connectivity and subjects behavioural measures.
@@ -16,8 +17,8 @@ functional connectivity and subjects behavioural measures.
 
 Content
 -------
-    :'Full Correlation': Text files containing full correlation values
-    :'Partial Correlation': Text files containing partial correlation values
+    :'Correlation': an array of matrices containing full correlation values
+    :'Partialcorrelation': an array of matrices containing partial correlation values
 
 
 References
