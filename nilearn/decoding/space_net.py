@@ -314,7 +314,7 @@ class _EarlyStoppingCallback(object):
         correlation, which captures ordering between input and
         output, but tends to have 'flat' regions. The other
         is the Pearson correlation, that we can use to disambiguate
-        between regions of equivalent Spearman correlations.
+        between regions with equivalent Spearman correlation.
 
         """
         if self.is_classif:
@@ -739,8 +739,7 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
         Parameters
         ----------
         X : list of Niimg-like objects
-            See http://nilearn.github.io/building_blocks/
-            manipulating_mr_images.html#niimg.
+            See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg
             Data on which model is to be fitted. If this is a list,
             the affine is considered the same for all.
 
@@ -930,8 +929,7 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
         Parameters
         ----------
         X : list of Niimg-like objects
-            See http://nilearn.github.io/building_blocks/
-            manipulating_mr_images.html#niimg.
+            See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg
             Data on prediction is to be made. If this is a list,
             the affine is considered the same for all.
 
@@ -1137,8 +1135,7 @@ class SpaceNetClassifier(BaseSpaceNet):
         Parameters
         ----------
         X : list of Niimg-like objects
-            See http://nilearn.github.io/building_blocks/
-            manipulating_mr_images.html#niimg.
+            See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg
             Data on which model is to be fitted. If this is a list,
             the affine is considered the same for all.
 

@@ -12,6 +12,7 @@ from sklearn.utils import extmath
 from sklearn.linear_model import Lasso
 from sklearn.utils import check_random_state
 from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score
 from nilearn._utils.testing import (assert_raises_regex, assert_warns,
                                     assert_less_equal)
 from nilearn.decoding.space_net import (
@@ -195,11 +196,11 @@ def test_graph_net_classifier_score():
     X_, mask = to_niimgs(X, (2, 2, 2))
     gnc = SpaceNetClassifier(mask=mask, alphas=1. / .01 / X.shape[0],
                              l1_ratios=1., tol=1e-10,
-                             penalty="graph-net", loss='logistic',
                              standardize=False, verbose=0,
                              screening_percentile=100.).fit(X_, y)
     accuracy = gnc.score(X_, y)
     assert_less_equal(0, accuracy)
+    assert_equal(accuracy, accuracy_score(y, gnc.predict(X_)))
 
 
 def test_log_reg_vs_graph_net_two_classes_iris(C=.01, tol=1e-10,
