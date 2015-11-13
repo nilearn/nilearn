@@ -385,13 +385,12 @@ def test_wrong_inputs_of_dimensionality_timeseriesmethods_matrices():
                             matrices=matrices)
 
 
-@with_setup(setup_tmpdata, teardown_tmpdata)
+@with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
 def test_fetch_megatrawls_netmats():
-    correlations = func.fetch_megatrawls_netmats(data_dir=tmpdir,
+    correlations = func.fetch_megatrawls_netmats(data_dir=tst.tmpdir,
                                                  dimensionality=[25, 100, 200, 300],
                                                  timeseries='eigen_regression',
                                                  matrices='partial_correlation')
-    dataset_name_path = os.path.join(tmpdir, 'Megatrawls')
 
     # test whether the shapes of each dimensionality are equal
     # expected shapes
