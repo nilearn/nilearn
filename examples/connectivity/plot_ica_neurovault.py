@@ -22,6 +22,7 @@ import os
 
 import numpy as np
 import seaborn
+from joblib import Memory
 from matplotlib import pyplot as plt
 from scipy import stats
 from sklearn.decomposition import FastICA
@@ -36,6 +37,10 @@ from nilearn.masking import compute_background_mask, _extrapolate_out_mask
 from nilearn.plotting import plot_stat_map
 
 
+mem = Memory('cache', verbose=0)
+
+
+@mem.cache
 def faulty_ids():
     # The following maps are not brain maps
     faulty_ids = [96, 97, 98]
@@ -52,12 +57,14 @@ def faulty_ids():
     return faulty_ids
 
 
+@mem.cache
 def splitext(p):
     if p.endswith('.nii.gz'):
         return p[:-7], '.nii.gz'
     return os.path.splitext(p)
 
 
+@mem.cache
 def resample_and_expand_image(src_nii, target_nii, out_path=None, force=False):
     """Resample src_img to target_img affine, turn 4D into list of 3D.
 
@@ -119,28 +126,34 @@ def resample_and_expand_image(src_nii, target_nii, out_path=None, force=False):
     return resampled_niis
 
 
+@mem.cache
 def get_neurosynth_terms(images, data_dir, print_frequency=100):
     """ Grab terms for each image, decoded with neurosynth"""
     terms = list()
-    image_ids = list()
     vectorizer = DictVectorizer()
     for ii, img in enumerate(images):
         if ii % print_frequency == 0:
             print("Fetching terms for images %d-%d of %d" % (
                 ii + 1, min(ii + print_frequency, len(images)), len(images)))
 
-        image_id = img['id']
-        image_ids.append(int(image_id))
+        url = 'http://neurosynth.org/decode/data/?neurovault=%d' % img['id']
+        fil = 'terms-%d.json' % img['id']
+        elevations = _fetch_files(data_dir, ((fil, url, {'move': fil}),),
+                                  verbose=2)[0]
 
-        image_url = image['url'].split('/')[-2]
-        url = 'http://neurosynth.org/decode/data/?neurovault=%s' % image_url
-        fil = 'terms-%s.json' % image_url
-        elevations = _fetch_files(data_dir, ((fil, url, {'move': fil}),))
-
-        with open(elevations[0], 'rb') as fp:
-            data = json.load(fp)['data']
-        data = dict([(i['analysis'], i['r']) for i in data])
-        terms.append(data)
+        try:
+            with open(elevations, 'r') as fp:
+                data = json.load(fp)['data']
+        except Exception as e:
+            print("Inspect what about the blob %d is causing invalid data.\n%s" % (
+                img['id'], e))
+            import pdb; pdb.set_trace()
+            if os.path.exists(elevations):
+                os.remove(elevations)
+            terms.append({})
+        else:
+            data = dict([(i['analysis'], i['r']) for i in data])
+            terms.append(data)
     X = vectorizer.fit_transform(terms).toarray()
     term_dframe = dict([(name, X[:, idx])
                         for name, idx in vectorizer.vocabulary_.items()])
@@ -149,7 +162,7 @@ def get_neurosynth_terms(images, data_dir, print_frequency=100):
 
 # -------------------------------------------
 # Define pre-download filters
-cfilts = []  # [lambda col: col['DOI'] is not None]
+cfilts = [lambda col: col.get('id') not in [16]]  # [lambda col: col['DOI'] is not None]
 imfilts = [lambda im: np.any([im.get('map_type', '').startswith(stat_type)
                               for stat_type in ["Z", "F", "T"]]),
            lambda im: im.get('id') not in faulty_ids(),
@@ -164,48 +177,72 @@ images, collections = ss_all['images'], ss_all['collections']
 # -------------------------------------------
 # Resample the images
 target_nii = datasets.load_mni152_template()
-resampled_niis = []
-for ii, image in enumerate(images):
-    if ii % 100 == 0:
-        print("Resampling image %d-%d of %d..." % (
-            ii + 1, min(ii + 100, len(images)), len(images)))
-    src_nii = nib.load(image['local_path'])
-    file_path, ext = splitext(image['local_path'])
-    resample_path = '%s-resampled-iii%s' % (file_path, ext)
-    resampled_niis += resample_and_expand_image(src_nii, target_nii, resample_path)
-print("After resampling, %d images => %d (each time point became an image." % (
-    len(images), len(resampled_niis)))
+@mem.cache
+def rne_images(images, target_nii):
+    resampled_niis = []
+    for ii, image in enumerate(images):
+        if ii % 100 == 0:
+            print("Resampling image %d-%d of %d..." % (
+                ii + 1, min(ii + 100, len(images)), len(images)))
+        src_nii = nib.load(image['local_path'])
+        file_path, ext = splitext(image['local_path'])
+        resample_path = '%s-resampled-iii%s' % (file_path, ext)
+        resampled_niis += resample_and_expand_image(src_nii, target_nii, resample_path)
+    print("After resampling, %d images => %d (each time point became an image." % (
+        len(images), len(resampled_niis)))
+    return resampled_niis
+resampled_niis = rne_images(images, target_nii)
 
 # -------------------------------------------
 # Get the neurosynth terms; returns a dict of terms, with
 #   a vector of values (1 per image)
-terms = get_neurosynth_terms(images, _get_dataset_dir('neurosynth'))
-good_terms = dict([(t, v) for t, v in terms.items()
-                   if np.sum(v[v > 0]) > 0.])
+@mem.cache
+def get_terms(images):
+    terms = get_neurosynth_terms(images, _get_dataset_dir('neurosynth'))
+    good_terms = dict([(t, v) for t, v in terms.items()
+                       if np.sum(v[v > 0]) > 0.])
+    return good_terms
+good_terms = get_terms(images)
+
+print("Top 100 neurosynth terms:")
 sort_idx = np.argsort([np.sum(v[v > 0]) for v in good_terms.values()])
-for term_idx in sort_idx:
+for term_idx in sort_idx[-100:]:
     # Eliminate negative values
     term = good_terms.keys()[term_idx]
     vec = good_terms[term]
     vec[vec < 0] = 0
-    print('%-50s: %.4e' % (term, np.sum(vec)))
+    print('\t%-25s: %.4e' % (term, np.sum(vec)))
 
 # -------------------------------------------
 # Get the grey matter mask. Cheat by pulling from github :)
-url = 'https://github.com/NeuroVault/neurovault_analysis/raw/master/gm_mask.nii.gz'
-mask = _fetch_files(_get_dataset_dir('neurovault'),
-                    (('gm_mask.nii.gz', url, {}),))[0]
-mask = resample_and_expand_image(nib.load(mask), target_nii)[0]
+@mem.cache
+def get_mask():
+    print("Downloading and resampling grey matter mask.")
+    url = 'https://github.com/NeuroVault/neurovault_analysis/raw/master/gm_mask.nii.gz'
+    mask = _fetch_files(_get_dataset_dir('neurovault'),
+                        (('gm_mask.nii.gz', url, {}),))[0]
+    mask = resample_and_expand_image(nib.load(mask), target_nii)[0]
+    mask = nib.Nifti1Image((mask.get_data() >= 0.5).astype(int),
+                           mask.get_affine(), mask.get_header())
+    return mask
+mask = get_mask()
 
 # -------------------------------------------
 # Do the ICA transform.
-masker = NiftiMasker(mask_img=mask, memory='cache')
-X = masker.fit_transform(resampled_niis)
+masker = NiftiMasker(mask_img=mask, memory=mem)
+@mem.cache
+def mask_images(resampled_niis, masker):
+    X = masker.fit_transform(resampled_niis)
+    return X
+X = mask_images(resampled_niis, masker)
 
-print("Running ICA; may take time...")
-fast_ica = FastICA(n_components=20, random_state=42)
-ica_maps = fast_ica.fit_transform(X.T).T
-
+@mem.cache
+def run_ica(X):
+    print("Running ICA; may take time...")
+    fast_ica = FastICA(n_components=20, random_state=42)
+    ica_maps = fast_ica.fit_transform(X.T).T
+    return fast_ica, ica_maps
+fast_ica, ica_maps = run_ica(X)
 # ica_img = masker.inverse_transform(ica_maps)
 # ica_img.to_filename('ica.nii.gz')
 
