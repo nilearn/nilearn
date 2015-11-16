@@ -3,6 +3,7 @@ Downloading NeuroImaging datasets: functional datasets (task + resting-state)
 """
 
 import collections
+import glob
 import json
 import os
 import re
@@ -1719,14 +1720,20 @@ def fetch_neurovault(max_images=100,
                 raise
             print('Working offline...')
 
+        # Sort collections, so same order is achieved online & offline
+        collection_dirs = [os.path.basename(p)
+                           for p in glob.glob(os.path.join(data_dir, '*'))
+                           if os.path.isdir(p)]
+        collection_dirs = sorted(collection_dirs,
+                                 lambda k1, k2: int(k1) - int(k2))
+
         coll_meta = dict(results=[], next=None)
-        for _, collection_dirs, _ in os.walk(data_dir):
-            for cdir in collection_dirs:
-                coll_meta_path = os.path.join(data_dir, cdir,
-                                              'collection_metadata.json')
-                if os.path.exists(coll_meta_path):
-                    with open(coll_meta_path, 'r') as fp:
-                        coll_meta['results'].append(json.load(fp))
+        for cdir in collection_dirs:
+            coll_meta_path = os.path.join(data_dir, cdir,
+                                          'collection_metadata.json')
+            if os.path.exists(coll_meta_path):
+                with open(coll_meta_path, 'r') as fp:
+                    coll_meta['results'].append(json.load(fp))
         return coll_meta
 
     def _filter_nv_results(results, filts):
