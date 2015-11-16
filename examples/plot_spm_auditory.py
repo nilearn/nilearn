@@ -12,7 +12,7 @@ import nibabel
 from pandas import DataFrame
 from nistats.design_matrix import (
     make_design_matrix, plot_design_matrix, check_design_matrix)
-from nistats.glm import FMRILinearModel
+from nistats.glm import FirstLevelGLM
 from nistats.datasets import fetch_spm_auditory
 from nilearn.plotting import plot_stat_map
 from nilearn.image import mean_img 
@@ -65,15 +65,8 @@ contrasts = {'active-rest': contrasts['active'] - contrasts['rest']}
 
 # fit GLM
 print('\r\nFitting a GLM (this takes time) ..')
-fmri_glm = FMRILinearModel(nibabel.concat_images(subject_data.func),
-                           matrix,
-                           mask='compute')
-fmri_glm.fit(do_scaling=True, model='ar1')
-
-# save computed mask
-mask_path = os.path.join(output_dir, "mask.nii.gz")
-print("Saving mask image %s" % mask_path)
-nibabel.save(fmri_glm.mask, mask_path)
+fmri_glm = FirstLevelGLM(noise_model='ar1', standardize=False).fit(
+    [subject_data.func], matrix)
 
 # compute bg unto which activation will be projected
 mean_img = mean_img(subject_data.func)
@@ -81,8 +74,8 @@ mean_img = mean_img(subject_data.func)
 print("Computing contrasts ..")
 for contrast_id, contrast_val in contrasts.items():
     print("\tcontrast id: %s" % contrast_id)
-    z_map, t_map, eff_map, var_map = fmri_glm.contrast(
-        contrasts[contrast_id], con_id=contrast_id, output_z=True,
+    z_map, t_map, eff_map, var_map = fmri_glm.transform(
+        contrasts[contrast_id], contrast_name=contrast_id, output_z=True,
         output_stat=True, output_effects=True, output_variance=True)
 
     # store stat maps to disk
