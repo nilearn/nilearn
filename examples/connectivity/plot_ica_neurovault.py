@@ -136,8 +136,8 @@ def get_neurosynth_terms(images, data_dir, print_frequency=100):
             print("Fetching terms for images %d-%d of %d" % (
                 ii + 1, min(ii + print_frequency, len(images)), len(images)))
 
-        url = 'http://neurosynth.org/decode/data/?neurovault=%d' % img['id']
-        fil = 'terms-%d.json' % img['id']
+        url = 'http://neurosynth.org/api/v2/decode/?neurovault=%d' % img['id']
+        fil = 'terms-for-image-%d.json' % img['id']
         elevations = _fetch_files(data_dir, ((fil, url, {'move': fil}),),
                                   verbose=2)[0]
 
@@ -145,19 +145,15 @@ def get_neurosynth_terms(images, data_dir, print_frequency=100):
             with open(elevations, 'r') as fp:
                 data = json.load(fp)['data']
         except Exception as e:
-            print("Inspect what about the blob %d is causing invalid data.\n%s" % (
-                img['id'], e))
-            import pdb; pdb.set_trace()
             if os.path.exists(elevations):
                 os.remove(elevations)
             terms.append({})
         else:
-            data = dict([(i['analysis'], i['r']) for i in data])
+            data = data['values']
             terms.append(data)
     X = vectorizer.fit_transform(terms).toarray()
-    term_dframe = dict([(name, X[:, idx])
-                        for name, idx in vectorizer.vocabulary_.items()])
-    return term_dframe
+    return dict([(name, X[:, idx])
+                 for name, idx in vectorizer.vocabulary_.items()])
 
 
 # -------------------------------------------
