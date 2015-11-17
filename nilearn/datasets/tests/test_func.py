@@ -538,12 +538,31 @@ def test_fetch_neurovault():
     dataset = func.fetch_neurovault(
         max_images=1,
         exclude_unpublished=True,
-        image_types=["F map"],
+        image_type='statistic_map',
+        map_types=["F map"],
         verbose=0)
     assert_true(len(dataset['collections']) > 0)
     assert_true(np.all([col.get('DOI') is not None
                         for col in dataset['collections'].values()]))
     assert_equal(len(dataset['images']), 1)
+    assert_equal(dataset['images'][0]["map_type"], "F map")
+    assert_equal(len(dataset['func_files']), 1)
+
+    # Get another image, with same filters, but exclude the previous
+    # image ID.
+    im_id = dataset['images'][0]['id']
+    dataset = func.fetch_neurovault(
+        max_images=1,
+        exclude_unpublished=True,
+        image_type='statistic_map',
+        map_types=["F map"],
+        image_ids=[-im_id],
+        verbose=0)
+    assert_true(len(dataset['collections']) > 0)
+    assert_true(np.all([col.get('DOI') is not None
+                        for col in dataset['collections'].values()]))
+    assert_equal(len(dataset['images']), 1)
+    assert_not_equal(dataset['images'][0]['id'], im_id)
     assert_equal(dataset['images'][0]["map_type"], "F map")
     assert_equal(len(dataset['func_files']), 1)
 

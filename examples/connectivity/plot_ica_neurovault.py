@@ -41,23 +41,6 @@ mem = Memory('cache', verbose=0)
 
 
 @mem.cache
-def faulty_ids():
-    # The following maps are not brain maps
-    faulty_ids = [96, 97, 98]
-    # And the following are crap
-    faulty_ids.extend([338, 339])
-    # 335 is a duplicate of 336
-    faulty_ids.extend([335, ])
-    # Now remove -3360, -3362, and -3364, that are mean images, and not Z
-    # scores
-    faulty_ids.extend([-3360, -3362, -3364])
-    # Now remove images that are ugly, or obviously not z maps:
-    faulty_ids.extend([1202, 1163, 1931, 1101, 1099])
-
-    return faulty_ids
-
-
-@mem.cache
 def splitext(p):
     if p.endswith('.nii.gz'):
         return p[:-7], '.nii.gz'
@@ -156,17 +139,23 @@ def get_neurosynth_terms(images, data_dir, print_frequency=100):
                  for name, idx in vectorizer.vocabulary_.items()])
 
 
+
 # -------------------------------------------
 # Define pre-download filters
-cfilts = [lambda col: col.get('id') not in [16]]  # [lambda col: col['DOI'] is not None]
-imfilts = [lambda im: np.any([im.get('map_type', '').startswith(stat_type)
-                              for stat_type in ["Z", "F", "T"]]),
-           lambda im: im.get('id') not in faulty_ids(),
-           lambda im: im.get('perc_bad_voxels', 0.) < 100.]
+bad_collects = [16]
+bad_image_ids = [
+    96, 97, 98,                    # The following maps are not brain maps
+    338, 339,                      # And the following are crap
+    335,                           # 335 is a duplicate of 336
+    3360, 3362, 3364,              # These are mean images, and not Z maps
+    1202, 1163, 1931, 1101, 1099]  # Ugly / obviously not Z maps
+imfilts = [lambda im: im.get('perc_bad_voxels', 0.) < 100.]
 
 # Download up to 100 matches
 ss_all = datasets.fetch_neurovault(max_images=np.inf,
-                                   collection_filters=cfilts,
+                                   collection_ids=[-bid for bid in bad_collects],
+                                   image_ids=[-bid for bid in bad_image_ids],
+                                   map_types=['F map', 'T map', 'Z map'],
                                    image_filters=imfilts)
 images, collections = ss_all['images'], ss_all['collections']
 

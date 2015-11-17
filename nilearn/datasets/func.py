@@ -1703,7 +1703,7 @@ def _filter_nv_results(results, filts):
 
 def fetch_neurovault(max_images=np.inf,
                      exclude_unpublished=False, collection_ids=None,
-                     image_types=None,
+                     image_ids=None, image_type=None, map_types=None,
                      collection_filters=None, image_filters=None,
                      data_dir=None, url=None, resume=True,
                      overwrite=False, verbose=2):
@@ -1733,10 +1733,21 @@ def fetch_neurovault(max_images=np.inf,
 
     collection_ids: list, optional (default: None)
         A list of integer IDs of collections to search for images.
+        Negative IDs are *excluded*.
         If None, all collections will be searched.
 
-    image_types: string or list, optional (default: None)
-        A string, or list of strings, of image types to include.
+    image_ids: list, optional (default: None)
+        A list of integer IDs of images to download.
+        Negative IDs are *excluded*.
+        If None, all images will be searched.
+
+    image_type: string, optional (default: None)
+        A string of image type to include.
+        These include: "statistic_map". See the NeuroVault
+        website for an update-to-date list.
+
+    map_types: string or list, optional (default: None)
+        A string, or list of strings, of map types to include.
         These include: "F map", "T map", "Z map". See the NeuroVault
         website for an update-to-date list.
 
@@ -1819,12 +1830,26 @@ def fetch_neurovault(max_images=np.inf,
         image_filters = []
     if exclude_unpublished:
         collection_filters.append(lambda col: col.get('DOI') is not None)
-    if collection_ids:
-        collection_filters.append(lambda col: col.get('id') in collection_ids)
-    if image_types and isinstance(image_types, _basestring):
-        image_types = [image_types]
-    if image_types:
-        image_filters.append(lambda im: im.get('map_type') in image_types)
+    if collection_ids:  # positive: include; negative: exclude
+        _pos_col_ids = filter(lambda id: id >= 0, collection_ids)
+        if _pos_col_ids:
+            collection_filters.append(lambda col: col.get('id') in _pos_col_ids)
+        _neg_col_ids = filter(lambda id: id < 0, collection_ids)
+        if _neg_col_ids:
+            collection_filters.append(lambda col: col.get('id') not in _neg_col_ids)
+    if image_ids:  # positive: include; negative: exclude
+        _pos_im_ids = filter(lambda id: id >= 0, image_ids)
+        if _pos_im_ids:
+            image_filters.append(lambda im: im.get('id') in _pos_im_ids)
+        _neg_im_ids = filter(lambda id: id < 0, image_ids)
+        if _neg_im_ids:
+            image_filters.append(lambda im: im.get('id') not in _neg_im_ids)
+    if image_type:
+        image_filters.append(lambda im: im.get('image_type') == image_type)
+    if map_types and isinstance(map_types, _basestring):
+        map_types = [map_types]
+    if map_types:
+        image_filters.append(lambda im: im.get('map_type') in map_types)
     data_dir = _get_dataset_dir('neurovault', data_dir=data_dir)
 
     collects = dict()
