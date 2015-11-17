@@ -1831,17 +1831,17 @@ def fetch_neurovault(max_images=np.inf,
     if exclude_unpublished:
         collection_filters.append(lambda col: col.get('DOI') is not None)
     if collection_ids:  # positive: include; negative: exclude
-        _pos_col_ids = filter(lambda id: id >= 0, collection_ids)
+        _pos_col_ids = [cid for cid in collection_ids if cid >= 0]
         if _pos_col_ids:
             collection_filters.append(lambda col: col.get('id') in _pos_col_ids)
-        _neg_col_ids = filter(lambda id: id < 0, collection_ids)
+        _neg_col_ids = [-cid for cid in collection_ids if cid < 0]
         if _neg_col_ids:
             collection_filters.append(lambda col: col.get('id') not in _neg_col_ids)
     if image_ids:  # positive: include; negative: exclude
-        _pos_im_ids = filter(lambda id: id >= 0, image_ids)
+        _pos_im_ids = [iid for iid in image_ids if iid >= 0]
         if _pos_im_ids:
             image_filters.append(lambda im: im.get('id') in _pos_im_ids)
-        _neg_im_ids = filter(lambda id: id < 0, image_ids)
+        _neg_im_ids = [-iid for iid in image_ids if iid < 0]
         if _neg_im_ids:
             image_filters.append(lambda im: im.get('id') not in _neg_im_ids)
     if image_type:
