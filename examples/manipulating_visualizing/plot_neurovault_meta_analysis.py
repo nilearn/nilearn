@@ -38,7 +38,6 @@ for cd in np.unique([im['contrast_definition'] for im in images]):
 from nilearn.plotting import plot_glass_brain
 for im in images:
     plot_glass_brain(im['local_path'], title='%04d' % im['id'])
-plt.show()
 
 # Convert t values to z values
 def t_to_z(t_scores, df):  # df == degrees of freedom
@@ -85,8 +84,6 @@ for collection_id in all_collection_ids:
     plot_glass_brain(mean_map,
                      title="Collection %04d mean map" % collection_id)
     mean_maps.append(mean_map)
-plt.show()
-
 
 # Fisher's z-score on all maps
 from nilearn.plotting import plot_stat_map
@@ -101,4 +98,5 @@ z_map(z_datas, mean_maps[0].get_affine())
 # Fisher's z-score on combined maps
 z_input_datas = [nii.get_data() for nii in mean_maps]
 z_map(z_input_datas, mean_maps[0].get_affine())
+
 plt.show()
