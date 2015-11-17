@@ -1567,12 +1567,12 @@ def fetch_cobre(n_subjects=10, data_dir=None, url=None, verbose=1):
 
 
 def _build_nv_url(base_url, filts=None):
-    """Build a Neurovault URL with the given filters.
+    """Build a NeuroVault URL with the given filters.
 
     Parameters
     ----------
     base_url: string
-        Neurovault URL (for collections, images, etc.)
+        NeuroVault URL (for collections, images, etc.)
 
     filts: object, optional
         If filts is a dict, then key-value pairs are added to the
@@ -1682,7 +1682,7 @@ def _get_nv_collections_json(url, data_dir, overwrite=False, verbose=2):
 
 
 def _filter_nv_results(results, filts):
-    """Filter neurovault metadata.
+    """Filter NeuroVault metadata.
 
     Parameters
     ----------
@@ -1701,7 +1701,9 @@ def _filter_nv_results(results, filts):
     return results
 
 
-def fetch_neurovault(max_images=100,
+def fetch_neurovault(max_images=np.inf,
+                     exclude_unpublished=False, collection_ids=None,
+                     image_types=None,
                      collection_filters=None, image_filters=None,
                      data_dir=None, url=None, resume=True,
                      overwrite=False, verbose=2):
@@ -1711,7 +1713,7 @@ def fetch_neurovault(max_images=100,
        `image_filters`, if specified.
 
        On each request, even if data are stored locally, this function
-       will requery neurovault for the latest colllections.
+       will requery NeuroVault for the latest colllections.
        Metadata for previously queried collections and images, as well
        as downloaded images, are cached to disk.
 
@@ -1722,11 +1724,24 @@ def fetch_neurovault(max_images=100,
 
     Parameters
     ----------
-    max_images: int, optional (default 100)
-        Total # of images to download from the database.
+    max_images: int, optional (default np.inf)
+        Maximum # of images to download from the database.
+        Useful for testing out filters and analyses if downloads are slow.
+
+    exclude_unpublished: bool, optional (default: False)
+        Exclude any images that belong to a collection without a DOI.
+
+    collection_ids: list, optional (default: None)
+        A list of integer IDs of collections to search for images.
+        If None, all collections will be searched.
+
+    image_types: string or list, optional (default: None)
+        A string, or list of strings, of image types to include.
+        These include: "F map", "T map", "Z map". See the NeuroVault
+        website for an update-to-date list.
 
     collection_filters: list or dict, optional (default None)
-        Filters to limit data retrieval and return via the neurovault API.
+        Filters to limit data retrieval and return via the NeuroVault API.
         If a list, each element should be a function that
             returns True if the collection metadata is a match.
             Filtering is applied after metadata is downloaded.
@@ -1739,7 +1754,7 @@ def fetch_neurovault(max_images=100,
          API keys and collection metadata keys)
 
     image_filters: list or dict, optional (default None)
-        Filters to limit data retrieval and return via the neurovault API.
+        Filters to limit data retrieval and return via the NeuroVault API.
         If a list, each element should be a function that
             returns True if the image metadata is a match.
             Filtering is applied after metadata is downloaded.
@@ -1799,11 +1814,18 @@ def fetch_neurovault(max_images=100,
     if url is None:
         url = "http://neurovault.org/api"
     if collection_filters is None:
-        collection_filters = {}
+        collection_filters = []
     if image_filters is None:
-        image_filters = {}
-    data_dir = _get_dataset_dir('neurovault',
-                                data_dir=data_dir)
+        image_filters = []
+    if exclude_unpublished:
+        collection_filters.append(lambda col: col.get('DOI') is not None)
+    if collection_ids:
+        collection_filters.append(lambda col: col.get('id') in collection_ids)
+    if image_types and isinstance(image_types, _basestring):
+        image_types = [image_types]
+    if image_types:
+        image_filters.append(lambda im: im.get('map_type') in image_types)
+    data_dir = _get_dataset_dir('neurovault', data_dir=data_dir)
 
     collects = dict()
     images = []

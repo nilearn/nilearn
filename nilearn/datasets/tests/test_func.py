@@ -521,7 +521,7 @@ def test_fetch_neurovault():
     try:
         # Cache all
         dataset = func.fetch_neurovault(
-            collection_filters=[lambda col: col['id'] == 835],
+            collection_ids=[835],
             image_filters=[lambda img: False],
             overwrite=True, verbose=0)  # will fail if offline
     except (_urllib.error.URLError, _urllib.error.HTTPError) as ue:
@@ -537,13 +537,16 @@ def test_fetch_neurovault():
     # Download a single image for a collection with a DOI
     dataset = func.fetch_neurovault(
         max_images=1,
-        collection_filters=[lambda col: col.get('DOI') is not None],
+        exclude_unpublished=True,
+        image_types=["F map"],
         verbose=0)
     assert_true(len(dataset['collections']) > 0)
     assert_true(np.all([col.get('DOI') is not None
                         for col in dataset['collections'].values()]))
     assert_equal(len(dataset['images']), 1)
+    assert_equal(dataset['images'][0]["map_type"], "F map")
     assert_equal(len(dataset['func_files']), 1)
 
     # Overwrite test would be nice, but downloading an image twice sounds...
     #   tough.
+
