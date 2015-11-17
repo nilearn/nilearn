@@ -1565,6 +1565,94 @@ def fetch_cobre(n_subjects=10, data_dir=None, url=None, verbose=1):
                  description=fdescr)
 
 
+def _build_nv_url(base_url, filts=None):
+    """Build a Neurovault URL with the given filters."""
+    if filts and isinstance(filts, dict):
+        url = '?'.join(base_url,
+                       '&'.join(['='.join(it) for it in filts.items()]))
+    else:
+        url = base_url
+    return url
+
+
+def _get_nv_json(url, local_file=None, overwrite=False, verbose=2):
+    """Download NeuroVault json metadata; load/save locally if local_file"""
+    opts = dict(overwrite=overwrite)
+
+    if not local_file:
+        # Didnt' request to save locally, but _fetch_files
+        #  requires it. So, dump to a temp location.
+        import tempfile
+        fp, filepath = tempfile.mkstemp()
+        data_dir = os.path.dirname(filepath)
+        filename = os.path.basename(filepath)
+        os.close(fp)  # Avoid any potential conflict
+        opts['overwrite'] = True
+        opts['move'] = filepath
+    else:
+        data_dir = os.path.dirname(local_file)
+        filename = os.path.basename(local_file)
+        opts['move'] = local_file  # make sure
+
+    fil = _fetch_files(data_dir=data_dir,
+                       files=[(filename, url, opts)],
+                       verbose=verbose)  # necessary to get proper url print
+    with open(fil[0], 'r') as fp:
+        meta = json.load(fp)
+
+    # Cleanup
+    if local_file is None:
+        os.remove(os.path.join(data_dir, filename))
+    return meta
+
+
+def _get_nv_collections_json(url, data_dir, overwrite=False, verbose=2):
+    """Get remote list of collections (don't cache locally).
+
+    If offline, aggregate collections metadata from directories.
+    Result is unfiltered.
+    """
+    try:
+        # Online
+        return _get_nv_json(url, overwrite=overwrite, verbose=verbose)
+    except (_urllib.error.URLError, _urllib.error.HTTPError) as ue:
+        if ue.reason[0] != 8:  # connection error
+            raise
+        elif overwrite:  # must requery... fail.
+            raise
+        print('Working offline...')
+
+    # Sort collections, so same order is achieved online & offline
+    collection_dirs = [os.path.basename(p)
+                       for p in glob.glob(os.path.join(data_dir, '*'))
+                       if os.path.isdir(p)]
+    collection_dirs = sorted(collection_dirs,
+                             lambda k1, k2: int(k1) - int(k2))
+
+    coll_meta = dict(results=[], next=None)
+    for cdir in collection_dirs:
+        coll_meta_path = os.path.join(data_dir, cdir,
+                                      'collection_metadata.json')
+        if os.path.exists(coll_meta_path):
+            with open(coll_meta_path, 'r') as fp:
+                coll_meta['results'].append(json.load(fp))
+    return coll_meta
+
+
+def _filter_nv_results(results, filts):
+    """Filter neurovault metadata.
+
+    Parameters
+    ----------
+    filts: list
+
+    """
+    if isinstance(filts, collections.Iterable):
+        for filt in filts:
+            results = [r for r in results if filt(r)]
+    return results
+
+
 def fetch_neurovault(max_images=100,
                      collection_filters=None, image_filters=None,
                      data_dir=None, url=None, resume=True,
@@ -1669,80 +1757,6 @@ def fetch_neurovault(max_images=100,
     data_dir = _get_dataset_dir('neurovault',
                                 data_dir=data_dir)
 
-    def _build_nv_url(base_url, filts=None):
-        # Build a URL with the given filters.
-        if filts and isinstance(filts, dict):
-            url = '?'.join(base_url,
-                           '&'.join(['='.join(it) for it in filts.items()]))
-        else:
-            url = base_url
-        return url
-
-    def _get_nv_json(url, local_file=None, overwrite=False):
-        # Download json metadata; load/save locally if local_file
-        opts = dict(overwrite=overwrite)
-
-        if not local_file:
-            import tempfile
-            fp, filepath = tempfile.mkstemp()
-            data_dir = os.path.dirname(filepath)
-            filename = os.path.basename(filepath)
-            os.close(fp)  # Avoid any potential conflict
-            opts['overwrite'] = True
-            opts['move'] = filepath
-        else:
-            data_dir = os.path.dirname(local_file)
-            filename = os.path.basename(local_file)
-            opts['move'] = local_file  # make sure
-
-        fil = _fetch_files(data_dir=data_dir,
-                           files=[(filename, url, opts)],
-                           verbose=verbose)  # necessary to get proper url print
-        with open(fil[0], 'r') as fp:
-            meta = json.load(fp)
-
-        # Cleanup
-        if local_file is None:
-            os.remove(os.path.join(data_dir, filename))
-        return meta
-
-    def _get_nv_collections_json(url, data_dir, overwrite=False):
-        # Get remote list of collections (uncacheable),
-        #   or amalgamate from local results (if offline).
-        #   Result is unfiltered.
-        try:
-            # Online
-            return _get_nv_json(url, overwrite=overwrite)
-        except (_urllib.error.URLError, _urllib.error.HTTPError) as ue:
-            if ue.reason[0] != 8:  # connection error
-                raise
-            elif overwrite:  # must requery... fail.
-                raise
-            print('Working offline...')
-
-        # Sort collections, so same order is achieved online & offline
-        collection_dirs = [os.path.basename(p)
-                           for p in glob.glob(os.path.join(data_dir, '*'))
-                           if os.path.isdir(p)]
-        collection_dirs = sorted(collection_dirs,
-                                 lambda k1, k2: int(k1) - int(k2))
-
-        coll_meta = dict(results=[], next=None)
-        for cdir in collection_dirs:
-            coll_meta_path = os.path.join(data_dir, cdir,
-                                          'collection_metadata.json')
-            if os.path.exists(coll_meta_path):
-                with open(coll_meta_path, 'r') as fp:
-                    coll_meta['results'].append(json.load(fp))
-        return coll_meta
-
-    def _filter_nv_results(results, filts):
-        # Filter after retreiving results, for negative filters
-        if isinstance(filts, collections.Iterable):
-            for filt in filts:
-                results = [r for r in results if filt(r)]
-        return results
-
     collects = dict()
     images = []
     func_files = []
@@ -1755,7 +1769,8 @@ def fetch_neurovault(max_images=100,
         # GET up to 100 collections, but without caching, and filter results.
         coll_meta = _get_nv_collections_json(coll_meta['next'],
                                              data_dir=data_dir,
-                                             overwrite=overwrite)
+                                             overwrite=overwrite,
+                                             verbose=verbose)
         good_coll = _filter_nv_results(results=coll_meta['results'],
                                        filts=collection_filters)
 
@@ -1787,7 +1802,7 @@ def fetch_neurovault(max_images=100,
                 local_path = os.path.join(collections_dir, filename)
 
                 tmp_meta = _get_nv_json(imgs_meta_url, local_path,
-                                        overwrite=overwrite)
+                                        overwrite=overwrite, verbose=verbose)
                 all_images, imgs_meta_url = tmp_meta['results'], tmp_meta['next']
 
                 good_images = _filter_nv_results(results=all_images,
@@ -1798,7 +1813,6 @@ def fetch_neurovault(max_images=100,
                 # Finally, we have images to download.
                 # 2. Save off collection and image metadata.
                 # 3. Download the image.
-
                 for im in good_images:
                     im_url = im['file']
                     im_filename = os.path.basename(im['file'])
