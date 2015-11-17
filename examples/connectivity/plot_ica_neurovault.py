@@ -18,6 +18,7 @@ frequency of activation in the brain.
 # License: BSD
 
 import json
+import io
 import os
 
 import numpy as np
@@ -142,7 +143,7 @@ def get_neurosynth_terms(images, data_dir, print_frequency=100):
                                   verbose=2)[0]
 
         try:
-            with open(elevations, 'r') as fp:
+            with io.open(elevations, 'r', encoding='utf8') as fp:
                 data = json.load(fp)['data']
         except Exception as e:
             if os.path.exists(elevations):

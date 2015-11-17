@@ -5,6 +5,7 @@ Downloading NeuroImaging datasets: functional datasets (task + resting-state)
 import collections
 import glob
 import json
+import io
 import os
 import re
 import warnings
@@ -1623,7 +1624,7 @@ def _get_nv_json(url, local_file=None, overwrite=False, verbose=2):
     fil = _fetch_files(data_dir=data_dir,
                        files=[(filename, url, opts)],
                        verbose=verbose)  # necessary to get proper url print
-    with open(fil[0], 'r') as fp:
+    with io.open(fil[0], 'r', encoding='utf8') as fp:
         meta = json.load(fp)
 
     # Cleanup
@@ -1675,7 +1676,7 @@ def _get_nv_collections_json(url, data_dir, overwrite=False, verbose=2):
         coll_meta_path = os.path.join(data_dir, cdir,
                                       'collection_metadata.json')
         if os.path.exists(coll_meta_path):
-            with open(coll_meta_path, 'r') as fp:
+            with io.open(coll_meta_path, 'r', encoding='utf8') as fp:
                 coll_meta['results'].append(json.load(fp))
     return coll_meta
 
@@ -1834,7 +1835,7 @@ def fetch_neurovault(max_images=100,
                                           'collection_metadata.json')
             if not os.path.exists(collections_dir):
                 os.makedirs(collections_dir)
-            with open(coll_meta_path, 'w') as fp:  # dir made by json save
+            with open(coll_meta_path, 'w') as fp:
                 json.dump(coll, fp)
 
             # Return the collections metadata for all matching collections,
