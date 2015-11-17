@@ -14,7 +14,9 @@ import sys
 import tarfile
 import warnings
 import zipfile
+
 from .._utils.compat import _basestring, cPickle, _urllib, md5_hash
+
 
 def _format_time(t):
     if t > 60:
@@ -84,10 +86,8 @@ def _chunk_report_(cur_chunk_size, bytes_so_far, total_size, initial_size, t0):
         If not resuming, set to zero.
     """
 
-    if cur_chunk_size == 0:
-        pass  # sys.stderr.write('\n')
     if not total_size:
-        sys.stderr.write("\rDownloaded %d of ? bytes" % (bytes_so_far))
+        sys.stderr.write("\rDownloaded %d of ? bytes." % (bytes_so_far))
 
     else:
         # Estimate remaining download time
@@ -320,7 +320,7 @@ def _uncompress_file(file_, delete_archive=True, verbose=1):
         if delete_archive:
             os.remove(file_)
         if verbose > 0:
-            sys.stderr.write('   ...done.\n')
+            sys.stderr.write('.. done.\n')
     except Exception as e:
         if verbose > 0:
             print('Error uncompressing file: %s' % e)
@@ -532,19 +532,14 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False,
         if verbose > 0:
             # Complete the reporting hook
             sys.stderr.write(' ...done. (%i seconds, %i min)\n' % (dt, dt // 60))
-    except _urllib.error.HTTPError as e:
-        if verbose > 0:
-            print('Error while fetching file %s. Dataset fetching aborted.' %
-                  (file_name))
-        if verbose > 1:
-            print("HTTP Error: %s, %s" % (e, url))
-        raise
-    except _urllib.error.URLError as e:
-        if verbose > 0:
-            print('Error while fetching file %s. Dataset fetching aborted.' %
-                  (file_name))
-        if verbose > 1:
-            print("URL Error: %s, %s" % (e, url))
+    except (_urllib.error.HTTPError, _urllib.error.URLError) as e:
+        if 'Error while fetching' not in str(e):
+            # For some odd reason, the error message gets doubled up
+            #   (possibly from the re-raise), so only add extra info
+            #   if it's not already there.
+            e.reason = ("%s| Error while fetching file %s; "
+                          "dataset fetching aborted." % (
+                            str(e.reason), file_name))
         raise
     finally:
         if local_file is not None:
