@@ -182,10 +182,12 @@ def rne_images(images, target_nii):
                 ii + 1, min(ii + 100, len(images)), len(images)))
         src_nii = nib.load(image['local_path'])
         file_path, ext = splitext(image['local_path'])
-        resample_path = '%s-resampled-iii%s' % (file_path, ext)
+        resample_path = '%s-resampled%s' % (file_path, ext)
         resampled_niis += resample_and_expand_image(src_nii, target_nii, resample_path)
-    print("After resampling, %d images => %d (each time point became an image." % (
-        len(images), len(resampled_niis)))
+    if len(images) != len(resampled_niis):
+        print("After resampling, %d images => %d "
+              "(each time point became an image)" % (
+                  len(images), len(resampled_niis)))
     return resampled_niis
 resampled_niis = rne_images(images, target_nii)
 
@@ -204,7 +206,7 @@ print("Top 100 neurosynth terms:")
 sort_idx = np.argsort([np.sum(v[v > 0]) for v in good_terms.values()])
 for term_idx in sort_idx[-100:]:
     # Eliminate negative values
-    term = good_terms.keys()[term_idx]
+    term = list(good_terms.keys())[term_idx]
     vec = good_terms[term]
     vec[vec < 0] = 0
     print('\t%-25s: %.4e' % (term, np.sum(vec)))
@@ -244,10 +246,10 @@ fast_ica, ica_maps = run_ica(X)
 
 # -------------------------------------------
 # Relate ICA to terms
-term_matrix = np.asarray(good_terms.values())
+term_matrix = np.asarray(list(good_terms.values()))
 # Don't use the transform method as it centers the data
 ica_terms = np.dot(term_matrix, fast_ica.components_.T).T
-col_names = good_terms.keys()
+col_names = list(good_terms.keys())
 
 # -------------------------------------------
 # Generate figures
@@ -261,7 +263,8 @@ for idx, (ic, ic_terms) in enumerate(zip(ica_maps, ica_terms)):
     ic_img = masker.inverse_transform(ic)
     # Use the 4 terms weighted most as a title
     important_terms = np.array(col_names)[np.argsort(ic_terms)[-4:]]
-    display = plot_stat_map(ic_img, threshold=ic_thr, colorbar=False)
+    display = plot_stat_map(ic_img, threshold=ic_thr, colorbar=False,
+                            bg_img=target_nii)
     display.title(', '.join(important_terms[::-1]), size=16)
 
 # Done.
