@@ -22,7 +22,6 @@ import io
 import os
 
 import numpy as np
-import seaborn
 from joblib import Memory
 from matplotlib import pyplot as plt
 from scipy import stats

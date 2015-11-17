@@ -10,7 +10,6 @@ See :func:`nilearn.datasets.fetch_neurovault` documentation for more details.
 
 import matplotlib.pyplot as plt
 import numpy as np
-import seaborn
 from nilearn import datasets
 
 # Define pre-download filters
