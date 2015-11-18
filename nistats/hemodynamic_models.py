@@ -136,8 +136,8 @@ def spm_time_derivative(tr, oversampling=16, time_length=32., onset=0.):
           dhrf sampling on the provided grid
     """
     do = .1
-    dhrf = 1. / do * (spm_hrf(tr, oversampling, time_length, onset + do) -
-                      spm_hrf(tr, oversampling, time_length, onset))
+    dhrf = 1. / do * (spm_hrf(tr, oversampling, time_length, onset) -
+                      spm_hrf(tr, oversampling, time_length, onset + do))
     return dhrf
 
 
@@ -161,8 +161,8 @@ def glover_time_derivative(tr, oversampling=16, time_length=32., onset=0.):
           dhrf sampling on the provided grid
     """
     do = .1
-    dhrf = 1. / do * (glover_hrf(tr, oversampling, time_length, onset + do) -
-                      glover_hrf(tr, oversampling, time_length, onset))
+    dhrf = 1. / do * (glover_hrf(tr, oversampling, time_length, onset) -
+                      glover_hrf(tr, oversampling, time_length, onset + do))
     return dhrf
 
 
@@ -189,9 +189,11 @@ def spm_dispersion_derivative(tr, oversampling=16, time_length=32., onset=0.):
           dhrf sampling on the oversampled time grid
     """
     dd = .01
-    dhrf = 1. / dd * (_gamma_difference_hrf(tr, oversampling, time_length,
-                                           onset, dispersion=1. + dd) -
-                      spm_hrf(tr, oversampling, time_length, onset))
+    dhrf = 1. / dd * (
+        - _gamma_difference_hrf(tr, oversampling, time_length,
+                                onset, dispersion=1. + dd)
+        + _gamma_difference_hrf(tr, oversampling, time_length, onset))
+    dhrf *= 10
     return dhrf
 
 
