@@ -5,7 +5,7 @@ Notes
 NeuroVault contains collections of statistical maps of the human brain.
 Such maps are acquired by scientists all around the world using brain imaging
 techniques such as MRI or PET in a combined effort to map the functions and
-structures of the brain. These include threshholded and unthreshholded statistical
+structures of the brain. These include thresholded and unthresholded statistical
 maps.
 
 Collections represent images with some relationship to each other.

@@ -1,6 +1,6 @@
 """
 NeuroVault cross-study ICA maps.
-=====================================================================
+================================
 
 This example shows how to download statistical maps from
 NeuroVault, label them with NeuroSynth terms,
@@ -8,18 +8,16 @@ and compute ICA components across all the maps.
 
 See :func:`nilearn.datasets.fetch_neurovault` documentation for more details.
 """
-# Outline
-
-
-""" Code to grab the data from NeuroVault, and compute a map of
-frequency of activation in the brain.
-"""
-# Authors: Chris Filo Gorgolewski, Gael Varoquaux
+# Author: Ben Cipollini
 # License: BSD
+# Ported from code authored by Chris Filo Gorgolewski, Gael Varoquaux
+# https://github.com/NeuroVault/neurovault_analysis
 
 import json
 import io
 import os
+import warnings
+warnings.simplefilter('error', RuntimeWarning)
 
 import numpy as np
 from joblib import Memory
@@ -37,57 +35,63 @@ from nilearn.masking import compute_background_mask, _extrapolate_out_mask
 from nilearn.plotting import plot_stat_map
 
 
+# Use for caching results to disk, so running twice will be *fast*
 mem = Memory('cache', verbose=0)
 
 
 @mem.cache
-def splitext(p):
-    if p.endswith('.nii.gz'):
-        return p[:-7], '.nii.gz'
-    return os.path.splitext(p)
+def splitext_multi(p):
+    """From my_img.nii.gz, return .nii.gz"""
+    dirname, basename = os.path.dirname(p), os.path.basename(p)
+    stem, ext = basename.split('.', 1)
+    return os.path.join(dirname, stem), '.' + ext if ext else ''
 
 
 @mem.cache
-def resample_and_expand_image(src_nii, target_nii, out_path=None, force=False):
+def resample_and_expand_image(src_img, target_img, out_path=None):
     """Resample src_img to target_img affine, turn 4D into list of 3D.
 
     Optionally save to out_path.
     """
-    data = src_nii.get_data().squeeze()
+    data = src_img.get_data().squeeze()
     data[np.isnan(data)] = 0
     assert np.abs(data).max() > 0
 
-    # print('working on %s, %s' % (src_nii.get_filename(), len(np.unique(data))))
     if out_path is not None:
-        out_stem, out_ext = splitext(out_path)
+        # Create the proper output filenames (if 3D, just one;
+        #   if 4D then one per time point)
+        out_stem, out_ext = splitext_multi(out_path)
         out_paths = [out_path] if len(data.shape) == 3 else \
                     ['%s-%d%s' % (out_stem, ii, out_ext)
                      for ii in range(data.shape[-1])]
+        # If all output images exist, use them cached from disk.
         if np.all([os.path.exists(p) for p in out_paths]):
             return [nib.load(p) for p in out_paths]
 
-    # Copy the image and mkae a background mask.
-    src_nii = nib.Nifti1Image(data, src_nii.get_affine(),
-                              header=src_nii.get_header())
-    bg_mask = compute_background_mask(src_nii).get_data()
+    # Copy the image and make a background mask.
+    src_img = nib.Nifti1Image(data, src_img.get_affine(),
+                              header=src_img.get_header())
+    bg_mask = compute_background_mask(src_img).get_data()
 
     # Test if the image has been masked:
     out_of_mask = data[np.logical_not(bg_mask)]
     if np.all(np.isnan(out_of_mask)) or len(np.unique(out_of_mask)) == 1:
         # Need to extrapolate
-        data = _extrapolate_out_mask(data.astype(np.float), bg_mask,
-                                     iterations=3)[0]
-    src_nii = nib.Nifti1Image(data, src_nii.get_affine(),
-                              header=src_nii.get_header())
+        with warnings.catch_warnings(record=False):
+            warnings.simplefilter('ignore', RuntimeWarning)
+            data, _ = _extrapolate_out_mask(data.astype(np.float), bg_mask,
+                                            iterations=3)
+    src_img = nib.Nifti1Image(data, src_img.get_affine(),
+                              header=src_img.get_header())
     del out_of_mask, bg_mask
 
     # Resampling the file to target and saving the output in the "resampled"
     # folder
-    resampled_nii = resample_img(src_nii, target_nii.get_affine(),
-                                 target_nii.shape)
+    resampled_nii = resample_img(src_img, target_img.get_affine(),
+                                 target_img.shape)
     resampled_nii = nib.Nifti1Image(resampled_nii.get_data().squeeze(),
                                     resampled_nii.get_affine(),
-                                    header=src_nii.get_header())
+                                    header=src_img.get_header())
 
     # Decimate 4D files.
     if len(resampled_nii.shape) == 3:
@@ -112,6 +116,7 @@ def resample_and_expand_image(src_nii, target_nii, out_path=None, force=False):
 @mem.cache
 def get_neurosynth_terms(images, data_dir, print_frequency=100):
     """ Grab terms for each image, decoded with neurosynth"""
+
     terms = list()
     vectorizer = DictVectorizer()
     for ii, img in enumerate(images):
@@ -151,8 +156,8 @@ bad_image_ids = [
     1202, 1163, 1931, 1101, 1099]  # Ugly / obviously not Z maps
 imfilts = [lambda im: im.get('perc_bad_voxels', 0.) < 100.]
 
-# Download up to 100 matches
-ss_all = datasets.fetch_neurovault(max_images=np.inf,
+# Download 100 matching images
+ss_all = datasets.fetch_neurovault(max_images=100,  # Use np.inf for all imgs.
                                    collection_ids=[-bid for bid in bad_collects],
                                    image_ids=[-bid for bid in bad_image_ids],
                                    map_types=['F map', 'T map', 'Z map'],
@@ -161,35 +166,28 @@ images, collections = ss_all['images'], ss_all['collections']
 
 # -------------------------------------------
 # Resample the images
-target_nii = datasets.load_mni152_template()
-@mem.cache
-def rne_images(images, target_nii):
-    resampled_niis = []
-    for ii, image in enumerate(images):
-        if ii % 100 == 0:
-            print("Resampling image %d-%d of %d..." % (
-                ii + 1, min(ii + 100, len(images)), len(images)))
-        src_nii = nib.load(image['local_path'])
-        file_path, ext = splitext(image['local_path'])
-        resample_path = '%s-resampled%s' % (file_path, ext)
-        resampled_niis += resample_and_expand_image(src_nii, target_nii, resample_path)
-    if len(images) != len(resampled_niis):
-        print("After resampling, %d images => %d "
-              "(each time point became an image)" % (
-                  len(images), len(resampled_niis)))
-    return resampled_niis
-resampled_niis = rne_images(images, target_nii)
+target_img = datasets.load_mni152_template()
+resampled_niis = []
+for ii, image in enumerate(images):
+    if ii % 100 == 0:
+        print("Resampling image %d-%d of %d..." % (
+            ii + 1, min(ii + 100, len(images)), len(images)))
+    src_img = nib.load(image['local_path'])
+    file_path, ext = splitext_multi(image['local_path'])
+    resample_path = '%s-resampled%s' % (file_path, ext)
+    resampled_niis += resample_and_expand_image(src_img, target_img,
+                                                resample_path)
+if len(images) != len(resampled_niis):
+    print("After resampling, %d images => %d "
+          "(each time point became an image)" % (
+              len(images), len(resampled_niis)))
 
 # -------------------------------------------
 # Get the neurosynth terms; returns a dict of terms, with
 #   a vector of values (1 per image)
-@mem.cache
-def get_terms(images):
-    terms = get_neurosynth_terms(images, _get_dataset_dir('neurosynth'))
-    good_terms = dict([(t, v) for t, v in terms.items()
-                       if np.sum(v[v > 0]) > 0.])
-    return good_terms
-good_terms = get_terms(images)
+terms = get_neurosynth_terms(images, _get_dataset_dir('neurosynth'))
+good_terms = dict([(t, v) for t, v in terms.items()
+                   if np.sum(v[v > 0]) > 0.])
 
 print("Top 100 neurosynth terms:")
 sort_idx = np.argsort([np.sum(v[v > 0]) for v in good_terms.values()])
@@ -202,36 +200,22 @@ for term_idx in sort_idx[-100:]:
 
 # -------------------------------------------
 # Get the grey matter mask. Cheat by pulling from github :)
-@mem.cache
-def get_mask():
-    print("Downloading and resampling grey matter mask.")
-    url = 'https://github.com/NeuroVault/neurovault_analysis/raw/master/gm_mask.nii.gz'
-    mask = _fetch_files(_get_dataset_dir('neurovault'),
-                        (('gm_mask.nii.gz', url, {}),))[0]
-    mask = resample_and_expand_image(nib.load(mask), target_nii)[0]
-    mask = nib.Nifti1Image((mask.get_data() >= 0.5).astype(int),
-                           mask.get_affine(), mask.get_header())
-    return mask
-mask = get_mask()
+print("Downloading and resampling grey matter mask.")
+url = 'https://github.com/NeuroVault/neurovault_analysis/raw/master/gm_mask.nii.gz'
+mask = _fetch_files(_get_dataset_dir('neurovault'),
+                    (('gm_mask.nii.gz', url, {}),))[0]
+mask = resample_and_expand_image(nib.load(mask), target_img)[0]
+mask = nib.Nifti1Image((mask.get_data() >= 0.5).astype(int),
+                       mask.get_affine(), mask.get_header())
 
 # -------------------------------------------
 # Do the ICA transform.
 masker = NiftiMasker(mask_img=mask, memory=mem)
-@mem.cache
-def mask_images(resampled_niis, masker):
-    X = masker.fit_transform(resampled_niis)
-    return X
-X = mask_images(resampled_niis, masker)
+X = masker.fit_transform(resampled_niis)
 
-@mem.cache
-def run_ica(X):
-    print("Running ICA; may take time...")
-    fast_ica = FastICA(n_components=20, random_state=42)
-    ica_maps = fast_ica.fit_transform(X.T).T
-    return fast_ica, ica_maps
-fast_ica, ica_maps = run_ica(X)
-# ica_img = masker.inverse_transform(ica_maps)
-# ica_img.to_filename('ica.nii.gz')
+print("Running ICA; may take time...")
+fast_ica = FastICA(n_components=20, random_state=42)
+ica_maps = fast_ica.fit_transform(X.T).T
 
 # -------------------------------------------
 # Relate ICA to terms
@@ -253,7 +237,7 @@ for idx, (ic, ic_terms) in enumerate(zip(ica_maps, ica_terms)):
     # Use the 4 terms weighted most as a title
     important_terms = np.array(col_names)[np.argsort(ic_terms)[-4:]]
     display = plot_stat_map(ic_img, threshold=ic_thr, colorbar=False,
-                            bg_img=target_nii)
+                            bg_img=target_img)
     display.title(', '.join(important_terms[::-1]), size=16)
 
 # Done.
