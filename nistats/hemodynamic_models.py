@@ -53,7 +53,7 @@ def _gamma_difference_hrf(tr, oversampling=16, time_length=32., onset=0.,
     """
     dt = tr / oversampling
     time_stamps = np.linspace(0, time_length, float(time_length) / dt)
-    time_stamps -= onset / dt
+    time_stamps -= onset
     hrf = gamma.pdf(time_stamps, delay / dispersion, dt / dispersion) - \
         ratio * gamma.pdf(
         time_stamps, undershoot / u_dispersion, dt / u_dispersion)
@@ -304,9 +304,10 @@ def _orthogonalize(X):
     """
     if X.size == X.shape[0]:
         return X
-    from scipy.linalg import pinv
+    from scipy.linalg import pinv, norm
     for i in range(1, X.shape[1]):
-        X[:, i] -= np.dot(X[:, i], np.dot(X[:, :i], pinv(X[:, :i])))
+        X[:, i] -= np.dot(np.dot(X[:, i], X[:, :i]), pinv(X[:, :i]))
+        X[:, i] /= norm(X[:, i])
     return X
 
 
