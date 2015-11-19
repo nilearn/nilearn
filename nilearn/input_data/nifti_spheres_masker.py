@@ -17,33 +17,8 @@ from .. import masking
 from .base_masker import filter_and_extract, BaseMasker
 
 
-def _iter_signals_from_spheres(seeds, niimg, radius, allow_overlap,
-                               mask_img=None):
-    """Utility function to iterate over spheres.
-
-    Parameters
-    ==========
-    seeds: List of triplet of coordinates in native space
-        Seed definitions. List of coordinates of the seeds in the same space
-        as the images (typically MNI or TAL).
-
-    imgs: 3D/4D Niimg-like object
-        See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
-        Images to process. It must boil down to a 4D image with scans
-        number as last dimension.
-
-    radius: float, optional
-        Indicates, in millimeters, the radius for the sphere around the seed.
-        Default is None (signal is extracted on a single voxel).
-
-    allow_overlap: boolean
-        If False, an error is raised if the maps overlaps (ie at least two
-        maps have a non-zero value for the same voxel). Default is False.
-
-    mask_img: Niimg-like object, optional
-        See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
-        Mask to apply to regions before extracting signals.
-    """
+def _apply_mask_and_get_affinity(seeds, niimg, radius, allow_overlap,
+                                 mask_img=None):
     seeds = list(seeds)
     affine = niimg.get_affine()
 
@@ -82,12 +57,38 @@ def _iter_signals_from_spheres(seeds, niimg, radius, allow_overlap,
         except ValueError:
             # seed is not in the mask
             pass
-    del mask_coords
-
+    
     if not allow_overlap:
         if np.any(A.sum(axis=0) >= 2):
             raise ValueError('Overlap detected between spheres')
+    
+    return X, A
 
+
+def _iter_signals_from_spheres(seeds, niimg, radius, allow_overlap,
+                               mask_img=None):
+    """Utility function to iterate over spheres.
+    Parameters
+    ==========
+    seeds: List of triplet of coordinates in native space
+        Seed definitions. List of coordinates of the seeds in the same space
+        as the images (typically MNI or TAL).
+    imgs: 3D/4D Niimg-like object
+        See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+        Images to process. It must boil down to a 4D image with scans
+        number as last dimension.
+    radius: float, optional
+        Indicates, in millimeters, the radius for the sphere around the seed.
+        Default is None (signal is extracted on a single voxel).
+    allow_overlap: boolean
+        If False, an error is raised if the maps overlaps (ie at least two
+        maps have a non-zero value for the same voxel). Default is False.
+    mask_img: Niimg-like object, optional
+        See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+        Mask to apply to regions before extracting signals.
+    """
+    X, A = _apply_mask_and_get_affinity(seeds, niimg, radius,
+                                        mask_img=mask_img)
     for i, row in enumerate(A.rows):
         if len(row) == 0:
             raise ValueError('Sphere around seed #%i is empty' % i)

@@ -22,9 +22,9 @@ from sklearn.externals.joblib import Parallel, delayed, cpu_count
 from sklearn import svm
 from sklearn.cross_validation import cross_val_score
 from sklearn.base import BaseEstimator
-from sklearn import neighbors
 
 from .. import masking
+from ..input_data.nifti_spheres_masker import _apply_mask_and_get_affinity
 from .._utils.compat import _basestring
 
 ESTIMATOR_CATALOG = dict(svc=svm.LinearSVC, svr=svm.SVR)
@@ -187,7 +187,7 @@ def _group_iter_search_light(list_rows, estimator, X, y,
 
 
 ##############################################################################
-### Class for search_light ###################################################
+# Class for search_light #####################################################
 ##############################################################################
 class SearchLight(BaseEstimator):
     """Implement search_light analysis using an arbitrary type of classifier.
@@ -279,36 +279,24 @@ class SearchLight(BaseEstimator):
             process_mask_img.
         """
 
-        # Compute world coordinates of all in-mask voxels.
-        mask, mask_affine = masking._load_mask_img(self.mask_img)
-        mask_coords = np.where(mask != 0)
-        mask_coords = np.asarray(mask_coords + (np.ones(len(mask_coords[0]),
-                                                        dtype=np.int),))
-        mask_coords = np.dot(mask_affine, mask_coords)[:3].T
-
-        # Compute world coordinates of all in-process mask voxels
+        # Get the seeds
+        process_mask_img = self.process_mask_img
         if self.process_mask_img is None:
-            process_mask = mask
-            process_mask_coords = mask_coords
-        else:
-            process_mask, process_mask_affine = \
-                masking._load_mask_img(self.process_mask_img)
-            process_mask_coords = np.where(process_mask != 0)
-            process_mask_coords = \
-                np.asarray(process_mask_coords
-                           + (np.ones(len(process_mask_coords[0]),
-                                      dtype=np.int),))
-            process_mask_coords = np.dot(process_mask_affine,
-                                         process_mask_coords)[:3].T
+            process_mask_img = self.mask_img
 
-        clf = neighbors.NearestNeighbors(radius=self.radius)
-        A = clf.fit(mask_coords).radius_neighbors_graph(process_mask_coords)
-        del process_mask_coords, mask_coords
-        A = A.tolil()
+        # Compute world coordinates of the seeds
+        process_mask, process_mask_affine = masking._load_mask_img(
+            process_mask_img)
+        process_mask_coords = np.where(process_mask != 0)
+        process_mask_coords = \
+            np.asarray(process_mask_coords +
+                       (np.ones(len(process_mask_coords[0]), dtype=np.int),))
+        process_mask_coords = np.dot(process_mask_affine,
+                                     process_mask_coords)[:3].T
 
-        # scores is an 1D array of CV scores with length equals to the number
-        # of voxels in processing mask (columns in process_mask)
-        X = masking._apply_mask_fmri(imgs, self.mask_img)
+        X, A = _apply_mask_and_get_affinity(
+            process_mask_coords, imgs, self.radius, True,
+            mask_img=self.process_mask_img)
 
         estimator = self.estimator
         if isinstance(estimator, _basestring):
