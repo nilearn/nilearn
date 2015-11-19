@@ -2,7 +2,11 @@
 
 .. image:: https://travis-ci.org/nilearn/nilearn.svg?branch=master
    :target: https://travis-ci.org/nilearn/nilearn
-   :alt: Build Status
+   :alt: Travis Build Status
+
+.. image:: https://ci.appveyor.com/api/projects/status/github/nilearn/nilearn?branch=master&svg=true
+   :target: https://ci.appveyor.com/project/nilearn-ci/nilearn
+   :alt: AppVeyor Build Status
 
 .. image:: https://coveralls.io/repos/nilearn/nilearn/badge.svg?branch=master
    :target: https://coveralls.io/r/nilearn/nilearn
@@ -75,5 +79,3 @@ You can check the latest sources with the command::
 or if you have write privileges::
 
     git clone git@github.com:nilearn/nilearn
-
-

@@ -36,7 +36,8 @@ os.chdir(os.path.dirname(os.path.abspath(__file__)))
 _VERSION_GLOBALS = load_version()
 DISTNAME = 'nilearn'
 DESCRIPTION = 'Statistical learning for neuroimaging in Python'
-LONG_DESCRIPTION = open('README.rst').read()
+with open('README.rst') as fp:
+    LONG_DESCRIPTION = fp.read()
 MAINTAINER = 'Gael Varoquaux'
 MAINTAINER_EMAIL = 'gael.varoquaux@normalesup.org'
 URL = 'http://nilearn.github.io'

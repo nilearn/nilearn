@@ -26,6 +26,7 @@ from sklearn.feature_selection import (SelectPercentile, f_regression,
 from sklearn.externals.joblib import Memory, Parallel, delayed
 from sklearn.cross_validation import check_cv
 from sklearn.preprocessing import LabelBinarizer
+from sklearn.metrics import accuracy_score
 from .._utils.compat import _basestring
 from .._utils.fixes import atleast2d_or_csr
 from .._utils.cache_mixin import CacheMixin
@@ -56,10 +57,49 @@ def _get_mask_volume(mask_img):
     return 1. * np.prod(vox_dims) * mask_img.get_data().astype(np.bool).sum()
 
 
+def _adjust_screening_percentile(screening_percentile, mask_img,
+                                 verbose=0):
+    original_screening_percentile = screening_percentile
+    # correct screening_percentile according to the volume of the data mask
+    mask_volume = _get_mask_volume(mask_img)
+    if mask_volume > MNI152_BRAIN_VOLUME:
+        warnings.warn(
+            "Brain mask is bigger than the volume of a standard "
+            "humain brain. SpaceNet is probably not tuned to "
+            "be used on such data.", stacklevel=2)
+    elif mask_volume < .005 * MNI152_BRAIN_VOLUME:
+        warnings.warn(
+            "Brain mask is smaller than .5% of the volume "
+            "humain brain. SpaceNet is probably not tuned to"
+            "be used on such data.", stacklevel=2)
+
+    if screening_percentile < 100:
+        screening_percentile = screening_percentile * (
+            MNI152_BRAIN_VOLUME / mask_volume)
+        screening_percentile = min(screening_percentile, 100)
+    # if screening_percentile is 100, we don't do anything
+
+    if verbose > 1:
+        print("Mask volume = %gmm^3 = %gcm^3" % (
+            mask_volume, mask_volume / 1.e3))
+        print("Standard brain volume = %gmm^3 = %gcm^3" % (
+            MNI152_BRAIN_VOLUME, MNI152_BRAIN_VOLUME / 1.e3))
+        print("Original screening-percentile: %g" % (
+            original_screening_percentile))
+        print("Volume-corrected screening-percentile: %g" % (
+            screening_percentile))
+    return screening_percentile
+
+
 def _crop_mask(mask):
     """Crops input mask to produce tighter (i.e smaller) bounding box with
     the same support (active voxels)"""
     idx = np.where(mask)
+    if idx[0].size == 0:
+        raise ValueError("Empty mask: if you have given a mask, it is "
+                          "empty, and if you have not given a mask, the "
+                          "mask-extraction routines have failed. Please "
+                          "provide an appropriate mask.")
     i_min = max(idx[0].min() - 1, 0)
     i_max = idx[0].max()
     j_min = max(idx[1].min() - 1, 0)
@@ -156,11 +196,11 @@ def _space_net_alpha_grid(X, y, eps=1e-3, n_alphas=10, l1_ratio=1.,
         For ``l1_ratio = 0`` the penalty is purely a spatial prior
         (Graph-Net, TV, etc.). ``For l1_ratio = 1`` it is an L1 penalty.
         For ``0 < l1_ratio < 1``, the penalty is a combination of L1
-        and a spatial prior
+        and a spatial prior.
 
     eps : float, optional
         Length of the path. ``eps=1e-3`` means that
-        ``alpha_min / alpha_max = 1e-3``
+        ``alpha_min / alpha_max = 1e-3``.
 
     n_alphas : int, optional
         Number of alphas along the regularization path.
@@ -274,7 +314,7 @@ class _EarlyStoppingCallback(object):
         correlation, which captures ordering between input and
         output, but tends to have 'flat' regions. The other
         is the Pearson correlation, that we can use to disambiguate
-        between regions of equivalent Spearman correlations
+        between regions with equivalent Spearman correlation.
 
         """
         if self.is_classif:
@@ -313,10 +353,10 @@ def path_scores(solver, X, y, mask, alphas, l1_ratios, train, test,
         List of regularization parameters being considered.
 
     train : array or list of integers
-        List of indices for the train samples
+        List of indices for the train samples.
 
     test : array or list of integers
-        List of indices for the test samples
+        List of indices for the test samples.
 
     l1_ratio : float in the interval [0, 1]; optional (default .5)
         Constant that mixes L1 and TV (resp. Graph-Net) penalization.
@@ -324,7 +364,7 @@ def path_scores(solver, X, y, mask, alphas, l1_ratios, train, test,
 
     eps : float, optional (default 1e-3)
         Length of the path. For example, ``eps=1e-3`` means that
-        ``alpha_min / alpha_max = 1e-3``
+        ``alpha_min / alpha_max = 1e-3``.
 
     n_alphas : int, optional (default 10).
         Generate this number of alphas per regularization path.
@@ -338,9 +378,6 @@ def path_scores(solver, X, y, mask, alphas, l1_ratios, train, test,
     """
     if l1_ratios is None:
         raise ValueError("l1_ratios must be specified!")
-
-    # make local copy of mask
-    mask = mask.copy()
 
     # misc
     _, n_features = X.shape
@@ -464,7 +501,7 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
     `SpaceNet` implements Graph-Net and TV-L1 priors /
     penalties. Thus, the penalty is a sum an L1 term and a spatial term. The
     aim of such a hybrid prior is to obtain weights maps which are structured
-    (due to the spatial prior) and sparse (enforced by L1 norm)
+    (due to the spatial prior) and sparse (enforced by L1 norm).
 
     Parameters
     ----------
@@ -515,15 +552,15 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
 
     low_pass : False or float, optional, (default None)
         This parameter is passed to signal.clean. Please see the related
-        documentation for details
+        documentation for details.
 
     high_pass : False or float, optional (default None)
         This parameter is passed to signal. Clean. Please see the related
-        documentation for details
+        documentation for details.
 
     t_r : float, optional (default None)
         This parameter is passed to signal.clean. Please see the related
-        documentation for details
+        documentation for details.
 
     screening_percentile : float in the interval [0, 100]; Optional (
     default 20)
@@ -531,7 +568,8 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
         100 means 'keep all features'. This percentile is is expressed
         w.r.t the volume of a standard (MNI152) brain, and so is corrected
         at runtime to correspond to the volume of the user-supplied mask
-        (which is typically smaller).
+        (which is typically smaller). If '100' is given, all the features
+        are used, regardless of the number of voxels.
 
     standardize : bool, optional (default True):
         If set, then the data (X, y) are centered to have mean zero along
@@ -541,8 +579,8 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
     fit_intercept : bool, optional (default True)
         Fit or not an intercept.
 
-    max_iter : int
-        Defines the iterations for the solver. Defaults to 1000
+    max_iter : int (default 1000)
+        Defines the iterations for the solver.
 
     tol : float, optional (default 1e-4)
         Defines the tolerance for convergence for the backend fista solver.
@@ -574,7 +612,7 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
     Attributes
     ----------
     `alpha_` : float
-         Best alpha found by cross-validation
+         Best alpha found by cross-validation.
 
     `coef_` : ndarray, shape (n_classes-1, n_features)
         Coefficient of the features in the decision function.
@@ -701,13 +739,12 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
         Parameters
         ----------
         X : list of Niimg-like objects
-            See http://nilearn.github.io/building_blocks/
-            manipulating_mr_images.html#niimg.
+            See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg
             Data on which model is to be fitted. If this is a list,
             the affine is considered the same for all.
 
         y : array or list of length n_samples
-            The dependent variable (age, sex, QI, etc.)
+            The dependent variable (age, sex, QI, etc.).
 
         Notes
         -----
@@ -800,22 +837,9 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
         w = np.zeros((n_problems, X.shape[1] + 1))
         self.all_coef_ = np.ndarray((n_problems, n_folds, X.shape[1]))
 
-        # correct screening_percentile according to the volume of the data mask
-        mask_volume = _get_mask_volume(self.mask_img_)
-        if mask_volume > MNI152_BRAIN_VOLUME:
-            warnings.warn(
-                "Brain mask is bigger than volume of standard brain!")
-        self.screening_percentile_ = self.screening_percentile * (
-            mask_volume / MNI152_BRAIN_VOLUME)
-        if self.verbose > 1:
-            print("Mask volume = %gmm^3 = %gcm^3" % (
-                mask_volume, mask_volume / 1.e3))
-            print("Standard brain volume = %gmm^3 = %gcm^3" % (
-                MNI152_BRAIN_VOLUME, MNI152_BRAIN_VOLUME / 1.e3))
-            print("Original screening-percentile: %g" % (
-                self.screening_percentile))
-            print("Volume-corrected screening-percentile: %g" % (
-                self.screening_percentile_))
+        self.screening_percentile_ = _adjust_screening_percentile(
+                self.screening_percentile, self.mask_img_,
+                verbose=self.verbose)
 
         # main loop: loop on classes and folds
         solver_params = dict(tol=self.tol, max_iter=self.max_iter)
@@ -830,7 +854,7 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
                 solver_params, n_alphas=self.n_alphas, eps=self.eps,
                 is_classif=self.loss == "logistic", key=(cls, fold),
                 debias=self.debias, verbose=self.verbose,
-                screening_percentile=self.screening_percentile_
+                screening_percentile=self.screening_percentile_,
                 ) for cls in range(n_problems) for fold in range(n_folds)):
             self.best_model_params_.append((best_alpha, best_l1_ratio))
             self.alpha_grids_.append(alphas)
@@ -905,8 +929,7 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
         Parameters
         ----------
         X : list of Niimg-like objects
-            See http://nilearn.github.io/building_blocks/
-            manipulating_mr_images.html#niimg.
+            See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg
             Data on prediction is to be made. If this is a list,
             the affine is considered the same for all.
 
@@ -946,8 +969,8 @@ class SpaceNetClassifier(BaseSpaceNet):
     penalty : string, optional (default 'graph-net')
         Penalty to used in the model. Can be 'graph-net' or 'tv-l1'.
 
-    loss : string, optional (default "mse")
-        Loss to be used in the model. Must be an one of "mse", or "logistic".
+    loss : string, optional (default "logistic")
+        Loss to be used in the classifier. Must be one of "mse", or "logistic".
 
     l1_ratios : float or list of floats in the interval [0, 1];
     optional (default .5)
@@ -966,13 +989,9 @@ class SpaceNetClassifier(BaseSpaceNet):
         Generate this number of alphas per regularization path.
         This parameter is mutually exclusive with the `alphas` parameter.
 
-    loss: string, optional (default "logistic"):
-        Loss to use in the classification problems. Must be one of "mse" and
-        "logistic".
-
     eps : float, optional (default 1e-3)
         Length of the path. For example, ``eps=1e-3`` means that
-        ``alpha_min / alpha_max = 1e-3``
+        ``alpha_min / alpha_max = 1e-3``.
 
     mask : filename, niimg, NiftiMasker instance, optional default None)
         Mask to be used on data. If an instance of masker is passed,
@@ -1005,7 +1024,8 @@ class SpaceNetClassifier(BaseSpaceNet):
         100 means 'keep all features'. This percentile is is expressed
         w.r.t the volume of a standard (MNI152) brain, and so is corrected
         at runtime by premultiplying it with the ratio of the volume of the
-        mask of the data and volume of a standard brain.
+        mask of the data and volume of a standard brain.  If '100' is given,
+        all the features are used, regardless of the number of voxels.
 
     standardize : bool, optional (default True):
         If set, then we'll center the data (X, y) have mean zero along axis 0.
@@ -1015,8 +1035,8 @@ class SpaceNetClassifier(BaseSpaceNet):
     fit_intercept : bool, optional (default True)
         Fit or not an intercept.
 
-    max_iter : int
-        Defines the iterations for the solver. Defaults to 1000.
+    max_iter : int (default 1000)
+        Defines the iterations for the solver.
 
     tol : float
         Defines the tolerance for convergence. Defaults to 1e-4.
@@ -1072,7 +1092,7 @@ class SpaceNetClassifier(BaseSpaceNet):
          samples for the corresponding fold.
 
     `cv_scores_` : 2d array of shape (n_alphas, n_folds)
-        Scores (misclassification) for each alpha, and on each fold
+        Scores (misclassification) for each alpha, and on each fold.
 
     `screening_percentile_` : float
         Screening percentile corrected according to volume of mask,
@@ -1099,7 +1119,7 @@ class SpaceNetClassifier(BaseSpaceNet):
             target_affine=target_affine, verbose=verbose)
 
     def _binarize_y(self, y):
-        """Helper function invoked just before fitting a classifier"""
+        """Helper function invoked just before fitting a classifier."""
         y = np.array(y)
 
         # encode target classes as -1 and 1
@@ -1108,6 +1128,26 @@ class SpaceNetClassifier(BaseSpaceNet):
         self.classes_ = self._enc.classes_
         self.n_classes_ = len(self.classes_)
         return y
+
+    def score(self, X, y):
+        """Returns the mean accuracy on the given test data and labels.
+
+        Parameters
+        ----------
+        X : list of Niimg-like objects
+            See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg
+            Data on which model is to be fitted. If this is a list,
+            the affine is considered the same for all.
+
+        y : array or list of length n_samples.
+            Labels.
+
+        Returns
+        -------
+        score : float
+            Mean accuracy of self.predict(X)  w.r.t y.
+        """
+        return accuracy_score(y, self.predict(X))
 
 
 class SpaceNetRegressor(BaseSpaceNet):
@@ -1187,8 +1227,8 @@ class SpaceNetRegressor(BaseSpaceNet):
     fit_intercept : bool, optional (default True)
         Fit or not an intercept.
 
-    max_iter : int
-        Defines the iterations for the solver. Defaults to 1000
+    max_iter : int (default 1000)
+        Defines the iterations for the solver.
 
     tol : float
         Defines the tolerance for convergence. Defaults to 1e-4.

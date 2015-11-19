@@ -12,10 +12,14 @@ from sklearn.utils import extmath
 from sklearn.linear_model import Lasso
 from sklearn.utils import check_random_state
 from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score
+from nilearn._utils.testing import (assert_raises_regex, assert_warns,
+                                    assert_less_equal)
 from nilearn.decoding.space_net import (
     _EarlyStoppingCallback, _space_net_alpha_grid, MNI152_BRAIN_VOLUME,
     path_scores, BaseSpaceNet, _crop_mask, _univariate_feature_screening,
-    _get_mask_volume, SpaceNetClassifier, SpaceNetRegressor)
+    _get_mask_volume, SpaceNetClassifier, SpaceNetRegressor,
+    _adjust_screening_percentile)
 from nilearn.decoding.space_net_solvers import (_graph_net_logistic,
                                                 _graph_net_squared_loss)
 
@@ -108,7 +112,16 @@ def test_params_correctly_propagated_in_constructors():
         assert_equal(cvobj.screening_percentile, perc)
 
 
-def testlogistic_path_scores():
+def test_screening_space_net():
+    screening_percentile = assert_warns(UserWarning,
+        _adjust_screening_percentile, 10, mask)
+    # We gave here a very small mask, judging by standards of brain size
+    # thus the screening_percentile_ corrected for brain size should
+    # be 100%
+    assert_equal(screening_percentile, 100)
+
+
+def test_logistic_path_scores():
     iris = load_iris()
     X, y = iris.data, iris.target
     _, mask = to_niimgs(X, [2, 2, 2])
@@ -174,6 +187,19 @@ def test_tv_regression_3D_image_doesnt_crash():
     for l1_ratio in [0., .5, 1.]:
         BaseSpaceNet(mask=mask, alphas=alpha, l1_ratios=l1_ratio,
                      penalty="tv-l1", is_classif=False, max_iter=10).fit(X, y)
+
+
+def test_graph_net_classifier_score():
+    iris = load_iris()
+    X, y = iris.data, iris.target
+    y = 2 * (y > 0) - 1
+    X_, mask = to_niimgs(X, (2, 2, 2))
+    gnc = SpaceNetClassifier(mask=mask, alphas=1. / .01 / X.shape[0],
+                             l1_ratios=1., tol=1e-10,
+                             standardize=False, verbose=0,
+                             screening_percentile=100.).fit(X_, y)
+    accuracy = gnc.score(X_, y)
+    assert_equal(accuracy, accuracy_score(y, gnc.predict(X_)))
 
 
 def test_log_reg_vs_graph_net_two_classes_iris(C=.01, tol=1e-10,
@@ -302,6 +328,8 @@ def test_string_params_case():
     assert_raises(ValueError, BaseSpaceNet, penalty='TV-L1')
     assert_raises(ValueError, BaseSpaceNet, penalty='Graph-Net')
 
-    # loss
-    assert_raises(ValueError, SpaceNetClassifier, loss="MSE")
-    assert_raises(ValueError, SpaceNetClassifier, loss="Logistic")
+
+def test_crop_mask_empty_mask():
+    assert_raises_regex(ValueError, "Empty mask:.", _crop_mask, np.array([]))
+    assert_raises_regex(ValueError, "Empty mask:", _crop_mask,
+                        np.zeros((2, 2, 2)))

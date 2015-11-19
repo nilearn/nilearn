@@ -16,7 +16,6 @@ import warnings
 import zipfile
 from .._utils.compat import _basestring, cPickle, _urllib, md5_hash
 
-
 def _format_time(t):
     if t > 60:
         return "%4.1fmin" % (t / 60.)
@@ -209,19 +208,19 @@ def _get_dataset_dir(dataset_name, data_dir=None, default_paths=None,
     # Search given environment variables
     if default_paths is not None:
         for default_path in default_paths:
-            paths.extend([(d, True) for d in default_path.split(':')])
+            paths.extend([(d, True) for d in default_path.split(os.pathsep)])
 
     # Check data_dir which force storage in a specific location
     if data_dir is not None:
-        paths.extend([(d, False) for d in data_dir.split(':')])
+        paths.extend([(d, False) for d in data_dir.split(os.pathsep)])
     else:
         global_data = os.getenv('NILEARN_SHARED_DATA')
         if global_data is not None:
-            paths.extend([(d, False) for d in global_data.split(':')])
+            paths.extend([(d, False) for d in global_data.split(os.pathsep)])
 
         local_data = os.getenv('NILEARN_DATA')
         if local_data is not None:
-            paths.extend([(d, False) for d in local_data.split(':')])
+            paths.extend([(d, False) for d in local_data.split(os.pathsep)])
 
         paths.append((os.path.expanduser('~/nilearn_data'), False))
 
@@ -413,9 +412,9 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False,
     url: string
         Contains the url of the file to be downloaded.
 
-    data_dir: string, optional
-        Path of the data directory. Used to force data storage in a specified
-        location. Default: None
+    data_dir: string
+        Path of the data directory. Used for data storage in the specified
+        location.
 
     resume: bool, optional
         If true, try to resume partially downloaded files
@@ -613,21 +612,20 @@ def _fetch_files(data_dir, files, resume=True, mock=False, verbose=1):
 
     Parameters
     ----------
-    dataset_name: string
-        Unique dataset name
+    data_dir: string
+        Path of the data directory. Used for data storage in a specified
+        location.
 
     files: list of (string, string, dict)
         List of files and their corresponding url with dictionary that contains
         options regarding the files. Eg. (file_path, url, opt). If a file_path
         is not found in data_dir, as in data_dir/file_path the download will
         be immediately cancelled and any downloaded files will be deleted.
-        Options supported are 'uncompress' to indicate that the file is an
-        archive, 'md5sum' to check the md5 sum of the file and 'move' if
-        renaming the file or moving it to a subfolder is needed.
-
-    data_dir: string, optional
-        Path of the data directory. Used to force data storage in a specified
-        location. Default: None
+        Options supported are:
+            * 'move' if renaming the file or moving it to a subfolder is needed
+            * 'uncompress' to indicate that the file is an archive
+            * 'md5sum' to check the md5 sum of the file
+            * 'overwrite' if the file should be re-downloaded even if it exists
 
     resume: bool, optional
         If true, try resuming download if possible
@@ -674,8 +672,10 @@ def _fetch_files(data_dir, files, resume=True, mock=False, verbose=1):
         target_file = os.path.join(data_dir, file_)
         # Target file in temp dir
         temp_target_file = os.path.join(temp_dir, file_)
-        if (abort is None and not os.path.exists(target_file) and not
-                os.path.exists(temp_target_file)):
+        # Whether to keep existing files
+        overwrite = opts.get('overwrite', False)
+        if (abort is None and (overwrite or (not os.path.exists(target_file) and not
+                os.path.exists(temp_target_file)))):
 
             # We may be in a global read-only repository. If so, we cannot
             # download files.
@@ -692,7 +692,8 @@ def _fetch_files(data_dir, files, resume=True, mock=False, verbose=1):
                                   verbose=verbose, md5sum=md5sum,
                                   username=opts.get('username', None),
                                   password=opts.get('password', None),
-                                  handlers=opts.get('handlers', []))
+                                  handlers=opts.get('handlers', []),
+                                  overwrite=overwrite)
             if 'move' in opts:
                 # XXX: here, move is supposed to be a dir, it can be a name
                 move = os.path.join(temp_dir, opts['move'])
@@ -709,13 +710,15 @@ def _fetch_files(data_dir, files, resume=True, mock=False, verbose=1):
                         os.remove(dl_file)
                 except Exception as e:
                     abort = str(e)
+
         if (abort is None and not os.path.exists(target_file) and not
                 os.path.exists(temp_target_file)):
             if not mock:
                 warnings.warn('An error occured while fetching %s' % file_)
                 abort = ("Dataset has been downloaded but requested file was "
-                         "not provided:\nURL:%s\nFile:%s" %
-                         (url, target_file))
+                         "not provided:\nURL: %s\n"
+                         "Target file: %s\nDownloaded: %s" %
+                         (url, target_file, dl_file))
             else:
                 if not os.path.exists(os.path.dirname(temp_target_file)):
                     os.makedirs(os.path.dirname(temp_target_file))
