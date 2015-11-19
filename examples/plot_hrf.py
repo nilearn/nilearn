@@ -17,7 +17,7 @@ frame_times = np.linspace(0, 30, 61)
 onset, amplitude, duration = 0., 1., 1.
 stim = np.zeros_like(frame_times)
 stim[(frame_times > onset) * (frame_times <= onset + duration)] = amplitude
-exp_condition = np.array((onset, amplitude, duration)).reshape(3, 1)
+exp_condition = np.array((onset, duration, amplitude)).reshape(3, 1)
 hrf_models = ['canonical with derivative', 'spm_time_dispersion']
 
 
@@ -26,7 +26,7 @@ fig = plt.figure(figsize=(9, 4))
 for i, hrf_model in enumerate(hrf_models):
     signal, name = hemodynamic_models.compute_regressor(
         exp_condition, hrf_model, frame_times, con_id='main',
-        oversampling=2)
+        oversampling=16)
 
     plt.subplot(1, 2, i)
     plt.fill(frame_times, stim, 'k', alpha=.5, label='stimulus')
