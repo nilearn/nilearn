@@ -400,17 +400,6 @@ def test_validity_threshold_value_and_strategy_in_threshold_img():
     maps = testing.generate_maps(shape, n_regions=2)
     map_0 = maps[0]
 
-    # Test whether function raises the same error by providing value
-    # higher than the max value of input image
-    float_value = 2.
-    testing.assert_raises_regex(ValueError,
-                                "The float value given to threshold "
-                                "directly must not exceed 1. "
-                                "You provided threshold=%s " % float_value,
-                                threshold_img,
-                                map_0, threshold=float_value,
-                                thresholding_strategy='img_value')
-
     invalid_thresholds = ['percent', 'float', 'value']
     for invalid_thr in invalid_thresholds:
         tools.assert_raises(ValueError, threshold_img,
@@ -419,10 +408,8 @@ def test_validity_threshold_value_and_strategy_in_threshold_img():
 
     # testing to raise same error when threshold=None case
     testing.assert_raises_regex(ValueError,
-                        "The input parameter 'threshold' is empty. "
-                        "Please submit value which should be either float or "
-                        "a string e.g. '90%' or simply number 90.",
-                        threshold_img, map_0, threshold=None)
+                                "The input parameter 'threshold' is empty. ",
+                                threshold_img, map_0, threshold=None)
 
     invalid_threshold_values = ['90t%', 's%', 't', '0.1']
     name = 'threshold'

@@ -72,7 +72,8 @@ def test_check_threshold():
 
     threshold = object()
     assert_raises_regex(TypeError,
-                        '{0}.+should be either a number or a string'.format(name),
+                        '{0}.+should be either a number '
+                        'or a string'.format(name),
                         check_threshold, threshold, matrix,
                         'fast_abs_percentile', name)
 

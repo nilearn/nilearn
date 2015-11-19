@@ -1,6 +1,7 @@
 """
 Better brain parcellations for Region of Interest analysis
 """
+import warnings
 import numbers
 import nibabel
 import numpy as np
@@ -17,7 +18,34 @@ from ..image import new_img_like, resample_img
 from ..image.image import _smooth_array, threshold_img
 from .._utils.niimg_conversions import concat_niimgs, _check_same_fov
 from .._utils.compat import _basestring
-from ..externals.skimage import peak_local_max, random_walker
+from .._utils.ndimage import _peak_local_max
+from .._utils.segmentation import _random_walker
+
+
+def _threshold_maps(maps, threshold):
+    """ Automatic threshold function using ratio to the number of voxels
+    in the brain volume to keep the most prominent features of the maps
+    which lies above a certain threshold
+    """
+    maps = check_niimg(maps)
+    maps_data = maps.get_data()
+    abs_maps = np.abs(maps_data)
+    if isinstance(threshold, float):
+        ratio = threshold
+    elif threshold is not None:
+        raise ValueError("Threshold must be float value for "
+                         "thresholding_strategy='ratio_n_voxels'. "
+                         "You provided %s." % str(threshold))
+
+    raveled = abs_maps.ravel()
+    argsort = np.argsort(raveled)
+    n_voxels = (ratio * maps_data.size)
+    cutoff_threshold = raveled[argsort[- n_voxels]]
+    maps_data[abs_maps < cutoff_threshold] = 0.
+
+    threshold_maps = new_img_like(maps, maps_data)
+
+    return threshold_maps
 
 
 def connected_regions(maps_img, min_size=50,
@@ -93,17 +121,12 @@ def connected_regions(maps_img, min_size=50,
         # Mark the seeds using random walker
         if extract_type == 'local_regions':
             smooth_map = _smooth_array(map_, affine, peak_local_smooth)
-            seeds = peak_local_max(smooth_map, indices=False,
-                                   exclude_border=False)
+            seeds = _peak_local_max(smooth_map, indices=False,
+                                    exclude_border=False)
             seeds_label, seeds_id = label(seeds)
             # Assign -1 to values which are 0. to indicate to ignore
             seeds_label[map_ == 0.] = -1
-            try:
-                rw_maps = random_walker(map_, seeds_label, mode='cg_mg')
-            except Exception as e:
-                print("Random Walker algorithm failed for mode:%s, %s" % ('cg_mg', str(e)))
-                rw_maps = random_walker(map_, seeds_label, mode='bf')
-
+            rw_maps = _random_walker(map_, seeds_label, mode='cg_mg')
             # Now simply replace "-1" with "0" for regions seperation
             rw_maps[rw_maps == -1] = 0.
             label_maps = rw_maps
@@ -156,27 +179,32 @@ class RegionExtractor(NiftiMapsMasker):
         the size of voxels. For example, min_size=50 means that regions
         which have more than cluster of 50 voxels are kept.
 
-    threshold: a float or a string or a number, default is string "80%", optional
-        A given input is used to threshold the input maps.
-        If given as float, this intensity value will be directly used to threshold
-        the maps image. The value should be within the range of minimum intensity and
-        maximum intensity of the given input maps.
-        Mostly suitable, if user knows exactly which part of the brain regions
-        are to be kept. This case is used in thresholding_strategy='img_value'.
+    threshold: a float or a string or a number, default string "80%" optional
+        A value used to threshold the input maps.
+        If given as float, this value will be used directly to threshold
+        the maps image. This float case is used in thresholding_strategy='img_value'
+        and 'ratio_n_voxels'.
         or
         If given as string, it should finish with percent sign e.g. "80%" and
         should be within the range of "0%" to "100%".
         if given as number, it should be a real number of range between 0 and 100.
         Both string and real number are in thresholding_strategy='percentile'.
 
-    thresholding_strategy: string {'percentile', 'img_value'}, default 'percentile', optional
-        A strategy which takes the value and thresholds the maps image.
-        Each strategy takes the given threshold into account and applies on the image.
-        If 'percentile', images are thresholded based on the percentage of the score on the
-        data and the scores which are survived above this percentile are kept.
+    thresholding_strategy: string {'percentile', 'img_value', 'ratio_n_voxels'},\
+        default 'percentile', optional
+        Each strategy denoted in string takes the given threshold into account and
+        thresholds the images.
+        If given as 'percentile', images are thresholded based on the percentage
+        of the score on the data and the scores which are survived above this
+        percentile are kept.
         or
-        If 'img_value', voxels which have intensities greater than the float value
-        are kept.
+        If given as 'img_value', voxels which have intensities greater than the
+        float value are kept.
+        or
+        If default 'ratio_n_voxels', we use default float value of ratio=1. meaning
+        we keep the more intense brain voxels n_voxels across all maps. This is
+        done by taking the ratio of the voxels like this (1. * n_voxels) and
+        more intense voxels which are survived across all the maps will be kept.
 
     extractor: string {'connected_components', 'local_regions'} default 'local_regions', optional
         A string as a method used for regions extraction.
@@ -270,23 +298,22 @@ class RegionExtractor(NiftiMapsMasker):
 
     def fit(self, X=None, y=None):
         """ Prepare the data and setup for the region extraction
-
         """
         maps_img = check_niimg_4d(self.maps_img)
 
         # foreground extraction
-        self.threshold_maps_img_ = threshold_img(
-            self.maps_img,
-            mask_img=self.mask_img,
-            threshold=self.threshold,
-            thresholding_strategy=self.thresholding_strategy)
+        if self.thresholding_strategy == 'ratio_n_voxels':
+            threshold_maps = _threshold_maps(maps_img, self.threshold)
+        else:
+            threshold_maps = threshold_img(maps_img, mask_img=self.mask_img,
+                                           threshold=self.threshold,
+                                           thresholding_strategy=self.thresholding_strategy)
 
         # connected component extraction
-        self.regions_, self.index_ = connected_regions(
-            self.threshold_maps_img_,
-            self.min_size,
-            self.extractor,
-            self.peak_local_smooth)
+        self.regions_, self.index_ = connected_regions(threshold_maps,
+                                                       self.min_size,
+                                                       self.extractor,
+                                                       self.peak_local_smooth)
 
         self.maps_img = self.regions_
         super(RegionExtractor, self).fit()

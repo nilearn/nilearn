@@ -2,9 +2,8 @@
 Regions Extraction of Default Mode Networks using Smith Atlas
 =============================================================
 
-This example shows how to extract regions which also includes
-default mode networks using ICA maps of Smith Atlas.
-
+This example shows how to extract regions from Smith Atlas resting
+state networks.
 """
 # Fetch the datasets and atlas maps
 from nilearn import datasets

@@ -1,16 +1,16 @@
 """
-Region Extraction using a t-statistical maps (3D)
-=================================================
+Region Extraction using a t-statistical map (3D)
+================================================
 
 This example shows how to extract regions or seperate the regions
-from the statistical maps.
+from a statistical map.
 
 We use localizer t-statistic maps from :func:`nilearn.datasets.fetch_localizer_contrasts`
 as an input image.
 
 The idea is to threshold an image to get foreground objects using a
 function :func:`nilearn.image.threshold_img` and extract objects using a function
-:func:`nilearn.regions.region_extractor.connected_regions`.
+:func:`nilearn.regions.connected_regions`.
 """
 
 # Load localizer datasets - contrast/t maps
@@ -30,7 +30,7 @@ for thr, strategy in zip(threshold_value, threshold_strategies):
                                            threshold=thr,
                                            thresholding_strategy=strategy)
 
-from nilearn.regions.region_extractor import connected_regions
+from nilearn.regions import connected_regions
 print(" -- Regions Extraction -- ")
 regions = []
 for strategy in threshold_strategies:

@@ -1,3 +1,0 @@
-"""
-External dependencies
-"""

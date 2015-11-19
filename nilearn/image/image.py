@@ -603,13 +603,12 @@ def new_img_like(ref_niimg, data, affine=None, copy_header=False):
 
 def threshold_img(img, threshold, mask_img=None,
                   thresholding_strategy='img_value'):
-    """ A function keeps the most prominent regions of the input image,
-    also can be called as foreground extraction.
+    """ Thresholds the given input image based on given input strategy.
 
     Parameters
     ----------
     img: a 3D/4D Nifti like image/object
-        a nifti image consists of statistical or atlas maps which needs
+        a Nifti image consists of statistical or atlas maps which needs
         to be used in the thresholding process.
 
     threshold: a float or a string or a number
@@ -626,7 +625,7 @@ def threshold_img(img, threshold, mask_img=None,
         Both string and real number are used in thresholding_strategy='percentile'.
 
     thresholding_strategy: string {'percentile', 'img_value'}, \
-        default 'percentile', optional
+        default 'img_value', optional
         A strategy which takes the value and thresholds the image.
         If 'percentile', image is thresholded based on the percentage of the
         score on the image data. The scores which are survived above this
@@ -649,7 +648,7 @@ def threshold_img(img, threshold, mask_img=None,
     from . import resampling
     from .. import masking
 
-    img = check_niimg(img, atleast_4d=True)
+    img = check_niimg(img)
     img_data = img.get_data()
     affine = img.get_affine()
 
@@ -663,27 +662,15 @@ def threshold_img(img, threshold, mask_img=None,
         # Set as 0 for the values which are outside of the mask
         img_data[mask_data == 0.] = 0.
 
-    if threshold is not None:
-        if isinstance(threshold, float):
-            # When float value is given to threshold the image directly,
-            # the value will be checking if it is more than maximum.
-            value_check = abs(img_data).max()
-            if abs(threshold) > value_check:
-                raise ValueError("The float value given to threshold directly "
-                                 "must not exceed %d. "
-                                 "You provided threshold=%s " % (value_check,
-                                                                 threshold))
-            cutoff_threshold = threshold
-        elif isinstance(threshold, _basestring) or isinstance(threshold, numbers.Real):
-            if isinstance(threshold, numbers.Number):
-                threshold = ("{0}%").format(threshold)
-            cutoff_threshold = check_threshold(threshold, img_data,
-                                               percentile_calculate=scoreatpercentile,
-                                               name='threshold')
-    else:
+    if threshold is None:
         raise ValueError("The input parameter 'threshold' is empty. "
-                         "Please submit value which should be either float or "
-                         "a string e.g. '90%' or simply number 90.")
+                         "Please give either a float value or a string as e.g. '90%'.")
+    else:
+        if not isinstance(threshold, float) and not isinstance(threshold, _basestring):
+            threshold = ("{0}%").format(threshold)
+        cutoff_threshold = check_threshold(threshold, img_data,
+                                           percentile_calculate=scoreatpercentile,
+                                           name='threshold')
 
     list_of_strategies = ['percentile', 'img_value']
     if thresholding_strategy not in list_of_strategies:

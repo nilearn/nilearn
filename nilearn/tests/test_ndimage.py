@@ -3,11 +3,12 @@
 This test file is in nilearn/tests because nosetests ignores modules whose
 name starts with an underscore
 """
+from scipy import ndimage
 from nose.tools import assert_raises
 
 import numpy as np
 
-from nilearn._utils.ndimage import largest_connected_component
+from nilearn._utils.ndimage import largest_connected_component, _peak_local_max
 
 
 def test_largest_cc():
@@ -20,3 +21,38 @@ def test_largest_cc():
     b = a.copy()
     b[5, 5, 5] = 1
     np.testing.assert_equal(a, largest_connected_component(b))
+
+
+def test_empty_peak_local_max():
+    image = np.zeros((10, 20))
+    result = _peak_local_max(image, min_distance=1,
+                             threshold_rel=0, indices=False,
+                             exclude_border=False)
+    assert np.all(~ result)
+
+
+def test_flat_peak_local_max():
+    image = np.zeros((5, 5), dtype=np.uint8)
+    image[1:3, 1:3] = 10
+    peaks = _peak_local_max(image, min_distance=1)
+    assert len(peaks) == 4
+
+
+def test_num_peaks_in_peak_local_max():
+    image = np.zeros((7, 7), dtype=np.uint8)
+    image[1, 1] = 10
+    image[1, 3] = 11
+    image[1, 5] = 12
+    image[3, 5] = 8
+    image[5, 3] = 7
+    assert len(_peak_local_max(image, min_distance=1)) == 5
+    peaks_limited = _peak_local_max(image, min_distance=1, num_peaks=2)
+    assert len(peaks_limited) == 2
+    assert (1, 3) in peaks_limited
+    assert (1, 5) in peaks_limited
+    peaks_limited = _peak_local_max(image, min_distance=1, num_peaks=4)
+    assert len(peaks_limited) == 4
+    assert (1, 3) in peaks_limited
+    assert (1, 5) in peaks_limited
+    assert (1, 1) in peaks_limited
+    assert (3, 5) in peaks_limited

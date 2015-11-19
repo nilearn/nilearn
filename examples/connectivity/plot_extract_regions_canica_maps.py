@@ -2,14 +2,14 @@
 Regions extraction using Canonical ICA maps and functional connectomes
 ======================================================================
 
-This example shows how to use :class:`nilearn.regions.region_extractor.RegionExtractor`
+This example shows how to use :class:`nilearn.regions.RegionExtractor`
 to extract connected brain regions from whole brain ICA maps and
 use them to estimate a connectome.
 
 We used 20 resting state ADHD functional datasets from :func:`nilearn.datasets.fetch_adhd`
-and :class:`nilearn.decomposition.canica` for whole brain ICA maps.
+and :class:`nilearn.decomposition.CanICA` for whole brain ICA maps.
 
-Please see the related documentation of :class:`nilearn.regions.region_extractor.RegionExtractor`
+Please see the related documentation of :class:`nilearn.regions.RegionExtractor`
 for more details.
 """
 import numpy as np
@@ -19,7 +19,7 @@ adhd_dataset = datasets.fetch_adhd(n_subjects=20)
 func_filenames = adhd_dataset.func
 confounds = adhd_dataset.confounds
 
-from nilearn.decomposition.canica import CanICA
+from nilearn.decomposition import CanICA
 print(" -- Canonical ICA decomposition of functional datasets -- ")
 # Initialize canica parameters
 n_components = 5

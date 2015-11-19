@@ -6,6 +6,8 @@ Pattern Anal Mach Intell. 2006 Nov;28(11):1768-83.
 
 Installing pyamg and using the 'cg_mg' mode of random_walker improves
 significantly the performance.
+
+This code is mostly adapted from scikit-image 0.11.3 release.
 """
 
 import warnings
@@ -14,33 +16,12 @@ from scipy import sparse, ndimage as ndi
 
 from sklearn.utils import as_float_array
 
-# executive summary for next code block: try to import umfpack from
-# scipy, but make sure not to raise a fuss if it fails since it's only
-# needed to speed up a few cases.
-# See discussions at:
-# https://groups.google.com/d/msg/scikit-image/FrM5IGP6wh4/1hp-FtVZmfcJ
-# http://stackoverflow.com/questions/13977970/ignore-exceptions-printed-to-stderr-in-del/13977992?noredirect=1#comment28386412_13977992
-try:
-    from scipy.sparse.linalg.dsolve import umfpack
-    old_del = umfpack.UmfpackContext.__del__
-
-    def new_del(self):
-        try:
-            old_del(self)
-        except AttributeError:
-            pass
-    umfpack.UmfpackContext.__del__ = new_del
-    UmfpackContext = umfpack.UmfpackContext()
-except:
-    UmfpackContext = None
-
 try:
     from pyamg import ruge_stuben_solver
     amg_loaded = True
 except ImportError:
     amg_loaded = False
 from scipy.sparse.linalg import cg
-from ._rank_order import rank_order
 
 #-----------Laplacian--------------------
 
@@ -190,30 +171,22 @@ def _build_laplacian(data, spacing, mask=None, beta=50,
 #----------- Random walker algorithm --------------------------------
 
 
-def random_walker(data, labels, beta=130, mode='bf', tol=1.e-3, copy=True,
-                  multichannel=False, return_full_prob=False, spacing=None):
+def _random_walker(data, labels, beta=130, mode='bf', tol=1.e-3, copy=True,
+                   return_full_prob=False, spacing=None):
     """Random walker algorithm for segmentation from markers.
-
-    Random walker algorithm is implemented for gray-level or multichannel
-    images.
 
     Parameters
     ----------
     data : array_like
-        Image to be segmented in phases. Gray-level `data` can be two- or
-        three-dimensional; multichannel data can be three- or four-
-        dimensional (multichannel=True) with the highest dimension denoting
-        channels. Data spacing is assumed isotropic unless the `spacing`
-        keyword argument is used.
+        Image to be segmented in phases. Data spacing is assumed isotropic unless
+        the `spacing` keyword argument is used.
     labels : array of ints, of same shape as `data` without channels dimension
         Array of seed markers labeled with different positive integers
         for different phases. Zero-labeled pixels are unlabeled pixels.
         Negative labels correspond to inactive pixels that are not taken
         into account (they are removed from the graph). If labels are not
         consecutive integers, the labels array will be transformed so that
-        labels are consecutive. In the multichannel case, `labels` should have
-        the same shape as a single channel of `data`, i.e. without the final
-        dimension denoting channels.
+        labels are consecutive.
     beta : float
         Penalization coefficient for the random walker motion
         (the greater `beta`, the more difficult the diffusion).
@@ -235,7 +208,6 @@ def random_walker(data, labels, beta=130, mode='bf', tol=1.e-3, copy=True,
           requires that the pyamg module (http://pyamg.org/) is
           installed. For images of size > 512x512, this is the recommended
           (fastest) mode.
-
     tol : float
         tolerance to achieve when solving the linear system, in
         cg' and 'cg_mg' modes.
@@ -243,9 +215,6 @@ def random_walker(data, labels, beta=130, mode='bf', tol=1.e-3, copy=True,
         If copy is False, the `labels` array will be overwritten with
         the result of the segmentation. Use copy=False if you want to
         save on memory.
-    multichannel : bool, default False
-        If True, input data is parsed as multichannel data (see 'data' above
-        for proper input format in this case)
     return_full_prob : bool, default False
         If True, the probability that a pixel belongs to each of the labels
         will be returned, instead of only the most likely label.
@@ -263,17 +232,8 @@ def random_walker(data, labels, beta=130, mode='bf', tol=1.e-3, copy=True,
           `(nlabels, data.shape)`. `output[label_nb, i, j]` is the probability
           that label `label_nb` reaches the pixel `(i, j)` first.
 
-    See also
-    --------
-    skimage.morphology.watershed: watershed segmentation
-        A segmentation algorithm based on mathematical morphology
-        and "flooding" of regions from markers.
-
     Notes
     -----
-    Multichannel inputs are scaled with all channel data combined. Ensure all
-    channels are separately normalized prior to running this algorithm.
-
     The `spacing` argument is specifically for anisotropic datasets, where
     data points are spaced differently in one or more spatial dimensions.
     Anisotropic data is commonly encountered in medical imaging.
@@ -315,43 +275,13 @@ def random_walker(data, labels, beta=130, mode='bf', tol=1.e-3, copy=True,
     This linear system is solved in the algorithm using a direct method for
     small images, and an iterative method for larger images.
 
-    Examples
-    --------
-    >>> np.random.seed(0)
-    >>> a = np.zeros((10, 10)) + 0.2 * np.random.rand(10, 10)
-    >>> a[5:8, 5:8] += 1
-    >>> b = np.zeros_like(a)
-    >>> b[3, 3] = 1  # Marker for first phase
-    >>> b[6, 6] = 2  # Marker for second phase
-    >>> random_walker(a, b)
-    array([[1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-           [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-           [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-           [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-           [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-           [1, 1, 1, 1, 1, 2, 2, 2, 1, 1],
-           [1, 1, 1, 1, 1, 2, 2, 2, 1, 1],
-           [1, 1, 1, 1, 1, 2, 2, 2, 1, 1],
-           [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-           [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]], dtype=int32)
-
     """
     # Parse input data
     if mode is None:
         if amg_loaded:
             mode = 'cg_mg'
-        elif UmfpackContext is not None:
-            mode = 'cg'
         else:
             mode = 'bf'
-
-    if UmfpackContext is None and mode == 'cg':
-        warnings.warn('"cg" mode will be used, but it may be slower than '
-                      '"bf" because SciPy was built without UMFPACK. Consider'
-                      ' rebuilding SciPy with UMFPACK; this will greatly '
-                      'accelerate the conjugate gradient ("cg") solver. '
-                      'You may also install pyamg and run the random_walker '
-                      'function in "cg_mg" mode (see docstring).')
 
     if (labels != 0).all():
         warnings.warn('Random walker only segments unlabeled areas, where '
@@ -372,26 +302,15 @@ def random_walker(data, labels, beta=130, mode='bf', tol=1.e-3, copy=True,
             out_labels = labels
         return out_labels
 
-    # This algorithm expects 4-D arrays of floats, where the first three
-    # dimensions are spatial and the final denotes channels. 2-D images have
-    # a singleton placeholder dimension added for the third spatial dimension,
-    # and single channel images likewise have a singleton added for channels.
-    # The following block ensures valid input and coerces it to the correct
-    # form.
+    # We take multichannel as always False since we are not strictly using
+    # for image processing as such with RGB values.
+    multichannel = False
     if not multichannel:
         if data.ndim < 2 or data.ndim > 3:
             raise ValueError('For non-multichannel input, data must be of '
                              'dimension 2 or 3.')
         dims = data.shape  # To reshape final labeled result
         data = np.atleast_3d(as_float_array(data))[..., np.newaxis]
-    else:
-        if data.ndim < 3:
-            raise ValueError('For multichannel input, data must have 3 or 4 '
-                             'dimensions.')
-        dims = data[..., 0].shape  # To reshape final labeled result
-        data = as_float_array(data)
-        if data.ndim == 3:  # 2D multispectral, needs singleton in 3rd axis
-            data = data[:, :, np.newaxis, :]
 
     # Spacing kwarg checks
     if spacing is None:
@@ -412,7 +331,8 @@ def random_walker(data, labels, beta=130, mode='bf', tol=1.e-3, copy=True,
     # Reorder label values to have consecutive integers (no gaps)
     if np.any(np.diff(label_values) != 1):
         mask = labels >= 0
-        labels[mask] = rank_order(labels[mask])[0].astype(labels.dtype)
+        labels[mask] = np.searchsorted(np.unique(labels[mask]),
+                                       labels[mask])[0].astype(labels.dtype)
     labels = labels.astype(np.int32)
 
     # If the array has pruned zones, be sure that no isolated pixels
