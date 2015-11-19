@@ -120,11 +120,11 @@ def test_design_matrix0():
     # Test design matrix creation when no paradigm is provided
     tr = 1.0
     frame_times = np.linspace(0, 127 * tr, 128)
-
     _, X, names = check_design_matrix(make_design_matrix(
         frame_times, drift_model='polynomial', drift_order=3))
     assert_equal(len(names), 4)
-    assert_almost_equal(X[:, 0], np.linspace(- 0.5, .5, 128))
+    x = np.linspace(- 0.5, .5, 128)
+    assert_almost_equal(X[:, 0], x / np.linalg.norm(x))
 
 
 def test_design_matrix0c():

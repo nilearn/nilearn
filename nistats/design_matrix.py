@@ -210,6 +210,7 @@ def _convolve_regressors(paradigm, hrf_model, frame_times, fir_delays=[0],
             exp_condition, hrf_model, frame_times, con_id=condition,
             fir_delays=fir_delays, oversampling=oversampling,
             min_onset=min_onset)
+
         regressor_names += names
         if regressor_matrix is None:
             regressor_matrix = reg
