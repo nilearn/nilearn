@@ -224,6 +224,43 @@ information.
    The complete source code for this example can be found here:
    :ref:`example_connectivity_plot_simulated_connectome.py`
 
+
+Linking total and direct interactions at the group level
+========================================================
+
+Individual connectivity patterns reflect both on covariances and inverse covariances, but in different ways. For multiple subjects, mean covariance (or correlation) and group sparse inverse covariance provide different insights into the connectivity at the group level.
+
+We can go one step further by coupling the information from total (pairwise) and direct interactions in a unique group connectome. This can be done through a geometrical framework allowing to measure interactions in a common space called **tangent space** `[Varoquaux et al, MICCAI 2010] <http://link.springer.com/chapter/10.1007%2F978-3-642-15705-9_25>`_.
+
+In nilearn, this is implemented in :class:`nilearn.connectome.ConnectivityMeasure`
+
+    >>> measure = ConnectivityMeasure(kind='tangent')  # doctest: +SKIP
+
+The group connectivity is computed using all the subjects timeseries. 
+
+    >>> connectivities = measure.fit([time_series_1, time_series_2, ...])  # doctest: +SKIP
+    >>> group_connectivity = measure.mean_  # doctest: +SKIP
+
+Deviations from this mean in the tangent space are provided in the connectivities array and can be used to compare different groups/sessions. In practice, the tangent measure can outperform the correlation and partial correlation measures, especially for noisy or heterogeneous data.
+
+
+.. topic:: **Full example**
+
+    See the following example for a full file running the analysis:
+    :ref:`example_connectivity_plot_connectivity_measures.py`
+
+.. topic:: **Exercise: computing connectivity in tangent space**
+   :class: green
+
+   Compute and visualize the tangent group connectome based on the NYU, OHSU and NeuroImage sites of the ADHD
+   dataset downloaded with :func:`nilearn.datasets.fetch_adhd`
+
+   **Hints:** The example above has the solution
+
+.. topic:: **Reference**
+
+ * The `tangent space for connectivity [Varoquaux et al, MICCAI 2010] <http://link.springer.com/chapter/10.1007%2F978-3-642-15705-9_25>`_
+
 ____
 
 A lot of technical details on the algorithm used for group-sparse
