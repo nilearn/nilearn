@@ -88,6 +88,7 @@ def _iter_signals_from_spheres(seeds, niimg, radius, allow_overlap,
         Mask to apply to regions before extracting signals.
     """
     X, A = _apply_mask_and_get_affinity(seeds, niimg, radius,
+                                        allow_overlap,
                                         mask_img=mask_img)
     for i, row in enumerate(A.rows):
         if len(row) == 0:
