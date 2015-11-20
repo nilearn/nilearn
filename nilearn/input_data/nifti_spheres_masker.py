@@ -70,7 +70,7 @@ def _iter_signals_from_spheres(seeds, niimg, radius, allow_overlap,
     """Utility function to iterate over spheres.
     Parameters
     ==========
-    seeds: List of triplet of coordinates in native space
+    seeds: List of triplets of coordinates in native space
         Seed definitions. List of coordinates of the seeds in the same space
         as the images (typically MNI or TAL).
     imgs: 3D/4D Niimg-like object
