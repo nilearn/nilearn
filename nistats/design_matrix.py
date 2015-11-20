@@ -167,8 +167,9 @@ def _convolve_regressors(paradigm, hrf_model, frame_times, fir_delays=[0],
         see nistats.experimental_paradigm to check the specification
         for these to be valid paradigm descriptors
 
-    hrf_model : {'canonical', 'canonical with derivative', 'fir'}
-        String that specifies the hemodynamic response function.
+    hrf_model : {'spm', 'spm + derivative', 'spm + derivative + dispersion',
+        'glover', 'glover + derivative', 'fir'}
+        String that specifies the hemodynamic response function
 
     frame_times : array of shape (n_scans,)
         The targeted timing for the design matrix.
@@ -189,9 +190,12 @@ def _convolve_regressors(paradigm, hrf_model, frame_times, fir_delays=[0],
 
     regressor_names : list of strings,
         The regressor names, that depend on the hrf model used
-        if 'canonical' then this is identical to the input names
-        if 'canonical with derivative', then two names are produced for
-        input name 'name': 'name' and 'name_derivative'
+        if 'glover' or 'spm' then this is identical to the input names
+        if 'glover + derivative' or 'spm + derivative', a second name is output
+            i.e. '#name_derivative'
+        if 'spm + derivative + dispersion', a third name is used,
+            i.e. '#name_dispersion'
+        if 'fir', a the strings
     """
     regressor_names = []
     regressor_matrix = None
@@ -259,7 +263,7 @@ def _full_rank(X, cmax=1e15):
 
 
 def make_design_matrix(
-    frame_times, paradigm=None, hrf_model='canonical',
+    frame_times, paradigm=None, hrf_model='glover',
     drift_model='cosine', period_cut=128, drift_order=1, fir_delays=[0],
     add_regs=None, add_reg_names=None, min_onset=-24):
     """Generate a design matrix from the input parameters
@@ -272,9 +276,9 @@ def make_design_matrix(
     paradigm : DataFrame instance, optional
         Description of the experimental paradigm.
 
-    hrf_model : string, optional,
-        Specifies the hemodynamic response function (HRF).
-        It can be 'canonical', 'canonical with derivative' or 'fir'
+    hrf_model : {'spm', 'spm + derivative', 'spm + derivative + dispersion',
+        'glover', 'glover + derivative', 'fir'}, optional,
+        Specifies the hemodynamic response function
 
     drift_model : string, optional
         Specifies the desired drift model,

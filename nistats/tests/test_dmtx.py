@@ -43,7 +43,7 @@ DESIGN_MATRIX = np.load(full_path_design_matrix_file)
 
 
 def design_matrix_light(
-    frame_times, paradigm=None, hrf_model='canonical',
+    frame_times, paradigm=None, hrf_model='glover',
     drift_model='cosine', period_cut=128, drift_order=1, fir_delays=[0],
     add_regs=None, add_reg_names=None, min_onset=-24, path=None):
     """ Idem make_design_matrix, but only returns the computed matrix
@@ -160,11 +160,11 @@ def test_design_matrix0d():
 
 
 def test_design_matrix1():
-    # basic test based on basic_paradigm and canonical hrf
+    # basic test based on basic_paradigm and glover hrf
     tr = 1.0
     frame_times = np.linspace(0, 127 * tr, 128)
     paradigm = basic_paradigm()
-    hrf_model = 'Canonical'
+    hrf_model = 'glover'
     X, names = design_matrix_light(frame_times, paradigm, hrf_model=hrf_model,
                             drift_model='polynomial', drift_order=3)
     assert_equal(len(names), 7)
@@ -178,7 +178,7 @@ def test_convolve_regressors():
                           'onset': onsets})
     # names not passed -> default names
     frame_times = np.arange(100)
-    f, names = _convolve_regressors(paradigm, 'canonical', frame_times)
+    f, names = _convolve_regressors(paradigm, 'glover', frame_times)
     assert_equal(names, ['c0', 'c1'])
 
 
@@ -187,7 +187,7 @@ def test_design_matrix1b():
     tr = 1.0
     frame_times = np.linspace(0, 127 * tr, 128)
     paradigm = basic_paradigm()
-    hrf_model = 'Canonical'
+    hrf_model = 'Glover'
     X, names = design_matrix_light(frame_times, paradigm, hrf_model=hrf_model,
                         drift_model='polynomial', drift_order=3)
     assert_equal(X.shape, (128, 7))
@@ -198,7 +198,7 @@ def test_design_matrix1c():
     tr = 1.0
     frame_times = np.linspace(0, 127 * tr, 128)
     paradigm = basic_paradigm()
-    hrf_model = 'Canonical'
+    hrf_model = 'Glover'
     X, names = design_matrix_light(frame_times, paradigm, hrf_model=hrf_model,
                         drift_model='polynomial', drift_order=3)
     assert_true((X[:, - 1] == 1).all())
@@ -209,7 +209,7 @@ def test_design_matrix1d():
     tr = 1.0
     frame_times = np.linspace(0, 127 * tr, 128)
     paradigm = basic_paradigm()
-    hrf_model = 'Canonical'
+    hrf_model = 'Glover'
     X, names = design_matrix_light(frame_times, paradigm, hrf_model=hrf_model,
                         drift_model='polynomial', drift_order=3)
     assert_true((np.isnan(X) == 0).all())
@@ -220,7 +220,7 @@ def test_design_matrix2():
     tr = 1.0
     frame_times = np.linspace(0, 127 * tr, 128)
     paradigm = basic_paradigm()
-    hrf_model = 'Canonical'
+    hrf_model = 'Glover'
     X, names = design_matrix_light(frame_times, paradigm, hrf_model=hrf_model,
                         drift_model='cosine', period_cut=63)
     assert_equal(len(names), 7)  # was 8 with old cosine
@@ -231,7 +231,7 @@ def test_design_matrix3():
     tr = 1.0
     frame_times = np.linspace(0, 127 * tr, 128)
     paradigm = basic_paradigm()
-    hrf_model = 'Canonical'
+    hrf_model = 'Glover'
     X, names = design_matrix_light(frame_times, paradigm, hrf_model=hrf_model,
                         drift_model='blank')
     assert_equal(len(names), 4)
@@ -242,7 +242,7 @@ def test_design_matrix4():
     tr = 1.0
     frame_times = np.linspace(0, 127 * tr, 128)
     paradigm = basic_paradigm()
-    hrf_model = 'Canonical With Derivative'
+    hrf_model = 'Glover + Derivative'
     X, names = design_matrix_light(frame_times, paradigm, hrf_model=hrf_model,
                          drift_model='polynomial', drift_order=3)
     assert_equal(len(names), 10)
@@ -253,7 +253,7 @@ def test_design_matrix5():
     tr = 1.0
     frame_times = np.linspace(0, 127 * tr, 128)
     paradigm = block_paradigm()
-    hrf_model = 'Canonical'
+    hrf_model = 'Glover'
     X, names = design_matrix_light(frame_times, paradigm, hrf_model=hrf_model,
                          drift_model='polynomial', drift_order=3)
     assert_equal(len(names), 7)
@@ -264,7 +264,7 @@ def test_design_matrix6():
     tr = 1.0
     frame_times = np.linspace(0, 127 * tr, 128)
     paradigm = block_paradigm()
-    hrf_model = 'Canonical With Derivative'
+    hrf_model = 'Glover + Derivative'
     X, names = design_matrix_light(frame_times, paradigm, hrf_model=hrf_model,
                          drift_model='polynomial', drift_order=3)
     assert_equal(len(names), 10)
@@ -279,7 +279,7 @@ def test_design_matrix7():
     onsets = [30, 70, 100, 10, 30, 90, 30, 40, 60]
     paradigm = pd.DataFrame({'name': conditions,
                           'onset': onsets})
-    hrf_model = 'Canonical'
+    hrf_model = 'Glover'
     X, names = design_matrix_light(frame_times, paradigm, hrf_model=hrf_model,
                           drift_model='polynomial', drift_order=3)
     assert_equal(len(names), 7)
@@ -379,7 +379,7 @@ def test_design_matrix15():
     tr = 1.0
     frame_times = np.linspace(0, 127 * tr, 128)
     paradigm = basic_paradigm()
-    hrf_model = 'Canonical'
+    hrf_model = 'Glover'
     ax = np.random.randn(128, 4)
     X, names = design_matrix_light(frame_times, paradigm, hrf_model=hrf_model,
                          drift_model='polynomial', drift_order=3, add_regs=ax)
@@ -392,7 +392,7 @@ def test_design_matrix16():
     tr = 1.0
     frame_times = np.linspace(0, 127 * tr, 128)
     paradigm = basic_paradigm()
-    hrf_model = 'Canonical'
+    hrf_model = 'Glover'
     ax = np.random.randn(128, 4)
     X, names = design_matrix_light(frame_times, paradigm, hrf_model=hrf_model,
                          drift_model='polynomial', drift_order=3, add_regs=ax)
@@ -404,7 +404,7 @@ def test_design_matrix17():
     tr = 1.0
     frame_times = np.linspace(0, 127 * tr, 128)
     paradigm = modulated_event_paradigm()
-    hrf_model = 'Canonical'
+    hrf_model = 'Glover'
     X, names = design_matrix_light(frame_times, paradigm, hrf_model=hrf_model,
                          drift_model='polynomial', drift_order=3)
     ct = paradigm.onset[paradigm.name == 'c0'].astype(np.int) + 1
@@ -416,7 +416,7 @@ def test_design_matrix18():
     tr = 1.0
     frame_times = np.linspace(0, 127 * tr, 128)
     paradigm = modulated_block_paradigm()
-    hrf_model = 'Canonical'
+    hrf_model = 'Glover'
     X, names = design_matrix_light(frame_times, paradigm, hrf_model=hrf_model,
                          drift_model='polynomial', drift_order=3)
     ct = paradigm.onset[paradigm.name == 'c0'].astype(np.int) + 3
@@ -441,7 +441,7 @@ def test_design_matrix20():
     frame_times = np.arange(0, 128)  # was 127 in old version of _cosine_drift
     paradigm = modulated_event_paradigm()
     X, names = design_matrix_light(
-        frame_times, paradigm, hrf_model='canonical', drift_model='cosine')
+        frame_times, paradigm, hrf_model='glover', drift_model='cosine')
 
     # check that the drifts are not constant
     assert_true(np.all(np.diff(X[:, -2]) != 0))
@@ -468,7 +468,7 @@ def test_csv_io():
     tr = 1.0
     frame_times = np.linspace(0, 127 * tr, 128)
     paradigm = modulated_event_paradigm()
-    DM = make_design_matrix(frame_times, paradigm, hrf_model='Canonical',
+    DM = make_design_matrix(frame_times, paradigm, hrf_model='Glover',
                    drift_model='polynomial', drift_order=3)
     path = 'design_matrix.csv'
     with InTemporaryDirectory():

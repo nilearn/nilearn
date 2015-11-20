@@ -156,11 +156,12 @@ def test_names():
     """
     name = 'con'
     assert_equal(_regressor_names(name, 'spm'), ['con'])
-    assert_equal(_regressor_names(name, 'spm_time'), ['con', 'con_derivative'])
-    assert_equal(_regressor_names(name, 'spm_time_dispersion'),
+    assert_equal(_regressor_names(name, 'spm + derivative'),
+                 ['con', 'con_derivative'])
+    assert_equal(_regressor_names(name, 'spm + derivative + dispersion'),
         ['con', 'con_derivative', 'con_dispersion'])
-    assert_equal(_regressor_names(name, 'canonical'), ['con'])
-    assert_equal(_regressor_names(name, 'canonical with derivative'),
+    assert_equal(_regressor_names(name, 'glover'), ['con'])
+    assert_equal(_regressor_names(name, 'glover + derivative'),
         ['con', 'con_derivative'])
 
 
@@ -171,16 +172,16 @@ def test_hkernel():
     h = _hrf_kernel('spm', tr)
     assert_almost_equal(h[0], spm_hrf(tr))
     assert_equal(len(h), 1)
-    h = _hrf_kernel('spm_time', tr)
+    h = _hrf_kernel('spm + derivative', tr)
     assert_almost_equal(h[1], spm_time_derivative(tr))
     assert_equal(len(h), 2)
-    h = _hrf_kernel('spm_time_dispersion', tr)
+    h = _hrf_kernel('spm + derivative + dispersion', tr)
     assert_almost_equal(h[2], spm_dispersion_derivative(tr))
     assert_equal(len(h), 3)
-    h = _hrf_kernel('canonical', tr)
+    h = _hrf_kernel('glover', tr)
     assert_almost_equal(h[0], glover_hrf(tr))
     assert_equal(len(h), 1)
-    h = _hrf_kernel('canonical with derivative', tr)
+    h = _hrf_kernel('glover + derivative', tr)
     assert_almost_equal(h[1], glover_time_derivative(tr))
     assert_almost_equal(h[0], glover_hrf(tr))
     assert_equal(len(h), 2)
