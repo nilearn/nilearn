@@ -31,8 +31,8 @@ frame_times = np.arange(n_scans) * tr
 # experimental paradigm
 conditions = ['c0', 'c0', 'c0', 'c1', 'c1', 'c1', 'c3', 'c3', 'c3']
 onsets = [30., 70., 100., 10., 30., 90., 30., 40., 60.]
-hrf_model = 'canonical'
 motion = np.cumsum(np.random.randn(n_scans, 6), 0)  # simulate motion
+hrf_model = 'glover'
 add_reg_names = ['tx', 'ty', 'tz', 'rx', 'ry', 'rz']
 
 # event-related design matrix

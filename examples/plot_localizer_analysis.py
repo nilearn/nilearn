@@ -44,9 +44,10 @@ fmri_img = data.epi_img
 
 paradigm = pd.read_csv(paradigm_file, sep=' ', header=None, index_col=None)
 paradigm.columns = ['session', 'name', 'onset']
+n_conditions = len(paradigm.name.unique())
 design_matrix = make_design_matrix(
-    frame_times, paradigm, hrf_model='canonical with derivative',
-    drift_model="cosine", period_cut=128)
+    frame_times, paradigm, hrf_model='glover + derivative',
+    drift_model='cosine', period_cut=128)
 
 ### Perform a GLM analysis ########################################
 

@@ -37,8 +37,8 @@ paradigm = pd.DataFrame(
 # construct design matrix
 frame_times = np.linspace(0, (n_scans - 1) * tr, n_scans)
 drift_model = 'Cosine'
-hrf_model = 'Canonical With Derivative'
 period_cut = 4. * epoch_duration
+hrf_model = 'glover + derivative'
 design_matrix = make_design_matrix(
     frame_times, paradigm, hrf_model=hrf_model, drift_model=drift_model,
     period_cut=period_cut)

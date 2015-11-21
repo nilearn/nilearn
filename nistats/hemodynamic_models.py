@@ -367,6 +367,9 @@ def _hrf_kernel(hrf_model, tr, oversampling=16, fir_delays=None):
     hkernel : list of arrays
         samples of the hrf (the number depends on the hrf_model used)
     """
+    acceptable_hrfs = [
+        'spm', 'spm + derivative', 'spm + derivative + dispersion',
+        'glover', 'glover + derivative', 'fir']
     if hrf_model == 'spm':
         hkernel = [spm_hrf(tr, oversampling)]
     elif hrf_model == 'spm + derivative':
@@ -386,7 +389,8 @@ def _hrf_kernel(hrf_model, tr, oversampling=16, fir_delays=None):
                               np.ones(oversampling)))
                    for f in fir_delays]
     else:
-        raise ValueError('Unknown hrf model')
+        raise ValueError('"{0}" is not a known hrf model. Use one of {1}'.
+                         format(hrf_model, acceptable_hrfs))
     return hkernel
 
 

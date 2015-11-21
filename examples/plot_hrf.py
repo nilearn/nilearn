@@ -18,7 +18,7 @@ onset, amplitude, duration = 0., 1., 1.
 stim = np.zeros_like(frame_times)
 stim[(frame_times > onset) * (frame_times <= onset + duration)] = amplitude
 exp_condition = np.array((onset, duration, amplitude)).reshape(3, 1)
-hrf_models = ['canonical with derivative', 'spm_time_dispersion']
+hrf_models = ['glover + derivative', 'spm + derivative + dispersion']
 
 
 fig = plt.figure(figsize=(9, 4))
