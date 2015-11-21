@@ -124,7 +124,7 @@ def test_design_matrix0():
         frame_times, drift_model='polynomial', drift_order=3))
     assert_equal(len(names), 4)
     x = np.linspace(- 0.5, .5, 128)
-    assert_almost_equal(X[:, 0], x / np.linalg.norm(x))
+    assert_almost_equal(X[:, 0], x)
 
 
 def test_design_matrix0c():

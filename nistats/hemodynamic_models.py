@@ -193,7 +193,6 @@ def spm_dispersion_derivative(tr, oversampling=16, time_length=32., onset=0.):
         - _gamma_difference_hrf(tr, oversampling, time_length,
                                 onset, dispersion=1. + dd)
         + _gamma_difference_hrf(tr, oversampling, time_length, onset))
-    dhrf *= 10
     return dhrf
 
 
@@ -307,7 +306,7 @@ def _orthogonalize(X):
     from scipy.linalg import pinv, norm
     for i in range(1, X.shape[1]):
         X[:, i] -= np.dot(np.dot(X[:, i], X[:, :i]), pinv(X[:, :i]))
-        X[:, i] /= norm(X[:, i])
+        # X[:, i] /= norm(X[:, i])
     return X
 
 
