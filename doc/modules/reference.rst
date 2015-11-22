@@ -277,3 +277,31 @@ uses.
    clean
 
 
+.. _connectivity_ref:
+
+:mod:`nilearn.connectome`: Functional Connectivity
+====================================================
+
+.. automodule:: nilearn.connectome
+   :no-members:
+   :no-inherited-members:
+
+**Classes**:
+
+.. currentmodule:: nilearn.connectome.connectivity_matrices
+
+.. autosummary::
+   :toctree: generated/
+   :template: class.rst
+   
+   ConnectivityMeasure
+
+**Functions**:
+
+.. currentmodule:: nilearn.connectome.connectivity_matrices
+
+.. autosummary::
+   :toctree: generated/
+   :template: function.rst
+
+   sym_to_vec
