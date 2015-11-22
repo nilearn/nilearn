@@ -15,6 +15,8 @@ import nilearn.datasets
 atlas = nilearn.datasets.fetch_atlas_msdl()
 dataset = nilearn.datasets.fetch_adhd()
 
+
+######################################################################
 # Extract regions time series signals
 import nilearn.input_data
 masker = nilearn.input_data.NiftiMapsMasker(
@@ -32,6 +34,8 @@ for func_file, phenotypic in zip(dataset.func, dataset.phenotypic):
         sites.append(phenotypic['site'])
         adhds.append(phenotypic['adhd'])  # ADHD/control label
 
+
+######################################################################
 # Estimate connectivity
 import nilearn.connectome
 kinds = ['tangent', 'partial correlation', 'correlation']
@@ -48,14 +52,8 @@ for kind in kinds:
         mean_connectivity_matrix[kind] = \
             individual_connectivity_matrices[kind].mean(axis=0)
 
-# Plot the correlation matrix for one subject
-subject_id = 21
-import matplotlib.pyplot as plt
-plt.figure()
-plt.imshow(individual_connectivity_matrices['correlation'][subject_id],
-           interpolation="nearest", vmin=-1., vmax=1.)
-plt.title('subject %d, correlation' % subject_id)
 
+######################################################################
 # Plot the mean connectome
 import numpy as np
 import nilearn.plotting
@@ -66,6 +64,8 @@ for kind in kinds:
                                      region_coords, edge_threshold='98%',
                                      title=kind)
 
+
+######################################################################
 # Use the connectivity coefficients to classify ADHD vs controls
 from sklearn.svm import LinearSVC
 from sklearn.cross_validation import StratifiedKFold, cross_val_score
@@ -84,12 +84,16 @@ for kind in kinds:
                                           cv_scores.std()))
     mean_scores.append(cv_scores.mean())
 
+
+######################################################################
 # Display the classification scores
-plt.figure()
+import matplotlib.pyplot as plt
+plt.figure(figsize=(6, 4))
 positions = np.arange(len(kinds)) * .1 + .1
 plt.barh(positions, mean_scores, align='center', height=.05)
 yticks = [kind.replace(' ', '\n') for kind in kinds]
 plt.yticks(positions, yticks)
 plt.xlabel('Classification accuracy')
 plt.grid(True)
+plt.tight_layout()
 plt.show()
