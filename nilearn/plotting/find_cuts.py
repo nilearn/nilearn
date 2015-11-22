@@ -64,6 +64,9 @@ def find_xyz_cut_coords(img, mask=None, activation_threshold=None):
     data = as_ndarray(data)
     my_map = data.copy()
     if mask is not None:
+        # check against empty mask
+        if mask.sum() == 0.:
+            raise ValueError("Provided mask is empty!")
         slice_x, slice_y, slice_z = ndimage.find_objects(mask)[0]
         my_map = my_map[slice_x, slice_y, slice_z]
         mask = mask[slice_x, slice_y, slice_z]

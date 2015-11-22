@@ -125,3 +125,10 @@ def test_tranform_cut_coords():
     for direction in 'xyz':
         assert_equal(len(_transform_cut_coords(cut_coords, direction, affine)),
                      n_cuts)
+
+
+def test_find_cuts_empty_mask_no_crash():
+    img = nibabel.Nifti1Image(np.ones((2, 2, 2)), np.eye(4))
+    mask = np.zeros((2, 2, 2)).astype(np.bool)
+    assert_raises_regex(ValueError, "Provided mask is empty!",
+                        find_xyz_cut_coords, img, mask=mask)
