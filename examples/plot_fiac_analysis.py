@@ -5,7 +5,7 @@ GLM fitting in fMRI
 Full step-by-step example of fitting a GLM to experimental data and visualizing
 the results. This is done on two runs of one subject of the FIAC dataset.
 For details on the data, please see:
- 
+
 Dehaene-Lambertz G, Dehaene S, Anton JL, Campagne A, Ciuciu P, Dehaene
 G, Denghien I, Jobert A, LeBihan D, Sigman M, Pallier C, Poline
 JB. Functional segregation of cortical language areas by sentence
@@ -54,6 +54,7 @@ multi_session_model = FirstLevelGLM(data['mask'], standardize=False,
 
 # GLM fitting
 multi_session_model.fit(fmri_files, design_files)
+
 
 def make_fiac_contrasts(n_columns):
     """ Specify some contrasts for the FIAC experiment"""

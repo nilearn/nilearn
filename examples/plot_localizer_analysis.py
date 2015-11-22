@@ -15,12 +15,14 @@ More specifically:
 
 """
 
+print(__doc__)
+
 from os import mkdir, path
 
 import numpy as np
 import matplotlib.pyplot as plt
-from pandas import DataFrame
-from nibabel import save
+import pandas as pd
+import nibabel
 
 from nistats.glm import FirstLevelGLM
 from nistats.design_matrix import (
@@ -53,8 +55,7 @@ epi_img = data.epi_img
 # Design matrix
 ########################################
 
-paradigm = DataFrame.from_csv(paradigm_file, sep=' ', header=None,
-                              index_col=None)
+paradigm = pd.read_csv(paradigm_file, sep=' ', header=None, index_col=None)
 paradigm.columns = ['session', 'name', 'onset']
 n_conditions = len(paradigm.name.unique())
 design_matrix = make_design_matrix(frame_times, paradigm,
@@ -117,12 +118,12 @@ for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
     image_path = path.join(write_dir, '%s_z_map.nii' % contrast_id)
     z_map, = fmri_glm.transform(contrast_val, contrast_name=contrast_id,
                                 output_z=True)
-    save(z_map, image_path)
+    nibabel.save(z_map, image_path)
 
     # Create snapshots of the contrasts
     vmax = max(-z_map.get_data().min(), z_map.get_data().max())
-    display = plotting.plot_stat_map(z_map,
-             display_mode='z', threshold=3.0, title=contrast_id)
+    display = plotting.plot_stat_map(z_map, display_mode='z',
+                                     threshold=3.0, title=contrast_id)
     display.savefig(path.join(write_dir, '%s_z_map.png' % contrast_id))
 
 plt.show()

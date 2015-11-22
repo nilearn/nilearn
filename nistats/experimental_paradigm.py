@@ -17,31 +17,31 @@ import numpy as np
 
 
 def check_paradigm(paradigm):
-    """ test that the DataFrame is describes a valid experimental paradigm
+    """Test that the DataFrame is describes a valid experimental paradigm
+
     A DataFrame is considered as valid whenever it has an 'onset' key.
 
     Parameters
     ----------
     paradigm : pandas DataFrame
-        describes a functional paradigm
+        Describes a functional paradigm.
 
     Returns
     -------
-    name : array of shape (n_events), dtype='s'
-        per-event experimental conditions identifier
-        Defaults to np.repeat('dummy', len(onsets))
+    name : array of shape (n_events,), dtype='s'
+        Per-event experimental conditions identifier.
+        Defaults to np.repeat('dummy', len(onsets)).
 
-    onset : array of shape (n_events), dtype='f'
-        per-event onset time (in seconds)
+    onset : array of shape (n_events,), dtype='f'
+        Per-event onset time (in seconds)
 
-    duration : array of shape (n_events), dtype='f'
-        per-event durantion, (in seconds)
+    duration : array of shape (n_events,), dtype='f'
+        Per-event durantion, (in seconds)
         defaults to zeros(n_events) when no duration is provided
 
-    modulation : array of shape (n_events), dtype='f'
-        per-event modulation, (in seconds)
+    modulation : array of shape (n_events,), dtype='f'
+        Per-event modulation, (in seconds)
         defaults to ones(n_events) when no duration is provided
-
     """
     if 'onset' not in paradigm.keys():
         raise ValueError('The provided paradigm has no onset key')
@@ -61,18 +61,19 @@ def check_paradigm(paradigm):
 
 
 def paradigm_from_csv(csv_file):
-    """ Utility function to directly read the paradigm from a csv file
-    This is simply meant to explicitly import pandas everywhere
+    """Utility function to directly read the paradigm from a csv file
+
+    This is simply meant to avoid explicitly import pandas everywhere.
 
     Parameters
     ----------
     csv_file : string,
-        path to a csv file
+        Path to a csv file.
 
     Returns
     -------
     paradigm : pandas DataFrame,
-        holding the paradigm information
+        Holding the paradigm information.
     """
     import pandas
-    return pandas.DataFrame().from_csv(csv_file)
+    return pandas.read_csv(csv_file)

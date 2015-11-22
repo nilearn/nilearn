@@ -25,9 +25,8 @@ from sklearn.externals.joblib import Memory
 from nilearn._utils import CacheMixin
 from nilearn._utils.class_inspect import get_params
 from nilearn.input_data import NiftiMasker
-
-
 from nilearn.masking import compute_multi_epi_mask as compute_mask_sessions
+
 from .regression import OLSModel, ARModel
 from .utils import multiple_mahalanobis, z_score, _basestring
 
@@ -40,16 +39,16 @@ def percent_mean_scaling(Y):
 
     Parameters
     ----------
-    Y : array of shape(n_time_points, n_voxels)
-       the input data
+    Y : array of shape (n_time_points, n_voxels)
+       The input data.
 
     Returns
     -------
     Y : array of shape (n_time_points, n_voxels),
-       the data after mean-scaling, de-meaning and multiplication by 100
+       The data after mean-scaling, de-meaning and multiplication by 100.
 
     mean : array of shape (n_voxels,)
-        the data mean
+        The data mean.
     """
     mean = Y.mean(axis=0)
     if (mean == 0).any():
@@ -66,26 +65,26 @@ def session_glm(Y, X, noise_model='ar1', bins=100):
 
     Parameters
     ----------
-    Y : array of shape(n_time_points, n_voxels)
-        the fMRI data
+    Y : array of shape (n_time_points, n_voxels)
+        The fMRI data.
 
     X : array of shape (n_time_points, n_regressors)
-           the design matrix
+        The design matrix.
 
     noise_model : {'ar1', 'ols'}, optional
-        the temporal variance model. Defaults to 'ar1'
+        The temporal variance model. Defaults to 'ar1'.
 
     bins : int, optional
-        Maximum number of discrete bins for the AR(1) coef histogram
+        Maximum number of discrete bins for the AR(1) coef histogram.
 
     Returns
     -------
-    labels : array of shape (n_voxels),
-        a map of values on voxels used to identify the corresponding model
+    labels : array of shape (n_voxels,),
+        A map of values on voxels used to identify the corresponding model.
 
     results : dict,
-        keys correspond to the different labels values
-        values are RegressionResults instances corresponding to the voxels
+        Keys correspond to the different labels values
+        values are RegressionResults instances corresponding to the voxels.
     """
     acceptable_noise_models = ['ar1', 'ols']
     if noise_model not in acceptable_noise_models:
@@ -126,18 +125,18 @@ def compute_contrast(labels, regression_result, con_val, contrast_type=None):
 
     Parameters
     ----------
-    labels : array of shape (n_voxels),
-        a map of values on voxels used to identify the corresponding model
+    labels : array of shape (n_voxels,),
+        A map of values on voxels used to identify the corresponding model
 
     results : dict,
-        with keys corresponding to the different labels
-        values are RegressionResults instances corresponding to the voxels
+        With keys corresponding to the different labels
+        values are RegressionResults instances corresponding to the voxels.
 
     con_val : numpy.ndarray of shape (p) or (q, p)
-        where q = number of contrast vectors and p = number of regressors
+        Where q = number of contrast vectors and p = number of regressors.
 
     contrast_type : {None, 't', 'F'}, optional
-        type of the contrast.  If None, then defaults to 't' for 1D
+        Type of the contrast.  If None, then defaults to 't' for 1D
         `con_val` and 'F' for 2D `con_val`
 
     Returns
@@ -182,6 +181,8 @@ def compute_contrast(labels, regression_result, con_val, contrast_type=None):
 class FirstLevelGLM(BaseEstimator, TransformerMixin, CacheMixin):
     """ Implementation of the General Linear Model for Single-session fMRI data
 
+    Parameters
+    ----------
     mask: Niimg-like, NiftiMasker or MultiNiftiMasker object, optional,
         Mask to be used on data. If an instance of masker is passed,
         then its mask will be used. If no mask is given,
@@ -242,7 +243,7 @@ class FirstLevelGLM(BaseEstimator, TransformerMixin, CacheMixin):
 
     Attributes
     ----------
-    labels : array of shape (n_voxels),
+    labels : array of shape (n_voxels,),
         a map of values on voxels used to identify the corresponding model
 
     results : dict,

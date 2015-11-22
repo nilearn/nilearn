@@ -393,13 +393,13 @@ def compute_regressor(exp_condition, hrf_model, frame_times, con_id='cond',
 
     Parameters
     ----------
-    exp_condition : arraylike of shape (3, n_events)
+    exp_condition : array-like of shape (3, n_events)
         yields description of events for this condition as a
         (onsets, durations, amplitudes) triplet
 
     hrf_model : {'spm', 'spm_time', 'spm_time_dispersion', 'canonical',
         'canonical_derivative', 'fir'}
-        name of the hrf model to be used
+        Name of the hrf model to be used.
 
     frame_times : array of shape (n_scans)
         the desired sampling times

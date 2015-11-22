@@ -31,12 +31,11 @@ Author: Bertrand Thirion, 2009-2015
 """
 from warnings import warn
 import numpy as np
-import scipy.linalg as spl
+from scipy import linalg
 from pandas import DataFrame
 
 from .hemodynamic_models import compute_regressor, _orthogonalize
 from .experimental_paradigm import check_paradigm
-
 
 
 ######################################################################
@@ -50,10 +49,10 @@ def _poly_drift(order, frame_times):
     Parameters
     ----------
     order : int,
-        number of polynomials in the drift model
+        Number of polynomials in the drift model.
 
     frame_times : array of shape(n_scans),
-        time stamps used to sample polynomials
+        Time stamps used to sample polynomials.
 
     Returns
     -------
@@ -79,7 +78,7 @@ def _cosine_drift(period_cut, frame_times):
     period_cut : float
         Cut period of the low-pass filter (in sec)
 
-    frame_times : array of shape(n_scans)
+    frame_times : array of shape (n_scans,)
         The sampling times (in sec)
 
     Returns
@@ -170,27 +169,27 @@ def _convolve_regressors(paradigm, hrf_model, frame_times, fir_delays=[0],
         for these to be valid paradigm descriptors
 
     hrf_model : {'canonical', 'canonical with derivative', 'fir'}
-        string that specifies the hemodynamic response function
+        String that specifies the hemodynamic response function.
 
-    frame_times : array of shape(n_scans)
-        the targeted timing for the design matrix
+    frame_times : array of shape (n_scans,)
+        The targeted timing for the design matrix.
 
-    fir_delays : array-like of shape(nb_onsets), optional,
-        in case of FIR design, yields the array of delays
-        used in the FIR model
+    fir_delays : array-like of shape (n_onsets,), optional,
+        In case of FIR design, yields the array of delays
+        used in the FIR model.
 
     min_onset : float, optional (default: -24),
-        minimal onset relative to frame_times[0] (in seconds)
-        events that start before frame_times[0] + min_onset are not considered
+        Minimal onset relative to frame_times[0] (in seconds) events
+        that start before frame_times[0] + min_onset are not considered.
 
     Returns
     -------
-    regressor_matrix : array of shape(n_scans, n_regressors),
-        contains the convolved regressors
-        associated with the experimental conditions
+    regressor_matrix : array of shape (n_scans, n_regressors),
+        Contains the convolved regressors associated with the
+        experimental conditions.
 
     regressor_names : list of strings,
-        the regressor names, that depend on the hrf model used
+        The regressor names, that depend on the hrf model used
         if 'canonical' then this is identical to the input names
         if 'canonical with derivative', then two names are produced for
         input name 'name': 'name' and 'name_derivative'
@@ -240,7 +239,7 @@ def _full_rank(X, cmax=1e15):
     cond : float,
         actual condition number
     """
-    U, s, V = spl.svd(X, 0)
+    U, s, V = linalg.svd(X, 0)
     smax, smin = s.max(), s.min()
     cond = smax / smin
     if cond < cmax:
@@ -261,43 +260,44 @@ def make_design_matrix(
     frame_times, paradigm=None, hrf_model='canonical',
     drift_model='cosine', period_cut=128, drift_order=1, fir_delays=[0],
     add_regs=None, add_reg_names=None, min_onset=-24):
-    """ Generate a design matrix from the input parameters
+    """Generate a design matrix from the input parameters
 
     Parameters
     ----------
-    frame_times : array of shape(n_frames),
-        the timing of the scans
+    frame_times : array of shape (n_frames,)
+        The timing of the scans in seconds.
 
     paradigm : DataFrame instance, optional
-        description of the experimental paradigm
+        Description of the experimental paradigm.
 
     hrf_model : string, optional,
-        that specifies the hemodynamic response function
-        it can be 'canonical', 'canonical with derivative' or 'fir'
+        Specifies the hemodynamic response function (HRF).
+        It can be 'canonical', 'canonical with derivative' or 'fir'
 
     drift_model : string, optional
-        specifies the desired drift model,
-        to be chosen among 'polynomial', 'cosine', 'blank'
+        Specifies the desired drift model,
+        It can be 'polynomial', 'cosine' or 'blank'.
 
     period_cut : float, optional
-        cut period of the low-pass filter in seconds
+        Cut period of the low-pass filter in seconds.
 
     drift_order : int, optional
-        order of the drift model (in case it is polynomial)
+        Order of the drift model (in case it is polynomial).
 
     fir_delays : array of shape(n_onsets) or list, optional,
-        in case of FIR design, yields the array of delays used in the FIR model
+        In case of FIR design, yields the array of delays used in the FIR
+        model.
 
     add_regs : array of shape(n_frames, n_add_reg), optional
         additional user-supplied regressors
 
-    add_reg_names : list of (n_add_reg) strings, optional
-        if None, while n_add_reg > 0, these will be termed
+    add_reg_names : list of (n_add_reg,) strings, optional
+        If None, while n_add_reg > 0, these will be termed
         'reg_%i', i = 0..n_add_reg - 1
 
     min_onset : float, optional
-        minimal onset relative to frame_times[0] (in seconds)
-        events that start before frame_times[0] + min_onset are not considered
+        Minimal onset relative to frame_times[0] (in seconds)
+        events that start before frame_times[0] + min_onset are not considered.
 
     Returns
     -------
@@ -363,23 +363,23 @@ def check_design_matrix(design_matrix):
     Parameters
     ----------
     design matrix : pandas DataFrame,
-        describes a design matrix
+        Describes a design matrix.
 
     Returns
     -------
-    frame_times : array of shape (n_frames),
-        sampling times of the design matrix
+    frame_times : array of shape (n_frames,),
+        Sampling times of the design matrix in seconds.
 
     matrix : array of shape (n_frames, n_regressors), dtype='f'
-        numerical values for the design matrix
+        Numerical values for the design matrix.
 
-    names : array of shape (n_events), dtype='f'
-           per-event onset time (in seconds)
+    names : array of shape (n_events,), dtype='f'
+        Per-event onset time (in seconds)
     """
     names = design_matrix.keys()
     if 'frame_times' not in names:
         raise ValueError('The provided DataFrame does not contain the'
-                         'mandatory frame_times field')
+                         'mandatory frame_times field.')
     frame_times = design_matrix['frame_times']
     names = list(names.drop('frame_times'))
     matrix = design_matrix[names].values
@@ -387,27 +387,28 @@ def check_design_matrix(design_matrix):
 
 
 def plot_design_matrix(design_matrix, rescale=True, ax=None):
-    """ Plot a design matrix provided as a DataFrame
+    """Plot a design matrix provided as a DataFrame
 
     Parameters
     ----------
     design matrix : pandas DataFrame,
-        describes a design matrix
+        Describes a design matrix.
 
     rescale : bool, optional
-        rescale columns magnitude for visualization or not
+        Rescale columns magnitude for visualization or not.
 
     ax : axis handle, optional
-        Handle to axis onto which we will draw design matrix
+        Handle to axis onto which we will draw design matrix.
 
     Returns
     -------
     ax: axis handle
+        The axis used for plotting.
     """
     # We import _set_mpl_backend because just the fact that we are
     # importing it sets the backend
     from nilearn.plotting import _set_mpl_backend
-    # avoid unhappy pyflackes
+    # avoid unhappy pyflakes
     _set_mpl_backend
     import matplotlib.pyplot as plt
 
@@ -419,7 +420,7 @@ def plot_design_matrix(design_matrix, rescale=True, ax=None):
         plt.figure()
         ax = plt.subplot(1, 1, 1)
 
-    ax.imshow(X, interpolation='Nearest', aspect='auto')
+    ax.imshow(X, interpolation='nearest', aspect='auto')
     ax.set_label('conditions')
     ax.set_ylabel('scan number')
 

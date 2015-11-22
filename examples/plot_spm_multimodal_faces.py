@@ -27,6 +27,8 @@ subject_data = fetch_spm_multimodal_fmri()
 dataset_dir = os.path.dirname(os.path.dirname(os.path.dirname(
     subject_data.anat)))
 output_dir = 'results'
+if not os.path.exists(output_dir):
+    os.makedirs(output_dir)
 
 # experimental paradigm meta-params
 tr = 2.
@@ -38,8 +40,6 @@ period_cut = 128.
 first_level_effects_maps = []
 mask_images = []
 design_matrices = []
-if not os.path.exists(output_dir):
-    os.makedirs(output_dir)
 
 # resample the images
 subject_data.func = [concat_imgs(subject_data.func1, auto_resample=True),
@@ -58,14 +58,14 @@ for x in range(2):
     scrambled_onsets = timing['onsets'][1].ravel()
     onsets = np.hstack((faces_onsets, scrambled_onsets))
     onsets *= tr  # because onsets were reporting in 'scans' units
-    conditions = ['faces'] * len(faces_onsets) + ['scrambled'] * len(
-        scrambled_onsets)
+    conditions = (['faces'] * len(faces_onsets) +
+                  ['scrambled'] * len(scrambled_onsets))
     paradigm = DataFrame({'name': conditions, 'onset': onsets})
 
     # build design matrix
-    frametimes = np.linspace(0, (n_scans - 1) * tr, n_scans)
+    frame_times = np.linspace(0, (n_scans - 1) * tr, n_scans)
     design_matrix = make_design_matrix(
-        frametimes, paradigm, hrf_model=hrf_model, drift_model=drift_model,
+        frame_times, paradigm, hrf_model=hrf_model, drift_model=drift_model,
         period_cut=period_cut)
     design_matrices.append(design_matrix)
 
@@ -95,13 +95,14 @@ mean_image = mean_img(subject_data.func)
 # compute contrast maps
 print('Computing contrasts')
 from nilearn.plotting import plot_stat_map
+
 for contrast_id, contrast_val in contrasts.items():
     print("\tcontrast id: %s" % contrast_id)
     z_map, t_map, effects_map, var_map = fmri_glm.transform(
         [contrast_val] * 2, contrast_name=contrast_id, output_z=True,
         output_stat=True, output_effects=True, output_variance=True)
     for map_type, out_map in zip(['z', 't', 'effects', 'variance'],
-                              [z_map, t_map, effects_map, var_map]):
+                                 [z_map, t_map, effects_map, var_map]):
         map_dir = os.path.join(output_dir, '%s_maps' % map_type)
         if not os.path.exists(map_dir):
             os.makedirs(map_dir)
