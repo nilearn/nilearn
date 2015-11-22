@@ -333,3 +333,15 @@ def test_crop_mask_empty_mask():
     assert_raises_regex(ValueError, "Empty mask:.", _crop_mask, np.array([]))
     assert_raises_regex(ValueError, "Empty mask:", _crop_mask,
                         np.zeros((2, 2, 2)))
+
+
+def test_space_net_no_crash_not_fitted():
+    rng = check_random_state(42)
+    iris = load_iris()
+    X, y = iris.data, iris.target
+    X, mask = to_niimgs(X, [2, 2, 2])
+    for model in [SpaceNetRegressor, SpaceNetClassifier]:
+        assert_raises_regex(RuntimeError,
+                            "This %s instance is not fitted yet" % (
+                                model.__name__), model().predict, X)
+        model(mask=mask, alphas=1.).fit(X, y).predict(X)
