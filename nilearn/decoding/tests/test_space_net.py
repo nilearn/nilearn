@@ -13,8 +13,7 @@ from sklearn.linear_model import Lasso
 from sklearn.utils import check_random_state
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score
-from nilearn._utils.testing import (assert_raises_regex, assert_warns,
-                                    assert_less_equal)
+from nilearn._utils.testing import assert_raises_regex, assert_warns
 from nilearn.decoding.space_net import (
     _EarlyStoppingCallback, _space_net_alpha_grid, MNI152_BRAIN_VOLUME,
     path_scores, BaseSpaceNet, _crop_mask, _univariate_feature_screening,
@@ -336,7 +335,7 @@ def test_crop_mask_empty_mask():
 
 
 def test_space_net_no_crash_not_fitted():
-    rng = check_random_state(42)
+    """Regression test."""
     iris = load_iris()
     X, y = iris.data, iris.target
     X, mask = to_niimgs(X, [2, 2, 2])
@@ -345,3 +344,12 @@ def test_space_net_no_crash_not_fitted():
                             "This %s instance is not fitted yet" % (
                                 model.__name__), model().predict, X)
         model(mask=mask, alphas=1.).fit(X, y).predict(X)
+
+
+def test_space_net_one_alpha_no_crash():
+    """Regression test."""
+    iris = load_iris()
+    X, y = iris.data, iris.target
+    X, mask = to_niimgs(X, [2, 2, 2])
+    SpaceNetRegressor(n_alphas=1, mask=mask).fit(X, y)
+    SpaceNetClassifier(n_alphas=1, mask=mask).fit(X, y)
