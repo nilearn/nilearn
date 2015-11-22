@@ -22,27 +22,23 @@ def plot_mats(netmats, title):
     plt.title(title)
 
 # Fetches the network matrices dimensionalities d=100 and d=300 for
-# timeseries method ts3
+# timeseries method multiple regression and eigen regression
 print(" -- Fetching Network Matrices -- ")
-netmats = datasets.fetch_megatrawls_netmats(dimensionality=[100, 300],
-                                            timeseries='eigen_regression',
+netmats = datasets.fetch_megatrawls_netmats(dimensionality=[300, 100],
+                                            timeseries=['multiple_spatial_regression', 'eigen_regression'],
                                             matrices=['correlation', 'partial_correlation'])
-correlation_matrices_100 = netmats.d100_eigen_regression_correlation
-correlation_matrices_300 = netmats.d300_eigen_regression_correlation
-
-partial_correlation_matrices_100 = netmats.d100_eigen_regression_partial_correlation
-partial_correlation_matrices_300 = netmats.d300_eigen_regression_partial_correlation
 
 # Visualization
 print(" -- Plotting correlation matrices -- ")
-correlation_matrices = {
-    'Correlation matrices of dimensionality d=100': correlation_matrices_100,
-    'Correlation matrices of dimensionality d=300': correlation_matrices_300,
-    'Partial correlation matrices of dimensionality d=100': partial_correlation_matrices_100,
-    'Partial correlation matrices of dimensionality d=300': partial_correlation_matrices_300
-    }
+for matrices, dim, tseries in zip(
+        netmats.correlation, netmats.dimensions_correlation, netmats.timeseries_correlation):
+    title = ('Correlation matrices of d=%d & timeseries=%s' % (dim, tseries))
+    plot_mats(matrices, title)
 
-for title, matrices in sorted(correlation_matrices.items()):
+print(" -- Plotting partial correlation matrices -- ")
+for matrices, dim, tseries in zip(
+        netmats.partial_correlation, netmats.dimensions_partial, netmats.timeseries_partial):
+    title = ('Partial correlation matrices of d=%d & timeseries=%s' % (dim, tseries))
     plot_mats(matrices, title)
 
 plt.show()

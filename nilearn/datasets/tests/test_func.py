@@ -366,48 +366,45 @@ def test_fetch_mixed_gambles():
 
 
 def test_wrong_inputs_of_dimensionality_timeseriesmethods_matrices():
-    message = ("The %s you have given '%s' is invalid. ")
-    for dim in ['a10', 'd15', 'd30']:
-        assert_raises_regex(ValueError,
-                            message % ('dimensionality', dim),
-                            func.fetch_megatrawls_netmats,
-                            dimensionality=dim)
 
-    for ts in ['ts4', 'st2', 'eigen_regresion', 'mutiple_sptial_regression']:
-        assert_raises_regex(ValueError,
-                            message % ('timeseries', ts),
-                            func.fetch_megatrawls_netmats,
-                            timeseries=ts)
-    for matrices in ['partal_correlation', 'corelation']:
-        assert_raises_regex(ValueError,
-                            message % ('matrices', matrices),
-                            func.fetch_megatrawls_netmats,
-                            matrices=matrices)
+    message = "Invalid %s name"
+
+    dimensionality = ['a10', 'd15', 'd30']
+    assert_raises_regex(ValueError,
+                        message % 'dimensionality',
+                        func.fetch_megatrawls_netmats,
+                        dimensionality=dimensionality)
+
+    timeseries = ['ts4', 'st2', 'eigen_regresion', 'multiple_sptial_regresion']
+    assert_raises_regex(ValueError,
+                        message % 'timeseries',
+                        func.fetch_megatrawls_netmats,
+                        timeseries=timeseries)
+
+    matrices = ['partal_corelation', 'sorelation']
+    assert_raises_regex(ValueError,
+                        message % 'matrices',
+                        func.fetch_megatrawls_netmats,
+                        matrices=matrices)
+
+    assert_raises(TypeError, func.fetch_megatrawls_netmats,
+                  matrices='partial_correlation')
 
 
 @with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
 def test_fetch_megatrawls_netmats():
+    for dim in [25, 100, 200, 300]:
+        files_dir = os.path.join(tst.tmpdir, 'Megatrawls', '3T_Q1-Q6related468_MSMsulc_d%d_ts3' % dim)
+        os.makedirs(files_dir)
+        dummy = open(os.path.join(files_dir, 'Znet2.txt'), 'w')
+        dummy.write("1")
+        dummy.close()
+
     correlations = func.fetch_megatrawls_netmats(data_dir=tst.tmpdir,
                                                  dimensionality=[25, 100, 200, 300],
-                                                 timeseries='eigen_regression',
-                                                 matrices='partial_correlation')
+                                                 timeseries=['eigen_regression'],
+                                                 matrices=['partial_correlation'])
 
-    # test whether the shapes of each dimensionality are equal
-    # expected shapes
-    d25_expected_shape = (25, 25)
-    d100_expected_shape = (100, 100)
-    d200_expected_shape = (200, 200)
-    d300_expected_shape = (300, 300)
-
-    # output shapes
-    d25_output_shape = correlations.d25_eigen_regression_partial_correlation.shape
-    d100_output_shape = correlations.d100_eigen_regression_partial_correlation.shape
-    d200_output_shape = correlations.d200_eigen_regression_partial_correlation.shape
-    d300_output_shape = correlations.d300_eigen_regression_partial_correlation.shape
-
-    assert_equal(d25_expected_shape, d25_output_shape)
-    assert_equal(d100_expected_shape, d100_output_shape)
-    assert_equal(d200_expected_shape, d200_output_shape)
-    assert_equal(d300_expected_shape, d300_output_shape)
+    assert_true(correlations.partial_correlation[0], np.ndarray)
 
     assert_not_equal(correlations.description, '')
