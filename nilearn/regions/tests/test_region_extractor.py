@@ -7,6 +7,7 @@ from nose.tools import assert_raises, assert_equal
 
 from nilearn.regions.region_extractor import (connected_regions,
                                               RegionExtractor)
+from nilearn.regions.region_extractor import _threshold_maps
 from nilearn.image import iter_img
 
 from nilearn._utils.testing import assert_raises_regex, generate_maps
@@ -21,7 +22,29 @@ def _make_random_data(shape):
     return img, data
 
 
-def test_validity_extract_types_in_connected_regions():
+def test_invalid_thresholds_in_threshold_maps():
+    shape = (91, 109, 91)
+    maps = generate_maps(shape, n_regions=2)
+    map_0 = maps[0]
+
+    for invalid_threshold in [10, '80%', 'auto']:
+        assert_raises_regex(ValueError,
+                            "Threshold must be float value",
+                            _threshold_maps,
+                            map_0, threshold=invalid_threshold)
+
+
+def test_passing_threshold_maps():
+    # smoke test for function _threshold_maps with randomly
+    # generated maps
+    shape = (6, 8, 10)
+    maps = generate_maps(shape, n_regions=3)
+    map_0 = maps[0]
+    for map_img, threshold in zip(iter_img(map_0), [0.0, 0.5, 1.0]):
+        thr_maps = _threshold_maps(map_img, threshold=threshold)
+
+
+def test_invalids_extract_types_in_connected_regions():
     shape = (91, 109, 91)
     n_regions = 2
     maps = generate_maps(shape, n_regions)
@@ -68,8 +91,15 @@ def test_passing_RegionExtractor_object():
     affine = np.eye(4)
     mask_img = nibabel.Nifti1Image(np.ones((shape), dtype=np.int8), affine)
 
-    # smoke test fit() and fit_transform() with giving inputs
-    extractor = RegionExtractor(map_0, threshold=0.5, mask_img=mask_img)
+    # smoke test to RegionExtractor with thresholding_strategy='ratio_n_voxels'
+    extract_ratio = RegionExtractor(map_0, threshold=0.2,
+                                    thresholding_strategy='ratio_n_voxels')
+    extract_ratio.fit()
+
+    # smoke test with threshold=string and strategy=percentile
+    extractor = RegionExtractor(map_0, threshold='30%',
+                                thresholding_strategy='percentile',
+                                mask_img=mask_img)
     # smoke test fit() function
     extractor.fit()
     n_regions = extractor.regions_.shape[-1]

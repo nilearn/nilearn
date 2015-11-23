@@ -171,7 +171,7 @@ def _build_laplacian(data, spacing, mask=None, beta=50,
 #----------- Random walker algorithm --------------------------------
 
 
-def _random_walker(data, labels, beta=130, mode='bf', tol=1.e-3, copy=True,
+def _random_walker(data, labels, beta=130, mode='cg', tol=1.e-3, copy=True,
                    return_full_prob=False, spacing=None):
     """Random walker algorithm for segmentation from markers.
 
@@ -190,14 +190,11 @@ def _random_walker(data, labels, beta=130, mode='bf', tol=1.e-3, copy=True,
     beta : float
         Penalization coefficient for the random walker motion
         (the greater `beta`, the more difficult the diffusion).
-    mode : string, available options {'cg_mg', 'cg', 'bf'}
+    mode : string, available options {'cg_mg', 'cg'}
         Mode for solving the linear system in the random walker algorithm.
         If no preference given, automatically attempt to use the fastest
-        option available ('cg_mg' from pyamg >> 'cg' with UMFPACK > 'bf').
+        option available ('cg_mg' from pyamg >> 'cg' with UMFPACK).
 
-        - 'bf' (brute force): an LU factorization of the Laplacian is
-          computed. This is fast for small images (<1024x1024), but very slow
-          and memory-intensive for large images (e.g., 3-D volumes).
         - 'cg' (conjugate gradient): the linear system is solved iteratively
           using the Conjugate Gradient method from scipy.sparse.linalg. This is
           less memory-consuming than the brute force method for large images,
@@ -281,7 +278,7 @@ def _random_walker(data, labels, beta=130, mode='bf', tol=1.e-3, copy=True,
         if amg_loaded:
             mode = 'cg_mg'
         else:
-            mode = 'bf'
+            mode = 'cg'
 
     if (labels != 0).all():
         warnings.warn('Random walker only segments unlabeled areas, where '
@@ -368,9 +365,6 @@ def _random_walker(data, labels, beta=130, mode='bf', tol=1.e-3, copy=True,
         else:
             X = _solve_cg_mg(lap_sparse, B, tol=tol,
                              return_full_prob=return_full_prob)
-    if mode == 'bf':
-        X = _solve_bf(lap_sparse, B,
-                      return_full_prob=return_full_prob)
 
     # Clean up results
     if return_full_prob:
@@ -383,21 +377,6 @@ def _random_walker(data, labels, beta=130, mode='bf', tol=1.e-3, copy=True,
             X[i - 1, mask_i] = 1
     else:
         X = _clean_labels_ar(X + 1, labels).reshape(dims)
-    return X
-
-
-def _solve_bf(lap_sparse, B, return_full_prob=False):
-    """
-    solves lap_sparse X_i = B_i for each phase i. An LU decomposition
-    of lap_sparse is computed first. For each pixel, the label i
-    corresponding to the maximal X_i is returned.
-    """
-    lap_sparse = lap_sparse.tocsc()
-    solver = sparse.linalg.factorized(lap_sparse.astype(np.double))
-    X = np.array([solver(np.array((-B[i]).todense()).ravel())
-                  for i in range(len(B))])
-    if not return_full_prob:
-        X = np.argmax(X, axis=0)
     return X
 
 

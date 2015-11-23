@@ -16,9 +16,6 @@ def test_modes_in_random_walker():
     labels = np.zeros_like(img)
     labels[6, 6, 6] = 1
     labels[14, 15, 16] = 2
-    # mode = bf
-    random_walker_bf = _random_walker(img, labels, mode='bf', beta=90)
-    assert (random_walker_bf.reshape(img.shape)[14, 15, 16] == 2).all()
     # mode = None
     random_walker_none = _random_walker(img, labels, mode=None)
     # mode = cg

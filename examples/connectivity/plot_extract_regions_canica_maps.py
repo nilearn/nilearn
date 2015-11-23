@@ -22,10 +22,10 @@ confounds = adhd_dataset.confounds
 from nilearn.decomposition import CanICA
 print(" -- Canonical ICA decomposition of functional datasets -- ")
 # Initialize canica parameters
-n_components = 5
+n_components = 8
 canica = CanICA(n_components=n_components, smoothing_fwhm=6.,
                 memory="nilearn_cache", memory_level=2,
-                threshold=3., random_state=0)
+                random_state=0)
 
 canica.fit(func_filenames)
 components_img = canica.masker_.inverse_transform(canica.components_)
@@ -33,7 +33,8 @@ components_img = canica.masker_.inverse_transform(canica.components_)
 from nilearn.regions import region_extractor
 print(" -- Extracting regions from ICA maps and timeseries signals -- ")
 extractor = region_extractor.RegionExtractor(
-    components_img, threshold="98%", standardize=True, min_size=100)
+    components_img, threshold=0.5, thresholding_strategy='ratio_n_voxels',
+    standardize=True, min_size=100)
 # Regions extraction from ICA maps
 extractor.fit()
 regions_extracted = extractor.regions_
