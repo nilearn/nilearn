@@ -16,7 +16,7 @@ def check_embedded_nifti_masker(estimator, multi_subject=True):
     - If instance contains a masker in mask parameter, we use a copy of
     this masker, overriding all instance masker related parameters.
     In all case, we forward system parameters of instance to new masker :
-    memory, memory_level, vebose, n_jobs
+    memory, memory_level, verbose, n_jobs
 
     Parameters
     ----------
