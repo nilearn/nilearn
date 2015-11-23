@@ -10,6 +10,35 @@ uses.
 .. contents:: **List of modules**
    :local:
 
+
+.. _connectome_ref:
+
+:mod:`nilearn.connectome`: Functional Connectivity
+====================================================
+
+.. automodule:: nilearn.connectome
+   :no-members:
+   :no-inherited-members:
+
+**Classes**:
+
+.. currentmodule:: nilearn.connectome.connectivity_matrices
+
+.. autosummary::
+   :toctree: generated/
+   :template: class.rst
+   
+   ConnectivityMeasure
+
+**Functions**:
+
+.. currentmodule:: nilearn.connectome.connectivity_matrices
+
+.. autosummary::
+   :toctree: generated/
+   :template: function.rst
+
+   sym_to_vec
 .. _datasets_ref:
 
 :mod:`nilearn.datasets`: Automatic Dataset Fetching
@@ -277,31 +306,4 @@ uses.
    clean
 
 
-.. _connectivity_ref:
 
-:mod:`nilearn.connectome`: Functional Connectivity
-====================================================
-
-.. automodule:: nilearn.connectome
-   :no-members:
-   :no-inherited-members:
-
-**Classes**:
-
-.. currentmodule:: nilearn.connectome.connectivity_matrices
-
-.. autosummary::
-   :toctree: generated/
-   :template: class.rst
-   
-   ConnectivityMeasure
-
-**Functions**:
-
-.. currentmodule:: nilearn.connectome.connectivity_matrices
-
-.. autosummary::
-   :toctree: generated/
-   :template: function.rst
-
-   sym_to_vec
