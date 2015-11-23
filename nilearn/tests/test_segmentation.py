@@ -23,7 +23,7 @@ def test_modes_in_random_walker():
     assert (random_walker_cg.reshape(img.shape)[6, 6, 6] == 1).all()
     assert img.shape == random_walker_cg.shape
     # mode = cg_mg
-    random_walker_bf = _random_walker(img, labels, mode='cg_mg', beta=90)
+    random_walker_cg_mg = _random_walker(img, labels, mode='cg_mg', beta=90)
     # test `mask` strategy of sub function _mask_edges_weights in laplacian
     labels[5:25, 26:29, 26:29] = -1
     random_walker_inactive = _random_walker(img, labels, mode='cg', beta=30)

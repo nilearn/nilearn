@@ -59,8 +59,7 @@ def _make_graph_edges_3d(n_x, n_y, n_z):
     return edges
 
 
-def _compute_weights_3d(data, spacing, beta=130, eps=1.e-6,
-                        multichannel=False):
+def _compute_weights_3d(data, spacing, beta=130, eps=1.e-6):
     # Weight calculation is main difference in multispectral version
     # Original gradient**2 replaced with sum of gradients ** 2
     gradients = 0
@@ -69,10 +68,6 @@ def _compute_weights_3d(data, spacing, beta=130, eps=1.e-6,
                                            spacing) ** 2
     # All channels considered together in this standard deviation
     beta /= 10 * data.std()
-    if multichannel:
-        # New final term in beta to give == results in trivial case where
-        # multiple identical spectra are passed.
-        beta /= np.sqrt(data.shape[-1])
     gradients *= beta
     weights = np.exp(- gradients)
     weights += eps
@@ -105,10 +100,8 @@ def _make_laplacian_sparse(edges, weights):
     return lap.tocsr()
 
 
-def _clean_labels_ar(X, labels, copy=False):
+def _clean_labels_ar(X, labels):
     X = X.astype(labels.dtype)
-    if copy:
-        labels = np.copy(labels)
     labels = np.ravel(labels)
     labels[labels == 0] = X
     return labels
@@ -155,12 +148,10 @@ def _mask_edges_weights(edges, weights, mask):
     return edges, weights
 
 
-def _build_laplacian(data, spacing, mask=None, beta=50,
-                     multichannel=False):
+def _build_laplacian(data, spacing, mask=None, beta=50):
     l_x, l_y, l_z = tuple(data.shape[i] for i in range(3))
     edges = _make_graph_edges_3d(l_x, l_y, l_z)
-    weights = _compute_weights_3d(data, spacing, beta=beta, eps=1.e-10,
-                                  multichannel=multichannel)
+    weights = _compute_weights_3d(data, spacing, beta=beta, eps=1.e-10)
     if mask is not None:
         edges, weights = _mask_edges_weights(edges, weights, mask)
     lap = _make_laplacian_sparse(edges, weights)
@@ -172,7 +163,7 @@ def _build_laplacian(data, spacing, mask=None, beta=50,
 
 
 def _random_walker(data, labels, beta=130, mode='cg', tol=1.e-3, copy=True,
-                   return_full_prob=False, spacing=None):
+                   spacing=None):
     """Random walker algorithm for segmentation from markers.
 
     Parameters
@@ -212,9 +203,6 @@ def _random_walker(data, labels, beta=130, mode='cg', tol=1.e-3, copy=True,
         If copy is False, the `labels` array will be overwritten with
         the result of the segmentation. Use copy=False if you want to
         save on memory.
-    return_full_prob : bool, default False
-        If True, the probability that a pixel belongs to each of the labels
-        will be returned, instead of only the most likely label.
     spacing : iterable of floats
         Spacing between voxels in each spatial dimension. If `None`, then
         the spacing between pixels/voxels in each dimension is assumed 1.
@@ -222,12 +210,9 @@ def _random_walker(data, labels, beta=130, mode='cg', tol=1.e-3, copy=True,
     Returns
     -------
     output : ndarray
-        * If `return_full_prob` is False, array of ints of same shape as
-          `data`, in which each pixel has been labeled according to the marker
-          that reached the pixel first by anisotropic diffusion.
-        * If `return_full_prob` is True, array of floats of shape
-          `(nlabels, data.shape)`. `output[label_nb, i, j]` is the probability
-          that label `label_nb` reaches the pixel `(i, j)` first.
+        * An array of ints of same shape as `data`, in which each pixel has
+          been labeled according to the marker that reached the pixel first
+          by anisotropic diffusion.
 
     Notes
     -----
@@ -275,28 +260,13 @@ def _random_walker(data, labels, beta=130, mode='cg', tol=1.e-3, copy=True,
     """
     # Parse input data
     if mode is None:
-        if amg_loaded:
-            mode = 'cg_mg'
-        else:
-            mode = 'cg'
+        mode = 'cg'
 
     if (labels != 0).all():
         warnings.warn('Random walker only segments unlabeled areas, where '
                       'labels == 0. No zero valued areas in labels were '
                       'found. Returning provided labels.')
-
-        if return_full_prob:
-            # Find and iterate over valid labels
-            unique_labels = np.unique(labels)
-            unique_labels = unique_labels[unique_labels > 0]
-
-            out_labels = np.empty(labels.shape + (len(unique_labels),),
-                                  dtype=np.bool)
-            for n, i in enumerate(unique_labels):
-                out_labels[..., n] = (labels == i)
-
-        else:
-            out_labels = labels
+        out_labels = labels
         return out_labels
 
     # We take multichannel as always False since we are not strictly using
@@ -340,11 +310,10 @@ def _random_walker(data, labels, beta=130, mode='cg', tol=1.e-3, copy=True,
         del filled
     labels = np.atleast_3d(labels)
     if np.any(labels < 0):
-        lap_sparse = _build_laplacian(data, spacing, mask=labels >= 0,
-                                      beta=beta, multichannel=multichannel)
+        lap_sparse = _build_laplacian(data, spacing, mask=labels >= 0, beta=beta)
     else:
-        lap_sparse = _build_laplacian(data, spacing, beta=beta,
-                                      multichannel=multichannel)
+        lap_sparse = _build_laplacian(data, spacing, beta=beta)
+
     lap_sparse, B = _buildAB(lap_sparse, labels)
 
     # We solve the linear system
@@ -352,31 +321,19 @@ def _random_walker(data, labels, beta=130, mode='cg', tol=1.e-3, copy=True,
     # where X[i, j] is the probability that a marker of label i arrives
     # first at pixel j by anisotropic diffusion.
     if mode == 'cg':
-        X = _solve_cg(lap_sparse, B, tol=tol,
-                      return_full_prob=return_full_prob)
+        X = _solve_cg(lap_sparse, B, tol=tol, return_full_prob=False)
     if mode == 'cg_mg':
         if not amg_loaded:
             warnings.warn(
                 """pyamg (http://pyamg.org/)) is needed to use
                 this mode, but is not installed. The 'cg' mode will be used
                 instead.""")
-            X = _solve_cg(lap_sparse, B, tol=tol,
-                          return_full_prob=return_full_prob)
+            X = _solve_cg(lap_sparse, B, tol=tol, return_full_prob=False)
         else:
-            X = _solve_cg_mg(lap_sparse, B, tol=tol,
-                             return_full_prob=return_full_prob)
+            X = _solve_cg_mg(lap_sparse, B, tol=tol, return_full_prob=False)
 
     # Clean up results
-    if return_full_prob:
-        labels = labels.astype(np.float)
-        X = np.array([_clean_labels_ar(Xline, labels, copy=True).reshape(dims)
-                      for Xline in X])
-        for i in range(1, int(labels.max()) + 1):
-            mask_i = np.squeeze(labels == i)
-            X[:, mask_i] = 0
-            X[i - 1, mask_i] = 1
-    else:
-        X = _clean_labels_ar(X + 1, labels).reshape(dims)
+    X = _clean_labels_ar(X + 1, labels).reshape(dims)
     return X
 
 
