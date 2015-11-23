@@ -125,7 +125,7 @@ def connected_regions(maps_img, min_size=50,
             seeds_label, seeds_id = label(seeds)
             # Assign -1 to values which are 0. to indicate to ignore
             seeds_label[map_ == 0.] = -1
-            rw_maps = _random_walker(map_, seeds_label, mode='cg_mg')
+            rw_maps = _random_walker(map_, seeds_label, mode='cg')
             # Now simply replace "-1" with "0" for regions seperation
             rw_maps[rw_maps == -1] = 0.
             label_maps = rw_maps

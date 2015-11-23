@@ -4,9 +4,6 @@ Random walker segmentation algorithm
 from *Random walks for image segmentation*, Leo Grady, IEEE Trans
 Pattern Anal Mach Intell. 2006 Nov;28(11):1768-83.
 
-Installing pyamg and using the 'cg_mg' mode of random_walker improves
-significantly the performance.
-
 This code is mostly adapted from scikit-image 0.11.3 release.
 """
 
@@ -16,11 +13,6 @@ from scipy import sparse, ndimage as ndi
 
 from sklearn.utils import as_float_array
 
-try:
-    from pyamg import ruge_stuben_solver
-    amg_loaded = True
-except ImportError:
-    amg_loaded = False
 from scipy.sparse.linalg import cg
 
 #-----------Laplacian--------------------
@@ -181,24 +173,16 @@ def _random_walker(data, labels, beta=130, mode='cg', tol=1.e-3, copy=True,
     beta : float
         Penalization coefficient for the random walker motion
         (the greater `beta`, the more difficult the diffusion).
-    mode : string, available options {'cg_mg', 'cg'}
+    mode : string, available options {'cg'}
         Mode for solving the linear system in the random walker algorithm.
-        If no preference given, automatically attempt to use the fastest
-        option available ('cg_mg' from pyamg >> 'cg' with UMFPACK).
 
         - 'cg' (conjugate gradient): the linear system is solved iteratively
           using the Conjugate Gradient method from scipy.sparse.linalg. This is
           less memory-consuming than the brute force method for large images,
           but it is quite slow.
-        - 'cg_mg' (conjugate gradient with multigrid preconditioner): a
-          preconditioner is computed using a multigrid solver, then the
-          solution is computed with the Conjugate Gradient method.  This mode
-          requires that the pyamg module (http://pyamg.org/) is
-          installed. For images of size > 512x512, this is the recommended
-          (fastest) mode.
     tol : float
         tolerance to achieve when solving the linear system, in
-        cg' and 'cg_mg' modes.
+        cg' mode.
     copy : bool
         If copy is False, the `labels` array will be overwritten with
         the result of the segmentation. Use copy=False if you want to
@@ -322,15 +306,6 @@ def _random_walker(data, labels, beta=130, mode='cg', tol=1.e-3, copy=True,
     # first at pixel j by anisotropic diffusion.
     if mode == 'cg':
         X = _solve_cg(lap_sparse, B, tol=tol, return_full_prob=False)
-    if mode == 'cg_mg':
-        if not amg_loaded:
-            warnings.warn(
-                """pyamg (http://pyamg.org/)) is needed to use
-                this mode, but is not installed. The 'cg' mode will be used
-                instead.""")
-            X = _solve_cg(lap_sparse, B, tol=tol, return_full_prob=False)
-        else:
-            X = _solve_cg_mg(lap_sparse, B, tol=tol, return_full_prob=False)
 
     # Clean up results
     X = _clean_labels_ar(X + 1, labels).reshape(dims)
@@ -347,25 +322,6 @@ def _solve_cg(lap_sparse, B, tol, return_full_prob=False):
     X = []
     for i in range(len(B)):
         x0 = cg(lap_sparse, -B[i].todense(), tol=tol)[0]
-        X.append(x0)
-    if not return_full_prob:
-        X = np.array(X)
-        X = np.argmax(X, axis=0)
-    return X
-
-
-def _solve_cg_mg(lap_sparse, B, tol, return_full_prob=False):
-    """
-    solves lap_sparse X_i = B_i for each phase i, using the conjugate
-    gradient method with a multigrid preconditioner (ruge-stuben from
-    pyamg). For each pixel, the label i corresponding to the maximal
-    X_i is returned.
-    """
-    X = []
-    ml = ruge_stuben_solver(lap_sparse)
-    M = ml.aspreconditioner(cycle='V')
-    for i in range(len(B)):
-        x0 = cg(lap_sparse, -B[i].todense(), tol=tol, M=M, maxiter=30)[0]
         X.append(x0)
     if not return_full_prob:
         X = np.array(X)
