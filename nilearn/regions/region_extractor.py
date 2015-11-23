@@ -121,8 +121,7 @@ def connected_regions(maps_img, min_size=50,
         # Mark the seeds using random walker
         if extract_type == 'local_regions':
             smooth_map = _smooth_array(map_, affine, peak_local_smooth)
-            seeds = _peak_local_max(smooth_map, indices=False,
-                                    exclude_border=False)
+            seeds = _peak_local_max(smooth_map, indices=False)
             seeds_label, seeds_id = label(seeds)
             # Assign -1 to values which are 0. to indicate to ignore
             seeds_label[map_ == 0.] = -1

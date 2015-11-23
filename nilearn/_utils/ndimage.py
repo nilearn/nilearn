@@ -50,7 +50,7 @@ def get_border_data(data, border_size):
 
 
 def _peak_local_max(image, min_distance=10, threshold_abs=0, threshold_rel=0.1,
-                    exclude_border=True, indices=True, num_peaks=np.inf):
+                    indices=True, num_peaks=np.inf):
     """Find peaks in an image, and return them as coordinates or a boolean array.
 
     Peaks are the local maxima in a region of `2 * min_distance + 1`
@@ -66,16 +66,11 @@ def _peak_local_max(image, min_distance=10, threshold_abs=0, threshold_rel=0.1,
     min_distance : int
         Minimum number of pixels separating peaks in a region of `2 *
         min_distance + 1` (i.e. peaks are separated by at least
-        `min_distance`). If `exclude_border` is True, this value also excludes
-        a border `min_distance` from the image boundary.
-        To find the maximum number of peaks, use `min_distance=1`.
+        `min_distance`). To find the maximum number of peaks, use `min_distance=1`.
     threshold_abs : float
         Minimum intensity of peaks.
     threshold_rel : float
         Minimum intensity of peaks calculated as `max(image) * threshold_rel`.
-    exclude_border : bool
-        If True, `min_distance` excludes peaks from the border of the image as
-        well as from each other.
     indices : bool
         If True, the output will be an array representing peak coordinates.
         If False, the output will be a boolean array shaped as `image.shape`
@@ -118,14 +113,6 @@ def _peak_local_max(image, min_distance=10, threshold_abs=0, threshold_rel=0.1,
 
     mask = (image == image_max)
     image *= mask
-
-    if exclude_border:
-        # zero out the image borders
-        for i in range(image.ndim):
-            image = image.swapaxes(0, i)
-            image[:min_distance] = 0
-            image[-min_distance:] = 0
-            image = image.swapaxes(0, i)
 
     # find top peak candidates above a threshold
     peak_threshold = max(np.max(image.ravel()) * threshold_rel, threshold_abs)

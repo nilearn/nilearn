@@ -26,8 +26,7 @@ def test_largest_cc():
 def test_empty_peak_local_max():
     image = np.zeros((10, 20))
     result = _peak_local_max(image, min_distance=1,
-                             threshold_rel=0, indices=False,
-                             exclude_border=False)
+                             threshold_rel=0, indices=False)
     assert np.all(~ result)
 
 
@@ -56,3 +55,21 @@ def test_num_peaks_in_peak_local_max():
     assert (1, 5) in peaks_limited
     assert (1, 1) in peaks_limited
     assert (3, 5) in peaks_limited
+
+
+def test_relative_and_absolute_thresholds_in_peak_local_max():
+    image = np.zeros((5, 5), dtype=np.uint8)
+    image[1, 1] = 10
+    image[3, 3] = 20
+    peaks_rel = _peak_local_max(image, min_distance=1, threshold_rel=0.5)
+    assert len(peaks_rel) == 1
+    np.testing.assert_allclose(peaks_rel, [(3, 3)])
+    peaks_abs = _peak_local_max(image, min_distance=1, threshold_abs=10)
+    assert len(peaks_abs) == 1
+    np.testing.assert_allclose(peaks_abs, [(3, 3)])
+
+
+def test_constant_image_in_peak_local_max():
+    image = 128 * np.ones((20, 20), dtype=np.uint8)
+    peaks = _peak_local_max(image, min_distance=1)
+    assert len(peaks) == 0
