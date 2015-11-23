@@ -939,6 +939,9 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
             Predicted class label per sample.
         """
         # cast X into usual 2D array
+        if not hasattr(self, "masker_"):
+            raise RuntimeError("This %s instance is not fitted yet!" % (
+                self.__class__.__name__))
         X = self.masker_.transform(X)
 
         # handle regression (least-squared loss)
