@@ -14,7 +14,9 @@ import sys
 import tarfile
 import warnings
 import zipfile
+
 from .._utils.compat import _basestring, cPickle, _urllib, md5_hash
+
 
 def _format_time(t):
     if t > 60:
@@ -61,11 +63,14 @@ def readlinkabs(link):
     return os.path.join(os.path.dirname(link), path)
 
 
-def _chunk_report_(bytes_so_far, total_size, initial_size, t0):
+def _chunk_report_(cur_chunk_size, bytes_so_far, total_size, initial_size, t0):
     """Show downloading percentage.
 
     Parameters
     ----------
+    cur_chunk_size: int
+        Number of bytes downloaded on current iteration (0=>end of download)
+
     bytes_so_far: int
         Number of downloaded bytes
 
@@ -82,7 +87,7 @@ def _chunk_report_(bytes_so_far, total_size, initial_size, t0):
     """
 
     if not total_size:
-        sys.stderr.write("Downloaded %d of ? bytes\r" % (bytes_so_far))
+        sys.stderr.write("\rDownloaded %d of ? bytes." % (bytes_so_far))
 
     else:
         # Estimate remaining download time
@@ -98,7 +103,7 @@ def _chunk_report_(bytes_so_far, total_size, initial_size, t0):
         # Trailing whitespace is to erase extra char when message length
         # varies
         sys.stderr.write(
-            "Downloaded %d of %d bytes (%0.2f%%, %s remaining)  \r"
+            "\rDownloaded %d of %d bytes (%0.2f%%, %s remaining)"
             % (bytes_so_far, total_size, total_percent * 100,
                _format_time(time_remaining)))
 
@@ -141,9 +146,9 @@ def _chunk_read_(response, local_file, chunk_size=8192, report_hook=None,
             total_size = response.info().get('Content-Length').strip()
         total_size = int(total_size) + initial_size
     except Exception as e:
-        if verbose > 1:
+        if verbose > 2:
             print("Warning: total size could not be determined.")
-            if verbose > 2:
+            if verbose > 3:
                 print("Full stack trace: %s" % e)
         total_size = None
     bytes_so_far = initial_size
@@ -152,15 +157,13 @@ def _chunk_read_(response, local_file, chunk_size=8192, report_hook=None,
     while True:
         chunk = response.read(chunk_size)
         bytes_so_far += len(chunk)
-
-        if not chunk:
-            if report_hook:
-                sys.stderr.write('\n')
-            break
-
-        local_file.write(chunk)
         if report_hook:
-            _chunk_report_(bytes_so_far, total_size, initial_size, t0)
+            _chunk_report_(len(chunk), bytes_so_far, total_size, initial_size, t0)
+
+        if chunk:
+            local_file.write(chunk)
+        else:
+            break
 
     return
 
@@ -279,7 +282,7 @@ def _uncompress_file(file_, delete_archive=True, verbose=1):
     This handles zip, tar, gzip and bzip files only.
     """
     if verbose > 0:
-        print('Extracting data from %s...' % file_)
+        sys.stderr.write('Extracting data from %s...' % file_)
     data_dir = os.path.dirname(file_)
     # We first try to see if it is a zip file
     try:
@@ -317,7 +320,7 @@ def _uncompress_file(file_, delete_archive=True, verbose=1):
         if delete_archive:
             os.remove(file_)
         if verbose > 0:
-            print('   ...done.')
+            sys.stderr.write('.. done.\n')
     except Exception as e:
         if verbose > 0:
             print('Error uncompressing file: %s' % e)
@@ -527,20 +530,16 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False,
         shutil.move(temp_full_name, full_name)
         dt = time.time() - t0
         if verbose > 0:
-            print('...done. (%i seconds, %i min)' % (dt, dt // 60))
-    except _urllib.error.HTTPError as e:
-        if verbose > 0:
-            print('Error while fetching file %s. Dataset fetching aborted.' %
-                  (file_name))
-        if verbose > 1:
-            print("HTTP Error: %s, %s" % (e, url))
-        raise
-    except _urllib.error.URLError as e:
-        if verbose > 0:
-            print('Error while fetching file %s. Dataset fetching aborted.' %
-                  (file_name))
-        if verbose > 1:
-            print("URL Error: %s, %s" % (e, url))
+            # Complete the reporting hook
+            sys.stderr.write(' ...done. (%i seconds, %i min)\n' % (dt, dt // 60))
+    except (_urllib.error.HTTPError, _urllib.error.URLError) as e:
+        if 'Error while fetching' not in str(e):
+            # For some odd reason, the error message gets doubled up
+            #   (possibly from the re-raise), so only add extra info
+            #   if it's not already there.
+            e.reason = ("%s| Error while fetching file %s; "
+                          "dataset fetching aborted." % (
+                            str(e.reason), file_name))
         raise
     finally:
         if local_file is not None:
