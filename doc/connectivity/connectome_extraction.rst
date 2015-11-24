@@ -227,7 +227,7 @@ information.
 
 
 .. [#] A lot of technical details on the algorithm used for group-sparse
-       estimation and its implementation can be found in 
+       estimation and its implementation can be found in
        :doc:`../developers/group_sparse_covariance`.
 
 .. topic:: **Reference**
@@ -257,7 +257,7 @@ Deviations from this mean in the tangent space are provided in the connectivitie
 .. topic:: **Full example**
 
     See the following example for a full file running the analysis:
-    :ref:`example_connectivity_plot_connectivity_measures.py`
+    :ref:`sphx_glr_auto_examples_connectivity_plot_connectivity_measures.py`
 
 .. topic:: **Exercise: computing connectivity in tangent space**
    :class: green
@@ -270,5 +270,3 @@ Deviations from this mean in the tangent space are provided in the connectivitie
 .. topic:: **Reference**
 
  * The `tangent space for connectivity [Varoquaux et al, MICCAI 2010] <http://link.springer.com/chapter/10.1007%2F978-3-642-15705-9_25>`_
-
-
