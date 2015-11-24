@@ -21,7 +21,7 @@ import shutil
 # is relative to the documentation root, use os.path.abspath to make it
 # absolute, like shown here.
 sys.path.insert(0, os.path.abspath('sphinxext'))
-import sphinxgallery
+import sphinx_gallery
 
 # We also add the directory just above to enable local imports of nilearn
 sys.path.insert(0, os.path.abspath('..'))
@@ -46,7 +46,7 @@ except:
 extensions = ['sphinx.ext.autodoc', 'sphinx.ext.autosummary',
               'sphinx.ext.pngmath', 'sphinx.ext.intersphinx',
               'numpy_ext.numpydoc',
-              'sphinxgallery.gen_gallery',
+              'sphinx_gallery.gen_gallery',
               ]
 
 autosummary_generate = True
@@ -164,7 +164,7 @@ html_favicon = 'logos/favicon.ico'
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['images', sphinxgallery.glr_path_static()]
+html_static_path = ['images']
 
 # If not '', a 'Last updated on:' timestamp is inserted at every page bottom,
 # using the given strftime format.
@@ -281,7 +281,7 @@ extlinks = {
     'compound': (_python_doc_base + '/reference/compound_stmts.html#%s', ''),
 }
 
-sphinxgallery_conf = {
+sphinx_gallery_conf = {
     'doc_module'        : 'nilearn',
     'reference_url'     : {
         'nilearn': None,
