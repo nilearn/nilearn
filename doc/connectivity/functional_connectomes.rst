@@ -19,7 +19,7 @@ Extracting times series to build a functional connectome
 
    * `Varoquaux and Craddock, Learning and comparing functional
      connectomes across subjects, NeuroImage 2013
-     <http://www.sciencedirect.com/science/article/pii/S1053811913003340>`_ 
+     <http://www.sciencedirect.com/science/article/pii/S1053811913003340>`_
 
 .. _parcellation_time_series:
 
@@ -84,7 +84,7 @@ filenames or `NiftiImage objects
 Note that confound signals can be specified in the call. Indeed, to
 obtain time series that capture well the functional interactions between
 regions, regressing out noise sources is indeed very important
-`[Varoquaux & Craddock 2013] <https://hal.inria.fr/hal-00812911/>`_. 
+`[Varoquaux & Craddock 2013] <https://hal.inria.fr/hal-00812911/>`_.
 
 .. image:: ../auto_examples/connectivity/images/sphx_glr_plot_signal_extraction_001.png
    :target: ../auto_examples/connectivity/plot_signal_extraction.html
@@ -135,7 +135,7 @@ atlas well suited to resting-state data analysis is the `MSDL atlas
 Probabilistic atlases are represented as a set of continuous maps, in a
 4D nifti image. Visualization the atlas thus requires to visualize each
 of these maps, which requires accessing them with
-:func:`nilearn.image.index_img` (see the :ref:`corresponding example <sphx_glr_auto_examples_manipulating_visualizing_plot_probabilistic_atlas.py>`).
+:func:`nilearn.image.index_img` (see the :ref:`corresponding example <sphx_glr_auto_examples_manipulating_visualizing_plot_overlay.py>`).
 
 .. image:: ../auto_examples/manipulating_visualizing/images/sphx_glr_plot_overlay_001.png
    :target: ../auto_examples/manipulating_visualizing/plot_overlay.html
@@ -202,9 +202,9 @@ In the case of the MSDL atlas
 with MNI coordinates for each region (see for instance example:
 :ref:`sphx_glr_auto_examples_connectivity_plot_probabilistic_atlas_extraction.py`).
 
-..  
+..
     For doctesting
-    
+
     >>> from nilearn import datasets
     >>> atlas_filename = datasets.fetch_atlas_msdl().maps # doctest: +SKIP
 
@@ -230,11 +230,9 @@ only direct connections.
 
 .. topic:: **References**
 
-  * `Zalesky NeuroImage 2012 "On the use of correlation as a measure of 
+  * `Zalesky NeuroImage 2012 "On the use of correlation as a measure of
     network connectivity" <http://www.sciencedirect.com/science/article/pii/S1053811912001784>`_
 
   * `Varoquaux NeuroImage 2013, Learning and comparing functional
     connectomes across subjects,
-    <http://www.sciencedirect.com/science/article/pii/S1053811913003340>`_ 
-
- 
+    <http://www.sciencedirect.com/science/article/pii/S1053811913003340>`_
