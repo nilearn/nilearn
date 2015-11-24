@@ -1432,9 +1432,6 @@ def fetch_megatrawls_netmats(data_dir=None, dimensionality=[25, 50, 100, 200, 30
             raise TypeError("If %s is given as single element, it should be "
                             "like a list as ['%s']" % (name, each_input))
 
-    url = "http://www.nitrc.org/frs/download.php/8037/Megatrawls.tgz"
-    opts = {'uncompress': True}
-
     dataset_name = 'Megatrawls'
     data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir, verbose=verbose)
     description = _get_dataset_descr(dataset_name)
