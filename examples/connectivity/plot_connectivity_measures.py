@@ -69,7 +69,7 @@ for kind in kinds:
 # Use the connectivity coefficients to classify ADHD vs controls
 from sklearn.svm import LinearSVC
 from sklearn.cross_validation import StratifiedKFold, cross_val_score
-classes = [site + str(adhd) for site, adhd in zip(sites, adhds)]
+classes = ['{0}{1}'.format(site, adhd) for site, adhd in zip(sites, adhds)]
 print('Classification accuracy:')
 mean_scores = []
 cv = StratifiedKFold(classes, n_folds=3)
