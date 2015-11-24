@@ -2,6 +2,10 @@
 # Author: Óscar Nájera
 # License: 3-clause BSD
 """
+==================
+RST file generator
+==================
+
 Generate the rst files for the examples by iterating over the python
 example files.
 

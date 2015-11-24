@@ -426,7 +426,7 @@ def embed_code_links(app, exception):
 
     print('Embedding documentation hyperlinks in examples..')
 
-    gallery_conf = app.config.sphinxgallery_conf
+    gallery_conf = app.config.sphinx_gallery_conf
 
     gallery_dirs = gallery_conf['gallery_dirs']
     if not isinstance(gallery_dirs, list):

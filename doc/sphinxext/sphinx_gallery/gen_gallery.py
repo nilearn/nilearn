@@ -1,6 +1,15 @@
 # -*- coding: utf-8 -*-
 # Author: Óscar Nájera
 # License: 3-clause BSD
+"""
+========================
+Sphinx-Gallery Generator
+========================
+
+Attaches Sphinx-Gallery to Sphinx in order to generate the galleries
+when building the documentation.
+"""
+
 
 from __future__ import division, print_function, absolute_import
 import os
@@ -43,10 +52,10 @@ def generate_gallery_rst(app):
     except TypeError:
         plot_gallery = bool(app.builder.config.plot_gallery)
 
-    gallery_conf.update(app.config.sphinxgallery_conf)
+    gallery_conf.update(app.config.sphinx_gallery_conf)
 
     # this assures I can call the config in other places
-    app.config.sphinxgallery_conf = gallery_conf
+    app.config.sphinx_gallery_conf = gallery_conf
     app.config.html_static_path.append(glr_path_static())
 
     if not plot_gallery:
@@ -104,7 +113,7 @@ gallery_conf = {
 def setup(app):
     """Setup sphinx-gallery sphinx extension"""
     app.add_config_value('plot_gallery', True, 'html')
-    app.add_config_value('sphinxgallery_conf', gallery_conf, 'html')
+    app.add_config_value('sphinx_gallery_conf', gallery_conf, 'html')
     app.add_stylesheet('gallery.css')
 
     app.connect('builder-inited', generate_gallery_rst)

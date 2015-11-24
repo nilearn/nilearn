@@ -2,6 +2,10 @@
 # Author: Óscar Nájera
 # License: 3-clause BSD
 """
+========================
+Backreferences Generator
+========================
+
 Reviews generated example files in order to keep track of used modules
 """
 
@@ -168,9 +172,9 @@ def write_backreferences(seen_backrefs, gallery_conf,
         seen = backref in seen_backrefs
         with open(include_path, 'a' if seen else 'w') as ex_file:
             if not seen:
-                heading = 'Examples using ``%s``' % backref
+                heading = '\n\nExamples using ``%s``' % backref
                 ex_file.write(heading + '\n')
-                ex_file.write('-' * len(heading) + '\n')
+                ex_file.write('^' * len(heading) + '\n')
             ex_file.write(_thumbnail_div(target_dir, fname, snippet,
                                          is_backref=True))
             seen_backrefs.add(backref)
