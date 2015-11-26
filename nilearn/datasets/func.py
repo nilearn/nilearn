@@ -1306,37 +1306,35 @@ def fetch_megatrawls_netmats(data_dir=None, dimensionality=[25, 50, 100, 200, 30
         Path of the data directory. Used to force data storage in a specified
         location.
 
-    dimensionality: list of integers, optional
-        Possible options are [25, 50, 100, 200, 300]
-        25 - Group ICA brain parcellations with dimensionality = 25
-        50 - Group ICA brain parcellations with dimensionality = 50
-        100 - Group ICA brain parcellations with dimensionality = 100
-        200 - Group ICA brain parcellations with dimensionality = 200
-        300 - Group ICA brain parcellations with dimensionality = 300
-
+    dimensionality: integer or integers as list, optional
+        Valid dimensions in integers are [25, 50, 100, 200, 300].
         By default, network matrices data estimated from brain parcellations
-        of all dimensionalities are fetched as seperate arrays.
+        of all dimensionalities are returned each in a separate dimensional
+        array (n, n).
+        If set to specific dimension, then network matrices related to
+        particular dimension of brain parcellations will be returned. For example,
+        if set as [25, 50] only data corresponding to dimensionality 25 and 50
+        of array (25, 25) and (50, 50) will be fetched.
 
-        If given as list of specific integers, network matrices
-        related to that particular dimensionality of brain parcellations
-        are fetched. For example, if given as [25, 50] only data
-        corresponding to dimensionality 25 and 50 will be fetched.
+    timeseries: string or strings as list, optional
+        Valid methods in strings are ['multiple_spatial_regression', 'eigen_regression']
+        By default, network matrices of both types of timeseries signal extraction
+        methods will be returned. Each method has its own matrix array.
+        If set to ['multiple_spatial_regression'], then correlation matrices
+        estimated using spatial regressor based extraction of subject specific
+        timeseries signals will be returned.
+        If set to ['eigen_regression'], then correlation matrices estimated using
+        first principal eigen component based extraction of subject specific
+        timeseries signals will be returned.
+        For full technical details about each method. Refer to [3] [4] [5]
 
-    timeseries: string list ['mutiple_spatial_regression', 'eigen_regression'] \
-        default is both, optional
-        'multiple_spatial_regression' - denotes the averaged timeseries signals
-        which were extracted using mutiple spatial regression, in which full set
-        of ICA maps were used as spatial regressors against the subjects datasets
-        resulting a subject specific timeseries signals. [3]
-        'eigen_regression' - denotes the principal eigen timeseries signals which were
-        extracted using multiple spatial regression, but the subject
-        specific timeseries signals are extracted using SVD. The first
-        eigen timeseries of each subject rather than simple averaging. [4] [5]
-
-    matrices: string list ['correlation', 'partial_correlation'], optional
-        By default, both data matrices will be fetched.
-        or If given as only ['correlation'], data matrices of its type will be
-        fetched.
+    matrices: string or strings as list, optional
+        Valid output matrices in strings are ['correlation', 'partial_correlation']
+        By default, matrices of both types will be returned.
+        If set as only ['correlation'], matrices of only full correlation
+        will be returned.
+        If set as ['partial_correlation'], only partial correlation matrices
+        will be fetched.
 
     resume: boolean, default is True
         This parameter is required if a partly downloaded file is needed to be
@@ -1416,21 +1414,21 @@ def fetch_megatrawls_netmats(data_dir=None, dimensionality=[25, 50, 100, 200, 30
     timeseries_methods = ['multiple_spatial_regression', 'eigen_regression']
     output_matrices = ['correlation', 'partial_correlation']
 
-    message = ("Invalid {0} name: {1}. "
-               "Please choose either of them:{2}")
+    message = ("Invalid {0} name is given: {1}. "
+               "Please choose either of them {2}")
 
     inputs = [dimensionality, timeseries, matrices]
     standards = [dimensionalities, timeseries_methods, output_matrices]
     error_names = ['dimensionality', 'timeseries', 'matrices']
 
     for each_input, standard, name in izip(inputs, standards, error_names):
-        if isinstance(each_input, list):
+        if not isinstance(each_input, list):
+            raise TypeError("Input given for {0} should be in list. "
+                            "You have given as single variable: {1}".format(name, each_input))
+        elif isinstance(each_input, list):
             for each_str in each_input:
                 if each_str not in standard:
                     raise ValueError(message.format(name, each_str, str(standard)))
-        elif not isinstance(each_input, list):
-            raise TypeError("If %s is given as single element, it should be "
-                            "like a list as ['%s']" % (name, each_input))
 
     dataset_name = 'Megatrawls'
     data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir, verbose=verbose)

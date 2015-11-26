@@ -367,44 +367,53 @@ def test_fetch_mixed_gambles():
 
 def test_wrong_inputs_of_dimensionality_timeseriesmethods_matrices():
 
-    message = "Invalid %s name"
+    message = "Invalid {0} name is given: {1}"
 
-    dimensionality = ['a10', 'd15', 'd30']
+    invalid_inputs_dimensionality = [1, 5, 30]
     assert_raises_regex(ValueError,
-                        message % 'dimensionality',
+                        message.format('dimensionality', invalid_inputs_dimensionality),
                         func.fetch_megatrawls_netmats,
-                        dimensionality=dimensionality)
+                        dimensionality=invalid_inputs_dimensionality)
 
-    timeseries = ['ts4', 'st2', 'eigen_regresion', 'multiple_sptial_regresion']
+    invalid_inputs_timeseries = ['asdf', 'time', 'st2']
     assert_raises_regex(ValueError,
-                        message % 'timeseries',
+                        message.format('timeseries', invalid_inputs_timeseries),
                         func.fetch_megatrawls_netmats,
-                        timeseries=timeseries)
+                        timeseries=invalid_inputs_timeseries)
 
-    matrices = ['partal_corelation', 'sorelation']
+    invalid_outputs = ['net1', 'net2']
     assert_raises_regex(ValueError,
-                        message % 'matrices',
+                        message.format('matrices', invalid_outputs),
+                        func.fetch_megatrawls_netmats,
+                        matrices=invalid_outputs)
+
+    # giving a valid input as a single element but not as a list to test
+    # if it raises same error message
+    matrices = 'correlation'
+    assert_raises_regex(TypeError,
+                        "Input given for {0} should be in list. "
+                        "You have given as single variable: {1}".format('matrices', matrices),
                         func.fetch_megatrawls_netmats,
                         matrices=matrices)
-
-    assert_raises(TypeError, func.fetch_megatrawls_netmats,
-                  matrices='partial_correlation')
 
 
 @with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
 def test_fetch_megatrawls_netmats():
+    # smoke test to see that files are fetched and read properly
+    # since we are loading information present in it and returning
+    # the same
     for dim in [25, 100, 200, 300]:
         files_dir = os.path.join(tst.tmpdir, 'Megatrawls', '3T_Q1-Q6related468_MSMsulc_d%d_ts3' % dim)
         os.makedirs(files_dir)
-        dummy = open(os.path.join(files_dir, 'Znet2.txt'), 'w')
-        dummy.write("1")
-        dummy.close()
+        with open(os.path.join(files_dir, 'Znet2.txt'), 'w') as net_file:
+            net_file.write("1")
 
     correlations = func.fetch_megatrawls_netmats(data_dir=tst.tmpdir,
                                                  dimensionality=[25, 100, 200, 300],
                                                  timeseries=['eigen_regression'],
                                                  matrices=['partial_correlation'])
 
-    assert_true(correlations.partial_correlation[0], np.ndarray)
+    # expected number of returns sitting in ouput name correlations should be equal
+    assert_equal(len(correlations), 7)
 
     assert_not_equal(correlations.description, '')
