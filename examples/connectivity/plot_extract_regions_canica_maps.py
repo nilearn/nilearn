@@ -34,13 +34,13 @@ from nilearn.regions import region_extractor
 print(" -- Extracting regions from ICA maps and timeseries signals -- ")
 extractor = region_extractor.RegionExtractor(
     components_img, threshold=0.5, thresholding_strategy='ratio_n_voxels',
-    standardize=True, min_size=100)
+    standardize=True, min_region_size=100)
 # Regions extraction from ICA maps
 extractor.fit()
 regions_extracted = extractor.regions_
 n_regions = regions_extracted.shape[3]
 print(" ====== Regions extracted ====== ")
-print(" -- Number of regions extracted from %d ICA components are %d -- " % (
+print(" -- %d regions are extracted from %d ICA components -- " % (
     n_components, n_regions))
 
 # Subjects timeseries signals extraction
@@ -50,10 +50,7 @@ for img, confound in zip(func_filenames, confounds):
     subjects_timeseries.append(signals)
 
 # Computing correlation coefficients of the timeseries signals
-correlation = []
-for subject_ts in subjects_timeseries:
-    corr = np.corrcoef(subject_ts.T)
-    correlation.append(corr)
+correlations = [np.corrcoef(subject_ts.T) for subject_ts in subjects_timeseries]
 
 # Show the results
 import matplotlib.pyplot as plt
@@ -75,11 +72,11 @@ plotting.plot_prob_atlas(regions_extracted, view_type='filled_contours',
 # Show mean of correlation and partial correlation matrices
 title = 'Correlation coefficients showing for %d regions' % n_regions
 plt.figure()
-plt.imshow(np.mean(correlation, axis=0), interpolation="nearest",
+plt.imshow(np.mean(correlations, axis=0), interpolation="nearest",
            vmax=1, vmin=-1, cmap=plt.cm.bwr)
 plt.colorbar()
 plt.title(title)
-plotting.plot_connectome(np.mean(correlation, axis=0),
+plotting.plot_connectome(np.mean(correlations, axis=0),
                          coords, edge_threshold='90%',
                          title='Correlation')
 plt.show()

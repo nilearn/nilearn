@@ -603,47 +603,41 @@ def new_img_like(ref_niimg, data, affine=None, copy_header=False):
 
 def threshold_img(img, threshold, mask_img=None,
                   thresholding_strategy='img_value'):
-    """ Thresholds the given input image based on given input strategy.
+    """ Thresholds the given input image based on specific strategy.
 
     Parameters
     ----------
-    img: a 3D/4D Nifti like image/object
-        a Nifti image consists of statistical or atlas maps which needs
-        to be used in the thresholding process.
+    img: a 3D/4D Niimg-like object
+        Image contains of statistical or atlas maps which should be thresholded.
 
-    threshold: a float or a string or a number
-        A value used to threshold the image.
-        If given as float, this intensity value will be directly used to
-        threshold the image. The value should be within the range of minimum
-        intensity and maximum intensity of the given image.
-        Mostly suitable, if you exactly know which part of the brain regions
-        are to be kept. This value is used in thresholding_strategy='img_value'.
-        or
-        If given as string, it should finish with percent sign e.g. "80%" and
+    threshold: float or string or number
+        If float, we consider it as intensity value and therefore will be used
+        to directly threshold the image meaning thresholding is based on image
+        intensities. The given value should be within the range of minimum and
+        maximum intensity of the image.
+        float option is used with thresholding_strategy='img_value'.
+        If string, it should finish with percent sign e.g. "80%" and
         should be within the range of "0%" to "100%".
-        If given as number, it should be a real number of range between 0 and 100.
-        Both string and real number are used in thresholding_strategy='percentile'.
+        If number, we consider it as percentage in real number and should be within
+        the range between 0 and 100 same like string case.
+        Both string and real number options are used with thresholding_strategy='percentile'.
 
     thresholding_strategy: string {'percentile', 'img_value'}, \
         default 'img_value', optional
-        A strategy which takes the value and thresholds the image.
         If 'percentile', image is thresholded based on the percentage of the
         score on the image data. The scores which are survived above this
         percentile are kept.
-        or
         If 'img_value', voxels which have intensities greater than given float
         value are kept.
 
-    mask_img: a Nifti like image/object, default is None, optional
-        A mask image used to mask the input image data. For example, if mask image
-        of one particular brain region is given then only those region will be
-        used for processing and rest of the regions are masked out to zero.
-        If None, no masking will be applied. Processing will be done on whole brain.
+    mask_img: Niimg-like object, default None, optional
+        Mask image applied to mask the input data.
+        If None, no masking will be applied.
 
     Returns
     -------
-    threshold_img: a Nifti like image/object
-        a thresholded image of the given input image.
+    threshold_img: Niimg-like object
+        thresholded image of the given input image.
     """
     from . import resampling
     from .. import masking

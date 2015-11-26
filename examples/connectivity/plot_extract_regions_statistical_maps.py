@@ -34,7 +34,7 @@ from nilearn.regions import connected_regions
 print(" -- Regions Extraction -- ")
 regions = []
 for strategy in threshold_strategies:
-    region, _ = connected_regions(thresholding[strategy], min_size=200)
+    region, _ = connected_regions(thresholding[strategy], min_region_size=200)
     regions.append(region)
 
 # Visualization

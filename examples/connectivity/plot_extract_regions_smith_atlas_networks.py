@@ -18,7 +18,7 @@ atlas_networks = smith_atlas.rsn10
 from nilearn.regions import region_extractor
 print (" -- Extracting Networks -- ")
 extraction = region_extractor.RegionExtractor(atlas_networks, threshold="98%",
-                                              min_size=100)
+                                              min_region_size=100)
 extraction.fit()
 regions = extraction.regions_
 
