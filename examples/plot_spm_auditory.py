@@ -6,7 +6,6 @@ Author: Bertrand Thirion, dohmatob elvis dopgima, 2015
 """
 
 import os
-import os.path as op
 import numpy as np
 import matplotlib.pyplot as plt
 import nibabel
@@ -20,9 +19,10 @@ from nilearn.image import mean_img
 
 # fetch spm auditory data
 subject_data = fetch_spm_auditory()
-dataset_dir = op.dirname(op.dirname(op.dirname(subject_data.anat)))
+dataset_dir = \
+    os.path.dirname(os.path.dirname(os.path.dirname(subject_data.anat)))
 output_dir = 'results'
-if not op.exists(output_dir):
+if not os.path.exists(output_dir):
     os.mkdir(output_dir)
 
 # construct experimental paradigm

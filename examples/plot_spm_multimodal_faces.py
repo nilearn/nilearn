@@ -63,7 +63,7 @@ for x in range(2):
     paradigm = DataFrame({'name': conditions, 'onset': onsets})
 
     # build design matrix
-    frame_times = np.linspace(0, (n_scans - 1) * tr, n_scans)
+    frame_times = np.arange(n_scans) * tr
     design_matrix = make_design_matrix(
         frame_times, paradigm, hrf_model=hrf_model, drift_model=drift_model,
         period_cut=period_cut)
