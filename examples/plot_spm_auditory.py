@@ -15,12 +15,12 @@ from nistats.design_matrix import (
 from nistats.glm import FirstLevelGLM
 from nistats.datasets import fetch_spm_auditory
 from nilearn.plotting import plot_stat_map
-from nilearn.image import mean_img 
+from nilearn.image import mean_img
 
 # fetch spm auditory data
 subject_data = fetch_spm_auditory()
-dataset_dir = os.path.dirname(os.path.dirname(os.path.dirname(
-            subject_data.anat)))
+dataset_dir = \
+    os.path.dirname(os.path.dirname(os.path.dirname(subject_data.anat)))
 output_dir = 'results'
 if not os.path.exists(output_dir):
     os.mkdir(output_dir)
@@ -28,9 +28,9 @@ if not os.path.exists(output_dir):
 # construct experimental paradigm
 tr = 7.
 n_scans = 96
-_duration = 6
+one_duration = 6  # duration in TR
 n_conditions = 2
-epoch_duration = _duration * tr
+epoch_duration = one_duration * tr  # in seconds now
 conditions = ['rest', 'active'] * 8
 duration = epoch_duration * np.ones(len(conditions))
 onset = np.linspace(0, (len(conditions) - 1) * epoch_duration,
@@ -40,12 +40,12 @@ paradigm = DataFrame(
 
 # construct design matrix
 nscans = len(subject_data.func)
-frametimes = np.linspace(0, (nscans - 1) * tr, nscans)
+frame_times = np.linspace(0, (nscans - 1) * tr, nscans)
 drift_model = 'Cosine'
 hrf_model = 'Canonical With Derivative'
-period_cut = 2 * 2 * epoch_duration
+period_cut = 2. * 2. * epoch_duration
 design_matrix = make_design_matrix(
-    frametimes, paradigm, hrf_model=hrf_model, drift_model=drift_model,
+    frame_times, paradigm, hrf_model=hrf_model, drift_model=drift_model,
     period_cut=period_cut)
 
 # plot and save design matrix
@@ -92,6 +92,5 @@ for contrast_id, contrast_val in contrasts.items():
         display = plot_stat_map(z_map, bg_img=mean_img, threshold=3.0,
                                 display_mode='z', cut_coords=3, black_bg=True,
                                 title=contrast_id)
-
 
 plt.show()

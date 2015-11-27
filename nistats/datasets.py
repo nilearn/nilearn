@@ -20,6 +20,7 @@ SPM_AUDITORY_DATA_FILES.append("sM00223/sM00223_002.img")
 
 def fetch_localizer_first_level(data_dir=None, verbose=1):
     """ Download a first-level localizer fMRI dataset
+
     Parameters
     ----------
     data_dir: string
@@ -58,7 +59,7 @@ def fetch_spm_auditory(data_dir=None, data_name='spm_auditory',
     Parameters
     ----------
     data_dir: string
-        path of the data directory. Used to force data storage in a specified
+        Path of the data directory. Used to force data storage in a specified
         location. If the data is already present there, then will simply
         glob it.
 
@@ -124,7 +125,7 @@ def fetch_spm_auditory(data_dir=None, data_name='spm_auditory',
 
     # maybe data_dir already contains the data ?
     data = _glob_spm_auditory_data()
-    if not data is None:
+    if data is not None:
         return data
 
     # No. Download the data
@@ -215,7 +216,7 @@ def fetch_spm_multimodal_fmri(data_dir=None, data_name="spm_multimodal_fmri",
 
     # maybe data_dir already contains the data ?
     data = _glob_spm_multimodal_fmri_data()
-    if not data is None:
+    if data is not None:
         return data
 
     # No. Download the data
@@ -286,7 +287,7 @@ def fetch_fiac_first_level(data_dir=None, verbose=1):
 
     # maybe data_dir already contains the data ?
     data = _glob_fiac_data()
-    if not data is None:
+    if data is not None:
         return data
 
     # No. Download the data
