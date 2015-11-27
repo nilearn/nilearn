@@ -218,7 +218,7 @@ def _convolve_regressors(paradigm, hrf_model, frame_times, fir_delays=[0],
     return regressor_matrix, regressor_names
 
 
-<<<<<<< HEAD
+
 def _full_rank(X, cmax=1e15):
     """ Computes the condition number of X and if it is larger than cmax,
     returns a matrix with a condition number smaller than cmax.
