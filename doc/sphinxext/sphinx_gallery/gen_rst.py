@@ -371,20 +371,27 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
         os.makedirs(target_dir)
     sorted_listdir = [fname for fname in sorted(os.listdir(src_dir))
                       if fname.endswith('.py')]
+    entries_text = []
     for fname in sorted_listdir:
-        generate_file_rst(fname, target_dir, src_dir, gallery_conf)
+        amount_of_code = generate_file_rst(fname, target_dir, src_dir,
+                                           gallery_conf)
         new_fname = os.path.join(src_dir, fname)
         intro = extract_intro(new_fname)
         write_backreferences(seen_backrefs, gallery_conf,
                              target_dir, fname, intro)
-
-        fhindex += _thumbnail_div(target_dir, fname, intro)
-        fhindex += """
+        this_entry =  _thumbnail_div(target_dir, fname, intro) + """
 
 .. toctree::
    :hidden:
 
    /%s/%s\n""" % (target_dir, fname[:-3])
+        entries_text.append((amount_of_code, this_entry))
+
+    # sort to have the smallest entries in the beginning
+    entries_text.sort()
+
+    for _, entry_text in entries_text:
+        fhindex += entry_text
 
     # clear at the end of the section
     fhindex += """.. raw:: html\n
@@ -455,7 +462,11 @@ def execute_script(code_block, example_globals, image_path, fig_count,
 
 
 def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
-    """ Generate the rst file for a given example."""
+    """ Generate the rst file for a given example.
+
+        Returns the amout of code (in characters) of the corresponding
+        files.
+    """
 
     src_file = os.path.join(src_dir, fname)
     example_file = os.path.join(target_dir, fname)
@@ -515,9 +526,14 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
             else:
                 example_rst += text2string(bcontent) + '\n'
 
+    amount_of_code = sum([len(bcontent)
+                          for blabel, bcontent in script_blocks
+                          if blabel == 'code'])
+
     save_thumbnail(image_path, base_image_name, gallery_conf)
 
     time_m, time_s = divmod(time_elapsed, 60)
     with open(os.path.join(target_dir, base_image_name + '.rst'), 'w') as f:
         example_rst += CODE_DOWNLOAD.format(time_m, time_s, fname)
         f.write(example_rst)
+    return amount_of_code
