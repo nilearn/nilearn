@@ -480,11 +480,15 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
     image_fname = 'sphx_glr_' + base_image_name + '_{0:03}.png'
     image_path = os.path.join(image_dir, image_fname)
 
+    script_blocks = split_code_and_text_blocks(example_file)
+
     if _plots_are_current(src_file, image_path):
-        return
+        amount_of_code = sum([len(bcontent)
+                            for blabel, bcontent in script_blocks
+                            if blabel == 'code'])
+        return amount_of_code
 
     time_elapsed = 0
-    script_blocks = split_code_and_text_blocks(example_file)
 
     ref_fname = example_file.replace(os.path.sep, '_')
     example_rst = """\n\n.. _sphx_glr_{0}:\n\n""".format(ref_fname)
