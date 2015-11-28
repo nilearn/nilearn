@@ -138,7 +138,7 @@ Computing the mask
     The full example described in this section can be found here:
     :doc:`plot_mask_computation.py <../auto_examples/manipulating_visualizing/plot_mask_computation>`.
     It is also related to this example:
-    :doc:`plot_nifti_simple.py <../auto_examples/plot_nifti_simple>`.
+    :doc:`plot_nifti_simple.py <../auto_examples/manipulating_visualizing/plot_nifti_simple>`.
 
 If a mask is not specified as an argument,
 :class:`NiftiMasker` will try to compute

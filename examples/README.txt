@@ -10,6 +10,11 @@
     A few examples may not run with scikit-learn versions older than
     0.14.1.
 
+
+.. contents:: **Contents**
+    :local:
+    :depth: 1
+
 General examples
 ----------------
 
