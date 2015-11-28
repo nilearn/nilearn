@@ -12,15 +12,17 @@ This example reproduces the experiment presented in
 
 It reconstructs 10x10 binary images from functional MRI data. Random images
 are used as training set and structured images are used for reconstruction.
+
+The code is a bit elaborate as the example uses, as the original article,
+a multiscale prediction on the images seen by the subject.
 """
 
-### Imports ###################################################################
-
-from matplotlib import pyplot as plt
+# Some basic imports
 import time
 import sys
 
-### Load Kamitani dataset #####################################################
+############################################################################
+# First we load the Miyawaki dataset
 from nilearn import datasets
 sys.stderr.write("Fetching dataset...")
 t0 = time.time()
@@ -39,7 +41,8 @@ y_shape = (10, 10)
 
 sys.stderr.write(" Done (%.2fs).\n" % (time.time() - t0))
 
-### Preprocess and mask #######################################################
+############################################################################
+# Then we prepare and mask the data
 import numpy as np
 from nilearn.input_data import MultiNiftiMasker
 
@@ -53,7 +56,7 @@ masker.fit()
 X_train = masker.transform(X_random_filenames)
 X_test = masker.transform(X_figure_filenames)
 
-# Load visual stimuli from csv files
+# We load the visual stimuli from csv files
 y_train = []
 for y in y_random_filenames:
     y_train.append(np.reshape(np.loadtxt(y, dtype=np.int, delimiter=','),
@@ -124,12 +127,13 @@ y_test = y_test[y_test[:, 0] != -1]
 
 sys.stderr.write(" Done (%.2fs).\n" % (time.time() - t0))
 
-### Prediction function #######################################################
+############################################################################
+# We define our prediction function
 
 sys.stderr.write("Training classifiers... \r")
 t0 = time.time()
 
-# OMP
+# OMP: Orthogonal Matching Pursuit
 from sklearn.linear_model import OrthogonalMatchingPursuit as OMP
 from sklearn.feature_selection import f_classif, SelectKBest
 from sklearn.pipeline import Pipeline
@@ -148,7 +152,8 @@ sys.stderr.write("Training classifiers %03d/%d... Done (%.2fs).\n" % (
     n_clfs, n_clfs, time.time() - t0))
 
 
-### Prediction ################################################################
+############################################################################
+# Here we run the prediction: the decoding itself
 sys.stderr.write("Calculating scores and outputs...")
 t0 = time.time()
 
@@ -158,7 +163,7 @@ for clf in clfs:
 y_pred = np.asarray(y_pred).T
 
 
-### Multi scale ###############################################################
+# We need to the multi scale reconstruction
 def split_multi_scale(y, y_shape):
     """ Split data into 4 original multi_scale images
     """
@@ -216,6 +221,9 @@ y_pred = (.25 * y_pred + .25 * y_pred_tall + .25 * y_pred_large
 
 sys.stderr.write(" Done (%.2fs).\n" % (time.time() - t0))
 
+
+############################################################################
+# Let us quantify our prediction error
 from sklearn.metrics import (accuracy_score, precision_score, recall_score,
                              f1_score)
 
@@ -230,7 +238,13 @@ print("  - Recall: %f" % np.mean([
 print("  - F1-score: %f" % np.mean([
     f1_score(y_test[:, i], y_pred[:, i] > .5) for i in range(100)]))
 
-# Generate six images from reconstruction
+
+############################################################################
+# And finally, we plot six reconstructed images, to compare with
+# ground truth
+
+from matplotlib import pyplot as plt
+
 
 for i in range(6):
     j = 10 * i
@@ -251,3 +265,5 @@ for i in range(6):
     sp3.imshow(np.reshape(y_pred[j] > .5, (10, 10)), cmap=plt.cm.gray,
                interpolation='nearest')
     plt.savefig('miyawaki2008_reconstruction_%d' % i)
+
+plt.show()

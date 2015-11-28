@@ -1603,3 +1603,9 @@ ul#tab li div.contents p{
     }
 
 }
+
+
+/* For the examples */
+p.sphx-glr-horizontal {
+    margin-top: 2em;
+}

@@ -59,6 +59,7 @@ div.sphx-glr-script-out div.highlight {
 
 .sphx-glr-script-out pre {
   overflow: auto;
+  word-break: break-word;
   max-height: 30em;
   background-color: #FAFAE2;
   border: none;
