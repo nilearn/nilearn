@@ -582,7 +582,7 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
     max_iter : int (default 1000)
         Defines the iterations for the solver.
 
-    tol : float, optional (default 1e-4)
+    tol : float, optional (default 5e-4)
         Defines the tolerance for convergence for the backend fista solver.
 
     verbose : int, optional (default 1)
@@ -650,7 +650,7 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
     def __init__(self, penalty="graph-net", is_classif=False, loss=None,
                  l1_ratios=.5, alphas=None, n_alphas=10, mask=None,
                  target_affine=None, target_shape=None, low_pass=None,
-                 high_pass=None, t_r=None, max_iter=1000, tol=1e-4,
+                 high_pass=None, t_r=None, max_iter=1000, tol=5e-4,
                  memory=Memory(None), memory_level=1,
                  standardize=True, verbose=1, n_jobs=1, eps=1e-3,
                  cv=8, fit_intercept=True, screening_percentile=20.,
