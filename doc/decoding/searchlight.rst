@@ -127,7 +127,7 @@ background. We can see here that voxels in the visual cortex contains
 information to distinguish pictures showed to the volunteers, which was the
 expected result.
 
-.. figure:: ../auto_examples/decoding/images/plot_haxby_searchlight_001.png
+.. figure:: ../auto_examples/decoding/images/sphx_glr_plot_haxby_searchlight_001.png
    :target: ../auto_examples/decoding/plot_haxby_searchlight.html
    :align: center
    :scale: 60
@@ -150,7 +150,7 @@ parametric tests (F-tests ot t-tests).
 Here we compute the *p-values* of the voxels [1]_.
 To display the results, we use the negative log of the p-value.
 
-.. figure:: ../auto_examples/decoding/images/plot_haxby_searchlight_002.png
+.. figure:: ../auto_examples/decoding/images/sphx_glr_plot_haxby_searchlight_002.png
    :target: ../auto_examples/decoding/plot_haxby_searchlight.html
    :align: center
    :scale: 60
@@ -211,7 +211,7 @@ every voxel so that the F-statistics are comparable. This correction
 strategy is applied in nilearn
 :func:`nilearn.mass_univariate.permuted_ols` function.
 
-.. figure:: ../auto_examples/manipulating_visualizing/images/plot_haxby_mass_univariate_001.png
+.. figure:: ../auto_examples/manipulating_visualizing/images/sphx_glr_plot_haxby_mass_univariate_001.png
    :target: ../auto_examples/manipulating_visualizing/plot_haxby_searchlight.html
    :align: center
    :scale: 60

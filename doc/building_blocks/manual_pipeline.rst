@@ -116,7 +116,7 @@ We use masking to convert 4D data (i.e. 3D volume over time) into 2D data
 Applying a mask
 ................
 
-.. figure:: ../auto_examples/images/plot_haxby_simple_002.png
+.. figure:: ../auto_examples/images/sphx_glr_plot_haxby_simple_002.png
     :target: ../auto_examples/plot_haxby_simple.html
     :align: right
     :scale: 30%
@@ -189,7 +189,7 @@ Again the visualization code is simple. We can use an fMRI slice as a
 background and plot the weights. Brighter points have a higher
 discriminating weight.
 
-.. figure:: ../auto_examples/images/plot_haxby_simple_001.png
+.. figure:: ../auto_examples/images/sphx_glr_plot_haxby_simple_001.png
     :target: ../auto_examples/plot_haxby_simple.html
     :align: right
     :scale: 50%

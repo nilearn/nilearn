@@ -68,18 +68,18 @@ of the estimator::
     >>> estimator.precision_  # doctest: +SKIP
 
 
-.. |covariance| image:: ../auto_examples/connectivity/images/plot_inverse_covariance_connectome_001.png
+.. |covariance| image:: ../auto_examples/connectivity/images/sphx_glr_plot_inverse_covariance_connectome_001.png
     :target: ../auto_examples/connectivity/plot_inverse_covariance_connectome.html
     :scale: 40
-.. |precision| image:: ../auto_examples/connectivity/images/plot_inverse_covariance_connectome_003.png
+.. |precision| image:: ../auto_examples/connectivity/images/sphx_glr_plot_inverse_covariance_connectome_003.png
     :target: ../auto_examples/connectivity/plot_inverse_covariance_connectome.html
     :scale: 40
 
-.. |covariance_graph| image:: ../auto_examples/connectivity/images/plot_inverse_covariance_connectome_002.png
+.. |covariance_graph| image:: ../auto_examples/connectivity/images/sphx_glr_plot_inverse_covariance_connectome_002.png
     :target: ../auto_examples/connectivity/plot_inverse_covariance_connectome.html
     :scale: 55
 
-.. |precision_graph| image:: ../auto_examples/connectivity/images/plot_inverse_covariance_connectome_004.png
+.. |precision_graph| image:: ../auto_examples/connectivity/images/sphx_glr_plot_inverse_covariance_connectome_004.png
     :target: ../auto_examples/connectivity/plot_inverse_covariance_connectome.html
     :scale: 55
 
@@ -99,7 +99,7 @@ of the estimator::
 .. topic:: **Full example**
 
     See the following example for a full file running the analysis:
-    :ref:`example_connectivity_plot_inverse_covariance_connectome.py`
+    :ref:`sphx_glr_auto_examples_connectivity_plot_inverse_covariance_connectome.py`
 
 .. topic:: **Exercise: computing sparse inverse covariance**
    :class: green
@@ -157,7 +157,7 @@ group analysis only on the non zero coefficients.
 .. topic:: **Full example**
 
     See the following example for a full file running the analysis:
-    :ref:`example_connectivity_plot_multi_subject_connectome.py`
+    :ref:`sphx_glr_auto_examples_connectivity_plot_multi_subject_connectome.py`
 
 
 .. topic:: **Exercise: computing the correlation matrix of rest fmri**
@@ -171,11 +171,11 @@ group analysis only on the non zero coefficients.
 
 
 ..
-    .. |covariance| image:: ../auto_examples/connectivity/images/plot_adhd_covariance_002.png
+    .. |covariance| image:: ../auto_examples/connectivity/images/sphx_glr_plot_adhd_covariance_002.png
     :target: ../auto_examples/connectivity/plot_adhd_covariance.html
     :scale: 55
 
-    .. |precision| image:: ../auto_examples/connectivity/images/plot_adhd_covariance_001.png
+    .. |precision| image:: ../auto_examples/connectivity/images/sphx_glr_plot_adhd_covariance_001.png
     :target: ../auto_examples/connectivity/plot_adhd_covariance.html
     :scale: 55
 
@@ -208,7 +208,7 @@ Finally, we use the
 
 The results are the following:
 
-.. image:: ../auto_examples/connectivity/images/plot_simulated_connectome_001.png
+.. image:: ../auto_examples/connectivity/images/sphx_glr_plot_simulated_connectome_001.png
     :target: ../auto_examples/connectivity/plot_simulated_connectome.html
     :scale: 60
 
@@ -223,11 +223,11 @@ information.
 .. topic::  **Full Example**
 
    The complete source code for this example can be found here:
-   :ref:`example_connectivity_plot_simulated_connectome.py`
+   :ref:`sphx_glr_auto_examples_connectivity_plot_simulated_connectome.py`
 
 
 .. [#] A lot of technical details on the algorithm used for group-sparse
-       estimation and its implementation can be found in 
+       estimation and its implementation can be found in
        :doc:`../developers/group_sparse_covariance`.
 
 .. topic:: **Reference**
@@ -257,7 +257,7 @@ Deviations from this mean in the tangent space are provided in the connectivitie
 .. topic:: **Full example**
 
     See the following example for a full file running the analysis:
-    :ref:`example_connectivity_plot_connectivity_measures.py`
+    :ref:`sphx_glr_auto_examples_connectivity_plot_connectivity_measures.py`
 
 .. topic:: **Exercise: computing connectivity in tangent space**
    :class: green
@@ -270,5 +270,3 @@ Deviations from this mean in the tangent space are provided in the connectivitie
 .. topic:: **Reference**
 
  * The `tangent space for connectivity [Varoquaux et al, MICCAI 2010] <http://link.springer.com/chapter/10.1007%2F978-3-642-15705-9_25>`_
-
-

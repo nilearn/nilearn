@@ -110,7 +110,7 @@ for the labels visualization.
     :end-before: # Display the original data
 
 
-.. figure:: ../auto_examples/connectivity/images/plot_rest_clustering_001.png
+.. figure:: ../auto_examples/connectivity/images/sphx_glr_plot_rest_clustering_001.png
    :target: ../auto_examples/connectivity/plot_rest_clustering.html
    :align: center
    :scale: 80
@@ -131,11 +131,11 @@ representation thanks to a two-step procedure :
 .. literalinclude:: ../../examples/connectivity/plot_rest_clustering.py
     :start-after: # Display the original data
 
-.. |left_img| image:: ../auto_examples/connectivity/images/plot_rest_clustering_002.png
+.. |left_img| image:: ../auto_examples/connectivity/images/sphx_glr_plot_rest_clustering_002.png
    :target: ../auto_examples/connectivity/plot_rest_clustering.html
    :width: 49%
 
-.. |right_img| image:: ../auto_examples/connectivity/images/plot_rest_clustering_003.png
+.. |right_img| image:: ../auto_examples/connectivity/images/sphx_glr_plot_rest_clustering_003.png
    :target: ../auto_examples/connectivity/plot_rest_clustering.html
    :width: 49%
 

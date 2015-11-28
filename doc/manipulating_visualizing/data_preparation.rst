@@ -161,7 +161,7 @@ The first step is to generate a mask with default parameters and visualize it.
     :end-before: # Generate mask with strong opening
 
 
-.. figure:: ../auto_examples/manipulating_visualizing/images/plot_mask_computation_002.png
+.. figure:: ../auto_examples/manipulating_visualizing/images/sphx_glr_plot_mask_computation_002.png
     :target: ../auto_examples/plot_mask_computation.html
     :scale: 50%
 
@@ -177,7 +177,7 @@ skull parts in the image.
     :end-before: # Generate mask with a high lower cutoff
 
 
-.. figure:: ../auto_examples/manipulating_visualizing/images/plot_mask_computation_003.png
+.. figure:: ../auto_examples/manipulating_visualizing/images/sphx_glr_plot_mask_computation_003.png
     :target: ../auto_examples/plot_mask_computation.html
     :scale: 50%
 
@@ -196,7 +196,7 @@ voxels that appear as bright in the EPI image.
     :end-before: ################################################################################
 
 
-.. figure:: ../auto_examples/manipulating_visualizing/images/plot_mask_computation_004.png
+.. figure:: ../auto_examples/manipulating_visualizing/images/sphx_glr_plot_mask_computation_004.png
     :target: ../auto_examples/plot_mask_computation.html
     :scale: 50%
 
@@ -242,13 +242,13 @@ In this case, nilearn
 computes automatically the translation part of the transformation
 matrix (i.e., affine).
 
-.. image:: ../auto_examples/manipulating_visualizing/images/plot_affine_transformation_002.png
+.. image:: ../auto_examples/manipulating_visualizing/images/sphx_glr_plot_affine_transformation_002.png
     :target: ../auto_examples/plot_affine_transformation.html
     :scale: 36%
-.. image:: ../auto_examples/manipulating_visualizing/images/plot_affine_transformation_004.png
+.. image:: ../auto_examples/manipulating_visualizing/images/sphx_glr_plot_affine_transformation_004.png
     :target: ../auto_examples/plot_affine_transformation.html
     :scale: 36%
-.. image:: ../auto_examples/manipulating_visualizing/images/plot_affine_transformation_003.png
+.. image:: ../auto_examples/manipulating_visualizing/images/sphx_glr_plot_affine_transformation_003.png
     :target: ../auto_examples/plot_affine_transformation.html
     :scale: 36%
 
@@ -319,7 +319,7 @@ before conversion to voxel signals.
 .. topic:: **Exercise**
 
    You can, more as a training than as an exercise, try to play with
-   the parameters in :ref:`example_plot_haxby_simple.py`. Try to enable detrending
+   the parameters in :ref:`sphx_glr_auto_examples_plot_haxby_simple.py`. Try to enable detrending
    and run the script: does it have a big impact on the result?
 
 
@@ -336,7 +336,7 @@ images after unmasking (masked-reduced data transformed back into
 the original whole-brain space). This step is present in almost all
 the :ref:`examples <examples-index>` provided in nilearn. Below you will find
 an excerpt of :ref:`the example performing Anova-SVM on the Haxby data
-<example_decoding_plot_haxby_anova_svm.py>`):
+<sphx_glr_auto_examples_decoding_plot_haxby_anova_svm.py>`):
 
 .. literalinclude:: ../../examples/decoding/plot_haxby_anova_svm.py
     :start-after: ### Look at the SVC's discriminating weights

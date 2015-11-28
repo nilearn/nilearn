@@ -13,8 +13,14 @@ div.sphx-glr-thumbContainer {
   div.sphx-glr-thumbContainer:hover {
     box-shadow: 0 0 15px rgba(142, 176, 202, 0.5);
     border: solid #B4DDFC 1px; }
-  div.sphx-glr-thumbContainer a {
-    display: block; }
+  div.sphx-glr-thumbContainer a.internal {
+    display: block;
+    position: absolute;
+    padding: 150px 10px 0px 10px;
+    top: 0px;
+    right: 0px;
+    bottom: 0px;
+    left: 0px; }
   div.sphx-glr-thumbContainer p {
     margin: 0 0 .1em 0; }
   div.sphx-glr-thumbContainer .figure {
@@ -48,7 +54,7 @@ div.sphx-glr-thumbContainer {
     bottom: 58%; }
 
 .sphx-glr-script-out pre {
-  overflow-y: scroll;
+  overflow-y: auto;
   max-height: 30em; }
 
 ul.sphx-glr-horizontal {
