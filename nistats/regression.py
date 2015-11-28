@@ -25,10 +25,11 @@ import warnings
 import numpy as np
 import scipy.linalg as spl
 from scipy import stats
+from numpy.linalg import matrix_rank
 
 from nibabel.onetime import setattr_on_read
 
-from .utils import matrix_rank, pos_recipr
+from .utils import pos_recipr
 
 from .model import LikelihoodModelResults
 
@@ -92,7 +93,9 @@ class OLSModel(object):
         self.normalized_cov_beta = np.dot(self.calc_beta,
                                           np.transpose(self.calc_beta))
         self.df_total = self.wdesign.shape[0]
-        self.df_model = matrix_rank(self.design)
+
+        eps = np.abs(self.design).sum() * np.finfo(np.float).eps
+        self.df_model = matrix_rank(self.design, eps)
         self.df_resid = self.df_total - self.df_model
 
     def logL(self, beta, Y, nuisance=None):

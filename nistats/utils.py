@@ -6,6 +6,7 @@ import sys
 import scipy.linalg as spl
 import numpy as np
 from scipy.stats import norm
+from warnings import warn
 
 py3 = sys.version_info[0] >= 3
 
@@ -39,13 +40,13 @@ def multiple_fast_inv(a):
 
     Notes
     -----
-    This function is borrowed from scipy.linalg.inv, 
+    This function is borrowed from scipy.linalg.inv,
     but with some customizations for speed-up.
     """
     if a.shape[1] != a.shape[2]:
-        raise ValueError('a must have shape(n_samples, n_dim, n_dim)')
+        raise ValueError('a must have shape (n_samples, n_dim, n_dim)')
     from scipy.linalg import calc_lwork
-    from scipy.linalg.lapack import  get_lapack_funcs
+    from scipy.linalg.lapack import get_lapack_funcs
     a1, n = a[0], a.shape[0]
     getrf, getri = get_lapack_funcs(('getrf', 'getri'), (a1,))
     for i in range(n):
@@ -78,7 +79,7 @@ def multiple_fast_inv(a):
 
 def multiple_mahalanobis(effect, covariance):
     """Returns the squared Mahalanobis distance for a given set of samples
-    
+
     Parameters
     ----------
     effect: array of shape (n_features, n_samples),
@@ -113,109 +114,36 @@ def multiple_mahalanobis(effect, covariance):
     return sqd
 
 
-def matrix_rank(M, tol=None):
-    ''' Return rank of matrix using SVD method
-
-    Rank of the array is the number of SVD singular values of the
-    array that are greater than `tol`.
-
-    This version of matrix rank is very similar to the numpy.linalg version
-    except for the use of:
-
-    * scipy.linalg.svd istead of numpy.linalg.svd.
-    * the MATLAB algorithm for default tolerance calculation
-
-    ``matrix_rank`` appeared in numpy.linalg in December 2009, first available
-    in numpy 1.5.0.
+def full_rank(X, cmax=1e15):
+    """ Computes the condition number of X and if it is larger than cmax,
+    returns a matrix with a condition number smaller than cmax.
 
     Parameters
     ----------
-    M : array-like
-        array of <=2 dimensions
-    tol : {None, float}
-         threshold below which SVD values are considered zero. If `tol`
-         is None, and `S` is an array with singular values for `M`, and
-         `eps` is the epsilon value for datatype of `S`, then `tol` set
-         to ``S.max() * eps * max(M.shape)``.
+    X : array of shape (nrows, ncols)
+        input array
 
-    Examples
-    --------
-    >>> matrix_rank(np.eye(4)) # Full rank matrix
-    4
-    >>> I=np.eye(4); I[-1,-1] = 0. # rank deficient matrix
-    >>> matrix_rank(I)
-    3
-    >>> matrix_rank(np.zeros((4,4))) # All zeros - zero rank
-    0
-    >>> matrix_rank(np.ones((4,))) # 1 dimension - rank 1 unless all 0
-    1
-    >>> matrix_rank(np.zeros((4,)))
-    0
-    >>> matrix_rank([1]) # accepts array-like
-    1
-
-    Notes
-    -----
-    We check for numerical rank deficiency by using ``tol=max(M.shape) * eps *
-    S[0]`` (where ``S[0]`` is the maximum singular value and thus the 2-norm of
-    the matrix). This is one tolerance threshold for rank deficiency, and the
-    default algorithm used by MATLAB [#2]_.  When floating point roundoff is the
-    main concern, then "numerical rank deficiency" is a reasonable choice. In
-    some cases you may prefer other definitions. The most useful measure of the
-    tolerance depends on the operations you intend to use on your matrix. For
-    example, if your data come from uncertain measurements with uncertainties
-    greater than floating point epsilon, choosing a tolerance near that
-    uncertainty may be preferable.  The tolerance may be absolute if the
-    uncertainties are absolute rather than relative.
-
-    References
-    ----------
-    .. [#1] G. H. Golub and C. F. Van Loan, _Matrix Computations_.
-    Baltimore: Johns Hopkins University Press, 1996.
-    .. [#2] http://www.mathworks.com/help/techdoc/ref/rank.html
-    '''
-    M = np.asarray(M)
-    if M.ndim > 2:
-        raise TypeError('array should have 2 or fewer dimensions')
-    if M.ndim < 2:
-        return int(not np.all(M == 0))
-    S = spl.svd(M, compute_uv=False)
-    if tol is None:
-        tol = S.max() * np.finfo(S.dtype).eps * max(M.shape)
-    return np.sum(S > tol)
-
-
-def full_rank(X, r=None):
-    """ Return full-rank matrix whose column span is the same as X
-
-    Uses an SVD decomposition.
-
-    If the rank of `X` is known it can be specified by `r` -- no check is made
-    to ensure that this really is the rank of X.
-
-    Parameters
-    ----------
-    X : array-like
-        2D array which may not be of full rank.
-    r : None or int
-        Known rank of `X`.  r=None results in standard matrix rank calculation.
-        We do not check `r` is really the rank of X; it is to speed up
-        calculations when the rank is already known.
+    cmax : float, optional (default:1.e15),
+        tolerance for condition number
 
     Returns
     -------
-    fX : array
-        Full-rank matrix with column span matching that of `X`
+    X : array of shape (nrows, ncols)
+        output array
+
+    cond : float,
+        actual condition number
     """
-    if r is None:
-        r = matrix_rank(X)
-    V, D, U = spl.svd(X, full_matrices=0)
-    order = np.argsort(D)
-    order = order[::-1]
-    value = []
-    for i in range(r):
-        value.append(V[:, order[i]])
-    return np.asarray(value).T.astype(np.float64)
+    U, s, V = spl.svd(X, full_matrices=False)
+    smax, smin = s.max(), s.min()
+    cond = smax / smin
+    if cond < cmax:
+        return X, cond
+
+    warn('Matrix is singular at working precision, regularizing...')
+    lda = (smax - cmax * smin) / (cmax - 1)
+    X = np.dot(U, np.dot(np.diag(s + lda), V))
+    return X, cmax
 
 
 def pos_recipr(X):

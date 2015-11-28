@@ -29,14 +29,13 @@ Design matrices contain three different types of regressors:
 
 Author: Bertrand Thirion, 2009-2015
 """
-from warnings import warn
 import numpy as np
 from scipy import linalg
 from pandas import DataFrame
 
 from .hemodynamic_models import compute_regressor, _orthogonalize
 from .experimental_paradigm import check_paradigm
-
+from .utils import full_rank
 
 ######################################################################
 # Ancillary functions
@@ -219,6 +218,7 @@ def _convolve_regressors(paradigm, hrf_model, frame_times, fir_delays=[0],
     return regressor_matrix, regressor_names
 
 
+
 def _full_rank(X, cmax=1e15):
     """ Computes the condition number of X and if it is larger than cmax,
     returns a matrix with a condition number smaller than cmax.
@@ -348,7 +348,7 @@ def make_design_matrix(
     names += dnames
 
     # step 4: Force the design matrix to be full rank at working precision
-    matrix, _ = _full_rank(matrix)
+    matrix, _ = full_rank(matrix)
 
     design_matrix = DataFrame(
         np.hstack((frame_times[:, np.newaxis], matrix)),
