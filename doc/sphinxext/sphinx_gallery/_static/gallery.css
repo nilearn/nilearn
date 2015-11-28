@@ -53,9 +53,36 @@ div.sphx-glr-thumbContainer {
     left: 85%;
     bottom: 58%; }
 
+div.sphx-glr-script-out div.highlight {
+    background-color: transparent;
+}
+
 .sphx-glr-script-out pre {
-  overflow-y: auto;
-  max-height: 30em; }
+  overflow: auto;
+  max-height: 30em;
+  background-color: #FAFAE2;
+  border: none;
+  margin-left: 1ex;
+  margin-top: 0px;
+  padding-left: 1ex;
+}
+
+p.sphx-glr-horizontal {
+    margin-bottom: 0px;
+}
+
+div.sphx-glr-download {
+    padding: 1ex;
+    margin: 1em auto 1ex auto;
+    border-radius: 4px;
+    max-width: 45ex;
+    background-color: #ffc;
+    border: 1px solid #C2C22D;
+}
+
+div.sphx-glr-download a {
+    color: #4B4600;
+}
 
 ul.sphx-glr-horizontal {
   padding: 0px;

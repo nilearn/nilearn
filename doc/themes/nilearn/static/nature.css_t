@@ -104,7 +104,6 @@ div.highlight {
 }
 
 div.highlight-python pre {
-    overflow-y: hidden;
     font-size: 90%;
 }
 

@@ -93,7 +93,9 @@ class Tee(object):
 ###############################################################################
 CODE_DOWNLOAD = """**Total running time of the script:**
 ({0:.0f} minutes {1:.3f} seconds)\n\n
-\n**Download Python source code:** :download:`{2} <{2}>`\n"""
+\n.. container:: sphx-glr-download
+
+    **Download Python source code:** :download:`{2} <{2}>`\n"""
 
 # The following strings are used when we have several pictures: we use
 # an html div tag that our CSS uses to turn the lists into horizontal
@@ -115,7 +117,7 @@ SINGLE_IMAGE = """
     :align: center
 """
 
-CODE_OUTPUT = """**Script output**:\n
+CODE_OUTPUT = """**Output**:\n
 .. rst-class:: sphx-glr-script-out
 
   ::
