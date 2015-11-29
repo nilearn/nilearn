@@ -117,8 +117,9 @@ SINGLE_IMAGE = """
     :align: center
 """
 
-CODE_OUTPUT = """**Output**:\n
-.. rst-class:: sphx-glr-script-out
+CODE_OUTPUT = """.. rst-class:: sphx-glr-script-out
+
+ **Output**:\n
 
   ::
 

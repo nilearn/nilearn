@@ -57,6 +57,11 @@ div.sphx-glr-script-out div.highlight {
     background-color: transparent;
 }
 
+p.sphx-glr-script-out {
+    margin: -.9ex 0ex;
+    color: #888;
+}
+
 .sphx-glr-script-out pre {
   overflow: auto;
   word-break: break-word;
@@ -70,6 +75,11 @@ div.sphx-glr-script-out div.highlight {
 
 p.sphx-glr-horizontal {
     margin-bottom: 0px;
+}
+
+/* Paragraph following an output are a bit more indented */
+blockquote.sphx-glr-script-out+p {
+    margin-top: 1.8em;
 }
 
 div.sphx-glr-download {

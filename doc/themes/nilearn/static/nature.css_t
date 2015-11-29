@@ -377,6 +377,10 @@ div.body p.caption {
     text-align: center;
 }
 
+div.body p.sphx-glr-script-out {
+    margin: -.9ex 0ex;
+}
+
 div.bodywrapper {
     margin: 0 246px 0 auto;
     border-right: 1px solid #EEE;
