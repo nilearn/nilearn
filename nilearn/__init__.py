@@ -17,8 +17,8 @@ datasets                --- Utilities to download NeuroImaging datasets
 decoding                --- Decoding tools and algorithms
 decomposition           --- Includes a subject level variant of the ICA
                             algorithm called Canonical ICA
-group_sparse_covariance --- Implementation of algorithm for sparse
-                            multi-subjects learning of Gaussian graphical models
+connectome              --- Set of tools for computing functional connectivity matrices
+                            and for sparse multi-subjects learning of Gaussian graphical models
 image                   --- Set of functions defining mathematical operations
                             working on Niimg-like objects
 input_data              --- includes scikit-learn tranformers and tools to
@@ -35,7 +35,7 @@ signal                  --- Set of preprocessing functions for time series
 import gzip
 
 # list all submodules available in nilearn
-__all__ = ['datasets', 'decoding', 'decomposition', 'group_sparse_covariance',
+__all__ = ['datasets', 'decoding', 'decomposition', 'connectome',
            'image', 'input_data', 'masking', 'mass_univariate', 'plotting',
            'region', 'signal']
 

@@ -82,7 +82,7 @@ for func_filename, confound_filename in zip(func_filenames,
 
 # Computing group-sparse precision matrices ###################################
 print("-- Computing group-sparse precision matrices ...")
-from nilearn.group_sparse_covariance import GroupSparseCovarianceCV
+from nilearn.connectome import GroupSparseCovarianceCV
 gsc = GroupSparseCovarianceCV(verbose=2)
 gsc.fit(subject_time_series)
 
