@@ -124,7 +124,7 @@ estimate multiple connectomes for each, with a similar structure but
 differing connection values across subjects.
 
 For this, nilearn provides the
-:class:`nilearn.group_sparse_covariance.GroupSparseCovarianceCV`
+:class:`nilearn.connectome.GroupSparseCovarianceCV`
 estimator. Its usage is similar to the GraphLassoCV object, but it takes
 a list of time series::
 
@@ -138,7 +138,7 @@ And it provides one estimated covariance and inverse-covariance
 
 |
 
-.. currentmodule:: nilearn.group_sparse_covariance
+.. currentmodule:: nilearn.connectome.group_sparse_covariance
 
 One specific case where this may be interesting is for group analysis
 across multiple subjects. Indeed, one challenge when doing statistics on
@@ -202,7 +202,7 @@ It is also possible to fit a graph lasso on data from every subject all
 together.
 
 Finally, we use the
-:class:`nilearn.group_sparse_covariance.GroupSparseCovarianceCV` [#]_.
+:class:`nilearn.connectome.GroupSparseCovarianceCV` [#]_.
 
 
 

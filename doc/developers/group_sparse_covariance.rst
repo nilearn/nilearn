@@ -5,7 +5,7 @@ Group-sparse covariance estimation
 ..
     Explain which case is implemented (p=2, unpenalized diagonal)
 
-.. currentmodule:: nilearn.group_sparse_covariance
+.. currentmodule:: nilearn.connectome.group_sparse_covariance
 
 
 This page gives technical information on the
