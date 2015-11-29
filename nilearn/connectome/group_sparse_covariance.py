@@ -21,9 +21,9 @@ from sklearn.base import BaseEstimator
 
 from sklearn.externals.joblib import Memory, delayed, Parallel
 
-from ._utils import CacheMixin
-from ._utils import logger
-from ._utils.extmath import is_spd
+from .._utils import CacheMixin
+from .._utils import logger
+from .._utils.extmath import is_spd
 
 
 def compute_alpha_max(emp_covs, n_samples):
@@ -654,7 +654,7 @@ def group_sparse_scores(precisions, n_samples, emp_covs, alpha,
 
     log_lik = 0
     for k in range(n_subjects):
-        log_lik_k = - np.sum(emp_covs[...,  k] * precisions[..., k]) 
+        log_lik_k = - np.sum(emp_covs[...,  k] * precisions[..., k])
         log_lik_k += fast_logdet(precisions[..., k])
         log_lik += n_samples[k] * log_lik_k
 
@@ -774,7 +774,7 @@ def group_sparse_covariance_path(train_subjs, alphas, test_subjs=None,
     """
     train_covs, train_n_samples = empirical_covariances(
         train_subjs, assume_centered=False, standardize=True)
- 
+
     scores = []
     precisions_list = []
     for alpha in alphas:
