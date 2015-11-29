@@ -12,8 +12,8 @@ See also the SpaceNet documentation: :ref:`space_net`.
 # Authors: DOHMATOB Elvis
 #          FRITSCH Virgile
 
-
-### Load Oasis dataset ########################################################
+###########################################################################
+# Load the Oasis VBM dataset
 import numpy as np
 from nilearn import datasets
 n_subjects = 200  # increase this number if you have more RAM on your box
@@ -35,10 +35,10 @@ perm = np.argsort(age_test)[::-1]
 age_test = age_test[perm]
 gm_imgs_test = gm_imgs_test[perm]
 
-### Fit and predict ###########################################################
+
+###########################################################################
+# Fit the SpaceNet and predict with it
 from nilearn.decoding import SpaceNetRegressor
-import matplotlib.pyplot as plt
-from nilearn.plotting import plot_stat_map
 
 # To save time (because these are anat images with many voxels), we include
 # only the 5-percent voxels most correlated with the age variable to fit.
@@ -54,14 +54,21 @@ decoder.fit(gm_imgs_train, age_train)  # fit
 coef_img = decoder.coef_img_
 y_pred = decoder.predict(gm_imgs_test).ravel()  # predict
 mse = np.mean(np.abs(age_test - y_pred))
+print('Mean square error (MSE) on the predicted age: %.2f' % mse)
 
-### Visualization #########################################################
+
+###########################################################################
+# Visualize the resulting maps
+from nilearn.plotting import plot_stat_map
 # weights map
 background_img = gm_imgs[0]
 plot_stat_map(coef_img, background_img, title="graph-net weights",
               display_mode="z", cut_coords=1)
 
-# quality of predictions
+
+###########################################################################
+# Visualize the quality of predictions
+import matplotlib.pyplot as plt
 plt.figure()
 plt.suptitle("graph-net: Mean Absolute Error %.2f years" % mse)
 linewidth = 3
