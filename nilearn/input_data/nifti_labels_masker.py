@@ -185,6 +185,8 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
         return self
 
     def fit_transform(self, imgs, confounds=None):
+        """ Prepare and perform signal extraction from regions.
+        """
         return self.fit().transform(imgs, confounds=confounds)
 
     def _check_fitted(self):

@@ -34,7 +34,7 @@ Brain parcellations
 Regions used to extract the signal can be defined by a "hard"
 parcellation. For instance, the :mod:`nilearn.datasets` has functions to
 download atlases forming reference parcellation, eg
-:func:`fetch_atlas_craddock_2011`, :func:`fetch_atlas_harvard_oxford`,
+:func:`fetch_atlas_craddock_2012`, :func:`fetch_atlas_harvard_oxford`,
 :func:`fetch_atlas_yeo_2011`.
 
 For instance to retrieve the Harvard-Oxford cortical parcelation, sampled
@@ -198,7 +198,7 @@ connectome".
 We can display it with the :func:`nilearn.plotting.plot_connectome`
 function that take the matrix, and coordinates of the nodes in MNI space.
 In the case of the MSDL atlas
-(:func:`nilearn.datasets.fetch_msdl_atlas`), the CSV file readily comes
+(:func:`nilearn.datasets.fetch_atlas_msdl`), the CSV file readily comes
 with MNI coordinates for each region (see for instance example:
 :ref:`sphx_glr_auto_examples_connectivity_plot_probabilistic_atlas_extraction.py`).
 

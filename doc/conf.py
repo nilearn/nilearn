@@ -35,12 +35,6 @@ except IOError:
 
 # -- General configuration ---------------------------------------------------
 
-# Try to override the matplotlib configuration as early as possible
-try:
-    import gen_rst
-except:
-    pass
-
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 extensions = ['sphinx.ext.autodoc', 'sphinx.ext.autosummary',
@@ -69,7 +63,7 @@ source_suffix = '.rst'
 plot_gallery = True
 
 # The master toctree document.
-master_doc = 'user_guide'
+master_doc = 'index'
 
 # General information about the project.
 project = u'Nilearn'
@@ -97,6 +91,7 @@ language = 'en'
 
 # List of documents that shouldn't be included in the build.
 #unused_docs = []
+exclude_patterns = ['tune_toc.rst', ]
 
 # List of directories, relative to source directory, that shouldn't be
 # searched for source files.

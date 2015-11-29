@@ -202,6 +202,8 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
                              % self.__class__.__name__)
 
     def fit_transform(self, imgs, confounds=None):
+        """Prepare and perform signal extraction.
+        """
         return self.fit().transform(imgs, confounds=confounds)
 
     def transform_single_imgs(self, imgs, confounds=None):

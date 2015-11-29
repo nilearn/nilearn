@@ -495,11 +495,12 @@ def fetch_miyawaki2008(data_dir=None, url=None, resume=True, verbose=1):
     -------
     data: Bunch
         Dictionary-like object, the interest attributes are :
-        'func': string list
+
+        - 'func': string list
             Paths to nifti file with bold data
-        'label': string list
+        - 'label': string list
             Paths to text file containing session and target data
-        'mask': string
+        - 'mask': string
             Path to nifti mask file to define target volume in visual
             cortex
 
@@ -638,7 +639,8 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
     ----------
     contrasts: list of str
         The contrasts to be fetched (for all 94 subjects available).
-        Allowed values are:
+        Allowed values are::
+
             {"checkerboard",
             "horizontal checkerboard",
             "vertical checkerboard",
@@ -672,7 +674,9 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
             "button press (auditory cue) vs sentence listening",
             "button press (visual cue) vs sentence reading",
             "button press vs calculation and sentence listening/reading"}
-        or equivalently on can use the original names:
+
+        or equivalently on can use the original names::
+
             {"checkerboard",
             "horizontal checkerboard",
             "vertical checkerboard",
@@ -737,21 +741,22 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
     -------
     data: Bunch
         Dictionary-like object, the interest attributes are :
-        'cmaps': string list
+
+        - 'cmaps': string list
             Paths to nifti contrast maps
-        'tmaps' string list (if 'get_tmaps' set to True)
+        - 'tmaps' string list (if 'get_tmaps' set to True)
             Paths to nifti t maps
-        'masks': string list
+        - 'masks': string list
             Paths to nifti files corresponding to the subjects individual masks
-        'anats': string
+        - 'anats': string
             Path to nifti files corresponding to the subjects structural images
 
     References
     ----------
-    [1] Pinel, Philippe, et al.
-        "Fast reproducible identification and large-scale databasing of
-         individual functional cognitive networks."
-        BMC neuroscience 8.1 (2007): 91.
+    Pinel, Philippe, et al.
+    "Fast reproducible identification and large-scale databasing of
+    individual functional cognitive networks."
+    BMC neuroscience 8.1 (2007): 91.
 
     """
     if isinstance(contrasts, _basestring):
@@ -976,8 +981,7 @@ def fetch_localizer_calculation_task(n_subjects=None, data_dir=None, url=None,
     -------
     data: Bunch
         Dictionary-like object, the interest attributes are :
-        'cmaps': string list
-            Paths to nifti contrast maps
+        'cmaps': string list, giving paths to nifti contrast maps
 
     """
     data = fetch_localizer_contrasts(["calculation (auditory and visual cue)"],

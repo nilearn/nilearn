@@ -87,7 +87,7 @@ different heuristics to find cutting coordinates.
 **plot_img**         :func:`plot_img`
                      |hack|
                      General-purpose function, with no specific presets
-================== =========================================================
+=================== =========================================================
 
 
 .. warning:: **Opening too many figures without closing**

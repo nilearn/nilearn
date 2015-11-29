@@ -227,22 +227,15 @@ If we do not have a spatial mask of the target regions, a brain mask
 can be easily extracted from the fMRI data by the
 :func:`nilearn.masking.compute_epi_mask` function:
 
-.. currentmodule:: nilearn.masking
-
-.. autosummary::
-   :toctree: generated/
-   :template: function.rst
-
-   compute_epi_mask
-
 .. figure:: ../auto_examples/manipulating_visualizing/images/sphx_glr_plot_visualization_002.png
     :target: ../auto_examples/manipulating_visualizing/plot_visualization.html
     :align: right
     :scale: 50%
 
 .. literalinclude:: ../../examples/manipulating_visualizing/plot_visualization.py
-     :start-after: ### Extracting a brain mask ###################################################
-     :end-before: ### Applying the mask #########################################################
+     :start-after: # Extracting a brain mask
+     :end-before: # Applying the mask to extract the corresponding time series
+
 
 .. _mask_4d_2_3d:
 
@@ -403,8 +396,8 @@ corresponding spatial mask is provided in `haxby.mask_vt`.
 We want to compute the
 intersection of this provided mask with our self-computed mask.
 The first step is to load it with
-nibabel's :func:`nibabel.load`. We can then use a logical "and" operation
--- :func:`numpy.logical_and` -- to keep only voxels
+nibabel's **nibabel.load**. We can then use a logical "and" operation
+-- **numpy.logical_and** -- to keep only voxels
 that have been selected in both masks. In neuroimaging jargon, this is
 called an "AND conjunction."
 
@@ -440,7 +433,7 @@ representations.
 Extracting connected components
 -------------------------------
 
-The function :func:`scipy.ndimage.label` from the scipy Python library
+The function **scipy.ndimage.label** from the scipy Python library
 identifies immediately neighboring
 voxels in our voxels mask. It assigns a separate integer label to each
 one of them.

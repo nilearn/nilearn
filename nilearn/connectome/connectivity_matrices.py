@@ -265,13 +265,13 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
 
     Attributes
     ----------
-    cov_estimator_ : estimator object
+    `cov_estimator_` : estimator object
         A new covariance estimator with the same parameters as cov_estimator.
 
-    mean_ : numpy.ndarray
+    `mean_` : numpy.ndarray
         The mean connectivity for the tangent kind.
 
-    whitening_ : numpy.ndarray
+    `whitening_` : numpy.ndarray
         The inverted square-rooted geometric mean of the covariance matrices.
 
     References

@@ -250,6 +250,7 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
         return self
 
     def fit_transform(self, imgs, confounds=None):
+        """Prepare and perform signal extraction"""
         return self.fit().transform(imgs, confounds=confounds)
 
     def _check_fitted(self):

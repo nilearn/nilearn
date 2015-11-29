@@ -147,8 +147,7 @@ class NiftiMasker(BaseMasker, CacheMixin):
     Attributes
     ----------
     `mask_img_` : nibabel.Nifti1Image
-        The mask of the data. If no mask was given at masker creation, contains
-        the automatically computed mask.
+        The mask of the data, or the computed one.
 
     `affine_` : 4x4 numpy array
         Affine of the transformed image.

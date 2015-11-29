@@ -272,11 +272,6 @@ class SearchLight(BaseEstimator):
             Target variable to predict. Must have exactly as many elements as
             3D images in img.
 
-        Attributes
-        ----------
-        `scores_` : numpy.ndarray
-            search_light scores. Same shape as input parameter
-            process_mask_img.
         """
 
         # Compute world coordinates of all in-mask voxels.

@@ -89,5 +89,13 @@
    </div>
    <div style="clear: left"></div>
 
+.. toctree::
+   :hidden:
+
+   AUTHORS.rst
+   user_guide.rst
+   auto_examples/index.rst
+   whats_new.rst
+
 Nilearn is part of the `NiPy ecosystem <http://nipy.org>`_.
 

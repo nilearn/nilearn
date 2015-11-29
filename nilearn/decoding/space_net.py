@@ -617,9 +617,6 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
     `coef_` : ndarray, shape (n_classes-1, n_features)
         Coefficient of the features in the decision function.
 
-        `coef_` is readonly property derived from `raw_coef_` that
-        follows the internal memory layout of liblinear.
-
     `masker_` : instance of NiftiMasker
         The nifti masker used to mask the data.
 
@@ -632,12 +629,11 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
          Intercept (a.k.a. bias) added to the decision function.
          It is available only when parameter intercept is set to True.
 
-    `self.cv_` : list of pairs of lists
+    `cv_` : list of pairs of lists
          Each pair are are the list of indices for the train and test
          samples for the corresponding fold.
 
-    `cv_scores_` : ndarray, shape (n_alphas, n_folds) or
-    (n_l1_ratios, n_alphas, n_folds)
+    `cv_scores_` : ndarray, shape (n_alphas, n_folds) or (n_l1_ratios, n_alphas, n_folds)
         Scores (misclassification) for each alpha, and on each fold
 
     `screening_percentile_` : float
@@ -958,8 +954,7 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
 
 
 class SpaceNetClassifier(BaseSpaceNet):
-    """
-    Classification learners with sparsity and spatial priors.
+    """Classification learners with sparsity and spatial priors.
 
     `SpaceNetClassifier` implements Graph-Net and TV-L1
     priors / penalties for classification problems. Thus, the penalty
@@ -975,8 +970,7 @@ class SpaceNetClassifier(BaseSpaceNet):
     loss : string, optional (default "logistic")
         Loss to be used in the classifier. Must be one of "mse", or "logistic".
 
-    l1_ratios : float or list of floats in the interval [0, 1];
-    optional (default .5)
+    l1_ratios : float or list of floats in the interval [0, 1]; optional (default .5)
         Constant that mixes L1 and spatial prior terms in penalization.
         l1_ratio == 1 corresponds to pure LASSO. The larger the value of this
         parameter, the sparser the estimated weights map. If list is provided,
@@ -1021,8 +1015,7 @@ class SpaceNetClassifier(BaseSpaceNet):
         This parameter is passed to signal.clean. Please see the related
         documentation for details.
 
-    screening_percentile : float in the interval [0, 100]; Optional (
-    default 20)
+    screening_percentile : float in the interval [0, 100]; Optional (default 20)
         Percentile value for ANOVA univariate feature selection. A value of
         100 means 'keep all features'. This percentile is is expressed
         w.r.t the volume of a standard (MNI152) brain, and so is corrected
@@ -1071,13 +1064,10 @@ class SpaceNetClassifier(BaseSpaceNet):
     Attributes
     ----------
     `alpha_` : float
-         Best alpha found by cross-validation.
+        Best alpha found by cross-validation.
 
     `coef_` : array, shape = [n_classes-1, n_features]
         Coefficient of the features in the decision function.
-
-        `coef_` is readonly property derived from `raw_coef_` that
-        follows the internal memory layout of liblinear.
 
     `masker_` : instance of NiftiMasker
         The nifti masker used to mask the data.
@@ -1087,12 +1077,12 @@ class SpaceNetClassifier(BaseSpaceNet):
         the automatically computed mask.
 
     `intercept_` : array, shape = [n_classes-1]
-         Intercept (a.k.a. bias) added to the decision function.
-         It is available only when parameter intercept is set to True.
+        Intercept (a.k.a. bias) added to the decision function.
+        It is available only when parameter intercept is set to True.
 
-    `self.cv_` : list of pairs of lists
-         Each pair are are the list of indices for the train and test
-         samples for the corresponding fold.
+    `cv_` : list of pairs of lists
+        Each pair are are the list of indices for the train and test
+        samples for the corresponding fold.
 
     `cv_scores_` : 2d array of shape (n_alphas, n_folds)
         Scores (misclassification) for each alpha, and on each fold.
@@ -1100,6 +1090,7 @@ class SpaceNetClassifier(BaseSpaceNet):
     `screening_percentile_` : float
         Screening percentile corrected according to volume of mask,
         relative to the volume of standard brain.
+
     """
 
     def __init__(self, penalty="graph-net", loss="logistic",
@@ -1154,8 +1145,7 @@ class SpaceNetClassifier(BaseSpaceNet):
 
 
 class SpaceNetRegressor(BaseSpaceNet):
-    """
-    Regression learners with sparsity and spatial priors.
+    """Regression learners with sparsity and spatial priors.
 
     `SpaceNetClassifier` implements Graph-Net and TV-L1 priors / penalties
     for regression problems. Thus, the penalty is a sum an L1 term and a
@@ -1168,8 +1158,7 @@ class SpaceNetRegressor(BaseSpaceNet):
     penalty : string, optional (default 'graph-net')
         Penalty to used in the model. Can be 'graph-net' or 'tv-l1'.
 
-    l1_ratios : float or list of floats in the interval [0, 1];
-    optional (default .5)
+    l1_ratios : float or list of floats in the interval [0, 1]; optional (default .5)
         Constant that mixes L1 and spatial prior terms in penalization.
         l1_ratio == 1 corresponds to pure LASSO. The larger the value of this
         parameter, the sparser the estimated weights map. If list is provided,
@@ -1214,8 +1203,7 @@ class SpaceNetRegressor(BaseSpaceNet):
         This parameter is passed to signal.clean. Please see the related
         documentation for details
 
-    screening_percentile : float in the interval [0, 100]; Optional (
-    default 20)
+    screening_percentile : float in the interval [0, 100]; Optional (default 20)
         Percentile value for ANOVA univariate feature selection. A value of
         100 means 'keep all features'. This percentile is is expressed
         w.r.t the volume of a standard (MNI152) brain, and so is corrected
@@ -1263,13 +1251,10 @@ class SpaceNetRegressor(BaseSpaceNet):
     Attributes
     ----------
     `alpha_` : float
-         Best alpha found by cross-validation
+        Best alpha found by cross-validation
 
     `coef_` : array, shape = [n_classes-1, n_features]
         Coefficient of the features in the decision function.
-
-        `coef_` is readonly property derived from `raw_coef_` that
-        follows the internal memory layout of liblinear.
 
     `masker_` : instance of NiftiMasker
         The nifti masker used to mask the data.
@@ -1279,8 +1264,8 @@ class SpaceNetRegressor(BaseSpaceNet):
         the automatically computed mask.
 
     `intercept_` : array, shape = [n_classes-1]
-         Intercept (a.k.a. bias) added to the decision function.
-         It is available only when parameter intercept is set to True.
+        Intercept (a.k.a. bias) added to the decision function.
+        It is available only when parameter intercept is set to True.
 
     `cv_scores_` : 2d array of shape (n_alphas, n_folds)
         Scores (misclassification) for each alpha, and on each fold

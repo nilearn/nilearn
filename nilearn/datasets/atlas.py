@@ -192,8 +192,8 @@ def fetch_atlas_harvard_oxford(atlas_name, data_dir=None,
         dictionary-like object, keys are:
 
         - "maps": nibabel.Nifti1Image, 4D maps if a probabilistic atlas is
-        requested and 3D labels if a maximum probabilistic atlas was
-        requested.
+          requested and 3D labels if a maximum probabilistic atlas was
+          requested.
 
         - "labels": string list, labels of the regions in the atlas.
     """
@@ -404,13 +404,16 @@ def fetch_atlas_smith_2009(data_dir=None, mirror='origin', url=None,
     -------
     data: sklearn.datasets.base.Bunch
         dictionary-like object, contains:
+
         - 20-dimensional ICA, Resting-FMRI components:
-            - all 20 components (rsn20)
-            - 10 well-matched maps from these, as shown in PNAS paper (rsn10)
+
+          - all 20 components (rsn20)
+          - 10 well-matched maps from these, as shown in PNAS paper (rsn10)
 
         - 20-dimensional ICA, BrainMap components:
-            - all 20 components (bm20)
-            - 10 well-matched maps from these, as shown in PNAS paper (bm10)
+
+          - all 20 components (bm20)
+          - 10 well-matched maps from these, as shown in PNAS paper (bm10)
 
         - 70-dimensional ICA, Resting-FMRI components (rsn70)
 

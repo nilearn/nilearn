@@ -150,14 +150,15 @@ def fetch_oasis_vbm(n_subjects=None, dartel_version=True, data_dir=None,
     -------
     data: Bunch
         Dictionary-like object, the interest attributes are :
-        'gray_matter_maps': string list
-            Paths to nifti gray matter density probability maps
-        'white_matter_maps' string list
-            Paths to nifti white matter density probability maps
-        'ext_vars': np.recarray
-            Data from the .csv file with information about selected subjects
-        'data_usage_agreement': string
-            Path to the .txt file containing the data usage agreement.
+
+        - 'gray_matter_maps': string list
+          Paths to nifti gray matter density probability maps
+        - 'white_matter_maps' string list
+          Paths to nifti white matter density probability maps
+        - 'ext_vars': np.recarray
+          Data from the .csv file with information about selected subjects
+        - 'data_usage_agreement': string
+          Path to the .txt file containing the data usage agreement.
 
     References
     ----------
@@ -171,6 +172,7 @@ def fetch_oasis_vbm(n_subjects=None, dartel_version=True, data_dir=None,
     -----
     In the DARTEL version, original Oasis data [1] have been preprocessed
     with the following steps:
+
       1. Dimension swapping (technically required for subsequent steps)
       2. Brain Extraction
       3. Segmentation with SPM8
@@ -182,6 +184,7 @@ def fetch_oasis_vbm(n_subjects=None, dartel_version=True, data_dir=None,
       8. Replacement of values < 1e-4 with zeros to reduce the file size.
 
     In the non-DARTEL version, the following steps have been performed instead:
+
       1. Dimension swapping (technically required for subsequent steps)
       2. Brain Extraction
       3. Segmentation and normalization to a template with SPM8

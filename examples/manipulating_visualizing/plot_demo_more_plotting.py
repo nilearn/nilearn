@@ -64,7 +64,7 @@ plotting.plot_stat_map(localizer_cmap_filename, display_mode='yz',
                        title="display_mode='yz', cut_coords=(-27, 60)")
 
 ###############################################################################
-# demo display objects with add_ methods
+# demo display objects with add_* methods
 mean_haxby_img = image.mean_img(haxby_func_filename)
 
 # Plot T1 outline on top of the mean EPI (useful for checking coregistration)
