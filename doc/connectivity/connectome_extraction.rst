@@ -138,7 +138,7 @@ And it provides one estimated covariance and inverse-covariance
 
 |
 
-.. currentmodule:: nilearn.connectome.group_sparse_covariance
+.. currentmodule:: nilearn.connectome
 
 One specific case where this may be interesting is for group analysis
 across multiple subjects. Indeed, one challenge when doing statistics on
