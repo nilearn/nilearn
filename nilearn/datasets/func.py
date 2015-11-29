@@ -1352,14 +1352,12 @@ def fetch_megatrawls_netmats(data_dir=None, dimensionality=[25, 50, 100, 200, 30
         - correlation: arrays of correlation matrices (Znet1).
         - partial_correlation: arrays of partial correlation matrices (Znet2).
         - dimensions_correlation: array of dimensionalities in numbers which
-          were given to fetch the correlation matrices.
+          were given as inputs.
         - dimensions_partial: array of dimensionalities in numbers which were
-          given to fetch the partial correlation matrices.
-        - timeseries_correlation: array of timeseries methods given to fetch its
-          corresponding matrices.
-        - timeseries_partial: array of timeseries methods given to fetch its
-          corresponding matrices.
-        - Data description
+          given as inputs.
+        - timeseries_correlation: array of timeseries method given as inputs.
+        - timeseries_partial: array of timeseries method given as inputs.
+        - description: Data description
 
     References
     ----------
