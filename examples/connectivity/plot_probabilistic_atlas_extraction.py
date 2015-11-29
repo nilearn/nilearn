@@ -19,7 +19,8 @@ brain. To avoid having too dense a graph, we represent only the 20% edges
 with the highest values.
 
 """
-
+############################################################################
+# Retrieve the atlas and the data
 from nilearn import datasets
 atlas = datasets.fetch_msdl_atlas()
 atlas_filename = atlas['maps']
@@ -32,19 +33,27 @@ csv_filename = atlas['labels']
 labels = np.recfromcsv(csv_filename)
 names = labels['name']
 
+data = datasets.fetch_adhd(n_subjects=1)
+
+print('First subject resting-state nifti image (4D) is located at: %s' %
+      data.func[0])
+
+############################################################################
+# Extract the time series
 from nilearn.input_data import NiftiMapsMasker
 masker = NiftiMapsMasker(maps_img=atlas_filename, standardize=True,
                          memory='nilearn_cache', verbose=5)
 
-data = datasets.fetch_adhd(n_subjects=1)
-
-# print basic dataset information
-print('First subject resting-state nifti image (4D) is located at: %s' %
-      data.func[0])
-
 time_series = masker.fit_transform(data.func[0],
                                    confounds=data.confounds)
 
+############################################################################
+# `time_series` is now a 2D matrix, of shape (number of time points x
+# number of regions)
+print(time_series.shape)
+
+############################################################################
+# Build and display a correlation matrix
 correlation_matrix = np.corrcoef(time_series.T)
 
 # Display the correlation matrix
@@ -59,6 +68,7 @@ plt.colorbar()
 x_ticks = plt.xticks(range(len(names)), names, rotation=90)
 y_ticks = plt.yticks(range(len(names)), names)
 
+############################################################################
 # And now display the corresponding graph
 from nilearn import plotting
 coords = labels[['x', 'y', 'z']].tolist()

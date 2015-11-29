@@ -79,11 +79,11 @@ plot_stat_map(coef_img, background_img,
 
 # Save the coefficients to a nifti file
 coef_img.to_filename('haxby_tv-l1_weights.nii')
+show()
 
 
-################
+###################################
 # We can see that the TV-l1 penalty is 3 times slower to converge and
 # gives the same prediction accuracy. However, it yields much
 # cleaner coefficient maps
 
-show()
