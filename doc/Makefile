@@ -20,6 +20,7 @@ help:
 	@echo "Please use \`make <target>' where <target> is one of"
 	@echo "  html      to make standalone HTML files"
 	@echo "  html-noplot to make standalone HTML files, without plotting anything"
+	@echo "  check     to do a sanity check of the documentation"
 	@echo "  dirhtml   to make HTML files named index.html in directories"
 	@echo "  pickle    to make pickle files"
 	@echo "  json      to make JSON files"
@@ -131,6 +132,11 @@ pdf: latex
 	cp _build/latex/nilearn.pdf nilearn-simple.pdf
 	cp _build/latex/nilearn-nup.pdf nilearn.pdf
 	#cd _build/latex ; make all-pdf ; pdfnup nilearn.pdf
+
+check:
+	rm -rf _build/doctrees
+	rm -rf $(BUILDDIR)/html/_images
+	$(SPHINXBUILD) -W -T -n -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 
 install:
 	rm -rf _build/doctrees _build/nilearn.github.io
