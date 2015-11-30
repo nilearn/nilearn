@@ -104,23 +104,17 @@ expression:
     >>> from nilearn.image import smooth_img
     >>> result_img = smooth_img("dataset/subject_*", fwhm='fast') # doctest: +SKIP
 
+.. topic:: **Python globbing**
 
-For more complicated use cases, Python also provides helper functions to work
-with file paths. In particular, :func:`glob.glob` is useful to automatically
-search and list many files with a "wild-card" pattern: \*.nii
+    For more complicated use cases, Python also provides functions to work
+    with file paths, in particular, :func:`glob.glob`.
 
-.. warning::
-   The result of :func:`glob.glob` is not sorted. In the neuroimaging domain,
-   it may be helpful to alphabetically sort the output of
-   the glob call using the :func:`sorted` function.
+    .. warning::
 
-::
-
-   >>> # dataset folder contains subject1.nii and subject2.nii
-   >>> import glob
-   >>> sorted(glob.glob('dataset/subject*.nii')) # doctest: +SKIP
-   ['dataset/subject1.nii', 'dataset/subject2.nii']
-
+        Unlike nilearn's path expansion, the result of :func:`glob.glob` is
+        not sorted and depending on the computer you are running they
+        might not be in alphabetic order. We advise you to rely on
+        nilearn's path expansion.
 
 Understanding neuroimaging data
 ===============================
