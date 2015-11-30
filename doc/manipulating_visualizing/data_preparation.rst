@@ -1,7 +1,7 @@
 .. _extracting_data:
 
 =========================================================
-Data preparation: loading and basic feature extraction
+Data preparation: loading and basic signal extraction
 =========================================================
 
 .. contents:: **Contents**

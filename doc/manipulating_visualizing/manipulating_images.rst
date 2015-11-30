@@ -102,7 +102,7 @@ expression:
     >>> # dataset/subject_*.nii is a glob expression matching all filenames.
     >>> # Example with a smoothing process:
     >>> from nilearn.image import smooth_img
-    >>> result_img = smooth_img("dataset/subject_*", fwhm='fast') # doctest: +SKIP
+    >>> result_img = smooth_img("dataset/subject_*") # doctest: +SKIP
 
 .. topic:: **Python globbing**
 
