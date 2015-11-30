@@ -144,8 +144,8 @@ Neuroimaging data can be loaded in a simple way thanks to nibabel_.
 A Nifti file on disk can be loaded with a single line.
 
 .. literalinclude:: ../../examples/manipulating_visualizing/plot_visualization.py
-     :start-after: ### Load an fMRI file #########################################################
-     :end-before: ### Visualization #############################################################
+     :start-after: # Fetch data
+     :end-before: # Visualization
 
 .. topic:: **Dataset formatting: data shape**
 
@@ -249,8 +249,8 @@ brain. It is thus convenient to apply a brain mask in order to convert the
 
 
 .. literalinclude:: ../../examples/manipulating_visualizing/plot_visualization.py
-     :start-after: ### Applying the mask #########################################################
-     :end-before: ### Find voxels of interest ###################################################
+     :start-after: # Applying the mask to extract the corresponding time series
+     :end-before: # Find voxels of interest
 
 .. figure:: ../auto_examples/manipulating_visualizing/images/sphx_glr_plot_visualization_003.png
     :target: ../auto_examples/manipulating_visualizing/plot_visualization.html
@@ -354,7 +354,7 @@ more discriminative is the voxel in distinguishing the two conditions.
 
 .. literalinclude:: ../../examples/manipulating_visualizing/plot_roi_extraction.py
     :start-after: # Run a T-test for face and houses
-    :end-before: ### Build a mask ##############################################################
+    :end-before: # Build a mask from this statistical map
 
 .. figure:: ../auto_examples/manipulating_visualizing/images/sphx_glr_plot_roi_extraction_002.png
     :target: ../auto_examples/manipulating_visualizing/plot_roi_extraction.html
