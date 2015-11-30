@@ -76,8 +76,8 @@ First, load the data using nilearn data downloading function,
 :func:`nilearn.datasets.fetch_haxby`:
 
 .. literalinclude:: ../../examples/plot_haxby_simple.py
-    :start-after: ### Load haxby dataset ########################################################
-    :end-before: ### Load Target labels ########################################################
+    :start-after: # Retrieve and load the Haxby dataset
+    :end-before: # Load the behavioral labels
 
 The ``haxby_dataset`` object has several entries that contain paths to the files
 downloaded on the disk::
@@ -97,8 +97,8 @@ We load the behavioral labels from the corresponding text file and limit
 our analysis to the `face` and `cat` conditions:
 
 .. literalinclude:: ../../examples/plot_haxby_simple.py
-    :start-after: ### Load Target labels ########################################################
-    :end-before: ### Prepare the data: apply the mask ##########################################
+    :start-after: # Load the behavioral labels
+    :end-before: # Prepare the data: apply the mask
 
 .. currentmodule:: nilearn.input_data
 
@@ -114,8 +114,8 @@ n_features) (see :ref:`mask_4d_2_3d` for a discussion on using masks).
 
 
 .. literalinclude:: ../../examples/plot_haxby_simple.py
-    :start-after: ### Prepare the data: apply the mask ##########################################
-    :end-before: ### Prediction ################################################################
+    :start-after: # Prepare the data: apply the mask
+    :end-before: # The decoding
 
 .. seealso::
 
@@ -183,7 +183,7 @@ In scikit-learn, the prediction objects have two important methods:
 
 .. literalinclude:: ../../examples/plot_haxby_simple.py
     :start-after: # And we run it
-    :end-before: ### Cross-validation ##########################################################
+    :end-before: # Compute prediction scores using cross-validation
 
 .. warning::
 
@@ -211,8 +211,8 @@ We use a cross-validation object,
 indices of the folds within a loop.
 
 .. literalinclude:: ../../examples/plot_haxby_simple.py
-    :start-after: ### Cross-validation ##########################################################
-    :end-before: ### Unmasking #################################################################
+    :start-after: # Compute prediction scores using cross-validation
+    :end-before: print(cv_scores)
 
 
 .. for doctests:
@@ -354,8 +354,8 @@ We can visualize the weights of the decoder:
 - finally we plot the SVC's weights after masking the zero values
 
 .. literalinclude:: ../../examples/plot_haxby_simple.py
-    :start-after: ### Unmasking #################################################################
-    :end-before: ### Visualize the mask ########################################################
+    :start-after: # Retrieve the discriminating weights and save them
+    :end-before: # Visualize the discriminating weights over the mean EPI
 
 .. figure:: ../auto_examples/images/sphx_glr_plot_haxby_simple_001.png
    :target: ../auto_examples/plot_haxby_simple.html
@@ -388,8 +388,10 @@ that we will put before the SVC in a `pipeline`
 (:class:`sklearn.pipeline.Pipeline`):
 
 .. literalinclude:: ../../examples/decoding/plot_haxby_anova_svm.py
-    :start-after: ### Dimension reduction #######################################################
-    :end-before: ### Visualization #############################################################
+    :start-after: # Build the decoder
+    :end-before: # Visualize the results
+
+ 
 
 We can use our ``anova_svc`` object exactly as we were using our ``svc``
 object previously.
@@ -410,8 +412,8 @@ To visualize the results, we need to:
    :scale: 65
 
 .. literalinclude:: ../../examples/decoding/plot_haxby_anova_svm.py
-    :start-after: ### Visualization #############################################################
-    :end-before: ### Cross validation ##########################################################
+    :start-after: # Visualize the results
+    :end-before: # Obtain prediction scores via cross validation
 
 .. seealso::
 

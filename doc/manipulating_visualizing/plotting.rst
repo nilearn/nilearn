@@ -112,7 +112,7 @@ Different display modes
 
 .. |plot_z_many| image:: ../auto_examples/manipulating_visualizing/images/sphx_glr_plot_demo_more_plotting_002.png
      :target: ../auto_examples/manipulating_visualizing/plot_demo_more_plotting.html
-     :scale: 50
+     :scale: 30
 
 .. |plot_x| image:: ../auto_examples/manipulating_visualizing/images/sphx_glr_plot_demo_more_plotting_003.png
      :target: ../auto_examples/manipulating_visualizing/plot_demo_more_plotting.html
