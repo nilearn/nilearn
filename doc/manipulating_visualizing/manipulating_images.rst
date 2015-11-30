@@ -440,7 +440,7 @@ one of them.
 
 .. literalinclude:: ../../examples/manipulating_visualizing/plot_roi_extraction.py
     :start-after: # Identification of connected components
-    :end-before: # use the new ROIs to extract data maps in both ROIs
+    :end-before: # Use the new ROIs to extract data maps in both ROIs
 
 .. figure:: ../auto_examples/manipulating_visualizing/images/sphx_glr_plot_roi_extraction_006.png
     :target: ../auto_examples/manipulating_visualizing/plot_roi_extraction.html
