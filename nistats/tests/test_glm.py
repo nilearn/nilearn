@@ -18,6 +18,7 @@ from nose.tools import assert_true, assert_equal, assert_raises
 from numpy.testing import (assert_array_almost_equal, assert_almost_equal,
                            assert_array_equal)
 from nibabel.tmpdirs import InTemporaryDirectory
+import pandas as pd
 
 
 # This directory path
@@ -32,8 +33,9 @@ def write_fake_fmri_data(shapes, rk=3, affine=np.eye(4)):
         data = np.random.randn(*shape)
         data[1:-1, 1:-1, 1:-1] += 100
         save(Nifti1Image(data, affine), fmri_files[-1])
-        design_files.append('dmtx_%d.npz' % i)
-        np.savez(design_files[-1], np.random.randn(shape[3], rk))
+        design_files.append('dmtx_%d.csv' % i)
+        pd.DataFrame(np.random.randn(shape[3], rk),
+                     columns=['', '', '']).to_csv(design_files[-1])
     save(Nifti1Image((np.random.rand(*shape[:3]) > .5).astype(np.int8),
                      affine), mask_file)
     return mask_file, fmri_files, design_files
@@ -46,7 +48,8 @@ def generate_fake_fmri_data(shapes, rk=3, affine=np.eye(4)):
         data = np.random.randn(*shape)
         data[1:-1, 1:-1, 1:-1] += 100
         fmri_data.append(Nifti1Image(data, affine))
-        design_matrices.append(np.random.randn(shape[3], rk))
+        design_matrices.append(pd.DataFrame(np.random.randn(shape[3], rk),
+                                            columns=['', '', '']))
     mask = Nifti1Image((np.random.rand(*shape[:3]) > .5).astype(np.int8),
                        affine)
     return mask, fmri_data, design_matrices
@@ -256,9 +259,9 @@ def test_fmri_inputs():
         FUNCFILE = FUNCFILE[0]
         func_img = load(FUNCFILE)
         T = func_img.shape[-1]
-        des = np.ones((T, 1))
-        des_fname = 'design.npz'
-        np.savez(des_fname, des)
+        des = pd.DataFrame(np.ones((T, 1)), columns=[''])
+        des_fname = 'design.csv'
+        des.to_csv(des_fname)
         for fi in func_img, FUNCFILE:
             for d in des, des_fname:
                 FirstLevelGLM().fit(fi, d)
