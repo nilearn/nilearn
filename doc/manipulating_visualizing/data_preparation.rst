@@ -341,8 +341,16 @@ an excerpt of :ref:`the example performing Anova-SVM on the Haxby data
 <sphx_glr_auto_examples_decoding_plot_haxby_anova_svm.py>`):
 
 .. literalinclude:: ../../examples/decoding/plot_haxby_anova_svm.py
-    :start-after: ### Look at the SVC's discriminating weights
-    :end-before: ### Create the figure
+    :start-after: # Look at the SVC's discriminating weights
+    :end-before: # Create the figure
+
+|
+
+.. topic:: **Examples to better understand the NiftiMasker**
+
+   * :ref:`sphx_glr_auto_examples_manipulating_visualizing_plot_nifti_simple.py`
+
+   * :ref:`sphx_glr_auto_examples_manipulating_visualizing_plot_mask_computation.py`
 
 
 .. _region:
@@ -382,9 +390,9 @@ labels and maps, handled by :class:`NiftiLabelsMasker` and
   difficult with this data transformation of whole-brain voxel data
   into weighted region-wise data.
 
-.. note::
+.. note:: 
 
-   These usage are illustrated in :ref:`functional_connectomes`
+   These usage are illustrated in the section :ref:`functional_connectomes`
 
 :class:`NiftiLabelsMasker` Usage
 ---------------------------------
@@ -404,6 +412,10 @@ Should some non-zero value encoding be necessary, it is
 possible to change the background value with the `background_label`
 keyword.
 
+.. topic:: **Examples**
+
+    * :ref:`sphx_glr_auto_examples_connectivity_plot_signal_extraction.py`
+
 :class:`NiftiMapsMasker` Usage
 ------------------------------
 
@@ -419,3 +431,8 @@ The keyword argument `resampling_target` specifies which format (i.e.,
 dimensions and affine) the data should be resampled to.
 See the reference documentation for :class:`NiftiMapsMasker` for every
 possible option.
+
+.. topic:: **Examples**
+
+   * :ref:`sphx_glr_auto_examples_connectivity_plot_probabilistic_atlas_extraction.py`
+
