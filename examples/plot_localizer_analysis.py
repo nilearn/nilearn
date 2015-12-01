@@ -23,23 +23,18 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 import nibabel
-
-from nistats.glm import FirstLevelGLM
-from nistats.design_matrix import (
-    make_design_matrix, plot_design_matrix, check_design_matrix)
-from nistats import datasets
-
 from nilearn import plotting
 
+from nistats.glm import FirstLevelGLM
+from nistats.design_matrix import make_design_matrix
+from nistats import datasets
 
-#######################################
-# Data and analysis parameters
-#######################################
+
+### Data and analysis parameters #######################################
 
 # timing
 n_scans = 128
 tr = 2.4
-# paradigm
 frame_times = np.linspace(0.5 * tr, (n_scans - .5) * tr, n_scans)
 
 # write directory
@@ -47,46 +42,29 @@ write_dir = 'results'
 if not path.exists(write_dir):
     mkdir(write_dir)
 
+# data
 data = datasets.fetch_localizer_first_level()
 paradigm_file = data.paradigm
 epi_img = data.epi_img
 
-########################################
-# Design matrix
-########################################
+### Design matrix ########################################
 
 paradigm = pd.read_csv(paradigm_file, sep=' ', header=None, index_col=None)
 paradigm.columns = ['session', 'name', 'onset']
-n_conditions = len(paradigm.name.unique())
-design_matrix = make_design_matrix(frame_times, paradigm,
-                                   hrf_model='canonical with derivative',
-                                   drift_model="cosine", period_cut=128)
-_, matrix, column_names = check_design_matrix(design_matrix)
+design_matrix = make_design_matrix(
+    frame_times, paradigm, hrf_model='canonical with derivative',
+    drift_model="cosine", period_cut=128)
 
-# Plot the design matrix
-ax = plot_design_matrix(design_matrix)
-ax.set_position([.05, .25, .9, .65])
-ax.set_title('Design matrix')
-plt.savefig(path.join(write_dir, 'design_matrix.png'))
+### Perform a GLM analysis ########################################
 
-########################################
-# Perform a GLM analysis
-########################################
+fmri_glm = FirstLevelGLM().fit(epi_img, design_matrix)
 
-fmri_glm = FirstLevelGLM().fit(epi_img, matrix)
-
-#########################################
-# Estimate contrasts
-#########################################
+### Estimate contrasts #########################################
 
 # Specify the contrasts
-
-# simplest ones
-contrasts = {}
-n_columns = len(column_names)
-contrast_matrix = np.eye(n_columns)
-for i in range(n_conditions):
-    contrasts[column_names[2 * i]] = contrast_matrix[2 * i]
+contrast_matrix = np.eye(design_matrix.shape[1])
+contrasts = dict([(column, contrast_matrix[i])
+                  for i, column in enumerate(design_matrix.columns)])
 
 # and more complex/ interesting ones
 contrasts["audio"] = contrasts["clicDaudio"] + contrasts["clicGaudio"] +\

@@ -48,10 +48,10 @@ affine, shape = subject_data.func[0].get_affine(), subject_data.func[0].shape
 print('Resampling the second image (this takes time)...')
 subject_data.func[1] = resample_img(subject_data.func[1], affine, shape[:3])
 
-for x in range(2):
+for idx in range(2):
     # build paradigm
-    n_scans = subject_data.func[x].shape[-1]
-    timing = loadmat(getattr(subject_data, "trials_ses%i" % (x + 1)),
+    n_scans = subject_data.func[idx].shape[-1]
+    timing = loadmat(getattr(subject_data, "trials_ses%i" % (idx + 1)),
                      squeeze_me=True, struct_as_record=False)
 
     faces_onsets = timing['onsets'][0].ravel()
@@ -70,24 +70,20 @@ for x in range(2):
     design_matrices.append(design_matrix)
 
 # specify contrasts
-_, matrix, names = check_design_matrix(design_matrix)
-contrasts = {}
-n_columns = len(names)
-contrast_matrix = np.eye(n_columns)
-for i in range(2):
-    contrasts[names[2 * i]] = contrast_matrix[2 * i]
-
+contrast_matrix = np.eye(design_matrix.shape[1])
+contrasts = dict([(column, contrast_matrix[i])
+                  for i, column in enumerate(design_matrix.columns)])
 # more interesting contrasts
-contrasts['faces-scrambled'] = contrasts['faces'] - contrasts['scrambled']
-contrasts['scrambled-faces'] = -contrasts['faces-scrambled']
-contrasts['effects_of_interest'] = np.vstack((contrasts['faces'],
-                                              contrasts['scrambled']))
+interesting_contrasts = {
+    'faces-scrambled': contrasts['faces'] - contrasts['scrambled'],
+    'scrambled-faces': -contrasts['faces'] + contrasts['scrambled'],
+    'effects_of_interest': np.vstack((contrasts['faces'], contrasts['scrambled']))
+    }
 
 # fit GLM
 print('Fitting a GLM')
-X = [check_design_matrix(design_)[1] for design_ in design_matrices]
-fmri_glm = FirstLevelGLM(standardize=False).fit(subject_data.func, X)
-
+fmri_glm = FirstLevelGLM(standardize=False).fit(
+    subject_data.func, design_matrices)
 
 # Create mean image for display
 mean_image = mean_img(subject_data.func)
@@ -96,7 +92,7 @@ mean_image = mean_img(subject_data.func)
 print('Computing contrasts')
 from nilearn.plotting import plot_stat_map
 
-for contrast_id, contrast_val in contrasts.items():
+for contrast_id, contrast_val in interesting_contrasts.items():
     print("\tcontrast id: %s" % contrast_id)
     z_map, t_map, effects_map, var_map = fmri_glm.transform(
         [contrast_val] * 2, contrast_name=contrast_id, output_z=True,

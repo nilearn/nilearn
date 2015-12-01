@@ -4,10 +4,10 @@ from __future__ import with_statement
 """
 This module implements fMRI Design Matrix creation.
 
-The DesignMatrix object is just a container that represents the design matrix.
+Design matrices a rerepsented by Pandas DataFrames
 Computations of the different parts of the design matrix are confined
-to the make_dmtx() function, that instantiates the DesignMatrix object.
-All the remainder are just ancillary functions.
+to the make_design_matrix function, that create a DataFrame
+All the others are ancillary functions.
 
 Design matrices contain three different types of regressors:
 
@@ -239,6 +239,7 @@ def _full_rank(X, cmax=1e15):
     cond : float,
         actual condition number
     """
+    from warnings import warn
     U, s, V = linalg.svd(X, 0)
     smax, smin = s.max(), s.min()
     cond = smax / smin
@@ -327,7 +328,7 @@ def make_design_matrix(
 
     # computation of the matrix
     names = []
-    matrix = np.zeros((frame_times.size, 0))
+    matrix = None
 
     # step 1: paradigm-related regressors
     if paradigm is not None:
@@ -338,21 +339,28 @@ def make_design_matrix(
     # step 2: additional regressors
     if add_regs is not None:
         # add user-supplied regressors and corresponding names
-        matrix = np.hstack((matrix, add_regs))
+        if matrix is not None:
+            matrix = np.hstack((matrix, add_regs))
+        else:
+            matrix = add_regs
         names += add_reg_names
 
     # step 3: drifts
     drift, dnames = _make_drift(drift_model.lower(), frame_times, drift_order,
                                 period_cut)
-    matrix = np.hstack((matrix, drift))
+
+    if matrix is not None:
+        matrix = np.hstack((matrix, drift))
+    else:
+        matrix = drift
+
     names += dnames
 
     # step 4: Force the design matrix to be full rank at working precision
     matrix, _ = full_rank(matrix)
 
     design_matrix = DataFrame(
-        np.hstack((frame_times[:, np.newaxis], matrix)),
-        columns=['frame_times'] + names)
+        matrix, columns=names, index=frame_times)
     return design_matrix
 
 
@@ -376,13 +384,9 @@ def check_design_matrix(design_matrix):
     names : array of shape (n_events,), dtype='f'
         Per-event onset time (in seconds)
     """
-    names = design_matrix.keys()
-    if 'frame_times' not in names:
-        raise ValueError('The provided DataFrame does not contain the'
-                         'mandatory frame_times field.')
-    frame_times = design_matrix['frame_times']
-    names = list(names.drop('frame_times'))
-    matrix = design_matrix[names].values
+    names = [name for name in design_matrix.keys()]
+    frame_times = design_matrix.index
+    matrix = design_matrix.values
     return frame_times, matrix, names
 
 

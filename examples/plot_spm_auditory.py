@@ -48,25 +48,17 @@ design_matrix = make_design_matrix(
     frame_times, paradigm, hrf_model=hrf_model, drift_model=drift_model,
     period_cut=period_cut)
 
-# plot and save design matrix
-ax = plot_design_matrix(design_matrix)
-ax.set_position([.05, .25, .9, .65])
-ax.set_title('Design matrix')
-
 # specify contrasts
-contrasts = {}
-_, matrix, names = check_design_matrix(design_matrix)
-contrast_matrix = np.eye(len(names))
-for i in range(len(names)):
-    contrasts[names[i]] = contrast_matrix[i]
-
+contrast_matrix = np.eye(design_matrix.shape[1])
+contrasts = dict([(column, contrast_matrix[i])
+                  for i, column in enumerate(design_matrix.columns)])
 # Use a  more interesting contrast
 contrasts = {'active-rest': contrasts['active'] - contrasts['rest']}
 
 # fit GLM
 print('\r\nFitting a GLM (this takes time) ..')
 fmri_glm = FirstLevelGLM(noise_model='ar1', standardize=False).fit(
-    [subject_data.func], matrix)
+    [subject_data.func], design_matrix)
 
 # compute bg unto which activation will be projected
 mean_img = mean_img(subject_data.func)
