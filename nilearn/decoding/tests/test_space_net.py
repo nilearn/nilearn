@@ -351,5 +351,6 @@ def test_space_net_one_alpha_no_crash():
     iris = load_iris()
     X, y = iris.data, iris.target
     X, mask = to_niimgs(X, [2, 2, 2])
-    SpaceNetRegressor(n_alphas=1, mask=mask).fit(X, y)
-    SpaceNetClassifier(n_alphas=1, mask=mask).fit(X, y)
+    for model in [SpaceNetRegressor, SpaceNetClassifier]:
+        model(n_alphas=1, mask=mask).fit(X, y)
+        model(alphas=None, n_alphas=2, mask=mask).fit(X, y)
