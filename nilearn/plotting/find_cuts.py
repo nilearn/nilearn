@@ -66,7 +66,12 @@ def find_xyz_cut_coords(img, mask=None, activation_threshold=None):
     if mask is not None:
         # check against empty mask
         if mask.sum() == 0.:
-            raise ValueError("Provided mask is empty!")
+            warnings.warn(
+                "Provided mask is empty. Returning center of mass instead.")
+            cut_coords = ndimage.center_of_mass(np.abs(my_map)) + offset
+            x_map, y_map, z_map = cut_coords
+            return np.asarray(coord_transform(x_map, y_map, z_map,
+                                              img.get_affine())).tolist()
         slice_x, slice_y, slice_z = ndimage.find_objects(mask)[0]
         my_map = my_map[slice_x, slice_y, slice_z]
         mask = mask[slice_x, slice_y, slice_z]

@@ -3,7 +3,7 @@ from nose.tools import assert_equal, assert_true
 import nibabel
 from nilearn.plotting.find_cuts import (find_xyz_cut_coords, find_cut_slices,
                                         _transform_cut_coords)
-from nilearn._utils.testing import assert_raises_regex
+from nilearn._utils.testing import assert_raises_regex, assert_warns
 
 
 def test_find_cut_coords():
@@ -130,5 +130,6 @@ def test_tranform_cut_coords():
 def test_find_cuts_empty_mask_no_crash():
     img = nibabel.Nifti1Image(np.ones((2, 2, 2)), np.eye(4))
     mask = np.zeros((2, 2, 2)).astype(np.bool)
-    assert_raises_regex(ValueError, "Provided mask is empty!",
-                        find_xyz_cut_coords, img, mask=mask)
+    cut_coords = assert_warns(UserWarning, find_xyz_cut_coords, img,
+                              mask=mask)
+    np.testing.assert_array_equal(cut_coords, [.5, .5, .5])
