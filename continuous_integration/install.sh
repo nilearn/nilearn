@@ -35,7 +35,7 @@ print_conda_requirements() {
     #   - for scikit-learn, SCIKIT_LEARN_VERSION is used
     TO_INSTALL_ALWAYS="pip nose"
     REQUIREMENTS="$TO_INSTALL_ALWAYS"
-    TO_INSTALL_MAYBE="python numpy scipy matplotlib scikit-learn"
+    TO_INSTALL_MAYBE="python numpy scipy matplotlib scikit-learn flake8"
     for PACKAGE in $TO_INSTALL_MAYBE; do
         # Capitalize package name and add _VERSION
         PACKAGE_VERSION_VARNAME="${PACKAGE^^}_VERSION"
@@ -104,4 +104,8 @@ if [[ "$COVERAGE" == "true" ]]; then
     pip install coverage coveralls
 fi
 
-python setup.py install
+# numpy not installed when skipping the tests so we do not want to run
+# setup.py install
+if [[ "$SKIP_TESTS" != "true" ]]; then
+    python setup.py install
+fi

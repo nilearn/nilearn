@@ -6,54 +6,48 @@ virtualenv:
 env:
   global:
     - TEST_RUN_FOLDER="/tmp" # folder where the tests are run from
-  matrix:
+
+matrix:
+  # Do not wait for the allowed_failures entry to finish before
+  # setting the status
+  fast_finish: true
+  allow_failures:
+    # allow_failures seems to be keyed on the python version
+    - python: 2.7
+  include:
     # Ubuntu 14.04 versions
-    - DISTRIB="conda" PYTHON_VERSION="2.7"
-      NUMPY_VERSION="1.8.2" SCIPY_VERSION="0.13.3"
-      SCIKIT_LEARN_VERSION="0.14.1" MATPLOTLIB_VERSION="1.3.1"
+    - env: DISTRIB="conda" PYTHON_VERSION="2.7"
+           NUMPY_VERSION="1.8.2" SCIPY_VERSION="0.13.3"
+           SCIKIT_LEARN_VERSION="0.14.1" MATPLOTLIB_VERSION="1.3.1"
     # Ubuntu 14.04 versions without matplotlib
-    - DISTRIB="conda" PYTHON_VERSION="2.7"
-      NUMPY_VERSION="1.8.2" SCIPY_VERSION="0.13.3"
-      SCIKIT_LEARN_VERSION="0.14.1"
-    - DISTRIB="neurodebian" PYTHON_VERSION="2.7"
-    # Trying to get as close to the minimum required versions while
-    # still having the package version available through conda
-    - DISTRIB="conda" PYTHON_VERSION="2.6"
-      NUMPY_VERSION="1.6.2" SCIPY_VERSION="0.11.0"
-      SCIKIT_LEARN_VERSION="0.13" MATPLOTLIB_VERSION="1.1.1"
-      NIBABEL_VERSION="1.1.0"
+    - env: DISTRIB="conda" PYTHON_VERSION="2.7"
+           NUMPY_VERSION="1.8.2" SCIPY_VERSION="0.13.3"
+           SCIKIT_LEARN_VERSION="0.14.1"
+    # Neurodebian
+    - env: DISTRIB="neurodebian" PYTHON_VERSION="2.7"
+      # Trying to get as close to the minimum required versions while
+      # still having the package version available through conda
+    - env: DISTRIB="conda" PYTHON_VERSION="2.6"
+           NUMPY_VERSION="1.6.2" SCIPY_VERSION="0.11.0"
+           SCIKIT_LEARN_VERSION="0.13" MATPLOTLIB_VERSION="1.1.1"
+           NIBABEL_VERSION="1.1.0"
     # Python 3.4 with intermediary versions
-    - DISTRIB="conda" PYTHON_VERSION="3.4"
-      NUMPY_VERSION="1.8" SCIPY_VERSION="0.14"
-      SCIKIT_LEARN_VERSION="0.15" MATPLOTLIB_VERSION="1.4"
+    - env: DISTRIB="conda" PYTHON_VERSION="3.4"
+           NUMPY_VERSION="1.8" SCIPY_VERSION="0.14"
+           SCIKIT_LEARN_VERSION="0.15" MATPLOTLIB_VERSION="1.4"
     # Most recent versions
-    - DISTRIB="conda" PYTHON_VERSION="3.5"
-      NUMPY_VERSION="*" SCIPY_VERSION="*"
-      SCIKIT_LEARN_VERSION="*" MATPLOTLIB_VERSION="*" COVERAGE="true"
+    - env: DISTRIB="conda" PYTHON_VERSION="3.5"
+           NUMPY_VERSION="*" SCIPY_VERSION="*"
+           SCIKIT_LEARN_VERSION="*" MATPLOTLIB_VERSION="*" COVERAGE="true"
+    # FLAKE8 linting on diff wrt common ancestor with upstream/master
+    # Note: the python value is only there to trigger allow_failures
+    - python: 2.7
+      env: DISTRIB="conda" PYTHON_VERSION="2.7" FLAKE8_VERSION="*" SKIP_TESTS="true"
 
-install: 
-    - source continuous_integration/install.sh
+install: source continuous_integration/install.sh
 
-before_script:
-    - make clean
+before_script: make clean
 
-script:
-    - python continuous_integration/show-python-packages-versions.py
-    # Copy setup.cfg to TEST_RUN_FOLDER where we are going to run the tests from
-    # Mainly for nose config settings
-    - cp setup.cfg "$TEST_RUN_FOLDER"
-    # We want to back out of the current working directory to make
-    # sure we are using nilearn installed in site-packages rather
-    # than the one from the current working directory
-    # Parentheses (run in a subshell) are used to leave
-    # the current directory unchanged
-    - (cd "$TEST_RUN_FOLDER" && make -f $OLDPWD/Makefile test-code)
-    - test "$MATPLOTLIB_VERSION" == "" || make test-doc
+script: source continuous_integration/test_script.sh
 
-after_success:
-    # Ignore coveralls failures as the coveralls server is not very reliable
-    # but we don't want travis to report a failure in the github UI just
-    # because the coverage report failed to be published.
-    # coveralls need to be run from the git checkout
-    # so we need to copy the coverage results from TEST_RUN_FOLDER
-    - if [[ "$COVERAGE" == "true" ]]; then cp "$TEST_RUN_FOLDER/.coverage" .; coveralls || echo "failed"; fi
+after_success: source continuous_integration/after_success.sh  
