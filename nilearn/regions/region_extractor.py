@@ -102,7 +102,7 @@ def connected_regions(maps_img, min_region_size=50, extract_type='local_regions'
     -------
     regions_extracted: Niimg-like object
         gives the image in 4D of extracted brain regions. Each 3D image consists
-        of only one seperated region.
+        of only one separated region.
 
     index_of_each_map: numpy array
         an array of list of indices where each index denotes the identity

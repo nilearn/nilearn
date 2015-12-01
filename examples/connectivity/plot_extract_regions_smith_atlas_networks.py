@@ -2,37 +2,43 @@
 Regions Extraction of Default Mode Networks using Smith Atlas
 =============================================================
 
-This example shows how to extract regions from Smith Atlas resting
-state networks.
+This simple example shows how to extract regions from Smith atlas
+resting state networks.
 """
-# Fetch the datasets and atlas maps
+
+################################################################################
+# Fetching the smith ICA 10 RSN by importing datasets utilities
 from nilearn import datasets
-from nilearn.image import iter_img
-from nilearn.image import new_img_like
-from nilearn.plotting import find_xyz_cut_coords
-print (" -- Fetching Smith Atlas ICA Networks -- ")
+
 smith_atlas = datasets.fetch_atlas_smith_2009()
 atlas_networks = smith_atlas.rsn10
 
-# Region Extraction
-from nilearn.regions import region_extractor
-print (" -- Extracting Networks -- ")
-extraction = region_extractor.RegionExtractor(atlas_networks, threshold="98%",
-                                              min_region_size=100)
+################################################################################
+# Import region extractor to extract atlas networks
+from nilearn.regions import RegionExtractor
+
+extraction = RegionExtractor(atlas_networks, threshold='98%', min_region_size=100)
+
+# Just call fit() to execute region extraction procedure
 extraction.fit()
 regions = extraction.regions_
 
-# Visualize the region extraction results
+################################################################################
+# Visualization
+# Show region extraction results by importing image & plotting utilities
+
 import matplotlib.pyplot as plt
 from nilearn import plotting
-print (" -- Showing the region extraction results from a Smith RSN -- ")
+from nilearn.image import iter_img
+from nilearn.plotting import find_xyz_cut_coords
+
 for i, cur_img in zip(extraction.index_, iter_img(regions)):
     coords = find_xyz_cut_coords(cur_img)
     plotting.plot_stat_map(cur_img, display_mode='z', cut_coords=coords[2:3],
-                           title="Region extracted corresponds to Network of %d " % i)
+                           title="Region extracted corresponds to the network of %d " % i)
 
 fig = plt.figure(figsize=(5, 5))
 plotting.plot_prob_atlas(regions, display_mode='z', figure=fig,
                          cut_coords=1, view_type='contours',
-                         title="Regions extracted. Each color is a seperate blob")
-plt.show()
+                         title="Regions extracted. Each color is a separate blob")
+plotting.show()
