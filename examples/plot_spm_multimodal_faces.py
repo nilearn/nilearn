@@ -60,7 +60,7 @@ for idx in range(2):
     onsets *= tr  # because onsets were reporting in 'scans' units
     conditions = (['faces'] * len(faces_onsets) +
                   ['scrambled'] * len(scrambled_onsets))
-    paradigm = DataFrame({'name': conditions, 'onset': onsets})
+    paradigm = pd.DataFrame({'name': conditions, 'onset': onsets})
 
     # build design matrix
     frame_times = np.arange(n_scans) * tr
