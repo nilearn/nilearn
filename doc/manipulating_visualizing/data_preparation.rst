@@ -449,14 +449,13 @@ Using :class:`NiftiSpheresMasker` needs to define a list of coordinates.
 they should be in the same space as the images.
 Seeds can overlap spatially and are represented in a binary present-nonpresent
 coding (no weighting).
-Below is an example of a coordinates list of four seeds from the default mode network.
+Below is an example of a coordinates list of four seeds from the default mode network.::
 
-.. literalinclude:: ../../examples/connectivity/plot_adhd_spheres.py
-    :start-after: # Coordinates of Default Mode Network
-    :end-before: labels = [
+  dmn_coords = [(0, -52, 18), (-46, -68, 32), (46, -68, 32), (0, 50, -5)]
 
 "radius" is an optional argument that takes a real value in millimeters.
-If no value is given the spheres are considered as voxels.
+If no value is given for the "radius" argument, the single voxel at the given
+seed position is used.
 
 .. topic:: **Examples**
 
