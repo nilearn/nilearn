@@ -615,7 +615,8 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
     Attributes
     ----------
     
-    `all_coef_` : 
+    `all_coef_` : ndarray, shape (n_l1_ratios, n_folds, n_features)
+        Coefficients for all folds and features.
     
     `alpha_grids_` : ndarray, shape (n_folds, n_alphas)
         Alpha values tried for choosing the best ones (saved in best_model_params_)
@@ -624,16 +625,20 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
         Best model parameters (alpha, l1_ratio) saved for the different 
         cross-validation folds.
 
-    `classes_` :
+    `classes_` : array of labels (n_classes_)
+        Labels of the classes
 
-    `n_classes_` :
+    `n_classes_` : int
+        Number of classes
 
     `coef_` : ndarray, shape (n_classes-1, n_features)
         Coefficient of the features in the decision function.
     
-    `coef_img_` :
+    `coef_img_` : nifti image
+        On mask model coefficients
 
-    `mask_` :
+    `mask_` : ndarray 
+        Mask image
 
     `masker_` : instance of NiftiMasker
         The nifti masker used to mask the data.
@@ -643,7 +648,7 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
         this attribute is the mask image computed automatically from the
         data `X`.
 
-    `memory_` :
+    `memory_` : joblib memory cache
 
     `intercept_` : narray, shape (nclasses -1,)
          Intercept (a.k.a. bias) added to the decision function.
@@ -660,14 +665,17 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
         Screening percentile corrected according to volume of mask,
         relative to the volume of standard brain.
 
-    `w_` :
-
-    `ymean_` :
-
-    `Xmean_` :
-
-    `Xstd_` :
+    `w_` : ndarray, shape (n_classes-1, n_features) #TODO: check shapes
+        Model weights 
     
+    `ymean_` : array, shape (n_samples,)
+        Mean of prediction targets
+    
+    `Xmean_` : array, shape (n_features,)
+        Mean of X samples
+    
+    `Xstd_` : array, shape (n_features,)
+        Standard deviation of X samples
     """
     SUPPORTED_PENALTIES = ["graph-net", "tv-l1"]
     SUPPORTED_LOSSES = ["mse", "logistic"]
