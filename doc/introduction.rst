@@ -197,6 +197,13 @@ the file name::
 
     >>> plotting.plot_glass_brain("/home/user/t_map000.nii")   # doctest: +SKIP
 
+.. sidebar:: File name matchings
+
+   The filename could be given as "~/t_map000.nii' as nilearn expands "~" to
+   the home directory.
+   :ref:`See more on file name matchings <extracting_data>`.
+
+
 .. image:: auto_examples/manipulating_visualizing/images/sphx_glr_plot_demo_glass_brain_001.png
     :target: auto_examples/manipulating_visualizing/plot_demo_glass_brain.html
     :align: center

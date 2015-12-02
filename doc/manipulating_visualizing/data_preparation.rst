@@ -16,11 +16,11 @@ Data preparation: loading and basic signal extraction
 
     >>> from nilearn import image
     >>> smoothed_img = image.smooth_img('/home/user/t_map001.nii') # doctest: +SKIP
-  
+
    Nilearn can operate on either file names or `NiftiImage objects
    <http://nipy.org/nibabel/nibabel_images.html>`_. The later represent
    the specified nifti files loaded in memory.
-   
+
    In nilearn, we often use the term 'niimg' as abbreviation that denotes
    either a file name or a NiftiImage object. In the example above, the
    function smooth_img returns a NiftiImage object, which can then be
@@ -28,10 +28,11 @@ Data preparation: loading and basic signal extraction
    arguments.
 
    Niimgs can be 3D or 4D, and a 4D niimg can be a list of file names, or
-   even a *wildcard* matching patterns. For instance, to retrieve a 4D
-   volume of all t maps smoothed::
+   even a *wildcard* matching patterns. The '~' symbol is also expanded to the
+   user home folder.For instance, to retrieve a 4D volume of
+   all t maps smoothed::
 
-    >>> smoothed_imgs = image.smooth_img('/home/user/t_map*.nii') # doctest: +SKIP
+    >>> smoothed_imgs = image.smooth_img('~/t_map*.nii') # doctest: +SKIP
 
 
 |
@@ -137,7 +138,7 @@ Computing the mask
 ...................
 
 .. note::
-   
+
     The full example described in this section can be found here:
     :doc:`plot_mask_computation.py <../auto_examples/manipulating_visualizing/plot_mask_computation>`.
     It is also related to this example:
@@ -390,7 +391,7 @@ labels and maps, handled by :class:`NiftiLabelsMasker` and
   difficult with this data transformation of whole-brain voxel data
   into weighted region-wise data.
 
-.. note:: 
+.. note::
 
    These usage are illustrated in the section :ref:`functional_connectomes`
 
@@ -435,4 +436,3 @@ possible option.
 .. topic:: **Examples**
 
    * :ref:`sphx_glr_auto_examples_connectivity_plot_probabilistic_atlas_extraction.py`
-
