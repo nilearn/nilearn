@@ -41,11 +41,8 @@ from .._utils.fixes.scikit_learn_backport import make_scorer
 from ..input_data import NiftiMasker, MultiNiftiMasker
 from ..image import index_img
 
-# XXX When using _score_func: access to a protected member _score_func of a client class
-
 # Volume of a standard (MNI152) brain mask in mm^3
 MNI152_BRAIN_VOLUME = 1827243.
-
 
 ESTIMATOR_CATALOG = dict(
     svc_l1=LinearSVC(penalty='l1', dual=False, class_weight='auto'),

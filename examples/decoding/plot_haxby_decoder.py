@@ -13,13 +13,9 @@ import nibabel
 from nilearn import datasets
 from nilearn.image import new_img_like
 
-# XXX remove this
-data_dir = '/home/ahoyosid/NEUROSPIN/DATA/nilearn_data'
-
 # Load the Haxby dataset
 from nilearn.datasets import fetch_haxby
 data_files = fetch_haxby(n_subjects=1)
-# mask_img = nibabel.load(data_files.mask)
 
 func_filenames = data_files.func[0]
 labels_filenames = data_files.session_target[0]

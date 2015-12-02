@@ -48,11 +48,8 @@ from nilearn.input_data import NiftiMasker
 
 n_subjects = 100  # more subjects requires more memory
 
-# XXX remove this
-data_dir = '/home/ahoyosid/NEUROSPIN/DATA/nilearn_data'
-
 ### Load Oasis dataset ########################################################
-oasis_dataset = datasets.fetch_oasis_vbm(data_dir=data_dir, n_subjects=n_subjects)
+oasis_dataset = datasets.fetch_oasis_vbm(n_subjects=n_subjects)
 gray_matter_map_filenames = oasis_dataset.gray_matter_maps
 age = oasis_dataset.ext_vars['age'].astype(float)
 
