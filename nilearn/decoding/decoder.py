@@ -26,13 +26,11 @@ from sklearn.metrics import r2_score, f1_score, precision_score, recall_score
 from sklearn.grid_search import ParameterGrid
 from sklearn.base import BaseEstimator
 from sklearn.base import is_classifier
-# scikit-learn >= 0.16
-from sklearn.utils import check_X_y
-
 from sklearn import clone
 
-from .._utils.fixes import check_array
+from .._utils.fixes import atleast2d_or_csr
 from .._utils.fixes import check_cv
+from .._utils.fixes.scikit_learn_validation import check_X_y
 
 from ..input_data import NiftiMasker, MultiNiftiMasker
 from ..image import index_img
@@ -189,10 +187,9 @@ class Decoder(BaseEstimator):
         self.n_jobs = n_jobs
         self.verbose = verbose
 
-
+    # XXX Too many local variables
+    # XXX Too many statements (75/60)
     def fit(self, niimgs, y, index=None):
-        # XXX Too many local variables
-        # XXX Too many statements (75/60)
         """Fit the decoder
 
         Parameters
@@ -263,8 +260,8 @@ class Decoder(BaseEstimator):
 
         # Load data and target
         X = self.masker_.transform(niimgs)
-        X = np.vstack(X) if isinstance(X, tuple) else X
-        y, = check_array(y)
+        X = atleast2d_or_csr(X)
+        # X = np.vstack(X) if isinstance(X, tuple) else X
 
         # Additional checking, otherwise it will continue (even where the
         # lengths are different)
