@@ -70,7 +70,7 @@ gm_maps_masked = nifti_masker.fit_transform(gray_matter_map_filenames)
 n_samples, n_features = gm_maps_masked.shape
 print("%d samples, %d features" % (n_subjects, n_features))
 
-### Prediction with Decoder####################################################
+### Prediction with Decoder ###################################################
 # remove features with too low between-subject variance
 gm_maps_masked = nifti_masker.fit_transform(gray_matter_map_filenames)
 gm_maps_masked[:, gm_maps_masked.var(0) < 0.01] = 0.
@@ -80,7 +80,7 @@ gm_maps_masked = nifti_masker.fit_transform(niimgs)
 n_samples, n_features = gm_maps_masked.shape
 
 from nilearn.decoding import Decoder
-decoder = Decoder(estimator='svr', mask=nifti_masker,
+decoder = Decoder(estimator='ridge_regression', mask=nifti_masker,
                   screening_percentile=2, n_jobs=1)
 
 ### Fit and predict
