@@ -385,8 +385,16 @@ class Decoder(BaseEstimator):
             return decision_labels
         return decision_values
 
-    def score(self, niimgs, y):
-        # XXX verify this
+    def score(self, niimgs, y, index=None):
+        if index is not None and isinstance(index, collections.Iterable):
+            niimgs = index_img(niimgs, index)
+            y = y[index]
+
+        X = self.masker_.transform(niimgs)
+        X = check_array(X)
+        X, y = check_X_y(X, y, ['csr', 'csc', 'coo'], dtype=np.float,
+                         multi_output=True, y_numeric=True)
+
         scorer, _ = _check_scorer(self, self.scoring, self.pos_label, y)
         return scorer(self, niimgs, y)
 
@@ -605,6 +613,7 @@ def _check_estimation(estimator, y, pos_label):
     return is_classification_, is_binary, classes_, classes_to_predict
 
 
+# XXX verify this, we are calling a private function
 def _check_scorer(estimator, scoring, pos_label, y):
     """Utility function to set up scoring metric.
 
@@ -620,6 +629,7 @@ def _check_scorer(estimator, scoring, pos_label, y):
 
     # Check that the passed scoring does not raise an Exception
     scorer = check_scoring(estimator, scoring)
+
     score_func = scorer._score_func if hasattr(scorer, '_score_func') else None
 
     # Check scoring is for right learning problem
@@ -647,6 +657,5 @@ def _check_scorer(estimator, scoring, pos_label, y):
 
     scorer = check_scoring(estimator, scoring)
     if estimator.is_binary_ and scorer._score_func in REQUIRES_POS_LABEL:
-        scorer = make_scorer(scorer._score_func,
-                             pos_label=pos_label)
+        scorer = make_scorer(scorer._score_func, pos_label=pos_label)
     return scorer, scoring
