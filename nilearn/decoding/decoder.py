@@ -25,12 +25,15 @@ from sklearn.metrics import r2_score, f1_score, precision_score, recall_score
 
 from sklearn.base import BaseEstimator
 from sklearn.base import is_classifier
+from sklearn.utils.extmath import safe_sparse_dot
 from sklearn import clone
 
 from .._utils.fixes import atleast2d_or_csr
 from .._utils.fixes import check_cv
+from .._utils.fixes import check_array
 from .._utils.fixes.scikit_learn_backport import ParameterGrid
 from .._utils.fixes.scikit_learn_backport import check_X_y
+from .._utils.fixes.scikit_learn_backport import check_is_fitted
 from .._utils.fixes.scikit_learn_backport import check_scoring
 from .._utils.fixes.scikit_learn_backport import make_scorer
 
@@ -252,8 +255,7 @@ class Decoder(BaseEstimator):
 
         # Load data and target
         X = self.masker_.transform(niimgs)
-        X = atleast2d_or_csr(X)
-        # X = np.vstack(X) if isinstance(X, tuple) else X
+        X = check_array(X)
 
         # Additional checking, otherwise it will continue (even where the
         # lengths are different)
@@ -320,30 +322,25 @@ class Decoder(BaseEstimator):
                 tmp[c] = cv_pred_values[i]
             cv_pred_.append(tmp)
 
+        if self.is_classification_:
+            classes = self.classes_
+        else:
+            classes = classes_to_predict
+
         self.cv_y_pred_ = []
         self.cv_y_true_ = []
         self.cv_scores_ = []
 
-        if self.is_classification_:
-            classes = self.classes_
-            for k in range(len(cv_pred_)):
-                y_prob_ = np.vstack([cv_pred_[k][c] for c in classes]).T
-                y_pred_ = self.classes_[np.argmax(y_prob_, axis=1)]
-                y_true_ = cv_true[cv_true.keys()[0]][k]
+        for k in range(len(cv_pred)):
+            y_pred = np.vstack([cv_pred_[k][c] for c in classes]).T
+            y_true = cv_true[cv_true.keys()[0]][k]
 
-                self.cv_y_pred_.append(y_pred_)
-                self.cv_y_true_.append(y_true_)
-                self.cv_scores_.append(scorer._score_func(y_true_, y_pred_))
-        else:
-            classes = classes_to_predict
-            for k in range(len(cv_pred_)):
-                y_pred_ = np.vstack([cv_pred_[k][c] for c in classes]).T
-                y_true_ = cv_true[cv_true.keys()[0]][k]
+            if self.is_classification_:
+                y_pred = self.classes_[np.argmax(y_pred, axis=1)]
 
-                self.cv_y_pred_.append(y_pred_)
-                self.cv_y_true_.append(y_true_)
-                self.cv_scores_.append(scorer._score_func(y_true_, y_pred_))
-            self.cv_params_['beta'] = self.cv_params_.pop(None)
+            self.cv_y_true_.append(y_true)
+            self.cv_y_pred_.append(y_pred)
+            self.cv_scores_.append(scorer._score_func(y_true, y_pred))
 
         self.coef_ = np.vstack([np.mean(coefs[c], axis=0) for c in classes])
         self.std_coef_ = np.vstack([np.std(coefs[c], axis=0) for c in classes])
@@ -369,16 +366,19 @@ class Decoder(BaseEstimator):
             niimgs = index_img(niimgs, index)
 
         X = self.masker_.transform(niimgs)
-        if isinstance(X, tuple):
-            X = np.vstack(X)
-        X_view = X.view()
-        X_view.shape = (X.shape[0], -1)
-        decision_values = np.dot(X_view, self.coef_.T) + self.intercept_
+        X = check_array(X)
+        decision_values = safe_sparse_dot(X, self.coef_.T,
+                                          dense_output=True) + self.intercept_
         return decision_values
 
     def predict(self, niimgs, index=None):
         """Predict a label for all X vectors indexed by the first axis"""
+
+        check_is_fitted(self, "coef_")
+        check_is_fitted(self, "masker_")
+
         decision_values = self.decision_function(niimgs, index)
+
         if self.is_classification_:
             decisions = decision_values.argmax(axis=1)
             decision_labels = self.classes_[decisions]
