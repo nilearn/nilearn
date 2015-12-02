@@ -1,11 +1,11 @@
 """
-Base class for decomposition estimators, utilies for masking and reducing group
-data
+Base class for decomposition estimators, utilities for masking and dimension
+reduction of group data
 """
 from __future__ import division
-
 from math import ceil
 
+import itertools
 import numpy as np
 from scipy import linalg
 from sklearn.base import BaseEstimator
@@ -13,10 +13,9 @@ from sklearn.externals.joblib import Memory, Parallel, delayed
 from sklearn.linear_model import LinearRegression
 from sklearn.utils import check_random_state
 from sklearn.utils.extmath import randomized_svd
-
 from .._utils.cache_mixin import CacheMixin, cache
 from .._utils.niimg import _safe_get_data
-from .._utils.niimg_conversions import check_niimg_4d
+from .._utils.niimg_conversions import check_niimg_4d, _iter_check_niimg
 from ..input_data import NiftiMapsMasker
 from ..input_data.masker_validation import check_embedded_nifti_masker
 
@@ -28,34 +27,34 @@ def mask_and_reduce(masker, imgs,
                     memory_level=0,
                     memory=Memory(cachedir=None),
                     n_jobs=1):
-    """Mask and reduce provided data with provided masker, using a PCA
+    """Mask and reduce provided 4D images with given masker.
 
     Uses a PCA (randomized for small reduction ratio) or a range finding matrix
-    on time series to reduce data size in time. For multiple image,
+    on time series to reduce data size in time direction. For multiple images,
     the concatenation of data is returned, either as an ndarray or a memorymap
     (useful for big datasets that do not fit in memory).
 
     Parameters
     ----------
     masker: NiftiMasker or MultiNiftiMasker
-        Masker to use to mask provided data
+        Instance used to mask provided data.
 
-    imgs: list of Niimg-like objects
-        See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
-        List of subject data
+    imgs: list of 4D Niimg-like objects
+        See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
+        List of subject data to mask, reduce and stack.
 
-    confounds: CSV file path or 2D matrix
+    confounds: CSV file path or 2D matrix, optional
         This parameter is passed to signal.clean. Please see the
         corresponding documentation for details.
 
-    reduction_ratio: 'auto' or float in [0., 1.], optional
-        - Between 0. or 1. : controls compression of data, 1. means no
-        compression
+    reduction_ratio: 'auto' or float between 0. and 1.
+        - Between 0. or 1. : controls data reduction in the temporal domain
+        , 1. means no reduction, < 1. calls for an SVD based reduction.
         - if set to 'auto', estimator will set the number of components per
-        compressed session to be n_components
+          reduced session to be n_components.
 
     n_components: integer, optional
-        Number of components to be extracted by the PCA
+        Number of components per subject to be extracted by dimension reduction
 
     random_state: int or RandomState
         Pseudo number generator state used for random sampling.
@@ -67,89 +66,97 @@ def mask_and_reduce(masker, imgs,
     memory: joblib.Memory
         Used to cache the function calls.
 
-    Retuns
+    Returns
     ------
     data: ndarray or memorymap
-        Concatenation of reduced data
+        Concatenation of reduced data.
     """
-
     if not hasattr(imgs, '__iter__'):
         imgs = [imgs]
-    else:
-        imgs = imgs
 
     if reduction_ratio == 'auto':
         if n_components is None:
             # Reduction ratio is 1 if
             # neither n_components nor ratio is provided
             reduction_ratio = 1
-        else:
-            reduction_ratio = 'auto'
     else:
         if reduction_ratio is None:
             reduction_ratio = 1
         else:
             reduction_ratio = float(reduction_ratio)
         if not 0 <= reduction_ratio <= 1:
-            raise ValueError('Reduction ratio should be between 0., 1.,'
+            raise ValueError('Reduction ratio should be between 0. and 1.,'
                              'got %.2f' % reduction_ratio)
 
     if confounds is None:
-        confounds = [None] * len(imgs)
+        confounds = itertools.repeat(confounds)
 
-    # Precomputing number of samples for preallocation
-    subject_n_samples = np.zeros(len(imgs), dtype='int')
-    for i, img in enumerate(imgs):
-        this_n_samples = check_niimg_4d(img).shape[3]
-        if reduction_ratio == 'auto':
-            subject_n_samples[i] = min(n_components,
-                                       this_n_samples)
-        else:
-            subject_n_samples[i] = int(ceil(this_n_samples *
-                                            reduction_ratio))
-    n_voxels = np.sum(_safe_get_data(masker.mask_img_))
-    n_samples = np.sum(subject_n_samples)
-
-    # XXX Should we provided memory mapping for n_jobs > 1 to allow concurrent
-    # write ?
-    data = np.empty((n_samples, n_voxels), order='F',
-                    dtype='float64')
+    if reduction_ratio == 'auto':
+        n_samples = n_components
+        reduction_ratio = None
+    else:
+        # We'll let _mask_and_reduce_single decide on the number of
+        # samples based on the reduction_ratio
+        n_samples = None
 
     data_list = Parallel(n_jobs=n_jobs)(
         delayed(_mask_and_reduce_single)(
             masker,
             img, confound,
-            n_samples,
+            reduction_ratio=reduction_ratio,
+            n_samples=n_samples,
             memory=memory,
             memory_level=memory_level,
             random_state=random_state
-        ) for img, confound, n_samples in zip(imgs, confounds,
-                                                      subject_n_samples))
+        ) for img, confound in zip(imgs, confounds))
+
+    subject_n_samples = [subject_data.shape[0]
+                         for subject_data in data_list]
+
+    n_samples = np.sum(subject_n_samples)
+    n_voxels = np.sum(_safe_get_data(masker.mask_img_))
+    data = np.empty((n_samples, n_voxels), order='F',
+                    dtype='float64')
 
     current_position = 0
     for i, next_position in enumerate(np.cumsum(subject_n_samples)):
         data[current_position:next_position] = data_list[i]
         current_position = next_position
+        # Clear memory as fast as possible: remove the reference on
+        # the corresponding block of data
+        data_list[i] = None
     return data
 
 
 def _mask_and_reduce_single(masker,
                             img, confound,
-                            n_samples,
+                            reduction_ratio=None,
+                            n_samples=None,
                             memory=None,
                             memory_level=0,
                             random_state=None):
     """Utility function for multiprocessing from MaskReducer"""
     this_data = masker.transform(img, confound)
+    # Now get rid of the img as fast as possible, to free a
+    # reference count on it, and possibly free the corresponding
+    # data
+    del img
     random_state = check_random_state(random_state)
 
-    if n_samples <= this_data.shape[0] // 4:
+    data_n_samples = this_data.shape[0]
+    if reduction_ratio is None:
+        assert n_samples is not None
+        n_samples = min(n_samples, data_n_samples)
+    else:
+        n_samples = int(ceil(data_n_samples * reduction_ratio))
+
+    if n_samples <= data_n_samples // 4:
         U, S, _ = cache(randomized_svd, memory,
                         memory_level=memory_level,
                         func_memory_level=3)(this_data.T,
                                              n_samples,
-                                             random_state=random_state,
-                                             n_iter=3)
+                                             transpose=True,
+                                             random_state=random_state)
         U = U.T
     else:
         U, S, _ = cache(linalg.svd, memory,
@@ -163,11 +170,12 @@ def _mask_and_reduce_single(masker,
 
 
 class BaseDecomposition(BaseEstimator, CacheMixin):
-    """Base class for decomposition estimator. Handles mask logic, provides
-     transform and inverse_transform methods
+    """Base class for matrix factorization based decomposition estimators.
+
+     Handles mask logic, provides transform and inverse_transform methods
 
     Parameters
-    ==========
+    ----------
     n_components: int
         Number of components to extract, for each 4D-Niimage
 
@@ -212,7 +220,7 @@ class BaseDecomposition(BaseEstimator, CacheMixin):
         This parameter is passed to image.resample_img. Please see the
         related documentation for details.
 
-    mask_strategy: {'background' or 'epi'}, optional
+    mask_strategy: {'background', 'epi'}, optional
         The strategy used to compute the mask: use 'background' if your
         images present a clear homogeneous background, and 'epi' if they
         are raw EPI images. Depending on this value, the mask will be
@@ -225,7 +233,7 @@ class BaseDecomposition(BaseEstimator, CacheMixin):
         to fine-tune mask computation. Please see the related documentation
         for details.
 
-    memory: instance of joblib.Memory or string
+    memory: instance of joblib.Memory or str
         Used to cache the masking process.
         By default, no caching is done. If a string is given, it is the
         path to the caching directory.
@@ -238,23 +246,13 @@ class BaseDecomposition(BaseEstimator, CacheMixin):
         The number of CPUs to use to do the computation. -1 means
         'all CPUs', -2 'all CPUs but one', and so on.
 
-    in_memory: boolean,
-        Intermediary unmasked data will be
-        stored as a tempory memory map
-
     verbose: integer, optional
         Indicate the level of verbosity. By default, nothing is printed.
 
     Attributes
-    ==========
-    `_pca_masker_`: instance of MultiNiftiMasker
-        Masker used to filter and mask data as first step. If an instance of
-        MultiNiftiMasker is given in `mask` parameter,
-        this is a copy of it. Otherwise, a masker is created using the value
-        of `mask` and other NiftiMasker related parameters as initialization.
-
+    ----------
     `mask_img_`: Niimg-like object
-        See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+        See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
         The mask of the data. If no mask was given at masker creation, contains
         the automatically computed mask.
     """
@@ -267,7 +265,7 @@ class BaseDecomposition(BaseEstimator, CacheMixin):
                  target_affine=None, target_shape=None,
                  mask_strategy='epi', mask_args=None,
                  memory=Memory(cachedir=None), memory_level=0,
-                 n_jobs=1, in_memory=True,
+                 n_jobs=1,
                  verbose=0):
         self.n_components = n_components
         self.random_state = random_state
@@ -286,7 +284,6 @@ class BaseDecomposition(BaseEstimator, CacheMixin):
         self.memory = memory
         self.memory_level = memory_level
         self.n_jobs = n_jobs
-        self.in_memory = in_memory
         self.verbose = verbose
 
     def fit(self, imgs, y=None, confounds=None):
@@ -295,7 +292,7 @@ class BaseDecomposition(BaseEstimator, CacheMixin):
         Parameters
         ----------
         imgs: list of Niimg-like objects
-            See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+            See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
             Data on which the mask is calculated. If this is a list,
             the affine is considered the same for all.
         """
@@ -322,7 +319,7 @@ class BaseDecomposition(BaseEstimator, CacheMixin):
             if self.__class__.__name__ == 'BaseDecomposition':
                 raise ValueError("Object has no components_ attribute. "
                                  "This may be because "
-                                 "BaseDecomposition is direclty "
+                                 "BaseDecomposition is directly "
                                  "being used.")
             else:
                 raise ValueError("Object has no components_ attribute. "
@@ -335,7 +332,7 @@ class BaseDecomposition(BaseEstimator, CacheMixin):
         Parameters
         ----------
         imgs: iterable of Niimg-like objects
-            See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+            See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
             Data to be projected
 
         confounds: CSV file path or 2D matrix
@@ -390,7 +387,7 @@ class BaseDecomposition(BaseEstimator, CacheMixin):
         return [nifti_maps_masker.inverse_transform(loading)
                 for loading in loadings]
 
-    def _sort_on_score(self, data):
+    def _sort_by_score(self, data):
         """Sort components on the explained variance over data of estimator
         components_"""
         components_score = self._raw_score(data, per_component=True)
@@ -410,7 +407,7 @@ class BaseDecomposition(BaseEstimator, CacheMixin):
         Parameters
         ----------
         imgs: iterable of Niimg-like objects
-            See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+            See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
             Data to be scored
 
         confounds: CSV file path or 2D matrix

@@ -40,7 +40,7 @@ def _compute_loadings(components, data):
 
 
 class DictLearning(BaseDecomposition, TransformerMixin, CacheMixin):
-    """Perform a map learning algorithm based on component sparsity,
+    """Perform a map learning algorithm based on spatial component sparsity,
      over a CanICA initialization.  This yields more stable maps than CanICA.
 
     Parameters
@@ -64,11 +64,12 @@ class DictLearning(BaseDecomposition, TransformerMixin, CacheMixin):
         Initial estimation of dictionary maps. Would be computed from CanICA if
         not provided
 
-    reduction_ratio: 'auto' or float in [0., 1.], optional
-        - Between 0. or 1. : controls compression of data, 1. means no
-        compression
+    reduction_ratio: 'auto' or float between 0. and 1.
+        - Between 0. or 1. : controls data temporal reduction, 1. means no
+          reduction, 0.5 means we will reduce a subject record to have 50%
+          summary time samples
         - if set to 'auto', estimator will set the number of components per
-        compressed session to be n_components
+          compressed session to be n_components.
 
     random_state: int or RandomState
         Pseudo number generator state used for random sampling.
@@ -120,17 +121,16 @@ class DictLearning(BaseDecomposition, TransformerMixin, CacheMixin):
     References
     ----------
     * Gael Varoquaux et al.
-    Multi-subject dictionary learning to segment an atlas of brain spontaneous
-    activity
-    Information Processing in Medical Imaging, 2011, pp. 562-573,
-    Lecture Notes in Computer Science
-
+      Multi-subject dictionary learning to segment an atlas of brain
+      spontaneous activity
+      Information Processing in Medical Imaging, 2011, pp. 562-573,
+      Lecture Notes in Computer Science
     """
 
     def __init__(self, n_components=20,
-                 n_epochs=1, alpha=1, reduction_ratio='auto', dict_init=None,
+                 n_epochs=1, alpha=10, reduction_ratio='auto', dict_init=None,
                  random_state=None,
-                 mask=None, smoothing_fwhm=None,
+                 mask=None, smoothing_fwhm=4,
                  standardize=True, detrend=True,
                  low_pass=None, high_pass=None, t_r=None,
                  target_affine=None, target_shape=None,
@@ -198,11 +198,11 @@ class DictLearning(BaseDecomposition, TransformerMixin, CacheMixin):
         Parameters
         ----------
         imgs: list of Niimg-like objects
-            See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+            See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
             Data on which PCA must be calculated. If this is a list,
             the affine is considered the same for all.
 
-        confounds: CSV file path or 2D matrixf
+        confounds: CSV file path or 2D matrix
             This parameter is passed to nilearn.signal.clean. Please see the
             related documentation for details
         """
@@ -261,7 +261,7 @@ class DictLearning(BaseDecomposition, TransformerMixin, CacheMixin):
             shuffle=True,
             n_jobs=1)
         self.components_ = self.components_.T
-        # Normalize components
+        # Unit-variance scaling
         S = np.sqrt(np.sum(self.components_ ** 2, axis=1))
         S[S == 0] = 1
         self.components_ /= S[:, np.newaxis]

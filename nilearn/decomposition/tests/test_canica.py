@@ -107,7 +107,3 @@ def test_component_sign():
                 canica.components_)):
             mp = mp.get_data()
             assert_less_equal(-mp.min(), mp.max())
-
-
-if __name__ == '__main__':
-    test_component_sign()

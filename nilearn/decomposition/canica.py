@@ -107,10 +107,11 @@ class CanICA(MultiPCA, CacheMixin):
       datasets", IEEE ISBI 2010, p. 1177
     """
 
-    def __init__(self, n_init=10, threshold='auto', n_components=20,
+    def __init__(self, mask=None, n_components=20, smoothing_fwhm=6,
                  do_cca=True,
+                 threshold='auto',
+                 n_init=10,
                  random_state=None,
-                 mask=None, smoothing_fwhm=None,
                  standardize=True, detrend=True,
                  low_pass=None, high_pass=None, t_r=None,
                  target_affine=None, target_shape=None,
@@ -135,6 +136,9 @@ class CanICA(MultiPCA, CacheMixin):
         self.n_init = n_init
 
     def _unmix_components(self):
+        """Core function of CanICA than rotate components_ to maximize
+        independance"""
+
         random_state = check_random_state(self.random_state)
 
         seeds = random_state.randint(np.iinfo(np.int32).max, size=self.n_init)
@@ -173,26 +177,7 @@ class CanICA(MultiPCA, CacheMixin):
             if component.max() < -component.min():
                 component *= -1
 
-    def fit(self, imgs, y=None, confounds=None):
-        """Compute the mask and the ICA maps across subjects
-
-        Parameters
-        ----------
-        imgs: list of Niimg-like objects
-            See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
-            Data on which PCA must be calculated. If this is a list,
-            the affine is considered the same for all.
-
-        confounds: CSV file path or 2D matrix
-            This parameter is passed to nilearn.signal.clean. Please see the
-            related documentation for details
-        """
-        if self.verbose:
-            print('[CanICA] Learning mask')
-        MultiPCA.fit(self, imgs, y=y, confounds=confounds)
-        self._unmix_components()
-        return self
-
+    # Overriding MultiPCA._raw_fit overrides MultiPCA.fit behavior
     def _raw_fit(self, data):
         """Helper function that direcly process unmasked data.
 

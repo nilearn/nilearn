@@ -72,8 +72,7 @@ def test_base_decomposition():
         data.append(nibabel.Nifti1Image(this_data, affine))
     mask = nibabel.Nifti1Image(np.ones(shape[:3], dtype=np.int8), affine)
     masker = MultiNiftiMasker(mask_img=mask)
-    base_decomposition = BaseDecomposition(mask=masker,
-                                                n_components=3)
+    base_decomposition = BaseDecomposition(mask=masker, n_components=3)
     base_decomposition.fit(data)
     assert_true(base_decomposition.mask_img_ == mask)
     assert_true(base_decomposition.mask_img_ ==
@@ -81,8 +80,7 @@ def test_base_decomposition():
 
     # Testing fit on data
     masker = MultiNiftiMasker()
-    base_decomposition = BaseDecomposition(mask=masker,
-                                                n_components=3)
+    base_decomposition = BaseDecomposition(mask=masker, n_components=3)
     base_decomposition.fit(data)
     assert_true(base_decomposition.mask_img_ ==
                 base_decomposition.masker_.mask_img_)
@@ -90,7 +88,7 @@ def test_base_decomposition():
     assert_raises_regex(ValueError,
                         "Object has no components_ attribute. "
                         "This may be because "
-                        "BaseDecomposition is direclty "
+                        "BaseDecomposition is directly "
                         "being used.",
                         base_decomposition.transform, data)
     assert_raises_regex(ValueError,
@@ -100,5 +98,3 @@ def test_base_decomposition():
 
 
 # Score is tested in multi_pca
-def test_base_decomposition_score():
-    pass
