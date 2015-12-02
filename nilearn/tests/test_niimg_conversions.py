@@ -310,9 +310,7 @@ def test_check_niimg_wildcards():
 def test_iter_check_niimgs():
     no_file_matching = "No files matching path: {}"
     affine = np.eye(4)
-    img_3d = Nifti1Image(np.ones((10, 10, 10)), affine)
     img_4d = Nifti1Image(np.ones((10, 10, 10, 4)), affine)
-    img_3_3d = [[[img_3d, img_3d]]]
     img_2_4d = [[img_4d, img_4d]]
 
     assert_raises_regex(ValueError,
