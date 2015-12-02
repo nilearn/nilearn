@@ -52,6 +52,15 @@ html:
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
 
+html-strict:
+	# These two lines make the build a bit more lengthy, and the
+	# the embedding of images more robust, it's also more strict than the html
+	# target in the sense that Warning are considered as errors.
+	make check
+	touch $(BUILDDIR)/html .nojekyll
+	@echo
+	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
+
 html-noplot:
 	$(SPHINXBUILD) -D plot_gallery=0 -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 	touch $(BUILDDIR)/html .nojekyll

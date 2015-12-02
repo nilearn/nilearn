@@ -61,10 +61,13 @@ doc-plot:
 doc:
 	make -C doc html-noplot
 
+.PHONY : doc-check
+doc-check:
+	make -C doc check
+
 .PHONY : pdf
 pdf:
 	make -C doc pdf
 
 install: 
 	cd doc && make install
- 

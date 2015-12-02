@@ -1,6 +1,16 @@
 dependencies:
   cache_directories:
     - "~/nilearn_data"
+
+  pre:
+    # We need to remove conflicting texlive packages.
+    - sudo -E apt-get -yq remove texlive-binaries --purge
+    # Installing required packages for `make -C doc check command` to work.
+    - sudo -E apt-get -yq update
+    - sudo -E apt-get -yq --no-install-suggests --no-install-recommends --force-yes install dvipng texlive-latex-base texlive-latex-extra
+    # Force another download for this data
+    - rm -rf /home/ubuntu/nilearn_data/adhd
+
   override:
     - pip install --upgrade pip
     # Installing sphinx 1.2.3 to work-around autosummary issues in 1.3
@@ -11,7 +21,7 @@ dependencies:
     - pip install -e .
     # we need to do this here so the datasets will be cached
     # pipefail is necessary to propagate exit codes
-    - set -o pipefail && cd doc && make html 2>&1 | tee ~/log.txt
+    - set -o pipefail && cd doc && make html-strict 2>&1 | tee ~/log.txt
 
 test:
   override:
