@@ -566,11 +566,26 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
 
     Attributes
     ----------
-    `alpha_` : float
-         Best alpha found by cross-validation.
+
+    `all_coef_` :
+
+    `alpha_grids_` : ndarray, shape (n_folds, n_alphas)
+        Alpha values tried for choosing the best ones (saved in best_model_params_)
+
+    `best_model_params_` : ndarray, shape (n_folds, n_parameter)
+        Best model parameters (alpha, l1_ratio) saved for the different
+        cross-validation folds.
+
+    `classes_` :
+
+    `n_classes_` :
 
     `coef_` : ndarray, shape (n_classes-1, n_features)
         Coefficient of the features in the decision function.
+
+    `coef_img_` :
+
+    `mask_` :
 
     `masker_` : instance of NiftiMasker
         The nifti masker used to mask the data.
@@ -579,6 +594,8 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
         The mask of the data. If no mask was supplied by the user,
         this attribute is the mask image computed automatically from the
         data `X`.
+
+    `memory_` :
 
     `intercept_` : narray, shape (nclasses -1,)
          Intercept (a.k.a. bias) added to the decision function.
@@ -596,6 +613,15 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
     `screening_percentile_` : float
         Screening percentile corrected according to volume of mask,
         relative to the volume of standard brain.
+
+    `w_` :
+
+    `ymean_` :
+
+    `Xmean_` :
+
+    `Xstd_` :
+
     """
     SUPPORTED_PENALTIES = ["graph-net", "tv-l1"]
     SUPPORTED_LOSSES = ["mse", "logistic"]
@@ -821,6 +847,7 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
 
         # misc
         self.cv_scores_ = np.array(self.cv_scores_)
+        self.best_model_params_ = np.array(self.best_model_params_)
         self.alpha_grids_ = np.array(self.alpha_grids_)
         self.ymean_ /= n_folds
         if not self.is_classif:
