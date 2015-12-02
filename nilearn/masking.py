@@ -47,7 +47,8 @@ def _load_mask_img(mask_img, allow_empty=False):
     if len(values) == 1:
         # We accept a single value if it is not 0 (full true mask).
         if values[0] == 0 and not allow_empty:
-            raise ValueError('Given mask is invalid because it masks all data')
+            raise ValueError(
+                'The mask is invalid as it is empty: it masks all data.')
     elif len(values) == 2:
         # If there are 2 different values, one of them must be 0 (background)
         if not 0 in values:
