@@ -24,6 +24,7 @@ from sklearn.cross_validation import cross_val_score
 from sklearn.base import BaseEstimator
 
 from .. import masking
+from ..image.resampling import coord_transform
 from ..input_data.nifti_spheres_masker import _apply_mask_and_get_affinity
 from .._utils.compat import _basestring
 
@@ -288,11 +289,10 @@ class SearchLight(BaseEstimator):
         process_mask, process_mask_affine = masking._load_mask_img(
             process_mask_img)
         process_mask_coords = np.where(process_mask != 0)
-        process_mask_coords = \
-            np.asarray(process_mask_coords +
-                       (np.ones(len(process_mask_coords[0]), dtype=np.int),))
-        process_mask_coords = np.dot(process_mask_affine,
-                                     process_mask_coords)[:3].T
+        process_mask_coords = coord_transform(
+            process_mask_coords[0], process_mask_coords[1],
+            process_mask_coords[2], process_mask_affine)
+        process_mask_coords = np.asarray(process_mask_coords).T
 
         X, A = _apply_mask_and_get_affinity(
             process_mask_coords, imgs, self.radius, True,
