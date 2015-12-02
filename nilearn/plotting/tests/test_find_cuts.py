@@ -4,6 +4,10 @@ import nibabel
 from nilearn.plotting.find_cuts import (find_xyz_cut_coords, find_cut_slices,
                                         _transform_cut_coords)
 from nilearn._utils.testing import assert_raises_regex, assert_warns
+from sklearn.datasets import load_iris
+from ...image import mean_img
+from ...decoding.tests.test_same_api import to_niimgs
+from ...plotting.find_cuts import find_xyz_cut_coords
 
 
 def test_find_cut_coords():
@@ -133,3 +137,11 @@ def test_find_cuts_empty_mask_no_crash():
     cut_coords = assert_warns(UserWarning, find_xyz_cut_coords, img,
                               mask=mask)
     np.testing.assert_array_equal(cut_coords, [.5, .5, .5])
+
+
+def test_fast_abs_percentile_no_index_error_find_cuts():
+    # check that find_cuts functions are safe
+    iris = load_iris()
+    X, _ = iris.data, iris.target
+    X, _ = to_niimgs(X, [2, 2, 2])
+    assert_equal(len(find_xyz_cut_coords(mean_img(X))), 3)

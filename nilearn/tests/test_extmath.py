@@ -6,13 +6,16 @@ import nose
 
 import numpy as np
 
+from sklearn.utils import check_random_state
 from nilearn._utils.extmath import fast_abs_percentile, is_spd
 
 
 def test_fast_abs_percentile():
-    data = np.arange(1, 100)
-    for p in range(10, 100, 10):
-        yield nose.tools.assert_equal, fast_abs_percentile(data, p - 1), p
+    rng = check_random_state(1)
+    data = np.arange(10, 100, 10)
+    rng.shuffle(data)
+    for p in data:
+        yield nose.tools.assert_equal, fast_abs_percentile(data, p), p
 
 
 def test_is_spd_with_non_symmetrical_matrix():
@@ -50,3 +53,8 @@ def test_is_spd_with_symmetrical_matrix():
     matrix = np.array([[2, 1],
                        [1, 1]])
     assert is_spd(matrix, verbose=0)
+
+
+def test_fast_abs_percentile_no_index_error():
+    # check the offending low-level function
+    fast_abs_percentile(np.arange(4))
