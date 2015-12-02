@@ -47,6 +47,8 @@ from nilearn import datasets
 from nilearn.input_data import NiftiMasker
 
 n_subjects = 100  # more subjects requires more memory
+
+# XXX remove this
 data_dir = '/home/ahoyosid/NEUROSPIN/DATA/nilearn_data'
 
 ### Load Oasis dataset ########################################################

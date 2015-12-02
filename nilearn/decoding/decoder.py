@@ -250,6 +250,7 @@ class Decoder(BaseEstimator):
 
         if index is not None and isinstance(index, collections.Iterable):
             niimgs = index_img(niimgs, index)
+            y = y[index]
 
         # Fit masker
         if not hasattr(self.masker_, 'mask_img_'):
