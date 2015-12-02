@@ -576,9 +576,6 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
         Best model parameters (alpha, l1_ratio) saved for the different
         cross-validation folds.
 
-    `classes_` : array of labels (n_classes_)
-        Labels of the classes
-
     `n_classes_` : int
         Number of classes
 
@@ -586,6 +583,10 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
             (1, n_features) for 2 class classification problems (i.e n_classes = 2)
             (n_classes, n_features) for n_classes > 2, and
         Coefficient of the features in the decision function.
+
+    `coef_img_` :
+
+    `mask_` :
 
     `coef_img_` : nifti image
         Masked model coefficients
@@ -601,11 +602,9 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
         this attribute is the mask image computed automatically from the
         data `X`.
 
-    `memory_` : joblib memory cache
+    `memory_` :
 
-    `intercept_` : narray, shape
-            (1,) for 2 class classification problems (i.e n_classes = 2)
-            (n_classes,) for n_classes > 2, and
+    `intercept_` : narray, shape (nclasses -1,)
          Intercept (a.k.a. bias) added to the decision function.
          It is available only when parameter intercept is set to True.
 
@@ -614,8 +613,7 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
          each pair is composed of two lists of indices,
          one for the train samples and one for the test samples.
 
-    `cv_scores_` : ndarray, shape (n_alphas, n_folds) or
-                   (n_l1_ratios, n_alphas, n_folds)
+    `cv_scores_` : ndarray, shape (n_folds, n_alphas) or (n_l1_ratios, n_folds, n_alphas)
         Scores (misclassification) for each alpha, and on each fold
 
     `screening_percentile_` : float
