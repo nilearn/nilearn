@@ -50,7 +50,7 @@ def _apply_mask_and_get_affinity(seeds, niimg, radius, allow_overlap,
 
     clf = neighbors.NearestNeighbors(radius=radius)
     A = clf.fit(mask_coords).radius_neighbors_graph(seeds)
-    if A.sum(axis=1).any():
+    if np.any(A.sum(axis=1) == 0):
         A = clf.fit(mask_coords).kneighbors_graph(seeds, 1)
     A = A.tolil()
     # Include selfs
