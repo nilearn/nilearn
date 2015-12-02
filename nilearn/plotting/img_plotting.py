@@ -436,6 +436,9 @@ def plot_anat(anat_img=MNI152TEMPLATE, cut_coords=None,
             you wish to save figures with a black background, you
             will need to pass "facecolor='k', edgecolor='k'"
             to matplotlib.pyplot.savefig.
+        dim: boolean or float, optional
+            Dimming factor applied to background image. If True, automatic
+            heuristics are applied. Accepted float values are between -1 and 1.
         cmap: matplotlib colormap, optional
             The colormap for the anat
         vmin: float
@@ -599,6 +602,9 @@ def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None,
             values below the threshold (in absolute value) are plotted
             as transparent. If auto is given, the threshold is determined
             magically by analysis of the image.
+        dim: boolean or float, optional
+            Dimming factor applied to background image. If True, automatic
+            heuristics are applied. Accepted float values are between -1 and 1.
         vmin: float
             Lower bound for plotting, passed to matplotlib.pyplot.imshow
         vmax: float
@@ -702,6 +708,9 @@ def plot_prob_atlas(maps_img, anat_img=MNI152TEMPLATE, view_type='auto',
             you wish to save figures with a black background, you
             will need to pass "facecolor='k', edgecolor='k'" to pylab's
             savefig.
+        dim: boolean or float, optional
+            Dimming factor applied to background image. If True, automatic
+            heuristics are applied. Accepted float values are between -1 and 1.
         cmap: matplotlib colormap, optional
             The colormap for the atlas maps
         vmin: float
