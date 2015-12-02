@@ -23,10 +23,10 @@ from functools import partial
 
 import numpy as np
 
-from sklearn.metrics import (r2_score, median_absolute_error, mean_absolute_error,
+from sklearn.metrics import (r2_score, mean_absolute_error,
                mean_squared_error, accuracy_score, f1_score,
-               roc_auc_score, average_precision_score,
-               precision_score, recall_score, log_loss)
+               average_precision_score,
+               precision_score, recall_score)
 from sklearn.metrics.cluster import adjusted_rand_score
 from sklearn.utils.multiclass import type_of_target
 from sklearn.externals import six

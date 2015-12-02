@@ -39,10 +39,7 @@ from .._utils.fixes.scikit_learn_backport import make_scorer
 from ..input_data import NiftiMasker, MultiNiftiMasker
 from ..image import index_img
 
-# scikit-learn 0.13
-# ImportError: cannot import name scorer and make_scorer (>=0.14)
 # XXX When using _score_func: access to a protected member _score_func of a client class
-
 
 # Volume of a standard (MNI152) brain mask in mm^3
 MNI152_BRAIN_VOLUME = 1827243.
@@ -288,6 +285,11 @@ class Decoder(BaseEstimator):
             self.screening_percentile) for pos_label, (train, test) in
             itertools.product(classes_to_predict, cv))
 
+        self._gather_results(results, classes_to_predict, scorer)
+
+
+    def _gather_results(self, results, classes_to_predict,
+                        scorer):
         # Gather results
         coefs = {}
         intercepts = {}
@@ -322,7 +324,7 @@ class Decoder(BaseEstimator):
         self.cv_y_true_ = []
         self.cv_scores_ = []
 
-        if is_classification_:
+        if self.is_classification_:
             classes = self.classes_
             for k in range(len(cv_pred_)):
                 y_prob_ = np.vstack([cv_pred_[k][c] for c in classes]).T
@@ -356,6 +358,8 @@ class Decoder(BaseEstimator):
 
         self.coef_img_ = coef_img
         self.std_coef_img_ = std_coef_img
+
+        return self
 
     def decision_function(self, niimgs, index=None):
         """Provide prediction values for new X which can be turned into
