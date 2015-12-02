@@ -31,26 +31,22 @@ from .._utils.fixes import atleast2d_or_csr
 from .._utils.fixes import check_cv
 from .._utils.fixes.scikit_learn_backport import ParameterGrid
 from .._utils.fixes.scikit_learn_backport import check_X_y
+from .._utils.fixes.scikit_learn_backport import check_scoring
+from .._utils.fixes.scikit_learn_backport import make_scorer
+
+
 
 from ..input_data import NiftiMasker, MultiNiftiMasker
 from ..image import index_img
 
-
-from sklearn.metrics.scorer import check_scoring
-from sklearn.metrics import make_scorer
-
-# from .._utils.fixes.scorer import check_scoring
-
 # scikit-learn 0.13
-# ImportError: cannot import name ParameterGrid (>=0.14)
 # ImportError: cannot import name scorer and make_scorer (>=0.14)
-
+# XXX When using _score_func: access to a protected member _score_func of a client class
 
 
 # Volume of a standard (MNI152) brain mask in mm^3
 MNI152_BRAIN_VOLUME = 1827243.
 
-# XXX When using _score_func: access to a protected member _score_func of a client class
 
 ESTIMATOR_CATALOG = dict(
     svc_l1=LinearSVC(penalty='l1', dual=False, class_weight='auto'),

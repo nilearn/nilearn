@@ -25,6 +25,7 @@ except:
     from sklearn.cross_validation import check_cv
 
 # atleast2d_or_csr
+# XXX change this to check_array too
 try:
     from sklearn.utils import atleast2d_or_csr
 except ImportError:

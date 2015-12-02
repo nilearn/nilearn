@@ -1,10 +1,10 @@
-
-
 try:
-    import sklearn.metrics.scorer as scorer
+    from sklearn.metrics.scorer import check_scoring
+    from sklearn.metrics.scorer import make_scorer
 except ImportError:
-    # metrics doesn't exist before scikit-learn 0.14.x
-    from . import sklearn_learn_scorer as scorer
+    # scikit-learn < 0.14
+    from scikit_learn_scorer import check_scoring
+    from scikit_learn_scorer import make_scorer
 
 
 try:
@@ -18,4 +18,4 @@ try:
     from sklearn.grid_search import ParameterGrid
 except ImportError:
     # scikit-learn < 0.14
-    from .scikit_learn_gridsearch import ParameterGrid
+    from scikit_learn_gridsearch import ParameterGrid
