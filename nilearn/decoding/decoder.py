@@ -32,11 +32,11 @@ from sklearn import clone
 
 from .._utils.fixes import check_cv
 from .._utils.fixes import check_array
-from .._utils.fixes.scikit_learn_backport import ParameterGrid
-from .._utils.fixes.scikit_learn_backport import check_X_y
-from .._utils.fixes.scikit_learn_backport import check_is_fitted
-from .._utils.fixes.scikit_learn_backport import check_scoring
-from .._utils.fixes.scikit_learn_backport import make_scorer
+from .._utils.fixes import ParameterGrid
+from .._utils.fixes import check_X_y
+from .._utils.fixes import check_is_fitted
+from .._utils.fixes import check_scoring
+from .._utils.fixes import make_scorer
 
 from ..input_data import NiftiMasker, MultiNiftiMasker
 from ..image import index_img

@@ -34,6 +34,9 @@ from sklearn.utils.multiclass import type_of_target
 from sklearn.externals import six
 from sklearn.base import is_classifier
 
+from . import type_of_target
+from . import roc_auc_score
+
 
 class _BaseScorer(six.with_metaclass(ABCMeta, object)):
     def __init__(self, score_func, sign, kwargs):
@@ -318,8 +321,6 @@ mean_squared_error_scorer = make_scorer(mean_squared_error,
                                         greater_is_better=False)
 mean_absolute_error_scorer = make_scorer(mean_absolute_error,
                                          greater_is_better=False)
-median_absolute_error_scorer = make_scorer(median_absolute_error,
-                                           greater_is_better=False)
 
 # Standard Classification Scores
 accuracy_scorer = make_scorer(accuracy_score)
@@ -334,19 +335,18 @@ precision_scorer = make_scorer(precision_score)
 recall_scorer = make_scorer(recall_score)
 
 # Score function for probabilistic classification
-log_loss_scorer = make_scorer(log_loss, greater_is_better=False,
-                              needs_proba=True)
+# log_loss_scorer = make_scorer(log_loss, greater_is_better=False,
+#                               needs_proba=True)
 
 # Clustering scores
 adjusted_rand_scorer = make_scorer(adjusted_rand_score)
 
 SCORERS = dict(r2=r2_scorer,
-               median_absolute_error=median_absolute_error_scorer,
                mean_absolute_error=mean_absolute_error_scorer,
                mean_squared_error=mean_squared_error_scorer,
                accuracy=accuracy_scorer, roc_auc=roc_auc_scorer,
                average_precision=average_precision_scorer,
-               log_loss=log_loss_scorer,
+               # log_loss=log_loss_scorer,
                adjusted_rand_score=adjusted_rand_scorer)
 
 for name, metric in [('precision', precision_score),

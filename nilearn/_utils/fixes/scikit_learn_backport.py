@@ -1,10 +1,22 @@
-try:
-    from sklearn.metrics.scorer import check_scoring
-    from sklearn.metrics.scorer import make_scorer
-except ImportError:
+# try:
+#     from sklearn.utils.multiclass import type_of_target
+# except ImportError:
+#     # scikit-learn < 0.14
+# # try:
+#     from .scikit_learn_utils import type_of_target
+# # except:
+# #     print "nooo"
+
+# try:
+#     from sklearn.metrics.scorer import check_scoring
+#     from sklearn.metrics.scorer import make_scorer
+# except ImportError:
     # scikit-learn < 0.14
+try:
     from .scikit_learn_scorer import check_scoring
     from .scikit_learn_scorer import make_scorer
+except:
+    print "no"
 
 
 try:
@@ -21,3 +33,6 @@ try:
 except ImportError:
     # scikit-learn < 0.14
     from .scikit_learn_gridsearch import ParameterGrid
+
+
+
