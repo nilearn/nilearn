@@ -9,9 +9,11 @@ except ImportError:
 
 try:
     from sklearn.utils import check_X_y
+    from sklearn.utils import check_is_fitted
 except ImportError:
     # scikit-learn < 0.16
     from .scikit_learn_validation import check_X_y
+    from .scikit_learn_validation import check_is_fitted
 
 
 try:
