@@ -50,6 +50,8 @@ def _apply_mask_and_get_affinity(seeds, niimg, radius, allow_overlap,
 
     clf = neighbors.NearestNeighbors(radius=radius)
     A = clf.fit(mask_coords).radius_neighbors_graph(seeds)
+    if A.sum(axis=1).any():
+        A = clf.fit(mask_coords).kneighbors_graph(seeds, 1)
     A = A.tolil()
     # Include selfs
     mask_coords = mask_coords.astype(int).tolist()
@@ -63,7 +65,6 @@ def _apply_mask_and_get_affinity(seeds, niimg, radius, allow_overlap,
     if not allow_overlap:
         if np.any(A.sum(axis=0) >= 2):
             raise ValueError('Overlap detected between spheres')
-
     return X, A
 
 
