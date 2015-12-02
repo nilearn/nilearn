@@ -589,7 +589,7 @@ def new_img_like(ref_niimg, data, affine=None, copy_header=False):
         data = as_ndarray(data, dtype=default_dtype)
     header = None
     if copy_header:
-        header = copy.copy(ref_niimg.get_header())
+        header = copy.deepcopy(ref_niimg.get_header())
         header['scl_slope'] = 0.
         header['scl_inter'] = 0.
         header['glmax'] = 0.

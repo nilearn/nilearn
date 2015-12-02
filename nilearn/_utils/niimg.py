@@ -128,7 +128,7 @@ def copy_img(img):
 
     if not isinstance(img, nibabel.spatialimages.SpatialImage):
         raise ValueError("Input value is not an image")
-    return new_img_like(img, img.get_data().copy(), img.get_affine().copy(),
+    return new_img_like(img, _safe_get_data(img).copy(), img.get_affine().copy(),
                         copy_header=True)
 
 
