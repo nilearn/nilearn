@@ -16,11 +16,11 @@ Data preparation: loading and basic signal extraction
 
     >>> from nilearn import image
     >>> smoothed_img = image.smooth_img('/home/user/t_map001.nii') # doctest: +SKIP
-  
+
    Nilearn can operate on either file names or `NiftiImage objects
    <http://nipy.org/nibabel/nibabel_images.html>`_. The later represent
    the specified nifti files loaded in memory.
-   
+
    In nilearn, we often use the term 'niimg' as abbreviation that denotes
    either a file name or a NiftiImage object. In the example above, the
    function smooth_img returns a NiftiImage object, which can then be
@@ -137,7 +137,7 @@ Computing the mask
 ...................
 
 .. note::
-   
+
     The full example described in this section can be found here:
     :doc:`plot_mask_computation.py <../auto_examples/manipulating_visualizing/plot_mask_computation>`.
     It is also related to this example:
@@ -390,7 +390,7 @@ labels and maps, handled by :class:`NiftiLabelsMasker` and
   difficult with this data transformation of whole-brain voxel data
   into weighted region-wise data.
 
-.. note:: 
+.. note::
 
    These usage are illustrated in the section :ref:`functional_connectomes`
 
@@ -420,8 +420,7 @@ keyword.
 ------------------------------
 
 This atlas defines its regions using maps. The path to the corresponding
-file is given in the "maps_img" argument. Extracting region signals for
-several subjects can be performed like this:
+file is given in the "maps_img" argument.
 
 One important thing that happens transparently during the execution of
 :meth:`NiftiMasker.fit_transform` is resampling. Initially, the images
@@ -436,3 +435,32 @@ possible option.
 
    * :ref:`sphx_glr_auto_examples_connectivity_plot_probabilistic_atlas_extraction.py`
 
+Extraction of signals from seeds:\  :class:`NiftiSpheresMasker`.
+==================================================================
+
+The purpose of :class:`NiftiSpheresMasker` is to compute signals from
+seeds containing voxels in spheres. It makes it easy to get these signals once
+you have a list of coordinates.
+
+Seeds definition
+------------------
+
+A single seed is a sphere defined by the radius (in millimeters) and the
+coordinates (typically MNI or TAL) of its center.
+
+A set of seeds is thus defined by a list of 3D coordinates and a radius.
+Seeds can overlap spatially and are represented in a binary present-nonpresent
+coding (no weighting).
+
+:class:`NiftiSpheresMasker` Usage
+---------------------------------
+
+"seeds" argument takes a list of 3D coordinates of the spheres centers,
+they should be in the same space as the images (typically MNI or TAL).
+"radius" is an optional argument that takes a real value in millimeters.
+If no value is given, the signals extracted are from voxels where
+"seeds" have been defined.
+
+.. topic:: **Examples**
+
+  * :ref:`sphx_glr_auto_examples_connectivity_plot_adhd_spheres.py`
