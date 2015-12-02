@@ -331,7 +331,7 @@ def test_iter_check_niimgs():
 
     # Create a test file
     with testing.write_tmp_imgs(img_4d, create_files=True) as filename:
-        niimgs = list(_iter_check_niimg([file_test]))
+        niimgs = list(_iter_check_niimg([filename]))
         assert_array_equal(niimgs[0].get_data(),
                            _utils.check_niimg(img_4d).get_data())
 

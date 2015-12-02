@@ -112,7 +112,7 @@ def _iter_check_niimg(niimgs, ensure_ndim=None, atleast_4d=False,
         niimgs_list = glob.glob(os.path.expanduser(niimgs))
         # Raise an error in case the niimgs list is empty.
         if len(niimgs_list) == 0:
-            raise ValueError("No files matching path: {}".format(niimgs))
+            raise ValueError("No files matching path: {0}".format(niimgs))
         niimgs = niimgs_list
 
     ref_fov = None
