@@ -209,7 +209,8 @@ def check_niimg(niimg, ensure_ndim=None, atleast_4d=False, dtype=None,
 
     if isinstance(niimg, _basestring):
         if wildcards and ni.EXPAND_PATH_WILDCARDS:
-            filenames = sorted(glob.glob(niimg))  # Ascending sorting
+            # Ascending sorting + expand user path
+            filenames = sorted(glob.glob(os.path.expanduser(niimg)))
 
             # processing filenames matching globbing expression
             if len(filenames) >= 1 and glob.has_magic(niimg):
