@@ -421,8 +421,7 @@ keyword.
 ------------------------------
 
 This atlas defines its regions using maps. The path to the corresponding
-file is given in the "maps_img" argument. Extracting region signals for
-several subjects can be performed like this:
+file is given in the "maps_img" argument.
 
 One important thing that happens transparently during the execution of
 :meth:`NiftiMasker.fit_transform` is resampling. Initially, the images
@@ -436,3 +435,29 @@ possible option.
 .. topic:: **Examples**
 
    * :ref:`sphx_glr_auto_examples_connectivity_plot_probabilistic_atlas_extraction.py`
+
+Extraction of signals from seeds:\  :class:`NiftiSpheresMasker`.
+==================================================================
+
+The purpose of :class:`NiftiSpheresMasker` is to compute signals from
+seeds containing voxels in spheres. It makes it easy to get these signals once
+you have a list of coordinates.
+A single seed is a sphere defined by the radius (in millimeters) and the
+coordinates (typically MNI or TAL) of its center.
+
+Using :class:`NiftiSpheresMasker` needs to define a list of coordinates.
+"seeds" argument takes a list of 3D coordinates (tuples) of the spheres centers,
+they should be in the same space as the images.
+Seeds can overlap spatially and are represented in a binary present-nonpresent
+coding (no weighting).
+Below is an example of a coordinates list of four seeds from the default mode network::
+
+  >>> dmn_coords = [(0, -52, 18), (-46, -68, 32), (46, -68, 32), (0, 50, -5)]
+
+"radius" is an optional argument that takes a real value in millimeters.
+If no value is given for the "radius" argument, the single voxel at the given
+seed position is used.
+
+.. topic:: **Examples**
+
+  * :ref:`sphx_glr_auto_examples_connectivity_plot_adhd_spheres.py`
