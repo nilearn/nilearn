@@ -30,8 +30,9 @@ from sklearn.base import is_classifier
 from sklearn.utils import check_X_y
 
 from sklearn import clone
-from sklearn.utils import check_array
-from sklearn.cross_validation import check_cv
+
+from .._utils.fixes import check_array
+from .._utils.fixes import check_cv
 
 from ..input_data import NiftiMasker, MultiNiftiMasker
 from ..image import index_img
@@ -291,9 +292,8 @@ class Decoder(BaseEstimator):
         results = parallel(delayed(_parallel_estimate)(
             estimator, X, y, train, test, self.param_grid,
             pos_label, is_classification_, scoring, mask_volume,
-            self.screening_percentile, self.verbose)
-            for pos_label, (train, test)
-            in itertools.product(classes_to_predict, cv))
+            self.screening_percentile) for pos_label, (train, test) in
+            itertools.product(classes_to_predict, cv))
 
         # Gather results
         coefs = {}
