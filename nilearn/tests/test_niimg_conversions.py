@@ -24,6 +24,7 @@ from nilearn import _utils, image
 from nilearn._utils.exceptions import DimensionError
 from nilearn._utils import testing, niimg_conversions
 from nilearn._utils.testing import assert_raises_regex
+from nilearn._utils.niimg_conversions import _iter_check_niimg
 
 
 class PhonyNiimage(nibabel.spatialimages.SpatialImage):
@@ -304,6 +305,45 @@ def test_check_niimg_wildcards():
 
     # Reverting to default behavior
     ni.EXPAND_PATH_WILDCARDS = True
+
+
+def test_iter_check_niimgs():
+    tmp_dir = tempfile.tempdir + os.sep
+    no_file_matching = "No files matching path: {}"
+    affine = np.eye(4)
+    img_3d = Nifti1Image(np.ones((10, 10, 10)), affine)
+    img_4d = Nifti1Image(np.ones((10, 10, 10, 4)), affine)
+    img_3_3d = [[[img_3d, img_3d]]]
+    img_2_4d = [[img_4d, img_4d]]
+
+    assert_raises_regex(ValueError,
+                        "Input niimgs list is empty.",
+                        list, _iter_check_niimg([]))
+
+    niimgs = (niimg for niimg in _iter_check_niimg(""))
+    assert_raises_regex(ValueError,
+                        no_file_matching.format(""),
+                        list, _iter_check_niimg(""))
+
+    nofile_path = "/tmp/nofile"
+    assert_raises_regex(ValueError,
+                        no_file_matching.format(nofile_path),
+                        list, _iter_check_niimg(nofile_path))
+
+    # Create a test file
+    file_test = os.path.join(tmp_dir, "file1.nii")
+    f = open(file_test, 'wb')
+    f.close()
+    img_4d.to_filename(file_test)
+    niimgs = list(_iter_check_niimg([file_test]))
+    assert_array_equal(niimgs[0].get_data(),
+                       _utils.check_niimg(img_4d).get_data())
+    os.remove(file_test)
+
+    # Regular case
+    niimgs = list(_iter_check_niimg(img_2_4d))
+    assert_array_equal(niimgs[0].get_data(),
+                       _utils.check_niimg(img_2_4d).get_data())
 
 
 def test_repr_niimgs():

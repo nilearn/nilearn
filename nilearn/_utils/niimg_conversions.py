@@ -103,6 +103,18 @@ def _iter_check_niimg(niimgs, ensure_ndim=None, atleast_4d=False,
         data will be converted to int32 if dtype is discrete and float32 if it
         is continuous.
     """
+    # Verify the input list is not empty, otherwise raise an error.
+    if isinstance(niimgs, list) and len(niimgs) == 0:
+        raise ValueError("Input niimgs list is empty.")
+
+    # If niimgs is a string, use glob to expand it to the matching filenames.
+    if isinstance(niimgs, _basestring):
+        niimgs_list = glob.glob(os.path.expanduser(niimgs))
+        # Raise an error in case the niimgs list is empty.
+        if len(niimgs_list) == 0:
+            raise ValueError("No files matching path: {}".format(niimgs))
+        niimgs = niimgs_list
+
     ref_fov = None
     resample_to_first_img = False
     ndim_minus_one = ensure_ndim - 1 if ensure_ndim is not None else None
