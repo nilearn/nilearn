@@ -13,6 +13,8 @@ is the model to be evaluated, ``X`` is the test data and ``y`` is the
 ground truth labeling (or ``None`` in the case of unsupervised models).
 """
 
+# scikit-learn v0.17
+
 # Authors: Andreas Mueller <amueller@ais.uni-bonn.de>
 #          Lars Buitinck <L.J.Buitinck@uva.nl>
 #          Arnaud Joly <arnaud.v.joly@gmail.com>
@@ -30,7 +32,7 @@ from sklearn.metrics import (r2_score, mean_absolute_error,
 from sklearn.metrics.cluster import adjusted_rand_score
 from sklearn.utils.multiclass import type_of_target
 from sklearn.externals import six
-from sklearn.base import is_regressor
+from sklearn.base import is_classifier
 
 
 class _BaseScorer(six.with_metaclass(ABCMeta, object)):
@@ -158,7 +160,7 @@ class _ThresholdScorer(_BaseScorer):
         if y_type not in ("binary", "multilabel-indicator"):
             raise ValueError("{0} format is not supported".format(y_type))
 
-        if is_regressor(clf):
+        if not is_classifier(clf):
             y_pred = clf.predict(X)
         else:
             try:
