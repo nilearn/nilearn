@@ -1,13 +1,26 @@
 from distutils.version import LooseVersion
 import sklearn
 
-if (LooseVersion(sklearn.__version__) < LooseVersion('0.15') or
-      sklearn.__version__ == '0.15-git'):
+# f_regression
+try:
     from .sklearn_f_regression_nosparse import (
         f_regression_nosparse as f_regression)
-else:
+except ImportError:
     from sklearn.feature_selection import f_regression
 
+try:
+    # scikit-learn < 0.16
+    from sklearn.utils import check_arrays as check_array
+except:
+    # scikit-learn >= 0.16
+    from sklearn.utils import check_array
+
+try:
+    # scikit-learn < 0.16
+    from sklearn.cross_validation import _check_cv as check_cv
+except:
+    # scikit-learn >= 0.16
+    from sklearn.cross_validation import check_cv
 
 # atleast2d_or_csr
 try:

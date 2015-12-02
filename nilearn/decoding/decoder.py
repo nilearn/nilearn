@@ -28,21 +28,10 @@ from sklearn.base import BaseEstimator
 from sklearn.base import is_classifier
 # scikit-learn >= 0.16
 from sklearn.utils import check_X_y
+
 from sklearn import clone
-
-try:
-    # scikit-learn < 0.16
-    from sklearn.utils import check_arrays as check_array
-except ImportError:
-    # scikit-learn >= 0.16
-    from sklearn.utils import check_array
-
-try:
-    # scikit-learn < 0.16
-    from sklearn.cross_validation import _check_cv as check_cv
-except ImportError:
-    # scikit-learn >= 0.16
-    from sklearn.cross_validation import check_cv
+from sklearn.utils import check_array
+from sklearn.cross_validation import check_cv
 
 from ..input_data import NiftiMasker, MultiNiftiMasker
 from ..image import index_img
@@ -404,12 +393,11 @@ class Decoder(BaseEstimator):
         return scorer(self, niimgs, y)
 
 
-# XXX here verbose is not doing anything, add verbosity
 # XXX Too many arguments (31/15)
 # XXX Too many branches (16/15)
 def _parallel_estimate(estimator, X, y, train, test, param_grid,
                        pos_label, is_classification, scoring, mask_volume,
-                       screening_percentile=None, verbose=0):
+                       screening_percentile=None):
     """Find the best estimator for a fold within a job."""
 
     if is_classification and pos_label is None:
