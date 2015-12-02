@@ -441,25 +441,22 @@ Extraction of signals from seeds:\  :class:`NiftiSpheresMasker`.
 The purpose of :class:`NiftiSpheresMasker` is to compute signals from
 seeds containing voxels in spheres. It makes it easy to get these signals once
 you have a list of coordinates.
-
-Seeds definition
-------------------
-
 A single seed is a sphere defined by the radius (in millimeters) and the
 coordinates (typically MNI or TAL) of its center.
 
-A set of seeds is thus defined by a list of 3D coordinates and a radius.
+Using :class:`NiftiSpheresMasker` needs to define a list of coordinates.
+"seeds" argument takes a list of 3D coordinates (tuples) of the spheres centers,
+they should be in the same space as the images.
 Seeds can overlap spatially and are represented in a binary present-nonpresent
 coding (no weighting).
+Below is an example of a coordinates list of four seeds from the default mode network.
 
-:class:`NiftiSpheresMasker` Usage
----------------------------------
+.. literalinclude:: ../../examples/connectivity/plot_adhd_spheres.py
+    :start-after: # Coordinates of Default Mode Network
+    :end-before: labels = [
 
-"seeds" argument takes a list of 3D coordinates of the spheres centers,
-they should be in the same space as the images (typically MNI or TAL).
 "radius" is an optional argument that takes a real value in millimeters.
-If no value is given, the signals extracted are from voxels where
-"seeds" have been defined.
+If no value is given the spheres are considered as voxels.
 
 .. topic:: **Examples**
 
