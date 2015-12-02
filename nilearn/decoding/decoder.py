@@ -23,14 +23,14 @@ from sklearn.feature_selection import f_classif, f_regression
 from sklearn.svm.bounds import l1_min_c
 from sklearn.metrics import r2_score, f1_score, precision_score, recall_score
 
-from sklearn.grid_search import ParameterGrid
 from sklearn.base import BaseEstimator
 from sklearn.base import is_classifier
 from sklearn import clone
 
 from .._utils.fixes import atleast2d_or_csr
 from .._utils.fixes import check_cv
-from .._utils.fixes.scikit_learn_validation import check_X_y
+from .._utils.fixes.scikit_learn_backport import ParameterGrid
+from .._utils.fixes.scikit_learn_backport import check_X_y
 
 from ..input_data import NiftiMasker, MultiNiftiMasker
 from ..image import index_img
@@ -43,7 +43,6 @@ from sklearn.metrics import make_scorer
 
 # scikit-learn 0.13
 # ImportError: cannot import name ParameterGrid (>=0.14)
-# ImportError: cannot import name check_X_y (>=0.16)
 # ImportError: cannot import name scorer and make_scorer (>=0.14)
 
 

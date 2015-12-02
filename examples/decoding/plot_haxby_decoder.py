@@ -41,7 +41,7 @@ condition_mask_test = np.logical_and(condition_mask, labels['chunks'] > 6)
 
 ### Prediction with Decoder ###################################################
 from nilearn.decoding import Decoder
-decoder = Decoder(estimator='svc_l2', screening_percentile=20, cv=5,
+decoder = Decoder(estimator='svc_l2', screening_percentile=20, cv=3,
                   mask_strategy='epi', standardize=True, smoothing_fwhm=4,
                   n_jobs=1)
 
