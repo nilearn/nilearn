@@ -48,7 +48,7 @@ if not path.exists(write_dir):
 data = datasets.fetch_fiac_first_level()
 fmri_files = [data['func1'], data['func2']]
 design_files = [data['design_matrix1'], data['design_matrix2']]
-design_files = [pd.DataFrame(np.load(df)['X']) for df in design_files]
+design_matrices = [pd.DataFrame(np.load(df)['X']) for df in design_files]
 
 
 # Load all the data into a common GLM
@@ -56,7 +56,7 @@ multi_session_model = FirstLevelGLM(data['mask'], standardize=False,
                                     noise_model='ar1')
 
 # GLM fitting
-multi_session_model.fit(fmri_files, design_files)
+multi_session_model.fit(fmri_files, design_matrices)
 
 
 def make_fiac_contrasts(n_columns):
@@ -80,7 +80,7 @@ def make_fiac_contrasts(n_columns):
     return contrast
 
 # compute fixed effects of the two runs and compute related images
-n_columns = design_files[0].shape[1]
+n_columns = design_matrices[0].shape[1]
 contrasts = make_fiac_contrasts(n_columns)
 
 print('Computing contrasts...')

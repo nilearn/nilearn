@@ -31,7 +31,7 @@ Author: Bertrand Thirion, 2009-2015
 """
 import numpy as np
 from scipy import linalg
-from pandas import DataFrame
+import pandas as pd
 
 from .hemodynamic_models import compute_regressor, _orthogonalize
 from .experimental_paradigm import check_paradigm
@@ -359,7 +359,7 @@ def make_design_matrix(
     # step 4: Force the design matrix to be full rank at working precision
     matrix, _ = full_rank(matrix)
 
-    design_matrix = DataFrame(
+    design_matrix = pd.DataFrame(
         matrix, columns=names, index=frame_times)
     return design_matrix
 

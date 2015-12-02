@@ -14,7 +14,7 @@ import os.path as osp
 from ..design_matrix import (
     _convolve_regressors, make_design_matrix,
     _cosine_drift, plot_design_matrix, check_design_matrix)
-from pandas import DataFrame
+import pandas as pd
 from ..experimental_paradigm import check_paradigm
 
 from nibabel.tmpdirs import InTemporaryDirectory
@@ -57,7 +57,7 @@ def design_matrix_light(
 def basic_paradigm():
     conditions = ['c0', 'c0', 'c0', 'c1', 'c1', 'c1', 'c2', 'c2', 'c2']
     onsets = [30, 70, 100, 10, 30, 90, 30, 40, 60]
-    paradigm = DataFrame({'name': conditions,
+    paradigm = pd.DataFrame({'name': conditions,
                           'onset': onsets})
     return paradigm
 
@@ -67,7 +67,7 @@ def modulated_block_paradigm():
     onsets = [30, 70, 100, 10, 30, 90, 30, 40, 60]
     duration = 5 + 5 * np.random.rand(len(onsets))
     values = 1 + np.random.rand(len(onsets))
-    paradigm = DataFrame({'name': conditions,
+    paradigm = pd.DataFrame({'name': conditions,
                           'onset': onsets,
                           'duration': duration,
                           'modulation': values})
@@ -78,7 +78,7 @@ def modulated_event_paradigm():
     conditions = ['c0', 'c0', 'c0', 'c1', 'c1', 'c1', 'c2', 'c2', 'c2']
     onsets = [30, 70, 100, 10, 30, 90, 30, 40, 60]
     values = 1 + np.random.rand(len(onsets))
-    paradigm = DataFrame({'name': conditions,
+    paradigm = pd.DataFrame({'name': conditions,
                           'onset': onsets,
                           'modulation': values})
     return paradigm
@@ -88,7 +88,7 @@ def block_paradigm():
     conditions = ['c0', 'c0', 'c0', 'c1', 'c1', 'c1', 'c2', 'c2', 'c2']
     onsets = [30, 70, 100, 10, 30, 90, 30, 40, 60]
     duration = 5 * np.ones(9)
-    paradigm = DataFrame({'name': conditions,
+    paradigm = pd.DataFrame({'name': conditions,
                           'onset': onsets,
                           'duration': duration})
     return paradigm
@@ -107,10 +107,7 @@ def test_show_design_matrix():
 def test_cosine_drift():
     # add something so that when the tests are launched
     #from a different directory
-    # we still find the file ' 'dctmtx_N_20_order_4.txt' ? 
-
     spm_drifts = DESIGN_MATRIX['cosbf_dt_1_nt_20_hcut_0p1']
-    # np.loadtxt('dctmtx_N_20_order_4.txt')
     tim = np.arange(20)
     P = 10  # period is half the time, gives us an order 4
     nistats_drifts = _cosine_drift(P, tim)
@@ -166,7 +163,7 @@ def test_convolve_regressors():
     # tests for convolve_regressors helper function
     conditions = ['c0', 'c1']
     onsets = [20, 40]
-    paradigm = DataFrame({'name': conditions,
+    paradigm = pd.DataFrame({'name': conditions,
                           'onset': onsets})
     # names not passed -> default names
     frame_times = np.arange(100)
@@ -269,7 +266,7 @@ def test_design_matrix7():
     conditions = [0, 0, 0, 1, 1, 1, 3, 3, 3]
     # no condition 'c2'
     onsets = [30, 70, 100, 10, 30, 90, 30, 40, 60]
-    paradigm = DataFrame({'name': conditions,
+    paradigm = pd.DataFrame({'name': conditions,
                           'onset': onsets})
     hrf_model = 'Canonical'
     X, names = design_matrix_light(frame_times, paradigm, hrf_model=hrf_model,
@@ -465,7 +462,7 @@ def test_csv_io():
     path = 'design_matrix.csv'
     with InTemporaryDirectory():
         DM.to_csv(path)
-        DM2 = DataFrame().from_csv(path)
+        DM2 = pd.DataFrame().from_csv(path)
 
     _, matrix, names = check_design_matrix(DM)
     _, matrix_, names_ = check_design_matrix(DM2)
@@ -479,7 +476,7 @@ def test_spm_1():
     frame_times = np.linspace(0, 99, 100)
     conditions = ['c0', 'c0', 'c0', 'c1', 'c1', 'c1', 'c2', 'c2', 'c2']
     onsets = [30, 50, 70, 10, 30, 80, 30, 40, 60]
-    paradigm = DataFrame({'name': conditions,
+    paradigm = pd.DataFrame({'name': conditions,
                           'onset': onsets})
     X1 = make_design_matrix(frame_times, paradigm, drift_model='blank')
     _, matrix, _ = check_design_matrix(X1)
@@ -495,7 +492,7 @@ def test_spm_2():
     conditions = ['c0', 'c0', 'c0', 'c1', 'c1', 'c1', 'c2', 'c2', 'c2']
     onsets = [30, 50, 70, 10, 30, 80, 30, 40, 60]
     duration = 10 * np.ones(9)
-    paradigm = DataFrame({'name': conditions,
+    paradigm = pd.DataFrame({'name': conditions,
                           'onset': onsets,
                           'duration': duration})
     X1 = make_design_matrix(frame_times, paradigm, drift_model='blank')

@@ -8,14 +8,14 @@ Author: Bertrand Thirion, dohmatob elvis dopgima, 2015
 import os
 import numpy as np
 import matplotlib.pyplot as plt
+import pandas as pd
 import nibabel
-from pandas import DataFrame
-from nistats.design_matrix import (
-    make_design_matrix, plot_design_matrix, check_design_matrix)
-from nistats.glm import FirstLevelGLM
-from nistats.datasets import fetch_spm_auditory
 from nilearn.plotting import plot_stat_map
 from nilearn.image import mean_img
+
+from nistats.design_matrix import make_design_matrix
+from nistats.glm import FirstLevelGLM
+from nistats.datasets import fetch_spm_auditory
 
 # fetch spm auditory data
 subject_data = fetch_spm_auditory()
@@ -35,7 +35,7 @@ conditions = ['rest', 'active'] * 8
 duration = epoch_duration * np.ones(len(conditions))
 onset = np.linspace(0, (len(conditions) - 1) * epoch_duration,
                     len(conditions))
-paradigm = DataFrame(
+paradigm = pd.DataFrame(
     {'onset': onset, 'duration': duration, 'name': conditions})
 
 # construct design matrix

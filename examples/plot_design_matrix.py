@@ -20,7 +20,7 @@ except ImportError:
     raise RuntimeError("This script needs the matplotlib library")
 
 from nistats.design_matrix import make_design_matrix, plot_design_matrix
-from pandas import DataFrame
+import pandas as pd
 
 
 # frame times
@@ -36,7 +36,7 @@ motion = np.cumsum(np.random.randn(n_scans, 6), 0)  # simulate motion
 add_reg_names = ['tx', 'ty', 'tz', 'rx', 'ry', 'rz']
 
 # event-related design matrix
-paradigm = DataFrame({'name': conditions, 'onset': onsets})
+paradigm = pd.DataFrame({'name': conditions, 'onset': onsets})
 
 X1 = make_design_matrix(
     frame_times, paradigm, drift_model='polynomial', drift_order=3,
@@ -44,14 +44,14 @@ X1 = make_design_matrix(
 
 # block design matrix
 duration = 7. * np.ones(len(conditions))
-paradigm = DataFrame({'name': conditions, 'onset': onsets,
+paradigm = pd.DataFrame({'name': conditions, 'onset': onsets,
                       'duration': duration})
 
 X2 = make_design_matrix(frame_times, paradigm, drift_model='polynomial',
                         drift_order=3)
 
 # FIR model
-paradigm = DataFrame({'name': conditions, 'onset': onsets})
+paradigm = pd.DataFrame({'name': conditions, 'onset': onsets})
 hrf_model = 'FIR'
 X3 = make_design_matrix(frame_times, paradigm, hrf_model='fir',
                         drift_model='polynomial', drift_order=3,

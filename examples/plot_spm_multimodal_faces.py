@@ -14,11 +14,11 @@ import nibabel
 import numpy as np
 from scipy.io import loadmat
 import matplotlib.pyplot as plt
+import pandas as pd
 
 # imports for GLM business
-from pandas import DataFrame
 from nilearn.image import concat_imgs, resample_img, mean_img
-from nistats.design_matrix import make_design_matrix, check_design_matrix
+from nistats.design_matrix import make_design_matrix
 from nistats.glm import FirstLevelGLM
 from nistats.datasets import fetch_spm_multimodal_fmri
 
