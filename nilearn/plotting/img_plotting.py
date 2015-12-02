@@ -27,7 +27,8 @@ import matplotlib.pyplot as plt
 
 from .. import _utils
 from ..image import new_img_like
-from .._utils.extmath import fast_abs_percentile, check_threshold
+from .._utils.extmath import fast_abs_percentile
+from .._utils.param_validation import check_threshold
 from .._utils.fixes.matplotlib_backports import (cbar_outline_get_xy,
                                                  cbar_outline_set_xy)
 from .._utils.ndimage import get_border_data

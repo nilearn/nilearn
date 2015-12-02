@@ -24,7 +24,7 @@ from .._utils import (check_niimg_4d, check_niimg_3d, check_niimg, as_ndarray,
 from .._utils.niimg_conversions import _index_img, _check_same_fov
 from .._utils.niimg import _safe_get_data
 from .._utils.compat import _basestring
-from .._utils.extmath import check_threshold
+from .._utils.param_validation import check_threshold
 
 
 def high_variance_confounds(imgs, n_confounds=5, percentile=2.,
@@ -643,7 +643,7 @@ def threshold_img(img, threshold, mask_img=None,
     from .. import masking
 
     img = check_niimg(img)
-    img_data = img.get_data()
+    img_data = _safe_get_data(img).copy()
     affine = img.get_affine()
 
     if mask_img is not None:
@@ -660,8 +660,6 @@ def threshold_img(img, threshold, mask_img=None,
         raise ValueError("The input parameter 'threshold' is empty. "
                          "Please give either a float value or a string as e.g. '90%'.")
     else:
-        if not isinstance(threshold, float) and not isinstance(threshold, _basestring):
-            threshold = ("{0}%").format(threshold)
         cutoff_threshold = check_threshold(threshold, img_data,
                                            percentile_calculate=scoreatpercentile,
                                            name='threshold')

@@ -56,16 +56,16 @@ extractor = RegionExtractor(components_img, threshold=0.5,
                             standardize=True, min_region_size=50)
 # Just call fit() to process for regions extraction
 extractor.fit()
-# Extracted regions are stored in regions_
-regions_extracted = extractor.regions_
+# Extracted regions are stored in regions_img_
+regions_extracted_img = extractor.regions_img_
 
 # Visualization
 # Show region extraction results
 fig2 = plt.figure(figsize=(10, 5))
 title = ('%d regions are extracted from %d ICA components. '
          '\nEach separate color of region indicates extracted region'
-         % (regions_extracted.shape[-1], n_components))
-plotting.plot_prob_atlas(regions_extracted, view_type='filled_contours',
+         % (regions_extracted_img.shape[-1], n_components))
+plotting.plot_prob_atlas(regions_extracted_img, view_type='filled_contours',
                          title=title, figure=fig2)
 
 ################################################################################
@@ -87,9 +87,9 @@ correlations = [np.corrcoef(subject_ts.T) for subject_ts in subjects_timeseries]
 # Import image utilities in utilising to operate on 4th dimension
 from nilearn import image
 
-regions_imgs = image.iter_img(regions_extracted)
+regions_imgs = image.iter_img(regions_extracted_img)
 coords_connectome = [plotting.find_xyz_cut_coords(img) for img in regions_imgs]
-title = 'Correlation interactions between %d regions' % regions_extracted.shape[-1]
+title = 'Correlation interactions between %d regions' % regions_extracted_img.shape[-1]
 plt.figure()
 plt.imshow(np.mean(correlations, axis=0), interpolation="nearest",
            vmax=1, vmin=-1, cmap=plt.cm.bwr)
@@ -117,22 +117,22 @@ color_list = [[0., 1., 0.29, 1.], [0., 0.73, 1., 1.],
               [0., 0.47, 1., 1.], [0., 0.22, 1., 1.]]
 display = plotting.plot_anat(cut_coords=(0, -52, 29), title='Extracted brain DMN')
 # Right Temporoparietal junction
-img_rtpj = image.index_img(extractor.regions_, extracted_DMN_indices[0])
+img_rtpj = image.index_img(extractor.regions_img_, extracted_DMN_indices[0])
 display.add_contours(img_rtpj, levels=[0.007], linewidths=2.5, colors=[color_list[0]],
                      filled=True, linestyles='solid', alpha=0.5)
 
 # Posterior Cingulate Cortex
-img_pcc = image.index_img(extractor.regions_, extracted_DMN_indices[1])
+img_pcc = image.index_img(extractor.regions_img_, extracted_DMN_indices[1])
 display.add_contours(img_pcc, levels=[0.007], linewidths=2.5, colors=[color_list[1]],
                      filled=True, linestyles='solid', alpha=0.5)
 
 # Medial Prefrontal Cortex
-img_mpfc = image.index_img(extractor.regions_, extracted_DMN_indices[2])
+img_mpfc = image.index_img(extractor.regions_img_, extracted_DMN_indices[2])
 display.add_contours(img_mpfc, levels=[0.007], linewidths=2.5, colors=[color_list[2]],
                      filled=True, linestyles='solid', alpha=0.5)
 
 # Left Temporoparietal junction
-img_ltpj = image.index_img(extractor.regions_, extracted_DMN_indices[3])
+img_ltpj = image.index_img(extractor.regions_img_, extracted_DMN_indices[3])
 display.add_contours(img_ltpj, levels=[0.007], linewidths=2.5, colors=[color_list[3]],
                      filled=True, linestyles='solid', alpha=0.5)
 

@@ -16,15 +16,13 @@ def test_modes_in_random_walker():
     labels = np.zeros_like(img)
     labels[6, 6, 6] = 1
     labels[14, 15, 16] = 2
-    # mode = None
-    random_walker_none = _random_walker(img, labels, mode=None)
-    # mode = cg
-    random_walker_cg = _random_walker(img, labels, mode='cg', beta=90)
+    # default mode = cg
+    random_walker_cg = _random_walker(img, labels, beta=90)
     assert (random_walker_cg.reshape(img.shape)[6, 6, 6] == 1).all()
     assert img.shape == random_walker_cg.shape
     # test `mask` strategy of sub function _mask_edges_weights in laplacian
     labels[5:25, 26:29, 26:29] = -1
-    random_walker_inactive = _random_walker(img, labels, mode='cg', beta=30)
+    random_walker_inactive = _random_walker(img, labels, beta=30)
 
 
 def test_trivial_cases():

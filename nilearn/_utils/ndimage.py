@@ -50,7 +50,7 @@ def get_border_data(data, border_size):
 
 
 def _peak_local_max(image, min_distance=10, threshold_abs=0, threshold_rel=0.1,
-                    indices=True, num_peaks=np.inf):
+                    num_peaks=np.inf):
     """Find peaks in an image, and return them as coordinates or a boolean array.
 
     Peaks are the local maxima in a region of `2 * min_distance + 1`
@@ -71,10 +71,6 @@ def _peak_local_max(image, min_distance=10, threshold_abs=0, threshold_rel=0.1,
         Minimum intensity of peaks.
     threshold_rel : float
         Minimum intensity of peaks calculated as `max(image) * threshold_rel`.
-    indices : bool
-        If True, the output will be an array representing peak coordinates.
-        If False, the output will be a boolean array shaped as `image.shape`
-        with peaks present at True elements.
     num_peaks : int
         Maximum number of peaks. When the number of peaks exceeds `num_peaks`,
         return `num_peaks` peaks based on highest peak intensity.
@@ -82,10 +78,7 @@ def _peak_local_max(image, min_distance=10, threshold_abs=0, threshold_rel=0.1,
     Returns
     -------
     output : ndarray or ndarray of bools
-
-        * If `indices = True`  : (row, column ...) coordinates of peaks.
-        * If `indices = False` : Boolean array shaped like `image`, with peaks
-          represented by True values.
+        Boolean array shaped like `image`, with peaks represented by True values.
 
     Notes
     -----
@@ -96,15 +89,12 @@ def _peak_local_max(image, min_distance=10, threshold_abs=0, threshold_rel=0.1,
     coordinates of peaks where dilated image = original.
 
     This code is mostly adapted from scikit image 0.11.3 release.
-    Thanks to scikit image.
+    Location of file in scikit image: peak_local_max function in skimage.feature.peak
     """
     out = np.zeros_like(image, dtype=np.bool)
 
     if np.all(image == image.flat[0]):
-        if indices is True:
-            return []
-        else:
-            return out
+        return out
 
     image = image.copy()
 
@@ -125,9 +115,6 @@ def _peak_local_max(image, min_distance=10, threshold_abs=0, threshold_rel=0.1,
         idx_maxsort = np.argsort(intensities)[::-1]
         coordinates = coordinates[idx_maxsort][:num_peaks]
 
-    if indices is True:
-        return coordinates
-    else:
-        nd_indices = tuple(coordinates.T)
-        out[nd_indices] = True
-        return out
+    nd_indices = tuple(coordinates.T)
+    out[nd_indices] = True
+    return out

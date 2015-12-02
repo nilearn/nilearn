@@ -420,7 +420,7 @@ def test_validity_threshold_value_and_strategy_in_threshold_img():
                                     threshold_img, map_0, threshold=thr)
 
 
-def test_passing_threshold_img():
+def test_threshold_img():
     # to check whether passes with valid threshold inputs
     shape = (10, 20, 30)
     maps = testing.generate_maps(shape, n_regions=4)

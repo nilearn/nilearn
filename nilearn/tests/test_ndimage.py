@@ -25,8 +25,7 @@ def test_largest_cc():
 
 def test_empty_peak_local_max():
     image = np.zeros((10, 20))
-    result = _peak_local_max(image, min_distance=1,
-                             threshold_rel=0, indices=False)
+    result = _peak_local_max(image, min_distance=1, threshold_rel=0)
     assert np.all(~ result)
 
 
@@ -34,27 +33,7 @@ def test_flat_peak_local_max():
     image = np.zeros((5, 5))
     image[1:3, 1:3] = 10
     peaks = _peak_local_max(image, min_distance=1)
-    assert len(peaks) == 4
-
-
-def test_num_peaks_in_peak_local_max():
-    image = np.zeros((7, 7))
-    image[1, 1] = 10
-    image[1, 3] = 11
-    image[1, 5] = 12
-    image[3, 5] = 8
-    image[5, 3] = 7
-    assert len(_peak_local_max(image, min_distance=1)) == 5
-    peaks_limited = _peak_local_max(image, min_distance=1, num_peaks=2)
-    assert len(peaks_limited) == 2
-    assert (1, 3) in peaks_limited
-    assert (1, 5) in peaks_limited
-    peaks_limited = _peak_local_max(image, min_distance=1, num_peaks=4)
-    assert len(peaks_limited) == 4
-    assert (1, 3) in peaks_limited
-    assert (1, 5) in peaks_limited
-    assert (1, 1) in peaks_limited
-    assert (3, 5) in peaks_limited
+    np.testing.assert_equal(len(peaks[peaks == 1]), 4)
 
 
 def test_relative_and_absolute_thresholds_in_peak_local_max():
@@ -62,20 +41,18 @@ def test_relative_and_absolute_thresholds_in_peak_local_max():
     image[1, 1] = 10
     image[3, 3] = 20
     peaks_rel = _peak_local_max(image, min_distance=1, threshold_rel=0.5)
-    assert len(peaks_rel) == 1
-    np.testing.assert_allclose(peaks_rel, [(3, 3)])
+    np.testing.assert_equal(len(peaks_rel[peaks_rel == 1]), 1)
     peaks_abs = _peak_local_max(image, min_distance=1, threshold_abs=10)
-    assert len(peaks_abs) == 1
-    np.testing.assert_allclose(peaks_abs, [(3, 3)])
+    np.testing.assert_equal(len(peaks_abs[peaks_abs == 1]), 1)
 
 
 def test_constant_image_in_peak_local_max():
     image = 128 * np.ones((20, 20))
     peaks = _peak_local_max(image, min_distance=1)
-    assert len(peaks) == 0
+    np.testing.assert_equal(len(peaks[peaks == 1]), 0)
 
 
 def test_trivial_cases_in_peak_local_max():
     trivial = np.zeros((25, 25))
-    peaks = _peak_local_max(trivial, min_distance=1, indices=False)
+    peaks = _peak_local_max(trivial, min_distance=1)
     assert (peaks.astype(np.bool) == trivial).all()

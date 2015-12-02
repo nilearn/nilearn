@@ -100,7 +100,7 @@ def connected_regions(maps_img, min_region_size=50, extract_type='local_regions'
 
     Returns
     -------
-    regions_extracted: Niimg-like object
+    regions_extracted_img: Nifti1Image object
         gives the image in 4D of extracted brain regions. Each 3D image consists
         of only one separated region.
 
@@ -136,11 +136,11 @@ def connected_regions(maps_img, min_region_size=50, extract_type='local_regions'
         # Mark the seeds using random walker
         if extract_type == 'local_regions':
             smooth_map = _smooth_array(map_3d, affine=affine, fwhm=smoothing_fwhm)
-            seeds = _peak_local_max(smooth_map, indices=False)
+            seeds = _peak_local_max(smooth_map)
             seeds_label, seeds_id = label(seeds)
             # Assign -1 to values which are 0. to indicate to ignore
             seeds_label[map_3d == 0.] = -1
-            rw_maps = _random_walker(map_3d, seeds_label, mode='cg')
+            rw_maps = _random_walker(map_3d, seeds_label)
             # Now simply replace "-1" with "0" for regions seperation
             rw_maps[rw_maps == -1] = 0.
             label_maps = rw_maps
@@ -161,9 +161,9 @@ def connected_regions(maps_img, min_region_size=50, extract_type='local_regions'
         index_of_each_map.extend([index] * len(regions))
         all_regions_imgs.extend(regions)
 
-    regions_extracted = concat_niimgs(all_regions_imgs)
+    regions_extracted_img = concat_niimgs(all_regions_imgs)
 
-    return regions_extracted, index_of_each_map
+    return regions_extracted_img, index_of_each_map
 
 
 class RegionExtractor(NiftiMapsMasker):
@@ -262,17 +262,13 @@ class RegionExtractor(NiftiMapsMasker):
 
     Attributes
     ----------
-    regions_: Niimg-like object
+    regions_img_: Nifti1Image object
         list of separated regions with each region lying on a 3D volume
-        concatenated into a 4D Nifti like object.
+        concatenated into a 4D image.
 
     index_: numpy array
         array of list of indices where each index value is assigned to
         each separate region of its corresponding family of brain maps.
-
-    signals_: numpy array
-        list of averaged timeseries signals of the subjects extracted from
-        each region.
 
     References
     ----------
@@ -314,11 +310,11 @@ class RegionExtractor(NiftiMapsMasker):
                                            thresholding_strategy=self.thresholding_strategy)
 
         # connected component extraction
-        self.regions_, self.index_ = connected_regions(threshold_maps,
-                                                       self.min_region_size,
-                                                       self.extractor)
+        self.regions_img_, self.index_ = connected_regions(threshold_maps,
+                                                           self.min_region_size,
+                                                           self.extractor)
 
-        self.maps_img = self.regions_
+        self.maps_img = self.regions_img_
         super(RegionExtractor, self).fit()
 
         return self

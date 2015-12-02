@@ -1191,10 +1191,9 @@ class OrthoProjector(OrthoSlicer):
                                                           k=-1)
             lower_diagonal_values = adjacency_matrix[
                 lower_diagonal_indices]
-            edge_threshold = _utils.extmath.check_threshold(edge_threshold,
-                                                            np.abs(lower_diagonal_values),
-                                                            stats.scoreatpercentile,
-                                                            'edge_threshold')
+            edge_threshold = _utils.param_validation.check_threshold(
+                edge_threshold, np.abs(lower_diagonal_values),
+                stats.scoreatpercentile, 'edge_threshold')
 
             adjacency_matrix = adjacency_matrix.copy()
             threshold_mask = np.abs(adjacency_matrix) < edge_threshold

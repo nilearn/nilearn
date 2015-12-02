@@ -5,6 +5,8 @@ from *Random walks for image segmentation*, Leo Grady, IEEE Trans
 Pattern Anal Mach Intell. 2006 Nov;28(11):1768-83.
 
 This code is mostly adapted from scikit-image 0.11.3 release.
+Location of file in scikit image: random_walker function and its suporting
+sub functions in skimage.segmentation
 """
 
 import warnings
@@ -14,8 +16,6 @@ from scipy import sparse, ndimage as ndi
 from sklearn.utils import as_float_array
 
 from scipy.sparse.linalg import cg
-
-#-----------Laplacian--------------------
 
 
 def _make_graph_edges_3d(n_x, n_y, n_z):
@@ -151,11 +151,7 @@ def _build_laplacian(data, spacing, mask=None, beta=50):
     return lap
 
 
-#----------- Random walker algorithm --------------------------------
-
-
-def _random_walker(data, labels, beta=130, mode='cg', tol=1.e-3, copy=True,
-                   spacing=None):
+def _random_walker(data, labels, beta=130, tol=1.e-3, copy=True, spacing=None):
     """Random walker algorithm for segmentation from markers.
 
     Parameters
@@ -173,13 +169,6 @@ def _random_walker(data, labels, beta=130, mode='cg', tol=1.e-3, copy=True,
     beta : float
         Penalization coefficient for the random walker motion
         (the greater `beta`, the more difficult the diffusion).
-    mode : string, available options {'cg'}
-        Mode for solving the linear system in the random walker algorithm.
-
-        - 'cg' (conjugate gradient): the linear system is solved iteratively
-          using the Conjugate Gradient method from scipy.sparse.linalg. This is
-          less memory-consuming than the brute force method for large images,
-          but it is quite slow.
     tol : float
         tolerance to achieve when solving the linear system, in
         cg' mode.
@@ -242,10 +231,6 @@ def _random_walker(data, labels, beta=130, mode='cg', tol=1.e-3, copy=True,
     small images, and an iterative method for larger images.
 
     """
-    # Parse input data
-    if mode is None:
-        mode = 'cg'
-
     if (labels != 0).all():
         warnings.warn('Random walker only segments unlabeled areas, where '
                       'labels == 0. No zero valued areas in labels were '
@@ -304,15 +289,14 @@ def _random_walker(data, labels, beta=130, mode='cg', tol=1.e-3, copy=True,
     # lap_sparse X = B
     # where X[i, j] is the probability that a marker of label i arrives
     # first at pixel j by anisotropic diffusion.
-    if mode == 'cg':
-        X = _solve_cg(lap_sparse, B, tol=tol, return_full_prob=False)
+    X = _solve_cg(lap_sparse, B, tol=tol)
 
     # Clean up results
     X = _clean_labels_ar(X + 1, labels).reshape(dims)
     return X
 
 
-def _solve_cg(lap_sparse, B, tol, return_full_prob=False):
+def _solve_cg(lap_sparse, B, tol):
     """
     solves lap_sparse X_i = B_i for each phase i, using the conjugate
     gradient method. For each pixel, the label i corresponding to the
@@ -323,7 +307,7 @@ def _solve_cg(lap_sparse, B, tol, return_full_prob=False):
     for i in range(len(B)):
         x0 = cg(lap_sparse, -B[i].todense(), tol=tol)[0]
         X.append(x0)
-    if not return_full_prob:
-        X = np.array(X)
-        X = np.argmax(X, axis=0)
+
+    X = np.array(X)
+    X = np.argmax(X, axis=0)
     return X

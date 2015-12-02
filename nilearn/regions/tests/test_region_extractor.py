@@ -79,14 +79,14 @@ def test_connected_regions():
     # if the regions extracted should be equal or more than already present.
     # 4D image case
     for extract_type in ['connected_components', 'local_regions']:
-        connected_extraction, index = connected_regions(maps, min_region_size=10,
-                                                        extract_type=extract_type)
-        assert_true(connected_extraction.shape[-1] >= n_regions)
+        connected_extraction_img, index = connected_regions(maps, min_region_size=10,
+                                                            extract_type=extract_type)
+        assert_true(connected_extraction_img.shape[-1] >= n_regions)
         assert_true(index, np.ndarray)
         # For 3D images regions extracted should be more than equal to one
-        connected_extraction_3d, _ = connected_regions(map_img, min_region_size=10,
-                                                       extract_type=extract_type)
-        assert_true(connected_extraction_3d.shape[-1] >= 1)
+        connected_extraction_3d_img, _ = connected_regions(map_img, min_region_size=10,
+                                                           extract_type=extract_type)
+        assert_true(connected_extraction_3d_img.shape[-1] >= 1)
 
 
 def test_invalid_threshold_value_in_regionextractor():
@@ -111,8 +111,8 @@ def test_region_extractor_fit_and_transform():
     extract_ratio = RegionExtractor(maps, threshold=0.2,
                                     thresholding_strategy='ratio_n_voxels')
     extract_ratio.fit()
-    assert_not_equal(extract_ratio.regions_, '')
-    assert_true(extract_ratio.regions_.shape[-1] >= 9)
+    assert_not_equal(extract_ratio.regions_img_, '')
+    assert_true(extract_ratio.regions_img_.shape[-1] >= 9)
 
     # smoke test with threshold=string and strategy=percentile
     extractor = RegionExtractor(maps, threshold='30%',
@@ -120,10 +120,10 @@ def test_region_extractor_fit_and_transform():
                                 mask_img=mask_img)
     extractor.fit()
     assert_true(extractor.index_, np.ndarray)
-    assert_not_equal(extractor.regions_, '')
-    assert_true(extractor.regions_.shape[-1] >= 9)
+    assert_not_equal(extractor.regions_img_, '')
+    assert_true(extractor.regions_img_.shape[-1] >= 9)
 
-    n_regions_extracted = extractor.regions_.shape[-1]
+    n_regions_extracted = extractor.regions_img_.shape[-1]
     imgs = []
     signals = []
     shape = (91, 109, 91, 7)
