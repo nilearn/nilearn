@@ -568,7 +568,6 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
     ----------
     `all_coef_` : ndarray, shape (n_l1_ratios, n_folds, n_features)
         Coefficients for all folds and features.
-
     `alpha_grids_` : ndarray, shape (n_folds, n_alphas)
         Alpha values tried for choosing the best ones (saved in best_model_params_)
 
@@ -584,9 +583,11 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
             (n_classes, n_features) for n_classes > 2, and
         Coefficient of the features in the decision function.
 
-    `coef_img_` :
+    `coef_img_` : nifti image
+        On mask model coefficients
 
-    `mask_` :
+    `mask_` : ndarray
+        Mask image
 
     `coef_img_` : nifti image
         Masked model coefficients
@@ -602,7 +603,7 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
         this attribute is the mask image computed automatically from the
         data `X`.
 
-    `memory_` :
+    `memory_` : joblib memory cache
 
     `intercept_` : narray, shape (nclasses -1,)
          Intercept (a.k.a. bias) added to the decision function.
@@ -620,20 +621,17 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
         Screening percentile corrected according to volume of mask,
         relative to the volume of standard brain.
 
-    `w_` : ndarray, shape
-            (1, n_features + 1) for 2 class classification problems (i.e n_classes = 2)
-            (n_classes, n_features + 1) for n_classes > 2, and
-            (n_features,) for regression
+    `w_` : ndarray, shape (n_classes-1, n_features) #TODO: check shapes
         Model weights
 
     `ymean_` : array, shape (n_samples,)
         Mean of prediction targets
 
     `Xmean_` : array, shape (n_features,)
-        Mean of X across samples
+        Mean of X samples
 
     `Xstd_` : array, shape (n_features,)
-        Standard deviation of X across samples
+        Standard deviation of X samples
     """
     SUPPORTED_PENALTIES = ["graph-net", "tv-l1"]
     SUPPORTED_LOSSES = ["mse", "logistic"]
