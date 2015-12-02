@@ -308,7 +308,6 @@ def test_check_niimg_wildcards():
 
 
 def test_iter_check_niimgs():
-    tmp_dir = tempfile.tempdir + os.sep
     no_file_matching = "No files matching path: {}"
     affine = np.eye(4)
     img_3d = Nifti1Image(np.ones((10, 10, 10)), affine)
@@ -331,14 +330,10 @@ def test_iter_check_niimgs():
                         list, _iter_check_niimg(nofile_path))
 
     # Create a test file
-    file_test = os.path.join(tmp_dir, "file1.nii")
-    f = open(file_test, 'wb')
-    f.close()
-    img_4d.to_filename(file_test)
-    niimgs = list(_iter_check_niimg([file_test]))
-    assert_array_equal(niimgs[0].get_data(),
-                       _utils.check_niimg(img_4d).get_data())
-    os.remove(file_test)
+    with testing.write_tmp_imgs(img_4d, create_files=True) as filename:
+        niimgs = list(_iter_check_niimg([file_test]))
+        assert_array_equal(niimgs[0].get_data(),
+                           _utils.check_niimg(img_4d).get_data())
 
     # Regular case
     niimgs = list(_iter_check_niimg(img_2_4d))
