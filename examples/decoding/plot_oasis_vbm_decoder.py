@@ -80,7 +80,7 @@ gm_maps_masked = nifti_masker.fit_transform(niimgs)
 n_samples, n_features = gm_maps_masked.shape
 
 from nilearn.decoding import Decoder
-decoder = Decoder(estimator='ridge_regression', mask=nifti_masker,
+decoder = Decoder(estimator='svr', mask=nifti_masker,
                   screening_percentile=2, n_jobs=1)
 
 ### Fit and predict

@@ -21,7 +21,9 @@ from sklearn.preprocessing import LabelBinarizer
 from sklearn.feature_selection import SelectPercentile
 from sklearn.feature_selection import f_classif, f_regression
 from sklearn.svm.bounds import l1_min_c
-from sklearn.metrics import r2_score, f1_score, precision_score, recall_score
+from sklearn.metrics import (r2_score, f1_score, precision_score, recall_score,
+                             accuracy_score, mean_absolute_error,
+                             mean_squared_error, average_precision_score)
 
 from sklearn.base import BaseEstimator
 from sklearn.base import is_classifier
@@ -56,6 +58,15 @@ ESTIMATOR_CATALOG = dict(
     ridge_regression=Ridge(),
     svr=SVR(kernel='linear'),
 )
+
+SCORINGS = dict(r2=r2_score,
+                mean_absolute_error=mean_absolute_error,
+                mean_squared_error=mean_squared_error,
+                accuracy=accuracy_score,
+                average_precision_score=average_precision_score,
+                recall_score=recall_score,
+                precision_score=precision_score,
+                f1_score=f1_score)
 
 REQUIRES_POS_LABEL = [f1_score, precision_score, recall_score]
 
@@ -178,7 +189,7 @@ class Decoder(BaseEstimator):
         self.verbose = verbose
 
 
-    def _gather_fit_results(self, results, classes_to_predict, scorer):
+    def _gather_fit_results(self, results, classes_to_predict, score_func):
         """ Posprocessing of the results
         """
         coefs = {}
@@ -230,7 +241,7 @@ class Decoder(BaseEstimator):
 
             self.cv_y_true_.append(y_true)
             self.cv_y_pred_.append(y_pred)
-            self.cv_scores_.append(scorer._score_func(y_true, y_pred))
+            self.cv_scores_.append(score_func(y_true, y_pred))
 
         self.coef_ = np.vstack([np.mean(coefs[c], axis=0) for c in classes])
         self.std_coef_ = np.vstack([np.std(coefs[c], axis=0) for c in classes])
@@ -336,8 +347,8 @@ class Decoder(BaseEstimator):
         self.is_classification_ = is_classification_
 
         # Raise an error early if something is wrong with the scoring
-        scorer, scoring = _check_scorer(self, self.scoring, self.pos_label, y)
-
+        scorer, self.scoring_, score_func = _check_scorer(self, self.scoring,
+                                                          self.pos_label, y)
         # Setup cv
         cv = check_cv(self.cv, X, y, classifier=is_classification_)
 
@@ -349,7 +360,7 @@ class Decoder(BaseEstimator):
             itertools.product(classes_to_predict, cv))
 
         # Process the results for all the folds
-        self._gather_fit_results(results, classes_to_predict, scorer)
+        self._gather_fit_results(results, classes_to_predict, score_func)
         return self
 
     def decision_function(self, niimgs, index=None):
@@ -395,7 +406,7 @@ class Decoder(BaseEstimator):
         X, y = check_X_y(X, y, ['csr', 'csc', 'coo'], dtype=np.float,
                          multi_output=True, y_numeric=True)
 
-        scorer, _ = _check_scorer(self, self.scoring, self.pos_label, y)
+        scorer, _ = _check_scorer(self, self.scoring_, self.pos_label, y)
         return scorer(self, niimgs, y)
 
 
@@ -613,7 +624,6 @@ def _check_estimation(estimator, y, pos_label):
     return is_classification_, is_binary, classes_, classes_to_predict
 
 
-# XXX verify this, we are calling a private function
 def _check_scorer(estimator, scoring, pos_label, y):
     """Utility function to set up scoring metric.
 
@@ -621,6 +631,11 @@ def _check_scorer(estimator, scoring, pos_label, y):
     Make use of pos_label when classification is binary
     and scoring method requires it.
     """
+    if not scoring in SCORINGS.keys():
+        scoring = None
+        warnings.warn("Scoring was not recogniced, it's going"
+                      "be setted according to the estimation problem")
+
     # Set scoring to a reasonable default
     if scoring is None and estimator.is_classification_:
         scoring = 'accuracy'
@@ -629,14 +644,18 @@ def _check_scorer(estimator, scoring, pos_label, y):
 
     # Check that the passed scoring does not raise an Exception
     scorer = check_scoring(estimator, scoring)
-
-    score_func = scorer._score_func if hasattr(scorer, '_score_func') else None
+    # Getting the scoring function
+    score_func = SCORINGS[scoring]
 
     # Check scoring is for right learning problem
     is_r2 = score_func is r2_score
-    if not estimator.is_classification_ and not is_r2:
+    is_mse = score_func is mean_squared_error
+    is_mae = score_func is mean_absolute_error
+    is_regression_score = is_r2 or is_mae or is_mse
+
+    if not estimator.is_classification_ and not is_regression_score:
         raise ValueError('Wrong scoring method `%s` for regression.' % scoring)
-    if estimator.is_classification_ and is_r2:
+    if estimator.is_classification_ and is_regression_score:
         raise ValueError('Wrong scoring method `%s` '
                          'for classification.' % scoring)
 
@@ -655,7 +674,7 @@ def _check_scorer(estimator, scoring, pos_label, y):
                 'which contains the classes `%s` and `%s`.' % (
                     pos_label, estimator.classes_[0], estimator.classes_[1]))
 
-    scorer = check_scoring(estimator, scoring)
-    if estimator.is_binary_ and scorer._score_func in REQUIRES_POS_LABEL:
-        scorer = make_scorer(scorer._score_func, pos_label=pos_label)
-    return scorer, scoring
+    if estimator.is_binary_ and score_func in REQUIRES_POS_LABEL:
+        scorer = make_scorer(score_func, pos_label=pos_label)
+
+    return scorer, scoring, score_func
