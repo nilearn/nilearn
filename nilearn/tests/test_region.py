@@ -102,7 +102,7 @@ def test_signals_extraction_with_labels():
     labels_4d_data[..., 1] = labels_data
     labels_4d_img = nibabel.Nifti1Image(labels_4d_data, np.eye(4))
 
-    ## Without mask
+    # Without mask
     # from labels
     data_img = region.signals_to_img_labels(signals, labels_img)
     data = data_img.get_data()
@@ -133,7 +133,7 @@ def test_signals_extraction_with_labels():
         np.testing.assert_almost_equal(signals_r, signals)
         assert_true(labels_r == list(range(1, 9)))
 
-    ## Same thing, with mask.
+    # Same thing, with mask.
     assert_raises_regex(DimensionError, "Data must be a 3D",
                         region.img_to_signals_labels, data_img, labels_img,
                         mask_img=mask_4d_img)
@@ -176,7 +176,7 @@ def test_signals_extraction_with_labels():
 
     # and back
     signals_r, labels_r = region.img_to_signals_labels(data_img, labels_img,
-                                           mask_img=mask_img)
+                                                       mask_img=mask_img)
     np.testing.assert_almost_equal(signals_r, signals)
     assert_true(labels_r == list(range(1, 9)))
 
@@ -229,7 +229,7 @@ def test_signal_extraction_with_maps():
                         region.img_to_signals_maps, img, maps_img,
                         mask_img=mask_4d_img)
 
-    ## Get signals
+    # Get signals
     signals_r, labels = region.img_to_signals_maps(img, maps_img,
                                                    mask_img=mask_img)
 
@@ -242,7 +242,7 @@ def test_signal_extraction_with_maps():
     signals_r, labels = region.img_to_signals_maps(img, maps_img)
     np.testing.assert_almost_equal(signals, signals_r)
 
-    ## Recover image
+    # Recover image
     img_r = region.signals_to_img_maps(signals, maps_img, mask_img=mask_img)
     np.testing.assert_almost_equal(img_r.get_data(), img.get_data())
     img_r = region.signals_to_img_maps(signals, maps_img)
@@ -298,21 +298,21 @@ def test_signal_extraction_with_maps_and_labels():
     # Extract signals from maps and labels: results must be identical.
     maps_signals, maps_labels = region.img_to_signals_maps(fmri_img, maps_img)
     labels_signals, labels_labels =\
-                    region.img_to_signals_labels(fmri_img, labels_img)
+        region.img_to_signals_labels(fmri_img, labels_img)
 
     np.testing.assert_almost_equal(maps_signals, labels_signals)
 
-    ## Same thing with a mask, containing only 3 regions.
+    # Same thing with a mask, containing only 3 regions.
     mask_data = (labels_data == 1) + (labels_data == 2) + (labels_data == 5)
     mask_img = nibabel.Nifti1Image(mask_data.astype(np.int8),
                                    labels_img.get_affine())
     labels_signals, labels_labels =\
-                    region.img_to_signals_labels(fmri_img, labels_img,
-                                                 mask_img=mask_img)
+        region.img_to_signals_labels(fmri_img, labels_img,
+                                     mask_img=mask_img)
 
     maps_signals, maps_labels = \
-                  region.img_to_signals_maps(fmri_img, maps_img,
-                                             mask_img=mask_img)
+        region.img_to_signals_maps(fmri_img, maps_img,
+                                   mask_img=mask_img)
 
     np.testing.assert_almost_equal(maps_signals, labels_signals)
     assert_true(maps_signals.shape[1] == n_regions)
@@ -329,13 +329,13 @@ def test_signal_extraction_with_maps_and_labels():
                                             mask_img=mask_img)
     assert_true(maps_img_r.shape == shape + (length,))
 
-    ## Check that NaNs in regions inside mask are preserved
+    # Check that NaNs in regions inside mask are preserved
     region1 = labels_data == 2
     indices = [ind[:1] for ind in np.where(region1)]
     fmri_img.get_data()[indices + [slice(None)]] = float('nan')
     labels_signals, labels_labels =\
-                    region.img_to_signals_labels(fmri_img, labels_img,
-                                                 mask_img=mask_img)
+        region.img_to_signals_labels(fmri_img, labels_img,
+                                     mask_img=mask_img)
     assert_true(np.all(np.isnan(labels_signals[:, labels_labels.index(2)])))
 
 

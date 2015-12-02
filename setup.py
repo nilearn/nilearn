@@ -36,7 +36,8 @@ os.chdir(os.path.dirname(os.path.abspath(__file__)))
 _VERSION_GLOBALS = load_version()
 DISTNAME = 'nilearn'
 DESCRIPTION = 'Statistical learning for neuroimaging in Python'
-LONG_DESCRIPTION = open('README.rst').read()
+with open('README.rst') as fp:
+    LONG_DESCRIPTION = fp.read()
 MAINTAINER = 'Gael Varoquaux'
 MAINTAINER_EMAIL = 'gael.varoquaux@normalesup.org'
 URL = 'http://nilearn.github.io'
@@ -84,9 +85,10 @@ if __name__ == "__main__":
               'Programming Language :: Python :: 3.4',
           ],
           packages=find_packages(),
-          package_data={'nilearn.data': ['*.nii.gz', '*.csv'],
+          package_data={'nilearn.datasets.data': ['*.nii.gz', '*.csv'],
                         'nilearn.plotting.glass_brain_files': ['*.json'],
                         'nilearn.tests.data': ['*'],
                         'nilearn.image.tests.data': ['*.mgz'],
-                        'nilearn.description': ['*.rst']},
+                        'nilearn.datasets.tests.data': ['*.*'],
+                        'nilearn.datasets.description': ['*.rst']},
           install_requires=install_requires,)

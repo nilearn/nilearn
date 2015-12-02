@@ -9,7 +9,8 @@ the fMRI (see the generated figures).
 
 """
 
-### Load Haxby dataset ########################################################
+#########################################################################
+# Load Haxby dataset
 import numpy as np
 import nibabel
 from nilearn import datasets
@@ -19,14 +20,15 @@ haxby_dataset = datasets.fetch_haxby_simple()
 
 # print basic information on the dataset
 print('Anatomical nifti image (3D) is located at: %s' % haxby_dataset.mask)
-print('Functional nifti image (4D) is located at: %s' % haxby_dataset.func)
+print('Functional nifti image (4D) is located at: %s' % haxby_dataset.func[0])
 
-fmri_filename = haxby_dataset.func
+fmri_filename = haxby_dataset.func[0]
 fmri_img = nibabel.load(fmri_filename)
-y, session = np.loadtxt(haxby_dataset.session_target).astype('int').T
-conditions = np.recfromtxt(haxby_dataset.conditions_target)['f0']
+y, session = np.loadtxt(haxby_dataset.session_target[0]).astype('int').T
+conditions = np.recfromtxt(haxby_dataset.conditions_target[0])['f0']
 
-### Restrict to faces and houses ##############################################
+#########################################################################
+# Restrict to faces and houses
 from nilearn.image import index_img
 condition_mask = np.logical_or(conditions == b'face', conditions == b'house')
 
@@ -34,7 +36,9 @@ fmri_img = index_img(fmri_img, condition_mask)
 y, session = y[condition_mask], session[condition_mask]
 conditions = conditions[condition_mask]
 
-### Prepare masks #############################################################
+#########################################################################
+# Prepare masks
+#
 # - mask_img is the original mask
 # - process_mask_img is a subset of mask_img, it contains the voxels that
 #   should be processed (we only keep the slice z = 26 and the back of the
@@ -50,14 +54,15 @@ process_mask[..., :picked_slice] = 0
 process_mask[:, 30:] = 0
 process_mask_img = new_img_like(mask_img, process_mask)
 
-### Searchlight computation ###################################################
+#########################################################################
+# Searchlight computation
 
 # Make processing parallel
 # /!\ As each thread will print its progress, n_jobs > 1 could mess up the
 #     information output.
 n_jobs = 1
 
-### Define the cross-validation scheme used for validation.
+# Define the cross-validation scheme used for validation.
 # Here we use a KFold cross-validation on the session, which corresponds to
 # splitting the samples in 4 folds and make 4 runs using each fold as a test
 # set once and the others as learning sets
@@ -73,7 +78,8 @@ searchlight = nilearn.decoding.SearchLight(
     verbose=1, cv=cv)
 searchlight.fit(fmri_img, y)
 
-### F-scores computation ######################################################
+#########################################################################
+# F-scores computation
 from nilearn.input_data import NiftiMasker
 
 # For decoding, standardizing is often very important
@@ -88,22 +94,22 @@ p_values = -np.log10(p_values)
 p_values[p_values > 10] = 10
 p_unmasked = nifti_masker.inverse_transform(p_values).get_data()
 
-### Visualization #############################################################
-import matplotlib.pyplot as plt
+#########################################################################
+# Visualization
 
 # Use the fmri mean image as a surrogate of anatomical data
 from nilearn import image
-from nilearn.plotting import plot_stat_map
 mean_fmri = image.mean_img(fmri_img)
 
+from nilearn.plotting import plot_stat_map, show
 plot_stat_map(new_img_like(mean_fmri, searchlight.scores_), mean_fmri,
               title="Searchlight", display_mode="z", cut_coords=[-16],
               colorbar=False)
 
-### F_score results
+# F_score results
 p_ma = np.ma.array(p_unmasked, mask=np.logical_not(process_mask))
 plot_stat_map(new_img_like(mean_fmri, p_ma), mean_fmri,
-              title="F-scores", display_mode="z", cut_coords=[-16],
-              colorbar=False)
+              title="F-scores", display_mode="z",
+              cut_coords=[-16], colorbar=False)
 
-plt.show()
+show()

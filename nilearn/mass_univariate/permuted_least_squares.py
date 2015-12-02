@@ -1,6 +1,5 @@
 """
 Massively Univariate Linear Model estimated with OLS and permutation test.
-
 """
 # Author: Benoit Da Mota, <benoit.da_mota@inria.fr>, sept. 2011
 #         Virgile Fritsch, <virgile.fritsch@inria.fr>, jan. 2014
@@ -296,8 +295,8 @@ def permuted_ols(tested_vars, target_vars, confounding_vars=None,
     n_jobs : int,
       Number of parallel workers.
       If 0 is provided, all CPUs are used.
-      A negative number indicates that all the CPUs except (|n_jobs| - 1) ones
-      will be used.
+      A negative number indicates that all the CPUs except (abs(n_jobs) - 1)
+      ones will be used.
 
     verbose: int, optional
         verbosity level (0 means no message).
@@ -450,7 +449,7 @@ def permuted_ols(tested_vars, target_vars, confounding_vars=None,
             targetvars_resid_covars.T, covars_orthonormalized,
             n_perm_chunk=n_perm_chunk, intercept_test=intercept_test,
             two_sided_test=two_sided_test,
-            random_state=rng.random_integers(np.iinfo(np.int32).max))
+            random_state=rng.random_integers(np.iinfo(np.int32).max - 1))
         for n_perm_chunk in n_perm_chunks)
     # reduce results
     scores_as_ranks_parts, h0_fmax_parts = zip(*ret)

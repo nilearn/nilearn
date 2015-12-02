@@ -1,7 +1,7 @@
 """Test the nifti_region module
 
 Functions in this file only test features added by the NiftiLabelsMasker class,
-not the underlying functions (clean(), img_to_signals_labels(), etc.). See
+non_overlappingt the underlying functions (clean(), img_to_signals_labels(), etc.). See
 test_masking.py and test_signal.py for details.
 """
 
@@ -10,18 +10,17 @@ import numpy as np
 
 import nibabel
 
-from nilearn.input_data.nifti_labels_masker import NiftiLabelsMasker
 from nilearn.input_data.nifti_maps_masker import NiftiMapsMasker
 from nilearn._utils import testing, as_ndarray
 from nilearn._utils.exceptions import DimensionError
-from nilearn._utils.testing import assert_less
+from nilearn._utils.testing import assert_less, assert_raises_regex
 
 
 def generate_random_img(shape, length=1, affine=np.eye(4),
                         rand_gen=np.random.RandomState(0)):
     data = rand_gen.randn(*(shape + (length,)))
     return nibabel.Nifti1Image(data, affine), nibabel.Nifti1Image(
-                    as_ndarray(data[..., 0] > 0.2, dtype=np.int8), affine)
+        as_ndarray(data[..., 0] > 0.2, dtype=np.int8), affine)
 
 
 def test_nifti_maps_masker():
@@ -43,7 +42,7 @@ def test_nifti_maps_masker():
                                                  length=length)
 
     labels11_img, labels_mask_img = \
-                  testing.generate_maps(shape1, n_regions, affine=affine1)
+        testing.generate_maps(shape1, n_regions, affine=affine1)
 
     # No exception raised here
     for create_files in (True, False):
@@ -52,6 +51,8 @@ def test_nifti_maps_masker():
             masker11 = NiftiMapsMasker(labels11, resampling_target=None)
             signals11 = masker11.fit().transform(fmri11_img)
             assert_equal(signals11.shape, (length, n_regions))
+            # enables to delete "labels11" on windows
+            del masker11
 
     masker11 = NiftiMapsMasker(labels11_img, mask_img=mask11_img,
                                resampling_target=None)
@@ -110,7 +111,7 @@ def test_nifti_maps_masker():
     affine2[-1, -1] = 1
 
     fmri22_img, _ = generate_random_img(shape22, affine=affine2,
-                                                 length=length)
+                                        length=length)
     masker = NiftiMapsMasker(labels11_img, mask_img=mask21_img)
 
     masker.fit_transform(fmri22_img)
@@ -131,12 +132,12 @@ def test_nifti_maps_masker_2():
     length = 3
 
     fmri11_img, _ = generate_random_img(shape1, affine=affine,
-                                                 length=length)
+                                        length=length)
     _, mask22_img = generate_random_img(shape2, affine=affine,
-                                                 length=length)
+                                        length=length)
 
     maps33_img, _ = \
-                  testing.generate_maps(shape3, n_regions, affine=affine)
+        testing.generate_maps(shape3, n_regions, affine=affine)
 
     mask_img_4d = nibabel.Nifti1Image(np.ones((2, 2, 2, 2), dtype=np.int8),
                                       affine=np.diag((4, 4, 4, 1)))
@@ -210,7 +211,7 @@ def test_nifti_maps_masker_2():
                                                affine=affine2)
     # Target: maps
     maps33_img, _ = \
-                  testing.generate_maps(shape3, n_regions, affine=affine1)
+        testing.generate_maps(shape3, n_regions, affine=affine1)
 
     masker = NiftiMapsMasker(maps33_img, mask_img=mask22_img,
                              resampling_target="maps")
@@ -234,3 +235,38 @@ def test_nifti_maps_masker_2():
                                    masker.maps_img_.get_affine())
     assert_equal(fmri11_img_r.shape,
                  (masker.maps_img_.shape[:3] + (length,)))
+
+
+def test_nifti_maps_masker_overlap():
+    # Test resampling in NiftiMapsMasker
+    affine = np.eye(4)
+    shape = (5, 5, 5)
+    length = 10
+
+    fmri_img, _ = generate_random_img(shape, affine=affine,
+                                      length=length)
+    non_overlapping_maps = np.zeros(shape + (2,))
+    non_overlapping_maps[:2, :, :, 0] = 1.
+    non_overlapping_maps[2:, :, :, 1] = 1.
+    non_overlapping_maps_img = nibabel.Nifti1Image(non_overlapping_maps,
+                                                   affine)
+
+    overlapping_maps = np.zeros(shape + (2,))
+    overlapping_maps[:3, :, :, 0] = 1.
+    overlapping_maps[2:, :, :, 1] = 1.
+    overlapping_maps_img = nibabel.Nifti1Image(overlapping_maps, affine)
+
+    overlapping_masker = NiftiMapsMasker(non_overlapping_maps_img,
+                                         allow_overlap=True)
+    overlapping_masker.fit_transform(fmri_img)
+    overlapping_masker = NiftiMapsMasker(overlapping_maps_img,
+                                         allow_overlap=True)
+    overlapping_masker.fit_transform(fmri_img)
+
+    non_overlapping_masker = NiftiMapsMasker(non_overlapping_maps_img,
+                                             allow_overlap=False)
+    non_overlapping_masker.fit_transform(fmri_img)
+    non_overlapping_masker = NiftiMapsMasker(overlapping_maps_img,
+                                             allow_overlap=False)
+    assert_raises_regex(ValueError, 'Overlap detected',
+                        non_overlapping_masker.fit_transform, fmri_img)

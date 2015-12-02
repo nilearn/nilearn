@@ -29,9 +29,9 @@ from ..image.resampling import (get_bounds, reorder_img, coord_transform,
                                 get_mask_bounds)
 
 
-################################################################################
+###############################################################################
 # class BaseAxes
-################################################################################
+###############################################################################
 
 class BaseAxes(object):
     """ An MPL axis-like object that displays a 2D view of 3D volumes
@@ -137,9 +137,10 @@ class BaseAxes(object):
         raise NotImplementedError("'draw_position' should be implemented "
                                   "in derived classes")
 
-################################################################################
+
+###############################################################################
 # class CutAxes
-################################################################################
+###############################################################################
 
 class CutAxes(BaseAxes):
     """ An MPL axis-like object that displays a cut of 3D volumes
@@ -336,9 +337,9 @@ class GlassBrainAxes(BaseAxes):
             self.ax.add_line(line)
 
 
-################################################################################
+###############################################################################
 # class BaseSlicer
-################################################################################
+###############################################################################
 
 class BaseSlicer(object):
     """ The main purpose of these class is to have auto adjust of axes size
@@ -392,6 +393,7 @@ class BaseSlicer(object):
                          cut_coords=None, figure=None, axes=None,
                          black_bg=False, leave_space=False, colorbar=False,
                          **kwargs):
+        "Initialize the slicer with an image"
         # deal with "fake" 4D images
         if img is not None and img is not False:
             img = _utils.check_niimg_3d(img)
@@ -432,7 +434,6 @@ class BaseSlicer(object):
         # then they cannot see their slicer
         axes.axis('off')
         return cls(cut_coords, axes, black_bg, **kwargs)
-
 
     def title(self, text, x=0.01, y=0.99, size=15, color=None, bgcolor=None,
               alpha=1, **kwargs):
@@ -479,7 +480,6 @@ class BaseSlicer(object):
                 zorder=1000,
                 **kwargs)
         ax.set_zorder(1000)
-
 
     def add_overlay(self, img, threshold=1e-6, colorbar=False, **kwargs):
         """ Plot a 3D map in all the views.
@@ -745,9 +745,10 @@ class BaseSlicer(object):
                                        facecolor=facecolor,
                                        edgecolor=edgecolor)
 
-################################################################################
+
+###############################################################################
 # class OrthoSlicer
-################################################################################
+###############################################################################
 
 class OrthoSlicer(BaseSlicer):
     """ A class to create 3 linked axes for plotting orthogonal
@@ -772,12 +773,13 @@ class OrthoSlicer(BaseSlicer):
 
     @classmethod
     def find_cut_coords(self, img=None, threshold=None, cut_coords=None):
+        "Instanciate the slicer and find cut coordinates"
         if cut_coords is None:
             if img is None or img is False:
                 cut_coords = (0, 0, 0)
             else:
-                cut_coords = find_xyz_cut_coords(img,
-                                                 activation_threshold=threshold)
+                cut_coords = find_xyz_cut_coords(
+                    img, activation_threshold=threshold)
             cut_coords = [cut_coords['xyz'.find(c)]
                           for c in sorted(self._cut_displayed)]
         return cut_coords
@@ -793,11 +795,12 @@ class OrthoSlicer(BaseSlicer):
         self.axes = dict()
         for index, direction in enumerate(self._cut_displayed):
             fh = self.frame_axes.get_figure()
-            ax = fh.add_axes([0.3*index*(x1 - x0) + x0, y0,
-                              .3*(x1 - x0), y1 - y0],
+            ax = fh.add_axes([0.3 * index * (x1 - x0) + x0, y0,
+                              .3 * (x1 - x0), y1 - y0],
                              axisbg=axisbg, aspect='equal')
             ax.axis('off')
-            coord = self.cut_coords[sorted(self._cut_displayed).index(direction)]
+            coord = self.cut_coords[
+                sorted(self._cut_displayed).index(direction)]
             display_ax = self._axes_class(ax, direction, coord, **kwargs)
             self.axes[direction] = display_ax
             ax.set_axes_locator(self._locator)
@@ -876,7 +879,8 @@ class OrthoSlicer(BaseSlicer):
         for direction in 'xyz':
             coord = None
             if direction in self._cut_displayed:
-                coord = cut_coords[sorted(self._cut_displayed).index(direction)]
+                coord = cut_coords[
+                    sorted(self._cut_displayed).index(direction)]
             coords[direction] = coord
         x, y, z = coords['x'], coords['y'], coords['z']
 
@@ -909,9 +913,9 @@ class OrthoSlicer(BaseSlicer):
                 ax.axhline(y, **kwargs)
 
 
-################################################################################
+###############################################################################
 # class BaseStackedSlicer
-################################################################################
+###############################################################################
 
 class BaseStackedSlicer(BaseSlicer):
     """ A class to create linked axes for plotting stacked
@@ -933,6 +937,7 @@ class BaseStackedSlicer(BaseSlicer):
     """
     @classmethod
     def find_cut_coords(cls, img=None, threshold=None, cut_coords=None):
+        "Instanciate the slicer and find cut coordinates"
         if cut_coords is None:
             cut_coords = 7
 
@@ -953,12 +958,12 @@ class BaseStackedSlicer(BaseSlicer):
         x0, y0, x1, y1 = self.rect
         # Create our axes:
         self.axes = dict()
-        fraction = 1./len(self.cut_coords)
+        fraction = 1. / len(self.cut_coords)
         for index, coord in enumerate(self.cut_coords):
             coord = float(coord)
             fh = self.frame_axes.get_figure()
-            ax = fh.add_axes([fraction*index*(x1-x0) + x0, y0,
-                              fraction*(x1-x0), y1-y0])
+            ax = fh.add_axes([fraction * index * (x1 - x0) + x0, y0,
+                              fraction * (x1 - x0), y1 - y0])
             ax.axis('off')
             display_ax = self._axes_class(ax, self._direction,
                                           coord, **kwargs)
@@ -978,7 +983,6 @@ class BaseStackedSlicer(BaseSlicer):
                                    zorder=-500, aspect='auto')
             self.frame_axes.set_zorder(-1000)
 
-
     def _locator(self, axes, renderer):
         """ The locator function used by matplotlib to position axes.
             Here we put the logic used to adjust the size of the axes.
@@ -988,7 +992,7 @@ class BaseStackedSlicer(BaseSlicer):
         display_ax_dict = self.axes
 
         if self._colorbar:
-            adjusted_width = self._colorbar_width/len(self.axes)
+            adjusted_width = self._colorbar_width / len(self.axes)
             right_margin = self._colorbar_margin['right'] / len(self.axes)
             ticks_margin = self._colorbar_margin['left'] / len(self.axes)
             x1 = x1 - (adjusted_width + right_margin + ticks_margin)
@@ -1014,7 +1018,6 @@ class BaseStackedSlicer(BaseSlicer):
             left += this_width
         return transforms.Bbox([[left_dict[axes], y0],
                                 [left_dict[axes] + width_dict[axes], y1]])
-
 
     def draw_cross(self, cut_coords=None, **kwargs):
         """ Draw a crossbar on the plot to show where the cut is
@@ -1260,7 +1263,7 @@ def get_create_display_fun(display_mode, class_dict):
     except KeyError:
         message = ('{0} is not a valid display_mode. '
                    'Valid options are {1}').format(
-                       display_mode, sorted(class_dict.keys()))
+                        display_mode, sorted(class_dict.keys()))
         raise ValueError(message)
 
 
@@ -1314,4 +1317,3 @@ def check_threshold(threshold, data, percentile_calculate, name):
         raise TypeError('%s should be either a number '
                         'or a string finishing with a percent sign' % (name, ))
     return threshold
-

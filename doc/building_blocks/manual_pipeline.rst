@@ -35,18 +35,18 @@ example, we can download the data from the
 `Haxby 2001 paper <http://dx.doi.org/10.1126/science.1063736>`_ ::
 
     >>> from nilearn import datasets
-    >>> dataset = datasets.fetch_haxby()
+    >>> dataset = datasets.fetch_haxby() # doctest: +SKIP
 
 `dataset.func` contains filenames referring to dataset files on the disk::
 
-  >>> list(dataset.keys())
-  ['mask_house_little', 'anat', 'mask_house', 'mask_face', 'func', 'session_target', 'mask_vt', 'mask_face_little']
-  >>> dataset.func # doctest: +ELLIPSIS
+  >>> list(sorted(dataset.keys())) # doctest: +SKIP
+  ['anat', 'description', 'func', 'mask_face', 'mask_face_little', 'mask_house', 'mask_house_little', 'mask_vt', 'session_target']
+  >>> dataset.func # doctest: +ELLIPSIS +SKIP
   ['.../haxby2001/subj1/bold.nii.gz']
 
 Access supplementary information on the dataset:
 
-  >>> print haxby_dataset['description']
+  >>> print haxby_dataset['description'] # doctest: +SKIP
 
 The complete list of the data-downloading functions can be found in the
 :ref:`reference documentation for the datasets <datasets_ref>`.
@@ -116,7 +116,7 @@ We use masking to convert 4D data (i.e. 3D volume over time) into 2D data
 Applying a mask
 ................
 
-.. figure:: ../auto_examples/images/plot_haxby_simple_002.png
+.. figure:: ../auto_examples/images/sphx_glr_plot_haxby_simple_002.png
     :target: ../auto_examples/plot_haxby_simple.html
     :align: right
     :scale: 30%
@@ -189,7 +189,7 @@ Again the visualization code is simple. We can use an fMRI slice as a
 background and plot the weights. Brighter points have a higher
 discriminating weight.
 
-.. figure:: ../auto_examples/images/plot_haxby_simple_001.png
+.. figure:: ../auto_examples/images/sphx_glr_plot_haxby_simple_001.png
     :target: ../auto_examples/plot_haxby_simple.html
     :align: right
     :scale: 50%

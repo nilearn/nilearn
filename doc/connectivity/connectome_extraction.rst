@@ -53,7 +53,7 @@ estimator :class:`sklearn.covariance.GraphLassoCV` is a good, simple
 solution. To use it, you need to create an estimator object::
 
     >>> from sklearn.covariance import GraphLassoCV
-    >>> estimator = GraphLasso()
+    >>> estimator = GraphLassoCV()
 
 And then you can fit it on the activation time series, for instance
 extracted in :ref:`the previous section <functional_connectomes>`::
@@ -68,18 +68,18 @@ of the estimator::
     >>> estimator.precision_  # doctest: +SKIP
 
 
-.. |covariance| image:: ../auto_examples/connectivity/images/plot_inverse_covariance_connectome_001.png
+.. |covariance| image:: ../auto_examples/connectivity/images/sphx_glr_plot_inverse_covariance_connectome_001.png
     :target: ../auto_examples/connectivity/plot_inverse_covariance_connectome.html
     :scale: 40
-.. |precision| image:: ../auto_examples/connectivity/images/plot_inverse_covariance_connectome_003.png
+.. |precision| image:: ../auto_examples/connectivity/images/sphx_glr_plot_inverse_covariance_connectome_003.png
     :target: ../auto_examples/connectivity/plot_inverse_covariance_connectome.html
     :scale: 40
 
-.. |covariance_graph| image:: ../auto_examples/connectivity/images/plot_inverse_covariance_connectome_002.png
+.. |covariance_graph| image:: ../auto_examples/connectivity/images/sphx_glr_plot_inverse_covariance_connectome_002.png
     :target: ../auto_examples/connectivity/plot_inverse_covariance_connectome.html
     :scale: 55
 
-.. |precision_graph| image:: ../auto_examples/connectivity/images/plot_inverse_covariance_connectome_004.png
+.. |precision_graph| image:: ../auto_examples/connectivity/images/sphx_glr_plot_inverse_covariance_connectome_004.png
     :target: ../auto_examples/connectivity/plot_inverse_covariance_connectome.html
     :scale: 55
 
@@ -99,7 +99,7 @@ of the estimator::
 .. topic:: **Full example**
 
     See the following example for a full file running the analysis:
-    :ref:`example_connectivity_plot_inverse_covariance_connectome.py`
+    :ref:`sphx_glr_auto_examples_connectivity_plot_inverse_covariance_connectome.py`
 
 .. topic:: **Exercise: computing sparse inverse covariance**
    :class: green
@@ -124,7 +124,7 @@ estimate multiple connectomes for each, with a similar structure but
 differing connection values across subjects.
 
 For this, nilearn provides the
-:class:`nilearn.group_sparse_covariance.GroupSparseCovarianceCV`
+:class:`nilearn.connectome.GroupSparseCovarianceCV`
 estimator. Its usage is similar to the GraphLassoCV object, but it takes
 a list of time series::
 
@@ -138,7 +138,7 @@ And it provides one estimated covariance and inverse-covariance
 
 |
 
-.. currentmodule:: nilearn.group_sparse_covariance
+.. currentmodule:: nilearn.connectome
 
 One specific case where this may be interesting is for group analysis
 across multiple subjects. Indeed, one challenge when doing statistics on
@@ -157,7 +157,7 @@ group analysis only on the non zero coefficients.
 .. topic:: **Full example**
 
     See the following example for a full file running the analysis:
-    :ref:`example_connectivity_plot_multi_subject_connectome.py`
+    :ref:`sphx_glr_auto_examples_connectivity_plot_multi_subject_connectome.py`
 
 
 .. topic:: **Exercise: computing the correlation matrix of rest fmri**
@@ -168,18 +168,6 @@ group analysis only on the non zero coefficients.
    :func:`nilearn.datasets.fetch_adhd`
 
    **Hint:** The example above has the solution
-
-
-..
-    .. |covariance| image:: ../auto_examples/connectivity/images/plot_adhd_covariance_002.png
-    :target: ../auto_examples/connectivity/plot_adhd_covariance.html
-    :scale: 55
-
-    .. |precision| image:: ../auto_examples/connectivity/images/plot_adhd_covariance_001.png
-    :target: ../auto_examples/connectivity/plot_adhd_covariance.html
-    :scale: 55
-
-    .. centered:: |covariance| |precision|
 
 
 .. topic:: **Reference**
@@ -202,11 +190,13 @@ It is also possible to fit a graph lasso on data from every subject all
 together.
 
 Finally, we use the
-:class:`nilearn.group_sparse_covariance.GroupSparseCovarianceCV`.
+:class:`nilearn.connectome.GroupSparseCovarianceCV` [#]_.
+
+
 
 The results are the following:
 
-.. image:: ../auto_examples/connectivity/images/plot_simulated_connectome_001.png
+.. image:: ../auto_examples/connectivity/images/sphx_glr_plot_simulated_connectome_001.png
     :target: ../auto_examples/connectivity/plot_simulated_connectome.html
     :scale: 60
 
@@ -218,15 +208,58 @@ applied to all subjects at once gives a sparsity pattern close to that
 obtained with the group-sparse one, but cannot provide per-subject
 information.
 
-
-.. note::
+.. topic::  **Full Example**
 
    The complete source code for this example can be found here:
-   :ref:`example_connectivity_plot_simulated_connectome.py`
-
-____
-
-A lot of technical details on the algorithm used for group-sparse
-estimation and its implementation can be found in :doc:`../developers/group_sparse_covariance`.
+   :ref:`sphx_glr_auto_examples_connectivity_plot_simulated_connectome.py`
 
 
+.. [#] A lot of technical details on the algorithm used for group-sparse
+       estimation and its implementation can be found in
+       :doc:`../developers/group_sparse_covariance`.
+
+.. toctree::
+   :hidden:
+
+   ../developers/group_sparse_covariance
+
+.. topic:: **Reference**
+
+ * The `Brain covariance selection using population prior [Varoquaux et al, NIPS 2010] <http://papers.nips.cc/paper/4080-brain-covariance-selection-better-individual-functional-connectivity-models-using-population-prior>`_
+
+Linking total and direct interactions at the group level
+========================================================
+
+Individual connectivity patterns reflect both on covariances and inverse covariances, but in different ways. For multiple subjects, mean covariance (or correlation) and group sparse inverse covariance provide different insights into the connectivity at the group level.
+
+We can go one step further by coupling the information from total (pairwise) and direct interactions in a unique group connectome. This can be done through a geometrical framework allowing to measure interactions in a common space called **tangent space** `[Varoquaux et al, MICCAI 2010] <https://hal.inria.fr/inria-00512417/>`_.
+
+In nilearn, this is implemented in
+:class:`nilearn.connectome.ConnectivityMeasure`::
+
+    >>> measure = ConnectivityMeasure(kind='tangent')  # doctest: +SKIP
+
+The group connectivity is computed using all the subjects timeseries.::
+
+    >>> connectivities = measure.fit([time_series_1, time_series_2, ...])  # doctest: +SKIP
+    >>> group_connectivity = measure.mean_  # doctest: +SKIP
+
+Deviations from this mean in the tangent space are provided in the connectivities array and can be used to compare different groups/sessions. In practice, the tangent measure can outperform the correlation and partial correlation measures, especially for noisy or heterogeneous data.
+
+
+.. topic:: **Full example**
+
+    See the following example for a full file running the analysis:
+    :ref:`sphx_glr_auto_examples_connectivity_plot_connectivity_measures.py`
+
+.. topic:: **Exercise: computing connectivity in tangent space**
+   :class: green
+
+   Compute and visualize the tangent group connectome based on the NYU, OHSU and NeuroImage sites of the ADHD
+   dataset downloaded with :func:`nilearn.datasets.fetch_adhd`
+
+   **Hints:** The example above has the solution
+
+.. topic:: **Reference**
+
+ * The `tangent space for connectivity [Varoquaux et al, MICCAI 2010] <http://link.springer.com/chapter/10.1007%2F978-3-642-15705-9_25>`_

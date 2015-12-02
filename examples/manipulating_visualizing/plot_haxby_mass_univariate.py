@@ -28,31 +28,32 @@ References
 
 """
 # Author: Virgile Fritsch, <virgile.fritsch@inria.fr>, Feb. 2014
-import numpy as np
-from scipy import linalg
-from nilearn import datasets
-from nilearn.input_data import NiftiMasker
-from nilearn.mass_univariate import permuted_ols
 
-### Load Haxby dataset ########################################################
+##############################################################################
+# Load Haxby dataset
+from nilearn import datasets
 haxby_dataset = datasets.fetch_haxby_simple()
 
 # print basic information on the dataset
 print('Mask nifti image (3D) is located at: %s' % haxby_dataset.mask)
-print('Functional nifti image (4D) is located at: %s' % haxby_dataset.func)
+print('Functional nifti image (4D) is located at: %s' % haxby_dataset.func[0])
 
-### Mask data #################################################################
+##############################################################################
+# Mask data
 mask_filename = haxby_dataset.mask
+from nilearn.input_data import NiftiMasker
 nifti_masker = NiftiMasker(
     mask_img=mask_filename,
     memory='nilearn_cache', memory_level=1)  # cache options
-func_filename = haxby_dataset.func
+func_filename = haxby_dataset.func[0]
 fmri_masked = nifti_masker.fit_transform(func_filename)
 
-### Restrict to faces and houses ##############################################
+##############################################################################
+# Restrict to faces and houses
+import numpy as np
 conditions_encoded, sessions = np.loadtxt(
-    haxby_dataset.session_target).astype("int").T
-conditions = np.recfromtxt(haxby_dataset.conditions_target)['f0']
+    haxby_dataset.session_target[0]).astype("int").T
+conditions = np.recfromtxt(haxby_dataset.conditions_target[0])['f0']
 condition_mask = np.logical_or(conditions == b'face', conditions == b'house')
 conditions_encoded = conditions_encoded[condition_mask]
 fmri_masked = fmri_masked[condition_mask]
@@ -78,9 +79,12 @@ for s in range(n_sessions):
     grouped_conditions_encoded[2 * s + 1] = conditions_encoded[
         session_face_mask][0]
 
-### Perform massively univariate analysis with permuted OLS ###################
+##############################################################################
+# Perform massively univariate analysis with permuted OLS
+#
 # We use a two-sided t-test to compute p-values, but we keep trace of the
 # effect sign to add it back at the end and thus observe the signed effect
+from nilearn.mass_univariate import permuted_ols
 neg_log_pvals, t_scores_original_data, _ = permuted_ols(
     grouped_conditions_encoded, grouped_fmri_masked,
     # + intercept as a covariate by default
@@ -90,7 +94,9 @@ signed_neg_log_pvals = neg_log_pvals * np.sign(t_scores_original_data)
 signed_neg_log_pvals_unmasked = nifti_masker.inverse_transform(
     signed_neg_log_pvals)
 
-### scikit-learn F-scores for comparison ######################################
+##############################################################################
+# scikit-learn F-scores for comparison
+#
 # F-test does not allow to observe the effect sign (pure two-sided test)
 from nilearn._utils.fixes import f_regression
 _, pvals_bonferroni = f_regression(
@@ -103,9 +109,10 @@ neg_log_pvals_bonferroni = -np.log10(pvals_bonferroni)
 neg_log_pvals_bonferroni_unmasked = nifti_masker.inverse_transform(
     neg_log_pvals_bonferroni)
 
-### Visualization #############################################################
+##############################################################################
+# Visualization
 import matplotlib.pyplot as plt
-from nilearn.plotting import plot_stat_map
+from nilearn.plotting import plot_stat_map, show
 
 # Use the fmri mean image as a surrogate of anatomical data
 from nilearn import image
@@ -115,6 +122,7 @@ mean_fmri_img = image.mean_img(func_filename)
 z_slice = -17  # plotted slice
 from nilearn.image.resampling import coord_transform
 affine = signed_neg_log_pvals_unmasked.get_affine()
+from scipy import linalg
 _, _, k_slice = coord_transform(0, 0, z_slice,
                                 linalg.inv(affine))
 k_slice = np.round(k_slice)
@@ -162,4 +170,4 @@ title = ('Negative $\log_{10}$ p-values'
 
 display.title(title, y=1.1)
 
-plt.show()
+show()

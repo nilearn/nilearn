@@ -35,7 +35,7 @@ def create_simulation_data(snr=0, n_samples=2 * 100, size=12, random_state=1):
     generator = check_random_state(random_state)
     roi_size = 2  # size / 3
     smooth_X = 1
-    ### Coefs
+    # Coefs
     w = np.zeros((size, size, size))
     w[0:roi_size, 0:roi_size, 0:roi_size] = -0.6
     w[-roi_size:, -roi_size:, 0:roi_size] = 0.5
@@ -45,7 +45,7 @@ def create_simulation_data(snr=0, n_samples=2 * 100, size=12, random_state=1):
       (size - roi_size) // 2:(size + roi_size) // 2,
       (size - roi_size) // 2:(size + roi_size) // 2] = 0.5
     w = w.ravel()
-    ### Generate smooth background noise
+    # Generate smooth background noise
     XX = generator.randn(n_samples, size, size, size)
     noise = []
     for i in range(n_samples):
@@ -53,7 +53,7 @@ def create_simulation_data(snr=0, n_samples=2 * 100, size=12, random_state=1):
         Xi = Xi.ravel()
         noise.append(Xi)
     noise = np.array(noise)
-    ### Generate the signal y
+    # Generate the signal y
     y = generator.randn(n_samples)
     X = np.dot(y[:, np.newaxis], w[np.newaxis])
     norm_noise = linalg.norm(X, 2) / np.exp(snr / 20.)
@@ -61,7 +61,7 @@ def create_simulation_data(snr=0, n_samples=2 * 100, size=12, random_state=1):
     noise *= noise_coef
     snr = 20 * np.log(linalg.norm(X, 2) / linalg.norm(noise, 2))
     print("SNR: %.1f dB" % snr)
-    ### Mixing of signal + noise and splitting into train/test
+    # Mixing of signal + noise and splitting into train/test
     X += noise
     X -= X.mean(axis=-1)[:, np.newaxis]
     X /= X.std(axis=-1)[:, np.newaxis]
@@ -79,7 +79,7 @@ def plot_slices(data, title=None):
     for i in (0, 6, 11):
         plt.subplot(1, 3, i // 5 + 1)
         plt.imshow(data[:, :, i], vmin=-vmax, vmax=vmax,
-                  interpolation="nearest", cmap=plt.cm.RdBu_r)
+                   interpolation="nearest", cmap=plt.cm.RdBu_r)
         plt.xticks(())
         plt.yticks(())
     plt.subplots_adjust(hspace=0.05, wspace=0.05, left=.03, right=.97, top=.9)

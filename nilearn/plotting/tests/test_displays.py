@@ -15,7 +15,7 @@ from nilearn._utils.testing import assert_raises_regex
 from nilearn._utils.extmath import fast_abs_percentile
 
 
-###############################################################################
+##############################################################################
 # Some smoke testing for graphics-related code
 
 def test_demo_ortho_slicer():
@@ -64,7 +64,8 @@ def test_check_threshold():
 
     threshold = object()
     assert_raises_regex(TypeError,
-                        '{0}.+should be either a number or a string'.format(name),
+                        '{0}.+should be either a number or a string'.format(
+                            name),
                         check_threshold,
                         threshold, adjacency_matrix,
                         calculate, name)

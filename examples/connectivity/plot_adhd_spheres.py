@@ -9,7 +9,8 @@ connectome from them.
 
 """
 
-# Fetching dataset ############################################################
+##########################################################################
+# Retrieve the dataset
 from nilearn import datasets
 adhd_dataset = datasets.fetch_adhd(n_subjects=1)
 
@@ -18,10 +19,7 @@ print('First subject functional nifti image (4D) is at: %s' %
       adhd_dataset.func[0])  # 4D data
 
 
-# Extracting region signals ###################################################
-from nilearn import input_data
-
-
+##########################################################################
 # Coordinates of Default Mode Network
 dmn_coords = [(0, -52, 18), (-46, -68, 32), (46, -68, 32), (0, 50, -5)]
 labels = [
@@ -31,7 +29,11 @@ labels = [
     'Medial prefrontal cortex'
 ]
 
-# Extracting signal from sphere around DMN seeds
+
+##########################################################################
+# Extracts signal from sphere around DMN seeds
+from nilearn import input_data
+
 masker = input_data.NiftiSpheresMasker(
     dmn_coords, radius=8,
     detrend=True, standardize=True,
@@ -42,19 +44,11 @@ func_filename = adhd_dataset.func[0]
 confound_filename = adhd_dataset.confounds[0]
 
 time_series = masker.fit_transform(func_filename,
-                             confounds=[confound_filename])
+                                   confounds=[confound_filename])
 
-
-# Computing precision matrices ################################################
-from sklearn.covariance import LedoitWolf
-cve = LedoitWolf()
-cve.fit(time_series)
-
-# Displaying results ##########################################################
-import matplotlib.pyplot as plt
-from nilearn import plotting
-
+##########################################################################
 # Display time series
+import matplotlib.pyplot as plt
 for time_serie, label in zip(time_series.T, labels):
     plt.plot(time_serie, label=label)
 
@@ -64,7 +58,18 @@ plt.ylabel('Normalized signal')
 plt.legend()
 plt.tight_layout()
 
+
+##########################################################################
+# Compute precision matrices
+from sklearn.covariance import LedoitWolf
+cve = LedoitWolf()
+cve.fit(time_series)
+
+
+##########################################################################
 # Display connectome
-title = "Default Mode Network Connectivity"
-plotting.plot_connectome(cve.precision_, dmn_coords, title=title)
-plt.show()
+from nilearn import plotting
+
+plotting.plot_connectome(cve.precision_, dmn_coords,
+                         title="Default Mode Network Connectivity")
+plotting.show()

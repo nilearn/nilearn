@@ -63,24 +63,23 @@ nifti_masker = NiftiMasker(
     standardize=False,
     smoothing_fwhm=2,
     memory='nilearn_cache')  # cache options
-# remove features with too low between-subject variance
 gm_maps_masked = nifti_masker.fit_transform(gray_matter_map_filenames)
-gm_maps_masked[:, gm_maps_masked.var(0) < 0.01] = 0.
-# final masking
-new_images = nifti_masker.inverse_transform(gm_maps_masked)
-gm_maps_masked = nifti_masker.fit_transform(new_images)
 n_samples, n_features = gm_maps_masked.shape
 print("%d samples, %d features" % (n_subjects, n_features))
 
 ### Prediction with SVR #######################################################
 print("ANOVA + SVR")
-### Define the prediction function to be used.
+# Define the prediction function to be used.
 # Here we use a Support Vector Classification, with a linear kernel
 from sklearn.svm import SVR
 svr = SVR(kernel='linear')
 
-### Dimension reduction
-from sklearn.feature_selection import SelectKBest, f_regression
+# Dimension reduction
+from sklearn.feature_selection import VarianceThreshold, SelectKBest, \
+        f_regression
+
+# Remove features with too low between-subject variance
+variance_threshold = VarianceThreshold(threshold=.01)
 
 # Here we use a classical univariate feature selection based on F-test,
 # namely Anova.
@@ -90,22 +89,27 @@ feature_selection = SelectKBest(f_regression, k=2000)
 # we can plug them together in a *pipeline* that performs the two operations
 # successively:
 from sklearn.pipeline import Pipeline
-anova_svr = Pipeline([('anova', feature_selection), ('svr', svr)])
+anova_svr = Pipeline([
+            ('variance_threshold', variance_threshold),
+            ('anova', feature_selection),
+            ('svr', svr)])
 
 ### Fit and predict
 anova_svr.fit(gm_maps_masked, age)
 age_pred = anova_svr.predict(gm_maps_masked)
 
-### Visualization
-### Look at the SVR's discriminating weights
+# Visualization
+# Look at the SVR's discriminating weights
 coef = svr.coef_
 # reverse feature selection
 coef = feature_selection.inverse_transform(coef)
+# reverse variance threshold
+coef = variance_threshold.inverse_transform(coef)
 # reverse masking
 weight_img = nifti_masker.inverse_transform(coef)
 
-### Create the figure
-from nilearn.plotting import plot_stat_map
+# Create the figure
+from nilearn.plotting import plot_stat_map, show
 bg_filename = gray_matter_map_filenames[0]
 z_slice = 0
 from nilearn.image.resampling import coord_transform
@@ -122,11 +126,11 @@ display = plot_stat_map(weight_img, bg_img=bg_filename,
                         figure=fig, vmax=vmax)
 display.title('SVM weights', y=1.2)
 
-### Measure accuracy with cross validation
+# Measure accuracy with cross validation
 from sklearn.cross_validation import cross_val_score
 cv_scores = cross_val_score(anova_svr, gm_maps_masked, age)
 
-### Return the corresponding mean prediction accuracy
+# Return the corresponding mean prediction accuracy
 prediction_accuracy = np.mean(cv_scores)
 print("=== ANOVA ===")
 print("Prediction accuracy: %f" % prediction_accuracy)
@@ -135,17 +139,18 @@ print("")
 ### Inference with massively univariate model #################################
 print("Massively univariate model")
 
-### Statistical inference
+# Statistical inference
 from nilearn.mass_univariate import permuted_ols
+data = variance_threshold.fit_transform(gm_maps_masked)
 neg_log_pvals, t_scores_original_data, _ = permuted_ols(
-    age, gm_maps_masked,  # + intercept as a covariate by default
-    n_perm=1000,  # 1,000 in the interest of time; 10000 would be better
+    age, data,  # + intercept as a covariate by default
+    n_perm=2000,  # 1,000 in the interest of time; 10000 would be better
     n_jobs=1)  # can be changed to use more CPUs
 signed_neg_log_pvals = neg_log_pvals * np.sign(t_scores_original_data)
 signed_neg_log_pvals_unmasked = nifti_masker.inverse_transform(
-    signed_neg_log_pvals)
+    variance_threshold.inverse_transform(signed_neg_log_pvals))
 
-### Show results
+# Show results
 threshold = -np.log10(0.1)  # 10% corrected
 
 fig = plt.figure(figsize=(5.5, 7.5), facecolor='k')
@@ -163,4 +168,4 @@ signed_neg_log_pvals_slice_data = \
 n_detections = (np.abs(signed_neg_log_pvals_slice_data) > threshold).sum()
 print('\n%d detections' % n_detections)
 
-plt.show()
+show()

@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 def plot_matrix(m, ylabel=""):
     abs_max = abs(m).max()
     plt.imshow(m, cmap=plt.cm.RdBu_r, interpolation="nearest",
-              vmin=-abs_max, vmax=abs_max)
+               vmin=-abs_max, vmax=abs_max)
 
 
 # Generate synthetic data
@@ -36,7 +36,7 @@ for n in range(n_displayed):
 
 
 # Run group-sparse covariance on all subjects
-from nilearn.group_sparse_covariance import GroupSparseCovarianceCV
+from nilearn.connectome import GroupSparseCovarianceCV
 gsc = GroupSparseCovarianceCV(max_iter=50, verbose=1)
 gsc.fit(subjects)
 

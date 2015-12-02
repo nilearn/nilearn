@@ -4,69 +4,33 @@ Transformer for computing ROI signals.
 
 import numpy as np
 
-from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.externals.joblib import Memory
 
 from .. import _utils
-from .._utils import logger
-from .._utils import CacheMixin
-from .._utils.cache_mixin import cache
-from .._utils import _compose_err_msg
+from .._utils import logger, CacheMixin, _compose_err_msg
+from .._utils.class_inspect import get_params
 from .._utils.niimg_conversions import _check_same_fov
-from .. import signal
 from .. import region
 from .. import masking
 from .. import image
+from .base_masker import filter_and_extract, BaseMasker
 
 
-def _extract_signals(imgs, labels_img, background_label, smoothing_fwhm,
-                     t_r, standardize, detrend, low_pass, high_pass,
-                     confounds, memory, memory_level,
-                     resample_on_labels=False, verbose=0):
-    """Extract representative time series of each region from fMRI signal
-    """
-    if verbose > 0:
-        print("Loading images: %s" % _utils._repr_niimgs(imgs)[:200])
-    imgs = _utils.check_niimg_4d(imgs)
+class _ExtractionFunctor(object):
 
-    if resample_on_labels:
-        if verbose > 0:
-            print("Resampling images")
-        imgs = cache(
-            image.resample_img, memory, func_memory_level=2,
-            memory_level=memory_level)(
-                imgs, interpolation="continuous",
-                target_shape=labels_img.shape,
-                target_affine=labels_img.get_affine())
+    func_name = 'nifti_labels_masker_extractor'
 
-    if smoothing_fwhm is not None:
-        if verbose > 0:
-            print("Smoothing images")
-        imgs = cache(
-            image.smooth_img, memory, func_memory_level=2,
-            memory_level=memory_level)(
-                imgs, smoothing_fwhm)
+    def __init__(self, _resampled_labels_img_, background_label):
+        self._resampled_labels_img_ = _resampled_labels_img_
+        self.background_label = background_label
 
-    if verbose > 0:
-        print("Extracting region signals")
-    region_signals, labels_ = cache(
-        region.img_to_signals_labels, memory, func_memory_level=2,
-        memory_level=memory_level)(
-            imgs, labels_img, background_label=background_label)
-
-    if verbose > 0:
-        print("Cleaning extracted signals")
-    region_signals = cache(
-        signal.clean, memory=memory, func_memory_level=2,
-        memory_level=memory_level)(
-            region_signals, detrend=detrend, standardize=standardize, t_r=t_r,
-            low_pass=low_pass, high_pass=high_pass,
-            confounds=confounds)
-
-    return region_signals
+    def __call__(self, imgs):
+        return region.img_to_signals_labels(
+            imgs, self._resampled_labels_img_,
+            background_label=self.background_label)
 
 
-class NiftiLabelsMasker(BaseEstimator, TransformerMixin, CacheMixin):
+class NiftiLabelsMasker(BaseMasker, CacheMixin):
     """Class for masking of Niimg-like objects.
 
     NiftiLabelsMasker is useful when data from non-overlapping volumes should
@@ -213,14 +177,16 @@ class NiftiLabelsMasker(BaseEstimator, TransformerMixin, CacheMixin):
                     interpolation="nearest",
                     copy=True)
             else:
-                raise ValueError("Invalid value for resampling_target: "
-                                 + str(self.resampling_target))
+                raise ValueError("Invalid value for resampling_target: " +
+                                 str(self.resampling_target))
 
             mask_data, mask_affine = masking._load_mask_img(self.mask_img_)
 
         return self
 
     def fit_transform(self, imgs, confounds=None):
+        """ Prepare and perform signal extraction from regions.
+        """
         return self.fit().transform(imgs, confounds=confounds)
 
     def _check_fitted(self):
@@ -229,30 +195,27 @@ class NiftiLabelsMasker(BaseEstimator, TransformerMixin, CacheMixin):
                              'You must call fit() before calling transform().'
                              % self.__class__.__name__)
 
-    def transform(self, imgs, confounds=None):
-        """Extract signals from images.
+    def transform_single_imgs(self, imgs, confounds=None):
+        """Extract signals from a single 4D niimg.
 
         Parameters
-        ==========
-        imgs: Niimg-like object
+        ----------
+        imgs: 3D/4D Niimg-like object
             See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
             Images to process. It must boil down to a 4D image with scans
             number as last dimension.
 
-        confounds: array-like, optional
+        confounds: CSV file or array-like, optional
             This parameter is passed to signal.clean. Please see the related
             documentation for details.
             shape: (number of scans, number of confounds)
 
         Returns
-        =======
-        signals: 2D numpy.ndarray
-            Signal for each region.
-            shape: (number of scans, number of regions)
-
+        -------
+        region_signals: 2D numpy.ndarray
+            Signal for each label.
+            shape: (number of scans, number of labels)
         """
-        self._check_fitted()
-
         # We handle the resampling of labels separately because the affine of
         # the labels image should not impact the extraction of the signal.
 
@@ -269,19 +232,32 @@ class NiftiLabelsMasker(BaseEstimator, TransformerMixin, CacheMixin):
                         target_shape=imgs_.shape[:3],
                         target_affine=imgs_.get_affine())
 
-        region_signals = self._cache(
-                _extract_signals,
+        target_shape = None
+        target_affine = None
+        if self.resampling_target == 'labels':
+            target_shape = self._resampled_labels_img_.shape[:3]
+            target_affine = self._resampled_labels_img_.get_affine()
+
+        params = get_params(NiftiLabelsMasker, self,
+                            ignore=['resampling_target'])
+        params['target_shape'] = target_shape
+        params['target_affine'] = target_affine
+
+        region_signals, labels_ = self._cache(
+                filter_and_extract,
                 ignore=['verbose', 'memory', 'memory_level'])(
             # Images
-            imgs, self._resampled_labels_img_, self.background_label,
+            imgs, _ExtractionFunctor(self._resampled_labels_img_,
+                                     self.background_label),
             # Pre-processing
-            self.smoothing_fwhm, self.t_r, self.standardize, self.detrend,
-            self.low_pass, self.high_pass, confounds,
+            params,
+            confounds=confounds,
             # Caching
-            self.memory, self.memory_level,
-            # kwargs
-            resample_on_labels=(self.resampling_target == 'labels'),
+            memory=self.memory,
+            memory_level=self.memory_level,
             verbose=self.verbose)
+
+        self.labels_ = labels_
 
         return region_signals
 

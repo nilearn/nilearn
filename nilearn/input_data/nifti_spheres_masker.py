@@ -5,22 +5,46 @@ Mask nifti images by spherical volumes for seed-region analyses
 """
 import numpy as np
 import sklearn
-from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn import neighbors
 from sklearn.externals.joblib import Memory
-
-from .. import _utils
-from .._utils import logger, CacheMixin
-from .._utils.niimg_conversions import check_niimg, check_niimg_3d
-from .. import signal
-from .. import image
-from .. import masking
 from distutils.version import LooseVersion
 
+from .._utils import CacheMixin
+from .._utils.niimg_conversions import check_niimg_4d, check_niimg_3d
+from .._utils.class_inspect import get_params
+from .. import image
+from .. import masking
+from .base_masker import filter_and_extract, BaseMasker
 
-def _iter_signals_from_spheres(seeds, niimg, radius, mask_img=None):
+
+def _iter_signals_from_spheres(seeds, niimg, radius, allow_overlap,
+                               mask_img=None):
+    """Utility function to iterate over spheres.
+
+    Parameters
+    ==========
+    seeds: List of triplet of coordinates in native space
+        Seed definitions. List of coordinates of the seeds in the same space
+        as the images (typically MNI or TAL).
+
+    imgs: 3D/4D Niimg-like object
+        See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+        Images to process. It must boil down to a 4D image with scans
+        number as last dimension.
+
+    radius: float, optional
+        Indicates, in millimeters, the radius for the sphere around the seed.
+        Default is None (signal is extracted on a single voxel).
+
+    allow_overlap: boolean
+        If False, an error is raised if the maps overlaps (ie at least two
+        maps have a non-zero value for the same voxel). Default is False.
+
+    mask_img: Niimg-like object, optional
+        See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+        Mask to apply to regions before extracting signals.
+    """
     seeds = list(seeds)
-    niimg = check_niimg(niimg)
     affine = niimg.get_affine()
 
     # Compute world coordinates of all in-mask voxels.
@@ -60,25 +84,40 @@ def _iter_signals_from_spheres(seeds, niimg, radius, mask_img=None):
             pass
     del mask_coords
 
+    if not allow_overlap:
+        if np.any(A.sum(axis=0) >= 2):
+            raise ValueError('Overlap detected between spheres')
+
     for i, row in enumerate(A.rows):
         if len(row) == 0:
             raise ValueError('Sphere around seed #%i is empty' % i)
         yield X[:, row]
 
 
-def _signals_from_spheres(seeds, niimg, radius, mask_img=None):
-    seeds = list(seeds)
-    n_seeds = len(seeds)
+class _ExtractionFunctor(object):
 
-    signals = np.empty((niimg.shape[3], n_seeds))
-    for i, sphere in enumerate(_iter_signals_from_spheres(
-            seeds, niimg, radius, mask_img=mask_img)):
-        signals[:, i] = np.mean(sphere, axis=1)
+    func_name = 'nifti_spheres_masker_extractor'
 
-    return signals
+    def __init__(self, seeds_, radius, mask_img, allow_overlap):
+        self.seeds_ = seeds_
+        self.radius = radius
+        self.mask_img = mask_img
+        self.allow_overlap = allow_overlap
+
+    def __call__(self, imgs):
+        n_seeds = len(self.seeds_)
+        imgs = check_niimg_4d(imgs)
+
+        signals = np.empty((imgs.shape[3], n_seeds))
+        for i, sphere in enumerate(_iter_signals_from_spheres(
+                self.seeds_, imgs, self.radius, self.allow_overlap,
+                mask_img=self.mask_img)):
+            signals[:, i] = np.mean(sphere, axis=1)
+
+        return signals, None
 
 
-class NiftiSpheresMasker(BaseEstimator, TransformerMixin, CacheMixin):
+class NiftiSpheresMasker(BaseMasker, CacheMixin):
     """Class for masking of Niimg-like objects using seeds.
 
     NiftiSpheresMasker is useful when data from given seeds should be
@@ -98,6 +137,10 @@ class NiftiSpheresMasker(BaseEstimator, TransformerMixin, CacheMixin):
     mask_img: Niimg-like object, optional
         See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
         Mask to apply to regions before extracting signals.
+
+    allow_overlap: boolean, optional
+        If False, an error is raised if the maps overlaps (ie at least two
+        maps have a non-zero value for the same voxel). Default is False.
 
     smoothing_fwhm: float, optional
         If smoothing_fwhm is not None, it gives the full-width half maximum in
@@ -141,7 +184,7 @@ class NiftiSpheresMasker(BaseEstimator, TransformerMixin, CacheMixin):
     """
     # memory and memory_level are used by CacheMixin.
 
-    def __init__(self, seeds, radius=None, mask_img=None,
+    def __init__(self, seeds, radius=None, mask_img=None, allow_overlap=False,
                  smoothing_fwhm=None, standardize=False, detrend=False,
                  low_pass=None, high_pass=None, t_r=None,
                  memory=Memory(cachedir=None, verbose=0), memory_level=1,
@@ -149,6 +192,7 @@ class NiftiSpheresMasker(BaseEstimator, TransformerMixin, CacheMixin):
         self.seeds = seeds
         self.mask_img = mask_img
         self.radius = radius
+        self.allow_overlap = allow_overlap
 
         # Parameters for _smooth_array
         self.smoothing_fwhm = smoothing_fwhm
@@ -191,7 +235,7 @@ class NiftiSpheresMasker(BaseEstimator, TransformerMixin, CacheMixin):
                                  % (i, type(seed)))
             # Convert to list because it is easier to process
             if isinstance(seed, np.ndarray):
-                seed = seed.to_list()
+                seed = seed.tolist()
             else:
                 # in case of tuple
                 seed = list(seed)
@@ -206,6 +250,7 @@ class NiftiSpheresMasker(BaseEstimator, TransformerMixin, CacheMixin):
         return self
 
     def fit_transform(self, imgs, confounds=None):
+        """Prepare and perform signal extraction"""
         return self.fit().transform(imgs, confounds=confounds)
 
     def _check_fitted(self):
@@ -214,50 +259,44 @@ class NiftiSpheresMasker(BaseEstimator, TransformerMixin, CacheMixin):
                              'You must call fit() before calling transform().'
                              % self.__class__.__name__)
 
-    def transform(self, imgs, confounds=None):
-        """Extract signals from Nifti-like objects.
+    def transform_single_imgs(self, imgs, confounds=None):
+        """Extract signals from a single 4D niimg.
 
         Parameters
-        ==========
-        imgs: Niimg-like object
+        ----------
+        imgs: 3D/4D Niimg-like object
             See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
             Images to process. It must boil down to a 4D image with scans
             number as last dimension.
 
-        confounds: array-like, optional
+        confounds: CSV file or array-like, optional
             This parameter is passed to signal.clean. Please see the related
             documentation for details.
             shape: (number of scans, number of confounds)
 
         Returns
-        =======
-        signals: 2D numpy.ndarray
-            Signal for each region.
-            shape: (number of scans, number of regions)
-
+        -------
+        region_signals: 2D numpy.ndarray
+            Signal for each sphere.
+            shape: (number of scans, number of spheres)
         """
         self._check_fitted()
 
-        logger.log("loading images: %s" %
-                   _utils._repr_niimgs(imgs)[:200], verbose=self.verbose)
-        imgs = _utils.check_niimg(imgs)
+        params = get_params(NiftiSpheresMasker, self)
 
-        if self.smoothing_fwhm is not None:
-            logger.log("smoothing images", verbose=self.verbose)
-            imgs = self._cache(image.smooth_img)(
-                imgs, fwhm=self.smoothing_fwhm)
+        signals, _ = self._cache(
+                filter_and_extract,
+                ignore=['verbose', 'memory', 'memory_level'])(
+            # Images
+            imgs, _ExtractionFunctor(self.seeds_, self.radius, self.mask_img,
+                                     self.allow_overlap),
+            # Pre-processing
+            params,
+            confounds=confounds,
+            # Caching
+            memory=self.memory,
+            memory_level=self.memory_level,
+            # kwargs
+            verbose=self.verbose)
 
-        logger.log("extracting region signals", verbose=self.verbose)
-        signals = self._cache(_signals_from_spheres)(
-                self.seeds_, imgs, radius=self.radius, mask_img=self.mask_img)
-
-        logger.log("cleaning extracted signals", verbose=self.verbose)
-        signals = self._cache(signal.clean
-                                     )(signals,
-                                       detrend=self.detrend,
-                                       standardize=self.standardize,
-                                       t_r=self.t_r,
-                                       low_pass=self.low_pass,
-                                       high_pass=self.high_pass,
-                                       confounds=confounds)
         return signals

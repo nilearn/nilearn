@@ -15,25 +15,28 @@
 
 .. Here we are building the carrousel
 
-.. |glass_brain| image:: auto_examples/manipulating_visualizing/images/plot_demo_glass_brain_002.png
+.. |glass_brain| image:: auto_examples/manipulating_visualizing/images/sphx_glr_plot_demo_glass_brain_002.png
    :target: auto_examples/manipulating_visualizing/plot_demo_glass_brain.html
 
-.. |connectome| image:: auto_examples/connectivity/images/plot_inverse_covariance_connectome_004.png
+.. |connectome| image:: auto_examples/connectivity/images/sphx_glr_plot_inverse_covariance_connectome_004.png
      :target: auto_examples/connectivity/plot_inverse_covariance_connectome.html
 
-.. |haxby_weights| image:: auto_examples/images/plot_haxby_simple_001.png
+.. |haxby_weights| image:: auto_examples/images/sphx_glr_plot_haxby_simple_001.png
    :target: auto_examples/plot_haxby_simple.html
 
-.. |oasis_weights| image:: auto_examples/decoding/images/plot_oasis_vbm_002.png
+.. |oasis_weights| image:: auto_examples/decoding/images/sphx_glr_plot_oasis_vbm_002.png
    :target: auto_examples/decoding/plot_oasis_vbm.html
 
-.. |rest_clustering| image:: auto_examples/connectivity/images/plot_rest_clustering_001.png
+.. |rest_clustering| image:: auto_examples/connectivity/images/sphx_glr_plot_rest_clustering_001.png
    :target: auto_examples/connectivity/plot_rest_clustering.html
 
-.. |canica| image:: auto_examples/connectivity/images/plot_canica_resting_state_011.png
+.. |canica| image:: auto_examples/connectivity/images/sphx_glr_plot_canica_resting_state_011.png
    :target: auto_examples/connectivity/plot_canica_resting_state.html
 
-.. |searchlight| image:: auto_examples/decoding/images/plot_haxby_searchlight_001.png
+.. |tvl1_haxby| image:: auto_examples/decoding/images/sphx_glr_plot_haxby_space_net_002.png
+   :target: auto_examples/decoding/plot_haxby_space_net.html
+
+.. |searchlight| image:: auto_examples/decoding/images/sphx_glr_plot_haxby_searchlight_001.png
    :target: auto_examples/decoding/plot_haxby_searchlight.html
 
 .. raw:: html
@@ -65,6 +68,8 @@
 
 * |canica|
 
+* |tvl1_haxby|
+
 * |searchlight|
 
 .. raw:: html
@@ -83,6 +88,14 @@
 
    </div>
    <div style="clear: left"></div>
+
+.. toctree::
+   :hidden:
+
+   AUTHORS.rst
+   user_guide.rst
+   auto_examples/index.rst
+   whats_new.rst
 
 Nilearn is part of the `NiPy ecosystem <http://nipy.org>`_.
 

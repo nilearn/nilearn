@@ -17,8 +17,9 @@ from sklearn.utils import gen_even_slices
 from distutils.version import LooseVersion
 
 from ._utils.compat import _basestring
+from ._utils.numpy_conversions import csv_to_array
 
-np_version = distutils.version.LooseVersion(np.version.short_version).version
+NP_VERSION = distutils.version.LooseVersion(np.version.short_version).version
 
 
 def _standardize(signals, detrend=False, normalize=True):
@@ -343,8 +344,8 @@ def _ensure_float(data):
     return data
 
 
-def clean(signals, detrend=True, standardize=True, confounds=None,
-          low_pass=None, high_pass=None, t_r=2.5):
+def clean(signals, sessions=None, detrend=True, standardize=True,
+          confounds=None, low_pass=None, high_pass=None, t_r=2.5):
     """Improve SNR on masked fMRI signals.
 
        This function can do several things on the input signals, in
@@ -366,6 +367,10 @@ def clean(signals, detrend=True, standardize=True, confounds=None,
        signals: numpy.ndarray
            Timeseries. Must have shape (instant number, features number).
            This array is not modified.
+
+    sessions : numpy array, optional
+        Add a session level to the cleaning process. Each session will be
+        cleaned independently. Must be a 1D array of n_samples elements.
 
        confounds: numpy.ndarray, str or list of
            Confounds timeseries. Shape must be
@@ -409,27 +414,23 @@ def clean(signals, detrend=True, standardize=True, confounds=None,
                       (list, tuple, _basestring, np.ndarray, type(None))):
         raise TypeError("confounds keyword has an unhandled type: %s"
                         % confounds.__class__)
-    # detrend
-    signals = _ensure_float(signals)
-    signals = _standardize(signals, normalize=False, detrend=detrend)
-
-    # Remove confounds
+    
+    # Read confounds
     if confounds is not None:
         if not isinstance(confounds, (list, tuple)):
             confounds = (confounds, )
 
-        # Read confounds
         all_confounds = []
         for confound in confounds:
             if isinstance(confound, _basestring):
                 filename = confound
-                confound = np.genfromtxt(filename)
+                confound = csv_to_array(filename)
                 if np.isnan(confound.flat[0]):
                     # There may be a header
-                    if np_version >= [1, 4, 0]:
-                        confound = np.genfromtxt(filename, skip_header=1)
+                    if NP_VERSION >= [1, 4, 0]:
+                        confound = csv_to_array(filename, skip_header=1)
                     else:
-                        confound = np.genfromtxt(filename, skiprows=1)
+                        confound = csv_to_array(filename, skiprows=1)
                 if confound.shape[0] != signals.shape[0]:
                     raise ValueError("Confound signal has an incorrect length")
 
@@ -451,6 +452,27 @@ def clean(signals, detrend=True, standardize=True, confounds=None,
         confounds = np.hstack(all_confounds)
         del all_confounds
 
+    if sessions is not None:
+        if not len(sessions) == len(signals):
+            raise ValueError(('The length of the session vector (%i) '
+                              'does not match the length of the signals (%i)')
+                              % (len(sessions), len(signals)))
+        for s in np.unique(sessions):
+            session_confounds = None
+            if confounds is not None:
+                session_confounds = confounds[sessions == s]
+            signals[sessions == s, :] = \
+                clean(signals[sessions == s],
+                      detrend=detrend, standardize=standardize,
+                      confounds=session_confounds, low_pass=low_pass,
+                      high_pass=high_pass, t_r=2.5)
+
+    # detrend
+    signals = _ensure_float(signals)
+    signals = _standardize(signals, normalize=False, detrend=detrend)
+
+    # Remove confounds
+    if confounds is not None:
         confounds = _ensure_float(confounds)
         confounds = _standardize(confounds, normalize=True, detrend=detrend)
 

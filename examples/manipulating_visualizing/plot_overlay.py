@@ -19,7 +19,6 @@ The tools that we need to leverage are:
 
 """
 
-import matplotlib.pyplot as plt
 from nilearn import datasets, plotting, image
 
 atlas_data = datasets.fetch_msdl_atlas()
@@ -39,4 +38,4 @@ display.add_overlay(image.index_img(atlas_filename, 6),
 display.add_overlay(image.index_img(atlas_filename, 3),
                     cmap=plotting.cm.black_pink)
 
-plt.show()
+plotting.show()

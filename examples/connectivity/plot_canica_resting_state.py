@@ -3,7 +3,8 @@ Group analysis of resting-state fMRI with ICA: CanICA
 =====================================================
 
 An example applying CanICA to resting-state data. This example applies it
-to 40 subjects of the ADHD200 datasets.
+to 40 subjects of the ADHD200 datasets. Then it plots a map with all the
+components together and an axial cut for each of the components separately.
 
 CanICA is an ICA method for group-level analysis of fMRI data. Compared
 to other strategies, it brings a well-controlled group model, as well as a
@@ -20,7 +21,8 @@ Pre-prints for both papers are available on hal
 (http://hal.archives-ouvertes.fr)
 """
 
-### Load ADHD rest dataset ####################################################
+####################################################################
+# First we load the ADHD200 data
 from nilearn import datasets
 
 adhd_dataset = datasets.fetch_adhd()
@@ -30,11 +32,12 @@ func_filenames = adhd_dataset.func  # list of 4D nifti files for each subject
 print('First functional nifti image (4D) is at: %s' %
       adhd_dataset.func[0])  # 4D data
 
-### Apply CanICA ##############################################################
+
+####################################################################
+# Here we apply CanICA on the data
 from nilearn.decomposition.canica import CanICA
 
-n_components = 20
-canica = CanICA(n_components=n_components, smoothing_fwhm=6.,
+canica = CanICA(n_components=20, smoothing_fwhm=6.,
                 memory="nilearn_cache", memory_level=5,
                 threshold=3., verbose=10, random_state=0)
 canica.fit(func_filenames)
@@ -45,14 +48,22 @@ components_img = canica.masker_.inverse_transform(canica.components_)
 # the following line:
 components_img.to_filename('canica_resting_state.nii.gz')
 
-### Visualize the results #####################################################
-# Show some interesting components
-import matplotlib.pyplot as plt
-from nilearn.plotting import plot_stat_map
+
+####################################################################
+# To visualize we plot the outline of all components on one figure
+from nilearn.plotting import plot_prob_atlas
+
+# Plot all ICA components together
+plot_prob_atlas(components_img, title='All ICA components')
+
+
+####################################################################
+# Finally, we plot the map for each ICA component separately
 from nilearn.image import iter_img
+from nilearn.plotting import plot_stat_map, show
 
 for i, cur_img in enumerate(iter_img(components_img)):
-    plot_stat_map(cur_img, display_mode="z", title="IC %d" % i, cut_coords=1,
-                  colorbar=False)
+    plot_stat_map(cur_img, display_mode="z", title="IC %d" % i,
+                  cut_coords=1, colorbar=False)
 
-plt.show()
+show()

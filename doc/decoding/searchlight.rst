@@ -26,8 +26,8 @@ Fetching the data from internet and loading it can be done with the
 provided functions (see :ref:`loading_data`):
 
 .. literalinclude:: ../../examples/decoding/plot_haxby_searchlight.py
-    :start-after: ### Load Haxby dataset ################################
-    :end-before: ### Restrict to faces and houses #######################
+    :start-after: # Load Haxby dataset
+    :end-before: # Restrict to faces and houses
 
 Reshaping the data
 -------------------
@@ -40,8 +40,8 @@ For this example we need:
   (like in the :ref:`decoding tutorial <decoding_tutorial>`)
 
 .. literalinclude:: ../../examples/decoding/plot_haxby_searchlight.py
-    :start-after: ### Restrict to faces and houses ###################
-    :end-before: ### Prepare masks ###################################
+    :start-after: # Restrict to faces and houses
+    :end-before: # Prepare masks
 
 Masking
 -------
@@ -64,7 +64,7 @@ taken into account when iterating with the sphere.
 
 .. literalinclude:: ../../examples/decoding/plot_haxby_searchlight.py
         :start-after: #   brain to speed up computation)
-        :end-before: ### Searchlight computation ######################
+        :end-before: # Searchlight computation
 
 Third Step: Setting up the searchlight
 =======================================
@@ -113,8 +113,8 @@ Kriegskorte et al. use a 4mm radius because it yielded the best detection
 performance in their simulation.
 
 .. literalinclude:: ../../examples/decoding/plot_haxby_searchlight.py
-    :start-after: # The radius is the one of the Searchlight sphere
-    :end-before: ### F-scores computation ############################
+    :start-after: import nilearn.decoding
+    :end-before: # F-scores computation
 	
 Visualization
 =============
@@ -127,15 +127,14 @@ background. We can see here that voxels in the visual cortex contains
 information to distinguish pictures showed to the volunteers, which was the
 expected result.
 
-.. figure:: ../auto_examples/decoding/images/plot_haxby_searchlight_001.png
+.. literalinclude:: ../../examples/decoding/plot_haxby_searchlight.py
+    :start-after: # Visualization
+    :end-before: # F_score results
+
+.. figure:: ../auto_examples/decoding/images/sphx_glr_plot_haxby_searchlight_001.png
    :target: ../auto_examples/decoding/plot_haxby_searchlight.html
    :align: center
-   :scale: 60
-
-.. literalinclude:: ../../examples/decoding/plot_haxby_searchlight.py
-    :start-after: ### Visualization ####################################
-    :end-before: ### Show the F_score
-
+   :scale: 80
 
 .. seealso::
 
@@ -150,13 +149,13 @@ parametric tests (F-tests ot t-tests).
 Here we compute the *p-values* of the voxels [1]_.
 To display the results, we use the negative log of the p-value.
 
-.. figure:: ../auto_examples/decoding/images/plot_haxby_searchlight_002.png
+.. literalinclude:: ../../examples/decoding/plot_haxby_searchlight.py
+    :start-after: # F_score results
+
+.. figure:: ../auto_examples/decoding/images/sphx_glr_plot_haxby_searchlight_002.png
    :target: ../auto_examples/decoding/plot_haxby_searchlight.html
    :align: center
-   :scale: 60
-
-.. literalinclude:: ../../examples/decoding/plot_haxby_searchlight.py
-    :start-after: ### F_score results
+   :scale: 80
 
 Parametric scores can be converted into p-values using a reference
 theoretical distribution, which is known under specific assumptions
@@ -187,11 +186,7 @@ is its associated p-value. The
 p-values computed with a permutation test.
 
 .. literalinclude:: ../../examples/manipulating_visualizing/plot_haxby_mass_univariate.py
-   :start-after: from nilearn.input_data import NiftiMasker
-   :end-before: ### Load Haxby dataset
-
-.. literalinclude:: ../../examples/manipulating_visualizing/plot_haxby_mass_univariate.py
-   :start-after: ### Perform massively univariate analysis with permuted OLS
+   :start-after: # Perform massively univariate analysis with permuted OLS
    :end-before: neg_log_pvals_unmasked
 
 The number of tests performed is generally large when full-brain
@@ -211,7 +206,7 @@ every voxel so that the F-statistics are comparable. This correction
 strategy is applied in nilearn
 :func:`nilearn.mass_univariate.permuted_ols` function.
 
-.. figure:: ../auto_examples/manipulating_visualizing/images/plot_haxby_mass_univariate_001.png
+.. figure:: ../auto_examples/manipulating_visualizing/images/sphx_glr_plot_haxby_mass_univariate_001.png
    :target: ../auto_examples/manipulating_visualizing/plot_haxby_searchlight.html
    :align: center
    :scale: 60

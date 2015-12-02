@@ -13,11 +13,11 @@ from distutils.version import LooseVersion
 import nibabel
 from sklearn.externals.joblib import Memory
 
-memory_classes = (Memory, )
+MEMORY_CLASSES = (Memory, )
 
 try:
     from joblib import Memory as JoblibMemory
-    memory_classes = (Memory, JoblibMemory)
+    MEMORY_CLASSES = (Memory, JoblibMemory)
 except ImportError:
     pass
 
@@ -25,7 +25,7 @@ import nilearn
 
 from .compat import _basestring
 
-__cache_checked = dict()
+__CACHE_CHECKED = dict()
 
 
 def _safe_cache(memory, func, **kwargs):
@@ -34,7 +34,7 @@ def _safe_cache(memory, func, **kwargs):
     """
     cachedir = memory.cachedir
 
-    if cachedir is None or cachedir in __cache_checked:
+    if cachedir is None or cachedir in __CACHE_CHECKED:
         return memory.cache(func, **kwargs)
 
     version_file = os.path.join(cachedir, 'module_versions.json')
@@ -53,15 +53,15 @@ def _safe_cache(memory, func, **kwargs):
 
     # Flush cache if version collision
     if len(collisions) > 0:
-        if nilearn.check_cache_version:
+        if nilearn.CHECK_CACHE_VERSION:
             warnings.warn("Incompatible cache in %s: "
                           "different version of nibabel. Deleting "
-                          "the cache. Put nilearn.check_cache_version "
+                          "the cache. Put nilearn.CHECK_CACHE_VERSION "
                           "to false to avoid this behavior."
                           % cachedir)
             try:
                 tmp_dir = (os.path.split(cachedir)[:-1]
-                            + ('old_%i' % os.getpid(), ))
+                           + ('old_%i' % os.getpid(), ))
                 tmp_dir = os.path.join(*tmp_dir)
                 # We use rename + unlink to be more robust to race
                 # conditions
@@ -85,7 +85,7 @@ def _safe_cache(memory, func, **kwargs):
         with open(version_file, 'w') as _version_file:
             json.dump(my_versions, _version_file)
 
-    __cache_checked[cachedir] = True
+    __CACHE_CHECKED[cachedir] = True
 
     return memory.cache(func, **kwargs)
 
@@ -143,7 +143,7 @@ def cache(func, memory, func_memory_level=None, memory_level=None,
                                memory_level >= func_memory_level):
         if isinstance(memory, _basestring):
             memory = Memory(cachedir=memory, verbose=verbose)
-        if not isinstance(memory, memory_classes):
+        if not isinstance(memory, MEMORY_CLASSES):
             raise TypeError("'memory' argument must be a string or a "
                             "joblib.Memory object. "
                             "%s %s was given." % (memory, type(memory)))
@@ -171,7 +171,6 @@ class CacheMixin(object):
     cache level (self._memory_level) is greater than the value given as a
     parameter to self._cache(). See _cache() documentation for details.
     """
-
     def _cache(self, func, func_memory_level=1, **kwargs):
         """ Return a joblib.Memory object.
 

@@ -6,6 +6,7 @@ Tools to find activations and cut on maps
 # License: BSD
 
 import warnings
+import numbers
 import numpy as np
 from scipy import ndimage
 
@@ -63,6 +64,14 @@ def find_xyz_cut_coords(img, mask=None, activation_threshold=None):
     data = as_ndarray(data)
     my_map = data.copy()
     if mask is not None:
+        # check against empty mask
+        if mask.sum() == 0.:
+            warnings.warn(
+                "Provided mask is empty. Returning center of mass instead.")
+            cut_coords = ndimage.center_of_mass(np.abs(my_map)) + offset
+            x_map, y_map, z_map = cut_coords
+            return np.asarray(coord_transform(x_map, y_map, z_map,
+                                              img.get_affine())).tolist()
         slice_x, slice_y, slice_z = ndimage.find_objects(mask)[0]
         my_map = my_map[slice_x, slice_y, slice_z]
         mask = mask[slice_x, slice_y, slice_z]
@@ -157,7 +166,7 @@ def _transform_cut_coords(cut_coords, direction, affine):
     return np.atleast_1d(cut_coords)
 
 
-def find_cut_slices(img, direction='z', n_cuts=12, spacing='auto'):
+def find_cut_slices(img, direction='z', n_cuts=7, spacing='auto'):
     """ Find 'good' cross-section slicing positions along a given axis.
 
     Parameters
@@ -166,7 +175,7 @@ def find_cut_slices(img, direction='z', n_cuts=12, spacing='auto'):
         the brain map
     direction: string, optional (default "z")
         sectional direction; possible values are "x", "y", or "z"
-    n_cuts: int, optional (default 12)
+    n_cuts: int, optional (default 7)
         number of cuts in the plot
     spacing: 'auto' or int, optional (default 'auto')
         minimum spacing between cuts (in voxels, not milimeters)
@@ -195,6 +204,11 @@ def find_cut_slices(img, direction='z', n_cuts=12, spacing='auto'):
     orig_data = np.abs(img.get_data())
     this_shape = orig_data.shape[axis]
 
+    if not isinstance(n_cuts, numbers.Number):
+        raise ValueError("The number of cuts (n_cuts) must be an integer "
+                         "greater than or equal to 1. "
+                         "You provided a value of n_cuts=%s. " % n_cuts)
+
     # BF issue #575: Return all the slices along and axis if this axis
     # is the display mode and there are at least as many requested
     # n_slices as there are slices.
@@ -208,6 +222,19 @@ def find_cut_slices(img, direction='z', n_cuts=12, spacing='auto'):
         data = data.astype(np.float)
 
     data = _smooth_array(data, affine, fwhm='fast')
+
+    # to control floating point error problems
+    # during given input value "n_cuts"
+    epsilon = np.finfo(np.float32).eps
+    difference = abs(round(n_cuts) - n_cuts)
+    if round(n_cuts) < 1. or difference > epsilon:
+        message = ("Image has %d slices in direction %s. "
+                   "Therefore, the number of cuts must be between 1 and %d. "
+                   "You provided n_cuts=%s " % (
+                       this_shape, direction, this_shape, n_cuts))
+        raise ValueError(message)
+    else:
+        n_cuts = int(round(n_cuts))
 
     if spacing == 'auto':
         spacing = max(int(.5 / n_cuts * data.shape[axis]), 1)

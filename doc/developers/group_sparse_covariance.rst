@@ -5,7 +5,7 @@ Group-sparse covariance estimation
 ..
     Explain which case is implemented (p=2, unpenalized diagonal)
 
-.. currentmodule:: nilearn.group_sparse_covariance
+.. currentmodule:: nilearn.connectome
 
 
 This page gives technical information on the
@@ -16,9 +16,9 @@ implementation.
 Description
 ===========
 
-:func:`group_sparse_covariance`, :func:`_group_sparse_covariance` and
-:class:`GroupSparseCovariance` are three different interfaces to an
-implementation of the algorithm described in this article:
+:func:`group_sparse_covariance`, and :class:`GroupSparseCovariance` are
+two different interfaces to an implementation of the algorithm described
+in this article:
 
     Jean Honorio and Dimitris Samaras.
     "Simultaneous and Group-Sparse Multi-Task Learning of Gaussian Graphical
@@ -55,10 +55,10 @@ matrices do not have any significant effect on numerical stability.
 What is relevant is:
 
 - covariance matrix symmetry: input covariances matrices in
-  :func:`_group_sparse_covariance` must be as symmetric as possible.
+  :func:`group_sparse_covariance` must be as symmetric as possible.
   This is true in general: a small discrepancy in symmetry tends to be
-  amplified. For this reason, :func:`empirical_covariances` enforces
-  symmetry of computed covariances.
+  amplified. For this reason, our functions computing covariances ensure
+  symmetry.
 - covariance matrix normalization: using correlation matrices or
   signals with unit variance is mandatory when a large number of
   signals is to be processed.
@@ -69,7 +69,7 @@ What is relevant is:
   implementation). Failing to do this leads quickly to instability,
   because too large numbers are used in the computation.
 - an on-line computation of an inverse is performed in function
-  :func:`_update_submatrix`. For large problems, this is faster than
+  `_update_submatrix`. For large problems, this is faster than
   computing the full inverse each time, but gives unfortunately less
   precision. In particular, symmetry is not always perfect, that's why
   it is enforced at the end on the final result.
@@ -89,7 +89,7 @@ Robert Kern was used to locate execution time bottlenecks. Its
 overhead proved not to be negligible (around 50% more execution time
 when activated), and not evenly distributed in code lines. Global
 execution times have also been measured to ensure that the findings
-were valid. As the code in :func:`_group_sparse_covariance` is highly
+were valid. As the code in :func:`group_sparse_covariance` is highly
 serial, and rather low-level, some lines have to be executed a very
 large number of times (10^6 times is easily reached), one of the
 bottlenecks is thus the Python interpreter overhead. Optimizing then
@@ -135,7 +135,7 @@ Synthetic dataset
 =================
 For testing purposes, a function for synthesis of signals based on
 sparse precision matrices has been written:
-:func:`nilearn._utils.testing.generate_group_sparse_gaussian_graphs`.
+`nilearn._utils.testing.generate_group_sparse_gaussian_graphs`.
 Synthesizing such signals is a hard problem that wasn't solved in the
 present implementation. It is hopefully good enough.
 
@@ -166,7 +166,7 @@ precise location of zeros. Two different sparsity patterns with the
 same number of zeros can lead to two significantly different sparsity
 level in precision matrices. In practice, it means that for a given
 value of the `density` parameter in
-:func:`nilearn._utils.testing.generate_group_sparse_gaussian_graphs`,
+`nilearn._utils.testing.generate_group_sparse_gaussian_graphs`,
 the actual number of zeros in the precision matrices can fluctuate
 widely depending on the random number generation.
 
@@ -207,7 +207,7 @@ Duality gap
 
 A better way to stop iteration is to use an upper bound on the duality
 gap value, since the problem is convex. This is performed in
-:func:`_group_sparse_covariance_costs`. The article by Honorio &
+`group_sparse_covariance_costs`. The article by Honorio &
 Samaras gives the formula for the dual cost, and proves that the
 derived bound at optimum is tight (strong duality holds). However, the
 dual problem is *not* solved by this algorithm, thus bounding the
@@ -279,13 +279,8 @@ the objective, the difference with the diagonal matrix initialization
 dwindles rather fast. It does not allow any significant speedup
 in practice.
 
-Only one initialization has been implemented (the diagonal matrix, as
-in the original paper), but the `precisions_init` parameter can be
-used to specify any other value. This parameter is available in
-:func:`_group_sparse_covariance` and
-:func:`group_sparse_covariance_path`, which are low-level functions.
-The only constraint on the initialization value is that all matrices
-must be symmetric positive definite.
+Only initialization by the diagonal matrix, as
+in the original paper, has been implemented.
 
 
 Modifying the stopping criterion
@@ -300,7 +295,7 @@ parameter. If that function returns True, iteration is stopped.
 Changing the stopping criterion is thus just a matter of writing a
 function and passing it to :func:`group_sparse_covariance`. The same
 feature can be used to study the algorithm convergence properties. An
-example is the :class:`EarlyStopProbe` class used by the
+example is the `EarlyStopProbe` class used by the
 cross-validation object.
 
 
@@ -343,7 +338,7 @@ Bounds on alpha
 The simplest and fastest thing is to get bounds for the value of
 alpha. Above a critical value, the optimal precision matrices are
 fully sparse (i.e. diagonal). This critical value depends on the input
-covariance matrices, and can be obtained by :func:`compute_alpha_max`.
+covariance matrices, and can be obtained by `compute_alpha_max`.
 The formula for computing this critical value can be obtained with
 techniques presented in:
 
@@ -355,7 +350,7 @@ This very same method can be also used for determining a lower
 critical value, for which the optimal precision matrices are fully
 dense (no zero values). In practice, this critical value is zero if
 there is a zero in the input matrices. For this reason, the second
-value returned by :func:`compute_alpha_max` is that under which all
+value returned by `compute_alpha_max` is that under which all
 coefficients *that can be non-zero* are non-zero in the optimal
 precision matrices.
 

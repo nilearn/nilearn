@@ -19,13 +19,14 @@ from nilearn.image.resampling import coord_transform
 from nilearn.plotting.img_plotting import (MNI152TEMPLATE, plot_anat, plot_img,
                                            plot_roi, plot_stat_map, plot_epi,
                                            plot_glass_brain, plot_connectome,
-                                           plot_prob_atlas)
+                                           plot_prob_atlas,
+                                           _get_colorbar_and_data_ranges)
 from nilearn._utils.testing import assert_raises_regex
 
-mni_affine = np.array([[  -2.,    0.,    0.,   90.],
-                       [   0.,    2.,    0., -126.],
-                       [   0.,    0.,    2.,  -72.],
-                       [   0.,    0.,    0.,    1.]])
+mni_affine = np.array([[-2.,    0.,    0.,   90.],
+                       [0.,    2.,    0., -126.],
+                       [0.,    0.,    2.,  -72.],
+                       [0.,    0.,    0.,    1.]])
 
 
 def _generate_img():
@@ -67,16 +68,25 @@ def test_plot_anat():
 
     # Test saving with empty plot
     z_slicer = plot_anat(anat_img=False, display_mode='z')
-    with tempfile.NamedTemporaryFile(suffix='.png') as fp:
-        z_slicer.savefig(fp.name)
+    filename = tempfile.mktemp(suffix='.png')
+    try:
+        z_slicer.savefig(filename)
+    finally:
+        os.remove(filename)
+
     z_slicer = plot_anat(display_mode='z')
-    with tempfile.NamedTemporaryFile(suffix='.png') as fp:
-        z_slicer.savefig(fp.name)
+    filename = tempfile.mktemp(suffix='.png')
+    try:
+        z_slicer.savefig(filename)
+    finally:
+        os.remove(filename)
 
     ortho_slicer = plot_anat(img, dim=True)
-    with tempfile.NamedTemporaryFile(suffix='.png') as fp:
-        ortho_slicer.savefig(fp.name)
-
+    filename = tempfile.mktemp(suffix='.png')
+    try:
+        ortho_slicer.savefig(filename)
+    finally:
+        os.remove(filename)
 
 def test_plot_functions():
     img = _generate_img()
@@ -84,16 +94,21 @@ def test_plot_functions():
     # smoke-test for each plotting function with default arguments
     for plot_func in [plot_anat, plot_img, plot_stat_map, plot_epi,
                       plot_glass_brain]:
-        with tempfile.NamedTemporaryFile(suffix='.png') as fp:
-            plot_func(img, output_file=fp.name)
+        filename = tempfile.mktemp(suffix='.png')
+        try:
+            plot_func(img, output_file=filename)
+        finally:
+            os.remove(filename)
 
     # test for bad input arguments (cf. #510)
     ax = plt.subplot(111, rasterized=True)
-    with tempfile.NamedTemporaryFile(suffix='.png') as fp:
-        plot_stat_map(
-            img, symmetric_cbar=True,
-            output_file=fp.name,
-            axes=ax, vmax=np.nan)
+    filename = tempfile.mktemp(suffix='.png')
+    try:
+        plot_stat_map(img, symmetric_cbar=True,
+                      output_file=filename,
+                      axes=ax, vmax=np.nan)
+    finally:
+        os.remove(filename)
     plt.close()
 
 
@@ -158,16 +173,45 @@ def test_plot_stat_map_threshold_for_uint8():
     # for uint8 data. See https://github.com/nilearn/nilearn/issues/611
     # for more details
     data = 10 * np.ones((10, 10, 10), dtype='uint8')
+    # Having a zero minimum value is important to reproduce
+    # https://github.com/nilearn/nilearn/issues/762
+    data[0, 0, 0] = 0
     affine = np.eye(4)
     img = nibabel.Nifti1Image(data, affine)
     threshold = np.array(5, dtype='uint8')
     display = plot_stat_map(img, bg_img=None, threshold=threshold,
-                            display_mode='z', cut_coords=1)
+                            display_mode='z', cut_coords=[0])
     # Next two lines retrieve the numpy array from the plot
     ax = list(display.axes.values())[0].ax
     plotted_array = ax.images[0].get_array()
-    # Make sure that no data is masked
-    assert_equal(plotted_array.mask.sum(), 0)
+    # Make sure that there is one value masked
+    assert_equal(plotted_array.mask.sum(), 1)
+    # Make sure that the value masked is in the corner. Note that the
+    # axis orientation seem to be flipped, hence (0, 0) -> (-1, 0)
+    assert_true(plotted_array.mask[-1, 0])
+
+
+def test_plot_glass_brain_threshold_for_uint8():
+    # mask was applied in [-threshold, threshold] which is problematic
+    # for uint8 data. See https://github.com/nilearn/nilearn/issues/611
+    # for more details
+    data = 10 * np.ones((10, 10, 10), dtype='uint8')
+    # Having a zero minimum value is important to reproduce
+    # https://github.com/nilearn/nilearn/issues/762
+    data[0, 0] = 0
+    affine = np.eye(4)
+    img = nibabel.Nifti1Image(data, affine)
+    threshold = np.array(5, dtype='uint8')
+    display = plot_glass_brain(img, threshold=threshold,
+                               display_mode='z', colorbar=True)
+    # Next two lines retrieve the numpy array from the plot
+    ax = list(display.axes.values())[0].ax
+    plotted_array = ax.images[0].get_array()
+    # Make sure that there is one value masked
+    assert_equal(plotted_array.mask.sum(), 1)
+    # Make sure that the value masked is in the corner. Note that the
+    # axis orientation seem to be flipped, hence (0, 0) -> (-1, 0)
+    assert_true(plotted_array.mask[-1, 0])
 
 
 def test_save_plot():
@@ -176,13 +220,19 @@ def test_save_plot():
     kwargs_list = [{}, {'display_mode': 'x', 'cut_coords': 3}]
 
     for kwargs in kwargs_list:
-        with tempfile.NamedTemporaryFile(suffix='.png') as fp:
-            display = plot_stat_map(img, output_file=fp.name, **kwargs)
-            assert_true(display is None)
+        filename = tempfile.mktemp(suffix='.png')
+        try:
+            display = plot_stat_map(img, output_file=filename, **kwargs)
+        finally:
+            os.remove(filename)
+        assert_true(display is None)
 
         display = plot_stat_map(img, **kwargs)
-        with tempfile.NamedTemporaryFile(suffix='.png') as fp:
-            display.savefig(fp.name)
+        filename = tempfile.mktemp(suffix='.png')
+        try:
+            display.savefig(filename)
+        finally:
+            os.remove(filename)
 
 
 def test_display_methods():
@@ -305,12 +355,14 @@ def test_plot_connectome():
                     [tuple(each) for each in node_coords],
                     **kwargs)
     # saving to file
-    with tempfile.NamedTemporaryFile(suffix='.png') as fp:
-        display = plot_connectome(*args, output_file=fp.name,
-                                  **kwargs)
+    filename = tempfile.mktemp(suffix='.png')
+    try:
+        display = plot_connectome(*args, output_file=filename, **kwargs)
         assert_true(display is None)
-        assert_true(os.path.isfile(fp.name) and
-                    os.path.getsize(fp.name) > 0)
+        assert_true(os.path.isfile(filename) and
+                    os.path.getsize(filename) > 0)
+    finally:
+        os.remove(filename)
 
     # with node_kwargs, edge_kwargs and edge_cmap arguments
     plot_connectome(*args,
@@ -384,17 +436,17 @@ def test_plot_connectome_exceptions():
 
     # wrong shapes for node_coords or adjacency_matrix
     assert_raises_regex(ValueError,
-                        r'supposed to have shape \(n, n\).+\(1, 2\)',
+                        r'supposed to have shape \(n, n\).+\(1L?, 2L?\)',
                         plot_connectome, adjacency_matrix[:1, :],
                         node_coords,
                         **kwargs)
 
-    assert_raises_regex(ValueError, r'shape \(2, 3\).+\(2,\)',
+    assert_raises_regex(ValueError, r'shape \(2L?, 3L?\).+\(2L?,\)',
                         plot_connectome, adjacency_matrix, node_coords[:, 2],
                         **kwargs)
 
     wrong_adjacency_matrix = np.zeros((3, 3))
-    assert_raises_regex(ValueError, r'Shape mismatch.+\(3, 3\).+\(2, 3\)',
+    assert_raises_regex(ValueError, r'Shape mismatch.+\(3L?, 3L?\).+\(2L?, 3L?\)',
                         plot_connectome,
                         wrong_adjacency_matrix, node_coords, **kwargs)
 
@@ -439,9 +491,299 @@ def test_plot_prob_atlas():
     data_rng = rng.normal(size=shape)
     img = nibabel.Nifti1Image(data_rng, affine)
     # Testing the 4D plot prob atlas with contours
-    display = plot_prob_atlas(img, view_type='contours')
+    plot_prob_atlas(img, view_type='contours')
     # Testing the 4D plot prob atlas with contours
-    display = plot_prob_atlas(img, view_type='filled_contours',
-                              threshold=0.2)
+    plot_prob_atlas(img, view_type='filled_contours',
+                    threshold=0.2)
     # Testing the 4D plot prob atlas with contours
-    display = plot_prob_atlas(img, view_type='continuous')
+    plot_prob_atlas(img, view_type='continuous')
+
+
+def test_get_colorbar_and_data_ranges_with_vmin():
+    affine = np.eye(4)
+    data = np.array([[-.5, 1., np.nan],
+                     [0., np.nan, -.2],
+                     [1.5, 2.5, 3.]])
+    img = nibabel.Nifti1Image(data, affine)
+
+    assert_raises_regex(ValueError,
+                        'does not accept a "vmin" argument',
+                        _get_colorbar_and_data_ranges,
+                        img, vmax=None,
+                        symmetric_cbar=True, kwargs={'vmin': 1.})
+
+
+def test_get_colorbar_and_data_ranges_pos_neg():
+    # data with positive and negative range
+    affine = np.eye(4)
+    data = np.array([[-.5, 1., np.nan],
+                     [0., np.nan, -.2],
+                     [1.5, 2.5, 3.]])
+    img = nibabel.Nifti1Image(data, affine)
+
+    # Reasonable additional arguments that would end up being passed
+    # to imshow in a real plotting use case
+    kwargs = {'aspect': 'auto', 'alpha': 0.9}
+
+    # symmetric_cbar set to True
+    cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
+        img, vmax=None,
+        symmetric_cbar=True,
+        kwargs=kwargs)
+    assert_equal(vmin, -np.nanmax(data))
+    assert_equal(vmax, np.nanmax(data))
+    assert_equal(cbar_vmin, None)
+    assert_equal(cbar_vmax, None)
+    # same case if vmax has been set
+    cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
+        img, vmax=2,
+        symmetric_cbar=True,
+        kwargs=kwargs)
+    assert_equal(vmin, -2)
+    assert_equal(vmax, 2)
+    assert_equal(cbar_vmin, None)
+    assert_equal(cbar_vmax, None)
+
+    # symmetric_cbar is set to False
+    cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
+        img, vmax=None,
+        symmetric_cbar=False,
+        kwargs=kwargs)
+    assert_equal(vmin, -np.nanmax(data))
+    assert_equal(vmax, np.nanmax(data))
+    assert_equal(cbar_vmin, np.nanmin(data))
+    assert_equal(cbar_vmax, np.nanmax(data))
+    # same case if vmax has been set
+    cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
+        img, vmax=2,
+        symmetric_cbar=False,
+        kwargs=kwargs)
+    assert_equal(vmin, -2)
+    assert_equal(vmax, 2)
+    assert_equal(cbar_vmin, np.nanmin(data))
+    assert_equal(cbar_vmax, np.nanmax(data))
+
+    # symmetric_cbar is set to 'auto', same behaviours as True for this case
+    cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
+        img, vmax=None,
+        symmetric_cbar='auto',
+        kwargs=kwargs)
+    assert_equal(vmin, -np.nanmax(data))
+    assert_equal(vmax, np.nanmax(data))
+    assert_equal(cbar_vmin, None)
+    assert_equal(cbar_vmax, None)
+    # same case if vmax has been set
+    cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
+        img, vmax=2,
+        symmetric_cbar='auto',
+        kwargs=kwargs)
+    assert_equal(vmin, -2)
+    assert_equal(vmax, 2)
+    assert_equal(cbar_vmin, None)
+    assert_equal(cbar_vmax, None)
+
+
+def test_get_colorbar_and_data_ranges_pos():
+    # data with positive range
+    affine = np.eye(4)
+    data_pos = np.array([[0, 1., np.nan],
+                         [0., np.nan, 0],
+                         [1.5, 2.5, 3.]])
+    img_pos = nibabel.Nifti1Image(data_pos, affine)
+
+    # symmetric_cbar set to True
+    cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
+        img_pos, vmax=None,
+        symmetric_cbar=True,
+        kwargs={})
+    assert_equal(vmin, -np.nanmax(data_pos))
+    assert_equal(vmax, np.nanmax(data_pos))
+    assert_equal(cbar_vmin, None)
+    assert_equal(cbar_vmax, None)
+    # same case if vmax has been set
+    cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
+        img_pos, vmax=2,
+        symmetric_cbar=True,
+        kwargs={})
+    assert_equal(vmin, -2)
+    assert_equal(vmax, 2)
+    assert_equal(cbar_vmin, None)
+    assert_equal(cbar_vmax, None)
+
+    # symmetric_cbar is set to False
+    cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
+        img_pos, vmax=None,
+        symmetric_cbar=False,
+        kwargs={})
+    assert_equal(vmin, -np.nanmax(data_pos))
+    assert_equal(vmax, np.nanmax(data_pos))
+    assert_equal(cbar_vmin, 0)
+    assert_equal(cbar_vmax, None)
+    # same case if vmax has been set
+    cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
+        img_pos, vmax=2,
+        symmetric_cbar=False,
+        kwargs={})
+    assert_equal(vmin, -2)
+    assert_equal(vmax, 2)
+    assert_equal(cbar_vmin, 0)
+    assert_equal(cbar_vmax, None)
+
+    # symmetric_cbar is set to 'auto', same behaviour as false in this case
+    cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
+        img_pos, vmax=None,
+        symmetric_cbar='auto',
+        kwargs={})
+    assert_equal(vmin, -np.nanmax(data_pos))
+    assert_equal(vmax, np.nanmax(data_pos))
+    assert_equal(cbar_vmin, 0)
+    assert_equal(cbar_vmax, None)
+    # same case if vmax has been set
+    cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
+        img_pos, vmax=2,
+        symmetric_cbar='auto',
+        kwargs={})
+    assert_equal(vmin, -2)
+    assert_equal(vmax, 2)
+    assert_equal(cbar_vmin, 0)
+    assert_equal(cbar_vmax, None)
+
+
+def test_get_colorbar_and_data_ranges_neg():
+    # data with negative range
+    affine = np.eye(4)
+    data_neg = np.array([[-.5, 0, np.nan],
+                         [0., np.nan, -.2],
+                         [0, 0, 0]])
+    img_neg = nibabel.Nifti1Image(data_neg, affine)
+
+    # symmetric_cbar set to True
+    cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
+        img_neg, vmax=None,
+        symmetric_cbar=True,
+        kwargs={})
+    assert_equal(vmin, np.nanmin(data_neg))
+    assert_equal(vmax, -np.nanmin(data_neg))
+    assert_equal(cbar_vmin, None)
+    assert_equal(cbar_vmax, None)
+    # same case if vmax has been set
+    cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
+        img_neg, vmax=2,
+        symmetric_cbar=True,
+        kwargs={})
+    assert_equal(vmin, -2)
+    assert_equal(vmax, 2)
+    assert_equal(cbar_vmin, None)
+    assert_equal(cbar_vmax, None)
+
+    # symmetric_cbar is set to False
+    cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
+        img_neg, vmax=None,
+        symmetric_cbar=False,
+        kwargs={})
+    assert_equal(vmin, np.nanmin(data_neg))
+    assert_equal(vmax, -np.nanmin(data_neg))
+    assert_equal(cbar_vmin, None)
+    assert_equal(cbar_vmax, 0)
+    # same case if vmax has been set
+    cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
+        img_neg, vmax=2,
+        symmetric_cbar=False,
+        kwargs={})
+    assert_equal(vmin, -2)
+    assert_equal(vmax, 2)
+    assert_equal(cbar_vmin, None)
+    assert_equal(cbar_vmax, 0)
+
+    # symmetric_cbar is set to 'auto', same behaviour as False in this case
+    cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
+        img_neg, vmax=None,
+        symmetric_cbar='auto',
+        kwargs={})
+    assert_equal(vmin, np.nanmin(data_neg))
+    assert_equal(vmax, -np.nanmin(data_neg))
+    assert_equal(cbar_vmin, None)
+    assert_equal(cbar_vmax, 0)
+    # same case if vmax has been set
+    cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
+        img_neg, vmax=2,
+        symmetric_cbar='auto',
+        kwargs={})
+    assert_equal(vmin, -2)
+    assert_equal(vmax, 2)
+    assert_equal(cbar_vmin, None)
+    assert_equal(cbar_vmax, 0)
+
+
+def test_get_colorbar_and_data_ranges_masked_array():
+    # data with positive and negative range
+    affine = np.eye(4)
+    data = np.array([[-.5, 1., np.nan],
+                     [0., np.nan, -.2],
+                     [1.5, 2.5, 3.]])
+    masked_data = np.ma.masked_greater(data, 2.)
+    # Easier to fill masked values with NaN to test against later on
+    filled_data = masked_data.filled(np.nan)
+
+    img = nibabel.Nifti1Image(masked_data, affine)
+
+    # Reasonable additional arguments that would end up being passed
+    # to imshow in a real plotting use case
+    kwargs = {'aspect': 'auto', 'alpha': 0.9}
+
+    # symmetric_cbar set to True
+    cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
+        img, vmax=None,
+        symmetric_cbar=True,
+        kwargs=kwargs)
+    assert_equal(vmin, -np.nanmax(filled_data))
+    assert_equal(vmax, np.nanmax(filled_data))
+    assert_equal(cbar_vmin, None)
+    assert_equal(cbar_vmax, None)
+    # same case if vmax has been set
+    cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
+        img, vmax=2,
+        symmetric_cbar=True,
+        kwargs=kwargs)
+    assert_equal(vmin, -2)
+    assert_equal(vmax, 2)
+    assert_equal(cbar_vmin, None)
+    assert_equal(cbar_vmax, None)
+
+    # symmetric_cbar is set to False
+    cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
+        img, vmax=None,
+        symmetric_cbar=False,
+        kwargs=kwargs)
+    assert_equal(vmin, -np.nanmax(filled_data))
+    assert_equal(vmax, np.nanmax(filled_data))
+    assert_equal(cbar_vmin, np.nanmin(filled_data))
+    assert_equal(cbar_vmax, np.nanmax(filled_data))
+    # same case if vmax has been set
+    cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
+        img, vmax=2,
+        symmetric_cbar=False,
+        kwargs=kwargs)
+    assert_equal(vmin, -2)
+    assert_equal(vmax, 2)
+    assert_equal(cbar_vmin, np.nanmin(filled_data))
+    assert_equal(cbar_vmax, np.nanmax(filled_data))
+
+    # symmetric_cbar is set to 'auto', same behaviours as True for this case
+    cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
+        img, vmax=None,
+        symmetric_cbar='auto',
+        kwargs=kwargs)
+    assert_equal(vmin, -np.nanmax(filled_data))
+    assert_equal(vmax, np.nanmax(filled_data))
+    assert_equal(cbar_vmin, None)
+    assert_equal(cbar_vmax, None)
+    # same case if vmax has been set
+    cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
+        img, vmax=2,
+        symmetric_cbar='auto',
+        kwargs=kwargs)
+    assert_equal(vmin, -2)
+    assert_equal(vmax, 2)
+    assert_equal(cbar_vmin, None)
+    assert_equal(cbar_vmax, None)

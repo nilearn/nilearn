@@ -21,7 +21,7 @@ import shutil
 # is relative to the documentation root, use os.path.abspath to make it
 # absolute, like shown here.
 sys.path.insert(0, os.path.abspath('sphinxext'))
-import sphinxgallery
+import sphinx_gallery
 
 # We also add the directory just above to enable local imports of nilearn
 sys.path.insert(0, os.path.abspath('..'))
@@ -35,18 +35,12 @@ except IOError:
 
 # -- General configuration ---------------------------------------------------
 
-# Try to override the matplotlib configuration as early as possible
-try:
-    import gen_rst
-except:
-    pass
-
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 extensions = ['sphinx.ext.autodoc', 'sphinx.ext.autosummary',
               'sphinx.ext.pngmath', 'sphinx.ext.intersphinx',
               'numpy_ext.numpydoc',
-              'sphinxgallery.gen_gallery',
+              'sphinx_gallery.gen_gallery',
               ]
 
 autosummary_generate = True
@@ -69,7 +63,7 @@ source_suffix = '.rst'
 plot_gallery = True
 
 # The master toctree document.
-master_doc = 'user_guide'
+master_doc = 'index'
 
 # General information about the project.
 project = u'Nilearn'
@@ -97,6 +91,7 @@ language = 'en'
 
 # List of documents that shouldn't be included in the build.
 #unused_docs = []
+exclude_patterns = ['tune_toc.rst', ]
 
 # List of directories, relative to source directory, that shouldn't be
 # searched for source files.
@@ -164,7 +159,7 @@ html_favicon = 'logos/favicon.ico'
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['images', sphinxgallery.path_static()]
+html_static_path = ['images']
 
 # If not '', a 'Last updated on:' timestamp is inserted at every page bottom,
 # using the given strftime format.
@@ -281,7 +276,7 @@ extlinks = {
     'compound': (_python_doc_base + '/reference/compound_stmts.html#%s', ''),
 }
 
-sphinxgallery_conf = {
+sphinx_gallery_conf = {
     'doc_module'        : 'nilearn',
     'reference_url'     : {
         'nilearn': None,
@@ -292,7 +287,18 @@ sphinxgallery_conf = {
         'sklearn': 'http://scikit-learn.org/stable'}
     }
 
+
+def touch_example_backreferences(app, what, name, obj, options, lines):
+    # generate empty examples files, so that we don't get
+    # inclusion errors if there are no examples for a class / module
+    examples_path = os.path.join(app.srcdir, "modules", "generated",
+                                 "%s.examples" % name)
+    if not os.path.exists(examples_path):
+        # touch file
+        open(examples_path, 'w').close()
+
 # Add the 'copybutton' javascript, to hide/show the prompt in code
 # examples
 def setup(app):
     app.add_javascript('copybutton.js')
+    app.connect('autodoc-process-docstring', touch_example_backreferences)

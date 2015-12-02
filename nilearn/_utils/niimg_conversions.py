@@ -4,7 +4,10 @@ Conversion utilities.
 # Author: Gael Varoquaux, Alexandre Abraham, Philippe Gervais
 # License: simplified BSD
 import warnings
+import os.path
+import glob
 
+import nilearn as ni
 import numpy as np
 import itertools
 from sklearn.externals.joblib import Memory
@@ -13,8 +16,7 @@ from .cache_mixin import cache
 from .niimg import _safe_get_data, load_niimg
 from .compat import _basestring, izip
 
-from nilearn._utils.exceptions import DimensionError
-
+from .exceptions import DimensionError
 
 def _check_fov(img, affine, shape):
     """ Return True if img's field of view correspond to given
@@ -37,7 +39,7 @@ def _check_same_fov(*args, **kwargs):
 
     args: images
         Images to be checked. Images passed without keywords will be labelled
-        as img_#1 in the error message (replace 1 with the appropriate index)
+        as img_#1 in the error message (replace 1 with the appropriate index).
 
     kwargs: images
         Images to be checked. In case of error, images will be reference by
@@ -138,6 +140,10 @@ def _iter_check_niimg(niimgs, ensure_ndim=None, atleast_4d=False,
                         % (i, ref_fov[0], niimg.get_affine(), ref_fov[1],
                            niimg.shape))
             yield niimg
+        except DimensionError as exc:
+            # Keep track of the additional dimension in the error
+            exc.increment_stack_counter()
+            raise
         except TypeError as exc:
             img_name = ''
             if isinstance(niimg, _basestring):
@@ -146,14 +152,11 @@ def _iter_check_niimg(niimgs, ensure_ndim=None, atleast_4d=False,
             exc.args = (('Error encountered while loading image #%d%s'
                          % (i, img_name),) + exc.args)
             raise
-        except DimensionError as exc:
-            # Keep track of the additional dimension in the error
-            exc.increment_stack_counter()
-            raise
 
 
 def check_niimg(niimg, ensure_ndim=None, atleast_4d=False, dtype=None,
-                return_iterator=False):
+                return_iterator=False,
+                wildcards=True):
     """Check that niimg is a proper 3D/4D niimg. Turn filenames into objects.
 
     Parameters
@@ -176,6 +179,17 @@ def check_niimg(niimg, ensure_ndim=None, atleast_4d=False, dtype=None,
         data will be converted to int32 if dtype is discrete and float32 if it
         is continuous.
 
+    return_iterator: boolean, optional
+        Returns an iterator on the content of the niimg file input
+
+    wildcards: boolean, optional
+        Use niimg as a regular expression to get a list of matching input
+        filenames.
+        If multiple files match, the returned list is sorted using an ascending
+        order.
+        If no file matches the regular expression, a ValueError exception is
+        raised.
+
     Returns
     -------
     result: 3D/4D Niimg-like object
@@ -192,6 +206,30 @@ def check_niimg(niimg, ensure_ndim=None, atleast_4d=False, dtype=None,
     Its application is idempotent.
     """
     from ..image import new_img_like  # avoid circular imports
+
+    if isinstance(niimg, _basestring):
+        if wildcards and ni.EXPAND_PATH_WILDCARDS:
+            filenames = sorted(glob.glob(niimg))  # Ascending sorting
+
+            # processing filenames matching globbing expression
+            if len(filenames) >= 1 and glob.has_magic(niimg):
+                niimg = filenames  # iterable case
+            # niimg is an existing filename
+            elif [niimg] == filenames:
+                niimg = filenames[0]
+            # No files found by glob
+            elif glob.has_magic(niimg):
+                # No files matching the glob expression, warn the user
+                message = ("No files matching the entered niimg expression: "
+                            "'%s'.\n You may have left wildcards usage "
+                           "activated: please set the global constant "
+                           "'nilearn.EXPAND_PATH_WILDCARDS' to False to "
+                           "deactivate this behavior.") % niimg
+                raise ValueError(message)
+            else:
+                raise ValueError("File not found: '%s'" % niimg)
+        elif not os.path.exists(niimg):
+            raise ValueError("File not found: '%s'" % niimg)
 
     # in case of an iterable
     if hasattr(niimg, "__iter__") and not isinstance(niimg, _basestring):
@@ -231,7 +269,7 @@ def check_niimg_3d(niimg, dtype=None):
         If niimg is a string, consider it as a path to Nifti image and
         call nibabel.load on it. If it is an object, check if get_data()
         and get_affine() methods are present, raise TypeError otherwise.
-    
+
     dtype: {dtype, "auto"}
         Data type toward which the data should be converted. If "auto", the
         data will be converted to int32 if dtype is discrete and float32 if it
@@ -272,7 +310,7 @@ def check_niimg_4d(niimg, return_iterator=False, dtype=None):
         Data type toward which the data should be converted. If "auto", the
         data will be converted to int32 if dtype is discrete and float32 if it
         is continuous.
-    
+
     return_iterator: boolean
         If True, an iterator of 3D images is returned. This reduces the memory
         usage when `niimgs` contains 3D images.
@@ -362,6 +400,10 @@ def concat_niimgs(niimgs, dtype=np.float32, ensure_ndim=None,
     # first image
     if ndim is None:
         ndim = len(first_niimg.shape)
+
+    if ndim not in [3, 4]:
+        raise TypeError('Concatenated images must be 3D or 4D. You gave a '
+                        'list of %dD images' % ndim)
 
     lengths = [first_niimg.shape[-1] if ndim == 4 else 1]
     for niimg in literator:

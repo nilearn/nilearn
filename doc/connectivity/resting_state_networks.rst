@@ -30,8 +30,8 @@ on data loading <loading_data>`):
 
 
 .. literalinclude:: ../../examples/connectivity/plot_canica_resting_state.py
-    :start-after: ### Load ADHD rest dataset ####################################################
-    :end-before: ### Apply CanICA ##############################################################
+    :start-after: # First we load the ADHD200 data
+    :end-before: # Here we apply CanICA on the data
 
 
 Applying CanICA
@@ -44,8 +44,8 @@ As with every object in nilearn, we give its parameters at construction,
 and then fit it on the data.
 
 .. literalinclude:: ../../examples/connectivity/plot_canica_resting_state.py
-    :start-after: ### Apply CanICA ##############################################################
-    :end-before: ### Visualize the results #####################################################
+    :start-after: # Here we apply CanICA on the data
+    :end-before: # To visualize we plot the outline of all components on one figure
 
 The components estimated are found as the `components_` attribute of the
 object.
@@ -53,25 +53,37 @@ object.
 Visualizing the results
 ========================
 
-We can visualize the components as in the previous examples.
+We can visualize the components as in the previous examples. The first plot
+shows a map generated from all the components. Then we plot an axial cut for
+each component separately.
 
 .. literalinclude:: ../../examples/connectivity/plot_canica_resting_state.py
-    :start-after: ### Visualize the results #####################################################
+    :start-after: # To visualize we plot the outline of all components on one figure
+    :end-before: # Finally, we plot the map for each ICA component separately
 
-.. |left_img| image:: ../auto_examples/connectivity/images/plot_canica_resting_state_002.png
+.. image :: ../auto_examples/connectivity/images/sphx_glr_plot_canica_resting_state_001.png
+   :align: center
    :target: ../auto_examples/connectivity/plot_canica_resting_state.html
-   :width: 48%
 
-.. |right_img| image:: ../auto_examples/connectivity/images/plot_canica_resting_state_003.png
+Finally, we can plot the map for different ICA components separately:
+
+.. literalinclude:: ../../examples/connectivity/plot_canica_resting_state.py
+    :start-after: # Finally, we plot the map for each ICA component separately
+
+.. |left_img| image:: ../auto_examples/connectivity/images/sphx_glr_plot_canica_resting_state_003.png
    :target: ../auto_examples/connectivity/plot_canica_resting_state.html
-   :width: 48%
+   :width: 33%
 
-|left_img| |right_img|
+.. |right_img| image:: ../auto_examples/connectivity/images/sphx_glr_plot_canica_resting_state_004.png
+   :target: ../auto_examples/connectivity/plot_canica_resting_state.html
+   :width: 33%
+
+.. centered:: |left_img| |right_img|
 
 .. seealso::
 
    The full code can be found as an example:
-   :ref:`example_connectivity_plot_canica_resting_state.py`
+   :ref:`sphx_glr_auto_examples_connectivity_plot_canica_resting_state.py`
 
 .. note::
 

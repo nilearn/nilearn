@@ -3,14 +3,8 @@ anatomy. This is only useful for internal purposes especially when the
 SVG is modified.
 """
 
-import functools
-
-import matplotlib.pyplot as plt
-
 from nilearn import plotting
-from nilearn.plotting import img_plotting, glass_brain
-
-plt.close('all')
+from nilearn.plotting import img_plotting, glass_brain, show
 
 
 # plotting anat for coarse alignment
@@ -59,4 +53,4 @@ add_brain_schematics(display)
 display = plotting.plot_anat(display_mode='z')
 add_brain_schematics(display)
 
-plt.show()
+show()

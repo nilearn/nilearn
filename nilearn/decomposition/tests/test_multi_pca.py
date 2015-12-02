@@ -27,12 +27,16 @@ def test_multi_pca():
         data.append(nibabel.Nifti1Image(this_data, affine))
 
     mask_img = nibabel.Nifti1Image(np.ones(shape[:3], dtype=np.int8), affine)
-    multi_pca = MultiPCA(mask=mask_img, n_components=3)
+    multi_pca = MultiPCA(mask=mask_img, n_components=3,
+                         random_state=0)
 
-    # Test that the components are the same if we put twice the same data
+    # Test that the components are the same if we put twice the same data, and
+    # that fit output is deterministic
     components1 = multi_pca.fit(data).components_
-    components2 = multi_pca.fit(2 * data).components_
-    np.testing.assert_array_almost_equal(components1, components2)
+    components2 = multi_pca.fit(data).components_
+    components3 = multi_pca.fit(2 * data).components_
+    np.testing.assert_array_equal(components1, components2)
+    np.testing.assert_array_almost_equal(components1, components3)
 
     # Smoke test fit with 'confounds' argument
     confounds = [np.arange(10).reshape(5, 2)] * 8

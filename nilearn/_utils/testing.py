@@ -17,10 +17,10 @@ from sklearn.utils import check_random_state
 import scipy.linalg
 import nibabel
 
-from .. import datasets
 from .. import masking
 from . import logger
 from .compat import _basestring, _urllib
+from ..datasets.utils import _fetch_files
 
 
 try:
@@ -95,6 +95,10 @@ def write_tmp_imgs(*imgs, **kwargs):
         useful to test the two cases (filename / Nifti1Image) in the same
         loop.
 
+    use_wildcards: bool
+        if True, and create_files is True, imgs are written on disk and a
+        matching glob is returned.
+
     Returns
     =======
     filenames: string or list of
@@ -102,7 +106,7 @@ def write_tmp_imgs(*imgs, **kwargs):
         has been given as input, a single string is returned. Otherwise, a
         list of string is returned.
     """
-    valid_keys = set(("create_files",))
+    valid_keys = set(("create_files", "use_wildcards"))
     input_keys = set(kwargs.keys())
     invalid_keys = input_keys - valid_keys
     if len(invalid_keys) > 0:
@@ -110,25 +114,34 @@ def write_tmp_imgs(*imgs, **kwargs):
                         (sys._getframe().f_code.co_name,
                          " ".join(invalid_keys)))
     create_files = kwargs.get("create_files", True)
+    use_wildcards = kwargs.get("use_wildcards", False)
+
+    prefix = "nilearn_"
+    suffix = ".nii"
 
     if create_files:
         filenames = []
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore", RuntimeWarning)
-            for img in imgs:
-                _, filename = tempfile.mkstemp(prefix="nilearn_",
-                                               suffix=".nii",
+        try:
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore", RuntimeWarning)
+                for img in imgs:
+                    filename = tempfile.mktemp(prefix=prefix,
+                                               suffix=suffix,
                                                dir=None)
-                filenames.append(filename)
-                img.to_filename(filename)
+                    filenames.append(filename)
+                    img.to_filename(filename)
 
-        if len(imgs) == 1:
-            yield filenames[0]
-        else:
-            yield filenames
-
-        for filename in filenames:
-            os.remove(filename)
+                if use_wildcards:
+                    yield prefix + "*" + suffix
+                else:
+                    if len(imgs) == 1:
+                        yield filenames[0]
+                    else:
+                        yield filenames
+        finally:
+            # Ensure all created files are removed
+            for filename in filenames:
+                os.remove(filename)
     else:  # No-op
         if len(imgs) == 1:
             yield imgs[0]
@@ -175,7 +188,7 @@ def mock_chunk_read_raise_error_(response, local_file, initial_size=0,
 
 
 class FetchFilesMock (object):
-    _mock_fetch_files = functools.partial(datasets._fetch_files, mock=True)
+    _mock_fetch_files = functools.partial(_fetch_files, mock=True)
 
     def __init__(self):
         """Create a mock that can fill a CSV file if needed

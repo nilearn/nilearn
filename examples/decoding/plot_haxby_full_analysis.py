@@ -13,16 +13,19 @@ that have been defined via a standard GLM-based analysis.
 
 """
 
+##########################################################################
+# First we load and prepare the data
 
-### Fetch data using nilearn dataset fetcher ################################
+# Fetch data using nilearn dataset fetcher
 from nilearn import datasets
 haxby_dataset = datasets.fetch_haxby(n_subjects=1)
+func_filename = haxby_dataset.func[0]
 
-# print basic information on the dataset
+# Print basic information on the dataset
 print('First subject anatomical nifti image (3D) located is at: %s' %
       haxby_dataset.anat[0])
 print('First subject functional nifti image (4D) is located at: %s' %
-      haxby_dataset.func[0])
+      func_filename)
 
 # Load nilearn NiftiMasker, the practical masking and unmasking tool
 from nilearn.input_data import NiftiMasker
@@ -41,6 +44,10 @@ categories = np.unique(stimuli[np.logical_not(resting_state)])
 # extract tags indicating to which acquisition run a tag belongs
 session_labels = labels["chunks"][np.logical_not(resting_state)]
 
+
+##########################################################################
+# Then we use scikit-learn for decoding on the different masks
+
 # The classifier: a support vector classifier
 from sklearn.svm import SVC
 classifier = SVC(C=1., kernel="linear")
@@ -53,7 +60,6 @@ dummy_classifier = DummyClassifier()
 from sklearn.cross_validation import LeaveOneLabelOut, cross_val_score
 cv = LeaveOneLabelOut(session_labels)
 
-func_filename = haxby_dataset.func[0]
 mask_names = ['mask_vt', 'mask_face', 'mask_house']
 
 mask_scores = {}
@@ -72,7 +78,8 @@ for mask_name in mask_names:
 
     for category in categories:
         print("Processing %s %s" % (mask_name, category))
-        classification_target = stimuli[np.logical_not(resting_state)] == category
+        task_mask = np.logical_not(resting_state)
+        classification_target = (stimuli[task_mask] == category)
         mask_scores[mask_name][category] = cross_val_score(
             classifier,
             masked_timecourses,
@@ -89,7 +96,9 @@ for mask_name in mask_names:
             mask_scores[mask_name][category].mean(),
             mask_scores[mask_name][category].std()))
 
-# make a rudimentary diagram
+
+##########################################################################
+# We make a simple bar plot to summarize the results
 import matplotlib.pyplot as plt
 plt.figure()
 

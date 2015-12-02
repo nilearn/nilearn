@@ -41,8 +41,8 @@ def plot_matrices(cov, prec, title):
     plt.title("%s / precision" % title)
 
 
-# Fetching datasets ###########################################################
-print("-- Fetching datasets ...")
+##############################################################################
+# Fetching datasets
 from nilearn import datasets
 msdl_atlas_dataset = datasets.fetch_msdl_atlas()
 adhd_dataset = datasets.fetch_adhd(n_subjects=n_subjects)
@@ -52,17 +52,19 @@ print('First subject functional nifti image (4D) is at: %s' %
       adhd_dataset.func[0])  # 4D data
 
 
-# Extracting region signals ###################################################
+##############################################################################
+# Extracting region signals
 from nilearn import image
 from nilearn import input_data
 
+# A "memory" to avoid recomputation
 from sklearn.externals.joblib import Memory
 mem = Memory('nilearn_cache')
 
 masker = input_data.NiftiMapsMasker(
     msdl_atlas_dataset.maps, resampling_target="maps", detrend=True,
     low_pass=None, high_pass=0.01, t_r=2.5, standardize=True,
-    memory=mem, memory_level=1, verbose=2)
+    memory='nilearn_cache', memory_level=1, verbose=2)
 masker.fit()
 
 subject_time_series = []
@@ -80,18 +82,20 @@ for func_filename, confound_filename in zip(func_filenames,
                                  confounds=[hv_confounds, confound_filename])
     subject_time_series.append(region_ts)
 
-# Computing group-sparse precision matrices ###################################
-print("-- Computing group-sparse precision matrices ...")
-from nilearn.group_sparse_covariance import GroupSparseCovarianceCV
+
+##############################################################################
+# Computing group-sparse precision matrices
+from nilearn.connectome import GroupSparseCovarianceCV
 gsc = GroupSparseCovarianceCV(verbose=2)
 gsc.fit(subject_time_series)
 
-print("-- Computing graph-lasso precision matrices ...")
 from sklearn import covariance
 gl = covariance.GraphLassoCV(verbose=2)
 gl.fit(np.concatenate(subject_time_series))
 
-# Displaying results ##########################################################
+
+##############################################################################
+# Displaying results
 atlas_imgs = image.iter_img(msdl_atlas_dataset.maps)
 atlas_region_coords = [plotting.find_xyz_cut_coords(img) for img in atlas_imgs]
 
@@ -111,4 +115,4 @@ plotting.plot_connectome(-gsc.precisions_[..., 0],
 plot_matrices(gsc.covariances_[..., 0],
               gsc.precisions_[..., 0], title)
 
-plt.show()
+plotting.show()

@@ -16,31 +16,31 @@ Nilearn has a set of plotting functions to plot brain volumes that are
 fined tuned to specific applications. Amongst other things, they use
 different heuristics to find cutting coordinates.
 
-.. |plot_stat_map| image:: ../auto_examples/manipulating_visualizing/images/plot_demo_plotting_001.png
+.. |plot_stat_map| image:: ../auto_examples/manipulating_visualizing/images/sphx_glr_plot_demo_plotting_001.png
      :target: ../auto_examples/manipulating_visualizing/plot_demo_plotting.html
      :scale: 50
 
-.. |plot_glass_brain| image:: ../auto_examples/manipulating_visualizing/images/plot_demo_glass_brain_extensive_001.png
+.. |plot_glass_brain| image:: ../auto_examples/manipulating_visualizing/images/sphx_glr_plot_demo_glass_brain_extensive_001.png
      :target: ../auto_examples/manipulating_visualizing/plot_demo_glass_brain_extensive.html
      :scale: 50
 
-.. |plot_connectome| image:: ../auto_examples/connectivity/images/plot_inverse_covariance_connectome_002.png
+.. |plot_connectome| image:: ../auto_examples/connectivity/images/sphx_glr_plot_inverse_covariance_connectome_002.png
      :target: ../auto_examples/connectivity/plot_inverse_covariance_connectome.html
      :scale: 50
 
-.. |plot_anat| image:: ../auto_examples/manipulating_visualizing/images/plot_demo_plotting_003.png
+.. |plot_anat| image:: ../auto_examples/manipulating_visualizing/images/sphx_glr_plot_demo_plotting_003.png
      :target: ../auto_examples/manipulating_visualizing/plot_demo_plotting.html
      :scale: 50
 
-.. |plot_roi| image:: ../auto_examples/manipulating_visualizing/images/plot_demo_plotting_004.png
+.. |plot_roi| image:: ../auto_examples/manipulating_visualizing/images/sphx_glr_plot_demo_plotting_004.png
      :target: ../auto_examples/manipulating_visualizing/plot_demo_plotting.html
      :scale: 50
 
-.. |plot_epi| image:: ../auto_examples/manipulating_visualizing/images/plot_demo_plotting_005.png
+.. |plot_epi| image:: ../auto_examples/manipulating_visualizing/images/sphx_glr_plot_demo_plotting_005.png
      :target: ../auto_examples/manipulating_visualizing/plot_demo_plotting.html
      :scale: 50
 
-.. |plot_prob_atlas| image:: ../auto_examples/manipulating_visualizing/images/plot_prob_atlas_003.png
+.. |plot_prob_atlas| image:: ../auto_examples/manipulating_visualizing/images/sphx_glr_plot_prob_atlas_003.png
      :target: ../auto_examples/manipulating_visualizing/plot_prob_atlas.html
      :scale: 50
 
@@ -87,7 +87,7 @@ different heuristics to find cutting coordinates.
 **plot_img**         :func:`plot_img`
                      |hack|
                      General-purpose function, with no specific presets
-================== =========================================================
+=================== =========================================================
 
 
 .. warning:: **Opening too many figures without closing**
@@ -106,35 +106,35 @@ different heuristics to find cutting coordinates.
 Different display modes
 ========================
 
-.. |plot_ortho| image:: ../auto_examples/manipulating_visualizing/images/plot_demo_more_plotting_001.png
+.. |plot_ortho| image:: ../auto_examples/manipulating_visualizing/images/sphx_glr_plot_demo_more_plotting_001.png
      :target: ../auto_examples/manipulating_visualizing/plot_demo_more_plotting.html
      :scale: 50
 
-.. |plot_z_many| image:: ../auto_examples/manipulating_visualizing/images/plot_demo_more_plotting_002.png
+.. |plot_z_many| image:: ../auto_examples/manipulating_visualizing/images/sphx_glr_plot_demo_more_plotting_002.png
+     :target: ../auto_examples/manipulating_visualizing/plot_demo_more_plotting.html
+     :scale: 30
+
+.. |plot_x| image:: ../auto_examples/manipulating_visualizing/images/sphx_glr_plot_demo_more_plotting_003.png
      :target: ../auto_examples/manipulating_visualizing/plot_demo_more_plotting.html
      :scale: 50
 
-.. |plot_x| image:: ../auto_examples/manipulating_visualizing/images/plot_demo_more_plotting_003.png
+.. |plot_x_small| image:: ../auto_examples/manipulating_visualizing/images/sphx_glr_plot_demo_more_plotting_004.png
      :target: ../auto_examples/manipulating_visualizing/plot_demo_more_plotting.html
      :scale: 50
 
-.. |plot_x_small| image:: ../auto_examples/manipulating_visualizing/images/plot_demo_more_plotting_004.png
+.. |plot_z_small| image:: ../auto_examples/manipulating_visualizing/images/sphx_glr_plot_demo_more_plotting_005.png
      :target: ../auto_examples/manipulating_visualizing/plot_demo_more_plotting.html
      :scale: 50
 
-.. |plot_z_small| image:: ../auto_examples/manipulating_visualizing/images/plot_demo_more_plotting_005.png
+.. |plot_xz| image:: ../auto_examples/manipulating_visualizing/images/sphx_glr_plot_demo_more_plotting_006.png
      :target: ../auto_examples/manipulating_visualizing/plot_demo_more_plotting.html
      :scale: 50
 
-.. |plot_xz| image:: ../auto_examples/manipulating_visualizing/images/plot_demo_more_plotting_006.png
+.. |plot_yx| image:: ../auto_examples/manipulating_visualizing/images/sphx_glr_plot_demo_more_plotting_007.png
      :target: ../auto_examples/manipulating_visualizing/plot_demo_more_plotting.html
      :scale: 50
 
-.. |plot_yx| image:: ../auto_examples/manipulating_visualizing/images/plot_demo_more_plotting_007.png
-     :target: ../auto_examples/manipulating_visualizing/plot_demo_more_plotting.html
-     :scale: 50
-
-.. |plot_yz| image:: ../auto_examples/manipulating_visualizing/images/plot_demo_more_plotting_008.png
+.. |plot_yz| image:: ../auto_examples/manipulating_visualizing/images/sphx_glr_plot_demo_more_plotting_008.png
      :target: ../auto_examples/manipulating_visualizing/plot_demo_more_plotting.html
      :scale: 50
 
@@ -193,11 +193,11 @@ plot, and has methods to add overlays, contours or edge maps::
 
         display = plotting.plot_epi(...)
 
-.. |plot_edges| image:: ../auto_examples/manipulating_visualizing/images/plot_demo_more_plotting_009.png
+.. |plot_edges| image:: ../auto_examples/manipulating_visualizing/images/sphx_glr_plot_demo_more_plotting_009.png
      :target: ../auto_examples/manipulating_visualizing/plot_demo_more_plotting.html
      :scale: 50
 
-.. |plot_contours| image:: ../auto_examples/manipulating_visualizing/images/plot_demo_more_plotting_010.png
+.. |plot_contours| image:: ../auto_examples/manipulating_visualizing/images/sphx_glr_plot_demo_more_plotting_010.png
      :target: ../auto_examples/manipulating_visualizing/plot_demo_more_plotting.html
      :scale: 50
 
@@ -218,20 +218,27 @@ plot, and has methods to add overlays, contours or edge maps::
                    'levels'. This is typically useful to outline a mask,
                    or ROI on top of another map.
                    |hack|
-                   **Example:** :ref:`example_manipulating_visualizing_plot_haxby_masks.py`
+                   **Example:** :ref:`sphx_glr_auto_examples_manipulating_visualizing_plot_haxby_masks.py`
 
 
 **add_overlay**   `display.add_overlay(img, cmap=plotting.cm.purple_green, threshold=3)`
                   |hack|
                   Add a new overlay on the existing figure
                   |hack|
-                  **Example:** :ref:`example_manipulating_visualizing_plot_overlay.py`
+                  **Example:** :ref:`sphx_glr_auto_examples_manipulating_visualizing_plot_overlay.py`
 
 
 ================= =========================================================
 
-Saving to an image file
-========================
+Displaying or saving to an image file
+=====================================
+
+To display the figure when running a script, you need to call
+:func:`nilearn.plotting.show`: (this is just an alias to
+:func:`matplotlib.pyplot.show`)::
+
+    >>> from nilearn import plotting
+    >>> plotting.show() # doctest: +SKIP
 
 The simplest way to output an image file from the plotting functions is
 to specify the `output_file` argument::

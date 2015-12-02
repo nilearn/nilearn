@@ -12,7 +12,7 @@ from sklearn.externals.joblib import Parallel, delayed, Memory
 from sklearn.utils.extmath import randomized_svd
 
 from ..input_data import NiftiMasker, MultiNiftiMasker, NiftiMapsMasker
-from ..input_data.base_masker import filter_and_mask
+from ..input_data.nifti_masker import filter_and_mask
 from .._utils.class_inspect import get_params
 from .._utils.cache_mixin import cache, CacheMixin
 from .._utils import as_ndarray
@@ -25,7 +25,8 @@ def session_pca(imgs, mask_img, parameters,
                 memory_level=0,
                 memory=Memory(cachedir=None),
                 verbose=0,
-                copy=True):
+                copy=True,
+                random_state=None):
     """Filter, mask and compute PCA on Niimg-like objects
 
     This is an helper function whose first call `base_masker.filter_and_mask`
@@ -52,6 +53,9 @@ def session_pca(imgs, mask_img, parameters,
     n_components: integer, optional
         Number of components to be extracted by the PCA
 
+    random_state: int or RandomState
+        Pseudo number generator state used for randomized SVD.
+
     memory_level: integer, optional
         Integer indicating the level of memorization. The higher, the more
         function calls are cached.
@@ -77,7 +81,8 @@ def session_pca(imgs, mask_img, parameters,
             confounds=confounds,
             copy=copy)
     if n_components <= data.shape[0] // 4:
-        U, S, _ = randomized_svd(data.T, n_components)
+        U, S, _ = randomized_svd(data.T, n_components,
+                                 transpose=True, random_state=random_state)
     else:
         U, S, _ = linalg.svd(data.T, full_matrices=False)
     U = U.T[:n_components].copy()
@@ -109,6 +114,9 @@ class MultiPCA(BaseEstimator, TransformerMixin, CacheMixin):
     do_cca: boolean, optional
         Indicate if a Canonical Correlation Analysis must be run after the
         PCA.
+
+    random_state: int or RandomState
+        Pseudo number generator state used for randomized SVD.
 
     standardize : boolean, optional
         If standardize is True, the time-series are centered and normed:
@@ -171,7 +179,8 @@ class MultiPCA(BaseEstimator, TransformerMixin, CacheMixin):
     def __init__(self, n_components=20, smoothing_fwhm=None, mask=None,
                  do_cca=True, standardize=True, target_affine=None,
                  target_shape=None, low_pass=None, high_pass=None,
-                 t_r=None, memory=Memory(cachedir=None), memory_level=0,
+                 t_r=None, random_state=None,
+                 memory=Memory(cachedir=None), memory_level=0,
                  n_jobs=1, verbose=0,
                  ):
         self.mask = mask
@@ -189,6 +198,8 @@ class MultiPCA(BaseEstimator, TransformerMixin, CacheMixin):
         self.target_affine = target_affine
         self.target_shape = target_shape
         self.standardize = standardize
+
+        self.random_state = random_state
 
     def fit(self, imgs, y=None, confounds=None):
         """Compute the mask and the components
@@ -286,7 +297,8 @@ class MultiPCA(BaseEstimator, TransformerMixin, CacheMixin):
                 memory=self.memory,
                 memory_level=self.memory_level,
                 confounds=confound,
-                verbose=self.verbose
+                verbose=self.verbose,
+                random_state=self.random_state
             )
             for img, confound in zip(imgs, confounds))
         subject_pcas, subject_svd_vals = zip(*subject_pcas)
@@ -309,7 +321,8 @@ class MultiPCA(BaseEstimator, TransformerMixin, CacheMixin):
                      (index + 1) * self.n_components] = subject_pca
             data, variance, _ = self._cache(
                 randomized_svd, func_memory_level=3)(
-                    data.T, n_components=self.n_components)
+                    data.T, n_components=self.n_components, transpose=True,
+                    random_state=self.random_state)
             # as_ndarray is to get rid of memmapping
             data = as_ndarray(data.T)
         else:

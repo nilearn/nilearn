@@ -1,9 +1,9 @@
 
 .. _estimator_choice:
 
-============================================
+=====================================
 Choosing the right predictive model
-============================================
+=====================================
 
 This page gives a few simple considerations on the choice of an estimator.
 It is slightly oriented towards a *decoding* application, that is the
@@ -18,11 +18,11 @@ the :ref:`dedicated section of the nilearn documentation
 
 
 Predictions: regression, classification and multi-class
-========================================================
+=======================================================
 
 
 Regression
------------
+----------
 
 A regression problem is a learning task in which the variable to predict
 --that we often call ``y``-- is a continuous value, such as an age.
@@ -33,8 +33,12 @@ Encoding models [1]_ typically call for regressions.
    Naselaris et al, Encoding and decoding in fMRI, NeuroImage Encoding
    and decoding in fMRI.2011 http://www.ncbi.nlm.nih.gov/pubmed/20691790
 
+.. seealso::
+
+   * :ref:`space_net`
+
 Classification: two classes or multi-class
--------------------------------------------
+------------------------------------------
 
 A classification task consists in predicting a *class* label for each
 observation. In other words, the variable to predict is categorical.
@@ -68,8 +72,8 @@ whereas the former is linear with the number of classes.
 
 .. seealso::
 
-    `Multi-class prediction in scikit-learn's documentation
-    <http://scikit-learn.org/stable/modules/multiclass.html>`_
+    * `Multi-class prediction in scikit-learn's documentation <http://scikit-learn.org/stable/modules/multiclass.html>`_
+    * :ref:`space_net`
 
 
 **Confusion matrix** `The confusion matrix
@@ -77,23 +81,23 @@ whereas the former is linear with the number of classes.
 :func:`sklearn.metrics.confusion_matrix` is a useful tool to 
 understand the classifier's errors in a multiclass problem.
 
-.. figure:: ../auto_examples/decoding/images/plot_haxby_multiclass_001.png
+.. figure:: ../auto_examples/decoding/images/sphx_glr_plot_haxby_multiclass_001.png
    :target: ../auto_examples/decoding/plot_haxby_multiclass.html
    :align: left
    :scale: 60
 
-.. figure:: ../auto_examples/decoding/images/plot_haxby_multiclass_002.png
+.. figure:: ../auto_examples/decoding/images/sphx_glr_plot_haxby_multiclass_002.png
    :target: ../auto_examples/decoding/plot_haxby_multiclass.html
    :align: left
    :scale: 40
 
-.. figure:: ../auto_examples/decoding/images/plot_haxby_multiclass_003.png
+.. figure:: ../auto_examples/decoding/images/sphx_glr_plot_haxby_multiclass_003.png
    :target: ../auto_examples/decoding/plot_haxby_multiclass.html
    :align: left
    :scale: 40
 
 Setting estimator parameters
-=============================
+============================
 
 Most estimators have parameters that can be set to optimize their
 performance. Importantly, this must be done via **nested**
@@ -105,7 +109,7 @@ will have bumps and peaks due to this noise. These will not generalize to
 new data and chances are that the corresponding choice of parameter will
 not perform as well on new data.
 
-.. figure:: ../auto_examples/decoding/images/plot_haxby_grid_search_001.png
+.. figure:: ../auto_examples/decoding/images/sphx_glr_plot_haxby_grid_search_001.png
    :target: ../auto_examples/decoding/plot_haxby_grid_search.html
    :align: center
    :scale: 60
@@ -121,10 +125,10 @@ CPUs.
    * `The scikit-learn documentation on parameter selection
      <http://scikit-learn.org/stable/modules/grid_search.html>`_
 
-   * The example :ref:`example_decoding_plot_haxby_grid_search.py`
+   * The example :ref:`sphx_glr_auto_examples_decoding_plot_haxby_grid_search.py`
 
 Different linear models
-========================
+=======================
 
 There is a wide variety of classifiers available in scikit-learn (see the
 `scikit-learn documentation on supervised learning
@@ -159,7 +163,7 @@ Here we apply a few linear models to fMRI data:
      in every situation.
 
 
-.. figure:: ../auto_examples/decoding/images/plot_haxby_different_estimators_001.png
+.. figure:: ../auto_examples/decoding/images/sphx_glr_plot_haxby_different_estimators_001.png
    :target: ../auto_examples/decoding/plot_haxby_different_estimators.html
    :align: center
    :scale: 80
@@ -177,49 +181,52 @@ the other, although the prediction scores are fairly similar. In other
 terms, a well-performing estimator in terms of prediction error gives us
 little guarantee on the brain maps.
 
-.. figure:: ../auto_examples/decoding/images/plot_haxby_different_estimators_007.png
+.. figure:: ../auto_examples/decoding/images/sphx_glr_plot_haxby_different_estimators_007.png
    :target: ../auto_examples/decoding/plot_haxby_different_estimators.html
    :align: left
    :scale: 70
 
-.. figure:: ../auto_examples/decoding/images/plot_haxby_different_estimators_008.png
+.. figure:: ../auto_examples/decoding/images/sphx_glr_plot_haxby_different_estimators_008.png
    :target: ../auto_examples/decoding/plot_haxby_different_estimators.html
    :align: left
    :scale: 70
 
-.. figure:: ../auto_examples/decoding/images/plot_haxby_different_estimators_005.png
+.. figure:: ../auto_examples/decoding/images/sphx_glr_plot_haxby_different_estimators_005.png
    :target: ../auto_examples/decoding/plot_haxby_different_estimators.html
    :align: left
    :scale: 70
 
-.. figure:: ../auto_examples/decoding/images/plot_haxby_different_estimators_006.png
+.. figure:: ../auto_examples/decoding/images/sphx_glr_plot_haxby_different_estimators_006.png
    :target: ../auto_examples/decoding/plot_haxby_different_estimators.html
    :align: left
    :scale: 70
 
-.. figure:: ../auto_examples/decoding/images/plot_haxby_different_estimators_004.png
+.. figure:: ../auto_examples/decoding/images/sphx_glr_plot_haxby_different_estimators_004.png
    :target: ../auto_examples/decoding/plot_haxby_different_estimators.html
    :align: left
    :scale: 70
 
-.. figure:: ../auto_examples/decoding/images/plot_haxby_different_estimators_002.png
+.. figure:: ../auto_examples/decoding/images/sphx_glr_plot_haxby_different_estimators_002.png
    :target: ../auto_examples/decoding/plot_haxby_different_estimators.html
    :align: left
    :scale: 70
 
-.. figure:: ../auto_examples/decoding/images/plot_haxby_different_estimators_003.png
+.. figure:: ../auto_examples/decoding/images/sphx_glr_plot_haxby_different_estimators_003.png
    :target: ../auto_examples/decoding/plot_haxby_different_estimators.html
    :align: left
    :scale: 70
 
-.. figure:: ../auto_examples/decoding/images/plot_haxby_different_estimators_009.png
+.. figure:: ../auto_examples/decoding/images/sphx_glr_plot_haxby_different_estimators_009.png
    :target: ../auto_examples/decoding/plot_haxby_different_estimators.html
    :align: left
    :scale: 70
 
-.. figure:: ../auto_examples/decoding/images/plot_haxby_different_estimators_010.png
+.. figure:: ../auto_examples/decoding/images/sphx_glr_plot_haxby_different_estimators_010.png
    :target: ../auto_examples/decoding/plot_haxby_different_estimators.html
    :align: left
    :scale: 70
 
+.. seealso::
+
+   * :ref:`space_net`
 

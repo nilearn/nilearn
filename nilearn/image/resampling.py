@@ -453,27 +453,32 @@ def resample_img(img, target_affine=None, target_shape=None,
     if isinstance(target_shape, np.ndarray):
         target_shape = target_shape.tolist()
     target_shape = tuple(target_shape)
-    # For images with dimensions larger than 3D:
-    if len(data_shape) > 3:
-        # Iter in a set of 3D volumes, as the interpolation problem is
-        # separable in the extra dimensions. This reduces the
-        # computational cost
-        other_shape = data_shape[3:]
-        resampled_data = np.ndarray(list(target_shape) + other_shape,
-                                    order=order)
 
-        all_img = (slice(None), ) * 3
-
-        for ind in np.ndindex(*other_shape):
-            _resample_one_img(data[all_img + ind], A, A_inv, b, target_shape,
-                      interpolation_order,
-                      out=resampled_data[all_img + ind],
-                      copy=not input_img_is_string)
+    if interpolation == 'continuous' and data.dtype.kind == 'i':
+        # cast unsupported data types to closest support dtype
+        aux = data.dtype.name.replace('int', 'float')
+        aux = aux.replace("ufloat", "float").replace("floatc", "float")
+        if aux in ["float8", "float16"]:
+            aux = "float32"
+        warnings.warn("Casting data from %s to %s" % (data.dtype.name, aux))
+        resampled_data_dtype = np.dtype(aux)
     else:
-        resampled_data = np.empty(target_shape, data.dtype)
-        _resample_one_img(data, A, A_inv, b, target_shape,
+        resampled_data_dtype = data.dtype
+
+    # Code is generic enough to work for both 3D and 4D images
+    other_shape = data_shape[3:]
+    resampled_data = np.empty(list(target_shape) + other_shape,
+                              order=order, dtype=resampled_data_dtype)
+
+    all_img = (slice(None), ) * 3
+
+    # Iter overr a set of 3D volumes, as the interpolation problem is
+    # separable in the extra dimensions. This reduces the
+    # computational cost
+    for ind in np.ndindex(*other_shape):
+        _resample_one_img(data[all_img + ind], A, A_inv, b, target_shape,
                           interpolation_order,
-                          out=resampled_data,
+                          out=resampled_data[all_img + ind],
                           copy=not input_img_is_string)
 
     return new_img_like(img, resampled_data, target_affine)

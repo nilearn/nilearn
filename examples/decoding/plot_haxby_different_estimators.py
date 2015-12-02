@@ -6,9 +6,10 @@ Here we compare different classifiers on a visual object recognition
 decoding task.
 """
 
-import time
+#############################################################################
+# We start by loading the data and applying simple transformations to it
 
-### Fetch data using nilearn dataset fetcher ################################
+# Fetch data using nilearn dataset fetcher
 from nilearn import datasets
 haxby_dataset = datasets.fetch_haxby(n_subjects=1)
 
@@ -38,21 +39,16 @@ from nilearn.input_data import NiftiMasker
 mask_filename = haxby_dataset.mask_vt[0]
 masker = NiftiMasker(mask_img=mask_filename, standardize=True)
 func_filename = haxby_dataset.func[0]
-masked_timecourses = masker.fit_transform(func_filename)[np.logical_not(resting_state)]
+masked_timecourses = masker.fit_transform(
+    func_filename)[np.logical_not(resting_state)]
 
-### Classifiers definition
+
+#############################################################################
+# Then we define the various classifiers that we use
 
 # A support vector classifier
 from sklearn.svm import SVC
 svm = SVC(C=1., kernel="linear")
-
-from sklearn.grid_search import GridSearchCV
-# GridSearchCV is slow, but note that it takes an 'n_jobs' parameter that
-# can significantly speed up the fitting process on computers with
-# multiple cores
-svm_cv = GridSearchCV(SVC(C=1., kernel="linear"),
-                      param_grid={'C': [.1, .5, 1., 5., 10., 50., 100.]},
-                      scoring='f1')
 
 # The logistic regression
 from sklearn.linear_model import LogisticRegression, RidgeClassifier, \
@@ -61,21 +57,29 @@ logistic = LogisticRegression(C=1., penalty="l1")
 logistic_50 = LogisticRegression(C=50., penalty="l1")
 logistic_l2 = LogisticRegression(C=1., penalty="l2")
 
+# Cross-validated versions of these classifiers
+from sklearn.grid_search import GridSearchCV
+# GridSearchCV is slow, but note that it takes an 'n_jobs' parameter that
+# can significantly speed up the fitting process on computers with
+# multiple cores
+svm_cv = GridSearchCV(SVC(C=1., kernel="linear"),
+                      param_grid={'C': [.1, .5, 1., 5., 10., 50., 100.]},
+                      scoring='f1', n_jobs=1)
+
 logistic_cv = GridSearchCV(LogisticRegression(C=1., penalty="l1"),
                            param_grid={'C': [.1, .5, 1., 5., 10., 50., 100.]},
                            scoring='f1')
 logistic_l2_cv = GridSearchCV(LogisticRegression(C=1., penalty="l2"),
-                              param_grid={'C': [.1, .5, 1., 5., 10., 50., 100.]},
+                              param_grid={
+                                  'C': [.1, .5, 1., 5., 10., 50., 100.]},
                               scoring='f1')
 
+# The ridge classifier has a specific 'CV' object that can set it's
+# parameters faster than using a GridSearchCV
 ridge = RidgeClassifier()
 ridge_cv = RidgeClassifierCV()
 
-
-# Make a data splitting object for cross validation
-from sklearn.cross_validation import LeaveOneLabelOut, cross_val_score
-cv = LeaveOneLabelOut(session_labels)
-
+# A dictionary, to hold all our classifiers
 classifiers = {'SVC': svm,
                'SVC cv': svm_cv,
                'log l1': logistic,
@@ -86,6 +90,17 @@ classifiers = {'SVC': svm,
                'ridge': ridge,
                'ridge cv': ridge_cv}
 
+
+#############################################################################
+# Here we compute prediction scores and run time for all these
+# classifiers
+
+# Make a data splitting object for cross validation
+from sklearn.cross_validation import LeaveOneLabelOut, cross_val_score
+cv = LeaveOneLabelOut(session_labels)
+
+import time
+
 classifiers_scores = {}
 
 for classifier_name, classifier in sorted(classifiers.items()):
@@ -93,7 +108,8 @@ for classifier_name, classifier in sorted(classifiers.items()):
     print(70 * '_')
 
     for category in categories:
-        classification_target = stimuli[np.logical_not(resting_state)] == category
+        task_mask = np.logical_not(resting_state)
+        classification_target = (stimuli[task_mask] == category)
         t0 = time.time()
         classifiers_scores[classifier_name][category] = cross_val_score(
             classifier,
@@ -107,8 +123,9 @@ for classifier_name, classifier in sorted(classifiers.items()):
             classifiers_scores[classifier_name][category].std(),
             time.time() - t0))
 
+
 ###############################################################################
-# make a rudimentary diagram
+# Then we make a rudimentary diagram
 import matplotlib.pyplot as plt
 plt.figure()
 
@@ -131,21 +148,23 @@ plt.legend(loc='lower center', ncol=3)
 plt.title('Category-specific classification accuracy for different classifiers')
 plt.tight_layout()
 
-###############################################################################
-# Plot the face vs house map for the different estimators
 
-# use the average EPI as a background
+###############################################################################
+# Finally, w plot the face vs house map for the different classifiers
+
+# Use the average EPI as a background
 from nilearn import image
 mean_epi_img = image.mean_img(func_filename)
 
 # Restrict the decoding to face vs house
 condition_mask = np.logical_or(stimuli == b'face', stimuli == b'house')
-masked_timecourses = masked_timecourses[condition_mask[np.logical_not(resting_state)]]
+masked_timecourses = masked_timecourses[
+    condition_mask[np.logical_not(resting_state)]]
 stimuli = stimuli[condition_mask]
 # Transform the stimuli to binary values
 stimuli = (stimuli == b'face').astype(np.int)
 
-from nilearn.plotting import plot_stat_map
+from nilearn.plotting import plot_stat_map, show
 
 for classifier_name, classifier in sorted(classifiers.items()):
     classifier.fit(masked_timecourses, stimuli)
@@ -164,4 +183,4 @@ for classifier_name, classifier in sorted(classifiers.items()):
                   threshold=threshold,
                   title='%s: face vs house' % classifier_name)
 
-plt.show()
+show()

@@ -114,12 +114,12 @@ def test_butterworth():
     data_original = data.copy()
 
     out_single = nisignal.butterworth(data, sampling,
-                                       low_pass=low_pass, high_pass=high_pass,
-                                       copy=True)
+                                      low_pass=low_pass, high_pass=high_pass,
+                                      copy=True)
     np.testing.assert_almost_equal(data, data_original)
     nisignal.butterworth(data, sampling,
-                          low_pass=low_pass, high_pass=high_pass,
-                          copy=False, save_memory=True)
+                         low_pass=low_pass, high_pass=high_pass,
+                         copy=False, save_memory=True)
     np.testing.assert_almost_equal(out_single, data)
 
     # multiple timeseries
@@ -128,23 +128,23 @@ def test_butterworth():
     data_original = data.copy()
 
     out1 = nisignal.butterworth(data, sampling,
-                                 low_pass=low_pass, high_pass=high_pass,
-                                 copy=True)
+                                low_pass=low_pass, high_pass=high_pass,
+                                copy=True)
     np.testing.assert_almost_equal(data, data_original)
     # check that multiple- and single-timeseries filtering do the same thing.
     np.testing.assert_almost_equal(out1[:, 0], out_single)
     nisignal.butterworth(data, sampling,
-                          low_pass=low_pass, high_pass=high_pass,
-                          copy=False)
+                         low_pass=low_pass, high_pass=high_pass,
+                         copy=False)
     np.testing.assert_almost_equal(out1, data)
 
     # Test nyquist frequency clipping, issue #482
     out1 = nisignal.butterworth(data, sampling,
-                                 low_pass=50.,
-                                 copy=True)
+                                low_pass=50.,
+                                copy=True)
     out2 = nisignal.butterworth(data, sampling,
-                                 low_pass=80.,  # Greater than nyq frequency
-                                 copy=True)
+                                low_pass=80.,  # Greater than nyq frequency
+                                copy=True)
     np.testing.assert_almost_equal(out1, out2)
 
 
@@ -215,6 +215,7 @@ def test_detrend():
     np.testing.assert_array_equal(length_1_signal,
                                   nisignal._detrend(length_1_signal))
 
+
 def test_mean_of_squares():
     """Test _mean_of_squares."""
     n_samples = 11
@@ -272,13 +273,13 @@ def test_clean_confounds():
     eps = np.finfo(np.float).eps
     noises1 = noises.copy()
     cleaned_signals = nisignal.clean(noises, confounds=confounds,
-                                      detrend=True, standardize=False)
+                                     detrend=True, standardize=False)
     assert_true(abs(cleaned_signals).max() < 100. * eps)
     np.testing.assert_almost_equal(noises, noises1, decimal=12)
 
     # With signal: output must be orthogonal to confounds
     cleaned_signals = nisignal.clean(signals + noises, confounds=confounds,
-                                      detrend=False, standardize=True)
+                                     detrend=False, standardize=True)
     assert_true(abs(np.dot(confounds.T, cleaned_signals)).max() < 1000. * eps)
 
     # Same output when a constant confound is added
@@ -293,25 +294,25 @@ def test_clean_confounds():
     temp += np.arange(confounds.shape[0])
 
     cleaned_signals = nisignal.clean(signals + noises, confounds=confounds,
-                                      detrend=False, standardize=False)
+                                     detrend=False, standardize=False)
     coeffs = np.polyfit(np.arange(cleaned_signals.shape[0]),
                         cleaned_signals, 1)
     assert_true((abs(coeffs) > 1e-3).any())   # trends remain
 
     cleaned_signals = nisignal.clean(signals + noises, confounds=confounds,
-                                      detrend=True, standardize=False)
+                                     detrend=True, standardize=False)
     coeffs = np.polyfit(np.arange(cleaned_signals.shape[0]),
                         cleaned_signals, 1)
-    assert_true((abs(coeffs) < 100. * eps).all())  # trend removed
+    assert_true((abs(coeffs) < 150. * eps).all())  # trend removed
 
     # Test no-op
     input_signals = 10 * signals
     cleaned_signals = nisignal.clean(input_signals, detrend=False,
-                                      standardize=False)
+                                     standardize=False)
     np.testing.assert_almost_equal(cleaned_signals, input_signals)
 
     cleaned_signals = nisignal.clean(input_signals, detrend=False,
-                                      standardize=True)
+                                     standardize=True)
     np.testing.assert_almost_equal(cleaned_signals.var(axis=0),
                                    np.ones(cleaned_signals.shape[1]))
 
@@ -320,7 +321,7 @@ def test_clean_confounds():
     current_dir = os.path.split(__file__)[0]
 
     signals, _, confounds = generate_signals(n_features=41,
-                                                  n_confounds=3, length=20)
+                                             n_confounds=3, length=20)
     filename1 = os.path.join(current_dir, "data", "spm_confounds.txt")
     filename2 = os.path.join(current_dir, "data",
                              "confounds_with_header.csv")
@@ -363,30 +364,30 @@ def test_high_variance_confounds():
 
     np.testing.assert_almost_equal(seriesC, seriesF, decimal=13)
     outC = nisignal.high_variance_confounds(seriesC, n_confounds=n_confounds,
-                                             detrend=False)
+                                            detrend=False)
     outF = nisignal.high_variance_confounds(seriesF, n_confounds=n_confounds,
-                                             detrend=False)
+                                            detrend=False)
     np.testing.assert_almost_equal(outC, outF, decimal=13)
 
     # Result must not be influenced by global scaling
     seriesG = 2 * seriesC
     outG = nisignal.high_variance_confounds(seriesG, n_confounds=n_confounds,
-                                             detrend=False)
+                                            detrend=False)
     np.testing.assert_almost_equal(outC, outG, decimal=13)
     assert(outG.shape == (length, n_confounds))
 
     # Changing percentile changes the result
     seriesG = seriesC
     outG = nisignal.high_variance_confounds(seriesG, percentile=1.,
-                                             n_confounds=n_confounds,
-                                             detrend=False)
+                                            n_confounds=n_confounds,
+                                            detrend=False)
     assert_raises(AssertionError, np.testing.assert_almost_equal,
                   outC, outG, decimal=13)
     assert(outG.shape == (length, n_confounds))
 
     # Check shape of output
     out = nisignal.high_variance_confounds(seriesG, n_confounds=7,
-                                            detrend=False)
+                                           detrend=False)
     assert(out.shape == (length, 7))
 
     # Adding a trend and detrending should give same results as with no trend.
@@ -395,12 +396,16 @@ def test_high_variance_confounds():
     seriesGt = seriesG + trends
 
     outG = nisignal.high_variance_confounds(seriesG, detrend=False,
-                                             n_confounds=n_confounds)
+                                            n_confounds=n_confounds)
     outGt = nisignal.high_variance_confounds(seriesGt, detrend=True,
                                              n_confounds=n_confounds)
-    # Since sign flips could occur, we look at the absolute values of the 
+    # Since sign flips could occur, we look at the absolute values of the
     # covariance, rather than the absolute difference, and compare this to
     # the identity matrix
     np.testing.assert_almost_equal(np.abs(outG.T.dot(outG)),
                                    np.identity(outG.shape[1]),
                                    decimal=13)
+    # Control for sign flips by taking the min of both possibilities
+    np.testing.assert_almost_equal(
+        np.min(np.abs(np.dstack([outG - outGt, outG + outGt])), axis=2),
+        np.zeros(outG.shape))

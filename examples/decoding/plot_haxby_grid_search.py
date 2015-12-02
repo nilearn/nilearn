@@ -33,26 +33,27 @@ a separator.
 
 """
 
-### Load Haxby dataset ########################################################
+###########################################################################
+# Load the Haxby dataset
 from nilearn import datasets
 import numpy as np
 haxby_dataset = datasets.fetch_haxby_simple()
 
 # print basic information on the dataset
 print('Mask nifti image (3D) is located at: %s' % haxby_dataset.mask)
-print('Functional nifti image (4D) are located at: %s' % haxby_dataset.func)
+print('Functional nifti image (4D) are located at: %s' % haxby_dataset.func[0])
 
-y, session = np.loadtxt(haxby_dataset.session_target).astype('int').T
-conditions = np.recfromtxt(haxby_dataset.conditions_target)['f0']
-
-### Preprocess data ###########################################################
+# Load the behavioral data
+y, session = np.loadtxt(haxby_dataset.session_target[0]).astype('int').T
+conditions = np.recfromtxt(haxby_dataset.conditions_target[0])['f0']
 
 # Keep only data corresponding to shoes or bottles
 condition_mask = np.logical_or(conditions == b'shoe', conditions == b'bottle')
 y = y[condition_mask]
 conditions = conditions[condition_mask]
 
-### Loading step ##############################################################
+###########################################################################
+# Prepare the data with the NiftiMasker
 from nilearn.input_data import NiftiMasker
 
 mask_filename = haxby_dataset.mask
@@ -60,26 +61,25 @@ mask_filename = haxby_dataset.mask
 nifti_masker = NiftiMasker(mask_img=mask_filename, sessions=session,
                            smoothing_fwhm=4, standardize=True,
                            memory="nilearn_cache", memory_level=1)
-func_filename = haxby_dataset.func
+func_filename = haxby_dataset.func[0]
 X = nifti_masker.fit_transform(func_filename)
 # Restrict to non rest data
 X = X[condition_mask]
 session = session[condition_mask]
 
-### Prediction function #######################################################
+###########################################################################
+# Build the decoder that we will use
 
-### Define the prediction function to be used.
+# Define the prediction function to be used.
 # Here we use a Support Vector Classification, with a linear kernel
 from sklearn.svm import SVC
 svc = SVC(kernel='linear')
 
-### Dimension reduction #######################################################
 
-from sklearn.feature_selection import SelectKBest, f_classif
-
-### Define the dimension reduction to be used.
+# Define the dimension reduction to be used.
 # Here we use a classical univariate feature selection based on F-test,
 # namely Anova. We set the number of features to be selected to 500
+from sklearn.feature_selection import SelectKBest, f_classif
 feature_selection = SelectKBest(f_classif, k=500)
 
 # We have our classifier (SVC), our feature selection (SelectKBest), and now,
@@ -88,7 +88,8 @@ feature_selection = SelectKBest(f_classif, k=500)
 from sklearn.pipeline import Pipeline
 anova_svc = Pipeline([('anova', feature_selection), ('svc', svc)])
 
-### Cross validation ##########################################################
+###########################################################################
+# Compute prediction scores using cross-validation
 
 anova_svc.fit(X, y)
 y_pred = anova_svc.predict(X)
@@ -111,16 +112,8 @@ for k in k_range:
     scores_validation.append(np.mean(y_pred == y[session == 10]))
     print("score validation: %.4f" % scores_validation[-1])
 
-
-from matplotlib import pyplot as plt
-plt.figure(figsize=(6, 4))
-plt.plot(cv_scores, label='Cross validation scores')
-plt.plot(scores_validation, label='Left-out validation data scores')
-plt.xticks(np.arange(len(k_range)), k_range)
-plt.axis('tight')
-plt.xlabel('k')
-
-### Nested cross-validation ###################################################
+###########################################################################
+# Nested cross-validation
 from sklearn.grid_search import GridSearchCV
 # We are going to tune the parameter 'k' of the step called 'anova' in
 # the pipeline. Thus we need to address it as 'anova__k'.
@@ -129,6 +122,19 @@ from sklearn.grid_search import GridSearchCV
 # much faster
 grid = GridSearchCV(anova_svc, param_grid={'anova__k': k_range}, verbose=1)
 nested_cv_scores = cross_val_score(grid, X, y)
+
+print("Nested CV score: %.4f" % np.mean(nested_cv_scores))
+
+###########################################################################
+# Plot the prediction scores using matplotlib
+
+from matplotlib import pyplot as plt
+plt.figure(figsize=(6, 4))
+plt.plot(cv_scores, label='Cross validation scores')
+plt.plot(scores_validation, label='Left-out validation data scores')
+plt.xticks(np.arange(len(k_range)), k_range)
+plt.axis('tight')
+plt.xlabel('k')
 
 plt.axhline(np.mean(nested_cv_scores),
             label='Nested cross-validation',

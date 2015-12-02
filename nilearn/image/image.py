@@ -7,6 +7,7 @@ See also nilearn.signal.
 # License: simplified BSD
 
 import collections
+import operator
 from distutils.version import LooseVersion
 
 import numpy as np
@@ -370,26 +371,32 @@ def _compute_mean(imgs, target_affine=None,
     input_repr = _repr_niimgs(imgs)
 
     imgs = check_niimg(imgs)
-    mean_img = _safe_get_data(imgs)
-    if not mean_img.ndim in (3, 4):
+    mean_data = _safe_get_data(imgs)
+    affine = imgs.get_affine()
+    # Free memory ASAP
+    imgs = None
+    if not mean_data.ndim in (3, 4):
         raise ValueError('Computation expects 3D or 4D '
                          'images, but %i dimensions were given (%s)'
-                         % (mean_img.ndim, input_repr))
-    if mean_img.ndim == 4:
-        mean_img = mean_img.mean(axis=-1)
-    mean_img = resampling.resample_img(
-        new_img_like(imgs, mean_img, imgs.get_affine()),
-        target_affine=target_affine, target_shape=target_shape)
-    affine = mean_img.get_affine()
-    mean_img = mean_img.get_data()
+                         % (mean_data.ndim, input_repr))
+    if mean_data.ndim == 4:
+        mean_data = mean_data.mean(axis=-1)
+    else:
+        mean_data = mean_data.copy()
+    mean_data = resampling.resample_img(
+        nibabel.Nifti1Image(mean_data, affine),
+        target_affine=target_affine, target_shape=target_shape,
+        copy=False)
+    affine = mean_data.get_affine()
+    mean_data = mean_data.get_data()
 
     if smooth:
-        nan_mask = np.isnan(mean_img)
-        mean_img = _smooth_array(mean_img, affine=np.eye(4), fwhm=smooth,
-                                 ensure_finite=True, copy=False)
-        mean_img[nan_mask] = np.nan
+        nan_mask = np.isnan(mean_data)
+        mean_data = _smooth_array(mean_data, affine=np.eye(4), fwhm=smooth,
+                                  ensure_finite=True, copy=False)
+        mean_data[nan_mask] = np.nan
 
-    return mean_img, affine
+    return mean_data, affine
 
 
 def mean_img(imgs, target_affine=None, target_shape=None,
@@ -442,6 +449,7 @@ def mean_img(imgs, target_affine=None, target_shape=None,
     running_mean, first_affine = _compute_mean(first_img,
                 target_affine=target_affine,
                 target_shape=target_shape)
+
     if target_affine is None or target_shape is None:
         target_affine = first_affine
         target_shape = running_mean.shape[:3]
@@ -453,10 +461,7 @@ def mean_img(imgs, target_affine=None, target_shape=None,
         n_imgs += 1
         # _compute_mean returns (mean_img, affine)
         this_mean = this_mean[0]
-        if running_mean is None:
-            running_mean = this_mean
-        else:
-            running_mean += this_mean
+        running_mean += this_mean
 
     running_mean = running_mean / float(n_imgs)
     return new_img_like(first_img, running_mean, target_affine)
@@ -563,9 +568,16 @@ def new_img_like(ref_niimg, data, affine=None, copy_header=False):
     new_img: image
         A loaded image with the same type (and header) as the reference image.
     """
-    from .._utils import load_niimg  # avoid circular import
-
-    ref_niimg = load_niimg(ref_niimg)
+    # Hand-written loading code to avoid too much memory consumption
+    if not (hasattr(ref_niimg, 'get_data')
+              and hasattr(ref_niimg,'get_affine')):
+        if isinstance(ref_niimg, _basestring):
+            ref_niimg = nibabel.load(ref_niimg)
+        elif operator.isSequenceType(ref_niimg):
+            ref_niimg = nibabel.load(ref_niimg[0])
+        else:
+            raise TypeError(('The reference image should be a niimg, %r '
+                            'was passed') % ref_niimg )
 
     if affine is None:
         affine = ref_niimg.get_affine()

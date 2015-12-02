@@ -2,65 +2,34 @@
 Transformer for computing ROI signals.
 """
 
-from sklearn.base import BaseEstimator, TransformerMixin
+import numpy as np
 from sklearn.externals.joblib import Memory
 
 from .. import _utils
-from .._utils import logger
-from .._utils import CacheMixin
-from .._utils.cache_mixin import cache
+from .._utils import logger, CacheMixin
+from .._utils.niimg import _get_data_dtype
+from .._utils.class_inspect import get_params
 from .._utils.niimg_conversions import _check_same_fov
-from .. import signal
 from .. import region
 from .. import image
+from .base_masker import filter_and_extract, BaseMasker
 
 
-def _extract_signals(imgs, maps_img, smoothing_fwhm,
-                     t_r, standardize, detrend, low_pass, high_pass,
-                     confounds, memory, memory_level,
-                     resample_on_maps=False, mask_img=None,
-                     verbose=0):
-    """Extract representative time series of each region from fMRI signal
-    """
-    if verbose > 0:
-        print("Loading images: %s" % _utils._repr_niimgs(imgs)[:200])
-    imgs = _utils.check_niimg_4d(imgs)
+class _ExtractionFunctor(object):
 
-    if resample_on_maps:
-        if verbose > 0:
-            print("Resampling images")
-        imgs = cache(
-            image.resample_img, memory, func_memory_level=2,
-            memory_level=memory_level)(
-                imgs, interpolation="continuous",
-                target_shape=maps_img.shape[:3],
-                target_affine=maps_img.get_affine())
+    func_name = 'nifti_maps_masker_extractor'
 
-    if smoothing_fwhm is not None:
-        if verbose > 0:
-            print("Smoothing images")
-        imgs = cache(image.smooth_img, memory, func_memory_level=2,
-                     memory_level=memory_level)(
-            imgs, fwhm=smoothing_fwhm)
+    def __init__(self, _resampled_maps_img_, _resampled_mask_img_):
+        self._resampled_maps_img_ = _resampled_maps_img_
+        self._resampled_mask_img_ = _resampled_mask_img_
 
-    if verbose > 0:
-        print("Extracting maps signals")
-    region_signals, labels_ = cache(
-        region.img_to_signals_maps, memory, func_memory_level=2,
-        memory_level=memory_level)(
-            imgs, maps_img, mask_img=mask_img)
-
-    if verbose > 0:
-        print("Cleaning extracted signals")
-    region_signals = cache(signal.clean, memory, func_memory_level=2,
-                           memory_level=memory_level)(
-        region_signals, detrend=detrend, standardize=standardize,
-        t_r=t_r, low_pass=low_pass, high_pass=high_pass,
-        confounds=confounds)
-    return region_signals, labels_
+    def __call__(self, imgs):
+            return region.img_to_signals_maps(
+                imgs, self._resampled_maps_img_,
+                mask_img=self._resampled_mask_img_)
 
 
-class NiftiMapsMasker(BaseEstimator, TransformerMixin, CacheMixin):
+class NiftiMapsMasker(BaseMasker, CacheMixin):
     """Class for masking of Niimg-like objects.
 
     NiftiMapsMasker is useful when data from overlapping volumes should be
@@ -77,6 +46,10 @@ class NiftiMapsMasker(BaseEstimator, TransformerMixin, CacheMixin):
     mask_img: 3D niimg-like object, optional
         See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
         Mask to apply to regions before extracting signals.
+
+    allow_overlap: boolean, optional
+        If False, an error is raised if the maps overlaps (ie at least two
+        maps have a non-zero value for the same voxel). Default is True.
 
     smoothing_fwhm: float, optional
         If smoothing_fwhm is not None, it gives the full-width half maximum in
@@ -135,6 +108,7 @@ class NiftiMapsMasker(BaseEstimator, TransformerMixin, CacheMixin):
     # memory and memory_level are used by CacheMixin.
 
     def __init__(self, maps_img, mask_img=None,
+                 allow_overlap=True,
                  smoothing_fwhm=None, standardize=False, detrend=False,
                  low_pass=None, high_pass=None, t_r=None,
                  resampling_target="data",
@@ -142,6 +116,9 @@ class NiftiMapsMasker(BaseEstimator, TransformerMixin, CacheMixin):
                  verbose=0):
         self.maps_img = maps_img
         self.mask_img = mask_img
+
+        # Maps Masker parameter
+        self.allow_overlap = allow_overlap
 
         # Parameters for image.smooth
         self.smoothing_fwhm = smoothing_fwhm
@@ -225,31 +202,31 @@ class NiftiMapsMasker(BaseEstimator, TransformerMixin, CacheMixin):
                              % self.__class__.__name__)
 
     def fit_transform(self, imgs, confounds=None):
+        """Prepare and perform signal extraction.
+        """
         return self.fit().transform(imgs, confounds=confounds)
 
-    def transform(self, imgs, confounds=None):
-        """Extract signals from images.
+    def transform_single_imgs(self, imgs, confounds=None):
+        """Extract signals from a single 4D niimg.
 
         Parameters
-        ==========
-        imgs: Niimg-like object
+        ----------
+        imgs: 3D/4D Niimg-like object
             See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
             Images to process. It must boil down to a 4D image with scans
             number as last dimension.
 
-        confounds: array-like, optional
+        confounds: CSV file or array-like, optional
             This parameter is passed to signal.clean. Please see the related
             documentation for details.
             shape: (number of scans, number of confounds)
 
         Returns
-        =======
+        -------
         region_signals: 2D numpy.ndarray
-            Signal for each region.
-            shape: (number of scans, number of regions)
+            Signal for each map.
+            shape: (number of scans, number of maps)
         """
-        self._check_fitted()
-
         # We handle the resampling of maps and mask separately because the
         # affine of the maps and mask images should not impact the extraction
         # of the signal.
@@ -293,18 +270,46 @@ class NiftiMapsMasker(BaseEstimator, TransformerMixin, CacheMixin):
                         target_shape=ref_img.shape[:3],
                         target_affine=ref_img.get_affine())
 
+        if not self.allow_overlap:
+            # Check if there is an overlap.
+
+            # If float, we set low values to 0
+            dtype = _get_data_dtype(self._resampled_maps_img_)
+            data = self._resampled_maps_img_.get_data()
+            if dtype.kind == 'f':
+                data[data < np.finfo(dtype).eps] = 0.
+
+            # Check the overlaps
+            if np.any(np.sum(data > 0., axis=3) > 1):
+                raise ValueError(
+                    'Overlap detected in the maps. The overlap may be '
+                    'due to the atlas itself or possibly introduced by '
+                    'resampling'
+                )
+
+        target_shape = None
+        target_affine = None
+        if self.resampling_target != 'data':
+            target_shape = self._resampled_maps_img_.shape[:3]
+            target_affine = self._resampled_maps_img_.get_affine()
+
+        params = get_params(NiftiMapsMasker, self,
+                            ignore=['resampling_target'])
+        params['target_shape'] = target_shape
+        params['target_affine'] = target_affine
+
         region_signals, labels_ = self._cache(
-            _extract_signals, ignore=['verbose', 'memory', 'memory_level'])(
+            filter_and_extract, ignore=['verbose', 'memory', 'memory_level'])(
                 # Images
-                imgs, self._resampled_maps_img_,
+                imgs, _ExtractionFunctor(self._resampled_maps_img_,
+                                         self._resampled_mask_img_),
                 # Pre-treatments
-                self.smoothing_fwhm, self.t_r, self.standardize, self.detrend,
-                self.low_pass, self.high_pass, confounds,
+                params,
+                confounds=confounds,
                 # Caching
-                self.memory, self.memory_level,
+                memory=self.memory,
+                memory_level=self.memory_level,
                 # kwargs
-                mask_img=self._resampled_mask_img_,
-                resample_on_maps=(self.resampling_target != 'data'),
                 verbose=self.verbose)
         self.labels_ = labels_
 

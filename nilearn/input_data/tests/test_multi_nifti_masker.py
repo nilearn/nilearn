@@ -119,10 +119,11 @@ def test_joblib_cache():
     mask[20, 20, 20] = 1
     mask_img = Nifti1Image(mask, np.eye(4))
 
-    with write_tmp_imgs(mask_img, create_files=True)\
-                as filename:
+    with write_tmp_imgs(mask_img, create_files=True) as filename:
         masker = MultiNiftiMasker(mask_img=filename)
         masker.fit()
         mask_hash = hash(masker.mask_img_)
         masker.mask_img_.get_data()
         assert_true(mask_hash == hash(masker.mask_img_))
+        # enables to delete "filename" on windows
+        del masker

@@ -3,6 +3,7 @@ from nose.tools import assert_equal, assert_true
 import nibabel
 from nilearn.plotting.find_cuts import (find_xyz_cut_coords, find_cut_slices,
                                         _transform_cut_coords)
+from nilearn._utils.testing import assert_raises_regex, assert_warns
 
 
 def test_find_cut_coords():
@@ -72,6 +73,36 @@ def test_find_cut_slices():
                                n_cuts=n_cuts, spacing=2)
 
 
+def test_validity_of_ncuts_error_in_find_cut_slices():
+    data = np.zeros((50, 50, 50))
+    affine = np.eye(4)
+    x_map, y_map, z_map = 25, 5, 20
+    data[x_map - 15:x_map + 15, y_map - 3:y_map + 3, z_map - 10:z_map + 10] = 1
+    img = nibabel.Nifti1Image(data, affine)
+    direction = 'z'
+    for n_cuts in (0, -2, -10.00034, 0.999999, 0.4, 0.11111111):
+        message = ("Image has %d slices in direction %s. Therefore, the number "
+                   "of cuts must be between 1 and %d. You provided n_cuts=%s " % (
+                       data.shape[0], direction, data.shape[0], n_cuts))
+        assert_raises_regex(ValueError,
+                            message,
+                            find_cut_slices,
+                            img, n_cuts=n_cuts)
+
+
+def test_passing_of_ncuts_in_find_cut_slices():
+    data = np.zeros((50, 50, 50))
+    affine = np.eye(4)
+    x_map, y_map, z_map = 25, 5, 20
+    data[x_map - 15:x_map + 15, y_map - 3:y_map + 3, z_map - 10:z_map + 10] = 1
+    img = nibabel.Nifti1Image(data, affine)
+    # smoke test to check if it rounds the floating point inputs
+    for n_cuts in (1, 5., 0.9999999, 2.000000004):
+        cut1 = find_cut_slices(img, direction='x', n_cuts=n_cuts)
+        cut2 = find_cut_slices(img, direction='x', n_cuts=round(n_cuts))
+        np.testing.assert_array_equal(cut1, cut2)
+
+
 def test_singleton_ax_dim():
     for axis, direction in enumerate("xyz"):
         shape = [5, 6, 7]
@@ -94,3 +125,11 @@ def test_tranform_cut_coords():
     for direction in 'xyz':
         assert_equal(len(_transform_cut_coords(cut_coords, direction, affine)),
                      n_cuts)
+
+
+def test_find_cuts_empty_mask_no_crash():
+    img = nibabel.Nifti1Image(np.ones((2, 2, 2)), np.eye(4))
+    mask = np.zeros((2, 2, 2)).astype(np.bool)
+    cut_coords = assert_warns(UserWarning, find_xyz_cut_coords, img,
+                              mask=mask)
+    np.testing.assert_array_equal(cut_coords, [.5, .5, .5])

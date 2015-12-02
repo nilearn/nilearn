@@ -19,7 +19,8 @@ brain. To avoid having too dense a graph, we represent only the 20% edges
 with the highest values.
 
 """
-
+############################################################################
+# Retrieve the atlas and the data
 from nilearn import datasets
 atlas = datasets.fetch_msdl_atlas()
 atlas_filename = atlas['maps']
@@ -32,38 +33,49 @@ csv_filename = atlas['labels']
 labels = np.recfromcsv(csv_filename)
 names = labels['name']
 
-from nilearn.input_data import NiftiMapsMasker
-masker = NiftiMapsMasker(maps_img=atlas_filename, standardize=True,
-                           memory='nilearn_cache', verbose=5)
-
 data = datasets.fetch_adhd(n_subjects=1)
 
-# print basic dataset information
 print('First subject resting-state nifti image (4D) is located at: %s' %
       data.func[0])
+
+############################################################################
+# Extract the time series
+from nilearn.input_data import NiftiMapsMasker
+masker = NiftiMapsMasker(maps_img=atlas_filename, standardize=True,
+                         memory='nilearn_cache', verbose=5)
 
 time_series = masker.fit_transform(data.func[0],
                                    confounds=data.confounds)
 
+############################################################################
+# `time_series` is now a 2D matrix, of shape (number of time points x
+# number of regions)
+print(time_series.shape)
+
+############################################################################
+# Build and display a correlation matrix
 correlation_matrix = np.corrcoef(time_series.T)
 
 # Display the correlation matrix
 from matplotlib import pyplot as plt
 plt.figure(figsize=(10, 10))
-plt.imshow(correlation_matrix, interpolation="nearest")
+# Mask out the major diagonal
+np.fill_diagonal(correlation_matrix, 0)
+plt.imshow(correlation_matrix, interpolation="nearest", cmap="RdBu_r",
+           vmax=0.8, vmin=-0.8)
+plt.colorbar()
 # And display the labels
 x_ticks = plt.xticks(range(len(names)), names, rotation=90)
 y_ticks = plt.yticks(range(len(names)), names)
 
+############################################################################
 # And now display the corresponding graph
 from nilearn import plotting
-coords = np.vstack((labels['x'], labels['y'], labels['z'])).T
+coords = labels[['x', 'y', 'z']].tolist()
 
 # We threshold to keep only the 20% of edges with the highest value
 # because the graph is very dense
 plotting.plot_connectome(correlation_matrix, coords,
                          edge_threshold="80%")
 
-plt.show()
-
-
+plotting.show()

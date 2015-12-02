@@ -10,6 +10,39 @@ uses.
 .. contents:: **List of modules**
    :local:
 
+
+.. _connectome_ref:
+
+:mod:`nilearn.connectome`: Functional Connectivity
+====================================================
+
+.. automodule:: nilearn.connectome
+   :no-members:
+   :no-inherited-members:
+
+**Classes**:
+
+.. currentmodule:: nilearn.connectome
+
+.. autosummary::
+   :toctree: generated/
+   :template: class.rst
+   
+   ConnectivityMeasure
+   GroupSparseCovariance
+   GroupSparseCovarianceCV
+
+**Functions**:
+
+.. currentmodule:: nilearn.connectome
+
+.. autosummary::
+   :toctree: generated/
+   :template: function.rst
+
+   sym_to_vec
+   group_sparse_covariance
+
 .. _datasets_ref:
 
 :mod:`nilearn.datasets`: Automatic Dataset Fetching
@@ -36,6 +69,7 @@ uses.
    fetch_atlas_power_2011
    fetch_atlas_smith_2009
    fetch_atlas_yeo_2011
+   fetch_atlas_aal
    fetch_abide_pcp
    fetch_adhd
    fetch_haxby
@@ -64,11 +98,13 @@ uses.
    :toctree: generated/
    :template: class.rst
 
+   SpaceNetClassifier
+   SpaceNetRegressor
    SearchLight
 
 .. _decomposition_ref:
 
-:mod:`nilearn.decompositon`: Multivariate decompositions
+:mod:`nilearn.decomposition`: Multivariate decompositions
 =========================================================
 
 .. automodule:: nilearn.decomposition
@@ -162,7 +198,7 @@ uses.
    compute_multi_epi_mask
    compute_background_mask
    compute_multi_background_mask
-   intersect_mask
+   intersect_masks
    apply_mask
    unmask
 
@@ -239,6 +275,7 @@ uses.
    plot_connectome
    plot_prob_atlas
    find_xyz_cut_coords
+   show
 
 **Classes**:
 
@@ -271,5 +308,7 @@ uses.
    :template: function.rst
 
    clean
+   high_variance_confounds
+
 
 

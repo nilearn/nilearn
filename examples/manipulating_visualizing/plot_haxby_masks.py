@@ -31,7 +31,7 @@ k_slice = np.round(k_slice)
 
 fig = plt.figure(figsize=(4, 5.4), facecolor='k')
 
-from nilearn.plotting import plot_anat
+from nilearn.plotting import plot_anat, show
 display = plot_anat(mean_img, display_mode='z', cut_coords=[z_slice],
                     figure=fig)
 mask_vt_filename = haxby_dataset.mask_vt[0]
@@ -52,4 +52,4 @@ p_h = Rectangle((0, 0), 1, 1, fc="blue")
 p_f = Rectangle((0, 0), 1, 1, fc="limegreen")
 plt.legend([p_v, p_h, p_f], ["vt", "house", "face"])
 
-plt.show()
+show()

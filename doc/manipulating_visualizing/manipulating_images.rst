@@ -32,20 +32,20 @@ datasets and atlases. Dataset fetching functions can be imported from
 :mod:`nilearn.datasets`::
 
     >>> from nilearn import datasets
-    >>> haxby_files = datasets.fetch_haxby(n_subjects=1)
+    >>> haxby_files = datasets.fetch_haxby(n_subjects=1)  # doctest: +SKIP
 
 They return a data structure that contains different pieces of
 information on the retrieved dataset, including the
 file names on hard disk::
 
     >>> # The different files
-    >>> print(list(haxby_files.keys()))
-    ['mask_house_little', 'anat', 'mask_house', 'mask_face', 'func', 'session_target', 'mask_vt', 'mask_face_little']
+    >>> print(sorted(list(haxby_files.keys())))  # doctest: +SKIP
+    ['anat', 'description', 'func', 'mask_face', 'mask_face_little', 'mask_house', 'mask_house_little', 'mask_vt', 'session_target']
     >>> # Path to first functional file
-    >>> print(haxby_files.func[0])  # doctest: +ELLIPSIS
+    >>> print(haxby_files.func[0])  # doctest: +ELLIPSIS +SKIP
     /.../nilearn_data/haxby2001/subj1/bold.nii.gz
     >>> # Provide information on the dataset
-    >>> print(haxby_files.description) # doctest: +ELLIPSIS
+    >>> print(haxby_files.description) # doctest: +ELLIPSIS +SKIP
     Haxby 2001 results
 
 
@@ -58,7 +58,7 @@ file names on hard disk::
 Explanation and further resources of the dataset at hand can be
 retrieved as follows:
 
-    >>> print haxby_dataset['description']
+    >>> print haxby_dataset['description']  # doctest: +SKIP
 
 For a list of all the data fetching functions in nilearn, see :ref:`datasets_ref`.
 
@@ -93,22 +93,28 @@ file name strings ::
     # dataset folder contains subject1.nii and subject2.nii
     my_data = ['dataset/subject1.nii', 'dataset/subject2.nii']
 
-Python also provides helper functions to work with file paths. In particular,
-:func:`glob.glob` is useful to automatically search and
-list many files with a "wild-card" pattern: \*.nii
-
-.. warning::
-   The result of :func:`glob.glob` is not sorted. In the neuroimaging domain,
-   it may be helpful to alphabetically sort the output of
-   the glob call using the :func:`sorted` function.
+Nilearn also provides a "wildcard" pattern to list many files with one
+expression:
 
 ::
 
-   >>> # dataset folder contains subject1.nii and subject2.nii
-   >>> import glob
-   >>> sorted(glob.glob('dataset/subject*.nii')) # doctest: +SKIP
-   ['dataset/subject1.nii', 'dataset/subject2.nii']
+    >>> # dataset folder contains subject_01.nii to subject_03.nii
+    >>> # dataset/subject_*.nii is a glob expression matching all filenames.
+    >>> # Example with a smoothing process:
+    >>> from nilearn.image import smooth_img
+    >>> result_img = smooth_img("dataset/subject_*") # doctest: +SKIP
 
+.. topic:: **Python globbing**
+
+    For more complicated use cases, Python also provides functions to work
+    with file paths, in particular, :func:`glob.glob`.
+
+    .. warning::
+
+        Unlike nilearn's path expansion, the result of :func:`glob.glob` is
+        not sorted and depending on the computer you are running they
+        might not be in alphabetic order. We advise you to rely on
+        nilearn's path expansion.
 
 Understanding neuroimaging data
 ===============================
@@ -138,8 +144,8 @@ Neuroimaging data can be loaded in a simple way thanks to nibabel_.
 A Nifti file on disk can be loaded with a single line.
 
 .. literalinclude:: ../../examples/manipulating_visualizing/plot_visualization.py
-     :start-after: ### Load an fMRI file #########################################################
-     :end-before: ### Visualization #############################################################
+     :start-after: # Fetch data
+     :end-before: # Visualization
 
 .. topic:: **Dataset formatting: data shape**
 
@@ -195,11 +201,11 @@ For the Haxby datasets, we can load the categories of the images
 presented to the subject::
 
     >>> from nilearn import datasets
-    >>> haxby_dataset = datasets.fetch_haxby(n_subjects=1)
+    >>> haxby_dataset = datasets.fetch_haxby(n_subjects=1)  # doctest: +SKIP
     >>> import numpy as np
-    >>> labels = np.recfromcsv(haxby_dataset.session_target[0], delimiter=" ")
-    >>> stimuli = labels['labels']
-    >>> print(np.unique(stimuli))
+    >>> labels = np.recfromcsv(haxby_dataset.session_target[0], delimiter=" ")  # doctest: +SKIP
+    >>> stimuli = labels['labels']  # doctest: +SKIP
+    >>> print(np.unique(stimuli))  # doctest: +SKIP
     ['bottle' 'cat' 'chair' 'face' 'house' 'rest' 'scissors' 'scrambledpix'
      'shoe']
 
@@ -215,22 +221,15 @@ If we do not have a spatial mask of the target regions, a brain mask
 can be easily extracted from the fMRI data by the
 :func:`nilearn.masking.compute_epi_mask` function:
 
-.. currentmodule:: nilearn.masking
-
-.. autosummary::
-   :toctree: generated/
-   :template: function.rst
-
-   compute_epi_mask
-
-.. figure:: ../auto_examples/manipulating_visualizing/images/plot_visualization_002.png
+.. figure:: ../auto_examples/manipulating_visualizing/images/sphx_glr_plot_visualization_002.png
     :target: ../auto_examples/manipulating_visualizing/plot_visualization.html
     :align: right
     :scale: 50%
 
 .. literalinclude:: ../../examples/manipulating_visualizing/plot_visualization.py
-     :start-after: ### Extracting a brain mask ###################################################
-     :end-before: ### Applying the mask #########################################################
+     :start-after: # Extracting a brain mask
+     :end-before: # Applying the mask to extract the corresponding time series
+
 
 .. _mask_4d_2_3d:
 
@@ -250,10 +249,10 @@ brain. It is thus convenient to apply a brain mask in order to convert the
 
 
 .. literalinclude:: ../../examples/manipulating_visualizing/plot_visualization.py
-     :start-after: ### Applying the mask #########################################################
-     :end-before: ### Find voxels of interest ###################################################
+     :start-after: # Applying the mask to extract the corresponding time series
+     :end-before: # Find voxels of interest
 
-.. figure:: ../auto_examples/manipulating_visualizing/images/plot_visualization_003.png
+.. figure:: ../auto_examples/manipulating_visualizing/images/sphx_glr_plot_visualization_003.png
     :target: ../auto_examples/manipulating_visualizing/plot_visualization.html
     :align: center
     :scale: 50
@@ -272,7 +271,7 @@ set up your own data preparation procedure:
 .. currentmodule:: nilearn
 
 * Resampling: :func:`nilearn.image.resample_img`. See the example
-  :ref:`example_manipulating_visualizing_plot_affine_transformation.py` to
+  :ref:`sphx_glr_auto_examples_manipulating_visualizing_plot_affine_transformation.py` to
   see the effect of affine transforms on data and bounding boxes.
 * Computing the mean of images (along the time/4th dimension):
   :func:`nilearn.image.mean_img`
@@ -326,7 +325,7 @@ it can also use file names as input parameters.
     :start-after: # Smooth the data
     :end-before: # Run a T-test for face and houses
 
-.. figure:: ../auto_examples/manipulating_visualizing/images/plot_roi_extraction_001.png
+.. figure:: ../auto_examples/manipulating_visualizing/images/sphx_glr_plot_roi_extraction_001.png
     :target: ../auto_examples/manipulating_visualizing/plot_roi_extraction.html
     :align: center
     :scale: 50%
@@ -355,9 +354,9 @@ more discriminative is the voxel in distinguishing the two conditions.
 
 .. literalinclude:: ../../examples/manipulating_visualizing/plot_roi_extraction.py
     :start-after: # Run a T-test for face and houses
-    :end-before: ### Build a mask ##############################################################
+    :end-before: # Build a mask from this statistical map
 
-.. figure:: ../auto_examples/manipulating_visualizing/images/plot_roi_extraction_002.png
+.. figure:: ../auto_examples/manipulating_visualizing/images/sphx_glr_plot_roi_extraction_002.png
     :target: ../auto_examples/manipulating_visualizing/plot_roi_extraction.html
     :align: center
     :scale: 50%
@@ -378,7 +377,7 @@ is easy thanks to numpy indexing à la Matlab.
     :start-after: # Thresholding
     :end-before: # Binarization and intersection with VT mask
 
-.. figure:: ../auto_examples/manipulating_visualizing/images/plot_roi_extraction_003.png
+.. figure:: ../auto_examples/manipulating_visualizing/images/sphx_glr_plot_roi_extraction_003.png
     :target: ../auto_examples/manipulating_visualizing/plot_roi_extraction.html
     :align: center
     :scale: 50%
@@ -391,8 +390,8 @@ corresponding spatial mask is provided in `haxby.mask_vt`.
 We want to compute the
 intersection of this provided mask with our self-computed mask.
 The first step is to load it with
-nibabel's :func:`nibabel.load`. We can then use a logical "and" operation
--- :func:`numpy.logical_and` -- to keep only voxels
+nibabel's **nibabel.load**. We can then use a logical "and" operation
+-- **numpy.logical_and** -- to keep only voxels
 that have been selected in both masks. In neuroimaging jargon, this is
 called an "AND conjunction."
 
@@ -400,7 +399,7 @@ called an "AND conjunction."
     :start-after: # Binarization and intersection with VT mask
     :end-before: # Dilation
 
-.. figure:: ../auto_examples/manipulating_visualizing/images/plot_roi_extraction_004.png
+.. figure:: ../auto_examples/manipulating_visualizing/images/sphx_glr_plot_roi_extraction_004.png
     :target: ../auto_examples/manipulating_visualizing/plot_roi_extraction.html
     :align: center
     :scale: 50%
@@ -420,7 +419,7 @@ representations.
     :start-after: # Dilation
     :end-before: # Identification of connected components
 
-.. figure:: ../auto_examples/manipulating_visualizing/images/plot_roi_extraction_005.png
+.. figure:: ../auto_examples/manipulating_visualizing/images/sphx_glr_plot_roi_extraction_005.png
     :target: ../auto_examples/manipulating_visualizing/plot_roi_extraction.html
     :align: center
     :scale: 50%
@@ -428,16 +427,16 @@ representations.
 Extracting connected components
 -------------------------------
 
-The function :func:`scipy.ndimage.label` from the scipy Python library
+The function **scipy.ndimage.label** from the scipy Python library
 identifies immediately neighboring
 voxels in our voxels mask. It assigns a separate integer label to each
 one of them.
 
 .. literalinclude:: ../../examples/manipulating_visualizing/plot_roi_extraction.py
     :start-after: # Identification of connected components
-    :end-before: # use the new ROIs to extract data maps in both ROIs
+    :end-before: # Use the new ROIs to extract data maps in both ROIs
 
-.. figure:: ../auto_examples/manipulating_visualizing/images/plot_roi_extraction_006.png
+.. figure:: ../auto_examples/manipulating_visualizing/images/sphx_glr_plot_roi_extraction_006.png
     :target: ../auto_examples/manipulating_visualizing/plot_roi_extraction.html
     :align: center
     :scale: 50%

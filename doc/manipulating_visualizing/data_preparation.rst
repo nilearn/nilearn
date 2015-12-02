@@ -1,7 +1,7 @@
 .. _extracting_data:
 
 =========================================================
-Data preparation: loading and basic feature extraction
+Data preparation: loading and basic signal extraction
 =========================================================
 
 .. contents:: **Contents**
@@ -12,24 +12,27 @@ Data preparation: loading and basic feature extraction
 
 .. topic:: **File names as arguments**
 
-   For most applications of nilearn, it is not necessary to load
-   the neuroimaging data oneself.
-   Rather than raw data (i.e., numpy arrays),
-   most nilearn functions and objects accept file names as
-   arguments::
+   Nilearn functions and objects accept file names as arguments::
 
     >>> from nilearn import image
-    >>> smoothed_img = image.smooth_img('/home/user/t_map001.nii')
+    >>> smoothed_img = image.smooth_img('/home/user/t_map001.nii') # doctest: +SKIP
   
    Nilearn can operate on either file names or `NiftiImage objects
-   <http://nipy.org/nibabel/nibabel_images.html>`_. The later
-   represent
+   <http://nipy.org/nibabel/nibabel_images.html>`_. The later represent
    the specified nifti files loaded in memory.
-   In the context of nilearn, we often use the term 'niimg'
-   as abbreviation that denotes either a file name or a
-   NiftiImage object. In the example above, the function smooth_img
-   returns a NiftiImage object, which can then be readily passed to any
-   other nilearn function that accepts niimg arguments.
+   
+   In nilearn, we often use the term 'niimg' as abbreviation that denotes
+   either a file name or a NiftiImage object. In the example above, the
+   function smooth_img returns a NiftiImage object, which can then be
+   readily passed to any other nilearn function that accepts niimg
+   arguments.
+
+   Niimgs can be 3D or 4D, and a 4D niimg can be a list of file names, or
+   even a *wildcard* matching patterns. For instance, to retrieve a 4D
+   volume of all t maps smoothed::
+
+    >>> smoothed_imgs = image.smooth_img('/home/user/t_map*.nii') # doctest: +SKIP
+
 
 |
 
@@ -138,7 +141,7 @@ Computing the mask
     The full example described in this section can be found here:
     :doc:`plot_mask_computation.py <../auto_examples/manipulating_visualizing/plot_mask_computation>`.
     It is also related to this example:
-    :doc:`plot_nifti_simple.py <../auto_examples/plot_nifti_simple>`.
+    :doc:`plot_nifti_simple.py <../auto_examples/manipulating_visualizing/plot_nifti_simple>`.
 
 If a mask is not specified as an argument,
 :class:`NiftiMasker` will try to compute
@@ -161,7 +164,7 @@ The first step is to generate a mask with default parameters and visualize it.
     :end-before: # Generate mask with strong opening
 
 
-.. figure:: ../auto_examples/manipulating_visualizing/images/plot_mask_computation_002.png
+.. figure:: ../auto_examples/manipulating_visualizing/images/sphx_glr_plot_mask_computation_002.png
     :target: ../auto_examples/plot_mask_computation.html
     :scale: 50%
 
@@ -177,7 +180,7 @@ skull parts in the image.
     :end-before: # Generate mask with a high lower cutoff
 
 
-.. figure:: ../auto_examples/manipulating_visualizing/images/plot_mask_computation_003.png
+.. figure:: ../auto_examples/manipulating_visualizing/images/sphx_glr_plot_mask_computation_003.png
     :target: ../auto_examples/plot_mask_computation.html
     :scale: 50%
 
@@ -196,7 +199,7 @@ voxels that appear as bright in the EPI image.
     :end-before: ################################################################################
 
 
-.. figure:: ../auto_examples/manipulating_visualizing/images/plot_mask_computation_004.png
+.. figure:: ../auto_examples/manipulating_visualizing/images/sphx_glr_plot_mask_computation_004.png
     :target: ../auto_examples/plot_mask_computation.html
     :scale: 50%
 
@@ -218,16 +221,15 @@ Common data preparation steps: resampling, smoothing, filtering
 Resampling
 ..........
 
-:class:`NiftiMasker` and many similar classes enable resampling (recasting
-       of images into different resolutions and transformations of brain voxel
-       data).
-       The resampling procedure takes as input the
-       *target_affine* to resample (resize, rotate...) images in order
-       to match the spatial configuration defined by the new
-       affine (i.e., matrix transforming from voxel space into world space).
-       Additionally, a *target_shape* can be used to resize
-       images (i.e., cropping or padding with zeros) to match an
-       expected data image dimensions (shape composed of x, y, and z).
+:class:`NiftiMasker` and many similar classes enable resampling
+(recasting of images into different resolutions and transformations of
+brain voxel data). The resampling procedure takes as input the
+*target_affine* to resample (resize, rotate...) images in order to match
+the spatial configuration defined by the new affine (i.e., matrix
+transforming from voxel space into world space). Additionally, a
+*target_shape* can be used to resize images (i.e., cropping or padding
+with zeros) to match an expected data image dimensions (shape composed of
+x, y, and z).
 
 As a common use case, resampling can be a viable means to
 downsample image quality on purpose to increase processing speed
@@ -242,15 +244,15 @@ In this case, nilearn
 computes automatically the translation part of the transformation
 matrix (i.e., affine).
 
-.. image:: ../auto_examples/manipulating_visualizing/images/plot_affine_transformation_002.png
+.. image:: ../auto_examples/manipulating_visualizing/images/sphx_glr_plot_affine_transformation_002.png
     :target: ../auto_examples/plot_affine_transformation.html
-    :scale: 36%
-.. image:: ../auto_examples/manipulating_visualizing/images/plot_affine_transformation_004.png
+    :scale: 33%
+.. image:: ../auto_examples/manipulating_visualizing/images/sphx_glr_plot_affine_transformation_004.png
     :target: ../auto_examples/plot_affine_transformation.html
-    :scale: 36%
-.. image:: ../auto_examples/manipulating_visualizing/images/plot_affine_transformation_003.png
+    :scale: 33%
+.. image:: ../auto_examples/manipulating_visualizing/images/sphx_glr_plot_affine_transformation_003.png
     :target: ../auto_examples/plot_affine_transformation.html
-    :scale: 36%
+    :scale: 33%
 
 
 .. topic:: **Special case: resampling to a given voxel size**
@@ -319,7 +321,7 @@ before conversion to voxel signals.
 .. topic:: **Exercise**
 
    You can, more as a training than as an exercise, try to play with
-   the parameters in :ref:`example_plot_haxby_simple.py`. Try to enable detrending
+   the parameters in :ref:`sphx_glr_auto_examples_plot_haxby_simple.py`. Try to enable detrending
    and run the script: does it have a big impact on the result?
 
 
@@ -336,11 +338,19 @@ images after unmasking (masked-reduced data transformed back into
 the original whole-brain space). This step is present in almost all
 the :ref:`examples <examples-index>` provided in nilearn. Below you will find
 an excerpt of :ref:`the example performing Anova-SVM on the Haxby data
-<example_decoding_plot_haxby_anova_svm.py>`):
+<sphx_glr_auto_examples_decoding_plot_haxby_anova_svm.py>`):
 
 .. literalinclude:: ../../examples/decoding/plot_haxby_anova_svm.py
-    :start-after: ### Look at the SVC's discriminating weights
-    :end-before: ### Create the figure
+    :start-after: # Look at the SVC's discriminating weights
+    :end-before: # Create the figure
+
+|
+
+.. topic:: **Examples to better understand the NiftiMasker**
+
+   * :ref:`sphx_glr_auto_examples_manipulating_visualizing_plot_nifti_simple.py`
+
+   * :ref:`sphx_glr_auto_examples_manipulating_visualizing_plot_mask_computation.py`
 
 
 .. _region:
@@ -380,9 +390,9 @@ labels and maps, handled by :class:`NiftiLabelsMasker` and
   difficult with this data transformation of whole-brain voxel data
   into weighted region-wise data.
 
-.. note::
+.. note:: 
 
-   These usage are illustrated in :ref:`functional_connectomes`
+   These usage are illustrated in the section :ref:`functional_connectomes`
 
 :class:`NiftiLabelsMasker` Usage
 ---------------------------------
@@ -402,6 +412,10 @@ Should some non-zero value encoding be necessary, it is
 possible to change the background value with the `background_label`
 keyword.
 
+.. topic:: **Examples**
+
+    * :ref:`sphx_glr_auto_examples_connectivity_plot_signal_extraction.py`
+
 :class:`NiftiMapsMasker` Usage
 ------------------------------
 
@@ -417,3 +431,8 @@ The keyword argument `resampling_target` specifies which format (i.e.,
 dimensions and affine) the data should be resampled to.
 See the reference documentation for :class:`NiftiMapsMasker` for every
 possible option.
+
+.. topic:: **Examples**
+
+   * :ref:`sphx_glr_auto_examples_connectivity_plot_probabilistic_atlas_extraction.py`
+

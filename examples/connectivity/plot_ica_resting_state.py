@@ -1,8 +1,23 @@
 """
-Independent component analysis of resting-state fMRI
-=====================================================
+Multivariate decompositions: Independent component analysis of fMRI
+===================================================================
 
-An example applying ICA to resting-state data.
+
+This example is meant to demonstrate nilearn as a low-level tools used to
+combine feature extraction with a multivariate decomposition algorithm
+for resting state.
+
+This example is a toy. To apply ICA to resting-state data, it is advised
+to look at the example
+:ref:`sphx_glr_auto_examples_connectivity_plot_canica_resting_state.py`.
+
+The example here applies the scikit-learn ICA to resting-state data.
+Note that following the code in the example, any unsupervised
+decomposition model, or other latent-factor models, can be applied to
+the data, as the scikit-learn API enables to exchange them as almost
+black box (though the relevant parameter for brain maps might no longer
+be given by a call to fit_transform).
+
 """
 
 ### Load nyu_rest dataset #####################################################
@@ -53,9 +68,8 @@ component_img = masker.inverse_transform(components_masked)
 
 ### Visualize the results #####################################################
 # Show some interesting components
-import matplotlib.pyplot as plt
 from nilearn import image
-from nilearn.plotting import plot_stat_map
+from nilearn.plotting import plot_stat_map, show
 
 # Use the mean as a background
 mean_img = image.mean_img(func_filename)
@@ -64,4 +78,4 @@ plot_stat_map(image.index_img(component_img, 5), mean_img)
 
 plot_stat_map(image.index_img(component_img, 12), mean_img)
 
-plt.show()
+show()

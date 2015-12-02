@@ -4,6 +4,7 @@ Test the resampling code.
 import copy
 import math
 
+from nose import SkipTest
 from nose.tools import assert_equal, assert_raises, \
     assert_false, assert_true, assert_almost_equal
 from numpy.testing import assert_array_equal, assert_array_almost_equal
@@ -106,14 +107,49 @@ def test_resampling_with_affine():
     """ Test resampling with a given rotation part of the affine.
     """
     prng = np.random.RandomState(10)
-    data = prng.randint(4, size=(1, 4, 4))
-    for angle in (0, np.pi, np.pi / 2., np.pi / 4., np.pi / 3.):
-        rot = rotation(0, angle)
-        rot_img = resample_img(Nifti1Image(data, np.eye(4)),
-                               target_affine=rot,
-                               interpolation='nearest')
-        np.testing.assert_almost_equal(np.max(data),
-                                       np.max(rot_img.get_data()))
+
+    data_3d = prng.randint(4, size=(1, 4, 4))
+    data_4d = prng.randint(4, size=(1, 4, 4, 3))
+
+    for data in [data_3d, data_4d]:
+        for angle in (0, np.pi, np.pi / 2., np.pi / 4., np.pi / 3.):
+            rot = rotation(0, angle)
+            rot_img = resample_img(Nifti1Image(data, np.eye(4)),
+                                   target_affine=rot,
+                                   interpolation='nearest')
+            assert_equal(np.max(data),
+                         np.max(rot_img.get_data()))
+            assert_equal(rot_img.get_data().dtype, data.dtype)
+
+
+def test_resampling_continuous_with_affine():
+    prng = np.random.RandomState(10)
+
+    data_3d = prng.randint(1, 4, size=(1, 10, 10))
+    data_4d = prng.randint(1, 4, size=(1, 10, 10, 3))
+
+    for data in [data_3d, data_4d]:
+        for angle in (0, np.pi / 2., np.pi, 3 * np.pi / 2.):
+            rot = rotation(0, angle)
+
+            img = Nifti1Image(data, np.eye(4))
+            rot_img = resample_img(
+                img,
+                target_affine=rot,
+                interpolation='continuous')
+            rot_img_back = resample_img(
+                rot_img,
+                target_affine=np.eye(4),
+                interpolation='continuous')
+
+            center = slice(1, 9)
+            # values on the edges are wrong for some reason
+            mask = (0, center, center)
+            np.testing.assert_allclose(
+                img.get_data()[mask],
+                rot_img_back.get_data()[mask])
+            assert_equal(rot_img.get_data().dtype,
+                         np.dtype(data.dtype.name.replace('int', 'float')))
 
 
 def test_resampling_error_checks():
@@ -516,10 +552,26 @@ def test_resample_img_segmentation_fault():
     # fourth_dim = 1024 works fine but for 1025 creates a segmentation
     # fault with scipy < 0.14.1
     fourth_dim = 1025
-    data = np.ones(shape_in + (fourth_dim, ), dtype=np.float64)
+
+    try:
+        data = np.ones(shape_in + (fourth_dim, ), dtype=np.float64)
+    except MemoryError:
+        # This can happen on AppVeyor and for 32-bit Python on Windows
+        raise SkipTest('Not enough RAM to run this test')
 
     img_in = Nifti1Image(data, aff_in)
 
     resample_img(img_in,
                  target_affine=aff_out,
                  interpolation='nearest')
+
+
+def test_resampling_with_int_types_no_crash():
+    affine = np.eye(4)
+    data = np.zeros((2, 2, 2))
+
+    for dtype in [np.int, np.int8, np.int16, np.int32, np.int64,
+                  np.uint, np.uint8, np.uint16, np.uint32, np.uint64,
+                  np.float32, np.float64, np.float]:
+        img = Nifti1Image(data.astype(dtype), affine)
+        resample_img(img, target_affine=2. * affine)

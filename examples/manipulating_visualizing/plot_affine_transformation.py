@@ -41,12 +41,11 @@ bounding box shape).
 """
 
 
-import matplotlib.pyplot as plt
-import numpy as np
-import nibabel
-from nilearn.image import resample_img
+#############################################################################
+# First make a simple synthetic image
 
-# Make an image
+# Create the data with numpy
+import numpy as np
 grid = np.mgrid[0:192, 0:128]
 circle = np.sum(
     (grid - np.array([32, 32])[:, np.newaxis, np.newaxis]) ** 2,
@@ -74,9 +73,15 @@ rotation_matrix = np.array([[np.cos(angle), -np.sin(angle)],
                             [np.sin(angle), np.cos(angle)]])
 source_affine[:2, :2] = rotation_matrix * 2.0  # 2.0mm voxel size
 
+# We need to turn this data into a nibabel image
+import nibabel
 img = nibabel.Nifti1Image(image[:, :, np.newaxis], affine=source_affine)
+
+#############################################################################
+# Now resample the image
+from nilearn.image import resample_img
 img_in_mm_space = resample_img(img, target_affine=np.eye(4),
-                                 target_shape=(512, 512, 1))
+                               target_shape=(512, 512, 1))
 
 target_affine_3x3 = np.eye(3) * 2
 target_affine_4x4 = np.eye(4) * 2
@@ -96,6 +101,10 @@ img_4d_affine_in_mm_space = resample_img(
     img_4d_affine,
     target_affine=np.eye(4),
     target_shape=(np.array(img_4d_affine.shape) * 2).astype(int))
+
+#############################################################################
+# Finally, visualize
+import matplotlib.pyplot as plt
 plt.figure()
 plt.imshow(image, interpolation="nearest", vmin=0, vmax=vmax)
 plt.title("The original data in voxel space")
