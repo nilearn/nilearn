@@ -72,11 +72,11 @@ Finally, we can plot the map for different ICA components separately:
 
 .. |left_img| image:: ../auto_examples/connectivity/images/sphx_glr_plot_canica_resting_state_003.png
    :target: ../auto_examples/connectivity/plot_canica_resting_state.html
-   :width: 33%
+   :width: 23%
 
 .. |right_img| image:: ../auto_examples/connectivity/images/sphx_glr_plot_canica_resting_state_004.png
    :target: ../auto_examples/connectivity/plot_canica_resting_state.html
-   :width: 33%
+   :width: 23%
 
 .. centered:: |left_img| |right_img|
 
