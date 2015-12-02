@@ -1,12 +1,15 @@
 import os
-import joblib
 import numpy as np
 
+from nose.tools import assert_equal
+
 from nibabel import Nifti1Image
+from sklearn.externals import joblib
+
 from nilearn.image import new_img_like
 from nilearn._utils import niimg
 from nilearn._utils.testing import assert_raises_regex
-from nose.tools import assert_equal
+
 
 
 currdir = os.path.dirname(os.path.abspath(__file__))
@@ -31,7 +34,3 @@ def test_new_img_like_side_effect():
     img2 = new_img_like(img1, np.ones((2, 2, 2, 2)), img1.get_affine().copy(), copy_header=True)
     hash2 = joblib.hash(img1)
     assert_equal(hash1, hash2)
-
-
-
-

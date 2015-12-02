@@ -590,9 +590,9 @@ def new_img_like(ref_niimg, data, affine=None, copy_header=False):
     header = None
     if copy_header:
         header = copy.deepcopy(ref_niimg.get_header())
-        header['glmax'] = 0.
         header['scl_slope'] = 0.
         header['scl_inter'] = 0.
+        header['glmax'] = 0.
         header['cal_max'] = np.max(data) if data.size > 0 else 0.
         header['cal_max'] = np.min(data) if data.size > 0 else 0.
     return ref_niimg.__class__(data, affine, header=header)
