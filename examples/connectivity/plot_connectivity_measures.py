@@ -13,7 +13,7 @@ standard measures.
 # Fetch dataset
 import nilearn.datasets
 atlas = nilearn.datasets.fetch_atlas_msdl()
-dataset = nilearn.datasets.fetch_adhd()
+dataset = nilearn.datasets.fetch_adhd(n_subjects=20)
 
 
 ######################################################################

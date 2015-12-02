@@ -8,8 +8,6 @@ dependencies:
     # Installing required packages for `make -C doc check command` to work.
     - sudo -E apt-get -yq update
     - sudo -E apt-get -yq --no-install-suggests --no-install-recommends --force-yes install dvipng texlive-latex-base texlive-latex-extra
-    # Force another download for this data
-    - rm -rf /home/ubuntu/nilearn_data/adhd
 
   override:
     - pip install --upgrade pip
