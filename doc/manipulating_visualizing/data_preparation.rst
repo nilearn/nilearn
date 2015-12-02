@@ -28,10 +28,11 @@ Data preparation: loading and basic signal extraction
    arguments.
 
    Niimgs can be 3D or 4D, and a 4D niimg can be a list of file names, or
-   even a *wildcard* matching patterns. For instance, to retrieve a 4D
-   volume of all t maps smoothed::
+   even a *wildcard* matching patterns. The '~' symbol is also expanded to the
+   user home folder.For instance, to retrieve a 4D volume of
+   all t maps smoothed::
 
-    >>> smoothed_imgs = image.smooth_img('/home/user/t_map*.nii') # doctest: +SKIP
+    >>> smoothed_imgs = image.smooth_img('~/t_map*.nii') # doctest: +SKIP
 
 
 |
@@ -449,9 +450,9 @@ Using :class:`NiftiSpheresMasker` needs to define a list of coordinates.
 they should be in the same space as the images.
 Seeds can overlap spatially and are represented in a binary present-nonpresent
 coding (no weighting).
-Below is an example of a coordinates list of four seeds from the default mode network : ::
+Below is an example of a coordinates list of four seeds from the default mode network::
 
- dmn_coords = [(0, -52, 18), (-46, -68, 32), (46, -68, 32), (0, 50, -5)]
+  >>> dmn_coords = [(0, -52, 18), (-46, -68, 32), (46, -68, 32), (0, 50, -5)]
 
 "radius" is an optional argument that takes a real value in millimeters.
 If no value is given for the "radius" argument, the single voxel at the given

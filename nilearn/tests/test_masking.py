@@ -17,6 +17,7 @@ from nilearn.masking import (compute_epi_mask, compute_multi_epi_mask,
                              _unmask_4d, intersect_masks, MaskWarning)
 from nilearn._utils.testing import (write_tmp_imgs, assert_raises_regex)
 from nilearn._utils.exceptions import DimensionError
+from nilearn.input_data import NiftiMasker
 
 np_version = (np.version.full_version if hasattr(np.version, 'full_version')
               else np.version.short_version)
@@ -388,3 +389,11 @@ def test_error_shape(random_state=42, shape=(3, 5, 7, 11)):
     X = rng.randn(n_samples, n_features)
     # Raises an error because the mask is 4D
     assert_raises(TypeError, unmask, X, mask_img)
+
+
+def test_nifti_masker_empty_mask_warning():
+    X = Nifti1Image(np.ones((2, 2, 2, 5)), np.eye(4))
+    assert_raises_regex(
+        ValueError,
+        "The mask is invalid as it is empty: it masks all data",
+        NiftiMasker(mask_strategy="epi").fit_transform, X)

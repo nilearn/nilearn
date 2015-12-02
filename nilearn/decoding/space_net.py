@@ -458,8 +458,11 @@ def path_scores(solver, X, y, mask, alphas, l1_ratios, train, test,
             all_test_scores.append(this_test_scores)
     else:
         if alphas is None:
-            raise RuntimeError
-        alphas_ = alphas
+            alphas_ = _space_net_alpha_grid(
+                X_train, y_train, l1_ratio=best_l1_ratio, eps=eps,
+                n_alphas=n_alphas, logistic=is_classif)
+        else:
+            alphas_ = alphas
         best_alpha = alphas_[0]
 
     # re-fit best model to high precision (i.e without early stopping, etc.)
@@ -803,6 +806,17 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
             else:
                 solver = partial(tvl1_solver, loss="logistic")
 
+        # generate fold indices
+        case1 = (None in [alphas, l1_ratios]) and self.n_alphas > 1
+        case2 = (not alphas is None) and min(len(l1_ratios), len(alphas)) > 1
+        if case1 or case2:
+            self.cv_ = list(check_cv(self.cv, X=X, y=y,
+                                     classifier=self.is_classif))
+        else:
+            # no cross-validation needed, user supplied all params
+            self.cv_ = [(np.arange(n_samples), [])]
+        n_folds = len(self.cv_)
+
         # number of problems to solve
         if self.is_classif:
             y = self._binarize_y(y)
@@ -817,16 +831,6 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
         self.ymean_ = np.zeros(y.shape[0])
         if n_problems == 1:
             y = y[:, 0]
-
-        # generate fold indices
-        if (None in [alphas, l1_ratios] and self.n_alphas > 1) or min(
-                len(l1_ratios), len(alphas)) > 1:
-            self.cv_ = list(check_cv(self.cv, X=X, y=y,
-                                     classifier=self.is_classif))
-        else:
-            # no cross-validation needed, user supplied all params
-            self.cv_ = [(np.arange(n_samples), [])]
-        n_folds = len(self.cv_)
 
         # scores & mean weights map over all folds
         self.cv_scores_ = [[] for _ in range(n_problems)]
