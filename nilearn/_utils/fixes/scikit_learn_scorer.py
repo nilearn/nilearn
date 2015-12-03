@@ -30,7 +30,6 @@ from sklearn.metrics import (r2_score, mean_absolute_error,
                average_precision_score,
                precision_score, recall_score)
 from sklearn.metrics.cluster import adjusted_rand_score
-from sklearn.utils.multiclass import type_of_target
 from sklearn.externals import six
 from sklearn.base import is_classifier
 
