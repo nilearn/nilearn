@@ -308,7 +308,7 @@ def test_check_niimg_wildcards():
 
 
 def test_iter_check_niimgs():
-    no_file_matching = "No files matching path: {0}"
+    no_file_matching = "No files matching path: %s"
     affine = np.eye(4)
     img_4d = Nifti1Image(np.ones((10, 10, 10, 4)), affine)
     img_2_4d = [[img_4d, img_4d]]
@@ -319,12 +319,12 @@ def test_iter_check_niimgs():
 
     niimgs = (niimg for niimg in _iter_check_niimg(""))
     assert_raises_regex(ValueError,
-                        no_file_matching.format(""),
+                        no_file_matching % "",
                         list, _iter_check_niimg(""))
 
     nofile_path = "/tmp/nofile"
     assert_raises_regex(ValueError,
-                        no_file_matching.format(nofile_path),
+                        no_file_matching % nofile_path,
                         list, _iter_check_niimg(nofile_path))
 
     # Create a test file
