@@ -313,17 +313,10 @@ def test_iter_check_niimgs():
     img_4d = Nifti1Image(np.ones((10, 10, 10, 4)), affine)
     img_2_4d = [[img_4d, img_4d]]
 
-    assert_raises_regex(ValueError,
-                        "Input niimgs list is empty.",
-                        list, _iter_check_niimg(()))
-
-    assert_raises_regex(ValueError,
-                        "Input niimgs list is empty.",
-                        list, _iter_check_niimg([]))
-
-    assert_raises_regex(ValueError,
-                        no_file_matching % "",
-                        list, _iter_check_niimg(""))
+    for empty in ((), [], (i for i in ()), [i for i in ()]):
+        assert_raises_regex(ValueError,
+                            "Input niimgs list is empty.",
+                            list, _iter_check_niimg(empty))
 
     nofile_path = "/tmp/nofile"
     assert_raises_regex(ValueError,
