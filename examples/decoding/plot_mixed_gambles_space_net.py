@@ -27,7 +27,7 @@ mask_filename = data.mask_img
 from nilearn.decoding import SpaceNetRegressor
 decoder = SpaceNetRegressor(mask=mask_filename, penalty="tv-l1",
                             eps=1e-1,  # prefer large alphas
-                            memory="cache")
+                            memory="nilearn_cache")
 
 decoder.fit(zmap_filenames, behavioral_target)
 
@@ -41,7 +41,7 @@ plot_stat_map(decoder.coef_img_, title="tv-l1", display_mode="yz",
 # Fit Graph-Net
 decoder = SpaceNetRegressor(mask=mask_filename, penalty="graph-net",
                             eps=1e-1,  # prefer large alphas
-                            memory="cache")
+                            memory="nilearn_cache")
 decoder.fit(zmap_filenames, behavioral_target)
 
 # Visualize Graph-Net weights
