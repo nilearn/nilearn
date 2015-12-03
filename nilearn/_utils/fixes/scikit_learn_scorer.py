@@ -40,7 +40,7 @@ def with_metaclass(meta, *bases):
     return meta("NewBase", bases, {})
 
 
-class _BaseScorer(six.with_metaclass(ABCMeta, object)):
+class _BaseScorer(with_metaclass(ABCMeta, object)):
     def __init__(self, score_func, sign, kwargs):
         self._kwargs = kwargs
         self._score_func = score_func
