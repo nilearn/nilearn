@@ -7,6 +7,7 @@ import nibabel
 import numpy as np
 
 from scipy.ndimage import label
+from scipy.stats import scoreatpercentile
 
 from sklearn.base import clone
 from sklearn.externals.joblib import Memory
@@ -41,10 +42,11 @@ def _threshold_maps(maps_img, threshold):
 
     Returns
     -------
-    threshold_maps_img: Niimg-like object
+    threshold_maps_img: Nifti1Image object
         gives us thresholded image.
     """
     maps = check_niimg(maps_img)
+    n_maps = maps.shape[-1]
     if not isinstance(threshold, float) or threshold <= 0 or threshold > maps.shape[-1]:
         raise ValueError("threshold given as ratio to the number of voxels must "
                          "be float value and should be positive and between 0 and "
@@ -56,10 +58,8 @@ def _threshold_maps(maps_img, threshold):
     maps_data = maps.get_data()
     abs_maps = np.abs(maps_data)
     # thresholding
-    raveled = abs_maps.ravel()
-    argsort = np.argsort(raveled)
-    n_voxels = ratio * maps_data.size
-    cutoff_threshold = raveled[argsort[- n_voxels]]
+    cutoff_threshold = scoreatpercentile(
+        abs_maps, 100. - (100. / n_maps) * ratio)
     maps_data[abs_maps < cutoff_threshold] = 0.
 
     threshold_maps_img = new_img_like(maps, maps_data)
@@ -81,7 +81,7 @@ def connected_regions(maps_img, min_region_size=50, extract_type='local_regions'
         Minimum number of voxels for a region to be kept. Useful to suppress
         small spurious regions.
 
-    extract_type: string {'connected_components', 'local_regions'} \
+    extract_type: str {'connected_components', 'local_regions'} \
         default local_regions, optional
         If 'connected_components', each component/region in the image is extracted
         automatically by labelling each region based upon the presence of unique
@@ -189,30 +189,23 @@ class RegionExtractor(NiftiMapsMasker):
         Minimum number of voxels for a region to be kept. Useful to suppress
         small spurious regions.
 
-    threshold: float or string or number, default string "80%" optional
-        To threshold the given input maps.
-        If float, value will be used directly to threshold the maps image.
-        This float case is used in thresholding_strategy='img_value'
-        and 'ratio_n_voxels'.
-        If string, it should finish with percent sign e.g. "80%" and should
-        be within the range of "0%" to "100%".
-        If number, it should be a real number of range between 0 and 100.
-        Both string and real number are used in thresholding_strategy='percentile'.
+    threshold: float or str, default string "80%", optional
+        If it is a float, it will be used in ratio_n_voxels threshold strategy.
+        If string, it should finish with percent sign e.g. "80%" and will be
+        used in percentile threshold strategy.
 
-    thresholding_strategy: string {'percentile', 'img_value', 'ratio_n_voxels'},\
+    thresholding_strategy: str {'percentile', 'ratio_n_voxels'},\
         default 'percentile', optional
-        Each strategy denoted in string takes the given threshold into account and
-        thresholds the images.
-        If set to 'percentile', images are thresholded based on the percentage
+        If default 'percentile', images are thresholded based on the percentage
         of the score on the data and the scores which are survived above this
-        percentile are kept.
-        If set to 'img_value', voxels which have intensities greater than the
-        float value are kept.
-        If default 'ratio_n_voxels', meaning we keep the more intense brain voxels
+        percentile will be kept.
+        If set to 'ratio_n_voxels', meaning we keep the more intense brain voxels
         n_voxels across all maps. The probability of chance of nonzero voxels
         survived after taking ratio to the total number of brain voxels will be kept.
+        For example, more the voxels to be kept high should be the ratio within the
+        total number of maps.
 
-    extractor: string {'connected_components', 'local_regions'} default 'local_regions', optional
+    extractor: str {'connected_components', 'local_regions'} default 'local_regions', optional
         If 'connected_components', each component/region in the image is extracted
         automatically by labelling each region based upon the presence of unique
         features in their respective regions.
@@ -220,13 +213,13 @@ class RegionExtractor(NiftiMapsMasker):
         maximum peak value to define a seed marker and then using random walker
         segementation algorithm on these markers for region separation.
 
-    standardize: boolean, True or False, default False, optional
+    standardize: bool, True or False, default False, optional
         If True, the time series signals are centered and normalized by
         putting their mean to 0 and variance to 1. Recommended to
         set as True if signals are not already standardized.
         passed to class NiftiMapsMasker.
 
-    detrend: boolean, True or False, default False, optional
+    detrend: bool, True or False, default False, optional
         This parameter is passed to nilearn.signal.clean basically
         indicates whether to detrend timeseries signals or not.
         passed to class NiftiMapsMasker.

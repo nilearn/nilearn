@@ -5,7 +5,7 @@ Test the _utils.param_validation module
 import warnings
 import numpy as np
 
-from nose.tools import assert_true
+from nose.tools import assert_true, assert_equal
 
 from nilearn._utils.testing import assert_raises_regex, assert_warns
 
@@ -37,18 +37,21 @@ def test_check_threshold():
 
     # Test threshold as int, threshold=2 should return as it is
     # since it is not string
-    assert_true(check_threshold(2, matrix,
-                                percentile_calculate=fast_abs_percentile) == 2)
+    assert_equal(check_threshold(2, matrix, percentile_calculate=fast_abs_percentile), 2)
 
     # check whether raises a warning if given threshold is higher than expected
     assert_warns(UserWarning, check_threshold, 3., matrix,
                  percentile_calculate=fast_abs_percentile)
 
-    thr = np.array((0.5, 1))
-    cutoff_thr = check_threshold(thr[0], matrix,
-                                 percentile_calculate=fast_abs_percentile)
+    # test with numpy scalar as argument
+    threshold = 2.
+    threshold_numpy_scalar = np.float64(threshold)
+    assert_equal(
+        check_threshold(threshold, matrix, percentile_calculate=fast_abs_percentile),
+        check_threshold(threshold_numpy_scalar, matrix, percentile_calculate=fast_abs_percentile))
 
-    # To check if it also gives the expected score to given threshold
+    # Test for threshold provided as a percentile of the data (str ending with a
+    # %)
     assert_true(1. < check_threshold("50%", matrix,
                                      percentile_calculate=fast_abs_percentile,
                                      name=name) <= 2.)
