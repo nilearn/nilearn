@@ -107,10 +107,6 @@ def _iter_check_niimg(niimgs, ensure_ndim=None, atleast_4d=False,
     --------
         check_niimg, check_niimg_3d, check_niimg_4d
     """
-    # Verify the input list is not empty, otherwise raise an error.
-    if isinstance(niimgs, list) and len(niimgs) == 0:
-        raise ValueError("Input niimgs list is empty.")
-
     # If niimgs is a string, use glob to expand it to the matching filenames.
     if isinstance(niimgs, _basestring):
         niimgs_list = glob.glob(os.path.expanduser(niimgs))
@@ -118,6 +114,9 @@ def _iter_check_niimg(niimgs, ensure_ndim=None, atleast_4d=False,
         if len(niimgs_list) == 0:
             raise ValueError("No files matching path: %s" % niimgs)
         niimgs = niimgs_list
+    elif ((isinstance(niimgs, tuple) or isinstance(niimgs, list)) and
+            len(niimgs) == 0):
+        raise ValueError("Input niimgs list is empty.")
 
     ref_fov = None
     resample_to_first_img = False

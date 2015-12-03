@@ -315,9 +315,12 @@ def test_iter_check_niimgs():
 
     assert_raises_regex(ValueError,
                         "Input niimgs list is empty.",
+                        list, _iter_check_niimg(()))
+
+    assert_raises_regex(ValueError,
+                        "Input niimgs list is empty.",
                         list, _iter_check_niimg([]))
 
-    niimgs = (niimg for niimg in _iter_check_niimg(""))
     assert_raises_regex(ValueError,
                         no_file_matching % "",
                         list, _iter_check_niimg(""))
@@ -328,10 +331,14 @@ def test_iter_check_niimgs():
                         list, _iter_check_niimg(nofile_path))
 
     # Create a test file
-    with testing.write_tmp_imgs(img_4d, create_files=True) as filename:
-        niimgs = list(_iter_check_niimg([filename]))
-        assert_array_equal(niimgs[0].get_data(),
-                           _utils.check_niimg(img_4d).get_data())
+    filename = tempfile.mktemp(prefix="nilearn_test",
+                               suffix=".nii",
+                               dir=None)
+    img_4d.to_filename(filename)
+    niimgs = list(_iter_check_niimg([filename]))
+    assert_array_equal(niimgs[0].get_data(),
+                       _utils.check_niimg(img_4d).get_data())
+    os.remove(filename)
 
     # Regular case
     niimgs = list(_iter_check_niimg(img_2_4d))
