@@ -308,7 +308,7 @@ def test_check_niimg_wildcards():
 
 
 def test_iter_check_niimgs():
-    no_file_matching = "No files matching path: {}"
+    no_file_matching = "No files matching path: {0}"
     affine = np.eye(4)
     img_4d = Nifti1Image(np.ones((10, 10, 10, 4)), affine)
     img_2_4d = [[img_4d, img_4d]]
