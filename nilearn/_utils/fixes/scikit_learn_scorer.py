@@ -30,11 +30,14 @@ from sklearn.metrics import (r2_score, mean_absolute_error,
                average_precision_score,
                precision_score, recall_score)
 from sklearn.metrics.cluster import adjusted_rand_score
-from sklearn.externals import six
 from sklearn.base import is_classifier
-
 from . import type_of_target
 from . import roc_auc_score
+
+# from sklearn.externals.six import with_metaclass
+def with_metaclass(meta, *bases):
+    """Create a base class with a metaclass."""
+    return meta("NewBase", bases, {})
 
 
 class _BaseScorer(six.with_metaclass(ABCMeta, object)):
@@ -192,7 +195,7 @@ class _ThresholdScorer(_BaseScorer):
 
 
 def get_scorer(scoring):
-    if isinstance(scoring, six.string_types):
+    if isinstance(scoring, basestring):
         try:
             scorer = SCORERS[scoring]
         except KeyError:
