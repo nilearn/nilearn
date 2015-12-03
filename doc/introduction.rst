@@ -64,7 +64,7 @@ Why is machine learning relevant to NeuroImaging? A few examples!
     Tricks pulled in machine learning (e.g. regularization) can
     make this estimation possible despite the usually
     small number of observations in the neuroimaging domain
-    `[Varoquaux 2012] <http://icml.cc/discuss/2012/688.html>`_. This
+    `[Varoquaux 2012] <http://icml.cc/2012/papers/688.pdf>`_. This
     usage of machine learning requires some understanding of the models.
 
 :Data mining / exploration:

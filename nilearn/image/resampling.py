@@ -1,6 +1,6 @@
 """
 Utilities to resample a Niimg-like object
-See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
 """
 # Author: Gael Varoquaux, Alexandre Abraham, Michael Eickenberg
 # License: simplified BSD
@@ -164,7 +164,7 @@ def get_mask_bounds(img):
         Parameters
         ----------
         img: Niimg-like object
-            See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+            See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
             The image to inspect. Zero values are considered as
             background.
 
@@ -275,7 +275,7 @@ def resample_img(img, target_affine=None, target_shape=None,
     Parameters
     ----------
     img: Niimg-like object
-        See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+        See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
         Image(s) to resample.
 
     target_affine: numpy.ndarray, optional
@@ -493,7 +493,7 @@ def reorder_img(img, resample=None):
         Parameters
         -----------
         img: Niimg-like object
-            See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+            See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
             Image to reorder.
 
         resample: None or string in {'continuous', 'nearest'}, optional
