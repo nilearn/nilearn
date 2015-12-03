@@ -12,7 +12,7 @@ from nilearn._utils.extmath import fast_abs_percentile, is_spd
 
 def test_fast_abs_percentile():
     rng = check_random_state(1)
-    data = np.arange(10, 100, 10)
+    data = np.arange(100)
     rng.shuffle(data)
     for p in data:
         yield nose.tools.assert_equal, fast_abs_percentile(data, p), p
