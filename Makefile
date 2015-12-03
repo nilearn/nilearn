@@ -29,11 +29,11 @@ inplace:
 	$(PYTHON) setup.py build_ext -i
 
 test-code:
-	$(NOSETESTS) -s nilearn 
+	$(NOSETESTS) -s nilearn
 test-doc:
 	$(NOSETESTS) -s --with-doctest --doctest-tests --doctest-extension=rst \
 	--doctest-extension=inc --doctest-fixtures=_fixture `find doc/ -name '*.rst'`
-	
+
 
 test-coverage:
 	rm -rf coverage .coverage
@@ -61,13 +61,9 @@ doc-plot:
 doc:
 	make -C doc html-noplot
 
-.PHONY : doc-check
-doc-check:
-	make -C doc check
-
 .PHONY : pdf
 pdf:
 	make -C doc pdf
 
-install: 
+install:
 	cd doc && make install
