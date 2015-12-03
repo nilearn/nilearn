@@ -102,6 +102,10 @@ def _iter_check_niimg(niimgs, ensure_ndim=None, atleast_4d=False,
         Data type toward which the data should be converted. If "auto", the
         data will be converted to int32 if dtype is discrete and float32 if it
         is continuous.
+
+    See also
+    --------
+        check_niimg, check_niimg_3d, check_niimg_4d
     """
     # Verify the input list is not empty, otherwise raise an error.
     if isinstance(niimgs, list) and len(niimgs) == 0:
@@ -218,6 +222,10 @@ def check_niimg(niimg, ensure_ndim=None, atleast_4d=False, dtype=None,
     necessary.
 
     Its application is idempotent.
+
+    See also
+    --------
+        _iter_check_niimg, check_niimg_3d, check_niimg_4d
     """
     from ..image import new_img_like  # avoid circular imports
 
