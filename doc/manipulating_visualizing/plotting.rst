@@ -265,3 +265,46 @@ that can be used to save the plot to an image file::
     >>> display.close()     # doctest: +SKIP
 
 
+Some tips for better rendering
+==============================
+
+A typical use of the plotting function is to display some functional
+characteristics (statistical parametric map, independent component),
+while having an anatomical image as background, that implicitly defines
+the location of all the features seen in the functional image.
+
+By default, the background image is the MNI152 template (T1)
+image. However, the rendering with an actual anatomical image is
+generally better.
+
+Using the default setting, the anatomical image often seem overly
+dark. This is easily fixed by reducing the dimming parameter,
+e.g. to 0.
+
+.. |plot_mni_background| image:: ../auto_examples/manipulating_visualizing/images/sphx_glr_plot_spms_001.png
+     :target: ../auto_examples/manipulating_visualizing/plot_spms.html
+     :scale: 50
+
+.. |plot_anat_background| image:: ../auto_examples/manipulating_visualizing/images/sphx_glr_plot_spms_002.png
+     :target: ../auto_examples/manipulating_visualizing/plot_spms.html
+     :scale: 50
+
+.. |plot_bright_background| image:: ../auto_examples/manipulating_visualizing/images/sphx_glr_plot_spms_003.png
+     :target: ../auto_examples/manipulating_visualizing/plot_spms.html
+     :scale: 50
+
+================= =========================================================
+================= =========================================================
+
+|plot_mni_background|    `activation image on MNI template` 
+                              |hack|
+			      The background image is the T1 MNI template.
+
+|plot_anat_background|    `activation image on subject anatomical image` 
+                              |hack|
+			      The background image is the subject anatomy.
+
+|plot_bright_background|    `activation image on brighted subject anatomical image` 
+                              |hack|
+			      The background image is the subject a,atomy --brighter.
+
