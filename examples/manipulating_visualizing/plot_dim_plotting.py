@@ -4,8 +4,8 @@ Controling the contrast of the background when plotting
 
 The `dim` argument controls the contrast of the background.
 
-dim modifies the contrast of this image: dim=0 leaves the image
-unchanged, negative values of dim enhance it, and positive values
+*dim* modifies the contrast of this image: dim=0 leaves the image
+unchanged, negative values of *dim* enhance it, and positive values
 decrease it (dim the background).
 """
 
@@ -27,7 +27,7 @@ from nilearn import plotting
 plotting.plot_stat_map(localizer_tmap_filename,
                        bg_img=localizer_anat_filename,
                        cut_coords=(36, -27, 66),
-                       threshold=3, title="dim=-5",
+                       threshold=3, title="dim=-.5",
                        dim=-.5)
 
 plotting.plot_stat_map(localizer_tmap_filename,

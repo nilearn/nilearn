@@ -103,6 +103,10 @@ different heuristics to find cutting coordinates.
     >>> display = plotting.plot_stat_map(img)     # doctest: +SKIP
     >>> display.close()     # doctest: +SKIP
 
+.. seealso::
+
+   :ref:`sphx_glr_auto_examples_manipulating_visualizing_plot_dim_plotting.py`
+
 Different display modes
 ========================
 
