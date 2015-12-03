@@ -53,8 +53,8 @@ html:
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
 
 html-strict:
-	# Build html documentation using a stric mode: Warnings are considered
-	# as errors.
+	# Build html documentation using a strict mode: Warnings are
+	# considered as errors.
 	make check
 	touch $(BUILDDIR)/html .nojekyll
 	@echo
