@@ -42,9 +42,10 @@ def fast_abs_percentile(data, percentile=80):
     index = int(data.size * .01 * percentile)
     if partition is not None:
         # Partial sort: faster than sort
-        return partition(data, index)[index + 1]
-    data.sort()
-    return data[index + 1]
+        data = partition(data, index)
+    else:
+        data.sort()
+    return data[index]
 
 
 def is_spd(M, decimal=15, verbose=1):
