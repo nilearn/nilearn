@@ -76,7 +76,7 @@ def _iter_signals_from_spheres(seeds, niimg, radius, allow_overlap,
         Seed definitions. List of coordinates of the seeds in the same space
         as the images (typically MNI or TAL).
     imgs: 3D/4D Niimg-like object
-        See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+        See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
         Images to process. It must boil down to a 4D image with scans
         number as last dimension.
     radius: float, optional
@@ -86,7 +86,7 @@ def _iter_signals_from_spheres(seeds, niimg, radius, allow_overlap,
         If False, an error is raised if the maps overlaps (ie at least two
         maps have a non-zero value for the same voxel). Default is False.
     mask_img: Niimg-like object, optional
-        See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+        See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
         Mask to apply to regions before extracting signals.
     """
     X, A = _apply_mask_and_get_affinity(seeds, niimg, radius,
@@ -139,7 +139,7 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
         Default is None (signal is extracted on a single voxel).
 
     mask_img: Niimg-like object, optional
-        See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+        See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
         Mask to apply to regions before extracting signals.
 
     allow_overlap: boolean, optional
@@ -269,7 +269,7 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
         Parameters
         ----------
         imgs: 3D/4D Niimg-like object
-            See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+            See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
             Images to process. It must boil down to a 4D image with scans
             number as last dimension.
 

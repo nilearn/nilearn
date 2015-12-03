@@ -35,11 +35,11 @@ def session_pca(imgs, mask_img, parameters,
     Parameters
     ----------
     imgs: list of Niimg-like objects
-        See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+        See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
         List of subject data
 
     mask_img: Niimg-like object
-        See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+        See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
         Mask to apply on the data
 
     parameters: dictionary
@@ -167,7 +167,7 @@ class MultiPCA(BaseEstimator, TransformerMixin, CacheMixin):
         of `mask` and other NiftiMasker related parameters as initialization.
 
     `mask_img_`: Niimg-like object
-        See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+        See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
         The mask of the data. If no mask was given at masker creation, contains
         the automatically computed mask.
 
@@ -207,7 +207,7 @@ class MultiPCA(BaseEstimator, TransformerMixin, CacheMixin):
         Parameters
         ----------
         imgs: list of Niimg-like objects
-            See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+            See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
             Data on which the PCA must be calculated. If this is a list,
             the affine is considered the same for all.
         """
@@ -338,7 +338,7 @@ class MultiPCA(BaseEstimator, TransformerMixin, CacheMixin):
         Parameters
         ----------
         imgs: iterable of Niimg-like objects
-            See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+            See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
             Data to be projected
 
         confounds: CSV file path or 2D matrix

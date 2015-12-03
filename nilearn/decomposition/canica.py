@@ -136,7 +136,7 @@ class CanICA(MultiPCA, CacheMixin):
         Parameters
         ----------
         imgs: list of Niimg-like objects
-            See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+            See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
             Data on which PCA must be calculated. If this is a list,
             the affine is considered the same for all.
 

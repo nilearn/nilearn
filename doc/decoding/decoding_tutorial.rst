@@ -452,7 +452,7 @@ Changing the prediction engine
 
 We now see how one can easily change the prediction engine, if needed.
 We can try Fisher's `Linear Discriminant Analysis (LDA)
-<http://scikit-learn.org/auto_examples/plot_lda_qda.html>`_
+<http://scikit-learn.org/stable/auto_examples/decomposition/plot_pca_vs_lda.html>`_
 
 Import the module::
 

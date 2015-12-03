@@ -29,7 +29,7 @@ def _load_mask_img(mask_img, allow_empty=False):
     Parameters
     ----------
     mask_img: Niimg-like object
-        See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+        See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
         The mask to check
 
     allow_empty: boolean, optional
@@ -111,7 +111,7 @@ def intersect_masks(mask_imgs, threshold=0.5, connected=True):
     Parameters
     ----------
     mask_imgs: list of Niimg-like objects
-        See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+        See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
         3D individual masks with same shape and affine.
 
     threshold: float, optional
@@ -196,7 +196,7 @@ def compute_epi_mask(epi_img, lower_cutoff=0.2, upper_cutoff=0.85,
     Parameters
     ----------
     epi_img: Niimg-like object
-        See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+        See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
         EPI image, used to compute the mask. 3D and 4D images are accepted.
         If a 3D image is given, we suggest to use the mean image
 
@@ -301,7 +301,7 @@ def compute_multi_epi_mask(epi_imgs, lower_cutoff=0.2, upper_cutoff=0.85,
     Parameters
     ----------
     epi_imgs: list of Niimg-like objects
-        See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+        See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
         A list of arrays, each item being a subject or a session.
         3D and 4D images are accepted.
         If 3D images is given, we suggest to use the mean image of each
@@ -377,7 +377,7 @@ def compute_background_mask(data_imgs, border_size=2,
     Parameters
     ----------
     data_imgs: Niimg-like object
-        See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+        See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
         Images used to compute the mask. 3D and 4D images are accepted.
         If a 3D image is given, we suggest to use the mean image
 
@@ -455,7 +455,7 @@ def compute_multi_background_mask(data_imgs, border_size=2, upper_cutoff=0.85,
     Parameters
     ----------
     data_imgs: list of Niimg-like objects
-        See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+        See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
         A list of arrays, each item being a subject or a session.
         3D and 4D images are accepted.
         If 3D images is given, we suggest to use the mean image of each
@@ -525,11 +525,11 @@ def apply_mask(imgs, mask_img, dtype='f',
     Parameters
     -----------
     imgs: list of 4D Niimg-like objects
-        See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+        See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
         Images to be masked. list of lists of 3D images are also accepted.
 
     mask_img: Niimg-like object
-        See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+        See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
         3D mask array: True where a voxel should be used.
 
     dtype: numpy dtype or 'f'
@@ -622,7 +622,7 @@ def _unmask_3d(X, mask, order="C"):
         Masked data. shape: (features,)
 
     mask: Niimg-like object
-        See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+        See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
         Mask. mask.ndim must be equal to 3, and dtype *must* be bool.
     """
 
@@ -683,7 +683,7 @@ def unmask(X, mask_img, order="F"):
         Masked data. shape: (samples #, features #).
         If X is one-dimensional, it is assumed that samples# == 1.
     mask_img: niimg: Niimg-like object
-        See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+        See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
         Must be 3-dimensional.
 
     Returns
