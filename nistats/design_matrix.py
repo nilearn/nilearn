@@ -4,7 +4,7 @@ from __future__ import with_statement
 """
 This module implements fMRI Design Matrix creation.
 
-Design matrices a rerepsented by Pandas DataFrames
+Design matrices are represented by Pandas DataFrames
 Computations of the different parts of the design matrix are confined
 to the make_design_matrix function, that create a DataFrame
 All the others are ancillary functions.

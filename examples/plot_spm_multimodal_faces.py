@@ -24,8 +24,6 @@ from nistats.datasets import fetch_spm_multimodal_fmri
 
 # fetch spm multimodal_faces data
 subject_data = fetch_spm_multimodal_fmri()
-dataset_dir = os.path.dirname(os.path.dirname(os.path.dirname(
-    subject_data.anat)))
 output_dir = 'results'
 if not os.path.exists(output_dir):
     os.makedirs(output_dir)
@@ -42,15 +40,15 @@ mask_images = []
 design_matrices = []
 
 # resample the images
-subject_data.func = [concat_imgs(subject_data.func1, auto_resample=True),
+fmri_img = [concat_imgs(subject_data.func1, auto_resample=True),
                      concat_imgs(subject_data.func2, auto_resample=True)]
-affine, shape = subject_data.func[0].get_affine(), subject_data.func[0].shape
+affine, shape = fmri_img[0].get_affine(), fmri_img[0].shape
 print('Resampling the second image (this takes time)...')
-subject_data.func[1] = resample_img(subject_data.func[1], affine, shape[:3])
+fmri_img[1] = resample_img(fmri_img[1], affine, shape[:3])
 
 for idx in range(2):
     # build paradigm
-    n_scans = subject_data.func[idx].shape[-1]
+    n_scans = fmri_img[idx].shape[-1]
     timing = loadmat(getattr(subject_data, "trials_ses%i" % (idx + 1)),
                      squeeze_me=True, struct_as_record=False)
 
@@ -74,25 +72,25 @@ contrast_matrix = np.eye(design_matrix.shape[1])
 contrasts = dict([(column, contrast_matrix[i])
                   for i, column in enumerate(design_matrix.columns)])
 # more interesting contrasts
-interesting_contrasts = {
+contrasts = {
     'faces-scrambled': contrasts['faces'] - contrasts['scrambled'],
     'scrambled-faces': -contrasts['faces'] + contrasts['scrambled'],
-    'effects_of_interest': np.vstack((contrasts['faces'], contrasts['scrambled']))
+    'effects_of_interest': np.vstack((contrasts['faces'],
+                                      contrasts['scrambled']))
     }
 
 # fit GLM
 print('Fitting a GLM')
-fmri_glm = FirstLevelGLM(standardize=False).fit(
-    subject_data.func, design_matrices)
+fmri_glm = FirstLevelGLM(standardize=False).fit(fmri_img, design_matrices)
 
 # Create mean image for display
-mean_image = mean_img(subject_data.func)
+mean_image = mean_img(fmri_img)
 
 # compute contrast maps
 print('Computing contrasts')
 from nilearn.plotting import plot_stat_map
 
-for contrast_id, contrast_val in interesting_contrasts.items():
+for contrast_id, contrast_val in contrasts.items():
     print("\tcontrast id: %s" % contrast_id)
     z_map, t_map, effects_map, var_map = fmri_glm.transform(
         [contrast_val] * 2, contrast_name=contrast_id, output_z=True,
@@ -104,8 +102,7 @@ for contrast_id, contrast_val in interesting_contrasts.items():
             os.makedirs(map_dir)
         map_path = os.path.join(map_dir, '%s.nii.gz' % contrast_id)
         nibabel.save(out_map, map_path)
-    plot_stat_map(z_map, bg_img=mean_image, threshold=3.0,
-                  display_mode='z', cut_coords=3, black_bg=True,
-                  title=contrast_id)
+    plot_stat_map(z_map, bg_img=mean_image, threshold=3.0, display_mode='z',
+                  cut_coords=3, black_bg=True, title=contrast_id)
 
 plt.show()
