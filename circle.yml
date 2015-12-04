@@ -16,6 +16,7 @@ dependencies:
     - pip install sphinx==1.2.3 matplotlib coverage Pillow
     - pip install scipy
     - pip install scikit-learn
+    - pip install nose-timer
     - pip install -e .
     # we need to do this here so the datasets will be cached
     # pipefail is necessary to propagate exit codes
