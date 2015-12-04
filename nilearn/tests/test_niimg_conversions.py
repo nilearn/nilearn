@@ -332,6 +332,7 @@ def test_iter_check_niimgs():
     assert_array_equal(niimgs[0].get_data(),
                        _utils.check_niimg(img_4d).get_data())
     del img_4d
+    del niimgs
     os.remove(filename)
 
     # Regular case
