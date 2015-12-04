@@ -618,7 +618,7 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
         Coefficients for all folds and features.
     
     `alpha_grids_` : ndarray, shape (n_folds, n_alphas)
-        Alpha values tried for choosing the best ones (saved in best_model_params_)
+        Alpha values considered for selection of the best one (saved in best_model_params_)
 
     `best_model_params_` : ndarray, shape (n_folds, n_parameter)
         Best model parameters (alpha, l1_ratio) saved for the different
@@ -639,7 +639,7 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
         Masked model coefficients
 
     `mask_` : ndarray 
-        Mask image
+        3D array of mask values
 
     `masker_` : instance of NiftiMasker
         The nifti masker used to mask the data.
@@ -658,7 +658,7 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
          It is available only when parameter intercept is set to True.
 
     `cv_` : list of pairs of lists
-         Each pair are are the list of indices for the train and test
+         Each pair is the list of indices for the train and test
          samples for the corresponding fold.
 
     `cv_scores_` : ndarray, shape (n_folds, n_alphas) or (n_l1_ratios, n_folds, n_alphas)
@@ -1112,7 +1112,7 @@ class SpaceNetClassifier(BaseSpaceNet):
         Coefficients for all folds and features.
     
     `alpha_grids_` : ndarray, shape (n_folds, n_alphas)
-        Alpha values tried for choosing the best ones (saved in best_model_params_)
+        Alpha values considered for selection of the best one (saved in best_model_params_)
 
     `best_model_params_` : ndarray, shape (n_folds, n_parameter)
         Best model parameters (alpha, l1_ratio) saved for the different
@@ -1133,7 +1133,7 @@ class SpaceNetClassifier(BaseSpaceNet):
         Masked model coefficients
 
     `mask_` : ndarray 
-        Mask image
+        3D array of mask values
 
     `masker_` : instance of NiftiMasker
         The nifti masker used to mask the data.
@@ -1152,7 +1152,7 @@ class SpaceNetClassifier(BaseSpaceNet):
          It is available only when parameter intercept is set to True.
 
     `cv_` : list of pairs of lists
-         Each pair are are the list of indices for the train and test
+         Each pair is the list of indices for the train and test
          samples for the corresponding fold.
 
     `cv_scores_` : ndarray, shape (n_folds, n_alphas) or (n_l1_ratios, n_folds, n_alphas)
@@ -1338,7 +1338,7 @@ class SpaceNetRegressor(BaseSpaceNet):
         Coefficients for all folds and features.
     
     `alpha_grids_` : ndarray, shape (n_folds, n_alphas)
-        Alpha values tried for choosing the best ones (saved in best_model_params_)
+        Alpha values considered for selection of the best one (saved in best_model_params_)
 
     `best_model_params_` : ndarray, shape (n_folds, n_parameter)
         Best model parameters (alpha, l1_ratio) saved for the different
@@ -1351,7 +1351,7 @@ class SpaceNetRegressor(BaseSpaceNet):
         Masked model coefficients
 
     `mask_` : ndarray 
-        Mask image
+        3D array of mask values
 
     `masker_` : instance of NiftiMasker
         The nifti masker used to mask the data.
@@ -1367,7 +1367,7 @@ class SpaceNetRegressor(BaseSpaceNet):
          It is available only when parameter intercept is set to True.
 
     `cv_` : list of pairs of lists
-         Each pair are are the list of indices for the train and test
+         Each pair is the list of indices for the train and test
          samples for the corresponding fold.
 
     `cv_scores_` : ndarray, shape (n_folds, n_alphas) or (n_l1_ratios, n_folds, n_alphas)
