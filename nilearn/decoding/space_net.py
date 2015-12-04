@@ -584,7 +584,7 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
         Coefficient of the features in the decision function.
 
     `coef_img_` : nifti image
-        On mask model coefficients
+        Masked model coefficients
 
     `mask_` : ndarray
         Mask image
@@ -605,7 +605,9 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
 
     `memory_` : joblib memory cache
 
-    `intercept_` : narray, shape (nclasses -1,)
+    `intercept_` : narray, shape
+            (1, n_features) for 2 class classification problems (i.e n_classes = 2)
+            (n_classes, n_features) for n_classes > 2, and
          Intercept (a.k.a. bias) added to the decision function.
          It is available only when parameter intercept is set to True.
 
@@ -621,17 +623,20 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
         Screening percentile corrected according to volume of mask,
         relative to the volume of standard brain.
 
-    `w_` : ndarray, shape (n_classes-1, n_features) #TODO: check shapes
+    `w_` : ndarray, shape
+            (1, n_features + 1) for 2 class classification problems (i.e n_classes = 2)
+            (n_classes, n_features + 1) for n_classes > 2, and
+            (n_features,) for regression
         Model weights
 
     `ymean_` : array, shape (n_samples,)
         Mean of prediction targets
 
     `Xmean_` : array, shape (n_features,)
-        Mean of X samples
+        Mean of X across samples
 
     `Xstd_` : array, shape (n_features,)
-        Standard deviation of X samples
+        Standard deviation of X across samples
     """
     SUPPORTED_PENALTIES = ["graph-net", "tv-l1"]
     SUPPORTED_LOSSES = ["mse", "logistic"]
