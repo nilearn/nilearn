@@ -27,7 +27,7 @@ install:
   - "conda install pip numpy scipy scikit-learn nose wheel matplotlib -y -q"
 
   # Install other nilearn dependencies
-  - "pip install nibabel coverage"
+  - "pip install nibabel coverage nose-timer"
   - "python setup.py bdist_wheel"
   - ps: "ls dist"
 
@@ -41,7 +41,7 @@ test_script:
   # Change to a non-source folder to make sure we run the tests on the
   # installed library.
   - "cd C:\\"
-  - "python -c \"import nose; nose.main()\" -v -s nilearn"
+  - "python -c \"import nose; nose.main()\" -v -s nilearn --with-timer --timer-top-n 50"
 
 artifacts:
   # Archive the generated packages in the ci.appveyor.com build report.
