@@ -1,6 +1,7 @@
 """
 Test the resampling code.
 """
+import os
 import copy
 import math
 
@@ -545,6 +546,9 @@ def test_coord_transform_trivial():
 
 
 def test_resample_img_segmentation_fault():
+    if os.environ.get('APPVEYOR') == 'True':
+        raise SkipTest('This test too slow (7-8 minutes) on AppVeyor')
+
     # see https://github.com/nilearn/nilearn/issues/346
     shape_in = (64, 64, 64)
     aff_in = np.diag([2., 2., 2., 1.])
