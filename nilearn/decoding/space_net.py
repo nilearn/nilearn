@@ -580,7 +580,7 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
 
     `coef_` : ndarray, shape
             (1, n_features) for 2 class classification problems (i.e n_classes = 2)
-            (n_classes, n_features) for n_classes > 2, and
+            (n_classes, n_features) for n_classes > 2
         Coefficient of the features in the decision function.
 
     `coef_img_` : nifti image
@@ -606,8 +606,8 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
     `memory_` : joblib memory cache
 
     `intercept_` : narray, shape
-            (1, n_features) for 2 class classification problems (i.e n_classes = 2)
-            (n_classes, n_features) for n_classes > 2, and
+            (1,) for 2 class classification problems (i.e n_classes = 2)
+            (n_classes,) for n_classes > 2
          Intercept (a.k.a. bias) added to the decision function.
          It is available only when parameter intercept is set to True.
 
@@ -1065,7 +1065,6 @@ class SpaceNetClassifier(BaseSpaceNet):
     ----------
     `all_coef_` : ndarray, shape (n_l1_ratios, n_folds, n_features)
         Coefficients for all folds and features.
-
     `alpha_grids_` : ndarray, shape (n_folds, n_alphas)
         Alpha values tried for choosing the best ones (saved in best_model_params_)
 
@@ -1081,8 +1080,14 @@ class SpaceNetClassifier(BaseSpaceNet):
 
     `coef_` : ndarray, shape
             (1, n_features) for 2 class classification problems (i.e n_classes = 2)
-            (n_classes, n_features) for n_classes > 2, and
+            (n_classes, n_features) for n_classes > 2
         Coefficient of the features in the decision function.
+
+    `coef_img_` : nifti image
+        Masked model coefficients
+
+    `mask_` : ndarray
+        Mask image
 
     `coef_img_` : nifti image
         Masked model coefficients
@@ -1102,7 +1107,7 @@ class SpaceNetClassifier(BaseSpaceNet):
 
     `intercept_` : narray, shape
             (1, ) for 2 class classification problems (i.e n_classes = 2)
-            (n_classes, ) for n_classes > 2, and
+            (n_classes, ) for n_classes > 2
          Intercept (a.k.a. bias) added to the decision function.
          It is available only when parameter intercept is set to True.
 
@@ -1119,7 +1124,7 @@ class SpaceNetClassifier(BaseSpaceNet):
 
     `w_` : ndarray, shape
             (1, n_features + 1) for 2 class classification problems (i.e n_classes = 2)
-            (n_classes, n_features + 1) for n_classes > 2, and
+            (n_classes, n_features + 1) for n_classes > 2
         Model weights
 
     `ymean_` : array, shape (n_samples,)
@@ -1301,6 +1306,12 @@ class SpaceNetRegressor(BaseSpaceNet):
 
     `coef_` : ndarray, shape (n_features,)
         Coefficient of the features in the decision function.
+
+    `coef_img_` : nifti image
+        Masked model coefficients
+
+    `mask_` : ndarray
+        Mask image
 
     `coef_img_` : nifti image
         Masked model coefficients
