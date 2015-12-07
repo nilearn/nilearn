@@ -29,7 +29,7 @@ from sklearn.feature_extraction import DictVectorizer
 import nibabel as nib
 from nilearn import datasets
 from nilearn.datasets.utils import _fetch_files, _get_dataset_dir
-from nilearn.image import resample_img
+from nilearn.image import resample_img, iter_img
 from nilearn.input_data import NiftiMasker
 from nilearn.masking import compute_background_mask, _extrapolate_out_mask
 from nilearn.plotting import plot_stat_map
@@ -40,78 +40,10 @@ mem = Memory('cache', verbose=0)
 
 
 @mem.cache
-def splitext_multi(p):
-    """From my_img.nii.gz, return .nii.gz"""
-    dirname, basename = os.path.dirname(p), os.path.basename(p)
-    stem, ext = basename.split('.', 1)
-    return os.path.join(dirname, stem), '.' + ext if ext else ''
-
-
-@mem.cache
-def resample_and_expand_image(src_img, target_img, out_path=None):
-    """Resample src_img to target_img affine, turn 4D into list of 3D.
-
-    Optionally save to out_path.
-    """
-    data = src_img.get_data().squeeze()
-    data[np.isnan(data)] = 0
-    assert np.abs(data).max() > 0
-
-    if out_path is not None:
-        # Create the proper output filenames (if 3D, just one;
-        #   if 4D then one per time point)
-        out_stem, out_ext = splitext_multi(out_path)
-        out_paths = [out_path] if len(data.shape) == 3 else \
-                    ['%s-%d%s' % (out_stem, ii, out_ext)
-                     for ii in range(data.shape[-1])]
-        # If all output images exist, use them cached from disk.
-        if np.all([os.path.exists(p) for p in out_paths]):
-            return [nib.load(p) for p in out_paths]
-
-    # Copy the image and make a background mask.
-    src_img = nib.Nifti1Image(data, src_img.get_affine(),
-                              header=src_img.get_header())
-    bg_mask = compute_background_mask(src_img).get_data()
-
-    # Test if the image has been masked:
-    out_of_mask = data[np.logical_not(bg_mask)]
-    if np.all(np.isnan(out_of_mask)) or len(np.unique(out_of_mask)) == 1:
-        # Need to extrapolate
-        with warnings.catch_warnings(record=False):
-            warnings.simplefilter('ignore', RuntimeWarning)
-            data, _ = _extrapolate_out_mask(data.astype(np.float), bg_mask,
-                                            iterations=3)
-    src_img = nib.Nifti1Image(data, src_img.get_affine(),
-                              header=src_img.get_header())
-    del out_of_mask, bg_mask
-
-    # Resampling the file to target and saving the output in the "resampled"
-    # folder
-    resampled_nii = resample_img(src_img, target_img.get_affine(),
-                                 target_img.shape)
-    resampled_nii = nib.Nifti1Image(resampled_nii.get_data().squeeze(),
-                                    resampled_nii.get_affine(),
-                                    header=src_img.get_header())
-
-    # Decimate 4D files.
-    if len(resampled_nii.shape) == 3:
-        resampled_niis = [resampled_nii]
-    else:
-        resampled_niis = []
-        resampled_data = resampled_nii.get_data()
-        for index in range(resampled_nii.shape[3]):
-            # First save the files separately
-            this_nii = nib.Nifti1Image(resampled_data[..., index],
-                                       resampled_nii.get_affine())
-            resampled_niis.append(this_nii)
-
-    # Save the result
-    if out_path:
-        for nii, nii_path in zip(resampled_niis, out_paths):
-            nib.save(nii, nii_path)
-
-    return resampled_niis
-
+def resample_img_with_cache(src_img, target_affine, target_shape=None):
+    """Cache wrapper around resample_img"""
+    return resample_img(img, target_affine=target_img.affine,
+                        target_shape=target_img.shape)
 
 @mem.cache
 def get_neurosynth_terms(images, data_dir, print_frequency=100):
@@ -168,14 +100,13 @@ images, collections = ss_all['images'], ss_all['collections']
 target_img = datasets.load_mni152_template()
 resampled_niis = []
 for ii, image in enumerate(images):
-    if ii % 100 == 0:
+    if ii % 100 == 0:  # Report progress, this can be slow.
         print("Resampling image %d-%d of %d..." % (
             ii + 1, min(ii + 100, len(images)), len(images)))
-    src_img = nib.load(image['local_path'])
-    file_path, ext = splitext_multi(image['local_path'])
-    resample_path = '%s-resampled%s' % (file_path, ext)
-    resampled_niis += resample_and_expand_image(src_img, target_img,
-                                                resample_path)
+    for img in iter_img(image['local_path']):  # Works for 3d or 4d images
+        resampled_niis.append(resample_img_with_cache(img))
+
+# Report to the user any expansion from 4D images.
 if len(images) != len(resampled_niis):
     print("After resampling, %d images => %d "
           "(each time point became an image)" % (
@@ -203,8 +134,8 @@ url = 'https://github.com/NeuroVault/neurovault_analysis/raw/master/gm_mask.nii.
 mask = _fetch_files(_get_dataset_dir('neurovault'),
                     (('gm_mask.nii.gz', url, {}),))[0]
 mask = resample_and_expand_image(nib.load(mask), target_img)[0]
-mask = nib.Nifti1Image((mask.get_data() >= 0.5).astype(int),
-                       mask.get_affine(), mask.get_header())
+mask = new_image_like((mask.get_data() >= 0.5).astype(int),
+                      mask.affine, mask.header)
 
 ### Get the ICA maps ##########################################################
 # Do the ICA transform.
