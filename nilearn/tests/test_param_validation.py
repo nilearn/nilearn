@@ -37,21 +37,21 @@ def test_check_threshold():
 
     # Test threshold as int, threshold=2 should return as it is
     # since it is not string
-    assert_equal(check_threshold(2, matrix, percentile_calculate=fast_abs_percentile), 2)
+    assert_equal(check_threshold(2, matrix, percentile_func=fast_abs_percentile), 2)
 
     # check whether raises a warning if given threshold is higher than expected
     assert_warns(UserWarning, check_threshold, 3., matrix,
-                 percentile_calculate=fast_abs_percentile)
+                 percentile_func=fast_abs_percentile)
 
     # test with numpy scalar as argument
     threshold = 2.
     threshold_numpy_scalar = np.float64(threshold)
     assert_equal(
-        check_threshold(threshold, matrix, percentile_calculate=fast_abs_percentile),
-        check_threshold(threshold_numpy_scalar, matrix, percentile_calculate=fast_abs_percentile))
+        check_threshold(threshold, matrix, percentile_func=fast_abs_percentile),
+        check_threshold(threshold_numpy_scalar, matrix, percentile_func=fast_abs_percentile))
 
     # Test for threshold provided as a percentile of the data (str ending with a
     # %)
     assert_true(1. < check_threshold("50%", matrix,
-                                     percentile_calculate=fast_abs_percentile,
+                                     percentile_func=fast_abs_percentile,
                                      name=name) <= 2.)

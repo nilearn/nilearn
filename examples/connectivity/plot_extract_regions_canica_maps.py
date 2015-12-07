@@ -53,11 +53,13 @@ from nilearn.regions import RegionExtractor
 extractor = RegionExtractor(components_img, threshold=0.5,
                             thresholding_strategy='ratio_n_voxels',
                             extractor='local_regions',
-                            standardize=True, min_region_size=50)
+                            standardize=True, min_region_size=1350)
 # Just call fit() to process for regions extraction
 extractor.fit()
 # Extracted regions are stored in regions_img_
 regions_extracted_img = extractor.regions_img_
+# Each region index is stored in index_
+regions_index = extractor.index_
 # Total number of regions extracted
 n_regions_extracted = regions_extracted_img.shape[-1]
 
@@ -76,7 +78,7 @@ plotting.plot_prob_atlas(regions_extracted_img, view_type='filled_contours',
 # To extract timeseries signals, we call transform() from RegionExtractor object
 # onto each subject functional data stored in func_filenames.
 # To estimate correlation matrices we import connectome utilities from nilearn
-from nilearn.connectome import ConnectivityMeasure, sym_to_vec
+from nilearn.connectome import ConnectivityMeasure
 
 correlations = []
 # Initializing ConnectivityMeasure object with kind='correlation'
@@ -114,40 +116,35 @@ plotting.plot_connectome(mean_correlations, coords_connectome,
                          edge_threshold='90%', title=title)
 
 ################################################################################
-# Showing only Default Mode Network (DMN) regions before and after region extraction
+# Showing Default Mode Network (DMN) regions before and after region extraction
 # by manually identifying the index of DMN in ICA decomposed components
+from nilearn._utils.compat import izip
 
 # First we plot DMN without region extraction, interested in only index=[3]
 img = image.index_img(components_img, 3)
 coords = plotting.find_xyz_cut_coords(img)
-display = plotting.plot_anat(cut_coords=((0, -52, 29)), title='ICA map: DMN')
-display.add_contours(img, levels=[0.007], linewidths=2.5, colors=[[0., 0.092711, 1., 1.]],
-                     filled=True, linestyles='solid', alpha=0.5)
+display = plotting.plot_stat_map(img, cut_coords=((0, -52, 29)),
+                                 colorbar=False, title='ICA map: DMN mode')
 
 # Now, we plot DMN after region extraction to show that connected regions are
 # nicely separated. Each brain extracted region is indicated with separate color
-extracted_DMN_indices = [10, 14, 15, 17]
-color_list = [[0., 1., 0.29, 1.], [0., 0.73, 1., 1.],
-              [0., 0.47, 1., 1.], [0., 0.22, 1., 1.]]
-display = plotting.plot_anat(cut_coords=(0, -52, 29), title='Extracted brain DMN')
-# Right Temporoparietal junction
-img_rtpj = image.index_img(extractor.regions_img_, extracted_DMN_indices[0])
-display.add_contours(img_rtpj, levels=[0.007], linewidths=2.5, colors=[color_list[0]],
-                     filled=True, linestyles='solid', alpha=0.5)
 
-# Posterior Cingulate Cortex
-img_pcc = image.index_img(extractor.regions_img_, extracted_DMN_indices[1])
-display.add_contours(img_pcc, levels=[0.007], linewidths=2.5, colors=[color_list[1]],
-                     filled=True, linestyles='solid', alpha=0.5)
+# For this, we take the indices of the all regions extracted related to original
+# ICA map 3.
+regions_indices_of_map3 = np.where(np.array(regions_index) == 3)
 
-# Medial Prefrontal Cortex
-img_mpfc = image.index_img(extractor.regions_img_, extracted_DMN_indices[2])
-display.add_contours(img_mpfc, levels=[0.007], linewidths=2.5, colors=[color_list[2]],
-                     filled=True, linestyles='solid', alpha=0.5)
+display = plotting.plot_anat(cut_coords=((0, -52, 29)), title='Extracted regions in DMN mode')
 
-# Left Temporoparietal junction
-img_ltpj = image.index_img(extractor.regions_img_, extracted_DMN_indices[3])
-display.add_contours(img_ltpj, levels=[0.007], linewidths=2.5, colors=[color_list[3]],
-                     filled=True, linestyles='solid', alpha=0.5)
+# Now add as an overlay by looping over all the regions for right
+# temporoparietal function, posterior cingulate cortex, medial prefrontal
+# cortex, left temporoparietal junction
+color_list = [[0., 1., 0.29, 1.], [0., 1., 0.54, 1.],
+              [0., 1., 0.78, 1.], [0., 0.96, 1., 1.],
+              [0., 0.73, 1., 1.], [0., 0.47, 1., 1.],
+              [0., 0.22, 1., 1.], [0.01, 0., 1., 1.],
+              [0.26, 0., 1., 1.]]
+for each_index_of_map3, color in izip(regions_indices_of_map3[0], color_list):
+    display.add_overlay(image.index_img(regions_extracted_img, each_index_of_map3),
+                        cmap=plotting.cm.alpha_cmap(color))
 
 plotting.show()

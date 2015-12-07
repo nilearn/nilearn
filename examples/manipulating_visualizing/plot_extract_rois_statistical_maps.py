@@ -28,14 +28,26 @@ tmap_filename = localizer_path.tmaps[2]
 from nilearn.image import threshold_img
 
 # Two types of strategies can be used from this threshold function
-# Type 1: strategy = 'percentile'
-threshold_percentile_img = threshold_img(tmap_filename, threshold='95%',
-                                         thresholding_strategy='percentile')
+# Type 1: strategy used will be based on scoreatpercentile
+threshold_percentile_img = threshold_img(tmap_filename, threshold='95%')
 
-# Type 2: strategy = 'img_value'
+
+# Type 2: threshold strategy used will be based on image intensity
 # Here, threshold value should be within the limits i.e. less than max value.
-threshold_value_img = threshold_img(tmap_filename, threshold=4.,
-                                    thresholding_strategy='img_value')
+threshold_value_img = threshold_img(tmap_filename, threshold=4.)
+
+################################################################################
+# Visualization
+# Showing thresholding results by importing plotting modules and its utilities
+from nilearn import plotting
+
+# Showing percentile threshold image
+plotting.plot_stat_map(threshold_percentile_img, display_mode='z', cut_coords=5,
+                       title='Threshold image with string percentile', colorbar=False)
+
+# Showing intensity threshold image
+plotting.plot_stat_map(threshold_value_img, display_mode='z', cut_coords=5,
+                       title='Threshold image with intensity value', colorbar=False)
 
 ################################################################################
 # Extracting the regions by importing connected regions function
@@ -48,28 +60,14 @@ regions_value_img, index = connected_regions(threshold_value_img,
                                              min_region_size=100)
 
 ################################################################################
-# Visualizing region extraction results by importing plotting tools
-from nilearn import plotting
-
-# Visualizing input statistical image
-plotting.plot_stat_map(tmap_filename, title='Input data: Statistical t-map')
-
-# Visualizing thresholding results
-# Showing threshold image thresholded using percentile strategy
-plotting.plot_stat_map(threshold_percentile_img,
-                       title='Statistical t-map thresholded using percentile')
-# Showing threshold image thresholded using image value strategy
-plotting.plot_stat_map(threshold_value_img,
-                       title='Statistical t-map thresholded using image value')
-
 # Visualizing region extraction results
-title = ("Region Extraction results on 'percentile' thresholded image. "
-         "\n Each color indicates segmented region")
+title = ("ROIs using percentile thresholding. "
+         "\n Each ROI in same color is an extracted region")
 plotting.plot_prob_atlas(regions_percentile_img, anat_img=tmap_filename,
                          view_type='contours', display_mode='z',
                          cut_coords=5, title=title)
-title = ("Region Extraction results on 'img_value' thresholded image. "
-         "\n Each color indicates segmented region")
+title = ("ROIs using image intensity thresholding. "
+         "\n Each ROI in same color is an extracted region")
 plotting.plot_prob_atlas(regions_value_img, anat_img=tmap_filename,
                          view_type='contours', display_mode='z',
                          cut_coords=5, title=title)

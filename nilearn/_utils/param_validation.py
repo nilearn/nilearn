@@ -8,7 +8,7 @@ import warnings
 from .compat import _basestring
 
 
-def check_threshold(threshold, data, percentile_calculate, name='threshold'):
+def check_threshold(threshold, data, percentile_func, name='threshold'):
     """ Checks if the given threshold is in correct format and within the limit.
 
     If necessary, this function also returns score of the data calculated based
@@ -17,23 +17,23 @@ def check_threshold(threshold, data, percentile_calculate, name='threshold'):
 
     Parameters
     ----------
-    threshold: a float value or a real number or a percentage in string.
+    threshold: float or str
         If threshold is a float value, it should be within the range of the
         maximum intensity value of the data.
         If threshold is a percentage expressed in a string it must finish with a
-        percent sign like "99.7%" or just a real number as 99.
+        percent sign like "99.7%".
     data: ndarray
         an array of the input masked data.
-    percentile_calculate: a percentile function {scoreatpercentile, fastabspercentile}
-        define the name of a specific percentile function to use it to
-        calculate the score on the data.
-    name: string, optional
+    percentile_func: function {scoreatpercentile, fastabspercentile}
+        Percentile function for example scipy.stats.scoreatpercentile
+        to calculate the score on the data.
+    name: str, optional
         A string just used for representing the name of the threshold for a precise
         error message.
 
     Returns
     -------
-    threshold: a number
+    threshold: number
         returns the score of the percentile on the data or
         returns threshold as it is if given threshold is not a string percentile.
     """
@@ -50,7 +50,7 @@ def check_threshold(threshold, data, percentile_calculate, name='threshold'):
             exc.args += (message, )
             raise
 
-        threshold = percentile_calculate(data, percentile)
+        threshold = percentile_func(data, percentile)
     elif isinstance(threshold, numbers.Real):
         # checks whether given float value exceeds the maximum
         # value of the image data

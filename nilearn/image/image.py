@@ -601,8 +601,7 @@ def new_img_like(ref_niimg, data, affine=None, copy_header=False):
     return ref_niimg.__class__(data, affine, header=header)
 
 
-def threshold_img(img, threshold, mask_img=None,
-                  thresholding_strategy='img_value'):
+def threshold_img(img, threshold, mask_img=None):
     """ Thresholds the given input image based on specific strategy.
 
     Parameters
@@ -610,25 +609,15 @@ def threshold_img(img, threshold, mask_img=None,
     img: a 3D/4D Niimg-like object
         Image contains of statistical or atlas maps which should be thresholded.
 
-    threshold: float or string or number
-        If float, we consider it as intensity value and therefore will be used
-        to directly threshold the image meaning thresholding is based on image
-        intensities. The given value should be within the range of minimum and
-        maximum intensity of the image.
-        float option is used with thresholding_strategy='img_value'.
-        If string, it should finish with percent sign e.g. "80%" and
-        should be within the range of "0%" to "100%".
-        If number, we consider it as percentage in real number and should be within
-        the range between 0 and 100 same like string case.
-        Both string and real number options are used with thresholding_strategy='percentile'.
-
-    thresholding_strategy: string {'percentile', 'img_value'}, \
-        default 'img_value', optional
-        If 'percentile', image is thresholded based on the percentage of the
-        score on the image data. The scores which are survived above this
-        percentile are kept.
-        If 'img_value', voxels which have intensities greater than given float
-        value are kept.
+    threshold: float or str
+        If float, we threshold the image based on image intensities meaning
+        voxels which have intensities greater than this value will be kept.
+        The given value should be within the range of minimum and
+        maximum intensity of the input image.
+        If string, it should finish with percent sign e.g. "80%" and we threshold
+        based on the score obtained using this percentile on the image data. The
+        voxels which have intensities greater than this score will be kept.
+        The given string should be within the range of "0%" to "100%".
 
     mask_img: Niimg-like object, default None, optional
         Mask image applied to mask the input data.
@@ -636,7 +625,7 @@ def threshold_img(img, threshold, mask_img=None,
 
     Returns
     -------
-    threshold_img: Niimg-like object
+    threshold_img: Nifti1Image object
         thresholded image of the given input image.
     """
     from . import resampling
@@ -661,14 +650,8 @@ def threshold_img(img, threshold, mask_img=None,
                          "Please give either a float value or a string as e.g. '90%'.")
     else:
         cutoff_threshold = check_threshold(threshold, img_data,
-                                           percentile_calculate=scoreatpercentile,
+                                           percentile_func=scoreatpercentile,
                                            name='threshold')
-
-    list_of_strategies = ['percentile', 'img_value']
-    if thresholding_strategy not in list_of_strategies:
-        message = ("'thresholding_strategy' should be given as "
-                   "either of these {0}").format(list_of_strategies)
-        raise ValueError(message)
 
     img_data[np.abs(img_data) < cutoff_threshold] = 0.
     threshold_img = new_img_like(img, img_data, affine)

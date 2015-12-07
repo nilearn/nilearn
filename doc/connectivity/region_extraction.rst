@@ -81,7 +81,10 @@ from ICA maps into separated brain activation regions with automatic
 thresholding strategy selected as thresholding_strategy='ratio_n_voxels'. We use
 thresholding strategy to first get foreground information present in the maps and
 then followed by robust region extraction on foreground information using
-Random Walker algorithm selected as extractor='local_regions'.
+Random Walker algorithm selected as extractor='local_regions'. The minimum
+number of voxels we keep is by defining min_region_size=1350 in mm^3 which means
+input should be given according to the volume of the voxel. Please see the
+documentation of nilearn.regions.connected_regions for more details.
 
 More explanation about threshold, threshold=0.5 can keep the nominal amount of
 non-zero voxels in brain volume across all the maps. If you need to keep more

@@ -767,7 +767,7 @@ def plot_prob_atlas(maps_img, anat_img=MNI152TEMPLATE, view_type='auto',
         data = map_img.get_data()
         # To threshold or choose the level of the contours
         thr = check_threshold(thr, data,
-                              percentile_calculate=fast_abs_percentile,
+                              percentile_func=fast_abs_percentile,
                               name='threshold')
         # Get rid of background values in all cases
         thr = max(thr, 1e-6)

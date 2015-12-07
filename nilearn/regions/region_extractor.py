@@ -23,7 +23,7 @@ from .._utils.ndimage import _peak_local_max
 from .._utils.segmentation import _random_walker
 
 
-def _threshold_maps(maps_img, threshold):
+def _threshold_maps_ratio(maps_img, threshold):
     """ Automatic thresholding of atlas maps image.
 
     Considers the given threshold as a ratio to the total number of voxels
@@ -35,10 +35,10 @@ def _threshold_maps(maps_img, threshold):
     ----------
     maps_img: Niimg-like object
         an image of brain atlas maps.
-    threshold: float
-        value used as a ratio to n_voxels to get a certain threshold size in
-        number to threshold the image. The value should be positive and within
-        the range of number of maps (i.e. n_maps in 4th dimension).
+    threshold: 'auto', float
+        If float, value is used as a ratio to n_voxels to get a certain threshold
+        size in number to threshold the image. The value should be positive and
+        within the range of number of maps (i.e. n_maps in 4th dimension).
 
     Returns
     -------
@@ -47,7 +47,7 @@ def _threshold_maps(maps_img, threshold):
     """
     maps = check_niimg(maps_img)
     n_maps = maps.shape[-1]
-    if not isinstance(threshold, float) or threshold <= 0 or threshold > maps.shape[-1]:
+    if not isinstance(threshold, float) or threshold <= 0 or threshold > n_maps:
         raise ValueError("threshold given as ratio to the number of voxels must "
                          "be float value and should be positive and between 0 and "
                          "total number of maps i.e. n_maps={0}. "
@@ -67,9 +67,12 @@ def _threshold_maps(maps_img, threshold):
     return threshold_maps_img
 
 
-def connected_regions(maps_img, min_region_size=50, extract_type='local_regions',
+def connected_regions(maps_img, min_region_size=1350, extract_type='local_regions',
                       smoothing_fwhm=6, mask_img=None):
     """ Extraction of brain connected regions into separate regions.
+
+    Note: the region size should be defined in mm^3. See the documentation for
+    more details.
 
     Parameters
     ----------
@@ -77,9 +80,10 @@ def connected_regions(maps_img, min_region_size=50, extract_type='local_regions'
         an image of brain activation or atlas maps to be extracted into set of
         separate brain regions.
 
-    min_region_size: int, default 50, optional
-        Minimum number of voxels for a region to be kept. Useful to suppress
-        small spurious regions.
+    min_region_size: int, default 1350mm^3, optional
+        Minimum volume in mm3 for a region to be kept. For example, if the voxel
+        size is 3x3x3 mm then the volume of the voxel is 27mm^3. By default, it
+        is 1350mm^3 which means we take minimum size of 1350 / 27 = 50 voxels.
 
     extract_type: str {'connected_components', 'local_regions'} \
         default local_regions, optional
@@ -113,6 +117,7 @@ def connected_regions(maps_img, min_region_size=50, extract_type='local_regions'
     maps_img = check_niimg(maps_img, atleast_4d=True)
     maps = maps_img.get_data()
     affine = maps_img.get_affine()
+    min_region_size = min_region_size / np.prod(np.diag(abs(affine[:3])))
 
     allowed_extract_types = ['connected_components', 'local_regions']
     if extract_type not in allowed_extract_types:
@@ -141,7 +146,7 @@ def connected_regions(maps_img, min_region_size=50, extract_type='local_regions'
             # Assign -1 to values which are 0. to indicate to ignore
             seeds_label[map_3d == 0.] = -1
             rw_maps = _random_walker(map_3d, seeds_label)
-            # Now simply replace "-1" with "0" for regions seperation
+            # Now simply replace "-1" with "0" for regions separation
             rw_maps[rw_maps == -1] = 0.
             label_maps = rw_maps
         else:
@@ -189,21 +194,23 @@ class RegionExtractor(NiftiMapsMasker):
         Minimum number of voxels for a region to be kept. Useful to suppress
         small spurious regions.
 
-    threshold: float or str, default string "80%", optional
-        If it is a float, it will be used in ratio_n_voxels threshold strategy.
-        If string, it should finish with percent sign e.g. "80%" and will be
-        used in percentile threshold strategy.
+    threshold: number, default 1., optional
+        A value used either in ratio_n_voxels or img_value or percentile
+        `thresholding_strategy` based upon the choice of selection.
 
-    thresholding_strategy: str {'percentile', 'ratio_n_voxels'},\
-        default 'percentile', optional
-        If default 'percentile', images are thresholded based on the percentage
-        of the score on the data and the scores which are survived above this
-        percentile will be kept.
-        If set to 'ratio_n_voxels', meaning we keep the more intense brain voxels
-        n_voxels across all maps. The probability of chance of nonzero voxels
-        survived after taking ratio to the total number of brain voxels will be kept.
-        For example, more the voxels to be kept high should be the ratio within the
-        total number of maps.
+    thresholding_strategy: str {'ratio_n_voxels', 'img_value', 'percentile'}, optional
+        If default 'ratio_n_voxels', we apply thresholding that will keep the
+        more intense nonzero brain voxels (denoted as n_voxels) across all maps
+        (n_voxels being the number of voxels in the brain volume). A float value
+        given in `threshold` parameter indicates the ratio of voxels to keep meaning
+        (if float=2. then maps will together have 2. x n_voxels non-zero voxels).
+        If set to 'percentile', images are thresholded based on the score obtained
+        with the given percentile on the data and the voxel intensities which are
+        survived above this obtained score will be kept.
+        If set to 'img_value', we apply thresholding based on the non-zero voxel
+        intensities across all maps. A value given in `threshold` parameter
+        indicates that we keep only those voxels which have intensities more than
+        this value.
 
     extractor: str {'connected_components', 'local_regions'} default 'local_regions', optional
         If 'connected_components', each component/region in the image is extracted
@@ -270,7 +277,7 @@ class RegionExtractor(NiftiMapsMasker):
       Sep 2014, Boston, United States. pp.8
     """
     def __init__(self, maps_img, mask_img=None, min_region_size=50,
-                 threshold="80%", thresholding_strategy='percentile',
+                 threshold=1., thresholding_strategy='ratio_n_voxels',
                  extractor='local_regions', standardize=False, detrend=False,
                  low_pass=None, high_pass=None, t_r=None,
                  memory=Memory(cachedir=None), memory_level=0, verbose=0):
@@ -290,17 +297,29 @@ class RegionExtractor(NiftiMapsMasker):
         """
         maps_img = check_niimg_4d(self.maps_img)
 
-        # foreground extraction
-        if self.thresholding_strategy == 'ratio_n_voxels':
-            if not isinstance(self.threshold, float):
-                raise ValueError("threshold should be given as float value "
-                                 "for thresholding_strategy='ratio_n_voxels'. "
-                                 "You provided a value of threshold={0}".format(self.threshold))
-            threshold_maps = _threshold_maps(maps_img, self.threshold)
-        else:
-            threshold_maps = threshold_img(maps_img, mask_img=self.mask_img,
-                                           threshold=self.threshold,
-                                           thresholding_strategy=self.thresholding_strategy)
+        list_of_strategies = ['ratio_n_voxels', 'img_value', 'percentile']
+        if self.thresholding_strategy not in list_of_strategies:
+            message = ("'thresholding_strategy' should be "
+                       "either of these {0}").format(list_of_strategies)
+            raise ValueError(message)
+
+        if self.threshold is None or isinstance(self.threshold, _basestring):
+            raise ValueError("The given input to threshold is not valid. "
+                             "Please submit a valid number specific to either of "
+                             "the strategy in {0}".format(list_of_strategies))
+        elif isinstance(self.threshold, numbers.Number):
+            # foreground extraction
+            if self.thresholding_strategy == 'ratio_n_voxels':
+                if not isinstance(self.threshold, float):
+                    raise ValueError("threshold should be given as float value "
+                                     "for thresholding_strategy='ratio_n_voxels'. "
+                                     "You provided a value of threshold={0}".format(self.threshold))
+                threshold_maps = _threshold_maps_ratio(maps_img, self.threshold)
+            else:
+                if self.thresholding_strategy == 'percentile':
+                    self.threshold = ("{0}%").format(self.threshold)
+                threshold_maps = threshold_img(maps_img, mask_img=self.mask_img,
+                                               threshold=self.threshold)
 
         # connected component extraction
         self.regions_img_, self.index_ = connected_regions(threshold_maps,

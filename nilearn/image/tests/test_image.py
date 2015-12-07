@@ -395,16 +395,10 @@ def test_new_img_like_mgz():
     new_img_like(ref_img, data, affine, copy_header=False)
 
 
-def test_validity_threshold_value_and_strategy_in_threshold_img():
+def test_validity_threshold_value_in_threshold_img():
     shape = (6, 8, 10)
     maps = testing.generate_maps(shape, n_regions=2)
     map_0 = maps[0]
-
-    invalid_thresholds = ['percent', 'float', 'value']
-    for invalid_thr in invalid_thresholds:
-        tools.assert_raises(ValueError, threshold_img,
-                            map_0, threshold=0.5,
-                            thresholding_strategy=invalid_thr)
 
     # testing to raise same error when threshold=None case
     testing.assert_raises_regex(ValueError,
@@ -429,9 +423,9 @@ def test_threshold_img():
     mask_img = nibabel.Nifti1Image(np.ones((shape), dtype=np.int8), affine)
 
     for img in iter_img(map_0):
-        thr_maps_img = threshold_img(img, threshold=0.8,
-                                     thresholding_strategy='img_value', mask_img=mask_img)
-        thr_maps_percent = threshold_img(img, threshold=1,
-                                         thresholding_strategy='percentile')
-        thr_maps_percent2 = threshold_img(img, threshold='2%',
-                                          thresholding_strategy='percentile')
+        # when threshold is a float value
+        thr_maps_img = threshold_img(img, threshold=0.8)
+        # when we provide mask image
+        thr_maps_percent = threshold_img(img, threshold=1, mask_img=mask_img)
+        # when threshold is a percentile
+        thr_maps_percent2 = threshold_img(img, threshold='2%')
