@@ -164,8 +164,7 @@ ss_all = datasets.fetch_neurovault(max_images=100,  # Use np.inf for all imgs.
                                    image_filters=imfilts)
 images, collections = ss_all['images'], ss_all['collections']
 
-# -------------------------------------------
-# Resample the images
+### Resample the images #######################################################
 target_img = datasets.load_mni152_template()
 resampled_niis = []
 for ii, image in enumerate(images):
@@ -182,8 +181,8 @@ if len(images) != len(resampled_niis):
           "(each time point became an image)" % (
               len(images), len(resampled_niis)))
 
-# -------------------------------------------
-# Get the neurosynth terms; returns a dict of terms, with
+### Get neurosynth terms ######################################################
+# Returns a dict of terms, with
 #   a vector of values (1 per image)
 terms = get_neurosynth_terms(images, _get_dataset_dir('neurosynth'))
 good_terms = dict([(t, v) for t, v in terms.items()
@@ -198,8 +197,7 @@ for term_idx in sort_idx[-100:]:
     vec[vec < 0] = 0
     print('\t%-25s: %.4e' % (term, np.sum(vec)))
 
-# -------------------------------------------
-# Get the grey matter mask. Cheat by pulling from github :)
+### Get the grey matter mask ##################################################
 print("Downloading and resampling grey matter mask.")
 url = 'https://github.com/NeuroVault/neurovault_analysis/raw/master/gm_mask.nii.gz'
 mask = _fetch_files(_get_dataset_dir('neurovault'),
@@ -208,7 +206,7 @@ mask = resample_and_expand_image(nib.load(mask), target_img)[0]
 mask = nib.Nifti1Image((mask.get_data() >= 0.5).astype(int),
                        mask.get_affine(), mask.get_header())
 
-# -------------------------------------------
+### Get the ICA maps ##########################################################
 # Do the ICA transform.
 masker = NiftiMasker(mask_img=mask, memory=mem)
 X = masker.fit_transform(resampled_niis)
@@ -217,15 +215,13 @@ print("Running ICA; may take time...")
 fast_ica = FastICA(n_components=20, random_state=42)
 ica_maps = fast_ica.fit_transform(X.T).T
 
-# -------------------------------------------
-# Relate ICA to terms
+### Map ICA components to terms ###############################################
 term_matrix = np.asarray(list(good_terms.values()))
 # Don't use the transform method as it centers the data
 ica_terms = np.dot(term_matrix, fast_ica.components_.T).T
 col_names = list(good_terms.keys())
 
-# -------------------------------------------
-# Generate figures
+### Generate figures ##########################################################
 for idx, (ic, ic_terms) in enumerate(zip(ica_maps, ica_terms)):
     if -ic.min() > ic.max():
         # Flip the map's sign for prettiness

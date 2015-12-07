@@ -12,14 +12,13 @@ import matplotlib.pyplot as plt
 import numpy as np
 from nilearn import datasets
 
-# Define pre-download filters
+### Define filters ############################################################
 cfilts = []  # [lambda col: col['DOI'] is not None]
 imfilts = [lambda im: "stop signal" in (im.get('cognitive_paradigm_cogatlas') or "").lower(),
            lambda im: np.all([s in (im.get("contrast_definition") or "")
                               for s in ["succ", "stop", "go"]])]
 
-
-# Download up to 100 matches
+### Download up to 100 images #################################################
 ss_all = datasets.fetch_neurovault(collection_filters=cfilts,
                                    image_filters=imfilts)
 images, collections = ss_all['images'], ss_all['collections']
@@ -28,17 +27,16 @@ for im in images:
     print("\t%04d: %s" % (im['id'],
                           im['cognitive_paradigm_cogatlas']))
 
-# Show all contrast definitions
 print("Contrast definitions for downloaded images:")
 for cd in np.unique([im['contrast_definition'] for im in images]):
     print("\t%s" % cd)
 
-# Visualize the content
+### Visualize the data ########################################################
 from nilearn.plotting import plot_glass_brain
 for im in images:
     plot_glass_brain(im['local_path'], title='%04d' % im['id'])
 
-# Convert t values to z values
+### Compute statistics ########################################################
 def t_to_z(t_scores, df):  # df == degrees of freedom
     import scipy
     p_values = scipy.stats.t.sf(t_scores, df=df)
