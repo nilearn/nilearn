@@ -81,15 +81,17 @@ from ICA maps into separated brain activation regions with automatic
 thresholding strategy selected as thresholding_strategy='ratio_n_voxels'. We use
 thresholding strategy to first get foreground information present in the maps and
 then followed by robust region extraction on foreground information using
-Random Walker algorithm selected as extractor='local_regions'. The minimum
-number of voxels we keep is by defining min_region_size=1350 in mm^3 which means
-input should be given according to the volume of the voxel. Please see the
-documentation of nilearn.regions.connected_regions for more details.
+Random Walker algorithm selected as extractor='local_regions'.
 
-More explanation about threshold, threshold=0.5 can keep the nominal amount of
-non-zero voxels in brain volume across all the maps. If you need to keep more
-non-zero voxels across all maps then more should be the threshold which means
-that you have more chance of keeping the maps.
+Here, we control foreground extraction using parameter threshold=.5, which
+represents the expected proportion of voxels included in the regions
+(i.e. with a non-zero value in one of the maps). If you need to keep more
+proportion of voxels then threshold should be tweaked according to the maps data.
+
+The parameter min_region_size=1350 mm^3 is to keep the minimum number of extracted
+regions. We control the small spurious regions size by thresholding in voxel units
+to adapt well to the resolution of the image. Please see the documentation of
+nilearn.regions.connected_regions for more details.
 
 .. literalinclude:: ../../examples/connectivity/plot_extract_regions_canica_maps.py
     :start-after: # regions, both can be done by importing Region Extractor from regions module
@@ -101,8 +103,8 @@ Visualization of Region Extraction results
 ==========================================
 
 Showing region extraction results. The same :func:`plot_prob_atlas` is used
-for visualizing extracted regions on a standard template. Each color is a
-extracted brain region and as you can see that visual cortex area is extracted
+for visualizing extracted regions on a standard template. Each extracted brain
+region is assigned a color and as you can see that visual cortex area is extracted
 quite nicely into each hemisphere.
 
 .. literalinclude:: ../../examples/connectivity/plot_extract_regions_canica_maps.py
@@ -118,18 +120,18 @@ quite nicely into each hemisphere.
 Computing functional connectivity matrices
 ==========================================
 
-Here, we took ready to use object called :class:`ConnectivityMeasure` to compute
-functional connectivity measures between each extracted brain regions. Many different
+Here, we use the object called :class:`ConnectivityMeasure` to compute
+functional connectivity measured between each extracted brain regions. Many different
 kinds of measures exists in nilearn such as "correlation", "partial correlation", "tangent",
 "covariance", "precision". But, here we show how to compute only correlations by
 selecting parameter as kind='correlation' as initialized in the object.
 
-First step to do is to extract subject specific timeseries signals using
-functional data stored in func_filenames and second step is to call fit_tranform()
-on the timeseries signals. Here, for each subject we have timeseries signals of
-shape=(176, 23) where 176 is the length of timeseries and 23 is the number of extracted regions.
-Likewise, we have a total of 20 subject specific timeseries signals. Third step,
-we compute mean over all the correlations.
+The first step to do is to extract subject specific time series signals using
+functional data stored in func_filenames and the second step is to call fit_tranform()
+on the time series signals. Here, for each subject we have time series signals of
+shape=(176, 23) where 176 is the length of time series and 23 is the number of
+extracted regions. Likewise, we have a total of 20 subject specific time series signals.
+The third step, we compute the mean correlation across all subjects.
 
 .. literalinclude:: ../../examples/connectivity/plot_extract_regions_canica_maps.py
     :start-after: # To estimate correlation matrices we import connectome utilities from nilearn
@@ -166,9 +168,9 @@ Validating results
 Showing only Default Mode Network (DMN) regions before and after region
 extraction by manually identifying the index of DMN in ICA decomposed maps.
 
-Left image shows DMN without region extraction and right image shows DMN after
-region extraction. Here, we can validate that DMN are nicely separated
-showing each extracted region in different color.
+Left image displays the DMN regions without region extraction and right image
+displays the DMN regions after region extraction. Here, we can validate that
+the DMN regions are nicely separated displaying each extracted region in different color.
 
 .. literalinclude:: ../../examples/connectivity/plot_extract_regions_canica_maps.py
     :start-after: # First we plot DMN without region extraction, interested in only index=[3]

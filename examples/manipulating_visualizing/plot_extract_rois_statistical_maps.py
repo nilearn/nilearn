@@ -21,7 +21,7 @@ from nilearn import datasets
 n_subjects = 3
 localizer_path = datasets.fetch_localizer_contrasts(
     ['calculation (auditory cue)'], n_subjects=n_subjects, get_tmaps=True)
-tmap_filename = localizer_path.tmaps[2]
+tmap_filename = localizer_path.tmaps[0]
 
 ################################################################################
 # Threshold the t-statistic image by importing threshold function
@@ -29,7 +29,7 @@ from nilearn.image import threshold_img
 
 # Two types of strategies can be used from this threshold function
 # Type 1: strategy used will be based on scoreatpercentile
-threshold_percentile_img = threshold_img(tmap_filename, threshold='95%')
+threshold_percentile_img = threshold_img(tmap_filename, threshold='97%')
 
 
 # Type 2: threshold strategy used will be based on image intensity
@@ -54,10 +54,10 @@ plotting.plot_stat_map(threshold_value_img, display_mode='z', cut_coords=5,
 from nilearn.regions import connected_regions
 
 regions_percentile_img, index = connected_regions(threshold_percentile_img,
-                                                  min_region_size=100)
+                                                  min_region_size=1500)
 
 regions_value_img, index = connected_regions(threshold_value_img,
-                                             min_region_size=100)
+                                             min_region_size=1500)
 
 ################################################################################
 # Visualizing region extraction results

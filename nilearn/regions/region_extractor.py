@@ -80,7 +80,7 @@ def connected_regions(maps_img, min_region_size=1350, extract_type='local_region
         an image of brain activation or atlas maps to be extracted into set of
         separate brain regions.
 
-    min_region_size: int, default 1350mm^3, optional
+    min_region_size: int, default 1350 mm^3, optional
         Minimum volume in mm3 for a region to be kept. For example, if the voxel
         size is 3x3x3 mm then the volume of the voxel is 27mm^3. By default, it
         is 1350mm^3 which means we take minimum size of 1350 / 27 = 50 voxels.

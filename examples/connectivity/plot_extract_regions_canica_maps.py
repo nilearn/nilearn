@@ -100,7 +100,6 @@ mean_correlations = np.mean(correlations, axis=0).reshape(n_regions_extracted,
 # Visualization
 # Showing mean correlation results
 # Import image utilities in utilising to operate on 4th dimension
-import numpy as np
 import matplotlib.pyplot as plt
 from nilearn import image
 

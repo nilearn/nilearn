@@ -4,6 +4,9 @@ Regions Extraction of Default Mode Networks using Smith Atlas
 
 This simple example shows how to extract regions from Smith atlas
 resting state networks.
+
+In particular, we show how Default Mode Network regions are extracted
+using :class:`nilearn.regions.RegionExtractor` from regions module
 """
 
 ################################################################################
@@ -28,18 +31,27 @@ regions_img = extraction.regions_img_
 ################################################################################
 # Visualization
 # Show region extraction results by importing image & plotting utilities
-
 from nilearn import plotting
-from nilearn.image import iter_img
+from nilearn.image import index_img
 from nilearn.plotting import find_xyz_cut_coords
 
 # Showing region extraction results using 4D maps visualization tool
 plotting.plot_prob_atlas(regions_img, display_mode='z', cut_coords=1,
                          view_type='contours', title="Regions extracted.")
 
-for i, cur_img in zip(extraction.index_, iter_img(regions_img)):
+# To reduce the complexity, we choose to display all the regions
+# extracted from network 3
+import numpy as np
+
+DMN_network = index_img(atlas_networks, 3)
+plotting.plot_roi(DMN_network, display_mode='z', cut_coords=1,
+                  title='Network 3')
+
+regions_indices_network3 = np.where(np.array(extraction.index_) == 3)
+for index in regions_indices_network3[0]:
+    cur_img = index_img(extraction.regions_img_, index)
     coords = find_xyz_cut_coords(cur_img)
-    plotting.plot_stat_map(cur_img, display_mode='z', cut_coords=coords[2:3],
-                           title="Blob of network %d " % i, colorbar=False)
+    plotting.plot_roi(cur_img, display_mode='z', cut_coords=coords[2:3],
+                      title="Blob of network3")
 
 plotting.show()
