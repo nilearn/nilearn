@@ -30,7 +30,7 @@ from nistats.utils import z_score
 z_map = nifti_masker.inverse_transform(z_score(p_values))
 
 # Threshold the resulting map:
-# false positive rate < 10^{-3}, cluster size > 10 voxels
+# false positive rate < .001, cluster size > 10 voxels
 from nistats.thresholding import map_threshold
 thresholded_map1 = map_threshold(
     z_map, nifti_masker.mask_img_, threshold=.001, height_control='fpr',

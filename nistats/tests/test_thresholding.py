@@ -33,21 +33,21 @@ def test_map_threshold():
     vals = th_map.get_data()
     assert_equal(np.sum(vals > 0), 8)
 
-    # test 2:excessive size threshold
-    th_map = map_threshold(
-        stat_img, mask_img, threshold, height_control='fpr',
-        cluster_threshold=10)
-    vals = th_map.get_data()
-    assert_true(np.sum(vals > 0) == 0)
-
-    # test 3: excessive cluster forming threshold
+    # test 2: excessive cluster forming threshold
     th_map = map_threshold(
         stat_img, mask_img, 100, height_control='fpr',
         cluster_threshold=0)
     vals = th_map.get_data()
     assert_true(np.sum(vals > 0) == 0)
 
-    # test 4: fdr threshold
+    # test 3:excessive size threshold
+    th_map = map_threshold(
+        stat_img, mask_img, threshold, height_control='fpr',
+        cluster_threshold=10)
+    vals = th_map.get_data()
+    assert_true(np.sum(vals > 0) == 0)
+
+    # test 4: fdr threshold + bonferroni
     for control in ['fdr', 'bonferoni']:
         th_map = map_threshold(
             stat_img, mask_img, .05, height_control='fdr',
@@ -56,8 +56,9 @@ def test_map_threshold():
         assert_equal(np.sum(vals > 0), 8)
 
     # test 5: direct threshold
+    th = stat_img.get_data().max() - 1    
     th_map = map_threshold(
-        stat_img, mask_img, 5., height_control=None,
-        cluster_threshold=5)
+        stat_img, mask_img, th, height_control=None,
+        cluster_threshold=0)
     vals = th_map.get_data()
     assert_equal(np.sum(vals > 0), 8)
