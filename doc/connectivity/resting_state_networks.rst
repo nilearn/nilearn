@@ -137,23 +137,23 @@ Visualizing the results
 .. literalinclude:: ../../examples/connectivity/plot_compare_resting_state_decomposition.py
     :start-after: # Visualize the results
 
-.. |left_img| image:: ../auto_examples/connectivity/plot_compare_resting_state_decomposition_001.png
+.. |left_img_decomp| image:: ../auto_examples/connectivity/plot_compare_resting_state_decomposition_001.png
    :target: ../auto_examples/plot_compare_resting_state_decomposition.html
    :width: 50%
-.. |right_img| image:: ../auto_examples/connectivity/plot_compare_resting_state_decomposition_003.png
-   :target: ../auto_examples/plot_compare_resting_state_decomposition.html
-   :width: 50%
-
-.. |left_img_single| image:: ../auto_examples/connectivity/plot_compare_resting_state_decomposition_002.png
-   :target: ../auto_examples/plot_compare_resting_state_decomposition.html
-   :width: 50%
-.. |right_img_single| image:: ../auto_examples/connectivity/plot_compare_resting_state_decomposition_004.png
+.. |right_img_decomp| image:: ../auto_examples/connectivity/plot_compare_resting_state_decomposition_003.png
    :target: ../auto_examples/plot_compare_resting_state_decomposition.html
    :width: 50%
 
+.. |left_img_decomp_single| image:: ../auto_examples/connectivity/plot_compare_resting_state_decomposition_002.png
+   :target: ../auto_examples/plot_compare_resting_state_decomposition.html
+   :width: 50%
+.. |right_img_decomp_ingle| image:: ../auto_examples/connectivity/plot_compare_resting_state_decomposition_004.png
+   :target: ../auto_examples/plot_compare_resting_state_decomposition.html
+   :width: 50%
 
-.. centered:: |left_img| |right_img|
-.. centered:: |left_img_single| |right_img_single|
+
+.. centered:: |left_img_decomp| |right_img_decomp|
+.. centered:: |left_img_decomp_single| |right_img_decomp_single|
 
 Maps obtained with dictionary leaning are often easier to exploit as they are
 less noisy than ICA maps, with blobs usually better defined. Typically,
