@@ -120,6 +120,7 @@ uses.
    :template: class.rst
 
    CanICA
+   DictLearning
 
 .. _image_ref:
 

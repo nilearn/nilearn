@@ -1,122 +1,45 @@
 """
-PCA dimension reduction on multiple subjects
+PCA dimension reduction on multiple subjects.
+This is a good initialization method for ICA.
 """
-import itertools
 import numpy as np
-import warnings
-from scipy import linalg
-
-import nibabel
-from sklearn.base import BaseEstimator, TransformerMixin, clone
-from sklearn.externals.joblib import Parallel, delayed, Memory
+from sklearn.externals.joblib import Memory
 from sklearn.utils.extmath import randomized_svd
+from sklearn.base import TransformerMixin
 
-from ..input_data import NiftiMasker, MultiNiftiMasker, NiftiMapsMasker
-from ..input_data.nifti_masker import filter_and_mask
-from .._utils.class_inspect import get_params
-from .._utils.cache_mixin import cache, CacheMixin
-from .._utils import as_ndarray
-from .._utils.compat import _basestring
+from .._utils.cache_mixin import CacheMixin
+from .base import BaseDecomposition, mask_and_reduce
 
 
-def session_pca(imgs, mask_img, parameters,
-                n_components=20,
-                confounds=None,
-                memory_level=0,
-                memory=Memory(cachedir=None),
-                verbose=0,
-                copy=True,
-                random_state=None):
-    """Filter, mask and compute PCA on Niimg-like objects
-
-    This is an helper function whose first call `base_masker.filter_and_mask`
-    and then apply a PCA to reduce the number of time series.
-
-    Parameters
-    ----------
-    imgs: list of Niimg-like objects
-        See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
-        List of subject data
-
-    mask_img: Niimg-like object
-        See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
-        Mask to apply on the data
-
-    parameters: dictionary
-        Dictionary of parameters passed to `filter_and_mask`. Please see the
-        documentation of the `NiftiMasker` for more informations.
-
-    confounds: CSV file path or 2D matrix
-        This parameter is passed to signal.clean. Please see the
-        corresponding documentation for details.
-
-    n_components: integer, optional
-        Number of components to be extracted by the PCA
-
-    random_state: int or RandomState
-        Pseudo number generator state used for randomized SVD.
-
-    memory_level: integer, optional
-        Integer indicating the level of memorization. The higher, the more
-        function calls are cached.
-
-    memory: joblib.Memory
-        Used to cache the function calls.
-
-    verbose: integer, optional
-        Indicate the level of verbosity (0 means no messages).
-
-    copy: boolean, optional
-        Whether or not data should be copied
-    """
-
-    data, affine = cache(
-        filter_and_mask, memory,
-        func_memory_level=2, memory_level=memory_level,
-        ignore=['verbose', 'memory', 'memory_level', 'copy'])(
-            imgs, mask_img, parameters,
-            memory_level=memory_level,
-            memory=memory,
-            verbose=verbose,
-            confounds=confounds,
-            copy=copy)
-    if n_components <= data.shape[0] // 4:
-        U, S, _ = randomized_svd(data.T, n_components,
-                                 transpose=True, random_state=random_state)
-    else:
-        U, S, _ = linalg.svd(data.T, full_matrices=False)
-    U = U.T[:n_components].copy()
-    S = S[:n_components]
-    return U, S
-
-
-class MultiPCA(BaseEstimator, TransformerMixin, CacheMixin):
+class MultiPCA(BaseDecomposition, TransformerMixin, CacheMixin):
     """Perform Multi Subject Principal Component Analysis.
 
-    Perform a PCA on each subject and stack the results. An optional Canonical
-    Correlation Analysis can also be performed.
+    Perform a PCA on each subject, stack the results, and reduce them
+    at group level. An optional Canonical Correlation Analysis can be
+     performed at group level. This is a good initialization method for ICA.
 
     Parameters
     ----------
     n_components: int
         Number of components to extract
 
-    smoothing_fwhm: float, optional
-        If smoothing_fwhm is not None, it gives the size in millimeters of the
-        spatial smoothing to apply to the signal.
-
-    mask: Niimg-like object, instance of NiftiMasker or MultiNiftiMasker, optional
-        Mask to be used on data. If an instance of masker is passed,
-        then its mask will be used. If no mask is given,
-        it will be computed automatically by a MultiNiftiMasker with default
-        parameters.
-
     do_cca: boolean, optional
         Indicate if a Canonical Correlation Analysis must be run after the
         PCA.
 
     random_state: int or RandomState
-        Pseudo number generator state used for randomized SVD.
+        Pseudo number generator state used for random sampling.
+
+    smoothing_fwhm: float, optional
+        If smoothing_fwhm is not None, it gives the size in millimeters of the
+        spatial smoothing to apply to the signal.
+
+    mask: Niimg-like object, instance of NiftiMasker or MultiNiftiMasker,
+     optional
+        Mask to be used on data. If an instance of masker is passed,
+        then its mask will be used. If no mask is given,
+        it will be computed automatically by a MultiNiftiMasker with default
+        parameters.
 
     standardize : boolean, optional
         If standardize is True, the time-series are centered and normed:
@@ -156,7 +79,7 @@ class MultiPCA(BaseEstimator, TransformerMixin, CacheMixin):
         'all CPUs', -2 'all CPUs but one', and so on.
 
     verbose: integer, optional
-        Indicate the level of verbosity. By default, nothing is printed
+        Indicate the level of verbosity. By default, nothing is printed.
 
     Attributes
     ----------
@@ -176,30 +99,38 @@ class MultiPCA(BaseEstimator, TransformerMixin, CacheMixin):
         the `masker_` attribute.
     """
 
-    def __init__(self, n_components=20, smoothing_fwhm=None, mask=None,
-                 do_cca=True, standardize=True, target_affine=None,
-                 target_shape=None, low_pass=None, high_pass=None,
-                 t_r=None, random_state=None,
+    def __init__(self, n_components=20,
+                 mask=None,
+                 smoothing_fwhm=None,
+                 do_cca=True,
+                 random_state=None,
+                 standardize=False, detrend=False,
+                 low_pass=None, high_pass=None, t_r=None,
+                 target_affine=None, target_shape=None,
+                 mask_strategy='epi', mask_args=None,
                  memory=Memory(cachedir=None), memory_level=0,
-                 n_jobs=1, verbose=0,
+                 n_jobs=1,
+                 verbose=0
                  ):
-        self.mask = mask
-        self.memory = memory
-        self.memory_level = memory_level
-        self.n_jobs = n_jobs
-        self.verbose = verbose
-        self.low_pass = low_pass
-        self.high_pass = high_pass
-        self.t_r = t_r
-
-        self.do_cca = do_cca
         self.n_components = n_components
-        self.smoothing_fwhm = smoothing_fwhm
-        self.target_affine = target_affine
-        self.target_shape = target_shape
-        self.standardize = standardize
+        self.do_cca = do_cca
 
-        self.random_state = random_state
+        BaseDecomposition.__init__(self, n_components=n_components,
+                                   random_state=random_state,
+                                   mask=mask,
+                                   smoothing_fwhm=smoothing_fwhm,
+                                   standardize=standardize,
+                                   detrend=detrend,
+                                   low_pass=low_pass,
+                                   high_pass=high_pass, t_r=t_r,
+                                   target_affine=target_affine,
+                                   target_shape=target_shape,
+                                   mask_strategy=mask_strategy,
+                                   mask_args=mask_args,
+                                   memory=memory,
+                                   memory_level=memory_level,
+                                   n_jobs=n_jobs,
+                                   verbose=verbose)
 
     def fit(self, imgs, y=None, confounds=None):
         """Compute the mask and the components
@@ -210,165 +141,34 @@ class MultiPCA(BaseEstimator, TransformerMixin, CacheMixin):
             See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
             Data on which the PCA must be calculated. If this is a list,
             the affine is considered the same for all.
-        """
-
-        # Hack to support single-subject data:
-        if isinstance(imgs, (_basestring, nibabel.Nifti1Image)):
-            imgs = [imgs]
-            # This is a very incomplete hack, as it won't work right for
-            # single-subject list of 3D filenames
-        if len(imgs) == 0:
-            # Common error that arises from a null glob. Capture
-            # it early and raise a helpful message
-            raise ValueError('Need one or more Niimg-like objects as input, '
-                             'an empty list was given.')
-        if confounds is None:
-            confounds = itertools.repeat(None, len(imgs))
-
-        # First, learn the mask
-        if not isinstance(self.mask, (NiftiMasker, MultiNiftiMasker)):
-            self.masker_ = MultiNiftiMasker(mask_img=self.mask,
-                                            smoothing_fwhm=self.smoothing_fwhm,
-                                            target_affine=self.target_affine,
-                                            target_shape=self.target_shape,
-                                            standardize=self.standardize,
-                                            low_pass=self.low_pass,
-                                            high_pass=self.high_pass,
-                                            mask_strategy='epi',
-                                            t_r=self.t_r,
-                                            memory=self.memory,
-                                            memory_level=self.memory_level,
-                                            n_jobs=self.n_jobs,
-                                            verbose=max(0, self.verbose - 1))
-        else:
-            try:
-                self.masker_ = clone(self.mask)
-            except TypeError as e:
-                # Workaround for a joblib bug: in joblib 0.6, a Memory object
-                # with cachedir = None cannot be cloned.
-                masker_memory = self.mask.memory
-                if masker_memory.cachedir is None:
-                    self.mask.memory = None
-                    self.masker_ = clone(self.mask)
-                    self.mask.memory = masker_memory
-                    self.masker_.memory = Memory(cachedir=None)
-                else:
-                    # The error was raised for another reason
-                    raise e
-
-            for param_name in ['target_affine', 'target_shape',
-                               'smoothing_fwhm', 'low_pass', 'high_pass',
-                               't_r', 'memory', 'memory_level']:
-                our_param = getattr(self, param_name)
-                if our_param is None:
-                    # Default value
-                    continue
-                if getattr(self.masker_, param_name) is not None:
-                    warnings.warn('Parameter %s of the masker overriden'
-                                  % param_name)
-                setattr(self.masker_, param_name, our_param)
-
-        # Masker warns if it has a mask_img and is passed
-        # imgs to fit().  Avoid the warning by being careful
-        # when calling fit.
-        if self.masker_.mask_img is None:
-            self.masker_.fit(imgs)
-        else:
-            self.masker_.fit()
-        self.mask_img_ = self.masker_.mask_img_
-
-        parameters = get_params(MultiNiftiMasker, self)
-        # Remove non specific and redudent parameters
-        for param_name in ['memory', 'memory_level', 'confounds',
-                           'verbose', 'n_jobs']:
-            parameters.pop(param_name, None)
-
-        parameters['detrend'] = True
-
-        # Now do the subject-level signal extraction (i.e. data-loading +
-        # PCA)
-
-        subject_pcas = Parallel(n_jobs=self.n_jobs, verbose=self.verbose)(
-            delayed(session_pca)(
-                img,
-                self.masker_.mask_img_,
-                parameters,
-                n_components=self.n_components,
-                memory=self.memory,
-                memory_level=self.memory_level,
-                confounds=confound,
-                verbose=self.verbose,
-                random_state=self.random_state
-            )
-            for img, confound in zip(imgs, confounds))
-        subject_pcas, subject_svd_vals = zip(*subject_pcas)
-
-        if len(imgs) > 1:
-            if not self.do_cca:
-                for subject_pca, subject_svd_val in \
-                        zip(subject_pcas, subject_svd_vals):
-                    subject_pca *= subject_svd_val[:, np.newaxis]
-            data = np.empty((len(imgs) * self.n_components,
-                            subject_pcas[0].shape[1]),
-                            dtype=subject_pcas[0].dtype)
-            for index, subject_pca in enumerate(subject_pcas):
-                if self.n_components > subject_pca.shape[0]:
-                    raise ValueError('You asked for %i components. '
-                                     'This is larger than the single-subject '
-                                     'data size (%d).' % (self.n_components,
-                                                          subject_pca.shape[0]))
-                data[index * self.n_components:
-                     (index + 1) * self.n_components] = subject_pca
-            data, variance, _ = self._cache(
-                randomized_svd, func_memory_level=3)(
-                    data.T, n_components=self.n_components, transpose=True,
-                    random_state=self.random_state)
-            # as_ndarray is to get rid of memmapping
-            data = as_ndarray(data.T)
-        else:
-            data = subject_pcas[0]
-            variance = subject_svd_vals[0]
-        self.components_ = data
-        self.variance_ = variance
-        return self
-
-    def transform(self, imgs, confounds=None):
-        """ Project the data into a reduced representation
-
-        Parameters
-        ----------
-        imgs: iterable of Niimg-like objects
-            See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
-            Data to be projected
 
         confounds: CSV file path or 2D matrix
             This parameter is passed to nilearn.signal.clean. Please see the
             related documentation for details
         """
-        components_img_ = self.masker_.inverse_transform(self.components_)
-        nifti_maps_masker = NiftiMapsMasker(
-            components_img_, self.masker_.mask_img_,
-            resampling_target='maps')
-        nifti_maps_masker.fit()
-        # XXX: dealing properly with 4D/ list of 4D data?
-        if confounds is None:
-            confounds = itertools.repeat(None, len(imgs))
-        return [nifti_maps_masker.transform(img, confounds=confound)
-                for img, confound in zip(imgs, confounds)]
+        BaseDecomposition.fit(self, imgs)
 
-    def inverse_transform(self, component_signals):
-        """ Transform regions signals into voxel signals
+        data = mask_and_reduce(self.masker_, imgs,
+                               confounds=confounds,
+                               n_components=self.n_components,
+                               random_state=self.random_state,
+                               memory=self.memory,
+                               memory_level=max(0, self.memory_level - 1),
+                               n_jobs=self.n_jobs)
+        self._raw_fit(data)
+        return self
 
-        Parameters
-        ----------
-        component_signals: list of numpy array (n_samples x n_components)
-            Component signals to tranform back into voxel signals
-        """
-        components_img_ = self.masker_.inverse_transform(self.components_)
-        nifti_maps_masker = NiftiMapsMasker(
-            components_img_, self.masker_.mask_img_,
-            resampling_target='maps')
-        nifti_maps_masker.fit()
-        # XXX: dealing properly with 2D/ list of 2D data?
-        return [nifti_maps_masker.inverse_transform(signal)
-                for signal in component_signals]
+    def _raw_fit(self, data):
+        """Helper function that direcly process unmasked data"""
+        if self.do_cca:
+            S = np.sqrt(np.sum(data ** 2, axis=1))
+            S[S == 0] = 1
+            data /= S[:, np.newaxis]
+        self.components_, self.variance_, _ = self._cache(
+            randomized_svd, func_memory_level=2)(
+            data.T, n_components=self.n_components,
+            transpose=True,
+            random_state=self.random_state, n_iter=3)
+        if self.do_cca:
+            data *= S[:, np.newaxis]
+        self.components_ = self.components_.T
