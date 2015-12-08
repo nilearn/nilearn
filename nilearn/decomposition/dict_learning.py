@@ -43,6 +43,8 @@ class DictLearning(BaseDecomposition, TransformerMixin, CacheMixin):
     """Perform a map learning algorithm based on spatial component sparsity,
      over a CanICA initialization.  This yields more stable maps than CanICA.
 
+     .. versionadded:: 0.2
+
     Parameters
     ----------
     mask: Niimg-like object or MultiNiftiMasker instance, optional

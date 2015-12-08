@@ -198,6 +198,8 @@ def sym_to_vec(symmetric):
 
     Acts on the last two dimensions of the array if not 2-dimensional.
 
+    .. versionadded:: 0.2
+
     Parameters
     ----------
     symmetric : numpy.ndarray, shape (..., n_features, n_features)
@@ -253,6 +255,8 @@ def _prec_to_partial(precision):
 class ConnectivityMeasure(BaseEstimator, TransformerMixin):
     """A class that computes different kinds of functional connectivity
     matrices.
+
+    .. versionadded:: 0.2
 
     Parameters
     ----------

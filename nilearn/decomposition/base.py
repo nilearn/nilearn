@@ -174,6 +174,8 @@ class BaseDecomposition(BaseEstimator, CacheMixin):
 
      Handles mask logic, provides transform and inverse_transform methods
 
+     .. versionadded:: 0.2
+
     Parameters
     ----------
     n_components: int

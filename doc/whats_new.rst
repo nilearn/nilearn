@@ -1,14 +1,51 @@
-0.1.5
-=======
+0.2
+===
 
 Changelog
 ---------
 
 The new minimum required version of scikit-learn is 0.13
 
-- Fix to control the behaviour of cut_coords or number of cuts in plot_stat_map.
-  For consistency, number of cuts is changed to default value 7.
+New features
+............
+   - The new module named as connectome.
+   - The new class ConnectivityMeasure in connectome module has tools for
+     computing functional connectivity matrices.
+   - The new function sym_to_vec in connectome module is implemented as a
+     helper function to class ConnectivityMeasure.
+   - The new class DictLearning in decomposition module is an alogrithm
+     implemented to decompose resting functional connectivity datasets in
+     a data driven manner.
+   - The new class BaseDecomposition in decomposition module has tools
+     decomposition estimators, masking and dimension reduction of group data.
+   - Integrating back references template from sphinx-gallery of 0.0.11
+     version release.
+   - AppVeyor continuous integration.
+   - New feature glob implementation for check_niimg function used to glob
+     list of many .nii files.
 
+Enhancements
+............
+   - Making website a bit elaborated & modernise by using sphinx-gallery.
+   - Documentation enhancement by integrating sphinx-gallery notebook style
+     examples.
+   - Documentation on NiftiSpheresMasker.
+
+Bug fixes
+.........
+   - Fixed bug to control the behaviour when cut_coords=0. in function
+     plot_stat_map in plotting module. See issue #784.
+   - Fixed bug in copy_img occured while caching the Nifti images. See issue
+     #793.
+   - Fixed bug causing an IndexError in function fast_abs_percentile. See
+     issue #875
+
+API changes summary
+...................
+   - The function group_sparse_covariance has been renamed to group_sparse_cov
+     and moved into nilearn.connectome module.
+   - The default value for number of cuts (n_cuts) in function find_cut_slices
+     in plotting module has been changed from 12 to 7 i.e. n_cuts=7.
 
 0.1.4
 =====
