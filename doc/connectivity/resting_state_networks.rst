@@ -147,7 +147,7 @@ Visualizing the results
 .. |left_img_decomp_single| image:: ../auto_examples/connectivity/plot_compare_resting_state_decomposition_002.png
    :target: ../auto_examples/plot_compare_resting_state_decomposition.html
    :width: 50%
-.. |right_img_decomp_ingle| image:: ../auto_examples/connectivity/plot_compare_resting_state_decomposition_004.png
+.. |right_img_decomp_single| image:: ../auto_examples/connectivity/plot_compare_resting_state_decomposition_004.png
    :target: ../auto_examples/plot_compare_resting_state_decomposition.html
    :width: 50%
 
