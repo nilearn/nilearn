@@ -76,24 +76,9 @@ def get_neurosynth_terms(images, data_dir, print_frequency=100):
                  for name, idx in vectorizer.vocabulary_.items()])
 
 
-
-# -------------------------------------------
-# Define pre-download filters
-bad_collects = [16]
-bad_image_ids = [
-    96, 97, 98,                    # The following maps are not brain maps
-    338, 339,                      # And the following are crap
-    335,                           # 335 is a duplicate of 336
-    3360, 3362, 3364,              # These are mean images, and not Z maps
-    1202, 1163, 1931, 1101, 1099]  # Ugly / obviously not Z maps
-imfilts = [lambda im: im.get('perc_bad_voxels', 0.) < 100.]
-
 # Download 100 matching images
 ss_all = datasets.fetch_neurovault(max_images=100,  # Use np.inf for all imgs.
-                                   collection_ids=[-bid for bid in bad_collects],
-                                   image_ids=[-bid for bid in bad_image_ids],
-                                   map_types=['F map', 'T map', 'Z map'],
-                                   image_filters=imfilts)
+                                   map_types=['F map', 'T map', 'Z map'])
 images, collections = ss_all['images'], ss_all['collections']
 
 ### Resample the images #######################################################

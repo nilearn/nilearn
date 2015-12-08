@@ -9,6 +9,7 @@ import io
 import os
 import re
 import warnings
+from itertools import chain
 
 import numpy as np
 import nibabel
@@ -1702,11 +1703,13 @@ def _filter_nv_results(results, filts):
 
 
 def fetch_neurovault(max_images=np.inf,
-                     exclude_unpublished=False, collection_ids=None,
-                     image_ids=None, image_type=None, map_types=None,
-                     collection_filters=None, image_filters=None,
-                     data_dir=None, url=None, resume=True,
-                     overwrite=False, verbose=2):
+                     exclude_unpublished=False,
+                     exclude_known_bad_images=True,
+                     collection_ids=(),
+                     image_ids=(), image_type=None, map_types=(),
+                     collection_filters=(), image_filters=(),
+                     data_dir=None, url="http://neurovault.org/api",
+                     resume=True, overwrite=False, verbose=2):
     """Fetch public statistical maps from NeuroVault.org.
 
        Image data downloaded is matched by `collection_filters` and
@@ -1730,6 +1733,11 @@ def fetch_neurovault(max_images=np.inf,
 
     exclude_unpublished: bool, optional (default: False)
         Exclude any images that belong to a collection without a DOI.
+
+    exclude_known_bad_images: bool
+        Append filters to remove known bad collections,
+        image ids, and images with parameter values that
+        indicate the data are not useful.
 
     collection_ids: list, optional (default: None)
         A list of integer IDs of collections to search for images.
@@ -1822,34 +1830,53 @@ def fetch_neurovault(max_images=np.inf,
         doi: 10.3389/fninf.2015.00008
     """
 
-    if url is None:
-        url = "http://neurovault.org/api"
-    if collection_filters is None:
-        collection_filters = []
-    if image_filters is None:
-        image_filters = []
+    # Massage parameters, convert into image filters.
+    if exclude_known_bad_images:
+        bad_collects = [16]
+        bad_image_ids = [
+            96, 97, 98,                    # The following maps are not brain maps
+            338, 339,                      # And the following are crap
+            335,                           # 335 is a duplicate of 336
+            3360, 3362, 3364,              # These are mean images, and not Z maps
+            1202, 1163, 1931, 1101, 1099]  # Ugly / obviously not Z maps
+        collection_ids = chain(collection_ids, [-bid for bid in bad_collects])
+        image_ids = chain(image_ids, [-bid for bid in bad_image_ids])
+        image_filters = chain(image_filters,
+                              [lambda im: im.get('perc_bad_voxels', 0) < 100,
+                               lambda im: im.get('brain_coverage', 100) > 0])
     if exclude_unpublished:
-        collection_filters.append(lambda col: col.get('DOI') is not None)
+        collection_filters = chain(collection_filters,
+                                   [lambda col: col.get('DOI') is not None])
     if collection_ids:  # positive: include; negative: exclude
+        collection_ids = tuple(collection_ids)  # consume more than once
         _pos_col_ids = [cid for cid in collection_ids if cid >= 0]
-        if _pos_col_ids:
-            collection_filters.append(lambda col: col.get('id') in _pos_col_ids)
         _neg_col_ids = [-cid for cid in collection_ids if cid < 0]
+        if _pos_col_ids:
+            collection_filters = chain(collection_filters,
+                                       [lambda c: c.get('id') in _pos_col_ids])
         if _neg_col_ids:
-            collection_filters.append(lambda col: col.get('id') not in _neg_col_ids)
+            collection_filters = chain(collection_filters,
+                                       [lambda c: c.get('id') not in _neg_col_ids])
     if image_ids:  # positive: include; negative: exclude
+        image_ids = tuple(image_ids)  # consume more than once
         _pos_im_ids = [iid for iid in image_ids if iid >= 0]
-        if _pos_im_ids:
-            image_filters.append(lambda im: im.get('id') in _pos_im_ids)
         _neg_im_ids = [-iid for iid in image_ids if iid < 0]
+        if _pos_im_ids:
+            image_filters = chain(image_filters,
+                                  [lambda im: im.get('id') in _pos_im_ids])
         if _neg_im_ids:
-            image_filters.append(lambda im: im.get('id') not in _neg_im_ids)
+            image_filters = chain(image_filters,
+                                  [lambda im: im.get('id') not in _neg_im_ids])
     if image_type:
-        image_filters.append(lambda im: im.get('image_type') == image_type)
+        image_filters = chain(image_filters,
+                              [lambda im: im.get('image_type') == image_type])
     if map_types and isinstance(map_types, _basestring):
         map_types = [map_types]
     if map_types:
-        image_filters.append(lambda im: im.get('map_type') in map_types)
+        image_filters = chain(image_filters,
+                              [lambda im: im.get('map_type') in map_types])
+    image_filters = tuple(image_filters)  # convert to tuples, we need to consume
+    collection_filters = tuple(collection_filters)  # these filters many times.
     data_dir = _get_dataset_dir('neurovault', data_dir=data_dir)
 
     collects = dict()
