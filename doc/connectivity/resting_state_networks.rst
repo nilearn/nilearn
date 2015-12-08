@@ -121,7 +121,7 @@ larger alpha yields sparser maps.
 
 .. literalinclude:: ../../examples/connectivity/plot_compare_resting_state_decomposition.py
     :start-after: # Dictionary learning
-    :end-before:# CanICA
+    :end-before: # CanICA
 
 We can fit both estimators to compare them
 
