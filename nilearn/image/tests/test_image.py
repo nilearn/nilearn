@@ -1,10 +1,12 @@
 """
 Test image pre-processing functions
 """
-from nose.tools import assert_true, assert_false
+
+from nose.tools import assert_true, assert_false, assert_equal
 from distutils.version import LooseVersion
 from nose import SkipTest
 
+import collections
 import platform
 import os
 import nibabel
@@ -333,8 +335,9 @@ def test_index_img():
 
 def test_iter_img():
     img_3d = nibabel.Nifti1Image(np.ones((3, 4, 5)), np.eye(4))
-    testing.assert_raises_regex(TypeError, '4D Niimg-like',
-                                image.iter_img, img_3d)
+    img_3d_iter = image.iter_img(img_3d)
+    assert_true(isinstance(img_3d_iter, collections.Iterable))
+    assert_equal(len(list(img_3d_iter)), 1)
 
     affine = np.array([[1., 2., 3., 4.],
                        [5., 6., 7., 8.],
