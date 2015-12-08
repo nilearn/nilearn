@@ -35,7 +35,7 @@ def _threshold_maps_ratio(maps_img, threshold):
     ----------
     maps_img: Niimg-like object
         an image of brain atlas maps.
-    threshold: 'auto', float
+    threshold: float
         If float, value is used as a ratio to n_voxels to get a certain threshold
         size in number to threshold the image. The value should be positive and
         within the range of number of maps (i.e. n_maps in 4th dimension).
@@ -190,9 +190,10 @@ class RegionExtractor(NiftiMapsMasker):
         Mask to be applied to input data, passed to NiftiMapsMasker.
         If None, no masking is applied.
 
-    min_region_size: int, default 50, optional
-        Minimum number of voxels for a region to be kept. Useful to suppress
-        small spurious regions.
+    min_region_size: int, default 1350 mm^3, optional
+        Minimum volume in mm3 for a region to be kept. For example, if the voxel
+        size is 3x3x3 mm then the volume of the voxel is 27mm^3. By default, it
+        is 1350mm^3 which means we take minimum size of 1350 / 27 = 50 voxels.
 
     threshold: number, default 1., optional
         A value used either in ratio_n_voxels or img_value or percentile
@@ -276,7 +277,7 @@ class RegionExtractor(NiftiMapsMasker):
       brain parcellations from rest fMRI", Sparsity Techniques in Medical Imaging,
       Sep 2014, Boston, United States. pp.8
     """
-    def __init__(self, maps_img, mask_img=None, min_region_size=50,
+    def __init__(self, maps_img, mask_img=None, min_region_size=1350,
                  threshold=1., thresholding_strategy='ratio_n_voxels',
                  extractor='local_regions', standardize=False, detrend=False,
                  low_pass=None, high_pass=None, t_r=None,
