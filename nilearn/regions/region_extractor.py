@@ -74,6 +74,8 @@ def connected_regions(maps_img, min_region_size=1350, extract_type='local_region
     Note: the region size should be defined in mm^3. See the documentation for
     more details.
 
+    .. versionadded:: 0.2
+
     Parameters
     ----------
     maps_img: Niimg-like object
@@ -179,6 +181,8 @@ class RegionExtractor(NiftiMapsMasker):
     into different set of separated brain activated region.
     Particularly, to show that each decomposed brain maps can be
     used to focus on a target specific Regions of Interest analysis.
+
+    .. versionadded:: 0.2
 
     Parameters
     ----------

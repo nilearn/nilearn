@@ -604,6 +604,8 @@ def new_img_like(ref_niimg, data, affine=None, copy_header=False):
 def threshold_img(img, threshold, mask_img=None):
     """ Thresholds the given input image based on specific strategy.
 
+    .. versionadded:: 0.2
+
     Parameters
     ----------
     img: a 3D/4D Niimg-like object
