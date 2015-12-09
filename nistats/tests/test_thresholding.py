@@ -3,7 +3,7 @@
 import numpy as np
 from scipy.stats import norm
 from nose.tools import assert_true
-from numpy.testing import assert_array_almost_equal, assert_almost_equal, assert_equal
+from numpy.testing import assert_almost_equal, assert_equal
 import nibabel as nib
 from ..thresholding import (fdr_threshold, map_threshold)
 
@@ -20,9 +20,10 @@ def test_fdr():
 
 def test_map_threshold():
     shape = (9, 10, 11)
-    data = np.random.randn(*shape)
-    threshold = norm.sf(data.max() + 1)
-    data[2:4, 5:7, 6:8] = data.max() + 2
+    p = np.prod(shape)
+    data = norm.isf(np.linspace(1. / p, 1. - 1. / p, p)).reshape(shape)
+    threshold = .001
+    data[2:4, 5:7, 6:8] = 5.
     stat_img = nib.Nifti1Image(data, np.eye(4))
     mask_img = nib.Nifti1Image(np.ones(shape), np.eye(4))
 
@@ -56,10 +57,8 @@ def test_map_threshold():
         assert_equal(np.sum(vals > 0), 8)
 
     # test 5: direct threshold
-    th = stat_img.get_data().max() - 1    
     th_map = map_threshold(
-        stat_img, mask_img, th, height_control=None,
+        stat_img, mask_img, 4.0, height_control=None,
         cluster_threshold=0)
     vals = th_map.get_data()
-    print(th, vals[vals > th])
     assert_equal(np.sum(vals > 0), 8)
