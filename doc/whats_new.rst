@@ -23,6 +23,13 @@ New features
    - AppVeyor continuous integration.
    - New feature glob implementation for check_niimg function used to glob
      list of many .nii files.
+   - The new module named as regions.
+   - The new class RegionExtractor in regions module has tools for post
+     processing brain region extraction.
+   - The new function connected_regions in regions module is implemented as a
+     helper function to class RegionExtractor.
+   - The new function threshold_img in image module is implemented to use it for
+     thresholding statistical maps.
 
 Enhancements
 ............
@@ -46,6 +53,8 @@ API changes summary
      and moved into nilearn.connectome module.
    - The default value for number of cuts (n_cuts) in function find_cut_slices
      in plotting module has been changed from 12 to 7 i.e. n_cuts=7.
+   - The function check_threshold has been moved from plotting module to
+     _utils module in new file param_validation.py
 
 0.1.4
 =====
