@@ -8,53 +8,53 @@ The new minimum required version of scikit-learn is 0.13
 
 New features
 ............
-   - The new module named as connectome.
-   - The new class ConnectivityMeasure in connectome module has tools for
-     computing functional connectivity matrices.
-   - The new function sym_to_vec in connectome module is implemented as a
-     helper function to class ConnectivityMeasure.
-   - The new class DictLearning in decomposition module is an alogrithm
-     implemented to decompose resting functional connectivity datasets in
-     a data driven manner.
-   - The new class BaseDecomposition in decomposition module has tools
-     decomposition estimators, masking and dimension reduction of group data.
+   - The new module :mod:`nilearn.connectome`.
+   - The new class :class:`nilearn.connectome.ConnectivityMeasure` in
+     :mod:`nilearn.connectome` has tools for computing functional
+     connectivity matrices.
+   - The new function :func:`nilearn.connectome.sym_to_vec` in
+     :mod:`nilearn.connectome` is implemented as a helper function to
+     :class:`nilearn.connectome.ConnectivityMeasure`.
+   - The new class :class:`nilearn.decomposition.DictLearning` in
+     :mod:`nilearn.decomposition` is an algorithm implemented to decompose
+     resting state functional connectivity datasets in a data driven manner.
    - Integrating back references template from sphinx-gallery of 0.0.11
      version release.
-   - AppVeyor continuous integration.
    - New feature glob implementation for check_niimg function used to glob
      list of many .nii files.
-   - The new module named as regions.
-   - The new class RegionExtractor in regions module has tools for post
-     processing brain region extraction.
-   - The new function connected_regions in regions module is implemented as a
-     helper function to class RegionExtractor.
-   - The new function threshold_img in image module is implemented to use it for
-     thresholding statistical maps.
+   - The new module :mod:`nilearn.regions`.
+   - The new class :class:`nilearn.regions.RegionExtractor` in
+     :mod:`nilearn.regions` has tools for post processing brain regions of
+     interest extraction.
+   - The new function :func:`nilearn.regions.connected_regions` in
+     :mod:`nilearn.regions` is implemented as a helper function to
+     :class:`nilearn.regions.RegionExtractor`.
+   - The new function :func:`nilearn.image.threshold_img` in :mod:`nilearn.image`
+     is implemented to use it for thresholding statistical maps.
 
 Enhancements
 ............
    - Making website a bit elaborated & modernise by using sphinx-gallery.
    - Documentation enhancement by integrating sphinx-gallery notebook style
      examples.
-   - Documentation on NiftiSpheresMasker.
+   - Documentation about :class:`nilearn.input_data.NiftiSpheresMasker`.
 
 Bug fixes
 .........
    - Fixed bug to control the behaviour when cut_coords=0. in function
-     plot_stat_map in plotting module. See issue #784.
-   - Fixed bug in copy_img occured while caching the Nifti images. See issue
-     #793.
-   - Fixed bug causing an IndexError in function fast_abs_percentile. See
-     issue #875
+     :func:`nilearn.plotting.plot_stat_map` in :mod:`nilearn.plotting`.
+     See issue # 784.
+   - Fixed bug in :func:`nilearn.image.copy_img` occured while caching
+     the Nifti images. See issue # 793.
+   - Fixed bug causing an IndexError in fast_abs_percentile. See issue # 875
 
 API changes summary
 ...................
-   - The function group_sparse_covariance has been renamed to group_sparse_cov
-     and moved into nilearn.connectome module.
-   - The default value for number of cuts (n_cuts) in function find_cut_slices
-     in plotting module has been changed from 12 to 7 i.e. n_cuts=7.
-   - The function check_threshold has been moved from plotting module to
-     _utils module in new file param_validation.py
+   - The utilities in function group_sparse_covariance has been moved
+     into :mod:`nilearn.connectome`.
+   - The default value for number of cuts (n_cuts) in function
+     :func:`nilearn.plotting.find_cuts` in :mod:`nilearn.plotting` has
+     been changed from 12 to 7 i.e. n_cuts=7.
 
 0.1.4
 =====
