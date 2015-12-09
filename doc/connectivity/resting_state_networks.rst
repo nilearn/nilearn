@@ -65,7 +65,7 @@ each component separately.
     :start-after: # To visualize we plot the outline of all components on one figure
     :end-before: # Finally, we plot the map for each ICA component separately
 
-.. image:: ../auto_examples/connectivity/images/sphx_glr_plot_canica_resting_state_001.png
+.. figure:: ../auto_examples/connectivity/images/sphx_glr_plot_canica_resting_state_001.png
    :align: center
    :target: ../auto_examples/connectivity/plot_canica_resting_state.html
 
@@ -75,12 +75,9 @@ Finally, we can plot the map for different ICA components separately:
     :start-after: # Finally, we plot the map for each ICA component separately
 
 .. |left_img| image:: ../auto_examples/connectivity/images/sphx_glr_plot_canica_resting_state_003.png
-   :target: ../auto_examples/connectivity/plot_canica_resting_state.html
    :width: 23%
 
 .. |right_img| image:: ../auto_examples/connectivity/images/sphx_glr_plot_canica_resting_state_004.png
-
-   :target: ../auto_examples/connectivity/plot_canica_resting_state.html
    :width: 23%
 
 .. centered:: |left_img| |right_img|
