@@ -15,7 +15,6 @@ from sklearn.utils import check_random_state
 from sklearn.utils.extmath import randomized_svd
 from .._utils.cache_mixin import CacheMixin, cache
 from .._utils.niimg import _safe_get_data
-from .._utils.niimg_conversions import check_niimg_4d, _iter_check_niimg
 from ..input_data import NiftiMapsMasker
 from ..input_data.masker_validation import check_embedded_nifti_masker
 
@@ -369,9 +368,10 @@ class BaseDecomposition(BaseEstimator, CacheMixin):
             Component signals to tranform back into voxel signals
 
         Returns
-        ----------
+        -------
         reconstructed_imgs: list of nibabel.Nifti1Image
            For each loading, reconstructed Nifti1Image
+
         """
         if not hasattr(self, 'components_'):
             ValueError('Object has no components_ attribute. This is either '
