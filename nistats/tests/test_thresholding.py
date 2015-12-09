@@ -61,4 +61,5 @@ def test_map_threshold():
         stat_img, mask_img, th, height_control=None,
         cluster_threshold=0)
     vals = th_map.get_data()
+    print(th, vals[vals > th])
     assert_equal(np.sum(vals > 0), 8)
