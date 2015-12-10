@@ -8,28 +8,26 @@ The new minimum required version of scikit-learn is 0.13
 
 New features
 ............
-   - The new module :mod:`nilearn.connectome`.
-   - The new class :class:`nilearn.connectome.ConnectivityMeasure` in
-     :mod:`nilearn.connectome` has tools for computing functional
-     connectivity matrices.
-   - The new function :func:`nilearn.connectome.sym_to_vec` in
-     :mod:`nilearn.connectome` is implemented as a helper function to
+   - The new module :mod:`nilearn.connectome` now has class
+     :class:`nilearn.connectome.ConnectivityMeasure` can be useful for
+     computing functional connectivity matrices.
+   - The function :func:`nilearn.connectome.sym_to_vec` in same module
+     :mod:`nilearn.connectome` is also implemented as a helper function to
      :class:`nilearn.connectome.ConnectivityMeasure`.
-   - The new class :class:`nilearn.decomposition.DictLearning` in
-     :mod:`nilearn.decomposition` is an algorithm implemented to decompose
-     resting state functional connectivity datasets in a data driven manner.
+   - The class :class:`nilearn.decomposition.DictLearning` in
+     :mod:`nilearn.decomposition` is a decomposition method similar to ICA
+     that imposes sparsity on components instead of independence between them.
    - Integrating back references template from sphinx-gallery of 0.0.11
      version release.
-   - New feature glob implementation for check_niimg function used to glob
-     list of many .nii files.
-   - The new module :mod:`nilearn.regions`.
-   - The new class :class:`nilearn.regions.RegionExtractor` in
-     :mod:`nilearn.regions` has tools for post processing brain regions of
-     interest extraction.
-   - The new function :func:`nilearn.regions.connected_regions` in
-     :mod:`nilearn.regions` is implemented as a helper function to
+   - Globbing expressions can now be used in all nilearn functions expecting a
+     list of files.
+   - The new module :mod:`nilearn.regions` now has class
+     :class:`nilearn.regions.RegionExtractor` which can be used for post
+     processing brain regions of interest extraction.
+   - The function :func:`nilearn.regions.connected_regions` in
+     :mod:`nilearn.regions` is also implemented as a helper function to
      :class:`nilearn.regions.RegionExtractor`.
-   - The new function :func:`nilearn.image.threshold_img` in :mod:`nilearn.image`
+   - The function :func:`nilearn.image.threshold_img` in :mod:`nilearn.image`
      is implemented to use it for thresholding statistical maps.
 
 Enhancements
