@@ -21,7 +21,7 @@ Available on https://hal.inria.fr/inria-00588898/en/
 # Load ADHD rest dataset
 from nilearn import datasets
 
-adhd_dataset = datasets.fetch_adhd(n_subjects=20)
+adhd_dataset = datasets.fetch_adhd(n_subjects=30)
 func_filenames = adhd_dataset.func  # list of 4D nifti files for each subject
 
 # print basic information on the dataset
