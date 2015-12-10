@@ -21,7 +21,7 @@ from sklearn.linear_model import Ridge
 
 from .base import BaseDecomposition, mask_and_reduce
 from .canica import CanICA
-from .._utils.cache_mixin import CacheMixin
+
 
 if LooseVersion(sklearn.__version__) >= LooseVersion('0.17'):
     # check_input=False is an optimization available only in sklearn >=0.17
@@ -39,7 +39,7 @@ def _compute_loadings(components, data):
     return loadings
 
 
-class DictLearning(BaseDecomposition, TransformerMixin, CacheMixin):
+class DictLearning(BaseDecomposition, TransformerMixin):
     """Perform a map learning algorithm based on spatial component sparsity,
      over a CanICA initialization.  This yields more stable maps than CanICA.
 

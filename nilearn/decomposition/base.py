@@ -171,7 +171,7 @@ def _mask_and_reduce_single(masker,
 class BaseDecomposition(BaseEstimator, CacheMixin):
     """Base class for matrix factorization based decomposition estimators.
 
-     Handles mask logic, provides transform and inverse_transform methods
+    Handles mask logic, provides transform and inverse_transform methods
 
     Parameters
     ----------
@@ -226,7 +226,7 @@ class BaseDecomposition(BaseEstimator, CacheMixin):
         computed from masking.compute_background_mask or
         masking.compute_epi_mask. Default is 'background'.
 
-    mask_args : dict, optional
+    mask_args: dict, optional
         If mask is None, these are additional parameters passed to
         masking.compute_background_mask or masking.compute_epi_mask
         to fine-tune mask computation. Please see the related documentation
@@ -250,7 +250,7 @@ class BaseDecomposition(BaseEstimator, CacheMixin):
 
     Attributes
     ----------
-    `mask_img_`: Niimg-like object
+    `mask_img_` : Niimg-like object
         See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
         The mask of the data. If no mask was given at masker creation, contains
         the automatically computed mask.

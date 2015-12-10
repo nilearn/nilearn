@@ -14,10 +14,9 @@ from sklearn.externals.joblib import Memory, delayed, Parallel
 from sklearn.utils import check_random_state
 
 from .multi_pca import MultiPCA
-from .._utils.cache_mixin import CacheMixin
 
 
-class CanICA(MultiPCA, CacheMixin):
+class CanICA(MultiPCA):
     """Perform Canonical Independent Component Analysis.
 
     Parameters
@@ -44,7 +43,7 @@ class CanICA(MultiPCA, CacheMixin):
         Indicate if a Canonical Correlation Analysis must be run after the
         PCA.
 
-    standardize : boolean, optional
+    standardize: boolean, optional
         If standardize is True, the time-series are centered and normed:
         their variance is put to 1 in the time dimension.
 
@@ -189,6 +188,7 @@ class CanICA(MultiPCA, CacheMixin):
         ----------
         data: ndarray or memmap
             Unmasked data to process
+
         """
         MultiPCA._raw_fit(self, data)
         self._unmix_components()
