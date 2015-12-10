@@ -3,13 +3,11 @@ Better brain parcellations for Region of Interest analysis
 """
 import warnings
 import numbers
-import nibabel
 import numpy as np
 
 from scipy.ndimage import label
 from scipy.stats import scoreatpercentile
 
-from sklearn.base import clone
 from sklearn.externals.joblib import Memory
 
 from .. import masking
@@ -42,16 +40,16 @@ def _threshold_maps_ratio(maps_img, threshold):
 
     Returns
     -------
-    threshold_maps_img: Nifti1Image object
+    threshold_maps_img: Nifti1Image
         gives us thresholded image.
     """
     maps = check_niimg(maps_img)
     n_maps = maps.shape[-1]
-    if not isinstance(threshold, float) or threshold <= 0 or threshold > n_maps:
+    if not isinstance(threshold, numbers.Real) or threshold <= 0 or threshold > n_maps:
         raise ValueError("threshold given as ratio to the number of voxels must "
-                         "be float value and should be positive and between 0 and "
+                         "be Real number and should be positive and between 0 and "
                          "total number of maps i.e. n_maps={0}. "
-                         "You provided {1}".format(maps.shape[-1], threshold))
+                         "You provided {1}".format(n_maps, threshold))
     else:
         ratio = threshold
 
@@ -106,7 +104,7 @@ def connected_regions(maps_img, min_region_size=1350, extract_type='local_region
 
     Returns
     -------
-    regions_extracted_img: Nifti1Image object
+    regions_extracted_img: Nifti1Image
         gives the image in 4D of extracted brain regions. Each 3D image consists
         of only one separated region.
 
@@ -267,7 +265,7 @@ class RegionExtractor(NiftiMapsMasker):
 
     Attributes
     ----------
-    regions_img_: Nifti1Image object
+    regions_img_: Nifti1Image
         list of separated regions with each region lying on a 3D volume
         concatenated into a 4D image.
 
@@ -315,14 +313,10 @@ class RegionExtractor(NiftiMapsMasker):
         elif isinstance(self.threshold, numbers.Number):
             # foreground extraction
             if self.thresholding_strategy == 'ratio_n_voxels':
-                if not isinstance(self.threshold, float):
-                    raise ValueError("threshold should be given as float value "
-                                     "for thresholding_strategy='ratio_n_voxels'. "
-                                     "You provided a value of threshold={0}".format(self.threshold))
                 threshold_maps = _threshold_maps_ratio(maps_img, self.threshold)
             else:
                 if self.thresholding_strategy == 'percentile':
-                    self.threshold = ("{0}%").format(self.threshold)
+                    self.threshold = "{0}%".format(self.threshold)
                 threshold_maps = threshold_img(maps_img, mask_img=self.mask_img,
                                                threshold=self.threshold)
 

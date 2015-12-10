@@ -627,7 +627,7 @@ def threshold_img(img, threshold, mask_img=None):
 
     Returns
     -------
-    threshold_img: Nifti1Image object
+    threshold_img: Nifti1Image
         thresholded image of the given input image.
     """
     from . import resampling

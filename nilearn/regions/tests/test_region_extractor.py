@@ -24,10 +24,10 @@ def _make_random_data(shape):
 def test_invalid_thresholds_in_threshold_maps_ratio():
     maps, _ = generate_maps((10, 11, 12), n_regions=2)
 
-    for invalid_threshold in [10, '80%', 'auto', -1.0]:
+    for invalid_threshold in ['80%', 'auto', -1.0]:
         assert_raises_regex(ValueError,
                             "threshold given as ratio to the number of voxels must "
-                            "be float value and should be positive and between 0 and "
+                            "be Real number and should be positive and between 0 and "
                             "total number of maps i.e. n_maps={0}. "
                             "You provided {1}".format(maps.shape[-1], invalid_threshold),
                             _threshold_maps_ratio,
@@ -111,19 +111,6 @@ def test_threshold_as_none_and_string_cases():
     assert_raises_regex(ValueError,
                         "The given input to threshold is not valid.",
                         extract_thr_string_check.fit)
-
-
-def test_invalid_threshold_value_in_regionextractor():
-    maps, _ = generate_maps((10, 11, 12), n_regions=1)
-    threshold = 10
-    extractor = RegionExtractor(maps, threshold=threshold,
-                                thresholding_strategy='ratio_n_voxels')
-    message = ("threshold should be given as float value "
-               "for thresholding_strategy='ratio_n_voxels'. "
-               "You provided a value of threshold={0}")
-    assert_raises_regex(ValueError,
-                        message.format(threshold),
-                        extractor.fit)
 
 
 def test_region_extractor_fit_and_transform():
