@@ -102,12 +102,25 @@ def _iter_check_niimg(niimgs, ensure_ndim=None, atleast_4d=False,
         Data type toward which the data should be converted. If "auto", the
         data will be converted to int32 if dtype is discrete and float32 if it
         is continuous.
+
+    See also
+    --------
+        check_niimg, check_niimg_3d, check_niimg_4d
     """
+    # If niimgs is a string, use glob to expand it to the matching filenames.
+    if isinstance(niimgs, _basestring):
+        niimgs_list = glob.glob(os.path.expanduser(niimgs))
+        # Raise an error in case the niimgs list is empty.
+        if len(niimgs_list) == 0:
+            raise ValueError("No files matching path: %s" % niimgs)
+        niimgs = niimgs_list
+
     ref_fov = None
     resample_to_first_img = False
     ndim_minus_one = ensure_ndim - 1 if ensure_ndim is not None else None
     if target_fov is not None and target_fov != "first":
         ref_fov = target_fov
+    i = -1
     for i, niimg in enumerate(niimgs):
         try:
             niimg = check_niimg(
@@ -152,6 +165,10 @@ def _iter_check_niimg(niimgs, ensure_ndim=None, atleast_4d=False,
             exc.args = (('Error encountered while loading image #%d%s'
                          % (i, img_name),) + exc.args)
             raise
+
+    # Raising an error if input generator is empty.
+    if i == -1:
+        raise ValueError("Input niimgs list is empty.")
 
 
 def check_niimg(niimg, ensure_ndim=None, atleast_4d=False, dtype=None,
@@ -206,6 +223,10 @@ def check_niimg(niimg, ensure_ndim=None, atleast_4d=False, dtype=None,
     necessary.
 
     Its application is idempotent.
+
+    See also
+    --------
+        _iter_check_niimg, check_niimg_3d, check_niimg_4d
     """
     from ..image import new_img_like  # avoid circular imports
 
