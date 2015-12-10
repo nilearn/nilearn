@@ -360,7 +360,7 @@ class BaseDecomposition(BaseEstimator, CacheMixin):
 
     def inverse_transform(self, loadings):
         """Use provided loadings to compute corresponding linear component
-         combination in whole-brain voxel space
+        combination in whole-brain voxel space
 
         Parameters
         ----------
