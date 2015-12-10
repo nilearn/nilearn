@@ -370,7 +370,7 @@ class BaseDecomposition(BaseEstimator, CacheMixin):
         Returns
         -------
         reconstructed_imgs: list of nibabel.Nifti1Image
-           For each loading, reconstructed Nifti1Image
+            For each loading, reconstructed Nifti1Image
 
         """
         if not hasattr(self, 'components_'):
