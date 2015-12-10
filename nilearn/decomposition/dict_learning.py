@@ -41,7 +41,7 @@ def _compute_loadings(components, data):
 
 class DictLearning(BaseDecomposition, TransformerMixin):
     """Perform a map learning algorithm based on spatial component sparsity,
-     over a CanICA initialization.  This yields more stable maps than CanICA.
+    over a CanICA initialization.  This yields more stable maps than CanICA.
 
     Parameters
     ----------
@@ -65,8 +65,8 @@ class DictLearning(BaseDecomposition, TransformerMixin):
         not provided
 
     reduction_ratio: 'auto' or float between 0. and 1.
-        - Between 0. or 1. : controls data reduction in the temporal domain
-        , 1. means no reduction, < 1. calls for an SVD based reduction.
+        - Between 0. or 1. : controls data reduction in the temporal domain.
+          1. means no reduction, < 1. calls for an SVD based reduction.
         - if set to 'auto', estimator will set the number of components per
           reduced session to be n_components.
 

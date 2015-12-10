@@ -7,11 +7,10 @@ from sklearn.externals.joblib import Memory
 from sklearn.utils.extmath import randomized_svd
 from sklearn.base import TransformerMixin
 
-from .._utils.cache_mixin import CacheMixin
 from .base import BaseDecomposition, mask_and_reduce
 
 
-class MultiPCA(BaseDecomposition, TransformerMixin, CacheMixin):
+class MultiPCA(BaseDecomposition, TransformerMixin):
     """Perform Multi Subject Principal Component Analysis.
 
     Perform a PCA on each subject, stack the results, and reduce them

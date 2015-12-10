@@ -254,6 +254,7 @@ class BaseDecomposition(BaseEstimator, CacheMixin):
         See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
         The mask of the data. If no mask was given at masker creation, contains
         the automatically computed mask.
+
     """
 
     def __init__(self, n_components=20,
@@ -294,6 +295,7 @@ class BaseDecomposition(BaseEstimator, CacheMixin):
             See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
             Data on which the mask is calculated. If this is a list,
             the affine is considered the same for all.
+
         """
         if hasattr(imgs, '__iter__') and len(imgs) == 0:
             # Common error that arises from a null glob. Capture
@@ -344,6 +346,7 @@ class BaseDecomposition(BaseEstimator, CacheMixin):
             For each subject, each sample, loadings for each decomposition
             components
             shape: number of subjects * (number of scans, number of regions)
+
         """
 
         self._check_components_()
@@ -418,7 +421,7 @@ class BaseDecomposition(BaseEstimator, CacheMixin):
         -------
         score: float,
             Holds the score for each subjects. Score is two dimensional
-             if per_component is True. First dimension
+            if per_component is True. First dimension
             is squeezed if the number of subjects is one
         """
         data = mask_and_reduce(self.masker_, imgs, confounds,
