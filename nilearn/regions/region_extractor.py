@@ -1,7 +1,7 @@
 """
 Better brain parcellations for Region of Interest analysis
 """
-import warnings
+
 import numbers
 import numpy as np
 
@@ -65,8 +65,9 @@ def _threshold_maps_ratio(maps_img, threshold):
     return threshold_maps_img
 
 
-def connected_regions(maps_img, min_region_size=1350, extract_type='local_regions',
-                      smoothing_fwhm=6, mask_img=None):
+def connected_regions(maps_img, min_region_size=1350,
+                      extract_type='local_regions', smoothing_fwhm=6,
+                      mask_img=None):
     """ Extraction of brain connected regions into separate regions.
 
     Note: the region size should be defined in mm^3. See the documentation for
@@ -172,7 +173,7 @@ def connected_regions(maps_img, min_region_size=1350, extract_type='local_region
 
 
 class RegionExtractor(NiftiMapsMasker):
-    """ Class for brain region extraction.
+    """Class for brain region extraction.
 
     Region Extraction is a post processing technique which
     is implemented to automatically segment each brain atlas maps
@@ -185,8 +186,8 @@ class RegionExtractor(NiftiMapsMasker):
     Parameters
     ----------
     maps_img: 4D Niimg-like object
-       Image containing a set of whole brain atlas maps or statistically
-       decomposed brain maps.
+        Image containing a set of whole brain atlas maps or statistically
+        decomposed brain maps.
 
     mask_img: Niimg-like object or None,  default None, optional
         Mask to be applied to input data, passed to NiftiMapsMasker.
@@ -265,11 +266,11 @@ class RegionExtractor(NiftiMapsMasker):
 
     Attributes
     ----------
-    regions_img_: Nifti1Image
+    `regions_img_` : Nifti1Image
         list of separated regions with each region lying on a 3D volume
         concatenated into a 4D image.
 
-    index_: numpy array
+    `index_` : numpy array
         array of list of indices where each index value is assigned to
         each separate region of its corresponding family of brain maps.
 
