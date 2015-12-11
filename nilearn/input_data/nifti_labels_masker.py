@@ -10,7 +10,6 @@ from .. import _utils
 from .._utils import logger, CacheMixin, _compose_err_msg
 from .._utils.class_inspect import get_params
 from .._utils.niimg_conversions import _check_same_fov
-from .. import region
 from .. import masking
 from .. import image
 from .base_masker import filter_and_extract, BaseMasker
@@ -25,7 +24,9 @@ class _ExtractionFunctor(object):
         self.background_label = background_label
 
     def __call__(self, imgs):
-        return region.img_to_signals_labels(
+        from ..regions import signal_extraction
+
+        return signal_extraction.img_to_signals_labels(
             imgs, self._resampled_labels_img_,
             background_label=self.background_label)
 
@@ -278,9 +279,11 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
             Signal for each voxel
             shape: (number of scans, number of voxels)
         """
+        from ..regions import signal_extraction
+
         self._check_fitted()
 
         logger.log("computing image from signals", verbose=self.verbose)
-        return region.signals_to_img_labels(
+        return signal_extraction.signals_to_img_labels(
             signals, self.labels_img_, self.mask_img_,
             background_label=self.background_label)

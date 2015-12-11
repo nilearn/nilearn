@@ -10,9 +10,9 @@ or as weights in one image per region (maps).
 import numpy as np
 from scipy import linalg, ndimage
 
-from . import _utils
-from . import masking
-from .image import new_img_like
+from .. import _utils
+from .. import masking
+from ..image import new_img_like
 
 
 # FIXME: naming scheme is not really satisfying. Any better idea appreciated.
