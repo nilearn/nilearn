@@ -20,7 +20,6 @@ import warnings
 warnings.simplefilter('error', RuntimeWarning)
 
 import numpy as np
-from joblib import Memory
 from matplotlib import pyplot as plt
 from scipy import stats
 from sklearn.decomposition import FastICA
@@ -35,74 +34,19 @@ from nilearn.masking import compute_background_mask, _extrapolate_out_mask
 from nilearn.plotting import plot_stat_map
 
 
-# Use for caching results to disk, so running twice will be *fast*
-mem = Memory('cache', verbose=0)
-
-
-@mem.cache
-def resample_img_with_cache(src_img, target_affine, target_shape=None):
-    """Cache wrapper around resample_img"""
-    return resample_img(img, target_affine=target_img.affine,
-                        target_shape=target_img.shape)
-
-@mem.cache
-def get_neurosynth_terms(images, data_dir, print_frequency=100):
-    """ Grab terms for each image, decoded with neurosynth"""
-
-    terms = list()
-    vectorizer = DictVectorizer()
-    for ii, img in enumerate(images):
-        if ii % print_frequency == 0:
-            print("Fetching terms for images %d-%d of %d" % (
-                ii + 1, min(ii + print_frequency, len(images)), len(images)))
-
-        url = 'http://neurosynth.org/api/v2/decode/?neurovault=%d' % img['id']
-        fil = 'terms-for-image-%d.json' % img['id']
-        elevations = _fetch_files(data_dir, ((fil, url, {'move': fil}),),
-                                  verbose=2)[0]
-
-        try:
-            with io.open(elevations, 'r', encoding='utf8') as fp:
-                data = json.load(fp)['data']
-        except Exception as e:
-            if os.path.exists(elevations):
-                os.remove(elevations)
-            terms.append({})
-        else:
-            data = data['values']
-            terms.append(data)
-    X = vectorizer.fit_transform(terms).toarray()
-    return dict([(name, X[:, idx])
-                 for name, idx in vectorizer.vocabulary_.items()])
-
+### Get data ##################################################################
+target_img = datasets.load_mni152_template()
 
 # Download 100 matching images
 ss_all = datasets.fetch_neurovault(max_images=100,  # Use np.inf for all imgs.
-                                   map_types=['F map', 'T map', 'Z map'])
+                                   map_types=['F map', 'T map', 'Z map'],
+                                   fetch_terms=True)
 images, collections = ss_all['images'], ss_all['collections']
 
-### Resample the images #######################################################
-target_img = datasets.load_mni152_template()
-resampled_niis = []
-for ii, image in enumerate(images):
-    if ii % 100 == 0:  # Report progress, this can be slow.
-        print("Resampling image %d-%d of %d..." % (
-            ii + 1, min(ii + 100, len(images)), len(images)))
-    for img in iter_img(image['local_path']):  # Works for 3d or 4d images
-        resampled_niis.append(resample_img_with_cache(img))
-
-# Report to the user any expansion from 4D images.
-if len(images) != len(resampled_niis):
-    print("After resampling, %d images => %d "
-          "(each time point became an image)" % (
-              len(images), len(resampled_niis)))
-
-### Get neurosynth terms ######################################################
-# Returns a dict of terms, with
-#   a vector of values (1 per image)
-terms = get_neurosynth_terms(images, _get_dataset_dir('neurosynth'))
-good_terms = dict([(t, v) for t, v in terms.items()
-                   if np.sum(v[v > 0]) > 0.])
+### Show neurosynth terms ######################################################
+term_scores = ss_all['terms']
+terms = list(term_scores.keys())
+total_scores = [np.sum(sc[sc > 0]) for sc in term_scores.values()]
 
 print("Top 100 neurosynth terms:")
 sort_idx = np.argsort([np.sum(v[v > 0]) for v in good_terms.values()])
@@ -123,9 +67,12 @@ mask = new_image_like((mask.get_data() >= 0.5).astype(int),
                       mask.affine, mask.header)
 
 ### Get the ICA maps ##########################################################
-# Do the ICA transform.
-masker = NiftiMasker(mask_img=mask, memory=mem)
-X = masker.fit_transform(resampled_niis)
+masker = NiftiMasker(mask_img=mask, target_affine=target_img.affine,
+                     target_shape=target_img.shape, memory='nilearn_cache')
+
+# Make a list of 3D images (4D => list of 3D).
+decimated_imgs = concat_niimgs([target_img] + [im['local_path'] for im in images])
+X = masker.fit_transform(decimated_imgs)
 
 print("Running ICA; may take time...")
 fast_ica = FastICA(n_components=20, random_state=42)

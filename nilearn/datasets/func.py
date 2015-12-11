@@ -8,12 +8,14 @@ import json
 import io
 import os
 import re
+import sys
 import warnings
 from itertools import chain
 
 import numpy as np
 import nibabel
 from sklearn.datasets.base import Bunch
+from sklearn.feature_extraction import DictVectorizer
 
 from .utils import (_get_dataset_dir, _fetch_files, _get_dataset_descr,
                     _read_md5_sum_file, _tree, _filter_columns)
@@ -1655,6 +1657,7 @@ def _get_nv_collections_json(url, data_dir, overwrite=False, verbose=2):
     verbose: int, optional
         Defines the level of verbosity of the output.
     """
+    import httplib
     try:
         # Online
         return _get_nv_json(url, overwrite=overwrite, verbose=verbose)
@@ -1663,7 +1666,10 @@ def _get_nv_collections_json(url, data_dir, overwrite=False, verbose=2):
             raise
         elif overwrite:  # must requery... fail.
             raise
-        print('Working offline...')
+        print("Working offline...")
+
+    except (httplib.BadStatusLine):
+        print("Working offline...")
 
     # Sort collections, so same order is achieved online & offline
     collection_dirs = [os.path.basename(p)
@@ -1702,7 +1708,71 @@ def _filter_nv_results(results, filts):
     return results
 
 
+
+def _fetch_nv_terms(image_ids, data_dir=None, verbose=2,
+                    url='http://neurosynth.org/api/v2/decode/'):
+    """ Grab terms for each NeuroVault image, decoded with neurosynth.
+
+    Parameters
+    ----------
+    image_ids: list
+        List of neurovault image IDs (int).
+
+    data_dir: str
+
+    verbose: int
+
+    url: str
+
+    Outputs:
+
+    """
+
+    # Massage inputs
+    data_dir = data_dir or _get_dataset_dir('neurosynth')
+    print_frequency = (200 / verbose) if verbose else np.inf
+
+    terms = list()
+    vectorizer = DictVectorizer()
+    for ii, image_id in enumerate(image_ids):
+        if verbose and ii % print_frequency == 0:
+            max_fetch_idx = min(ii + print_frequency, len(image_ids))
+            if ii == 0:
+                sys.stderr.write("Fetching terms for images (of %d)" % (
+                    len(image_ids)))
+            sys.stderr.write(" %d-%d" % (ii + 1, max_fetch_idx))
+
+        # Fetch the terms
+        terms_url = url + '?neurovault=%d' % image_id
+        output_file = 'terms-for-image-%d.json' % image_id
+        file_tuple = ((output_file, terms_url, {'move': output_file}),)
+        elevations = _fetch_files(data_dir, file_tuple, verbose=verbose)[0]
+
+        # Read and process the terms.
+        try:
+            with io.open(elevations, 'r', encoding='utf8') as fp:
+                data = json.load(fp)['data']
+        except Exception as e:
+            if os.path.exists(elevations):
+                os.remove(elevations)
+            terms.append({})
+        else:
+            data = data['values']
+            terms.append(data)
+    if verbose:
+        sys.stderr.write(" done.\n")
+
+    # Transform and filter the terms.
+    X = vectorizer.fit_transform(terms).toarray()
+    all_terms = dict([(name, X[:, idx])
+                 for name, idx in vectorizer.vocabulary_.items()])
+    good_terms = dict([(t, v) for t, v in all_terms.items()
+                       if np.sum(v[v > 0]) > 0.])
+    return good_terms
+
+
 def fetch_neurovault(max_images=np.inf,
+                     fetch_terms=False,
                      exclude_unpublished=False,
                      exclude_known_bad_images=True,
                      collection_ids=(),
@@ -1730,6 +1800,10 @@ def fetch_neurovault(max_images=np.inf,
     max_images: int, optional (default np.inf)
         Maximum # of images to download from the database.
         Useful for testing out filters and analyses if downloads are slow.
+
+    fetch_terms: bool
+        Whether to fetch terms related to each image from
+        NeuroSynth.org.
 
     exclude_unpublished: bool, optional (default: False)
         Exclude any images that belong to a collection without a DOI.
@@ -1965,10 +2039,17 @@ def fetch_neurovault(max_images=np.inf,
                     # Stopping criterion
                     if len(func_files) >= max_images:
                         break
+
+    # Do term fetching after everything else.
+    if fetch_terms:
+        terms = _fetch_nv_terms([im['id'] for im in images],
+                                verbose=verbose)
+    else:
+        terms = dict()
+
     if verbose > 0:
         print('Done.')
 
     # Flatten the struct
     return Bunch(func_files=func_files, images=images,
-                 collections=collects)
-
+                 collections=collects, terms=terms)
