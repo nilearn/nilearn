@@ -28,12 +28,13 @@ import matplotlib.pyplot as plt
 from .. import _utils
 from ..image import new_img_like
 from .._utils.extmath import fast_abs_percentile
+from .._utils.param_validation import check_threshold
 from .._utils.fixes.matplotlib_backports import (cbar_outline_get_xy,
                                                  cbar_outline_set_xy)
 from .._utils.ndimage import get_border_data
 from ..datasets import load_mni152_template
 from ..image import iter_img
-from .displays import get_slicer, get_projector, check_threshold
+from .displays import get_slicer, get_projector
 from . import cm
 
 
@@ -775,7 +776,7 @@ def plot_prob_atlas(maps_img, anat_img=MNI152TEMPLATE, view_type='auto',
         data = map_img.get_data()
         # To threshold or choose the level of the contours
         thr = check_threshold(thr, data,
-                              percentile_calculate=fast_abs_percentile,
+                              percentile_func=fast_abs_percentile,
                               name='threshold')
         # Get rid of background values in all cases
         thr = max(thr, 1e-6)
