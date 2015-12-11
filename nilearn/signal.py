@@ -469,7 +469,8 @@ def clean(signals, sessions=None, detrend=True, standardize=True,
 
     # detrend
     signals = _ensure_float(signals)
-    signals = _standardize(signals, normalize=False, detrend=detrend)
+    if signals.shape[0] > 1:
+        signals = _standardize(signals, normalize=False, detrend=detrend)
 
     # Remove confounds
     if confounds is not None:
