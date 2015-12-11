@@ -61,8 +61,8 @@ def img_to_signals_labels(imgs, labels_img, mask_img=None,
 
     See also
     ========
-    nilearn.region.signals_to_img_labels
-    nilearn.region.img_to_signals_maps
+    nilearn.regions.signals_to_img_labels
+    nilearn.regions.img_to_signals_maps
     """
 
     labels_img = _utils.check_niimg_3d(labels_img)
@@ -147,8 +147,8 @@ def signals_to_img_labels(signals, labels_img, mask_img=None,
 
     See also
     ========
-    nilearn.region.img_to_signals_labels
-    nilearn.region.signals_to_img_maps
+    nilearn.regions.img_to_signals_labels
+    nilearn.regions.signals_to_img_maps
     """
 
     labels_img = _utils.check_niimg_3d(labels_img)
@@ -232,8 +232,8 @@ def img_to_signals_maps(imgs, maps_img, mask_img=None):
 
     See also
     ========
-    nilearn.region.img_to_signals_labels
-    nilearn.region.signals_to_img_maps
+    nilearn.regions.img_to_signals_labels
+    nilearn.regions.signals_to_img_maps
     """
 
     maps_img = _utils.check_niimg_4d(maps_img)
@@ -297,8 +297,8 @@ def signals_to_img_maps(region_signals, maps_img, mask_img=None):
 
     See also
     ========
-    nilearn.region.signals_to_img_labels
-    nilearn.region.img_to_signals_maps
+    nilearn.regions.signals_to_img_labels
+    nilearn.regions.img_to_signals_maps
     """
 
     maps_img = _utils.check_niimg_4d(maps_img)
