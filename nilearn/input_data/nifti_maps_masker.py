@@ -10,7 +10,6 @@ from .._utils import logger, CacheMixin
 from .._utils.niimg import _get_data_dtype
 from .._utils.class_inspect import get_params
 from .._utils.niimg_conversions import _check_same_fov
-from .. import region
 from .. import image
 from .base_masker import filter_and_extract, BaseMasker
 
@@ -24,7 +23,9 @@ class _ExtractionFunctor(object):
         self._resampled_mask_img_ = _resampled_mask_img_
 
     def __call__(self, imgs):
-            return region.img_to_signals_maps(
+            from ..regions import signal_extraction
+
+            return signal_extraction.img_to_signals_maps(
                 imgs, self._resampled_maps_img_,
                 mask_img=self._resampled_mask_img_)
 
@@ -331,8 +332,10 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
         voxel_signals: nibabel.Nifti1Image
             Signal for each voxel. shape: that of maps.
         """
+        from ..regions import signal_extraction
+
         self._check_fitted()
 
         logger.log("computing image from signals", verbose=self.verbose)
-        return region.signals_to_img_maps(region_signals, self.maps_img_,
-                                          mask_img=self.mask_img_)
+        return signal_extraction.signals_to_img_maps(
+            region_signals, self.maps_img_, mask_img=self.mask_img_)
