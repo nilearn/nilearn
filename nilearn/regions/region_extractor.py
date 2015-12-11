@@ -194,35 +194,38 @@ class RegionExtractor(NiftiMapsMasker):
         If None, no masking is applied.
 
     min_region_size: int, default 1350 mm^3, optional
-        Minimum volume in mm3 for a region to be kept. For example, if the voxel
-        size is 3x3x3 mm then the volume of the voxel is 27mm^3. By default, it
-        is 1350mm^3 which means we take minimum size of 1350 / 27 = 50 voxels.
+        Minimum volume in mm3 for a region to be kept. For example, if
+        the voxel size is 3x3x3 mm then the volume of the voxel is
+        27mm^3. By default, it is 1350mm^3 which means we take minimum
+        size of 1350 / 27 = 50 voxels.
 
     threshold: number, default 1., optional
         A value used either in ratio_n_voxels or img_value or percentile
         `thresholding_strategy` based upon the choice of selection.
 
     thresholding_strategy: str {'ratio_n_voxels', 'img_value', 'percentile'}, optional
-        If default 'ratio_n_voxels', we apply thresholding that will keep the
-        more intense nonzero brain voxels (denoted as n_voxels) across all maps
-        (n_voxels being the number of voxels in the brain volume). A float value
-        given in `threshold` parameter indicates the ratio of voxels to keep meaning
-        (if float=2. then maps will together have 2. x n_voxels non-zero voxels).
-        If set to 'percentile', images are thresholded based on the score obtained
-        with the given percentile on the data and the voxel intensities which are
-        survived above this obtained score will be kept.
-        If set to 'img_value', we apply thresholding based on the non-zero voxel
-        intensities across all maps. A value given in `threshold` parameter
-        indicates that we keep only those voxels which have intensities more than
-        this value.
+        If default 'ratio_n_voxels', we apply thresholding that will keep
+        the more intense nonzero brain voxels (denoted as n_voxels)
+        across all maps (n_voxels being the number of voxels in the brain
+        volume). A float value given in `threshold` parameter indicates
+        the ratio of voxels to keep meaning (if float=2. then maps will
+        together have 2. x n_voxels non-zero voxels). If set to
+        'percentile', images are thresholded based on the score obtained
+        with the given percentile on the data and the voxel intensities
+        which are survived above this obtained score will be kept. If set
+        to 'img_value', we apply thresholding based on the non-zero voxel
+        intensities across all maps. A value given in `threshold`
+        parameter indicates that we keep only those voxels which have
+        intensities more than this value.
 
     extractor: str {'connected_components', 'local_regions'} default 'local_regions', optional
-        If 'connected_components', each component/region in the image is extracted
-        automatically by labelling each region based upon the presence of unique
-        features in their respective regions.
-        If 'local_regions', each component/region is extracted based on their
-        maximum peak value to define a seed marker and then using random walker
-        segementation algorithm on these markers for region separation.
+        If 'connected_components', each component/region in the image is
+        extracted automatically by labelling each region based upon the
+        presence of unique features in their respective regions. If
+        'local_regions', each component/region is extracted based on
+        their maximum peak value to define a seed marker and then using
+        random walker segementation algorithm on these markers for region
+        separation.
 
     standardize: bool, True or False, default False, optional
         If True, the time series signals are centered and normalized by
@@ -261,8 +264,8 @@ class RegionExtractor(NiftiMapsMasker):
         passed to NiftiMapsMasker.
 
     verbose: int, default 0, optional
-        Indicates the level of verbosity by printing the message. Zero indicates
-        nothing is printed.
+        Indicates the level of verbosity by printing the message. Zero
+        indicates nothing is printed.
 
     Attributes
     ----------
@@ -276,9 +279,10 @@ class RegionExtractor(NiftiMapsMasker):
 
     References
     ----------
-    * Abraham et al. "Region segmentation for sparse decompositions: better
-      brain parcellations from rest fMRI", Sparsity Techniques in Medical Imaging,
-      Sep 2014, Boston, United States. pp.8
+    * Abraham et al. "Region segmentation for sparse decompositions:
+      better brain parcellations from rest fMRI", Sparsity Techniques in
+      Medical Imaging, Sep 2014, Boston, United States. pp.8
+
     """
     def __init__(self, maps_img, mask_img=None, min_region_size=1350,
                  threshold=1., thresholding_strategy='ratio_n_voxels',
