@@ -203,8 +203,9 @@ uses.
    apply_mask
    unmask
 
-:mod:`nilearn.region`: Operating on regions
-==============================================
+
+:mod:`nilearn.region`: Signal extraction on regions
+=====================================================
 
 .. automodule:: nilearn.region
    :no-members:
@@ -223,6 +224,29 @@ uses.
    img_to_signals_maps
    signals_to_img_maps
 
+.. seealso::
+
+   :func:`nilearn.masking.apply_mask`,
+   :func:`nilearn.masking.unmask`
+
+:
+:mod:`nilearn.regions`: Operating on regions
+==============================================
+
+.. automodule:: nilearn.regions
+   :no-members:
+   :no-inherited-members:
+
+**Functions**:
+
+.. currentmodule:: nilearn.regions
+
+.. autosummary::
+   :toctree: generated/
+   :template: function.rst
+
+    connected_regions
+
 **Classes**:
 
 .. currentmodule:: nilearn.regions
@@ -233,11 +257,6 @@ uses.
 
     RegionExtractor   
 
-
-.. seealso::
-
-   :func:`nilearn.masking.apply_mask`,
-   :func:`nilearn.masking.unmask`
 
 :mod:`nilearn.mass_univariate`: Mass-univariate analysis
 =========================================================
