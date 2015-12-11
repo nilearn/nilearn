@@ -170,18 +170,6 @@ group analysis only on the non zero coefficients.
    **Hint:** The example above has the solution
 
 
-..
-    .. |covariance| image:: ../auto_examples/connectivity/images/sphx_glr_plot_adhd_covariance_002.png
-    :target: ../auto_examples/connectivity/plot_adhd_covariance.html
-    :scale: 55
-
-    .. |precision| image:: ../auto_examples/connectivity/images/sphx_glr_plot_adhd_covariance_001.png
-    :target: ../auto_examples/connectivity/plot_adhd_covariance.html
-    :scale: 55
-
-    .. centered:: |covariance| |precision|
-
-
 .. topic:: **Reference**
 
  * The `group-sparse covariance [Varoquaux et al, NIPS 2010] <https://hal.inria.fr/inria-00512451>`_
@@ -229,6 +217,11 @@ information.
 .. [#] A lot of technical details on the algorithm used for group-sparse
        estimation and its implementation can be found in
        :doc:`../developers/group_sparse_covariance`.
+
+.. toctree::
+   :hidden:
+
+   ../developers/group_sparse_covariance
 
 .. topic:: **Reference**
 

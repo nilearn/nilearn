@@ -30,7 +30,7 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
     Parameters
     ----------
     mask_img: Niimg-like object
-        See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+        See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
         Mask of the data. If not given, a mask is computed in the fit step.
         Optional parameters can be set using mask_args and mask_strategy to
         fine tune the mask extraction.
@@ -98,14 +98,11 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
 
     Attributes
     ----------
-    mask_img_: nibabel.Nifti1Image object
-        The mask of the data. If no mask was given at masker creation, contains
-        the automatically computed mask.
+    `mask_img_` : nibabel.Nifti1Image object
+        The mask of the data.
 
-    affine_: 4x4 numpy.ndarray
-        Affine of the transformed image. If affine is different across
-        subjects, contains the affine of the first subject on which other
-        subject data have been resampled.
+    `affine_` : 4x4 numpy.ndarray
+        Affine of the transformed image.
 
     See Also
     --------
@@ -148,7 +145,7 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
         Parameters
         ----------
         imgs: list of Niimg-like objects
-            See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+            See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
             Data on which the mask must be calculated. If this is a list,
             the affine is considered the same for all.
         """
@@ -221,7 +218,7 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
         ----------
 
         imgs_list: list of Niimg-like objects
-            See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+            See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
             List of imgs file to prepare. One item per subject.
 
         confounds: list of confounds, optional
@@ -287,7 +284,7 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
         Parameters
         ----------
         imgs: list of Niimg-like objects
-            See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+            See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
             Data to be preprocessed
 
         confounds: CSV file path or 2D matrix

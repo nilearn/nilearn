@@ -146,6 +146,6 @@ for i in np.arange(2):
 
 show()
 
-# save the ROI 'atlas' to a single output nifti
+# save the ROI 'atlas' to a single output Nifti
 nibabel.save(new_img_like(fmri_img, labels),
              'mask_atlas.nii')

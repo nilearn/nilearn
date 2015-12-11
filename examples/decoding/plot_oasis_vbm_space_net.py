@@ -48,7 +48,7 @@ from nilearn.decoding import SpaceNetRegressor
 #
 # Also, here we use a graph-net penalty but more beautiful results can be
 # obtained using the TV-l1 penalty, at the expense of longer runtimes.
-decoder = SpaceNetRegressor(memory="cache", penalty="graph-net",
+decoder = SpaceNetRegressor(memory="nilearn_cache", penalty="graph-net",
                             screening_percentile=5., memory_level=2)
 decoder.fit(gm_imgs_train, age_train)  # fit
 coef_img = decoder.coef_img_

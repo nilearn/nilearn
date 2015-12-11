@@ -52,8 +52,8 @@ class DimensionError(TypeError):
         message = (
                 "Data must be a %iD Niimg-like object but you provided a "
                 "%s%iD image%s. "
-                "See http://nilearn.github.io/building_blocks/"
-                "manipulating_mr_images.html#niimg." % (
+                "See http://nilearn.github.io/manipulating_visualizing/"
+                "manipulating_images.html#niimg." % (
                     self.required_dimension + self.stack_counter,
                     "list of " * self.stack_counter,
                     self.file_dimension,

@@ -133,7 +133,7 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
         Parameters
         ----------
         imgs: 3D/4D Niimg-like object
-            See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+            See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
             Images to process. It must boil down to a 4D image with scans
             number as last dimension.
 
@@ -156,7 +156,7 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
         Parameters
         ----------
         imgs: 3D/4D Niimg-like object
-            See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+            See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
             Images to process. It must boil down to a 4D image with scans
             number as last dimension.
 
@@ -181,7 +181,7 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
         Parameters
         ----------
         X : Niimg-like object
-            See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+            See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
 
         y : numpy array of shape [n_samples]
             Target values.
@@ -217,6 +217,8 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
                 return self.fit(**fit_params).transform(X, confounds=confounds)
 
     def inverse_transform(self, X):
+        """ Transform the 2D data matrix back to an image in brain space.
+        """
         img = self._cache(masking.unmask)(X, self.mask_img_)
         # Be robust again memmapping that will create read-only arrays in
         # internal structures of the header: remove the memmaped array

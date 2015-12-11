@@ -392,6 +392,7 @@ class BaseSlicer(object):
                          cut_coords=None, figure=None, axes=None,
                          black_bg=False, leave_space=False, colorbar=False,
                          **kwargs):
+        "Initialize the slicer with an image"
         # deal with "fake" 4D images
         if img is not None and img is not False:
             img = _utils.check_niimg_3d(img)
@@ -485,7 +486,7 @@ class BaseSlicer(object):
             Parameters
             -----------
             img: Niimg-like object
-                See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+                See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
                 If it is a masked array, only the non-masked part will be
                 plotted.
             threshold : a number, None
@@ -522,7 +523,7 @@ class BaseSlicer(object):
             Parameters
             -----------
             img: Niimg-like object
-                See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+                See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
                 Provides image to plot.
             filled: boolean, optional
                 If filled=True, contours are displayed with color fillings.
@@ -771,6 +772,7 @@ class OrthoSlicer(BaseSlicer):
 
     @classmethod
     def find_cut_coords(self, img=None, threshold=None, cut_coords=None):
+        "Instanciate the slicer and find cut coordinates"
         if cut_coords is None:
             if img is None or img is False:
                 cut_coords = (0, 0, 0)
@@ -934,6 +936,7 @@ class BaseStackedSlicer(BaseSlicer):
     """
     @classmethod
     def find_cut_coords(cls, img=None, threshold=None, cut_coords=None):
+        "Instanciate the slicer and find cut coordinates"
         if cut_coords is None:
             cut_coords = 7
 

@@ -102,25 +102,19 @@ expression:
     >>> # dataset/subject_*.nii is a glob expression matching all filenames.
     >>> # Example with a smoothing process:
     >>> from nilearn.image import smooth_img
-    >>> result_img = smooth_img("dataset/subject_*", fwhm='fast') # doctest: +SKIP
+    >>> result_img = smooth_img("dataset/subject_*") # doctest: +SKIP
 
+.. topic:: **Python globbing**
 
-For more complicated use cases, Python also provides helper functions to work
-with file paths. In particular, :func:`glob.glob` is useful to automatically
-search and list many files with a "wild-card" pattern: \*.nii
+    For more complicated use cases, Python also provides functions to work
+    with file paths, in particular, :func:`glob.glob`.
 
-.. warning::
-   The result of :func:`glob.glob` is not sorted. In the neuroimaging domain,
-   it may be helpful to alphabetically sort the output of
-   the glob call using the :func:`sorted` function.
+    .. warning::
 
-::
-
-   >>> # dataset folder contains subject1.nii and subject2.nii
-   >>> import glob
-   >>> sorted(glob.glob('dataset/subject*.nii')) # doctest: +SKIP
-   ['dataset/subject1.nii', 'dataset/subject2.nii']
-
+        Unlike nilearn's path expansion, the result of :func:`glob.glob` is
+        not sorted and depending on the computer you are running they
+        might not be in alphabetic order. We advise you to rely on
+        nilearn's path expansion.
 
 Understanding neuroimaging data
 ===============================
@@ -150,8 +144,8 @@ Neuroimaging data can be loaded in a simple way thanks to nibabel_.
 A Nifti file on disk can be loaded with a single line.
 
 .. literalinclude:: ../../examples/manipulating_visualizing/plot_visualization.py
-     :start-after: ### Load an fMRI file #########################################################
-     :end-before: ### Visualization #############################################################
+     :start-after: # Fetch data
+     :end-before: # Visualization
 
 .. topic:: **Dataset formatting: data shape**
 
@@ -227,22 +221,15 @@ If we do not have a spatial mask of the target regions, a brain mask
 can be easily extracted from the fMRI data by the
 :func:`nilearn.masking.compute_epi_mask` function:
 
-.. currentmodule:: nilearn.masking
-
-.. autosummary::
-   :toctree: generated/
-   :template: function.rst
-
-   compute_epi_mask
-
 .. figure:: ../auto_examples/manipulating_visualizing/images/sphx_glr_plot_visualization_002.png
     :target: ../auto_examples/manipulating_visualizing/plot_visualization.html
     :align: right
     :scale: 50%
 
 .. literalinclude:: ../../examples/manipulating_visualizing/plot_visualization.py
-     :start-after: ### Extracting a brain mask ###################################################
-     :end-before: ### Applying the mask #########################################################
+     :start-after: # Extracting a brain mask
+     :end-before: # Applying the mask to extract the corresponding time series
+
 
 .. _mask_4d_2_3d:
 
@@ -262,8 +249,8 @@ brain. It is thus convenient to apply a brain mask in order to convert the
 
 
 .. literalinclude:: ../../examples/manipulating_visualizing/plot_visualization.py
-     :start-after: ### Applying the mask #########################################################
-     :end-before: ### Find voxels of interest ###################################################
+     :start-after: # Applying the mask to extract the corresponding time series
+     :end-before: # Find voxels of interest
 
 .. figure:: ../auto_examples/manipulating_visualizing/images/sphx_glr_plot_visualization_003.png
     :target: ../auto_examples/manipulating_visualizing/plot_visualization.html
@@ -367,7 +354,7 @@ more discriminative is the voxel in distinguishing the two conditions.
 
 .. literalinclude:: ../../examples/manipulating_visualizing/plot_roi_extraction.py
     :start-after: # Run a T-test for face and houses
-    :end-before: ### Build a mask ##############################################################
+    :end-before: # Build a mask from this statistical map
 
 .. figure:: ../auto_examples/manipulating_visualizing/images/sphx_glr_plot_roi_extraction_002.png
     :target: ../auto_examples/manipulating_visualizing/plot_roi_extraction.html
@@ -403,8 +390,8 @@ corresponding spatial mask is provided in `haxby.mask_vt`.
 We want to compute the
 intersection of this provided mask with our self-computed mask.
 The first step is to load it with
-nibabel's :func:`nibabel.load`. We can then use a logical "and" operation
--- :func:`numpy.logical_and` -- to keep only voxels
+nibabel's **nibabel.load**. We can then use a logical "and" operation
+-- **numpy.logical_and** -- to keep only voxels
 that have been selected in both masks. In neuroimaging jargon, this is
 called an "AND conjunction."
 
@@ -440,14 +427,14 @@ representations.
 Extracting connected components
 -------------------------------
 
-The function :func:`scipy.ndimage.label` from the scipy Python library
+The function **scipy.ndimage.label** from the scipy Python library
 identifies immediately neighboring
 voxels in our voxels mask. It assigns a separate integer label to each
 one of them.
 
 .. literalinclude:: ../../examples/manipulating_visualizing/plot_roi_extraction.py
     :start-after: # Identification of connected components
-    :end-before: # use the new ROIs to extract data maps in both ROIs
+    :end-before: # Use the new ROIs to extract data maps in both ROIs
 
 .. figure:: ../auto_examples/manipulating_visualizing/images/sphx_glr_plot_roi_extraction_006.png
     :target: ../auto_examples/manipulating_visualizing/plot_roi_extraction.html

@@ -71,7 +71,7 @@ class NiftiMasker(BaseMasker, CacheMixin):
     Parameters
     ----------
     mask_img : Niimg-like object, optional
-        See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+        See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
         Mask for the data. If not given, a mask is computed in the fit step.
         Optional parameters (mask_args and mask_strategy) can be set to
         fine tune the mask extraction.
@@ -147,8 +147,7 @@ class NiftiMasker(BaseMasker, CacheMixin):
     Attributes
     ----------
     `mask_img_` : nibabel.Nifti1Image
-        The mask of the data. If no mask was given at masker creation, contains
-        the automatically computed mask.
+        The mask of the data, or the computed one.
 
     `affine_` : 4x4 numpy array
         Affine of the transformed image.
@@ -202,7 +201,7 @@ class NiftiMasker(BaseMasker, CacheMixin):
         Parameters
         ----------
         imgs: list of Niimg-like objects
-            See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+            See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
             Data on which the mask must be calculated. If this is a list,
             the affine is considered the same for all.
         """
@@ -258,7 +257,7 @@ class NiftiMasker(BaseMasker, CacheMixin):
         Parameters
         ----------
         imgs: 3D/4D Niimg-like object
-            See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+            See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
             Images to process. It must boil down to a 4D image with scans
             number as last dimension.
 

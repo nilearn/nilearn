@@ -295,8 +295,8 @@ def permuted_ols(tested_vars, target_vars, confounding_vars=None,
     n_jobs : int,
       Number of parallel workers.
       If 0 is provided, all CPUs are used.
-      A negative number indicates that all the CPUs except (|n_jobs| - 1) ones
-      will be used.
+      A negative number indicates that all the CPUs except (abs(n_jobs) - 1)
+      ones will be used.
 
     verbose: int, optional
         verbosity level (0 means no message).

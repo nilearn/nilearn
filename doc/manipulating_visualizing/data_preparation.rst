@@ -1,7 +1,7 @@
 .. _extracting_data:
 
 =========================================================
-Data preparation: loading and basic feature extraction
+Data preparation: loading and basic signal extraction
 =========================================================
 
 .. contents:: **Contents**
@@ -12,24 +12,28 @@ Data preparation: loading and basic feature extraction
 
 .. topic:: **File names as arguments**
 
-   For most applications of nilearn, it is not necessary to load
-   the neuroimaging data oneself.
-   Rather than raw data (i.e., numpy arrays),
-   most nilearn functions and objects accept file names as
-   arguments::
+   Nilearn functions and objects accept file names as arguments::
 
     >>> from nilearn import image
     >>> smoothed_img = image.smooth_img('/home/user/t_map001.nii') # doctest: +SKIP
-  
+
    Nilearn can operate on either file names or `NiftiImage objects
-   <http://nipy.org/nibabel/nibabel_images.html>`_. The later
-   represent
+   <http://nipy.org/nibabel/nibabel_images.html>`_. The later represent
    the specified nifti files loaded in memory.
-   In the context of nilearn, we often use the term 'niimg'
-   as abbreviation that denotes either a file name or a
-   NiftiImage object. In the example above, the function smooth_img
-   returns a NiftiImage object, which can then be readily passed to any
-   other nilearn function that accepts niimg arguments.
+
+   In nilearn, we often use the term 'niimg' as abbreviation that denotes
+   either a file name or a NiftiImage object. In the example above, the
+   function smooth_img returns a NiftiImage object, which can then be
+   readily passed to any other nilearn function that accepts niimg
+   arguments.
+
+   Niimgs can be 3D or 4D, and a 4D niimg can be a list of file names, or
+   even a *wildcard* matching patterns. The '~' symbol is also expanded to the
+   user home folder.For instance, to retrieve a 4D volume of
+   all t maps smoothed::
+
+    >>> smoothed_imgs = image.smooth_img('~/t_map*.nii') # doctest: +SKIP
+
 
 |
 
@@ -134,7 +138,7 @@ Computing the mask
 ...................
 
 .. note::
-   
+
     The full example described in this section can be found here:
     :doc:`plot_mask_computation.py <../auto_examples/manipulating_visualizing/plot_mask_computation>`.
     It is also related to this example:
@@ -218,16 +222,15 @@ Common data preparation steps: resampling, smoothing, filtering
 Resampling
 ..........
 
-:class:`NiftiMasker` and many similar classes enable resampling (recasting
-       of images into different resolutions and transformations of brain voxel
-       data).
-       The resampling procedure takes as input the
-       *target_affine* to resample (resize, rotate...) images in order
-       to match the spatial configuration defined by the new
-       affine (i.e., matrix transforming from voxel space into world space).
-       Additionally, a *target_shape* can be used to resize
-       images (i.e., cropping or padding with zeros) to match an
-       expected data image dimensions (shape composed of x, y, and z).
+:class:`NiftiMasker` and many similar classes enable resampling
+(recasting of images into different resolutions and transformations of
+brain voxel data). The resampling procedure takes as input the
+*target_affine* to resample (resize, rotate...) images in order to match
+the spatial configuration defined by the new affine (i.e., matrix
+transforming from voxel space into world space). Additionally, a
+*target_shape* can be used to resize images (i.e., cropping or padding
+with zeros) to match an expected data image dimensions (shape composed of
+x, y, and z).
 
 As a common use case, resampling can be a viable means to
 downsample image quality on purpose to increase processing speed
@@ -244,13 +247,13 @@ matrix (i.e., affine).
 
 .. image:: ../auto_examples/manipulating_visualizing/images/sphx_glr_plot_affine_transformation_002.png
     :target: ../auto_examples/plot_affine_transformation.html
-    :scale: 36%
+    :scale: 33%
 .. image:: ../auto_examples/manipulating_visualizing/images/sphx_glr_plot_affine_transformation_004.png
     :target: ../auto_examples/plot_affine_transformation.html
-    :scale: 36%
+    :scale: 33%
 .. image:: ../auto_examples/manipulating_visualizing/images/sphx_glr_plot_affine_transformation_003.png
     :target: ../auto_examples/plot_affine_transformation.html
-    :scale: 36%
+    :scale: 33%
 
 
 .. topic:: **Special case: resampling to a given voxel size**
@@ -339,8 +342,16 @@ an excerpt of :ref:`the example performing Anova-SVM on the Haxby data
 <sphx_glr_auto_examples_decoding_plot_haxby_anova_svm.py>`):
 
 .. literalinclude:: ../../examples/decoding/plot_haxby_anova_svm.py
-    :start-after: ### Look at the SVC's discriminating weights
-    :end-before: ### Create the figure
+    :start-after: # Look at the SVC's discriminating weights
+    :end-before: # Create the figure
+
+|
+
+.. topic:: **Examples to better understand the NiftiMasker**
+
+   * :ref:`sphx_glr_auto_examples_manipulating_visualizing_plot_nifti_simple.py`
+
+   * :ref:`sphx_glr_auto_examples_manipulating_visualizing_plot_mask_computation.py`
 
 
 .. _region:
@@ -382,7 +393,7 @@ labels and maps, handled by :class:`NiftiLabelsMasker` and
 
 .. note::
 
-   These usage are illustrated in :ref:`functional_connectomes`
+   These usage are illustrated in the section :ref:`functional_connectomes`
 
 :class:`NiftiLabelsMasker` Usage
 ---------------------------------
@@ -402,12 +413,15 @@ Should some non-zero value encoding be necessary, it is
 possible to change the background value with the `background_label`
 keyword.
 
+.. topic:: **Examples**
+
+    * :ref:`sphx_glr_auto_examples_connectivity_plot_signal_extraction.py`
+
 :class:`NiftiMapsMasker` Usage
 ------------------------------
 
 This atlas defines its regions using maps. The path to the corresponding
-file is given in the "maps_img" argument. Extracting region signals for
-several subjects can be performed like this:
+file is given in the "maps_img" argument.
 
 One important thing that happens transparently during the execution of
 :meth:`NiftiMasker.fit_transform` is resampling. Initially, the images
@@ -417,3 +431,33 @@ The keyword argument `resampling_target` specifies which format (i.e.,
 dimensions and affine) the data should be resampled to.
 See the reference documentation for :class:`NiftiMapsMasker` for every
 possible option.
+
+.. topic:: **Examples**
+
+   * :ref:`sphx_glr_auto_examples_connectivity_plot_probabilistic_atlas_extraction.py`
+
+Extraction of signals from seeds:\  :class:`NiftiSpheresMasker`.
+==================================================================
+
+The purpose of :class:`NiftiSpheresMasker` is to compute signals from
+seeds containing voxels in spheres. It makes it easy to get these signals once
+you have a list of coordinates.
+A single seed is a sphere defined by the radius (in millimeters) and the
+coordinates (typically MNI or TAL) of its center.
+
+Using :class:`NiftiSpheresMasker` needs to define a list of coordinates.
+"seeds" argument takes a list of 3D coordinates (tuples) of the spheres centers,
+they should be in the same space as the images.
+Seeds can overlap spatially and are represented in a binary present-nonpresent
+coding (no weighting).
+Below is an example of a coordinates list of four seeds from the default mode network::
+
+  >>> dmn_coords = [(0, -52, 18), (-46, -68, 32), (46, -68, 32), (0, 50, -5)]
+
+"radius" is an optional argument that takes a real value in millimeters.
+If no value is given for the "radius" argument, the single voxel at the given
+seed position is used.
+
+.. topic:: **Examples**
+
+  * :ref:`sphx_glr_auto_examples_connectivity_plot_adhd_spheres.py`

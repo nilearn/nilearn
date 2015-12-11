@@ -46,7 +46,7 @@ background_img = mean_img(func_filenames)
 from nilearn.decoding import SpaceNetClassifier
 
 # Fit model on train data and predict on test data
-decoder = SpaceNetClassifier(memory="cache", penalty='graph-net')
+decoder = SpaceNetClassifier(memory="nilearn_cache", penalty='graph-net')
 decoder.fit(X_train, y_train)
 y_pred = decoder.predict(X_test)
 accuracy = (y_pred == y_test).mean() * 100.
@@ -65,7 +65,7 @@ coef_img.to_filename('haxby_graph-net_weights.nii')
 
 ##############################################################################
 # Now Fit SpaceNet with a TV-l1 penalty
-decoder = SpaceNetClassifier(memory="cache", penalty='tv-l1')
+decoder = SpaceNetClassifier(memory="nilearn_cache", penalty='tv-l1')
 decoder.fit(X_train, y_train)
 y_pred = decoder.predict(X_test)
 accuracy = (y_pred == y_test).mean() * 100.

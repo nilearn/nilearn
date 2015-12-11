@@ -35,11 +35,11 @@ def high_variance_confounds(imgs, n_confounds=5, percentile=2.,
         Parameters
         ==========
         imgs: Niimg-like object
-            See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+            See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
             4D image.
 
         mask_img: Niimg-like object
-            See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+            See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
             If provided, confounds are extracted from voxels inside the mask.
             If not provided, all voxels are used.
 
@@ -225,7 +225,7 @@ def smooth_img(imgs, fwhm):
     Parameters
     ==========
     imgs: Niimg-like object or iterable of Niimg-like objects
-        See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+        See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
         Image(s) to smooth.
 
     fwhm: scalar, numpy.ndarray, 'fast' or None
@@ -277,7 +277,7 @@ def _crop_img_to(img, slices, copy=True):
     Parameters
     ==========
     img: Niimg-like object
-        See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+        See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
         Img to be cropped. If slices has less entries than img
         has dimensions, the slices will be applied to the first len(slices)
         dimensions
@@ -294,7 +294,7 @@ def _crop_img_to(img, slices, copy=True):
     Returns
     =======
     cropped_img: Niimg-like object
-        See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+        See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
         Cropped version of the input image
     """
 
@@ -330,7 +330,7 @@ def crop_img(img, rtol=1e-8, copy=True):
     Parameters
     ==========
     img: Niimg-like object
-        See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+        See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
         img to be cropped.
 
     rtol: float
@@ -413,7 +413,7 @@ def mean_img(imgs, target_affine=None, target_shape=None,
     ==========
 
     imgs: Niimg-like object or iterable of Niimg-like objects
-        See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+        See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
         Images to mean.
 
     target_affine: numpy.ndarray, optional
@@ -478,7 +478,7 @@ def swap_img_hemispheres(img):
     Parameters
     ----------
     img: Niimg-like object
-        See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+        See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
         Images to swap.
 
     Returns
@@ -519,7 +519,7 @@ def index_img(imgs, index):
     Parameters
     ----------
     imgs: 4D Niimg-like object
-        See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+        See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
 
     index: Any type compatible with numpy array indexing
         Used for indexing the 4D data array in the fourth dimension.
@@ -539,7 +539,7 @@ def iter_img(imgs):
     Parameters
     ----------
     imgs: 4D Niimg-like object
-        See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+        See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
 
     Returns
     -------
@@ -592,7 +592,7 @@ def new_img_like(ref_niimg, data, affine=None, copy_header=False):
         data = as_ndarray(data, dtype=default_dtype)
     header = None
     if copy_header:
-        header = copy.copy(ref_niimg.get_header())
+        header = copy.deepcopy(ref_niimg.get_header())
         header['scl_slope'] = 0.
         header['scl_inter'] = 0.
         header['glmax'] = 0.

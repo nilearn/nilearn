@@ -9,7 +9,8 @@ the fMRI (see the generated figures).
 
 """
 
-### Load Haxby dataset ########################################################
+#########################################################################
+# Load Haxby dataset
 import numpy as np
 import nibabel
 from nilearn import datasets
@@ -26,7 +27,8 @@ fmri_img = nibabel.load(fmri_filename)
 y, session = np.loadtxt(haxby_dataset.session_target[0]).astype('int').T
 conditions = np.recfromtxt(haxby_dataset.conditions_target[0])['f0']
 
-### Restrict to faces and houses ##############################################
+#########################################################################
+# Restrict to faces and houses
 from nilearn.image import index_img
 condition_mask = np.logical_or(conditions == b'face', conditions == b'house')
 
@@ -34,7 +36,9 @@ fmri_img = index_img(fmri_img, condition_mask)
 y, session = y[condition_mask], session[condition_mask]
 conditions = conditions[condition_mask]
 
-### Prepare masks #############################################################
+#########################################################################
+# Prepare masks
+#
 # - mask_img is the original mask
 # - process_mask_img is a subset of mask_img, it contains the voxels that
 #   should be processed (we only keep the slice z = 26 and the back of the
@@ -50,7 +54,8 @@ process_mask[..., :picked_slice] = 0
 process_mask[:, 30:] = 0
 process_mask_img = new_img_like(mask_img, process_mask)
 
-### Searchlight computation ###################################################
+#########################################################################
+# Searchlight computation
 
 # Make processing parallel
 # /!\ As each thread will print its progress, n_jobs > 1 could mess up the
@@ -73,7 +78,8 @@ searchlight = nilearn.decoding.SearchLight(
     verbose=1, cv=cv)
 searchlight.fit(fmri_img, y)
 
-### F-scores computation ######################################################
+#########################################################################
+# F-scores computation
 from nilearn.input_data import NiftiMasker
 
 # For decoding, standardizing is often very important
@@ -88,13 +94,14 @@ p_values = -np.log10(p_values)
 p_values[p_values > 10] = 10
 p_unmasked = nifti_masker.inverse_transform(p_values).get_data()
 
-### Visualization #############################################################
+#########################################################################
+# Visualization
 
 # Use the fmri mean image as a surrogate of anatomical data
 from nilearn import image
-from nilearn.plotting import plot_stat_map, show
 mean_fmri = image.mean_img(fmri_img)
 
+from nilearn.plotting import plot_stat_map, show
 plot_stat_map(new_img_like(mean_fmri, searchlight.scores_), mean_fmri,
               title="Searchlight", display_mode="z", cut_coords=[-16],
               colorbar=False)

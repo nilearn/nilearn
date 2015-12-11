@@ -172,7 +172,7 @@ class CacheMixin(object):
     parameter to self._cache(). See _cache() documentation for details.
     """
     def _cache(self, func, func_memory_level=1, **kwargs):
-        """ Return a joblib.Memory object.
+        """Return a joblib.Memory object.
 
         The memory_level determines the level above which the wrapped
         function output is cached. By specifying a numeric value for
@@ -196,6 +196,7 @@ class CacheMixin(object):
             a no-op, if the requested level is lower than the value given
             to _cache()). For consistency, a joblib.Memory object is always
             returned.
+
         """
 
         verbose = getattr(self, 'verbose', 0)

@@ -28,7 +28,7 @@ labels = np.recfromcsv(haxby_dataset.session_target[0], delimiter=" ")
 # target = labels['labels']
 _, target = np.unique(labels['labels'], return_inverse=True)
 
-### Keep only data corresponding to faces or cats #############################
+# Keep only data corresponding to faces or cats
 condition_mask = np.logical_or(labels['labels'] == b'face',
                                labels['labels'] == b'cat')
 target = target[condition_mask]

@@ -39,12 +39,12 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
     Parameters
     ==========
     maps_img: 4D niimg-like object
-        See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+        See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
         Set of continuous maps. One representative time course per map is
         extracted using least square regression.
 
     mask_img: 3D niimg-like object, optional
-        See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+        See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
         Mask to apply to regions before extracting signals.
 
     allow_overlap: boolean, optional
@@ -202,6 +202,8 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
                              % self.__class__.__name__)
 
     def fit_transform(self, imgs, confounds=None):
+        """Prepare and perform signal extraction.
+        """
         return self.fit().transform(imgs, confounds=confounds)
 
     def transform_single_imgs(self, imgs, confounds=None):
@@ -210,7 +212,7 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
         Parameters
         ----------
         imgs: 3D/4D Niimg-like object
-            See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+            See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
             Images to process. It must boil down to a 4D image with scans
             number as last dimension.
 

@@ -64,7 +64,7 @@ Why is machine learning relevant to NeuroImaging? A few examples!
     Tricks pulled in machine learning (e.g. regularization) can
     make this estimation possible despite the usually
     small number of observations in the neuroimaging domain
-    `[Varoquaux 2012] <http://icml.cc/discuss/2012/688.html>`_. This
+    `[Varoquaux 2012] <http://icml.cc/2012/papers/688.pdf>`_. This
     usage of machine learning requires some understanding of the models.
 
 :Data mining / exploration:
@@ -196,6 +196,13 @@ Then you can call the function that creates a "glass brain" by giving it
 the file name::
 
     >>> plotting.plot_glass_brain("/home/user/t_map000.nii")   # doctest: +SKIP
+
+.. sidebar:: File name matchings
+
+   The filename could be given as "~/t_map000.nii' as nilearn expands "~" to
+   the home directory.
+   :ref:`See more on file name matchings <extracting_data>`.
+
 
 .. image:: auto_examples/manipulating_visualizing/images/sphx_glr_plot_demo_glass_brain_001.png
     :target: auto_examples/manipulating_visualizing/plot_demo_glass_brain.html

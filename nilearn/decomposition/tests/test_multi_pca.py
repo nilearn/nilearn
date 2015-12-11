@@ -3,12 +3,13 @@ Test the multi-PCA module
 """
 
 import numpy as np
-from nose.tools import assert_raises
-
+from nose.tools import assert_raises, assert_true
 import nibabel
+from numpy.testing import assert_almost_equal, assert_equal
 
 from nilearn.decomposition.multi_pca import MultiPCA
-from nilearn.input_data import MultiNiftiMasker
+from nilearn.input_data import MultiNiftiMasker, NiftiMasker
+from nilearn._utils.testing import assert_raises_regex
 
 
 def test_multi_pca():
@@ -59,3 +60,58 @@ def test_multi_pca():
 
     # Smoke test to fit with no img
     assert_raises(TypeError, multi_pca.fit)
+
+    multi_pca = MultiPCA(mask=mask_img, n_components=3)
+    assert_raises_regex(ValueError,
+                        "Object has no components_ attribute. "
+                        "This is probably because fit has not been called",
+                        multi_pca.transform, data)
+
+
+
+def test_multi_pca_score():
+    shape = (6, 8, 10, 5)
+    affine = np.eye(4)
+    rng = np.random.RandomState(0)
+
+    # Create a "multi-subject" dataset
+    imgs = []
+    for i in range(8):
+        this_img = rng.normal(size=shape)
+        imgs.append(nibabel.Nifti1Image(this_img, affine))
+
+    mask_img = nibabel.Nifti1Image(np.ones(shape[:3], dtype=np.int8), affine)
+
+    # Assert that score is between zero and one
+    multi_pca = MultiPCA(mask=mask_img, random_state=0, memory_level=0,
+                         n_components=3)
+    multi_pca.fit(imgs)
+    s = multi_pca.score(imgs)
+    assert_true(np.all(s <= 1))
+    assert_true(np.all(0 <= s))
+
+    # Assert that score does not fail with single subject data
+    multi_pca = MultiPCA(mask=mask_img, random_state=0, memory_level=0,
+                         n_components=3)
+    multi_pca.fit(imgs[0])
+    s = multi_pca.score(imgs[0])
+    assert_true(isinstance(s, float))
+    assert(0. <= s <= 1.)
+
+    # Assert that score is one for n_components == n_sample
+    # in single subject configuration
+    multi_pca = MultiPCA(mask=mask_img, random_state=0, memory_level=0,
+                         n_components=5)
+    multi_pca.fit(imgs[0])
+    s = multi_pca.score(imgs[0])
+    assert_almost_equal(s, 1., 1)
+
+    # Per component score
+    multi_pca = MultiPCA(mask=mask_img, random_state=0, memory_level=0,
+                         n_components=5)
+    multi_pca.fit(imgs[0])
+    masker = NiftiMasker(mask_img).fit()
+    s = multi_pca._raw_score(masker.transform(imgs[0]), per_component=True)
+    assert_equal(s.shape, (5,))
+    assert_true(np.all(s <= 1))
+    assert_true(np.all(0 <= s))

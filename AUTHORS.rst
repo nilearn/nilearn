@@ -25,7 +25,19 @@ Thanks to M. Hanke and Y. Halchenko for data and packaging.
 
 .. _citing:
 
-Citing the scikit-learn
+Citing nilearn
+------------------------
+
+There is no paper published yet about nilearn. We are waiting for the
+package to mature a bit. However, the patterns underlying the package
+have been described in: `Machine learning for neuroimaging with
+scikit-learn
+<http://journal.frontiersin.org/article/10.3389/fninf.2014.00014/abstract>`_.
+
+We suggest that you read and cite the paper. Thank you.
+
+
+Citing scikit-learn
 ------------------------
 
 A huge amount of work goes in the scikit-learn. Researchers that invest

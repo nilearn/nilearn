@@ -522,14 +522,6 @@ class GroupSparseCovariance(BaseEstimator, CacheMixin):
             signals. Sample number can vary from subject to subject, but all
             subjects must have the same number of features (i.e. of columns).
 
-        Attributes
-        ----------
-        `covariances_` : numpy.ndarray
-            empirical covariances
-
-        `precisions_` : numpy.ndarray
-            precision matrices
-
         Returns
         -------
         self : GroupSparseCovariance instance
@@ -899,7 +891,7 @@ class GroupSparseCovarianceCV(BaseEstimator, CacheMixin):
 
     See also
     --------
-    group_sparse_covariance, GroupSparseCovariance,
+    GroupSparseCovariance,
     sklearn.covariance.GraphLassoCV
 
     Notes
@@ -935,26 +927,6 @@ class GroupSparseCovarianceCV(BaseEstimator, CacheMixin):
             input subjects. Each subject is a 2D array, whose columns contain
             signals. Sample number can vary from subject to subject, but all
             subjects must have the same number of features (i.e. of columns.)
-
-        Attributes
-        ----------
-        covariances_ : numpy.ndarray, shape (n_features, n_features, n_subjects)
-            covariance matrices, one per subject.
-
-        precisions_ : numpy.ndarray, shape (n_features, n_features, n_subjects)
-            precision matrices, one per subject. All matrices have the same
-            sparsity pattern (if a coefficient is zero for a given matrix, it
-            is also zero for every other.)
-
-        alpha_ : float
-            selected value for penalization parameter.
-
-        cv_alphas_ : list of float
-            all penalization parameter values explored.
-
-        cv_scores_ : numpy.ndarray with shape (n_alphas, n_folds)
-            scores obtained on test set for each value of the penalization
-            parameter explored.
 
         Returns
         =======

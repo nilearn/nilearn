@@ -87,7 +87,7 @@ different heuristics to find cutting coordinates.
 **plot_img**         :func:`plot_img`
                      |hack|
                      General-purpose function, with no specific presets
-================== =========================================================
+=================== =========================================================
 
 
 .. warning:: **Opening too many figures without closing**
@@ -103,6 +103,10 @@ different heuristics to find cutting coordinates.
     >>> display = plotting.plot_stat_map(img)     # doctest: +SKIP
     >>> display.close()     # doctest: +SKIP
 
+.. seealso::
+
+   :ref:`sphx_glr_auto_examples_manipulating_visualizing_plot_dim_plotting.py`
+
 Different display modes
 ========================
 
@@ -112,7 +116,7 @@ Different display modes
 
 .. |plot_z_many| image:: ../auto_examples/manipulating_visualizing/images/sphx_glr_plot_demo_more_plotting_002.png
      :target: ../auto_examples/manipulating_visualizing/plot_demo_more_plotting.html
-     :scale: 50
+     :scale: 30
 
 .. |plot_x| image:: ../auto_examples/manipulating_visualizing/images/sphx_glr_plot_demo_more_plotting_003.png
      :target: ../auto_examples/manipulating_visualizing/plot_demo_more_plotting.html
