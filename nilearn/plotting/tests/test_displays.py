@@ -4,15 +4,10 @@ import tempfile
 
 import numpy as np
 
-from nose.tools import assert_true
-
 import matplotlib.pyplot as plt
 
 from nilearn.plotting.displays import OrthoSlicer, XSlicer, OrthoProjector
-from nilearn.plotting.displays import check_threshold
 from nilearn.datasets import load_mni152_template
-from nilearn._utils.testing import assert_raises_regex
-from nilearn._utils.extmath import fast_abs_percentile
 
 
 ##############################################################################
@@ -45,32 +40,3 @@ def test_demo_ortho_projector():
     with tempfile.TemporaryFile() as fp:
         oprojector.savefig(fp)
     oprojector.close()
-
-
-def test_check_threshold():
-    adjacency_matrix = np.array([[1., 2.],
-                                 [2., 1.]])
-    name = 'edge_threshold'
-    calculate = 'fast_abs_percentile'
-    # a few not correctly formatted strings for 'edge_threshold'
-    wrong_edge_thresholds = ['0.1', '10', '10.2.3%', 'asdf%']
-    for wrong_edge_threshold in wrong_edge_thresholds:
-        assert_raises_regex(ValueError,
-                            '{0}.+should be a number followed by '
-                            'the percent sign'.format(name),
-                            check_threshold,
-                            wrong_edge_threshold, adjacency_matrix,
-                            calculate, name)
-
-    threshold = object()
-    assert_raises_regex(TypeError,
-                        '{0}.+should be either a number or a string'.format(
-                            name),
-                        check_threshold,
-                        threshold, adjacency_matrix,
-                        calculate, name)
-
-    # To check if it also gives the score which is expected
-    assert_true(1. < check_threshold("50%", adjacency_matrix,
-                                     percentile_calculate=fast_abs_percentile,
-                                     name='threshold') <= 2.)

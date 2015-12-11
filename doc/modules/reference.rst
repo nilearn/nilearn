@@ -149,7 +149,7 @@ uses.
    reorder_img
    smooth_img
    swap_img_hemispheres
-
+   threshold_img
 
 .. _io_ref:
 
@@ -222,6 +222,16 @@ uses.
    signals_to_img_labels
    img_to_signals_maps
    signals_to_img_maps
+
+**Classes**:
+
+.. currentmodule:: nilearn.regions
+
+.. autosummary::
+   :toctree: generated/
+   :template: class.rst
+
+    RegionExtractor   
 
 
 .. seealso::

@@ -7,11 +7,13 @@ See also nilearn.signal.
 # License: simplified BSD
 
 import collections
+import numbers
 import operator
 from distutils.version import LooseVersion
 
 import numpy as np
 from scipy import ndimage
+from scipy.stats import scoreatpercentile
 import copy
 import nibabel
 from sklearn.externals.joblib import Parallel, delayed
@@ -19,9 +21,10 @@ from sklearn.externals.joblib import Parallel, delayed
 from .. import signal
 from .._utils import (check_niimg_4d, check_niimg_3d, check_niimg, as_ndarray,
                       _repr_niimgs)
-from .._utils.niimg_conversions import _index_img
+from .._utils.niimg_conversions import _index_img, _check_same_fov
 from .._utils.niimg import _safe_get_data
 from .._utils.compat import _basestring
+from .._utils.param_validation import check_threshold
 
 
 def high_variance_confounds(imgs, n_confounds=5, percentile=2.,
@@ -596,3 +599,63 @@ def new_img_like(ref_niimg, data, affine=None, copy_header=False):
         header['cal_max'] = np.max(data) if data.size > 0 else 0.
         header['cal_max'] = np.min(data) if data.size > 0 else 0.
     return ref_niimg.__class__(data, affine, header=header)
+
+
+def threshold_img(img, threshold, mask_img=None):
+    """ Thresholds the given input image based on specific strategy.
+
+    .. versionadded:: 0.2
+
+    Parameters
+    ----------
+    img: a 3D/4D Niimg-like object
+        Image contains of statistical or atlas maps which should be thresholded.
+
+    threshold: float or str
+        If float, we threshold the image based on image intensities meaning
+        voxels which have intensities greater than this value will be kept.
+        The given value should be within the range of minimum and
+        maximum intensity of the input image.
+        If string, it should finish with percent sign e.g. "80%" and we threshold
+        based on the score obtained using this percentile on the image data. The
+        voxels which have intensities greater than this score will be kept.
+        The given string should be within the range of "0%" to "100%".
+
+    mask_img: Niimg-like object, default None, optional
+        Mask image applied to mask the input data.
+        If None, no masking will be applied.
+
+    Returns
+    -------
+    threshold_img: Nifti1Image
+        thresholded image of the given input image.
+    """
+    from . import resampling
+    from .. import masking
+
+    img = check_niimg(img)
+    img_data = _safe_get_data(img).copy()
+    affine = img.get_affine()
+
+    if mask_img is not None:
+        if not _check_same_fov(img, mask_img):
+            mask_img = resampling.resample_img(mask_img, target_affine=affine,
+                                               target_shape=img.shape[:3],
+                                               interpolation="nearest")
+
+        mask_data, _ = masking._load_mask_img(mask_img)
+        # Set as 0 for the values which are outside of the mask
+        img_data[mask_data == 0.] = 0.
+
+    if threshold is None:
+        raise ValueError("The input parameter 'threshold' is empty. "
+                         "Please give either a float value or a string as e.g. '90%'.")
+    else:
+        cutoff_threshold = check_threshold(threshold, img_data,
+                                           percentile_func=scoreatpercentile,
+                                           name='threshold')
+
+    img_data[np.abs(img_data) < cutoff_threshold] = 0.
+    threshold_img = new_img_like(img, img_data, affine)
+
+    return threshold_img
