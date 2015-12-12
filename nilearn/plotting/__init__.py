@@ -35,9 +35,10 @@ from . import cm
 from .img_plotting import plot_img, plot_anat, plot_epi, \
     plot_roi, plot_stat_map, plot_glass_brain, plot_connectome, \
     plot_prob_atlas, show
-from .find_cuts import find_xyz_cut_coords
+from .find_cuts import find_xyz_cut_coords, find_cut_slices
 
 __all__ = ['cm', 'plot_img', 'plot_anat', 'plot_epi',
            'plot_roi', 'plot_stat_map', 'plot_glass_brain',
            'plot_connectome', 'plot_prob_atlas',
-           'find_xyz_cut_coords', 'show']
+           'find_xyz_cut_coords', 'find_cut_slices',
+           'show']

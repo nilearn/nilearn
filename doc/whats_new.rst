@@ -51,7 +51,7 @@ API changes summary
    - The utilities in function group_sparse_covariance has been moved
      into :mod:`nilearn.connectome`.
    - The default value for number of cuts (n_cuts) in function
-     :func:`nilearn.plotting.find_cuts` in :mod:`nilearn.plotting` has
+     :func:`nilearn.plotting.find_cut_slices` in :mod:`nilearn.plotting` has
      been changed from 12 to 7 i.e. n_cuts=7.
 
 0.1.4

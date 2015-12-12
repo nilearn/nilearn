@@ -140,6 +140,7 @@ uses.
    :template: function.rst
 
    crop_img
+   copy_img
    index_img
    iter_img
    high_variance_confounds
@@ -273,6 +274,8 @@ uses.
    :toctree: generated/
    :template: function.rst
 
+   find_cut_slices
+   find_xyz_cut_coords
    plot_anat
    plot_img
    plot_epi
@@ -281,7 +284,6 @@ uses.
    plot_glass_brain
    plot_connectome
    plot_prob_atlas
-   find_xyz_cut_coords
    show
 
 **Classes**:
