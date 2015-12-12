@@ -1,14 +1,58 @@
-0.1.5
-=======
+0.2
+===
 
 Changelog
 ---------
 
 The new minimum required version of scikit-learn is 0.13
 
-- Fix to control the behaviour of cut_coords or number of cuts in plot_stat_map.
-  For consistency, number of cuts is changed to default value 7.
+New features
+............
+   - The new module :mod:`nilearn.connectome` now has class
+     :class:`nilearn.connectome.ConnectivityMeasure` can be useful for
+     computing functional connectivity matrices.
+   - The function :func:`nilearn.connectome.sym_to_vec` in same module
+     :mod:`nilearn.connectome` is also implemented as a helper function to
+     :class:`nilearn.connectome.ConnectivityMeasure`.
+   - The class :class:`nilearn.decomposition.DictLearning` in
+     :mod:`nilearn.decomposition` is a decomposition method similar to ICA
+     that imposes sparsity on components instead of independence between them.
+   - Integrating back references template from sphinx-gallery of 0.0.11
+     version release.
+   - Globbing expressions can now be used in all nilearn functions expecting a
+     list of files.
+   - The new module :mod:`nilearn.regions` now has class
+     :class:`nilearn.regions.RegionExtractor` which can be used for post
+     processing brain regions of interest extraction.
+   - The function :func:`nilearn.regions.connected_regions` in
+     :mod:`nilearn.regions` is also implemented as a helper function to
+     :class:`nilearn.regions.RegionExtractor`.
+   - The function :func:`nilearn.image.threshold_img` in :mod:`nilearn.image`
+     is implemented to use it for thresholding statistical maps.
 
+Enhancements
+............
+   - Making website a bit elaborated & modernise by using sphinx-gallery.
+   - Documentation enhancement by integrating sphinx-gallery notebook style
+     examples.
+   - Documentation about :class:`nilearn.input_data.NiftiSpheresMasker`.
+
+Bug fixes
+.........
+   - Fixed bug to control the behaviour when cut_coords=0. in function
+     :func:`nilearn.plotting.plot_stat_map` in :mod:`nilearn.plotting`.
+     See issue # 784.
+   - Fixed bug in :func:`nilearn.image.copy_img` occured while caching
+     the Nifti images. See issue # 793.
+   - Fixed bug causing an IndexError in fast_abs_percentile. See issue # 875
+
+API changes summary
+...................
+   - The utilities in function group_sparse_covariance has been moved
+     into :mod:`nilearn.connectome`.
+   - The default value for number of cuts (n_cuts) in function
+     :func:`nilearn.plotting.find_cuts` in :mod:`nilearn.plotting` has
+     been changed from 12 to 7 i.e. n_cuts=7.
 
 0.1.4
 =====
