@@ -6,7 +6,7 @@ import scipy.linalg as spl
 from numpy.testing import assert_almost_equal, assert_array_almost_equal
 from nose.tools import assert_true, assert_equal
 
-from ..utils import (multiple_mahalanobis, z_score, multiple_fast_inv,
+from nistats.utils import (multiple_mahalanobis, z_score, multiple_fast_inv,
                      pos_recipr, full_rank)
 
 

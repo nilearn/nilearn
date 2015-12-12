@@ -5,7 +5,7 @@ from scipy.stats import norm
 from nose.tools import assert_true
 from numpy.testing import assert_almost_equal, assert_equal
 import nibabel as nib
-from ..thresholding import (fdr_threshold, map_threshold)
+from nistats.thresholding import (fdr_threshold, map_threshold)
 
 
 def test_fdr():
