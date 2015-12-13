@@ -1,3 +1,12 @@
+0.2.1
+======
+
+Changelog
+---------
+
+Small bugfix for more flexible input types (targetter in particular at
+making code easier in nistats).
+
 0.2
 ===
 
