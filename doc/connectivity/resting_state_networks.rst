@@ -124,7 +124,7 @@ larger alpha yields sparser maps.
 We can fit both estimators to compare them
 
 .. literalinclude:: ../../examples/connectivity/plot_compare_resting_state_decomposition.py
-    :start-after: # Fitting both estimators
+    :start-after: # Fit both estimators
     :end-before: # Visualize the results
 
 Visualizing the results
