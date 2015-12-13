@@ -4,7 +4,6 @@ Test image pre-processing functions
 from nose.tools import assert_true, assert_false
 from distutils.version import LooseVersion
 from nose import SkipTest
-from nose import tools
 
 import platform
 import os
@@ -393,6 +392,16 @@ def test_new_img_like_mgz():
     data = np.ones(ref_img.get_data().shape, dtype=np.bool)
     affine = ref_img.get_affine()
     new_img_like(ref_img, data, affine, copy_header=False)
+
+
+def test_new_img_like():
+    # Give a list to new_img_like
+    data = np.zeros((5, 6, 7))
+    data[2:4, 1:5, 3:6] = 1
+    affine = np.diag((4, 3, 2, 1))
+    img = nibabel.Nifti1Image(data, affine=affine)
+    img2 = new_img_like([img, ], data)
+    np.testing.assert_array_equal(img.get_data(), img2.get_data())
 
 
 def test_validity_threshold_value_in_threshold_img():
