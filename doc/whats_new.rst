@@ -54,6 +54,35 @@ API changes summary
      :func:`nilearn.plotting.find_cut_slices` in :mod:`nilearn.plotting` has
      been changed from 12 to 7 i.e. n_cuts=7.
 
+Contributors
+.............
+
+Contributors (from ``git shortlog -ns 0.1.4..0.2.0``)::
+
+   822  Elvis Dohmatob    (hasn't learn squashing yet)
+   142  Gael Varoquaux
+   119  Alexandre Abraham
+    90  Loïc Estève
+    85  Kamalakar Daddy
+    65  Alexandre Abadie
+    43  Chris Filo Gorgolewski
+    39  Salma BOUGACHA
+    29  Danilo Bzdok
+    20  Martin Perez-Guevara
+    19  Mehdi Rahim
+    19  Óscar Nájera
+    17  martin
+     8  Arthur Mensch
+     8  Ben Cipollini
+     4  ainafp
+     4  juhuntenburg
+     2  Martin_Perez_Guevara
+     2  Michael Hanke
+     2  arokem
+     1  Bertrand Thirion
+     1  Dimitri Papadopoulos Orfanos
+
+
 0.1.4
 =====
 
