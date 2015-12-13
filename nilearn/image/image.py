@@ -7,7 +7,6 @@ See also nilearn.signal.
 # License: simplified BSD
 
 import collections
-import operator
 from distutils.version import LooseVersion
 
 import numpy as np
@@ -574,7 +573,7 @@ def new_img_like(ref_niimg, data, affine=None, copy_header=False):
     orig_ref_niimg = ref_niimg
     if (not isinstance(ref_niimg, _basestring)
             and not hasattr(ref_niimg, 'get_data')
-            and operator.isSequenceType(ref_niimg)):
+            and hasattr(ref_niimg, '__iter__')):
         ref_niimg = ref_niimg[0]
     if not (hasattr(ref_niimg, 'get_data')
               and hasattr(ref_niimg,'get_affine')):
