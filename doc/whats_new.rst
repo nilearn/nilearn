@@ -68,7 +68,7 @@ Contributors
 
 Contributors (from ``git shortlog -ns 0.1.4..0.2.0``)::
 
-   822  Elvis Dohmatob    (hasn't learn squashing yet)
+   822  Elvis Dohmatob
    142  Gael Varoquaux
    119  Alexandre Abraham
     90  Loïc Estève
