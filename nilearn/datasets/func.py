@@ -12,8 +12,9 @@ from sklearn.datasets.base import Bunch
 from .utils import (_get_dataset_dir, _fetch_files, _get_dataset_descr,
                     _read_md5_sum_file, _tree, _filter_columns)
 
-from .._utils.compat import BytesIO, _basestring, _urllib, izip
+from .._utils.compat import BytesIO, _basestring, _urllib
 from .._utils.numpy_conversions import csv_to_array
+from .._utils.param_validation import check_parameters_megatrawls_datasets
 
 
 def fetch_haxby_simple(data_dir=None, url=None, resume=True, verbose=1):
@@ -1283,10 +1284,8 @@ def fetch_mixed_gambles(n_subjects=1, data_dir=None, url=None, resume=True,
     return data
 
 
-def fetch_megatrawls_netmats(data_dir=None, dimensionality=[25, 50, 100, 200, 300],
-                             timeseries=['multiple_spatial_regression', 'eigen_regression'],
-                             matrices=['correlation', 'partial_correlation'],
-                             resume=True, verbose=1):
+def fetch_megatrawls_netmats(data_dir=None, dimensionality=None, timeseries=None,
+                             matrices=None, resume=True, verbose=1):
     """Downloads and fetches Network Matrices data from MegaTrawls release in HCP.
 
     This data can be used to predict relationships between imaging data (functional
@@ -1298,26 +1297,24 @@ def fetch_megatrawls_netmats(data_dir=None, dimensionality=[25, 50, 100, 200, 30
     denoted as 'Znet1' or partial correlation with limited L2 regularisation
     denoted as 'Znet2'. [1]
 
-    .. versionadded:: 0.1.5
+    .. versionadded:: 0.2.2
 
     Parameters
     ----------
-    data_dir: string, default is None, optional
+    data_dir: str, default is None, optional
         Path of the data directory. Used to force data storage in a specified
         location.
 
-    dimensionality: integer or integers as list, optional
-        Valid dimensions in integers are [25, 50, 100, 200, 300].
+    dimensionality: list of int in [25, 50, 100, 200, 300], optional
         By default, network matrices data estimated from brain parcellations
         of all dimensionalities are returned each in a separate dimensional
         array (n, n).
         If set to specific dimension, then network matrices related to
         particular dimension of brain parcellations will be returned. For example,
         if set as [25, 50] only data corresponding to dimensionality 25 and 50
-        of array (25, 25) and (50, 50) will be fetched.
+        of array (25, 25) and (50, 50) in size will be returned.
 
-    timeseries: string or strings as list, optional
-        Valid methods in strings are ['multiple_spatial_regression', 'eigen_regression']
+    timeseries: list of str in ['multiple_spatial_regression', 'eigen_regression'], optional
         By default, network matrices of both types of timeseries signal extraction
         methods will be returned. Each method has its own matrix array.
         If set to ['multiple_spatial_regression'], then correlation matrices
@@ -1328,16 +1325,15 @@ def fetch_megatrawls_netmats(data_dir=None, dimensionality=[25, 50, 100, 200, 30
         timeseries signals will be returned.
         For full technical details about each method. Refer to [3] [4] [5]
 
-    matrices: string or strings as list, optional
-        Valid output matrices in strings are ['correlation', 'partial_correlation']
+    matrices: list of str in ['correlation', 'partial_correlation'], optional
         By default, matrices of both types will be returned.
         If set as only ['correlation'], matrices of only full correlation
         will be returned.
         If set as ['partial_correlation'], only partial correlation matrices
         will be fetched.
 
-    resume: boolean, default is True
-        This parameter is required if a partly downloaded file is needed to be
+    resume: bool, default is True
+        This parameter is required if a partially downloaded file is needed to be
         resumed to download again.
 
     verbose: int, default is 1
@@ -1357,7 +1353,7 @@ def fetch_megatrawls_netmats(data_dir=None, dimensionality=[25, 50, 100, 200, 30
           given as inputs.
         - timeseries_correlation: array of timeseries method given as inputs.
         - timeseries_partial: array of timeseries method given as inputs.
-        - description: Data description
+        - description: data description
 
     References
     ----------
@@ -1407,26 +1403,28 @@ def fetch_megatrawls_netmats(data_dir=None, dimensionality=[25, 50, 100, 200, 30
     url = "http://www.nitrc.org/frs/download.php/8037/Megatrawls.tgz"
     opts = {'uncompress': True}
 
-    # dataset terms
+    # standard dataset terms
     dimensionalities = [25, 50, 100, 200, 300]
     timeseries_methods = ['multiple_spatial_regression', 'eigen_regression']
-    output_matrices = ['correlation', 'partial_correlation']
+    output_matrices_names = ['correlation', 'partial_correlation']
 
-    message = ("Invalid {0} name is given: {1}. "
-               "Please choose either of them {2}")
+    if dimensionality is not None:
+        dimensionality = check_parameters_megatrawls_datasets(
+            dimensionality, dimensionalities, 'dimensionality')
+    else:
+        dimensionality = dimensionalities
 
-    inputs = [dimensionality, timeseries, matrices]
-    standards = [dimensionalities, timeseries_methods, output_matrices]
-    error_names = ['dimensionality', 'timeseries', 'matrices']
+    if timeseries is not None:
+        timeseries = check_parameters_megatrawls_datasets(
+            timeseries, timeseries_methods, 'timeseries')
+    else:
+        timeseries = timeseries_methods
 
-    for each_input, standard, name in izip(inputs, standards, error_names):
-        if not isinstance(each_input, list):
-            raise TypeError("Input given for {0} should be in list. "
-                            "You have given as single variable: {1}".format(name, each_input))
-        elif isinstance(each_input, list):
-            for each_str in each_input:
-                if each_str not in standard:
-                    raise ValueError(message.format(name, each_str, str(standard)))
+    if matrices is not None:
+        matrices = check_parameters_megatrawls_datasets(
+            matrices, output_matrices_names, 'matrices')
+    else:
+        matrices = output_matrices_names
 
     dataset_name = 'Megatrawls'
     data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir, verbose=verbose)
