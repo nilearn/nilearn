@@ -24,7 +24,7 @@ with the highest values.
 ##############################################################################
 # Retrieve the atlas and the data
 from nilearn import datasets
-atlas = datasets.fetch_msdl_atlas()
+atlas = datasets.fetch_atlas_msdl()
 atlas_filename = atlas['maps']
 
 # Load the labels
