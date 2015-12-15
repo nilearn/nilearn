@@ -1286,16 +1286,12 @@ def fetch_mixed_gambles(n_subjects=1, data_dir=None, url=None, resume=True,
 
 def fetch_megatrawls_netmats(data_dir=None, dimensionality=None, timeseries=None,
                              matrices=None, resume=True, verbose=1):
-    """Downloads and fetches Network Matrices data from MegaTrawls release in HCP.
+    """Downloads and returns Network Matrices data from MegaTrawls release in HCP.
 
-    This data can be used to predict relationships between imaging data (functional
-    connectivity) and non-imaging behavioural measures such as age, sex, education, etc.
-    The network matrices are estimated from functional connectivity datasets of 461
-    subjects [1]. Full technical details in [2].
-
-    The network matrices denoted as 'netmats' are estimated using full correlation
-    denoted as 'Znet1' or partial correlation with limited L2 regularisation
-    denoted as 'Znet2'. [1]
+    This data can be used to predict relationships between imaging data and
+    non-imaging behavioural measures such as age, sex, education, etc.
+    The network matrices are estimated from functional connectivity
+    datasets of 461 subjects. Full technical details in [1] [2].
 
     .. versionadded:: 0.2.2
 
@@ -1308,33 +1304,30 @@ def fetch_megatrawls_netmats(data_dir=None, dimensionality=None, timeseries=None
     dimensionality: list of int in [25, 50, 100, 200, 300], optional
         By default, network matrices data estimated from brain parcellations
         of all dimensionalities are returned each in a separate dimensional
-        array (n, n).
-        If set to specific dimension, then network matrices related to
-        particular dimension of brain parcellations will be returned. For example,
-        if set as [25, 50] only data corresponding to dimensionality 25 and 50
-        of array (25, 25) and (50, 50) in size will be returned.
+        array (n, n). If set to specific dimension, then data of its
+        particular dimension will be returned. For example, if set as
+        [25] only data corresponding to dimensions 25 of array (25, 25)
+        in size will be returned.
 
-    timeseries: list of str in ['multiple_spatial_regression', 'eigen_regression'], optional
-        By default, network matrices of both types of timeseries signal extraction
-        methods will be returned. Each method has its own matrix array.
-        If set to ['multiple_spatial_regression'], then correlation matrices
-        estimated using spatial regressor based extraction of subject specific
-        timeseries signals will be returned.
-        If set to ['eigen_regression'], then correlation matrices estimated using
+    timeseries: list of str in ['multiple_spatial_regression', 'eigen_regression']
+        By default, network matrices data extimated using both methods will be
+        returned each in a separate array. If ['multiple_spatial_regression'],
+        then correlation matrices estimated using spatial regressor based
+        extraction of subject specific timeseries signals will be returned.
+        If ['eigen_regression'], then correlation matrices estimated using
         first principal eigen component based extraction of subject specific
-        timeseries signals will be returned.
-        For full technical details about each method. Refer to [3] [4] [5]
+        timeseries signals will be returned. For full technical details
+        about each method, refer to [3] [4] [5].
 
     matrices: list of str in ['correlation', 'partial_correlation'], optional
-        By default, matrices of both types will be returned.
-        If set as only ['correlation'], matrices of only full correlation
+        By default, matrices of both types will be returned. If ['correlation'],
+        then only full correlation matrices will be returned otherwise if
+        set as ['partial_correlation'], only partial correlation matrices
         will be returned.
-        If set as ['partial_correlation'], only partial correlation matrices
-        will be fetched.
 
     resume: bool, default is True
-        This parameter is required if a partially downloaded file is needed to be
-        resumed to download again.
+        This parameter is required if a partially downloaded file is needed
+        to be resumed to download again.
 
     verbose: int, default is 1
         This parameter is used to set the verbosity level to print the message
@@ -1343,60 +1336,61 @@ def fetch_megatrawls_netmats(data_dir=None, dimensionality=None, timeseries=None
 
     Returns
     -------
-    data: sklearn.datasets.base.Bunch
-        Dictionary-like object, contains:
-        - correlation: arrays of correlation matrices (Znet1).
-        - partial_correlation: arrays of partial correlation matrices (Znet2).
-        - dimensions_correlation: array of dimensionalities in numbers which
-          were given as inputs.
-        - dimensions_partial: array of dimensionalities in numbers which were
-          given as inputs.
-        - timeseries_correlation: array of timeseries method given as inputs.
-        - timeseries_partial: array of timeseries method given as inputs.
-        - description: data description
+    data: Bunch
+        Dictionary-like object, the attributes are :
+        'correlation': list of arrays, contains full correlation matrices.
+        'partial_correlation': list of arrays, contains partial correlation
+        matrices.
+        'dimensions_correlation': array consists of given input in dimensions
+        used in fetching its full correlation matrices.
+        'dimensions_partial': array consists of given input in dimensions
+        used in fetching its partial correlation matrices.
+        'timeseries_correlation': array consists of given input in timeseries
+        methods used in fetching its full correlation matrices.
+        'timeseries_partial': array consists of given input in timeseries
+        methods used in fetching its partial correlation matrices.
 
     References
     ----------
-    For more details:
-    [1] Stephen Smith et al, HCP beta-release of the Functional Connectivity MegaTrawl.
-    April 2015 "HCP500-MegaTrawl" release.
-    https://db.humanconnectome.org/megatrawl/
+    [1] Stephen Smith et al, HCP beta-release of the Functional Connectivity
+        MegaTrawl.
+        April 2015 "HCP500-MegaTrawl" release.
+        https://db.humanconnectome.org/megatrawl/
 
-    Technical details:
     [2] Smith, S.M. et al. Nat. Neurosci. 18, 1565-1567 (2015).
 
-    [3] N.Filippini, et al. Distinct patterns of brain activity in young carriers
-    of the APOE-e4 allele.
-    Proc Natl Acad Sci USA (PNAS), 106:7209-7214, 2009.
+    [3] N.Filippini, et al. Distinct patterns of brain activity in young
+        carriers of the APOE-e4 allele.
+        Proc Natl Acad Sci USA (PNAS), 106::7209-7214, 2009.
 
     [4] S.Smith, et al. Methods for network modelling from high quality rfMRI data.
-    Meeting of the Organization for Human Brain Mapping. 2014
+        Meeting of the Organization for Human Brain Mapping. 2014
 
-    [5] J.X. O'Reilly et al. Distinct and overlapping functional zones in the cerebellum
-    defined by resting state functional connectivity.
-    Cerebral Cortex, 2009.
+    [5] J.X. O'Reilly et al. Distinct and overlapping functional zones in the
+        cerebellum defined by resting state functional connectivity.
+        Cerebral Cortex, 2009.
 
     Disclaimer
     ----------
     IMPORTANT: This is open access data. You must agree to Terms and conditions
-    of using this data before using it,
-    available at: http://humanconnectome.org/data/data-use-terms/open-access.html
-    Open Access Data (all imaging data and most of the behavioral data)
-    is available to those who register an account at ConnectomeDB and agree to
-    the Open Access Data Use Terms. This includes agreement to comply with
+    of using this data before using it, available at
+    http://humanconnectome.org/data/data-use-terms/open-access.html.
+    Open Access Data (all imaging data and most of the behavioral data) is
+    available to those who register an account at ConnectomeDB and agree to the
+    Open Access Data Use Terms. This includes agreement to comply with
     institutional rules and regulations. This means you may need the approval
     of your IRB or Ethics Committee to use the data. The released HCP data are
     not considered de-identified, since certain combinations of HCP Restricted
     Data (available through a separate process) might allow identification of
     individuals. Different national, state and local laws may apply and be
     interpreted differently, so it is important that you consult with your IRB
-    or Ethics Committee before beginning your research. If needed and upon request,
-    the HCP will provide a certificate stating that you have accepted the
-    HCP Open Access Data Use Terms. Please note that everyone who works with
+    or Ethics Committee before beginning your research. If needed and upon
+    request, the HCP will provide a certificate stating that you have accepted
+    the HCP Open Access Data Use Terms. Please note that everyone who works with
     HCP open access data must review and agree to these terms, including those
-    who are accessing shared copies of this data. If you are sharing
-    HCP Open Access data, please advise your co-researchers that they must
-    register with ConnectomeDB and agree to these terms.
+    who are accessing shared copies of this data. If you are sharing HCP Open
+    Access data, please advise your co-researchers that they must register with
+    ConnectomeDB and agree to these terms.
     Register and sign the Open Access Data Use Terms at
     ConnectomeDB: https://db.humanconnectome.org/
     """
