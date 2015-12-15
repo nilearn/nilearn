@@ -169,7 +169,7 @@ def test_fetch_atlas_smith_2009():
     assert_not_equal(bunch.description, '')
 
 
-def test_fetch_atlas_power_2011_atlas():
+def test_fetch_atlas_power_2011():
     bunch = atlas.fetch_atlas_power_2011()
     assert_equal(len(bunch.rois), 264)
     assert_not_equal(bunch.description, '')
@@ -177,7 +177,7 @@ def test_fetch_atlas_power_2011_atlas():
 
 @with_setup(setup_mock, teardown_mock)
 @with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
-def test_fetch_atlas_destrieux_2009_atlas():
+def test_fetch_atlas_destrieux_2009():
     datadir = os.path.join(tst.tmpdir, 'destrieux_2009')
     os.mkdir(datadir)
     dummy = open(os.path.join(
