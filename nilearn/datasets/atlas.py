@@ -7,7 +7,6 @@ import numpy as np
 from scipy import ndimage
 
 from sklearn.datasets.base import Bunch
-from sklearn.utils import deprecated
 
 #from . import utils
 from .utils import _get_dataset_dir, _fetch_files, _get_dataset_descr
@@ -85,16 +84,6 @@ def fetch_atlas_craddock_2012(data_dir=None, url=None, resume=True, verbose=1):
     params = dict([('description', fdescr)] + list(zip(keys, sub_files)))
 
     return Bunch(**params)
-
-
-@deprecated('it has been replace by fetch_atlas_craddock_2012 and '
-            'will be removed in nilearn 0.1.5')
-def fetch_craddock_2012_atlas(data_dir=None, url=None, resume=True, verbose=1):
-    return fetch_atlas_craddock_2012(
-        data_dir=data_dir,
-        url=url,
-        resume=resume,
-        verbose=verbose)
 
 
 def fetch_atlas_destrieux_2009(lateralized=True, data_dir=None, url=None,
@@ -288,18 +277,6 @@ def fetch_atlas_harvard_oxford(atlas_name, data_dir=None,
     return Bunch(maps=atlas_img, labels=new_names)
 
 
-@deprecated('it has been replaced by fetch_atlas_harvard_oxford and '
-            'will be removed in nilearn 0.1.5')
-def fetch_harvard_oxford(atlas_name, data_dir=None, symmetric_split=False,
-                        resume=True, verbose=1):
-
-    atlas = fetch_atlas_harvard_oxford(atlas_name, data_dir=data_dir,
-                                       symmetric_split=symmetric_split,
-                                       resume=resume, verbose=verbose)
-
-    return atlas.maps, atlas.labels
-
-
 def fetch_atlas_msdl(data_dir=None, url=None, resume=True, verbose=1):
     """Download and load the MSDL brain atlas.
 
@@ -351,13 +328,6 @@ def fetch_atlas_msdl(data_dir=None, url=None, resume=True, verbose=1):
     fdescr = _get_dataset_descr(dataset_name)
 
     return Bunch(labels=files[0], maps=files[1], description=fdescr)
-
-
-@deprecated('it has been replace by fetch_atlas_msdl and '
-            'will be removed in nilearn 0.1.5')
-def fetch_msdl_atlas(data_dir=None, url=None, resume=True, verbose=1):
-    return fetch_atlas_msdl(data_dir=data_dir, url=url,
-                            resume=resume, verbose=verbose)
 
 
 def fetch_atlas_power_2011():
@@ -482,18 +452,6 @@ def fetch_atlas_smith_2009(data_dir=None, mirror='origin', url=None,
     return Bunch(**params)
 
 
-@deprecated('it has been replace by fetch_atlas_smith_2009 and '
-            'will be removed in nilearn 0.1.5')
-def fetch_smith_2009(data_dir=None, mirror='origin', url=None, resume=True,
-                     verbose=1):
-    return fetch_atlas_smith_2009(
-        data_dir=data_dir,
-        mirror=mirror,
-        url=url,
-        resume=resume,
-        verbose=verbose)
-
-
 def fetch_atlas_yeo_2011(data_dir=None, url=None, resume=True, verbose=1):
     """Download and return file names for the Yeo 2011 parcellation.
 
@@ -570,23 +528,6 @@ def fetch_atlas_yeo_2011(data_dir=None, url=None, resume=True, verbose=1):
 
     params = dict([('description', fdescr)] + list(zip(keys, sub_files)))
     return Bunch(**params)
-
-
-@deprecated('it has been replace by fetch_atlas_yeo_2011 and '
-            'will be removed in nilearn 0.1.5')
-def fetch_yeo_2011_atlas(data_dir=None, url=None, resume=True, verbose=1):
-    return fetch_atlas_yeo_2011(
-        data_dir=data_dir,
-        url=url,
-        resume=resume,
-        verbose=verbose)
-
-
-@deprecated('it has been replace by fetch_atlas_aal and '
-            'will be removed in nilearn 0.1.5')
-def fetch_atlas_aal_spm_12(data_dir=None, url=None, resume=True, verbose=1):
-    return fetch_atlas_aal(version='SPM12', data_dir=data_dir, url=url,
-                           resume=resume, verbose=verbose)
 
 
 def fetch_atlas_aal(version='SPM12', data_dir=None, url=None, resume=True,

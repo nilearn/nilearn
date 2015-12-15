@@ -44,7 +44,7 @@ def plot_matrices(cov, prec, title):
 ##############################################################################
 # Fetching datasets
 from nilearn import datasets
-msdl_atlas_dataset = datasets.fetch_msdl_atlas()
+msdl_atlas_dataset = datasets.fetch_atlas_msdl()
 adhd_dataset = datasets.fetch_adhd(n_subjects=n_subjects)
 
 # print basic information on the dataset
