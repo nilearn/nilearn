@@ -10,14 +10,9 @@ dependencies:
     - sudo -E apt-get -yq --no-install-suggests --no-install-recommends --force-yes install dvipng texlive-latex-base texlive-latex-extra
 
   override:
-    - pip install --upgrade pip
-    # Installing sphinx 1.2.3 to work-around autosummary issues in 1.3
-    # They should be fixed in sphinx 1.4
-    - pip install sphinx==1.2.3 matplotlib coverage Pillow
-    - pip install scipy
-    - pip install scikit-learn
-    - pip install nose-timer
-    - pip install -e .
+    - export DISTRIB="conda" PYTHON_VERSION="2.7" NUMPY_VERSION="1.8.2" SCIPY_VERSION="0.13.3" SCIKIT_LEARN_VERSION="0.14.1" MATPLOTLIB_VERSION="1.1.1"
+    - source continuous_integration/install.sh
+    - conda install sphinx==1.2.3 coverage pillow
     # we need to do this here so the datasets will be cached
     # pipefail is necessary to propagate exit codes
     - set -o pipefail && cd doc && make html-strict 2>&1 | tee ~/log.txt

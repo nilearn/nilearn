@@ -98,7 +98,7 @@ elif [[ "$DISTRIB" == "conda" ]]; then
     fi
 
 else
-    echo "Unrecognized distribution ($DISTRIB); cannot setup travis environment."
+    echo "Unrecognized distribution ($DISTRIB); cannot setup CI environment."
     exit 1
 fi
 
