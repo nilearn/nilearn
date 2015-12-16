@@ -1338,17 +1338,23 @@ def fetch_megatrawls_netmats(data_dir=None, dimensionality=None, timeseries=None
     -------
     data: Bunch
         Dictionary-like object, the attributes are :
-        'correlation': list of arrays, contains full correlation matrices.
-        'partial_correlation': list of arrays, contains partial correlation
-        matrices.
-        'dimensions_correlation': array consists of given input in dimensions
-        used in fetching its full correlation matrices.
-        'dimensions_partial': array consists of given input in dimensions
-        used in fetching its partial correlation matrices.
-        'timeseries_correlation': array consists of given input in timeseries
-        methods used in fetching its full correlation matrices.
-        'timeseries_partial': array consists of given input in timeseries
-        methods used in fetching its partial correlation matrices.
+
+        - 'correlation': list of arrays
+          contains full correlation matrices.
+        - 'partial_correlation': list of arrays
+          contains partial correlation matrices.
+        - 'dimensions_correlation': array
+          consists of given input in dimensions used in fetching its full
+          correlation matrices.
+        - 'dimensions_partial': array
+          consists of given input in dimensions used in fetching its partial
+          correlation matrices.
+        - 'timeseries_correlation': array
+          consists of given input in timeseries methods used in fetching its
+          full correlation matrices.
+        - 'timeseries_partial': array
+          consists of given input in timeseries methods used in fetching its
+          partial correlation matrices.
 
     References
     ----------
