@@ -10,7 +10,7 @@ import glob
 import nibabel
 from sklearn.datasets.base import Bunch
 
-from nilearn.datasets import (
+from nilearn.datasets.utils import (
     _get_dataset_dir, _fetch_files, _fetch_file, _uncompress_file)
 
 SPM_AUDITORY_DATA_FILES = ["fM00223/fM00223_%03i.img" % index
