@@ -231,7 +231,7 @@ def fetch_atlas_harvard_oxford(atlas_name, data_dir=None,
     names[0] = 'Background'
     for label in ElementTree.parse(label_file).findall('.//label'):
         names[int(label.get('index')) + 1] = label.text
-    names = np.asarray(list(names.values()))
+    names = list(names.values())
 
     if not symmetric_split:
         return Bunch(maps=atlas_img, labels=names)
