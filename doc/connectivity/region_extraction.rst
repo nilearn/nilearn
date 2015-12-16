@@ -7,9 +7,9 @@ Region Extraction for better brain parcellations
 .. topic:: **Page summary**
 
    This section shows how to use Region Extractor to extract each connected
-   brain regions/components into a separate brain activation regions and also
+   brain regions/components into a separate brain activation region and also
    shows how to learn functional connectivity interactions between each
-   separate regions.
+   separate region.
 
 .. contents:: **Contents**
     :local:
@@ -40,13 +40,13 @@ datasets.
 
 .. currentmodule:: nilearn.decomposition
 
-Data decomposition using Canonical ICA
-======================================
+Brain maps using Dictionary Learning
+====================================
 
-Here, we use :class:`CanICA`, a multi subject model to decompose previously
-fetched multi subjects datasets. We do this by setting the parameters in the
-object and calling fit on the functional filenames without necessarily
-converting each filename to Nifti1Image object.
+Here, we use :class:`DictLearning`, a multi subject model to decompose previously
+fetched multi subjects datasets into functionally defined maps. We do this by setting
+the parameters in the object and calling fit on the functional filenames without
+necessarily converting each filename to Nifti1Image object.
 
 
 .. literalinclude:: ../../examples/03_connectivity/plot_extract_regions_canica_maps.py
@@ -55,12 +55,12 @@ converting each filename to Nifti1Image object.
 
 .. currentmodule:: nilearn.plotting
 
-Visualization of Canonical ICA maps
-===================================
+Visualization of Dictionary Learning maps
+=========================================
 
-Showing ICA maps stored in components_img using nilearn plotting utilities.
+Showing maps stored in components_img using nilearn plotting utilities.
 Here, we use :func:`plot_prob_atlas` for easy visualization of 4D atlas maps
-onto the anatomical standard template. Each ICA map is displayed in different
+onto the anatomical standard template. Each map is displayed in different
 color and colors are random and automatically picked.
 
 .. literalinclude:: ../../examples/03_connectivity/plot_extract_regions_canica_maps.py
@@ -73,11 +73,11 @@ color and colors are random and automatically picked.
 
 .. currentmodule:: nilearn.regions
 
-Region Extraction with CanICA maps
-==================================
+Region Extraction with Dictionary Learning maps
+===============================================
 
 We use object :class:`RegionExtractor` for extracting brain connected regions
-from ICA maps into separated brain activation regions with automatic
+from dictionary maps into separated brain activation regions with automatic
 thresholding strategy selected as thresholding_strategy='ratio_n_voxels'. We use
 thresholding strategy to first get foreground information present in the maps and
 then followed by robust region extraction on foreground information using
@@ -166,7 +166,7 @@ Validating results
 ==================
 
 Showing only Default Mode Network (DMN) regions before and after region
-extraction by manually identifying the index of DMN in ICA decomposed maps.
+extraction by manually identifying the index of DMN in decomposed maps.
 
 Left image displays the DMN regions without region extraction and right image
 displays the DMN regions after region extraction. Here, we can validate that
