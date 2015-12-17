@@ -9,6 +9,10 @@ using dictionary learning and use them to build a functional connectome.
 We used 20 resting state ADHD functional datasets from :func:`nilearn.datasets.fetch_adhd`
 and :class:`nilearn.decomposition.DictLearning` for set of brain atlas maps.
 
+This example can also be inspired to apply the same steps to even regions extraction
+using ICA maps. In that case, idea would be to replace dictionary learning to canonical
+ICA decomposition using :class:`nilearn.decomposition.CanICA`
+
 Please see the related documentation of :class:`nilearn.regions.RegionExtractor`
 for more details.
 """
