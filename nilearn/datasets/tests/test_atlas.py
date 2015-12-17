@@ -121,7 +121,7 @@ def test_fail_fetch_atlas_harvard_oxford():
                                           data_dir=tst.tmpdir)
 
     assert_true(isinstance(nibabel.load(ho.maps), nibabel.Nifti1Image))
-    assert_true(isinstance(ho.labels, np.ndarray))
+    assert_true(isinstance(ho.labels, list))
     assert_true(len(ho.labels) > 0)
 
 
