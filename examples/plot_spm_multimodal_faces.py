@@ -7,6 +7,7 @@ Note: this example takes a lot of time because the input are lists of 3D images
 sampled in different position (encoded by different) affine functions.
 """
 
+print(__doc__)
 
 # standard imports
 import numpy as np
@@ -28,11 +29,6 @@ drift_model = 'Cosine'
 hrf_model = 'Canonical With Derivative'
 period_cut = 128.
 
-# make design matrices
-first_level_effects_maps = []
-mask_images = []
-design_matrices = []
-
 # resample the images
 fmri_img = [concat_imgs(subject_data.func1, auto_resample=True),
             concat_imgs(subject_data.func2, auto_resample=True)]
@@ -42,6 +38,8 @@ fmri_img[1] = resample_img(fmri_img[1], affine, shape[:3])
 # Create mean image for display
 mean_image = mean_img(fmri_img)
 
+# make design matrices
+design_matrices = []
 for idx in range(2):
     # build paradigm
     n_scans = fmri_img[idx].shape[-1]
@@ -85,7 +83,7 @@ from nilearn import plotting
 
 for contrast_id, contrast_val in contrasts.items():
     print("\tcontrast id: %s" % contrast_id)
-    z_map, t_map, effects_map, var_map = fmri_glm.transform(
+    z_map, = fmri_glm.transform(
         [contrast_val] * 2, contrast_name=contrast_id, output_z=True)
     plotting.plot_stat_map(
         z_map, bg_img=mean_image, threshold=3.0, display_mode='z',
