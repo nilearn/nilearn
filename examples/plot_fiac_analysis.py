@@ -29,9 +29,8 @@ from os import mkdir, path, getcwd
 
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
 
-from nilearn.plotting import plot_stat_map
+from nilearn import plotting
 from nilearn.image import mean_img
 import nibabel as nib
 
@@ -47,6 +46,7 @@ if not path.exists(write_dir):
 # Data and analysis parameters
 data = datasets.fetch_fiac_first_level()
 fmri_img = [data['func1'], data['func2']]
+mean_img_ = mean_img(fmri_img[0])
 design_files = [data['design_matrix1'], data['design_matrix2']]
 design_matrices = [pd.DataFrame(np.load(df)['X']) for df in design_files]
 
@@ -56,33 +56,21 @@ fmri_glm = FirstLevelGLM(data['mask'], standardize=False, noise_model='ar1')
 # GLM fitting
 fmri_glm.fit(fmri_img, design_matrices)
 
-
-def make_fiac_contrasts(n_columns):
-    """ Specify some contrasts for the FIAC experiment"""
-    contrast = {}
-    # the design matrices of both runs comprise 13 columns
-    # the first 5 columns of the design matrices correspond to the following
-    # conditions: ['SSt-SSp', 'SSt-DSp', 'DSt-SSp', 'DSt-DSp', 'FirstSt']
-
-    def _pad_vector(contrast_, n_columns):
-        return np.hstack((contrast_, np.zeros(n_columns - len(contrast_))))
-
-    contrast['SStSSp_minus_DStDSp'] = _pad_vector([1, 0, 0, -1], n_columns)
-    contrast['DStDSp_minus_SStSSp'] = - contrast['SStSSp_minus_DStDSp']
-    contrast['DSt_minus_SSt'] = _pad_vector([-1, -1, 1, 1], n_columns)
-    contrast['DSp_minus_SSp'] = _pad_vector([-1, 1, -1, 1], n_columns)
-    contrast['DSt_minus_SSt_for_DSp'] = _pad_vector([0, -1, 0, 1], n_columns)
-    contrast['DSp_minus_SSp_for_DSt'] = _pad_vector([0, 0, -1, 1], n_columns)
-    contrast['Deactivation'] = _pad_vector([-1, -1, -1, -1, 4], n_columns)
-    contrast['Effects_of_interest'] = np.eye(n_columns)[:5]
-    return contrast
-
 # compute fixed effects of the two runs and compute related images
 n_columns = design_matrices[0].shape[1]
-contrasts = make_fiac_contrasts(n_columns)
+def pad_vector(contrast_, n_columns):
+    return np.hstack((contrast_, np.zeros(n_columns - len(contrast_))))
+
+contrasts = {'SStSSp_minus_DStDSp': pad_vector([1, 0, 0, -1], n_columns),
+            'DStDSp_minus_SStSSp': pad_vector([-1, 0, 0, 1], n_columns),
+            'DSt_minus_SSt': pad_vector([-1, -1, 1, 1], n_columns),
+            'DSp_minus_SSp': pad_vector([-1, 1, -1, 1], n_columns),
+            'DSt_minus_SSt_for_DSp': pad_vector([0, -1, 0, 1], n_columns),
+            'DSp_minus_SSp_for_DSt': pad_vector([0, 0, -1, 1], n_columns),
+            'Deactivation': pad_vector([-1, -1, -1, -1, 4], n_columns),
+            'Effects_of_interest': np.eye(n_columns)[:5]}
 
 print('Computing contrasts...')
-mean_ = mean_img(fmri_img[0])
 for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
     print('  Contrast % 2i out of %i: %s' % (
         index + 1, len(contrasts), contrast_id))
@@ -93,9 +81,9 @@ for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
 
     # make a snapshot of the contrast activation
     if contrast_id == 'Effects_of_interest':
-        display = plot_stat_map(z_map, bg_img=mean_, threshold=2.5,
-                                title=contrast_id)
+        display = plotting.plot_stat_map(
+            z_map, bg_img=mean_img_, threshold=2.5, title=contrast_id)
         display.savefig(path.join(write_dir, '%s_z_map.png' % contrast_id))
 
 print('All the  results were witten in %s' % write_dir)
-plt.show()
+plotting.show()
