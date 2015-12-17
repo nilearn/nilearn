@@ -245,35 +245,34 @@ def fetch_atlas_harvard_oxford(atlas_name, data_dir=None,
     atlas = atlas_img.get_data()
 
     labels = np.unique(atlas)
-    # ndimage.find_objects output contains None elements for labels
-    # that do not exist
-    found_slices = (s for s in ndimage.find_objects(atlas)
-                    if s is not None)
+    # Build a mask of both halves of the brain
     middle_ind = (atlas.shape[0] - 1) // 2
-    crosses_middle = [s.start < middle_ind and s.stop > middle_ind
-                      for s, _, _ in found_slices]
-
-    # Split every zone crossing the median plane into two parts.
-    # Assumes that the background label is zero.
-    half = np.zeros(atlas.shape, dtype=np.bool)
-    half[:middle_ind, ...] = True
-    new_label = max(labels) + 1
     # Put zeros on the median plane
     atlas[middle_ind, ...] = 0
-    for label, crosses in zip(labels[1:], crosses_middle):
-        if not crosses:
-            continue
-        atlas[np.logical_and(atlas == label, half)] = new_label
-        new_label += 1
+    # Split every zone crossing the median plane into two parts.
+    left_atlas = atlas.copy()
+    left_atlas[middle_ind:, ...] = 0
+    right_atlas = atlas.copy()
+    right_atlas[:middle_ind, ...] = 0
 
-    # Duplicate labels for right and left
+    new_label = 0
+    new_atlas = atlas.copy()
+    # Assumes that the background label is zero.
     new_names = [names[0]]
-    for n in names[1:]:
-        new_names.append(n + ', right part')
-    for n in names[1:]:
-        new_names.append(n + ', left part')
+    for label, name in zip(labels[1:], names[1:]):
+        new_label += 1
+        if ((left_atlas == label).sum() == 0 or
+                (right_atlas == label).sum() == 0):
+            new_atlas[atlas == label] = new_label
+            new_names.append(name)
+            continue
+        new_atlas[right_atlas == label] = new_label
+        new_names.append(name + ', left part')
+        new_label += 1
+        new_atlas[left_atlas == label] = new_label
+        new_names.append(name + ', right part')
 
-    atlas_img = new_img_like(atlas_img, atlas, atlas_img.get_affine())
+    atlas_img = new_img_like(atlas_img, new_atlas, atlas_img.get_affine())
     return Bunch(maps=atlas_img, labels=new_names)
 
 
