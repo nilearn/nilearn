@@ -10,7 +10,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
-import nibabel
+import nibabel as nib
 from nilearn.plotting import plot_stat_map
 from nilearn.image import mean_img
 
@@ -20,14 +20,12 @@ from nistats.datasets import fetch_spm_auditory
 
 # fetch spm auditory data
 subject_data = fetch_spm_auditory()
-fmri_img = subject_data.func
+fmri_img = nib.concat_images(subject_data.func)
 
 # construct experimental paradigm
 tr = 7.
 n_scans = 96
-one_duration = 6  # duration in TR
-n_conditions = 2
-epoch_duration = one_duration * tr  # in seconds now
+epoch_duration = 6 * tr  # duration in seconds
 conditions = ['rest', 'active'] * 8
 n_blocks = len(conditions)
 duration = epoch_duration * np.ones(n_blocks)
@@ -36,11 +34,10 @@ paradigm = pd.DataFrame(
     {'onset': onset, 'duration': duration, 'name': conditions})
 
 # construct design matrix
-n_scans = len(fmri_img)
 frame_times = np.linspace(0, (n_scans - 1) * tr, n_scans)
 drift_model = 'Cosine'
 hrf_model = 'Canonical With Derivative'
-period_cut = 2. * 2. * epoch_duration
+period_cut = 4. * epoch_duration
 design_matrix = make_design_matrix(
     frame_times, paradigm, hrf_model=hrf_model, drift_model=drift_model,
     period_cut=period_cut)
@@ -79,7 +76,7 @@ for contrast_id, contrast_val in contrasts.items():
         if not os.path.exists(map_dir):
             os.makedirs(map_dir)
         map_path = os.path.join(map_dir, '%s.nii.gz' % contrast_id)
-        nibabel.save(out_map, map_path)
+        nib.save(out_map, map_path)
         print("\t\t%s map: %s" % (dtype, map_path))
 
     # plot activation map
