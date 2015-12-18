@@ -17,6 +17,7 @@ from warnings import warn
 
 import numpy as np
 import scipy.stats as sps
+import pandas as pd
 
 from nibabel import load, Nifti1Image
 
@@ -288,10 +289,8 @@ class FirstLevelGLM(BaseEstimator, TransformerMixin, CacheMixin):
             Data on which the GLM will be fitted. If this is a list,
             the affine is considered the same for all.
 
-        design_matrices: array or list of arrays
-            Models of the temporal events considered in the analysis.
-            the arrays have shape (n_time_points, n_regressors)
-
+        design_matrices: pandas DataFrame or list of pandas DataFrames,
+            fMRI design matrices
         """
         # First, learn the mask
         if not isinstance(self.mask, NiftiMasker):
@@ -317,7 +316,7 @@ class FirstLevelGLM(BaseEstimator, TransformerMixin, CacheMixin):
                 setattr(self.masker_, param_name, our_param)
 
         # make design_matrices a list of arrays
-        if isinstance(design_matrices, (_basestring, np.ndarray)):
+        if isinstance(design_matrices, (_basestring, pd.DataFrame)):
             design_matrices_ = [design_matrices]
         else:
             design_matrices_ = [X for X in design_matrices]
@@ -325,10 +324,14 @@ class FirstLevelGLM(BaseEstimator, TransformerMixin, CacheMixin):
         design_matrices = []
         for design_matrix in design_matrices_:
             if isinstance(design_matrix, _basestring):
-                loaded = np.load(design_matrix)
-                design_matrices.append(loaded[loaded.files[0]])
+                loaded = pd.read_csv(design_matrix, index_col=0)
+                design_matrices.append(loaded.values)
+            elif isinstance(design_matrix, pd.DataFrame):
+                design_matrices.append(design_matrix.values)
             else:
-                design_matrices.append(design_matrix)
+                raise TypeError(
+                    'Design matrix can only be a pandas DataFrames or a'
+                    'string. A %s was provided' % type(design_matrix))
 
         # make imgs a list of Nifti1Images
         if isinstance(imgs, (Nifti1Image, _basestring)):

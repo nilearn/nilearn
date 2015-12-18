@@ -9,7 +9,7 @@ not whether it is exact.
 
 import numpy as np
 import os
-from pandas import DataFrame
+import pandas  as pd
 from ..experimental_paradigm import check_paradigm, paradigm_from_csv
 from nose.tools import assert_true
 
@@ -17,7 +17,7 @@ from nose.tools import assert_true
 def basic_paradigm():
     conditions = ['c0', 'c0', 'c0', 'c1', 'c1', 'c1', 'c2', 'c2', 'c2']
     onsets = [30, 70, 100, 10, 30, 90, 30, 40, 60]
-    paradigm = DataFrame({'name': conditions, 'onset': onsets})
+    paradigm = pd.DataFrame({'name': conditions, 'onset': onsets})
     return paradigm
 
 
@@ -26,7 +26,7 @@ def modulated_block_paradigm():
     onsets = [30, 70, 100, 10, 30, 90, 30, 40, 60]
     duration = 5 + 5 * np.random.rand(len(onsets))
     values = np.random.rand(len(onsets))
-    paradigm = DataFrame({'name': conditions,
+    paradigm = pd.DataFrame({'name': conditions,
                           'onset': onsets,
                           'duration': duration,
                           'modulation': values})
@@ -37,7 +37,7 @@ def modulated_event_paradigm():
     conditions = ['c0', 'c0', 'c0', 'c1', 'c1', 'c1', 'c2', 'c2', 'c2']
     onsets = [30, 70, 100, 10, 30, 90, 30, 40, 60]
     values = np.random.rand(len(onsets))
-    paradigm = DataFrame({'name': conditions,
+    paradigm = pd.DataFrame({'name': conditions,
                           'onset': onsets,
                           'amplitude': values})
     return paradigm
@@ -47,7 +47,7 @@ def block_paradigm():
     conditions = ['c0', 'c0', 'c0', 'c1', 'c1', 'c1', 'c2', 'c2', 'c2']
     onsets = [30, 70, 100, 10, 30, 90, 30, 40, 60]
     duration = 5 * np.ones(9)
-    paradigm = DataFrame({'name': conditions,
+    paradigm = pd.DataFrame({'name': conditions,
                           'onset': onsets,
                           'duration': duration})
     return paradigm
