@@ -88,6 +88,7 @@ def test_plot_anat():
     finally:
         os.remove(filename)
 
+
 def test_plot_functions():
     img = _generate_img()
 
@@ -787,3 +788,15 @@ def test_get_colorbar_and_data_ranges_masked_array():
     assert_equal(vmax, 2)
     assert_equal(cbar_vmin, None)
     assert_equal(cbar_vmax, None)
+
+
+def test_invalid_in_display_mode_cut_coords_all_plots():
+    img = _generate_img()
+
+    for plot_func in [plot_img, plot_anat, plot_roi, plot_epi,
+                      plot_stat_map, plot_prob_atlas, plot_glass_brain]:
+        assert_raises_regex(ValueError,
+                            "The input given for display_mode='ortho' needs to "
+                            "be a list of 3d world coordinates.",
+                            plot_func,
+                            img, display_mode='ortho', cut_coords=2)
