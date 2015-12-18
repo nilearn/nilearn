@@ -18,7 +18,12 @@ from nilearn import datasets
 
 # fetch power atlas coords
 power = datasets.fetch_atlas_power_2011()
-power_coords = power.rois[['x', 'y', 'z']]
+power_coords = np.vstack((
+    power.rois['x'],
+    power.rois['y'],
+    power.rois['z'],
+)).T
+print(power_coords.shape)
 
 #fetch dataset
 adhd = datasets.fetch_adhd(n_subjects=1)
