@@ -8,6 +8,7 @@ import os.path
 
 import numpy as np
 from nose.tools import assert_true, assert_false, assert_raises
+from sklearn.utils.testing import assert_less
 
 # Use nisignal here to avoid name collisions (using nilearn.signal is
 # not possible)
@@ -216,10 +217,10 @@ def test_detrend():
                                   nisignal._detrend(length_1_signal))
 
     # Mean removal on integers
-    detrended = nisignal._detrend(x.astype(np.int), inplace=True,
+    detrended = nisignal._detrend(x.astype(np.int64), inplace=True,
                                   type="constant")
-    assert_true(abs(detrended.mean(axis=0)).max()
-                < 15. * np.finfo(np.float).eps)
+    assert_less(abs(detrended.mean(axis=0)).max(),
+                20. * np.finfo(np.float).eps)
 
 def test_mean_of_squares():
     """Test _mean_of_squares."""
