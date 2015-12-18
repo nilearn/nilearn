@@ -139,6 +139,11 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None,
                    'Tip: Use np.nan_max() instead of np.max().')
         warnings.warn(nan_msg)
 
+    if isinstance(cut_coords, numbers.Number) and display_mode == 'ortho':
+        raise ValueError("The input given for display_mode='ortho' needs to be "
+                         "a list of 3d world coordinates in (x, y, z). "
+                         "You provided single cut, cut_coords={0}".format(cut_coords))
+
     if img is not False and img is not None:
         img = _utils.check_niimg_3d(img, dtype='auto')
         data = img.get_data()
