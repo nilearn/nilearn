@@ -13,7 +13,7 @@ import warnings
 import numpy as np
 import scipy
 from scipy import signal, stats, linalg
-from sklearn.utils import gen_even_slices
+from sklearn.utils import gen_even_slices, as_float_array
 from distutils.version import LooseVersion
 
 from ._utils.compat import _basestring
@@ -135,8 +135,7 @@ def _detrend(signals, inplace=False, type="linear", n_batches=10):
     If a signal of lenght 1 is given, it is returned unchanged.
 
     """
-    if not inplace:
-        signals = signals.copy()
+    signals = as_float_array(signals, copy=not inplace)
     if signals.shape[0] == 1:
         warnings.warn('Detrending of 3D signal has been requested but '
             'would lead to zero values. Skipping.')

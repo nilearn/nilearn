@@ -215,9 +215,11 @@ def test_detrend():
     np.testing.assert_array_equal(length_1_signal,
                                   nisignal._detrend(length_1_signal))
 
-    # Mean removal only (out-of-place)
+    # Mean removal on integers
     detrended = nisignal._detrend(x.astype(np.int), inplace=True,
                                   type="constant")
+    assert_true(abs(detrended.mean(axis=0)).max()
+                < 15. * np.finfo(np.float).eps)
 
 def test_mean_of_squares():
     """Test _mean_of_squares."""
