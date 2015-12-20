@@ -20,6 +20,9 @@ Extracting times series to build a functional connectome
    * `Varoquaux and Craddock, Learning and comparing functional
      connectomes across subjects, NeuroImage 2013
      <http://www.sciencedirect.com/science/article/pii/S1053811913003340>`_
+   * Eickhoff, Thirion, Varoquaux, and Bzdok, Connectivity-based parcellation:
+     Critique and implications. Human Brain Mapping. 2015.
+     <http://onlinelibrary.wiley.com/doi/10.1002/hbm.22933/abstract>`_
 
 .. _parcellation_time_series:
 

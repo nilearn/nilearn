@@ -18,6 +18,10 @@ regions, we can visualize the matrix as a graph of interaction in a
 brain. To avoid having too dense a graph, we represent only the 20% edges
 with the highest values.
 
+References:
+* Eickhoff, Thirion, Varoquaux, and Bzdok, Connectivity-based parcellation:
+  Critique and implications. Human Brain Mapping. 2015.
+  <http://onlinelibrary.wiley.com/doi/10.1002/hbm.22933/abstract>`_
 """
 ############################################################################
 # Retrieve the atlas and the data
