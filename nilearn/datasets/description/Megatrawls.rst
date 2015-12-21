@@ -3,27 +3,32 @@ MegaTrawls Network Matrices HCP
 
 Notes
 -----
-Network Matrices data of two types, Full correlation and Partial correlation
-matrices estimated by a timeseries signals extracted from a nodes of Group ICA
-parcellations. In total, 461 functional connectivity datasets were used.
+Contains network matrices data of two types, full correlation and partial
+correlation which were estimated using each subject specific timeseries
+signals extracted from group of ICA nodes or parcellations. In total,
+461 functional connectivity datasets were used to obtain these matrices
+and is part of HCP Megatrawls release.
 
-Data is available for all dimensionalities (d=25, d=50, d=100, d=200, d=300)
-of Group ICA and for all timeseries methods multiple spatial regression and
-eigen regression (ts2 and ts3).
+The number of nodes available for download are 25, 50, 100, 200, 300
+with combination of two variants of timeseries extraction methods,
+multiple spatial regression (ts2) and eigen regression (ts3).
 
 These matrices can be used to predict the relationships between subjects
-functional connectivity and subjects behavioural measures.
+functional connectivity datasets and their behavioural measures. Both can be
+downloaded from HCP connectome website under conditions. See disclaimer below.
 
 
 Content
 -------
-    :'Correlation': an array of matrices containing full correlation values
-    :'Partialcorrelation': an array of matrices containing partial correlation values
+    :'dimensions': contains given input in dimensions used in fetching data.
+    :'timeseries': contains given specific timeseries method used in fetching data.
+    :'matrices': contains given specific type of matrices name.
+    :'correlation_matrices': contains correlation network matrices data.
 
 
 References
 ----------
-For more information about technical details about predicting the measures:
+For more technical details about predicting the measures, refer to:
 Stephen Smith et al, HCP beta-release of the Functional Connectivity MegaTrawl.
 April 2015 "HCP500-MegaTrawl" release.
 https://db.humanconnectome.org/megatrawl/

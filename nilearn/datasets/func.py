@@ -4,7 +4,6 @@ Downloading NeuroImaging datasets: functional datasets (task + resting-state)
 import warnings
 import os
 import re
-import itertools
 import numpy as np
 import nibabel
 from sklearn.datasets.base import Bunch
@@ -14,7 +13,6 @@ from .utils import (_get_dataset_dir, _fetch_files, _get_dataset_descr,
 
 from .._utils.compat import BytesIO, _basestring, _urllib
 from .._utils.numpy_conversions import csv_to_array
-from .._utils.param_validation import check_parameters_megatrawls_datasets
 
 
 def fetch_haxby_simple(data_dir=None, url=None, resume=True, verbose=1):
@@ -1284,8 +1282,9 @@ def fetch_mixed_gambles(n_subjects=1, data_dir=None, url=None, resume=True,
     return data
 
 
-def fetch_megatrawls_netmats(data_dir=None, dimensionality=None, timeseries=None,
-                             matrices=None, resume=True, verbose=1):
+def fetch_megatrawls_netmats(dimensionality=100, timeseries='eigen_regression',
+                             matrices='partial_correlation', data_dir=None,
+                             resume=True, verbose=1):
     """Downloads and returns Network Matrices data from MegaTrawls release in HCP.
 
     This data can be used to predict relationships between imaging data and
@@ -1297,33 +1296,27 @@ def fetch_megatrawls_netmats(data_dir=None, dimensionality=None, timeseries=None
 
     Parameters
     ----------
+    dimensionality: int, optional
+        Valid inputs are 25, 50, 100, 200, 300. By default, network matrices
+        estimated using Group ICA brain parcellations of 100 components/dimensions
+        will be returned.
+
+    timeseries: str, optional
+        Valid inputs are 'multiple_spatial_regression' or 'eigen_regression'. By
+        default 'eigen_regression', matrices estimated using first principal
+        eigen component timeseries signals extracted from each subject data
+        parcellations will be returned. Otherwise, 'multiple_spatial_regression'
+        matrices estimated using spatial regressor based timeseries signals
+        extracted from each subject data parcellations will be returned.
+
+    matrices: str, optional
+        Valid inputs are 'full_correlation' or 'partial_correlation'. By default,
+        partial correlation matrices will be returned otherwise if selected
+        full correlation matrices will be returned.
+
     data_dir: str, default is None, optional
         Path of the data directory. Used to force data storage in a specified
         location.
-
-    dimensionality: list of int in [25, 50, 100, 200, 300], optional
-        By default, network matrices data estimated from brain parcellations
-        of all dimensionalities are returned each in a separate dimensional
-        array (n, n). If set to specific dimension, then data of its
-        particular dimension will be returned. For example, if set as
-        [25] only data corresponding to dimensions 25 of array (25, 25)
-        in size will be returned.
-
-    timeseries: list of str in ['multiple_spatial_regression', 'eigen_regression']
-        By default, network matrices data extimated using both methods will be
-        returned each in a separate array. If ['multiple_spatial_regression'],
-        then correlation matrices estimated using spatial regressor based
-        extraction of subject specific timeseries signals will be returned.
-        If ['eigen_regression'], then correlation matrices estimated using
-        first principal eigen component based extraction of subject specific
-        timeseries signals will be returned. For full technical details
-        about each method, refer to [3] [4] [5].
-
-    matrices: list of str in ['correlation', 'partial_correlation'], optional
-        By default, matrices of both types will be returned. If ['correlation'],
-        then only full correlation matrices will be returned otherwise if
-        set as ['partial_correlation'], only partial correlation matrices
-        will be returned.
 
     resume: bool, default is True
         This parameter is required if a partially downloaded file is needed
@@ -1337,24 +1330,18 @@ def fetch_megatrawls_netmats(data_dir=None, dimensionality=None, timeseries=None
     Returns
     -------
     data: Bunch
-        Dictionary-like object, the attributes are :
+        dictionary-like object, the attributes are :
 
-        - 'correlation': list of arrays
-          contains full correlation matrices.
-        - 'partial_correlation': list of arrays
-          contains partial correlation matrices.
-        - 'dimensions_correlation': array
-          consists of given input in dimensions used in fetching its full
-          correlation matrices.
-        - 'dimensions_partial': array
-          consists of given input in dimensions used in fetching its partial
-          correlation matrices.
-        - 'timeseries_correlation': array
-          consists of given input in timeseries methods used in fetching its
-          full correlation matrices.
-        - 'timeseries_partial': array
-          consists of given input in timeseries methods used in fetching its
-          partial correlation matrices.
+        - 'dimensions': int, consists of given input in dimensions.
+
+        - 'timeseries': str, consists of given input in timeseries method.
+
+        - 'matrices': str, consists of given type of specific matrices.
+
+        - 'correlation_matrices': ndarray, consists of correlation matrices
+          based on given type of matrices. Array size will depend on given
+          dimensions (n, n).
+        - 'description': data description
 
     References
     ----------
@@ -1376,95 +1363,46 @@ def fetch_megatrawls_netmats(data_dir=None, dimensionality=None, timeseries=None
         cerebellum defined by resting state functional connectivity.
         Cerebral Cortex, 2009.
 
-    Disclaimer
-    ----------
-    IMPORTANT: This is open access data. You must agree to Terms and conditions
-    of using this data before using it, available at
-    http://humanconnectome.org/data/data-use-terms/open-access.html.
-    Open Access Data (all imaging data and most of the behavioral data) is
-    available to those who register an account at ConnectomeDB and agree to the
-    Open Access Data Use Terms. This includes agreement to comply with
-    institutional rules and regulations. This means you may need the approval
-    of your IRB or Ethics Committee to use the data. The released HCP data are
-    not considered de-identified, since certain combinations of HCP Restricted
-    Data (available through a separate process) might allow identification of
-    individuals. Different national, state and local laws may apply and be
-    interpreted differently, so it is important that you consult with your IRB
-    or Ethics Committee before beginning your research. If needed and upon
-    request, the HCP will provide a certificate stating that you have accepted
-    the HCP Open Access Data Use Terms. Please note that everyone who works with
-    HCP open access data must review and agree to these terms, including those
-    who are accessing shared copies of this data. If you are sharing HCP Open
-    Access data, please advise your co-researchers that they must register with
-    ConnectomeDB and agree to these terms.
-    Register and sign the Open Access Data Use Terms at
-    ConnectomeDB: https://db.humanconnectome.org/
+    Note: See description for terms & conditions on data usage.
+
     """
     url = "http://www.nitrc.org/frs/download.php/8037/Megatrawls.tgz"
     opts = {'uncompress': True}
 
+    error_message = "Invalid {0} input is provided: {1}, choose one of them {2}"
     # standard dataset terms
     dimensionalities = [25, 50, 100, 200, 300]
+    if dimensionality not in dimensionalities:
+        raise ValueError(error_message.format('dimensionality', dimensionality,
+                                              dimensionalities))
     timeseries_methods = ['multiple_spatial_regression', 'eigen_regression']
-    output_matrices_names = ['correlation', 'partial_correlation']
-
-    if dimensionality is not None:
-        dimensionality = check_parameters_megatrawls_datasets(
-            dimensionality, dimensionalities, 'dimensionality')
-    else:
-        dimensionality = dimensionalities
-
-    if timeseries is not None:
-        timeseries = check_parameters_megatrawls_datasets(
-            timeseries, timeseries_methods, 'timeseries')
-    else:
-        timeseries = timeseries_methods
-
-    if matrices is not None:
-        matrices = check_parameters_megatrawls_datasets(
-            matrices, output_matrices_names, 'matrices')
-    else:
-        matrices = output_matrices_names
+    if timeseries not in timeseries_methods:
+        raise ValueError(error_message.format('timeseries', timeseries,
+                                              timeseries_methods))
+    output_matrices_names = ['full_correlation', 'partial_correlation']
+    if matrices not in output_matrices_names:
+        raise ValueError(error_message.format('matrices', matrices,
+                                              output_matrices_names))
 
     dataset_name = 'Megatrawls'
     data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir, verbose=verbose)
     description = _get_dataset_descr(dataset_name)
 
-    # Generate all combinations
-    dims, tseries, mats = list(zip(*list(itertools.product(dimensionality, timeseries, matrices))))
-    files = []
-    ids_correlation = []
-    ids_partial = []
     timeseries_map = dict(multiple_spatial_regression='ts2', eigen_regression='ts3')
-    matrices_map = dict(correlation='Znet1.txt', partial_correlation='Znet2.txt')
-    for index, (dim, tserie, mat) in enumerate(zip(dims, tseries, mats)):
-        if mat == 'correlation':
-            ids_correlation.append(index)
-        elif mat == 'partial_correlation':
-            ids_partial.append(index)
-        filepath = os.path.join(
-            '3T_Q1-Q6related468_MSMsulc_d%d_%s' % (dim, timeseries_map[tserie]), matrices_map[mat])
-        files.append((filepath, url, opts))
+    matrices_map = dict(full_correlation='Znet1.txt', partial_correlation='Znet2.txt')
+    filepath = [(os.path.join(
+        '3T_Q1-Q6related468_MSMsulc_d%d_%s' % (dimensionality, timeseries_map[timeseries]),
+        matrices_map[matrices]), url, opts)]
 
     # Fetch all the files
-    files = _fetch_files(data_dir, files, resume=resume, verbose=verbose)
+    files = _fetch_files(data_dir, filepath, resume=resume, verbose=verbose)
 
     # Load the files into arrays
-    correlation = [csv_to_array(files[id_c]) for id_c in ids_correlation]
-    partial = [csv_to_array(files[id_p]) for id_p in ids_partial]
-    # Taking the account of all the given dimensions & timeseries
-    # methods to give the end users to identify themselves about the
-    # matrices which are fetched.
-    dimensions_correlation = [dims[id_c] for id_c in ids_correlation]
-    dimensions_partial = [dims[id_p] for id_p in ids_partial]
-    timeseries_correlation = [tseries[id_c] for id_c in ids_correlation]
-    timeseries_partial = [tseries[id_p] for id_p in ids_partial]
+    correlation_matrices = csv_to_array(files[0])
 
     return Bunch(
-        correlation=correlation,
-        partial_correlation=partial,
-        dimensions_correlation=dimensions_correlation,
-        dimensions_partial=dimensions_partial,
-        timeseries_correlation=timeseries_correlation,
-        timeseries_partial=timeseries_partial,
+        dimensions=dimensionality,
+        timeseries=timeseries,
+        matrices=matrices,
+        correlation_matrices=correlation_matrices,
         description=description)
