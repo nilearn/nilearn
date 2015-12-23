@@ -2049,5 +2049,8 @@ def fetch_neurovault(max_images=np.inf,
         print('Done.')
 
     # Flatten the struct
-    return Bunch(func_files=func_files, images=images,
-                 collections=collects, terms=terms)
+    bunch = Bunch(func_files=func_files, images=images,
+                  collections=collects)
+    if fetch_terms:
+        bunch['terms'] = terms
+    return bunch
