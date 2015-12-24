@@ -20,7 +20,7 @@ from sklearn.feature_extraction import DictVectorizer
 from .utils import (_get_dataset_dir, _fetch_files, _get_dataset_descr,
                     _read_md5_sum_file, _tree, _filter_columns)
 from .._utils import check_niimg
-from .._utils.compat import BytesIO, _basestring, _urllib
+from .._utils.compat import BytesIO, _basestring, _urllib, _http
 from .._utils.numpy_conversions import csv_to_array
 
 
@@ -1657,7 +1657,6 @@ def _get_nv_collections_json(url, data_dir, overwrite=False, verbose=2):
     verbose: int, optional
         Defines the level of verbosity of the output.
     """
-    import httplib
     try:
         # Online
         return _get_nv_json(url, overwrite=overwrite, verbose=verbose)
@@ -1668,7 +1667,9 @@ def _get_nv_collections_json(url, data_dir, overwrite=False, verbose=2):
             raise
         print("Working offline...")
 
-    except (httplib.BadStatusLine):
+    except (_http.client.BadStatusLine):
+        if overwrite:
+            raise
         print("Working offline...")
 
     # Sort collections, so same order is achieved online & offline
