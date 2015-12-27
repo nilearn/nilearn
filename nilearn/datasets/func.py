@@ -1763,7 +1763,7 @@ def _fetch_nv_terms(image_ids, data_dir=None, verbose=2,
             terms.append({})
         else:
             data = data['values']
-            terms.append(data)
+            terms.append(data if data is not None else {})
     if verbose:
         sys.stderr.write(" done.\n")
 
