@@ -1636,7 +1636,8 @@ def _get_nv_json(url, local_file=None, overwrite=False, verbose=2):
     return meta
 
 
-def _get_nv_collections_json(url, data_dir, overwrite=False, verbose=2):
+def _get_nv_collections_json(url, data_dir, overwrite=False, query_server=True,
+                             verbose=2):
     """Get remote list of collections (don't cache locally).
 
     If offline, aggregate collections metadata from directories.
@@ -1654,12 +1655,15 @@ def _get_nv_collections_json(url, data_dir, overwrite=False, verbose=2):
         If True, will re-download the data, even if it has been
         previously downloaded.
 
+    query_server: bool, optional (default: True)
+        if False, then only cached data is used.
+
     verbose: int, optional
         Defines the level of verbosity of the output.
     """
     try:
-        # Online
-        return _get_nv_json(url, overwrite=overwrite, verbose=verbose)
+        if query_server:  # Fall through to cached copies below, if not.
+            return _get_nv_json(url, overwrite=overwrite, verbose=verbose)
     except (_urllib.error.URLError, _urllib.error.HTTPError) as ue:
         if ue.reason[0] != 8:  # connection error
             raise
@@ -1773,6 +1777,7 @@ def _fetch_nv_terms(image_ids, data_dir=None, verbose=2,
 
 
 def fetch_neurovault(max_images=np.inf,
+                     query_server=True,
                      fetch_terms=False,
                      exclude_unpublished=False,
                      exclude_known_bad_images=True,
@@ -1801,6 +1806,9 @@ def fetch_neurovault(max_images=np.inf,
     max_images: int, optional (default np.inf)
         Maximum # of images to download from the database.
         Useful for testing out filters and analyses if downloads are slow.
+
+    query_server: bool, optional (default: True)
+        if False, then only cached data is used.
 
     fetch_terms: bool
         Whether to fetch terms related to each image from
@@ -1967,6 +1975,7 @@ def fetch_neurovault(max_images=np.inf,
         coll_meta = _get_nv_collections_json(coll_meta['next'],
                                              data_dir=data_dir,
                                              overwrite=overwrite,
+                                             query_server=query_server,
                                              verbose=verbose)
         good_coll = _filter_nv_results(results=coll_meta['results'],
                                        filts=collection_filters)
