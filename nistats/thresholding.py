@@ -65,11 +65,13 @@ def map_threshold(stat_img, mask_img, threshold, height_control='fpr',
         z_th = threshold
     stats *= (stats > z_th)
 
+    # embed it back to 3D grid
     stat_map = masker.inverse_transform(stats).get_data()
 
     # Extract connected components above threshold
     label_map, n_labels = label(stat_map > z_th)
-    labels = label_map[(masker.mask_img.get_data() > 0)]
+    labels = label_map[masker.mask_img_.get_data() > 0]
+
     for label_ in range(1, n_labels + 1):
         if np.sum(labels == label_) < cluster_threshold:
             stats[labels == label_] = 0
