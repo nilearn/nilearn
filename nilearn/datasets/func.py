@@ -24,7 +24,8 @@ from .._utils.compat import BytesIO, _basestring, _urllib, _http
 from .._utils.numpy_conversions import csv_to_array
 
 
-def fetch_haxby_simple(data_dir=None, url=None, resume=True, verbose=1):
+def fetch_haxby_simple(data_dir=None, url=None, resume=True,
+                       query_server=True, verbose=1):
     """Download and load a simple example haxby dataset.
 
     Parameters
@@ -32,6 +33,15 @@ def fetch_haxby_simple(data_dir=None, url=None, resume=True, verbose=1):
     data_dir: string, optional
         Path of the data directory. Used to force data storage in a specified
         location. Default: None
+
+    resume: bool
+        Whether to resume download of a partly-downloaded file.
+
+    query_server: bool, optional (default: True)
+        if False, then only cached data is used.
+
+    verbose: int
+        Verbosity level (0 means no message).
 
     Returns
     -------
@@ -78,7 +88,8 @@ def fetch_haxby_simple(data_dir=None, url=None, resume=True, verbose=1):
     dataset_name = 'haxby2001_simple'
     data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
                                 verbose=verbose)
-    files = _fetch_files(data_dir, files, resume=resume, verbose=verbose)
+    files = _fetch_files(data_dir, files, resume=resume,
+                         query_server=query_server, verbose=verbose)
 
     # There is a common file for the two versions of Haxby
     fdescr = _get_dataset_descr('haxby2001')
@@ -89,7 +100,7 @@ def fetch_haxby_simple(data_dir=None, url=None, resume=True, verbose=1):
 
 
 def fetch_haxby(data_dir=None, n_subjects=1, fetch_stimuli=False,
-                url=None, resume=True, verbose=1):
+                url=None, resume=True, query_server=True, verbose=1):
     """Download and loads complete haxby dataset
 
     Parameters
@@ -104,6 +115,15 @@ def fetch_haxby(data_dir=None, n_subjects=1, fetch_stimuli=False,
     fetch_stimuli: boolean, optional
         Indicate if stimuli images must be downloaded. They will be presented
         as a dictionnary of categories.
+
+    resume: bool
+        Whether to resume download of a partly-downloaded file.
+
+    query_server: bool, optional (default: True)
+        if False, then only cached data is used.
+
+    verbose: int
+        Verbosity level (0 means no message).
 
     Returns
     -------
@@ -154,12 +174,14 @@ def fetch_haxby(data_dir=None, n_subjects=1, fetch_stimuli=False,
     # Get the mask
     url_mask = 'https://www.nitrc.org/frs/download.php/7868/mask.nii.gz'
     mask = _fetch_files(data_dir, [('mask.nii.gz', url_mask, {})],
+                        resume=resume, query_server=query_server,
                         verbose=verbose)[0]
 
     # Dataset files
     if url is None:
         url = 'http://data.pymvpa.org/datasets/haxby2001/'
     md5sums = _fetch_files(data_dir, [('MD5SUMS', url + 'MD5SUMS', {})],
+                           resume=resume, query_server=query_server,
                            verbose=verbose)[0]
     md5sums = _read_md5_sum_file(md5sums)
 
@@ -180,7 +202,8 @@ def fetch_haxby(data_dir=None, n_subjects=1, fetch_stimuli=False,
             if not (sub_file == 'anat.nii.gz' and i == 6)  # no anat for sub. 6
     ]
 
-    files = _fetch_files(data_dir, files, resume=resume, verbose=verbose)
+    files = _fetch_files(data_dir, files, resume=resume,
+                         query_server=query_server, verbose=verbose)
 
     if n_subjects == 6:
         files.append(None)  # None value because subject 6 has no anat
@@ -191,7 +214,7 @@ def fetch_haxby(data_dir=None, n_subjects=1, fetch_stimuli=False,
                           url + 'stimuli-2010.01.14.tar.gz',
                           {'uncompress': True})]
         readme = _fetch_files(data_dir, stimuli_files, resume=resume,
-                              verbose=verbose)[0]
+                              query_server=query_server, verbose=verbose)[0]
         kwargs['stimuli'] = _tree(os.path.dirname(readme), pattern='*.jpg',
                                   dictionary=True)
 
@@ -213,7 +236,7 @@ def fetch_haxby(data_dir=None, n_subjects=1, fetch_stimuli=False,
 
 
 def fetch_nyu_rest(n_subjects=None, sessions=[1], data_dir=None, resume=True,
-                   verbose=1):
+                   query_server=True, verbose=1):
     """Download and loads the NYU resting-state test-retest dataset.
 
     Parameters
@@ -228,6 +251,15 @@ def fetch_nyu_rest(n_subjects=None, sessions=[1], data_dir=None, resume=True,
     data_dir: string, optional
         Path of the data directory. Used to force data storage in a specified
         location. Default: None
+
+    resume: bool
+        Whether to resume download of a partly-downloaded file.
+
+    query_server: bool, optional (default: True)
+        if False, then only cached data is used.
+
+    verbose: int
+        Verbosity level (0 means no message).
 
     Returns
     -------
@@ -388,11 +420,11 @@ def fetch_nyu_rest(n_subjects=None, sessions=[1], data_dir=None, resume=True,
     data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
                                 verbose=verbose)
     anat_anon = _fetch_files(data_dir, anat_anon, resume=resume,
-                             verbose=verbose)
+                             query_server=query_server, verbose=verbose)
     anat_skull = _fetch_files(data_dir, anat_skull, resume=resume,
-                              verbose=verbose)
+                              query_server=query_server, verbose=verbose)
     func = _fetch_files(data_dir, func, resume=resume,
-                        verbose=verbose)
+                        query_server=query_server, verbose=verbose)
 
     fdescr = _get_dataset_descr(dataset_name)
 
@@ -400,8 +432,8 @@ def fetch_nyu_rest(n_subjects=None, sessions=[1], data_dir=None, resume=True,
                  session=session, description=fdescr)
 
 
-def fetch_adhd(n_subjects=30, data_dir=None, url=None, resume=True,
-               verbose=1):
+def fetch_adhd(n_subjects=None, data_dir=None, url=None, resume=True,
+               query_server=True, verbose=1):
     """Download and load the ADHD resting-state dataset.
 
     Parameters
@@ -418,6 +450,15 @@ def fetch_adhd(n_subjects=30, data_dir=None, url=None, resume=True,
     url: string, optional
         Override download URL. Used for test only (or if you setup a mirror of
         the data). Default: None
+
+    resume: bool
+        Whether to resume download of a partly-downloaded file.
+
+    query_server: bool, optional (default: True)
+        if False, then only cached data is used.
+
+    verbose: int
+        Verbosity level (0 means no message).
 
     Returns
     -------
@@ -468,7 +509,7 @@ def fetch_adhd(n_subjects=30, data_dir=None, url=None, resume=True,
         url + '7781/adhd40_metadata.tgz', opts)
 
     phenotypic = _fetch_files(data_dir, [phenotypic], resume=resume,
-                              verbose=verbose)[0]
+                              query_server=query_server, verbose=verbose)[0]
 
     # Load the csv file
     phenotypic = np.genfromtxt(phenotypic, names=True, delimiter=',',
@@ -489,18 +530,39 @@ def fetch_adhd(n_subjects=30, data_dir=None, url=None, resume=True,
 
     functionals = _fetch_files(
         data_dir, zip(functionals, archives, (opts,) * n_subjects),
-        resume=resume, verbose=verbose)
+        resume=resume, query_server=query_server, verbose=verbose)
 
     confounds = _fetch_files(
         data_dir, zip(confounds, archives, (opts,) * n_subjects),
-        resume=resume, verbose=verbose)
+        resume=resume, query_server=query_server, verbose=verbose)
 
     return Bunch(func=functionals, confounds=confounds,
                  phenotypic=phenotypic, description=fdescr)
 
 
-def fetch_miyawaki2008(data_dir=None, url=None, resume=True, verbose=1):
+def fetch_miyawaki2008(data_dir=None, url=None, resume=True,
+                       query_server=True, verbose=1):
     """Download and loads Miyawaki et al. 2008 dataset (153MB)
+
+    Parameters
+    ----------
+
+    data_dir: string, optional
+        Path of the data directory. Used to force data storage in a specified
+        location. Default: None
+
+    url: string, optional
+        Override download URL. Used for test only (or if you setup a mirror of
+        the data).
+
+    resume: bool
+        Whether to resume download of a partly-downloaded file.
+
+    query_server: bool, optional (default: True)
+        if False, then only cached data is used.
+
+    verbose: int
+        Verbosity level (0 means no message).
 
     Returns
     -------
@@ -617,7 +679,8 @@ def fetch_miyawaki2008(data_dir=None, url=None, resume=True, verbose=1):
     dataset_name = 'miyawaki2008'
     data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
                                 verbose=verbose)
-    files = _fetch_files(data_dir, file_names, resume=resume, verbose=verbose)
+    files = _fetch_files(data_dir, file_names, resume=resume,
+                         query_server=query_server, verbose=verbose)
 
     # Fetch the background image
     bg_img = _fetch_files(data_dir, [('bg.nii.gz', url, opts)], resume=resume,
@@ -637,7 +700,8 @@ def fetch_miyawaki2008(data_dir=None, url=None, resume=True, verbose=1):
 
 def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
                               get_masks=False, get_anats=False,
-                              data_dir=None, url=None, resume=True, verbose=1):
+                              data_dir=None, url=None, resume=True,
+                              query_server=True, verbose=1):
     """Download and load Brainomics Localizer dataset (94 subjects).
 
     "The Functional Localizer is a simple and fast acquisition
@@ -752,6 +816,9 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
 
     resume: bool
         Whether to resume download of a partly-downloaded file.
+
+    query_server: bool, optional (default: True)
+        if False, then only cached data is used.
 
     verbose: int
         Verbosity level (0 means no message).
@@ -943,7 +1010,8 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
     data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
                                 verbose=verbose)
     fdescr = _get_dataset_descr(dataset_name)
-    files = _fetch_files(data_dir, filenames, verbose=verbose)
+    files = _fetch_files(data_dir, filenames, resume=resume,
+                         query_server=query_server, verbose=verbose)
     anats = None
     masks = None
     tmaps = None
@@ -972,6 +1040,7 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
 
 
 def fetch_localizer_calculation_task(n_subjects=None, data_dir=None, url=None,
+                                     resume=True, query_server=True,
                                      verbose=1):
     """Fetch calculation task contrast maps from the localizer.
 
@@ -993,8 +1062,14 @@ def fetch_localizer_calculation_task(n_subjects=None, data_dir=None, url=None,
         Override download URL. Used for test only (or if you setup a mirror of
         the data).
 
-    verbose: int, optional
-        verbosity level (0 means no message).
+    resume: bool
+        Whether to resume download of a partly-downloaded file.
+
+    query_server: bool, optional (default: True)
+        if False, then only cached data is used.
+
+    verbose: int
+        Verbosity level (0 means no message).
 
     Returns
     -------
@@ -1007,7 +1082,8 @@ def fetch_localizer_calculation_task(n_subjects=None, data_dir=None, url=None,
                                      n_subjects=n_subjects,
                                      get_tmaps=False, get_masks=False,
                                      get_anats=False, data_dir=data_dir,
-                                     url=url, resume=True, verbose=verbose)
+                                     url=url, resume=resume, verbose=verbose,
+                                     query_server=query_server)
     data.pop('tmaps')
     data.pop('masks')
     data.pop('anats')
@@ -1016,8 +1092,9 @@ def fetch_localizer_calculation_task(n_subjects=None, data_dir=None, url=None,
 
 def fetch_abide_pcp(data_dir=None, n_subjects=None, pipeline='cpac',
                     band_pass_filtering=False, global_signal_regression=False,
-                    derivatives=['func_preproc'],
-                    quality_checked=True, url=None, verbose=1, **kwargs):
+                    derivatives=['func_preproc'], quality_checked=True,
+                    url=None, resume=True, query_server=True, verbose=1,
+                    **kwargs):
     """ Fetch ABIDE dataset
 
     Fetch the Autism Brain Imaging Data Exchange (ABIDE) dataset wrt criteria
@@ -1034,6 +1111,15 @@ def fetch_abide_pcp(data_dir=None, n_subjects=None, pipeline='cpac',
     n_subjects: int, optional
         The number of subjects to load. If None is given,
         all 94 subjects are used.
+
+    resume: bool
+        Whether to resume download of a partly-downloaded file.
+
+    query_server: bool, optional (default: True)
+        if False, then only cached data is used.
+
+    verbose: int
+        Verbosity level (0 means no message).
 
     pipeline: string, optional
         Possible pipelines are "ccs", "cpac", "dparsf" and "niak"
@@ -1138,6 +1224,7 @@ def fetch_abide_pcp(data_dir=None, n_subjects=None, pipeline='cpac',
     # Fetch the phenotypic file and load it
     csv = 'Phenotypic_V1_0b_preprocessed1.csv'
     path_csv = _fetch_files(data_dir, [(csv, url + '/' + csv, {})],
+                            resume=resume, query_server=query_server,
                             verbose=verbose)[0]
 
     # Note: the phenotypic file contains string that contains comma which mess
@@ -1178,10 +1265,11 @@ def fetch_abide_pcp(data_dir=None, n_subjects=None, pipeline='cpac',
     results['phenotypic'] = pheno
     for derivative in derivatives:
         ext = '.1D' if derivative.startswith('rois') else '.nii.gz'
-        files = [(file_id + '_' + derivative + ext,
-                  '/'.join([url, derivative, file_id + '_' + derivative + ext]),
-                  {}) for file_id in file_ids]
-        files = _fetch_files(data_dir, files, verbose=verbose)
+        files = [(fid + '_' + derivative + ext,
+                  '/'.join([url, derivative, fid + '_' + derivative + ext]),
+                  {}) for fid in file_ids]
+        files = _fetch_files(data_dir, files, resume=resume,
+                             query_server=query_server, verbose=verbose)
         # Load derivatives if needed
         if ext == '.1D':
             files = [np.loadtxt(f) for f in files]
@@ -1234,7 +1322,7 @@ def _load_mixed_gambles(zmap_imgs):
 
 
 def fetch_mixed_gambles(n_subjects=1, data_dir=None, url=None, resume=True,
-                        return_raw_data=False, verbose=0):
+                        return_raw_data=False, query_server=True, verbose=0):
     """Fetch Jimura "mixed gambles" dataset.
 
     Parameters
@@ -1251,8 +1339,11 @@ def fetch_mixed_gambles(n_subjects=1, data_dir=None, url=None, resume=True,
         Override download URL. Used for test only (or if you setup a mirror of
         the data).
 
-    resume: bool, optional (default True)
-        If true, try resuming download if possible.
+    resume: bool
+        Whether to resume download of a partly-downloaded file.
+
+    query_server: bool, optional (default: True)
+        if False, then only cached data is used.
 
     verbose: int, optional (default 0)
         Defines the level of verbosity of the output.
@@ -1590,7 +1681,8 @@ def _build_nv_url(base_url, filts=None):
     return url
 
 
-def _get_nv_json(url, local_file=None, overwrite=False, verbose=2):
+def _get_nv_json(url, local_file=None, overwrite=False,
+                 verbose=2):
     """Download NeuroVault json metadata; load/save locally if local_file.
 
     Parameters
@@ -1627,7 +1719,7 @@ def _get_nv_json(url, local_file=None, overwrite=False, verbose=2):
 
     fil = _fetch_files(data_dir=data_dir,
                        files=[(filename, url, opts)],
-                       verbose=verbose)  # necessary to get proper url print
+                       verbose=verbose)  # necessary for proper url print
     with io.open(fil[0], 'r', encoding='utf8') as fp:
         meta = json.load(fp)
 
@@ -1714,7 +1806,6 @@ def _filter_nv_results(results, filts):
     return results
 
 
-
 def _fetch_nv_terms(image_ids, data_dir=None, verbose=2, query_server=True,
                     url='http://neurosynth.org/api/v2/decode/'):
     """ Grab terms for each NeuroVault image, decoded with neurosynth.
@@ -1724,13 +1815,24 @@ def _fetch_nv_terms(image_ids, data_dir=None, verbose=2, query_server=True,
     image_ids: list
         List of neurovault image IDs (int).
 
-    data_dir: str
+    data_dir: string, optional (default None)
+        Path of the data directory. Used to force data storage in a specified
+        location. Default: None.
 
-    verbose: int
+    verbose: int, optional (default 0)
+        Defines the level of verbosity of the output.
 
-    url: str
+    url: string, optional (default None)
+        Override download URL. Used for test only (or if you setup a mirror of
+        the data).
 
-    Outputs:
+    query_server: bool, optional (default: True)
+        if False, then only cached data is used.
+
+    Outputs
+    -------
+
+    Dict, key: term, value: score for each image ID.
 
     """
 
@@ -1765,6 +1867,9 @@ def _fetch_nv_terms(image_ids, data_dir=None, verbose=2, query_server=True,
             with io.open(elevations, 'r', encoding='utf8') as fp:
                 data = json.load(fp)['data']
         except Exception as e:
+            if verbose >= 2:
+                print("Exception downloading term for image %s: %s" % (
+                    image_id, e))
             if os.path.exists(elevations):
                 os.remove(elevations)
             terms.append({})
@@ -1775,9 +1880,9 @@ def _fetch_nv_terms(image_ids, data_dir=None, verbose=2, query_server=True,
         sys.stderr.write(" done.\n")
 
     # Transform and filter the terms.
-    X = vectorizer.fit_transform(terms).toarray()
+    X = vectorizer.fit_transform(terms).toarray()  # noqa
     all_terms = dict([(name, X[:, idx])
-                 for name, idx in vectorizer.vocabulary_.items()])
+                      for name, idx in vectorizer.vocabulary_.items()])
     good_terms = dict([(t, v) for t, v in all_terms.items()
                        if np.sum(v[v > 0]) > 0.])
     return good_terms
