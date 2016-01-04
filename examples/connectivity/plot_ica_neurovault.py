@@ -23,8 +23,7 @@ from scipy import stats
 from sklearn.decomposition import FastICA
 
 from nilearn import datasets
-from nilearn.datasets.utils import _fetch_files, _get_dataset_dir
-from nilearn.image import new_img_like, resample_img
+from nilearn.image import new_img_like
 from nilearn.input_data import NiftiMasker
 from nilearn._utils import check_niimg
 from nilearn.plotting import plot_stat_map
@@ -38,11 +37,13 @@ def clean_img(img):
     img_data[np.isinf(img_data)] = 0
     return new_img_like(img, img_data)
 
+
 def cast_img(img, dtype=np.float32):
     """ Cast image to the specified dtype"""
     img = check_niimg(img)
     img_data = img.get_data().astype(dtype)
     return new_img_like(img, img_data)
+
 
 ### Get image and term data ###################################################
 # Download 100 matching images
