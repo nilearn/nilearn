@@ -411,7 +411,7 @@ def _filter_columns(array, filters, combination='and'):
 
 def _fetch_file(url, data_dir, resume=True, overwrite=False,
                 md5sum=None, username=None, password=None, handlers=[],
-                verbose=1):
+                query_server=True, verbose=1):
     """Load requested file, downloading it if needed or requested.
 
     Parameters
@@ -442,6 +442,9 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False,
         urllib handlers passed to urllib.request.build_opener. Used by
         advanced users to customize request handling.
 
+    query_server: bool, optional
+        If False, raises an exception if the file does not exist.
+
     verbose: int, optional
         verbosity level (0 means no message).
 
@@ -468,11 +471,13 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False,
     temp_file_name = file_name + ".part"
     full_name = os.path.join(data_dir, file_name)
     temp_full_name = os.path.join(data_dir, temp_file_name)
-    if os.path.exists(full_name):
-        if overwrite:
-            os.remove(full_name)
-        else:
-            return full_name
+    if not os.path.exists(full_name):
+        if not query_server:
+            raise IOError("File not found and query_server==False")
+    elif overwrite:
+        os.remove(full_name)
+    else:
+        return full_name
     if os.path.exists(temp_full_name):
         if overwrite:
             os.remove(temp_full_name)
@@ -595,7 +600,8 @@ def movetree(src, dst):
         raise Exception(errors)
 
 
-def _fetch_files(data_dir, files, resume=True, mock=False, verbose=1):
+def _fetch_files(data_dir, files, resume=True, mock=False, query_server=True,
+                 verbose=1):
     """Load requested dataset, downloading it if needed or requested.
 
     This function retrieves files from the hard drive or download them from
@@ -628,6 +634,9 @@ def _fetch_files(data_dir, files, resume=True, mock=False, verbose=1):
     mock: boolean, optional
         If true, create empty files if the file cannot be downloaded. Test use
         only.
+
+    query_server: bool, optional
+        If False and the file does not exist, will return None for that file.
 
     verbose: int, optional
         verbosity level (0 means no message).
@@ -669,8 +678,13 @@ def _fetch_files(data_dir, files, resume=True, mock=False, verbose=1):
         temp_target_file = os.path.join(temp_dir, file_)
         # Whether to keep existing files
         overwrite = opts.get('overwrite', False)
-        if (abort is None and (overwrite or (not os.path.exists(target_file) and not
-                os.path.exists(temp_target_file)))):
+        do_fetch_file = overwrite or (not os.path.exists(target_file) and
+                                      not os.path.exists(temp_target_file))
+        if do_fetch_file and not query_server:
+            files_.append(None)
+            continue
+
+        elif do_fetch_file and abort is None:
 
             # We may be in a global read-only repository. If so, we cannot
             # download files.
