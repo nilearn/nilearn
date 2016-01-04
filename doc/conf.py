@@ -39,7 +39,7 @@ except IOError:
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 extensions = ['sphinx.ext.autodoc', 'sphinx.ext.autosummary',
               'sphinx.ext.pngmath', 'sphinx.ext.intersphinx',
-              'numpy_ext.numpydoc',
+              'numpydoc.numpydoc',
               'sphinx_gallery.gen_gallery',
               ]
 
@@ -286,6 +286,12 @@ sphinx_gallery_conf = {
         'nibabel': 'http://nipy.org/nibabel',
         'sklearn': 'http://scikit-learn.org/stable'}
     }
+
+# Get rid of spurious warnings due to some interaction between
+# autosummary and numpydoc. See
+# https://github.com/phn/pytpm/issues/3#issuecomment-12133978 for more
+# details
+numpydoc_show_class_members = False
 
 
 def touch_example_backreferences(app, what, name, obj, options, lines):
