@@ -1296,7 +1296,8 @@ def fetch_mixed_gambles(n_subjects=1, data_dir=None, url=None, resume=True,
              for j in range(n_subjects)]
     data_dir = _get_dataset_dir('jimura_poldrack_2012_zmaps',
                                 data_dir=data_dir)
-    zmap_fnames = _fetch_files(data_dir, files, resume=resume, verbose=verbose)
+    zmap_fnames = _fetch_files(data_dir, files, resume=resume,
+                               query_server=query_server, verbose=verbose)
     subject_id = np.repeat(np.arange(n_subjects), 6 * 8)
     data = Bunch(zmaps=zmap_fnames,
                  subject_id=subject_id)
@@ -1714,7 +1715,7 @@ def _filter_nv_results(results, filts):
 
 
 
-def _fetch_nv_terms(image_ids, data_dir=None, verbose=2,
+def _fetch_nv_terms(image_ids, data_dir=None, verbose=2, query_server=True,
                     url='http://neurosynth.org/api/v2/decode/'):
     """ Grab terms for each NeuroVault image, decoded with neurosynth.
 
@@ -1751,7 +1752,13 @@ def _fetch_nv_terms(image_ids, data_dir=None, verbose=2,
         terms_url = url + '?neurovault=%d' % image_id
         output_file = 'terms-for-image-%d.json' % image_id
         file_tuple = ((output_file, terms_url, {'move': output_file}),)
-        elevations = _fetch_files(data_dir, file_tuple, verbose=verbose)[0]
+        elevations = _fetch_files(data_dir, file_tuple, verbose=verbose,
+                                  query_server=query_server)[0]
+        if elevations is None:
+            if verbose >= 3:
+                print("No terms for image %s; skipping." % image_id)
+            terms.append({})
+            continue
 
         # Read and process the terms.
         try:
@@ -2023,12 +2030,15 @@ def fetch_neurovault(max_images=np.inf,
 
                     # Download file
                     try:
-                        real_image_path = _fetch_files(collections_dir,
-                                                       files=[(im_filename, im_url, {})],
-                                                       verbose=verbose)[0]
+                        real_image_path = _fetch_files(
+                            collections_dir,
+                            files=[(im_filename, im_url, {})],
+                            verbose=verbose, query_server=query_server)[0]
                     except Exception as e:
                         print("ERROR: failed to download image %d (col=%d): %s" % (
                             im['id'], coll['id'], e))
+                        continue
+                    if real_image_path is None:
                         continue
 
                     # Save metadata
@@ -2051,7 +2061,7 @@ def fetch_neurovault(max_images=np.inf,
     # Do term fetching after everything else.
     if fetch_terms:
         terms = _fetch_nv_terms([im['id'] for im in images],
-                                verbose=verbose)
+                                query_server=query_server, verbose=verbose)
     else:
         terms = dict()
 
