@@ -42,7 +42,8 @@ at 2mm, and with a threshold of a probability of .25::
 
   from nilearn import datasets
   dataset = datasets.fetch_atlas_harvard_oxford('cort-maxprob-thr25-2mm')
-  atlas_filename, labels = dataset.maps, dataset.labels
+  atlas_filename = dataset.maps
+  labels = dataset.labels
 
 Plotting can then be done as::
 
