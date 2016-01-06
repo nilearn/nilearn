@@ -32,21 +32,25 @@ datasets and atlases. Dataset fetching functions can be imported from
 :mod:`nilearn.datasets`::
 
     >>> from nilearn import datasets
-    >>> haxby_files = datasets.fetch_haxby(n_subjects=1)  # doctest: +SKIP
+    >>> haxby_dataset = datasets.fetch_haxby(n_subjects=1)
 
 They return a data structure that contains different pieces of
 information on the retrieved dataset, including the
 file names on hard disk::
 
     >>> # The different files
-    >>> print(sorted(list(haxby_files.keys())))  # doctest: +SKIP
-    ['anat', 'description', 'func', 'mask_face', 'mask_face_little', 'mask_house', 'mask_house_little', 'mask_vt', 'session_target']
+    >>> print(sorted(list(haxby_dataset.keys()))) # doctest: +SKIP
+    ['anat', 'description', 'func', 'mask_face', 'mask_face_little',
+    'mask_house', 'mask_house_little', 'mask_vt', 'session_target']
     >>> # Path to first functional file
-    >>> print(haxby_files.func[0])  # doctest: +ELLIPSIS +SKIP
+    >>> print(haxby_dataset.func[0]) # doctest: +ELLIPSIS
     /.../nilearn_data/haxby2001/subj1/bold.nii.gz
-    >>> # Provide information on the dataset
-    >>> print(haxby_files.description) # doctest: +ELLIPSIS +SKIP
-    Haxby 2001 results
+
+Explanation and further resources of the dataset at hand can be retrieved as
+follows::
+
+    >>> print(haxby_dataset.description) # doctest: +ELLIPSIS
+    Haxby 2001 results...
 
 
     Notes
@@ -55,10 +59,6 @@ file names on hard disk::
 
 |
 
-Explanation and further resources of the dataset at hand can be
-retrieved as follows:
-
-    >>> print haxby_dataset['description']  # doctest: +SKIP
 
 For a list of all the data fetching functions in nilearn, see :ref:`datasets_ref`.
 
