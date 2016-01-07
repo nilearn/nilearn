@@ -23,11 +23,6 @@ Loading data
 
 .. _datasets:
 
-.. directive:: .. testsetup:: *
-
->>> from nilearn.datasets.tests.test_utils import setup_mock
->>> setup_mock()
-
 Fetching open datasets
 ----------------------
 
@@ -37,27 +32,27 @@ datasets and atlases. Dataset fetching functions can be imported from
 :mod:`nilearn.datasets`::
 
     >>> from nilearn import datasets
-    >>> haxby_dataset = datasets.fetch_haxby(n_subjects=1)
+    >>> haxby_dataset = datasets.fetch_haxby(n_subjects=1)  # doctest: +SKIP
 
 They return a data structure that contains different pieces of
 information on the retrieved dataset, including the
 file names on hard disk::
 
     >>> # The different files
-    >>> print(sorted(list(haxby_dataset.keys())))  # doctest: +NORMALIZE_WHITESPACE
+    >>> print(sorted(list(haxby_dataset.keys())))  # doctest: +SKIP
     ['anat', 'description', 'func', 'mask', 'mask_face', 'mask_face_little',
     'mask_house', 'mask_house_little', 'mask_vt', 'session_target']
     >>> # Path to first functional file
-    >>> print(haxby_dataset.func[0])  # doctest: +ELLIPSIS
+    >>> print(haxby_dataset.func[0])  # doctest: +SKIP
     /.../nilearn_data/haxby2001/subj1/bold.nii.gz
 
 Explanation and further resources of the dataset at hand can be retrieved as
 follows::
 
-    >>> print(haxby_dataset.description)  # doctest: +ELLIPSIS
+    >>> print(haxby_dataset.description)  # doctest: +SKIP
     Haxby 2001 results
-    <BLANKLINE>
-    <BLANKLINE>
+
+
     Notes
     -----
     Results from a classical fMRI study that...
