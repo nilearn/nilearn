@@ -50,8 +50,8 @@ Plotting can then be done as::
     from nilearn import plotting
     plotting.plot_roi(atlas_filename)
 
-.. image:: ../auto_examples/manipulating_visualizing/images/sphx_glr_plot_atlas_001.png
-   :target: ../auto_examples/manipulating_visualizing/plot_atlas.html
+.. image:: ../auto_examples/plotting/images/sphx_glr_plot_atlas_001.png
+   :target: ../auto_examples/plotting/plot_atlas.html
    :scale: 60
 
 .. seealso::
@@ -136,10 +136,10 @@ atlas well suited to resting-state data analysis is the `MSDL atlas
 Probabilistic atlases are represented as a set of continuous maps, in a
 4D nifti image. Visualization the atlas thus requires to visualize each
 of these maps, which requires accessing them with
-:func:`nilearn.image.index_img` (see the :ref:`corresponding example <sphx_glr_auto_examples_manipulating_visualizing_plot_overlay.py>`).
+:func:`nilearn.image.index_img` (see the :ref:`corresponding example <sphx_glr_auto_examples_plotting_plot_overlay.py>`).
 
-.. image:: ../auto_examples/manipulating_visualizing/images/sphx_glr_plot_overlay_001.png
-   :target: ../auto_examples/manipulating_visualizing/plot_overlay.html
+.. image:: ../auto_examples/plotting/images/sphx_glr_plot_overlay_001.png
+   :target: ../auto_examples/plotting/plot_overlay.html
    :scale: 60
 
 

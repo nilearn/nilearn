@@ -15,8 +15,8 @@
 
 .. Here we are building the carrousel
 
-.. |glass_brain| image:: auto_examples/manipulating_visualizing/images/sphx_glr_plot_demo_glass_brain_002.png
-   :target: auto_examples/manipulating_visualizing/plot_demo_glass_brain.html
+.. |glass_brain| image:: auto_examples/plotting/images/sphx_glr_plot_demo_glass_brain_002.png
+   :target: auto_examples/plotting/plot_demo_glass_brain.html
 
 .. |connectome| image:: auto_examples/connectivity/images/sphx_glr_plot_inverse_covariance_connectome_004.png
      :target: auto_examples/connectivity/plot_inverse_covariance_connectome.html

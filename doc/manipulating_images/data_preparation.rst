@@ -120,7 +120,7 @@ possible, there is no need to save your data to a file to pass it to a
 in memory:
 
 
-.. literalinclude:: ../../examples/manipulating_visualizing/plot_mask_computation.py
+.. literalinclude:: ../../examples/manipulating_images/plot_mask_computation.py
     :start-after: Load NYU resting-state dataset
     :end-before: # To display the background
 
@@ -140,9 +140,9 @@ Computing the mask
 .. note::
 
     The full example described in this section can be found here:
-    :doc:`plot_mask_computation.py <../auto_examples/manipulating_visualizing/plot_mask_computation>`.
+    :doc:`plot_mask_computation.py <../auto_examples/manipulating_images/plot_mask_computation>`.
     It is also related to this example:
-    :doc:`plot_nifti_simple.py <../auto_examples/manipulating_visualizing/plot_nifti_simple>`.
+    :doc:`plot_nifti_simple.py <../auto_examples/manipulating_images/plot_nifti_simple>`.
 
 If a mask is not specified as an argument,
 :class:`NiftiMasker` will try to compute
@@ -160,13 +160,13 @@ we can compare the data-derived mask against.
 
 The first step is to generate a mask with default parameters and visualize it.
 
-.. literalinclude:: ../../examples/manipulating_visualizing/plot_mask_computation.py
+.. literalinclude:: ../../examples/manipulating_images/plot_mask_computation.py
     :start-after: # Simple mask extraction from EPI images
     :end-before: # Generate mask with strong opening
 
 
-.. figure:: ../auto_examples/manipulating_visualizing/images/sphx_glr_plot_mask_computation_002.png
-    :target: ../auto_examples/plot_mask_computation.html
+.. figure:: ../auto_examples/manipulating_images/images/sphx_glr_plot_mask_computation_002.png
+    :target: ../auto_examples/manipulating_images/plot_mask_computation.html
     :scale: 50%
 
 
@@ -176,13 +176,13 @@ opening steps (*opening=10*) using the `mask_args` argument of the
 on the outer voxel layers of the mask, which can for example remove remaining
 skull parts in the image.
 
-.. literalinclude:: ../../examples/manipulating_visualizing/plot_mask_computation.py
+.. literalinclude:: ../../examples/manipulating_images/plot_mask_computation.py
     :start-after: # Generate mask with strong opening
     :end-before: # Generate mask with a high lower cutoff
 
 
-.. figure:: ../auto_examples/manipulating_visualizing/images/sphx_glr_plot_mask_computation_003.png
-    :target: ../auto_examples/plot_mask_computation.html
+.. figure:: ../auto_examples/manipulating_images/images/sphx_glr_plot_mask_computation_003.png
+    :target: ../auto_examples/manipulating_images/plot_mask_computation.html
     :scale: 50%
 
 
@@ -195,13 +195,13 @@ the lower cutoff to enforce selection of those
 voxels that appear as bright in the EPI image.
 
 
-.. literalinclude:: ../../examples/manipulating_visualizing/plot_mask_computation.py
+.. literalinclude:: ../../examples/manipulating_images/plot_mask_computation.py
     :start-after: # Generate mask with a high lower cutoff
     :end-before: ################################################################################
 
 
-.. figure:: ../auto_examples/manipulating_visualizing/images/sphx_glr_plot_mask_computation_004.png
-    :target: ../auto_examples/plot_mask_computation.html
+.. figure:: ../auto_examples/manipulating_images/images/sphx_glr_plot_mask_computation_004.png
+    :target: ../auto_examples/manipulating_images/plot_mask_computation.html
     :scale: 50%
 
 
@@ -245,14 +245,14 @@ In this case, nilearn
 computes automatically the translation part of the transformation
 matrix (i.e., affine).
 
-.. image:: ../auto_examples/manipulating_visualizing/images/sphx_glr_plot_affine_transformation_002.png
-    :target: ../auto_examples/plot_affine_transformation.html
+.. image:: ../auto_examples/manipulating_images/images/sphx_glr_plot_affine_transformation_002.png
+    :target: ../auto_examples/manipulating_images/plot_affine_transformation.html
     :scale: 33%
-.. image:: ../auto_examples/manipulating_visualizing/images/sphx_glr_plot_affine_transformation_004.png
-    :target: ../auto_examples/plot_affine_transformation.html
+.. image:: ../auto_examples/manipulating_images/images/sphx_glr_plot_affine_transformation_004.png
+    :target: ../auto_examples/manipulating_images/plot_affine_transformation.html
     :scale: 33%
-.. image:: ../auto_examples/manipulating_visualizing/images/sphx_glr_plot_affine_transformation_003.png
-    :target: ../auto_examples/plot_affine_transformation.html
+.. image:: ../auto_examples/manipulating_images/images/sphx_glr_plot_affine_transformation_003.png
+    :target: ../auto_examples/manipulating_images/plot_affine_transformation.html
     :scale: 33%
 
 
@@ -349,9 +349,9 @@ an excerpt of :ref:`the example performing Anova-SVM on the Haxby data
 
 .. topic:: **Examples to better understand the NiftiMasker**
 
-   * :ref:`sphx_glr_auto_examples_manipulating_visualizing_plot_nifti_simple.py`
+   * :ref:`sphx_glr_auto_examples_manipulating_images_plot_nifti_simple.py`
 
-   * :ref:`sphx_glr_auto_examples_manipulating_visualizing_plot_mask_computation.py`
+   * :ref:`sphx_glr_auto_examples_manipulating_images_plot_mask_computation.py`
 
 
 .. _region:

@@ -50,8 +50,8 @@ corresponding category.
 
    Cat stimuli
 
-.. figure:: ../auto_examples/manipulating_visualizing/images/sphx_glr_plot_haxby_masks_001.png
-   :target: ../auto_examples/manipulating_visualizing/plot_haxby_masks.html
+.. figure:: ../auto_examples/plotting/images/sphx_glr_plot_haxby_masks_001.png
+   :target: ../auto_examples/plotting/plot_haxby_masks.html
    :scale: 30
    :align: left
 
@@ -328,8 +328,8 @@ permutation testing on the labels, with
     scores.
 
 
-.. figure:: ../auto_examples/manipulating_visualizing/images/sphx_glr_plot_haxby_masks_001.png
-   :target: ../auto_examples/manipulating_visualizing/plot_haxby_masks.html
+.. figure:: ../auto_examples/plotting/images/sphx_glr_plot_haxby_masks_001.png
+   :target: ../auto_examples/plotting/plot_haxby_masks.html
    :scale: 55
    :align: left
 
