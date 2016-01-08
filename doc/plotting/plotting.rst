@@ -1,4 +1,4 @@
-.. _plotting:
+.. _plotting_images:
 
 ======================
 Plotting brain images
