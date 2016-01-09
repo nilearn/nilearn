@@ -11,8 +11,12 @@ def _set_mpl_backend():
         # We are doing local imports here to avoid poluting our namespace
         import matplotlib
         import os
+        import sys
         # Set the backend to a non-interactive one for unices without X
-        if os.name == 'posix' and 'DISPLAY' not in os.environ:
+        if (os.name == 'posix' and 'DISPLAY' not in os.environ
+            and not (sys.platform == 'darwin'
+                     and matplotlib.get_backend() == 'MacOSX'
+                     )):
             matplotlib.use('Agg')
     except ImportError:
         from .._utils.testing import skip_if_running_nose
