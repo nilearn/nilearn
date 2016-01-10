@@ -50,6 +50,11 @@ def find_xyz_cut_coords(img, mask=None, activation_threshold=None):
     # To speed up computations, we work with partial views of the array,
     # and keep track of the offset
     offset = np.zeros(3)
+    
+    # if a pseudo-4D image or several images were passed (cf. #922),
+    # we reduce to a single 3D image to find the coordinates
+    if len(data.shape) > 3:
+        data = data[:, :, :, 0]
 
     # Deal with masked arrays:
     if hasattr(data, 'mask'):
