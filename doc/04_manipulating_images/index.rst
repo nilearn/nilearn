@@ -1,13 +1,13 @@
 .. include:: ../tune_toc.rst
 
 
-.. _manipulating_images:
+.. _image_manipulation:
 
 =================================
 Image manipulation
 =================================
 
-In this section, we detail the general tools to manipulation of
+In this section, we detail the general tools to manipulate of
 brain images with nilearn.
 
 |

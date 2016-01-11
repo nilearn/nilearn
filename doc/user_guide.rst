@@ -15,10 +15,10 @@ User guide: table of contents
    :numbered:
 
    introduction.rst
-   decoding/index.rst
-   connectivity/index.rst
-   plotting/index.rst
-   manipulating_images/index.rst
+   02_decoding/index.rst
+   03_connectivity/index.rst
+   01_plotting/index.rst
+   04_manipulating_images/index.rst
    building_blocks/index.rst
    modules/reference.rst
 
