@@ -41,7 +41,7 @@ def test_find_cut_coords():
     np.testing.assert_array_equal(
         np.array([x, y, z]),
         0.5 * np.array(data.shape).astype(np.float))
-        
+
     # regression test (cf. #922)
     # pseudo-4D images as input (i.e., X, Y, Z, 1)
     # previously raised "ValueError: too many values to unpack"
