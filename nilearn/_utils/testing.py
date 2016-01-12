@@ -665,11 +665,13 @@ def memory_limit(limit):
             try:
                 # Save previous limit
                 prev_rlimit_as = resource.getrlimit(resource.RLIMIT_AS)
+                print(prev_rlimit_as)
                 # Set new limit
                 resource.setrlimit(resource.RLIMIT_AS,
                                    (limit, prev_rlimit_as[1]))
                 # Check that limits are properly set
                 new_rlimit_as = resource.getrlimit(resource.RLIMIT_AS)
+                print(new_rlimit_as)
                 if new_rlimit_as != (limit, prev_rlimit_as[1]):
                     raise SystemError()
 
