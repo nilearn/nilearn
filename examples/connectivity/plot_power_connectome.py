@@ -13,50 +13,58 @@ human brain." Neuron 72.4 (2011): 665-678.
 
 import numpy as np
 import matplotlib.pyplot as plt
-from nilearn import datasets
+from nilearn import datasets, connectome, plotting, input_data
 
 
-# fetch power atlas coords
+###############################################################################
+# Atlas and dataset fetching
+
+# Fetch the coordinates of power atlas
 power = datasets.fetch_atlas_power_2011()
 power_coords = np.vstack((
     power.rois['x'],
     power.rois['y'],
     power.rois['z'],
 )).T
-print(power_coords.shape)
 
-#fetch dataset
+# Fetch the first subject of ADHD dataset
 adhd = datasets.fetch_adhd(n_subjects=1)
 
-# Preprocess image and extract signals from Power-264
-from nilearn import input_data
+
+###############################################################################
+# Masking: taking the signal in a sphere of radius 5 around Power coords
 
 masker = input_data.NiftiSpheresMasker(seeds=power_coords,
+                                       smoothing_fwhm=4,
                                        radius=5.,
                                        standardize=True,
-                                       smoothing_fwhm=4,
                                        detrend=True,
                                        low_pass=0.1,
                                        high_pass=0.01,
-                                       t_r=2.5,
-                                       verbose=5)
+                                       t_r=2.5)
 
 timeseries = masker.fit_transform(adhd.func[0], confounds=adhd.confounds[0])
 
+###############################################################################
+# Extract and plot correlation matrix
+
 # calculate connectivity and plot Power-264 correlation matrix
-connectivity = np.arctanh(np.corrcoef(timeseries.T))
-plt.imshow(connectivity, vmin=-1., vmax=1.)
+connectivity = connectome.ConnectivityMeasure(kind='correlation')
+corr_matrix = connectivity.fit_transform([timeseries])[0]
+plt.imshow(corr_matrix, vmin=-1., vmax=1., cmap='RdBu_r')
 plt.colorbar()
 plt.title('Power 264 Connectivity')
 
 # Plot the connectome
-from nilearn import plotting
 
-plotting.plot_connectome(connectivity,
+plotting.plot_connectome(corr_matrix,
                          power_coords,
                          edge_threshold='99.8%',
                          node_size=20)
 
+
+###############################################################################
+# Extract and plot covariance and sparse covariance
 
 # Compute the sparse inverse covariance
 from sklearn.covariance import GraphLassoCV
@@ -90,4 +98,4 @@ plotting.plot_connectome(-estimator.precision_, power_coords,
                          title='Sparse inverse covariance',
                          edge_threshold="99.8%",
                          node_size=20)
-plt.show()
+plotting.show()
