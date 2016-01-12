@@ -39,7 +39,7 @@ __all__ = ['datasets', 'decoding', 'decomposition', 'connectome',
            'image', 'input_data', 'masking', 'mass_univariate', 'plotting',
            'region', 'signal']
 
-from .version import _check_module_dependencies, __version__
+from .version import _check_module_dependencies
 
 _check_module_dependencies()
 

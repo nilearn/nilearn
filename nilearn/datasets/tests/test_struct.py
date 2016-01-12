@@ -7,7 +7,6 @@ Test the datasets module
 import os
 import shutil
 import numpy as np
-from tempfile import mkdtemp
 
 from nose import with_setup
 from nose.tools import assert_true, assert_equal, assert_not_equal

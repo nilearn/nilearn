@@ -6,7 +6,6 @@ Test the datasets module
 
 import os
 import numpy as np
-from tempfile import mkdtemp
 import nibabel
 from sklearn.utils import check_random_state
 

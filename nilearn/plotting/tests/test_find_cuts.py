@@ -4,7 +4,6 @@ import nibabel
 from nilearn.plotting.find_cuts import (find_xyz_cut_coords, find_cut_slices,
                                         _transform_cut_coords)
 from nilearn._utils.testing import assert_raises_regex, assert_warns
-from nilearn.plotting.find_cuts import find_xyz_cut_coords
 
 
 def test_find_cut_coords():

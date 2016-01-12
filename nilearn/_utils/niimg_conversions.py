@@ -18,6 +18,7 @@ from .compat import _basestring, izip
 
 from .exceptions import DimensionError
 
+
 def _check_fov(img, affine, shape):
     """ Return True if img's field of view correspond to given
         shape and affine, False elsewhere.
@@ -48,8 +49,6 @@ def _check_same_fov(*args, **kwargs):
     raise_error: boolean, optional
         If True, an error will be raised in case of error.
     """
-    from ..image import new_img_like  # avoid circular imports
-
     raise_error = kwargs.pop('raise_error', False)
     for i, arg in enumerate(args):
         kwargs['img_#%i' % i] = arg
