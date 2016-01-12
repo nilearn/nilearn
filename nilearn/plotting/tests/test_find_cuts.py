@@ -45,10 +45,13 @@ def test_find_cut_coords():
     # regression test (cf. #922)
     # pseudo-4D images as input (i.e., X, Y, Z, 1)
     # previously raised "ValueError: too many values to unpack"
-    data = np.ones((36, 43, 36))[..., np.newaxis]
+    rng = np.random.RandomState(42)
+    data_3d = rng.randn(10, 10, 10)
+    data_4d = data_3d[..., np.newaxis]
     affine = np.eye(4)
-    img = nibabel.Nifti1Image(data, affine)
-    x, y, z = find_xyz_cut_coords(img, activation_threshold=1.1)
+    img_3d = nibabel.Nifti1Image(data_3d, affine)
+    img_4d = nibabel.Nifti1Image(data_4d, affine)
+    assert_equal(find_xyz_cut_coords(img_3d), find_xyz_cut_coords(img_4d))
 
 
 def test_find_cut_slices():
