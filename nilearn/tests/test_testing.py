@@ -53,6 +53,6 @@ def test_memory_limit():
 
 @memory_limit(10000000)
 def test_memory_limit_raise():
-    # memory usage : 40000000, this should be fine
+    # memory usage : 40000000, this should not be fine
     assert_raises_regex(
         MemoryError, '', np.zeros, (500, 100, 60), dtype=np.float32)
