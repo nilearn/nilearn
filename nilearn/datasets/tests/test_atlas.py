@@ -7,7 +7,6 @@ Test the datasets module
 import os
 import shutil
 import numpy as np
-from tempfile import mkdtemp
 
 import nibabel
 

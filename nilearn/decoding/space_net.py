@@ -833,7 +833,7 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
             y = y[:, 0]
 
         # scores & mean weights map over all folds
-        self.cv_scores_ = [[] for _ in range(n_problems)]
+        self.cv_scores_ = [[] for i in range(n_problems)]
         w = np.zeros((n_problems, X.shape[1] + 1))
         self.all_coef_ = np.ndarray((n_problems, n_folds, X.shape[1]))
 

@@ -3,7 +3,6 @@
 This test file is in nilearn/tests because nosetests ignores modules whose
 name starts with an underscore
 """
-from scipy import ndimage
 from nose.tools import assert_raises
 
 import numpy as np

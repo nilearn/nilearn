@@ -2,8 +2,6 @@
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 import tempfile
 
-import numpy as np
-
 import matplotlib.pyplot as plt
 
 from nilearn.plotting.displays import OrthoSlicer, XSlicer, OrthoProjector
