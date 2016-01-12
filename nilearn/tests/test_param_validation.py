@@ -2,7 +2,6 @@
 Test the _utils.param_validation module
 """
 
-import warnings
 import numpy as np
 
 from nose.tools import assert_true, assert_equal

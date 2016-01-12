@@ -12,6 +12,7 @@ from .utils import (_get_dataset_dir, _fetch_files, _get_dataset_descr,
                     _read_md5_sum_file, _tree, _filter_columns)
 
 from .._utils.compat import BytesIO, _basestring, _urllib
+from .._utils.numpy_conversions import csv_to_array
 
 
 def fetch_haxby_simple(data_dir=None, url=None, resume=True, verbose=1):
@@ -459,7 +460,7 @@ def fetch_adhd(n_subjects=None, data_dir=None, url=None, resume=True,
     phenotypic = _fetch_files(data_dir, [phenotypic], resume=resume,
                               verbose=verbose)[0]
 
-    ## Load the csv file
+    # Load the csv file
     phenotypic = np.genfromtxt(phenotypic, names=True, delimiter=',',
                                dtype=None)
 
@@ -1279,3 +1280,129 @@ def fetch_mixed_gambles(n_subjects=1, data_dir=None, url=None, resume=True,
         X, y, mask_img = _load_mixed_gambles(map(nibabel.load, data.zmaps))
         data.zmaps, data.gain, data.mask_img = X, y, mask_img
     return data
+
+
+def fetch_megatrawls_netmats(dimensionality=100, timeseries='eigen_regression',
+                             matrices='partial_correlation', data_dir=None,
+                             resume=True, verbose=1):
+    """Downloads and returns Network Matrices data from MegaTrawls release in HCP.
+
+    This data can be used to predict relationships between imaging data and
+    non-imaging behavioural measures such as age, sex, education, etc.
+    The network matrices are estimated from functional connectivity
+    datasets of 461 subjects. Full technical details in [1] [2].
+
+    .. versionadded:: 0.2.2
+
+    Parameters
+    ----------
+    dimensionality: int, optional
+        Valid inputs are 25, 50, 100, 200, 300. By default, network matrices
+        estimated using Group ICA brain parcellations of 100 components/dimensions
+        will be returned.
+
+    timeseries: str, optional
+        Valid inputs are 'multiple_spatial_regression' or 'eigen_regression'. By
+        default 'eigen_regression', matrices estimated using first principal
+        eigen component timeseries signals extracted from each subject data
+        parcellations will be returned. Otherwise, 'multiple_spatial_regression'
+        matrices estimated using spatial regressor based timeseries signals
+        extracted from each subject data parcellations will be returned.
+
+    matrices: str, optional
+        Valid inputs are 'full_correlation' or 'partial_correlation'. By default,
+        partial correlation matrices will be returned otherwise if selected
+        full correlation matrices will be returned.
+
+    data_dir: str, default is None, optional
+        Path of the data directory. Used to force data storage in a specified
+        location.
+
+    resume: bool, default is True
+        This parameter is required if a partially downloaded file is needed
+        to be resumed to download again.
+
+    verbose: int, default is 1
+        This parameter is used to set the verbosity level to print the message
+        to give information about the processing.
+        0 indicates no information will be given.
+
+    Returns
+    -------
+    data: Bunch
+        dictionary-like object, the attributes are :
+
+        - 'dimensions': int, consists of given input in dimensions.
+
+        - 'timeseries': str, consists of given input in timeseries method.
+
+        - 'matrices': str, consists of given type of specific matrices.
+
+        - 'correlation_matrices': ndarray, consists of correlation matrices
+          based on given type of matrices. Array size will depend on given
+          dimensions (n, n).
+        - 'description': data description
+
+    References
+    ----------
+    [1] Stephen Smith et al, HCP beta-release of the Functional Connectivity
+        MegaTrawl.
+        April 2015 "HCP500-MegaTrawl" release.
+        https://db.humanconnectome.org/megatrawl/
+
+    [2] Smith, S.M. et al. Nat. Neurosci. 18, 1565-1567 (2015).
+
+    [3] N.Filippini, et al. Distinct patterns of brain activity in young
+        carriers of the APOE-e4 allele.
+        Proc Natl Acad Sci USA (PNAS), 106::7209-7214, 2009.
+
+    [4] S.Smith, et al. Methods for network modelling from high quality rfMRI data.
+        Meeting of the Organization for Human Brain Mapping. 2014
+
+    [5] J.X. O'Reilly et al. Distinct and overlapping functional zones in the
+        cerebellum defined by resting state functional connectivity.
+        Cerebral Cortex, 2009.
+
+    Note: See description for terms & conditions on data usage.
+
+    """
+    url = "http://www.nitrc.org/frs/download.php/8037/Megatrawls.tgz"
+    opts = {'uncompress': True}
+
+    error_message = "Invalid {0} input is provided: {1}, choose one of them {2}"
+    # standard dataset terms
+    dimensionalities = [25, 50, 100, 200, 300]
+    if dimensionality not in dimensionalities:
+        raise ValueError(error_message.format('dimensionality', dimensionality,
+                                              dimensionalities))
+    timeseries_methods = ['multiple_spatial_regression', 'eigen_regression']
+    if timeseries not in timeseries_methods:
+        raise ValueError(error_message.format('timeseries', timeseries,
+                                              timeseries_methods))
+    output_matrices_names = ['full_correlation', 'partial_correlation']
+    if matrices not in output_matrices_names:
+        raise ValueError(error_message.format('matrices', matrices,
+                                              output_matrices_names))
+
+    dataset_name = 'Megatrawls'
+    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir, verbose=verbose)
+    description = _get_dataset_descr(dataset_name)
+
+    timeseries_map = dict(multiple_spatial_regression='ts2', eigen_regression='ts3')
+    matrices_map = dict(full_correlation='Znet1.txt', partial_correlation='Znet2.txt')
+    filepath = [(os.path.join(
+        '3T_Q1-Q6related468_MSMsulc_d%d_%s' % (dimensionality, timeseries_map[timeseries]),
+        matrices_map[matrices]), url, opts)]
+
+    # Fetch all the files
+    files = _fetch_files(data_dir, filepath, resume=resume, verbose=verbose)
+
+    # Load the files into arrays
+    correlation_matrices = csv_to_array(files[0])
+
+    return Bunch(
+        dimensions=dimensionality,
+        timeseries=timeseries,
+        matrices=matrices,
+        correlation_matrices=correlation_matrices,
+        description=description)

@@ -16,6 +16,7 @@ from nose.tools import (assert_true, assert_equal, assert_raises,
 from . import test_utils as tst
 
 from nilearn.datasets import utils, func
+from nilearn._utils.testing import assert_raises_regex
 
 from nilearn._utils.compat import _basestring, _urllib
 
@@ -362,3 +363,68 @@ def test_fetch_mixed_gambles():
         assert_equal(mgambles["zmaps"][0], os.path.join(datasetdir, "zmaps",
                                                         "sub001_zmaps.nii.gz"))
         assert_equal(len(mgambles["zmaps"]), n_subjects)
+
+
+def test_check_parameters_megatrawls_datasets():
+    # testing whether the function raises the same error message
+    # if invalid input parameters are provided
+    message = "Invalid {0} input is provided: {1}."
+
+    for invalid_input_dim in [1, 5, 30]:
+        assert_raises_regex(ValueError,
+                            message.format('dimensionality', invalid_input_dim),
+                            func.fetch_megatrawls_netmats,
+                            dimensionality=invalid_input_dim)
+
+    for invalid_input_timeserie in ['asdf', 'time', 'st2']:
+        assert_raises_regex(ValueError,
+                            message.format('timeseries', invalid_input_timeserie),
+                            func.fetch_megatrawls_netmats,
+                            timeseries=invalid_input_timeserie)
+
+    for invalid_output_name in ['net1', 'net2']:
+        assert_raises_regex(ValueError,
+                            message.format('matrices', invalid_output_name),
+                            func.fetch_megatrawls_netmats,
+                            matrices=invalid_output_name)
+
+
+@with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
+def test_fetch_megatrawls_netmats():
+    # smoke test to see that files are fetched and read properly
+    # since we are loading data present in it
+    files_dir = os.path.join(tst.tmpdir, 'Megatrawls', '3T_Q1-Q6related468_MSMsulc_d100_ts3')
+    os.makedirs(files_dir)
+    with open(os.path.join(files_dir, 'Znet2.txt'), 'w') as net_file:
+        net_file.write("1")
+
+    files_dir2 = os.path.join(tst.tmpdir, 'Megatrawls', '3T_Q1-Q6related468_MSMsulc_d300_ts2')
+    os.makedirs(files_dir2)
+    with open(os.path.join(files_dir2, 'Znet1.txt'), 'w') as net_file2:
+        net_file2.write("1")
+
+    megatrawl_netmats_data = func.fetch_megatrawls_netmats(data_dir=tst.tmpdir)
+
+    # expected number of returns in output name should be equal
+    assert_equal(len(megatrawl_netmats_data), 5)
+    # check if returned bunch should not be empty
+    # dimensions
+    assert_not_equal(megatrawl_netmats_data.dimensions, '')
+    # timeseries
+    assert_not_equal(megatrawl_netmats_data.timeseries, '')
+    # matrices
+    assert_not_equal(megatrawl_netmats_data.matrices, '')
+    # correlation matrices
+    assert_not_equal(megatrawl_netmats_data.correlation_matrices, '')
+    # description
+    assert_not_equal(megatrawl_netmats_data.description, '')
+
+    # check if input provided for dimensions, timeseries, matrices to be same
+    # to user settings
+    netmats_data = func.fetch_megatrawls_netmats(data_dir=tst.tmpdir,
+                                                 dimensionality=300,
+                                                 timeseries='multiple_spatial_regression',
+                                                 matrices='full_correlation')
+    assert_equal(netmats_data.dimensions, 300)
+    assert_equal(netmats_data.timeseries, 'multiple_spatial_regression')
+    assert_equal(netmats_data.matrices, 'full_correlation')
