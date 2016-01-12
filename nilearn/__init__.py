@@ -39,7 +39,7 @@ __all__ = ['datasets', 'decoding', 'decomposition', 'connectome',
            'image', 'input_data', 'masking', 'mass_univariate', 'plotting',
            'region', 'signal']
 
-from .version import _check_module_dependencies
+from .version import _check_module_dependencies, __version__
 
 _check_module_dependencies()
 
@@ -58,3 +58,5 @@ EXPAND_PATH_WILDCARDS = True
 # structures
 # This  is used in nilearn._utils.cache_mixin
 CHECK_CACHE_VERSION = True
+
+__all__ = ['__version__']
