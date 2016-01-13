@@ -6,8 +6,8 @@ Region Extraction for better brain parcellations
 
 .. topic:: **Page summary**
 
-   This section shows how to use Region Extractor to extract each connected
-   brain regions/components into a separate brain activation region and also
+   This section shows how to use Region Extractor to extract brain connected
+   regions/components into a separate brain activation region and also
    shows how to learn functional connectivity interactions between each
    separate region.
 
@@ -43,10 +43,10 @@ datasets.
 Brain maps using Dictionary Learning
 ====================================
 
-Here, we use :class:`DictLearning`, a multi subject model to decompose previously
-fetched multi subjects datasets into functionally defined maps. We do this by setting
-the parameters in the object and calling fit on the functional filenames without
-necessarily converting each filename to Nifti1Image object.
+Here, we use :class:`DictLearning`, a multi subject model to decompose multi
+subjects fMRI datasets into functionally defined maps. We do this by setting
+the parameters in the object and calling fit on the filenames of datasets without
+necessarily converting each file to Nifti1Image object.
 
 
 .. literalinclude:: ../../examples/03_connectivity/plot_extract_regions_canica_maps.py

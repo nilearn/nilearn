@@ -3,7 +3,7 @@ Regions extraction using Dictionary Learning and functional connectomes
 =======================================================================
 
 This example shows how to use :class:`nilearn.regions.RegionExtractor`
-to extract connected brain regions from whole brain maps decomposed
+to extract spatially constrained brain regions from whole brain maps decomposed
 using dictionary learning and use them to build a functional connectome.
 
 We used 20 resting state ADHD functional datasets from :func:`nilearn.datasets.fetch_adhd`
@@ -127,7 +127,7 @@ plotting.plot_connectome(mean_correlations, coords_connectome,
 img = image.index_img(components_img, 4)
 coords = plotting.find_xyz_cut_coords(img)
 display = plotting.plot_stat_map(img, cut_coords=coords,
-                                 colorbar=False, title='Dictionary map: DMN mode')
+                                 colorbar=False, title='Showing one specific network')
 
 # Now, we plot (right side) same network after region extraction to show that
 # connected regions are nicely seperated.
@@ -137,7 +137,8 @@ display = plotting.plot_stat_map(img, cut_coords=coords,
 # network given as 4.
 regions_indices_of_map3 = np.where(np.array(regions_index) == 4)
 
-display = plotting.plot_anat(cut_coords=coords, title='Extracted regions in DMN mode')
+display = plotting.plot_anat(cut_coords=coords,
+                             title='Extracted regions in one specific network')
 
 # Now add as an overlay by looping over all the regions of index 4
 # color list is random (you can choose your own color)
