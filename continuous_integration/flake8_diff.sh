@@ -16,6 +16,10 @@ git remote set-branches --add $REMOTE master
 git fetch $REMOTE master
 REMOTE_MASTER_REF="$REMOTE/master"
 
+echo -e '\nLast 2 commits:'
+echo '--------------------------------------------------------------------------------'
+git log -2 --pretty=short
+
 # Find common ancestor between HEAD and remotes/$REMOTE/master
 COMMIT=$(git merge-base @ $REMOTE_MASTER_REF) || \
     echo "No common ancestor found for $(git show @ -q) and $(git show $REMOTE_MASTER_REF -q)"
@@ -24,9 +28,9 @@ if [ -z "$COMMIT" ]; then
     exit 1
 fi
 
-echo Common ancestor is:
-git show $COMMIT --stat
-
+echo -e "\nCommon ancestor between HEAD and $REMOTE_MASTER_REF is:"
+echo '--------------------------------------------------------------------------------'
+git show --no-patch $COMMIT
 
 echo -e '\nRunning flake8 on the diff in the range'\
      "$(git rev-parse --short $COMMIT)..$(git rev-parse --short @)" \
