@@ -28,7 +28,7 @@ echo Common ancestor is:
 git show $COMMIT --stat
 
 
-echo '\nRunning flake8 on the diff in the range'\
+echo -e '\nRunning flake8 on the diff in the range'\
      "$(git rev-parse --short $COMMIT)..$(git rev-parse --short @)" \
      "($(git rev-list $COMMIT.. | wc -l) commit(s)):"
 echo '--------------------------------------------------------------------------------'
