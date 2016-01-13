@@ -113,7 +113,7 @@ good extracted maps.
 Applying DictLearning
 ---------------------
 
-:class:'DictLearning' is a ready-to-use class with the same interface as CanICA.
+:class:`DictLearning` is a ready-to-use class with the same interface as CanICA.
 Sparsity of output map is controlled by a parameter alpha: using a
 larger alpha yields sparser maps.
 
