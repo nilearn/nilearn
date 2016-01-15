@@ -1,6 +1,6 @@
 """
 Extracting signals and plotting a connectome for the Power-264 seed-region atlas
-=============================================================
+================================================================================
 
 This example shows how to extract signals from spherical seed-regions based
 on the Power-264 atlas (Power, 2011) and estimating a connectome using sparse
