@@ -36,29 +36,29 @@ activity recorded in masks of the ventral stream. Significant prediction
 shows that the signal in the region contains information on the
 corresponding category.
 
-.. figure:: ../auto_examples/decoding/images/sphx_glr_plot_haxby_stimuli_004.png
-   :target: ../auto_examples/decoding/plot_haxby_stimuli.html
+.. figure:: ../auto_examples/02_decoding/images/sphx_glr_plot_haxby_stimuli_004.png
+   :target: ../auto_examples/02_decoding/plot_haxby_stimuli.html
    :scale: 30
    :align: left
 
    Face stimuli
 
-.. figure:: ../auto_examples/decoding/images/sphx_glr_plot_haxby_stimuli_002.png
-   :target: ../auto_examples/decoding/plot_haxby_stimuli.html
+.. figure:: ../auto_examples/02_decoding/images/sphx_glr_plot_haxby_stimuli_002.png
+   :target: ../auto_examples/02_decoding/plot_haxby_stimuli.html
    :scale: 30
    :align: left
 
    Cat stimuli
 
-.. figure:: ../auto_examples/manipulating_visualizing/images/sphx_glr_plot_haxby_masks_001.png
-   :target: ../auto_examples/manipulating_visualizing/plot_haxby_masks.html
+.. figure:: ../auto_examples/01_plotting/images/sphx_glr_plot_haxby_masks_001.png
+   :target: ../auto_examples/01_plotting/plot_haxby_masks.html
    :scale: 30
    :align: left
 
    Masks
 
-.. figure:: ../auto_examples/decoding/images/sphx_glr_plot_haxby_full_analysis_001.png
-   :target: ../auto_examples/decoding/plot_haxby_full_analysis.html
+.. figure:: ../auto_examples/02_decoding/images/sphx_glr_plot_haxby_full_analysis_001.png
+   :target: ../auto_examples/02_decoding/plot_haxby_full_analysis.html
    :scale: 35
    :align: left
 
@@ -320,7 +320,7 @@ permutation testing on the labels, with
 .. topic:: **Putting it all together**
 
     The :ref:`ROI-based decoding example
-    <sphx_glr_auto_examples_decoding_plot_haxby_full_analysis.py>` does a decoding analysis per
+    <sphx_glr_auto_examples_02_decoding_plot_haxby_full_analysis.py>` does a decoding analysis per
     mask, giving the f1-score of the prediction for each object.
 
     It uses all the notions presented above, with ``for`` loop to iterate
@@ -328,16 +328,16 @@ permutation testing on the labels, with
     scores.
 
 
-.. figure:: ../auto_examples/manipulating_visualizing/images/sphx_glr_plot_haxby_masks_001.png
-   :target: ../auto_examples/manipulating_visualizing/plot_haxby_masks.html
+.. figure:: ../auto_examples/01_plotting/images/sphx_glr_plot_haxby_masks_001.png
+   :target: ../auto_examples/01_plotting/plot_haxby_masks.html
    :scale: 55
    :align: left
 
    Masks
 
 
-.. figure:: ../auto_examples/decoding/images/sphx_glr_plot_haxby_full_analysis_001.png
-   :target: ../auto_examples/decoding/plot_haxby_full_analysis.html
+.. figure:: ../auto_examples/02_decoding/images/sphx_glr_plot_haxby_full_analysis_001.png
+   :target: ../auto_examples/02_decoding/plot_haxby_full_analysis.html
    :scale: 70
    :align: left
 
@@ -387,7 +387,7 @@ based feature selection (a.k.a.
 that we will put before the SVC in a `pipeline`
 (:class:`sklearn.pipeline.Pipeline`):
 
-.. literalinclude:: ../../examples/decoding/plot_haxby_anova_svm.py
+.. literalinclude:: ../../examples/02_decoding/plot_haxby_anova_svm.py
     :start-after: # Build the decoder
     :end-before: # Visualize the results
 
@@ -406,12 +406,12 @@ To visualize the results, we need to:
 - then, as before, inverse the masking process to retrieve the weights
   and plot them.
 
-.. figure:: ../auto_examples/decoding/images/sphx_glr_plot_haxby_anova_svm_001.png
-   :target: ../auto_examples/decoding/plot_haxby_anova_svm.html
+.. figure:: ../auto_examples/02_decoding/images/sphx_glr_plot_haxby_anova_svm_001.png
+   :target: ../auto_examples/02_decoding/plot_haxby_anova_svm.html
    :align: right
    :scale: 65
 
-.. literalinclude:: ../../examples/decoding/plot_haxby_anova_svm.py
+.. literalinclude:: ../../examples/02_decoding/plot_haxby_anova_svm.py
     :start-after: # Visualize the results
     :end-before: # Obtain prediction scores via cross validation
 
@@ -423,7 +423,7 @@ To visualize the results, we need to:
 .. topic:: **Final script**
 
     The complete script to do an SVM-Anova analysis can be found as
-    :ref:`an example <sphx_glr_auto_examples_decoding_plot_haxby_anova_svm.py>`.
+    :ref:`an example <sphx_glr_auto_examples_02_decoding_plot_haxby_anova_svm.py>`.
 
 
 .. seealso::

@@ -68,19 +68,19 @@ of the estimator::
     >>> estimator.precision_  # doctest: +SKIP
 
 
-.. |covariance| image:: ../auto_examples/connectivity/images/sphx_glr_plot_inverse_covariance_connectome_001.png
-    :target: ../auto_examples/connectivity/plot_inverse_covariance_connectome.html
+.. |covariance| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_inverse_covariance_connectome_001.png
+    :target: ../auto_examples/03_connectivity/plot_inverse_covariance_connectome.html
     :scale: 40
-.. |precision| image:: ../auto_examples/connectivity/images/sphx_glr_plot_inverse_covariance_connectome_003.png
-    :target: ../auto_examples/connectivity/plot_inverse_covariance_connectome.html
+.. |precision| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_inverse_covariance_connectome_003.png
+    :target: ../auto_examples/03_connectivity/plot_inverse_covariance_connectome.html
     :scale: 40
 
-.. |covariance_graph| image:: ../auto_examples/connectivity/images/sphx_glr_plot_inverse_covariance_connectome_002.png
-    :target: ../auto_examples/connectivity/plot_inverse_covariance_connectome.html
+.. |covariance_graph| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_inverse_covariance_connectome_002.png
+    :target: ../auto_examples/03_connectivity/plot_inverse_covariance_connectome.html
     :scale: 55
 
-.. |precision_graph| image:: ../auto_examples/connectivity/images/sphx_glr_plot_inverse_covariance_connectome_004.png
-    :target: ../auto_examples/connectivity/plot_inverse_covariance_connectome.html
+.. |precision_graph| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_inverse_covariance_connectome_004.png
+    :target: ../auto_examples/03_connectivity/plot_inverse_covariance_connectome.html
     :scale: 55
 
 .. centered:: |covariance| |precision|
@@ -99,7 +99,7 @@ of the estimator::
 .. topic:: **Full example**
 
     See the following example for a full file running the analysis:
-    :ref:`sphx_glr_auto_examples_connectivity_plot_inverse_covariance_connectome.py`
+    :ref:`sphx_glr_auto_examples_03_connectivity_plot_inverse_covariance_connectome.py`
 
 .. topic:: **Exercise: computing sparse inverse covariance**
    :class: green
@@ -157,7 +157,7 @@ group analysis only on the non zero coefficients.
 .. topic:: **Full example**
 
     See the following example for a full file running the analysis:
-    :ref:`sphx_glr_auto_examples_connectivity_plot_multi_subject_connectome.py`
+    :ref:`sphx_glr_auto_examples_03_connectivity_plot_multi_subject_connectome.py`
 
 
 .. topic:: **Exercise: computing the correlation matrix of rest fmri**
@@ -196,8 +196,8 @@ Finally, we use the
 
 The results are the following:
 
-.. image:: ../auto_examples/connectivity/images/sphx_glr_plot_simulated_connectome_001.png
-    :target: ../auto_examples/connectivity/plot_simulated_connectome.html
+.. image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_simulated_connectome_001.png
+    :target: ../auto_examples/03_connectivity/plot_simulated_connectome.html
     :scale: 60
 
 The group-sparse estimation outputs matrices with
@@ -211,7 +211,7 @@ information.
 .. topic::  **Full Example**
 
    The complete source code for this example can be found here:
-   :ref:`sphx_glr_auto_examples_connectivity_plot_simulated_connectome.py`
+   :ref:`sphx_glr_auto_examples_03_connectivity_plot_simulated_connectome.py`
 
 
 .. [#] A lot of technical details on the algorithm used for group-sparse
@@ -250,7 +250,7 @@ Deviations from this mean in the tangent space are provided in the connectivitie
 .. topic:: **Full example**
 
     See the following example for a full file running the analysis:
-    :ref:`sphx_glr_auto_examples_connectivity_plot_connectivity_measures.py`
+    :ref:`sphx_glr_auto_examples_03_connectivity_plot_connectivity_measures.py`
 
 .. topic:: **Exercise: computing connectivity in tangent space**
    :class: green

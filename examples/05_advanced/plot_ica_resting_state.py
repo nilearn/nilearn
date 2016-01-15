@@ -9,7 +9,7 @@ for resting state.
 
 This example is a toy. To apply ICA to resting-state data, it is advised
 to look at the example
-:ref:`sphx_glr_auto_examples_connectivity_plot_canica_resting_state.py`.
+:ref:`sphx_glr_auto_examples_03_connectivity_plot_canica_resting_state.py`.
 
 The example here applies the scikit-learn ICA to resting-state data.
 Note that following the code in the example, any unsupervised
