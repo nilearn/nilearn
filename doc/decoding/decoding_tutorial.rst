@@ -320,7 +320,7 @@ permutation testing on the labels, with
 .. topic:: **Putting it all together**
 
     The :ref:`ROI-based decoding example
-    <sphx_glr_auto_examples_decoding_plot_haxby_full_analysis.py>` does a decoding analysis per
+    <sphx_glr_auto_examples_02_decoding_plot_haxby_full_analysis.py>` does a decoding analysis per
     mask, giving the f1-score of the prediction for each object.
 
     It uses all the notions presented above, with ``for`` loop to iterate
