@@ -34,7 +34,7 @@ which is already preprocessed and publicly available at
 datasets.
 
 
-.. literalinclude:: ../../examples/03_connectivity/plot_extract_regions_dictlearn_maps.py
+.. literalinclude:: ../../examples/03_connectivity/plot_extract_regions_dictlearning_maps.py
     :start-after: # utilities
     :end-before: ################################################################################
 
@@ -49,7 +49,7 @@ the parameters and calling the object fit on the filenames of datasets without
 necessarily converting each file to Nifti1Image object.
 
 
-.. literalinclude:: ../../examples/03_connectivity/plot_extract_regions_dictlearn_maps.py
+.. literalinclude:: ../../examples/03_connectivity/plot_extract_regions_dictlearning_maps.py
     :start-after: # object and fit the model to the functional datasets
     :end-before: # Visualization of resting state networks
 
@@ -63,12 +63,12 @@ Here, we use :func:`plot_prob_atlas` for easy visualization of 4D atlas maps
 onto the anatomical standard template. Each map is displayed in different
 color and colors are random and automatically picked.
 
-.. literalinclude:: ../../examples/03_connectivity/plot_extract_regions_dictlearn_maps.py
+.. literalinclude:: ../../examples/03_connectivity/plot_extract_regions_dictlearning_maps.py
     :start-after: # Show networks using plotting utilities
     :end-before: ################################################################################
 
-.. image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_extract_regions_dictlearn_maps_001.png
-    :target: ../auto_examples/03_connectivity/plot_extract_regions_dictlearn_maps.html
+.. image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_extract_regions_dictlearning_maps_001.png
+    :target: ../auto_examples/03_connectivity/plot_extract_regions_dictlearning_maps.html
     :scale: 60
 
 .. currentmodule:: nilearn.regions
@@ -93,7 +93,7 @@ regions. We control the small spurious regions size by thresholding in voxel uni
 to adapt well to the resolution of the image. Please see the documentation of
 nilearn.regions.connected_regions for more details.
 
-.. literalinclude:: ../../examples/03_connectivity/plot_extract_regions_dictlearn_maps.py
+.. literalinclude:: ../../examples/03_connectivity/plot_extract_regions_dictlearning_maps.py
     :start-after: # maps, less the threshold means that more intense non-voxels will be survived.
     :end-before: # Visualization of region extraction results
 
@@ -107,12 +107,12 @@ for visualizing extracted regions on a standard template. Each extracted brain
 region is assigned a color and as you can see that visual cortex area is extracted
 quite nicely into each hemisphere.
 
-.. literalinclude:: ../../examples/03_connectivity/plot_extract_regions_dictlearn_maps.py
+.. literalinclude:: ../../examples/03_connectivity/plot_extract_regions_dictlearning_maps.py
     :start-after: # Visualization of region extraction results
     :end-before: ################################################################################
 
-.. image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_extract_regions_dictlearn_maps_002.png
-    :target: ../auto_examples/03_connectivity/plot_extract_regions_dictlearn_maps.html
+.. image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_extract_regions_dictlearning_maps_002.png
+    :target: ../auto_examples/03_connectivity/plot_extract_regions_dictlearning_maps.html
     :scale: 60
 
 .. currentmodule:: nilearn.connectome
@@ -133,7 +133,7 @@ shape=(176, 23) where 176 is the length of time series and 23 is the number of
 extracted regions. Likewise, we have a total of 20 subject specific time series signals.
 The third step, we compute the mean correlation across all subjects.
 
-.. literalinclude:: ../../examples/03_connectivity/plot_extract_regions_dictlearn_maps.py
+.. literalinclude:: ../../examples/03_connectivity/plot_extract_regions_dictlearning_maps.py
     :start-after: # To estimate correlation matrices we import connectome utilities from nilearn
     :end-before: # Visualization
 
@@ -148,16 +148,16 @@ automatically the coordinates required, for plotting connectome relations.
 Left image is the correlations in a matrix form and right image is the
 connectivity relations to brain regions plotted using :func:`plot_connectome`
 
-.. literalinclude:: ../../examples/03_connectivity/plot_extract_regions_dictlearn_maps.py
+.. literalinclude:: ../../examples/03_connectivity/plot_extract_regions_dictlearning_maps.py
     :start-after: # Plotting connectome results
     :end-before: ################################################################################
 
-.. |matrix| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_extract_regions_dictlearn_maps_003.png
-   :target: ../auto_examples/03_connectivity/plot_extract_regions_dictlearn_maps.html
+.. |matrix| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_extract_regions_dictlearning_maps_003.png
+   :target: ../auto_examples/03_connectivity/plot_extract_regions_dictlearning_maps.html
    :scale: 60
 
-.. |connectome| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_extract_regions_dictlearn_maps_004.png
-   :target: ../auto_examples/03_connectivity/plot_extract_regions_dictlearn_maps.html
+.. |connectome| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_extract_regions_dictlearning_maps_004.png
+   :target: ../auto_examples/03_connectivity/plot_extract_regions_dictlearning_maps.html
    :scale: 60
 
 .. centered:: |matrix| |connectome|
@@ -172,15 +172,15 @@ and right image displays the regions split apart after region extraction. Here, 
 validate that regions are nicely separated identified by each extracted region in different
 color.
 
-.. literalinclude:: ../../examples/03_connectivity/plot_extract_regions_dictlearn_maps.py
+.. literalinclude:: ../../examples/03_connectivity/plot_extract_regions_dictlearning_maps.py
     :start-after: # Plotting regions extracted for only one specific network
 
-.. |dmn| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_extract_regions_dictlearn_maps_005.png
-   :target: ../auto_examples/03_connectivity/plot_extract_regions_dictlearn_maps.html
+.. |dmn| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_extract_regions_dictlearning_maps_005.png
+   :target: ../auto_examples/03_connectivity/plot_extract_regions_dictlearning_maps.html
    :scale: 50
     
-.. |dmn_reg| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_extract_regions_dictlearn_maps_006.png
-   :target: ../auto_examples/03_connectivity/plot_extract_regions_dictlearn_maps.html
+.. |dmn_reg| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_extract_regions_dictlearning_maps_006.png
+   :target: ../auto_examples/03_connectivity/plot_extract_regions_dictlearning_maps.html
    :scale: 50
 
 .. centered:: |dmn| |dmn_reg|
@@ -188,4 +188,4 @@ color.
 .. seealso::
 
    The full code can be found as an example:
-   :ref:`sphx_glr_auto_examples_03_connectivity_plot_extract_regions_dictlearn_maps.py`
+   :ref:`sphx_glr_auto_examples_03_connectivity_plot_extract_regions_dictlearning_maps.py`
