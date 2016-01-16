@@ -724,3 +724,32 @@ def fetch_atlas_basc_multiscale_2015(version='sym', data_dir=None,
     params['description'] = descr
 
     return Bunch(**params)
+
+
+def fetch_atlas_dosenbach_2010():
+    """Download and load the Dosenbach et al. brain atlas composed of 160 ROIs.
+
+    Returns
+    -------
+    data: sklearn.datasets.base.Bunch
+        dictionary-like object, contains:
+        - "rois": coordinates of 160 ROIs in MNI space
+        - "labels": ROIs labels
+        - "networks": networks names
+
+
+    References
+    ----------
+    Dosenbach N.U., Nardos B., et al. "Prediction of individual brain maturity
+    using fMRI.", 2010, Science 329, 1358-1361.
+    """
+    dataset_name = 'dosenbach_2010'
+    fdescr = _get_dataset_descr(dataset_name)
+    package_directory = os.path.dirname(os.path.abspath(__file__))
+    csv = os.path.join(package_directory, "data", "dosenbach_2010.csv")
+    out_csv = np.recfromcsv(csv)
+    params = dict(rois=out_csv[['x', 'y', 'z']],
+                  labels=out_csv[['name', 'number']],
+                  networks=out_csv['network'], description=fdescr)
+
+    return Bunch(**params)

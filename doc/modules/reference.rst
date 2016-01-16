@@ -71,6 +71,7 @@ uses.
    fetch_atlas_yeo_2011
    fetch_atlas_aal
    fetch_atlas_basc_multiscale_2015
+   fetch_atlas_dosenbach_2010
    fetch_abide_pcp
    fetch_adhd
    fetch_haxby
