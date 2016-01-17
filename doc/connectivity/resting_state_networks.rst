@@ -36,7 +36,7 @@ on data loading <loading_data>`):
 
 .. literalinclude:: ../../examples/03_connectivity/plot_canica_resting_state.py
     :start-after: # First we load the ADHD200 data
-    :end-before: # Here we apply CanICA on the data
+    :end-before:  ####################################################################
 
 Applying CanICA
 ---------------
@@ -49,7 +49,7 @@ and then fit it on the data.
 
 .. literalinclude:: ../../examples/03_connectivity/plot_canica_resting_state.py
     :start-after: # Here we apply CanICA on the data
-    :end-before: # To visualize we plot the outline of all components on one figure
+    :end-before: ####################################################################
 
 The components estimated are found as the `components_` attribute of the
 object.
@@ -63,7 +63,7 @@ each component separately.
 
 .. literalinclude:: ../../examples/03_connectivity/plot_canica_resting_state.py
     :start-after: # To visualize we plot the outline of all components on one figure
-    :end-before: # Finally, we plot the map for each ICA component separately
+    :end-before: ####################################################################
 
 .. figure:: ../auto_examples/03_connectivity/images/sphx_glr_plot_canica_resting_state_001.png
    :align: center
@@ -119,13 +119,13 @@ larger alpha yields sparser maps.
 
 .. literalinclude:: ../../examples/03_connectivity/plot_compare_resting_state_decomposition.py
     :start-after: # Dictionary learning
-    :end-before: # CanICA
+    :end-before: ###############################################################################
 
 We can fit both estimators to compare them
 
 .. literalinclude:: ../../examples/03_connectivity/plot_compare_resting_state_decomposition.py
     :start-after: # Fit both estimators
-    :end-before: # Visualize the results
+    :end-before: ###############################################################################
 
 Visualizing the results
 -----------------------
