@@ -727,7 +727,8 @@ def fetch_atlas_basc_multiscale_2015(version='sym', data_dir=None,
 
 
 def fetch_atlas_dosenbach_2010():
-    """Download and load the Dosenbach et al. brain atlas composed of 160 ROIs.
+    """Download and load the Dosenbach et al. brain atlas composed of 160 ROIs
+    grouped in 6 networks.
 
     Returns
     -------
@@ -748,8 +749,15 @@ def fetch_atlas_dosenbach_2010():
     package_directory = os.path.dirname(os.path.abspath(__file__))
     csv = os.path.join(package_directory, "data", "dosenbach_2010.csv")
     out_csv = np.recfromcsv(csv)
+
+    # We add the ROI number to its name, since names are not unique
+    names = out_csv['name']
+    numbers = out_csv['number']
+    labels = np.array([name + ' ' + str(number) for (name, number) in
+                       zip(names, numbers)])
+
     params = dict(rois=out_csv[['x', 'y', 'z']],
-                  labels=out_csv[['name', 'number']],
+                  labels=labels,
                   networks=out_csv['network'], description=fdescr)
 
     return Bunch(**params)
