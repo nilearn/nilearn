@@ -33,6 +33,15 @@ def test_invalid_thresholds_in_threshold_maps_ratio():
                             maps, threshold=invalid_threshold)
 
 
+def test_nans_threshold_maps_ratio():
+    maps, _ = generate_maps((10, 10, 10), n_regions=2)
+    data = maps.get_data()
+    data[:, :, 0] = np.nan
+
+    maps_img = nibabel.Nifti1Image(data, np.eye(4))
+    thr_maps = _threshold_maps_ratio(maps_img, threshold=0.8)
+
+
 def test_threshold_maps_ratio():
     # smoke test for function _threshold_maps_ratio with randomly
     # generated maps
