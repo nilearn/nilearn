@@ -568,7 +568,8 @@ def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None,
         bg_img : Niimg-like object
             See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
             The background image that the ROI/mask will be plotted on top of.
-            If not specified MNI152 template will be used.
+            If nothing is specified, the MNI152 template will be used.
+            To turn off background image, just pass "bg_img=False".
         cut_coords: None, or a tuple of floats
             The MNI coordinates of the point where the cut is performed, in
             MNI coordinates and order.
@@ -654,8 +655,9 @@ def plot_prob_atlas(maps_img, anat_img=MNI152TEMPLATE, view_type='auto',
             4D image of the probabilistic atlas maps
         anat_img : Niimg-like object
             See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
-            The anatomical image to be used as a background. If None is
-            given, nilearn tries to find a T1 template.
+            The anatomical image to be used as a background.
+            If nothing is specified, the MNI152 template will be used.
+            To turn off background image, just pass "anat_img=False".
         view_type: {'auto', 'contours', 'filled_contours', 'continuous'}, optional
             By default view_type == 'auto', which means maps are overlayed as
             contours if number of maps to display are more or
@@ -821,7 +823,8 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
         bg_img : Niimg-like object
             See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
             The background image that the ROI/mask will be plotted on top of.
-            If not specified MNI152 template will be used.
+            If nothing is specified, the MNI152 template will be used.
+            To turn off background image, just pass "bg_img=False".
         cut_coords : None, a tuple of floats, or an integer
             The MNI coordinates of the point where the cut is performed
             If display_mode is 'ortho', this should be a 3-tuple: (x, y, z)
