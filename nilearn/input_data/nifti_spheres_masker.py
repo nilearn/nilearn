@@ -62,13 +62,13 @@ def _apply_mask_and_get_affinity(seeds, niimg, radius, allow_overlap,
 
     clf = neighbors.NearestNeighbors(radius=radius)
     A = clf.fit(mask_coords).radius_neighbors_graph(seeds)
+    A = A.tolil()
     for i, nearest in enumerate(nearests):
         if nearest is None:
             continue
         A[i, nearest] = True
-    A = A.tolil()
-    # Include selfs
-
+    
+    # Include the voxel containing the seed itself if not masked
     mask_coords = mask_coords.astype(int).tolist()
     for i, seed in enumerate(seeds):
         try:
