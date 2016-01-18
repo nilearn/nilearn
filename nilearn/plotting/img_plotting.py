@@ -329,6 +329,8 @@ class _MNI152Template(SpatialImage):
     def __str__(self):
         return "<MNI152Template>"
 
+    def __repr__(self):
+        return "<MNI152Template>"
 
 # The constant that we use as a default in functions
 MNI152TEMPLATE = _MNI152Template()
