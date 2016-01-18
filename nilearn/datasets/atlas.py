@@ -738,7 +738,6 @@ def fetch_atlas_dosenbach_2010():
         - "labels": ROIs labels
         - "networks": networks names
 
-
     References
     ----------
     Dosenbach N.U., Nardos B., et al. "Prediction of individual brain maturity
@@ -753,9 +752,8 @@ def fetch_atlas_dosenbach_2010():
     # We add the ROI number to its name, since names are not unique
     names = out_csv['name']
     numbers = out_csv['number']
-    labels = np.array([name + ' ' + str(number) for (name, number) in
+    labels = np.array(['{0} {1}'.format(name, number) for (name, number) in
                        zip(names, numbers)])
-
     params = dict(rois=out_csv[['x', 'y', 'z']],
                   labels=labels,
                   networks=out_csv['network'], description=fdescr)
