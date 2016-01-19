@@ -4,7 +4,8 @@ import numpy as np
 
 from nose.tools import assert_equal, assert_raises
 
-from nilearn._utils.testing import generate_fake_fmri
+from nilearn._utils.testing import (generate_fake_fmri, memory_limit,
+                                    assert_raises_regex)
 
 
 def test_generate_fake_fmri():
@@ -41,3 +42,17 @@ def test_generate_fake_fmri():
 
     assert_raises(ValueError, generate_fake_fmri, length=10, n_blocks=10,
                   block_size=None, rand_gen=rand_gen)
+
+
+@memory_limit(10000000)
+def test_memory_limit():
+    # memory usage : 4000, this should be fine
+    a = np.zeros((10, 10, 10), dtype=np.float32)
+    del a
+
+
+@memory_limit(10000000)
+def test_memory_limit_raise():
+    # memory usage : 40000000, this should not be fine
+    assert_raises_regex(
+        MemoryError, '', np.zeros, (500, 100, 60), dtype=np.float32)

@@ -10,6 +10,11 @@ import re
 import sys
 import tempfile
 import warnings
+from functools import wraps
+try:
+    import resource
+except:
+    resource = None
 
 import numpy as np
 import scipy.signal
@@ -659,3 +664,44 @@ except ImportError:
     def assert_less(a, b):
         if a >= b:
             raise AssertionError("%f is not less than %f" % (a, b))
+
+
+def memory_limit(limit):
+    def decorator(func):
+        @wraps(func)
+        def wrapper_func(*args, **kwargs):
+            if resource is None:
+                import nose
+                raise nose.SkipTest('Test skipped because resource package is '
+                                    'not available.')
+            try:
+                # Save previous limit
+                prev_rlimit_as = resource.getrlimit(resource.RLIMIT_AS)
+                print(prev_rlimit_as)
+                # Set new limit
+                resource.setrlimit(resource.RLIMIT_AS,
+                                   (limit, prev_rlimit_as[1]))
+                # Check that limits are properly set
+                new_rlimit_as = resource.getrlimit(resource.RLIMIT_AS)
+                print(new_rlimit_as)
+                if new_rlimit_as != (limit, prev_rlimit_as[1]):
+                    raise SystemError()
+
+            except:
+                import nose
+                raise nose.SkipTest('Test skipped because nilearn was not '
+                                    'able to set resource limitation.')
+
+            # Call the function
+            retval = func(*args, **kwargs)
+
+            try:
+                # Set previous limit back
+                resource.setrlimit(resource.RLIMIT_AS, prev_rlimit_as)
+            except:
+                import nose
+                raise nose.SystemError('Unable to restore resource context.'
+                                       'Aborting.')
+            return retval
+        return wrapper_func
+    return decorator
