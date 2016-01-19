@@ -268,7 +268,7 @@ def _random_walker(data, labels, beta=130, tol=1.e-3, copy=True, spacing=None):
     if np.any(np.diff(label_values) != 1):
         mask = labels >= 0
         labels[mask] = np.searchsorted(np.unique(labels[mask]),
-                                       labels[mask])[0].astype(labels.dtype)
+                                       labels[mask]).astype(labels.dtype)
     labels = labels.astype(np.int32)
 
     # If the array has pruned zones, be sure that no isolated pixels

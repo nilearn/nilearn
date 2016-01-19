@@ -406,13 +406,12 @@ def test_new_img_like():
 
 def test_validity_threshold_value_in_threshold_img():
     shape = (6, 8, 10)
-    maps = testing.generate_maps(shape, n_regions=2)
-    map_0 = maps[0]
+    maps, _ = testing.generate_maps(shape, n_regions=2)
 
     # testing to raise same error when threshold=None case
     testing.assert_raises_regex(ValueError,
                                 "The input parameter 'threshold' is empty. ",
-                                threshold_img, map_0, threshold=None)
+                                threshold_img, maps, threshold=None)
 
     invalid_threshold_values = ['90t%', 's%', 't', '0.1']
     name = 'threshold'
@@ -420,21 +419,31 @@ def test_validity_threshold_value_in_threshold_img():
         testing.assert_raises_regex(ValueError,
                                     '{0}.+should be a number followed by '
                                     'the percent sign'.format(name),
-                                    threshold_img, map_0, threshold=thr)
+                                    threshold_img, maps, threshold=thr)
 
 
 def test_threshold_img():
     # to check whether passes with valid threshold inputs
     shape = (10, 20, 30)
-    maps = testing.generate_maps(shape, n_regions=4)
-    map_0 = maps[0]
+    maps, _ = testing.generate_maps(shape, n_regions=4)
     affine = np.eye(4)
     mask_img = nibabel.Nifti1Image(np.ones((shape), dtype=np.int8), affine)
 
-    for img in iter_img(map_0):
+    for img in iter_img(maps):
         # when threshold is a float value
         thr_maps_img = threshold_img(img, threshold=0.8)
         # when we provide mask image
         thr_maps_percent = threshold_img(img, threshold=1, mask_img=mask_img)
         # when threshold is a percentile
         thr_maps_percent2 = threshold_img(img, threshold='2%')
+
+
+def test_isnan_threshold_img_data():
+    shape = (10, 10, 10)
+    maps, _ = testing.generate_maps(shape, n_regions=2)
+    data = maps.get_data()
+    data[:, :, 0] = np.nan
+
+    maps_img = nibabel.Nifti1Image(data, np.eye(4))
+    # test threshold_img to converge properly when input image has nans.
+    threshold_maps = threshold_img(maps_img, threshold=0.8)

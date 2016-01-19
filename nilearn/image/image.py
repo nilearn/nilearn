@@ -603,7 +603,10 @@ def new_img_like(ref_niimg, data, affine=None, copy_header=False):
 
 
 def threshold_img(img, threshold, mask_img=None):
-    """ Thresholds the given input image based on specific strategy.
+    """ Threshold the given input image, mostly statistical or atlas images.
+
+    Thresholding can be done based on direct image intensities or selection
+    threshold with given percentile.
 
     .. versionadded:: 0.2
 
@@ -635,8 +638,10 @@ def threshold_img(img, threshold, mask_img=None):
     from .. import masking
 
     img = check_niimg(img)
-    img_data = _safe_get_data(img).copy()
+    img_data = img.get_data()
     affine = img.get_affine()
+
+    img_data = np.nan_to_num(img_data)
 
     if mask_img is not None:
         if not _check_same_fov(img, mask_img):
