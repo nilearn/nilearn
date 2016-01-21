@@ -5,7 +5,6 @@ Author: Bertrand.thirion, Virgile Fritsch, 2014--2015
 """
 print(__doc__)
 
-import matplotlib.pyplot as plt
 from nilearn import datasets
 from nilearn.input_data import NiftiMasker
 
@@ -36,17 +35,17 @@ thresholded_map1 = map_threshold(
     z_map, nifti_masker.mask_img_, threshold=.001, height_control='fpr',
     cluster_threshold=10)
 
-# Now use FDR <.05, no lcuster-level threshold
+# Now use FDR <.05, no cluster-level threshold
 thresholded_map2 = map_threshold(
-    z_map, nifti_masker.mask_img_, threshold=.01, height_control='fdr')
+    z_map, nifti_masker.mask_img_, threshold=.05, height_control='fdr')
 
 
 # Visualization
-from nilearn.plotting import plot_stat_map
-display = plot_stat_map(z_map, title='Raw z map')
-plot_stat_map(thresholded_map1, cut_coords=display.cut_coords,
+from nilearn import plotting
+display = plotting.plot_stat_map(z_map, title='Raw z map')
+plotting.plot_stat_map(thresholded_map1, cut_coords=display.cut_coords,
               title='Thresholded z map, fpr <.001, clusters > 10 voxels')
-plot_stat_map(thresholded_map2, cut_coords=display.cut_coords,
-              title='Thresholded z map, expected fdr = .01')
+plotting.plot_stat_map(thresholded_map2, cut_coords=display.cut_coords,
+              title='Thresholded z map, expected fdr = .05')
 
-plt.show()
+plotting.show()
