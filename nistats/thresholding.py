@@ -22,22 +22,22 @@ def fdr_threshold(z_vals, alpha):
         return np.infty
 
 
-def map_threshold(stat_img, mask_img, threshold, height_control='fpr',
-                  cluster_threshold=0):
-    """ Threshold the provvided map
+def map_threshold(stat_img, mask_img=None, threshold=.001,
+                  height_control='fpr', cluster_threshold=0):
+    """ Threshold the provided map
 
     Parameters
     ----------
     stat_img : Niimg-like object,
        statistical image (presumably in z scale)
 
-    mask_img : Niimg-like object,
+    mask_img : Niimg-like object, optional,
         mask image
 
-    threshold: float,
+    threshold: float, optional
         cluster forming threshold (either a p-value or z-scale value)
 
-    height_control: string
+    height_control: string, optional
         false positive control meaning of cluster forming
         threshold: 'fpr'|'fdr'|'bonferroni'|'none'
 
@@ -48,10 +48,16 @@ def map_threshold(stat_img, mask_img, threshold, height_control='fpr',
     -------
     thresholded_map : Nifti1Image,
         the stat_map theresholded at the prescribed voxel- and cluster-level
+        
+    threshold: float,
+        the voxel-level threshold used actually
     """
     # Masking
-    masker = NiftiMasker(mask_img=mask_img)
-    stats = np.ravel(masker.fit_transform(stat_img))
+    if mask_img is None:
+        masker = NiftiMasker(mask_strategy='background').fit(stat_img)
+    else:
+        masker = NiftiMasker(mask_img=mask_img).fit()
+    stats = np.ravel(masker.transform(stat_img))
     n_voxels = np.size(stats)
 
     # Thresholding
@@ -76,4 +82,4 @@ def map_threshold(stat_img, mask_img, threshold, height_control='fpr',
         if np.sum(labels == label_) < cluster_threshold:
             stats[labels == label_] = 0
 
-    return masker.inverse_transform(stats)
+    return masker.inverse_transform(stats), z_th
