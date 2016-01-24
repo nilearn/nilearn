@@ -12,6 +12,7 @@ when building the documentation.
 
 
 from __future__ import division, print_function, absolute_import
+import re
 import os
 from . import glr_path_static
 from .gen_rst import generate_dir_rst
@@ -53,13 +54,12 @@ def generate_gallery_rst(app):
         plot_gallery = bool(app.builder.config.plot_gallery)
 
     gallery_conf.update(app.config.sphinx_gallery_conf)
+    gallery_conf.update(plot_gallery=plot_gallery)
+    gallery_conf.update(abort_on_example_error=app.builder.config.abort_on_example_error)
 
     # this assures I can call the config in other places
     app.config.sphinx_gallery_conf = gallery_conf
     app.config.html_static_path.append(glr_path_static())
-
-    if not plot_gallery:
-        return
 
     clean_gallery_out(app.builder.outdir)
 
@@ -102,6 +102,7 @@ def generate_gallery_rst(app):
 
 
 gallery_conf = {
+    'filename_pattern': re.escape(os.sep) + 'plot',
     'examples_dirs': '../examples',
     'gallery_dirs': 'auto_examples',
     'mod_example_dir': 'modules/generated',
@@ -113,6 +114,7 @@ gallery_conf = {
 def setup(app):
     """Setup sphinx-gallery sphinx extension"""
     app.add_config_value('plot_gallery', True, 'html')
+    app.add_config_value('abort_on_example_error', False, 'html')
     app.add_config_value('sphinx_gallery_conf', gallery_conf, 'html')
     app.add_stylesheet('gallery.css')
 
