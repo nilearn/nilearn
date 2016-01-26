@@ -473,7 +473,16 @@ def clean(signals, sessions=None, detrend=True, standardize=True,
     # Remove confounds
     if confounds is not None:
         confounds = _ensure_float(confounds)
-        confounds = _standardize(confounds, normalize=True, detrend=detrend)
+        confounds = _standardize(confounds, normalize=standardize,
+                                 detrend=detrend)
+        if not standardize:
+            # Improve numerical stability by controlling the range of
+            # confounds. We don't rely on _standardize as it removes any
+            # constant contribution to confounds
+            confound_max = np.maximum(confounds.max(axis=0),
+                                      -confounds.min(axis=0))
+            confound_max[confound_max == 0] = 1
+            confounds /= confound_max
 
         if (LooseVersion(scipy.__version__) > LooseVersion('0.9.0')):
             # Pivoting in qr decomposition was added in scipy 0.10
