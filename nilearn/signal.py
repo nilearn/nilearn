@@ -478,9 +478,8 @@ def clean(signals, sessions=None, detrend=True, standardize=True,
         if not standardize:
             # Improve numerical stability by controlling the range of
             # confounds. We don't rely on _standardize as it removes any
-            # constant contribution to confounds
-            confound_max = np.maximum(confounds.max(axis=0),
-                                      -confounds.min(axis=0))
+            # constant contribution to confounds.
+            confound_max = np.max(np.abs(confounds), axis=0)
             confound_max[confound_max == 0] = 1
             confounds /= confound_max
 
