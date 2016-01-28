@@ -105,6 +105,7 @@ def test_small_radius():
     data = np.random.random(shape)
     mask = np.zeros(shape)
     mask[1, 1, 1] = 1
+    mask[2, 2, 2] = 1
     affine = np.eye(4) * 1.2
     seed = (1.4, 1.4, 1.4)
 
