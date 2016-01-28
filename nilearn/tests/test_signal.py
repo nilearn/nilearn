@@ -363,7 +363,7 @@ def test_clean_confounds():
                                                   confounds=np.ones(20),
                                                   detrend=False,
                                                   ).mean(),
-                                   0)
+                                   np.zeros((20, 2)))
 
 
 def test_high_variance_confounds():
