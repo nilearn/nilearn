@@ -49,8 +49,21 @@ def _apply_mask_and_get_affinity(seeds, niimg, radius, allow_overlap,
         radius += 1e-6
 
     clf = neighbors.NearestNeighbors(radius=radius)
-    A = clf.fit(mask_coords).radius_neighbors_graph(seeds)
-    A = A.tolil()
+    clf.fit(mask_coords)
+    A = []
+    for i, s in enumerate(seeds):
+        # Check seed is inside the mask
+        dist, _ = clf.kneighbors(s, 1)
+        if dist > 2:
+            raise ValueError('Seed #%i is too far' % i)
+        # Select voxels inside radius
+        a = clf.radius_neighbors_graph(s)
+        # If Radius is too small
+        if a.sum() == 0:
+            a = clf.kneighbors_graph(s, 1)
+        A.append(a)
+    from scipy import sparse
+    A = sparse.vstack(A).tolil()
     # Include selfs
     mask_coords = mask_coords.astype(int).tolist()
     for i, seed in enumerate(seeds):
