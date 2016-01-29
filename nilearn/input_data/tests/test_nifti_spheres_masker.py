@@ -110,7 +110,7 @@ def test_small_radius():
     seed = (1.4, 1.4, 1.4)
 
     masker = NiftiSpheresMasker([seed], radius=0.1,
-                            mask_img=nibabel.Nifti1Image(mask, affine))
+                                mask_img=nibabel.Nifti1Image(mask, affine))
     masker.fit_transform(nibabel.Nifti1Image(data, affine))
 
     # Test if masking is taken into account
@@ -118,11 +118,11 @@ def test_small_radius():
     mask[1, 1, 0] = 1
 
     masker = NiftiSpheresMasker([seed], radius=0.1,
-                            mask_img=nibabel.Nifti1Image(mask, affine))
+                                mask_img=nibabel.Nifti1Image(mask, affine))
     assert_raises_regex(ValueError, 'Sphere around seed #0 is empty',
                         masker.fit_transform,
                         nibabel.Nifti1Image(data, affine))
 
     masker = NiftiSpheresMasker([seed], radius=1.6,
-                            mask_img=nibabel.Nifti1Image(mask, affine))
+                                mask_img=nibabel.Nifti1Image(mask, affine))
     masker.fit_transform(nibabel.Nifti1Image(data, affine))
