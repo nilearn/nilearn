@@ -334,6 +334,10 @@ def test_fetch_abide_pcp():
     assert_equal(len(dataset.func_preproc), 400)
     assert_not_equal(dataset.description, '')
 
+    # Smoke test using only a string, rather than a list of strings
+    dataset = func.fetch_abide_pcp(data_dir=tst.tmpdir, url=local_url,
+                                   quality_checked=False, verbose=0,
+                                   derivatives='func_preproc')
 
 def test__load_mixed_gambles():
     rng = check_random_state(42)

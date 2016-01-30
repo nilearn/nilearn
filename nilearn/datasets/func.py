@@ -1078,6 +1078,10 @@ def fetch_abide_pcp(data_dir=None, n_subjects=None, pipeline='cpac',
     classification of autism: ABIDE results." Frontiers in human neuroscience
     7 (2013).
     """
+    # People keep getting it wrong and submiting a string instead of a
+    # list of strings. We'll make their life easy
+    if isinstance(derivatives, _basestring):
+        derivatives = [derivatives, ]
 
     # Parameter check
     for derivative in derivatives:
