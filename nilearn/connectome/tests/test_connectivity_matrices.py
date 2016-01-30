@@ -324,7 +324,7 @@ def test_geometric_mean_errors():
 
 def test_sym_to_vec():
     sym = np.ones((3, 3))
-    vec = np.array([1., sqrt(2), 1., sqrt(2),  sqrt(2), 1.])
+    vec = np.array([1., sqrt(2), 1., sqrt(2), sqrt(2), 1.])
     assert_array_almost_equal(sym_to_vec(sym), vec)
 
 
@@ -414,4 +414,3 @@ def test_connectivity_measure_outputs():
                     d = np.sqrt(np.diag(np.diag(prec)))
                     assert_array_almost_equal(d.dot(cov_new).dot(d), -prec +
                                               2 * np.diag(np.diag(prec)))
-

@@ -312,7 +312,7 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
             raise ValueError("'subjects' input argument must be an iterable. "
                              "You provided {0}".format(X.__class__))
 
-        subjects_types = [type(s)for s in X]
+        subjects_types = [type(s) for s in X]
         if set(subjects_types) != {np.ndarray}:
             raise ValueError("Each subject must be 2D numpy.ndarray.\n You "
                              "provided {0}".format(str(subjects_types)))
@@ -352,9 +352,8 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
              The transformed connectivity matrices.
         """
         if self.kind == 'correlation':
-            covariances_std = [self.cov_estimator_.fit(
-                signal._standardize(x, detrend=False, normalize=True)
-                ).covariance_ for x in X]
+            covariances_std = [self.cov_estimator_.fit(signal._standardize(
+                x, detrend=False, normalize=True)).covariance_ for x in X]
             connectivities = [_cov_to_corr(cov) for cov in covariances_std]
         else:
             covariances = [self.cov_estimator_.fit(x).covariance_ for x in X]
