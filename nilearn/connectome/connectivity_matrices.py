@@ -299,7 +299,7 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
 
         Parameters
         ----------
-        X : array-like, shape (n_subjects, n_samples, n_features)
+        X : list of numpy.ndarray, shape for each (n_samples, n_features)
             The input subjects time series.
 
         Returns
@@ -308,9 +308,26 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
             The object itself. Useful for chaining operations.
         """
         self.cov_estimator_ = clone(self.cov_estimator)
-        if np.ndim(X) != 3:
-            raise ValueError("Expects a 3D array-like data, got array with"
-                             " {} dimensions".format(np.ndim(X)))
+        if not hasattr(X, "__iter__"):
+            raise ValueError("'subjects' input argument must be an iterable. "
+                             "You provided {0}".format(X.__class__))
+
+        subjects_types = [type(s)for s in X]
+        if set(subjects_types) != {np.ndarray}:
+            raise ValueError("Each subject must be 2D numpy.ndarray.\n You "
+                             "provided {0}".format(str(subjects_types)))
+
+        subjects_dims = [s.ndim for s in X]
+        if set(subjects_dims) != {2}:
+            raise ValueError("Each subject must be 2D numpy.ndarray.\n You"
+                             "provided arrays of dimensions "
+                             "{0}".format(str(subjects_dims)))
+
+        n_subjects = [s.shape[1] for s in X]
+        if len(set(n_subjects)) > 1:
+            raise ValueError("All subjects must have the same number of "
+                             "features.\nYou provided: "
+                             "{0}".format(str(n_subjects)))
 
         if self.kind == 'tangent':
             covariances = [self.cov_estimator_.fit(x).covariance_ for x in X]

@@ -336,11 +336,17 @@ def test_prec_to_partial():
 
 
 def test_connectivity_measure_errors():
-    # Raising error for input with bad dimension
+    # Raising error for input subjects not iterable
     conn_measure = ConnectivityMeasure()
-    assert_raises(ValueError, conn_measure.fit, np.ones((4, 4)))
+    assert_raises(ValueError, conn_measure.fit, 1.)
+
+    # Raising error for input subjects not 2D numpy.ndarrays
+    assert_raises(ValueError, conn_measure.fit, [np.ones((100, 40)),
+                                                 np.ones((10,))])
+
+    # Raising error for input subjects with different number of features
     assert_raises(ValueError, conn_measure.fit,
-                  np.ones((3, 4, 7, 5)))
+                  [np.ones((100, 40)), np.ones((100, 41))])
 
 
 def test_connectivity_measure_outputs():
