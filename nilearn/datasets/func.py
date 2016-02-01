@@ -59,12 +59,12 @@ def fetch_haxby_simple(data_dir=None, url=None, resume=True, verbose=1):
 
     opts = {'uncompress': True}
     files = [
-        (os.path.join('pymvpa-exampledata', 'attributes.txt'), url, opts),
-        (os.path.join('pymvpa-exampledata', 'bold.nii.gz'), url, opts),
-        (os.path.join('pymvpa-exampledata', 'mask.nii.gz'), url, opts),
-        (os.path.join('pymvpa-exampledata', 'attributes_literal.txt'),
-         url, opts),
-        ]
+            (os.path.join('pymvpa-exampledata', 'attributes.txt'), url, opts),
+            (os.path.join('pymvpa-exampledata', 'bold.nii.gz'), url, opts),
+            (os.path.join('pymvpa-exampledata', 'mask.nii.gz'), url, opts),
+            (os.path.join('pymvpa-exampledata', 'attributes_literal.txt'),
+             url, opts),
+    ]
 
     dataset_name = 'haxby2001_simple'
     data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
@@ -162,14 +162,14 @@ def fetch_haxby(data_dir=None, n_subjects=1, fetch_stimuli=False,
     n_files = len(sub_files)
 
     files = [
-        (os.path.join('subj%d' % i, sub_file),
-         url + 'subj%d-2010.01.14.tar.gz' % i,
-         {'uncompress': True,
-          'md5sum': md5sums.get('subj%d-2010.01.14.tar.gz' % i, None)})
-        for i in range(1, n_subjects + 1)
-        for sub_file in sub_files
-        if not (sub_file == 'anat.nii.gz' and i == 6)  # no anat for sub. 6
-        ]
+            (os.path.join('subj%d' % i, sub_file),
+             url + 'subj%d-2010.01.14.tar.gz' % i,
+             {'uncompress': True,
+              'md5sum': md5sums.get('subj%d-2010.01.14.tar.gz' % i, None)})
+            for i in range(1, n_subjects + 1)
+            for sub_file in sub_files
+            if not (sub_file == 'anat.nii.gz' and i == 6)  # no anat for sub. 6
+    ]
 
     files = _fetch_files(data_dir, files, resume=resume, verbose=verbose)
 
@@ -190,17 +190,17 @@ def fetch_haxby(data_dir=None, n_subjects=1, fetch_stimuli=False,
 
     # return the data
     return Bunch(
-        anat=files[7::n_files],
-        func=files[0::n_files],
-        session_target=files[1::n_files],
-        mask_vt=files[2::n_files],
-        mask_face=files[3::n_files],
-        mask_house=files[4::n_files],
-        mask_face_little=files[5::n_files],
-        mask_house_little=files[6::n_files],
-        mask=mask,
-        description=fdescr,
-        **kwargs)
+            anat=files[7::n_files],
+            func=files[0::n_files],
+            session_target=files[1::n_files],
+            mask_vt=files[2::n_files],
+            mask_face=files[3::n_files],
+            mask_house=files[4::n_files],
+            mask_face_little=files[5::n_files],
+            mask_house_little=files[6::n_files],
+            mask=mask,
+            description=fdescr,
+            **kwargs)
 
 
 def fetch_nyu_rest(n_subjects=None, sessions=[1], data_dir=None, resume=True,
@@ -455,7 +455,7 @@ def fetch_adhd(n_subjects=None, data_dir=None, url=None, resume=True,
 
     # First, get the metadata
     phenotypic = ('ADHD200_40subs_motion_parameters_and_phenotypics.csv',
-                  url + '7781/adhd40_metadata.tgz', opts)
+        url + '7781/adhd40_metadata.tgz', opts)
 
     phenotypic = _fetch_files(data_dir, [phenotypic], resume=resume,
                               verbose=verbose)[0]
@@ -598,8 +598,8 @@ def fetch_miyawaki2008(data_dir=None, url=None, resume=True, verbose=1):
     file_mask = [(os.path.join('mask', m), url, opts) for m in file_mask]
 
     file_names = func_figure + func_random + \
-        label_figure + label_random + \
-        file_mask
+                 label_figure + label_random + \
+                 file_mask
 
     dataset_name = 'miyawaki2008'
     data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
@@ -819,7 +819,7 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
         "right button press (visual cue)": "right visual click",
         "right button press": "right auditory & visual click",
         "right vs left button press": "right auditory & visual click "
-            + "vs left auditory&visual click",
+           + "vs left auditory&visual click",
         "button press (auditory cue) vs sentence listening":
             "auditory click vs auditory sentences",
         "button press (visual cue) vs sentence reading":
@@ -866,8 +866,8 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
     urls = ["%sbrainomics_data_%d.zip?rql=%s&vid=data-zip"
             % (root_url, i,
                _urllib.parse.quote(base_query % {"types": rql_types,
-                                                 "label": c},
-                                   safe=',()'))
+                                          "label": c},
+                            safe=',()'))
             for c, i in zip(contrasts_wrapped, contrasts_indices)]
     filenames = []
     for subject_id in subject_ids:
@@ -884,8 +884,8 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
         urls.append("%sbrainomics_data_masks.zip?rql=%s&vid=data-zip"
                     % (root_url,
                        _urllib.parse.quote(base_query % {"types": '"boolean mask"',
-                                                         "label": "mask"},
-                                           safe=',()')))
+                                                  "label": "mask"},
+                                    safe=',()')))
         for subject_id in subject_ids:
             file_path = os.path.join(
                 "brainomics_data", subject_id, "boolean_mask_mask.nii.gz")
@@ -896,8 +896,8 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
         urls.append("%sbrainomics_data_anats.zip?rql=%s&vid=data-zip"
                     % (root_url,
                        _urllib.parse.quote(base_query % {"types": '"normalized T1"',
-                                                         "label": "anatomy"},
-                                           safe=',()')))
+                                                  "label": "anatomy"},
+                                    safe=',()')))
         for subject_id in subject_ids:
             file_path = os.path.join(
                 "brainomics_data", subject_id,
@@ -911,8 +911,8 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
         url_csv2 = ("%sdataset/cubicwebexport2.csv?rql=%s&vid=csvexport"
                     % (root_url,
                        _urllib.parse.quote("Any X,XI,XD WHERE X is QuestionnaireRun, "
-                                           "X identifier XI, X datetime "
-                                           "XD", safe=',')
+                                    "X identifier XI, X datetime "
+                                    "XD", safe=',')
                        ))
     else:
         url_csv = "%s/cubicwebexport.csv" % url
