@@ -1,3 +1,12 @@
+0.2.2
+======
+
+Changelog
+---------
+
+The default n_subjects=None in :func:`nilearn.datasets.fetch_adhd` is now
+changed to n_subjects=30.
+
 0.2.1
 ======
 

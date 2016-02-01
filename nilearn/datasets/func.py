@@ -391,7 +391,7 @@ def fetch_nyu_rest(n_subjects=None, sessions=[1], data_dir=None, resume=True,
                  session=session, description=fdescr)
 
 
-def fetch_adhd(n_subjects=None, data_dir=None, url=None, resume=True,
+def fetch_adhd(n_subjects=30, data_dir=None, url=None, resume=True,
                verbose=1):
     """Download and load the ADHD resting-state dataset.
 
@@ -399,7 +399,8 @@ def fetch_adhd(n_subjects=None, data_dir=None, url=None, resume=True,
     ----------
     n_subjects: int, optional
         The number of subjects to load from maximum of 40 subjects.
-        If default None, only 30 subjects will be loaded.
+        By default, 30 subjects will be loaded. If None is given,
+        all 40 subjects will be loaded.
 
     data_dir: string, optional
         Path of the data directory. Used to force data storage in a specified
@@ -441,7 +442,7 @@ def fetch_adhd(n_subjects=None, data_dir=None, url=None, resume=True,
     nitrc_ids = range(7782, 7822)
     max_subjects = len(ids)
     if n_subjects is None:
-        n_subjects = 30
+        n_subjects = max_subjects
     if n_subjects > max_subjects:
         warnings.warn('Warning: there are only %d subjects' % max_subjects)
         n_subjects = max_subjects
