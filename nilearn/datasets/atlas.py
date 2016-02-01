@@ -261,8 +261,11 @@ def fetch_atlas_harvard_oxford(atlas_name, data_dir=None,
     new_names = [names[0]]
     for label, name in zip(labels[1:], names[1:]):
         new_label += 1
-        if ((left_atlas == label).sum() == 0 or
-                (right_atlas == label).sum() == 0):
+        left_elements = (left_atlas == label).sum()
+        right_elements = (right_atlas == label).sum()
+        n_elements = float(left_elements + right_elements)
+        if (left_elements / n_elements < 0.05 or
+                right_elements / n_elements < 0.05):
             new_atlas[atlas == label] = new_label
             new_names.append(name)
             continue
