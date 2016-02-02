@@ -109,7 +109,8 @@ def _chunk_report_(cur_chunk_size, bytes_so_far, total_size, initial_size, t0):
 
 
 def _chunk_read_(response, local_file, chunk_size=8192, report_hook=None,
-                 initial_size=0, total_size=None, verbose=1):
+                 initial_size=0, total_size=None, verbose=1,
+                 report_frequency=0):
     """Download a file chunk by chunk and show advancement
 
     Parameters
@@ -135,6 +136,10 @@ def _chunk_read_(response, local_file, chunk_size=8192, report_hook=None,
     verbose: int, optional
         verbosity level (0 means no message).
 
+    report_frequency: int, optional
+        frequency of partial download reports displayed during a fetch.
+        default: 0: a report is displayed for each read chunk.
+
     Returns
     -------
     data: string
@@ -154,18 +159,32 @@ def _chunk_read_(response, local_file, chunk_size=8192, report_hook=None,
     bytes_so_far = initial_size
 
     t0 = time.time()
+    _block_size = 1
+    if (report_frequency > 0 and
+            total_size is not None and total_size // report_frequency > 0):
+        _block_size = total_size // report_frequency
+
     while True:
         chunk = response.read(chunk_size)
         bytes_so_far += len(chunk)
-        if report_hook:
-            _chunk_report_(len(chunk), bytes_so_far, total_size, initial_size, t0)
-
+        # Reporting download progress by block
+        if report_hook and bytes_so_far % _block_size < chunk_size:
+            _chunk_report_(len(chunk), bytes_so_far,
+                           total_size, initial_size, t0)
         if chunk:
             local_file.write(chunk)
         else:
             break
 
     return
+
+# To prevent flooding output messages on Circle CI when running the
+# examples, we override report_frequency to 4 using a check on the CIRCLECI
+# environment variable which is set to "true" automatically
+# by circle ci, see https://circleci.com/docs/environment-variables.
+if os.getenv('CIRCLECI'):
+    from functools import partial
+    _chunk_read_ = partial(_chunk_read_, report_frequency=4)
 
 
 def _get_dataset_dir(dataset_name, data_dir=None, default_paths=None,
@@ -531,7 +550,10 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False,
         dt = time.time() - t0
         if verbose > 0:
             # Complete the reporting hook
-            sys.stderr.write(' ...done. (%i seconds, %i min)\n' % (dt, dt // 60))
+            sys.stderr.write(' ...done. ({0:.4f} MB, {1} seconds, '
+                             '{2} min)\n'
+                             .format(os.path.getsize(full_name) / float(1e6),
+                                     int(dt), int(dt // 60)))
     except (_urllib.error.HTTPError, _urllib.error.URLError) as e:
         if 'Error while fetching' not in str(e):
             # For some odd reason, the error message gets doubled up
