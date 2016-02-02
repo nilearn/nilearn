@@ -103,14 +103,13 @@ def _chunk_report_(cur_chunk_size, bytes_so_far, total_size, initial_size, t0):
         # Trailing whitespace is to erase extra char when message length
         # varies
         sys.stderr.write(
-            "\rDownloaded %d of %d bytes (%0.2f%%, %s remaining)"
-            % (bytes_so_far, total_size, total_percent * 100,
+            "\rDownloaded %d of %d bytes (%i%%, %s remaining)"
+            % (bytes_so_far, total_size, int(total_percent * 100),
                _format_time(time_remaining)))
 
 
 def _chunk_read_(response, local_file, chunk_size=8192, report_hook=None,
-                 initial_size=0, total_size=None, verbose=1,
-                 report_frequency=0):
+                 initial_size=0, total_size=None, verbose=1):
     """Download a file chunk by chunk and show advancement
 
     Parameters
@@ -136,10 +135,6 @@ def _chunk_read_(response, local_file, chunk_size=8192, report_hook=None,
     verbose: int, optional
         verbosity level (0 means no message).
 
-    report_frequency: int, optional
-        frequency of partial download reports displayed during a fetch.
-        default: 0: a report is displayed for each read chunk.
-
     Returns
     -------
     data: string
@@ -160,14 +155,14 @@ def _chunk_read_(response, local_file, chunk_size=8192, report_hook=None,
 
     t0 = time.time()
     _block_size = 1
-    if (report_frequency > 0 and
-            total_size is not None and total_size // report_frequency > 0):
-        _block_size = total_size // report_frequency
+    if (total_size is not None and total_size // 100 > 0):
+        _block_size = total_size // 100
 
     while True:
         chunk = response.read(chunk_size)
         bytes_so_far += len(chunk)
-        # Reporting download progress by block
+        # Reporting download progress by block (one block is 1% of the
+        # total size of the full size if _block_size == 1).
         if report_hook and bytes_so_far % _block_size < chunk_size:
             _chunk_report_(len(chunk), bytes_so_far,
                            total_size, initial_size, t0)
@@ -177,14 +172,6 @@ def _chunk_read_(response, local_file, chunk_size=8192, report_hook=None,
             break
 
     return
-
-# To prevent flooding output messages on Circle CI when running the
-# examples, we override report_frequency to 4 using a check on the CIRCLECI
-# environment variable which is set to "true" automatically
-# by circle ci, see https://circleci.com/docs/environment-variables.
-if os.getenv('CIRCLECI'):
-    from functools import partial
-    _chunk_read_ = partial(_chunk_read_, report_frequency=4)
 
 
 def _get_dataset_dir(dataset_name, data_dir=None, default_paths=None,
