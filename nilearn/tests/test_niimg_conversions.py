@@ -346,8 +346,9 @@ def test_iter_check_niimgs():
 def _check_memory(list_img_3d):
     # We intentionally add an offset of memory usage to avoid non trustable
     # measures with memory_profiler.
-    b'a' * 100 * 1024 ** 2
+    mem_offset = b'a' * 100 * 1024 ** 2
     list(_iter_check_niimg(list_img_3d))
+    del mem_offset
 
 
 @with_memory_profiler
