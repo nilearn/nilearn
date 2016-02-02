@@ -352,9 +352,9 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
              The transformed connectivity matrices.
         """
         if self.kind == 'correlation':
-            covariances_std = [self.cov_estimator_.fit(signal._standardize(
+            covariances = [self.cov_estimator_.fit(signal._standardize(
                 x, detrend=False, normalize=True)).covariance_ for x in X]
-            connectivities = [_cov_to_corr(cov) for cov in covariances_std]
+            connectivities = [_cov_to_corr(cov) for cov in covariances]
         else:
             covariances = [self.cov_estimator_.fit(x).covariance_ for x in X]
             if self.kind == 'covariance':

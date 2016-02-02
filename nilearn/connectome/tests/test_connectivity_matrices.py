@@ -409,6 +409,8 @@ def test_connectivity_measure_outputs():
                     if cov_estimator == EmpiricalCovariance():
                         assert_array_almost_equal(d.dot(cov_new).dot(d),
                                                   covs[k])
+                    assert_array_almost_equal(np.diag(cov_new),
+                                              np.ones((n_features)))
                 elif kind == "partial correlation":
                     prec = linalg.inv(covs[k])
                     d = np.sqrt(np.diag(np.diag(prec)))
