@@ -130,7 +130,7 @@ def scan_used_functions(example_file, gallery_conf):
 THUMBNAIL_TEMPLATE = """
 .. raw:: html
 
-    <div class="sphx-glr-thumbContainer" tooltip="{snippet}">
+    <div class="sphx-glr-thumbcontainer" tooltip="{snippet}">
 
 .. only:: html
 
