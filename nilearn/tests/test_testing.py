@@ -9,8 +9,7 @@ from nilearn._utils.testing import assert_memory_less_than, assert_raises_regex
 
 def create_object(size):
     """Just create and return an object containing `size` bytes."""
-    mem_size = b'a' * size
-    return mem_size
+    mem_use = b'a' * size
 
 
 @with_memory_profiler
