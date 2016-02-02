@@ -35,6 +35,7 @@
   display: inline;
   max-height: 160px;
   max-width: 100%;
+  width: 160px;
 }
 .sphx-glr-thumbcontainer[tooltip]:hover:after {
   background: rgba(0, 0, 0, 0.8);
