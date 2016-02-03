@@ -153,17 +153,16 @@ def _chunk_read_(response, local_file, chunk_size=8192, report_hook=None,
         total_size = None
     bytes_so_far = initial_size
 
-    t0 = time.time()
-    t_display = t0
+    t0 = time_last_display = time.time()
     while True:
         chunk = response.read(chunk_size)
         bytes_so_far += len(chunk)
-        t_read = time.time()
+        time_last_read = time.time()
         # Refresh report every half second.
-        if report_hook and t_read > t_display + 0.5:
+        if report_hook and time_last_read > time_last_display + 0.5:
             _chunk_report_(len(chunk), bytes_so_far,
                            total_size, initial_size, t0)
-            t_display = time.time()
+            time_last_display = time_last_read
         if chunk:
             local_file.write(chunk)
         else:
