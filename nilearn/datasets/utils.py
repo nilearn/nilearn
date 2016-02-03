@@ -538,10 +538,8 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False,
         dt = time.time() - t0
         if verbose > 0:
             # Complete the reporting hook
-            sys.stderr.write(' ...done. ({0:.4f} MB, {1} seconds, '
-                             '{2} min)\n'
-                             .format(os.path.getsize(full_name) / float(1e6),
-                                     int(dt), int(dt // 60)))
+            sys.stderr.write(' ...done. ({0:.0f} seconds, {1:.0f} min)\n'
+                             .format(dt, dt // 60))
     except (_urllib.error.HTTPError, _urllib.error.URLError) as e:
         if 'Error while fetching' not in str(e):
             # For some odd reason, the error message gets doubled up
