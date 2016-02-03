@@ -313,7 +313,7 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
                              "You provided {0}".format(X.__class__))
 
         subjects_types = [type(s) for s in X]
-        if set(subjects_types) != {np.ndarray}:
+        if set(subjects_types) != set([np.ndarray]):
             raise ValueError("Each subject must be 2D numpy.ndarray.\n You "
                              "provided {0}".format(str(subjects_types)))
 
