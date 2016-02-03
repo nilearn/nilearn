@@ -158,8 +158,10 @@ def _chunk_read_(response, local_file, chunk_size=8192, report_hook=None,
         chunk = response.read(chunk_size)
         bytes_so_far += len(chunk)
         time_last_read = time.time()
-        # Refresh report every half second.
-        if report_hook and time_last_read > time_last_display + 0.5:
+        if (report_hook and
+                # Refresh report every half second or when download is
+                # finished.
+                (time_last_read > time_last_display + 0.5 or not chunk)):
             _chunk_report_(len(chunk), bytes_so_far,
                            total_size, initial_size, t0)
             time_last_display = time_last_read
@@ -167,10 +169,7 @@ def _chunk_read_(response, local_file, chunk_size=8192, report_hook=None,
             local_file.write(chunk)
         else:
             break
-    # Show final report (with 100% downloaded).
-    if report_hook:
-        _chunk_report_(len(chunk), bytes_so_far,
-                       total_size, initial_size, t0)
+
     return
 
 
