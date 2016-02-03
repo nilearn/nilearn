@@ -1,5 +1,3 @@
-# emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
-# vi: set ft=python sts=4 ts=4 sw=4 et:
 """
 Test the design_matrix utilities.
 
@@ -9,8 +7,10 @@ not whether it is exact.
 
 import numpy as np
 import os
-import pandas  as pd
-from ..experimental_paradigm import check_paradigm, paradigm_from_csv
+import pandas as pd
+
+from nistats.experimental_paradigm import paradigm_from_csv
+
 from nose.tools import assert_true
 
 

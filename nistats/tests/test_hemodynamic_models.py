@@ -4,7 +4,7 @@ from numpy.testing import (
     assert_almost_equal, assert_equal, assert_array_equal, assert_warns)
 import warnings
 
-from ..hemodynamic_models import (
+from nistats.hemodynamic_models import (
     spm_hrf, spm_time_derivative, spm_dispersion_derivative,
     _resample_regressor, _orthogonalize, _sample_condition,
     _regressor_names, _hrf_kernel, glover_hrf,

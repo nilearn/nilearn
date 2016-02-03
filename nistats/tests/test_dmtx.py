@@ -1,5 +1,3 @@
-# emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
-# vi: set ft=python sts=4 ts=4 sw=4 et:
 """
 Test the design_matrix utilities.
 
@@ -11,11 +9,13 @@ from __future__ import with_statement
 
 import numpy as np
 import os.path as osp
-from ..design_matrix import (
+import pandas as pd
+
+from nistats.design_matrix import (
     _convolve_regressors, make_design_matrix,
     _cosine_drift, plot_design_matrix, check_design_matrix)
-import pandas as pd
-from ..experimental_paradigm import check_paradigm
+
+from nistats.experimental_paradigm import check_paradigm
 
 from nibabel.tmpdirs import InTemporaryDirectory
 
