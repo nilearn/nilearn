@@ -318,7 +318,7 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
                              "provided {0}".format(str(subjects_types)))
 
         subjects_dims = [s.ndim for s in X]
-        if set(subjects_dims) != {2}:
+        if set(subjects_dims) != set([2]):
             raise ValueError("Each subject must be 2D numpy.ndarray.\n You"
                              "provided arrays of dimensions "
                              "{0}".format(str(subjects_dims)))
