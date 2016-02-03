@@ -103,8 +103,8 @@ def _chunk_report_(cur_chunk_size, bytes_so_far, total_size, initial_size, t0):
         # Trailing whitespace is to erase extra char when message length
         # varies
         sys.stderr.write(
-            "\rDownloaded %d of %d bytes (%i%%, %s remaining)"
-            % (bytes_so_far, total_size, int(total_percent * 100),
+            "\rDownloaded %d of %d bytes (%.1f%%, %s remaining)"
+            % (bytes_so_far, total_size, total_percent * 100,
                _format_time(time_remaining)))
 
 
@@ -154,23 +154,24 @@ def _chunk_read_(response, local_file, chunk_size=8192, report_hook=None,
     bytes_so_far = initial_size
 
     t0 = time.time()
-    _block_size = 1
-    if (total_size is not None and total_size // 100 > 0):
-        _block_size = total_size // 100
-
+    t_display = t0
     while True:
         chunk = response.read(chunk_size)
         bytes_so_far += len(chunk)
-        # Reporting download progress by block (one block is 1% of the
-        # total size or the full size if _block_size == 1).
-        if report_hook and bytes_so_far % _block_size < chunk_size:
+        t_read = time.time()
+        # Refresh report every half second.
+        if report_hook and t_read > t_display + 0.5:
             _chunk_report_(len(chunk), bytes_so_far,
                            total_size, initial_size, t0)
+            t_display = time.time()
         if chunk:
             local_file.write(chunk)
         else:
             break
-
+    # Show final report (with 100% downloaded).
+    if report_hook:
+        _chunk_report_(len(chunk), bytes_so_far,
+                       total_size, initial_size, t0)
     return
 
 
