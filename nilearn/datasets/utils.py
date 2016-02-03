@@ -162,7 +162,7 @@ def _chunk_read_(response, local_file, chunk_size=8192, report_hook=None,
         chunk = response.read(chunk_size)
         bytes_so_far += len(chunk)
         # Reporting download progress by block (one block is 1% of the
-        # total size of the full size if _block_size == 1).
+        # total size or the full size if _block_size == 1).
         if report_hook and bytes_so_far % _block_size < chunk_size:
             _chunk_report_(len(chunk), bytes_so_far,
                            total_size, initial_size, t0)
