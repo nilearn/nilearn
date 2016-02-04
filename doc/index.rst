@@ -96,6 +96,6 @@
    user_guide.rst
    auto_examples/index.rst
    whats_new.rst
-   ../contributing.rst
+   contributing.rst
 
 Nilearn is part of the `NiPy ecosystem <http://nipy.org>`_.
