@@ -63,14 +63,11 @@ def readlinkabs(link):
     return os.path.join(os.path.dirname(link), path)
 
 
-def _chunk_report_(cur_chunk_size, bytes_so_far, total_size, initial_size, t0):
+def _chunk_report_(bytes_so_far, total_size, initial_size, t0):
     """Show downloading percentage.
 
     Parameters
     ----------
-    cur_chunk_size: int
-        Number of bytes downloaded on current iteration (0=>end of download)
-
     bytes_so_far: int
         Number of downloaded bytes
 
@@ -162,7 +159,7 @@ def _chunk_read_(response, local_file, chunk_size=8192, report_hook=None,
                 # Refresh report every half second or when download is
                 # finished.
                 (time_last_read > time_last_display + 0.5 or not chunk)):
-            _chunk_report_(len(chunk), bytes_so_far,
+            _chunk_report_(bytes_so_far,
                            total_size, initial_size, t0)
             time_last_display = time_last_read
         if chunk:
