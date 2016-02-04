@@ -1222,9 +1222,8 @@ class OrthoProjector(OrthoSlicer):
                               vmin=edge_vmin, vmax=edge_vmax,
                               **edge_kwargs)
 
-        # At the moment threshold=0, we fix this based upon discussion
         if colorbar:
-            self._colorbar_show(ax, threshold=0)
+            self._colorbar_show(ax, threshold=edge_threshold)
 
         plt.draw_if_interactive()
 
