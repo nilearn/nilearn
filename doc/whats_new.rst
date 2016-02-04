@@ -4,8 +4,65 @@
 Changelog
 ---------
 
-The default n_subjects=None in :func:`nilearn.datasets.fetch_adhd` is now
-changed to n_subjects=30.
+The 0.2.2 is a bugfix + dependency update release (for sphinx gallery). It
+aims at preparing a renewal of the tutorials.
+
+New features
+............
+   - Fetcher for Megatrawl Netmats dataset.
+
+Enhancements
+............
+   - Flake8 is now run on pull requests.
+   - Reworking of the documentation organization.
+   - Sphinx-gallery updated to version 0.1.1
+   - The default n_subjects=None in :func:`nilearn.datasets.fetch_adhd` is now
+     changed to n_subjects=30.
+
+Bug fixes
+.........
+   - Fix `symmetric_split` behavior in
+     :func:`nilearn.datasets.fetch_atlas_harvard_oxford`
+   - Fix casting errors when providing integer data to
+     :func:`nilearn.image.high_variance_confounds`
+   - Fix matplotlib 1.5.0 compatibility in
+     :func:`nilearn.plotting.plot_prob_atlas`
+   - Fix matplotlib backend choice on Mac OS X.
+   - :func:`nilearn.plotting.find_xyz_cut_coords` raises a meaningful error
+     when 4D data is provided instead of 3D.
+   - :class:`nilearn.input_data.NiftiSpheresMasker` handles radius smaller than
+     the size of a voxel
+   - :class:`nilearn.regions.RegionExtractor` handles data containing Nans.
+   - Confound regression does not force systematically the normalization of
+     the confounds. 
+   - Force time series normalization in
+     :class:`nilearn.connectome.ConnectivityMeasure`
+     and check dimensionality of the input. 
+   - :func:`nilearn._utils.numpy_conversions.csv_to_array` could consider
+     valid CSV files as invalid.
+
+API changes summary
+...................
+   - Deprecated dataset downloading function have been removed.
+   - Download progression message refreshing rate has been lowered to sparsify
+     CircleCI logs.
+
+Contributors
+.............
+
+Contributors (from ``git shortlog -ns 0.2.1..0.2.2``)::
+
+    39  Kamalakar Daddy
+    22  Alexandre Abraham
+    21  Loïc Estève
+    19  Gael Varoquaux
+    12  Alexandre Abadie
+     7  Salma
+     3  Danilo Bzdok
+     1  Arthur Mensch
+     1  Ben Cipollini
+     1  Elvis Dohmatob
+     1  Óscar Nájera
 
 0.2.1
 ======
