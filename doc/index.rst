@@ -74,13 +74,13 @@
 
 .. raw:: html
 
-            </div> 
+            </div>
 
         <a href="#" class="jcarousel-control-prev">&lsaquo;</a>
         <a href="#" class="jcarousel-control-next">&rsaquo;</a>
-        
+
         <p class="jcarousel-pagination">
-            
+
         </p>
 
         </div>
@@ -96,6 +96,6 @@
    user_guide.rst
    auto_examples/index.rst
    whats_new.rst
+   ../contributing.rst
 
 Nilearn is part of the `NiPy ecosystem <http://nipy.org>`_.
-
