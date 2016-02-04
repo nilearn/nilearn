@@ -289,6 +289,8 @@ class GlassBrainAxes(BaseAxes):
             kwargs: dict
                 additional arguments to pass to matplotlib Line2D.
         """
+        # colormap for colorbar
+        self.cmap = cmap
         if vmin is None and vmax is None:
             abs_line_values_max = np.abs(line_values).max()
             vmin = -abs_line_values_max
@@ -311,6 +313,8 @@ class GlassBrainAxes(BaseAxes):
                 )
         norm = colors.Normalize(vmin=vmin,
                                 vmax=vmax)
+        # normalization useful for colorbar
+        self.norm = norm
         abs_norm = colors.Normalize(vmin=0,
                                     vmax=vmax)
         value_to_color = plt.cm.ScalarMappable(norm=norm, cmap=cmap).to_rgba
@@ -1090,7 +1094,8 @@ class OrthoProjector(OrthoSlicer):
                   edge_cmap=cm.bwr,
                   edge_vmin=None, edge_vmax=None,
                   edge_threshold=None,
-                  edge_kwargs=None, node_kwargs=None):
+                  edge_kwargs=None, node_kwargs=None, colorbar=False,
+                  ):
         """Plot undirected graph on each of the axes
 
             Parameters
@@ -1216,6 +1221,10 @@ class OrthoProjector(OrthoSlicer):
                 ax._add_lines(line_coords, adjacency_matrix_values, edge_cmap,
                               vmin=edge_vmin, vmax=edge_vmax,
                               **edge_kwargs)
+
+        # At the moment threshold=0, we fix this based upon discussion
+        if colorbar:
+            self._colorbar_show(ax, threshold=0)
 
         plt.draw_if_interactive()
 
