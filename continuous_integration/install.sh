@@ -102,6 +102,8 @@ else
     exit 1
 fi
 
+pip install psutil memory_profiler
+
 if [[ "$COVERAGE" == "true" ]]; then
     pip install coverage coveralls
 fi
