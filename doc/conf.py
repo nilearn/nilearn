@@ -26,14 +26,6 @@ import sphinx_gallery
 # We also add the directory just above to enable local imports of nilearn
 sys.path.insert(0, os.path.abspath('..'))
 
-try:
-    shutil.copy('../AUTHORS.rst', '.')
-    shutil.copy('../contributing.rst', '.')
-except IOError:
-    # When nose scans this file, it is not in the right working
-    # directory, and thus the line above fails
-    pass
-
 # -- General configuration ---------------------------------------------------
 
 # Add any Sphinx extension module names here, as strings. They can be
