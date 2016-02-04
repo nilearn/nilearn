@@ -1,3 +1,3 @@
 .. -*- mode: rst -*-
 
-.. include:: ../contributing.rst
+.. include:: ../CONTRIBUTING.rst

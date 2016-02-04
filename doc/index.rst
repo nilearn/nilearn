@@ -92,7 +92,7 @@
 .. toctree::
    :hidden:
 
-   AUTHORS.rst
+   authors.rst
    user_guide.rst
    auto_examples/index.rst
    whats_new.rst
