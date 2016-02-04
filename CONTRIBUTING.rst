@@ -9,8 +9,7 @@ contribute.
 
 The project is hosted on https://github.com/nilearn/nilearn
 
-Nilearn is somewhat selective when it comes to adding new features, and the
-best way to contribute and to help the project is to start working on known
+The best way to contribute and to help the project is to start working on known
 issues.
 See `Easy issues <https://github.com/nilearn/nilearn/labels/Easy>`_ to get
 started.
