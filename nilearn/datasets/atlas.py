@@ -727,8 +727,9 @@ def fetch_atlas_basc_multiscale_2015(version='sym', data_dir=None,
 
 
 def fetch_atlas_dosenbach_2010():
-    """Download and load the Dosenbach et al. brain atlas composed of 160 ROIs
-    grouped in 6 networks.
+    """Load the Dosenbach et al. 160 ROIs. These ROIs cover
+    much of the cerebral cortex and cerebellum and are assigned to 6
+    networks.
 
     Returns
     -------

@@ -3,7 +3,7 @@ Dosenbach 2010 atlas
 
 Notes
 -----
-160 ROIs covering much of the cerebral cortex and cerebellum.
+160 regions of interest covering much of the cerebral cortex and cerebellum.
 They were obtained from meta-analyses of fMRI activation studies
 and assigned into 6 networks according to a modularity analysis of
 resting-state data.
