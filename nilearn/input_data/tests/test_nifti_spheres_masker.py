@@ -82,13 +82,47 @@ def test_nifti_spheres_masker_overlap():
 
     seeds = [(0, 0, 0), (2, 2, 2)]
 
-    overlapping_masker = NiftiSpheresMasker(seeds, radius=1, allow_overlap=True)
+    overlapping_masker = NiftiSpheresMasker(seeds, radius=1,
+                                            allow_overlap=True)
     overlapping_masker.fit_transform(fmri_img)
-    overlapping_masker = NiftiSpheresMasker(seeds, radius=2, allow_overlap=True)
+    overlapping_masker = NiftiSpheresMasker(seeds, radius=2,
+                                            allow_overlap=True)
     overlapping_masker.fit_transform(fmri_img)
 
-    noverlapping_masker = NiftiSpheresMasker(seeds, radius=1, allow_overlap=False)
+    noverlapping_masker = NiftiSpheresMasker(seeds, radius=1,
+                                             allow_overlap=False)
     noverlapping_masker.fit_transform(fmri_img)
-    noverlapping_masker = NiftiSpheresMasker(seeds, radius=2, allow_overlap=False)
+    noverlapping_masker = NiftiSpheresMasker(seeds, radius=2,
+                                             allow_overlap=False)
     assert_raises_regex(ValueError, 'Overlap detected',
                         noverlapping_masker.fit_transform, fmri_img)
+
+
+def test_small_radius():
+    affine = np.eye(4)
+    shape = (3, 3, 3)
+
+    data = np.random.random(shape)
+    mask = np.zeros(shape)
+    mask[1, 1, 1] = 1
+    mask[2, 2, 2] = 1
+    affine = np.eye(4) * 1.2
+    seed = (1.4, 1.4, 1.4)
+
+    masker = NiftiSpheresMasker([seed], radius=0.1,
+                                mask_img=nibabel.Nifti1Image(mask, affine))
+    masker.fit_transform(nibabel.Nifti1Image(data, affine))
+
+    # Test if masking is taken into account
+    mask[1, 1, 1] = 0
+    mask[1, 1, 0] = 1
+
+    masker = NiftiSpheresMasker([seed], radius=0.1,
+                                mask_img=nibabel.Nifti1Image(mask, affine))
+    assert_raises_regex(ValueError, 'Sphere around seed #0 is empty',
+                        masker.fit_transform,
+                        nibabel.Nifti1Image(data, affine))
+
+    masker = NiftiSpheresMasker([seed], radius=1.6,
+                                mask_img=nibabel.Nifti1Image(mask, affine))
+    masker.fit_transform(nibabel.Nifti1Image(data, affine))
