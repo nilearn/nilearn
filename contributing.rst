@@ -9,10 +9,11 @@ contribute.
 
 The project is hosted on https://github.com/nilearn/nilearn
 
-Nilearn is somewhat :ref:`selective <selectiveness>` when it comes to
-adding new algorithms, and the best way to contribute and to help the project
-is to start working on known issues.
-See :ref:`easy_issues` to get started.
+Nilearn is somewhat selective when it comes to adding new features, and the
+best way to contribute and to help the project is to start working on known
+issues.
+See `Easy issues <https://github.com/nilearn/nilearn/labels/Easy>`_ to get
+started.
 
 Submitting a bug report
 =======================
@@ -28,7 +29,10 @@ Retrieving the latest code
 ==========================
 
 We use `Git <http://git-scm.com/>`_ for version control and
-`GitHub <https://github.com/>`_ for hosting our main repository.
+`GitHub <https://github.com/>`_ for hosting our main repository. If you are
+new on GitHub and don't know how to work with it, please first
+have a look at `this <https://try.github.io/>`_ to get the basics.
+
 
 You can check out the latest sources with the command::
 
@@ -37,3 +41,10 @@ You can check out the latest sources with the command::
 or if you have write privileges::
 
     git clone git@github.com:nilearn/nilearn.git
+
+Coding guidelines
+=================
+
+Nilearn follows the coding conventions used by scikit-learn. `Please read them
+<http://scikit-learn.org/stable/developers/contributing.html#coding-guidelines>`_
+before you start implementing your changes.
