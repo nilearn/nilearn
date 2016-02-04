@@ -13,7 +13,7 @@ all: clean test doc-noplot
 
 clean-pyc:
 	find . -name "*.pyc" | xargs rm -f
-	find . -name "__pycache__" | xargs rm -r
+	find . -name "__pycache__" | xargs rm -rf
 
 clean-so:
 	find . -name "*.so" | xargs rm -f
