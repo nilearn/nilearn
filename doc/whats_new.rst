@@ -38,7 +38,7 @@ Bug fixes
    - Force time series normalization in
      :class:`nilearn.connectome.ConnectivityMeasure`
      and check dimensionality of the input. 
-   - :func:`nilearn._utils.numpy_conversions.csv_to_array` could consider
+   - `nilearn._utils.numpy_conversions.csv_to_array` could consider
      valid CSV files as invalid.
 
 API changes summary
