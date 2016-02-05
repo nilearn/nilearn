@@ -665,3 +665,36 @@ def threshold_img(img, threshold, mask_img=None):
     threshold_img = new_img_like(img, img_data, affine)
 
     return threshold_img
+
+
+def math_img(formula, **imgs):
+    """Interpret a string formula using niimg in named parameters.
+
+    Parameters
+    ----------
+    formula: string
+        The mathematical formula to apply to image internal data.
+
+    """
+    niimg = None
+    try:
+        list_imgs = []
+        for k, v in imgs.items():
+            list_imgs.append(v)
+            check_niimg(list_imgs)
+            data = v.get_data().view()
+            imgs[k] = data
+            niimg = v
+    except Exception as e:
+        raise ValueError("Input images cannot be compared: {0}".format(e))
+
+    # Add a reference to the input dictionary of eval so that numpy
+    # functions can be used inside.
+    imgs['np'] = np
+    try:
+        result = eval(formula, imgs)
+    except Exception as e:
+        raise ValueError("Input formula couldn't be processed: {0}"
+                         .format(e))
+
+    return new_img_like(niimg, result, niimg.get_affine())
