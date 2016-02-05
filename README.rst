@@ -66,7 +66,5 @@ http://nilearn.github.io/introduction.html#installation.
 Development
 ===========
 
-The project is hosted on https://github.com/nilearn/nilearn
-
-More detailed instruction on how to contribute are available at
+Detailed instructions on how to contribute are available at
 http://nilearn.github.io/contributing.html
