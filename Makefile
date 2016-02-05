@@ -66,5 +66,3 @@ doc:
 pdf:
 	make -C doc pdf
 
-install:
-	cd doc && make install
