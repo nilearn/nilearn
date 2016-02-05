@@ -380,7 +380,7 @@ def _load_anat(anat_img=MNI152TEMPLATE, dim=False, black_bg='auto'):
         else:
             if not isinstance(dim, numbers.Number):
                 dim = .6
-            vmin = vmean - (1 + dim) * ptp
+            vmin = .5 * (2 - dim) * vmean - (1 + dim) * ptp
     return anat_img, black_bg, vmin, vmax
 
 
