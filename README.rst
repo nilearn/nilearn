@@ -66,16 +66,7 @@ http://nilearn.github.io/introduction.html#installation.
 Development
 ===========
 
-Code
-----
+The project is hosted on https://github.com/nilearn/nilearn
 
-GIT
-~~~
-
-You can check the latest sources with the command::
-
-    git clone git://github.com/nilearn/nilearn
-
-or if you have write privileges::
-
-    git clone git@github.com:nilearn/nilearn
+More detailed instruction on how to contribute are available at
+http://nilearn.github.io/contributing.html
