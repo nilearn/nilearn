@@ -699,12 +699,13 @@ def fetch_atlas_basc_multiscale(version='sym', data_dir=None,
         url = "https://ndownloader.figshare.com/files/1861820"
     opts = {'uncompress': True}
 
-    dataset_name = "urchs_multiscale_2015"
-    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir, verbose=verbose)
+    dataset_name = "basc_multiscale_2015"
+    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
+                                verbose=verbose)
 
     folder_name = 'template_cambridge_basc_multiscale_nii_' + version
-    basenames = ['template_cambridge_basc_multiscale_' + version + '_' + key + '.nii.gz'
-                 for key in keys]
+    basenames = ['template_cambridge_basc_multiscale_' + version +
+                 '_' + key + '.nii.gz' for key in keys]
 
     filenames = [(os.path.join(folder_name, basename), url, opts)
                  for basename in basenames]
