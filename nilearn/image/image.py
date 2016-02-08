@@ -676,23 +676,25 @@ def math_img(formula, **imgs):
         The mathematical formula to apply to image internal data.
 
     """
-    niimg = None
     try:
-        list_imgs = []
-        for k, v in imgs.items():
-            list_imgs.append(v)
-            check_niimg(list_imgs)
-            data = v.get_data().view()
-            imgs[k] = data
-            niimg = v
+        check_niimg(imgs.values())
     except Exception as e:
         raise ValueError("Input images cannot be compared: {0}".format(e))
 
+    # Computing input data as a dictionary of numpy arrays. Keep a reference
+    # niimg for building the result as new niimg like.
+    niimg = None
+    list_data = {}
+    for k, v in imgs.items():
+        data = v.get_data().view()
+        list_data[k] = data
+        niimg = v
+
     # Add a reference to the input dictionary of eval so that numpy
     # functions can be used inside.
-    imgs['np'] = np
+    list_data['np'] = np
     try:
-        result = eval(formula, imgs)
+        result = eval(formula, list_data)
     except Exception as e:
         raise ValueError("Input formula couldn't be processed: {0}"
                          .format(e))
