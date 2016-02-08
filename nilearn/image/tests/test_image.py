@@ -449,7 +449,7 @@ def test_isnan_threshold_img_data():
 
     maps_img = nibabel.Nifti1Image(data, np.eye(4))
     # test threshold_img to converge properly when input image has nans.
-    threshold_maps = threshold_img(maps_img, threshold=0.8)
+    threshold_img(maps_img, threshold=0.8)
 
 
 def test_math_img_exceptions():
