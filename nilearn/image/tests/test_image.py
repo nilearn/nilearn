@@ -471,7 +471,7 @@ def test_math_img_exceptions():
 def test_math_img():
     img1 = Nifti1Image(np.ones((10, 10, 10, 10)), np.eye(4))
     img2 = Nifti1Image(np.zeros((10, 10, 10, 10)), np.eye(4))
-    expected_result = Nifti1Image(np.ones((10, 10)), np.eye(4))
+    expected_result = Nifti1Image(np.ones((10, 10, 10)), np.eye(4))
 
     formula = "np.mean(img1, axis=-1) - np.mean(img2, axis=-1)"
     result = math_img(formula, img1=img1, img2=img2)
