@@ -622,13 +622,13 @@ def fetch_atlas_aal(version='SPM12', data_dir=None, url=None, resume=True,
 
 def fetch_atlas_basc_multiscale(version='sym', data_dir=None,
                                 resume=True, verbose=1):
-    """Downloads and load Multiscale functional Brain parcellations
+    """Downloads and loads multiscale functional brain parcellations
 
     This atlas includes group brain parcellations generated from
-    resting-state functional magnetic resonance images for about
+    resting-state functional magnetic resonance images from about
     200 young healthy subjects.
 
-    Multiple scales (number of networks) are available, and includes
+    Multiple scales (number of networks) are available, among
     7, 12, 20, 36, 64, 122, 197, 325, 444. The brain parcellations
     have been generated using a method called bootstrap analysis of
     stable clusters called as BASC, (Bellec et al., 2010) and the
