@@ -674,6 +674,36 @@ def math_img(formula, **imgs):
     ----------
     formula: string
         The mathematical formula to apply to image internal data.
+    imgs:
+        Keyword arguments corresponding to the variables in the formula.
+
+    Example
+    -------
+        The same formula can be applied on different lists of nifti images.
+
+        >>> import numpy as np
+        >>> from nibabel import Nifti1Image
+        >>> from nilearn.image import math_img
+
+        Let's create 3 sample nifti images.
+
+        >>> rng = np.random.RandomState(0)
+        >>> img1 = Nifti1Image(np.random.normal(loc=1.0,
+                                                size=(10, 10, 10)), np.eye(4))
+        >>> img2 = Nifti1Image(np.random.normal(loc=2.0,
+                                                size=(10, 10, 10)), np.eye(4))
+        >>> img3 = Nifti1Image(np.random.normal(loc=3.0,
+                                                size=(10, 10, 10)), np.eye(4))
+
+        Let's compare the mean image on the last axis between 2 images with
+        the following formula.
+
+        >>> formula = "np.mean(img2, axis=-1) - np.mean(img2, axis=-1)"
+
+        We can now apply the same formula with different input data:
+
+        >>> math_img(formula, img1=img1, img2=img2)
+        >>> math_img(formula, img1=img2, img2=img3)
 
     """
     try:
@@ -684,17 +714,17 @@ def math_img(formula, **imgs):
     # Computing input data as a dictionary of numpy arrays. Keep a reference
     # niimg for building the result as new niimg like.
     niimg = None
-    list_data = {}
-    for k, v in imgs.items():
-        data = v.get_data().view()
-        list_data[k] = data
-        niimg = v
+    data_dict = {}
+    for key, img in imgs.items():
+        data = _safe_get_data(img)
+        data_dict[key] = data
+        niimg = img
 
     # Add a reference to the input dictionary of eval so that numpy
     # functions can be used inside.
-    list_data['np'] = np
+    data_dict['np'] = np
     try:
-        result = eval(formula, list_data)
+        result = eval(formula, data_dict)
     except Exception as e:
         raise ValueError("Input formula couldn't be processed: {0}"
                          .format(e))
