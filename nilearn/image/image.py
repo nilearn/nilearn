@@ -698,7 +698,7 @@ def math_img(formula, **imgs):
         Let's compare the mean image on the last axis between 2 images with
         the following formula.
 
-        >>> formula = "np.mean(img2, axis=-1) - np.mean(img2, axis=-1)"
+        >>> formula = "np.mean(img2, axis=-1) - np.mean(img1, axis=-1)"
 
         We can now apply the same formula with different input data:
 
