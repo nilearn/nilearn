@@ -688,11 +688,11 @@ def math_img(formula, **imgs):
         Let's create 3 sample nifti images.
 
         >>> rng = np.random.RandomState(0)
-        >>> img1 = Nifti1Image(np.random.normal(loc=1.0,
+        >>> img1 = Nifti1Image(np.random.normal(loc=1.0,\
                                                 size=(10, 10, 10)), np.eye(4))
-        >>> img2 = Nifti1Image(np.random.normal(loc=2.0,
+        >>> img2 = Nifti1Image(np.random.normal(loc=2.0,\
                                                 size=(10, 10, 10)), np.eye(4))
-        >>> img3 = Nifti1Image(np.random.normal(loc=3.0,
+        >>> img3 = Nifti1Image(np.random.normal(loc=3.0,\
                                                 size=(10, 10, 10)), np.eye(4))
 
         Let's compare the mean image on the last axis between 2 images with
@@ -702,8 +702,8 @@ def math_img(formula, **imgs):
 
         We can now apply the same formula with different input data:
 
-        >>> math_img(formula, img1=img1, img2=img2)
-        >>> math_img(formula, img1=img2, img2=img3)
+        >>> result_1 = math_img(formula, img1=img1, img2=img2)
+        >>> result_2 = math_img(formula, img1=img2, img2=img3)
 
     """
     try:
