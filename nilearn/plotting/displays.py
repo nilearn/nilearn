@@ -539,8 +539,9 @@ class BaseSlicer(object):
         if filled:
             colors = kwargs['colors']
             levels = kwargs['levels']
-            # contour fillings levels should be given as (lower, upper).
-            levels.append(np.inf)
+            if len(levels) <= 1:
+                # contour fillings levels should be given as (lower, upper).
+                levels.append(np.inf)
             alpha = kwargs['alpha']
             self._map_show(img, type='contourf', levels=levels, alpha=alpha,
                            colors=colors[:3])
