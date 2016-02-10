@@ -668,18 +668,27 @@ def threshold_img(img, threshold, mask_img=None):
 
 
 def math_img(formula, **imgs):
-    """Interpret a string formula using niimg in named parameters.
+    """Interpret a numpy based string formula using niimg in named parameters.
 
     Parameters
     ----------
     formula: string
         The mathematical formula to apply to image internal data.
     imgs:
-        Keyword arguments corresponding to the variables in the formula.
+        Keyword arguments corresponding to the variables in the formula as
+        Nifti images. All input images should have the same geometry (shape,
+        affine).
+
+    Returns
+    -------
+    Nifti1Image
+        Result of the formula as a Nifti image. Note the dimension of the
+        result image can be smaller than the input image. The affine is the
+        same as the input the image.
 
     Example
     -------
-        The same formula can be applied on different lists of nifti images.
+        The same formula can be applied on different lists of Nifti images.
 
         >>> import numpy as np
         >>> from nibabel import Nifti1Image
