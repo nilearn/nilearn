@@ -275,6 +275,8 @@ set up your own data preparation procedure:
   see the effect of affine transforms on data and bounding boxes.
 * Computing the mean of images (along the time/4th dimension):
   :func:`nilearn.image.mean_img`
+* Applying numpy functions on an image or a list of images:
+  :func:`nilearn.image.math_img`
 * Swapping voxels of both hemisphere (e.g., useful to homogenize masks
   inter-hemispherically):
   :func:`nilearn.image.swap_img_hemispheres`
