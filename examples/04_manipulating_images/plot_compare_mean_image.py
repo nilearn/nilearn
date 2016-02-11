@@ -2,7 +2,10 @@
 Comparing the means of 2 images
 ===============================
 
-Here we compare the means of 2 resting state 4D images.
+The goal of this example is to illustrate the use of the function
+:func:`math_img` with a list of images as input.
+We compare the means of 2 resting state 4D images. The mean of the images
+could have been computed with nilearn :func:`mean_img` function.
 """
 
 from nilearn import datasets, plotting, image
