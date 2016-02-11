@@ -456,14 +456,21 @@ def test_math_img_exceptions():
     img1 = Nifti1Image(np.ones((10, 10, 10, 10)), np.eye(4))
     img2 = Nifti1Image(np.zeros((10, 20, 10, 10)), np.eye(4))
     img3 = Nifti1Image(np.ones((10, 10, 10, 10)), np.eye(4))
+    img4 = Nifti1Image(np.ones((10, 10, 10, 10)), np.eye(4) * 2)
 
     formula = "np.mean(img1, axis=-1) - np.mean(img2, axis=-1)"
+    # Images with different shapes should raise a ValueError exception.
     assert_raises_regex(ValueError,
                         "Input images cannot be compared",
                         math_img, formula, img1=img1, img2=img2)
 
-    bad_formula = "np.toto(img1, axis=-1) - np.mean(img3, axis=-1)"
+    # Images with different affines should raise a ValueError exception.
     assert_raises_regex(ValueError,
+                        "Input images cannot be compared",
+                        math_img, formula, img1=img1, img2=img4)
+
+    bad_formula = "np.toto(img1, axis=-1) - np.mean(img3, axis=-1)"
+    assert_raises_regex(AttributeError,
                         "Input formula couldn't be processed",
                         math_img, bad_formula, img1=img1, img3=img3)
 
@@ -474,7 +481,12 @@ def test_math_img():
     expected_result = Nifti1Image(np.ones((10, 10, 10)), np.eye(4))
 
     formula = "np.mean(img1, axis=-1) - np.mean(img2, axis=-1)"
-    result = math_img(formula, img1=img1, img2=img2)
-    assert_array_equal(result.get_data(), expected_result.get_data())
-    assert_array_equal(result.get_affine(), expected_result.get_affine())
-    assert_equal(result.shape, expected_result.shape)
+    for create_files in (True, False):
+        with testing.write_tmp_imgs(img1, img2,
+                                    create_files=create_files) as imgs:
+            result = math_img(formula, img1=imgs[0], img2=imgs[1])
+            assert_array_equal(result.get_data(),
+                               expected_result.get_data())
+            assert_array_equal(result.get_affine(),
+                               expected_result.get_affine())
+            assert_equal(result.shape, expected_result.shape)
