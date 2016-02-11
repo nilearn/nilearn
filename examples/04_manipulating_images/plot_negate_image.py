@@ -8,17 +8,27 @@ Here we compute a negative image by multiplying it's voxel values with -1.
 from nilearn import datasets, plotting, image
 
 ################################################################################
-# Fetching AAL atlas regions by loading from datasets.
-data = datasets.fetch_atlas_aal()
-
-################################################################################
-# Print basic information on the AAL regions.
-print('AAL regions nifti image (3D) is located at: %s' % data.regions)
+# # Retrieve the data: the localizer dataset with contrast maps.
+localizer_dataset = datasets.fetch_localizer_contrasts(
+    ["left vs right button press"],
+    n_subjects=2,
+    get_anats=True,
+    get_tmaps=True)
+localizer_anat_filename = localizer_dataset.anats[1]
+localizer_tmap_filename = localizer_dataset.tmaps[1]
 
 ################################################################################
 # Multiply voxel values by -1.
-result_img = image.math_img("-img", img=data.regions)
+negative_stat_img = image.math_img("-img", img=localizer_tmap_filename)
 
-plotting.plot_roi(data.regions, cmap='Blues', title="AAL regions")
-plotting.plot_roi(result_img, cmap='Blues', title="Negative of AAL regions")
+plotting.plot_stat_map(localizer_tmap_filename,
+                       bg_img=localizer_anat_filename,
+                       cut_coords=(36, -27, 66),
+                       threshold=3, title="dim=-.5",
+                       dim=-.5)
+plotting.plot_stat_map(negative_stat_img,
+                       bg_img=localizer_anat_filename,
+                       cut_coords=(36, -27, 66),
+                       threshold=3, title="dim=-.5",
+                       dim=-.5)
 plotting.show()
