@@ -49,17 +49,16 @@ class DimensionError(TypeError):
 
     @property
     def message(self):
-        message = ("Data must be a {0}D Niimg-like object but you provided a "
-                   "{1}{2}D image{3}. "
-                   "See http://nilearn.github.io/manipulating_images/"
-                   "manipulating_images.html#niimg-like-objects."
-                   .format(self.required_dimension + self.stack_counter,
-                           "list of " * self.stack_counter,
-                           self.file_dimension,
-                           "s" * (self.stack_counter != 0)
-                           )
-                   )
-        return message
+        return ("Data must be a {0}D Niimg-like object but you provided a "
+                "{1}{2}D image{3}. "
+                "See http://nilearn.github.io/manipulating_images/"
+                "manipulating_images.html#niimg."
+                .format(self.required_dimension + self.stack_counter,
+                        "list of " * self.stack_counter,
+                        self.file_dimension,
+                        "s" * (self.stack_counter != 0)
+                        )
+                )
 
     def __str__(self):
         return self.message
