@@ -674,7 +674,7 @@ def math_img(formula, **imgs):
     ----------
     formula: string
         The mathematical formula to apply to image internal data.
-    imgs:
+    imgs: images
         Keyword arguments corresponding to the variables in the formula as
         Nifti images. All input images should have the same geometry (shape,
         affine).
@@ -716,26 +716,33 @@ def math_img(formula, **imgs):
 
     """
     try:
-        check_niimg(imgs.values())
-    except Exception as e:
-        raise ValueError("Input images cannot be compared: {0}".format(e))
+        # Check that input images are valid niimg and have a compatible shape
+        # and affine.
+        niimgs = []
+        for image in imgs.values():
+            niimgs.append(check_niimg(image))
+        _check_same_fov(*niimgs, raise_error=True)
+    except Exception as exc:
+        exc.args = (("Input images cannot be compared, you provided '{0}',"
+                     .format(imgs.values()),) + exc.args)
+        raise
 
     # Computing input data as a dictionary of numpy arrays. Keep a reference
-    # niimg for building the result as new niimg like.
+    # niimg for building the result as a new niimg.
     niimg = None
     data_dict = {}
     for key, img in imgs.items():
-        data = _safe_get_data(img)
-        data_dict[key] = data
-        niimg = img
+        niimg = check_niimg(img)
+        data_dict[key] = _safe_get_data(niimg)
 
-    # Add a reference to the input dictionary of eval so that numpy
-    # functions can be used inside.
+    # Add a reference to numpy in the kwargs of eval so that numpy functions
+    # can be called from there.
     data_dict['np'] = np
     try:
         result = eval(formula, data_dict)
-    except Exception as e:
-        raise ValueError("Input formula couldn't be processed: {0}"
-                         .format(e))
+    except Exception as exc:
+        exc.args = (("Input formula couldn't be processed, you provided '{0}',"
+                     .format(formula),) + exc.args)
+        raise
 
     return new_img_like(niimg, result, niimg.get_affine())
