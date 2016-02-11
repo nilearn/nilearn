@@ -1,14 +1,16 @@
 """
-Negate image
-============
+Negating an image with math_img
+===============================
 
-Here we compute a negative image by multiplying it's voxel values with -1.
+The goal of this example is to illustrate the use of the function
+:func:`math_img` on T-maps.
+We compute a negative image by multiplying its voxel values with -1.
 """
 
 from nilearn import datasets, plotting, image
 
 ################################################################################
-# # Retrieve the data: the localizer dataset with contrast maps.
+# Retrieve the data: the localizer dataset with contrast maps.
 localizer_dataset = datasets.fetch_localizer_contrasts(
     ["left vs right button press"],
     n_subjects=2,
@@ -29,6 +31,6 @@ plotting.plot_stat_map(localizer_tmap_filename,
 plotting.plot_stat_map(negative_stat_img,
                        bg_img=localizer_anat_filename,
                        cut_coords=(36, -27, 66),
-                       threshold=3, title="Inverted t-map, dim=-.5",
+                       threshold=3, title="Negative t-map, dim=-.5",
                        dim=-.5)
 plotting.show()
