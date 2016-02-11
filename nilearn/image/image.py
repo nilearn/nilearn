@@ -673,7 +673,8 @@ def math_img(formula, **imgs):
     Parameters
     ----------
     formula: string
-        The mathematical formula to apply to image internal data.
+        The mathematical formula to apply to image internal data. It can use
+        numpy imported as 'np'.
     imgs: images
         Keyword arguments corresponding to the variables in the formula as
         Nifti images. All input images should have the same geometry (shape,
@@ -688,31 +689,15 @@ def math_img(formula, **imgs):
 
     Example
     -------
-        The same formula can be applied on different lists of Nifti images.
+        Let's load an image using nilearn datasets module:
 
-        >>> import numpy as np
-        >>> from nibabel import Nifti1Image
+        >>> from nilearn import datasets
+        >>> anatomical_image = datasets.load_mni152_template()
+
+        Now we can use any numpy function on this image:
+
         >>> from nilearn.image import math_img
-
-        Let's create 3 sample nifti images.
-
-        >>> rng = np.random.RandomState(0)
-        >>> img1 = Nifti1Image(np.random.normal(loc=1.0,\
-                                                size=(10, 10, 10)), np.eye(4))
-        >>> img2 = Nifti1Image(np.random.normal(loc=2.0,\
-                                                size=(10, 10, 10)), np.eye(4))
-        >>> img3 = Nifti1Image(np.random.normal(loc=3.0,\
-                                                size=(10, 10, 10)), np.eye(4))
-
-        Let's compare the mean image on the last axis between 2 images with
-        the following formula.
-
-        >>> formula = "np.mean(img2, axis=-1) - np.mean(img1, axis=-1)"
-
-        We can now apply the same formula with different input data:
-
-        >>> result_1 = math_img(formula, img1=img1, img2=img2)
-        >>> result_2 = math_img(formula, img1=img2, img2=img3)
+        >>> log_img = math_img("np.log(img)", img=anatomical_image)
 
     """
     try:
