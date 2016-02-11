@@ -682,7 +682,7 @@ def math_img(formula, **imgs):
     Returns
     -------
     Nifti1Image
-        Result of the formula as a Nifti image. Note the dimension of the
+        Result of the formula as a Nifti image. Note that the dimension of the
         result image can be smaller than the input image. The affine is the
         same as the input the image.
 
