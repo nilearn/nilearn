@@ -24,11 +24,11 @@ negative_stat_img = image.math_img("-img", img=localizer_tmap_filename)
 plotting.plot_stat_map(localizer_tmap_filename,
                        bg_img=localizer_anat_filename,
                        cut_coords=(36, -27, 66),
-                       threshold=3, title="dim=-.5",
+                       threshold=3, title="t-map, dim=-.5",
                        dim=-.5)
 plotting.plot_stat_map(negative_stat_img,
                        bg_img=localizer_anat_filename,
                        cut_coords=(36, -27, 66),
-                       threshold=3, title="dim=-.5",
+                       threshold=3, title="Inverted t-map, dim=-.5",
                        dim=-.5)
 plotting.show()
