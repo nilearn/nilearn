@@ -699,6 +699,10 @@ def math_img(formula, **imgs):
         >>> from nilearn.image import math_img
         >>> log_img = math_img("np.log(img)", img=anatomical_image)
 
+        We can also apply mathematical operations on a list of images:
+
+        >> result_img = math_img("img1 + img2", img1=img, img2=log_img)
+
     """
     try:
         # Check that input images are valid niimg and have a compatible shape
