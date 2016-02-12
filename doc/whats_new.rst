@@ -1,3 +1,14 @@
+0.2.3
+=====
+
+Changelog
+---------
+
+New features
+............
+    - Mathematical formulas based on numpy functions can be applied on an
+      image or a list of images using :func:`nilearn.image.math_img`.
+
 0.2.2
 ======
 
