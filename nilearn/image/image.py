@@ -701,7 +701,8 @@ def math_img(formula, **imgs):
 
         We can also apply mathematical operations on a list of images:
 
-        >>> result_img = math_img("img1 + img2", img1=img, img2=log_img)
+        >>> result_img = math_img("img1 + img2", \
+                                  img1=anatomical_image, img2=log_img)
 
     """
     try:
