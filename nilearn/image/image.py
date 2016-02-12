@@ -675,34 +675,34 @@ def math_img(formula, **imgs):
     formula: str
         The mathematical formula to apply to image internal data. It can use
         numpy imported as 'np'.
-    imgs: images
+    imgs: images (Nifti1Image or file names)
         Keyword arguments corresponding to the variables in the formula as
         Nifti images. All input images should have the same geometry (shape,
         affine).
 
     Returns
     -------
-    Nifti1Image
+    return_img: Nifti1Image
         Result of the formula as a Nifti image. Note that the dimension of the
         result image can be smaller than the input image. The affine is the
         same as the input image.
 
-    Example
-    -------
-        Let's load an image using nilearn datasets module:
+    Examples
+    --------
+    Let's load an image using nilearn datasets module::
 
-        >>> from nilearn import datasets
-        >>> anatomical_image = datasets.load_mni152_template()
+     >>> from nilearn import datasets
+     >>> anatomical_image = datasets.load_mni152_template()
 
-        Now we can use any numpy function on this image:
+    Now we can use any numpy function on this image::
 
-        >>> from nilearn.image import math_img
-        >>> log_img = math_img("np.log(img)", img=anatomical_image)
+     >>> from nilearn.image import math_img
+     >>> log_img = math_img("np.log(img)", img=anatomical_image)
 
-        We can also apply mathematical operations on a list of images:
+    We can also apply mathematical operations on a list of images::
 
-        >>> result_img = math_img("img1 + img2", \
-                                  img1=anatomical_image, img2=log_img)
+     >>> result_img = math_img("img1 + img2",
+     ...                       img1=anatomical_image, img2=log_img)
 
     """
     try:
