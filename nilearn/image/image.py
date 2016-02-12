@@ -670,6 +670,8 @@ def threshold_img(img, threshold, mask_img=None):
 def math_img(formula, **imgs):
     """Interpret a numpy based string formula using niimg in named parameters.
 
+    .. versionadded:: 0.2.3
+
     Parameters
     ----------
     formula: str
