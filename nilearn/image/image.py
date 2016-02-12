@@ -672,7 +672,7 @@ def math_img(formula, **imgs):
 
     Parameters
     ----------
-    formula: string
+    formula: str
         The mathematical formula to apply to image internal data. It can use
         numpy imported as 'np'.
     imgs: images
@@ -685,7 +685,7 @@ def math_img(formula, **imgs):
     Nifti1Image
         Result of the formula as a Nifti image. Note that the dimension of the
         result image can be smaller than the input image. The affine is the
-        same as the input the image.
+        same as the input image.
 
     Example
     -------
