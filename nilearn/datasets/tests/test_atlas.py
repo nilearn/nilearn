@@ -287,15 +287,15 @@ def test_fetch_atlas_basc_multiscale():
 
     dataset_name = 'basc_multiscale_2015'
     name_sym = 'template_cambridge_basc_multiscale_nii_sym'
-    basenames_sym = ['template_cambridge_basc_multiscale_sym_'
-                     + key + '.nii.gz' for key in keys]
+    basenames_sym = ['template_cambridge_basc_multiscale_sym_' +
+                     key + '.nii.gz' for key in keys]
     for key, basename_sym in zip(keys, basenames_sym):
         assert_equal(data_sym[key], os.path.join(tst.tmpdir, dataset_name,
                                                  name_sym, basename_sym))
 
     name_asym = 'template_cambridge_basc_multiscale_nii_asym'
-    basenames_asym = ['template_cambridge_basc_multiscale_asym_'
-                      + key + '.nii.gz' for key in keys]
+    basenames_asym = ['template_cambridge_basc_multiscale_asym_' +
+                      key + '.nii.gz' for key in keys]
     for key, basename_asym in zip(keys, basenames_asym):
         assert_equal(data_asym[key], os.path.join(tst.tmpdir, dataset_name,
                                                   name_asym, basename_asym))
