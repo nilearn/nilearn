@@ -431,3 +431,57 @@ def test_fetch_megatrawls_netmats():
     assert_equal(netmats_data.dimensions, 300)
     assert_equal(netmats_data.timeseries, 'multiple_spatial_regression')
     assert_equal(netmats_data.matrices, 'full_correlation')
+
+
+@with_setup(setup_mock, teardown_mock)
+@with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
+def test_fetch_cobre_niak():
+    local_url = "file://" + tst.datadir
+    ids_sc = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 15, 16, 21, 22, 25,
+              28, 29, 32, 34, 37, 39, 40, 41, 42, 44, 46, 47, 49, 59, 60,
+              64, 71, 72, 73, 75, 77, 78, 79, 80, 81, 82, 84, 85, 88, 89,
+              92, 94, 96, 97, 98, 99, 100, 101, 103, 105, 106, 108, 109, 110,
+              112, 117, 122, 126, 132, 133, 137, 142, 143, 145]
+    ids_con = [13, 14, 17, 18, 19, 20, 23, 24, 26, 27, 30, 31, 33, 35, 36,
+               38, 43, 45, 48, 50, 51, 52, 53, 54, 55, 56, 57, 58, 61, 62,
+               63, 65, 66, 67, 68, 69, 74, 76, 86, 87, 90, 91, 93, 95, 102,
+               104, 107, 111, 113, 114, 115, 116, 118, 119, 120, 121, 123,
+               124, 125, 127, 128, 129, 130, 131, 134, 135, 136, 138, 139,
+               140, 141, 144, 146, 147]
+    ids_sch = [('szxxx0040%03d' % i) for i in ids_sc]
+    ids_cont = ids_cont = [('contxxx0040%03d' % i) for i in ids_con]
+    subs = np.array(ids_sch + ids_cont, dtype='S17')
+    subs = subs.view(dtype=[('subject_type', 'S17')])
+    tst.mock_fetch_files.add_csv('cobre_model_group.csv', subs)
+    # All subjects
+    cobre_data = func.fetch_cobre_niak(n_subjects=None, data_dir=tst.tmpdir,
+                                       url=local_url)
+
+    phenotypic_names = ['phenotypic', 'mat_files', 'description', 'func']
+    # test length of functional filenames to max 146
+    assert_equal(len(cobre_data.func), 146)
+    # test length of corresponding matlab files of same length to max 146
+    assert_equal(len(cobre_data.mat_files), 146)
+    # test return type variables
+    assert_equal(cobre_data.keys(), phenotypic_names)
+    # test functional filenames in a list
+    assert_true(isinstance(cobre_data.func, list))
+    # test matlab files in a list
+    assert_true(isinstance(cobre_data.mat_files, list))
+
+    assert_true(isinstance(cobre_data.func[0], _basestring))
+    # returned phenotypic data will be an array
+    assert_true(isinstance(cobre_data.phenotypic, np.recarray))
+    # data description should not be empty
+    assert_not_equal(cobre_data.description, '')
+
+    # Fetch only 30 subjects
+    data_30_subjects = func.fetch_cobre_niak(n_subjects=30, url=local_url,
+                                             data_dir=tst.tmpdir)
+    assert_equal(len(data_30_subjects.func), 30)
+    assert_equal(len(data_30_subjects.mat_files), 30)
+
+    # Test more than maximum subjects
+    test_150_subjects = func.fetch_cobre_niak(n_subjects=150, url=local_url,
+                                              data_dir=tst.datadir)
+    assert_equal(len(test_150_subjects.func), 146)
