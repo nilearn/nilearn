@@ -1,4 +1,4 @@
-An atlas of Multiscale Brain Parcellations
+An atlas of multiscale brain parcellations
 
 
 Content
