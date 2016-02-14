@@ -644,6 +644,8 @@ def fetch_atlas_basc_multiscale(version='sym', data_dir=None,
     study homotopic functional connections in fMRI: finding homotopic regions
     simply consists of flipping the x-axis of the template.
 
+    .. versionadded:: 0.2.3
+
     Parameters
     ----------
     version: str, optional
