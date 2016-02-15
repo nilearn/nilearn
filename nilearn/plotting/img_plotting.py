@@ -380,7 +380,7 @@ def _load_anat(anat_img=MNI152TEMPLATE, dim=False, black_bg='auto'):
         else:
             if not isinstance(dim, numbers.Number):
                 dim = .6
-            vmin = vmean - (1 + dim) * ptp
+            vmin = .5 * (2 - dim) * vmean - (1 + dim) * ptp
     return anat_img, black_bg, vmin, vmax
 
 
@@ -446,7 +446,10 @@ def plot_anat(anat_img=MNI152TEMPLATE, cut_coords=None,
             to matplotlib.pyplot.savefig.
         dim: boolean or float, optional
             Dimming factor applied to background image. If True, automatic
-            heuristics are applied. Accepted float values are between -1 and 1.
+            heuristics are applied. Accepted float values, where at
+            typical span is -1 to 1 (-1 = increase contrast; 1 = decrease
+            contrast), but larger values can be used for a more
+            pronounced effect.
         cmap: matplotlib colormap, optional
             The colormap for the anat
         vmin: float
@@ -613,7 +616,9 @@ def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None,
             magically by analysis of the image.
         dim: boolean or float, optional
             Dimming factor applied to background image. If True, automatic
-            heuristics are applied. Accepted float values are between -1 and 1.
+            heuristics are applied. Accepted float values, where at
+            typical span is -1 to 1 (-1 = increase contrast; 1 = decrease
+            contrast), but larger values can be used for a more
         vmin: float
             Lower bound for plotting, passed to matplotlib.pyplot.imshow
         vmax: float
@@ -720,7 +725,9 @@ def plot_prob_atlas(maps_img, anat_img=MNI152TEMPLATE, view_type='auto',
             savefig.
         dim: boolean or float, optional
             Dimming factor applied to background image. If True, automatic
-            heuristics are applied. Accepted float values are between -1 and 1.
+            heuristics are applied. Accepted float values, where at
+            typical span is -1 to 1 (-1 = increase contrast; 1 = decrease
+            contrast), but larger values can be used for a more
         cmap: matplotlib colormap, optional
             The colormap for the atlas maps
         vmin: float
