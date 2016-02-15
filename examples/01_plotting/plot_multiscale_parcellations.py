@@ -6,14 +6,15 @@ This example shows how to download and fetch brain parcellations of
 multiple networks using :func:`nilearn.datasets.fetch_atlas_basc_multiscale`
 and visualize them using plotting function :func:`nilearn.plotting.plot_roi`.
 
-We show here only three different networks of symmetric version. For more
+We show here only three different networks of 'symmetric' version. For more
 details about different versions and different networks, please refer to its
 documentation.
 """
 
 ###############################################################################
 # Fetching multiscale group brain parcellations
-# Import datasets module and use fetch_atlas_basc_multiscale function
+
+# import datasets module and use `fetch_atlas_basc_multiscale` function
 from nilearn import datasets
 
 parcellations = datasets.fetch_atlas_basc_multiscale(version='sym')
@@ -25,7 +26,8 @@ networks_444 = parcellations['scale444']
 
 ###############################################################################
 # Visualizing brain parcellations
-# Import plotting module and use plot_roi function, since the maps are in 3D
+
+# import plotting module and use `plot_roi` function, since the maps are in 3D
 from nilearn import plotting
 
 # The coordinates of all plots are selected automatically by itself
