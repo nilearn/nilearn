@@ -7,7 +7,6 @@ import re
 import numpy as np
 import nibabel
 from sklearn.datasets.base import Bunch
-from sklearn.utils import shuffle
 
 from .utils import (_get_dataset_dir, _fetch_files, _get_dataset_descr,
                     _read_md5_sum_file, _tree, _filter_columns)
@@ -1464,6 +1463,11 @@ def fetch_cobre(n_subjects=10, data_dir=None, url=None, verbose=1):
         - 'phenotypic': ndarray
             Contains data of clinical variables, sex, age, FD.
         - 'description': data description of the release and references.
+
+    Notes
+    -----
+    More information about datasets structure, See:
+    https://figshare.com/articles/COBRE_preprocessed_with_NIAK_0_12_4/1160600
     """
     if url is None:
         url = "https://ndownloader.figshare.com/articles/1160600/versions/15"
@@ -1484,14 +1488,11 @@ def fetch_cobre(n_subjects=10, data_dir=None, url=None, verbose=1):
     # Get the ids of the datasets
     ids = csv_array['subject_type']
     max_subjects = len(ids)
-    if n_subjects is not None:
-        if n_subjects < max_subjects:
-            # shuffle datasets to have almost equal balance between sch vs ctrl
-            ids = shuffle(ids, random_state=0, n_samples=n_subjects)
-        elif n_subjects > max_subjects:
-            warnings.warn('Warning: there are only %d subjects' % max_subjects)
-            n_subjects = max_subjects
-    else:
+    if n_subjects is None:
+        n_subjects = max_subjects
+
+    if n_subjects > max_subjects:
+        warnings.warn('Warning: there are only %d subjects' % max_subjects)
         n_subjects = max_subjects
 
     func_filenames = [('fmri_' + i.decode().strip(' "\'') +
@@ -1504,6 +1505,16 @@ def fetch_cobre(n_subjects=10, data_dir=None, url=None, verbose=1):
 
     func_files = _fetch_files(data_dir, func_files, verbose=verbose)
     mat_files = _fetch_files(data_dir, mat_files, verbose=verbose)
+
+    if n_subjects < max_subjects:
+        first_split = n_subjects/2
+        second_split = n_subjects - first_split
+        func = func_files[0:71][:first_split]
+        func.extend(func_files[72:146][:second_split])
+        func_files = func
+        mats = mat_files[0:71][:first_split]
+        mats.extend(mat_files[72:146][:second_split])
+        mat_files = mats
 
     return Bunch(func=func_files, mat_files=mat_files, phenotypic=csv_array,
                  description=fdescr)
