@@ -457,13 +457,13 @@ def test_fetch_cobre():
     cobre_data = func.fetch_cobre(n_subjects=None, data_dir=tst.tmpdir,
                                   url=local_url)
 
-    phenotypic_names = ['phenotypic', 'mat_files', 'description', 'func']
+    phenotypic_names = ['description', 'func', 'mat_files', 'phenotypic']
     # test length of functional filenames to max 146
     assert_equal(len(cobre_data.func), 146)
     # test length of corresponding matlab files of same length to max 146
     assert_equal(len(cobre_data.mat_files), 146)
     # test return type variables
-    assert_equal(cobre_data.keys(), phenotypic_names)
+    assert_equal(sorted(cobre_data), phenotypic_names)
     # test functional filenames in a list
     assert_true(isinstance(cobre_data.func, list))
     # test matlab files in a list
