@@ -1414,7 +1414,7 @@ def fetch_megatrawls_netmats(dimensionality=100, timeseries='eigen_regression',
         description=description)
 
 
-def fetch_cobre_niak(n_subjects=10, data_dir=None, url=None, verbose=1):
+def fetch_cobre(n_subjects=10, data_dir=None, url=None, verbose=1):
     """Fetch COBRE datasets preprocessed using NIAK 0.12.4 pipeline.
 
     Downloads and returns preprocessed resting state fMRI datasets and
@@ -1430,13 +1430,13 @@ def fetch_cobre_niak(n_subjects=10, data_dir=None, url=None, verbose=1):
 
     NOTE: The number of time samples vary, as some samples have been removed
     if tagged with excessive motion. This means that data is already time
-    filtered. See output variable 'decription' for more details.
+    filtered. See output variable 'description' for more details.
 
     .. versionadded 0.2.3
 
     Parameters
     ----------
-    n_subject: int, optional
+    n_subjects: int, optional
         The number of subjects to load from maximum of 146 subjects.
         By default, 10 subjects will be loaded. If n_subjects=None,
         all subjects will be loaded.
@@ -1469,7 +1469,7 @@ def fetch_cobre_niak(n_subjects=10, data_dir=None, url=None, verbose=1):
         url = "https://ndownloader.figshare.com/articles/1160600/versions/15"
     opts = {'uncompress': True}
 
-    dataset_name = 'COBRE_NIAK'
+    dataset_name = 'cobre'
     data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
                                 verbose=verbose)
 
@@ -1494,9 +1494,9 @@ def fetch_cobre_niak(n_subjects=10, data_dir=None, url=None, verbose=1):
     else:
         n_subjects = max_subjects
 
-    func_filenames = [('fmri_' + i.strip(' "\'') +
+    func_filenames = [('fmri_' + i.decode().strip(' "\'') +
                        '_session1' + '_run1.nii.gz') for i in ids]
-    mats_filenames = [('fmri_' + i.strip(' "\'') +
+    mats_filenames = [('fmri_' + i.decode().strip(' "\'') +
                        '_session1' + '_run1_extra.mat') for i in ids]
 
     func_files = [(path, url, opts) for path in func_filenames]

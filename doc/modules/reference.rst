@@ -81,7 +81,7 @@ uses.
    fetch_nyu_rest
    fetch_oasis_vbm
    fetch_megatrawls_netmats
-   fetch_cobre_niak
+   fetch_cobre
 
 .. _decoding_ref:
 
