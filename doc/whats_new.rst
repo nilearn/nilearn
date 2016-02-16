@@ -10,6 +10,8 @@ New features
       image or a list of images using :func:`nilearn.image.math_img`.
     - Downloader for COBRE datasets of 146 rest fMRI subjects with
       :func:`nilearn.datasets.fetch_cobre`
+    - Fetcher for multiscale functional brain parcellations (BASC)
+      :func:`nilearn.datasets.fetch_atlas_basc_multiscale_2015`
 
 0.2.2
 ======

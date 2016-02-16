@@ -274,13 +274,14 @@ def test_fetch_atlas_aal():
 
 @with_setup(setup_mock, teardown_mock)
 @with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
-def test_fetch_atlas_basc_multiscale():
+def test_fetch_atlas_basc_multiscale_2015():
     # default version='sym'
-    data_sym = atlas.fetch_atlas_basc_multiscale(data_dir=tst.tmpdir,
-                                                 verbose=0)
+    data_sym = atlas.fetch_atlas_basc_multiscale_2015(data_dir=tst.tmpdir,
+                                                      verbose=0)
     # version='asym'
-    data_asym = atlas.fetch_atlas_basc_multiscale(version='asym', verbose=0,
-                                                  data_dir=tst.tmpdir)
+    data_asym = atlas.fetch_atlas_basc_multiscale_2015(version='asym',
+                                                       verbose=0,
+                                                       data_dir=tst.tmpdir)
 
     keys = ['scale007', 'scale012', 'scale020', 'scale036', 'scale064',
             'scale122', 'scale197', 'scale325', 'scale444']
@@ -303,7 +304,7 @@ def test_fetch_atlas_basc_multiscale():
     assert_equal(len(data_sym), 10)
     assert_raises_regex(ValueError,
                         'The version of Brain parcellations requested "aym"',
-                        atlas.fetch_atlas_basc_multiscale, version="aym",
+                        atlas.fetch_atlas_basc_multiscale_2015, version="aym",
                         data_dir=tst.tmpdir, verbose=0)
 
     assert_equal(len(tst.mock_url_request.urls), 2)

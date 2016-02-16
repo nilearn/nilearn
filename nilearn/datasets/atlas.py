@@ -620,8 +620,8 @@ def fetch_atlas_aal(version='SPM12', data_dir=None, url=None, resume=True,
     return Bunch(**params)
 
 
-def fetch_atlas_basc_multiscale(version='sym', data_dir=None,
-                                resume=True, verbose=1):
+def fetch_atlas_basc_multiscale_2015(version='sym', data_dir=None,
+                                     resume=True, verbose=1):
     """Downloads and loads multiscale functional brain parcellations
 
     This atlas includes group brain parcellations generated from
