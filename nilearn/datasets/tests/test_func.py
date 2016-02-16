@@ -435,7 +435,7 @@ def test_fetch_megatrawls_netmats():
 
 @with_setup(setup_mock, teardown_mock)
 @with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
-def test_fetch_cobre_niak():
+def test_fetch_cobre():
     local_url = "file://" + tst.datadir
     ids_sc = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 15, 16, 21, 22, 25,
               28, 29, 32, 34, 37, 39, 40, 41, 42, 44, 46, 47, 49, 59, 60,
@@ -448,14 +448,14 @@ def test_fetch_cobre_niak():
                104, 107, 111, 113, 114, 115, 116, 118, 119, 120, 121, 123,
                124, 125, 127, 128, 129, 130, 131, 134, 135, 136, 138, 139,
                140, 141, 144, 146, 147]
-    ids_sch = [('szxxx0040%03d' % i) for i in ids_sc]
-    ids_cont = ids_cont = [('contxxx0040%03d' % i) for i in ids_con]
+    ids_sch = [('szxxx0040%03d' % i).encode() for i in ids_sc]
+    ids_cont = ids_cont = [('contxxx0040%03d' % i).encode() for i in ids_con]
     subs = np.array(ids_sch + ids_cont, dtype='S17')
     subs = subs.view(dtype=[('subject_type', 'S17')])
     tst.mock_fetch_files.add_csv('cobre_model_group.csv', subs)
     # All subjects
-    cobre_data = func.fetch_cobre_niak(n_subjects=None, data_dir=tst.tmpdir,
-                                       url=local_url)
+    cobre_data = func.fetch_cobre(n_subjects=None, data_dir=tst.tmpdir,
+                                  url=local_url)
 
     phenotypic_names = ['phenotypic', 'mat_files', 'description', 'func']
     # test length of functional filenames to max 146
@@ -476,12 +476,12 @@ def test_fetch_cobre_niak():
     assert_not_equal(cobre_data.description, '')
 
     # Fetch only 30 subjects
-    data_30_subjects = func.fetch_cobre_niak(n_subjects=30, url=local_url,
-                                             data_dir=tst.tmpdir)
+    data_30_subjects = func.fetch_cobre(n_subjects=30, url=local_url,
+                                        data_dir=tst.tmpdir)
     assert_equal(len(data_30_subjects.func), 30)
     assert_equal(len(data_30_subjects.mat_files), 30)
 
     # Test more than maximum subjects
-    test_150_subjects = func.fetch_cobre_niak(n_subjects=150, url=local_url,
-                                              data_dir=tst.datadir)
+    test_150_subjects = func.fetch_cobre(n_subjects=150, url=local_url,
+                                         data_dir=tst.datadir)
     assert_equal(len(test_150_subjects.func), 146)
