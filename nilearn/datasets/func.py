@@ -1507,7 +1507,7 @@ def fetch_cobre(n_subjects=10, data_dir=None, url=None, verbose=1):
     mat_files = _fetch_files(data_dir, mat_files, verbose=verbose)
 
     if n_subjects < max_subjects:
-        first_split = n_subjects/2
+        first_split = int(n_subjects/2)
         second_split = n_subjects - first_split
         func = func_files[0:71][:first_split]
         func.extend(func_files[72:146][:second_split])
