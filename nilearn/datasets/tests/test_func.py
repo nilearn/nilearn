@@ -6,6 +6,7 @@ Test the datasets module
 
 import os
 import numpy as np
+import json
 import nibabel
 from sklearn.utils import check_random_state
 
@@ -436,7 +437,6 @@ def test_fetch_megatrawls_netmats():
 @with_setup(setup_mock, teardown_mock)
 @with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
 def test_fetch_cobre():
-    local_url = "file://" + tst.datadir
     ids_sc = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 15, 16, 21, 22, 25,
               28, 29, 32, 34, 37, 39, 40, 41, 42, 44, 46, 47, 49, 59, 60,
               64, 71, 72, 73, 75, 77, 78, 79, 80, 81, 82, 84, 85, 88, 89,
@@ -448,11 +448,37 @@ def test_fetch_cobre():
                104, 107, 111, 113, 114, 115, 116, 118, 119, 120, 121, 123,
                124, 125, 127, 128, 129, 130, 131, 134, 135, 136, 138, 139,
                140, 141, 144, 146, 147]
-    ids_sch = [('szxxx0040%03d' % i).encode() for i in ids_sc]
-    ids_cont = ids_cont = [('contxxx0040%03d' % i).encode() for i in ids_con]
-    subs = np.array(ids_sch + ids_cont, dtype='S17')
-    subs = subs.view(dtype=[('subject_type', 'S17')])
-    tst.mock_fetch_files.add_csv('cobre_model_group.csv', subs)
+    ids_sch = ['szxxx0040%03d' % i for i in ids_sc]
+    ids_cont = ids_cont = ['contxxx0040%03d' % i for i in ids_con]
+    ids = np.asarray(ids_sch + ids_cont, dtype='|U17')
+    sz = np.asarray([i.startswith('s') for i in ids], dtype='<f8')
+    age = np.ones(len(ids), dtype='<f8')
+    sex = np.ones(len(ids), dtype='<f8')
+    fd = np.ones(len(ids), dtype='<f8')
+    csv = np.rec.array([ids, sz, age, sex, fd],
+                       dtype=[('id', '|U17'), ('sz', '<f8'),
+                              ('age', '<f8'), ('sex', '<f8'),
+                              ('fd', '<f8')])
+    tst.mock_fetch_files.add_csv('cobre_model_group.csv', csv)
+
+    # Create a dummy 'files'
+    cobre_dir = os.path.join(tst.tmpdir, 'cobre')
+    os.mkdir(cobre_dir)
+    dummy = os.path.join(cobre_dir, 'files')
+    dummy_data = []
+    for i in np.hstack([ids_sch, ids_cont]):
+        # Func file
+        f = 'fmri_' + i + '_session1_run1.nii.gz'
+        m = 'fmri_' + i + '_session1_run1_extra.mat'
+        dummy_data.append({'downloadUrl': 'whatever', 'name': f})
+        dummy_data.append({'downloadUrl': 'whatever', 'name': m})
+
+    # Add the CSV file
+    dummy_data.append({
+        'downloadUrl': 'whatever', 'name': 'cobre_model_group.csv'})
+    json.dump(dummy_data, open(dummy, 'w'))
+    local_url = "file://" + dummy
+
     # All subjects
     cobre_data = func.fetch_cobre(n_subjects=None, data_dir=tst.tmpdir,
                                   url=local_url)
@@ -483,5 +509,6 @@ def test_fetch_cobre():
 
     # Test more than maximum subjects
     test_150_subjects = func.fetch_cobre(n_subjects=150, url=local_url,
-                                         data_dir=tst.datadir)
+                                         data_dir=tst.tmpdir)
     assert_equal(len(test_150_subjects.func), 146)
+    os.remove(dummy)
