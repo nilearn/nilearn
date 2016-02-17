@@ -270,3 +270,43 @@ def test_fetch_atlas_aal():
                         data_dir=tst.tmpdir, verbose=0)
 
     assert_not_equal(dataset.description, '')
+
+
+@with_setup(setup_mock, teardown_mock)
+@with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
+def test_fetch_atlas_basc_multiscale_2015():
+    # default version='sym'
+    data_sym = atlas.fetch_atlas_basc_multiscale_2015(data_dir=tst.tmpdir,
+                                                      verbose=0)
+    # version='asym'
+    data_asym = atlas.fetch_atlas_basc_multiscale_2015(version='asym',
+                                                       verbose=0,
+                                                       data_dir=tst.tmpdir)
+
+    keys = ['scale007', 'scale012', 'scale020', 'scale036', 'scale064',
+            'scale122', 'scale197', 'scale325', 'scale444']
+
+    dataset_name = 'basc_multiscale_2015'
+    name_sym = 'template_cambridge_basc_multiscale_nii_sym'
+    basenames_sym = ['template_cambridge_basc_multiscale_sym_' +
+                     key + '.nii.gz' for key in keys]
+    for key, basename_sym in zip(keys, basenames_sym):
+        assert_equal(data_sym[key], os.path.join(tst.tmpdir, dataset_name,
+                                                 name_sym, basename_sym))
+
+    name_asym = 'template_cambridge_basc_multiscale_nii_asym'
+    basenames_asym = ['template_cambridge_basc_multiscale_asym_' +
+                      key + '.nii.gz' for key in keys]
+    for key, basename_asym in zip(keys, basenames_asym):
+        assert_equal(data_asym[key], os.path.join(tst.tmpdir, dataset_name,
+                                                  name_asym, basename_asym))
+
+    assert_equal(len(data_sym), 10)
+    assert_raises_regex(ValueError,
+                        'The version of Brain parcellations requested "aym"',
+                        atlas.fetch_atlas_basc_multiscale_2015, version="aym",
+                        data_dir=tst.tmpdir, verbose=0)
+
+    assert_equal(len(tst.mock_url_request.urls), 2)
+    assert_not_equal(data_sym.description, '')
+    assert_not_equal(data_asym.description, '')

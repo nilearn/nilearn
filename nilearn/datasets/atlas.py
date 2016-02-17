@@ -618,3 +618,111 @@ def fetch_atlas_aal(version='SPM12', data_dir=None, url=None, resume=True,
               'labels': labels_dict}
 
     return Bunch(**params)
+
+
+def fetch_atlas_basc_multiscale_2015(version='sym', data_dir=None,
+                                     resume=True, verbose=1):
+    """Downloads and loads multiscale functional brain parcellations
+
+    This atlas includes group brain parcellations generated from
+    resting-state functional magnetic resonance images from about
+    200 young healthy subjects.
+
+    Multiple scales (number of networks) are available, among
+    7, 12, 20, 36, 64, 122, 197, 325, 444. The brain parcellations
+    have been generated using a method called bootstrap analysis of
+    stable clusters called as BASC, (Bellec et al., 2010) and the
+    scales have been selected using a data-driven method called MSTEPS
+    (Bellec, 2013).
+
+    Note that two versions of the template are available, 'sym' or 'asym'.
+    The 'asym' type contains brain images that have been registered in the
+    asymmetric version of the MNI brain template (reflecting that the brain
+    is asymmetric), while the 'sym' type contains images registered in the
+    symmetric version of the MNI template. The symmetric template has been
+    forced to be symmetric anatomically, and is therefore ideally suited to
+    study homotopic functional connections in fMRI: finding homotopic regions
+    simply consists of flipping the x-axis of the template.
+
+    .. versionadded:: 0.2.3
+
+    Parameters
+    ----------
+    version: str, optional
+        Available versions are 'sym' or 'asym'. By default all scales of
+        brain parcellations of version 'sym' will be returned.
+
+    data_dir: str, optional
+        directory where data should be downloaded and unpacked.
+
+    url: str, optional
+        url of file to download.
+
+    resume: bool
+        whether to resumed download of a partly-downloaded file.
+
+    verbose: int
+        verbosity level (0 means no message).
+
+    Returns
+    -------
+    data: sklearn.datasets.base.Bunch
+        dictionary-like object, Keys are:
+
+        - "scale007", "scale012", "scale020", "scale036", "scale064",
+          "scale122", "scale197", "scale325", "scale444": str, path
+          to Nifti file of various scales of brain parcellations.
+
+        - "description": details about the data release.
+
+    References
+    ----------
+    Bellec P, Rosa-Neto P, Lyttelton OC, Benali H, Evans AC, Jul. 2010.
+    Multi-level bootstrap analysis of stable clusters in resting-state fMRI.
+    NeuroImage 51 (3), 1126-1139.
+    URL http://dx.doi.org/10.1016/j.neuroimage.2010.02.082
+
+    Bellec P, Jun. 2013. Mining the Hierarchy of Resting-State Brain Networks:
+    Selection of Representative Clusters in a Multiscale Structure.
+    Pattern Recognition in Neuroimaging (PRNI), 2013 pp. 54-57.
+
+    Notes
+    -----
+    More information about dataset's structure, See:
+    https://figshare.com/articles/
+    Group_multiscale_functional_template_generated_with_BASC_on_the_Cambridge_sample
+    /1285615
+    """
+    versions = ['sym', 'asym']
+    if version not in versions:
+        raise ValueError('The version of Brain parcellations requested "%s" '
+                         'does not exist. Please choose one among them %s.' %
+                         (version, str(versions)))
+
+    keys = ['scale007', 'scale012', 'scale020', 'scale036', 'scale064',
+            'scale122', 'scale197', 'scale325', 'scale444']
+
+    if version == 'sym':
+        url = "https://ndownloader.figshare.com/files/1861819"
+    elif version == 'asym':
+        url = "https://ndownloader.figshare.com/files/1861820"
+    opts = {'uncompress': True}
+
+    dataset_name = "basc_multiscale_2015"
+    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
+                                verbose=verbose)
+
+    folder_name = 'template_cambridge_basc_multiscale_nii_' + version
+    basenames = ['template_cambridge_basc_multiscale_' + version +
+                 '_' + key + '.nii.gz' for key in keys]
+
+    filenames = [(os.path.join(folder_name, basename), url, opts)
+                 for basename in basenames]
+    data = _fetch_files(data_dir, filenames, resume=resume, verbose=verbose)
+
+    descr = _get_dataset_descr(dataset_name)
+
+    params = dict(zip(keys, data))
+    params['description'] = descr
+
+    return Bunch(**params)
