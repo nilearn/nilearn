@@ -310,3 +310,11 @@ def test_fetch_atlas_basc_multiscale_2015():
     assert_equal(len(tst.mock_url_request.urls), 2)
     assert_not_equal(data_sym.description, '')
     assert_not_equal(data_asym.description, '')
+
+
+def test_fetch_atlas_dosenbach_2010():
+    bunch = atlas.fetch_atlas_dosenbach_2010()
+    assert_equal(len(bunch.rois), 160)
+    assert_equal(len(bunch.labels), 160)
+    assert_equal(len(np.unique(bunch.networks)), 6)
+    assert_not_equal(bunch.description, '')

@@ -724,3 +724,39 @@ def fetch_atlas_basc_multiscale_2015(version='sym', data_dir=None,
     params['description'] = descr
 
     return Bunch(**params)
+
+
+def fetch_atlas_dosenbach_2010():
+    """Load the Dosenbach et al. 160 ROIs. These ROIs cover
+    much of the cerebral cortex and cerebellum and are assigned to 6
+    networks.
+
+    Returns
+    -------
+    data: sklearn.datasets.base.Bunch
+        dictionary-like object, contains:
+        - "rois": coordinates of 160 ROIs in MNI space
+        - "labels": ROIs labels
+        - "networks": networks names
+
+    References
+    ----------
+    Dosenbach N.U., Nardos B., et al. "Prediction of individual brain maturity
+    using fMRI.", 2010, Science 329, 1358-1361.
+    """
+    dataset_name = 'dosenbach_2010'
+    fdescr = _get_dataset_descr(dataset_name)
+    package_directory = os.path.dirname(os.path.abspath(__file__))
+    csv = os.path.join(package_directory, "data", "dosenbach_2010.csv")
+    out_csv = np.recfromcsv(csv)
+
+    # We add the ROI number to its name, since names are not unique
+    names = out_csv['name']
+    numbers = out_csv['number']
+    labels = np.array(['{0} {1}'.format(name, number) for (name, number) in
+                       zip(names, numbers)])
+    params = dict(rois=out_csv[['x', 'y', 'z']],
+                  labels=labels,
+                  networks=out_csv['network'], description=fdescr)
+
+    return Bunch(**params)
