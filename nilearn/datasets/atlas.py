@@ -688,10 +688,8 @@ def fetch_atlas_basc_multiscale_2015(version='sym', data_dir=None,
 
     Notes
     -----
-    More information about dataset's structure, See:
-    https://figshare.com/articles/
-    Group_multiscale_functional_template_generated_with_BASC_on_the_Cambridge_sample
-    /1285615
+    For more information on this dataset's structure, see
+    https://figshare.com/articles/basc/1285615
     """
     versions = ['sym', 'asym']
     if version not in versions:
