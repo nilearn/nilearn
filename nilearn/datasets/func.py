@@ -1411,3 +1411,110 @@ def fetch_megatrawls_netmats(dimensionality=100, timeseries='eigen_regression',
         matrices=matrices,
         correlation_matrices=correlation_matrices,
         description=description)
+
+
+def fetch_cobre(n_subjects=10, data_dir=None, url=None, verbose=1):
+    """Fetch COBRE datasets preprocessed using NIAK 0.12.4 pipeline.
+
+    Downloads and returns preprocessed resting state fMRI datasets and
+    phenotypic information such as demographic, clinical variables,
+    measure of frame displacement FD (an average FD for all the time
+    frames left after censoring).
+
+    For each subject, this function also returns .mat files which contains
+    all the covariates that have been regressed out of the functional data.
+    The covariates such as motion parameters, mean CSF signal, etc. It also
+    contains a list of time frames that have been removed from the time series
+    by censoring for high motion.
+
+    NOTE: The number of time samples vary, as some samples have been removed
+    if tagged with excessive motion. This means that data is already time
+    filtered. See output variable 'description' for more details.
+
+    .. versionadded 0.2.3
+
+    Parameters
+    ----------
+    n_subjects: int, optional
+        The number of subjects to load from maximum of 146 subjects.
+        By default, 10 subjects will be loaded. If n_subjects=None,
+        all subjects will be loaded.
+
+    data_dir: str, optional
+        Path to the data directory. Used to force data storage in a
+        specified location. Default: None
+
+    url: str, optional
+        Override download url. Used for test only (or if you setup a
+        mirror of the data). Default: None
+
+    verbose: int, optional
+       Verbosity level (0 means no message).
+
+    Returns
+    -------
+    data: Bunch
+        Dictionary-like object, the attributes are:
+
+        - 'func': string list
+            Paths to Nifti images.
+        - 'mat_files': string list
+            Paths to .mat files of each subject.
+        - 'phenotypic': ndarray
+            Contains data of clinical variables, sex, age, FD.
+        - 'description': data description of the release and references.
+
+    Notes
+    -----
+    More information about datasets structure, See:
+    https://figshare.com/articles/COBRE_preprocessed_with_NIAK_0_12_4/1160600
+    """
+    if url is None:
+        url = "https://ndownloader.figshare.com/articles/1160600/versions/15"
+    opts = {'uncompress': True}
+
+    dataset_name = 'cobre'
+    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
+                                verbose=verbose)
+
+    fdescr = _get_dataset_descr(dataset_name)
+    # Fetch the phenotypic file and load it
+    csv_name = 'cobre_model_group.csv'
+
+    csv_file = _fetch_files(data_dir, [(csv_name, url, opts)], verbose=verbose)
+    # Load file in filename to numpy arrays
+    names = ['subject_type', 'sz', 'age', 'sex', 'fd']
+    csv_array = np.recfromcsv(csv_file[0], names=names, skip_header=True)
+    # Get the ids of the datasets
+    ids = csv_array['subject_type']
+    max_subjects = len(ids)
+    if n_subjects is None:
+        n_subjects = max_subjects
+
+    if n_subjects > max_subjects:
+        warnings.warn('Warning: there are only %d subjects' % max_subjects)
+        n_subjects = max_subjects
+
+    func_filenames = [('fmri_' + i.decode().strip(' "\'') +
+                       '_session1' + '_run1.nii.gz') for i in ids]
+    mats_filenames = [('fmri_' + i.decode().strip(' "\'') +
+                       '_session1' + '_run1_extra.mat') for i in ids]
+
+    func_files = [(path, url, opts) for path in func_filenames]
+    mat_files = [(path, url, opts) for path in mats_filenames]
+
+    func_files = _fetch_files(data_dir, func_files, verbose=verbose)
+    mat_files = _fetch_files(data_dir, mat_files, verbose=verbose)
+
+    if n_subjects < max_subjects:
+        first_split = int(n_subjects/2)
+        second_split = n_subjects - first_split
+        func = func_files[0:71][:first_split]
+        func.extend(func_files[72:146][:second_split])
+        func_files = func
+        mats = mat_files[0:71][:first_split]
+        mats.extend(mat_files[72:146][:second_split])
+        mat_files = mats
+
+    return Bunch(func=func_files, mat_files=mat_files, phenotypic=csv_array,
+                 description=fdescr)

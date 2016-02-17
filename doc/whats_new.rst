@@ -8,6 +8,8 @@ New features
 ............
     - Mathematical formulas based on numpy functions can be applied on an
       image or a list of images using :func:`nilearn.image.math_img`.
+    - Downloader for COBRE datasets of 146 rest fMRI subjects with
+      :func:`nilearn.datasets.fetch_cobre`
 
 0.2.2
 ======
