@@ -649,8 +649,8 @@ def fetch_atlas_basc_multiscale_2015(version='sym', data_dir=None,
     Parameters
     ----------
     version: str, optional
-         Available versions are 'sym' or 'asym'. By default all scales of
-         brain parcellations of version 'sym' will be returned.
+        Available versions are 'sym' or 'asym'. By default all scales of
+        brain parcellations of version 'sym' will be returned.
 
     data_dir: str, optional
         directory where data should be downloaded and unpacked.
@@ -685,6 +685,13 @@ def fetch_atlas_basc_multiscale_2015(version='sym', data_dir=None,
     Bellec P, Jun. 2013. Mining the Hierarchy of Resting-State Brain Networks:
     Selection of Representative Clusters in a Multiscale Structure.
     Pattern Recognition in Neuroimaging (PRNI), 2013 pp. 54-57.
+
+    Notes
+    -----
+    More information about dataset's structure, See:
+    https://figshare.com/articles/
+    Group_multiscale_functional_template_generated_with_BASC_on_the_Cambridge_sample
+    /1285615
     """
     versions = ['sym', 'asym']
     if version not in versions:
