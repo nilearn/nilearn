@@ -1484,7 +1484,6 @@ def fetch_cobre(n_subjects=10, data_dir=None, url=None, verbose=1):
                          [("files", url + "?offset=0&limit=300", {})],
                          verbose=verbose)[0]
     files = json.load(open(files, 'r'))
-
     # Index files by name
     files_ = {}
     for f in files:
@@ -1493,11 +1492,11 @@ def fetch_cobre(n_subjects=10, data_dir=None, url=None, verbose=1):
 
     # Fetch the phenotypic file and load it
     csv_name = 'cobre_model_group.csv'
-    csv_file = _fetch_files(data_dir, [(csv_name,
-                                        files[csv_name]['downloadUrl'],
-                                        {'md5': files[csv_name]['md5'],
-                                         'move': csv_name})],
-                            verbose=verbose)[0]
+    csv_file = _fetch_files(
+        data_dir, [(csv_name, files[csv_name]['downloadUrl'],
+                    {'md5': files[csv_name].get('md5', None),
+                     'move': csv_name})],
+        verbose=verbose)[0]
 
     # Load file in filename to numpy arrays
     names = ['id', 'sz', 'age', 'sex', 'fd']
@@ -1507,7 +1506,7 @@ def fetch_cobre(n_subjects=10, data_dir=None, url=None, verbose=1):
         [('id', '|U17'),
          ('sz', 'bool'),
          ('age', '<f8'),
-         ('sex', '<f8'),
+         ('sex', '<i8'),
          ('fd', '<f8')])
     csv_array['id'] = np.char.strip(csv_array['id'], '" ')
 
@@ -1520,27 +1519,30 @@ def fetch_cobre(n_subjects=10, data_dir=None, url=None, verbose=1):
         warnings.warn('Warning: there are only %d subjects' % max_subjects)
         n_subjects = max_subjects
 
+    n_sz = np.ceil(float(n_subjects) / max_subjects * csv_array['sz'].sum())
+    n_ct = np.floor(float(n_subjects) / max_subjects *
+                    np.logical_not(csv_array['sz']).sum())
+
     # First, restrict the csv files to the adequate number of subjects
-    sz_ids = csv_array[csv_array['sz'] == 1.]['id'][:np.floor(n_subjects / 2)]
-    ct_ids = csv_array[csv_array['sz'] == 0.]['id'][:np.ceil(n_subjects / 2)]
+    sz_ids = csv_array[csv_array['sz'] == 1.]['id'][:n_sz]
+    ct_ids = csv_array[csv_array['sz'] == 0.]['id'][:n_ct]
     ids = np.hstack([sz_ids, ct_ids])
     csv_array = csv_array[np.in1d(csv_array['id'], ids)]
 
-    func_filenames = [('fmri_' + i + '_session1_run1.nii.gz') for i in ids]
-    mat_filenames = [('fmri_' + i + '_session1_run1_extra.mat') for i in ids]
-
-    func_files = [(fn, files[fn]['downloadUrl'],
-                   {'md5': files[fn]['md5'], 'move': fn})
-                  for fn in func_filenames]
-    mat_files = [(fn, files[fn]['downloadUrl'],
-                  {'md5': files[fn]['md5'], 'move': fn})
-                 for fn in mat_filenames]
-
-    # Zip the file to couple func and mat. Call fetch_files once per subject.
+    # Call fetch_files once per subject.
     func = []
     mat = []
-    for subject_files in zip(func_files, mat_files):
-        f, m = _fetch_files(data_dir, subject_files, verbose=verbose)
+    for i in ids:
+        f = 'fmri_' + i + '_session1_run1.nii.gz'
+        m = 'fmri_' + i + '_session1_run1_extra.mat'
+        f, m = _fetch_files(
+            data_dir,
+            [(f, files[f]['downloadUrl'], {'md5': files[f].get('md5', None),
+                                           'move': f}),
+             (m, files[m]['downloadUrl'], {'md5': files[m].get('md5', None),
+                                           'move': m})
+             ],
+            verbose=verbose)
         func.append(f)
         mat.append(m)
 
