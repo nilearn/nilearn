@@ -214,7 +214,7 @@ def _get_dataset_dir(dataset_name, data_dir=None, default_paths=None,
     if data_dir is not None:
         paths.extend([(d, False) for d in data_dir.split(os.pathsep)])
 
-    # Search given environment variables
+    # Search possible system paths
     if default_paths is not None:
         for default_path in default_paths:
             paths.extend([(d, True) for d in default_path.split(os.pathsep)])
