@@ -70,8 +70,12 @@ try:
 
     def memory_used(func, *args, **kwargs):
         """Compute memory usage when executing func."""
+        def func_3_times(*args, **kwargs):
+            for _ in range(3):
+                func(*args, **kwargs)
+
         gc.collect()
-        mem_use = memory_usage((func, args, kwargs), interval=0.001)
+        mem_use = memory_usage((func_3_times, args, kwargs), interval=0.001)
         return max(mem_use) - min(mem_use)
 
 except ImportError:
