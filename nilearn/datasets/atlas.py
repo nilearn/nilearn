@@ -4,9 +4,9 @@ Downloading NeuroImaging datasets: atlas datasets
 import os
 import xml.etree.ElementTree
 import numpy as np
-from scipy import ndimage
 
 from sklearn.datasets.base import Bunch
+from sklearn.utils import deprecated
 
 #from . import utils
 from .utils import _get_dataset_dir, _fetch_files, _get_dataset_descr
@@ -332,7 +332,13 @@ def fetch_atlas_msdl(data_dir=None, url=None, resume=True, verbose=1):
     return Bunch(labels=files[0], maps=files[1], description=fdescr)
 
 
+@deprecated('This function has been replace by fetch_coords_power_2011 and '
+            'will be removed in nilearn 0.2.5')
 def fetch_atlas_power_2011():
+    return fetch_coords_power_2011()
+
+
+def fetch_coords_power_2011():
     """Download and load the Power et al. brain atlas composed of 264 ROIs.
 
     Returns
@@ -366,9 +372,9 @@ def fetch_atlas_smith_2009(data_dir=None, mirror='origin', url=None,
         Path of the data directory. Used to force data storage in a non-
         standard location. Default: None (meaning: default)
     mirror: string, optional
-        By default, the dataset is downloaded from the original website of the atlas.
-        Specifying "nitrc" will force download from a mirror, with potentially
-        higher bandwith.
+        By default, the dataset is downloaded from the original website of the
+        atlas. Specifying "nitrc" will force download from a mirror, with
+        potentially higher bandwith.
     url: string, optional
         Download URL of the dataset. Overwrite the default URL.
 
@@ -726,7 +732,7 @@ def fetch_atlas_basc_multiscale_2015(version='sym', data_dir=None,
     return Bunch(**params)
 
 
-def fetch_atlas_dosenbach_2010():
+def fetch_coords_dosenbach_2010():
     """Load the Dosenbach et al. 160 ROIs. These ROIs cover
     much of the cerebral cortex and cerebellum and are assigned to 6
     networks.
