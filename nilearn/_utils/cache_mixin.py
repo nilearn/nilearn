@@ -11,6 +11,8 @@ import shutil
 from distutils.version import LooseVersion
 
 import nibabel
+import sklearn
+
 from sklearn.externals.joblib import Memory
 
 MEMORY_CLASSES = (Memory, )
@@ -91,7 +93,7 @@ def _safe_cache(memory, func, **kwargs):
 
 
 def cache(func, memory, func_memory_level=None, memory_level=None,
-          **kwargs):
+          shelve=False, **kwargs):
     """ Return a joblib.Memory object.
 
     The memory_level determines the level above which the wrapped
@@ -116,6 +118,10 @@ def cache(func, memory, func_memory_level=None, memory_level=None,
         The memory_level used to determine if function call must
         be cached or not (if user_memory_level is equal of greater than
         func_memory_level the function is cached)
+
+    shelve: boolean,
+        Whether to return a MemorizedResult, callable by a .get() method,
+        instead of the return value of func
 
     kwargs: keyword arguments
         The keyword arguments passed to memory.cache
@@ -157,7 +163,21 @@ def cache(func, memory, func_memory_level=None, memory_level=None,
                           stacklevel=2)
     else:
         memory = Memory(cachedir=None, verbose=verbose)
-    return _safe_cache(memory, func, **kwargs)
+    cached_func = _safe_cache(memory, func, **kwargs)
+    if shelve:
+        cached_func = _shelved_func(cached_func)
+    return cached_func
+
+
+class _shelved_func(object):
+    """Work around for Python 2, for which pickle fails on instance method"""
+    def __init__(self, func):
+        self.func = func
+        self.func_name = func.__name__ + '_shelved'
+
+    def __call__(self, *args, **kwargs):
+            return self.func.call_and_shelve(*args, **kwargs)
+
 
 
 class CacheMixin(object):
@@ -171,7 +191,7 @@ class CacheMixin(object):
     cache level (self._memory_level) is greater than the value given as a
     parameter to self._cache(). See _cache() documentation for details.
     """
-    def _cache(self, func, func_memory_level=1, **kwargs):
+    def _cache(self, func, func_memory_level=1, shelve=False, **kwargs):
         """Return a joblib.Memory object.
 
         The memory_level determines the level above which the wrapped
@@ -189,6 +209,10 @@ class CacheMixin(object):
             The memory_level from which caching must be enabled for the wrapped
             function.
 
+        shelve: boolean,
+            Whether to return a MemorizedResult, callable by a .get() method,
+            instead of the return value of func
+
         Returns
         -------
         mem: joblib.Memory
@@ -198,6 +222,11 @@ class CacheMixin(object):
             returned.
 
         """
+
+        if shelve and (
+                    LooseVersion(sklearn.__version__) < LooseVersion('0.15')):
+            raise ValueError('Shelving is only available if scikit-learn>=0.15'
+                             ' is installed.')
 
         verbose = getattr(self, 'verbose', 0)
 
@@ -251,4 +280,5 @@ class CacheMixin(object):
             self.memory_level = 1
 
         return cache(func, self.memory, func_memory_level=func_memory_level,
-                     memory_level=self.memory_level, **kwargs)
+                     memory_level=self.memory_level, shelve=shelve,
+                     **kwargs)
