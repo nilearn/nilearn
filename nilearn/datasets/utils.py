@@ -210,15 +210,17 @@ def _get_dataset_dir(dataset_name, data_dir=None, default_paths=None,
     # dataset name to the path.
     paths = []
 
+    # Check data_dir which force storage in a specific location
+    if data_dir is not None:
+        paths.extend([(d, False) for d in data_dir.split(os.pathsep)])
+
     # Search given environment variables
     if default_paths is not None:
         for default_path in default_paths:
             paths.extend([(d, True) for d in default_path.split(os.pathsep)])
 
-    # Check data_dir which force storage in a specific location
-    if data_dir is not None:
-        paths.extend([(d, False) for d in data_dir.split(os.pathsep)])
-    else:
+    # If data_dir has not been specified, then we crawl default locations
+    if data_dir is None:
         global_data = os.getenv('NILEARN_SHARED_DATA')
         if global_data is not None:
             paths.extend([(d, False) for d in global_data.split(os.pathsep)])
