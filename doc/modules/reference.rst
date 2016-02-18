@@ -66,12 +66,12 @@ uses.
    fetch_atlas_destrieux_2009
    fetch_atlas_harvard_oxford
    fetch_atlas_msdl
-   fetch_atlas_power_2011
+   fetch_coords_power_2011
    fetch_atlas_smith_2009
    fetch_atlas_yeo_2011
    fetch_atlas_aal
    fetch_atlas_basc_multiscale_2015
-   fetch_atlas_dosenbach_2010
+   fetch_coords_dosenbach_2010
    fetch_abide_pcp
    fetch_adhd
    fetch_haxby

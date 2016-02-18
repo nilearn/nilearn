@@ -192,8 +192,8 @@ def test_fetch_atlas_smith_2009():
     assert_not_equal(bunch.description, '')
 
 
-def test_fetch_atlas_power_2011():
-    bunch = atlas.fetch_atlas_power_2011()
+def test_fetch_coords_power_2011():
+    bunch = atlas.fetch_coords_power_2011()
     assert_equal(len(bunch.rois), 264)
     assert_not_equal(bunch.description, '')
 
@@ -312,8 +312,8 @@ def test_fetch_atlas_basc_multiscale_2015():
     assert_not_equal(data_asym.description, '')
 
 
-def test_fetch_atlas_dosenbach_2010():
-    bunch = atlas.fetch_atlas_dosenbach_2010()
+def test_fetch_coords_dosenbach_2010():
+    bunch = atlas.fetch_coords_dosenbach_2010()
     assert_equal(len(bunch.rois), 160)
     assert_equal(len(bunch.labels), 160)
     assert_equal(len(np.unique(bunch.networks)), 6)
