@@ -3,7 +3,12 @@ Test the multi_nifti_masker module
 """
 # Author: Gael Varoquaux
 # License: simplified BSD
+import shutil
+from tempfile import mkdtemp
 
+import sklearn
+
+from sklearn.externals.joblib import Memory
 from nose.tools import assert_true, assert_false, assert_raises, assert_equal
 from nose import SkipTest
 import numpy as np
@@ -130,3 +135,35 @@ def test_joblib_cache():
         assert_true(mask_hash == hash(masker.mask_img_))
         # enables to delete "filename" on windows
         del masker
+
+
+def test_shelving():
+    if LooseVersion(sklearn.__version__) >= LooseVersion('0.15'):
+        mask_img = Nifti1Image(np.ones((2, 2, 2), dtype=np.int8),
+                               affine=np.diag((4, 4, 4, 1)))
+        epi_img1 = Nifti1Image(np.ones((2, 2, 2)),
+                               affine=np.diag((4, 4, 4, 1)))
+        epi_img2 = Nifti1Image(np.ones((2, 2, 2)),
+                               affine=np.diag((2, 2, 2, 1)))
+        cachedir = mkdtemp()
+        try:
+            masker_shelved = MultiNiftiMasker(mask_img=mask_img, shelve=True)
+            masker_shelved.memory = Memory(cachedir=cachedir, mmap_mode='r',
+                                   verbose=0)
+            masker = MultiNiftiMasker(mask_img=mask_img)
+            epis_shelved = masker_shelved.fit_transform([epi_img1, epi_img2])
+            epis = masker.fit_transform([epi_img1, epi_img2])
+            for epi_shelved, epi in zip(epis_shelved, epis):
+                epi_shelved = epi_shelved.get()
+                assert_array_equal(epi_shelved, epi)
+
+            epi = masker.fit_transform(epi_img1)
+            epi_shelved = masker_shelved.fit_transform(epi_img1)
+            epi_shelved = epi_shelved.get()
+            assert_array_equal(epi_shelved, epi)
+        finally:
+            # enables to delete "filename" on windows
+            del masker
+            shutil.rmtree(cachedir, ignore_errors=True)
+    else:
+        pass

@@ -1,3 +1,5 @@
 *.nii
 *.nii.gz
 *.png
+
+.idea/

@@ -15,7 +15,7 @@ from distutils.version import LooseVersion
 from nose.tools import assert_true, assert_false, assert_raises
 from nose import SkipTest
 import numpy as np
-from numpy.testing import assert_array_equal
+from numpy.testing import assert_array_equal, assert_equal
 
 from nibabel import Nifti1Image
 import nibabel
@@ -305,7 +305,7 @@ def test_compute_epi_mask():
                              mask4.get_data()[3:12, 3:12]))
 
 
-def test_filter_and_mask():
+def test_filter_and_mask_error():
     data = np.zeros([20, 30, 40, 5])
     mask = np.zeros([20, 30, 40, 2])
     mask[10, 15, 20, :] = 1
@@ -322,3 +322,20 @@ def test_filter_and_mask():
                         "a 4D image.",
                         filter_and_mask,
                         data_img, mask_img, params)
+    assert_raises_regex(DimensionError, "Data must be a 3D", filter_and_mask,
+                         data_img, mask_img, params)
+
+
+def test_filter_and_mask():
+    data = np.zeros([20, 30, 40, 5])
+    mask = np.ones([20, 30, 40])
+
+    data_img = nibabel.Nifti1Image(data, np.eye(4))
+    mask_img = nibabel.Nifti1Image(mask, np.eye(4))
+
+    masker = NiftiMasker()
+    params = get_params(NiftiMasker, masker)
+
+    # Test return_affine = False
+    data = filter_and_mask(data_img, mask_img, params, return_affine=False)
+    assert_equal(data.shape, (5, 24000))

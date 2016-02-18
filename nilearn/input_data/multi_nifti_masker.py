@@ -4,20 +4,20 @@ Transformer used to apply basic transformations on multi subject MRI data.
 # Author: Gael Varoquaux, Alexandre Abraham
 # License: simplified BSD
 
-import warnings
 import collections
 import itertools
+import warnings
 
+from nilearn import _utils
+from nilearn import image
+from nilearn import masking
+from nilearn._utils import CacheMixin
+from nilearn._utils.class_inspect import get_params
+from nilearn._utils.compat import _basestring, izip
+from nilearn._utils.niimg_conversions import _iter_check_niimg
 from sklearn.externals.joblib import Memory, Parallel, delayed
 
-from .. import masking
-from .. import image
-from .. import _utils
-from .._utils import CacheMixin
 from .nifti_masker import NiftiMasker, filter_and_mask
-from .._utils.compat import _basestring, izip
-from .._utils.niimg_conversions import _iter_check_niimg
-from .._utils.class_inspect import get_params
 
 
 class MultiNiftiMasker(NiftiMasker, CacheMixin):
@@ -93,6 +93,13 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
         The number of CPUs to use to do the computation. -1 means
         'all CPUs', -2 'all CPUs but one', and so on.
 
+    shelve: boolean,
+        If True, the transform method will shelve the result on disk and return
+        an object region_signals with method get: region_signals.get() yields
+        the maked array.
+        Useful to parallelize the masking of records before entering a
+        sequential pipeline.
+
     verbose: integer, optional
         Indicate the level of verbosity. By default, nothing is printed
 
@@ -118,6 +125,7 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
                  target_affine=None, target_shape=None,
                  mask_strategy='background', mask_args=None,
                  memory=Memory(cachedir=None), memory_level=0,
+                 shelve=False,
                  n_jobs=1, verbose=0
                  ):
         # Mask is provided or computed
@@ -137,6 +145,8 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
         self.memory = memory
         self.memory_level = memory_level
         self.n_jobs = n_jobs
+
+        self.shelve = shelve
         self.verbose = verbose
 
     def fit(self, imgs=None, y=None):
@@ -175,23 +185,23 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
                 compute_mask = masking.compute_multi_epi_mask
             else:
                 raise ValueError("Unknown value of mask_strategy '%s'. "
-                    "Acceptable values are 'background' and 'epi'.")
+                                 "Acceptable values are 'background' and 'epi'.")
 
-            self.mask_img_ = self._cache(compute_mask,
-                        ignore=['n_jobs', 'verbose', 'memory'])(
-                            imgs,
-                            target_affine=self.target_affine,
-                            target_shape=self.target_shape,
-                            n_jobs=self.n_jobs,
-                            memory=self.memory,
-                            verbose=max(0, self.verbose - 1),
-                        **mask_args)
+            self.mask_img_ = self._cache(
+                compute_mask, ignore=['n_jobs', 'verbose', 'memory'])(
+                    imgs,
+                    target_affine=self.target_affine,
+                    target_shape=self.target_shape,
+                    n_jobs=self.n_jobs,
+                    memory=self.memory,
+                    verbose=max(0, self.verbose - 1),
+                    **mask_args)
         else:
             if imgs is not None:
                 warnings.warn('[%s.fit] Generation of a mask has been'
-                             ' requested (imgs != None) while a mask has'
-                             ' been provided at masker creation. Given mask'
-                             ' will be used.' % self.__class__.__name__)
+                              ' requested (imgs != None) while a mask has'
+                              ' been provided at masker creation. Given mask'
+                              ' will be used.' % self.__class__.__name__)
             self.mask_img_ = _utils.check_niimg_3d(self.mask_img)
 
         # If resampling is requested, resample the mask as well.
@@ -232,7 +242,7 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
         n_jobs: integer, optional
             The number of cpus to use to do the computation. -1 means
             'all cpus'.
-        
+
         Returns
         -------
         region_signals: list of 2D numpy.ndarray
@@ -267,16 +277,19 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
                                     'copy'])
 
         func = self._cache(filter_and_mask,
-                          ignore=['verbose', 'memory', 'memory_level', 'copy'])
+                           ignore=['verbose', 'memory', 'memory_level',
+                                   'copy'],
+                           shelve=self.shelve)
         data = Parallel(n_jobs=n_jobs)(
             delayed(func)(imgs, self.mask_img_, params,
-                           memory_level=self.memory_level,
-                           memory=self.memory,
-                           verbose=self.verbose,
-                           confounds=cfs,
-                           copy=copy)
+                          memory_level=self.memory_level,
+                          memory=self.memory,
+                          verbose=self.verbose,
+                          confounds=cfs,
+                          copy=copy,
+                          return_affine=False)
             for imgs, cfs in izip(niimg_iter, confounds))
-        return [d[0] for d in data]
+        return data
 
     def transform(self, imgs, confounds=None):
         """ Apply mask, spatial and temporal preprocessing
@@ -297,7 +310,7 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
             preprocessed images
         """
         self._check_fitted()
-        if not hasattr(imgs, '__iter__')\
-                    or isinstance(imgs, _basestring):
-                return self.transform_single_imgs(imgs)
+        if not hasattr(imgs, '__iter__') \
+                or isinstance(imgs, _basestring):
+            return self.transform_single_imgs(imgs)
         return self.transform_imgs(imgs, confounds, n_jobs=self.n_jobs)

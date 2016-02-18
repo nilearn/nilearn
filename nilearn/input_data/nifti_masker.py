@@ -17,7 +17,6 @@ from nilearn._utils.niimg_conversions import _check_same_fov
 
 
 class _ExtractionFunctor(object):
-
     func_name = 'nifti_masker_extractor'
 
     def __init__(self, mask_img_):
@@ -31,8 +30,8 @@ def filter_and_mask(imgs, mask_img_, parameters,
                     memory_level=0, memory=Memory(cachedir=None),
                     verbose=0,
                     confounds=None,
-                    copy=True):
-
+                    copy=True,
+                    return_affine=True):
     imgs = _utils.check_niimg(imgs, atleast_4d=True, ensure_ndim=4)
 
     # Check whether resampling is truly necessary. If so, crop mask
@@ -57,8 +56,10 @@ def filter_and_mask(imgs, mask_img_, parameters,
     # earlier)
     # Optionally: 'doctor_nan', remove voxels with NaNs, other option
     # for later: some form of imputation
-
-    return data, affine
+    if return_affine:
+        return data, affine
+    else:
+        return data
 
 
 class NiftiMasker(BaseMasker, CacheMixin):
@@ -141,6 +142,13 @@ class NiftiMasker(BaseMasker, CacheMixin):
         Rough estimator of the amount of memory used by caching. Higher value
         means more memory for caching.
 
+    shelve: boolean,
+        If true, the transform method will shelve the result on disk and return
+        an object region_signals with method get: region_signals.get() yields
+        the maked array.
+        Useful to parallelize the masking of records before entering a
+        sequential pipeline.
+
     verbose : integer, optional
         Indicate the level of verbosity. By default, nothing is printed
 
@@ -160,6 +168,7 @@ class NiftiMasker(BaseMasker, CacheMixin):
     nilearn.masking.apply_mask
     nilearn.signal.clean
     """
+
     def __init__(self, mask_img=None, sessions=None, smoothing_fwhm=None,
                  standardize=False, detrend=False,
                  low_pass=None, high_pass=None, t_r=None,
@@ -167,6 +176,7 @@ class NiftiMasker(BaseMasker, CacheMixin):
                  mask_strategy='background',
                  mask_args=None, sample_mask=None,
                  memory_level=1, memory=Memory(cachedir=None),
+                 shelve=False,
                  verbose=0
                  ):
         # Mask is provided or computed
@@ -187,6 +197,7 @@ class NiftiMasker(BaseMasker, CacheMixin):
 
         self.memory = memory
         self.memory_level = memory_level
+        self.shelve = shelve
         self.verbose = verbose
 
     def _check_fitted(self):
@@ -210,8 +221,8 @@ class NiftiMasker(BaseMasker, CacheMixin):
         # Load data (if filenames are given, load them)
         if self.verbose > 0:
             print("[%s.fit] Loading data from %s" % (
-                            self.__class__.__name__,
-                            _utils._repr_niimgs(imgs)[:200]))
+                self.__class__.__name__,
+                _utils._repr_niimgs(imgs)[:200]))
 
         # Compute the mask if not given by the user
         if self.mask_img is None:
@@ -268,8 +279,9 @@ class NiftiMasker(BaseMasker, CacheMixin):
 
         Returns
         -------
-        region_signals: 2D numpy.ndarray
-            Signal for each voxel inside the mask.
+        region_signals: 2D numpy.ndarray or MemorizedResult
+            Signal for each voxel inside the mask. If shelving is activated,
+            array is retrieved by calling region_signals.get()
             shape: (number of scans, number of voxels)
         """
 
@@ -279,13 +291,17 @@ class NiftiMasker(BaseMasker, CacheMixin):
         params = get_params(self.__class__, self,
                             ignore=['mask_img', 'mask_args', 'mask_strategy'])
 
-        data, _ = self._cache(filter_and_mask,
-                              ignore=['verbose', 'memory', 'memory_level', 'copy'])(
-                                    imgs, self.mask_img_, params,
-                                    memory_level=self.memory_level,
-                                    memory=self.memory,
-                                    verbose=self.verbose,
-                                    confounds=confounds,
-                                    copy=copy
+        data = self._cache(filter_and_mask,
+                           ignore=['verbose', 'memory', 'memory_level',
+                                   'copy'],
+                           shelve=self.shelve)(
+            imgs, self.mask_img_, params,
+            memory_level=self.memory_level,
+            memory=self.memory,
+            verbose=self.verbose,
+            confounds=confounds,
+            copy=copy,
+            return_affine=False
         )
+
         return data
