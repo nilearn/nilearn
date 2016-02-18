@@ -449,7 +449,7 @@ def test_fetch_cobre():
                124, 125, 127, 128, 129, 130, 131, 134, 135, 136, 138, 139,
                140, 141, 144, 146, 147]
     ids_sch = ['szxxx0040%03d' % i for i in ids_sc]
-    ids_cont = ids_cont = ['contxxx0040%03d' % i for i in ids_con]
+    ids_cont = ['contxxx0040%03d' % i for i in ids_con]
     ids = np.asarray(ids_sch + ids_cont, dtype='|U17')
     sz = np.asarray([i.startswith('s') for i in ids], dtype='<f8')
     age = np.ones(len(ids), dtype='<f8')

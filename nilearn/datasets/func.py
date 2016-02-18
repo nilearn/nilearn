@@ -1504,7 +1504,7 @@ def fetch_cobre(n_subjects=10, data_dir=None, url=None, verbose=1):
     # Change dtype of id and condition column
     csv_array = csv_array.astype(
         [('id', '|U17'),
-         ('sz', 'bool'),
+         ('sz', '<i8'),
          ('age', '<f8'),
          ('sex', '<i8'),
          ('fd', '<f8')])
