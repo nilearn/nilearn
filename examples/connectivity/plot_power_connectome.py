@@ -43,33 +43,37 @@ adhd = datasets.fetch_adhd(n_subjects=1)
 ###############################################################################
 # Masking: taking the signal in a sphere of radius 5 around Power coords
 
-masker = input_data.NiftiSpheresMasker(seeds=power_coords,
-                                       smoothing_fwhm=4,
-                                       radius=5.,
-                                       standardize=True,
-                                       detrend=True,
-                                       low_pass=0.1,
-                                       high_pass=0.01,
-                                       t_r=2.5)
+power_masker = input_data.NiftiSpheresMasker(
+    seeds=power_coords, smoothing_fwhm=4, radius=5.,
+    standardize=True, detrend=True,
+    low_pass=0.1, high_pass=0.01, t_r=2.5)
 
-timeseries = masker.fit_transform(adhd.func[0], confounds=adhd.confounds[0])
+dosenbach_masker = input_data.NiftiSpheresMasker(
+    seeds=dosenbach_coords, smoothing_fwhm=4, radius=5.,
+    standardize=True, detrend=True,
+    low_pass=0.1, high_pass=0.01, t_r=2.5)
+
+power_timeseries = power_masker.fit_transform(
+    adhd.func[0], confounds=adhd.confounds[0])
+
+dosenbach_timeseries = dosenbach_masker.fit_transform(
+    adhd.func[0], confounds=adhd.confounds[0])
 
 ###############################################################################
 # Extract and plot correlation matrix
 
-# calculate connectivity and plot Power-264 correlation matrix
 connectivity = connectome.ConnectivityMeasure(kind='correlation')
-corr_matrix = connectivity.fit_transform([timeseries])[0]
+corr_matrix = connectivity.fit_transform([power_timeseries])[0]
 plt.imshow(corr_matrix, vmin=-1., vmax=1., cmap='RdBu_r')
 plt.colorbar()
-plt.title('Power 264 Connectivity')
+plt.title('Power correlation matrix')
 
 # Plot the connectome
-
 plotting.plot_connectome(corr_matrix,
                          power_coords,
                          edge_threshold='99.8%',
-                         node_size=20)
+                         node_size=20,
+                         title="Power correlation connectome")
 
 
 ###############################################################################
@@ -78,33 +82,20 @@ plotting.plot_connectome(corr_matrix,
 # Compute the sparse inverse covariance
 from sklearn.covariance import GraphLassoCV
 
-estimator = GraphLassoCV()
-estimator.fit(timeseries)
+connectivity = connectome.ConnectivityMeasure(kind='partial_correlation',
+                                              estimator=GraphLassoCV())
+prec_matrix = connectivity.fit_transform([power_timeseries])[0]
 
-# Display the covariance
-plt.figure(figsize=(5, 5))
-plt.imshow(estimator.covariance_, interpolation="nearest",
+# Display the sparse inverse covariance
+plt.imshow(connectivity.precision_, interpolation="nearest",
            vmax=1, vmin=-1, cmap=plt.cm.RdBu_r)
-plt.title('Covariance')
+plt.title('Power sparse partial correlation matrix')
 
 # display the corresponding graph
-plotting.plot_connectome(estimator.covariance_,
+plotting.plot_connectome(connectivity.precision_,
                          power_coords,
-                         title='Covariance',
+                         title='Power sparse partial correlation connectome',
                          edge_threshold='99.8%',
                          node_size=20)
 
-# Display the sparse inverse covariance
-plt.figure(figsize=(5, 5))
-plt.imshow(-estimator.precision_, interpolation="nearest",
-           vmax=1, vmin=-1, cmap=plt.cm.RdBu_r)
-
-# And display the labels
-plt.title('Sparse inverse covariance')
-
-# And now display the corresponding graph
-plotting.plot_connectome(-estimator.precision_, power_coords,
-                         title='Sparse inverse covariance',
-                         edge_threshold="99.8%",
-                         node_size=20)
 plotting.show()
