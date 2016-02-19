@@ -1,14 +1,16 @@
 """
-Extracting signals and plotting a connectome for the Power-264 seed-region atlas
-================================================================================
+Extract signals and plot a connectome for seed-based atlases
+============================================================
 
-This example shows how to extract signals from spherical seed-regions based
-on the Power-264 atlas (Power, 2011) and estimating a connectome using sparse
-inverse covariance.
+This example shows how to extract signals from spherical seed-based
+atlases such as Power-264 atlas (Power, 2011) and Dosenbach-160 (Dosenbach,
+2010). We estimate connectome using sparse inverse covariance.
+
+Dosenbach N.U., Nardos B., et al. "Prediction of individual brain maturity
+using fMRI.", 2010, Science 329, 1358-1361.
 
 Power, Jonathan D., et al. "Functional network organization of the
 human brain." Neuron 72.4 (2011): 665-678.
-
 """
 
 import numpy as np
@@ -20,11 +22,18 @@ from nilearn import datasets, connectome, plotting, input_data
 # Atlas and dataset fetching
 
 # Fetch the coordinates of power atlas
-power = datasets.fetch_atlas_power_2011()
+power = datasets.fetch_coords_power_2011()
 power_coords = np.vstack((
     power.rois['x'],
     power.rois['y'],
     power.rois['z'],
+)).T
+
+dosenbach = datasets.fetch_coords_dosenbach_2010()
+dosenbach_coords = np.vstack((
+    dosenbach.rois['x'],
+    dosenbach.rois['y'],
+    dosenbach.rois['z'],
 )).T
 
 # Fetch the first subject of ADHD dataset
