@@ -49,7 +49,7 @@ power_masker = input_data.NiftiSpheresMasker(
     low_pass=0.1, high_pass=0.01, t_r=2.5)
 
 dosenbach_masker = input_data.NiftiSpheresMasker(
-    seeds=dosenbach_coords, smoothing_fwhm=4, radius=5.,
+    seeds=dosenbach_coords, smoothing_fwhm=4, radius=4.,
     standardize=True, detrend=True,
     low_pass=0.1, high_pass=0.01, t_r=2.5)
 
@@ -62,40 +62,29 @@ dosenbach_timeseries = dosenbach_masker.fit_transform(
 ###############################################################################
 # Extract and plot correlation matrix
 
-connectivity = connectome.ConnectivityMeasure(kind='correlation')
-corr_matrix = connectivity.fit_transform([power_timeseries])[0]
-plt.imshow(corr_matrix, vmin=-1., vmax=1., cmap='RdBu_r')
-plt.colorbar()
-plt.title('Power correlation matrix')
+for atlas in ['Power', 'Dosenbach']:
 
-# Plot the connectome
-plotting.plot_connectome(corr_matrix,
-                         power_coords,
-                         edge_threshold='99.8%',
-                         node_size=20,
-                         title="Power correlation connectome")
+    if atlas == 'Power':
+        timeseries = power_timeseries
+        coords = power_coords
+    else:
+        timeseries = dosenbach_timeseries
+        coords = dosenbach_coords
 
+    connectivity = connectome.ConnectivityMeasure(kind='correlation')
+    corr_matrix = connectivity.fit_transform([timeseries])[0]
+    np.fill_diagonal(corr_matrix, 0)
 
-###############################################################################
-# Extract and plot covariance and sparse covariance
+    plt.figure()
+    vmax = np.max(np.abs(corr_matrix))
+    plt.imshow(corr_matrix, vmin=-vmax, vmax=vmax, cmap='RdBu_r',
+               interpolation='nearest')
+    plt.colorbar()
+    plt.title(atlas + 'correlation matrix')
 
-# Compute the sparse inverse covariance
-from sklearn.covariance import GraphLassoCV
-
-connectivity = connectome.ConnectivityMeasure(kind='partial_correlation',
-                                              estimator=GraphLassoCV())
-prec_matrix = connectivity.fit_transform([power_timeseries])[0]
-
-# Display the sparse inverse covariance
-plt.imshow(connectivity.precision_, interpolation="nearest",
-           vmax=1, vmin=-1, cmap=plt.cm.RdBu_r)
-plt.title('Power sparse partial correlation matrix')
-
-# display the corresponding graph
-plotting.plot_connectome(connectivity.precision_,
-                         power_coords,
-                         title='Power sparse partial correlation connectome',
-                         edge_threshold='99.8%',
-                         node_size=20)
+    # Plot the connectome
+    plotting.plot_connectome(corr_matrix, coords,
+                             edge_threshold='99.8%', node_size=20,
+                             title=atlas + 'correlation connectome')
 
 plotting.show()
