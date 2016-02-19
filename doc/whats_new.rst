@@ -4,14 +4,22 @@
 Changelog
 ---------
 
+The 0.2.3 is a small feature release for BrainHack 2016.
+
 New features
 ............
     - Mathematical formulas based on numpy functions can be applied on an
       image or a list of images using :func:`nilearn.image.math_img`.
     - Downloader for COBRE datasets of 146 rest fMRI subjects with
       :func:`nilearn.datasets.fetch_cobre`
+    - Downloader for Dosenbach atlas
+      :func:`nilearn.datasets.fetch_coords_dosenbach_2010`
     - Fetcher for multiscale functional brain parcellations (BASC)
       :func:`nilearn.datasets.fetch_atlas_basc_multiscale_2015`
+
+Bug fixes
+.........
+    - Better dimming on white background for plotting
 
 0.2.2
 ======
