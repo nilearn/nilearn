@@ -706,6 +706,12 @@ def math_img(formula, **imgs):
      >>> result_img = math_img("img1 + img2",
      ...                       img1=anatomical_image, img2=log_img)
 
+    Notes
+    -----
+
+    This function is the Python equivalent of ImCal in SPM or fslmaths
+    in FSL.
+
     """
     try:
         # Check that input images are valid niimg and have a compatible shape
