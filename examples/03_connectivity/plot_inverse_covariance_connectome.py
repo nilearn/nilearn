@@ -27,12 +27,8 @@ from nilearn import datasets
 atlas = datasets.fetch_atlas_msdl()
 atlas_filename = atlas['maps']
 
-# Load the labels
-import numpy as np
-csv_filename = atlas['labels']
-
-# The recfromcsv function can load a csv file
-labels = np.recfromcsv(csv_filename)
+# Loading the labels and its names
+labels = atlas['labels']
 names = labels['name']
 
 data = datasets.fetch_adhd(n_subjects=1)

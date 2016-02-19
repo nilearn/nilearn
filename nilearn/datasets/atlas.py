@@ -296,7 +296,7 @@ def fetch_atlas_msdl(data_dir=None, url=None, resume=True, verbose=1):
     -------
     data: sklearn.datasets.base.Bunch
         Dictionary-like object, the interest attributes are :
-        - 'labels': str. Path to csv file containing labels.
+        - 'labels': numpy array. An array containing labels.
         - 'maps': str. path to nifti file containing regions definition.
 
     References
@@ -327,9 +327,10 @@ def fetch_atlas_msdl(data_dir=None, url=None, resume=True, verbose=1):
     data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
                                 verbose=verbose)
     files = _fetch_files(data_dir, files, resume=resume, verbose=verbose)
+    labels = np.recfromcsv(files[0])
     fdescr = _get_dataset_descr(dataset_name)
 
-    return Bunch(labels=files[0], maps=files[1], description=fdescr)
+    return Bunch(labels=labels, maps=files[1], description=fdescr)
 
 
 @deprecated('This function has been replace by fetch_coords_power_2011 and '

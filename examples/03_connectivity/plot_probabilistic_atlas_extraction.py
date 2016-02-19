@@ -25,12 +25,8 @@ from nilearn import datasets
 atlas = datasets.fetch_atlas_msdl()
 atlas_filename = atlas['maps']
 
-# Load the labels
-import numpy as np
-csv_filename = atlas['labels']
-
-# The recfromcsv function can load a csv file
-labels = np.recfromcsv(csv_filename)
+# Load the labels and its names
+labels = atlas['labels']
 names = labels['name']
 
 data = datasets.fetch_adhd(n_subjects=1)
@@ -54,6 +50,7 @@ print(time_series.shape)
 
 ############################################################################
 # Build and display a correlation matrix
+import numpy as np
 correlation_matrix = np.corrcoef(time_series.T)
 
 # Display the correlation matrix

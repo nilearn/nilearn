@@ -229,8 +229,15 @@ def test_fetch_atlas_destrieux_2009():
 @with_setup(setup_mock, teardown_mock)
 @with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
 def test_fetch_atlas_msdl():
-    dataset = atlas.fetch_atlas_msdl(data_dir=tst.tmpdir, verbose=0)
-    assert_true(isinstance(dataset.labels, _basestring))
+    datadir = os.path.join(tst.tmpdir, 'msdl_atlas')
+    os.mkdir(datadir)
+    os.mkdir(os.path.join(datadir, 'MSDL_rois'))
+    dummy = open(os.path.join(
+        datadir, 'MSDL_rois', 'msdl_rois_labels.csv'), 'w')
+    dummy.write("1.2, 1.3, 1.4, msdl, labels")
+    dummy.close()
+    dataset = atlas.fetch_atlas_msdl(data_dir=tst.tmpdir, verbose=1)
+    assert_true(isinstance(dataset.labels, np.recarray))
     assert_true(isinstance(dataset.maps, _basestring))
     assert_equal(len(tst.mock_url_request.urls), 1)
     assert_not_equal(dataset.description, '')

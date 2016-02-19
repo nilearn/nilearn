@@ -32,6 +32,12 @@ Bug fixes
 .........
     - Better dimming on white background for plotting
 
+API changes summary
+...................
+    - The output variable 'labels' of MSDL atlas in fetcher
+      :func:`nilearn.datasets.fetch_atlas_msdl` are now directly loaded as
+      numpy array.
+
 0.2.2
 ======
 
