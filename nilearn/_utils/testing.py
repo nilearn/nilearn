@@ -260,7 +260,7 @@ class FetchFilesMock (object):
 
     def add_csv(self, filename, content):
         self.csv_files[filename] = content
-
+    
     def __call__(self, *args, **kwargs):
         """Load requested dataset, downloading it if needed or requested.
 

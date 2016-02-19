@@ -4,6 +4,7 @@ Downloading NeuroImaging datasets: functional datasets (task + resting-state)
 import warnings
 import os
 import re
+import json
 import numpy as np
 import nibabel
 from sklearn.datasets.base import Bunch
@@ -1470,24 +1471,47 @@ def fetch_cobre(n_subjects=10, data_dir=None, url=None, verbose=1):
     https://figshare.com/articles/COBRE_preprocessed_with_NIAK_0_12_4/1160600
     """
     if url is None:
-        url = "https://ndownloader.figshare.com/articles/1160600/versions/15"
-    opts = {'uncompress': True}
+        # Here we use the file that provides URL for all others
+        url = "https://figshare.com/api/articles/1160600/15/files"
 
     dataset_name = 'cobre'
     data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
                                 verbose=verbose)
-
     fdescr = _get_dataset_descr(dataset_name)
+
+    # First, fetch the file that references all individual URLs
+    files = _fetch_files(data_dir,
+                         [("files", url + "?offset=0&limit=300", {})],
+                         verbose=verbose)[0]
+    files = json.load(open(files, 'r'))
+    # Index files by name
+    files_ = {}
+    for f in files:
+        files_[f['name']] = f
+    files = files_
+
     # Fetch the phenotypic file and load it
     csv_name = 'cobre_model_group.csv'
+    csv_file = _fetch_files(
+        data_dir, [(csv_name, files[csv_name]['downloadUrl'],
+                    {'md5': files[csv_name].get('md5', None),
+                     'move': csv_name})],
+        verbose=verbose)[0]
 
-    csv_file = _fetch_files(data_dir, [(csv_name, url, opts)], verbose=verbose)
     # Load file in filename to numpy arrays
-    names = ['subject_type', 'sz', 'age', 'sex', 'fd']
-    csv_array = np.recfromcsv(csv_file[0], names=names, skip_header=True)
-    # Get the ids of the datasets
-    ids = csv_array['subject_type']
-    max_subjects = len(ids)
+    names = ['id', 'sz', 'age', 'sex', 'fd']
+    csv_array = np.recfromcsv(csv_file, names=names, skip_header=True)
+    # Change dtype of id and condition column
+    csv_array = csv_array.astype(
+        [('id', '|U17'),
+         ('sz', '<i8'),
+         ('age', '<f8'),
+         ('sex', '<i8'),
+         ('fd', '<f8')])
+    csv_array['id'] = np.char.strip(csv_array['id'], '" ')
+
+    # Check number of subjects
+    max_subjects = len(csv_array)
     if n_subjects is None:
         n_subjects = max_subjects
 
@@ -1495,26 +1519,32 @@ def fetch_cobre(n_subjects=10, data_dir=None, url=None, verbose=1):
         warnings.warn('Warning: there are only %d subjects' % max_subjects)
         n_subjects = max_subjects
 
-    func_filenames = [('fmri_' + i.decode().strip(' "\'') +
-                       '_session1' + '_run1.nii.gz') for i in ids]
-    mats_filenames = [('fmri_' + i.decode().strip(' "\'') +
-                       '_session1' + '_run1_extra.mat') for i in ids]
+    n_sz = np.ceil(float(n_subjects) / max_subjects * csv_array['sz'].sum())
+    n_ct = np.floor(float(n_subjects) / max_subjects *
+                    np.logical_not(csv_array['sz']).sum())
 
-    func_files = [(path, url, opts) for path in func_filenames]
-    mat_files = [(path, url, opts) for path in mats_filenames]
+    # First, restrict the csv files to the adequate number of subjects
+    sz_ids = csv_array[csv_array['sz'] == 1.]['id'][:n_sz]
+    ct_ids = csv_array[csv_array['sz'] == 0.]['id'][:n_ct]
+    ids = np.hstack([sz_ids, ct_ids])
+    csv_array = csv_array[np.in1d(csv_array['id'], ids)]
 
-    func_files = _fetch_files(data_dir, func_files, verbose=verbose)
-    mat_files = _fetch_files(data_dir, mat_files, verbose=verbose)
+    # Call fetch_files once per subject.
+    func = []
+    mat = []
+    for i in ids:
+        f = 'fmri_' + i + '_session1_run1.nii.gz'
+        m = 'fmri_' + i + '_session1_run1_extra.mat'
+        f, m = _fetch_files(
+            data_dir,
+            [(f, files[f]['downloadUrl'], {'md5': files[f].get('md5', None),
+                                           'move': f}),
+             (m, files[m]['downloadUrl'], {'md5': files[m].get('md5', None),
+                                           'move': m})
+             ],
+            verbose=verbose)
+        func.append(f)
+        mat.append(m)
 
-    if n_subjects < max_subjects:
-        first_split = int(n_subjects/2)
-        second_split = n_subjects - first_split
-        func = func_files[0:71][:first_split]
-        func.extend(func_files[72:146][:second_split])
-        func_files = func
-        mats = mat_files[0:71][:first_split]
-        mats.extend(mat_files[72:146][:second_split])
-        mat_files = mats
-
-    return Bunch(func=func_files, mat_files=mat_files, phenotypic=csv_array,
+    return Bunch(func=func, mat_files=mat, phenotypic=csv_array,
                  description=fdescr)
