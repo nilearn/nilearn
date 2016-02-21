@@ -8,6 +8,15 @@ New features
 ............
     - plotting plot_connectome with colorbar is now implemented in function
       :func:`nilearn.plotting.plot_connectome`
+API changes summary
+...................
+    - Atlas fetcher :func:`nilearn.datasets.fetch_atlas_msdl` now returns directly
+      labels of the regions in output variable 'labels' and its coordinates
+      in output variable 'region_coords' and its type of network in 'networks'.
+    - The output variable name 'regions' is now changed to 'maps' in AAL atlas
+      fetcher in :func:`nilearn.datasets.fetch_atlas_aal`.
+    - AAL atlas now returns directly its labels in variable 'labels' and its
+      index values in variable 'indices'.
 
 0.2.3
 =====
@@ -31,12 +40,6 @@ New features
 Bug fixes
 .........
     - Better dimming on white background for plotting
-
-API changes summary
-...................
-    - The output variable 'labels' of MSDL atlas in fetcher
-      :func:`nilearn.datasets.fetch_atlas_msdl` are now directly loaded as
-      numpy array.
 
 0.2.2
 ======
