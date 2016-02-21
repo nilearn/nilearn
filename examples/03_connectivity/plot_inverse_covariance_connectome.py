@@ -25,12 +25,9 @@ with the highest values.
 # Retrieve the atlas and the data
 from nilearn import datasets
 atlas = datasets.fetch_atlas_msdl()
-atlas_filename = atlas['maps']
+atlas_filename, labels = atlas['maps'], atlas['labels']
 
-# Loading the labels and its names
-labels = atlas['labels']
-names = labels['name']
-
+# Loading the functional datasets
 data = datasets.fetch_adhd(n_subjects=1)
 
 # print basic information on the dataset
@@ -64,14 +61,14 @@ plt.figure(figsize=(10, 10))
 plt.imshow(estimator.covariance_, interpolation="nearest",
            vmax=1, vmin=-1, cmap=plt.cm.RdBu_r)
 # And display the labels
-x_ticks = plt.xticks(range(len(names)), names, rotation=90)
-y_ticks = plt.yticks(range(len(names)), names)
+x_ticks = plt.xticks(range(len(labels)), labels, rotation=90)
+y_ticks = plt.yticks(range(len(labels)), labels)
 plt.title('Covariance')
 
 ##############################################################################
 # And now display the corresponding graph
 from nilearn import plotting
-coords = labels[['x', 'y', 'z']].tolist()
+coords = atlas.region_coords
 
 plotting.plot_connectome(estimator.covariance_, coords,
                          title='Covariance')
@@ -84,8 +81,8 @@ plt.figure(figsize=(10, 10))
 plt.imshow(-estimator.precision_, interpolation="nearest",
            vmax=1, vmin=-1, cmap=plt.cm.RdBu_r)
 # And display the labels
-x_ticks = plt.xticks(range(len(names)), names, rotation=90)
-y_ticks = plt.yticks(range(len(names)), names)
+x_ticks = plt.xticks(range(len(labels)), labels, rotation=90)
+y_ticks = plt.yticks(range(len(labels)), labels)
 plt.title('Sparse inverse covariance')
 
 ##############################################################################

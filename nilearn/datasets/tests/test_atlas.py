@@ -6,6 +6,7 @@ Test the datasets module
 
 import os
 import shutil
+import csv
 import numpy as np
 
 import nibabel
@@ -232,12 +233,20 @@ def test_fetch_atlas_msdl():
     datadir = os.path.join(tst.tmpdir, 'msdl_atlas')
     os.mkdir(datadir)
     os.mkdir(os.path.join(datadir, 'MSDL_rois'))
-    dummy = open(os.path.join(
-        datadir, 'MSDL_rois', 'msdl_rois_labels.csv'), 'w')
-    dummy.write("1.2, 1.3, 1.4, msdl, labels")
-    dummy.close()
-    dataset = atlas.fetch_atlas_msdl(data_dir=tst.tmpdir, verbose=1)
-    assert_true(isinstance(dataset.labels, np.recarray))
+    data_dir = os.path.join(datadir, 'MSDL_rois', 'msdl_rois_labels.csv')
+    with open(data_dir, 'w') as csv_file:
+        fieldnames = ['x', 'y', 'z', 'name', 'net_name']
+        writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerow(
+            {'x': 1.5, 'y': 1.5, 'z': 1.5, 'name': 'Aud', 'net_name': 'Aud'})
+        writer.writerow(
+            {'x': 1.2, 'y': 1.3, 'z': 1.1, 'name': 'DMN', 'net_name': 'DMN'})
+
+    dataset = atlas.fetch_atlas_msdl(data_dir=tst.tmpdir, verbose=0)
+    assert_true(isinstance(dataset.labels, list))
+    assert_true(isinstance(dataset.region_coords, list))
+    assert_true(isinstance(dataset.networks, list))
     assert_true(isinstance(dataset.maps, _basestring))
     assert_equal(len(tst.mock_url_request.urls), 1)
     assert_not_equal(dataset.description, '')

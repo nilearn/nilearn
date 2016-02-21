@@ -296,8 +296,14 @@ def fetch_atlas_msdl(data_dir=None, url=None, resume=True, verbose=1):
     -------
     data: sklearn.datasets.base.Bunch
         Dictionary-like object, the interest attributes are :
-        - 'labels': numpy array. An array containing labels.
-        - 'maps': str. path to nifti file containing regions definition.
+
+        - 'maps': str, path to nifti file containing regions definition.
+        - 'labels': string list containing the labels of the regions.
+        - 'region_coords': tuple list (x, y, z) containing coordinates
+          of each region in MNI space.
+        - 'networks': string list containing names of the networks.
+        - 'description': description about the atlas.
+
 
     References
     ----------
@@ -327,10 +333,14 @@ def fetch_atlas_msdl(data_dir=None, url=None, resume=True, verbose=1):
     data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
                                 verbose=verbose)
     files = _fetch_files(data_dir, files, resume=resume, verbose=verbose)
-    labels = np.recfromcsv(files[0])
+    csv_data = np.recfromcsv(files[0])
+    labels = csv_data['name'].tolist()
+    region_coords = csv_data[['x', 'y', 'z']].tolist()
+    net_names = csv_data['net_name'].tolist()
     fdescr = _get_dataset_descr(dataset_name)
 
-    return Bunch(labels=labels, maps=files[1], description=fdescr)
+    return Bunch(maps=files[1], labels=labels, region_coords=region_coords,
+                 networks=net_names, description=fdescr)
 
 
 @deprecated('This function has been replace by fetch_coords_power_2011 and '
