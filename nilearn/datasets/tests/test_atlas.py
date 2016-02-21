@@ -277,8 +277,9 @@ def test_fetch_atlas_aal():
                        "<metadata>"
                        "</metadata>")
     dataset = atlas.fetch_atlas_aal(data_dir=tst.tmpdir, verbose=0)
-    assert_true(isinstance(dataset.regions, _basestring))
-    assert_true(isinstance(dataset.labels, dict))
+    assert_true(isinstance(dataset.maps, _basestring))
+    assert_true(isinstance(dataset.labels, list))
+    assert_true(isinstance(dataset.indices, list))
     assert_equal(len(tst.mock_url_request.urls), 1)
 
     assert_raises_regex(ValueError, 'The version of AAL requested "FLS33"',

@@ -581,7 +581,7 @@ def fetch_atlas_aal(version='SPM12', data_dir=None, url=None, resume=True,
     data: sklearn.datasets.base.Bunch
         dictionary-like object, keys are:
 
-        - "regions": str. path to nifti file containing regions.
+        - "maps": str. path to nifti file containing regions.
 
         - "labels": dict. labels dictionary with their region id as key and
                     name as value
@@ -627,12 +627,14 @@ def fetch_atlas_aal(version='SPM12', data_dir=None, url=None, resume=True,
     # We return the labels contained in the xml file as a dictionary
     xml_tree = xml.etree.ElementTree.parse(labels_file)
     root = xml_tree.getroot()
-    labels_dict = {}
+    labels = []
+    indices = []
     for label in root.getiterator('label'):
-        labels_dict[label.find('index').text] = label.find('name').text
+        indices.append(label.find('index').text)
+        labels.append(label.find('name').text)
 
-    params = {'description': fdescr, 'regions': atlas_img,
-              'labels': labels_dict}
+    params = {'description': fdescr, 'maps': atlas_img,
+              'labels': labels, 'indices': indices}
 
     return Bunch(**params)
 
