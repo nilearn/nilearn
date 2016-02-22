@@ -1222,6 +1222,7 @@ class OrthoProjector(OrthoSlicer):
                               **edge_kwargs)
 
         if colorbar:
+            self._colorbar = colorbar
             self._colorbar_show(ax, threshold=edge_threshold)
 
         plt.draw_if_interactive()
