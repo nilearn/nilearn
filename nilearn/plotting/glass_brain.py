@@ -131,8 +131,10 @@ def _get_object_bounds(json_content, transform):
     xmin, xmax = min(x0, x1), max(x0, x1)
     ymin, ymax = min(y0, y1), max(y0, y1)
 
-    xmargin = (xmax - xmin) * 0.025
-    ymargin = (ymax - ymin) * 0.025
+    # A combination of a proportional factor (fraction of the drawing)
+    # and a guestimate of the linewidth
+    xmargin = (xmax - xmin) * 0.025 + .1
+    ymargin = (ymax - ymin) * 0.025 + .1
     return xmin - xmargin, xmax + xmargin, ymin - ymargin, ymax + ymargin
 
 

@@ -76,6 +76,6 @@ coords = labels[['x', 'y', 'z']].tolist()
 # We threshold to keep only the 20% of edges with the highest value
 # because the graph is very dense
 plotting.plot_connectome(correlation_matrix, coords,
-                         edge_threshold="80%")
+                         edge_threshold="80%", colorbar=True)
 
 plotting.show()
