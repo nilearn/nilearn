@@ -242,6 +242,7 @@ def test_fetch_atlas_msdl():
             {'x': 1.5, 'y': 1.5, 'z': 1.5, 'name': 'Aud', 'net_name': 'Aud'})
         writer.writerow(
             {'x': 1.2, 'y': 1.3, 'z': 1.1, 'name': 'DMN', 'net_name': 'DMN'})
+        del writer
 
     dataset = atlas.fetch_atlas_msdl(data_dir=tst.tmpdir, verbose=0)
     assert_true(isinstance(dataset.labels, list))

@@ -25,7 +25,10 @@ with the highest values.
 # Retrieve the atlas and the data
 from nilearn import datasets
 atlas = datasets.fetch_atlas_msdl()
-atlas_filename, labels = atlas['maps'], atlas['labels']
+# Loading atlas image stored in 'maps'
+atlas_filename = atlas['maps']
+# Loading atlas data stored in 'labels'
+labels = atlas['labels']
 
 # Loading the functional datasets
 data = datasets.fetch_adhd(n_subjects=1)
