@@ -1,3 +1,14 @@
+0.2.4
+=====
+
+Changelog
+---------
+
+New features
+............
+    - colorbar is now available for plotting function plot_connectome in
+      :func:`nilearn.plotting.plot_connectome`.
+
 0.2.3
 =====
 
