@@ -1050,7 +1050,8 @@ def plot_connectome(adjacency_matrix, node_coords,
                     figure=None, axes=None, title=None,
                     annotate=True, black_bg=False,
                     alpha=0.7,
-                    edge_kwargs=None, node_kwargs=None):
+                    edge_kwargs=None, node_kwargs=None,
+                    colorbar=False):
     """Plot connectome on top of the brain glass schematics.
 
         Parameters
@@ -1111,6 +1112,9 @@ def plot_connectome(adjacency_matrix, node_coords,
         node_kwargs: dict
             will be passed as kwargs to the plt.scatter call that plots all
             the nodes in one go
+        colorbar: bool, optional
+            If True, display a colorbar on the right of the plots.
+            By default it is False.
 
     """
     display = plot_glass_brain(None,
@@ -1124,7 +1128,8 @@ def plot_connectome(adjacency_matrix, node_coords,
                       edge_cmap=edge_cmap,
                       edge_vmin=edge_vmin, edge_vmax=edge_vmax,
                       edge_threshold=edge_threshold,
-                      edge_kwargs=edge_kwargs, node_kwargs=node_kwargs)
+                      edge_kwargs=edge_kwargs, node_kwargs=node_kwargs,
+                      colorbar=colorbar)
 
     if output_file is not None:
         display.savefig(output_file)
