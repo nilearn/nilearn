@@ -517,7 +517,7 @@ class BaseSlicer(object):
         ims = self._map_show(img, type='imshow', threshold=threshold, **kwargs)
 
         if colorbar:
-            self._colorbar_show(ims[0], threshold)
+            self._show_colorbar(ims[0], threshold)
 
         plt.draw_if_interactive()
 
@@ -608,7 +608,7 @@ class BaseSlicer(object):
                 ims.append(im)
         return ims
 
-    def _colorbar_show(self, im, threshold):
+    def _show_colorbar(self, im, threshold):
         if threshold is None:
             offset = 0
         else:
@@ -1224,7 +1224,7 @@ class OrthoProjector(OrthoSlicer):
 
         if colorbar:
             self._colorbar = colorbar
-            self._colorbar_show(ax, threshold=edge_threshold)
+            self._show_colorbar(ax, threshold=edge_threshold)
 
         plt.draw_if_interactive()
 
