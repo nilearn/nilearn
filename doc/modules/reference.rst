@@ -84,6 +84,7 @@ uses.
    fetch_oasis_vbm
    fetch_megatrawls_netmats
    fetch_cobre
+   load_mni152_template
 
 .. _decoding_ref:
 
