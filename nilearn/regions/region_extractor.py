@@ -16,6 +16,7 @@ from .._utils import check_niimg, check_niimg_4d
 from ..image import new_img_like, resample_img
 from ..image.image import _smooth_array, threshold_img
 from .._utils.niimg_conversions import concat_niimgs, _check_same_fov
+from .._utils.niimg import _safe_get_data
 from .._utils.compat import _basestring
 from .._utils.ndimage import _peak_local_max
 from .._utils.segmentation import _random_walker
@@ -53,7 +54,8 @@ def _threshold_maps_ratio(maps_img, threshold):
     else:
         ratio = threshold
 
-    maps_data = maps.get_data()
+    maps_data = np.nan_to_num(maps.get_data())
+
     abs_maps = np.abs(maps_data)
     # thresholding
     cutoff_threshold = scoreatpercentile(
@@ -116,7 +118,7 @@ def connected_regions(maps_img, min_region_size=1350,
     all_regions_imgs = []
     index_of_each_map = []
     maps_img = check_niimg(maps_img, atleast_4d=True)
-    maps = maps_img.get_data()
+    maps = _safe_get_data(maps_img).copy()
     affine = maps_img.get_affine()
     min_region_size = min_region_size / np.prod(np.diag(abs(affine[:3])))
 

@@ -24,8 +24,8 @@ a linear model with a random design matrix **X**:
   brain regions. Here, in the simulations, they form a 3D image with 5, four
   of which in opposite corners and one in the middle. 
 
-.. figure:: ../auto_examples/decoding/images/sphx_glr_plot_simulated_data_001.png
-    :target: auto_examples/decoding/plot_simulated_data.html
+.. figure:: ../auto_examples/02_decoding/images/sphx_glr_plot_simulated_data_001.png
+    :target: auto_examples/02_decoding/plot_simulated_data.html
     :align: center
     :scale: 90
 
@@ -36,7 +36,7 @@ a linear model with a random design matrix **X**:
 * **e** is random normal noise.
 
 We provide a black-box function to create the data in the 
-:ref:`example script <sphx_glr_auto_examples_decoding_plot_simulated_data.py>`.
+:ref:`example script <sphx_glr_auto_examples_02_decoding_plot_simulated_data.py>`.
 
 
 Running various estimators
@@ -65,24 +65,24 @@ a for loop: they all have a `fit` method for fitting the data, a `score`
 method to retrieve the prediction score, and because they are all linear
 models, a `coef_` attribute that stores the coefficients **w** estimated
 (see the :ref:`code of the simulation
-<sphx_glr_auto_examples_decoding_plot_simulated_data.py>`).
+<sphx_glr_auto_examples_02_decoding_plot_simulated_data.py>`).
 
 .. note:: All parameters estimated from the data end with an underscore
 
-.. |estimator1| image:: ../auto_examples/decoding/images/sphx_glr_plot_simulated_data_002.png
-    :target: ../auto_examples/decoding/plot_simulated_data.html
+.. |estimator1| image:: ../auto_examples/02_decoding/images/sphx_glr_plot_simulated_data_002.png
+    :target: ../auto_examples/02_decoding/plot_simulated_data.html
     :scale: 60
 
-.. |estimator2| image:: ../auto_examples/decoding/images/sphx_glr_plot_simulated_data_003.png
-    :target: ../auto_examples/decoding/plot_simulated_data.html
+.. |estimator2| image:: ../auto_examples/02_decoding/images/sphx_glr_plot_simulated_data_003.png
+    :target: ../auto_examples/02_decoding/plot_simulated_data.html
     :scale: 60
 
-.. |estimator3| image:: ../auto_examples/decoding/images/sphx_glr_plot_simulated_data_004.png
-    :target: ../auto_examples/decoding/plot_simulated_data.html
+.. |estimator3| image:: ../auto_examples/02_decoding/images/sphx_glr_plot_simulated_data_004.png
+    :target: ../auto_examples/02_decoding/plot_simulated_data.html
     :scale: 60
 
-.. |estimator4| image:: ../auto_examples/decoding/images/sphx_glr_plot_simulated_data_005.png
-    :target: ../auto_examples/decoding/plot_simulated_data.html
+.. |estimator4| image:: ../auto_examples/02_decoding/images/sphx_glr_plot_simulated_data_005.png
+    :target: ../auto_examples/02_decoding/plot_simulated_data.html
     :scale: 60
 
 |estimator1| |estimator2| |estimator3| |estimator4|
@@ -103,7 +103,7 @@ models, a `coef_` attribute that stores the coefficients **w** estimated
 .. topic:: **Source code to run the simulation**
 
    The full file to run the simulation can be found in
-   :ref:`sphx_glr_auto_examples_decoding_plot_simulated_data.py`
+   :ref:`sphx_glr_auto_examples_02_decoding_plot_simulated_data.py`
 
 .. seealso::
 

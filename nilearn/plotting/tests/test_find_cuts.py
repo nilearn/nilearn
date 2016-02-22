@@ -4,7 +4,6 @@ import nibabel
 from nilearn.plotting.find_cuts import (find_xyz_cut_coords, find_cut_slices,
                                         _transform_cut_coords)
 from nilearn._utils.testing import assert_raises_regex, assert_warns
-from nilearn.plotting.find_cuts import find_xyz_cut_coords
 
 
 def test_find_cut_coords():
@@ -41,6 +40,17 @@ def test_find_cut_coords():
     np.testing.assert_array_equal(
         np.array([x, y, z]),
         0.5 * np.array(data.shape).astype(np.float))
+
+    # regression test (cf. #922)
+    # pseudo-4D images as input (i.e., X, Y, Z, 1)
+    # previously raised "ValueError: too many values to unpack"
+    rng = np.random.RandomState(42)
+    data_3d = rng.randn(10, 10, 10)
+    data_4d = data_3d[..., np.newaxis]
+    affine = np.eye(4)
+    img_3d = nibabel.Nifti1Image(data_3d, affine)
+    img_4d = nibabel.Nifti1Image(data_4d, affine)
+    assert_equal(find_xyz_cut_coords(img_3d), find_xyz_cut_coords(img_4d))
 
 
 def test_find_cut_slices():

@@ -2,8 +2,6 @@
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 import tempfile
 
-import numpy as np
-
 import matplotlib.pyplot as plt
 
 from nilearn.plotting.displays import OrthoSlicer, XSlicer, OrthoProjector
@@ -40,3 +38,17 @@ def test_demo_ortho_projector():
     with tempfile.TemporaryFile() as fp:
         oprojector.savefig(fp)
     oprojector.close()
+
+
+def test_contour_fillings_levels_in_add_contours():
+    oslicer = OrthoSlicer(cut_coords=(0, 0, 0))
+    img = load_mni152_template()
+    # levels should be atleast 2
+    # If single levels are passed then we force upper level to be inf
+    oslicer.add_contours(img, filled=True, colors='r',
+                         alpha=0.2, levels=[0.])
+
+    # If two levels are passed, it should be increasing from zero index
+    # In this case, we simply omit appending inf
+    oslicer.add_contours(img, filled=True, colors='b',
+                         alpha=0.1, levels=[0., 0.2])

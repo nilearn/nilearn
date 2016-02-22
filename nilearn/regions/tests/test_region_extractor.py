@@ -3,11 +3,10 @@
 import numpy as np
 import nibabel
 
-from nose.tools import assert_raises, assert_equal, assert_true, assert_not_equal
+from nose.tools import assert_equal, assert_true, assert_not_equal
 
 from nilearn.regions import connected_regions, RegionExtractor
 from nilearn.regions.region_extractor import _threshold_maps_ratio
-from nilearn.image import iter_img
 
 from nilearn._utils.testing import assert_raises_regex, generate_maps
 
@@ -32,6 +31,15 @@ def test_invalid_thresholds_in_threshold_maps_ratio():
                             "You provided {1}".format(maps.shape[-1], invalid_threshold),
                             _threshold_maps_ratio,
                             maps, threshold=invalid_threshold)
+
+
+def test_nans_threshold_maps_ratio():
+    maps, _ = generate_maps((10, 10, 10), n_regions=2)
+    data = maps.get_data()
+    data[:, :, 0] = np.nan
+
+    maps_img = nibabel.Nifti1Image(data, np.eye(4))
+    thr_maps = _threshold_maps_ratio(maps_img, threshold=0.8)
 
 
 def test_threshold_maps_ratio():
@@ -74,7 +82,6 @@ def test_connected_regions():
     map_img = np.zeros((30, 30, 30)) + 0.1 * np.random.randn(30, 30, 30)
     map_img = nibabel.Nifti1Image(map_img, affine=np.eye(4))
 
-    valid_extract_types = ['connected_components', 'local_regions']
     # smoke test for function connected_regions and also to check
     # if the regions extracted should be equal or more than already present.
     # 4D image case
@@ -135,8 +142,6 @@ def test_region_extractor_fit_and_transform():
     assert_true(extractor.regions_img_.shape[-1] >= 9)
 
     n_regions_extracted = extractor.regions_img_.shape[-1]
-    imgs = []
-    signals = []
     shape = (91, 109, 91, 7)
     expected_signal_shape = (7, n_regions_extracted)
     for id_ in range(n_subjects):

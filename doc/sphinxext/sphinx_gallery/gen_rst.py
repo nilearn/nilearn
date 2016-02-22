@@ -15,41 +15,18 @@ Files that generate images should start with 'plot'
 from __future__ import division, print_function, absolute_import
 from time import time
 import ast
+import hashlib
 import os
 import re
 import shutil
-import traceback
-import sys
 import subprocess
+import sys
+import traceback
 import warnings
-from textwrap import dedent
-from . import glr_path_static
-from .backreferences import write_backreferences, _thumbnail_div
 
 
 # Try Python 2 first, otherwise load from Python 3
-try:
-    from StringIO import StringIO
-except ImportError:
-    from io import StringIO
-
-try:
-    basestring
-except NameError:
-    basestring = str
-
-try:
-    # make sure that the Agg backend is set before importing any
-    # matplotlib
-    import matplotlib
-    matplotlib.use('Agg')
-    import matplotlib.pyplot as plt
-except ImportError:
-    # this script can be imported by nosetest to find tests to run: we should
-    # not impose the matplotlib requirement in that case.
-    pass
-
-
+from textwrap import dedent
 try:
     # textwrap indent only exists in python 3
     from textwrap import indent
@@ -70,6 +47,32 @@ except ImportError:
             for line in text.splitlines(True):
                 yield (prefix + line if predicate(line) else line)
         return ''.join(prefixed_lines())
+
+try:
+    from StringIO import StringIO
+except ImportError:
+    from io import StringIO
+
+try:
+    # make sure that the Agg backend is set before importing any
+    # matplotlib
+    import matplotlib
+    matplotlib.use('Agg')
+    import matplotlib.pyplot as plt
+except ImportError:
+    # this script can be imported by nosetest to find tests to run: we should
+    # not impose the matplotlib requirement in that case.
+    pass
+
+from . import glr_path_static
+from .backreferences import write_backreferences, _thumbnail_div
+from .notebook import Notebook
+
+try:
+    basestring
+except NameError:
+    basestring = str
+
 
 ###############################################################################
 
@@ -95,7 +98,10 @@ CODE_DOWNLOAD = """**Total running time of the script:**
 ({0:.0f} minutes {1:.3f} seconds)\n\n
 \n.. container:: sphx-glr-download
 
-    **Download Python source code:** :download:`{2} <{2}>`\n"""
+    **Download Python source code:** :download:`{2} <{2}>`\n
+\n.. container:: sphx-glr-download
+
+    **Download IPython notebook:** :download:`{3} <{3}>`\n"""
 
 # The following strings are used when we have several pictures: we use
 # an html div tag that our CSS uses to turn the lists into horizontal
@@ -117,13 +123,12 @@ SINGLE_IMAGE = """
     :align: center
 """
 
+
 CODE_OUTPUT = """.. rst-class:: sphx-glr-script-out
 
- **Output**:\n
+ Out::
 
-  ::
-
-{0}\n"""
+  {0}\n"""
 
 
 def get_docstring_and_rest(filename):
@@ -196,9 +201,9 @@ def split_code_and_text_blocks(source_file):
     return blocks
 
 
-def codestr2rst(codestr):
+def codestr2rst(codestr, lang='python'):
     """Return reStructuredText code block from code string"""
-    code_directive = "\n.. code-block:: python\n\n"
+    code_directive = "\n.. code-block:: {0}\n\n".format(lang)
     indented_block = indent(codestr, ' ' * 4)
     return code_directive + indented_block
 
@@ -231,14 +236,49 @@ def extract_intro(filename):
     return first_paragraph
 
 
+def get_md5sum(src_file):
+    """Returns md5sum of file"""
+
+    with open(src_file, 'r') as src_data:
+        src_content = src_data.read()
+
+        # data needs to be encoded in python3 before hashing
+        if sys.version_info[0] == 3:
+            src_content = src_content.encode('utf-8')
+
+        src_md5 = hashlib.md5(src_content).hexdigest()
+    return src_md5
+
+
+def check_md5sum_change(src_file):
+    """Returns True if src_file has a different md5sum"""
+
+    src_md5 = get_md5sum(src_file)
+
+    src_md5_file = src_file + '.md5'
+    src_file_changed = True
+    if os.path.exists(src_md5_file):
+        with open(src_md5_file, 'r') as file_checksum:
+            ref_md5 = file_checksum.read()
+        if src_md5 == ref_md5:
+            src_file_changed = False
+
+    if src_file_changed:
+        with open(src_md5_file, 'w') as file_checksum:
+            file_checksum.write(src_md5)
+
+    return src_file_changed
+
+
 def _plots_are_current(src_file, image_file):
-    """Test existence of image file and later touch time to source script"""
+    """Test existence of image file and no change in md5sum of
+    example"""
 
     first_image_file = image_file.format(1)
-    needs_replot = (
-        not os.path.exists(first_image_file) or
-        os.stat(first_image_file).st_mtime <= os.stat(src_file).st_mtime)
-    return not needs_replot
+    has_image = os.path.exists(first_image_file)
+    src_file_changed = check_md5sum_change(src_file)
+
+    return has_image and not src_file_changed
 
 
 def save_figures(image_path, fig_count, gallery_conf):
@@ -380,7 +420,7 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
         intro = extract_intro(new_fname)
         write_backreferences(seen_backrefs, gallery_conf,
                              target_dir, fname, intro)
-        this_entry =  _thumbnail_div(target_dir, fname, intro) + """
+        this_entry = _thumbnail_div(target_dir, fname, intro) + """
 
 .. toctree::
    :hidden:
@@ -437,21 +477,36 @@ def execute_script(code_block, example_globals, image_path, fig_count,
 
         # Depending on whether we have one or more figures, we're using a
         # horizontal list or a single rst call to 'image'.
+        image_list = ""
         if len(figure_list) == 1:
             figure_name = figure_list[0]
             image_list = SINGLE_IMAGE % figure_name.lstrip('/')
-        else:
+        elif len(figure_list) > 1:
             image_list = HLIST_HEADER
             for figure_name in figure_list:
                 image_list += HLIST_IMAGE_TEMPLATE % figure_name.lstrip('/')
 
     except Exception:
+        formatted_exception = traceback.format_exc()
+
+        print(80 * '_')
+        print('%s is not compiling:' % src_file)
+        print(formatted_exception)
+        print(80 * '_')
+
         figure_list = []
-        image_list = '%s is not compiling:' % src_file
-        print(80 * '_')
-        print(image_list)
-        traceback.print_exc()
-        print(80 * '_')
+        image_list = codestr2rst(formatted_exception, lang='pytb')
+
+        # Overrides the output thumbnail in the gallery for easy identification
+        broken_img = os.path.join(glr_path_static(), 'broken_example.png')
+        shutil.copyfile(broken_img, os.path.join(cwd, image_path.format(1)))
+        fig_count += 1  # raise count to avoid overwriting image
+
+        # Breaks build on first example error
+
+        if gallery_conf['abort_on_example_error']:
+            raise
+
     finally:
         os.chdir(cwd)
         sys.stdout = orig_stdout
@@ -483,22 +538,21 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
 
     script_blocks = split_code_and_text_blocks(example_file)
 
-    if _plots_are_current(src_file, image_path):
-        amount_of_code = sum([len(bcontent)
-                            for blabel, bcontent in script_blocks
-                            if blabel == 'code'])
+    amount_of_code = sum([len(bcontent)
+                          for blabel, bcontent in script_blocks
+                          if blabel == 'code'])
+
+    if _plots_are_current(example_file, image_path):
         return amount_of_code
 
     time_elapsed = 0
 
     ref_fname = example_file.replace(os.path.sep, '_')
     example_rst = """\n\n.. _sphx_glr_{0}:\n\n""".format(ref_fname)
+    example_nb = Notebook(fname, target_dir)
 
-    if not fname.startswith('plot'):
-        convert_func = dict(code=codestr2rst, text=text2string)
-        for blabel, bcontent in script_blocks:
-            example_rst += convert_func[blabel](bcontent) + '\n'
-    else:
+    filename_pattern = gallery_conf.get('filename_pattern')
+    if re.search(filename_pattern, src_file) and gallery_conf['plot_gallery']:
         # A lot of examples contains 'print(__doc__)' for example in
         # scikit-learn so that running the example prints some useful
         # information. Because the docstring has been separated from
@@ -520,6 +574,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
                                                                gallery_conf)
 
                 time_elapsed += rtime
+                example_nb.add_code_cell(bcontent)
 
                 if is_example_notebook_like:
                     example_rst += codestr2rst(bcontent) + '\n'
@@ -530,15 +585,23 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
 
             else:
                 example_rst += text2string(bcontent) + '\n'
-
-    amount_of_code = sum([len(bcontent)
-                          for blabel, bcontent in script_blocks
-                          if blabel == 'code'])
+                example_nb.add_markdown_cell(text2string(bcontent))
+    else:
+        for blabel, bcontent in script_blocks:
+            if blabel == 'code':
+                example_rst += codestr2rst(bcontent) + '\n'
+                example_nb.add_code_cell(bcontent)
+            else:
+                example_rst += bcontent + '\n'
+                example_nb.add_markdown_cell(text2string(bcontent))
 
     save_thumbnail(image_path, base_image_name, gallery_conf)
 
     time_m, time_s = divmod(time_elapsed, 60)
+    example_nb.save_file()
     with open(os.path.join(target_dir, base_image_name + '.rst'), 'w') as f:
-        example_rst += CODE_DOWNLOAD.format(time_m, time_s, fname)
+        example_rst += CODE_DOWNLOAD.format(time_m, time_s, fname,
+                                            example_nb.file_name)
         f.write(example_rst)
+
     return amount_of_code

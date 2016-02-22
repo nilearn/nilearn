@@ -161,5 +161,6 @@ install:
 	cp -r html/* nilearn.github.io && \
 	cd nilearn.github.io && \
 	git add * && \
+	git add .nojekyll && \
 	git commit -a -m 'Make install' && \
 	git push

@@ -4,6 +4,7 @@ Downloading NeuroImaging datasets: functional datasets (task + resting-state)
 import warnings
 import os
 import re
+import json
 import numpy as np
 import nibabel
 from sklearn.datasets.base import Bunch
@@ -12,6 +13,7 @@ from .utils import (_get_dataset_dir, _fetch_files, _get_dataset_descr,
                     _read_md5_sum_file, _tree, _filter_columns)
 
 from .._utils.compat import BytesIO, _basestring, _urllib
+from .._utils.numpy_conversions import csv_to_array
 
 
 def fetch_haxby_simple(data_dir=None, url=None, resume=True, verbose=1):
@@ -390,15 +392,16 @@ def fetch_nyu_rest(n_subjects=None, sessions=[1], data_dir=None, resume=True,
                  session=session, description=fdescr)
 
 
-def fetch_adhd(n_subjects=None, data_dir=None, url=None, resume=True,
+def fetch_adhd(n_subjects=30, data_dir=None, url=None, resume=True,
                verbose=1):
     """Download and load the ADHD resting-state dataset.
 
     Parameters
     ----------
     n_subjects: int, optional
-        The number of subjects to load. If None is given, all the
-        40 subjects are used.
+        The number of subjects to load from maximum of 40 subjects.
+        By default, 30 subjects will be loaded. If None is given,
+        all 40 subjects will be loaded.
 
     data_dir: string, optional
         Path of the data directory. Used to force data storage in a specified
@@ -406,7 +409,7 @@ def fetch_adhd(n_subjects=None, data_dir=None, url=None, resume=True,
 
     url: string, optional
         Override download URL. Used for test only (or if you setup a mirror of
-        the data).
+        the data). Default: None
 
     Returns
     -------
@@ -459,7 +462,7 @@ def fetch_adhd(n_subjects=None, data_dir=None, url=None, resume=True,
     phenotypic = _fetch_files(data_dir, [phenotypic], resume=resume,
                               verbose=verbose)[0]
 
-    ## Load the csv file
+    # Load the csv file
     phenotypic = np.genfromtxt(phenotypic, names=True, delimiter=',',
                                dtype=None)
 
@@ -1077,6 +1080,10 @@ def fetch_abide_pcp(data_dir=None, n_subjects=None, pipeline='cpac',
     classification of autism: ABIDE results." Frontiers in human neuroscience
     7 (2013).
     """
+    # People keep getting it wrong and submiting a string instead of a
+    # list of strings. We'll make their life easy
+    if isinstance(derivatives, _basestring):
+        derivatives = [derivatives, ]
 
     # Parameter check
     for derivative in derivatives:
@@ -1106,11 +1113,11 @@ def fetch_abide_pcp(data_dir=None, n_subjects=None, pipeline='cpac',
                'ABIDE_Initiative')
 
     if quality_checked:
-        kwargs['qc_rater_1'] = 'OK'
-        kwargs['qc_anat_rater_2'] = ['OK', 'maybe']
-        kwargs['qc_func_rater_2'] = ['OK', 'maybe']
-        kwargs['qc_anat_rater_3'] = 'OK'
-        kwargs['qc_func_rater_3'] = 'OK'
+        kwargs['qc_rater_1'] = b'OK'
+        kwargs['qc_anat_rater_2'] = [b'OK', b'maybe']
+        kwargs['qc_func_rater_2'] = [b'OK', b'maybe']
+        kwargs['qc_anat_rater_3'] = b'OK'
+        kwargs['qc_func_rater_3'] = b'OK'
 
     # Fetch the phenotypic file and load it
     csv = 'Phenotypic_V1_0b_preprocessed1.csv'
@@ -1279,3 +1286,265 @@ def fetch_mixed_gambles(n_subjects=1, data_dir=None, url=None, resume=True,
         X, y, mask_img = _load_mixed_gambles(map(nibabel.load, data.zmaps))
         data.zmaps, data.gain, data.mask_img = X, y, mask_img
     return data
+
+
+def fetch_megatrawls_netmats(dimensionality=100, timeseries='eigen_regression',
+                             matrices='partial_correlation', data_dir=None,
+                             resume=True, verbose=1):
+    """Downloads and returns Network Matrices data from MegaTrawls release in HCP.
+
+    This data can be used to predict relationships between imaging data and
+    non-imaging behavioural measures such as age, sex, education, etc.
+    The network matrices are estimated from functional connectivity
+    datasets of 461 subjects. Full technical details in [1] [2].
+
+    .. versionadded:: 0.2.2
+
+    Parameters
+    ----------
+    dimensionality: int, optional
+        Valid inputs are 25, 50, 100, 200, 300. By default, network matrices
+        estimated using Group ICA brain parcellations of 100 components/dimensions
+        will be returned.
+
+    timeseries: str, optional
+        Valid inputs are 'multiple_spatial_regression' or 'eigen_regression'. By
+        default 'eigen_regression', matrices estimated using first principal
+        eigen component timeseries signals extracted from each subject data
+        parcellations will be returned. Otherwise, 'multiple_spatial_regression'
+        matrices estimated using spatial regressor based timeseries signals
+        extracted from each subject data parcellations will be returned.
+
+    matrices: str, optional
+        Valid inputs are 'full_correlation' or 'partial_correlation'. By default,
+        partial correlation matrices will be returned otherwise if selected
+        full correlation matrices will be returned.
+
+    data_dir: str, default is None, optional
+        Path of the data directory. Used to force data storage in a specified
+        location.
+
+    resume: bool, default is True
+        This parameter is required if a partially downloaded file is needed
+        to be resumed to download again.
+
+    verbose: int, default is 1
+        This parameter is used to set the verbosity level to print the message
+        to give information about the processing.
+        0 indicates no information will be given.
+
+    Returns
+    -------
+    data: Bunch
+        dictionary-like object, the attributes are :
+
+        - 'dimensions': int, consists of given input in dimensions.
+
+        - 'timeseries': str, consists of given input in timeseries method.
+
+        - 'matrices': str, consists of given type of specific matrices.
+
+        - 'correlation_matrices': ndarray, consists of correlation matrices
+          based on given type of matrices. Array size will depend on given
+          dimensions (n, n).
+        - 'description': data description
+
+    References
+    ----------
+    [1] Stephen Smith et al, HCP beta-release of the Functional Connectivity
+        MegaTrawl.
+        April 2015 "HCP500-MegaTrawl" release.
+        https://db.humanconnectome.org/megatrawl/
+
+    [2] Smith, S.M. et al. Nat. Neurosci. 18, 1565-1567 (2015).
+
+    [3] N.Filippini, et al. Distinct patterns of brain activity in young
+        carriers of the APOE-e4 allele.
+        Proc Natl Acad Sci USA (PNAS), 106::7209-7214, 2009.
+
+    [4] S.Smith, et al. Methods for network modelling from high quality rfMRI data.
+        Meeting of the Organization for Human Brain Mapping. 2014
+
+    [5] J.X. O'Reilly et al. Distinct and overlapping functional zones in the
+        cerebellum defined by resting state functional connectivity.
+        Cerebral Cortex, 2009.
+
+    Note: See description for terms & conditions on data usage.
+
+    """
+    url = "http://www.nitrc.org/frs/download.php/8037/Megatrawls.tgz"
+    opts = {'uncompress': True}
+
+    error_message = "Invalid {0} input is provided: {1}, choose one of them {2}"
+    # standard dataset terms
+    dimensionalities = [25, 50, 100, 200, 300]
+    if dimensionality not in dimensionalities:
+        raise ValueError(error_message.format('dimensionality', dimensionality,
+                                              dimensionalities))
+    timeseries_methods = ['multiple_spatial_regression', 'eigen_regression']
+    if timeseries not in timeseries_methods:
+        raise ValueError(error_message.format('timeseries', timeseries,
+                                              timeseries_methods))
+    output_matrices_names = ['full_correlation', 'partial_correlation']
+    if matrices not in output_matrices_names:
+        raise ValueError(error_message.format('matrices', matrices,
+                                              output_matrices_names))
+
+    dataset_name = 'Megatrawls'
+    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir, verbose=verbose)
+    description = _get_dataset_descr(dataset_name)
+
+    timeseries_map = dict(multiple_spatial_regression='ts2', eigen_regression='ts3')
+    matrices_map = dict(full_correlation='Znet1.txt', partial_correlation='Znet2.txt')
+    filepath = [(os.path.join(
+        '3T_Q1-Q6related468_MSMsulc_d%d_%s' % (dimensionality, timeseries_map[timeseries]),
+        matrices_map[matrices]), url, opts)]
+
+    # Fetch all the files
+    files = _fetch_files(data_dir, filepath, resume=resume, verbose=verbose)
+
+    # Load the files into arrays
+    correlation_matrices = csv_to_array(files[0])
+
+    return Bunch(
+        dimensions=dimensionality,
+        timeseries=timeseries,
+        matrices=matrices,
+        correlation_matrices=correlation_matrices,
+        description=description)
+
+
+def fetch_cobre(n_subjects=10, data_dir=None, url=None, verbose=1):
+    """Fetch COBRE datasets preprocessed using NIAK 0.12.4 pipeline.
+
+    Downloads and returns preprocessed resting state fMRI datasets and
+    phenotypic information such as demographic, clinical variables,
+    measure of frame displacement FD (an average FD for all the time
+    frames left after censoring).
+
+    For each subject, this function also returns .mat files which contains
+    all the covariates that have been regressed out of the functional data.
+    The covariates such as motion parameters, mean CSF signal, etc. It also
+    contains a list of time frames that have been removed from the time series
+    by censoring for high motion.
+
+    NOTE: The number of time samples vary, as some samples have been removed
+    if tagged with excessive motion. This means that data is already time
+    filtered. See output variable 'description' for more details.
+
+    .. versionadded 0.2.3
+
+    Parameters
+    ----------
+    n_subjects: int, optional
+        The number of subjects to load from maximum of 146 subjects.
+        By default, 10 subjects will be loaded. If n_subjects=None,
+        all subjects will be loaded.
+
+    data_dir: str, optional
+        Path to the data directory. Used to force data storage in a
+        specified location. Default: None
+
+    url: str, optional
+        Override download url. Used for test only (or if you setup a
+        mirror of the data). Default: None
+
+    verbose: int, optional
+       Verbosity level (0 means no message).
+
+    Returns
+    -------
+    data: Bunch
+        Dictionary-like object, the attributes are:
+
+        - 'func': string list
+            Paths to Nifti images.
+        - 'mat_files': string list
+            Paths to .mat files of each subject.
+        - 'phenotypic': ndarray
+            Contains data of clinical variables, sex, age, FD.
+        - 'description': data description of the release and references.
+
+    Notes
+    -----
+    More information about datasets structure, See:
+    https://figshare.com/articles/COBRE_preprocessed_with_NIAK_0_12_4/1160600
+    """
+    if url is None:
+        # Here we use the file that provides URL for all others
+        url = "https://figshare.com/api/articles/1160600/15/files"
+
+    dataset_name = 'cobre'
+    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
+                                verbose=verbose)
+    fdescr = _get_dataset_descr(dataset_name)
+
+    # First, fetch the file that references all individual URLs
+    files = _fetch_files(data_dir,
+                         [("files", url + "?offset=0&limit=300", {})],
+                         verbose=verbose)[0]
+    files = json.load(open(files, 'r'))
+    # Index files by name
+    files_ = {}
+    for f in files:
+        files_[f['name']] = f
+    files = files_
+
+    # Fetch the phenotypic file and load it
+    csv_name = 'cobre_model_group.csv'
+    csv_file = _fetch_files(
+        data_dir, [(csv_name, files[csv_name]['downloadUrl'],
+                    {'md5': files[csv_name].get('md5', None),
+                     'move': csv_name})],
+        verbose=verbose)[0]
+
+    # Load file in filename to numpy arrays
+    names = ['id', 'sz', 'age', 'sex', 'fd']
+    csv_array = np.recfromcsv(csv_file, names=names, skip_header=True)
+    # Change dtype of id and condition column
+    csv_array = csv_array.astype(
+        [('id', '|U17'),
+         ('sz', '<i8'),
+         ('age', '<f8'),
+         ('sex', '<i8'),
+         ('fd', '<f8')])
+    csv_array['id'] = np.char.strip(csv_array['id'], '" ')
+
+    # Check number of subjects
+    max_subjects = len(csv_array)
+    if n_subjects is None:
+        n_subjects = max_subjects
+
+    if n_subjects > max_subjects:
+        warnings.warn('Warning: there are only %d subjects' % max_subjects)
+        n_subjects = max_subjects
+
+    n_sz = np.ceil(float(n_subjects) / max_subjects * csv_array['sz'].sum())
+    n_ct = np.floor(float(n_subjects) / max_subjects *
+                    np.logical_not(csv_array['sz']).sum())
+
+    # First, restrict the csv files to the adequate number of subjects
+    sz_ids = csv_array[csv_array['sz'] == 1.]['id'][:n_sz]
+    ct_ids = csv_array[csv_array['sz'] == 0.]['id'][:n_ct]
+    ids = np.hstack([sz_ids, ct_ids])
+    csv_array = csv_array[np.in1d(csv_array['id'], ids)]
+
+    # Call fetch_files once per subject.
+    func = []
+    mat = []
+    for i in ids:
+        f = 'fmri_' + i + '_session1_run1.nii.gz'
+        m = 'fmri_' + i + '_session1_run1_extra.mat'
+        f, m = _fetch_files(
+            data_dir,
+            [(f, files[f]['downloadUrl'], {'md5': files[f].get('md5', None),
+                                           'move': f}),
+             (m, files[m]['downloadUrl'], {'md5': files[m].get('md5', None),
+                                           'move': m})
+             ],
+            verbose=verbose)
+        func.append(f)
+        mat.append(m)
+
+    return Bunch(func=func, mat_files=mat, phenotypic=csv_array,
+                 description=fdescr)

@@ -32,20 +32,24 @@ datasets and atlases. Dataset fetching functions can be imported from
 :mod:`nilearn.datasets`::
 
     >>> from nilearn import datasets
-    >>> haxby_files = datasets.fetch_haxby(n_subjects=1)  # doctest: +SKIP
+    >>> haxby_dataset = datasets.fetch_haxby(n_subjects=1)  # doctest: +SKIP
 
 They return a data structure that contains different pieces of
 information on the retrieved dataset, including the
 file names on hard disk::
 
     >>> # The different files
-    >>> print(sorted(list(haxby_files.keys())))  # doctest: +SKIP
-    ['anat', 'description', 'func', 'mask_face', 'mask_face_little', 'mask_house', 'mask_house_little', 'mask_vt', 'session_target']
+    >>> print(sorted(list(haxby_dataset.keys())))  # doctest: +SKIP
+    ['anat', 'description', 'func', 'mask', 'mask_face', 'mask_face_little',
+    'mask_house', 'mask_house_little', 'mask_vt', 'session_target']
     >>> # Path to first functional file
-    >>> print(haxby_files.func[0])  # doctest: +ELLIPSIS +SKIP
+    >>> print(haxby_dataset.func[0])  # doctest: +SKIP
     /.../nilearn_data/haxby2001/subj1/bold.nii.gz
-    >>> # Provide information on the dataset
-    >>> print(haxby_files.description) # doctest: +ELLIPSIS +SKIP
+
+Explanation and further resources of the dataset at hand can be retrieved as
+follows::
+
+    >>> print(haxby_dataset.description)  # doctest: +SKIP
     Haxby 2001 results
 
 
@@ -55,10 +59,6 @@ file names on hard disk::
 
 |
 
-Explanation and further resources of the dataset at hand can be
-retrieved as follows:
-
-    >>> print haxby_dataset['description']  # doctest: +SKIP
 
 For a list of all the data fetching functions in nilearn, see :ref:`datasets_ref`.
 
@@ -143,7 +143,7 @@ Nifti and Analyze files
 Neuroimaging data can be loaded in a simple way thanks to nibabel_.
 A Nifti file on disk can be loaded with a single line.
 
-.. literalinclude:: ../../examples/manipulating_visualizing/plot_visualization.py
+.. literalinclude:: ../../examples/01_plotting/plot_visualization.py
      :start-after: # Fetch data
      :end-before: # Visualization
 
@@ -221,12 +221,12 @@ If we do not have a spatial mask of the target regions, a brain mask
 can be easily extracted from the fMRI data by the
 :func:`nilearn.masking.compute_epi_mask` function:
 
-.. figure:: ../auto_examples/manipulating_visualizing/images/sphx_glr_plot_visualization_002.png
-    :target: ../auto_examples/manipulating_visualizing/plot_visualization.html
+.. figure:: ../auto_examples/01_plotting/images/sphx_glr_plot_visualization_002.png
+    :target: ../auto_examples/01_plotting/plot_visualization.html
     :align: right
     :scale: 50%
 
-.. literalinclude:: ../../examples/manipulating_visualizing/plot_visualization.py
+.. literalinclude:: ../../examples/01_plotting/plot_visualization.py
      :start-after: # Extracting a brain mask
      :end-before: # Applying the mask to extract the corresponding time series
 
@@ -248,12 +248,12 @@ brain. It is thus convenient to apply a brain mask in order to convert the
     :width: 100%
 
 
-.. literalinclude:: ../../examples/manipulating_visualizing/plot_visualization.py
+.. literalinclude:: ../../examples/01_plotting/plot_visualization.py
      :start-after: # Applying the mask to extract the corresponding time series
      :end-before: # Find voxels of interest
 
-.. figure:: ../auto_examples/manipulating_visualizing/images/sphx_glr_plot_visualization_003.png
-    :target: ../auto_examples/manipulating_visualizing/plot_visualization.html
+.. figure:: ../auto_examples/01_plotting/images/sphx_glr_plot_visualization_003.png
+    :target: ../auto_examples/01_plotting/plot_visualization.html
     :align: center
     :scale: 50
 
@@ -271,10 +271,12 @@ set up your own data preparation procedure:
 .. currentmodule:: nilearn
 
 * Resampling: :func:`nilearn.image.resample_img`. See the example
-  :ref:`sphx_glr_auto_examples_manipulating_visualizing_plot_affine_transformation.py` to
+  :ref:`sphx_glr_auto_examples_04_manipulating_images_plot_affine_transformation.py` to
   see the effect of affine transforms on data and bounding boxes.
 * Computing the mean of images (along the time/4th dimension):
   :func:`nilearn.image.mean_img`
+* Applying numpy functions on an image or a list of images:
+  :func:`nilearn.image.math_img`
 * Swapping voxels of both hemisphere (e.g., useful to homogenize masks
   inter-hemispherically):
   :func:`nilearn.image.swap_img_hemispheres`
@@ -321,12 +323,12 @@ the three dimensions). Analogous to the majority of nilearn functions,
 it can also use file names as input parameters.
 
 
-.. literalinclude:: ../../examples/manipulating_visualizing/plot_roi_extraction.py
+.. literalinclude:: ../../examples/04_manipulating_images/plot_roi_extraction.py
     :start-after: # Smooth the data
     :end-before: # Run a T-test for face and houses
 
-.. figure:: ../auto_examples/manipulating_visualizing/images/sphx_glr_plot_roi_extraction_001.png
-    :target: ../auto_examples/manipulating_visualizing/plot_roi_extraction.html
+.. figure:: ../auto_examples/04_manipulating_images/images/sphx_glr_plot_roi_extraction_001.png
+    :target: ../auto_examples/04_manipulating_images/plot_roi_extraction.html
     :align: center
     :scale: 50%
 
@@ -352,12 +354,12 @@ This test returns p-values that represent probabilities that the two
 time-series had been drawn from the same distribution. The lower is the p-value, the
 more discriminative is the voxel in distinguishing the two conditions.
 
-.. literalinclude:: ../../examples/manipulating_visualizing/plot_roi_extraction.py
+.. literalinclude:: ../../examples/04_manipulating_images/plot_roi_extraction.py
     :start-after: # Run a T-test for face and houses
     :end-before: # Build a mask from this statistical map
 
-.. figure:: ../auto_examples/manipulating_visualizing/images/sphx_glr_plot_roi_extraction_002.png
-    :target: ../auto_examples/manipulating_visualizing/plot_roi_extraction.html
+.. figure:: ../auto_examples/04_manipulating_images/images/sphx_glr_plot_roi_extraction_002.png
+    :target: ../auto_examples/04_manipulating_images/plot_roi_extraction.html
     :align: center
     :scale: 50%
 
@@ -373,12 +375,12 @@ Voxels with better p-values are kept as voxels of interest.
 Applying a threshold to an array
 is easy thanks to numpy indexing à la Matlab.
 
-.. literalinclude:: ../../examples/manipulating_visualizing/plot_roi_extraction.py
+.. literalinclude:: ../../examples/04_manipulating_images/plot_roi_extraction.py
     :start-after: # Thresholding
     :end-before: # Binarization and intersection with VT mask
 
-.. figure:: ../auto_examples/manipulating_visualizing/images/sphx_glr_plot_roi_extraction_003.png
-    :target: ../auto_examples/manipulating_visualizing/plot_roi_extraction.html
+.. figure:: ../auto_examples/04_manipulating_images/images/sphx_glr_plot_roi_extraction_003.png
+    :target: ../auto_examples/04_manipulating_images/plot_roi_extraction.html
     :align: center
     :scale: 50%
 
@@ -395,12 +397,12 @@ nibabel's **nibabel.load**. We can then use a logical "and" operation
 that have been selected in both masks. In neuroimaging jargon, this is
 called an "AND conjunction."
 
-.. literalinclude:: ../../examples/manipulating_visualizing/plot_roi_extraction.py
+.. literalinclude:: ../../examples/04_manipulating_images/plot_roi_extraction.py
     :start-after: # Binarization and intersection with VT mask
     :end-before: # Dilation
 
-.. figure:: ../auto_examples/manipulating_visualizing/images/sphx_glr_plot_roi_extraction_004.png
-    :target: ../auto_examples/manipulating_visualizing/plot_roi_extraction.html
+.. figure:: ../auto_examples/04_manipulating_images/images/sphx_glr_plot_roi_extraction_004.png
+    :target: ../auto_examples/04_manipulating_images/plot_roi_extraction.html
     :align: center
     :scale: 50%
 
@@ -415,12 +417,12 @@ not to forget voxels located on the edge of a ROI.
 Put differently, such operations can fill "holes" in masked voxel
 representations.
 
-.. literalinclude:: ../../examples/manipulating_visualizing/plot_roi_extraction.py
+.. literalinclude:: ../../examples/04_manipulating_images/plot_roi_extraction.py
     :start-after: # Dilation
     :end-before: # Identification of connected components
 
-.. figure:: ../auto_examples/manipulating_visualizing/images/sphx_glr_plot_roi_extraction_005.png
-    :target: ../auto_examples/manipulating_visualizing/plot_roi_extraction.html
+.. figure:: ../auto_examples/04_manipulating_images/images/sphx_glr_plot_roi_extraction_005.png
+    :target: ../auto_examples/04_manipulating_images/plot_roi_extraction.html
     :align: center
     :scale: 50%
 
@@ -432,12 +434,12 @@ identifies immediately neighboring
 voxels in our voxels mask. It assigns a separate integer label to each
 one of them.
 
-.. literalinclude:: ../../examples/manipulating_visualizing/plot_roi_extraction.py
+.. literalinclude:: ../../examples/04_manipulating_images/plot_roi_extraction.py
     :start-after: # Identification of connected components
     :end-before: # Use the new ROIs to extract data maps in both ROIs
 
-.. figure:: ../auto_examples/manipulating_visualizing/images/sphx_glr_plot_roi_extraction_006.png
-    :target: ../auto_examples/manipulating_visualizing/plot_roi_extraction.html
+.. figure:: ../auto_examples/04_manipulating_images/images/sphx_glr_plot_roi_extraction_006.png
+    :target: ../auto_examples/04_manipulating_images/plot_roi_extraction.html
     :align: center
     :scale: 50%
 
@@ -447,7 +449,7 @@ Saving the result
 The final voxel mask is saved using nibabel for further inspection
 with a software such as FSLView.
 
-.. literalinclude:: ../../examples/manipulating_visualizing/plot_roi_extraction.py
+.. literalinclude:: ../../examples/04_manipulating_images/plot_roi_extraction.py
     :start-after: # save the ROI 'atlas' to a single output Nifti
 
 .. _nibabel: http://nipy.sourceforge.net/nibabel/

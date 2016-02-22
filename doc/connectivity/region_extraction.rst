@@ -6,10 +6,10 @@ Region Extraction for better brain parcellations
 
 .. topic:: **Page summary**
 
-   This section shows how to use Region Extractor to extract each connected
-   brain regions/components into a separate brain activation regions and also
+   This section shows how to use Region Extractor to extract brain connected
+   regions/components into a separate brain activation region and also
    shows how to learn functional connectivity interactions between each
-   separate regions.
+   separate region.
 
 .. contents:: **Contents**
     :local:
@@ -34,50 +34,50 @@ which is already preprocessed and publicly available at
 datasets.
 
 
-.. literalinclude:: ../../examples/connectivity/plot_extract_regions_canica_maps.py
+.. literalinclude:: ../../examples/03_connectivity/plot_extract_regions_dictlearning_maps.py
     :start-after: # utilities
     :end-before: ################################################################################
 
 .. currentmodule:: nilearn.decomposition
 
-Data decomposition using Canonical ICA
-======================================
+Brain maps using Dictionary Learning
+====================================
 
-Here, we use :class:`CanICA`, a multi subject model to decompose previously
-fetched multi subjects datasets. We do this by setting the parameters in the
-object and calling fit on the functional filenames without necessarily
-converting each filename to Nifti1Image object.
+Here, we use object :class:`DictLearning`, a multi subject model to decompose multi
+subjects fMRI datasets into functionally defined maps. We do this by setting
+the parameters and calling the object fit on the filenames of datasets without
+necessarily converting each file to Nifti1Image object.
 
 
-.. literalinclude:: ../../examples/connectivity/plot_extract_regions_canica_maps.py
-    :start-after: # decomposition module
-    :end-before: # Visualization
+.. literalinclude:: ../../examples/03_connectivity/plot_extract_regions_dictlearning_maps.py
+    :start-after: # object and fit the model to the functional datasets
+    :end-before: # Visualization of resting state networks
 
 .. currentmodule:: nilearn.plotting
 
-Visualization of Canonical ICA maps
-===================================
+Visualization of Dictionary Learning maps
+=========================================
 
-Showing ICA maps stored in components_img using nilearn plotting utilities.
+Showing maps stored in components_img using nilearn plotting utilities.
 Here, we use :func:`plot_prob_atlas` for easy visualization of 4D atlas maps
-onto the anatomical standard template. Each ICA map is displayed in different
+onto the anatomical standard template. Each map is displayed in different
 color and colors are random and automatically picked.
 
-.. literalinclude:: ../../examples/connectivity/plot_extract_regions_canica_maps.py
-    :start-after: # Show ICA maps by using plotting utilities
+.. literalinclude:: ../../examples/03_connectivity/plot_extract_regions_dictlearning_maps.py
+    :start-after: # Show networks using plotting utilities
     :end-before: ################################################################################
 
-.. image:: ../auto_examples/connectivity/images/sphx_glr_plot_extract_regions_canica_maps_001.png
-    :target: ../auto_examples/connectivity/plot_extract_regions_canica_maps.html
+.. image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_extract_regions_dictlearning_maps_001.png
+    :target: ../auto_examples/03_connectivity/plot_extract_regions_dictlearning_maps.html
     :scale: 60
 
 .. currentmodule:: nilearn.regions
 
-Region Extraction with CanICA maps
-==================================
+Region Extraction with Dictionary Learning maps
+===============================================
 
 We use object :class:`RegionExtractor` for extracting brain connected regions
-from ICA maps into separated brain activation regions with automatic
+from dictionary maps into separated brain activation regions with automatic
 thresholding strategy selected as thresholding_strategy='ratio_n_voxels'. We use
 thresholding strategy to first get foreground information present in the maps and
 then followed by robust region extraction on foreground information using
@@ -93,9 +93,9 @@ regions. We control the small spurious regions size by thresholding in voxel uni
 to adapt well to the resolution of the image. Please see the documentation of
 nilearn.regions.connected_regions for more details.
 
-.. literalinclude:: ../../examples/connectivity/plot_extract_regions_canica_maps.py
-    :start-after: # regions, both can be done by importing Region Extractor from regions module
-    :end-before: # Visualization
+.. literalinclude:: ../../examples/03_connectivity/plot_extract_regions_dictlearning_maps.py
+    :start-after: # maps, less the threshold means that more intense non-voxels will be survived.
+    :end-before: # Visualization of region extraction results
 
 .. currentmodule:: nilearn.plotting
 
@@ -107,12 +107,12 @@ for visualizing extracted regions on a standard template. Each extracted brain
 region is assigned a color and as you can see that visual cortex area is extracted
 quite nicely into each hemisphere.
 
-.. literalinclude:: ../../examples/connectivity/plot_extract_regions_canica_maps.py
-    :start-after: # Show region extraction results
+.. literalinclude:: ../../examples/03_connectivity/plot_extract_regions_dictlearning_maps.py
+    :start-after: # Visualization of region extraction results
     :end-before: ################################################################################
 
-.. image:: ../auto_examples/connectivity/images/sphx_glr_plot_extract_regions_canica_maps_002.png
-    :target: ../auto_examples/connectivity/plot_extract_regions_canica_maps.html
+.. image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_extract_regions_dictlearning_maps_002.png
+    :target: ../auto_examples/03_connectivity/plot_extract_regions_dictlearning_maps.html
     :scale: 60
 
 .. currentmodule:: nilearn.connectome
@@ -133,7 +133,7 @@ shape=(176, 23) where 176 is the length of time series and 23 is the number of
 extracted regions. Likewise, we have a total of 20 subject specific time series signals.
 The third step, we compute the mean correlation across all subjects.
 
-.. literalinclude:: ../../examples/connectivity/plot_extract_regions_canica_maps.py
+.. literalinclude:: ../../examples/03_connectivity/plot_extract_regions_dictlearning_maps.py
     :start-after: # To estimate correlation matrices we import connectome utilities from nilearn
     :end-before: # Visualization
 
@@ -148,16 +148,16 @@ automatically the coordinates required, for plotting connectome relations.
 Left image is the correlations in a matrix form and right image is the
 connectivity relations to brain regions plotted using :func:`plot_connectome`
 
-.. literalinclude:: ../../examples/connectivity/plot_extract_regions_canica_maps.py
-    :start-after: # Import image utilities in utilising to operate on 4th dimension
+.. literalinclude:: ../../examples/03_connectivity/plot_extract_regions_dictlearning_maps.py
+    :start-after: # Plotting connectome results
     :end-before: ################################################################################
 
-.. |matrix| image:: ../auto_examples/connectivity/images/sphx_glr_plot_extract_regions_canica_maps_003.png
-   :target: ../auto_examples/connectivity/plot_extract_regions_canica_maps.html
+.. |matrix| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_extract_regions_dictlearning_maps_003.png
+   :target: ../auto_examples/03_connectivity/plot_extract_regions_dictlearning_maps.html
    :scale: 60
 
-.. |connectome| image:: ../auto_examples/connectivity/images/sphx_glr_plot_extract_regions_canica_maps_004.png
-   :target: ../auto_examples/connectivity/plot_extract_regions_canica_maps.html
+.. |connectome| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_extract_regions_dictlearning_maps_004.png
+   :target: ../auto_examples/03_connectivity/plot_extract_regions_dictlearning_maps.html
    :scale: 60
 
 .. centered:: |matrix| |connectome|
@@ -165,22 +165,22 @@ connectivity relations to brain regions plotted using :func:`plot_connectome`
 Validating results
 ==================
 
-Showing only Default Mode Network (DMN) regions before and after region
-extraction by manually identifying the index of DMN in ICA decomposed maps.
+Showing only one specific network regions before and after region extraction.
 
-Left image displays the DMN regions without region extraction and right image
-displays the DMN regions after region extraction. Here, we can validate that
-the DMN regions are nicely separated displaying each extracted region in different color.
+Left image displays the regions of one specific resting network without region extraction
+and right image displays the regions split apart after region extraction. Here, we can
+validate that regions are nicely separated identified by each extracted region in different
+color.
 
-.. literalinclude:: ../../examples/connectivity/plot_extract_regions_canica_maps.py
-    :start-after: # First we plot DMN without region extraction, interested in only index=[3]
+.. literalinclude:: ../../examples/03_connectivity/plot_extract_regions_dictlearning_maps.py
+    :start-after: # Plotting regions extracted for only one specific network
 
-.. |dmn| image:: ../auto_examples/connectivity/images/sphx_glr_plot_extract_regions_canica_maps_005.png
-   :target: ../auto_examples/connectivity/plot_extract_regions_canica_maps.html
+.. |dmn| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_extract_regions_dictlearning_maps_005.png
+   :target: ../auto_examples/03_connectivity/plot_extract_regions_dictlearning_maps.html
    :scale: 50
     
-.. |dmn_reg| image:: ../auto_examples/connectivity/images/sphx_glr_plot_extract_regions_canica_maps_006.png
-   :target: ../auto_examples/connectivity/plot_extract_regions_canica_maps.html
+.. |dmn_reg| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_extract_regions_dictlearning_maps_006.png
+   :target: ../auto_examples/03_connectivity/plot_extract_regions_dictlearning_maps.html
    :scale: 50
 
 .. centered:: |dmn| |dmn_reg|
@@ -188,4 +188,4 @@ the DMN regions are nicely separated displaying each extracted region in differe
 .. seealso::
 
    The full code can be found as an example:
-   :ref:`sphx_glr_auto_examples_connectivity_plot_extract_regions_canica_maps.py`
+   :ref:`sphx_glr_auto_examples_03_connectivity_plot_extract_regions_dictlearning_maps.py`

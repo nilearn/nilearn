@@ -219,6 +219,7 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
     def inverse_transform(self, X):
         """ Transform the 2D data matrix back to an image in brain space.
         """
+        self._check_fitted()
         img = self._cache(masking.unmask)(X, self.mask_img_)
         # Be robust again memmapping that will create read-only arrays in
         # internal structures of the header: remove the memmaped array

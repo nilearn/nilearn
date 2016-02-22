@@ -34,9 +34,9 @@ functions to fetch data from Internet and get the filenames (:ref:`more
 on data loading <loading_data>`):
 
 
-.. literalinclude:: ../../examples/connectivity/plot_canica_resting_state.py
+.. literalinclude:: ../../examples/03_connectivity/plot_canica_resting_state.py
     :start-after: # First we load the ADHD200 data
-    :end-before: # Here we apply CanICA on the data
+    :end-before:  ####################################################################
 
 Applying CanICA
 ---------------
@@ -47,9 +47,9 @@ perform a multi-subject ICA decomposition following the CanICA model.
 As with every object in nilearn, we give its parameters at construction,
 and then fit it on the data.
 
-.. literalinclude:: ../../examples/connectivity/plot_canica_resting_state.py
+.. literalinclude:: ../../examples/03_connectivity/plot_canica_resting_state.py
     :start-after: # Here we apply CanICA on the data
-    :end-before: # To visualize we plot the outline of all components on one figure
+    :end-before: ####################################################################
 
 The components estimated are found as the `components_` attribute of the
 object.
@@ -61,23 +61,23 @@ We can visualize the components as in the previous examples. The first plot
 shows a map generated from all the components. Then we plot an axial cut for
 each component separately.
 
-.. literalinclude:: ../../examples/connectivity/plot_canica_resting_state.py
+.. literalinclude:: ../../examples/03_connectivity/plot_canica_resting_state.py
     :start-after: # To visualize we plot the outline of all components on one figure
-    :end-before: # Finally, we plot the map for each ICA component separately
+    :end-before: ####################################################################
 
-.. figure:: ../auto_examples/connectivity/images/sphx_glr_plot_canica_resting_state_001.png
+.. figure:: ../auto_examples/03_connectivity/images/sphx_glr_plot_canica_resting_state_001.png
    :align: center
-   :target: ../auto_examples/connectivity/plot_canica_resting_state.html
+   :target: ../auto_examples/03_connectivity/plot_canica_resting_state.html
 
 Finally, we can plot the map for different ICA components separately:
 
-.. literalinclude:: ../../examples/connectivity/plot_canica_resting_state.py
+.. literalinclude:: ../../examples/03_connectivity/plot_canica_resting_state.py
     :start-after: # Finally, we plot the map for each ICA component separately
 
-.. |left_img| image:: ../auto_examples/connectivity/images/sphx_glr_plot_canica_resting_state_003.png
+.. |left_img| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_canica_resting_state_003.png
    :width: 23%
 
-.. |right_img| image:: ../auto_examples/connectivity/images/sphx_glr_plot_canica_resting_state_004.png
+.. |right_img| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_canica_resting_state_004.png
    :width: 23%
 
 .. centered:: |left_img| |right_img|
@@ -85,7 +85,7 @@ Finally, we can plot the map for different ICA components separately:
 .. seealso::
 
    The full code can be found as an example:
-   :ref:`sphx_glr_auto_examples_connectivity_plot_canica_resting_state.py`
+   :ref:`sphx_glr_auto_examples_03_connectivity_plot_canica_resting_state.py`
 
 .. note::
 
@@ -113,40 +113,40 @@ good extracted maps.
 Applying DictLearning
 ---------------------
 
-:class:'DictLearning' is a ready-to-use class with the same interface as CanICA.
+:class:`DictLearning` is a ready-to-use class with the same interface as CanICA.
 Sparsity of output map is controlled by a parameter alpha: using a
 larger alpha yields sparser maps.
 
-.. literalinclude:: ../../examples/connectivity/plot_compare_resting_state_decomposition.py
+.. literalinclude:: ../../examples/03_connectivity/plot_compare_resting_state_decomposition.py
     :start-after: # Dictionary learning
-    :end-before: # CanICA
+    :end-before: ###############################################################################
 
 We can fit both estimators to compare them
 
-.. literalinclude:: ../../examples/connectivity/plot_compare_resting_state_decomposition.py
+.. literalinclude:: ../../examples/03_connectivity/plot_compare_resting_state_decomposition.py
     :start-after: # Fit both estimators
-    :end-before: # Visualize the results
+    :end-before: ###############################################################################
 
 Visualizing the results
 -----------------------
 
 4D plotting offers an efficient way to compare both resulting outputs
 
-.. literalinclude:: ../../examples/connectivity/plot_compare_resting_state_decomposition.py
+.. literalinclude:: ../../examples/03_connectivity/plot_compare_resting_state_decomposition.py
     :start-after: # Visualize the results
 
-.. |left_img_decomp| image:: ../auto_examples/connectivity/images/sphx_glr_plot_compare_resting_state_decomposition_001.png
-   :target: ../auto_examples/connectivity/plot_compare_resting_state_decomposition.html
+.. |left_img_decomp| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_compare_resting_state_decomposition_001.png
+   :target: ../auto_examples/03_connectivity/plot_compare_resting_state_decomposition.html
    :width: 50%
-.. |right_img_decomp| image:: ../auto_examples/connectivity/images/sphx_glr_plot_compare_resting_state_decomposition_003.png
-   :target: ../auto_examples/connectivity/plot_compare_resting_state_decomposition.html
+.. |right_img_decomp| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_compare_resting_state_decomposition_003.png
+   :target: ../auto_examples/03_connectivity/plot_compare_resting_state_decomposition.html
    :width: 50%
 
-.. |left_img_decomp_single| image:: ../auto_examples/connectivity/images/sphx_glr_plot_compare_resting_state_decomposition_002.png
-   :target: ../auto_examples/connectivity/plot_compare_resting_state_decomposition.html
+.. |left_img_decomp_single| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_compare_resting_state_decomposition_002.png
+   :target: ../auto_examples/03_connectivity/plot_compare_resting_state_decomposition.html
    :width: 50%
-.. |right_img_decomp_single| image:: ../auto_examples/connectivity/images/sphx_glr_plot_compare_resting_state_decomposition_004.png
-   :target: ../auto_examples/connectivity/plot_compare_resting_state_decomposition.html
+.. |right_img_decomp_single| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_compare_resting_state_decomposition_004.png
+   :target: ../auto_examples/03_connectivity/plot_compare_resting_state_decomposition.html
    :width: 50%
 
 
@@ -163,4 +163,4 @@ classification tasks.
 .. seealso::
 
    The full code can be found as an example:
-   :ref:`sphx_glr_auto_examples_connectivity_plot_compare_resting_state_decomposition.py`
+   :ref:`sphx_glr_auto_examples_03_connectivity_plot_compare_resting_state_decomposition.py`

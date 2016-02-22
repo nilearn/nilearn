@@ -329,6 +329,8 @@ class _MNI152Template(SpatialImage):
     def __str__(self):
         return "<MNI152Template>"
 
+    def __repr__(self):
+        return "<MNI152Template>"
 
 # The constant that we use as a default in functions
 MNI152TEMPLATE = _MNI152Template()
@@ -378,7 +380,7 @@ def _load_anat(anat_img=MNI152TEMPLATE, dim=False, black_bg='auto'):
         else:
             if not isinstance(dim, numbers.Number):
                 dim = .6
-            vmin = vmean - (1 + dim) * ptp
+            vmin = .5 * (2 - dim) * vmean - (1 + dim) * ptp
     return anat_img, black_bg, vmin, vmax
 
 
@@ -444,7 +446,10 @@ def plot_anat(anat_img=MNI152TEMPLATE, cut_coords=None,
             to matplotlib.pyplot.savefig.
         dim: boolean or float, optional
             Dimming factor applied to background image. If True, automatic
-            heuristics are applied. Accepted float values are between -1 and 1.
+            heuristics are applied. Accepted float values, where a
+            typical span is -1 to 1 (-1 = increase contrast; 1 = decrease
+            contrast), but larger values can be used for a more
+            pronounced effect.
         cmap: matplotlib colormap, optional
             The colormap for the anat
         vmin: float
@@ -566,7 +571,8 @@ def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None,
         bg_img : Niimg-like object
             See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
             The background image that the ROI/mask will be plotted on top of.
-            If not specified MNI152 template will be used.
+            If nothing is specified, the MNI152 template will be used.
+            To turn off background image, just pass "bg_img=False".
         cut_coords: None, or a tuple of floats
             The MNI coordinates of the point where the cut is performed, in
             MNI coordinates and order.
@@ -610,7 +616,10 @@ def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None,
             magically by analysis of the image.
         dim: boolean or float, optional
             Dimming factor applied to background image. If True, automatic
-            heuristics are applied. Accepted float values are between -1 and 1.
+            heuristics are applied. Accepted float values, where a
+            typical span is -1 to 1 (-1 = increase contrast; 1 = decrease
+            contrast), but larger values can be used for a more
+            pronounced effect.
         vmin: float
             Lower bound for plotting, passed to matplotlib.pyplot.imshow
         vmax: float
@@ -652,8 +661,9 @@ def plot_prob_atlas(maps_img, anat_img=MNI152TEMPLATE, view_type='auto',
             4D image of the probabilistic atlas maps
         anat_img : Niimg-like object
             See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
-            The anatomical image to be used as a background. If None is
-            given, nilearn tries to find a T1 template.
+            The anatomical image to be used as a background.
+            If nothing is specified, the MNI152 template will be used.
+            To turn off background image, just pass "anat_img=False".
         view_type: {'auto', 'contours', 'filled_contours', 'continuous'}, optional
             By default view_type == 'auto', which means maps are overlayed as
             contours if number of maps to display are more or
@@ -716,7 +726,10 @@ def plot_prob_atlas(maps_img, anat_img=MNI152TEMPLATE, view_type='auto',
             savefig.
         dim: boolean or float, optional
             Dimming factor applied to background image. If True, automatic
-            heuristics are applied. Accepted float values are between -1 and 1.
+            heuristics are applied. Accepted float values, where a
+            typical span is -1 to 1 (-1 = increase contrast; 1 = decrease
+            contrast), but larger values can be used for a more
+            pronounced effect.
         cmap: matplotlib colormap, optional
             The colormap for the atlas maps
         vmin: float
@@ -819,7 +832,8 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
         bg_img : Niimg-like object
             See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
             The background image that the ROI/mask will be plotted on top of.
-            If not specified MNI152 template will be used.
+            If nothing is specified, the MNI152 template will be used.
+            To turn off background image, just pass "bg_img=False".
         cut_coords : None, a tuple of floats, or an integer
             The MNI coordinates of the point where the cut is performed
             If display_mode is 'ortho', this should be a 3-tuple: (x, y, z)

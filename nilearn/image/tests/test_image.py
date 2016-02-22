@@ -1,15 +1,17 @@
 """
 Test image pre-processing functions
 """
-from nose.tools import assert_true, assert_false
+from nose.tools import assert_true, assert_false, assert_equal
 from distutils.version import LooseVersion
 from nose import SkipTest
 
 import platform
 import os
 import nibabel
+from nibabel import Nifti1Image
 import numpy as np
 from numpy.testing import assert_array_equal, assert_allclose
+from nilearn._utils.testing import assert_raises_regex
 
 from nilearn.image import image
 from nilearn.image import resampling
@@ -18,6 +20,7 @@ from nilearn._utils import testing, niimg_conversions
 from nilearn.image import new_img_like
 from nilearn.image import threshold_img
 from nilearn.image import iter_img
+from nilearn.image import math_img
 
 X64 = (platform.architecture()[0] == '64bit')
 
@@ -406,13 +409,12 @@ def test_new_img_like():
 
 def test_validity_threshold_value_in_threshold_img():
     shape = (6, 8, 10)
-    maps = testing.generate_maps(shape, n_regions=2)
-    map_0 = maps[0]
+    maps, _ = testing.generate_maps(shape, n_regions=2)
 
     # testing to raise same error when threshold=None case
     testing.assert_raises_regex(ValueError,
                                 "The input parameter 'threshold' is empty. ",
-                                threshold_img, map_0, threshold=None)
+                                threshold_img, maps, threshold=None)
 
     invalid_threshold_values = ['90t%', 's%', 't', '0.1']
     name = 'threshold'
@@ -420,21 +422,71 @@ def test_validity_threshold_value_in_threshold_img():
         testing.assert_raises_regex(ValueError,
                                     '{0}.+should be a number followed by '
                                     'the percent sign'.format(name),
-                                    threshold_img, map_0, threshold=thr)
+                                    threshold_img, maps, threshold=thr)
 
 
 def test_threshold_img():
     # to check whether passes with valid threshold inputs
     shape = (10, 20, 30)
-    maps = testing.generate_maps(shape, n_regions=4)
-    map_0 = maps[0]
+    maps, _ = testing.generate_maps(shape, n_regions=4)
     affine = np.eye(4)
     mask_img = nibabel.Nifti1Image(np.ones((shape), dtype=np.int8), affine)
 
-    for img in iter_img(map_0):
+    for img in iter_img(maps):
         # when threshold is a float value
         thr_maps_img = threshold_img(img, threshold=0.8)
         # when we provide mask image
         thr_maps_percent = threshold_img(img, threshold=1, mask_img=mask_img)
         # when threshold is a percentile
         thr_maps_percent2 = threshold_img(img, threshold='2%')
+
+
+def test_isnan_threshold_img_data():
+    shape = (10, 10, 10)
+    maps, _ = testing.generate_maps(shape, n_regions=2)
+    data = maps.get_data()
+    data[:, :, 0] = np.nan
+
+    maps_img = nibabel.Nifti1Image(data, np.eye(4))
+    # test threshold_img to converge properly when input image has nans.
+    threshold_img(maps_img, threshold=0.8)
+
+
+def test_math_img_exceptions():
+    img1 = Nifti1Image(np.ones((10, 10, 10, 10)), np.eye(4))
+    img2 = Nifti1Image(np.zeros((10, 20, 10, 10)), np.eye(4))
+    img3 = Nifti1Image(np.ones((10, 10, 10, 10)), np.eye(4))
+    img4 = Nifti1Image(np.ones((10, 10, 10, 10)), np.eye(4) * 2)
+
+    formula = "np.mean(img1, axis=-1) - np.mean(img2, axis=-1)"
+    # Images with different shapes should raise a ValueError exception.
+    assert_raises_regex(ValueError,
+                        "Input images cannot be compared",
+                        math_img, formula, img1=img1, img2=img2)
+
+    # Images with different affines should raise a ValueError exception.
+    assert_raises_regex(ValueError,
+                        "Input images cannot be compared",
+                        math_img, formula, img1=img1, img2=img4)
+
+    bad_formula = "np.toto(img1, axis=-1) - np.mean(img3, axis=-1)"
+    assert_raises_regex(AttributeError,
+                        "Input formula couldn't be processed",
+                        math_img, bad_formula, img1=img1, img3=img3)
+
+
+def test_math_img():
+    img1 = Nifti1Image(np.ones((10, 10, 10, 10)), np.eye(4))
+    img2 = Nifti1Image(np.zeros((10, 10, 10, 10)), np.eye(4))
+    expected_result = Nifti1Image(np.ones((10, 10, 10)), np.eye(4))
+
+    formula = "np.mean(img1, axis=-1) - np.mean(img2, axis=-1)"
+    for create_files in (True, False):
+        with testing.write_tmp_imgs(img1, img2,
+                                    create_files=create_files) as imgs:
+            result = math_img(formula, img1=imgs[0], img2=imgs[1])
+            assert_array_equal(result.get_data(),
+                               expected_result.get_data())
+            assert_array_equal(result.get_affine(),
+                               expected_result.get_affine())
+            assert_equal(result.shape, expected_result.shape)

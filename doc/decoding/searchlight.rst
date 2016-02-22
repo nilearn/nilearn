@@ -25,7 +25,7 @@ Loading
 Fetching the data from internet and loading it can be done with the
 provided functions (see :ref:`loading_data`):
 
-.. literalinclude:: ../../examples/decoding/plot_haxby_searchlight.py
+.. literalinclude:: ../../examples/02_decoding/plot_haxby_searchlight.py
     :start-after: # Load Haxby dataset
     :end-before: # Restrict to faces and houses
 
@@ -39,7 +39,7 @@ For this example we need:
 - limit our analysis to the `face` and `house` conditions
   (like in the :ref:`decoding tutorial <decoding_tutorial>`)
 
-.. literalinclude:: ../../examples/decoding/plot_haxby_searchlight.py
+.. literalinclude:: ../../examples/02_decoding/plot_haxby_searchlight.py
     :start-after: # Restrict to faces and houses
     :end-before: # Prepare masks
 
@@ -62,7 +62,7 @@ be used here :
 back of the brain. *mask_img* will ensure that no value outside the brain is
 taken into account when iterating with the sphere.
 
-.. literalinclude:: ../../examples/decoding/plot_haxby_searchlight.py
+.. literalinclude:: ../../examples/02_decoding/plot_haxby_searchlight.py
         :start-after: #   brain to speed up computation)
         :end-before: # Searchlight computation
 
@@ -99,7 +99,7 @@ validation method that does not take too much time.
 *K*-Fold along with *K* = 4 is a
 good compromise between running time and quality.
 
-.. literalinclude:: ../../examples/decoding/plot_haxby_searchlight.py
+.. literalinclude:: ../../examples/02_decoding/plot_haxby_searchlight.py
     :start-after: # set once and the others as learning sets
     :end-before: import nilearn.decoding
 
@@ -112,7 +112,7 @@ parameter left is the radius of the ball that will run through the data.
 Kriegskorte et al. use a 4mm radius because it yielded the best detection
 performance in their simulation.
 
-.. literalinclude:: ../../examples/decoding/plot_haxby_searchlight.py
+.. literalinclude:: ../../examples/02_decoding/plot_haxby_searchlight.py
     :start-after: import nilearn.decoding
     :end-before: # F-scores computation
 	
@@ -127,12 +127,12 @@ background. We can see here that voxels in the visual cortex contains
 information to distinguish pictures showed to the volunteers, which was the
 expected result.
 
-.. literalinclude:: ../../examples/decoding/plot_haxby_searchlight.py
+.. literalinclude:: ../../examples/02_decoding/plot_haxby_searchlight.py
     :start-after: # Visualization
     :end-before: # F_score results
 
-.. figure:: ../auto_examples/decoding/images/sphx_glr_plot_haxby_searchlight_001.png
-   :target: ../auto_examples/decoding/plot_haxby_searchlight.html
+.. figure:: ../auto_examples/02_decoding/images/sphx_glr_plot_haxby_searchlight_001.png
+   :target: ../auto_examples/02_decoding/plot_haxby_searchlight.html
    :align: center
    :scale: 80
 
@@ -149,11 +149,11 @@ parametric tests (F-tests ot t-tests).
 Here we compute the *p-values* of the voxels [1]_.
 To display the results, we use the negative log of the p-value.
 
-.. literalinclude:: ../../examples/decoding/plot_haxby_searchlight.py
+.. literalinclude:: ../../examples/02_decoding/plot_haxby_searchlight.py
     :start-after: # F_score results
 
-.. figure:: ../auto_examples/decoding/images/sphx_glr_plot_haxby_searchlight_002.png
-   :target: ../auto_examples/decoding/plot_haxby_searchlight.html
+.. figure:: ../auto_examples/02_decoding/images/sphx_glr_plot_haxby_searchlight_002.png
+   :target: ../auto_examples/02_decoding/plot_haxby_searchlight.html
    :align: center
    :scale: 80
 
@@ -185,7 +185,7 @@ is its associated p-value. The
 :func:`nilearn.mass_univariate.permuted_ols` function returns the
 p-values computed with a permutation test.
 
-.. literalinclude:: ../../examples/manipulating_visualizing/plot_haxby_mass_univariate.py
+.. literalinclude:: ../../examples/05_advanced/plot_haxby_mass_univariate.py
    :start-after: # Perform massively univariate analysis with permuted OLS
    :end-before: neg_log_pvals_unmasked
 
@@ -206,8 +206,8 @@ every voxel so that the F-statistics are comparable. This correction
 strategy is applied in nilearn
 :func:`nilearn.mass_univariate.permuted_ols` function.
 
-.. figure:: ../auto_examples/manipulating_visualizing/images/sphx_glr_plot_haxby_mass_univariate_001.png
-   :target: ../auto_examples/manipulating_visualizing/plot_haxby_searchlight.html
+.. figure:: ../auto_examples/05_advanced/images/sphx_glr_plot_haxby_mass_univariate_001.png
+   :target: ../auto_examples/05_advanced/plot_haxby_mass_univariate.html
    :align: center
    :scale: 60
 

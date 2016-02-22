@@ -26,20 +26,13 @@ import sphinx_gallery
 # We also add the directory just above to enable local imports of nilearn
 sys.path.insert(0, os.path.abspath('..'))
 
-try:
-    shutil.copy('../AUTHORS.rst', '.')
-except IOError:
-    # When nose scans this file, it is not in the right working
-    # directory, and thus the line above fails
-    pass
-
 # -- General configuration ---------------------------------------------------
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 extensions = ['sphinx.ext.autodoc', 'sphinx.ext.autosummary',
               'sphinx.ext.pngmath', 'sphinx.ext.intersphinx',
-              'numpy_ext.numpydoc',
+              'numpydoc.numpydoc',
               'sphinx_gallery.gen_gallery',
               ]
 
@@ -286,6 +279,12 @@ sphinx_gallery_conf = {
         'nibabel': 'http://nipy.org/nibabel',
         'sklearn': 'http://scikit-learn.org/stable'}
     }
+
+# Get rid of spurious warnings due to some interaction between
+# autosummary and numpydoc. See
+# https://github.com/phn/pytpm/issues/3#issuecomment-12133978 for more
+# details
+numpydoc_show_class_members = False
 
 
 def touch_example_backreferences(app, what, name, obj, options, lines):

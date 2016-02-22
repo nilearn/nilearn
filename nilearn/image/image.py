@@ -603,7 +603,10 @@ def new_img_like(ref_niimg, data, affine=None, copy_header=False):
 
 
 def threshold_img(img, threshold, mask_img=None):
-    """ Thresholds the given input image based on specific strategy.
+    """ Threshold the given input image, mostly statistical or atlas images.
+
+    Thresholding can be done based on direct image intensities or selection
+    threshold with given percentile.
 
     .. versionadded:: 0.2
 
@@ -635,8 +638,10 @@ def threshold_img(img, threshold, mask_img=None):
     from .. import masking
 
     img = check_niimg(img)
-    img_data = _safe_get_data(img).copy()
+    img_data = img.get_data()
     affine = img.get_affine()
+
+    img_data = np.nan_to_num(img_data)
 
     if mask_img is not None:
         if not _check_same_fov(img, mask_img):
@@ -660,3 +665,82 @@ def threshold_img(img, threshold, mask_img=None):
     threshold_img = new_img_like(img, img_data, affine)
 
     return threshold_img
+
+
+def math_img(formula, **imgs):
+    """Interpret a numpy based string formula using niimg in named parameters.
+
+    .. versionadded:: 0.2.3
+
+    Parameters
+    ----------
+    formula: str
+        The mathematical formula to apply to image internal data. It can use
+        numpy imported as 'np'.
+    imgs: images (Nifti1Image or file names)
+        Keyword arguments corresponding to the variables in the formula as
+        Nifti images. All input images should have the same geometry (shape,
+        affine).
+
+    Returns
+    -------
+    return_img: Nifti1Image
+        Result of the formula as a Nifti image. Note that the dimension of the
+        result image can be smaller than the input image. The affine is the
+        same as the input image.
+
+    Examples
+    --------
+    Let's load an image using nilearn datasets module::
+
+     >>> from nilearn import datasets
+     >>> anatomical_image = datasets.load_mni152_template()
+
+    Now we can use any numpy function on this image::
+
+     >>> from nilearn.image import math_img
+     >>> log_img = math_img("np.log(img)", img=anatomical_image)
+
+    We can also apply mathematical operations on a list of images::
+
+     >>> result_img = math_img("img1 + img2",
+     ...                       img1=anatomical_image, img2=log_img)
+
+    Notes
+    -----
+
+    This function is the Python equivalent of ImCal in SPM or fslmaths
+    in FSL.
+
+    """
+    try:
+        # Check that input images are valid niimg and have a compatible shape
+        # and affine.
+        niimgs = []
+        for image in imgs.values():
+            niimgs.append(check_niimg(image))
+        _check_same_fov(*niimgs, raise_error=True)
+    except Exception as exc:
+        exc.args = (("Input images cannot be compared, you provided '{0}',"
+                     .format(imgs.values()),) + exc.args)
+        raise
+
+    # Computing input data as a dictionary of numpy arrays. Keep a reference
+    # niimg for building the result as a new niimg.
+    niimg = None
+    data_dict = {}
+    for key, img in imgs.items():
+        niimg = check_niimg(img)
+        data_dict[key] = _safe_get_data(niimg)
+
+    # Add a reference to numpy in the kwargs of eval so that numpy functions
+    # can be called from there.
+    data_dict['np'] = np
+    try:
+        result = eval(formula, data_dict)
+    except Exception as exc:
+        exc.args = (("Input formula couldn't be processed, you provided '{0}',"
+                     .format(formula),) + exc.args)
+        raise
+
+    return new_img_like(niimg, result, niimg.get_affine())

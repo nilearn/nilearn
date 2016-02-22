@@ -20,3 +20,5 @@ try:
     from sklearn.metrics import roc_auc_score
 except ImportError:
     from sklearn.metrics import auc as roc_auc_score
+
+__all__ = ['f_regression', 'atleast2d_or_csr', 'roc_auc_score']

@@ -45,15 +45,16 @@ at 2mm, and with a threshold of a probability of .25::
 
   from nilearn import datasets
   dataset = datasets.fetch_atlas_harvard_oxford('cort-maxprob-thr25-2mm')
-  atlas_filename, labels = dataset.maps, dataset.labels
+  atlas_filename = dataset.maps
+  labels = dataset.labels
 
 Plotting can then be done as::
 
     from nilearn import plotting
     plotting.plot_roi(atlas_filename)
 
-.. image:: ../auto_examples/manipulating_visualizing/images/sphx_glr_plot_atlas_001.png
-   :target: ../auto_examples/manipulating_visualizing/plot_atlas.html
+.. image:: ../auto_examples/01_plotting/images/sphx_glr_plot_atlas_001.png
+   :target: ../auto_examples/01_plotting/plot_atlas.html
    :scale: 60
 
 .. seealso::
@@ -89,17 +90,17 @@ obtain time series that capture well the functional interactions between
 regions, regressing out noise sources is indeed very important
 `[Varoquaux & Craddock 2013] <https://hal.inria.fr/hal-00812911/>`_.
 
-.. image:: ../auto_examples/connectivity/images/sphx_glr_plot_signal_extraction_001.png
-   :target: ../auto_examples/connectivity/plot_signal_extraction.html
+.. image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_signal_extraction_001.png
+   :target: ../auto_examples/03_connectivity/plot_signal_extraction.html
    :scale: 40
-.. image:: ../auto_examples/connectivity/images/sphx_glr_plot_signal_extraction_002.png
-   :target: ../auto_examples/connectivity/plot_signal_extraction.html
+.. image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_signal_extraction_002.png
+   :target: ../auto_examples/03_connectivity/plot_signal_extraction.html
    :scale: 40
 
 .. topic:: **Full example**
 
     See the following example for a full file running the analysis:
-    :ref:`sphx_glr_auto_examples_connectivity_plot_signal_extraction.py`
+    :ref:`sphx_glr_auto_examples_03_connectivity_plot_signal_extraction.py`
 
 
 .. topic:: **Exercise: computing the correlation matrix of rest fmri**
@@ -138,10 +139,10 @@ atlas well suited to resting-state data analysis is the `MSDL atlas
 Probabilistic atlases are represented as a set of continuous maps, in a
 4D nifti image. Visualization the atlas thus requires to visualize each
 of these maps, which requires accessing them with
-:func:`nilearn.image.index_img` (see the :ref:`corresponding example <sphx_glr_auto_examples_manipulating_visualizing_plot_overlay.py>`).
+:func:`nilearn.image.index_img` (see the :ref:`corresponding example <sphx_glr_auto_examples_01_plotting_plot_overlay.py>`).
 
-.. image:: ../auto_examples/manipulating_visualizing/images/sphx_glr_plot_overlay_001.png
-   :target: ../auto_examples/manipulating_visualizing/plot_overlay.html
+.. image:: ../auto_examples/01_plotting/images/sphx_glr_plot_overlay_001.png
+   :target: ../auto_examples/01_plotting/plot_overlay.html
    :scale: 60
 
 
@@ -167,15 +168,15 @@ The procedure is the same as with `brain parcellations
 <parcellation_time_series>`_ but using the :class:`NiftiMapsMasker`, and
 the same considerations on using confounds regressors apply.
 
-.. image:: ../auto_examples/connectivity/images/sphx_glr_plot_probabilistic_atlas_extraction_001.png
-   :target: ../auto_examples/connectivity/plot_probabilistic_atlas_extraction.html
+.. image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_probabilistic_atlas_extraction_001.png
+   :target: ../auto_examples/03_connectivity/plot_probabilistic_atlas_extraction.html
    :scale: 30
 
 
 .. topic:: **Full example**
 
     A full example of extracting signals on a probabilistic:
-    :ref:`sphx_glr_auto_examples_connectivity_plot_probabilistic_atlas_extraction.py`
+    :ref:`sphx_glr_auto_examples_03_connectivity_plot_probabilistic_atlas_extraction.py`
 
 
 .. topic:: **Exercise: correlation matrix of rest fmri on probabilistic atlas**
@@ -203,7 +204,7 @@ function that take the matrix, and coordinates of the nodes in MNI space.
 In the case of the MSDL atlas
 (:func:`nilearn.datasets.fetch_atlas_msdl`), the CSV file readily comes
 with MNI coordinates for each region (see for instance example:
-:ref:`sphx_glr_auto_examples_connectivity_plot_probabilistic_atlas_extraction.py`).
+:ref:`sphx_glr_auto_examples_03_connectivity_plot_probabilistic_atlas_extraction.py`).
 
 ..
     For doctesting
@@ -214,15 +215,15 @@ with MNI coordinates for each region (see for instance example:
 For another atlas this information can be computed for each region with
 the :func:`nilearn.plotting.find_xyz_cut_coords` function
 (see example:
-:ref:`sphx_glr_auto_examples_connectivity_plot_multi_subject_connectome.py`)::
+:ref:`sphx_glr_auto_examples_03_connectivity_plot_multi_subject_connectome.py`)::
 
  >>> from nilearn import image, plotting
  >>> atlas_region_coords = [plotting.find_xyz_cut_coords(img) for img in image.iter_img(atlas_filename)] # doctest: +SKIP
 
 
 
-.. image:: ../auto_examples/connectivity/images/sphx_glr_plot_probabilistic_atlas_extraction_002.png
-   :target: ../auto_examples/connectivity/plot_probabilistic_atlas_extraction.html
+.. image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_probabilistic_atlas_extraction_002.png
+   :target: ../auto_examples/03_connectivity/plot_probabilistic_atlas_extraction.html
 
 As you can see, the correlation matrix gives a very "full" graph: every
 node is connected to every other one. This is because is also captures

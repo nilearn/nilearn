@@ -66,37 +66,37 @@ technical details regarding the implementation of SpaceNet.
 Mixed gambles
 .............
 
-.. figure:: ../auto_examples/decoding/images/sphx_glr_plot_mixed_gambles_space_net_001.png
+.. figure:: ../auto_examples/02_decoding/images/sphx_glr_plot_mixed_gambles_space_net_001.png
    :align: right
    :scale: 60
 
-.. figure:: ../auto_examples/decoding/images/sphx_glr_plot_mixed_gambles_space_net_002.png
+.. figure:: ../auto_examples/02_decoding/images/sphx_glr_plot_mixed_gambles_space_net_002.png
    :scale: 60
 
 .. topic:: **Code**
 
     The complete script can be found
-    :ref:`here <sphx_glr_auto_examples_decoding_plot_mixed_gambles_space_net.py>`.
+    :ref:`here <sphx_glr_auto_examples_02_decoding_plot_mixed_gambles_space_net.py>`.
 
 
 Haxby
 .....
 
-.. figure:: ../auto_examples/decoding/images/sphx_glr_plot_haxby_space_net_001.png
+.. figure:: ../auto_examples/02_decoding/images/sphx_glr_plot_haxby_space_net_001.png
    :align: right
    :scale: 60
 
-.. figure:: ../auto_examples/decoding/images/sphx_glr_plot_haxby_space_net_002.png
+.. figure:: ../auto_examples/02_decoding/images/sphx_glr_plot_haxby_space_net_002.png
    :scale: 60
 
 .. topic:: **Code**
 
     The complete script can be found
-    :ref:`here <sphx_glr_auto_examples_decoding_plot_haxby_space_net.py>`.
+    :ref:`here <sphx_glr_auto_examples_02_decoding_plot_haxby_space_net.py>`.
 
 .. seealso::
 
-     * :ref:`Age prediction on OASIS dataset with SpaceNet <sphx_glr_auto_examples_decoding_plot_oasis_vbm_space_net.py>`.
+     * :ref:`Age prediction on OASIS dataset with SpaceNet <sphx_glr_auto_examples_02_decoding_plot_oasis_vbm_space_net.py>`.
 
      * The `scikit-learn documentation <http://scikit-learn.org>`_
        has very detailed explanations on a large variety of estimators and

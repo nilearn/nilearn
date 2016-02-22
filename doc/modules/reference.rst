@@ -66,10 +66,12 @@ uses.
    fetch_atlas_destrieux_2009
    fetch_atlas_harvard_oxford
    fetch_atlas_msdl
-   fetch_atlas_power_2011
+   fetch_coords_power_2011
    fetch_atlas_smith_2009
    fetch_atlas_yeo_2011
    fetch_atlas_aal
+   fetch_atlas_basc_multiscale_2015
+   fetch_coords_dosenbach_2010
    fetch_abide_pcp
    fetch_adhd
    fetch_haxby
@@ -80,6 +82,9 @@ uses.
    fetch_miyawaki2008
    fetch_nyu_rest
    fetch_oasis_vbm
+   fetch_megatrawls_netmats
+   fetch_cobre
+   load_mni152_template
 
 .. _decoding_ref:
 
@@ -145,6 +150,7 @@ uses.
    iter_img
    high_variance_confounds
    mean_img
+   math_img
    new_img_like
    resample_img
    reorder_img

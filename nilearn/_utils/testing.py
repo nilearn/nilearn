@@ -1,6 +1,5 @@
-"""Utilities for testing nilearn.
-"""
-# Author: Alexandre Abrahame, Philippe Gervais
+"""Utilities for testing nilearn."""
+# Author: Alexandre Abraham, Philippe Gervais
 # License: simplified BSD
 import contextlib
 import functools
@@ -10,6 +9,7 @@ import re
 import sys
 import tempfile
 import warnings
+import gc
 
 import numpy as np
 import scipy.signal
@@ -58,6 +58,69 @@ except ImportError:
             warnings.simplefilter("ignore", warning_class)
             output = func(*args, **kw)
         return output
+
+
+# we use memory_profiler library for memory consumption checks
+try:
+    from memory_profiler import memory_usage
+
+    def with_memory_profiler(func):
+        """A decorator to skip tests requiring memory_profiler."""
+        return func
+
+    def memory_used(func, *args, **kwargs):
+        """Compute memory usage when executing func."""
+        def func_3_times(*args, **kwargs):
+            for _ in range(3):
+                func(*args, **kwargs)
+
+        gc.collect()
+        mem_use = memory_usage((func_3_times, args, kwargs), interval=0.001)
+        return max(mem_use) - min(mem_use)
+
+except ImportError:
+    def with_memory_profiler(func):
+        """A decorator to skip tests requiring memory_profiler."""
+        def dummy_func():
+            import nose
+            raise nose.SkipTest('Test requires memory_profiler.')
+        return dummy_func
+
+    memory_usage = memory_used = None
+
+
+def assert_memory_less_than(memory_limit, tolerance,
+                            callable_obj, *args, **kwargs):
+    """Check memory consumption of a callable stays below a given limit.
+
+    Parameters
+    ----------
+    memory_limit : int
+        The expected memory limit in MiB.
+    tolerance: float
+        As memory_profiler results have some variability, this adds some
+        tolerance around memory_limit. Accepted values are in range [0.0, 1.0].
+    callable_obj: callable
+        The function to be called to check memory consumption.
+
+    """
+    mem_used = memory_used(callable_obj, *args, **kwargs)
+
+    if mem_used > memory_limit * (1 + tolerance):
+        raise ValueError("Memory consumption measured ({0:.2f} MiB) is "
+                         "greater than required memory limit ({1} MiB) within "
+                         "accepted tolerance ({2:.2f}%)."
+                         "".format(mem_used, memory_limit, tolerance * 100))
+
+    # We are confident in memory_profiler measures above 100MiB.
+    # We raise an error if the measure is below the limit of 50MiB to avoid
+    # false positive.
+    if mem_used < 50:
+        raise ValueError("Memory profiler measured an untrustable memory "
+                         "consumption ({0:.2f} MiB). The expected memory "
+                         "limit was {1:.2f} MiB. Try to bench with larger "
+                         "objects (at least 100MiB in memory).".
+                         format(mem_used, memory_limit))
 
 
 class MockRequest(object):
@@ -197,7 +260,7 @@ class FetchFilesMock (object):
 
     def add_csv(self, filename, content):
         self.csv_files[filename] = content
-
+    
     def __call__(self, *args, **kwargs):
         """Load requested dataset, downloading it if needed or requested.
 
@@ -623,8 +686,7 @@ def is_nose_running():
         return False
     # Now check that we have the loader in the call stask
     stack = inspect.stack()
-    from nose import loader
-    loader_file_name = loader.__file__
+    loader_file_name = nose.loader.__file__
     if loader_file_name.endswith('.pyc'):
         loader_file_name = loader_file_name[:-1]
     for _, file_name, _, _, _, _ in stack:

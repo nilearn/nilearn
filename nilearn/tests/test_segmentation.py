@@ -54,3 +54,20 @@ def test_bad_inputs():
     labels[6, 8] = 5
     np.testing.assert_raises(ValueError,
                              _random_walker, img, labels, spacing=(1,))
+
+
+def test_reorder_labels():
+    # When labels have non-consecutive integers, we make them consecutive
+    # by reordering them to make no gaps/differences between integers. We expect
+    # labels to be of same shape even if they are reordered.
+    # Issue #938, comment #14.
+    data = np.zeros((5, 5)) + 0.1 * np.random.randn(5, 5)
+    data[1:5, 1:5] = 1
+
+    labels = np.zeros_like(data)
+    labels[3, 3] = 1
+    labels[1, 4] = 4 # giving integer which is non-consecutive
+
+    labels = _random_walker(data, labels)
+    assert data.shape == labels.shape
+
