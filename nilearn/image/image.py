@@ -436,6 +436,10 @@ def mean_img(imgs, target_affine=None, target_shape=None,
     mean: nibabel.Nifti1Image
         mean image
 
+    See Also
+    --------
+    nilearn.image.math_img : For more general operations on images
+
     """
     if (isinstance(imgs, _basestring) or
             not isinstance(imgs, collections.Iterable)):
@@ -689,6 +693,10 @@ def math_img(formula, **imgs):
         result image can be smaller than the input image. The affine is the
         same as the input image.
 
+    See Also
+    --------
+    nilearn.image.mean_img : To simply compute the mean of multiple images
+
     Examples
     --------
     Let's load an image using nilearn datasets module::
@@ -701,7 +709,7 @@ def math_img(formula, **imgs):
      >>> from nilearn.image import math_img
      >>> log_img = math_img("np.log(img)", img=anatomical_image)
 
-    We can also apply mathematical operations on a list of images::
+    We can also apply mathematical operations on several images::
 
      >>> result_img = math_img("img1 + img2",
      ...                       img1=anatomical_image, img2=log_img)
