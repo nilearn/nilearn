@@ -289,6 +289,8 @@ class GlassBrainAxes(BaseAxes):
             kwargs: dict
                 additional arguments to pass to matplotlib Line2D.
         """
+        # colormap for colorbar
+        self.cmap = cmap
         if vmin is None and vmax is None:
             abs_line_values_max = np.abs(line_values).max()
             vmin = -abs_line_values_max
@@ -311,6 +313,8 @@ class GlassBrainAxes(BaseAxes):
                 )
         norm = colors.Normalize(vmin=vmin,
                                 vmax=vmax)
+        # normalization useful for colorbar
+        self.norm = norm
         abs_norm = colors.Normalize(vmin=0,
                                     vmax=vmax)
         value_to_color = plt.cm.ScalarMappable(norm=norm, cmap=cmap).to_rgba
@@ -513,7 +517,7 @@ class BaseSlicer(object):
         ims = self._map_show(img, type='imshow', threshold=threshold, **kwargs)
 
         if colorbar:
-            self._colorbar_show(ims[0], threshold)
+            self._show_colorbar(ims[0].cmap, ims[0].norm, threshold)
 
         plt.draw_if_interactive()
 
@@ -604,13 +608,24 @@ class BaseSlicer(object):
                 ims.append(im)
         return ims
 
-    def _colorbar_show(self, im, threshold):
+    def _show_colorbar(self, cmap, norm, threshold=None):
+        """
+        Parameters
+        ==========
+        cmap: a matplotlib colormap
+            The colormap used
+        norm: a matplotlib.colors.Normalize object
+            This object is typically found as the 'norm' attribute of an
+            matplotlib.image.AxesImage
+        threshold: float or None
+            The absolute value at which the colorbar is thresholded
+        """
         if threshold is None:
             offset = 0
         else:
             offset = threshold
-        if offset > im.norm.vmax:
-            offset = im.norm.vmax
+        if offset > norm.vmax:
+            offset = norm.vmax
 
         # create new  axis for the colorbar
         figure = self.frame_axes.figure
@@ -625,27 +640,27 @@ class BaseSlicer(object):
                                    self._colorbar_margin['bottom'])]
         self._colorbar_ax = figure.add_axes(lt_wid_top_ht, axis_bgcolor='w')
 
-        our_cmap = im.cmap
+        our_cmap = cmap
         # edge case where the data has a single value
         # yields a cryptic matplotlib error message
         # when trying to plot the color bar
-        nb_ticks = 5 if im.norm.vmin != im.norm.vmax else 1
-        ticks = np.linspace(im.norm.vmin, im.norm.vmax, nb_ticks)
-        bounds = np.linspace(im.norm.vmin, im.norm.vmax, our_cmap.N)
+        nb_ticks = 5 if norm.vmin != norm.vmax else 1
+        ticks = np.linspace(norm.vmin, norm.vmax, nb_ticks)
+        bounds = np.linspace(norm.vmin, norm.vmax, our_cmap.N)
 
         # some colormap hacking
         cmaplist = [our_cmap(i) for i in range(our_cmap.N)]
-        istart = int(im.norm(-offset, clip=True) * (our_cmap.N - 1))
-        istop = int(im.norm(offset, clip=True) * (our_cmap.N - 1))
+        istart = int(norm(-offset, clip=True) * (our_cmap.N - 1))
+        istop = int(norm(offset, clip=True) * (our_cmap.N - 1))
         for i in range(istart, istop):
             cmaplist[i] = (0.5, 0.5, 0.5, 1.)  # just an average gray color
-        if im.norm.vmin == im.norm.vmax:  # len(np.unique(data)) == 1 ?
+        if norm.vmin == norm.vmax:  # len(np.unique(data)) == 1 ?
             return
         else:
             our_cmap = our_cmap.from_list('Custom cmap', cmaplist, our_cmap.N)
 
         self._cbar = ColorbarBase(
-            self._colorbar_ax, ticks=ticks, norm=im.norm,
+            self._colorbar_ax, ticks=ticks, norm=norm,
             orientation='vertical', cmap=our_cmap, boundaries=bounds,
             spacing='proportional', format='%.2g')
 
@@ -1090,7 +1105,8 @@ class OrthoProjector(OrthoSlicer):
                   edge_cmap=cm.bwr,
                   edge_vmin=None, edge_vmax=None,
                   edge_threshold=None,
-                  edge_kwargs=None, node_kwargs=None):
+                  edge_kwargs=None, node_kwargs=None, colorbar=False,
+                  ):
         """Plot undirected graph on each of the axes
 
             Parameters
@@ -1216,6 +1232,10 @@ class OrthoProjector(OrthoSlicer):
                 ax._add_lines(line_coords, adjacency_matrix_values, edge_cmap,
                               vmin=edge_vmin, vmax=edge_vmax,
                               **edge_kwargs)
+
+        if colorbar:
+            self._colorbar = colorbar
+            self._show_colorbar(ax.cmap, ax.norm, threshold=edge_threshold)
 
         plt.draw_if_interactive()
 
