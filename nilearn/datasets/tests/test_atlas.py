@@ -234,15 +234,15 @@ def test_fetch_atlas_msdl():
     os.mkdir(datadir)
     os.mkdir(os.path.join(datadir, 'MSDL_rois'))
     data_dir = os.path.join(datadir, 'MSDL_rois', 'msdl_rois_labels.csv')
+    csv = np.rec.array([(1.5, 1.5, 1.5, 'Aud', 'Aud'),
+                        (1.2, 1.3, 1.4, 'DMN', 'DMN')],
+                       dtype=[('x', '<f8'), ('y', '<f8'),
+                              ('z', '<f8'), ('name', 'S12'),
+                              ('net_name', 'S19')])
     with open(data_dir, 'w') as csv_file:
-        fieldnames = ['x', 'y', 'z', 'name', 'net_name']
-        writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
-        writer.writeheader()
-        writer.writerow(
-            {'x': 1.5, 'y': 1.5, 'z': 1.5, 'name': 'Aud', 'net_name': 'Aud'})
-        writer.writerow(
-            {'x': 1.2, 'y': 1.3, 'z': 1.1, 'name': 'DMN', 'net_name': 'DMN'})
-        del writer
+        header = '{0}\n'.format(','.join(csv.dtype.names))
+        csv_file.write(header.encode())
+        np.savetxt(csv_file, csv, delimiter=',', fmt='%s')
 
     dataset = atlas.fetch_atlas_msdl(data_dir=tst.tmpdir, verbose=0)
     assert_true(isinstance(dataset.labels, list))
