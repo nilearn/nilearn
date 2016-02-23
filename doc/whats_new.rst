@@ -8,6 +8,7 @@ New features
 ............
     - plotting plot_connectome with colorbar is now implemented in function
       :func:`nilearn.plotting.plot_connectome`
+
 API changes summary
 ...................
     - Atlas fetcher :func:`nilearn.datasets.fetch_atlas_msdl` now returns directly
