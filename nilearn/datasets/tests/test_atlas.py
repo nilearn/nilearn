@@ -239,9 +239,9 @@ def test_fetch_atlas_msdl():
                        dtype=[('x', '<f8'), ('y', '<f8'),
                               ('z', '<f8'), ('name', 'S12'),
                               ('net_name', 'S19')])
-    with open(data_dir, 'w') as csv_file:
+    with open(data_dir, 'wb') as csv_file:
         header = '{0}\n'.format(','.join(csv.dtype.names))
-        csv_file.write(header)
+        csv_file.write(header.encode())
         np.savetxt(csv_file, csv, delimiter=',', fmt='%s')
 
     dataset = atlas.fetch_atlas_msdl(data_dir=tst.tmpdir, verbose=0)
