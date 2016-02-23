@@ -241,7 +241,7 @@ def test_fetch_atlas_msdl():
                               ('net_name', 'S19')])
     with open(data_dir, 'w') as csv_file:
         header = '{0}\n'.format(','.join(csv.dtype.names))
-        csv_file.write(header.encode())
+        csv_file.write(header.decode())
         np.savetxt(csv_file, csv, delimiter=',', fmt='%s')
 
     dataset = atlas.fetch_atlas_msdl(data_dir=tst.tmpdir, verbose=0)
