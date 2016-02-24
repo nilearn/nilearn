@@ -145,6 +145,7 @@ uses.
    :template: function.rst
 
    crop_img
+   concat_imgs
    copy_img
    index_img
    iter_img
