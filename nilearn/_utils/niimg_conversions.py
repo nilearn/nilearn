@@ -396,6 +396,11 @@ def concat_niimgs(niimgs, dtype=np.float32, ensure_ndim=None,
     -------
     concatenated: nibabel.Nifti1Image
         A single image.
+
+    See Also
+    --------
+    nilearn.image.index_img
+    
     """
     from ..image import new_img_like  # avoid circular imports
 
