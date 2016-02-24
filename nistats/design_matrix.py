@@ -313,9 +313,9 @@ def make_design_matrix(
             add_regs = np.reshape(add_regs, (np.size(add_regs), 1))
         n_add_regs = add_regs.shape[1]
         assert add_regs.shape[0] == np.size(frame_times), ValueError(
-            'incorrect specification of additional regressors: '
-            'length of regressors provided: %s, number of ' +
-            'time-frames: %s' % (add_regs.shape[0], np.size(frame_times)))
+            'Incorrect specification of additional regressors: '
+            'length of regressors provided: %d, number of '
+            'time-frames: %d' % (add_regs.shape[0], np.size(frame_times)))
 
     # check that additional regressor names are well specified
     if add_reg_names is None:
@@ -323,8 +323,8 @@ def make_design_matrix(
     elif len(add_reg_names) != n_add_regs:
         raise ValueError(
             'Incorrect number of additional regressor names was provided'
-            '(%s provided, %s expected) % (len(add_reg_names),'
-            'n_add_regs)')
+            '(%d provided, %d expected' % (len(add_reg_names),
+            n_add_regs))
 
     # computation of the matrix
     names = []
