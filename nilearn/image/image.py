@@ -541,7 +541,8 @@ def index_img(imgs, index):
 
      >>> from nilearn import datasets
      >>> from nilearn.image import concat_imgs, index_img
-     >>> joint_mni_image = concat_imgs([datasets.load_mni152_template(), datasets.load_mni152_template()])
+     >>> joint_mni_image = concat_imgs([datasets.load_mni152_template(), \
+         datasets.load_mni152_template()])
      >>> print(joint_mni_image.shape)
      (91, 109, 91, 2)
 
