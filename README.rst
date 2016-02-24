@@ -44,9 +44,9 @@ If you want to run the tests, you need nose >= 1.2.1 and coverage >= 3.6.
 Install
 =======
 
-In order to perform the installation, run the following command from the nistats directory:
+In order to perform the installation, run the following command from the nistats directory::
 
-python setup.py install --user
+    python setup.py install --user
 
 
 Development
