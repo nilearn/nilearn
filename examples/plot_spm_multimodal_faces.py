@@ -3,6 +3,12 @@ Minimal script for preprocessing single-subject data (two session)
 
 Author: DOHMATOB Elvis, Bertrand Thirion, 2015
 
+For details on the data, please see:
+Henson, R.N., Goshen-Gottstein, Y., Ganel, T., Otten, L.J., Quayle, A.,
+Rugg, M.D. Electrophysiological and haemodynamic correlates of face
+perception, recognition and priming. Cereb Cortex. 2003 Jul;13(7):793-805.
+http://www.dx.doi.org/10.1093/cercor/13.7.793
+
 Note: this example takes a lot of time because the input are lists of 3D images
 sampled in different position (encoded by different) affine functions.
 """
