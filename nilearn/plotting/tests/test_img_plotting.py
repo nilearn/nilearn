@@ -504,26 +504,22 @@ def test_plot_prob_atlas():
 
 
 def test_get_colorbar_and_data_ranges_with_vmin():
-    affine = np.eye(4)
     data = np.array([[-.5, 1., np.nan],
                      [0., np.nan, -.2],
                      [1.5, 2.5, 3.]])
-    img = nibabel.Nifti1Image(data, affine)
 
     assert_raises_regex(ValueError,
                         'does not accept a "vmin" argument',
                         _get_colorbar_and_data_ranges,
-                        img, vmax=None,
+                        data, vmax=None,
                         symmetric_cbar=True, kwargs={'vmin': 1.})
 
 
 def test_get_colorbar_and_data_ranges_pos_neg():
     # data with positive and negative range
-    affine = np.eye(4)
     data = np.array([[-.5, 1., np.nan],
                      [0., np.nan, -.2],
                      [1.5, 2.5, 3.]])
-    img = nibabel.Nifti1Image(data, affine)
 
     # Reasonable additional arguments that would end up being passed
     # to imshow in a real plotting use case
@@ -531,7 +527,7 @@ def test_get_colorbar_and_data_ranges_pos_neg():
 
     # symmetric_cbar set to True
     cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
-        img, vmax=None,
+        data, vmax=None,
         symmetric_cbar=True,
         kwargs=kwargs)
     assert_equal(vmin, -np.nanmax(data))
@@ -540,7 +536,7 @@ def test_get_colorbar_and_data_ranges_pos_neg():
     assert_equal(cbar_vmax, None)
     # same case if vmax has been set
     cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
-        img, vmax=2,
+        data, vmax=2,
         symmetric_cbar=True,
         kwargs=kwargs)
     assert_equal(vmin, -2)
@@ -550,7 +546,7 @@ def test_get_colorbar_and_data_ranges_pos_neg():
 
     # symmetric_cbar is set to False
     cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
-        img, vmax=None,
+        data, vmax=None,
         symmetric_cbar=False,
         kwargs=kwargs)
     assert_equal(vmin, -np.nanmax(data))
@@ -559,7 +555,7 @@ def test_get_colorbar_and_data_ranges_pos_neg():
     assert_equal(cbar_vmax, np.nanmax(data))
     # same case if vmax has been set
     cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
-        img, vmax=2,
+        data, vmax=2,
         symmetric_cbar=False,
         kwargs=kwargs)
     assert_equal(vmin, -2)
@@ -569,7 +565,7 @@ def test_get_colorbar_and_data_ranges_pos_neg():
 
     # symmetric_cbar is set to 'auto', same behaviours as True for this case
     cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
-        img, vmax=None,
+        data, vmax=None,
         symmetric_cbar='auto',
         kwargs=kwargs)
     assert_equal(vmin, -np.nanmax(data))
@@ -578,7 +574,7 @@ def test_get_colorbar_and_data_ranges_pos_neg():
     assert_equal(cbar_vmax, None)
     # same case if vmax has been set
     cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
-        img, vmax=2,
+        data, vmax=2,
         symmetric_cbar='auto',
         kwargs=kwargs)
     assert_equal(vmin, -2)
@@ -589,15 +585,13 @@ def test_get_colorbar_and_data_ranges_pos_neg():
 
 def test_get_colorbar_and_data_ranges_pos():
     # data with positive range
-    affine = np.eye(4)
     data_pos = np.array([[0, 1., np.nan],
                          [0., np.nan, 0],
                          [1.5, 2.5, 3.]])
-    img_pos = nibabel.Nifti1Image(data_pos, affine)
 
     # symmetric_cbar set to True
     cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
-        img_pos, vmax=None,
+        data_pos, vmax=None,
         symmetric_cbar=True,
         kwargs={})
     assert_equal(vmin, -np.nanmax(data_pos))
@@ -606,7 +600,7 @@ def test_get_colorbar_and_data_ranges_pos():
     assert_equal(cbar_vmax, None)
     # same case if vmax has been set
     cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
-        img_pos, vmax=2,
+        data_pos, vmax=2,
         symmetric_cbar=True,
         kwargs={})
     assert_equal(vmin, -2)
@@ -616,7 +610,7 @@ def test_get_colorbar_and_data_ranges_pos():
 
     # symmetric_cbar is set to False
     cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
-        img_pos, vmax=None,
+        data_pos, vmax=None,
         symmetric_cbar=False,
         kwargs={})
     assert_equal(vmin, -np.nanmax(data_pos))
@@ -625,7 +619,7 @@ def test_get_colorbar_and_data_ranges_pos():
     assert_equal(cbar_vmax, None)
     # same case if vmax has been set
     cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
-        img_pos, vmax=2,
+        data_pos, vmax=2,
         symmetric_cbar=False,
         kwargs={})
     assert_equal(vmin, -2)
@@ -635,7 +629,7 @@ def test_get_colorbar_and_data_ranges_pos():
 
     # symmetric_cbar is set to 'auto', same behaviour as false in this case
     cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
-        img_pos, vmax=None,
+        data_pos, vmax=None,
         symmetric_cbar='auto',
         kwargs={})
     assert_equal(vmin, -np.nanmax(data_pos))
@@ -644,7 +638,7 @@ def test_get_colorbar_and_data_ranges_pos():
     assert_equal(cbar_vmax, None)
     # same case if vmax has been set
     cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
-        img_pos, vmax=2,
+        data_pos, vmax=2,
         symmetric_cbar='auto',
         kwargs={})
     assert_equal(vmin, -2)
@@ -655,15 +649,13 @@ def test_get_colorbar_and_data_ranges_pos():
 
 def test_get_colorbar_and_data_ranges_neg():
     # data with negative range
-    affine = np.eye(4)
     data_neg = np.array([[-.5, 0, np.nan],
                          [0., np.nan, -.2],
                          [0, 0, 0]])
-    img_neg = nibabel.Nifti1Image(data_neg, affine)
 
     # symmetric_cbar set to True
     cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
-        img_neg, vmax=None,
+        data_neg, vmax=None,
         symmetric_cbar=True,
         kwargs={})
     assert_equal(vmin, np.nanmin(data_neg))
@@ -672,7 +664,7 @@ def test_get_colorbar_and_data_ranges_neg():
     assert_equal(cbar_vmax, None)
     # same case if vmax has been set
     cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
-        img_neg, vmax=2,
+        data_neg, vmax=2,
         symmetric_cbar=True,
         kwargs={})
     assert_equal(vmin, -2)
@@ -682,7 +674,7 @@ def test_get_colorbar_and_data_ranges_neg():
 
     # symmetric_cbar is set to False
     cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
-        img_neg, vmax=None,
+        data_neg, vmax=None,
         symmetric_cbar=False,
         kwargs={})
     assert_equal(vmin, np.nanmin(data_neg))
@@ -691,7 +683,7 @@ def test_get_colorbar_and_data_ranges_neg():
     assert_equal(cbar_vmax, 0)
     # same case if vmax has been set
     cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
-        img_neg, vmax=2,
+        data_neg, vmax=2,
         symmetric_cbar=False,
         kwargs={})
     assert_equal(vmin, -2)
@@ -701,7 +693,7 @@ def test_get_colorbar_and_data_ranges_neg():
 
     # symmetric_cbar is set to 'auto', same behaviour as False in this case
     cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
-        img_neg, vmax=None,
+        data_neg, vmax=None,
         symmetric_cbar='auto',
         kwargs={})
     assert_equal(vmin, np.nanmin(data_neg))
@@ -710,7 +702,7 @@ def test_get_colorbar_and_data_ranges_neg():
     assert_equal(cbar_vmax, 0)
     # same case if vmax has been set
     cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
-        img_neg, vmax=2,
+        data_neg, vmax=2,
         symmetric_cbar='auto',
         kwargs={})
     assert_equal(vmin, -2)
@@ -721,7 +713,6 @@ def test_get_colorbar_and_data_ranges_neg():
 
 def test_get_colorbar_and_data_ranges_masked_array():
     # data with positive and negative range
-    affine = np.eye(4)
     data = np.array([[-.5, 1., np.nan],
                      [0., np.nan, -.2],
                      [1.5, 2.5, 3.]])
@@ -729,15 +720,13 @@ def test_get_colorbar_and_data_ranges_masked_array():
     # Easier to fill masked values with NaN to test against later on
     filled_data = masked_data.filled(np.nan)
 
-    img = nibabel.Nifti1Image(masked_data, affine)
-
     # Reasonable additional arguments that would end up being passed
     # to imshow in a real plotting use case
     kwargs = {'aspect': 'auto', 'alpha': 0.9}
 
     # symmetric_cbar set to True
     cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
-        img, vmax=None,
+        masked_data, vmax=None,
         symmetric_cbar=True,
         kwargs=kwargs)
     assert_equal(vmin, -np.nanmax(filled_data))
@@ -746,7 +735,7 @@ def test_get_colorbar_and_data_ranges_masked_array():
     assert_equal(cbar_vmax, None)
     # same case if vmax has been set
     cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
-        img, vmax=2,
+        masked_data, vmax=2,
         symmetric_cbar=True,
         kwargs=kwargs)
     assert_equal(vmin, -2)
@@ -756,7 +745,7 @@ def test_get_colorbar_and_data_ranges_masked_array():
 
     # symmetric_cbar is set to False
     cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
-        img, vmax=None,
+        masked_data, vmax=None,
         symmetric_cbar=False,
         kwargs=kwargs)
     assert_equal(vmin, -np.nanmax(filled_data))
@@ -765,7 +754,7 @@ def test_get_colorbar_and_data_ranges_masked_array():
     assert_equal(cbar_vmax, np.nanmax(filled_data))
     # same case if vmax has been set
     cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
-        img, vmax=2,
+        masked_data, vmax=2,
         symmetric_cbar=False,
         kwargs=kwargs)
     assert_equal(vmin, -2)
@@ -775,7 +764,7 @@ def test_get_colorbar_and_data_ranges_masked_array():
 
     # symmetric_cbar is set to 'auto', same behaviours as True for this case
     cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
-        img, vmax=None,
+        masked_data, vmax=None,
         symmetric_cbar='auto',
         kwargs=kwargs)
     assert_equal(vmin, -np.nanmax(filled_data))
@@ -784,7 +773,7 @@ def test_get_colorbar_and_data_ranges_masked_array():
     assert_equal(cbar_vmax, None)
     # same case if vmax has been set
     cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
-        img, vmax=2,
+        masked_data, vmax=2,
         symmetric_cbar='auto',
         kwargs=kwargs)
     assert_equal(vmin, -2)

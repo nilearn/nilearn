@@ -50,7 +50,7 @@ def show():
 # Core, usage-agnostic functions
 
 
-def _get_colorbar_and_data_ranges(stat_map_img, vmax, symmetric_cbar, kwargs,
+def _get_colorbar_and_data_ranges(stat_map_data, vmax, symmetric_cbar, kwargs,
                                   force_min_stat_map_value=None):
     """ Internal function for setting colormap and colorbar limits
 
@@ -68,7 +68,6 @@ def _get_colorbar_and_data_ranges(stat_map_img, vmax, symmetric_cbar, kwargs,
 
     # make sure that the color range is symmetrical
     if vmax is None or symmetric_cbar in ['auto', False]:
-        stat_map_data = stat_map_img.get_data()
         # Avoid dealing with masked_array:
         if hasattr(stat_map_data, '_mask'):
             stat_map_data = np.asarray(
@@ -901,7 +900,7 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
     stat_map_img = _utils.check_niimg_3d(stat_map_img, dtype='auto')
 
     cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
-        stat_map_img,
+        stat_map_img.get_data(),
         vmax,
         symmetric_cbar,
         kwargs)
@@ -1008,14 +1007,14 @@ def plot_glass_brain(stat_map_img,
         stat_map_img = _utils.check_niimg_3d(stat_map_img, dtype='auto')
         if plot_abs:
             cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
-                stat_map_img,
+                stat_map_img.get_data(),
                 vmax,
                 symmetric_cbar,
                 kwargs,
                 0)
         else:
             cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
-                stat_map_img,
+                stat_map_img.get_data(),
                 vmax,
                 symmetric_cbar,
                 kwargs)
