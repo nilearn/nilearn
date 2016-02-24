@@ -4,7 +4,7 @@ Only matplotlib is required.
 """
 
 from nilearn._utils.compat import _basestring
-from .img_plotting import _get_plot_stat_map_params
+from .img_plotting import _get_colorbar_and_data_ranges
 
 # Import libraries
 import numpy as np
@@ -209,10 +209,10 @@ def plot_surf_stat_map(surf_mesh, hemi, stat_map=None, bg_map=None,
                                  'rois or labels use plot_roi_surf instead')
             stat_map_faces = np.mean(stat_map_data[faces], axis=1)
 
-            # Call _get_plot_stat_map_params to derive symmetric vmin and vmax
+            # Call _get_colorbar_and_data_ranges to derive symmetric vmin and vmax
             # And colorbar limits depending on symmetric_cbar settings
             cbar_vmin, cbar_vmax, vmin, vmax = \
-                _get_plot_stat_map_params(stat_map_faces, vmax,
+                _get_colorbar_and_data_ranges(stat_map_faces, vmax,
                                           symmetric_cbar, kwargs)
 
             if threshold is not None:
