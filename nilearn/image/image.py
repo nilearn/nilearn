@@ -566,7 +566,7 @@ def iter_img(imgs):
     Returns
     -------
     output: iterator of 3D nibabel.Nifti1Image
-    
+
     See Also
     --------
     nilearn.image.index_img
