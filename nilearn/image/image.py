@@ -530,6 +530,27 @@ def index_img(imgs, index):
     -------
     output: nibabel.Nifti1Image
 
+    See Also
+    --------
+    nilearn.image.concat_imgs
+    nilearn.image.iter_img
+
+    Examples
+    --------
+    First we concatenate two mni152 images to create a 4D-image::
+
+     >>> from nilearn import datasets
+     >>> from nilearn.image import concat_imgs, index_img
+     >>> joint_mni_image = concat_imgs([datasets.load_mni152_template(),
+     ...                                datasets.load_mni152_template()])
+     >>> print(joint_mni_image.shape)
+     (91, 109, 91, 2)
+
+    We can now select one slice from the last dimension of this 4D-image::
+
+     >>> single_mni_image = index_img(joint_mni_image, 1)
+     >>> print(single_mni_image.shape)
+     (91, 109, 91)
     """
     imgs = check_niimg_4d(imgs)
     return _index_img(imgs, index)
@@ -546,6 +567,11 @@ def iter_img(imgs):
     Returns
     -------
     output: iterator of 3D nibabel.Nifti1Image
+
+    See Also
+    --------
+    nilearn.image.index_img
+
     """
     return check_niimg_4d(imgs, return_iterator=True)
 
