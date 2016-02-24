@@ -1,5 +1,10 @@
-""" 
-Perform a one-sample t-test on a bunch of images (a.k.a. second-level analyis in fMRI) and threshold a statistical image.
+"""
+
+Perform a one-sample t-test on a bunch of images 
+(a.k.a. second-level analyis in fMRI) and threshold a statistical image.
+This is based on the so-called localizer dataset.
+It shows activation related to a mental computation task,
+as opposed to narrative sentence reading/listening.
 
 Author: Bertrand.thirion, Virgile Fritsch, 2014--2015
 """
@@ -32,13 +37,11 @@ z_map = nifti_masker.inverse_transform(z_score(p_values))
 # false positive rate < .001, cluster size > 10 voxels
 from nistats.thresholding import map_threshold
 thresholded_map1, threshold1 = map_threshold(
-    z_map, nifti_masker.mask_img_, threshold=.001, height_control='fpr',
-    cluster_threshold=10)
+    z_map, threshold=.001, height_control='fpr', cluster_threshold=10)
 
 # Now use FDR <.05, no cluster-level threshold
 thresholded_map2, threshold2 = map_threshold(
-    z_map, None, threshold=.05, height_control='fdr')
-
+    z_map, threshold=.05, height_control='fdr')
 
 # Visualization
 from nilearn import plotting
