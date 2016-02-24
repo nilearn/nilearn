@@ -33,11 +33,6 @@ def check_surf_data(surf_data, gii_darray=0):
             data = gifti.read(surf_data).darrays[gii_darray].data
         else:
             raise ValueError('Format of data file not recognized.')
-    # if the input is an array, it should have a single dimension
-    elif isinstance(surf_data, np.ndarray):
-        data = np.squeeze(surf_data)
-        if len(data.shape) is not 1:
-            raise ValueError('Data array cannot have more than one dimension.')
     return data
 
 
@@ -54,16 +49,6 @@ def check_surf_mesh(surf_mesh):
                             gifti.read(surf_mesh).darrays[1].data
         else:
             raise ValueError('Format of mesh file not recognized.')
-    # if a dictionary is given, check it contains entries for coords and faces
-    elif isinstance(surf_mesh, dict):
-        if ('faces' in surf_mesh and 'coords' in surf_mesh):
-            coords, faces = surf_mesh['coords'], surf_mesh['faces']
-        else:
-            raise ValueError('If surf_mesh is given as a dictionary it must '
-                             'contain items with keys "coords" and "faces"')
-    else:
-        raise ValueError('surf_mesh must be a either filename or a dictionary '
-                         'containing items with keys "coords" and "faces"')
     return coords, faces
 
 
