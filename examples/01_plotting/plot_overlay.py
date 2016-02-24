@@ -17,6 +17,9 @@ The tools that we need to leverage are:
  * Adding overlays on an existing brain display, to plot each of these
    maps
 
+Alternatively, :func:`nilearn.plotting.plot_prob_atlas` allows to plot the maps in one step that
+with less control over the plot (see below)
+
 """
 
 from nilearn import datasets, plotting, image
@@ -38,4 +41,25 @@ display.add_overlay(image.index_img(atlas_filename, 6),
 display.add_overlay(image.index_img(atlas_filename, 3),
                     cmap=plotting.cm.black_pink)
 
+plotting.show()
+
+
+###############################################################################
+# Visualizing a probablistic atlas with plot_prob_atlas
+# =====================================================
+#
+# Alternatively, we can create a new 4D-image by selecting the 3rd, 4th, 5th and 6th (zero-based) probabilistic map from atlas
+# via :func:`nilearn.image.index_img` and use :func:`nilearn.plotting.plot_prob_atlas` (added in version 0.2)
+# to plot the selected nodes in one step.
+#
+# Unlike :func:`nilearn.plotting.plot_stat_map` this works with 4D images
+
+dmn_nodes = image.index_img(atlas_filename, [3, 4, 5, 6])
+# Note that dmn_node is now a 4D image
+print(dmn_nodes.shape)
+####################################
+
+display = plotting.plot_prob_atlas(dmn_nodes,
+                                   cut_coords=(0, -55, 29),
+                                   title="DMN nodes in MSDL atlas")
 plotting.show()
