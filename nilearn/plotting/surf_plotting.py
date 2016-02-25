@@ -45,8 +45,8 @@ def check_surf_mesh(surf_mesh):
                 surf_mesh.endswith('inflated')):
             coords, faces = nibabel.freesurfer.io.read_geometry(surf_mesh)
         elif surf_mesh.endswith('gii'):
-            coords, faces = gifti.read(surf_mesh).darrays[0].data, \
-                            gifti.read(surf_mesh).darrays[1].data
+            coords, faces = gifti.read(surf_mesh).getArraysFromIntent(1008)[0], \
+                            gifti.read(surf_mesh).getArraysFromIntent(1009)[1]
         else:
             raise ValueError('Format of mesh file not recognized.')
     return coords, faces

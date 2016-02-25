@@ -1811,25 +1811,32 @@ def fetch_nki_enhanced_surface(n_subjects=30, data_dir=None,
     infl = []
     sulc = []
     surf_file = os.path.join('fsaverage', '%s.%s.gii')
-    surf_url = url + '/%s.%s.gii'
+    surf_url = url + '%i/%s.%s.gii'
+    surf_nids = {'lh pial': 8465, 'rh pial': 8468,
+                 'lh infl': 8464, 'rh infl': 8467,
+                 'lh sulc': 8466, 'rh sulc': 8469}
+
     for hemi in ['lh', 'rh']:
         p = _fetch_files(data_dir,
                          [(surf_file % (hemi, 'pial'),
-                          surf_url % (hemi, 'pial'),
+                          surf_url % (surf_nids['%s pial' % hemi],
+                                      hemi, 'pial'),
                           {'move': surf_file % (hemi, 'pial')})],
                          resume=resume, verbose=verbose)
         pial.append(p)
 
         i = _fetch_files(data_dir,
                          [(surf_file % (hemi, 'inflated'),
-                          surf_url % (hemi, 'inflated'),
+                          surf_url % (surf_nids['%s infl' % hemi],
+                                      hemi, 'inflated'),
                           {'move': surf_file % (hemi, 'inflated')})],
                          resume=resume, verbose=verbose)
         infl.append(i)
 
         s = _fetch_files(data_dir,
                          [(surf_file % (hemi, 'sulc'),
-                          surf_url % (hemi, 'sulc'),
+                          surf_url % (surf_nids['%s sulc' % hemi],
+                                      hemi, 'sulc'),
                           {'move': surf_file % (hemi, 'sulc')})],
                          resume=resume, verbose=verbose)
         sulc.append(s)
