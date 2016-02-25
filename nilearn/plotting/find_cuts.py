@@ -118,7 +118,7 @@ def find_xyz_cut_coords(img, mask=None, activation_threshold=None):
 def _get_auto_mask_bounds(img):
     """ Compute the bounds of the data with an automaticaly computed mask
     """
-    data = img.get_data().copy()
+    data = _safe_get_data(img)
     affine = img.get_affine()
     if hasattr(data, 'mask'):
         # Masked array
@@ -207,7 +207,7 @@ def find_cut_slices(img, direction='z', n_cuts=7, spacing='auto'):
                 direction))
     axis = 'xyz'.index(direction)
     affine = img.get_affine()
-    orig_data = np.abs(img.get_data())
+    orig_data = np.abs(_safe_get_data(img))
     this_shape = orig_data.shape[axis]
 
     if not isinstance(n_cuts, numbers.Number):

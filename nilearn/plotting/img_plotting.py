@@ -22,6 +22,7 @@ from nibabel.spatialimages import SpatialImage
 
 from .._utils.numpy_conversions import as_ndarray
 from .._utils.compat import _basestring
+from .._utils.niimg import _safe_get_data
 
 import matplotlib.pyplot as plt
 
@@ -145,7 +146,7 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None,
 
     if img is not False and img is not None:
         img = _utils.check_niimg_3d(img, dtype='auto')
-        data = img.get_data()
+        data = _safe_get_data(img)
         affine = img.get_affine()
 
         if np.isnan(np.sum(data)):
@@ -900,7 +901,7 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
     stat_map_img = _utils.check_niimg_3d(stat_map_img, dtype='auto')
 
     cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
-        stat_map_img.get_data(),
+        _safe_get_data(stat_map_img),
         vmax,
         symmetric_cbar,
         kwargs)
@@ -1007,14 +1008,14 @@ def plot_glass_brain(stat_map_img,
         stat_map_img = _utils.check_niimg_3d(stat_map_img, dtype='auto')
         if plot_abs:
             cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
-                stat_map_img.get_data(),
+                _safe_get_data(stat_map_img),
                 vmax,
                 symmetric_cbar,
                 kwargs,
                 0)
         else:
             cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
-                stat_map_img.get_data(),
+                _safe_get_data(stat_map_img),
                 vmax,
                 symmetric_cbar,
                 kwargs)
