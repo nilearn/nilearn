@@ -11,7 +11,8 @@ from .func import (fetch_haxby_simple, fetch_haxby, fetch_nyu_rest,
                    fetch_localizer_contrasts, fetch_abide_pcp,
                    fetch_localizer_button_task,
                    fetch_localizer_calculation_task, fetch_mixed_gambles,
-                   fetch_megatrawls_netmats, fetch_cobre)
+                   fetch_megatrawls_netmats, fetch_cobre,
+                   fetch_nki_enhanced_surface)
 from .atlas import (fetch_atlas_craddock_2012, fetch_atlas_destrieux_2009,
                     fetch_atlas_harvard_oxford, fetch_atlas_msdl,
                     fetch_coords_power_2011,
@@ -37,4 +38,5 @@ __all__ = ['MNI152_FILE_PATH', 'fetch_icbm152_2009', 'load_mni152_template',
            'fetch_megatrawls_netmats', 'fetch_cobre',
            'fetch_atlas_basc_multiscale_2015', 'fetch_coords_dosenbach_2010',
            'load_mni152_brain_mask', 'fetch_icbm152_brain_gm_mask',
+           'fetch_nki_enhanced_surface',
            'get_data_dirs']

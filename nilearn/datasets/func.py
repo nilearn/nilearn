@@ -1704,3 +1704,160 @@ def fetch_cobre(n_subjects=10, data_dir=None, url=None, verbose=1):
     return Bunch(func=func, confounds=con, phenotypic=csv_array_phen,
                  description=fdescr, desc_con=files_keys_con,
                  desc_phenotypic=files_keys_phen)
+
+
+def fetch_nki_enhanced_surface(n_subjects=30, data_dir=None,
+                               url=None, resume=True, verbose=1):
+    """Download and load the NKI enhanced resting-state dataset,
+       preprocessed and projected to the surface.
+
+    Parameters
+    ----------
+    n_subjects: int, optional
+        The number of subjects to load from maximum of 102 subjects.
+        By default, 30 subjects will be loaded. If None is given,
+        all 102 subjects will be loaded.
+
+    data_dir: string, optional
+        Path of the data directory. Used to force data storage in a specified
+        location. Default: None
+
+    url: string, optional
+        Override download URL. Used for test only (or if you setup a mirror of
+        the data). Default: None
+
+    Returns
+    -------
+    data: sklearn.datasets.base.Bunch
+        Dictionary-like object, the interest attributes are :
+         - 'func': Paths to functional resting-state images
+         - 'phenotypic': Explanations of preprocessing steps
+         - 'confounds': CSV files containing the nuisance variables
+
+    References
+    ----------
+    :Download: http://fcon_1000.projects.nitrc.org/indi/enhanced/
+
+    Nooner et al, (2012). The NKI-Rockland Sample: A model for accelerating the
+    pace of discovery science in psychiatry. Frontiers in neuroscience 6, 152.
+    URL http://dx.doi.org/10.3389/fnins.2012.00152
+
+    """
+
+    if url is None:
+        url = 'https://www.nitrc.org/frs/download.php/'
+
+    # Preliminary checks and declarations
+    dataset_name = 'nki_enhanced_surface'
+    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
+                                verbose=verbose)
+    ids = ['A00028185', 'A00033747', 'A00035072', 'A00035827', 'A00035840',
+           'A00037112', 'A00037511', 'A00038998', 'A00039391', 'A00039431',
+           'A00039488', 'A00040524', 'A00040623', 'A00040944', 'A00043299',
+           'A00043520', 'A00043677', 'A00043722', 'A00045589', 'A00050998',
+           'A00051063', 'A00051064', 'A00051456', 'A00051457', 'A00051477',
+           'A00051513', 'A00051514', 'A00051517', 'A00051528', 'A00051529',
+           'A00051539', 'A00051604', 'A00051638', 'A00051658', 'A00051676',
+           'A00051678', 'A00051679', 'A00051726', 'A00051774', 'A00051796',
+           'A00051835', 'A00051882', 'A00051925', 'A00051927', 'A00052070',
+           'A00052117', 'A00052118', 'A00052126', 'A00052180', 'A00052197',
+           'A00052214', 'A00052234', 'A00052307', 'A00052319', 'A00052499',
+           'A00052502', 'A00052577', 'A00052612', 'A00052639', 'A00053202',
+           'A00053369', 'A00053456', 'A00053474', 'A00053546', 'A00053576',
+           'A00053577', 'A00053578', 'A00053625', 'A00053626', 'A00053627',
+           'A00053874', 'A00053901', 'A00053927', 'A00053949', 'A00054038',
+           'A00054153', 'A00054173', 'A00054358', 'A00054482', 'A00054532',
+           'A00054533', 'A00054534', 'A00054621', 'A00054895', 'A00054897',
+           'A00054913', 'A00054929', 'A00055061', 'A00055215', 'A00055352',
+           'A00055353', 'A00055542', 'A00055738', 'A00055763', 'A00055806',
+           'A00056097', 'A00056098', 'A00056164', 'A00056372', 'A00056452',
+           'A00056489', 'A00056949']
+
+    nitrc_ids = range(8260, 8470)
+    max_subjects = len(ids)
+    if n_subjects is None:
+        n_subjects = max_subjects
+    if n_subjects > max_subjects:
+        warnings.warn('Warning: there are only %d subjects' % max_subjects)
+        n_subjects = max_subjects
+    ids = ids[:n_subjects]
+    nitrc_ids = nitrc_ids[:n_subjects]
+
+    opts = dict()
+
+    # Dataset description
+    fdescr = _get_dataset_descr(dataset_name)
+
+    # First, get the metadata
+    phenotypic_file = 'NKI_enhanced_surface_phenoytypics.csv'
+    phenotypic = (phenotypic_file, url + '8470/pheno_nki_nilearn.csv',
+                  {'move':phenotypic_file})
+
+    phenotypic = _fetch_files(data_dir, [phenotypic], resume=resume,
+                              verbose=verbose)[0]
+
+    # Load the csv file
+    phenotypic = np.genfromtxt(phenotypic, skip_header=True,
+                               names=['Subject', 'Age', 'Dominant Hand', 'Sex'],
+                               delimiter=',', dtype=None)
+
+    # Keep phenotypic information for selected subjects
+    int_ids = np.asarray(ids)
+    phenotypic = phenotypic[[np.where(phenotypic['Subject'] == i)[0][0]
+                             for i in int_ids]]
+
+    # Download fsaverage surfaces and sulcal information
+    pial = []
+    infl = []
+    sulc = []
+    surf_file = os.path.join('fsaverage', '%s.%s.gii')
+    surf_url = url + '/%s.%s.gii'
+    for hemi in ['lh', 'rh']:
+        p = _fetch_files(data_dir,
+                         [(surf_file % (hemi, 'pial'),
+                          surf_url % (hemi, 'pial'),
+                          {'move': surf_file % (hemi, 'pial')})],
+                         resume=resume, verbose=verbose)
+        pial.append(p)
+
+        i = _fetch_files(data_dir,
+                         [(surf_file % (hemi, 'inflated'),
+                          surf_url % (hemi, 'inflated'),
+                          {'move': surf_file % (hemi, 'inflated')})],
+                         resume=resume, verbose=verbose)
+        infl.append(i)
+
+        s = _fetch_files(data_dir,
+                         [(surf_file % (hemi, 'sulc'),
+                          surf_url % (hemi, 'sulc'),
+                          {'move': surf_file % (hemi, 'sulc')})],
+                         resume=resume, verbose=verbose)
+        sulc.append(s)
+
+    # Download dataset files
+    rh = []
+    lh = []
+    for i in range(len(ids)):
+
+        archive = url + '%i/%s_%s_preprocessed_fsaverage5_fwhm6.gii'
+        resting = os.path.join('%s', '%s_%s_preprocessed_fsaverage5_fwhm6.gii')
+        r = _fetch_files(data_dir,
+                         [(resting % (ids[i], ids[i], 'rh'),
+                           archive % (nitrc_ids[i], ids[i], 'rh'),
+                           {'move': resting % (ids[i], ids[i], 'rh')}
+                           )],
+                         resume=resume, verbose=verbose)
+        l = _fetch_files(data_dir,
+                         [(resting % (ids[i], ids[i], 'lh'),
+                           archive % (nitrc_ids[i], ids[i], 'lh'),
+                           {'move': resting % (ids[i], ids[i], 'lh')}
+                           )],
+                         resume=resume, verbose=verbose)
+
+        rh.append(r)
+        lh.append(l)
+
+    return Bunch(resting_rh=rh, resting_lh=lh,
+                 fsaverage_pial=pial, fsaverage_inflated=infl,
+                 fsaverage_sulc=sulc, phenotypic=phenotypic,
+                 description=fdescr)
