@@ -6,6 +6,7 @@ Test the datasets module
 
 import os
 import shutil
+import csv
 import numpy as np
 
 import nibabel
@@ -229,8 +230,24 @@ def test_fetch_atlas_destrieux_2009():
 @with_setup(setup_mock, teardown_mock)
 @with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
 def test_fetch_atlas_msdl():
+    datadir = os.path.join(tst.tmpdir, 'msdl_atlas')
+    os.mkdir(datadir)
+    os.mkdir(os.path.join(datadir, 'MSDL_rois'))
+    data_dir = os.path.join(datadir, 'MSDL_rois', 'msdl_rois_labels.csv')
+    csv = np.rec.array([(1.5, 1.5, 1.5, 'Aud', 'Aud'),
+                        (1.2, 1.3, 1.4, 'DMN', 'DMN')],
+                       dtype=[('x', '<f8'), ('y', '<f8'),
+                              ('z', '<f8'), ('name', 'S12'),
+                              ('net_name', 'S19')])
+    with open(data_dir, 'wb') as csv_file:
+        header = '{0}\n'.format(','.join(csv.dtype.names))
+        csv_file.write(header.encode())
+        np.savetxt(csv_file, csv, delimiter=',', fmt='%s')
+
     dataset = atlas.fetch_atlas_msdl(data_dir=tst.tmpdir, verbose=0)
-    assert_true(isinstance(dataset.labels, _basestring))
+    assert_true(isinstance(dataset.labels, list))
+    assert_true(isinstance(dataset.region_coords, list))
+    assert_true(isinstance(dataset.networks, list))
     assert_true(isinstance(dataset.maps, _basestring))
     assert_equal(len(tst.mock_url_request.urls), 1)
     assert_not_equal(dataset.description, '')
@@ -261,8 +278,9 @@ def test_fetch_atlas_aal():
                        "<metadata>"
                        "</metadata>")
     dataset = atlas.fetch_atlas_aal(data_dir=tst.tmpdir, verbose=0)
-    assert_true(isinstance(dataset.regions, _basestring))
-    assert_true(isinstance(dataset.labels, dict))
+    assert_true(isinstance(dataset.maps, _basestring))
+    assert_true(isinstance(dataset.labels, list))
+    assert_true(isinstance(dataset.indices, list))
     assert_equal(len(tst.mock_url_request.urls), 1)
 
     assert_raises_regex(ValueError, 'The version of AAL requested "FLS33"',

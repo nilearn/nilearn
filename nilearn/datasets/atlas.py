@@ -296,8 +296,14 @@ def fetch_atlas_msdl(data_dir=None, url=None, resume=True, verbose=1):
     -------
     data: sklearn.datasets.base.Bunch
         Dictionary-like object, the interest attributes are :
-        - 'labels': str. Path to csv file containing labels.
-        - 'maps': str. path to nifti file containing regions definition.
+
+        - 'maps': str, path to nifti file containing regions definition.
+        - 'labels': string list containing the labels of the regions.
+        - 'region_coords': tuple list (x, y, z) containing coordinates
+          of each region in MNI space.
+        - 'networks': string list containing names of the networks.
+        - 'description': description about the atlas.
+
 
     References
     ----------
@@ -327,9 +333,14 @@ def fetch_atlas_msdl(data_dir=None, url=None, resume=True, verbose=1):
     data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
                                 verbose=verbose)
     files = _fetch_files(data_dir, files, resume=resume, verbose=verbose)
+    csv_data = np.recfromcsv(files[0])
+    labels = csv_data['name'].tolist()
+    region_coords = csv_data[['x', 'y', 'z']].tolist()
+    net_names = csv_data['net_name'].tolist()
     fdescr = _get_dataset_descr(dataset_name)
 
-    return Bunch(labels=files[0], maps=files[1], description=fdescr)
+    return Bunch(maps=files[1], labels=labels, region_coords=region_coords,
+                 networks=net_names, description=fdescr)
 
 
 @deprecated('This function has been replace by fetch_coords_power_2011 and '
@@ -570,7 +581,7 @@ def fetch_atlas_aal(version='SPM12', data_dir=None, url=None, resume=True,
     data: sklearn.datasets.base.Bunch
         dictionary-like object, keys are:
 
-        - "regions": str. path to nifti file containing regions.
+        - "maps": str. path to nifti file containing regions.
 
         - "labels": dict. labels dictionary with their region id as key and
                     name as value
@@ -616,12 +627,14 @@ def fetch_atlas_aal(version='SPM12', data_dir=None, url=None, resume=True,
     # We return the labels contained in the xml file as a dictionary
     xml_tree = xml.etree.ElementTree.parse(labels_file)
     root = xml_tree.getroot()
-    labels_dict = {}
+    labels = []
+    indices = []
     for label in root.getiterator('label'):
-        labels_dict[label.find('index').text] = label.find('name').text
+        indices.append(label.find('index').text)
+        labels.append(label.find('name').text)
 
-    params = {'description': fdescr, 'regions': atlas_img,
-              'labels': labels_dict}
+    params = {'description': fdescr, 'maps': atlas_img,
+              'labels': labels, 'indices': indices}
 
     return Bunch(**params)
 

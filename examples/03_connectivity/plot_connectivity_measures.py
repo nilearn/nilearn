@@ -57,8 +57,8 @@ for kind in kinds:
 # Plot the mean connectome
 import numpy as np
 import nilearn.plotting
-labels = np.recfromcsv(atlas.labels)
-region_coords = labels[['x', 'y', 'z']].tolist()
+labels = atlas.labels
+region_coords = atlas.region_coords
 for kind in kinds:
     nilearn.plotting.plot_connectome(mean_connectivity_matrix[kind],
                                      region_coords, edge_threshold='98%',

@@ -23,16 +23,12 @@ with the highest values.
 # Retrieve the atlas and the data
 from nilearn import datasets
 atlas = datasets.fetch_atlas_msdl()
+# Loading atlas image stored in 'maps'
 atlas_filename = atlas['maps']
+# Loading atlas data stored in 'labels'
+labels = atlas['labels']
 
-# Load the labels
-import numpy as np
-csv_filename = atlas['labels']
-
-# The recfromcsv function can load a csv file
-labels = np.recfromcsv(csv_filename)
-names = labels['name']
-
+# Load the functional datasets
 data = datasets.fetch_adhd(n_subjects=1)
 
 print('First subject resting-state nifti image (4D) is located at: %s' %
@@ -54,6 +50,7 @@ print(time_series.shape)
 
 ############################################################################
 # Build and display a correlation matrix
+import numpy as np
 correlation_matrix = np.corrcoef(time_series.T)
 
 # Display the correlation matrix
@@ -65,13 +62,13 @@ plt.imshow(correlation_matrix, interpolation="nearest", cmap="RdBu_r",
            vmax=0.8, vmin=-0.8)
 plt.colorbar()
 # And display the labels
-x_ticks = plt.xticks(range(len(names)), names, rotation=90)
-y_ticks = plt.yticks(range(len(names)), names)
+x_ticks = plt.xticks(range(len(labels)), labels, rotation=90)
+y_ticks = plt.yticks(range(len(labels)), labels)
 
 ############################################################################
 # And now display the corresponding graph
 from nilearn import plotting
-coords = labels[['x', 'y', 'z']].tolist()
+coords = atlas.region_coords
 
 # We threshold to keep only the 20% of edges with the highest value
 # because the graph is very dense
