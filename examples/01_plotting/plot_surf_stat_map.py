@@ -11,10 +11,10 @@ from nilearn import datasets
 # Retrieve the data
 nki_dataset = datasets.fetch_nki_enhanced_surface(n_subjects=1)
 
-fsaverage5_pial = nki_dataset.fsaverage_pial[0]
-fsaverage5_inflated = nki_dataset.fsaverage_inflated[0]
-sulcal_depth_map = nki_dataset.fsaverage_sulc[0]
-stat_map = nki_dataset.resting_rh[0]
+fsaverage5_pial = nki_dataset['fsaverage_pial'][0][0]
+fsaverage5_inflated = nki_dataset['fsaverage_inflated'][0][0]
+sulcal_depth_map = nki_dataset['fsaverage_sulc'][0][0]
+stat_map = nki_dataset['resting_rh'][0][0]
 
 
 # display unthresholded stat map in lateral and medial view
