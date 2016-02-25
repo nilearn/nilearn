@@ -1799,7 +1799,7 @@ def fetch_nki_enhanced_surface(n_subjects=30, data_dir=None,
     # Load the csv file
     phenotypic = np.genfromtxt(phenotypic, skip_header=True,
                                names=['Subject', 'Age', 'Dominant Hand', 'Sex'],
-                               delimiter=',', dtype=None)
+                               delimiter=',', dtype=['U9', '<f8', 'U1', 'U1'])
 
     # Keep phenotypic information for selected subjects
     int_ids = np.asarray(ids)
