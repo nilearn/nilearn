@@ -6,13 +6,15 @@ See :ref:`plotting` for more details.
 """
 import matplotlib.pyplot as plt
 from nilearn import plotting
+from nilearn import datasets
 
-# Retrieve the data: to be replaced by nilearn dataset
+# Retrieve the data
+nki_dataset = datasets.fetch_nki_enhanced_surface(n_subjects=1)
 
-fsaverage5_pial = '/SCR/data/paris/fsaverage/fsaverage5/surf/rh.pial'
-fsaverage5_inflated = '/SCR/data/paris/fsaverage/fsaverage5/surf/rh.inflated'
-sulcal_depth_map = '/SCR/data/paris/fsaverage/fsaverage5/surf/rh.sulc'
-stat_map = '/SCR/data/paris/2500/fwhm6/0100451/RsfMRI_preprocessed_0100451_fsaverage5_1d_neg.rh.nii.gz'
+fsaverage5_pial = nki_dataset.fsaverage_pial[0]
+fsaverage5_inflated = nki_dataset.fsaverage_inflated[0]
+sulcal_depth_map = nki_dataset.fsaverage_sulc[0]
+stat_map = nki_dataset.resting_rh[0]
 
 
 # display unthresholded stat map in lateral and medial view
