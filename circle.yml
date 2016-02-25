@@ -1,8 +1,16 @@
+machine:
+  environment:
+    PATH: /home/ubuntu/miniconda2/bin:$PATH
+
 dependencies:
   cache_directories:
     - "~/nilearn_data"
 
   pre:
+    # Get rid of existing virtualenvs on circle ci as they conflict with conda.
+    # Trick found here:
+    # https://discuss.circleci.com/t/disable-autodetection-of-project-or-application-of-python-venv/235/10
+    - cd && rm -rf ~/.pyenv && rm -rf ~/virtualenvs
     # We need to remove conflicting texlive packages.
     - sudo -E apt-get -yq remove texlive-binaries --purge
     # Installing required packages for `make -C doc check command` to work.
@@ -10,12 +18,21 @@ dependencies:
     - sudo -E apt-get -yq --no-install-suggests --no-install-recommends --force-yes install dvipng texlive-latex-base texlive-latex-extra
 
   override:
-    - export DISTRIB="conda" PYTHON_VERSION="2.7" NUMPY_VERSION="1.8.2" SCIPY_VERSION="0.13.3" SCIKIT_LEARN_VERSION="0.14.1" MATPLOTLIB_VERSION="1.1.1"
-    - source continuous_integration/install.sh
-    - conda install sphinx==1.2.3 coverage pillow
+    # Moving to nilearn directory before performing the installation.
+    - cd ~/nilearn
+    - source continuous_integration/install.sh:
+        environment:
+            DISTRIB: "conda"
+            PYTHON_VERSION: "2.7"
+            NUMPY_VERSION: "*"
+            SCIPY_VERSION: "*"
+            SCIKIT_LEARN_VERSION: "*"
+            MATPLOTLIB_VERSION: "*"
+    - conda install sphinx==1.2.3 coverage pillow -y -n testenv
+
     # we need to do this here so the datasets will be cached
-    # pipefail is necessary to propagate exit codes
-    - set -o pipefail && cd doc && make html-strict 2>&1 | tee ~/log.txt
+    - source continuous_integration/circle_ci_test_doc.sh:
+        timeout: 1500
 
 test:
   override:
