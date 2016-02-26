@@ -506,6 +506,9 @@ def fetch_miyawaki2008(data_dir=None, url=None, resume=True, verbose=1):
         - 'mask': string
             Path to nifti mask file to define target volume in visual
             cortex
+        - 'background': string
+            Path to nifti file containing a background image usable as a
+            background image for miyawaki images.
 
     References
     ----------
@@ -608,6 +611,13 @@ def fetch_miyawaki2008(data_dir=None, url=None, resume=True, verbose=1):
                                 verbose=verbose)
     files = _fetch_files(data_dir, file_names, resume=resume, verbose=verbose)
 
+    # Fetch the background image
+    bg_img = _fetch_files(
+        data_dir,
+        [('bg.nii.gz',
+          'http://www.nitrc.org/frs/download.php/8471/bg.nii.gz', {})],
+        resume=resume, verbose=verbose)[0]
+
     fdescr = _get_dataset_descr(dataset_name)
 
     # Return the data
@@ -616,6 +626,7 @@ def fetch_miyawaki2008(data_dir=None, url=None, resume=True, verbose=1):
         label=files[32:64],
         mask=files[64],
         mask_roi=files[65:],
+        background=bg_img,
         description=fdescr)
 
 
