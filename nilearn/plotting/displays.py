@@ -713,7 +713,8 @@ class BaseSlicer(object):
 
         plt.draw_if_interactive()
 
-    def add_markers(self, marker_coords, marker_color, marker_size, **kwargs):
+    def add_markers(self, marker_coords, marker_color='r', marker_size=30,
+                    **kwargs):
         """Add markers to the plot.
 
         Parameters
@@ -721,10 +722,10 @@ class BaseSlicer(object):
         markers_coords: array of size (n_markers, 3)
             Coordinates of the markers to plot. For each slice, only markers
             that are 2 millimeters away from the slice are plotted.
-        marker_color: list of pyplot compatible colors of shape (n_markers,)
+        marker_color: pyplot compatible color or list of shape (n_markers,)
             List of colors for each marker that can be string or matplotlib
             colors
-        marker_size: list of floats of size (n_markers,)
+        marker_size: single float or list of shape (n_markers,)
             Size in pixel for each marker
         """
         defaults = {'marker': 'o',
