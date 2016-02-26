@@ -714,7 +714,19 @@ class BaseSlicer(object):
         plt.draw_if_interactive()
 
     def add_markers(self, marker_coords, marker_color, marker_size, **kwargs):
-        """Plot markers"""
+        """Add markers to the plot.
+
+        Parameters
+        ----------
+        markers_coords: array of size (n_markers, 3)
+            Coordinates of the markers to plot. For each slice, only markers
+            that are 2 millimeters away from the slice are plotted.
+        marker_color: list of pyplot compatible colors of shape (n_markers,)
+            List of colors for each marker that can be string or matplotlib
+            colors
+        marker_size: list of floats of size (n_markers,)
+            Size in pixel for each marker
+        """
         defaults = {'marker': 'o',
                     'zorder': 1000}
         for k, v in defaults.items():
@@ -722,13 +734,13 @@ class BaseSlicer(object):
 
         for display_ax in self.axes.values():
             direction = display_ax.direction
-            index = _get_index_from_direction(direction)
-            # coord = display_ax.coord[index]
             coord = display_ax.coord
             marker_coords_2d, third_d = _coords_3d_to_2d(
                 marker_coords, direction, return_direction=True)
+            # Heuristic that plots only markers that are 2mm away from the
+            # current slice.
             # XXX: should we keep this heuristic?
-            mask = np.abs(third_d - coord) < 2.
+            mask = np.abs(third_d - coord) <= 2.
             xdata, ydata = marker_coords_2d.T
             display_ax.ax.scatter(xdata[mask], ydata[mask],
                                   s=marker_size,
