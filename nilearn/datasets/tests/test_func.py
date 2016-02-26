@@ -165,7 +165,8 @@ def test_miyawaki2008():
     assert_equal(len(dataset.label), 32)
     assert_true(isinstance(dataset.mask, _basestring))
     assert_equal(len(dataset.mask_roi), 38)
-    assert_equal(len(tst.mock_url_request.urls), 1)
+    assert_true(isinstance(dataset.background, _basestring))
+    assert_equal(len(tst.mock_url_request.urls), 2)
     assert_not_equal(dataset.description, '')
 
 
