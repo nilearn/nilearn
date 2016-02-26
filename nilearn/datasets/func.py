@@ -506,6 +506,9 @@ def fetch_miyawaki2008(data_dir=None, url=None, resume=True, verbose=1):
         - 'mask': string
             Path to nifti mask file to define target volume in visual
             cortex
+        - 'bg': string
+            Path to nifti file containing a background image usable as a
+            background image for miyawaki images.
 
     References
     ----------
