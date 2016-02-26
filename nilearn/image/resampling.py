@@ -289,7 +289,8 @@ def resample_img(img, target_affine=None, target_shape=None,
         must also be given. (See notes)
 
     interpolation: str, optional
-        Can be 'continuous' (default) or 'nearest'. Indicate the resample method
+        Can be 'continuous' (default) or 'nearest'. Indicates the resample
+        method.
 
     copy: bool, optional
         If True, guarantees that output array has no memory in common with
@@ -503,7 +504,7 @@ def resample_to_img(source_img, target_img,
         Reference image taken for resampling.
 
     interpolation: str, optional
-        Can be 'continuous' (default) or 'nearest'. Indicate the resample
+        Can be 'continuous' (default) or 'nearest'. Indicates the resample
         method.
 
     copy: bool, optional
