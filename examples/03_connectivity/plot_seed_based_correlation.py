@@ -139,7 +139,7 @@ seed_based_correlations = np.dot(brain_time_series.T, seed_time_series) / \
 # values can potentially range between -1 and 1.
 print("seed-based correlation shape: (%s, %s)" % seed_based_correlations.shape)
 print("seed-based correlation: min = %.3f; max = %.3f" % (
-seed_based_correlations.min(), seed_based_correlations.max()))
+    seed_based_correlations.min(), seed_based_correlations.max()))
 
 
 ##########################################################################
