@@ -27,7 +27,7 @@ uses.
 .. autosummary::
    :toctree: generated/
    :template: class.rst
-   
+
    ConnectivityMeasure
    GroupSparseCovariance
    GroupSparseCovarianceCV
@@ -154,6 +154,7 @@ uses.
    math_img
    new_img_like
    resample_img
+   resample_to_img
    reorder_img
    smooth_img
    swap_img_hemispheres
@@ -240,7 +241,7 @@ uses.
    :toctree: generated/
    :template: class.rst
 
-   RegionExtractor   
+   RegionExtractor
 
 
 :mod:`nilearn.mass_univariate`: Mass-univariate analysis
@@ -325,6 +326,3 @@ uses.
 
    clean
    high_variance_confounds
-
-
-
