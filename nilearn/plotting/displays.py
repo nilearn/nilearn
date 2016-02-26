@@ -730,6 +730,7 @@ class BaseSlicer(object):
         """
         defaults = {'marker': 'o',
                     'zorder': 1000}
+        marker_coords = np.asanyarray(marker_coords)
         for k, v in defaults.items():
             kwargs.setdefault(k, v)
 
