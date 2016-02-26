@@ -1,27 +1,23 @@
 
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-import tempfile
 import os
+import tempfile
 from functools import partial
 
+import matplotlib.pyplot as plt
+import nibabel
 import numpy as np
+from nose.tools import assert_raises, assert_true, assert_equal
 from scipy import sparse
 
-from nose.tools import assert_raises, assert_true, assert_equal
-
-import matplotlib.pyplot as plt
-
-import nibabel
-
+from nilearn._utils.testing import assert_raises_regex
 from nilearn.image.resampling import coord_transform
-
 from nilearn.plotting.img_plotting import (MNI152TEMPLATE, plot_anat, plot_img,
                                            plot_roi, plot_stat_map, plot_epi,
                                            plot_glass_brain, plot_connectome,
                                            plot_prob_atlas,
                                            _get_colorbar_and_data_ranges)
-from nilearn._utils.testing import assert_raises_regex
 
 mni_affine = np.array([[-2.,    0.,    0.,   90.],
                        [0.,    2.,    0., -126.],
@@ -552,6 +548,9 @@ def test_plot_prob_atlas():
     plt.close()
     # Testing the 4D plot prob atlas with contours
     plot_prob_atlas(img, view_type='continuous')
+    plt.close()
+    # Testing the 4D plot prob atlas with colormap
+    plot_prob_atlas(img, view_type='continuous', colorbar=True)
     plt.close()
 
 
