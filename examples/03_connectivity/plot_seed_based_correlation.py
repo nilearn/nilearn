@@ -86,12 +86,9 @@ brain_time_series = brain_masker.fit_transform(func_filename,
 
 
 ##########################################################################
-# Inspecting the extracted time series
-# ------------------------------------
-
-##########################################################################
-# Note that the **seed time series** is an array with shape (n_volumes, 1),
-# while the **brain time series** is an array with shape (n_volumes, n_voxels).
+# We can now inspect the extracted time series. Note that the **seed time
+# series** is an array with shape n_volumes, 1), while the
+# **brain time series** is an array with shape (n_volumes, n_voxels).
 
 print("seed time series shape: (%s, %s)" % seed_time_series.shape)
 print("brain time series shape: (%s, %s)" % brain_time_series.shape)
