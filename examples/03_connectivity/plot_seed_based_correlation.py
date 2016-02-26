@@ -5,6 +5,10 @@ Producing single subject maps of seed-based correlation
 This example shows how to produce seed-based correlation maps for a single
 subject based on resting-state fMRI scans. These maps depict the temporal
 correlation of a **seed region** with the **rest of the brain**.
+
+This example is an advanced one that requires manipulating the data with numpy.
+Note the difference between images, that lie in brain space, and the
+numpy array, corresponding to the data inside the mask.
 """
 
 
