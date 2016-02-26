@@ -437,7 +437,7 @@ def mean_img(imgs, target_affine=None, target_shape=None,
         mean image
 
     See Also
-    --------
+    ========
     nilearn.image.math_img : For more general operations on images
 
     """

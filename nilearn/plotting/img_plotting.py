@@ -233,7 +233,7 @@ def plot_img(img, cut_coords=None, output_file=None, display_mode='ortho',
             The name of an image file to export the plot to. Valid extensions
             are .png, .pdf, .svg. If output_file is not None, the plot
             is saved to a file, and the display is closed.
-        display_mode: {'ortho', 'x', 'y', 'z'}
+        display_mode : {'ortho', 'x', 'y', 'z', 'xy', 'xz', 'yz'}
             Choose the direction of the cuts: 'x' - saggital, 'y' - coronal,
             'z' - axial, 'ortho' - three cuts are performed in orthogonal
             directions.
@@ -414,7 +414,7 @@ def plot_anat(anat_img=MNI152TEMPLATE, cut_coords=None,
             The name of an image file to export the plot to. Valid extensions
             are .png, .pdf, .svg. If output_file is not None, the plot
             is saved to a file, and the display is closed.
-        display_mode: {'ortho', 'x', 'y', 'z'}
+        display_mode : {'ortho', 'x', 'y', 'z', 'xy', 'xz', 'yz'}
             Choose the direction of the cuts: 'x' - saggital, 'y' - coronal,
             'z' - axial, 'ortho' - three cuts are performed in orthogonal
             directions.
@@ -503,7 +503,7 @@ def plot_epi(epi_img=None, cut_coords=None, output_file=None,
             The name of an image file to export the plot to. Valid extensions
             are .png, .pdf, .svg. If output_file is not None, the plot
             is saved to a file, and the display is closed.
-        display_mode: {'ortho', 'x', 'y', 'z'}
+        display_mode : {'ortho', 'x', 'y', 'z', 'xy', 'xz', 'yz'}
             Choose the direction of the cuts: 'x' - saggital, 'y' - coronal,
             'z' - axial, 'ortho' - three cuts are performed in orthogonal
             directions.
@@ -584,7 +584,7 @@ def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None,
             The name of an image file to export the plot to. Valid extensions
             are .png, .pdf, .svg. If output_file is not None, the plot
             is saved to a file, and the display is closed.
-        display_mode: {'ortho', 'x', 'y', 'z'}
+        display_mode: {'ortho', 'x', 'y', 'z', 'xy', 'xz', 'yz'}
             Choose the direction of the cuts: 'x' - saggital, 'y' - coronal,
             'z' - axial, 'ortho' - three cuts are performed in orthogonal
             directions.
@@ -624,6 +624,13 @@ def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None,
             Lower bound for plotting, passed to matplotlib.pyplot.imshow
         vmax: float
             Upper bound for plotting, passed to matplotlib.pyplot.imshow
+
+        See Also
+        --------
+
+        nilearn.plotting.plot_roi : To simply plot probabilistic atlases
+            (4D images)
+
 
     """
     bg_img, black_bg, bg_vmin, bg_vmax = _load_anat(bg_img, dim=dim,
@@ -700,7 +707,7 @@ def plot_prob_atlas(maps_img, anat_img=MNI152TEMPLATE, view_type='auto',
             The name of an image file to export the plot to. Valid extensions
             are .png, .pdf, .svg. If output_file is not None, the plot
             is saved to a file, and the display is closed.
-        display_mode: {'ortho', 'x', 'y', 'z'}
+        display_mode: {'ortho', 'x', 'y', 'z', 'xy', 'xz', 'yz'}
             Choose the direction of the cuts: 'x' - saggital, 'y' - coronal,
             'z' - axial, 'ortho' - three cuts are performed in orthogonal
             directions.
@@ -739,6 +746,11 @@ def plot_prob_atlas(maps_img, anat_img=MNI152TEMPLATE, view_type='auto',
         alpha: float between 0 and 1
             Alpha sets the transparency of the color inside the filled
             contours.
+
+        See Also
+        --------
+        nilearn.plotting.plot_roi : To simply plot max-prob atlases (3D images)
+
     """
     display = plot_anat(anat_img, cut_coords=cut_coords,
                         display_mode=display_mode,
@@ -846,7 +858,7 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
             The name of an image file to export the plot to. Valid extensions
             are .png, .pdf, .svg. If output_file is not None, the plot
             is saved to a file, and the display is closed.
-        display_mode : {'ortho', 'x', 'y', 'z'}
+        display_mode: {'ortho', 'x', 'y', 'z', 'xy', 'xz', 'yz'}
             Choose the direction of the cuts: 'x' - saggital, 'y' - coronal,
             'z' - axial, 'ortho' - three cuts are performed in orthogonal
             directions.
@@ -893,6 +905,14 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
         -----
         Arrays should be passed in numpy convention: (x, y, z)
         ordered.
+
+        See Also
+        --------
+
+        nilearn.plotting.plot_anat : To simply plot anatomical images
+        nilearn.plotting.plot_epi : To simply plot raw EPI images
+        nilearn.plotting.plot_glass_brain : To plot maps in a glass brain
+
     """
     # dim the background
     bg_img, black_bg, bg_vmin, bg_vmax = _load_anat(bg_img, dim=dim,
@@ -947,7 +967,7 @@ def plot_glass_brain(stat_map_img,
             The name of an image file to export the plot to. Valid extensions
             are .png, .pdf, .svg. If output_file is not None, the plot
             is saved to a file, and the display is closed.
-        display_mode : {'ortho', 'x', 'y', 'z'}
+        display_mode: {'ortho', 'x', 'y', 'z', 'xy', 'xz', 'yz'}
             Choose the direction of the cuts: 'x' - saggital, 'y' - coronal,
             'z' - axial, 'ortho' - three cuts are performed in orthogonal
             directions.
@@ -1084,7 +1104,7 @@ def plot_connectome(adjacency_matrix, node_coords,
             The name of an image file to export the plot to. Valid extensions
             are .png, .pdf, .svg. If output_file is not None, the plot
             is saved to a file, and the display is closed.
-        display_mode : {'ortho', 'x', 'y', 'z'}
+        display_mode : {'ortho', 'x', 'y', 'z', 'xy', 'xz', 'yz'}
             Choose the direction of the cuts: 'x' - saggital, 'y' - coronal,
             'z' - axial, 'ortho' - three cuts are performed in orthogonal
             directions.
