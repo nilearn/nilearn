@@ -169,7 +169,7 @@ from nilearn import plotting
 
 display = plotting.plot_stat_map(seed_based_correlation_img, threshold=0.3,
                                  cut_coords=dmn_coords[0])
-display.add_markers(marker_coords=np.array(dmn_coords), marker_color='g',
+display.add_markers(marker_coords=dmn_coords, marker_color='g',
                     marker_size=300)
 # At last, we save the plot as pdf.
 display.savefig('sbc_z.pdf')
