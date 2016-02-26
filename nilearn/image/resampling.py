@@ -306,6 +306,11 @@ def resample_img(img, target_affine=None, target_shape=None,
         input image, resampled to have respectively target_shape and
         target_affine as shape and affine.
 
+    See Also
+    --------
+    nilearn.resampling.resample_to_img : To resample an image on a target
+    image.
+
     Notes
     =====
 
@@ -482,6 +487,59 @@ def resample_img(img, target_affine=None, target_shape=None,
                           copy=not input_img_is_string)
 
     return new_img_like(img, resampled_data, target_affine)
+
+
+def resample_to_img(source_img, target_img,
+                    interpolation='continuous', copy=True, order='F'):
+    """Resample a Niimg-like source object on a target Niimg-like object.
+
+    Parameters
+    ----------
+    source_img: Niimg-like object
+        See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
+        Image(s) to resample.
+
+    target_img: Niimg-like object
+        See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
+        Reference image taken for resampling.
+
+    interpolation: str, optional
+        Can be 'continuous' (default) or 'nearest'. Indicate the resample
+        method.
+
+    copy: bool, optional
+        If True, guarantees that output array has no memory in common with
+        input array.
+        In all cases, input images are never modified by this function.
+
+    order: "F" or "C"
+        Data ordering in output array. This function is slightly faster with
+        Fortran ordering.
+
+    Returns
+    -------
+    resampled: nibabel.Nifti1Image
+        input image, resampled to have respectively target image shape and
+        affine as shape and affine.
+
+    See Also
+    --------
+    nilearn.resampling.resample_img : To resample an image with using a given
+    shape and affine instead of a target image.
+    """
+
+    target = _utils.check_niimg(target_img)
+    target_shape = target.shape
+
+    # When target shape is greater than 3, we reduce to 3, ti be compatible
+    # with uniderlying call to resample_img
+    if len(target_shape) > 3:
+        target_shape = target.shape[:3]
+
+    return resample_img(source_img,
+                        target_affine=target.get_affine(),
+                        target_shape=target_shape,
+                        interpolation=interpolation, copy=copy, order=order)
 
 
 def reorder_img(img, resample=None):
