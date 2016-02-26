@@ -43,12 +43,12 @@ print(confound_filename)
 #
 # We will be working with one seed sphere in the Posterior Cingulate Cortex,
 # considered part of the Default Mode Network.
-dmn_coords = [(0, -52, 18)]
+pcc_coords = [(0, -52, 18)]
 
 ##########################################################################
 # We use :class:`nilearn.input_data.NiftiSpheresMasker` to extract the
 # **time series from the functional imaging within the sphere**. The
-# sphere is centered at dmn_coords and will have the radius we pass the
+# sphere is centered at pcc_coords and will have the radius we pass the
 # NiftiSpheresMasker function (here 8 mm).
 #
 # The extraction will also detrend, standardize, and bandpass filter the data.
@@ -56,7 +56,7 @@ dmn_coords = [(0, -52, 18)]
 from nilearn import input_data
 
 seed_masker = input_data.NiftiSpheresMasker(
-    dmn_coords, radius=8,
+    pcc_coords, radius=8,
     detrend=True, standardize=True,
     low_pass=0.1, high_pass=0.01, t_r=2.,
     memory='nilearn_cache', memory_level=1, verbose=0)
@@ -172,8 +172,8 @@ seed_based_correlation_img.to_filename('sbc_z.nii.gz')
 from nilearn import plotting
 
 display = plotting.plot_stat_map(seed_based_correlation_img, threshold=0.3,
-                                 cut_coords=dmn_coords[0])
-display.add_markers(marker_coords=dmn_coords, marker_color='g',
+                                 cut_coords=pcc_coords[0])
+display.add_markers(marker_coords=pcc_coords, marker_color='g',
                     marker_size=300)
 # At last, we save the plot as pdf.
 display.savefig('sbc_z.pdf')
