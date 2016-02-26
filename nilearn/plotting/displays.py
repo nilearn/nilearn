@@ -184,21 +184,31 @@ class CutAxes(BaseAxes):
                 **kwargs)
 
 
-def _coords_3d_to_2d(coords_3d, direction):
-    """Project 3d coordinates into 2d ones given the direction of a cut
+def _get_index_from_direction(direction):
+    """Returns numerical index from direction
     """
-    direction_to_index = {'x': [1, 2],
-                          'y': [0, 2],
-                          'z': [0, 1]}
-    index = direction_to_index.get(direction)
-
-    if index is None:
+    directions = ['x', 'y', 'z']
+    try:
+        index = directions.index(direction)
+    except ValueError:
         message = (
             '{0} is not a valid direction. '
             "Allowed values are 'x', 'y' and 'z'").format(direction)
         raise ValueError(message)
+    return index
 
-    return coords_3d[:, index]
+
+def _coords_3d_to_2d(coords_3d, direction, return_direction=False):
+    """Project 3d coordinates into 2d ones given the direction of a cut
+    """
+    index = _get_index_from_direction(direction)
+    dimensions = [0, 1, 2]
+    dimensions.pop(index)
+
+    if return_direction:
+        return coords_3d[:, dimensions], coords_3d[:, index]
+
+    return coords_3d[:, dimensions]
 
 
 class GlassBrainAxes(BaseAxes):
@@ -702,6 +712,27 @@ class BaseSlicer(object):
                                type='imshow', cmap=single_color_cmap)
 
         plt.draw_if_interactive()
+
+    def add_markers(self, marker_coords, marker_color, marker_size, **kwargs):
+        """Plot markers"""
+        defaults = {'marker': 'o',
+                    'zorder': 1000}
+        for k, v in defaults.items():
+            kwargs.setdefault(k, v)
+
+        for display_ax in self.axes.values():
+            direction = display_ax.direction
+            index = _get_index_from_direction(direction)
+            # coord = display_ax.coord[index]
+            coord = display_ax.coord
+            marker_coords_2d, third_d = _coords_3d_to_2d(
+                marker_coords, direction, return_direction=True)
+            # XXX: should we keep this heuristic?
+            mask = np.abs(third_d - coord) < 2.
+            xdata, ydata = marker_coords_2d.T
+            display_ax.ax.scatter(xdata[mask], ydata[mask],
+                                  s=marker_size,
+                                  c=marker_color, **kwargs)
 
     def annotate(self, left_right=True, positions=True, size=12, **kwargs):
         """ Add annotations to the plot.
