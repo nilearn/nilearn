@@ -308,8 +308,7 @@ def resample_img(img, target_affine=None, target_shape=None,
 
     See Also
     --------
-    nilearn.resampling.resample_to_img : To resample an image on a target
-    image.
+    nilearn.resample_to_img
 
     Notes
     =====
@@ -524,8 +523,7 @@ def resample_to_img(source_img, target_img,
 
     See Also
     --------
-    nilearn.resampling.resample_img : To resample an image with using a given
-    shape and affine instead of a target image.
+    nilearn.resample_img
     """
 
     target = _utils.check_niimg(target_img)
