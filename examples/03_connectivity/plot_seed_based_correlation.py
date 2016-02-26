@@ -15,6 +15,7 @@ These maps depict the temporal correlation of a **seed region** with the **rest 
 # We will work with the first subject of the adhd data set.
 # adhd_dataset.func is a list of filenames. We select the 1st (0-based) subject by indexing with [0]).
 from nilearn import datasets
+
 adhd_dataset = datasets.fetch_adhd(n_subjects=1)
 func_filename = adhd_dataset.func[0]
 confound_filename = adhd_dataset.confounds[0]
@@ -43,6 +44,7 @@ dmn_coords = [(0, -52, 18)]
 # The extraction will also detrend, standardize, and bandpass filter the data.
 # This will create a NiftiSpheresMasker object.
 from nilearn import input_data
+
 seed_masker = input_data.NiftiSpheresMasker(
     dmn_coords, radius=8,
     detrend=True, standardize=True,
@@ -83,6 +85,7 @@ print("brain time series shape: (%s, %s)" % brain_time_series.shape)
 # We can plot the **seed time series**.
 
 import matplotlib.pyplot as plt
+
 plt.plot(seed_time_series)
 plt.title('Seed time series (Posterior cingulate cortex)')
 plt.xlabel('Scan number')
@@ -109,6 +112,7 @@ plt.tight_layout()
 # correlation. Note that the signals have been variance-standardized during extraction. To have them standardized to
 # norm unit, we further have to divide the result by the length of the time series.
 import numpy as np
+
 seed_based_correlations = np.dot(brain_time_series.T, seed_time_series) / seed_time_series.shape[0]
 
 ################################################
@@ -137,9 +141,11 @@ seed_based_correlation_img.to_filename('sbc_z.nii.gz')
 # Plotting the seed-based correlation map
 # ----------------------------------------------
 # We can also plot this image and perform thresholding to only show values more extreme than +/- 0.3.
-# The cross has been set to the center of the seed region of interest.
+# Furthermore, we can display the location of the seed with a sphere and set the cross to the center
+# of the seed region of interest.
 from nilearn import plotting
-display = plotting.plot_stat_map(seed_based_correlation_img, threshold=0.3, cut_coords=dmn_coords[0])
 
+display = plotting.plot_stat_map(seed_based_correlation_img, threshold=0.3, cut_coords=dmn_coords[0])
+display.add_markers(marker_coords=np.array(dmn_coords), marker_color='g', marker_size=300)
 # At last, we save the plot as pdf.
 display.savefig('sbc_z.pdf')
