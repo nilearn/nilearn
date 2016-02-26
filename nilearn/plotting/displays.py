@@ -719,7 +719,7 @@ class BaseSlicer(object):
 
         Parameters
         ----------
-        markers_coords: array of size (n_markers, 3)
+        marker_coords: array of size (n_markers, 3)
             Coordinates of the markers to plot. For each slice, only markers
             that are 2 millimeters away from the slice are plotted.
         marker_color: pyplot compatible color or list of shape (n_markers,)
