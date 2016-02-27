@@ -1731,8 +1731,9 @@ def fetch_nki_enhanced_surface(n_subjects=30, data_dir=None,
     data: sklearn.datasets.base.Bunch
         Dictionary-like object, the interest attributes are :
          - 'func': Paths to functional resting-state images
-         - 'phenotypic': Explanations of preprocessing steps
-         - 'confounds': CSV files containing the nuisance variables
+         - 'phenotypic': CSV file containing age, dominant hand and sex
+                         for each subject.
+         -
 
     References
     ----------
@@ -1789,17 +1790,19 @@ def fetch_nki_enhanced_surface(n_subjects=30, data_dir=None,
     fdescr = _get_dataset_descr(dataset_name)
 
     # First, get the metadata
-    phenotypic_file = 'NKI_enhanced_surface_phenoytypics.csv'
+    phenotypic_file = 'NKI_enhanced_surface_phenotypics.csv'
     phenotypic = (phenotypic_file, url + '8470/pheno_nki_nilearn.csv',
-                  {'move':phenotypic_file})
+                  {'move': phenotypic_file})
 
     phenotypic = _fetch_files(data_dir, [phenotypic], resume=resume,
                               verbose=verbose)[0]
 
     # Load the csv file
     phenotypic = np.genfromtxt(phenotypic, skip_header=True,
-                               names=['Subject', 'Age', 'Dominant Hand', 'Sex'],
-                               delimiter=',', dtype=['U9', '<f8', 'U1', 'U1'])
+                               names=['Subject', 'Age',
+                                      'Dominant Hand', 'Sex'],
+                               delimiter=',', dtype=['U9', '<f8',
+                                                     'U1', 'U1'])
 
     # Keep phenotypic information for selected subjects
     int_ids = np.asarray(ids)
@@ -1807,64 +1810,70 @@ def fetch_nki_enhanced_surface(n_subjects=30, data_dir=None,
                              for i in int_ids]]
 
     # Download fsaverage surfaces and sulcal information
-    pial = []
-    infl = []
-    sulc = []
-    surf_file = os.path.join('fsaverage', '%s.%s.gii')
+    surf_file = os.path.join('fsaverage5', '%s.%s.gii')
     surf_url = url + '%i/%s.%s.gii'
     surf_nids = {'lh pial': 8465, 'rh pial': 8468,
                  'lh infl': 8464, 'rh infl': 8467,
                  'lh sulc': 8466, 'rh sulc': 8469}
 
-    for hemi in ['lh', 'rh']:
-        p = _fetch_files(data_dir,
-                         [(surf_file % (hemi, 'pial'),
-                          surf_url % (surf_nids['%s pial' % hemi],
-                                      hemi, 'pial'),
-                          {'move': surf_file % (hemi, 'pial')})],
-                         resume=resume, verbose=verbose)
-        pial.append(p)
+    pials = []
+    infls = []
+    sulcs = []
+    for hemi in [('lh', 'left'), ('rh', 'right')]:
 
-        i = _fetch_files(data_dir,
-                         [(surf_file % (hemi, 'inflated'),
-                          surf_url % (surf_nids['%s infl' % hemi],
-                                      hemi, 'inflated'),
-                          {'move': surf_file % (hemi, 'inflated')})],
-                         resume=resume, verbose=verbose)
-        infl.append(i)
+        pial = _fetch_files(data_dir,
+                            [(surf_file % ('pial', hemi[1]),
+                             surf_url % (surf_nids['%s pial' % hemi[0]],
+                                         hemi[0], 'pial'),
+                             {'move': surf_file % ('pial', hemi[1])})],
+                            resume=resume, verbose=verbose)
+        pials.append(pial)
 
-        s = _fetch_files(data_dir,
-                         [(surf_file % (hemi, 'sulc'),
-                          surf_url % (surf_nids['%s sulc' % hemi],
-                                      hemi, 'sulc'),
-                          {'move': surf_file % (hemi, 'sulc')})],
-                         resume=resume, verbose=verbose)
-        sulc.append(s)
+        infl = _fetch_files(data_dir,
+                            [(surf_file % ('pial_inflated', hemi[1]),
+                             surf_url % (surf_nids['%s infl' % hemi[0]],
+                                         hemi[0], 'inflated'),
+                             {'move': surf_file % ('pial_inflated', hemi[1])})],
+                            resume=resume, verbose=verbose)
+        infls.append(infl)
 
-    # Download dataset files
-    rh = []
-    lh = []
+        sulc = _fetch_files(data_dir,
+                            [(surf_file % ('sulc', hemi[1]),
+                             surf_url % (surf_nids['%s sulc' % hemi[0]],
+                                         hemi[0], 'sulc'),
+                             {'move': surf_file % ('sulc', hemi[1])})],
+                            resume=resume, verbose=verbose)
+        sulcs.append(sulc)
+
+    # Download subjects' datasets
+    func_right = []
+    func_left = []
     for i in range(len(ids)):
 
         archive = url + '%i/%s_%s_preprocessed_fsaverage5_fwhm6.gii'
-        resting = os.path.join('%s', '%s_%s_preprocessed_fsaverage5_fwhm6.gii')
-        r = _fetch_files(data_dir,
-                         [(resting % (ids[i], ids[i], 'rh'),
+        func = os.path.join('%s', '%s_%s_preprocessed_fwhm6.gii')
+        rh = _fetch_files(data_dir,
+                          [(func % (ids[i], ids[i], 'right'),
                            archive % (nitrc_ids[i], ids[i], 'rh'),
-                           {'move': resting % (ids[i], ids[i], 'rh')}
-                           )],
-                         resume=resume, verbose=verbose)
-        l = _fetch_files(data_dir,
-                         [(resting % (ids[i], ids[i], 'lh'),
+                           {'move': func % (ids[i], ids[i], 'right')}
+                            )],
+                          resume=resume, verbose=verbose)
+        lh = _fetch_files(data_dir,
+                          [(func % (ids[i], ids[i], 'left'),
                            archive % (nitrc_ids[i], ids[i], 'lh'),
-                           {'move': resting % (ids[i], ids[i], 'lh')}
-                           )],
-                         resume=resume, verbose=verbose)
+                           {'move': func % (ids[i], ids[i], 'left')}
+                            )],
+                          resume=resume, verbose=verbose)
 
-        rh.append(r)
-        lh.append(l)
+        func_right.append(rh[0])
+        func_left.append(lh[0])
 
-    return Bunch(resting_rh=rh, resting_lh=lh,
-                 fsaverage_pial=pial, fsaverage_inflated=infl,
-                 fsaverage_sulc=sulc, phenotypic=phenotypic,
+    return Bunch(func_left=func_left, func_right=func_right,
+                 fsaverage5_pial_left=pials[0],
+                 fsaverage5_pial_right=pials[1],
+                 fsaverage5_infl_left=infls[0],
+                 fsaverage5_infl_right=infls[1],
+                 fsaverage5_sulc_left=sulcs[0],
+                 fsaverage5_sulc_right=sulcs[1],
+                 phenotypic=phenotypic,
                  description=fdescr)
