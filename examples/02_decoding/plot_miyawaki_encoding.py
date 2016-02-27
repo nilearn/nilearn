@@ -171,8 +171,7 @@ xy_indices_of_special_voxels = [(30, 10), (32, 10), (31, 9), (31, 10)]
 
 display = plot_stat_map(thresholded_score_map, bg_img=dataset.background,
                         cut_coords=[-8], display_mode='z', aspect=1.25,
-                        title='Explained variance per voxel',
-                        symmetric_cbar=False)
+                        title='Explained variance per voxel')
 
 # creating a marker for each voxel and adding it to the statistical map
 
