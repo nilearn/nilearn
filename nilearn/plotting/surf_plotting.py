@@ -64,7 +64,7 @@ def plot_surf_stat_map(surf_mesh, hemi, stat_map=None, bg_map=None,
             Parameters
             ----------
             surf_mesh: Surface object (to be defined)
-            hemi: Hemisphere to display
+            hemi: {'left', 'right'}, hemisphere to display
             stat_map: Surface data (to be defined) to be displayed, optional
             bg_map: Surface data object (to be defined), optional,
                 background image to be plotted on the mesh underneath the
@@ -114,7 +114,7 @@ def plot_surf_stat_map(surf_mesh, hemi, stat_map=None, bg_map=None,
     limits = [coords.min(), coords.max()]
 
     # set view
-    if hemi == 'rh':
+    if hemi == 'right':
         if view == 'lateral':
             elev, azim = 0, 0
         elif view == 'medial':
@@ -126,7 +126,7 @@ def plot_surf_stat_map(surf_mesh, hemi, stat_map=None, bg_map=None,
         else:
             raise ValueError('view must be one of lateral, medial, '
                              'dorsal or ventral')
-    elif hemi == 'lh':
+    elif hemi == 'left':
         if view == 'medial':
             elev, azim = 0, 0
         elif view == 'lateral':
@@ -139,7 +139,7 @@ def plot_surf_stat_map(surf_mesh, hemi, stat_map=None, bg_map=None,
             raise ValueError('view must be one of lateral, medial, '
                              'dorsal or ventral')
     else:
-        raise ValueError('hemi must be one of rh or lh')
+        raise ValueError('hemi must be one of rght or left')
 
     # set alpha if in auto mode
     if alpha == 'auto':
