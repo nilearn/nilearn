@@ -3,20 +3,20 @@
 Encoding models for visual stimuli from Miyawaki et al. 2008
 ============================================================
 
-This example demonstrates how to build an encoding model for 
+This example demonstrates how to build an encoding model for
 functional MRI data with visual stimuli.
 
-Encoding models try to predict neuronal activity using properties of 
+Encoding models try to predict neuronal activity using properties of
 a real world stimulus, like images or sound.
 
 In the dataset from :func:`nilearn.datasets.fetch_miyawaki2008`,
-participants were shown images consisting of 10x10 
+participants were shown images consisting of 10x10
 binary (either black or white) pixels and the corresponding  fMRI activity
-was recorded. We will predict the neuronal activity from the pixel-values 
-of the presented images for each voxel. Then we extract the receptive fields 
+was recorded. We will predict the neuronal activity from the pixel-values
+of the presented images for each voxel. Then we extract the receptive fields
 for a set of voxels to see which pixel location a voxel is most sensitive to.
 
-See also :doc:`plot_miyawaki_reconstruction` for a decoding 
+See also :doc:`plot_miyawaki_reconstruction` for a decoding
 approach for the same dataset.
 """
 
@@ -38,7 +38,7 @@ from nilearn.datasets import fetch_miyawaki2008
 dataset = fetch_miyawaki2008()
 
 ##############################################################################
-# We only use the training data of this study, 
+# We only use the training data of this study,
 # where random binary images were shown.
 
 X_random_filenames = dataset.func[12:]
@@ -96,8 +96,8 @@ from sklearn.linear_model import Ridge
 from sklearn.cross_validation import KFold
 
 ##############################################################################
-# Using 10-fold cross-validation, we partition the data into 10 'Folds', 
-# we hold out each fold of the data for testing, then fit a ridge regression 
+# Using 10-fold cross-validation, we partition the data into 10 'Folds',
+# we hold out each fold of the data for testing, then fit a ridge regression
 # to the remaining 9/10 of the data, using y_train as predictors
 # and X_train as targets, and create predictions for the held-out 10th.
 
@@ -106,7 +106,7 @@ cv = KFold(len(y_train), 10)
 
 predictions = [Ridge(alpha=100.).fit(
     y_train.reshape(-1, 100)[train], X_train[train]).predict(
-        y_train.reshape(-1, 100)[test]) 
+        y_train.reshape(-1, 100)[test])
     for train, test in cv]
 
 
@@ -115,7 +115,7 @@ predictions = [Ridge(alpha=100.).fit(
 # much variance our encoding model explains in each voxel.
 
 scores = [1. - (((X_train[test] - pred) ** 2).sum(axis=0) /
-         ((X_train[test] - X_train[test].mean(axis=0)) ** 2).sum(axis=0)) 
+         ((X_train[test] - X_train[test].mean(axis=0)) ** 2).sum(axis=0))
          for pred, (train, test) in zip(predictions, cv)]
 
 ##############################################################################
@@ -131,13 +131,13 @@ cut_score = np.array(scores).mean(axis=0)
 cut_score[cut_score < 0] = 0
 
 # bring the scores into the shape of the background brain
-score_map = new_img_like(dataset.background, 
+score_map = new_img_like(dataset.background,
                          masking.unmask(cut_score, dataset.mask).get_data())
 
 thresholded_score_map = threshold_img(score_map, threshold = 1e-6)
 
 ##############################################################################
-# Plotting the statistical map on a background brain, we mark four voxels 
+# Plotting the statistical map on a background brain, we mark four voxels
 # which we will inspect more closely later on.
 
 def index_to_xy_coord(x,y,z=10):
@@ -148,9 +148,9 @@ def index_to_xy_coord(x,y,z=10):
 
 xy_indices_of_special_voxels = [(30, 10), (32, 10), (31, 9), (31, 10)]
 
-statmap = plot_stat_map(thresholded_score_map, bg_img=dataset.background, 
+statmap = plot_stat_map(thresholded_score_map, bg_img=dataset.background,
                         cut_coords=[-8], display_mode='z', aspect=1.25,
-                        title='Explained variance per voxel', 
+                        title='Explained variance per voxel',
                         symmetric_cbar=False)
 
 # creating a contour for each voxel and adding it to the statistical map
@@ -172,12 +172,12 @@ plt.show()
 # Estimating receptive fields
 # ---------------------------
 # Now we take a closer look at the receptive fields of the four marked voxels.
-# A voxel's `receptive field <http://en.wikipedia.org/wiki/Receptive_field>`_ 
+# A voxel's `receptive field <http://en.wikipedia.org/wiki/Receptive_field>`_
 # is the region of a stimulus (like an image) where the presence of an object,
 # like a white instead of a black pixel, results in a change in activity
 # in the voxel. In our case the receptive field is just the vector of 100
-# regression  coefficients (one for each pixel) reshaped into the 10x10 
-# form of the original images. Some voxels are receptive to only very few 
+# regression  coefficients (one for each pixel) reshaped into the 10x10
+# form of the original images. Some voxels are receptive to only very few
 # pixels, so we use Lasso regression to estimate a sparse set of
 # regression coefficients.
 
@@ -206,11 +206,10 @@ for i, index in enumerate([1780, 1951, 2131]):
                       cmap=['Reds','Greens','Blues'][i],vmin=0.,vmax=0.75)
     # add the marked pixel
     ax.add_patch(mpl.patches.Rectangle(
-        (p[1] - .5, p[0] - .5), 1, 1, 
+        (p[1] - .5, p[0] - .5), 1, 1,
         facecolor = 'none', edgecolor = 'r', lw = 4))
     plt.axis('off')
     plt.colorbar(ax_im, ax=ax)
-    
 
 # and then for the voxel at the bottom
 
@@ -229,6 +228,6 @@ ax.add_patch(mpl.patches.Rectangle(
 plt.axis('off')
 plt.colorbar(ax_im, ax=ax)
 ##############################################################################
-# The receptive fields of the four voxels are not only close to each other, 
-# the relative location of the pixel each voxel is most sensitive to 
+# The receptive fields of the four voxels are not only close to each other,
+# the relative location of the pixel each voxel is most sensitive to
 # roughly maps to the relative location of the voxels to each other.
