@@ -70,7 +70,7 @@ seed_time_series = seed_masker.fit_transform(func_filename,
 
 ##########################################################################
 # Next, we can proceed similarly for the **brain-wide voxel-wise time
-# series**, using :class:`nilearn.in_data.NiftiMasker` with the same input
+# series**, using :class:`nilearn.input_data.NiftiMasker` with the same input
 # arguments as in the seed_masker in addition to smoothing with a 6 mm kernel
 brain_masker = input_data.NiftiMasker(
     smoothing_fwhm=6,
