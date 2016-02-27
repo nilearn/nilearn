@@ -11,6 +11,7 @@ Note the difference between images, that lie in brain space, and the
 numpy array, corresponding to the data inside the mask.
 """
 
+# author: Franz Liem
 
 
 ##########################################################################
