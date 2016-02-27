@@ -491,7 +491,10 @@ def resample_img(img, target_affine=None, target_shape=None,
 
 def resample_to_img(source_img, target_img,
                     interpolation='continuous', copy=True, order='F'):
-    """Resample a Niimg-like source object on a target Niimg-like object.
+    """Resample a Niimg-like source image on a target Niimg-like image
+    (no registration is performed: the image should already be aligned).
+
+    .. versionadded:: 0.2.4
 
     Parameters
     ----------

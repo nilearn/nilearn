@@ -9,6 +9,10 @@ New features
     - plotting plot_connectome with colorbar is now implemented in function
       :func:`nilearn.plotting.plot_connectome`
 
+    - New function :func:`nilearn.image.resample_to_img` to resample one
+      img on another one (just resampling / interpolation, no
+      coregistration)
+
 API changes summary
 ...................
     - Atlas fetcher :func:`nilearn.datasets.fetch_atlas_msdl` now returns directly
