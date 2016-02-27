@@ -11,10 +11,10 @@ then adding 1 as a fourth entry, (i, j, k, 1), and multiplying by the affine
 matrix yields (x, y, z, 1), a 4-vector containing the millimeter position of
 the voxel.
 
-The resampling procedure in `resample_img` can attribute a new affine matrix
-and a new shape to your Nifti image while keeping its representation in
-millimeter space exactly the same (up to sampling error and possible
-clipping).
+The resampling procedure in :func:`nilearn.image.resample_img` can attribute
+a new affine matrix and a new shape to your Nifti image while keeping its
+representation in millimeter space exactly the same (up to sampling error and
+possible clipping).
 
 This example shows a 2D image in voxel space, and the position of the data in
 millimeter space, as encoded by the affine matrix. The image is the resampled
