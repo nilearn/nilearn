@@ -2,9 +2,9 @@
 Demonstrate basic surface plotting with plot_surf_stat_map
 ==========================================================
 
+
 See :ref:`plotting` for more details.
 """
-import matplotlib.pyplot as plt
 from nilearn import plotting
 from nilearn import datasets
 
@@ -55,4 +55,4 @@ plotting.plot_surf_stat_map(fsaverage5_pial, 'left', stat_map=stat_map,
 plotting.plot_surf_stat_map(fsaverage5_pial, 'left', stat_map=stat_map,
                             output_file='/tmp/plot_surf_stat_map.png')
 
-plt.show()
+plotting.show()
