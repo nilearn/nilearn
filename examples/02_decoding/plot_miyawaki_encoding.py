@@ -12,14 +12,19 @@ This example partly reproduces the encoding model presented in
     Neuron, 60(5), 915-929.
 
 Encoding models try to predict neuronal activity using a presented stimulus,
-like images or sound.
+like an image or sound. Where decoding goes from brain data to
+real-world stimulus, encoding goes the other direction.
 
-In the dataset from :func:`nilearn.datasets.fetch_miyawaki2008`,
-participants were shown images consisting of 10x10
-binary (either black or white) pixels and the corresponding  fMRI activity
-was recorded. We will predict the neuronal activity from the pixel-values
-of the presented images for each voxel. Then we extract the receptive fields
-for a set of voxels to see which pixel location a voxel is most sensitive to.
+We demonstrate how to build such an **encoding model** in nilearn, predicting
+**fMRI data** from **visual stimuli**, using the dataset from `Miyawaki et al.,
+2008  <http://www.cell.com/neuron/abstract/S0896-6273%2808%2900958-6>`_.
+
+In a part of this experiment, participants were shown images consisting of
+10x10 binary (either black or white) pixels and the corresponding fMRI
+activity was recorded. We will try to predict the activity in each voxel
+from the binary pixel-values of the presented images. Then we extract the
+receptive fields for a set of voxels to see which pixel location a voxel
+is most sensitive to.
 
 See also :doc:`plot_miyawaki_reconstruction` for a decoding
 approach for the same dataset.
@@ -89,13 +94,13 @@ X_train = np.vstack([x[2:] for x in X_train])
 y_train = np.vstack([y[:-2] for y in y_train]).astype(float)
 
 ##############################################################################
-# X_train is a matrix of *N_samples* x *N_voxels*
+# X_train is a matrix of *samples* x *voxels*
 
 print(X_train.shape)
 
 ##############################################################################
 # We flatten the last two dimensions of y_train
-# so it is a matrix of *N_samples* x *N_pixels*.
+# so it is a matrix of *samples* x *pixels*.
 
 # Flatten the stimuli
 y_train = np.reshape(y_train, (-1, y_shape[0] * y_shape[1]))
@@ -105,13 +110,17 @@ print(y_train.shape)
 ##############################################################################
 # Building the encoding models
 # ----------------------------
-# We can now proceed to do a simple encoding using Ridge regression.
+# We can now proceed to build a simple **voxel-wise encoding model** using
+# `Ridge regression <http://en.wikipedia.org/wiki/Tikhonov_regularization>`_.
+# For each voxel we fit an independent regression model,
+# using the pixel-values of the visual stimuli to predict the neuronal
+# activity in this voxel.
 
 from sklearn.linear_model import Ridge
 from sklearn.cross_validation import KFold
 
 ##############################################################################
-# Using 10-fold cross-validation, we partition the data into 10 'Folds',
+# Using 10-fold cross-validation, we partition the data into 10 'folds',
 # we hold out each fold of the data for testing, then fit a ridge regression
 # to the remaining 9/10 of the data, using y_train as predictors
 # and X_train as targets, and create predictions for the held-out 10th.
@@ -127,7 +136,7 @@ for train, test in cv:
 
 ##############################################################################
 # To have a measure for the quality of our encoding model, we estimate how
-# much variance our encoding model explains in each voxel.
+# much variance the encoding model explains in each voxel.
 
 from sklearn.metrics import r2_score
 
@@ -141,7 +150,6 @@ scores = [r2_score(X_train[test], pred, multioutput = 'raw_values')
 # to create a Nifti1Image containing the scores and then threshold it:
 
 from nilearn.image import threshold_img, new_img_like
-from nilearn.image.resampling import coord_transform
 from nilearn.masking import unmask
 
 cut_score = np.array(scores).mean(axis=0)
@@ -158,7 +166,7 @@ thresholded_score_map = threshold_img(score_map, threshold = 1e-6)
 # which we will inspect more closely later on.
 
 from nilearn.plotting import plot_stat_map
-
+from nilearn.image.resampling import coord_transform
 
 def index_to_xy_coord(x, y, z=10):
     '''Transforms data index to coordinates of the background + offset'''
@@ -198,8 +206,9 @@ plt.show()
 # in the voxel. In our case the receptive field is just the vector of 100
 # regression  coefficients (one for each pixel) reshaped into the 10x10
 # form of the original images. Some voxels are receptive to only very few
-# pixels, so we use Lasso regression to estimate a sparse set of
-# regression coefficients.
+# pixels, so we use `Lasso regression
+# <http://en.wikipedia.org/wiki/Lasso_(statistics)>`_ to estimate a sparse
+# set of regression coefficients.
 
 from sklearn.linear_model import LassoLarsCV
 
@@ -209,8 +218,8 @@ lasso = LassoLarsCV(max_iter=10)
 # Mark the same pixel in each receptive field
 marked_pixel = (4, 2)
 
-import matplotlib as mpl
 from matplotlib import gridspec
+from matplotlib.patches import Rectangle
 
 fig = plt.figure(figsize=(12, 12))
 gs1 = gridspec.GridSpec(2, 3)
@@ -225,7 +234,7 @@ for i, index in enumerate([1780, 1951, 2131]):
     ax_im = ax.imshow(np.ma.masked_less(rf, 0.1), interpolation="nearest",
                       cmap=['Reds', 'Greens', 'Blues'][i], vmin=0., vmax=0.75)
     # add the marked pixel
-    ax.add_patch(mpl.patches.Rectangle(
+    ax.add_patch(Rectangle(
         (marked_pixel[1] - .5, marked_pixel[0] - .5), 1, 1,
         facecolor = 'none', edgecolor = 'r', lw = 4))
     plt.axis('off')
@@ -242,7 +251,7 @@ ax_im = ax.imshow(np.ma.masked_less(rf, 0.1), interpolation="nearest",
                   cmap='RdPu', vmin=0., vmax=0.75)
 
 # add the marked pixel
-ax.add_patch(mpl.patches.Rectangle(
+ax.add_patch(Rectangle(
     (marked_pixel[1] - .5, marked_pixel[0] - .5), 1, 1,
     facecolor = 'none', edgecolor = 'r', lw = 4))
 plt.axis('off')
