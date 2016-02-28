@@ -46,7 +46,7 @@ def check_surf_mesh(surf_mesh):
             coords, faces = nibabel.freesurfer.io.read_geometry(surf_mesh)
         elif surf_mesh.endswith('gii'):
             coords, faces = gifti.read(surf_mesh).getArraysFromIntent(nibabel.nifti1.intent_codes['NIFTI_INTENT_POINTSET'])[0].data, \
-                            gifti.read(surf_mesh).getArraysFromIntent(nibabel.nifti1.intent_codes['NIFTI_INTENT_TRIANGLE'])[0].data
+                            gifti.read(surf_mesh).getArraysFromIntent(nibabel.nifti1.intent_codes['NIFTI_INTENT_TRIANGLEÞ'])[0].data
         else:
             raise ValueError('Format of mesh file not recognized.')
 
@@ -202,7 +202,7 @@ def plot_surf_stat_map(surf_mesh, hemi, stat_map=None, bg_map=None,
                                           symmetric_cbar, kwargs)
 
             if threshold is not None:
-                kept_indices = np.where(abs(stat_map_faces) >= threshold)[0]
+                kept_indices = np.where(np.abs(stat_map_faces) >= threshold)[0]
                 stat_map_faces = stat_map_faces - vmin
                 stat_map_faces = stat_map_faces / (vmax-vmin)
                 if bg_on_stat:

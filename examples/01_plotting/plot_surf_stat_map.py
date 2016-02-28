@@ -5,9 +5,12 @@ Demonstrate basic surface plotting with plot_surf_stat_map
 
 See :ref:`plotting` for more details.
 """
+
+###############################################################################
 from nilearn import plotting
 from nilearn import datasets
 
+###############################################################################
 # Retrieve the data
 nki_dataset = datasets.fetch_nki_enhanced_surface(n_subjects=1)
 
@@ -16,7 +19,7 @@ fsaverage5_inflated = nki_dataset['fsaverage5_infl_left'][0]
 sulcal_depth_map = nki_dataset['fsaverage5_sulc_left'][0]
 stat_map = nki_dataset['func_left'][0]
 
-
+###############################################################################
 # display unthresholded stat map in lateral and medial view
 plotting.plot_surf_stat_map(fsaverage5_pial, 'left', stat_map=stat_map)
 
