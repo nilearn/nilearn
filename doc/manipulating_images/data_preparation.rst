@@ -269,7 +269,7 @@ matrix (i.e., affine).
     Instead of using an affine or shape, it's also possible to resample an
     image using a reference with :func:`nilearn.image.resample_to_img`.
 
-.. image:: ../auto_examples/04_manipulating_images/images/sphx_glr_plot_resample_to_template_002.png
+.. image:: ../auto_examples/04_manipulating_images/images/sphx_glr_plot_resample_to_template_001.png
     :target: ../auto_examples/04_manipulating_images/plot_resample_to_template.html
     :scale: 33%
 
