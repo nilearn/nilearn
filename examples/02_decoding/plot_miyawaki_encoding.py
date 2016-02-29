@@ -11,17 +11,18 @@ This example partly reproduces the encoding model presented in
     Morito, Y., Tanabe, H. C., ... & Kamitani, Y. (2008).
     Neuron, 60(5), 915-929.
 
-Encoding models try to predict neuronal activity using a presented stimulus,
-like an image or sound. Where decoding goes from brain data to
-real-world stimulus, encoding goes the other direction.
+Encoding models try to predict neuronal activity using information from
+presented stimuli, like an image or sound. Where decoding goes from
+brain data to real-world stimulus, encoding goes the other direction.
 
 We demonstrate how to build such an **encoding model** in nilearn, predicting
-**fMRI data** from **visual stimuli**, using the dataset from `Miyawaki et al.,
-2008  <http://www.cell.com/neuron/abstract/S0896-6273%2808%2900958-6>`_.
+**fMRI data** from **visual stimuli**, using the dataset from
+`Miyawaki et al., 2008
+<http://www.cell.com/neuron/abstract/S0896-6273%2808%2900958-6>`_.
 
-In a part of this experiment, participants were shown images consisting of
-10x10 binary (either black or white) pixels and the corresponding fMRI
-activity was recorded. We will try to predict the activity in each voxel
+Participants were shown images, which consisted of random 10x10 binary
+(either black or white) pixels, and the corresponding fMRI activity was
+recorded. We will try to predict the activity in each voxel
 from the binary pixel-values of the presented images. Then we extract the
 receptive fields for a set of voxels to see which pixel location a voxel
 is most sensitive to.
@@ -59,7 +60,7 @@ masker = MultiNiftiMasker(mask_img=dataset.mask, detrend=True,
 masker.fit()
 X_train = masker.transform(X_random_filenames)
 
-# shape of the binary image in pixels
+# shape of the binary (i.e. black and wihte values) image in pixels
 y_shape = (10, 10)
 
 # We load the visual stimuli from csv files
@@ -116,8 +117,8 @@ from sklearn.linear_model import Ridge
 from sklearn.cross_validation import KFold
 
 ##############################################################################
-# Using 10-fold cross-validation, we partition the data into 10 'folds',
-# we hold out each fold of the data for testing, then fit a ridge regression
+# Using 10-fold cross-validation, we partition the data into 10 'folds'.
+# We hold out each fold of the data for testing, then fit a ridge regression
 # to the remaining 9/10 of the data, using y_train as predictors
 # and X_train as targets, and create predictions for the held-out 10th.
 from sklearn.metrics import r2_score
@@ -143,14 +144,13 @@ for train, test in cv:
 # to create a Nifti1Image containing the scores and then threshold it:
 
 from nilearn.image import threshold_img, new_img_like
-from nilearn.masking import unmask
 
-cut_score = np.array(scores).mean(axis=0)
+cut_score = np.mean(scores, axis=0)
 cut_score[cut_score < 0] = 0
 
 # bring the scores into the shape of the background brain
 score_map_img = new_img_like(dataset.background,
-                         unmask(cut_score, dataset.mask).get_data())
+                             masker.inverse_transform(cut_score).get_data())
 
 thresholded_score_map_img = threshold_img(score_map_img, threshold=1e-6)
 
@@ -176,9 +176,9 @@ display = plot_stat_map(thresholded_score_map_img, bg_img=dataset.background,
 # creating a marker for each voxel and adding it to the statistical map
 
 for i, (x, y) in enumerate(xy_indices_of_special_voxels):
-    display.add_markers(index_to_xy_coord(x, y),
+    display.add_markers(index_to_xy_coord(x, y), marker_color='none',
                         edgecolor=['b', 'r', 'magenta', 'g'][i],
-                        marker_size=150, marker='s',
+                        marker_size=140, marker='s',
                         facecolor='none', lw=4.5)
 
 
@@ -212,7 +212,7 @@ marked_pixel = (4, 2)
 from matplotlib import gridspec
 from matplotlib.patches import Rectangle
 
-fig = plt.figure(figsize=(12, 12))
+fig = plt.figure(figsize=(12, 8))
 fig.suptitle('Receptive fields of the marked voxels', fontsize=25)
 
 # GridSpec allows us to do subplots with more control of the spacing
@@ -236,7 +236,7 @@ for i, index in enumerate([1780, 1951, 2131]):
 
 # and then for the voxel at the bottom
 
-gs1.update(left=0., right=1., wspace=0.1, bottom=0.3)
+gs1.update(left=0., right=1., wspace=0.1)
 ax = plt.subplot(gs1[1, 1])
 # we reshape the coefficients into the form of the original images
 rf = lasso.fit(y_train, X_train[:, 1935]).coef_.reshape((10, 10))
@@ -254,6 +254,6 @@ plt.colorbar(ax_im, ax=ax)
 ##############################################################################
 # The receptive fields of the four voxels are not only close to each other,
 # the relative location of the pixel each voxel is most sensitive to
-# roughly maps to the relative location of the voxels to each other. 
+# roughly maps to the relative location of the voxels to each other.
 # We can see a relationship between some voxel's receptive field and
 # its location in the brain.
