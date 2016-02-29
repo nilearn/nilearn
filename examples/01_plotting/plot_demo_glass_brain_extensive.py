@@ -41,10 +41,13 @@ plotting.plot_glass_brain(localizer_tmap_filename, threshold=3,
                           display_mode='lyrz')
 
 plotting.plot_glass_brain(localizer_tmap_filename, threshold=3, colorbar=True,
-                          display_mode='lyrz')
+                          display_mode='lzry')
 
 plotting.plot_glass_brain(localizer_tmap_filename, title='plot_glass_brain',
-                          black_bg=True, display_mode='lr', threshold=3)
+                          black_bg=True, display_mode='lyr', threshold=3)
+
+plotting.plot_glass_brain(localizer_tmap_filename, title='plot_glass_brain',
+                          black_bg=True, display_mode='lzr', threshold=3)
 
 plotting.plot_glass_brain(localizer_tmap_filename, threshold=0, colorbar=True,
                           plot_abs=False, display_mode='lyrz')

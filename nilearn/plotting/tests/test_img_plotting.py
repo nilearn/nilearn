@@ -107,6 +107,10 @@ def test_plot_functions():
         finally:
             os.remove(filename)
 
+    # smoke-test for hemispheric glass brain
+    filename = tempfile.mktemp(suffix='.png')
+    plot_glass_brain(img, output_file=filename, display_mode='lzry')
+
     # test for bad input arguments (cf. #510)
     ax = plt.subplot(111, rasterized=True)
     filename = tempfile.mktemp(suffix='.png')

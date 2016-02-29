@@ -1019,16 +1019,18 @@ class OrthoSlicer(BaseSlicer):
         total_width = float(sum(width_dict.values()))
         for ax, width in width_dict.items():
             width_dict[ax] = width / total_width * (x1 - x0)
-        x_ax = display_ax_dict.get('x', dummy_ax)
-        y_ax = display_ax_dict.get('y', dummy_ax)
-        z_ax = display_ax_dict.get('z', dummy_ax)
+
+        direction_ax = []
+        for d in self._cut_displayed:
+            direction_ax.append(display_ax_dict.get(d, dummy_ax).ax)
         left_dict = dict()
-        left_dict[y_ax.ax] = x0
-        left_dict[x_ax.ax] = x0 + width_dict[y_ax.ax]
-        left_dict[z_ax.ax] = x0 + width_dict[x_ax.ax] + width_dict[y_ax.ax]
+        for idx, ax in enumerate(direction_ax):
+            left_dict[ax] = x0
+            for prev_ax in direction_ax[:idx]:
+                left_dict[ax] += width_dict[prev_ax]
 
         return transforms.Bbox([[left_dict[axes], y0],
-                          [left_dict[axes] + width_dict[axes], y1]])
+                               [left_dict[axes] + width_dict[axes], y1]])
 
     def draw_cross(self, cut_coords=None, **kwargs):
         """ Draw a crossbar on the plot to show where the cut is
@@ -1402,52 +1404,6 @@ class OrthoHemisphericProjector(OrthoProjector):
     _cut_displayed = 'lyrz'
     _axes_class = GlassBrainHemisphericAxes
 
-    def _locator(self, axes, renderer):
-        """ The locator function used by matplotlib to position axes.
-            Here we put the logic used to adjust the size of the axes.
-        """
-        x0, y0, x1, y1 = self.rect
-        width_dict = dict()
-        # A dummy axes, for the situation in which we are not plotting
-        # all three (x, y, z) cuts
-        dummy_ax = self._axes_class(None, None, None)
-        width_dict[dummy_ax.ax] = 0
-        display_ax_dict = self.axes
-
-        if self._colorbar:
-            adjusted_width = self._colorbar_width / len(self.axes)
-            right_margin = self._colorbar_margin['right'] / len(self.axes)
-            ticks_margin = self._colorbar_margin['left'] / len(self.axes)
-            x1 = x1 - (adjusted_width + ticks_margin + right_margin)
-
-        for display_ax in display_ax_dict.values():
-            bounds = display_ax.get_object_bounds()
-            if not bounds:
-                # This happens if the call to _map_show was not
-                # succesful. As it happens asyncroniously (during a
-                # refresh of the figure) we capture the problem and
-                # ignore it: it only adds a non informative traceback
-                bounds = [0, 1, 0, 1]
-            xmin, xmax, ymin, ymax = bounds
-            width_dict[display_ax.ax] = (xmax - xmin)
-
-        total_width = float(sum(width_dict.values()))
-        for ax, width in width_dict.items():
-            width_dict[ax] = width / total_width * (x1 - x0)
-        l_ax = display_ax_dict.get('l', dummy_ax)
-        y_ax = display_ax_dict.get('y', dummy_ax)
-        r_ax = display_ax_dict.get('r', dummy_ax)
-        z_ax = display_ax_dict.get('z', dummy_ax)
-        left_dict = dict()
-        left_dict[l_ax.ax] = x0
-        left_dict[y_ax.ax] = x0 + width_dict[l_ax.ax]
-        left_dict[r_ax.ax] = x0 + width_dict[y_ax.ax] + width_dict[l_ax.ax]
-        left_dict[z_ax.ax] = (x0 + width_dict[r_ax.ax] + width_dict[y_ax.ax] +
-                              width_dict[l_ax.ax])
-
-        return transforms.Bbox([[left_dict[axes], y0],
-                               [left_dict[axes] + width_dict[axes], y1]])
-
 
 class XProjector(OrthoProjector):
     _cut_displayed = 'x'
@@ -1480,6 +1436,18 @@ class LYRZProjector(OrthoHemisphericProjector):
     _cut_displayed = 'lyrz'
 
 
+class LZRYProjector(OrthoHemisphericProjector):
+    _cut_displayed = 'lzry'
+
+
+class LZRProjector(OrthoHemisphericProjector):
+    _cut_displayed = 'lzr'
+
+
+class LYRProjector(OrthoHemisphericProjector):
+    _cut_displayed = 'lyr'
+
+
 class LRProjector(OrthoHemisphericProjector):
     _cut_displayed = 'lr'
 
@@ -1501,7 +1469,10 @@ PROJECTORS = dict(ortho=OrthoProjector,
                   x=XProjector,
                   y=YProjector,
                   z=ZProjector,
+                  lzry=LZRYProjector,
                   lyrz=LYRZProjector,
+                  lyr=LYRProjector,
+                  lzr=LZRProjector,
                   lr=LRProjector,
                   l=LProjector,
                   r=RProjector)

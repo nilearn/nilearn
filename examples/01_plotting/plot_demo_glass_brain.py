@@ -34,8 +34,4 @@ plotting.plot_glass_brain(
 plotting.plot_glass_brain(
     localizer_tmap_filename, display_mode='lyrz', threshold=3)
 
-plotting.plot_glass_brain(
-    localizer_tmap_filename, title='plot_glass_brain_hemispheres',
-    black_bg=True, display_mode='lr', threshold=3)
-
 plotting.show()
