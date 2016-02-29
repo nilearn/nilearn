@@ -357,13 +357,8 @@ class GlassBrainHemisphericAxes(GlassBrainAxes):
 
     """
     def __init__(self, ax, direction, coord, plot_abs=True, **kwargs):
-        super(GlassBrainHemisphericAxes, self).__init__(ax, direction, coord)
-        self._plot_abs = plot_abs
-        if ax is not None:
-            object_bounds = glass_brain.plot_brain_schematics(ax,
-                                                              direction,
-                                                              **kwargs)
-            self.add_object_bounds(object_bounds)
+        super(GlassBrainHemisphericAxes, self).__init__(
+            ax, direction, coord, plot_abs, **kwargs)
 
     def draw_2d(self, data_2d, data_bounds, bounding_box,
                 type='imshow', **kwargs):
