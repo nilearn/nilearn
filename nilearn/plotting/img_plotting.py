@@ -963,14 +963,16 @@ def plot_glass_brain(stat_map_img,
             See http://nilearn.github.io/manipulating_images/manipulating_images.html#niimg.
             The statistical map image. It needs to be in MNI space
             in order to align with the brain schematics.
-        output_file : string, or None, optional
+        output_file : string, or None, optional.
             The name of an image file to export the plot to. Valid extensions
             are .png, .pdf, .svg. If output_file is not None, the plot
             is saved to a file, and the display is closed.
-        display_mode : {'ortho', 'x', 'y', 'z', 'yx', 'xz', 'yz'}
+        display_mode : {'ortho', 'x', 'y', 'z', 'xz', 'yx', 'yz',
+                        'l', 'r', 'lr', 'lyrz'}. Default is 'ortho'.
             Choose the direction of the cuts: 'x' - saggital, 'y' - coronal,
-            'z' - axial, 'ortho' - three cuts are performed in orthogonal
-            directions.
+            'z' - axial, 'l' - saggital left hemisphere only,
+            'r' - saggital right hemisphere only, 'ortho' - three cuts are
+            performed in orthogonal directions.
         colorbar : boolean, optional
             If True, display a colorbar on the right of the plots.
         figure : integer or matplotlib figure, optional

@@ -4,7 +4,8 @@ import tempfile
 
 import matplotlib.pyplot as plt
 
-from nilearn.plotting.displays import OrthoSlicer, XSlicer, OrthoProjector
+from nilearn.plotting.displays import (OrthoSlicer, XSlicer, OrthoProjector,
+                                       OrthoHemisphericProjector)
 from nilearn.datasets import load_mni152_template
 
 
@@ -34,6 +35,16 @@ def test_demo_ortho_projector():
     # This is only a smoke test
     img = load_mni152_template()
     oprojector = OrthoProjector.init_with_figure(img=img)
+    oprojector.add_overlay(img, cmap=plt.cm.gray)
+    with tempfile.TemporaryFile() as fp:
+        oprojector.savefig(fp)
+    oprojector.close()
+
+
+def test_demo_ortho_hemispheric_projector():
+    # This is only a smoke test
+    img = load_mni152_template()
+    oprojector = OrthoHemisphericProjector.init_with_figure(img=img)
     oprojector.add_overlay(img, cmap=plt.cm.gray)
     with tempfile.TemporaryFile() as fp:
         oprojector.savefig(fp)

@@ -350,6 +350,120 @@ class GlassBrainAxes(BaseAxes):
             self.ax.add_line(line)
 
 
+class GlassBrainHemisphericAxes(GlassBrainAxes):
+    """An MPL axis-like object that displays a 2D projection of 3D
+    volumes with a schematic view of the brain. In the case of saggital cuts,
+    projects only data in the selected left or right hemisphere.
+
+    """
+    def __init__(self, ax, direction, coord, plot_abs=True, **kwargs):
+        super(GlassBrainHemisphericAxes, self).__init__(ax, direction, coord)
+        self._plot_abs = plot_abs
+        if ax is not None:
+            object_bounds = glass_brain.plot_brain_schematics(ax,
+                                                              direction,
+                                                              **kwargs)
+            self.add_object_bounds(object_bounds)
+
+    def draw_2d(self, data_2d, data_bounds, bounding_box,
+                type='imshow', **kwargs):
+        # kwargs massaging
+        kwargs['origin'] = 'upper'
+
+        if self.direction == 'y':
+            (xmin, xmax), (_, _), (zmin, zmax) = data_bounds
+            (xmin_, xmax_), (_, _), (zmin_, zmax_) = bounding_box
+        elif self.direction in 'lr':
+            (_, _), (xmin, xmax), (zmin, zmax) = data_bounds
+            (_, _), (xmin_, xmax_), (zmin_, zmax_) = bounding_box
+        elif self.direction == 'z':
+            (xmin, xmax), (zmin, zmax), (_, _) = data_bounds
+            (xmin_, xmax_), (zmin_, zmax_), (_, _) = bounding_box
+        else:
+            raise ValueError('Invalid value for direction %s' %
+                             self.direction)
+        ax = self.ax
+        # Here we need to do a copy to avoid having the image changing as
+        # we change the data
+        im = getattr(ax, type)(data_2d.copy(),
+                               extent=(xmin, xmax, zmin, zmax),
+                               **kwargs)
+
+        self.add_object_bounds((xmin_, xmax_, zmin_, zmax_))
+
+        return im
+
+    def draw_left_right(self, size, bg_color, **kwargs):
+        if self.direction in 'lr':
+            return
+        ax = self.ax
+        ax.text(.1, .95, 'L',
+                transform=ax.transAxes,
+                horizontalalignment='left',
+                verticalalignment='top',
+                size=size,
+                bbox=dict(boxstyle="square,pad=0",
+                          ec=bg_color, fc=bg_color, alpha=1),
+                **kwargs)
+
+        ax.text(.9, .95, 'R',
+                transform=ax.transAxes,
+                horizontalalignment='right',
+                verticalalignment='top',
+                size=size,
+                bbox=dict(boxstyle="square,pad=0", ec=bg_color, fc=bg_color),
+                **kwargs)
+
+    def transform_to_2d(self, data, affine):
+        """ Returns the maximum of the absolute value of the 3D volume
+            along an axis.
+
+            Parameters
+            ==========
+            data: 3D ndarray
+                The 3D volume
+            affine: 4x4 ndarray
+                The affine of the volume
+
+        """
+        if self.direction in 'lr':
+            max_axis = 0
+        else:
+            max_axis = '.yz'.index(self.direction)
+
+        # set unselected brain hemisphere activations to 0
+        if self.direction == 'l':
+            data_selection = np.copy(data)
+            data_selection[(data.shape[0]/2):, :, :] = 0
+        elif self.direction == 'r':
+            data_selection = np.copy(data)
+            data_selection[:(data.shape[0]/2), :, :] = 0
+        else:
+            data_selection = np.copy(data)
+
+        if not self._plot_abs:
+            # get the shape of the array we are projecting to
+            new_shape = list(data.shape)
+            del new_shape[max_axis]
+
+            # generate a 3D indexing array that points to max abs value in the
+            # current projection
+            a1, a2 = np.indices(new_shape)
+            inds = [a1, a2]
+            inds.insert(max_axis, np.abs(data_selection).argmax(axis=max_axis))
+
+            # take the values where the absolute value of the projection
+            # is the highest
+            maximum_intensity_data = data[inds]
+        else:
+            maximum_intensity_data = np.abs(data_selection).max(axis=max_axis)
+
+        if self.direction == 'l':
+            return np.fliplr(np.rot90(maximum_intensity_data))
+        else:
+            return np.rot90(maximum_intensity_data)
+
+
 ###############################################################################
 # class BaseSlicer
 ###############################################################################
@@ -1285,6 +1399,61 @@ class OrthoProjector(OrthoSlicer):
         plt.draw_if_interactive()
 
 
+class OrthoHemisphericProjector(OrthoProjector):
+    """A class to create linked axes for plotting orthogonal projections
+       of 3D maps. In the case of saggital cuts, projects only data in the
+       selected left or right hemisphere.
+    """
+    _cut_displayed = 'lyrz'
+    _axes_class = GlassBrainHemisphericAxes
+
+    def _locator(self, axes, renderer):
+        """ The locator function used by matplotlib to position axes.
+            Here we put the logic used to adjust the size of the axes.
+        """
+        x0, y0, x1, y1 = self.rect
+        width_dict = dict()
+        # A dummy axes, for the situation in which we are not plotting
+        # all three (x, y, z) cuts
+        dummy_ax = self._axes_class(None, None, None)
+        width_dict[dummy_ax.ax] = 0
+        display_ax_dict = self.axes
+
+        if self._colorbar:
+            adjusted_width = self._colorbar_width / len(self.axes)
+            right_margin = self._colorbar_margin['right'] / len(self.axes)
+            ticks_margin = self._colorbar_margin['left'] / len(self.axes)
+            x1 = x1 - (adjusted_width + ticks_margin + right_margin)
+
+        for display_ax in display_ax_dict.values():
+            bounds = display_ax.get_object_bounds()
+            if not bounds:
+                # This happens if the call to _map_show was not
+                # succesful. As it happens asyncroniously (during a
+                # refresh of the figure) we capture the problem and
+                # ignore it: it only adds a non informative traceback
+                bounds = [0, 1, 0, 1]
+            xmin, xmax, ymin, ymax = bounds
+            width_dict[display_ax.ax] = (xmax - xmin)
+
+        total_width = float(sum(width_dict.values()))
+        for ax, width in width_dict.items():
+            width_dict[ax] = width / total_width * (x1 - x0)
+        l_ax = display_ax_dict.get('l', dummy_ax)
+        y_ax = display_ax_dict.get('y', dummy_ax)
+        r_ax = display_ax_dict.get('r', dummy_ax)
+        z_ax = display_ax_dict.get('z', dummy_ax)
+        left_dict = dict()
+        left_dict[l_ax.ax] = x0
+        left_dict[y_ax.ax] = x0 + width_dict[l_ax.ax]
+        left_dict[r_ax.ax] = x0 + width_dict[y_ax.ax] + width_dict[l_ax.ax]
+        left_dict[z_ax.ax] = (x0 + width_dict[r_ax.ax] + width_dict[y_ax.ax] +
+                              width_dict[l_ax.ax])
+
+        return transforms.Bbox([[left_dict[axes], y0],
+                               [left_dict[axes] + width_dict[axes], y1]])
+
+
 class XProjector(OrthoProjector):
     _cut_displayed = 'x'
     _default_figsize = [2.6, 2.3]
@@ -1312,13 +1481,35 @@ class YZProjector(OrthoProjector):
     _cut_displayed = 'yz'
 
 
+class LYRZProjector(OrthoHemisphericProjector):
+    _cut_displayed = 'lyrz'
+
+
+class LRProjector(OrthoHemisphericProjector):
+    _cut_displayed = 'lr'
+
+
+class LProjector(OrthoHemisphericProjector):
+    _cut_displayed = 'l'
+    _default_figsize = [2.6, 2.3]
+
+
+class RProjector(OrthoHemisphericProjector):
+    _cut_displayed = 'r'
+    _default_figsize = [2.6, 2.3]
+
+
 PROJECTORS = dict(ortho=OrthoProjector,
                   xz=XZProjector,
                   yz=YZProjector,
                   yx=YXProjector,
                   x=XProjector,
                   y=YProjector,
-                  z=ZProjector)
+                  z=ZProjector,
+                  lyrz=LYRZProjector,
+                  lr=LRProjector,
+                  l=LProjector,
+                  r=RProjector)
 
 
 def get_create_display_fun(display_mode, class_dict):
