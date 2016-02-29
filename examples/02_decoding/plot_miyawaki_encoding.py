@@ -45,8 +45,8 @@ dataset = fetch_miyawaki2008()
 # where random binary images were shown.
 
 # training data starts after the first 12 files
-X_random_filenames = dataset.func[12:]
-y_random_filenames = dataset.label[12:]
+fmri_random_runs_filenames = dataset.func[12:]
+stimuli_random_runs_filenames = dataset.label[12:]
 
 ##############################################################################
 # We can use :func:`nilearn.input_data.MultiNiftiMasker` to load the fMRI
@@ -58,16 +58,17 @@ from nilearn.input_data import MultiNiftiMasker
 masker = MultiNiftiMasker(mask_img=dataset.mask, detrend=True,
                           standardize=True)
 masker.fit()
-X_train = masker.transform(X_random_filenames)
+fmri_data = masker.transform(fmri_random_runs_filenames)
 
 # shape of the binary (i.e. black and wihte values) image in pixels
-y_shape = (10, 10)
+stimulus_shape = (10, 10)
 
 # We load the visual stimuli from csv files
-y_train = []
-for y in y_random_filenames:
-    y_train.append(np.reshape(np.loadtxt(y, dtype=np.int, delimiter=','),
-                              (-1,) + y_shape, order='F'))
+stimuli = []
+for stimulus_run in stimuli_random_runs_filenames:
+    stimuli.append(np.reshape(np.loadtxt(stimulus_run,
+                              dtype=np.int, delimiter=','),
+                              (-1,) + stimulus_shape, order='F'))
 
 ##############################################################################
 # Let's take a look at some of these binary images:
@@ -75,34 +76,35 @@ for y in y_random_filenames:
 import pylab as plt
 plt.figure(figsize=(8, 4))
 plt.subplot(1, 2, 1)
-plt.imshow(y_train[0][124], interpolation='nearest', cmap='gray')
+plt.imshow(stimuli[0][124], interpolation='nearest', cmap='gray')
 plt.axis('off')
 plt.title('Run {}, Stimulus {}'.format(1, 125))
 plt.subplot(1, 2, 2)
-plt.imshow(y_train[2][101], interpolation='nearest', cmap='gray')
+plt.imshow(stimuli[2][101], interpolation='nearest', cmap='gray')
 plt.axis('off')
 plt.title('Run {}, Stimulus {}'.format(3, 102))
 plt.subplots_adjust(wspace=0.5)
 
 ##############################################################################
-# We now stack the X and y data and remove an offset in the beginning/end.
+# We now stack the fmri and stimulus data and remove an offset in the
+# beginning/end.
 
-X_train = np.vstack([x[2:] for x in X_train])
-y_train = np.vstack([y[:-2] for y in y_train]).astype(float)
-
-##############################################################################
-# X_train is a matrix of *samples* x *voxels*
-
-print(X_train.shape)
+fmri_data = np.vstack([fmri_run[2:] for fmri_run in fmri_data])
+stimuli = np.vstack([stimuli_run[:-2] for stimuli_run in stimuli]).astype(float)
 
 ##############################################################################
-# We flatten the last two dimensions of y_train
+# fmri_data is a matrix of *samples* x *voxels*
+
+print(fmri_data.shape)
+
+##############################################################################
+# We flatten the last two dimensions of stimuli
 # so it is a matrix of *samples* x *pixels*.
 
 # Flatten the stimuli
-y_train = np.reshape(y_train, (-1, y_shape[0] * y_shape[1]))
+stimuli = np.reshape(stimuli, (-1, stimulus_shape[0] * stimulus_shape[1]))
 
-print(y_train.shape)
+print(stimuli.shape)
 
 ##############################################################################
 # Building the encoding models
@@ -119,22 +121,22 @@ from sklearn.cross_validation import KFold
 ##############################################################################
 # Using 10-fold cross-validation, we partition the data into 10 'folds'.
 # We hold out each fold of the data for testing, then fit a ridge regression
-# to the remaining 9/10 of the data, using y_train as predictors
-# and X_train as targets, and create predictions for the held-out 10th.
+# to the remaining 9/10 of the data, using stimuli as predictors
+# and fmri_data as targets, and create predictions for the held-out 10th.
 from sklearn.metrics import r2_score
 
 estimator = Ridge(alpha=100.)
-cv = KFold(len(y_train), 10)
+cv = KFold(len(stimuli), 10)
 
 scores = []
 for train, test in cv:
     # we train the Ridge estimator on the training set
     # and predict the fMRI activity for the test set
     predictions = Ridge(alpha=100.).fit(
-    y_train.reshape(-1, 100)[train], X_train[train]).predict(
-        y_train.reshape(-1, 100)[test])
+    stimuli.reshape(-1, 100)[train], fmri_data[train]).predict(
+        stimuli.reshape(-1, 100)[test])
     # we compute how much variance our encoding model explains in each voxel
-    scores.append(r2_score(X_train[test], predictions,
+    scores.append(r2_score(fmri_data[test], predictions,
                            multioutput='raw_values'))
 
 ##############################################################################
@@ -222,7 +224,7 @@ gs1 = gridspec.GridSpec(2, 3)
 for i, index in enumerate([1780, 1951, 2131]):
     ax = plt.subplot(gs1[0, i])
     # we reshape the coefficients into the form of the original images
-    rf = lasso.fit(y_train, X_train[:, index]).coef_.reshape((10, 10))
+    rf = lasso.fit(stimuli, fmri_data[:, index]).coef_.reshape((10, 10))
     # add a black background
     ax.imshow(np.zeros_like(rf), vmin=0., vmax=1., cmap='gray')
     ax_im = ax.imshow(np.ma.masked_less(rf, 0.1), interpolation="nearest",
@@ -239,7 +241,7 @@ for i, index in enumerate([1780, 1951, 2131]):
 gs1.update(left=0., right=1., wspace=0.1)
 ax = plt.subplot(gs1[1, 1])
 # we reshape the coefficients into the form of the original images
-rf = lasso.fit(y_train, X_train[:, 1935]).coef_.reshape((10, 10))
+rf = lasso.fit(stimuli, fmri_data[:, 1935]).coef_.reshape((10, 10))
 ax.imshow(np.zeros_like(rf), vmin=0., vmax=1., cmap='gray')
 ax_im = ax.imshow(np.ma.masked_less(rf, 0.1), interpolation="nearest",
                   cmap='RdPu', vmin=0., vmax=0.75)
