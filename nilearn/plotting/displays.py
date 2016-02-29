@@ -433,13 +433,13 @@ class GlassBrainHemisphericAxes(GlassBrainAxes):
 
         # set unselected brain hemisphere activations to 0
         if self.direction == 'l':
-            data_selection = np.copy(data)
+            data_selection = data.copy()
             data_selection[(data.shape[0]/2):, :, :] = 0
         elif self.direction == 'r':
-            data_selection = np.copy(data)
+            data_selection = data.copy()
             data_selection[:(data.shape[0]/2), :, :] = 0
         else:
-            data_selection = np.copy(data)
+            data_selection = data
 
         if not self._plot_abs:
             # get the shape of the array we are projecting to
