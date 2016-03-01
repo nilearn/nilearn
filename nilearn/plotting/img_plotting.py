@@ -967,11 +967,13 @@ def plot_glass_brain(stat_map_img,
             The name of an image file to export the plot to. Valid extensions
             are .png, .pdf, .svg. If output_file is not None, the plot
             is saved to a file, and the display is closed.
-        display_mode : {'ortho', 'x', 'y', 'z', 'xz', 'yx', 'yz', 'l', 'r', 'lr', 'lzr', 'lyr', 'lzry', 'lyrz'}. Default is 'ortho'.
+        display_mode : string, optional. Default is 'ortho'.
             Choose the direction of the cuts: 'x' - saggital, 'y' - coronal,
             'z' - axial, 'l' - saggital left hemisphere only,
             'r' - saggital right hemisphere only, 'ortho' - three cuts are
-            performed in orthogonal directions.
+            performed in orthogonal directions. Possible values are: 'ortho',
+            'x', 'y', 'z', 'xz', 'yx', 'yz', 'l', 'r', 'lr', 'lzr', 'lyr',
+            'lzry', 'lyrz'.
         colorbar : boolean, optional
             If True, display a colorbar on the right of the plots.
         figure : integer or matplotlib figure, optional
