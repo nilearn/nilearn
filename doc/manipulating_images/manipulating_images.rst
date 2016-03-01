@@ -273,9 +273,9 @@ set up your own data preparation procedure:
 * Resampling: :func:`nilearn.image.resample_img` and
   :func:`nilearn.image.resample_to_img`. See the following examples:
   * :ref:`sphx_glr_auto_examples_04_manipulating_images_plot_affine_transformation.py` shows
-  the effect of affine transforms on data and bounding boxes,
+    the effect of affine transforms on data and bounding boxes,
   * ref:`sphx_glr_auto_examples_04_manipulating_images_plot_resample_to_template.py` shows
-   how to resample an image to a template reference.
+    how to resample an image to a template reference.
 * Computing the mean of images (along the time/4th dimension):
   :func:`nilearn.image.mean_img`
 * Applying numpy functions on an image or a list of images:
