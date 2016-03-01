@@ -62,12 +62,10 @@ plotting.plot_stat_map(localizer_tmap_filename,
                        bg_img=localizer_anat_filename,
                        cut_coords=(36, -27, 66),
                        threshold=3,
-                       title="t-map on original anat, dim=-.5",
-                       dim=-.5)
+                       title="t-map on original anat")
 plotting.plot_stat_map(resampled_localizer_tmap,
                        bg_img=template,
                        cut_coords=(36, -27, 66),
                        threshold=3,
-                       title="Resampled t-map on MNI template anat, dim=-.5",
-                       dim=-.5)
+                       title="Resampled t-map on MNI template anat")
 plotting.show()
