@@ -264,10 +264,10 @@ matrix (i.e., affine).
     >>> import numpy as np
     >>> target_affine = np.diag((3, 3, 3))
 
-.. topic:: **Resampling to a given reference image**
+.. topic:: **Resampling an image to a given reference image**
 
     Instead of using an affine or shape, it's also possible to resample an
-    image using a reference with :func:`nilearn.image.resample_to_img`.
+    image using a reference image with :func:`nilearn.image.resample_to_img`.
 
 .. image:: ../auto_examples/04_manipulating_images/images/sphx_glr_plot_resample_to_template_001.png
     :target: ../auto_examples/04_manipulating_images/plot_resample_to_template.html
