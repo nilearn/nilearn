@@ -66,19 +66,20 @@ create_new_conda_env() {
     chmod +x ~/miniconda.sh && ~/miniconda.sh -b
     export PATH=$HOME/miniconda2/bin:$PATH
     echo $PATH
-    conda update --yes conda
+    conda update --quiet --yes conda
 
     # Configure the conda environment and put it in the path using the
     # provided versions
     REQUIREMENTS=$(print_conda_requirements)
     echo "conda requirements string: $REQUIREMENTS"
-    conda create -n testenv --yes $REQUIREMENTS
+    conda create -n testenv --quiet --yes $REQUIREMENTS
     source activate testenv
 
     if [[ "$INSTALL_MKL" == "true" ]]; then
         # Make sure that MKL is used
-        conda install --yes mkl
-    else
+        conda install --quiet --yes mkl
+    elif [[ -z $CIRCLECI ]]; then
+        # Travis doesn't use MKL
         # Make sure that MKL is not used
         conda remove --yes --features mkl || echo "MKL not installed"
     fi
