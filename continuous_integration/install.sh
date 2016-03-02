@@ -52,29 +52,35 @@ print_conda_requirements() {
 }
 
 create_new_conda_env() {
-    # Deactivate the travis-provided virtual environment and setup a
-    # conda-based environment instead
-    deactivate
+    # Skip Travis related code on circle ci.
+    if [ -z $CIRCLECI ]; then
+        # Deactivate the travis-provided virtual environment and setup a
+        # conda-based environment instead
+        deactivate
+    fi
 
     # Use the miniconda installer for faster download / install of conda
     # itself
     wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh \
-        -O miniconda.sh
-    chmod +x miniconda.sh && ./miniconda.sh -b
-    export PATH=/home/travis/miniconda2/bin:$PATH
-    conda update --yes conda
+        -O ~/miniconda.sh
+    chmod +x ~/miniconda.sh && ~/miniconda.sh -b
+    export PATH=$HOME/miniconda2/bin:$PATH
+    echo $PATH
+    conda update --quiet --yes conda
 
     # Configure the conda environment and put it in the path using the
     # provided versions
     REQUIREMENTS=$(print_conda_requirements)
     echo "conda requirements string: $REQUIREMENTS"
-    conda create -n testenv --yes $REQUIREMENTS
+    conda create -n testenv --quiet --yes $REQUIREMENTS
     source activate testenv
 
     if [[ "$INSTALL_MKL" == "true" ]]; then
         # Make sure that MKL is used
-        conda install --yes mkl
-    else
+        conda install --quiet --yes mkl
+    elif [[ -z $CIRCLECI ]]; then
+        # Travis doesn't use MKL but circle ci does for speeding up examples
+        # generation in the html documentation.
         # Make sure that MKL is not used
         conda remove --yes --features mkl || echo "MKL not installed"
     fi
@@ -98,7 +104,7 @@ elif [[ "$DISTRIB" == "conda" ]]; then
     fi
 
 else
-    echo "Unrecognized distribution ($DISTRIB); cannot setup travis environment."
+    echo "Unrecognized distribution ($DISTRIB); cannot setup CI environment."
     exit 1
 fi
 
