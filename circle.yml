@@ -30,6 +30,7 @@ dependencies:
             MATPLOTLIB_VERSION: "*"
     - conda install sphinx==1.2.3 coverage pillow -y -n testenv
 
+    # Generating html documentation (with warnings as errors)
     # we need to do this here so the datasets will be cached
     - source continuous_integration/circle_ci_test_doc.sh:
         timeout: 1500

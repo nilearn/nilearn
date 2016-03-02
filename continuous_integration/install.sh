@@ -52,7 +52,7 @@ print_conda_requirements() {
 }
 
 create_new_conda_env() {
-    # Skip Travis related code with circle ci.
+    # Skip Travis related code on circle ci.
     if [ -z $CIRCLECI ]; then
         # Deactivate the travis-provided virtual environment and setup a
         # conda-based environment instead
@@ -79,7 +79,8 @@ create_new_conda_env() {
         # Make sure that MKL is used
         conda install --quiet --yes mkl
     elif [[ -z $CIRCLECI ]]; then
-        # Travis doesn't use MKL
+        # Travis doesn't use MKL but circle ci does for speeding up examples
+        # generation in the html documentation.
         # Make sure that MKL is not used
         conda remove --yes --features mkl || echo "MKL not installed"
     fi
