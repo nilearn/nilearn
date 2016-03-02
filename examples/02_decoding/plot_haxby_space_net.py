@@ -21,7 +21,7 @@ labels = np.recfromcsv(data_files.session_target[0], delimiter=" ")
 
 # Restrict to face and house conditions
 target = labels['labels']
-condition_mask = np.logical_or(target == "face", target == "house")
+condition_mask = np.logical_or(target == b"face", target == b"house")
 
 # Split data into train and test samples, using the chunks
 condition_mask_train = np.logical_and(condition_mask, labels['chunks'] <= 6)
