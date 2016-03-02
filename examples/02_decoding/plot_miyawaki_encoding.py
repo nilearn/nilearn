@@ -142,17 +142,15 @@ for train, test in cv:
 ##############################################################################
 # Mapping the encoding scores on the brain
 # ----------------------------------------
-# To plot the scores onto the brain, we use :func:`nilearn.image.new_img_like`
-# to create a Nifti1Image containing the scores and then threshold it:
+# To plot the scores onto the brain, we create a Nifti1Image containing
+# the scores and then threshold it:
 
-from nilearn.image import threshold_img, new_img_like
-
+from nilearn.image import threshold_img
 cut_score = np.mean(scores, axis=0)
 cut_score[cut_score < 0] = 0
 
 # bring the scores into the shape of the background brain
-score_map_img = new_img_like(dataset.background,
-                             masker.inverse_transform(cut_score).get_data())
+score_map_img = masker.inverse_transform(cut_score)
 
 thresholded_score_map_img = threshold_img(score_map_img, threshold=1e-6)
 
