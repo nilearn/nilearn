@@ -530,7 +530,7 @@ def fetch_miyawaki2008(data_dir=None, url=None, resume=True, verbose=1):
     """
 
     url = 'https://www.nitrc.org/frs/download.php' \
-          '/5899/miyawaki2008.tgz?i_agree=1&download_now=1'
+          '/8486/miyawaki2008.tgz?i_agree=1&download_now=1'
     opts = {'uncompress': True}
 
     # Dataset files
@@ -612,11 +612,8 @@ def fetch_miyawaki2008(data_dir=None, url=None, resume=True, verbose=1):
     files = _fetch_files(data_dir, file_names, resume=resume, verbose=verbose)
 
     # Fetch the background image
-    bg_img = _fetch_files(
-        data_dir,
-        [('bg.nii.gz',
-          'http://www.nitrc.org/frs/download.php/8471/bg.nii.gz', {})],
-        resume=resume, verbose=verbose)[0]
+    bg_img = _fetch_files(data_dir, [('bg.nii.gz', url, opts)], resume=resume,
+                          verbose=verbose)[0]
 
     fdescr = _get_dataset_descr(dataset_name)
 
