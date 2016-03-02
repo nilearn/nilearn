@@ -1093,6 +1093,11 @@ div.body p {
     margin: 1.2em 0 .5em 0;
 }
 
+/* More vertical space after a code block */
+div.highlight-python + p {
+    margin-top: 1.5em;
+}
+
 .float-right {
   float: right;
 }
