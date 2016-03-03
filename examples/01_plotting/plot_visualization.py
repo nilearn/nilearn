@@ -51,7 +51,7 @@ masked_data = apply_mask(func_filename, mask_img)
 # And now plot a few of these
 import matplotlib.pyplot as plt
 plt.figure(figsize=(7, 5))
-plt.plot(masked_data[:2, :150].T)
+plt.plot(masked_data[:150, :2])
 plt.xlabel('Time [TRs]', fontsize=16)
 plt.ylabel('Intensity', fontsize=16)
 plt.xlim(0, 150)
