@@ -11,7 +11,7 @@ from sklearn.datasets.base import Bunch
 
 from .utils import (_get_dataset_dir, _fetch_files, _get_dataset_descr,
                     _read_md5_sum_file, _tree, _filter_columns)
-
+from .._utils import check_niimg
 from .._utils.compat import BytesIO, _basestring, _urllib
 from .._utils.numpy_conversions import csv_to_array
 
@@ -1215,7 +1215,7 @@ def _load_mixed_gambles(zmap_imgs):
         mask.append(this_mask)
     y = np.array(y)
     X = np.concatenate(X, axis=-1)
-    mask = np.sum(mask, axis=0) > .5 * len(zmap_imgs)
+    mask = np.sum(mask, axis=0) > .5 * len(mask)
     mask = np.logical_and(mask, np.all(np.isfinite(X), axis=-1))
     X = X[mask, :].T
     tmp = np.zeros(list(mask.shape) + [len(X)])
@@ -1291,7 +1291,8 @@ def fetch_mixed_gambles(n_subjects=1, data_dir=None, url=None, resume=True,
     zmap_fnames = _fetch_files(data_dir, files, resume=resume, verbose=verbose)
     data = Bunch(zmaps=zmap_fnames)
     if not return_raw_data:
-        X, y, mask_img = _load_mixed_gambles(map(nibabel.load, data.zmaps))
+        X, y, mask_img = _load_mixed_gambles(check_niimg(data.zmaps,
+                                                         return_iterator=True))
         data.zmaps, data.gain, data.mask_img = X, y, mask_img
     return data
 
