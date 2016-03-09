@@ -84,7 +84,10 @@ language = 'en'
 
 # List of documents that shouldn't be included in the build.
 #unused_docs = []
-exclude_patterns = ['tune_toc.rst', ]
+exclude_patterns = ['tune_toc.rst',
+                    'includes/big_toc_css.rst',
+                    'includes/bigger_toc_css.rst',
+                    ]
 
 # List of directories, relative to source directory, that shouldn't be
 # searched for source files.
