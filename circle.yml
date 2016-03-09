@@ -23,12 +23,12 @@ dependencies:
     - source continuous_integration/install.sh:
         environment:
             DISTRIB: "conda"
-            PYTHON_VERSION: "2.7"
+            PYTHON_VERSION: "3.5"
             NUMPY_VERSION: "*"
             SCIPY_VERSION: "*"
             SCIKIT_LEARN_VERSION: "*"
             MATPLOTLIB_VERSION: "*"
-    - conda install sphinx==1.2.3 coverage pillow -y -n testenv
+    - conda install sphinx coverage pillow -y -n testenv
 
     # Generating html documentation (with warnings as errors)
     # we need to do this here so the datasets will be cached
