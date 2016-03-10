@@ -354,7 +354,6 @@ class GlassBrainHemisphericAxes(GlassBrainAxes):
     """An MPL axis-like object that displays a 2D projection of 3D
     volumes with a schematic view of the brain. In the case of saggital cuts,
     projects only data in the selected left or right hemisphere.
-
     """
     def __init__(self, ax, direction, coord, plot_abs=True, **kwargs):
         super(GlassBrainHemisphericAxes, self).__init__(
