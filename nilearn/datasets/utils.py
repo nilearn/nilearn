@@ -714,7 +714,11 @@ def _fetch_files(data_dir, files, resume=True, mock=False, verbose=1):
                         os.remove(dl_file)
                 except Exception as e:
                     abort = str(e)
-
+            if 'callback' in opts:
+                try:
+                    opts['callback'](temp_dir)
+                except Exception as e:
+                    abort = str(e)
         if (abort is None and not os.path.exists(target_file) and not
                 os.path.exists(temp_target_file)):
             if not mock:

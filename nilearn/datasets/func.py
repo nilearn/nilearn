@@ -7,6 +7,7 @@ import re
 import json
 import numpy as np
 import nibabel
+import shutil
 from sklearn.datasets.base import Bunch
 
 from .utils import (_get_dataset_dir, _fetch_files, _get_dataset_descr,
@@ -1632,7 +1633,7 @@ def fetch_acpi(n_subjects=10, preprocessing='ANTS', scrubbing=False,
         scrubbing, global_signal_regression)
     regexp = root + '_([0-9]+)_([0-9]+)'
     indices = re.findall(regexp, html)
-    indices = [(int(s), int(e)) for (s, e) in indices]
+    indices = [(int(start), int(end)) for (start, end) in indices]
 
     # Download phenotypic file
     csv = _fetch_files(
@@ -1656,18 +1657,30 @@ def fetch_acpi(n_subjects=10, preprocessing='ANTS', scrubbing=False,
     csv = csv[:n_subjects]
     ids = csv['SUBID']
 
+    # Define an helper function to deal with archives without root dir
+    def move_if_root_is_wrong(temp_dir):
+        files = os.listdir(temp_dir)
+        if files != [root]:
+            # Create root dir
+            root_dir = os.path.join(temp_dir, root)
+            os.mkdir(root_dir)
+            # Move all files in it
+            for f in files:
+                shutil.move(os.path.join(temp_dir, f), root_dir)
+
     # Now, download the files
-    opts = {'uncompress': True}
+    opts = {'uncompress': True, 'callback': move_if_root_is_wrong}
     func = []
     for i in ids:
         # Find the file where the subject data is located
-        s, e = [(s, e) for (s, e) in indices if s <= i and i <= e][0]
+        start, end = [(s, e) for (s, e) in indices if s <= i and i <= e][0]
         # Download it
         path = os.path.join(root, '00%i-session_1' % i, 'rest_1',
                             'func_preproc', 'func_preproc.nii.gz')
         f = _fetch_files(
             data_dir,
-            [(path, url + '/OutputTars/%s_00%i_00%i.tar.gz' % (root, s, e),
+            [(path,
+              url + '/OutputTars/%s_00%i_00%i.tar.gz' % (root, start, end),
               opts)],
             verbose=verbose)[0]
         func.append(f)
