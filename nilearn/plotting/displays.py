@@ -429,10 +429,14 @@ class GlassBrainHemisphericAxes(GlassBrainAxes):
         # set unselected brain hemisphere activations to 0
         if self.direction == 'l':
             data_selection = data.copy()
-            data_selection[(data.shape[0]/2):, :, :] = 0
+            x_center, _, _, _ = np.dot(np.linalg.inv(affine),
+                                       np.array([0, 0, 0, 1]))
+            data_selection[int(x_center):, :, :] = 0
         elif self.direction == 'r':
             data_selection = data.copy()
-            data_selection[:(data.shape[0]/2), :, :] = 0
+            x_center, _, _, _ = np.dot(np.linalg.inv(affine),
+                                       np.array([0, 0, 0, 1]))
+            data_selection[:x_center, :, :] = 0
         else:
             data_selection = data
 
@@ -453,6 +457,8 @@ class GlassBrainHemisphericAxes(GlassBrainAxes):
         else:
             maximum_intensity_data = np.abs(data_selection).max(axis=max_axis)
 
+        # Originally the array is a brain pointing to the right so we flip it
+        # in the case of the left pointing brain image
         if self.direction == 'l':
             return np.fliplr(np.rot90(maximum_intensity_data))
         else:
