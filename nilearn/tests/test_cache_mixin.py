@@ -12,7 +12,7 @@ from nose.tools import assert_false, assert_true, assert_equal
 from sklearn.externals.joblib import Memory
 
 import nilearn
-from nilearn._utils import cache_mixin
+from nilearn._utils import cache_mixin, CacheMixin
 
 
 def f(x):
@@ -87,3 +87,27 @@ def test_cache_memory_level():
     assert_equal(len(glob.glob(job_glob)), 2)
     cache_mixin.cache(f, mem)(3)
     assert_equal(len(glob.glob(job_glob)), 3)
+
+
+def test_cache_mixin_expand_user():
+    # Test the memory cache is correctly created when using ~.
+    class CacheMixinMock(CacheMixin):
+
+        def __init__(self, memory=None, memory_level=1):
+            self.memory = memory
+            self.memory_level = memory_level
+
+        def run(self):
+            self._cache(f)
+
+    cache_dir = "~/nilearn_data/cache"
+    expand_cache_dir = os.path.expanduser(cache_dir)
+    mixin_mock = CacheMixinMock(cache_dir)
+
+    try:
+        assert_false(os.path.exists(expand_cache_dir))
+        mixin_mock.run()
+        assert_true(os.path.exists(expand_cache_dir))
+    finally:
+        if os.path.exists(expand_cache_dir):
+            shutil.rmtree(expand_cache_dir)
