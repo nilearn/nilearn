@@ -103,7 +103,7 @@ class CacheMixinMock(CacheMixin):
 
 def test_cache_mixin_with_expand_user():
     # Test the memory cache is correctly created when using ~.
-    cache_dir = "~/nilearn_data/cache"
+    cache_dir = "~/nilearn_test_cache"
     expand_cache_dir = os.path.expanduser(cache_dir)
     mixin_mock = CacheMixinMock(cache_dir)
 
@@ -118,7 +118,7 @@ def test_cache_mixin_with_expand_user():
 
 def test_cache_mixin_without_expand_user():
     # Test the memory cache is correctly created when using ~.
-    cache_dir = "~/nilearn_data/cache"
+    cache_dir = "~/nilearn_test_cache"
     expand_cache_dir = os.path.expanduser(cache_dir)
     mixin_mock = CacheMixinMock(cache_dir)
 

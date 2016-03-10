@@ -47,8 +47,8 @@ if hasattr(gzip.GzipFile, 'max_read_chunk'):
 # module
 EXPAND_PATH_WILDCARDS = True
 
-# Boolean controlling whether os.path.expanduser should be applied on input path
-# parameters.
+# Boolean controlling whether os.path.expanduser should be applied on input
+# path parameters.
 # Default value is True. Set this to False to completely deactivate this
 # behavior.
 EXPAND_PATH_USER = True
