@@ -214,11 +214,27 @@ class CacheMixin(object):
 
             # Perform some verifications on given path.
             split_cache_dir = os.path.split(cache_dir)
-            if (len(split_cache_dir) > 1 and
-                    not os.path.exists(split_cache_dir[0])):
-                raise ValueError("Given cache path base directory doesn't "
+            if not os.path.exists(split_cache_dir[0]):
+                if (not nilearn.EXPAND_PATH_WILDCARDS and
+                        cache_dir.startswith("~")):
+                    # Maybe the user want to enable expanded user path.
+                    error_msg = ("Given cache path base directory doesn't "
+                                 "exists, you gave '{0}'. Enabling "
+                                 "nilearn.EXPAND_PATH_WILDCARDS could solve "
+                                 "this issue.".format(split_cache_dir[0]))
+                elif self.memory.startswith("~"):
+                    # Path built on top of expanded user path doesn't exist.
+                    error_msg = ("Given cache path base directory doesn't "
+                                 "exists, you gave '{0}' which has expanded "
+                                 "as '{1}' and doesn't exist either."
+                                 .format(split_cache_dir[0],
+                                         os.path.dirname(self.memory)))
+                else:
+                    # The given cache base path doesn't exist.
+                    error_msg = ("Given cache path base directory doesn't "
                                  "exists, you gave '{0}'."
                                  .format(split_cache_dir[0]))
+                raise ValueError(error_msg)
 
             self.memory = Memory(cachedir=cache_dir, verbose=verbose)
 
