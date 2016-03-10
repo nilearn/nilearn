@@ -71,7 +71,7 @@ class BaseAxes(object):
 
     def draw_2d(self, data_2d, data_bounds, bounding_box,
                 type='imshow', **kwargs):
-        # kwargs massaging
+        # kwargs messaging
         kwargs['origin'] = 'upper'
 
         if self.direction == 'y':
@@ -361,7 +361,7 @@ class GlassBrainHemisphericAxes(GlassBrainAxes):
 
     def draw_2d(self, data_2d, data_bounds, bounding_box,
                 type='imshow', **kwargs):
-        # kwargs massaging
+        # kwargs messaging
         kwargs['origin'] = 'upper'
 
         if self.direction == 'y':
@@ -546,10 +546,10 @@ class BaseSlicer(object):
             if leave_space:
                 figsize[0] += 3.4
             figure = plt.figure(figure, figsize=figsize,
-                            facecolor=facecolor)
+                                facecolor=facecolor)
         if isinstance(axes, plt.Axes):
             assert axes.figure is figure, ("The axes passed are not "
-                    "in the figure")
+                                           "in the figure")
 
         if axes is None:
             axes = [0., 0., 1., 1.]
@@ -697,12 +697,12 @@ class BaseSlicer(object):
         (xmin, xmax), (ymin, ymax), (zmin, zmax) = data_bounds
 
         xmin_, xmax_, ymin_, ymax_, zmin_, zmax_ = \
-                                        xmin, xmax, ymin, ymax, zmin, zmax
+            xmin, xmax, ymin, ymax, zmin, zmax
 
         if hasattr(data, 'mask') and isinstance(data.mask, np.ndarray):
             not_mask = np.logical_not(data.mask)
             xmin_, xmax_, ymin_, ymax_, zmin_, zmax_ = \
-                    get_mask_bounds(new_img_like(img, not_mask, affine))
+                get_mask_bounds(new_img_like(img, not_mask, affine))
 
         data_2d_list = []
         for display_ax in self.axes.values():
@@ -880,7 +880,7 @@ class BaseSlicer(object):
                 function.
         """
         kwargs = kwargs.copy()
-        if not 'color' in kwargs:
+        if 'color' not in kwargs:
             if self._black_bg:
                 kwargs['color'] = 'w'
             else:
@@ -890,12 +890,12 @@ class BaseSlicer(object):
         if left_right:
             for display_ax in self.axes.values():
                 display_ax.draw_left_right(size=size, bg_color=bg_color,
-                                       **kwargs)
+                                           **kwargs)
 
         if positions:
             for display_ax in self.axes.values():
                 display_ax.draw_position(size=size, bg_color=bg_color,
-                                       **kwargs)
+                                         **kwargs)
 
     def close(self):
         """ Close the figure. This is necessary to avoid leaking memory.
@@ -1061,7 +1061,7 @@ class OrthoSlicer(BaseSlicer):
         x, y, z = coords['x'], coords['y'], coords['z']
 
         kwargs = kwargs.copy()
-        if not 'color' in kwargs:
+        if 'color' not in kwargs:
             if self._black_bg:
                 kwargs['color'] = '.8'
             else:
