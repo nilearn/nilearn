@@ -1557,3 +1557,120 @@ def fetch_cobre(n_subjects=10, data_dir=None, url=None, verbose=1):
 
     return Bunch(func=func, mat_files=mat, phenotypic=csv_array,
                  description=fdescr)
+
+
+def fetch_acpi(n_subjects=10, preprocessing='ANTS', scrubbing=False,
+               global_signal_regression=False, data_dir=None, url=None,
+               verbose=1):
+    """Fetch ACPI dataset preprocessed with either ANTS of FNIRT
+
+    .. versionadded 0.2.4
+
+    Parameters
+    ----------
+    n_subjects: int, optional
+        Number of subjects to load. Maximum is 129. If n_subjects is None, all
+        available subjects are loaded.
+
+    preprocessing: string, optional
+        Preprocessing pipeline to use. Possible values are "ANTS" and "FNIRT".
+        ANTS is the default.
+
+    scrubbing: boolean, optional
+        Whether or not to load scrubbed dataset. Default is False.
+
+    global_signal_regression: boolean, optional
+        Whether or not to load data where global signal has been regressed.
+        Default is False.
+
+    data_dir: str, optional
+        Path to the data directory. Used to force data storage in a
+        specified location. Default: None
+
+    url: str, optional
+        Override download url. Used for test only (or if you setup a
+        mirror of the data). Default: None
+
+    verbose: int, optional
+       Verbosity level (0 means no message).
+
+    Returns
+    -------
+    data: Bunch
+        Dictionary-like object, the attributes are:
+
+        - 'func': string list
+            Paths to Nifti images.
+        - 'phenotypic': ndarray
+            Contains phenotypic data.
+        - 'description': data description of the release and references.
+
+    Notes
+    -----
+    More information about datasets structure, See:
+    https://figshare.com/articles/COBRE_preprocessed_with_NIAK_0_12_4/1160600
+    """
+    if url is None:
+        # Here we use the file that provides URL for all others
+        url = "https://s3.amazonaws.com/fcp-indi/data/Projects/ACPI"
+
+    dataset_name = 'acpi'
+    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
+                                verbose=verbose)
+    fdescr = _get_dataset_descr(dataset_name)
+
+    # First, fetch the file that references all URLs
+    html = ("http://fcon_1000.projects.nitrc.org/indi/ACPI/html/"
+            + "acpi_mta_1.html")
+    files = _fetch_files(data_dir, [("acpi_mta_1.html", html, {})],
+                         verbose=verbose)[0]
+
+    html = open(files, "r").read()
+
+    # Prepare the regexp to get id ranges
+    root = preprocessing.lower() + '_s%i_g%i' % (
+        scrubbing, global_signal_regression)
+    regexp = root + '_([0-9]+)_([0-9]+)'
+    indices = re.findall(regexp, html)
+    indices = [(int(s), int(e)) for (s, e) in indices]
+
+    # Download phenotypic file
+    csv = _fetch_files(
+        data_dir, [('mta_1_phenotypic_data.csv',
+                    url + '/PhenotypicData/mta_1_phenotypic_data.csv', {})],
+        verbose=verbose)[0]
+    csv = np.genfromtxt(
+        csv, delimiter=',', names=True,
+        dtype='i8,i8,i8,i8,i8,U1,i8,f8,f8,i8,f8,f8,f8,f8,f8,i8,i8,i8')
+
+    # Check number of subjects
+    max_subjects = len(csv)
+    if n_subjects is None:
+        n_subjects = max_subjects
+
+    if n_subjects > max_subjects:
+        warnings.warn('Warning: Requested too many subjects, using maximum'
+                      ' number of subjects (%i).' % max_subjects)
+        n_subjects = max_subjects
+
+    csv = csv[:n_subjects]
+    ids = csv['SUBID']
+
+    # Now, download the files
+    opts = {'uncompress': True}
+    func = []
+    for i in ids:
+        # Find the file where the subject data is located
+        s, e = [(s, e) for (s, e) in indices if s <= i and i <= e][0]
+        # Download it
+        path = os.path.join(root, '00%i-session_1' % i, 'rest_1',
+                            'func_preproc', 'func_preproc.nii.gz')
+        f = _fetch_files(
+            data_dir,
+            [(path, url + '/OutputTars/%s_00%i_00%i.tar.gz' % (root, s, e),
+              opts)],
+            verbose=verbose)[0]
+        func.append(f)
+
+    return Bunch(func=func, phenotypic=csv,
+                 description=fdescr)
