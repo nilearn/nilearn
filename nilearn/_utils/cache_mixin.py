@@ -208,17 +208,16 @@ class CacheMixin(object):
         if not hasattr(self, "memory"):
             self.memory = Memory(cachedir=None, verbose=verbose)
         if isinstance(self.memory, _basestring):
-            self.memory = Memory(cachedir=self.memory, verbose=verbose)
+            self.memory = Memory(cachedir=os.path.expanduser(self.memory),
+                                 verbose=verbose)
 
         # If cache level is 0 but a memory object has been provided, set
         # memory_level to 1 with a warning.
-        if self.memory_level == 0:
-            if (isinstance(self.memory, _basestring)
-                    or self.memory.cachedir is not None):
-                warnings.warn("memory_level is currently set to 0 but "
-                              "a Memory object has been provided. "
-                              "Setting memory_level to 1.")
-                self.memory_level = 1
+        if self.memory_level == 0 and self.memory.cachedir is not None:
+            warnings.warn("memory_level is currently set to 0 but "
+                          "a Memory object has been provided. "
+                          "Setting memory_level to 1.")
+            self.memory_level = 1
 
         return cache(func, self.memory, func_memory_level=func_memory_level,
                      memory_level=self.memory_level, **kwargs)
