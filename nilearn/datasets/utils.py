@@ -678,8 +678,9 @@ def _fetch_files(data_dir, files, resume=True, mock=False, verbose=1):
         temp_target_file = os.path.join(temp_dir, file_)
         # Whether to keep existing files
         overwrite = opts.get('overwrite', False)
-        if (abort is None and (overwrite or (not os.path.exists(target_file) and not
-                os.path.exists(temp_target_file)))):
+        if (abort is None and
+                (overwrite or (not os.path.exists(target_file) and not
+                               os.path.exists(temp_target_file)))):
 
             # We may be in a global read-only repository. If so, we cannot
             # download files.
@@ -721,16 +722,18 @@ def _fetch_files(data_dir, files, resume=True, mock=False, verbose=1):
                     abort = str(e)
         if (abort is None and not os.path.exists(target_file) and not
                 os.path.exists(temp_target_file)):
-            if not mock:
+            if mock:
+                if not os.path.exists(os.path.dirname(temp_target_file)):
+                    os.makedirs(os.path.dirname(temp_target_file))
+                open(temp_target_file, 'w').close()
+            elif 'loose_check' in opts:
+                target_file = None
+            else:
                 warnings.warn('An error occured while fetching %s' % file_)
                 abort = ("Dataset has been downloaded but requested file was "
                          "not provided:\nURL: %s\n"
                          "Target file: %s\nDownloaded: %s" %
                          (url, target_file, dl_file))
-            else:
-                if not os.path.exists(os.path.dirname(temp_target_file)):
-                    os.makedirs(os.path.dirname(temp_target_file))
-                open(temp_target_file, 'w').close()
         if abort is not None:
             if os.path.exists(temp_dir):
                 shutil.rmtree(temp_dir)

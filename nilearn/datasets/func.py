@@ -1654,9 +1654,6 @@ def fetch_acpi(n_subjects=10, preprocessing='ANTS', scrubbing=False,
                       ' number of subjects (%i).' % max_subjects)
         n_subjects = max_subjects
 
-    csv = csv[:n_subjects]
-    ids = csv['SUBID']
-
     # Define an helper function to deal with archives without root dir
     def move_if_root_is_wrong(temp_dir):
         files = os.listdir(temp_dir)
@@ -1668,22 +1665,29 @@ def fetch_acpi(n_subjects=10, preprocessing='ANTS', scrubbing=False,
             for f in files:
                 shutil.move(os.path.join(temp_dir, f), root_dir)
 
-    # Now, download the files
-    opts = {'uncompress': True, 'callback': move_if_root_is_wrong}
+    # Download the files incrementally until number of subjects is reached
+    opts = {'uncompress': True, 'callback': move_if_root_is_wrong,
+            'loose_check': True}
     func = []
-    for i in ids:
-        # Find the file where the subject data is located
-        start, end = [(s, e) for (s, e) in indices if s <= i and i <= e][0]
-        # Download it
-        path = os.path.join(root, '00%i-session_1' % i, 'rest_1',
-                            'func_preproc', 'func_preproc.nii.gz')
-        f = _fetch_files(
-            data_dir,
-            [(path,
-              url + '/OutputTars/%s_00%i_00%i.tar.gz' % (root, start, end),
-              opts)],
-            verbose=verbose)[0]
-        func.append(f)
+    ids = []
+    for start, end in indices:
+        archive_url = url + '/OutputTars/%s_00%i_00%i.tar.gz' % (
+            root, start, end)
+        archive_ids = np.arange(start, min(csv['SUBID'][-1], end) + 1)
+        # List the files supposed to be there
+        filepath = os.path.join(root, '00%i-session_1', 'rest_1',
+                                'func_preproc', 'func_preproc.nii.gz')
+        files = [(filepath % i, archive_url, opts) for i in archive_ids]
+        files = _fetch_files(data_dir, files, verbose=verbose)
 
-    return Bunch(func=func, phenotypic=csv,
+        for i, f in zip(archive_ids, files):
+            if f is None:
+                continue
+            func.append(f)
+            ids.append(i)
+        if len(func) >= n_subjects:
+            break
+
+    return Bunch(func=func[:n_subjects],
+                 phenotypic=csv[np.in1d(csv['SUBID'], ids)],
                  description=fdescr)
