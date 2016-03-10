@@ -209,7 +209,7 @@ class CacheMixin(object):
             self.memory = Memory(cachedir=None, verbose=verbose)
         if isinstance(self.memory, _basestring):
             cache_dir = self.memory
-            if nilearn.EXPAND_PATH_USER:
+            if nilearn.EXPAND_PATH_WILDCARDS:
                 cache_dir = os.path.expanduser(cache_dir)
 
             # Perform some verifications on given path.
