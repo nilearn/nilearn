@@ -208,8 +208,19 @@ class CacheMixin(object):
         if not hasattr(self, "memory"):
             self.memory = Memory(cachedir=None, verbose=verbose)
         if isinstance(self.memory, _basestring):
-            self.memory = Memory(cachedir=os.path.expanduser(self.memory),
-                                 verbose=verbose)
+            cache_dir = self.memory
+            if nilearn.EXPAND_PATH_USER:
+                cache_dir = os.path.expanduser(cache_dir)
+
+            # Perform some verifications on given path.
+            split_cache_dir = os.path.split(cache_dir)
+            if (len(split_cache_dir) > 1 and
+                    not os.path.exists(split_cache_dir[0])):
+                raise ValueError("Given cache path base directory doesn't "
+                                 "exists, you gave '{0}'."
+                                 .format(split_cache_dir[0]))
+
+            self.memory = Memory(cachedir=cache_dir, verbose=verbose)
 
         # If cache level is 0 but a memory object has been provided, set
         # memory_level to 1 with a warning.

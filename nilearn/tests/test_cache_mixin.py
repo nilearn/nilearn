@@ -13,6 +13,7 @@ from sklearn.externals.joblib import Memory
 
 import nilearn
 from nilearn._utils import cache_mixin, CacheMixin
+from nilearn._utils.testing import assert_raises_regex
 
 
 def f(x):
@@ -89,17 +90,19 @@ def test_cache_memory_level():
     assert_equal(len(glob.glob(job_glob)), 3)
 
 
-def test_cache_mixin_expand_user():
+class CacheMixinMock(CacheMixin):
+    """Dummy mock object that wraps a CacheMixin."""
+
+    def __init__(self, memory=None, memory_level=1):
+        self.memory = memory
+        self.memory_level = memory_level
+
+    def run(self):
+        self._cache(f)
+
+
+def test_cache_mixin_with_expand_user():
     # Test the memory cache is correctly created when using ~.
-    class CacheMixinMock(CacheMixin):
-
-        def __init__(self, memory=None, memory_level=1):
-            self.memory = memory
-            self.memory_level = memory_level
-
-        def run(self):
-            self._cache(f)
-
     cache_dir = "~/nilearn_data/cache"
     expand_cache_dir = os.path.expanduser(cache_dir)
     mixin_mock = CacheMixinMock(cache_dir)
@@ -111,3 +114,38 @@ def test_cache_mixin_expand_user():
     finally:
         if os.path.exists(expand_cache_dir):
             shutil.rmtree(expand_cache_dir)
+
+
+def test_cache_mixin_without_expand_user():
+    # Test the memory cache is correctly created when using ~.
+    cache_dir = "~/nilearn_data/cache"
+    expand_cache_dir = os.path.expanduser(cache_dir)
+    mixin_mock = CacheMixinMock(cache_dir)
+
+    try:
+        assert_false(os.path.exists(expand_cache_dir))
+        nilearn.EXPAND_PATH_USER = False
+        mixin_mock.run()
+        # Memory fails to create a cache whose path starts with ~.
+        assert_false(os.path.exists(expand_cache_dir))
+        nilearn.EXPAND_PATH_USER = True
+    finally:
+        if os.path.exists(expand_cache_dir):
+            shutil.rmtree(expand_cache_dir)
+
+
+def test_cache_mixin_wrong_expand_user():
+    # Test the memory cache raises a ValueError when input base path doesn't
+    # exist.
+
+    cache_dir = "/bad_dir/cache"
+    mixin_mock = CacheMixinMock(cache_dir)
+
+    try:
+        assert_raises_regex(ValueError,
+                            "Given cache path base directory doesn't exists",
+                            mixin_mock.run)
+        assert_false(os.path.exists(cache_dir))
+    finally:
+        if os.path.exists(cache_dir):
+            shutil.rmtree(cache_dir)
