@@ -215,7 +215,8 @@ class CacheMixin(object):
             # Perform some verifications on given path.
             split_cache_dir = os.path.split(cache_dir)
             if (len(split_cache_dir) > 1 and
-                    not os.path.exists(split_cache_dir[0])):
+                    (not os.path.exists(split_cache_dir[0]) and
+                     split_cache_dir[0] != '')):
                 if (not nilearn.EXPAND_PATH_WILDCARDS and
                         cache_dir.startswith("~")):
                     # Maybe the user want to enable expanded user path.
