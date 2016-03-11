@@ -777,6 +777,7 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
         # misc
         self.Xmean_ = X.mean(axis=0)
         self.Xstd_ = X.std(axis=0)
+        self.Xstd_[self.Xstd_ < 1e-8] = 1
         self.mask_img_ = self.masker_.mask_img_
         self.mask_ = self.mask_img_.get_data().astype(np.bool)
         n_samples, _ = X.shape
