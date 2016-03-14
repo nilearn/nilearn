@@ -1689,5 +1689,5 @@ def fetch_acpi(n_subjects=10, preprocessing='ANTS', scrubbing=False,
             break
 
     return Bunch(func=func[:n_subjects],
-                 phenotypic=csv[np.in1d(csv['SUBID'], ids)],
+                 phenotypic=csv[np.in1d(csv['SUBID'], ids)[:n_subjects]],
                  description=fdescr)
