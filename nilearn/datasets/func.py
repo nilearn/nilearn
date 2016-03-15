@@ -1289,7 +1289,9 @@ def fetch_mixed_gambles(n_subjects=1, data_dir=None, url=None, resume=True,
     data_dir = _get_dataset_dir('jimura_poldrack_2012_zmaps',
                                 data_dir=data_dir)
     zmap_fnames = _fetch_files(data_dir, files, resume=resume, verbose=verbose)
-    data = Bunch(zmaps=zmap_fnames)
+    subject_id = np.repeat(np.arange(n_subjects), 6 * 8)
+    data = Bunch(zmaps=zmap_fnames,
+                 subject_id=subject_id)
     if not return_raw_data:
         X, y, mask_img = _load_mixed_gambles(check_niimg(data.zmaps,
                                                          return_iterator=True))
