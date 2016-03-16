@@ -126,7 +126,7 @@ def test_cache_mixin_without_expand_user():
         assert_false(os.path.exists(expand_cache_dir))
         nilearn.EXPAND_PATH_WILDCARDS = False
         assert_raises_regex(ValueError,
-                            "Given cache path base directory doesn't",
+                            "Given cache path parent directory doesn't",
                             mixin_mock.run)
         assert_false(os.path.exists(expand_cache_dir))
         nilearn.EXPAND_PATH_WILDCARDS = True
@@ -146,7 +146,7 @@ def test_cache_mixin_wrong_dirs():
 
         try:
             assert_raises_regex(ValueError,
-                                "Given cache path base directory doesn't",
+                                "Given cache path parent directory doesn't",
                                 mixin_mock.run)
             assert_false(os.path.exists(expand_cache_dir))
         finally:
