@@ -43,8 +43,9 @@ if hasattr(gzip.GzipFile, 'max_read_chunk'):
     gzip.GzipFile.max_read_chunk = 100 * 1024 * 1024  # 100Mb
 
 # Boolean controlling the default globbing technique when using check_niimg
-# Default value it True, set it to False to completely deactivate use of glob
-# module
+# and the os.path.expanduser usage in CacheMixin.
+# Default value it True, set it to False to completely deactivate this
+# behavior.
 EXPAND_PATH_WILDCARDS = True
 
 # Boolean controlling whether the joblib caches should be
