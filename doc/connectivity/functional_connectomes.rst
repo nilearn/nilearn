@@ -233,8 +233,8 @@ only direct connections.
 
 .. topic:: **References**
 
-  * `Zalesky, NeuroImage 2012, "On the use of correlation as a measure of
+  * `Zalesky et al., NeuroImage 2012, "On the use of correlation as a measure of
     network connectivity" <http://www.sciencedirect.com/science/article/pii/S1053811912001784>`_.
 
-  * `Varoquaux, NeuroImage 2013, "Learning and comparing functional
+  * `Varoquaux et al., NeuroImage 2013, "Learning and comparing functional
     connectomes across subjects" <http://www.sciencedirect.com/science/article/pii/S1053811913003340>`_.
