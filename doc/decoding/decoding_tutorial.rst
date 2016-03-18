@@ -450,7 +450,7 @@ Changing the prediction engine
     >>> from sklearn.feature_selection import SelectKBest, f_classif
     >>> from sklearn.svm import LinearSVC
     >>> feature_selection = SelectKBest(f_classif, k=4)
-    >>> clf = LinearSVC()
+
 
 We now see how one can easily change the prediction engine, if needed.
 We can try Fisher's `Linear Discriminant Analysis (LDA)
@@ -478,6 +478,10 @@ and recompute the cross-validation score::
 
 Changing the feature selection
 ------------------------------
+Let's start by defining a linear SVM as a first classifier::
+
+    >>> clf = LinearSVC()
+
 
 Let's say that you want a more sophisticated feature selection, for example a
 `Recursive Feature Elimination (RFE)
@@ -491,7 +495,7 @@ Construct your new fancy selection::
 
     >>> rfe = RFE(SVC(kernel='linear', C=1.), 50, step=0.25)
 
-and create a new pipeline::
+and create a new pipeline, composing the two classifiers `rfe` and `clf`::
 
     >>> rfe_svc = Pipeline([('rfe', rfe), ('svc', clf)])
 
@@ -510,4 +514,3 @@ But, be aware that this can take *A WHILE*...
     has very detailed explanations on a large variety of estimators and
     machine learning techniques. To become better at decoding, you need
     to study it.
-
