@@ -210,7 +210,7 @@ into different sets, called "folds", in a `K-Fold strategy
 
 We use a cross-validation object,
 :class:`sklearn.cross_validation.KFold`, that simply generates the
-indeces of the folds within a loop.
+indexes of the folds within a loop.
 
 .. literalinclude:: ../../examples/plot_haxby_simple.py
     :start-after: # Compute prediction scores using cross-validation
