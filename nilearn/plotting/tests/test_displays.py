@@ -41,16 +41,6 @@ def test_demo_ortho_projector():
     oprojector.close()
 
 
-def test_demo_ortho_hemispheric_projector():
-    # This is only a smoke test
-    img = load_mni152_template()
-    oprojector = OrthoHemisphericProjector.init_with_figure(img=img)
-    oprojector.add_overlay(img, cmap=plt.cm.gray)
-    with tempfile.TemporaryFile() as fp:
-        oprojector.savefig(fp)
-    oprojector.close()
-
-
 def test_contour_fillings_levels_in_add_contours():
     oslicer = OrthoSlicer(cut_coords=(0, 0, 0))
     img = load_mni152_template()
