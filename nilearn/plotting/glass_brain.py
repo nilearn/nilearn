@@ -88,14 +88,14 @@ def _get_json_and_transform(direction):
     direction_to_view_name = {'x': 'side',
                               'y': 'front',
                               'z': 'top',
-                              'l': 'left_side',
+                              'l': 'side',
                               'r': 'side'}
 
     direction_to_transform_params = {
         'x': [0.38, 0, 0, 0.38, -108, -70],
         'y': [0.39, 0, 0, 0.39, -72, -73],
         'z': [0.36, 0, 0, 0.37, -71, -107],
-        'l': [0.38, 0, 0, 0.38, -115, -70],
+        'l': [0.38, 0, 0, 0.38, -108, -70],
         'r': [0.38, 0, 0, 0.38, -108, -70]}
 
     dirname = os.path.dirname(os.path.abspath(__file__))

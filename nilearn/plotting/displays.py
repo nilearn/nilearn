@@ -189,11 +189,15 @@ def _get_index_from_direction(direction):
     """
     directions = ['x', 'y', 'z']
     try:
-        index = directions.index(direction)
+        # l and r are subcases of x
+        if direction in 'lr':
+            index = 0
+        else:
+            index = directions.index(direction)
     except ValueError:
         message = (
             '{0} is not a valid direction. '
-            "Allowed values are 'x', 'y' and 'z'").format(direction)
+            "Allowed values are 'l', 'r', 'x', 'y' and 'z'").format(direction)
         raise ValueError(message)
     return index
 
@@ -210,6 +214,10 @@ def _coords_3d_to_2d(coords_3d, direction, return_direction=False):
 
     return coords_3d[:, dimensions]
 
+
+###############################################################################
+# class GlassBrainAxes
+###############################################################################
 
 class GlassBrainAxes(BaseAxes):
     """An MPL axis-like object that displays a 2D projection of 3D
@@ -252,7 +260,7 @@ class GlassBrainAxes(BaseAxes):
             data_selection = data.copy()
             x_center, _, _, _ = np.dot(np.linalg.inv(affine),
                                        np.array([0, 0, 0, 1]))
-            data_selection[:x_center, :, :] = 0
+            data_selection[:int(x_center), :, :] = 0
         else:
             data_selection = data
 
@@ -269,16 +277,11 @@ class GlassBrainAxes(BaseAxes):
 
             # take the values where the absolute value of the projection
             # is the highest
-            maximum_intensity_data = data[inds]
+            maximum_intensity_data = data_selection[inds]
         else:
             maximum_intensity_data = np.abs(data_selection).max(axis=max_axis)
 
-        # Originally the array is a brain pointing to the right so we flip it
-        # in the case of the left pointing brain image
-        if self.direction == 'l':
-            return np.fliplr(np.rot90(maximum_intensity_data))
-        else:
-            return np.rot90(maximum_intensity_data)
+        return np.rot90(maximum_intensity_data)
 
     def draw_position(self, size, bg_color, **kwargs):
         # It does not make sense to draw crosses for the position of
@@ -288,8 +291,22 @@ class GlassBrainAxes(BaseAxes):
     def _add_markers(self, marker_coords, marker_color, marker_size, **kwargs):
         """Plot markers"""
         marker_coords_2d = _coords_3d_to_2d(marker_coords, self.direction)
-
         xdata, ydata = marker_coords_2d.T
+
+        # Allow markers only in their respective hemisphere when appropriate
+        if self.direction in 'lr':
+            relevant_coords = []
+            xcoords, ycoords, zcoords = marker_coords.T
+            for cidx, xc in enumerate(xcoords):
+                if self.direction == 'r':
+                    if xc >= 0:
+                        relevant_coords.append(cidx)
+                elif self.direction == 'l':
+                    if xc < 0:
+                        relevant_coords.append(cidx)
+            xdata = xdata[relevant_coords]
+            ydata = ydata[relevant_coords]
+            marker_color = marker_color[relevant_coords]
 
         defaults = {'marker': 'o',
                     'zorder': 1000}
@@ -350,6 +367,19 @@ class GlassBrainAxes(BaseAxes):
         abs_norm = colors.Normalize(vmin=0,
                                     vmax=vmax)
         value_to_color = plt.cm.ScalarMappable(norm=norm, cmap=cmap).to_rgba
+
+        # Allow lines only in their respective hemisphere when appropriate
+        if self.direction in 'lr':
+            relevant_lines = []
+            for lidx, line in enumerate(line_coords):
+                if self.direction == 'r':
+                    if line[0, 0] >= 0 and line[1, 0] >= 0:
+                        relevant_lines.append(lidx)
+                elif self.direction == 'l':
+                    if line[0, 0] < 0 and line[1, 0] < 0:
+                        relevant_lines.append(lidx)
+            line_coords = np.array(line_coords)[relevant_lines]
+            line_values = line_values[relevant_lines]
 
         for start_end_point_3d, line_value in zip(
                 line_coords, line_values):
@@ -616,6 +646,9 @@ class BaseSlicer(object):
         for display_ax in self.axes.values():
             try:
                 data_2d = display_ax.transform_to_2d(data, affine)
+                # To obtain the brain left view, we simply invert the x axis
+                if display_ax.direction == 'l':
+                    display_ax.ax.invert_xaxis()
             except IndexError:
                 # We are cutting outside the indices of the data
                 data_2d = None
@@ -630,7 +663,6 @@ class BaseSlicer(object):
                                         if d is not None])
 
         bounding_box = (xmin_, xmax_), (ymin_, ymax_), (zmin_, zmax_)
-
         ims = []
         to_iterate_over = zip(self.axes.values(), data_2d_list)
         for display_ax, data_2d in to_iterate_over:
@@ -1301,6 +1333,9 @@ class OrthoProjector(OrthoSlicer):
                 ax._add_lines(line_coords, adjacency_matrix_values, edge_cmap,
                               vmin=edge_vmin, vmax=edge_vmax,
                               **edge_kwargs)
+            # To obtain the brain left view, we simply invert the x axis
+            if ax.direction == 'l':
+                ax.ax.invert_xaxis()
 
         if colorbar:
             self._colorbar = colorbar

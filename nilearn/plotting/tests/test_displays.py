@@ -4,8 +4,7 @@ import tempfile
 
 import matplotlib.pyplot as plt
 
-from nilearn.plotting.displays import (OrthoSlicer, XSlicer, OrthoProjector,
-                                       OrthoHemisphericProjector)
+from nilearn.plotting.displays import OrthoSlicer, XSlicer, OrthoProjector
 from nilearn.datasets import load_mni152_template
 
 

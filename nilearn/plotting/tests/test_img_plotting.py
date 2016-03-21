@@ -107,10 +107,6 @@ def test_plot_functions():
         finally:
             os.remove(filename)
 
-    # smoke-test for hemispheric glass brain
-    filename = tempfile.mktemp(suffix='.png')
-    plot_glass_brain(img, output_file=filename, display_mode='lzry')
-
     # test for bad input arguments (cf. #510)
     ax = plt.subplot(111, rasterized=True)
     filename = tempfile.mktemp(suffix='.png')
@@ -134,6 +130,9 @@ def test_plot_glass_brain():
 
     # Save execution time and memory
     plt.close()
+    # smoke-test for hemispheric glass brain
+    filename = tempfile.mktemp(suffix='.png')
+    plot_glass_brain(img, output_file=filename, display_mode='lzry')
 
 
 def test_plot_stat_map():
@@ -452,6 +451,9 @@ def test_plot_connectome():
     # with colorbar=True
     plot_connectome(*args, colorbar=True)
     plt.close()
+
+    # smoke-test with hemispheric saggital cuts
+    plot_connectome(*args, display_mode='lzry')
 
 
 def test_plot_connectome_exceptions():
