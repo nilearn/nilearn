@@ -19,7 +19,7 @@ localizer_dataset = datasets.fetch_localizer_contrasts(
 localizer_tmap_filename = localizer_dataset.tmaps[1]
 
 ###############################################################################
-# demo glass brain plotting
+# demo glass brain plotting.
 from nilearn import plotting
 
 # Whole brain saggital cuts
@@ -36,6 +36,9 @@ plotting.plot_glass_brain(localizer_tmap_filename, threshold=0, colorbar=True,
 plotting.plot_glass_brain(localizer_tmap_filename, threshold=3,
                           colorbar=True, plot_abs=False)
 
+plotting.show()
+
+###############################################################################
 # Hemispheric saggital cuts
 plotting.plot_glass_brain(localizer_tmap_filename, threshold=3,
                           display_mode='lyrz')
