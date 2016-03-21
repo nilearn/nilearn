@@ -1,8 +1,8 @@
 .. _functional_connectomes:
 
-===============================================================
+========================================================
 Extracting times series to build a functional connectome
-===============================================================
+========================================================
 
 .. topic:: **Page summary**
 
@@ -17,28 +17,28 @@ Extracting times series to build a functional connectome
 
 .. topic:: **References**
 
-   * `Varoquaux and Craddock, Learning and comparing functional
-     connectomes across subjects, NeuroImage 2013
-     <http://www.sciencedirect.com/science/article/pii/S1053811913003340>`_
+   * `Varoquaux and Craddock, "Learning and comparing functional
+     connectomes across subjects", NeuroImage 2013
+     <http://www.sciencedirect.com/science/article/pii/S1053811913003340>`_.
 
 .. _parcellation_time_series:
 
 Time-series from a brain parcellation or "MaxProb" atlas
-===========================================================
+========================================================
 
 Brain parcellations
---------------------
+-------------------
 
 .. currentmodule:: nilearn.datasets
 
 Regions used to extract the signal can be defined by a "hard"
 parcellation. For instance, the :mod:`nilearn.datasets` has functions to
-download atlases forming reference parcellation, eg
+download atlases forming reference parcellation, e.g.,
 :func:`fetch_atlas_craddock_2012`, :func:`fetch_atlas_harvard_oxford`,
 :func:`fetch_atlas_yeo_2011`.
 
-For instance to retrieve the Harvard-Oxford cortical parcelation, sampled
-at 2mm, and with a threshold of a probability of .25::
+For instance to retrieve the Harvard-Oxford cortical parcellation, sampled
+at 2mm, and with a threshold of a probability of 0.25::
 
   from nilearn import datasets
   dataset = datasets.fetch_atlas_harvard_oxford('cort-maxprob-thr25-2mm')
@@ -56,17 +56,17 @@ Plotting can then be done as::
 
 .. seealso::
 
-   * The :ref:`plotting documentation <plotting>`
+   * The :ref:`plotting documentation <plotting>`;
 
-   * The :ref:`dataset downloaders <datasets_ref>`
+   * The :ref:`dataset downloaders <datasets_ref>`.
 
 Extracting signals on a parcellation
-----------------------------------------
+------------------------------------
 
 .. currentmodule:: nilearn.input_data
 
 To extract signal on the parcellation, the easiest option is to use the
-:class:`nilearn.input_data.NiftiLabelsMasker`. As any ''maskers'' in
+:class:`nilearn.input_data.NiftiLabelsMasker`. As any "maskers" in
 nilearn, it is a processing object that is created by specifying all
 the important parameters, but not the data::
 
@@ -97,7 +97,7 @@ regions, regressing out noise sources is indeed very important
 .. topic:: **Full example**
 
     See the following example for a full file running the analysis:
-    :ref:`sphx_glr_auto_examples_03_connectivity_plot_signal_extraction.py`
+    :ref:`sphx_glr_auto_examples_03_connectivity_plot_signal_extraction.py`.
 
 
 .. topic:: **Exercise: computing the correlation matrix of rest fmri**
@@ -105,38 +105,40 @@ regions, regressing out noise sources is indeed very important
 
    Try using the information above to compute the correlation matrix of
    the first subject of the ADHD dataset downloaded with
-   :func:`nilearn.datasets.fetch_adhd`
+   :func:`nilearn.datasets.fetch_adhd`.
 
    **Hints:**
 
    * Inspect the '.keys()' of the object returned by
-     :func:`nilearn.datasets.fetch_adhd`
+     :func:`nilearn.datasets.fetch_adhd`.
 
    * :func:`numpy.corrcoef` can be used to compute a correlation matrix
-     (check the shape of your matrices)
+     (check the shape of your matrices).
 
-   * :func:`matplotlib.pyplot.imshow` can show a correlation matrix
+   * :func:`matplotlib.pyplot.imshow` can show a correlation matrix.
 
-   * The example above has the solution
+   * The example above has the solution.
 
 |
 
 Time-series from a probabilistic atlas
-========================================
+======================================
 
 Probabilistic atlases
-----------------------
+---------------------
 
 The definition of regions as by a continuous probability map captures
 better our imperfect knowledge of boundaries in brain images (notably
 because of inter-subject registration errors). One example of such an
 atlas well suited to resting-state data analysis is the `MSDL atlas
-<https://team.inria.fr/parietal/research/spatial_patterns/spatial-patterns-in-resting-state/>`_ (:func:`nilearn.datasets.fetch_atlas_msdl`).
+<https://team.inria.fr/parietal/research/spatial_patterns/spatial-patterns-in-resting-state/>`_
+(:func:`nilearn.datasets.fetch_atlas_msdl`).
 
 Probabilistic atlases are represented as a set of continuous maps, in a
 4D nifti image. Visualization the atlas thus requires to visualize each
 of these maps, which requires accessing them with
-:func:`nilearn.image.index_img` (see the :ref:`corresponding example <sphx_glr_auto_examples_01_plotting_plot_overlay.py>`).
+:func:`nilearn.image.index_img` (see the :ref:`corresponding example
+<sphx_glr_auto_examples_01_plotting_plot_overlay.py>`).
 
 .. image:: ../auto_examples/01_plotting/images/sphx_glr_plot_overlay_001.png
    :target: ../auto_examples/01_plotting/plot_overlay.html
@@ -144,7 +146,7 @@ of these maps, which requires accessing them with
 
 
 Extracting signals from a probabilistic atlas
-----------------------------------------------
+---------------------------------------------
 
 .. currentmodule:: nilearn.input_data
 
@@ -173,25 +175,25 @@ the same considerations on using confounds regressors apply.
 .. topic:: **Full example**
 
     A full example of extracting signals on a probabilistic:
-    :ref:`sphx_glr_auto_examples_03_connectivity_plot_probabilistic_atlas_extraction.py`
+    :ref:`sphx_glr_auto_examples_03_connectivity_plot_probabilistic_atlas_extraction.py`.
 
 
-.. topic:: **Exercise: correlation matrix of rest fmri on probabilistic atlas**
+.. topic:: **Exercise: correlation matrix of rest fMRI on probabilistic atlas**
    :class: green
 
    Try to compute the correlation matrix of the first subject of the ADHD
    dataset downloaded with :func:`nilearn.datasets.fetch_adhd`
    with the MSDL atlas downloaded via
-   :func:`nilearn.datasets.fetch_atlas_msdl`
+   :func:`nilearn.datasets.fetch_atlas_msdl`.
 
-   **Hint:** The example above has the solution
+   **Hint:** The example above has the solution.
 
 
 A functional connectome: a graph of interactions
-====================================================
+================================================
 
 A square matrix, such as a correlation matrix, can also be seen as a
-`"graph" <http://en.wikipedia.org/wiki/Graph_%28mathematics%29>`_: a set
+`"graph" <https://en.wikipedia.org/wiki/Graph_%28mathematics%29>`_: a set
 of "nodes", connected by "edges". When these nodes are brain regions, and
 the edges capture interactions between them, this graph is a "functional
 connectome".
@@ -223,7 +225,7 @@ the :func:`nilearn.plotting.find_xyz_cut_coords` function
    :target: ../auto_examples/03_connectivity/plot_probabilistic_atlas_extraction.html
 
 As you can see, the correlation matrix gives a very "full" graph: every
-node is connected to every other one. This is because is also captures
+node is connected to every other one. This is because it also captures
 indirect connections. In the next section we will see how to focus on
 only direct connections.
 
@@ -231,9 +233,8 @@ only direct connections.
 
 .. topic:: **References**
 
-  * `Zalesky NeuroImage 2012 "On the use of correlation as a measure of
-    network connectivity" <http://www.sciencedirect.com/science/article/pii/S1053811912001784>`_
+  * `Zalesky et al., NeuroImage 2012, "On the use of correlation as a measure of
+    network connectivity" <http://www.sciencedirect.com/science/article/pii/S1053811912001784>`_.
 
-  * `Varoquaux NeuroImage 2013, Learning and comparing functional
-    connectomes across subjects,
-    <http://www.sciencedirect.com/science/article/pii/S1053811913003340>`_
+  * `Varoquaux et al., NeuroImage 2013, "Learning and comparing functional
+    connectomes across subjects" <http://www.sciencedirect.com/science/article/pii/S1053811913003340>`_.
