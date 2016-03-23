@@ -633,8 +633,9 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
          It is available only when parameter intercept is set to True.
 
     `cv_` : list of pairs of lists
-         Each pair is composed of two lists of indices, one for the train,
-         one for the test, for the samples for the corresponding fold.
+         List of the (n_folds,) folds. For the corresponding fold,
+         each pair is composed of two lists of indices,
+         one for the train samples and one for the test samples.
 
     `cv_scores_` : ndarray, shape (n_alphas, n_folds) or (n_l1_ratios, n_alphas, n_folds)
         Scores (misclassification) for each alpha, and on each fold
