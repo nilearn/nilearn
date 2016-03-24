@@ -10,9 +10,9 @@
 
 .. _decoding_tutorial:
 
-=====================
+===================
 A decoding tutorial
-=====================
+===================
 
 This page is a decoding tutorial articulated on the analysis of the Haxby
 2001 dataset. It shows how to predict from brain activity images the
@@ -25,7 +25,7 @@ stimuli that the subject is viewing.
 
 
 Data loading and preparation
-================================
+============================
 
 The Haxby 2001 experiment
 -------------------------
@@ -66,14 +66,16 @@ corresponding category.
 
 
 Loading the data into Python
------------------------------
+----------------------------
 
 Launch IPython::
 
   ipython --matplotlib
 
 First, load the data using nilearn data downloading function,
-:func:`nilearn.datasets.fetch_haxby`:
+:func:`nilearn.datasets.fetch_haxby` (if the data is not present
+on the disk, it can take a while to download about 310 Mo of data
+from the Internet):
 
 .. literalinclude:: ../../examples/plot_haxby_simple.py
     :start-after: # Retrieve and load the Haxby dataset
@@ -83,14 +85,14 @@ The ``haxby_dataset`` object has several entries that contain paths to the files
 downloaded on the disk::
 
     >>> print(haxby_dataset)  # doctest: +SKIP
-    {'anat': ['/home/varoquau/dev/nilearn/nilearn_data/haxby2001/subj1/anat.nii.gz'],
-    'func': ['/home/varoquau/dev/nilearn/nilearn_data/haxby2001/subj1/bold.nii.gz'],
-    'mask_face': ['/home/varoquau/dev/nilearn/nilearn_data/haxby2001/subj1/mask8b_face_vt.nii.gz'],
-    'mask_face_little': ['/home/varoquau/dev/nilearn/nilearn_data/haxby2001/subj1/mask8_face_vt.nii.gz'],
-    'mask_house': ['/home/varoquau/dev/nilearn/nilearn_data/haxby2001/subj1/mask8b_house_vt.nii.gz'],
-    'mask_house_little': ['/home/varoquau/dev/nilearn/nilearn_data/haxby2001/subj1/mask8_house_vt.nii.gz'],
-    'mask_vt': ['/home/varoquau/dev/nilearn/nilearn_data/haxby2001/subj1/mask4_vt.nii.gz'],
-    'session_target': ['/home/varoquau/dev/nilearn/nilearn_data/haxby2001/subj1/labels.txt']}
+    {'anat': ['/home/user/nilearn_data/haxby2001/subj1/anat.nii.gz'],
+    'func': ['/home/user/nilearn_data/haxby2001/subj1/bold.nii.gz'],
+    'mask_face': ['/home/user/nilearn_data/haxby2001/subj1/mask8b_face_vt.nii.gz'],
+    'mask_face_little': ['/home/user/nilearn_data/haxby2001/subj1/mask8_face_vt.nii.gz'],
+    'mask_house': ['/home/user/nilearn_data/haxby2001/subj1/mask8b_house_vt.nii.gz'],
+    'mask_house_little': ['/home/user/nilearn_data/haxby2001/subj1/mask8_house_vt.nii.gz'],
+    'mask_vt': ['/home/user/nilearn_data/haxby2001/subj1/mask4_vt.nii.gz'],
+    'session_target': ['/home/user/nilearn_data/haxby2001/subj1/labels.txt']}
 
 
 We load the behavioral labels from the corresponding text file and limit
@@ -109,7 +111,7 @@ n_features) (see :ref:`mask_4d_2_3d` for a discussion on using masks).
 
 .. note::
 
-   seemingly minor data preparation can matter a lot on the final score,
+   Seemingly minor data preparation can matter a lot on the final score,
    for instance standardizing the data.
 
 
@@ -125,13 +127,13 @@ n_features) (see :ref:`mask_4d_2_3d` for a discussion on using masks).
 
 
 Performing the decoding analysis
-====================================
+================================
 
 The prediction engine
------------------------
+---------------------
 
 An estimator object
-....................
+...................
 
 To perform decoding we construct an estimator, predicting a condition
 label **y** given a set **X** of images.
@@ -153,8 +155,8 @@ can be displayed as follows::
     Type:             SVC
     Base Class:       <class 'sklearn.svm.libsvm.SVC'>
     String Form:
-    SVC(kernel=linear, C=1.0, probability=False, degree=3, coef0=0.0, eps=0.001,
-    cache_size=100.0, shrinking=True, gamma=0.0)
+    SVC(kernel=linear, C=1.0, probability=False, degree=3, coef0=0.0, tol=0.001,
+    cache_size=200, shrinking=True, gamma=0.0)
     Namespace:        Interactive
     Docstring:
         C-Support Vector Classification.
@@ -171,13 +173,13 @@ can be displayed as follows::
 
 
 Applying it to data: fit (train) and predict (test)
-....................................................
+...................................................
 
 In scikit-learn, the prediction objects have two important methods:
 
-- a *fit* function that "learns" the parameters of the model from the data.
-  Thus, we need to give some training data to *fit*.
-- a *predict* function that "predicts" a target from new data.
+- a `fit` function that "learns" the parameters of the model from the data.
+  Thus, we need to give some training data to `fit`.
+- a `predict` function that "predicts" a target from new data.
   Here, we just have to give the new set of images (as the target should be
   unknown):
 
@@ -187,28 +189,28 @@ In scikit-learn, the prediction objects have two important methods:
 
 .. warning::
 
-    **Do not predict on data used by the fit:** the prediction that we obtain here
-    is to good to be true (see next paragraph). Here we are just doing a sanity
-    check.
+    **Do not predict on data used by the fit:** the prediction that we obtain
+    here is to good to be true (see next paragraph).
+    Here we were just doing a sanity check.
 
 .. for doctests (smoke testing):
     >>> from sklearn.svm import SVC
     >>> svc = SVC()
 
 Measuring prediction performance
----------------------------------
+--------------------------------
 
 Cross-validation
-.................
+................
 
 However, the last analysis is *wrong*, as we have learned and tested on
-the same set of data. We need to use a cross-validation to split the data
+the *same* set of data. We need to use a cross-validation to split the data
 into different sets, called "folds", in a `K-Fold strategy
-<http://en.wikipedia.org/wiki/Cross-validation_(statistics)#k-fold_cross-validation>`_.
+<https://en.wikipedia.org/wiki/Cross-validation_(statistics)#k-fold_cross-validation>`_.
 
 We use a cross-validation object,
 :class:`sklearn.cross_validation.KFold`, that simply generates the
-indices of the folds within a loop.
+indexes of the folds within a loop.
 
 .. literalinclude:: ../../examples/plot_haxby_simple.py
     :start-after: # Compute prediction scores using cross-validation
@@ -232,9 +234,9 @@ under Windows)::
  >>> cv_scores = cross_val_score(svc, fmri_masked, target, cv=cv, n_jobs=-1, verbose=10) #doctest: +SKIP
 
 **Prediction accuracy**: We can take a look at the results of the
-*cross_val_score* function::
+`cross_val_score` function::
 
-  >>> print(cv_scores) # doctest: +SKIP
+  >>> print(cv_scores)  # doctest: +SKIP
   [0.72727272727272729, 0.46511627906976744, 0.72093023255813948, 0.58139534883720934, 0.7441860465116279]
 
 This is simply the prediction score for each fold, i.e. the fraction of
@@ -259,30 +261,30 @@ to use the session label, present in the behavioral data file, and
 :class:`sklearn.cross_validation.LeaveOneLabelOut`::
 
     >>> from sklearn.cross_validation import LeaveOneLabelOut
-    >>> session_label = labels['chunks'] # doctest: +SKIP
+    >>> session_label = labels['chunks']  # doctest: +SKIP
     >>> # We need to remember to remove the rest conditions
-    >>> session_label = session_label[condition_mask] # doctest: +SKIP
-    >>> cv = LeaveOneLabelOut(labels=session_label) # doctest: +SKIP
-    >>> cv_scores = cross_val_score(svc, fmri_masked, target, cv=cv) # doctest: +SKIP
-    >>> print(cv_scores) # doctest: +SKIP
+    >>> session_label = session_label[condition_mask]  # doctest: +SKIP
+    >>> cv = LeaveOneLabelOut(labels=session_label)  # doctest: +SKIP
+    >>> cv_scores = cross_val_score(svc, fmri_masked, target, cv=cv)  # doctest: +SKIP
+    >>> print(cv_scores)  # doctest: +SKIP
     [ 1.          0.61111111  0.94444444  0.88888889  0.88888889  0.94444444
       0.72222222  0.94444444  0.5         0.72222222  0.5         0.55555556]
 
 .. topic:: **Exercise**
    :class: green
 
-   Compute the mean prediction accuracy using *cv_scores*
+   Compute the mean prediction accuracy using `cv_scores`.
 
 .. topic:: Solution
 
-    >>> classification_accuracy = np.mean(cv_scores) # doctest: +SKIP
-    >>> classification_accuracy # doctest: +SKIP
-    0.76851851851851849
+    >>> classification_accuracy = np.mean(cv_scores)  # doctest: +SKIP
+    >>> classification_accuracy  # doctest: +SKIP
+    0.76851...
 
-We have a total prediction accuracy of 77% across the different sessions.
+We have a total prediction accuracy of *77%* across the different sessions.
 
 Choice of the prediction accuracy measure
-..........................................
+.........................................
 
 The default metric used for measuring errors is the accuracy score, i.e.
 the number of total errors. It is not always a sensible metric,
@@ -291,7 +293,7 @@ choosing the dominant class can achieve a low number of errors.
 
 Other metrics, such as the f1-score, can be used::
 
-    >>> cv_scores = cross_val_score(svc, fmri_masked, target, cv=cv,  scoring='f1') # doctest: +SKIP
+    >>> cv_scores = cross_val_score(svc, fmri_masked, target, cv=cv,  scoring='f1')  # doctest: +SKIP
 
 .. seealso::
 
@@ -299,21 +301,21 @@ Other metrics, such as the f1-score, can be used::
    <http://scikit-learn.org/stable/modules/model_evaluation.html#common-cases-predefined-values>`_
 
 Measuring the chance level
-...........................
+..........................
 
 **Dummy estimators**: The simplest way to measure prediction performance
-at chance, is to use a dummy classifier,
-:class:`sklearn.dummy.DummyClassifier`::
+at chance, is to use a *"dummy"* classifier,
+:class:`sklearn.dummy.DummyClassifier` (purely random)::
 
     >>> from sklearn.dummy import DummyClassifier
-    >>> null_cv_scores = cross_val_score(DummyClassifier(), fmri_masked, target, cv=cv) # doctest: +SKIP
+    >>> null_cv_scores = cross_val_score(DummyClassifier(), fmri_masked, target, cv=cv)  # doctest: +SKIP
 
 **Permutation testing**: A more controlled way, but slower, is to do
 permutation testing on the labels, with
 :func:`sklearn.cross_validation.permutation_test_score`::
 
   >>> from sklearn.cross_validation import permutation_test_score
-  >>> null_cv_scores = permutation_test_score(svc, fmri_masked, target, cv=cv) # doctest: +SKIP
+  >>> null_cv_scores = permutation_test_score(svc, fmri_masked, target, cv=cv)  # doctest: +SKIP
 
 |
 
@@ -324,7 +326,7 @@ permutation testing on the labels, with
     mask, giving the f1-score of the prediction for each object.
 
     It uses all the notions presented above, with ``for`` loop to iterate
-    over masks and categories and Python dictionnaries to store the
+    over masks and categories and Python dictionaries to store the
     scores.
 
 
@@ -368,10 +370,10 @@ We can visualize the weights of the decoder:
 
 
 Decoding without a mask: Anova-SVM
-===================================
+==================================
 
 Dimension reduction with feature selection
--------------------------------------------
+------------------------------------------
 
 If we do not start from a mask of the relevant regions, there is a very
 large number of voxels and not all are useful for
@@ -383,7 +385,7 @@ task.
 For this, we need to import the :mod:`sklearn.feature_selection` module and use
 :func:`sklearn.feature_selection.f_classif`, a simple F-score
 based feature selection (a.k.a.
-`Anova <http://en.wikipedia.org/wiki/Analysis_of_variance#The_F-test>`_),
+`Anova <https://en.wikipedia.org/wiki/Analysis_of_variance#The_F-test>`_),
 that we will put before the SVC in a `pipeline`
 (:class:`sklearn.pipeline.Pipeline`):
 
@@ -391,13 +393,13 @@ that we will put before the SVC in a `pipeline`
     :start-after: # Build the decoder
     :end-before: # Visualize the results
 
- 
+
 
 We can use our ``anova_svc`` object exactly as we were using our ``svc``
 object previously.
 
 Visualizing the results
--------------------------
+-----------------------
 
 To visualize the results, we need to:
 
@@ -434,7 +436,7 @@ To visualize the results, we need to:
 
 
 Going further with scikit-learn
-===================================
+===============================
 
 We have seen a very simple analysis with scikit-learn, but it may be
 interesting to explore the `wide variety of supervised learning
@@ -442,13 +444,13 @@ algorithms in the scikit-learn
 <http://scikit-learn.org/stable/supervised_learning.html>`_.
 
 Changing the prediction engine
---------------------------------
+------------------------------
 
 .. for doctest:
     >>> from sklearn.feature_selection import SelectKBest, f_classif
     >>> from sklearn.svm import LinearSVC
     >>> feature_selection = SelectKBest(f_classif, k=4)
-    >>> clf = LinearSVC()
+
 
 We now see how one can easily change the prediction engine, if needed.
 We can try Fisher's `Linear Discriminant Analysis (LDA)
@@ -466,15 +468,20 @@ Construct the new estimator object and use it in a pipeline::
 
 and recompute the cross-validation score::
 
-    >>> cv_scores = cross_val_score(anova_lda, X, y, cv=cv, verbose=1)  # doctest: +SKIP
+    >>> cv_scores = cross_val_score(anova_lda, fmri_masked, target, cv=cv, verbose=1)  # doctest: +SKIP
     >>> classification_accuracy = np.mean(cv_scores)  # doctest: +SKIP
+    >>> n_conditions = len(set(target))  # number of target classes
     >>> print("Classification accuracy: %.4f / Chance Level: %.4f" % \
-    ...    (classification_accuracy, 1. / n_conditions)) # doctest: +SKIP
-    Classification accuracy: 1.0000 / Chance level: 0.5000
+    ...    (classification_accuracy, 1. / n_conditions))  # doctest: +SKIP
+    Classification accuracy: 0.7846 / Chance level: 0.5000
 
 
 Changing the feature selection
 ------------------------------
+Let's start by defining a linear SVM as a first classifier::
+
+    >>> clf = LinearSVC()
+
 
 Let's say that you want a more sophisticated feature selection, for example a
 `Recursive Feature Elimination (RFE)
@@ -488,16 +495,16 @@ Construct your new fancy selection::
 
     >>> rfe = RFE(SVC(kernel='linear', C=1.), 50, step=0.25)
 
-and create a new pipeline::
+and create a new pipeline, composing the two classifiers `rfe` and `clf`::
 
     >>> rfe_svc = Pipeline([('rfe', rfe), ('svc', clf)])
 
 and recompute the cross-validation score::
 
-    >>> cv_scores = cross_val_score(rfe_svc, X, y, cv=cv, n_jobs=-1,
-    ...     verbose=1) # doctest: +SKIP
+    >>> cv_scores = cross_val_score(rfe_svc, fmri_masked, target, cv=cv,
+    ...     n_jobs=-1, verbose=1)  # doctest: +SKIP
 
-But, be aware that this can take A WHILE...
+But, be aware that this can take *A WHILE*...
 
 |
 
@@ -507,4 +514,3 @@ But, be aware that this can take A WHILE...
     has very detailed explanations on a large variety of estimators and
     machine learning techniques. To become better at decoding, you need
     to study it.
-  
