@@ -141,29 +141,22 @@ class DictLearning(BaseDecomposition, TransformerMixin):
 
     def __init__(self, n_components=20,
                  n_epochs=1, alpha=10, reduction_ratio='auto', dict_init=None,
-                 random_state=None, batch_size=20, method="cd",
-                 mask=None, smoothing_fwhm=4,
-                 standardize=True, detrend=True,
-                 low_pass=None, high_pass=None, t_r=None,
-                 target_affine=None, target_shape=None,
-                 mask_strategy='epi', mask_args=None,
-                 memory=Memory(cachedir=None), memory_level=0,
-                 n_jobs=1, verbose=0):
+                 random_state=None, batch_size=20, method="cd", mask=None,
+                 smoothing_fwhm=4, standardize=True, detrend=True,
+                 low_pass=None, high_pass=None, t_r=None, target_affine=None,
+                 target_shape=None, mask_strategy='epi', mask_args=None,
+                 n_jobs=1, verbose=0, memory=Memory(cachedir=None),
+                 memory_level=0):
         BaseDecomposition.__init__(self, n_components=n_components,
-                                   random_state=random_state,
-                                   mask=mask,
+                                   random_state=random_state, mask=mask,
                                    smoothing_fwhm=smoothing_fwhm,
-                                   standardize=standardize,
-                                   detrend=detrend,
+                                   standardize=standardize, detrend=detrend,
                                    low_pass=low_pass, high_pass=high_pass,
-                                   t_r=t_r,
-                                   target_affine=target_affine,
+                                   t_r=t_r, target_affine=target_affine,
                                    target_shape=target_shape,
                                    mask_strategy=mask_strategy,
-                                   mask_args=mask_args,
-                                   memory=memory,
-                                   memory_level=memory_level,
-                                   n_jobs=n_jobs,
+                                   mask_args=mask_args, memory=memory,
+                                   memory_level=memory_level, n_jobs=n_jobs,
                                    verbose=verbose)
         self.n_epochs = n_epochs
         self.batch_size = batch_size
@@ -181,13 +174,9 @@ class DictLearning(BaseDecomposition, TransformerMixin):
                             do_cca=True, threshold=float(self.n_components),
                             n_init=1,
                             # mask parameter is not useful as we bypass masking
-                            mask=self.masker_,
-                            random_state=self.random_state,
-                            memory=self.memory,
-                            memory_level=self.memory_level,
-                            n_jobs=self.n_jobs,
-                            verbose=self.verbose
-                            )
+                            mask=self.masker_, random_state=self.random_state,
+                            memory=self.memory, memory_level=self.memory_level,
+                            n_jobs=self.n_jobs, verbose=self.verbose)
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore", UserWarning)
                 # We use protected function _raw_fit as data
@@ -227,8 +216,7 @@ class DictLearning(BaseDecomposition, TransformerMixin):
                                n_components=self.n_components,
                                random_state=self.random_state,
                                memory_level=max(0, self.memory_level - 1),
-                               n_jobs=self.n_jobs,
-                               memory=self.memory)
+                               n_jobs=self.n_jobs, memory=self.memory)
         if self.verbose:
             print('[DictLearning] Learning initial components')
         self._init_dict(data)
@@ -256,17 +244,10 @@ class DictLearning(BaseDecomposition, TransformerMixin):
         if self.verbose:
             print('[DictLearning] Learning dictionary')
         self.components_, _ = self._cache(dict_learning_online)(
-            data.T,
-            self.n_components,
-            alpha=self.alpha,
-            n_iter=n_iter,
-            batch_size=self.batch_size,
-            method=self.method,
-            dict_init=dict_init,
-            verbose=max(0, self.verbose - 1),
-            random_state=self.random_state,
-            return_code=True,
-            shuffle=True,
+            data.T, self.n_components, alpha=self.alpha, n_iter=n_iter,
+            batch_size=self.batch_size, method=self.method,
+            dict_init=dict_init, verbose=max(0, self.verbose - 1),
+            random_state=self.random_state, return_code=True, shuffle=True,
             n_jobs=1)
         self.components_ = self.components_.T
         # Unit-variance scaling
