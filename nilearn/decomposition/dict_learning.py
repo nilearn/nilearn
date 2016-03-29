@@ -54,23 +54,34 @@ class DictLearning(BaseDecomposition, TransformerMixin):
         parameters.
 
     n_components: int
-        Number of components to extract
+        Number of components to extract.
+
+    batch_size : int, optional, default=20
+        The number of samples to take in each batch.
 
     n_epochs: float
-        Number of epochs the algorithm should run on the data
+        Number of epochs the algorithm should run on the data.
 
     alpha: float, optional, default=1
-        Sparsity controlling parameter
+        Sparsity controlling parameter.
 
     dict_init: Niimg-like object, optional
         Initial estimation of dictionary maps. Would be computed from CanICA if
-        not provided
+        not provided.
 
     reduction_ratio: 'auto' or float between 0. and 1.
         - Between 0. or 1. : controls data reduction in the temporal domain.
           1. means no reduction, < 1. calls for an SVD based reduction.
         - if set to 'auto', estimator will set the number of components per
           reduced session to be n_components.
+
+    method : {'lars', 'cd'}
+        Coding method used by sklearn backend. Below are the possible values.
+        lars: uses the least angle regression method to solve the lasso problem
+        (linear_model.lars_path)
+        cd: uses the coordinate descent method to compute the
+        Lasso solution (linear_model.Lasso). Lars will be faster if
+        the estimated components are sparse.
 
     random_state: int or RandomState
         Pseudo number generator state used for random sampling.
@@ -93,15 +104,15 @@ class DictLearning(BaseDecomposition, TransformerMixin):
 
     low_pass: None or float, optional
         This parameter is passed to signal.clean. Please see the related
-        documentation for details
+        documentation for details.
 
     high_pass: None or float, optional
         This parameter is passed to signal.clean. Please see the related
-        documentation for details
+        documentation for details.
 
     t_r: float, optional
         This parameter is passed to signal.clean. Please see the related
-        documentation for details
+        documentation for details.
 
     memory: instance of joblib.Memory or string
         Used to cache the masking process.
@@ -117,7 +128,7 @@ class DictLearning(BaseDecomposition, TransformerMixin):
         'all CPUs', -2 'all CPUs but one', and so on.
 
     verbose: integer, optional
-        Indicate the level of verbosity. By default, nothing is printed
+        Indicate the level of verbosity. By default, nothing is printed.
 
     References
     ----------
@@ -130,15 +141,14 @@ class DictLearning(BaseDecomposition, TransformerMixin):
 
     def __init__(self, n_components=20,
                  n_epochs=1, alpha=10, reduction_ratio='auto', dict_init=None,
-                 random_state=None,
+                 random_state=None, batch_size=20, method="cd",
                  mask=None, smoothing_fwhm=4,
                  standardize=True, detrend=True,
                  low_pass=None, high_pass=None, t_r=None,
                  target_affine=None, target_shape=None,
                  mask_strategy='epi', mask_args=None,
                  memory=Memory(cachedir=None), memory_level=0,
-                 n_jobs=1, verbose=0,
-                 ):
+                 n_jobs=1, verbose=0):
         BaseDecomposition.__init__(self, n_components=n_components,
                                    random_state=random_state,
                                    mask=mask,
@@ -156,6 +166,8 @@ class DictLearning(BaseDecomposition, TransformerMixin):
                                    n_jobs=n_jobs,
                                    verbose=verbose)
         self.n_epochs = n_epochs
+        self.batch_size = batch_size
+        self.method = method
         self.alpha = alpha
         self.reduction_ratio = reduction_ratio
         self.dict_init = dict_init
@@ -188,13 +200,11 @@ class DictLearning(BaseDecomposition, TransformerMixin):
         self.components_init_ = components
 
     def _init_loadings(self, data):
-        self._loadings_init = self._cache(_compute_loadings,
-                                          func_memory_level=2)(
-            self.components_init_,
-            data)
+        self._loadings_init = self._cache(_compute_loadings)(
+            self.components_init_, data)
 
     def fit(self, imgs, y=None, confounds=None):
-        """Compute the mask and the ICA maps across subjects
+        """Compute the mask and component maps across subjects
 
         Parameters
         ----------
@@ -222,20 +232,18 @@ class DictLearning(BaseDecomposition, TransformerMixin):
         if self.verbose:
             print('[DictLearning] Learning initial components')
         self._init_dict(data)
-
         self._raw_fit(data)
+        return self
 
     def _raw_fit(self, data):
-        """Compute the mask and the maps across subjects, using raw_data. Can
-        only be called directly is dict_init and mask_img, or
-        components_init_ is provided
+        """Helper function that direcly process unmasked data
 
         Parameters
         ----------
         data: ndarray,
             Shape (n_samples, n_features)
         """
-        n_samples, n_features = data.shape
+        _, n_features = data.shape
 
         if self.verbose:
             print('[DictLearning] Computing initial loadings')
@@ -243,18 +251,17 @@ class DictLearning(BaseDecomposition, TransformerMixin):
 
         dict_init = self._loadings_init
 
-        n_iter = ((n_features - 1) // 20 + 1) * self.n_epochs
+        n_iter = ((n_features - 1) // self.batch_size + 1) * self.n_epochs
 
         if self.verbose:
             print('[DictLearning] Learning dictionary')
-        self.components_, dictionary = self._cache(dict_learning_online,
-                                                   func_memory_level=2)(
+        self.components_, _ = self._cache(dict_learning_online)(
             data.T,
             self.n_components,
             alpha=self.alpha,
             n_iter=n_iter,
-            batch_size=20,
-            method='cd',
+            batch_size=self.batch_size,
+            method=self.method,
             dict_init=dict_init,
             verbose=max(0, self.verbose - 1),
             random_state=self.random_state,
@@ -267,10 +274,9 @@ class DictLearning(BaseDecomposition, TransformerMixin):
         S[S == 0] = 1
         self.components_ /= S[:, np.newaxis]
 
-        # flip signs in each composant so that positive part is l1 larger
-        # than negative part
-        # Empirically this yield more positive looking maps
-        # than with setting the max to be positive
+        # Flip signs in each composant so that positive part is l1 larger
+        # than negative part. Empirically this yield more positive looking maps
+        # than with setting the max to be positive.
         for component in self.components_:
             if np.sum(component > 0) < np.sum(component < 0):
                 component *= -1
