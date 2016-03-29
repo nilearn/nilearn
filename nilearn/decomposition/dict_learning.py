@@ -189,7 +189,7 @@ class DictLearning(BaseDecomposition, TransformerMixin):
         self.components_init_ = components
 
     def _init_loadings(self, data):
-        self._loadings_init = self._cache(_compute_loadings)(
+        self.loadings_init_ = self._cache(_compute_loadings)(
             self.components_init_, data)
 
     def fit(self, imgs, y=None, confounds=None):
@@ -237,7 +237,7 @@ class DictLearning(BaseDecomposition, TransformerMixin):
             print('[DictLearning] Computing initial loadings')
         self._init_loadings(data)
 
-        dict_init = self._loadings_init
+        dict_init = self.loadings_init_
 
         n_iter = ((n_features - 1) // self.batch_size + 1) * self.n_epochs
 
