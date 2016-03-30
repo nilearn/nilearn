@@ -10,16 +10,19 @@ basic nilearn functionalities.
 import os
 
 #########################################################################
-# Let us use a Nifti file that is shipped with nilearn
+# Let us use an in-memory Nifti file that is shipped with nilearn
 from nilearn.datasets import data
+
 anat_filename = os.path.join(os.path.dirname(data.__file__),
                              'avg152T1_brain.nii.gz')
 print('anat_filename: %s' % anat_filename)
 
 #########################################################################
-# Using simple image nilearn functions
+# Using simple function from nilearn for image manipulation
 from nilearn import image
-# functions containing 'img' can take either a filename or an image as input
+
+# functions containing 'img' can take either a filename or an image as input.
+# Inputs of this function: image filename and smoothing value in mm
 smooth_anat_img = image.smooth_img(anat_filename, 3)
 
 # While we are giving a file name as input, the object that is returned
@@ -27,15 +30,14 @@ smooth_anat_img = image.smooth_img(anat_filename, 3)
 anat_data = smooth_anat_img.get_data()
 print('anat_data has shape: %s' % str(anat_data.shape))
 anat_affine = smooth_anat_img.get_affine()
-print('anat_affineaffine:\n%s' % anat_affine)
-
-# Finally, it can be passed to nilearn function
-smooth_anat_img = image.smooth_img(smooth_anat_img, 3)
+print('anat_affine has affine:\n%s' % anat_affine)
 
 #########################################################################
-# Visualization
+# Visualization using plotting tool `plot_anat` from nilearn
 from nilearn import plotting
-cut_coords = (0, 0, 0)
+
+# positioning of the image coordinates given as a list [x, y, z]
+cut_coords = [0, 0, 0]
 
 # Like all functions in nilearn, plotting can be given filenames
 plotting.plot_anat(anat_filename, cut_coords=cut_coords,
