@@ -22,15 +22,19 @@ print('anat_filename: %s' % anat_filename)
 from nilearn import image
 
 # functions containing 'img' can take either a filename or an image as input.
-# Inputs of this function: image filename and smoothing value in mm
+# Inputs here are given as: image filename and smoothing value in mm
 smooth_anat_img = image.smooth_img(anat_filename, 3)
 
 # While we are giving a file name as input, the object that is returned
-# is a 'nibabel' object. It has data, and an affine
+# is a 'nibabel' object. It has data, and an affine stored in object.
 anat_data = smooth_anat_img.get_data()
 print('anat_data has shape: %s' % str(anat_data.shape))
 anat_affine = smooth_anat_img.get_affine()
 print('anat_affine has affine:\n%s' % anat_affine)
+
+# Finally, object can also be passed to nilearn function
+# First input now is a image/object with same smoothing value
+smooth_anat_img = image.smooth_img(smooth_anat_img, 3)
 
 #########################################################################
 # Visualization using plotting tool `plot_anat` from nilearn
@@ -49,7 +53,7 @@ plotting.plot_anat(smooth_anat_img,
                    title='Smoothed anatomy image')
 
 #########################################################################
-# Saving image to file
+# Saving smoothed image to file
 smooth_anat_img.to_filename('smooth_anat_img.nii.gz')
 
 #########################################################################
