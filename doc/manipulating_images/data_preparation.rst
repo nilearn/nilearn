@@ -1,7 +1,7 @@
 .. _extracting_data:
 
 =====================================================
-Data preparation: loading and basic signal extraction
+Data preparation: data loading and signal extraction
 =====================================================
 
 .. contents:: **Contents**
@@ -10,30 +10,53 @@ Data preparation: loading and basic signal extraction
 
 |
 
-.. topic:: **File names as arguments**
+.. currentmodule:: nilearn.image
 
-   Nilearn functions and objects accept file names as arguments::
+File names or image objects
+=============================
+
+File names and objects for 3D and 4D images
+-------------------------------------------
+
+All Nilearn functions accept file names as arguments::
 
     >>> from nilearn import image
     >>> smoothed_img = image.smooth_img('/home/user/t_map001.nii')  # doctest: +SKIP
 
-   Nilearn can operate on either file names or `NiftiImage objects
-   <http://nipy.org/nibabel/nibabel_images.html>`_. The later represent
-   the specified nifti files loaded in memory.
+Nilearn can operate on either file names or `NiftiImage objects
+<http://nipy.org/nibabel/nibabel_images.html>`_. The later represent the
+data loaded in memory. In the example above, the
+function :func:`smooth_img` returns a NiftiImage object, which can then
+be readily passed to other nilearn functions.
 
-   In nilearn, we often use the term *"niimg"* as abbreviation that denotes
-   either a file name or a NiftiImage object. In the example above, the
-   function smooth_img returns a NiftiImage object, which can then be
-   readily passed to any other nilearn function that accepts niimg
-   arguments.
+In nilearn, we often use the term *"niimg"* as abbreviation that denotes
+either a file name or a `NiftiImage object
+<http://nipy.org/nibabel/nibabel_images.html>`_. 
 
-   Niimgs can be 3D or 4D, and a 4D niimg can be a list of file names, or
-   even a *wildcard* matching patterns. The ``~`` symbol is also expanded to the
-   user home folder. For instance, to retrieve a 4D volume of
-   all t maps smoothed::
+Niimgs can be 3D or 4D. A 4D niimg can be **a list of file names**, if
+these contain 3D information.
 
-    >>> smoothed_imgs = image.smooth_img('~/t_map*.nii')  # doctest: +SKIP
+.. _filename_matching:
 
+File name matching: "globbing" and user path expansion
+------------------------------------------------------
+
+You can specific files with *wildcard* matching patterns (as in Unix
+shell):
+
+* To retrieve all t maps::
+
+    >>> smoothed_imgs = image.smooth_img('/home/user/t_map*.nii')  # doctest: +SKIP
+
+  Note that the resulting is a 4D image.
+
+* The ``~`` symbol is also expanded to the user home folder::
+
+    >>> smoothed_imgs = image.smooth_img('~/t_map001.nii')  # doctest: +SKIP
+
+  Using ``~`` rather than specifying the details of the path is good
+  practice, as it will make it more likely that your script work on
+  multiple different computers.
 
 |
 
@@ -47,7 +70,7 @@ where the samples could be different time points, and the features derived
 from different voxels (e.g., restrict analysis to the ventral visual stream),
 regions of interest (e.g., extract local signals from spheres/cubes), or
 pre-specified networks (e.g., look at data from all voxels of a set of
-network nodes). Think of masker objects as swiss army knifes for shaping
+network nodes). Think of masker objects as swiss-army knifes for shaping
 the raw neuroimaging data in 3D space into the units of observation
 relevant for the research questions at hand.
 
@@ -66,57 +89,62 @@ relevant for the research questions at hand.
 
 
 
-"masker" objects (found in modules :mod:`nilearn.input_data`) aim at
-simplifying these "data folding" steps that often preceed the actual
+"masker" objects (found in modules :mod:`nilearn.input_data`)
+simplify these "data folding" steps that often preceed the
 statistical analysis.
 
-On an advanced note, the underlying philosophy of these classes is similar
-to `scikit-learn <http://scikit-learn.org>`_\ 's transformers.
-First, objects are initialized with some parameters guiding
-the transformation (unrelated to the data). Then the `fit()` method
-should be called, possibly specifying some data-related
-information (such as number of images to process), to perform some
-initial computation (e.g., fitting a mask based on the data). Finally,
-`transform()` can be called, with the data as argument, to perform some
-computation on data themselves (e.g., extracting time series from images).
-
 Note that the masker objects may not cover all the image transformations
-for specific tasks. Users who want to make some specific processing
-may have to call low-level functions
-(see e.g., :mod:`nilearn.signal`, :mod:`nilearn.masking`).
+for specific tasks. Users who want to make some specific processing may
+have to call :ref:`specific functions <preprocessing_functions>`
+(modules :mod:`nilearn.signal`, :mod:`nilearn.masking`).
+
+|
+
+.. topic:: **Advanced: Design philosophy of "Maskers"**
+
+    The design of these classes is similar to `scikit-learn
+    <http://scikit-learn.org>`_\ 's transformers. First, objects are
+    initialized with some parameters guiding the transformation
+    (unrelated to the data). Then the `fit()` method should be called,
+    possibly specifying some data-related information (such as number of
+    images to process), to perform some initial computation (e.g.,
+    fitting a mask based on the data). Finally, `transform()` can be
+    called, with the data as argument, to perform some computation on
+    data themselves (e.g., extracting time series from images).
+
 
 .. currentmodule:: nilearn.input_data
 
 .. _nifti_masker:
 
-:class:`NiftiMasker`: loading, masking and filtering
-====================================================
+:class:`NiftiMasker`: applying a mask to load time-series
+==========================================================
 
-This section details how to use the :class:`NiftiMasker` class.
 :class:`NiftiMasker` is a powerful tool to load images and
 extract voxel signals in the area defined by the mask.
-It is designed to apply some basic preprocessing
-steps by default with commonly used parameters as defaults.
+It applies some basic preprocessing
+steps with commonly used parameters as defaults.
 But it is *very important* to look at your data to see the effects
 of the preprocessings and validate them.
 
-In particular, :class:`NiftiMasker` is a `scikit-learn
-<http://scikit-learn.org>`_ compliant
-transformer so that you can directly plug it into a `scikit-learn
-pipeline <http://scikit-learn.org/stable/modules/pipeline.html>`_.
+.. topic:: **Advanced: scikit-learn Pipelines**
 
-Custom data loading
--------------------
+    :class:`NiftiMasker` is a `scikit-learn
+    <http://scikit-learn.org>`_ compliant
+    transformer so that you can directly plug it into a `scikit-learn
+    pipeline <http://scikit-learn.org/stable/modules/pipeline.html>`_.
 
-Sometimes, some custom preprocessing of data is necessary. For instance
-we can restrict a dataset to the first 100 frames. Below, we load
+
+Custom data loading: loading only the first 100 time points
+------------------------------------------------------------
+
+Suppose we want to restrict a dataset to the first 100 frames. Below, we load
 a resting-state dataset with :func:`fetch_fetch_nyu_rest()
 <nilearn.datasets.fetch_nyu_rest>`, restrict it to 100 frames and
-build a brand new Nifti-like object to give it to the masker. Although
+build a new niimg object that we can give to the masker. Although
 possible, there is no need to save your data to a file to pass it to a
-:class:`NiftiMasker`. Simply use `nibabel
-<http://nipy.sourceforge.net/nibabel/>`_ to create a :ref:`Niimg <niimg>`
-in memory:
+:class:`NiftiMasker`. Simply use :func:`nilearn.image.index_img` to apply a
+slice and create a :ref:`Niimg <niimg>` in memory:
 
 
 .. literalinclude:: ../../examples/04_manipulating_images/plot_mask_computation.py
@@ -126,15 +154,12 @@ in memory:
 Controlling how the mask is computed from the data
 --------------------------------------------------
 
-In this tutorial, we show how the masker object can compute a mask
+In this section, we show how the masker object can compute a mask
 automatically for subsequent statistical analysis.
 On some datasets, the default algorithm may however perform poorly.
 This is why it is very important to
 **always look at your data** before and after feature
 engineering using masker objects.
-
-Computing the mask
-..................
 
 .. note::
 
@@ -143,6 +168,9 @@ Computing the mask
     It is also related to this example:
     :doc:`plot_nifti_simple.py <../auto_examples/04_manipulating_images/plot_nifti_simple>`.
 
+
+Visualizing the mask computed
+..............................
 
 If a mask is not specified as an argument, :class:`NiftiMasker` will try to
 compute one from the provided neuroimaging data.
@@ -156,7 +184,8 @@ As a first example, we will now automatically build a mask from a dataset.
 We will here use the Haxby dataset because it provides the original mask that
 we can compare the data-derived mask against.
 
-The first step is to generate a mask with default parameters and visualize it.
+Generate a mask with default parameters and visualize it (it is in the
+`mask_img_` attribute of the masker:
 
 .. literalinclude:: ../../examples/04_manipulating_images/plot_mask_computation.py
     :start-after: # Simple mask extraction from EPI images
@@ -167,6 +196,8 @@ The first step is to generate a mask with default parameters and visualize it.
     :target: ../auto_examples/04_manipulating_images/plot_mask_computation.html
     :scale: 50%
 
+Changing mask parameters: opening, cutoff
+..........................................
 
 We can then fine-tune the outline of the mask by increasing the number of
 opening steps (`opening=10`) using the `mask_args` argument of the
@@ -195,7 +226,7 @@ voxels that appear as bright in the EPI image.
 
 .. literalinclude:: ../../examples/04_manipulating_images/plot_mask_computation.py
     :start-after: # Generate mask with a high lower cutoff
-    :end-before: ################################################################################
+    :end-before: ###############################################################################
 
 
 .. figure:: ../auto_examples/04_manipulating_images/images/sphx_glr_plot_mask_computation_004.png
@@ -204,8 +235,24 @@ voxels that appear as bright in the EPI image.
 
 
 
-Common data preparation steps: resampling, smoothing, filtering
----------------------------------------------------------------
+Common data preparation steps: smoothing, filtering, resampling
+----------------------------------------------------------------
+
+:class:`NiftiMasker` comes with many parameters that enable data
+preparation::
+
+   >>> from nilearn import input_data
+   >>> masker = input_data.NiftiMasker()
+   >>> print(masker)
+   NiftiMasker(detrend=False, high_pass=None, low_pass=None, mask_args=None,
+         mask_img=None, mask_strategy='background',
+         memory=Memory(cachedir=None), memory_level=1, sample_mask=None,
+         sessions=None, smoothing_fwhm=None, standardize=False, t_r=None,
+         target_affine=None, target_shape=None, verbose=0)
+
+The meaning of each parameter is described in the documentation of
+:class:`NiftiMasker` (click on the name :class:`NiftiMasker`), here we
+comment on the most important.
 
 .. seealso::
 
@@ -214,95 +261,41 @@ Common data preparation steps: resampling, smoothing, filtering
    accessed in nilearn such as in
    :ref:`corresponding functions <preprocessing_functions>`.
 
-.. _resampling:
-
-Resampling
-..........
-
-:class:`NiftiMasker` and many similar classes enable resampling
-(recasting of images into different resolutions and transformations of
-brain voxel data). The resampling procedure takes as input the
-`target_affine` to resample (resize, rotate...) images in order to match
-the spatial configuration defined by the new affine (i.e., matrix
-transforming from voxel space into world space).
-
-Additionally, a `target_shape` can be used to resize images
-(i.e., cropping or padding with zeros) to match an expected data
-image dimensions (shape composed of x, y, and z).
-
-As a common use case, resampling can be a viable means to
-downsample image quality on purpose to increase processing speed
-and lower memory consumption of an analysis pipeline.
-In fact, certain image viewers (e.g., FSLView) also require images to be
-resampled to display overlays.
-
-On an advanced note, automatic computation of offset and bounding box
-can be performed by specifying a 3x3 matrix instead of the 4x4 affine.
-In this case, nilearn computes automatically the translation part
-of the transformation matrix (i.e., affine).
-
-.. image:: ../auto_examples/04_manipulating_images/images/sphx_glr_plot_affine_transformation_002.png
-    :target: ../auto_examples/04_manipulating_images/plot_affine_transformation.html
-    :scale: 33%
-.. image:: ../auto_examples/04_manipulating_images/images/sphx_glr_plot_affine_transformation_004.png
-    :target: ../auto_examples/04_manipulating_images/plot_affine_transformation.html
-    :scale: 33%
-.. image:: ../auto_examples/04_manipulating_images/images/sphx_glr_plot_affine_transformation_003.png
-    :target: ../auto_examples/04_manipulating_images/plot_affine_transformation.html
-    :scale: 33%
-
-
-.. topic:: **Special case: resampling to a given voxel size**
-
-   Specifying a 3x3 matrix that is diagonal as a target_affine fixes the
-   voxel size. For instance to resample to 3x3x3 mm voxels::
-
-    >>> import numpy as np
-    >>> target_affine = np.diag((3, 3, 3))
-
-.. topic:: **Resampling an image to a given reference image**
-
-    Instead of using an affine or shape, it's also possible to resample an
-    image using a reference image with :func:`nilearn.image.resample_to_img`.
-
-.. image:: ../auto_examples/04_manipulating_images/images/sphx_glr_plot_resample_to_template_001.png
-    :target: ../auto_examples/04_manipulating_images/plot_resample_to_template.html
-    :scale: 33%
-
-.. seealso::
-
-   :func:`nilearn.image.resample_img`, :func:`nilearn.image.resample_to_img`
-
-
 Smoothing
 .........
 
-:class:`NiftiMasker` can further be used for local spatial filtering of
-the neuroimaging data to make the data more homogeneous and thus account
-for inter-individual differences in neuroanatomy.
-It is achieved by passing the full-width half maximum (FWHM; in millimeter scale)
-along the x, y, and z image axes by specifying the `smoothing_fwhm` parameter.
-For an isotropic filtering, passing a scalar is also possible.
-The underlying function handles properly the tricky case of non-cubic
-voxels by scaling the given widths appropriately.
+:class:`NiftiMasker` can apply Gaussian spatial smoothing to the
+neuroimaging data, useful to fight noise or for inter-individual
+differences in neuroanatomy. It is achieved by specifying the full-width
+half maximum (FWHM; in millimeter scale) with the `smoothing_fwhm`
+parameter. Anisotropic filtering is also possible by passing 3 scalars
+``(x, y, z)``, the FWHM along the x, y, and z direction.
+
+The underlying function handles properly non-cubic voxels by scaling the
+given widths appropriately.
 
 .. seealso::
 
    :func:`nilearn.image.smooth_img`
 
-
 .. _temporal_filtering:
 
-Temporal Filtering
-..................
+Temporal Filtering and confound removal
+........................................
 
-Rather than optimizing spatial properties of the neuroimaging data,
-the user may want to improve aspects of temporal data properties, before
-conversion to voxel signals. :class:`NiftiMasker` can also process voxel signals.
-Here are the possibilities:
+:class:`NiftiMasker` can also improve aspects of temporal data
+properties, before conversion to voxel signals.
 
-- Confound removal. Two ways of removing confounds are provided. Any linear
-  trend can be removed by activating the `detrend` option.
+- **Standardization**. Parameter ``standardize``: Signals can be
+  standardized (scaled to unit variance). 
+
+- **Frequency filtering**. Low-pass and high-pass filters can be used to
+  remove artifacts. Parameters: ``high_pass`` and ``low_pass``, specified
+  in Hz (note that you must specific the sampling rate in seconds with
+  the ``t_r`` parameter.
+
+- **Confound removal**. Two ways of removing confounds are provided. Any linear
+  trend can be removed by activating the `detrend` parameter.
   This accounts for slow (as opposed to abrupt or transient) changes
   in voxel values along a series of brain images that are unrelated to the
   signal of interest (e.g., the neural correlates of cognitive tasks).
@@ -311,15 +304,8 @@ Here are the possibilities:
   be removed by passing them to :meth:`NiftiMasker.transform`. If the
   dataset provides a confounds file, just pass its path to the masker.
 
-- Linear filtering. Low-pass and high-pass filters can be used to remove artifacts.
-  It simply removes all voxel values lower or higher than the specified
-  parameters, respectively. Care has been taken to automatically
-  apply this processing to confounds if it appears necessary.
-
-- Normalization. Signals can be normalized (scaled to unit variance) before
-  returning them. This is performed by default.
-
 .. topic:: **Exercise**
+   :class: green
 
    You can, more as a training than as an exercise, try to play with
    the parameters in :ref:`sphx_glr_auto_examples_plot_haxby_simple.py`.
@@ -330,6 +316,31 @@ Here are the possibilities:
 .. seealso::
 
    :func:`nilearn.signal.clean`
+
+
+
+
+Resampling: resizing and changing resolutions of images
+.......................................................
+
+:class:`NiftiMasker` and many similar classes enable resampling
+(recasting of images into different resolutions and transformations of
+brain voxel data). Two parameters control resampling:
+
+* `target_affine` to resample (resize, rotate...) images in order to match
+  the spatial configuration defined by the new affine (i.e., matrix
+  transforming from voxel space into world space).
+
+* Additionally, a `target_shape` can be used to resize images
+  (i.e., cropping or padding with zeros) to match an expected data
+  image dimensions (shape composed of x, y, and z).
+
+How to combine these parameter to obtain the specific resampling desired
+is explained in details in :ref:`resampling`.
+
+.. seealso::
+
+   :func:`nilearn.image.resample_img`, :func:`nilearn.image.resample_to_img`
 
 
 Inverse transform: unmasking data
@@ -354,6 +365,7 @@ an excerpt of :ref:`the example performing Anova-SVM on the Haxby data
 
    * :ref:`sphx_glr_auto_examples_04_manipulating_images_plot_mask_computation.py`
 
+|
 
 .. _region:
 
