@@ -6,6 +6,12 @@ Changelog
 
 New features
 ............
+    - The path given to the "memory" argument of object now have their
+      "~" expanded to the homedir
+
+    - Display object created by plotting now uniformely expose an
+      "add_markers" method.
+
     - plotting plot_connectome with colorbar is now implemented in function
       :func:`nilearn.plotting.plot_connectome`
 
