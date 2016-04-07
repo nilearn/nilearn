@@ -4,6 +4,8 @@
 Changelog
 ---------
 
+The 0.2.4 is a small release focused on documentation for teaching.
+
 New features
 ............
     - The path given to the "memory" argument of object now have their
