@@ -243,7 +243,7 @@ preparation::
 
    >>> from nilearn import input_data
    >>> masker = input_data.NiftiMasker()
-   >>> print(masker)
+   >>> masker
    NiftiMasker(detrend=False, high_pass=None, low_pass=None, mask_args=None,
          mask_img=None, mask_strategy='background',
          memory=Memory(cachedir=None), memory_level=1, sample_mask=None,
