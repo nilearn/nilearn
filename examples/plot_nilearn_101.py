@@ -10,7 +10,7 @@ basic nilearn functionalities.
 import os
 
 #########################################################################
-# Let us use an in-memory Nifti file that is shipped with nilearn
+# Let us use a Nifti file that is shipped with nilearn
 from nilearn.datasets import data
 
 anat_filename = os.path.join(os.path.dirname(data.__file__),
