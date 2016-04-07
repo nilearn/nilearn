@@ -59,50 +59,59 @@ follows::
 
 |
 
+.. seealso::
 
-For a list of all the data fetching functions in nilearn, see :ref:`datasets_ref`.
+    For a list of all the data fetching functions in nilearn, see
+    :ref:`datasets_ref`.
 
-Besides convenient downloading of openly accessible reference datasets
-including important meta-data (e.g., stimulus characteristics and
-participant information for confound removal), the fetching functions
-perform data downloads only once and return the locally saved data upon
-any later function calls.
-The locally stored data can be found in one of the
-following directories (in order of priority, if present):
+.. topic:: **nilearn_data: Where is the downloaded data stored?**
 
-  * default system paths used by third party software that may already
-    provide the data (e.g., the Harvard-Oxford atlas
-    is provided by the FSL software suite)
-  * the folder specified by `data_dir` parameter in the fetching function
-  * the global environment variable `NILEARN_SHARED_DATA`
-  * the user environment variable `NILEARN_DATA`
-  * the `nilearn_data` folder in the user home folder
+    The fetching functions download the reference datasets to the disk.
+    They save it locally for future use, in one of the
+    following directories (in order of priority, if present):
 
-Two different environment variables are provided to distinguish a global dataset
-repository that may be read-only at the user-level.
-Note that you can copy that folder to another user's computers to avoid
-the initial dataset download on the first fetching call.
+     * the folder specified by `data_dir` parameter in the fetching function
+     * the global environment variable `NILEARN_SHARED_DATA`
+     * the user environment variable `NILEARN_DATA`
+     * the `nilearn_data` folder in the user home folder
+
+    The two different environment variables (NILEARN_SHARED_DATA and
+    NILEARN_DATA) are provided for multi-user systems, to distinguish a
+    global dataset repository that may be read-only at the user-level.
+    Note that you can copy that folder to another user's computers to
+    avoid the initial dataset download on the first fetching call.
 
 
-Loading your own data
----------------------
+Loading your own data: filenames or Nibabel objects
+----------------------------------------------------
 
-Using your own data images in nilearn is as simple as creating a list of
-file name strings ::
+Function in nilearn can take filenames or nibabel in-memory object.
 
-    # dataset folder contains subject1.nii and subject2.nii
-    my_data = ['dataset/subject1.nii', 'dataset/subject2.nii']
+Using your own data images in nilearn is as simple as giving the file
+name, or list of file name strings ::
 
-Nilearn also provides a "wildcard" pattern to list many files with one
-expression:
+    >>> # dataset folder contains subject1.nii and subject2.nii
+    >>> from nilearn.image import smooth_img
+    >>> result_img = smooth_img(['dataset/subject1.nii', 'dataset/subject2.nii']) # doctest: +SKIP
 
-::
+``result_img`` is a 4D in-memory image, containing the data of both
+subjects.
 
-    >>> # dataset folder contains subject_01.nii to subject_03.nii
-    >>> # dataset/subject_*.nii is a glob expression matching all filenames.
+**Filename matching** Nilearn also provides a "wildcard" pattern to list
+many files with one expression:
+
+ * **Matching multiple files**: suppose the dataset folder contains
+   subject_01.nii to subject_03.nii ``dataset/subject_*.nii`` is a glob
+   expression matching all filenames::
+
     >>> # Example with a smoothing process:
     >>> from nilearn.image import smooth_img
-    >>> result_img = smooth_img("dataset/subject_*") # doctest: +SKIP
+    >>> result_img = smooth_img("dataset/subject_*.nii") # doctest: +SKIP
+
+ * **Expanding the home directory** ``~`` is expanded to your home
+   directory::
+
+    >>> result_img = smooth_img("~/dataset/subject_01.nii") # doctest: +SKIP
 
 .. topic:: **Python globbing**
 
@@ -119,33 +128,30 @@ expression:
 Understanding neuroimaging data
 ===============================
 
-Nifti and Analyze files
+Nifti and Analyze data
 -----------------------
 
-.. topic:: **NIfTI and Analyze file structures**
+For volumetric data, nilearn works with data stored as in the Nifti
+structure (via the nibabel_ package).
 
-    `NifTi <http://nifti.nimh.nih.gov/>`_ files (or Analyze files) are
-    the standard way of sharing data in neuroimaging research.
-    Three main components are:
+The `NifTi <http://nifti.nimh.nih.gov/>`_ data structure (also used in
+Analyze files) is the standard way of sharing data in neuroimaging
+research. Three main components are:
 
-     :data:
-         raw scans in form of a numpy array: ``data = img.get_data()``
-     :affine:
-         returns the transformation matrix that maps
-         from voxel indices of the numpy array to actual real-world
-         locations of the brain:
-         ``affine = img.get_affine()``
-     :header:
-         low-level informations about the data (slice duration, etc.):
-         ``header = img.get_header()``
+:data:
+    raw scans in form of a numpy array: ``data = img.get_data()``
+:affine:
+    returns the transformation matrix that maps
+    from voxel indices of the numpy array to actual real-world
+    locations of the brain:
+    ``affine = img.get_affine()``
+:header:
+    low-level informations about the data (slice duration, etc.):
+    ``header = img.get_header()``
 
+If you need to load the data without using nilearn, read the nibabel_
+documentation.
 
-Neuroimaging data can be loaded in a simple way thanks to nibabel_.
-A Nifti file on disk can be loaded with a single line.
-
-.. literalinclude:: ../../examples/01_plotting/plot_visualization.py
-     :start-after: # Fetch data
-     :end-before: # Visualization
 
 .. topic:: **Dataset formatting: data shape**
 
@@ -167,12 +173,12 @@ A Nifti file on disk can be loaded with a single line.
 Niimg-like objects
 -------------------
 
-As a baseline, nilearn functions take as input argument what we call
-"Niimg-like objects":
+Nilearn functions take as input argument what we call "Niimg-like
+objects":
 
 **Niimg:** A Niimg-like object can be one of the following:
 
-  * A string variable with a file path to a Nifti or Analyse image
+  * A string with a file path to a Nifti or Analyse image
   * Any object exposing ``get_data()`` and ``get_affine()`` methods, typically
     a ``Nifti1Image`` from nibabel_.
 
@@ -184,7 +190,7 @@ data, which we call Niimgs or Niimg-4D. Accepted input arguments are:
   * 4D Nifti-like object
   * List of 3D Nifti-like objects
 
-.. note:: **Image affines**
+.. topic:: **Image affines**
 
    If you provide a sequence of Nifti images, all of them must have the same
    affine.
@@ -208,6 +214,11 @@ presented to the subject::
     >>> print(np.unique(stimuli))  # doctest: +SKIP
     ['bottle' 'cat' 'chair' 'face' 'house' 'rest' 'scissors' 'scrambledpix'
      'shoe']
+
+.. topic:: **Reading CSV with pandas**
+
+    `Pandas <http://pandas.pydata.org/>`_ is a powerful package to read
+    data from CSV files and manipulate them.
 
 |
 
@@ -298,6 +309,67 @@ set up your own data preparation procedure:
 
 * Cleaning signals (e.g., linear detrending, standardization,
   confound removal, low/high pass filtering): :func:`nilearn.signal.clean`
+
+.. _resampling:
+
+Resampling images
+=================
+
+Resampling one image to match another
+-------------------------------------
+
+:func:`nilearn.image.resample_to_img` resamples an image to a reference
+image.
+
+.. topic:: **Example**
+
+    * :ref:`sphx_glr_auto_examples_04_manipulating_images_plot_resample_to_template.py`
+
+.. image:: ../auto_examples/04_manipulating_images/images/sphx_glr_plot_resample_to_template_001.png
+    :target: ../auto_examples/04_manipulating_images/plot_resample_to_template.html
+    :scale: 55%
+
+Resampling specific target affine, shape, or resolution
+--------------------------------------------------------
+
+The resampling procedure takes as input the
+`target_affine` to resample (resize, rotate...) images in order to match
+the spatial configuration defined by the new affine (i.e., matrix
+transforming from voxel space into world space).
+
+Additionally, a `target_shape` can be used to resize images
+(i.e., cropping or padding with zeros) to match an expected data
+image dimensions (shape composed of x, y, and z).
+
+As a common use case, resampling can be a viable means to
+downsample image quality on purpose to increase processing speed
+and lower memory consumption of an analysis pipeline.
+In fact, certain image viewers (e.g., FSLView) also require images to be
+resampled to display overlays.
+
+On an advanced note, automatic computation of offset and bounding box
+can be performed by specifying a 3x3 matrix instead of the 4x4 affine.
+In this case, nilearn computes automatically the translation part
+of the transformation matrix (i.e., affine).
+
+.. image:: ../auto_examples/04_manipulating_images/images/sphx_glr_plot_affine_transformation_002.png
+    :target: ../auto_examples/04_manipulating_images/plot_affine_transformation.html
+    :scale: 33%
+.. image:: ../auto_examples/04_manipulating_images/images/sphx_glr_plot_affine_transformation_004.png
+    :target: ../auto_examples/04_manipulating_images/plot_affine_transformation.html
+    :scale: 33%
+.. image:: ../auto_examples/04_manipulating_images/images/sphx_glr_plot_affine_transformation_003.png
+    :target: ../auto_examples/04_manipulating_images/plot_affine_transformation.html
+    :scale: 33%
+
+
+.. topic:: **Special case: resampling to a given voxel size**
+
+   Specifying a 3x3 matrix that is diagonal as a target_affine fixes the
+   voxel size. For instance to resample to 3x3x3 mm voxels::
+
+    >>> import numpy as np
+    >>> target_affine = np.diag((3, 3, 3))
 
 
 Image operations: creating a ROI mask manually

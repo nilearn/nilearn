@@ -16,10 +16,6 @@ underlying mask extraction routine
 
 """
 
-import numpy as np
-
-import nibabel
-from nilearn import datasets
 
 
 ###############################################################################
@@ -29,6 +25,7 @@ import nilearn.image as image
 from nilearn.plotting import plot_roi, show
 
 # Load Miyawaki dataset
+from nilearn import datasets
 miyawaki_dataset = datasets.fetch_miyawaki2008()
 
 # print basic information on the dataset
@@ -55,11 +52,10 @@ plot_roi(masker.mask_img_, miyawaki_mean_img,
 # Load NYU resting-state dataset
 nyu_dataset = datasets.fetch_nyu_rest(n_subjects=1)
 nyu_filename = nyu_dataset.func[0]
-nyu_img = nibabel.load(nyu_filename)
 
 # Restrict nyu to 100 frames to speed up computation
 from nilearn.image import index_img
-nyu_img = index_img(nyu_img, slice(0, 100))
+nyu_img = index_img(nyu_filename, slice(0, 100))
 
 # To display the background
 nyu_mean_img = image.mean_img(nyu_img)
@@ -92,6 +88,9 @@ trended = NiftiMasker(mask_strategy='epi')
 detrended = NiftiMasker(mask_strategy='epi', detrend=True)
 trended_data = trended.fit_transform(nyu_img)
 detrended_data = detrended.fit_transform(nyu_img)
+
+# The timeseries are numpy arrays, so we can manipulate them with numpy
+import numpy as np
 
 print("Trended: mean %.2f, std %.2f" %
       (np.mean(trended_data), np.std(trended_data)))

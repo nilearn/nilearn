@@ -201,7 +201,7 @@ the file name::
 
    The filename could be given as "~/t_map000.nii' as nilearn expands "~" to
    the home directory.
-   :ref:`See more on file name matchings <extracting_data>`.
+   :ref:`See more on file name matchings <filename_matching>`.
 
 
 .. image:: auto_examples/01_plotting/images/sphx_glr_plot_demo_glass_brain_001.png
