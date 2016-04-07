@@ -15,8 +15,8 @@ Data preparation: data loading and signal extraction
 File names or image objects
 =============================
 
-File names and objects for 3D and 4D images
--------------------------------------------
+File names and objects, 3D and 4D images
+-----------------------------------------
 
 All Nilearn functions accept file names as arguments::
 
@@ -33,8 +33,9 @@ In nilearn, we often use the term *"niimg"* as abbreviation that denotes
 either a file name or a `NiftiImage object
 <http://nipy.org/nibabel/nibabel_images.html>`_. 
 
-Niimgs can be 3D or 4D. A 4D niimg can be **a list of file names**, if
-these contain 3D information.
+Niimgs can be 3D or 4D. A 4D niimg may for instance represent a time
+series of 3D images. It can be **a list of file names**, if these contain
+3D information.
 
 .. _filename_matching:
 
@@ -169,7 +170,7 @@ engineering using masker objects.
     :doc:`plot_nifti_simple.py <../auto_examples/04_manipulating_images/plot_nifti_simple>`.
 
 
-Visualizing the mask computed
+Visualizing the computed mask
 ..............................
 
 If a mask is not specified as an argument, :class:`NiftiMasker` will try to
@@ -292,7 +293,7 @@ properties, before conversion to voxel signals.
 - **Frequency filtering**. Low-pass and high-pass filters can be used to
   remove artifacts. Parameters: ``high_pass`` and ``low_pass``, specified
   in Hz (note that you must specific the sampling rate in seconds with
-  the ``t_r`` parameter.
+  the ``t_r`` parameter: ``loss_pass=.5, t_r=2.1``).
 
 - **Confound removal**. Two ways of removing confounds are provided: simple
   detrending or using prespecified confounds, such as behavioral or movement 
