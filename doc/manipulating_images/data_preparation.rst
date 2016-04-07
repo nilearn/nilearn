@@ -56,7 +56,7 @@ shell):
 
   Using ``~`` rather than specifying the details of the path is good
   practice, as it will make it more likely that your script work on
-  multiple different computers.
+  different computers.
 
 |
 
@@ -294,15 +294,20 @@ properties, before conversion to voxel signals.
   in Hz (note that you must specific the sampling rate in seconds with
   the ``t_r`` parameter.
 
-- **Confound removal**. Two ways of removing confounds are provided. Any linear
-  trend can be removed by activating the `detrend` parameter.
-  This accounts for slow (as opposed to abrupt or transient) changes
-  in voxel values along a series of brain images that are unrelated to the
-  signal of interest (e.g., the neural correlates of cognitive tasks).
-  It is not activated by default in :class:`NiftiMasker` but is recommended
-  in almost all scenarios. More complex confounds can
-  be removed by passing them to :meth:`NiftiMasker.transform`. If the
-  dataset provides a confounds file, just pass its path to the masker.
+- **Confound removal**. Two ways of removing confounds are provided: simple
+  detrending or using prespecified confounds, such as behavioral or movement 
+  information.
+
+  * Linear trends can be removed by activating the `detrend` parameter.
+    This accounts for slow (as opposed to abrupt or transient) changes
+    in voxel values along a series of brain images that are unrelated to the
+    signal of interest (e.g., the neural correlates of cognitive tasks).
+    It is not activated by default in :class:`NiftiMasker` but is recommended
+    in almost all scenarios.
+    
+  * More complex confounds, measured during the acquision, can be removed
+    by passing them to :meth:`NiftiMasker.transform`. If the dataset
+    provides a confounds file, just pass its path to the masker.
 
 .. topic:: **Exercise**
    :class: green
