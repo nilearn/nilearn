@@ -304,7 +304,10 @@ def test_concat_imgs():
 
 def test_index_img():
     img_3d = nibabel.Nifti1Image(np.ones((3, 4, 5)), np.eye(4))
-    testing.assert_raises_regex(TypeError, '4D Niimg-like',
+    testing.assert_raises_regex(TypeError,
+                                "Input data has incompatible dimensionality: "
+                                "Expected dimension is 4D and you provided "
+                                "a 3D image.",
                                 image.index_img, img_3d, 0)
 
     affine = np.array([[1., 2., 3., 4.],
@@ -336,7 +339,10 @@ def test_index_img():
 
 def test_iter_img():
     img_3d = nibabel.Nifti1Image(np.ones((3, 4, 5)), np.eye(4))
-    testing.assert_raises_regex(TypeError, '4D Niimg-like',
+    testing.assert_raises_regex(TypeError,
+                                "Input data has incompatible dimensionality: "
+                                "Expected dimension is 4D and you provided "
+                                "a 3D image.",
                                 image.iter_img, img_3d)
 
     affine = np.array([[1., 2., 3., 4.],

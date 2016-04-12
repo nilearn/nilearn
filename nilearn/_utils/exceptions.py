@@ -49,14 +49,18 @@ class DimensionError(TypeError):
 
     @property
     def message(self):
-        return ("Data must be a {0}D Niimg-like object but you provided a "
-                "{1}{2}D image{3}. "
+        return ("Input data has incompatible dimensionality: "
+                "Expected dimension is {0}D and you provided a "
+                "{1}{2}D image{3}{4}. "
                 "See http://nilearn.github.io/manipulating_images/"
                 "manipulating_images.html#niimg."
                 .format(self.required_dimension + self.stack_counter,
                         "list of " * self.stack_counter,
                         self.file_dimension,
-                        "s" * (self.stack_counter != 0)
+                        "s" * (self.stack_counter != 0),
+                        (" (%iD)" %
+                            (self.file_dimension + self.stack_counter)) *
+                        (self.stack_counter > 0)
                         )
                 )
 
