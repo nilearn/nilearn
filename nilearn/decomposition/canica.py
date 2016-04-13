@@ -27,11 +27,6 @@ class CanICA(MultiPCA):
         it will be computed automatically by a MultiNiftiMasker with default
         parameters.
 
-    data: array-like, shape = [[n_samples, n_features], ...]
-        Training vector, where n_samples is the number of samples,
-        n_features is the number of features. There is one vector per
-        subject.
-
     n_components: int
         Number of components to extract
 
