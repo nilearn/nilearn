@@ -169,8 +169,9 @@ seed_based_correlations_fisher_z_img.to_filename('sbc_z.nii.gz')
 # interest.
 from nilearn import plotting
 
-display = plotting.plot_stat_map(seed_based_correlations_fisher_z_img, threshold=0.3,
-                                 vmax=1.3, cut_coords=pcc_coords[0],
+display = plotting.plot_stat_map(seed_based_correlations_fisher_z_img,
+                                 threshold=0.3, vmax=1.3,
+                                 cut_coords=pcc_coords[0],
                                  title="SBC (PCC seed; Fisher-z)")
 display.add_markers(marker_coords=pcc_coords, marker_color='g',
                     marker_size=300)
