@@ -155,9 +155,9 @@ print("seed-based correlation Fisher-z transformed: min = %.3f; max = %.3f" % (
 
 # Finally, we can tranform the correlation array back to a Nifti image
 # object, that we can save.
-seed_based_correlation_img = brain_masker.inverse_transform(
-    seed_based_correlations.T)
-seed_based_correlation_img.to_filename('sbc_z.nii.gz')
+seed_based_correlations_fisher_z_img = brain_masker.inverse_transform(
+    seed_based_correlations_fisher_z.T)
+seed_based_correlations_fisher_z_img.to_filename('sbc_z.nii.gz')
 
 
 ##########################################################################
@@ -169,8 +169,9 @@ seed_based_correlation_img.to_filename('sbc_z.nii.gz')
 # interest.
 from nilearn import plotting
 
-display = plotting.plot_stat_map(seed_based_correlation_img, threshold=0.3,
-                                 cut_coords=pcc_coords[0])
+display = plotting.plot_stat_map(seed_based_correlations_fisher_z_img, threshold=0.3,
+                                 vmax=1.3, cut_coords=pcc_coords[0],
+                                 title="SBC (PCC seed; Fisher-z)")
 display.add_markers(marker_coords=pcc_coords, marker_color='g',
                     marker_size=300)
 # At last, we save the plot as pdf.
