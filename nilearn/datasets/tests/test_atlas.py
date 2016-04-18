@@ -6,8 +6,8 @@ Test the datasets module
 
 import os
 import shutil
+import csv
 import numpy as np
-from tempfile import mkdtemp
 
 import nibabel
 
@@ -109,20 +109,44 @@ def test_fail_fetch_atlas_harvard_oxford():
     os.makedirs(nifti_dir)
 
     target_atlas_nii = os.path.join(nifti_dir, target_atlas_fname)
-    struct.load_mni152_template().to_filename(target_atlas_nii)
+
+    # Create false atlas
+    atlas_data = np.zeros((10, 10, 10), dtype=int)
+
+    # Create an interhemispheric map
+    atlas_data[:, :2, :] = 1
+
+    # Create a left map
+    atlas_data[:5, 3:5, :] = 2
+
+    # Create a right map, with one voxel on the left side
+    atlas_data[5:, 7:9, :] = 3
+    atlas_data[4, 7, 0] = 3
+
+    nibabel.Nifti1Image(atlas_data, np.eye(4) * 3).to_filename(
+        target_atlas_nii)
 
     dummy = open(os.path.join(ho_dir, 'HarvardOxford-Cortical.xml'), 'w')
-    dummy.write("<?xml version='1.0' encoding='us-ascii'?> "
-                "<metadata>"
-                "</metadata>")
+    dummy.write("<?xml version='1.0' encoding='us-ascii'?>\n"
+                "<data>\n"
+                '<label index="0" x="48" y="94" z="35">R1</label>\n'
+                '<label index="1" x="25" y="70" z="32">R2</label>\n'
+                '<label index="2" x="33" y="73" z="63">R3</label>\n'
+                "</data>")
     dummy.close()
 
     ho = atlas.fetch_atlas_harvard_oxford(target_atlas,
-                                          data_dir=tst.tmpdir)
+                                          data_dir=tst.tmpdir,
+                                          symmetric_split=True)
 
-    assert_true(isinstance(nibabel.load(ho.maps), nibabel.Nifti1Image))
-    assert_true(isinstance(ho.labels, np.ndarray))
-    assert_true(len(ho.labels) > 0)
+    assert_true(isinstance(ho.maps, nibabel.Nifti1Image))
+    assert_true(isinstance(ho.labels, list))
+    assert_equal(len(ho.labels), 5)
+    assert_equal(ho.labels[0], "Background")
+    assert_equal(ho.labels[1], "R1, left part")
+    assert_equal(ho.labels[2], "R1, right part")
+    assert_equal(ho.labels[3], "R2")
+    assert_equal(ho.labels[4], "R3")
 
 
 @with_setup(setup_mock, teardown_mock)
@@ -169,15 +193,15 @@ def test_fetch_atlas_smith_2009():
     assert_not_equal(bunch.description, '')
 
 
-def test_fetch_atlas_power_2011_atlas():
-    bunch = atlas.fetch_atlas_power_2011()
+def test_fetch_coords_power_2011():
+    bunch = atlas.fetch_coords_power_2011()
     assert_equal(len(bunch.rois), 264)
     assert_not_equal(bunch.description, '')
 
 
 @with_setup(setup_mock, teardown_mock)
 @with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
-def test_fetch_atlas_destrieux_2009_atlas():
+def test_fetch_atlas_destrieux_2009():
     datadir = os.path.join(tst.tmpdir, 'destrieux_2009')
     os.mkdir(datadir)
     dummy = open(os.path.join(
@@ -206,8 +230,24 @@ def test_fetch_atlas_destrieux_2009_atlas():
 @with_setup(setup_mock, teardown_mock)
 @with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
 def test_fetch_atlas_msdl():
+    datadir = os.path.join(tst.tmpdir, 'msdl_atlas')
+    os.mkdir(datadir)
+    os.mkdir(os.path.join(datadir, 'MSDL_rois'))
+    data_dir = os.path.join(datadir, 'MSDL_rois', 'msdl_rois_labels.csv')
+    csv = np.rec.array([(1.5, 1.5, 1.5, 'Aud', 'Aud'),
+                        (1.2, 1.3, 1.4, 'DMN', 'DMN')],
+                       dtype=[('x', '<f8'), ('y', '<f8'),
+                              ('z', '<f8'), ('name', 'S12'),
+                              ('net_name', 'S19')])
+    with open(data_dir, 'wb') as csv_file:
+        header = '{0}\n'.format(','.join(csv.dtype.names))
+        csv_file.write(header.encode())
+        np.savetxt(csv_file, csv, delimiter=',', fmt='%s')
+
     dataset = atlas.fetch_atlas_msdl(data_dir=tst.tmpdir, verbose=0)
-    assert_true(isinstance(dataset.labels, _basestring))
+    assert_true(isinstance(dataset.labels, list))
+    assert_true(isinstance(dataset.region_coords, list))
+    assert_true(isinstance(dataset.networks, list))
     assert_true(isinstance(dataset.maps, _basestring))
     assert_equal(len(tst.mock_url_request.urls), 1)
     assert_not_equal(dataset.description, '')
@@ -238,8 +278,9 @@ def test_fetch_atlas_aal():
                        "<metadata>"
                        "</metadata>")
     dataset = atlas.fetch_atlas_aal(data_dir=tst.tmpdir, verbose=0)
-    assert_true(isinstance(dataset.regions, _basestring))
-    assert_true(isinstance(dataset.labels, dict))
+    assert_true(isinstance(dataset.maps, _basestring))
+    assert_true(isinstance(dataset.labels, list))
+    assert_true(isinstance(dataset.indices, list))
     assert_equal(len(tst.mock_url_request.urls), 1)
 
     assert_raises_regex(ValueError, 'The version of AAL requested "FLS33"',
@@ -247,3 +288,51 @@ def test_fetch_atlas_aal():
                         data_dir=tst.tmpdir, verbose=0)
 
     assert_not_equal(dataset.description, '')
+
+
+@with_setup(setup_mock, teardown_mock)
+@with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
+def test_fetch_atlas_basc_multiscale_2015():
+    # default version='sym'
+    data_sym = atlas.fetch_atlas_basc_multiscale_2015(data_dir=tst.tmpdir,
+                                                      verbose=0)
+    # version='asym'
+    data_asym = atlas.fetch_atlas_basc_multiscale_2015(version='asym',
+                                                       verbose=0,
+                                                       data_dir=tst.tmpdir)
+
+    keys = ['scale007', 'scale012', 'scale020', 'scale036', 'scale064',
+            'scale122', 'scale197', 'scale325', 'scale444']
+
+    dataset_name = 'basc_multiscale_2015'
+    name_sym = 'template_cambridge_basc_multiscale_nii_sym'
+    basenames_sym = ['template_cambridge_basc_multiscale_sym_' +
+                     key + '.nii.gz' for key in keys]
+    for key, basename_sym in zip(keys, basenames_sym):
+        assert_equal(data_sym[key], os.path.join(tst.tmpdir, dataset_name,
+                                                 name_sym, basename_sym))
+
+    name_asym = 'template_cambridge_basc_multiscale_nii_asym'
+    basenames_asym = ['template_cambridge_basc_multiscale_asym_' +
+                      key + '.nii.gz' for key in keys]
+    for key, basename_asym in zip(keys, basenames_asym):
+        assert_equal(data_asym[key], os.path.join(tst.tmpdir, dataset_name,
+                                                  name_asym, basename_asym))
+
+    assert_equal(len(data_sym), 10)
+    assert_raises_regex(ValueError,
+                        'The version of Brain parcellations requested "aym"',
+                        atlas.fetch_atlas_basc_multiscale_2015, version="aym",
+                        data_dir=tst.tmpdir, verbose=0)
+
+    assert_equal(len(tst.mock_url_request.urls), 2)
+    assert_not_equal(data_sym.description, '')
+    assert_not_equal(data_asym.description, '')
+
+
+def test_fetch_coords_dosenbach_2010():
+    bunch = atlas.fetch_coords_dosenbach_2010()
+    assert_equal(len(bunch.rois), 160)
+    assert_equal(len(bunch.labels), 160)
+    assert_equal(len(np.unique(bunch.networks)), 6)
+    assert_not_equal(bunch.description, '')

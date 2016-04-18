@@ -4,7 +4,6 @@ Downloading NeuroImaging datasets: atlas datasets
 import os
 import xml.etree.ElementTree
 import numpy as np
-from scipy import ndimage
 
 from sklearn.datasets.base import Bunch
 from sklearn.utils import deprecated
@@ -85,16 +84,6 @@ def fetch_atlas_craddock_2012(data_dir=None, url=None, resume=True, verbose=1):
     params = dict([('description', fdescr)] + list(zip(keys, sub_files)))
 
     return Bunch(**params)
-
-
-@deprecated('it has been replace by fetch_atlas_craddock_2012 and '
-            'will be removed in nilearn 0.1.5')
-def fetch_craddock_2012_atlas(data_dir=None, url=None, resume=True, verbose=1):
-    return fetch_atlas_craddock_2012(
-        data_dir=data_dir,
-        url=url,
-        resume=resume,
-        verbose=verbose)
 
 
 def fetch_atlas_destrieux_2009(lateralized=True, data_dir=None, url=None,
@@ -242,7 +231,7 @@ def fetch_atlas_harvard_oxford(atlas_name, data_dir=None,
     names[0] = 'Background'
     for label in ElementTree.parse(label_file).findall('.//label'):
         names[int(label.get('index')) + 1] = label.text
-    names = np.asarray(list(names.values()))
+    names = list(names.values())
 
     if not symmetric_split:
         return Bunch(maps=atlas_img, labels=names)
@@ -256,48 +245,38 @@ def fetch_atlas_harvard_oxford(atlas_name, data_dir=None,
     atlas = atlas_img.get_data()
 
     labels = np.unique(atlas)
-    # ndimage.find_objects output contains None elements for labels
-    # that do not exist
-    found_slices = (s for s in ndimage.find_objects(atlas)
-                    if s is not None)
+    # Build a mask of both halves of the brain
     middle_ind = (atlas.shape[0] - 1) // 2
-    crosses_middle = [s.start < middle_ind and s.stop > middle_ind
-                      for s, _, _ in found_slices]
-
-    # Split every zone crossing the median plane into two parts.
-    # Assumes that the background label is zero.
-    half = np.zeros(atlas.shape, dtype=np.bool)
-    half[:middle_ind, ...] = True
-    new_label = max(labels) + 1
     # Put zeros on the median plane
     atlas[middle_ind, ...] = 0
-    for label, crosses in zip(labels[1:], crosses_middle):
-        if not crosses:
-            continue
-        atlas[np.logical_and(atlas == label, half)] = new_label
-        new_label += 1
+    # Split every zone crossing the median plane into two parts.
+    left_atlas = atlas.copy()
+    left_atlas[middle_ind:, ...] = 0
+    right_atlas = atlas.copy()
+    right_atlas[:middle_ind, ...] = 0
 
-    # Duplicate labels for right and left
+    new_label = 0
+    new_atlas = atlas.copy()
+    # Assumes that the background label is zero.
     new_names = [names[0]]
-    for n in names[1:]:
-        new_names.append(n + ', right part')
-    for n in names[1:]:
-        new_names.append(n + ', left part')
+    for label, name in zip(labels[1:], names[1:]):
+        new_label += 1
+        left_elements = (left_atlas == label).sum()
+        right_elements = (right_atlas == label).sum()
+        n_elements = float(left_elements + right_elements)
+        if (left_elements / n_elements < 0.05 or
+                right_elements / n_elements < 0.05):
+            new_atlas[atlas == label] = new_label
+            new_names.append(name)
+            continue
+        new_atlas[right_atlas == label] = new_label
+        new_names.append(name + ', left part')
+        new_label += 1
+        new_atlas[left_atlas == label] = new_label
+        new_names.append(name + ', right part')
 
-    atlas_img = new_img_like(atlas_img, atlas, atlas_img.get_affine())
+    atlas_img = new_img_like(atlas_img, new_atlas, atlas_img.get_affine())
     return Bunch(maps=atlas_img, labels=new_names)
-
-
-@deprecated('it has been replaced by fetch_atlas_harvard_oxford and '
-            'will be removed in nilearn 0.1.5')
-def fetch_harvard_oxford(atlas_name, data_dir=None, symmetric_split=False,
-                        resume=True, verbose=1):
-
-    atlas = fetch_atlas_harvard_oxford(atlas_name, data_dir=data_dir,
-                                       symmetric_split=symmetric_split,
-                                       resume=resume, verbose=verbose)
-
-    return atlas.maps, atlas.labels
 
 
 def fetch_atlas_msdl(data_dir=None, url=None, resume=True, verbose=1):
@@ -317,8 +296,14 @@ def fetch_atlas_msdl(data_dir=None, url=None, resume=True, verbose=1):
     -------
     data: sklearn.datasets.base.Bunch
         Dictionary-like object, the interest attributes are :
-        - 'labels': str. Path to csv file containing labels.
-        - 'maps': str. path to nifti file containing regions definition.
+
+        - 'maps': str, path to nifti file containing regions definition.
+        - 'labels': string list containing the labels of the regions.
+        - 'region_coords': tuple list (x, y, z) containing coordinates
+          of each region in MNI space.
+        - 'networks': string list containing names of the networks.
+        - 'description': description about the atlas.
+
 
     References
     ----------
@@ -348,19 +333,23 @@ def fetch_atlas_msdl(data_dir=None, url=None, resume=True, verbose=1):
     data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
                                 verbose=verbose)
     files = _fetch_files(data_dir, files, resume=resume, verbose=verbose)
+    csv_data = np.recfromcsv(files[0])
+    labels = csv_data['name'].tolist()
+    region_coords = csv_data[['x', 'y', 'z']].tolist()
+    net_names = csv_data['net_name'].tolist()
     fdescr = _get_dataset_descr(dataset_name)
 
-    return Bunch(labels=files[0], maps=files[1], description=fdescr)
+    return Bunch(maps=files[1], labels=labels, region_coords=region_coords,
+                 networks=net_names, description=fdescr)
 
 
-@deprecated('it has been replace by fetch_atlas_msdl and '
-            'will be removed in nilearn 0.1.5')
-def fetch_msdl_atlas(data_dir=None, url=None, resume=True, verbose=1):
-    return fetch_atlas_msdl(data_dir=data_dir, url=url,
-                            resume=resume, verbose=verbose)
-
-
+@deprecated('This function has been replace by fetch_coords_power_2011 and '
+            'will be removed in nilearn 0.2.5')
 def fetch_atlas_power_2011():
+    return fetch_coords_power_2011()
+
+
+def fetch_coords_power_2011():
     """Download and load the Power et al. brain atlas composed of 264 ROIs.
 
     Returns
@@ -394,9 +383,9 @@ def fetch_atlas_smith_2009(data_dir=None, mirror='origin', url=None,
         Path of the data directory. Used to force data storage in a non-
         standard location. Default: None (meaning: default)
     mirror: string, optional
-        By default, the dataset is downloaded from the original website of the atlas.
-        Specifying "nitrc" will force download from a mirror, with potentially
-        higher bandwith.
+        By default, the dataset is downloaded from the original website of the
+        atlas. Specifying "nitrc" will force download from a mirror, with
+        potentially higher bandwith.
     url: string, optional
         Download URL of the dataset. Overwrite the default URL.
 
@@ -482,18 +471,6 @@ def fetch_atlas_smith_2009(data_dir=None, mirror='origin', url=None,
     return Bunch(**params)
 
 
-@deprecated('it has been replace by fetch_atlas_smith_2009 and '
-            'will be removed in nilearn 0.1.5')
-def fetch_smith_2009(data_dir=None, mirror='origin', url=None, resume=True,
-                     verbose=1):
-    return fetch_atlas_smith_2009(
-        data_dir=data_dir,
-        mirror=mirror,
-        url=url,
-        resume=resume,
-        verbose=verbose)
-
-
 def fetch_atlas_yeo_2011(data_dir=None, url=None, resume=True, verbose=1):
     """Download and return file names for the Yeo 2011 parcellation.
 
@@ -572,23 +549,6 @@ def fetch_atlas_yeo_2011(data_dir=None, url=None, resume=True, verbose=1):
     return Bunch(**params)
 
 
-@deprecated('it has been replace by fetch_atlas_yeo_2011 and '
-            'will be removed in nilearn 0.1.5')
-def fetch_yeo_2011_atlas(data_dir=None, url=None, resume=True, verbose=1):
-    return fetch_atlas_yeo_2011(
-        data_dir=data_dir,
-        url=url,
-        resume=resume,
-        verbose=verbose)
-
-
-@deprecated('it has been replace by fetch_atlas_aal and '
-            'will be removed in nilearn 0.1.5')
-def fetch_atlas_aal_spm_12(data_dir=None, url=None, resume=True, verbose=1):
-    return fetch_atlas_aal(version='SPM12', data_dir=data_dir, url=url,
-                           resume=resume, verbose=verbose)
-
-
 def fetch_atlas_aal(version='SPM12', data_dir=None, url=None, resume=True,
                     verbose=1):
     """Downloads and returns the AAL template for SPM 12.
@@ -621,7 +581,7 @@ def fetch_atlas_aal(version='SPM12', data_dir=None, url=None, resume=True,
     data: sklearn.datasets.base.Bunch
         dictionary-like object, keys are:
 
-        - "regions": str. path to nifti file containing regions.
+        - "maps": str. path to nifti file containing regions.
 
         - "labels": dict. labels dictionary with their region id as key and
                     name as value
@@ -667,11 +627,155 @@ def fetch_atlas_aal(version='SPM12', data_dir=None, url=None, resume=True,
     # We return the labels contained in the xml file as a dictionary
     xml_tree = xml.etree.ElementTree.parse(labels_file)
     root = xml_tree.getroot()
-    labels_dict = {}
+    labels = []
+    indices = []
     for label in root.getiterator('label'):
-        labels_dict[label.find('index').text] = label.find('name').text
+        indices.append(label.find('index').text)
+        labels.append(label.find('name').text)
 
-    params = {'description': fdescr, 'regions': atlas_img,
-              'labels': labels_dict}
+    params = {'description': fdescr, 'maps': atlas_img,
+              'labels': labels, 'indices': indices}
+
+    return Bunch(**params)
+
+
+def fetch_atlas_basc_multiscale_2015(version='sym', data_dir=None,
+                                     resume=True, verbose=1):
+    """Downloads and loads multiscale functional brain parcellations
+
+    This atlas includes group brain parcellations generated from
+    resting-state functional magnetic resonance images from about
+    200 young healthy subjects.
+
+    Multiple scales (number of networks) are available, among
+    7, 12, 20, 36, 64, 122, 197, 325, 444. The brain parcellations
+    have been generated using a method called bootstrap analysis of
+    stable clusters called as BASC, (Bellec et al., 2010) and the
+    scales have been selected using a data-driven method called MSTEPS
+    (Bellec, 2013).
+
+    Note that two versions of the template are available, 'sym' or 'asym'.
+    The 'asym' type contains brain images that have been registered in the
+    asymmetric version of the MNI brain template (reflecting that the brain
+    is asymmetric), while the 'sym' type contains images registered in the
+    symmetric version of the MNI template. The symmetric template has been
+    forced to be symmetric anatomically, and is therefore ideally suited to
+    study homotopic functional connections in fMRI: finding homotopic regions
+    simply consists of flipping the x-axis of the template.
+
+    .. versionadded:: 0.2.3
+
+    Parameters
+    ----------
+    version: str, optional
+        Available versions are 'sym' or 'asym'. By default all scales of
+        brain parcellations of version 'sym' will be returned.
+
+    data_dir: str, optional
+        directory where data should be downloaded and unpacked.
+
+    url: str, optional
+        url of file to download.
+
+    resume: bool
+        whether to resumed download of a partly-downloaded file.
+
+    verbose: int
+        verbosity level (0 means no message).
+
+    Returns
+    -------
+    data: sklearn.datasets.base.Bunch
+        dictionary-like object, Keys are:
+
+        - "scale007", "scale012", "scale020", "scale036", "scale064",
+          "scale122", "scale197", "scale325", "scale444": str, path
+          to Nifti file of various scales of brain parcellations.
+
+        - "description": details about the data release.
+
+    References
+    ----------
+    Bellec P, Rosa-Neto P, Lyttelton OC, Benali H, Evans AC, Jul. 2010.
+    Multi-level bootstrap analysis of stable clusters in resting-state fMRI.
+    NeuroImage 51 (3), 1126-1139.
+    URL http://dx.doi.org/10.1016/j.neuroimage.2010.02.082
+
+    Bellec P, Jun. 2013. Mining the Hierarchy of Resting-State Brain Networks:
+    Selection of Representative Clusters in a Multiscale Structure.
+    Pattern Recognition in Neuroimaging (PRNI), 2013 pp. 54-57.
+
+    Notes
+    -----
+    For more information on this dataset's structure, see
+    https://figshare.com/articles/basc/1285615
+    """
+    versions = ['sym', 'asym']
+    if version not in versions:
+        raise ValueError('The version of Brain parcellations requested "%s" '
+                         'does not exist. Please choose one among them %s.' %
+                         (version, str(versions)))
+
+    keys = ['scale007', 'scale012', 'scale020', 'scale036', 'scale064',
+            'scale122', 'scale197', 'scale325', 'scale444']
+
+    if version == 'sym':
+        url = "https://ndownloader.figshare.com/files/1861819"
+    elif version == 'asym':
+        url = "https://ndownloader.figshare.com/files/1861820"
+    opts = {'uncompress': True}
+
+    dataset_name = "basc_multiscale_2015"
+    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
+                                verbose=verbose)
+
+    folder_name = 'template_cambridge_basc_multiscale_nii_' + version
+    basenames = ['template_cambridge_basc_multiscale_' + version +
+                 '_' + key + '.nii.gz' for key in keys]
+
+    filenames = [(os.path.join(folder_name, basename), url, opts)
+                 for basename in basenames]
+    data = _fetch_files(data_dir, filenames, resume=resume, verbose=verbose)
+
+    descr = _get_dataset_descr(dataset_name)
+
+    params = dict(zip(keys, data))
+    params['description'] = descr
+
+    return Bunch(**params)
+
+
+def fetch_coords_dosenbach_2010():
+    """Load the Dosenbach et al. 160 ROIs. These ROIs cover
+    much of the cerebral cortex and cerebellum and are assigned to 6
+    networks.
+
+    Returns
+    -------
+    data: sklearn.datasets.base.Bunch
+        dictionary-like object, contains:
+        - "rois": coordinates of 160 ROIs in MNI space
+        - "labels": ROIs labels
+        - "networks": networks names
+
+    References
+    ----------
+    Dosenbach N.U., Nardos B., et al. "Prediction of individual brain maturity
+    using fMRI.", 2010, Science 329, 1358-1361.
+    """
+    dataset_name = 'dosenbach_2010'
+    fdescr = _get_dataset_descr(dataset_name)
+    package_directory = os.path.dirname(os.path.abspath(__file__))
+    csv = os.path.join(package_directory, "data", "dosenbach_2010.csv")
+    out_csv = np.recfromcsv(csv)
+
+    # We add the ROI number to its name, since names are not unique
+    names = out_csv['name']
+    numbers = out_csv['number']
+    labels = np.array(['{0} {1}'.format(name, number) for (name, number) in
+                       zip(names, numbers)])
+    params = dict(rois=out_csv[['x', 'y', 'z']],
+                  labels=labels,
+                  networks=out_csv['network'], description=fdescr)
 
     return Bunch(**params)

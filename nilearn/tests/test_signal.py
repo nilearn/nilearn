@@ -8,6 +8,7 @@ import os.path
 
 import numpy as np
 from nose.tools import assert_true, assert_false, assert_raises
+from sklearn.utils.testing import assert_less
 
 # Use nisignal here to avoid name collisions (using nilearn.signal is
 # not possible)
@@ -215,6 +216,11 @@ def test_detrend():
     np.testing.assert_array_equal(length_1_signal,
                                   nisignal._detrend(length_1_signal))
 
+    # Mean removal on integers
+    detrended = nisignal._detrend(x.astype(np.int64), inplace=True,
+                                  type="constant")
+    assert_less(abs(detrended.mean(axis=0)).max(),
+                20. * np.finfo(np.float).eps)
 
 def test_mean_of_squares():
     """Test _mean_of_squares."""
@@ -349,6 +355,15 @@ def test_clean_confounds():
                   confounds=filename1)
     assert_raises(TypeError, nisignal.clean, signals,
                   confounds=[None])
+
+    # Test without standardizing that constant parts of confounds are
+    # accounted for
+    np.testing.assert_almost_equal(nisignal.clean(np.ones((20, 2)),
+                                                  standardize=False,
+                                                  confounds=np.ones(20),
+                                                  detrend=False,
+                                                  ).mean(),
+                                   np.zeros((20, 2)))
 
 
 def test_high_variance_confounds():

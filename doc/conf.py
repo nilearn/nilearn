@@ -15,6 +15,7 @@
 import sys
 import os
 import shutil
+import sphinx
 
 # If extensions (or modules to document with autodoc) are in another
 # directory, add these directories to sys.path here. If the directory
@@ -26,20 +27,17 @@ import sphinx_gallery
 # We also add the directory just above to enable local imports of nilearn
 sys.path.insert(0, os.path.abspath('..'))
 
-try:
-    shutil.copy('../AUTHORS.rst', '.')
-except IOError:
-    # When nose scans this file, it is not in the right working
-    # directory, and thus the line above fails
-    pass
-
 # -- General configuration ---------------------------------------------------
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions = ['sphinx.ext.autodoc', 'sphinx.ext.autosummary',
-              'sphinx.ext.pngmath', 'sphinx.ext.intersphinx',
-              'numpy_ext.numpydoc',
+extensions = ['sphinx.ext.autodoc',
+              'sphinx.ext.autosummary',
+              ('sphinx.ext.imgmath'  # only available for sphinx >= 1.4
+                  if sphinx.version_info[:2] >= (1, 4)
+                  else 'sphinx.ext.pngmath'),
+              'sphinx.ext.intersphinx',
+              'numpydoc.numpydoc',
               'sphinx_gallery.gen_gallery',
               ]
 
@@ -91,7 +89,10 @@ language = 'en'
 
 # List of documents that shouldn't be included in the build.
 #unused_docs = []
-exclude_patterns = ['tune_toc.rst', ]
+exclude_patterns = ['tune_toc.rst',
+                    'includes/big_toc_css.rst',
+                    'includes/bigger_toc_css.rst',
+                    ]
 
 # List of directories, relative to source directory, that shouldn't be
 # searched for source files.
@@ -286,6 +287,12 @@ sphinx_gallery_conf = {
         'nibabel': 'http://nipy.org/nibabel',
         'sklearn': 'http://scikit-learn.org/stable'}
     }
+
+# Get rid of spurious warnings due to some interaction between
+# autosummary and numpydoc. See
+# https://github.com/phn/pytpm/issues/3#issuecomment-12133978 for more
+# details
+numpydoc_show_class_members = False
 
 
 def touch_example_backreferences(app, what, name, obj, options, lines):

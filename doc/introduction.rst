@@ -24,7 +24,7 @@ What is nilearn: MVPA, decoding, predictive models, functional connectivity
 
     Nilearn can readily be used on :ref:`task fMRI <decoding_tutorial>`,
     :ref:`resting-state <functional_connectomes>`, or
-    :ref:`VBM <sphx_glr_auto_examples_decoding_plot_oasis_vbm.py>` data.
+    :ref:`VBM <sphx_glr_auto_examples_02_decoding_plot_oasis_vbm.py>` data.
 
     For a machine-learning expert, the value of nilearn can be seen as
     domain-specific **feature engineering** construction, that is, shaping
@@ -64,7 +64,7 @@ Why is machine learning relevant to NeuroImaging? A few examples!
     Tricks pulled in machine learning (e.g. regularization) can
     make this estimation possible despite the usually
     small number of observations in the neuroimaging domain
-    `[Varoquaux 2012] <http://icml.cc/discuss/2012/688.html>`_. This
+    `[Varoquaux 2012] <http://icml.cc/2012/papers/688.pdf>`_. This
     usage of machine learning requires some understanding of the models.
 
 :Data mining / exploration:
@@ -197,8 +197,15 @@ the file name::
 
     >>> plotting.plot_glass_brain("/home/user/t_map000.nii")   # doctest: +SKIP
 
-.. image:: auto_examples/manipulating_visualizing/images/sphx_glr_plot_demo_glass_brain_001.png
-    :target: auto_examples/manipulating_visualizing/plot_demo_glass_brain.html
+.. sidebar:: File name matchings
+
+   The filename could be given as "~/t_map000.nii' as nilearn expands "~" to
+   the home directory.
+   :ref:`See more on file name matchings <filename_matching>`.
+
+
+.. image:: auto_examples/01_plotting/images/sphx_glr_plot_demo_glass_brain_001.png
+    :target: auto_examples/01_plotting/plot_demo_glass_brain.html
     :align: center
     :scale: 60
 
@@ -257,7 +264,7 @@ To loop over each individual volume of a 4D image, use :func:`image.iter_img`::
       * To perform a for loop in Python, you can use the "range" function
 
       * The solution can be found :ref:`here
-        <sphx_glr_auto_examples_manipulating_visualizing_plot_smooth_mean_image.py>`
+        <sphx_glr_auto_examples_04_manipulating_images_plot_smooth_mean_image.py>`
 
 |
 

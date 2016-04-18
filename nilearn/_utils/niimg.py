@@ -80,7 +80,7 @@ def load_niimg(niimg, dtype=None):
     -----------
 
     niimg: Niimg-like object
-        See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+        See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
         Image to load.
 
     dtype: {dtype, "auto"}
@@ -128,7 +128,7 @@ def copy_img(img):
 
     if not isinstance(img, nibabel.spatialimages.SpatialImage):
         raise ValueError("Input value is not an image")
-    return new_img_like(img, img.get_data().copy(), img.get_affine().copy(),
+    return new_img_like(img, _safe_get_data(img).copy(), img.get_affine().copy(),
                         copy_header=True)
 
 

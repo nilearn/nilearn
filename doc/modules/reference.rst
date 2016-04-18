@@ -27,7 +27,7 @@ uses.
 .. autosummary::
    :toctree: generated/
    :template: class.rst
-   
+
    ConnectivityMeasure
    GroupSparseCovariance
    GroupSparseCovarianceCV
@@ -66,10 +66,12 @@ uses.
    fetch_atlas_destrieux_2009
    fetch_atlas_harvard_oxford
    fetch_atlas_msdl
-   fetch_atlas_power_2011
+   fetch_coords_power_2011
    fetch_atlas_smith_2009
    fetch_atlas_yeo_2011
    fetch_atlas_aal
+   fetch_atlas_basc_multiscale_2015
+   fetch_coords_dosenbach_2010
    fetch_abide_pcp
    fetch_adhd
    fetch_haxby
@@ -80,6 +82,9 @@ uses.
    fetch_miyawaki2008
    fetch_nyu_rest
    fetch_oasis_vbm
+   fetch_megatrawls_netmats
+   fetch_cobre
+   load_mni152_template
 
 .. _decoding_ref:
 
@@ -120,6 +125,7 @@ uses.
    :template: class.rst
 
    CanICA
+   DictLearning
 
 .. _image_ref:
 
@@ -139,16 +145,20 @@ uses.
    :template: function.rst
 
    crop_img
+   concat_imgs
+   copy_img
    index_img
    iter_img
    high_variance_confounds
    mean_img
+   math_img
    new_img_like
    resample_img
+   resample_to_img
    reorder_img
    smooth_img
    swap_img_hemispheres
-
+   threshold_img
 
 .. _io_ref:
 
@@ -202,31 +212,37 @@ uses.
    apply_mask
    unmask
 
-:mod:`nilearn.region`: Operating on regions
-==============================================
+:mod:`nilearn.regions`: Operating on regions
+============================================
 
-.. automodule:: nilearn.region
+.. automodule:: nilearn.regions
    :no-members:
    :no-inherited-members:
 
 **Functions**:
 
-.. currentmodule:: nilearn.region
+.. currentmodule:: nilearn.regions
 
 .. autosummary::
    :toctree: generated/
    :template: function.rst
 
+   connected_regions
    img_to_signals_labels
    signals_to_img_labels
    img_to_signals_maps
    signals_to_img_maps
 
+**Classes**:
 
-.. seealso::
+.. currentmodule:: nilearn.regions
 
-   :func:`nilearn.masking.apply_mask`,
-   :func:`nilearn.masking.unmask`
+.. autosummary::
+   :toctree: generated/
+   :template: class.rst
+
+   RegionExtractor
+
 
 :mod:`nilearn.mass_univariate`: Mass-univariate analysis
 =========================================================
@@ -266,6 +282,8 @@ uses.
    :toctree: generated/
    :template: function.rst
 
+   find_cut_slices
+   find_xyz_cut_coords
    plot_anat
    plot_img
    plot_epi
@@ -274,7 +292,6 @@ uses.
    plot_glass_brain
    plot_connectome
    plot_prob_atlas
-   find_xyz_cut_coords
    show
 
 **Classes**:
@@ -309,6 +326,3 @@ uses.
 
    clean
    high_variance_confounds
-
-
-

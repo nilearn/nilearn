@@ -3,7 +3,6 @@ Tests for the permuted_ols function.
 
 """
 # Author: Virgile Fritsch, <virgile.fritsch@inria.fr>, Feb. 2014
-import nose
 import numpy as np
 from scipy import stats
 from sklearn.utils import check_random_state

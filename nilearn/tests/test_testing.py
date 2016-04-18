@@ -1,10 +1,37 @@
 import itertools
-
 import numpy as np
 
 from nose.tools import assert_equal, assert_raises
 
-from nilearn._utils.testing import generate_fake_fmri
+from nilearn._utils.testing import generate_fake_fmri, with_memory_profiler
+from nilearn._utils.testing import assert_memory_less_than, assert_raises_regex
+
+
+def create_object(size):
+    """Just create and return an object containing `size` bytes."""
+    mem_use = b'a' * size
+    return mem_use
+
+
+@with_memory_profiler
+def test_memory_usage():
+    # Valid measures
+    for mem in (500, 200, 100):
+        assert_memory_less_than(mem, 0.1, create_object, mem * 1024 ** 2)
+
+    # Ensure an exception is raised with too small objects as
+    # memory_profiler can return non trustable memory measure in this case.
+    assert_raises_regex(ValueError,
+                        "Memory profiler measured an untrustable memory",
+                        assert_memory_less_than, 50, 0.1,
+                        create_object, 25 * 1024 ** 2)
+
+    # Ensure ValueError is raised if memory used is above expected memory
+    # limit.
+    assert_raises_regex(ValueError,
+                        "Memory consumption measured",
+                        assert_memory_less_than, 50, 0.1,
+                        create_object, 100 * 1024 ** 2)
 
 
 def test_generate_fake_fmri():

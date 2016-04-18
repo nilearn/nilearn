@@ -24,6 +24,9 @@ from nilearn import _utils, image
 from nilearn._utils.exceptions import DimensionError
 from nilearn._utils import testing, niimg_conversions
 from nilearn._utils.testing import assert_raises_regex
+from nilearn._utils.testing import with_memory_profiler
+from nilearn._utils.testing import assert_memory_less_than
+from nilearn._utils.niimg_conversions import _iter_check_niimg
 
 
 class PhonyNiimage(nibabel.spatialimages.SpatialImage):
@@ -304,6 +307,57 @@ def test_check_niimg_wildcards():
 
     # Reverting to default behavior
     ni.EXPAND_PATH_WILDCARDS = True
+
+
+def test_iter_check_niimgs():
+    no_file_matching = "No files matching path: %s"
+    affine = np.eye(4)
+    img_4d = Nifti1Image(np.ones((10, 10, 10, 4)), affine)
+    img_2_4d = [[img_4d, img_4d]]
+
+    for empty in ((), [], (i for i in ()), [i for i in ()]):
+        assert_raises_regex(ValueError,
+                            "Input niimgs list is empty.",
+                            list, _iter_check_niimg(empty))
+
+    nofile_path = "/tmp/nofile"
+    assert_raises_regex(ValueError,
+                        no_file_matching % nofile_path,
+                        list, _iter_check_niimg(nofile_path))
+
+    # Create a test file
+    filename = tempfile.mktemp(prefix="nilearn_test",
+                               suffix=".nii",
+                               dir=None)
+    img_4d.to_filename(filename)
+    niimgs = list(_iter_check_niimg([filename]))
+    assert_array_equal(niimgs[0].get_data(),
+                       _utils.check_niimg(img_4d).get_data())
+    del img_4d
+    del niimgs
+    os.remove(filename)
+
+    # Regular case
+    niimgs = list(_iter_check_niimg(img_2_4d))
+    assert_array_equal(niimgs[0].get_data(),
+                       _utils.check_niimg(img_2_4d).get_data())
+
+
+def _check_memory(list_img_3d):
+    # We intentionally add an offset of memory usage to avoid non trustable
+    # measures with memory_profiler.
+    mem_offset = b'a' * 100 * 1024 ** 2
+    list(_iter_check_niimg(list_img_3d))
+    return mem_offset
+
+
+@with_memory_profiler
+def test_iter_check_niimgs_memory():
+    # Verify that iterating over a list of images doesn't consume extra
+    # memory.
+    assert_memory_less_than(100, 0.1, _check_memory,
+                            [Nifti1Image(np.ones((100, 100, 200)), np.eye(4))
+                             for i in range(10)])
 
 
 def test_repr_niimgs():

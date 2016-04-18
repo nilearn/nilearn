@@ -1,0 +1,15 @@
+"""
+The :mod:`nilearn.regions` class module includes region extraction
+procedure on a 4D statistical/atlas maps and its function.
+"""
+from .region_extractor import connected_regions, RegionExtractor
+from .signal_extraction import (
+    img_to_signals_labels, signals_to_img_labels,
+    img_to_signals_maps, signals_to_img_maps,
+)
+
+__all__ = [
+    'connected_regions', 'RegionExtractor',
+    'img_to_signals_labels', 'signals_to_img_labels',
+    'img_to_signals_maps', 'signals_to_img_maps',
+]

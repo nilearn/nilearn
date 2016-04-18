@@ -15,6 +15,8 @@ from .._utils.ndimage import largest_connected_component
 from ..image import new_img_like
 from .._utils.extmath import fast_abs_percentile
 from .._utils.numpy_conversions import as_ndarray
+from .._utils import check_niimg_3d
+from .._utils.niimg import _safe_get_data
 from ..image.resampling import get_mask_bounds, coord_transform
 from ..image.image import _smooth_array
 
@@ -46,7 +48,11 @@ def find_xyz_cut_coords(img, mask=None, activation_threshold=None):
         z : float
             the z world coordinate.
     """
-    data = img.get_data()
+    # if a pseudo-4D image or several images were passed (cf. #922),
+    # we reduce to a single 3D image to find the coordinates
+    img = check_niimg_3d(img)
+    data = _safe_get_data(img)
+
     # To speed up computations, we work with partial views of the array,
     # and keep track of the offset
     offset = np.zeros(3)
@@ -112,7 +118,7 @@ def find_xyz_cut_coords(img, mask=None, activation_threshold=None):
 def _get_auto_mask_bounds(img):
     """ Compute the bounds of the data with an automaticaly computed mask
     """
-    data = img.get_data().copy()
+    data = _safe_get_data(img)
     affine = img.get_affine()
     if hasattr(data, 'mask'):
         # Masked array
@@ -201,7 +207,7 @@ def find_cut_slices(img, direction='z', n_cuts=7, spacing='auto'):
                 direction))
     axis = 'xyz'.index(direction)
     affine = img.get_affine()
-    orig_data = np.abs(img.get_data())
+    orig_data = np.abs(_safe_get_data(img))
     this_shape = orig_data.shape[axis]
 
     if not isinstance(n_cuts, numbers.Number):

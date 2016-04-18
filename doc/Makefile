@@ -52,6 +52,14 @@ html:
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
 
+html-strict:
+	# Build html documentation using a strict mode: Warnings are
+	# considered as errors.
+	make check
+	touch $(BUILDDIR)/html .nojekyll
+	@echo
+	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
+
 html-noplot:
 	$(SPHINXBUILD) -D plot_gallery=0 -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 	touch $(BUILDDIR)/html .nojekyll
@@ -153,5 +161,6 @@ install:
 	cp -r html/* nilearn.github.io && \
 	cd nilearn.github.io && \
 	git add * && \
+	git add .nojekyll && \
 	git commit -a -m 'Make install' && \
 	git push

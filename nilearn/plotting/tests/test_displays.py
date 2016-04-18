@@ -2,17 +2,10 @@
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 import tempfile
 
-import numpy as np
-
-from nose.tools import assert_true
-
 import matplotlib.pyplot as plt
 
 from nilearn.plotting.displays import OrthoSlicer, XSlicer, OrthoProjector
-from nilearn.plotting.displays import check_threshold
 from nilearn.datasets import load_mni152_template
-from nilearn._utils.testing import assert_raises_regex
-from nilearn._utils.extmath import fast_abs_percentile
 
 
 ##############################################################################
@@ -47,30 +40,15 @@ def test_demo_ortho_projector():
     oprojector.close()
 
 
-def test_check_threshold():
-    adjacency_matrix = np.array([[1., 2.],
-                                 [2., 1.]])
-    name = 'edge_threshold'
-    calculate = 'fast_abs_percentile'
-    # a few not correctly formatted strings for 'edge_threshold'
-    wrong_edge_thresholds = ['0.1', '10', '10.2.3%', 'asdf%']
-    for wrong_edge_threshold in wrong_edge_thresholds:
-        assert_raises_regex(ValueError,
-                            '{0}.+should be a number followed by '
-                            'the percent sign'.format(name),
-                            check_threshold,
-                            wrong_edge_threshold, adjacency_matrix,
-                            calculate, name)
+def test_contour_fillings_levels_in_add_contours():
+    oslicer = OrthoSlicer(cut_coords=(0, 0, 0))
+    img = load_mni152_template()
+    # levels should be atleast 2
+    # If single levels are passed then we force upper level to be inf
+    oslicer.add_contours(img, filled=True, colors='r',
+                         alpha=0.2, levels=[0.])
 
-    threshold = object()
-    assert_raises_regex(TypeError,
-                        '{0}.+should be either a number or a string'.format(
-                            name),
-                        check_threshold,
-                        threshold, adjacency_matrix,
-                        calculate, name)
-
-    # To check if it also gives the score which is expected
-    assert_true(1. < check_threshold("50%", adjacency_matrix,
-                                     percentile_calculate=fast_abs_percentile,
-                                     name='threshold') <= 2.)
+    # If two levels are passed, it should be increasing from zero index
+    # In this case, we simply omit appending inf
+    oslicer.add_contours(img, filled=True, colors='b',
+                         alpha=0.1, levels=[0., 0.2])

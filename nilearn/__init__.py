@@ -34,11 +34,6 @@ signal                  --- Set of preprocessing functions for time series
 
 import gzip
 
-# list all submodules available in nilearn
-__all__ = ['datasets', 'decoding', 'decomposition', 'connectome',
-           'image', 'input_data', 'masking', 'mass_univariate', 'plotting',
-           'region', 'signal']
-
 from .version import _check_module_dependencies, __version__
 
 _check_module_dependencies()
@@ -48,8 +43,9 @@ if hasattr(gzip.GzipFile, 'max_read_chunk'):
     gzip.GzipFile.max_read_chunk = 100 * 1024 * 1024  # 100Mb
 
 # Boolean controlling the default globbing technique when using check_niimg
-# Default value it True, set it to False to completely deactivate use of glob
-# module
+# and the os.path.expanduser usage in CacheMixin.
+# Default value it True, set it to False to completely deactivate this
+# behavior.
 EXPAND_PATH_WILDCARDS = True
 
 # Boolean controlling whether the joblib caches should be
@@ -58,3 +54,8 @@ EXPAND_PATH_WILDCARDS = True
 # structures
 # This  is used in nilearn._utils.cache_mixin
 CHECK_CACHE_VERSION = True
+
+# list all submodules available in nilearn and version
+__all__ = ['datasets', 'decoding', 'decomposition', 'connectome',
+           'image', 'input_data', 'masking', 'mass_univariate', 'plotting',
+           'region', 'signal', '__version__']

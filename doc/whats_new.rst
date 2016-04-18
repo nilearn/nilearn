@@ -1,13 +1,217 @@
-0.1.5
-=======
+0.2.4
+=====
+
+Changelog
+---------
+
+The 0.2.4 is a small release focused on documentation for teaching.
+
+New features
+............
+    - The path given to the "memory" argument of object now have their
+      "~" expanded to the homedir
+
+    - Display object created by plotting now uniformely expose an
+      "add_markers" method.
+
+    - plotting plot_connectome with colorbar is now implemented in function
+      :func:`nilearn.plotting.plot_connectome`
+
+    - New function :func:`nilearn.image.resample_to_img` to resample one
+      img on another one (just resampling / interpolation, no
+      coregistration)
+
+API changes summary
+...................
+    - Atlas fetcher :func:`nilearn.datasets.fetch_atlas_msdl` now returns directly
+      labels of the regions in output variable 'labels' and its coordinates
+      in output variable 'region_coords' and its type of network in 'networks'.
+    - The output variable name 'regions' is now changed to 'maps' in AAL atlas
+      fetcher in :func:`nilearn.datasets.fetch_atlas_aal`.
+    - AAL atlas now returns directly its labels in variable 'labels' and its
+      index values in variable 'indices'.
+
+0.2.3
+=====
+
+Changelog
+---------
+
+The 0.2.3 is a small feature release for BrainHack 2016.
+
+New features
+............
+    - Mathematical formulas based on numpy functions can be applied on an
+      image or a list of images using :func:`nilearn.image.math_img`.
+    - Downloader for COBRE datasets of 146 rest fMRI subjects with
+      :func:`nilearn.datasets.fetch_cobre`
+    - Downloader for Dosenbach atlas
+      :func:`nilearn.datasets.fetch_coords_dosenbach_2010`
+    - Fetcher for multiscale functional brain parcellations (BASC)
+      :func:`nilearn.datasets.fetch_atlas_basc_multiscale_2015`
+
+Bug fixes
+.........
+    - Better dimming on white background for plotting
+
+0.2.2
+======
+
+Changelog
+---------
+
+The 0.2.2 is a bugfix + dependency update release (for sphinx gallery). It
+aims at preparing a renewal of the tutorials.
+
+New features
+............
+   - Fetcher for Megatrawl Netmats dataset.
+
+Enhancements
+............
+   - Flake8 is now run on pull requests.
+   - Reworking of the documentation organization.
+   - Sphinx-gallery updated to version 0.1.1
+   - The default n_subjects=None in :func:`nilearn.datasets.fetch_adhd` is now
+     changed to n_subjects=30.
+
+Bug fixes
+.........
+   - Fix `symmetric_split` behavior in
+     :func:`nilearn.datasets.fetch_atlas_harvard_oxford`
+   - Fix casting errors when providing integer data to
+     :func:`nilearn.image.high_variance_confounds`
+   - Fix matplotlib 1.5.0 compatibility in
+     :func:`nilearn.plotting.plot_prob_atlas`
+   - Fix matplotlib backend choice on Mac OS X.
+   - :func:`nilearn.plotting.find_xyz_cut_coords` raises a meaningful error
+     when 4D data is provided instead of 3D.
+   - :class:`nilearn.input_data.NiftiSpheresMasker` handles radius smaller than
+     the size of a voxel
+   - :class:`nilearn.regions.RegionExtractor` handles data containing Nans.
+   - Confound regression does not force systematically the normalization of
+     the confounds. 
+   - Force time series normalization in
+     :class:`nilearn.connectome.ConnectivityMeasure`
+     and check dimensionality of the input. 
+   - `nilearn._utils.numpy_conversions.csv_to_array` could consider
+     valid CSV files as invalid.
+
+API changes summary
+...................
+   - Deprecated dataset downloading function have been removed.
+   - Download progression message refreshing rate has been lowered to sparsify
+     CircleCI logs.
+
+Contributors
+.............
+
+Contributors (from ``git shortlog -ns 0.2.1..0.2.2``)::
+
+    39  Kamalakar Daddy
+    22  Alexandre Abraham
+    21  Loïc Estève
+    19  Gael Varoquaux
+    12  Alexandre Abadie
+     7  Salma
+     3  Danilo Bzdok
+     1  Arthur Mensch
+     1  Ben Cipollini
+     1  Elvis Dohmatob
+     1  Óscar Nájera
+
+0.2.1
+======
+
+Changelog
+---------
+
+Small bugfix for more flexible input types (targetter in particular at
+making code easier in nistats).
+
+0.2
+===
 
 Changelog
 ---------
 
 The new minimum required version of scikit-learn is 0.13
 
-- Fix to control the behaviour of cut_coords or number of cuts in plot_stat_map.
-  For consistency, number of cuts is changed to default value 7.
+New features
+............
+   - The new module :mod:`nilearn.connectome` now has class
+     :class:`nilearn.connectome.ConnectivityMeasure` can be useful for
+     computing functional connectivity matrices.
+   - The function :func:`nilearn.connectome.sym_to_vec` in same module
+     :mod:`nilearn.connectome` is also implemented as a helper function to
+     :class:`nilearn.connectome.ConnectivityMeasure`.
+   - The class :class:`nilearn.decomposition.DictLearning` in
+     :mod:`nilearn.decomposition` is a decomposition method similar to ICA
+     that imposes sparsity on components instead of independence between them.
+   - Integrating back references template from sphinx-gallery of 0.0.11
+     version release.
+   - Globbing expressions can now be used in all nilearn functions expecting a
+     list of files.
+   - The new module :mod:`nilearn.regions` now has class
+     :class:`nilearn.regions.RegionExtractor` which can be used for post
+     processing brain regions of interest extraction.
+   - The function :func:`nilearn.regions.connected_regions` in
+     :mod:`nilearn.regions` is also implemented as a helper function to
+     :class:`nilearn.regions.RegionExtractor`.
+   - The function :func:`nilearn.image.threshold_img` in :mod:`nilearn.image`
+     is implemented to use it for thresholding statistical maps.
+
+Enhancements
+............
+   - Making website a bit elaborated & modernise by using sphinx-gallery.
+   - Documentation enhancement by integrating sphinx-gallery notebook style
+     examples.
+   - Documentation about :class:`nilearn.input_data.NiftiSpheresMasker`.
+
+Bug fixes
+.........
+   - Fixed bug to control the behaviour when cut_coords=0. in function
+     :func:`nilearn.plotting.plot_stat_map` in :mod:`nilearn.plotting`.
+     See issue # 784.
+   - Fixed bug in :func:`nilearn.image.copy_img` occured while caching
+     the Nifti images. See issue # 793.
+   - Fixed bug causing an IndexError in fast_abs_percentile. See issue # 875
+
+API changes summary
+...................
+   - The utilities in function group_sparse_covariance has been moved
+     into :mod:`nilearn.connectome`.
+   - The default value for number of cuts (n_cuts) in function
+     :func:`nilearn.plotting.find_cut_slices` in :mod:`nilearn.plotting` has
+     been changed from 12 to 7 i.e. n_cuts=7.
+
+Contributors
+.............
+
+Contributors (from ``git shortlog -ns 0.1.4..0.2.0``)::
+
+   822  Elvis Dohmatob
+   142  Gael Varoquaux
+   119  Alexandre Abraham
+    90  Loïc Estève
+    85  Kamalakar Daddy
+    65  Alexandre Abadie
+    43  Chris Filo Gorgolewski
+    39  Salma BOUGACHA
+    29  Danilo Bzdok
+    20  Martin Perez-Guevara
+    19  Mehdi Rahim
+    19  Óscar Nájera
+    17  martin
+     8  Arthur Mensch
+     8  Ben Cipollini
+     4  ainafp
+     4  juhuntenburg
+     2  Martin_Perez_Guevara
+     2  Michael Hanke
+     2  arokem
+     1  Bertrand Thirion
+     1  Dimitri Papadopoulos Orfanos
 
 
 0.1.4

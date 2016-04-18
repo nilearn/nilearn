@@ -13,7 +13,7 @@ import warnings
 import numpy as np
 import scipy
 from scipy import signal, stats, linalg
-from sklearn.utils import gen_even_slices
+from sklearn.utils import gen_even_slices, as_float_array
 from distutils.version import LooseVersion
 
 from ._utils.compat import _basestring
@@ -47,12 +47,13 @@ def _standardize(signals, detrend=False, normalize=True):
         signals = _detrend(signals, inplace=False)
     else:
         signals = signals.copy()
-    if signals.shape[0] == 1:
-        warnings.warn('Standardization of 3D signal has been requested but '
-            'would lead to zero values. Skipping.')
-        return signals
 
     if normalize:
+        if signals.shape[0] == 1:
+            warnings.warn('Standardization of 3D signal has been requested but '
+                'would lead to zero values. Skipping.')
+            return signals
+
         if not detrend:
             # remove mean if not already detrended
             signals = signals - signals.mean(axis=0)
@@ -135,8 +136,7 @@ def _detrend(signals, inplace=False, type="linear", n_batches=10):
     If a signal of lenght 1 is given, it is returned unchanged.
 
     """
-    if not inplace:
-        signals = signals.copy()
+    signals = as_float_array(signals, copy=not inplace)
     if signals.shape[0] == 1:
         warnings.warn('Detrending of 3D signal has been requested but '
             'would lead to zero values. Skipping.')
@@ -350,6 +350,7 @@ def clean(signals, sessions=None, detrend=True, standardize=True,
 
        This function can do several things on the input signals, in
        the following order:
+
        - detrend
        - standardize
        - remove confounds
@@ -368,9 +369,9 @@ def clean(signals, sessions=None, detrend=True, standardize=True,
            Timeseries. Must have shape (instant number, features number).
            This array is not modified.
 
-    sessions : numpy array, optional
-        Add a session level to the cleaning process. Each session will be
-        cleaned independently. Must be a 1D array of n_samples elements.
+       sessions : numpy array, optional
+           Add a session level to the cleaning process. Each session will be
+           cleaned independently. Must be a 1D array of n_samples elements.
 
        confounds: numpy.ndarray, str or list of
            Confounds timeseries. Shape must be
@@ -474,7 +475,15 @@ def clean(signals, sessions=None, detrend=True, standardize=True,
     # Remove confounds
     if confounds is not None:
         confounds = _ensure_float(confounds)
-        confounds = _standardize(confounds, normalize=True, detrend=detrend)
+        confounds = _standardize(confounds, normalize=standardize,
+                                 detrend=detrend)
+        if not standardize:
+            # Improve numerical stability by controlling the range of
+            # confounds. We don't rely on _standardize as it removes any
+            # constant contribution to confounds.
+            confound_max = np.max(np.abs(confounds), axis=0)
+            confound_max[confound_max == 0] = 1
+            confounds /= confound_max
 
         if (LooseVersion(scipy.__version__) > LooseVersion('0.9.0')):
             # Pivoting in qr decomposition was added in scipy 0.10

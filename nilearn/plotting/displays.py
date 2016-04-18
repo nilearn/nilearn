@@ -12,7 +12,6 @@ import numpy as np
 from scipy import sparse, stats
 
 from ..image import new_img_like
-from .._utils.compat import _basestring
 from .. import _utils
 
 import matplotlib.pyplot as plt
@@ -185,21 +184,31 @@ class CutAxes(BaseAxes):
                 **kwargs)
 
 
-def _coords_3d_to_2d(coords_3d, direction):
-    """Project 3d coordinates into 2d ones given the direction of a cut
+def _get_index_from_direction(direction):
+    """Returns numerical index from direction
     """
-    direction_to_index = {'x': [1, 2],
-                          'y': [0, 2],
-                          'z': [0, 1]}
-    index = direction_to_index.get(direction)
-
-    if index is None:
+    directions = ['x', 'y', 'z']
+    try:
+        index = directions.index(direction)
+    except ValueError:
         message = (
             '{0} is not a valid direction. '
             "Allowed values are 'x', 'y' and 'z'").format(direction)
         raise ValueError(message)
+    return index
 
-    return coords_3d[:, index]
+
+def _coords_3d_to_2d(coords_3d, direction, return_direction=False):
+    """Project 3d coordinates into 2d ones given the direction of a cut
+    """
+    index = _get_index_from_direction(direction)
+    dimensions = [0, 1, 2]
+    dimensions.pop(index)
+
+    if return_direction:
+        return coords_3d[:, dimensions], coords_3d[:, index]
+
+    return coords_3d[:, dimensions]
 
 
 class GlassBrainAxes(BaseAxes):
@@ -290,6 +299,8 @@ class GlassBrainAxes(BaseAxes):
             kwargs: dict
                 additional arguments to pass to matplotlib Line2D.
         """
+        # colormap for colorbar
+        self.cmap = cmap
         if vmin is None and vmax is None:
             abs_line_values_max = np.abs(line_values).max()
             vmin = -abs_line_values_max
@@ -312,6 +323,8 @@ class GlassBrainAxes(BaseAxes):
                 )
         norm = colors.Normalize(vmin=vmin,
                                 vmax=vmax)
+        # normalization useful for colorbar
+        self.norm = norm
         abs_norm = colors.Normalize(vmin=0,
                                     vmax=vmax)
         value_to_color = plt.cm.ScalarMappable(norm=norm, cmap=cmap).to_rgba
@@ -487,7 +500,7 @@ class BaseSlicer(object):
             Parameters
             -----------
             img: Niimg-like object
-                See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+                See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
                 If it is a masked array, only the non-masked part will be
                 plotted.
             threshold : a number, None
@@ -514,7 +527,7 @@ class BaseSlicer(object):
         ims = self._map_show(img, type='imshow', threshold=threshold, **kwargs)
 
         if colorbar:
-            self._colorbar_show(ims[0], threshold)
+            self._show_colorbar(ims[0].cmap, ims[0].norm, threshold)
 
         plt.draw_if_interactive()
 
@@ -524,7 +537,7 @@ class BaseSlicer(object):
             Parameters
             -----------
             img: Niimg-like object
-                See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+                See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
                 Provides image to plot.
             filled: boolean, optional
                 If filled=True, contours are displayed with color fillings.
@@ -540,8 +553,9 @@ class BaseSlicer(object):
         if filled:
             colors = kwargs['colors']
             levels = kwargs['levels']
-            # Append lower boundary value to '0' for contour fillings
-            levels.append(0.)
+            if len(levels) <= 1:
+                # contour fillings levels should be given as (lower, upper).
+                levels.append(np.inf)
             alpha = kwargs['alpha']
             self._map_show(img, type='contourf', levels=levels, alpha=alpha,
                            colors=colors[:3])
@@ -604,13 +618,24 @@ class BaseSlicer(object):
                 ims.append(im)
         return ims
 
-    def _colorbar_show(self, im, threshold):
+    def _show_colorbar(self, cmap, norm, threshold=None):
+        """
+        Parameters
+        ==========
+        cmap: a matplotlib colormap
+            The colormap used
+        norm: a matplotlib.colors.Normalize object
+            This object is typically found as the 'norm' attribute of an
+            matplotlib.image.AxesImage
+        threshold: float or None
+            The absolute value at which the colorbar is thresholded
+        """
         if threshold is None:
             offset = 0
         else:
             offset = threshold
-        if offset > im.norm.vmax:
-            offset = im.norm.vmax
+        if offset > norm.vmax:
+            offset = norm.vmax
 
         # create new  axis for the colorbar
         figure = self.frame_axes.figure
@@ -625,27 +650,27 @@ class BaseSlicer(object):
                                    self._colorbar_margin['bottom'])]
         self._colorbar_ax = figure.add_axes(lt_wid_top_ht, axis_bgcolor='w')
 
-        our_cmap = im.cmap
+        our_cmap = cmap
         # edge case where the data has a single value
         # yields a cryptic matplotlib error message
         # when trying to plot the color bar
-        nb_ticks = 5 if im.norm.vmin != im.norm.vmax else 1
-        ticks = np.linspace(im.norm.vmin, im.norm.vmax, nb_ticks)
-        bounds = np.linspace(im.norm.vmin, im.norm.vmax, our_cmap.N)
+        nb_ticks = 5 if norm.vmin != norm.vmax else 1
+        ticks = np.linspace(norm.vmin, norm.vmax, nb_ticks)
+        bounds = np.linspace(norm.vmin, norm.vmax, our_cmap.N)
 
         # some colormap hacking
         cmaplist = [our_cmap(i) for i in range(our_cmap.N)]
-        istart = int(im.norm(-offset, clip=True) * (our_cmap.N - 1))
-        istop = int(im.norm(offset, clip=True) * (our_cmap.N - 1))
+        istart = int(norm(-offset, clip=True) * (our_cmap.N - 1))
+        istop = int(norm(offset, clip=True) * (our_cmap.N - 1))
         for i in range(istart, istop):
             cmaplist[i] = (0.5, 0.5, 0.5, 1.)  # just an average gray color
-        if im.norm.vmin == im.norm.vmax:  # len(np.unique(data)) == 1 ?
+        if norm.vmin == norm.vmax:  # len(np.unique(data)) == 1 ?
             return
         else:
             our_cmap = our_cmap.from_list('Custom cmap', cmaplist, our_cmap.N)
 
         self._cbar = ColorbarBase(
-            self._colorbar_ax, ticks=ticks, norm=im.norm,
+            self._colorbar_ax, ticks=ticks, norm=norm,
             orientation='vertical', cmap=our_cmap, boundaries=bounds,
             spacing='proportional', format='%.2g')
 
@@ -687,6 +712,41 @@ class BaseSlicer(object):
                                type='imshow', cmap=single_color_cmap)
 
         plt.draw_if_interactive()
+
+    def add_markers(self, marker_coords, marker_color='r', marker_size=30,
+                    **kwargs):
+        """Add markers to the plot.
+
+        Parameters
+        ----------
+        marker_coords: array of size (n_markers, 3)
+            Coordinates of the markers to plot. For each slice, only markers
+            that are 2 millimeters away from the slice are plotted.
+        marker_color: pyplot compatible color or list of shape (n_markers,)
+            List of colors for each marker that can be string or matplotlib
+            colors
+        marker_size: single float or list of shape (n_markers,)
+            Size in pixel for each marker
+        """
+        defaults = {'marker': 'o',
+                    'zorder': 1000}
+        marker_coords = np.asanyarray(marker_coords)
+        for k, v in defaults.items():
+            kwargs.setdefault(k, v)
+
+        for display_ax in self.axes.values():
+            direction = display_ax.direction
+            coord = display_ax.coord
+            marker_coords_2d, third_d = _coords_3d_to_2d(
+                marker_coords, direction, return_direction=True)
+            # Heuristic that plots only markers that are 2mm away from the
+            # current slice.
+            # XXX: should we keep this heuristic?
+            mask = np.abs(third_d - coord) <= 2.
+            xdata, ydata = marker_coords_2d.T
+            display_ax.ax.scatter(xdata[mask], ydata[mask],
+                                  s=marker_size,
+                                  c=marker_color, **kwargs)
 
     def annotate(self, left_right=True, positions=True, size=12, **kwargs):
         """ Add annotations to the plot.
@@ -1090,7 +1150,8 @@ class OrthoProjector(OrthoSlicer):
                   edge_cmap=cm.bwr,
                   edge_vmin=None, edge_vmax=None,
                   edge_threshold=None,
-                  edge_kwargs=None, node_kwargs=None):
+                  edge_kwargs=None, node_kwargs=None, colorbar=False,
+                  ):
         """Plot undirected graph on each of the axes
 
             Parameters
@@ -1195,10 +1256,9 @@ class OrthoProjector(OrthoSlicer):
                                                           k=-1)
             lower_diagonal_values = adjacency_matrix[
                 lower_diagonal_indices]
-            edge_threshold = check_threshold(edge_threshold,
-                                             np.abs(lower_diagonal_values),
-                                             stats.scoreatpercentile,
-                                             'edge_threshold')
+            edge_threshold = _utils.param_validation.check_threshold(
+                edge_threshold, np.abs(lower_diagonal_values),
+                stats.scoreatpercentile, 'edge_threshold')
 
             adjacency_matrix = adjacency_matrix.copy()
             threshold_mask = np.abs(adjacency_matrix) < edge_threshold
@@ -1217,6 +1277,10 @@ class OrthoProjector(OrthoSlicer):
                 ax._add_lines(line_coords, adjacency_matrix_values, edge_cmap,
                               vmin=edge_vmin, vmax=edge_vmax,
                               **edge_kwargs)
+
+        if colorbar:
+            self._colorbar = colorbar
+            self._show_colorbar(ax.cmap, ax.norm, threshold=edge_threshold)
 
         plt.draw_if_interactive()
 
@@ -1275,45 +1339,3 @@ def get_slicer(display_mode):
 def get_projector(display_mode):
     "Internal function to retrieve a projector"
     return get_create_display_fun(display_mode, PROJECTORS)
-
-
-def check_threshold(threshold, data, percentile_calculate, name):
-    """ Checks if the given threshold is in correct format
-
-    Parameters
-    ----------
-    threshold: a real value or a percentage in string.
-        if threshold is a percentage expressed in a string
-        it must finish with a percent sign like "99.7%".
-    data: ndarray
-        an array of the input masked data
-    percentile_calculate: a percentile function
-        define the name of a specific percentile function
-        to calculate the score on the data.
-
-    Returns
-    -------
-    value: a number
-        returns the score of the percentile on the data or
-        returns threshold as it is if input threshold is not
-        a percentile.
-    """
-    if isinstance(threshold, _basestring):
-        message = ('If "{0}" is given as string it '
-                   'should be a number followed by the percent '
-                   'sign, e.g. "25.3%"').format(name)
-        if not threshold.endswith('%'):
-            raise ValueError(message)
-
-        try:
-            percentile = float(threshold[:-1])
-        except ValueError as exc:
-            exc.args += (message, )
-            raise
-
-        threshold = percentile_calculate(data, percentile)
-
-    elif not isinstance(threshold, numbers.Real):
-        raise TypeError('%s should be either a number '
-                        'or a string finishing with a percent sign' % (name, ))
-    return threshold

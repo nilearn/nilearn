@@ -1,6 +1,7 @@
 """
 Test the resampling code.
 """
+import os
 import copy
 import math
 
@@ -13,8 +14,9 @@ import numpy as np
 
 from nibabel import Nifti1Image
 
-from nilearn.image.resampling import resample_img, BoundingBoxError, \
-        reorder_img, from_matrix_vector, coord_transform
+from nilearn.image.resampling import resample_img, resample_to_img, reorder_img
+from nilearn.image.resampling import from_matrix_vector, coord_transform
+from nilearn.image.resampling import BoundingBoxError
 from nilearn._utils import testing
 
 
@@ -420,8 +422,29 @@ def test_resampling_nan():
         target_affine=np.eye(4))
 
     resampled_data = resampled_img.get_data()
-    np.testing.assert_allclose(10,
-                resampled_data[np.isfinite(resampled_data)])
+    np.testing.assert_allclose(10, resampled_data[np.isfinite(resampled_data)])
+
+
+def test_resample_to_img():
+    # Testing resample to img function
+    rand_gen = np.random.RandomState(0)
+    shape = (6, 3, 6, 3)
+    data = rand_gen.random_sample(shape)
+
+    source_affine = np.eye(4)
+    source_img = Nifti1Image(data, source_affine)
+
+    target_affine = 2 * source_affine
+    target_img = Nifti1Image(data, target_affine)
+
+
+    result_img = resample_to_img(source_img, target_img,
+                                 interpolation='nearest')
+
+    downsampled = data[::2, ::2, ::2, ...]
+    x, y, z = downsampled.shape[:3]
+    np.testing.assert_almost_equal(downsampled,
+                                   result_img.get_data()[:x, :y, :z, ...])
 
 
 def test_reorder_img():
@@ -545,6 +568,9 @@ def test_coord_transform_trivial():
 
 
 def test_resample_img_segmentation_fault():
+    if os.environ.get('APPVEYOR') == 'True':
+        raise SkipTest('This test too slow (7-8 minutes) on AppVeyor')
+
     # see https://github.com/nilearn/nilearn/issues/346
     shape_in = (64, 64, 64)
     aff_in = np.diag([2., 2., 2., 1.])

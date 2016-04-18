@@ -63,14 +63,11 @@ def readlinkabs(link):
     return os.path.join(os.path.dirname(link), path)
 
 
-def _chunk_report_(cur_chunk_size, bytes_so_far, total_size, initial_size, t0):
+def _chunk_report_(bytes_so_far, total_size, initial_size, t0):
     """Show downloading percentage.
 
     Parameters
     ----------
-    cur_chunk_size: int
-        Number of bytes downloaded on current iteration (0=>end of download)
-
     bytes_so_far: int
         Number of downloaded bytes
 
@@ -103,7 +100,7 @@ def _chunk_report_(cur_chunk_size, bytes_so_far, total_size, initial_size, t0):
         # Trailing whitespace is to erase extra char when message length
         # varies
         sys.stderr.write(
-            "\rDownloaded %d of %d bytes (%0.2f%%, %s remaining)"
+            "\rDownloaded %d of %d bytes (%.1f%%, %s remaining)"
             % (bytes_so_far, total_size, total_percent * 100,
                _format_time(time_remaining)))
 
@@ -153,13 +150,18 @@ def _chunk_read_(response, local_file, chunk_size=8192, report_hook=None,
         total_size = None
     bytes_so_far = initial_size
 
-    t0 = time.time()
+    t0 = time_last_display = time.time()
     while True:
         chunk = response.read(chunk_size)
         bytes_so_far += len(chunk)
-        if report_hook:
-            _chunk_report_(len(chunk), bytes_so_far, total_size, initial_size, t0)
-
+        time_last_read = time.time()
+        if (report_hook and
+                # Refresh report every half second or when download is
+                # finished.
+                (time_last_read > time_last_display + 0.5 or not chunk)):
+            _chunk_report_(bytes_so_far,
+                           total_size, initial_size, t0)
+            time_last_display = time_last_read
         if chunk:
             local_file.write(chunk)
         else:
@@ -208,15 +210,17 @@ def _get_dataset_dir(dataset_name, data_dir=None, default_paths=None,
     # dataset name to the path.
     paths = []
 
-    # Search given environment variables
+    # Check data_dir which force storage in a specific location
+    if data_dir is not None:
+        paths.extend([(d, False) for d in data_dir.split(os.pathsep)])
+
+    # Search possible system paths
     if default_paths is not None:
         for default_path in default_paths:
             paths.extend([(d, True) for d in default_path.split(os.pathsep)])
 
-    # Check data_dir which force storage in a specific location
-    if data_dir is not None:
-        paths.extend([(d, False) for d in data_dir.split(os.pathsep)])
-    else:
+    # If data_dir has not been specified, then we crawl default locations
+    if data_dir is None:
         global_data = os.getenv('NILEARN_SHARED_DATA')
         if global_data is not None:
             paths.extend([(d, False) for d in global_data.split(os.pathsep)])
@@ -531,7 +535,8 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False,
         dt = time.time() - t0
         if verbose > 0:
             # Complete the reporting hook
-            sys.stderr.write(' ...done. (%i seconds, %i min)\n' % (dt, dt // 60))
+            sys.stderr.write(' ...done. ({0:.0f} seconds, {1:.0f} min)\n'
+                             .format(dt, dt // 60))
     except (_urllib.error.HTTPError, _urllib.error.URLError) as e:
         if 'Error while fetching' not in str(e):
             # For some odd reason, the error message gets doubled up

@@ -732,6 +732,31 @@ div.warning ul, div.warning ol {
     padding: 0;
 }
 
+div.sidebar {
+    border-radius: 6px;
+    min-width: 200pt;
+    margin-right: 2px;
+    margin: 0px 0px 0.5em 1em;
+    border: 1px solid #DDB;
+    padding: 7px 7px 0px;
+    background-color: #FFE;
+    width: 40%;
+    float: right;
+}
+
+div.sidebar p.first {
+    font-weight: bold;
+}
+
+@media (max-width: 800px) {
+    div.sidebar {
+        margin-top: 1em;
+        margin-left: auto;
+        margin-right: auto;
+        float: none;
+    }
+}
+
 div.versioninfo {
     margin: 1em 0 0 0;
     border: 1px solid #ccc;
@@ -1066,6 +1091,11 @@ div.max-height pre {
 
 div.body p {
     margin: 1.2em 0 .5em 0;
+}
+
+/* More vertical space after a code block */
+div.highlight-python + p {
+    margin-top: 1.5em;
 }
 
 .float-right {

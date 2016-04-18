@@ -172,7 +172,7 @@ class CacheMixin(object):
     parameter to self._cache(). See _cache() documentation for details.
     """
     def _cache(self, func, func_memory_level=1, **kwargs):
-        """ Return a joblib.Memory object.
+        """Return a joblib.Memory object.
 
         The memory_level determines the level above which the wrapped
         function output is cached. By specifying a numeric value for
@@ -196,6 +196,7 @@ class CacheMixin(object):
             a no-op, if the requested level is lower than the value given
             to _cache()). For consistency, a joblib.Memory object is always
             returned.
+
         """
 
         verbose = getattr(self, 'verbose', 0)
@@ -207,17 +208,47 @@ class CacheMixin(object):
         if not hasattr(self, "memory"):
             self.memory = Memory(cachedir=None, verbose=verbose)
         if isinstance(self.memory, _basestring):
-            self.memory = Memory(cachedir=self.memory, verbose=verbose)
+            cache_dir = self.memory
+            if nilearn.EXPAND_PATH_WILDCARDS:
+                cache_dir = os.path.expanduser(cache_dir)
+
+            # Perform some verifications on given path.
+            split_cache_dir = os.path.split(cache_dir)
+            if (len(split_cache_dir) > 1 and
+                    (not os.path.exists(split_cache_dir[0]) and
+                     split_cache_dir[0] != '')):
+                if (not nilearn.EXPAND_PATH_WILDCARDS and
+                        cache_dir.startswith("~")):
+                    # Maybe the user want to enable expanded user path.
+                    error_msg = ("Given cache path parent directory doesn't "
+                                 "exists, you gave '{0}'. Enabling "
+                                 "nilearn.EXPAND_PATH_WILDCARDS could solve "
+                                 "this issue.".format(split_cache_dir[0]))
+                elif self.memory.startswith("~"):
+                    # Path built on top of expanded user path doesn't exist.
+                    error_msg = ("Given cache path parent directory doesn't "
+                                 "exists, you gave '{0}' which was expanded "
+                                 "as '{1}' but doesn't exist either. Use "
+                                 "nilearn.EXPAND_PATH_WILDCARDS to deactivate "
+                                 "auto expand user path (~) behavior."
+                                 .format(split_cache_dir[0],
+                                         os.path.dirname(self.memory)))
+                else:
+                    # The given cache base path doesn't exist.
+                    error_msg = ("Given cache path parent directory doesn't "
+                                 "exists, you gave '{0}'."
+                                 .format(split_cache_dir[0]))
+                raise ValueError(error_msg)
+
+            self.memory = Memory(cachedir=cache_dir, verbose=verbose)
 
         # If cache level is 0 but a memory object has been provided, set
         # memory_level to 1 with a warning.
-        if self.memory_level == 0:
-            if (isinstance(self.memory, _basestring)
-                    or self.memory.cachedir is not None):
-                warnings.warn("memory_level is currently set to 0 but "
-                              "a Memory object has been provided. "
-                              "Setting memory_level to 1.")
-                self.memory_level = 1
+        if self.memory_level == 0 and self.memory.cachedir is not None:
+            warnings.warn("memory_level is currently set to 0 but "
+                          "a Memory object has been provided. "
+                          "Setting memory_level to 1.")
+            self.memory_level = 1
 
         return cache(func, self.memory, func_memory_level=func_memory_level,
                      memory_level=self.memory_level, **kwargs)

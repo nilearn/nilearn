@@ -70,4 +70,4 @@ except ImportError:
     from .scikit_learn_gridsearch import ParameterGrid
 
 
-
+__all__ = ['f_regression', 'atleast2d_or_csr', 'roc_auc_score']

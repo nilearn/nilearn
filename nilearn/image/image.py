@@ -7,11 +7,11 @@ See also nilearn.signal.
 # License: simplified BSD
 
 import collections
-import operator
 from distutils.version import LooseVersion
 
 import numpy as np
 from scipy import ndimage
+from scipy.stats import scoreatpercentile
 import copy
 import nibabel
 from sklearn.externals.joblib import Parallel, delayed
@@ -19,9 +19,10 @@ from sklearn.externals.joblib import Parallel, delayed
 from .. import signal
 from .._utils import (check_niimg_4d, check_niimg_3d, check_niimg, as_ndarray,
                       _repr_niimgs)
-from .._utils.niimg_conversions import _index_img
+from .._utils.niimg_conversions import _index_img, _check_same_fov
 from .._utils.niimg import _safe_get_data
 from .._utils.compat import _basestring
+from .._utils.param_validation import check_threshold
 
 
 def high_variance_confounds(imgs, n_confounds=5, percentile=2.,
@@ -32,11 +33,11 @@ def high_variance_confounds(imgs, n_confounds=5, percentile=2.,
         Parameters
         ==========
         imgs: Niimg-like object
-            See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+            See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
             4D image.
 
         mask_img: Niimg-like object
-            See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+            See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
             If provided, confounds are extracted from voxels inside the mask.
             If not provided, all voxels are used.
 
@@ -222,7 +223,7 @@ def smooth_img(imgs, fwhm):
     Parameters
     ==========
     imgs: Niimg-like object or iterable of Niimg-like objects
-        See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+        See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
         Image(s) to smooth.
 
     fwhm: scalar, numpy.ndarray, 'fast' or None
@@ -274,7 +275,7 @@ def _crop_img_to(img, slices, copy=True):
     Parameters
     ==========
     img: Niimg-like object
-        See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+        See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
         Img to be cropped. If slices has less entries than img
         has dimensions, the slices will be applied to the first len(slices)
         dimensions
@@ -291,7 +292,7 @@ def _crop_img_to(img, slices, copy=True):
     Returns
     =======
     cropped_img: Niimg-like object
-        See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+        See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
         Cropped version of the input image
     """
 
@@ -327,7 +328,7 @@ def crop_img(img, rtol=1e-8, copy=True):
     Parameters
     ==========
     img: Niimg-like object
-        See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+        See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
         img to be cropped.
 
     rtol: float
@@ -410,7 +411,7 @@ def mean_img(imgs, target_affine=None, target_shape=None,
     ==========
 
     imgs: Niimg-like object or iterable of Niimg-like objects
-        See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+        See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
         Images to mean.
 
     target_affine: numpy.ndarray, optional
@@ -434,6 +435,10 @@ def mean_img(imgs, target_affine=None, target_shape=None,
     =======
     mean: nibabel.Nifti1Image
         mean image
+
+    See Also
+    ========
+    nilearn.image.math_img : For more general operations on images
 
     """
     if (isinstance(imgs, _basestring) or
@@ -475,7 +480,7 @@ def swap_img_hemispheres(img):
     Parameters
     ----------
     img: Niimg-like object
-        See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+        See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
         Images to swap.
 
     Returns
@@ -516,7 +521,7 @@ def index_img(imgs, index):
     Parameters
     ----------
     imgs: 4D Niimg-like object
-        See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+        See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
 
     index: Any type compatible with numpy array indexing
         Used for indexing the 4D data array in the fourth dimension.
@@ -525,6 +530,27 @@ def index_img(imgs, index):
     -------
     output: nibabel.Nifti1Image
 
+    See Also
+    --------
+    nilearn.image.concat_imgs
+    nilearn.image.iter_img
+
+    Examples
+    --------
+    First we concatenate two mni152 images to create a 4D-image::
+
+     >>> from nilearn import datasets
+     >>> from nilearn.image import concat_imgs, index_img
+     >>> joint_mni_image = concat_imgs([datasets.load_mni152_template(),
+     ...                                datasets.load_mni152_template()])
+     >>> print(joint_mni_image.shape)
+     (91, 109, 91, 2)
+
+    We can now select one slice from the last dimension of this 4D-image::
+
+     >>> single_mni_image = index_img(joint_mni_image, 1)
+     >>> print(single_mni_image.shape)
+     (91, 109, 91)
     """
     imgs = check_niimg_4d(imgs)
     return _index_img(imgs, index)
@@ -536,11 +562,16 @@ def iter_img(imgs):
     Parameters
     ----------
     imgs: 4D Niimg-like object
-        See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+        See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
 
     Returns
     -------
     output: iterator of 3D nibabel.Nifti1Image
+
+    See Also
+    --------
+    nilearn.image.index_img
+
     """
     return check_niimg_4d(imgs, return_iterator=True)
 
@@ -569,15 +600,18 @@ def new_img_like(ref_niimg, data, affine=None, copy_header=False):
         A loaded image with the same type (and header) as the reference image.
     """
     # Hand-written loading code to avoid too much memory consumption
+    orig_ref_niimg = ref_niimg
+    if (not isinstance(ref_niimg, _basestring)
+            and not hasattr(ref_niimg, 'get_data')
+            and hasattr(ref_niimg, '__iter__')):
+        ref_niimg = ref_niimg[0]
     if not (hasattr(ref_niimg, 'get_data')
               and hasattr(ref_niimg,'get_affine')):
         if isinstance(ref_niimg, _basestring):
             ref_niimg = nibabel.load(ref_niimg)
-        elif operator.isSequenceType(ref_niimg):
-            ref_niimg = nibabel.load(ref_niimg[0])
         else:
             raise TypeError(('The reference image should be a niimg, %r '
-                            'was passed') % ref_niimg )
+                            'was passed') % orig_ref_niimg )
 
     if affine is None:
         affine = ref_niimg.get_affine()
@@ -589,10 +623,158 @@ def new_img_like(ref_niimg, data, affine=None, copy_header=False):
         data = as_ndarray(data, dtype=default_dtype)
     header = None
     if copy_header:
-        header = copy.copy(ref_niimg.get_header())
+        header = copy.deepcopy(ref_niimg.get_header())
         header['scl_slope'] = 0.
         header['scl_inter'] = 0.
         header['glmax'] = 0.
         header['cal_max'] = np.max(data) if data.size > 0 else 0.
         header['cal_max'] = np.min(data) if data.size > 0 else 0.
     return ref_niimg.__class__(data, affine, header=header)
+
+
+def threshold_img(img, threshold, mask_img=None):
+    """ Threshold the given input image, mostly statistical or atlas images.
+
+    Thresholding can be done based on direct image intensities or selection
+    threshold with given percentile.
+
+    .. versionadded:: 0.2
+
+    Parameters
+    ----------
+    img: a 3D/4D Niimg-like object
+        Image contains of statistical or atlas maps which should be thresholded.
+
+    threshold: float or str
+        If float, we threshold the image based on image intensities meaning
+        voxels which have intensities greater than this value will be kept.
+        The given value should be within the range of minimum and
+        maximum intensity of the input image.
+        If string, it should finish with percent sign e.g. "80%" and we threshold
+        based on the score obtained using this percentile on the image data. The
+        voxels which have intensities greater than this score will be kept.
+        The given string should be within the range of "0%" to "100%".
+
+    mask_img: Niimg-like object, default None, optional
+        Mask image applied to mask the input data.
+        If None, no masking will be applied.
+
+    Returns
+    -------
+    threshold_img: Nifti1Image
+        thresholded image of the given input image.
+    """
+    from . import resampling
+    from .. import masking
+
+    img = check_niimg(img)
+    img_data = img.get_data()
+    affine = img.get_affine()
+
+    img_data = np.nan_to_num(img_data)
+
+    if mask_img is not None:
+        if not _check_same_fov(img, mask_img):
+            mask_img = resampling.resample_img(mask_img, target_affine=affine,
+                                               target_shape=img.shape[:3],
+                                               interpolation="nearest")
+
+        mask_data, _ = masking._load_mask_img(mask_img)
+        # Set as 0 for the values which are outside of the mask
+        img_data[mask_data == 0.] = 0.
+
+    if threshold is None:
+        raise ValueError("The input parameter 'threshold' is empty. "
+                         "Please give either a float value or a string as e.g. '90%'.")
+    else:
+        cutoff_threshold = check_threshold(threshold, img_data,
+                                           percentile_func=scoreatpercentile,
+                                           name='threshold')
+
+    img_data[np.abs(img_data) < cutoff_threshold] = 0.
+    threshold_img = new_img_like(img, img_data, affine)
+
+    return threshold_img
+
+
+def math_img(formula, **imgs):
+    """Interpret a numpy based string formula using niimg in named parameters.
+
+    .. versionadded:: 0.2.3
+
+    Parameters
+    ----------
+    formula: str
+        The mathematical formula to apply to image internal data. It can use
+        numpy imported as 'np'.
+    imgs: images (Nifti1Image or file names)
+        Keyword arguments corresponding to the variables in the formula as
+        Nifti images. All input images should have the same geometry (shape,
+        affine).
+
+    Returns
+    -------
+    return_img: Nifti1Image
+        Result of the formula as a Nifti image. Note that the dimension of the
+        result image can be smaller than the input image. The affine is the
+        same as the input image.
+
+    See Also
+    --------
+    nilearn.image.mean_img : To simply compute the mean of multiple images
+
+    Examples
+    --------
+    Let's load an image using nilearn datasets module::
+
+     >>> from nilearn import datasets
+     >>> anatomical_image = datasets.load_mni152_template()
+
+    Now we can use any numpy function on this image::
+
+     >>> from nilearn.image import math_img
+     >>> log_img = math_img("np.log(img)", img=anatomical_image)
+
+    We can also apply mathematical operations on several images::
+
+     >>> result_img = math_img("img1 + img2",
+     ...                       img1=anatomical_image, img2=log_img)
+
+    Notes
+    -----
+
+    This function is the Python equivalent of ImCal in SPM or fslmaths
+    in FSL.
+
+    """
+    try:
+        # Check that input images are valid niimg and have a compatible shape
+        # and affine.
+        niimgs = []
+        for image in imgs.values():
+            niimgs.append(check_niimg(image))
+        _check_same_fov(*niimgs, raise_error=True)
+    except Exception as exc:
+        exc.args = (("Input images cannot be compared, you provided '{0}',"
+                     .format(imgs.values()),) + exc.args)
+        raise
+
+    # Computing input data as a dictionary of numpy arrays. Keep a reference
+    # niimg for building the result as a new niimg.
+    niimg = None
+    data_dict = {}
+    for key, img in imgs.items():
+        niimg = check_niimg(img)
+        data_dict[key] = _safe_get_data(niimg)
+
+    # Add a reference to numpy in the kwargs of eval so that numpy functions
+    # can be called from there.
+    data_dict['np'] = np
+    try:
+        result = eval(formula, data_dict)
+    except Exception as exc:
+        exc.args = (("Input formula couldn't be processed, you provided '{0}',"
+                     .format(formula),) + exc.args)
+        raise
+
+    return new_img_like(niimg, result, niimg.get_affine())
