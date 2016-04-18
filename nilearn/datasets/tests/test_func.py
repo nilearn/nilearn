@@ -10,7 +10,7 @@ import json
 import nibabel
 from sklearn.utils import check_random_state
 
-from nose import with_setup
+from nose import with_setup, SkipTest
 from nose.tools import (assert_true, assert_equal, assert_raises,
                         assert_not_equal)
 from . import test_utils as tst
@@ -355,7 +355,7 @@ def test__load_mixed_gambles():
         assert_equal(len(zmaps), len(gain))
 
 
-@with_setup(setup_mock)
+@with_setup(setup_mock, teardown_mock)
 @with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
 def test_fetch_mixed_gambles():
     local_url = "file://" + os.path.join(tst.datadir,
@@ -513,3 +513,59 @@ def test_fetch_cobre():
                                          data_dir=tst.tmpdir)
     assert_equal(len(test_150_subjects.func), 146)
     os.remove(dummy)
+
+
+@with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
+def test_fetch_neurovault():
+    # Setup: locally cache collections.
+    try:
+        # Cache all
+        dataset = func.fetch_neurovault(
+            collection_ids=[835],
+            image_filters=[lambda img: False],
+            overwrite=True, verbose=0)  # will fail if offline
+    except (_urllib.error.URLError, _urllib.error.HTTPError) as ue:
+        if ue.reason[0] != 8:  # connection error
+            raise
+        raise SkipTest("Cannot test neurovault while offline.")
+    else:
+        assert_equal(len(dataset['collections']), 1)
+        assert_true(835 in dataset['collections'], 1)
+        assert_equal(len(dataset['images']), 0)
+        assert_equal(len(dataset['func_files']), 0)
+
+    # Download a single image for a collection with a DOI
+    dataset = func.fetch_neurovault(
+        max_images=1,
+        exclude_unpublished=True,
+        image_type='statistic_map',
+        map_types=["F map"],
+        verbose=0)
+    assert_true(len(dataset['collections']) > 0)
+    assert_true(np.all([col.get('DOI') is not None
+                        for col in dataset['collections'].values()]))
+    assert_equal(len(dataset['images']), 1)
+    assert_equal(dataset['images'][0]["map_type"], "F map")
+    assert_equal(len(dataset['func_files']), 1)
+
+    # Get another image, with same filters, but exclude the previous
+    # image ID.
+    im_id = dataset['images'][0]['id']
+    dataset = func.fetch_neurovault(
+        max_images=1,
+        exclude_unpublished=True,
+        image_type='statistic_map',
+        map_types=["F map"],
+        image_ids=[-im_id],
+        verbose=0)
+    assert_true(len(dataset['collections']) > 0)
+    assert_true(np.all([col.get('DOI') is not None
+                        for col in dataset['collections'].values()]))
+    assert_equal(len(dataset['images']), 1)
+    assert_not_equal(dataset['images'][0]['id'], im_id)
+    assert_equal(dataset['images'][0]["map_type"], "F map")
+    assert_equal(len(dataset['func_files']), 1)
+
+    # Overwrite test would be nice, but downloading an image twice sounds...
+    #   tough.
+

@@ -8,12 +8,14 @@ import hashlib
 if sys.version_info[0] == 3:
     import pickle
     import io
+    import http
     import urllib
 
     _basestring = str
     cPickle = pickle
     StringIO = io.StringIO
     BytesIO = io.BytesIO
+    _http = http
     _urllib = urllib
     izip = zip
 
@@ -24,6 +26,7 @@ if sys.version_info[0] == 3:
 else:
     import cPickle
     import StringIO
+    import httplib
     import urllib
     import urllib2
     import urlparse
@@ -53,6 +56,9 @@ else:
         request = module_lookup
         error = module_lookup
         parse = module_lookup
+
+    class _http():
+        client = httplib
 
     def md5_hash(string):
         m = hashlib.md5()

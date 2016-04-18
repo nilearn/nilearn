@@ -85,6 +85,7 @@ uses.
    fetch_megatrawls_netmats
    fetch_cobre
    load_mni152_template
+   fetch_neurovault
 
 .. _decoding_ref:
 

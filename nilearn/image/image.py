@@ -19,6 +19,7 @@ from sklearn.externals.joblib import Parallel, delayed
 from .. import signal
 from .._utils import (check_niimg_4d, check_niimg_3d, check_niimg, as_ndarray,
                       _repr_niimgs)
+from .._utils.exceptions import DimensionError
 from .._utils.niimg_conversions import _index_img, _check_same_fov
 from .._utils.niimg import _safe_get_data
 from .._utils.compat import _basestring
@@ -561,7 +562,7 @@ def iter_img(imgs):
 
     Parameters
     ----------
-    imgs: 4D Niimg-like object
+    imgs: 3D or 4D Niimg-like object
         See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
 
     Returns
@@ -573,7 +574,12 @@ def iter_img(imgs):
     nilearn.image.index_img
 
     """
-    return check_niimg_4d(imgs, return_iterator=True)
+
+    try:
+        return check_niimg_4d(imgs, return_iterator=True)
+    except DimensionError:
+        # Wrap a 3D image in a dummy list.
+        return check_niimg_4d([imgs], return_iterator=True)
 
 
 def new_img_like(ref_niimg, data, affine=None, copy_header=False):
