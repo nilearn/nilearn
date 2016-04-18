@@ -144,9 +144,30 @@ print("seed-based correlation: min = %.3f; max = %.3f" % (
 
 
 ##########################################################################
+# Plotting the seed-based correlation map
+# ---------------------------------------
+# We can now plot the seed-based correlation map and perform thresholding
+# to only show values more extreme than +/- 0.3. Before displaying,
+# we need to create an in memory Nifti image object.
+# Furthermore, we can display the location of the seed with a sphere and
+# set the cross to the center of the seed region of interest.
+from nilearn import plotting
+seed_based_correlations_img = brain_masker.inverse_transform(
+    seed_based_correlations.T)
+display = plotting.plot_stat_map(seed_based_correlations_img,
+                                 threshold=0.3, vmax=1,
+                                 cut_coords=pcc_coords[0],
+                                 title="Seed-based correlation (PCC seed)")
+display.add_markers(marker_coords=pcc_coords, marker_color='g',
+                    marker_size=300)
+# At last, we save the plot as pdf.
+display.savefig('pcc_based_correlation.pdf')
+
+
+##########################################################################
 # Fisher-z transformation and save nifti
 # --------------------------------------
-# Now we can Fisher-z transform the data to achieve a normal distribution.
+# Finally, we can Fisher-z transform the data to achieve a normal distribution.
 # The transformed array can now have values more extreme than +/- 1.
 seed_based_correlations_fisher_z = np.arctanh(seed_based_correlations)
 print("seed-based correlation Fisher-z transformed: min = %.3f; max = %.3f" % (
@@ -157,23 +178,5 @@ print("seed-based correlation Fisher-z transformed: min = %.3f; max = %.3f" % (
 # object, that we can save.
 seed_based_correlations_fisher_z_img = brain_masker.inverse_transform(
     seed_based_correlations_fisher_z.T)
-seed_based_correlations_fisher_z_img.to_filename('sbc_z.nii.gz')
-
-
-##########################################################################
-# Plotting the seed-based correlation map
-# ---------------------------------------
-# We can also plot this image and perform thresholding to only show values
-# more extreme than +/- 0.3. Furthermore, we can display the location of the
-# seed with a sphere and set the cross to the center of the seed region of
-# interest.
-from nilearn import plotting
-
-display = plotting.plot_stat_map(seed_based_correlations_fisher_z_img,
-                                 threshold=0.3, vmax=1.3,
-                                 cut_coords=pcc_coords[0],
-                                 title="SBC (PCC seed; Fisher-z)")
-display.add_markers(marker_coords=pcc_coords, marker_color='g',
-                    marker_size=300)
-# At last, we save the plot as pdf.
-display.savefig('sbc_z.pdf')
+seed_based_correlations_fisher_z_img.to_filename(
+    'pcc_based_correlation_z.nii.gz')
