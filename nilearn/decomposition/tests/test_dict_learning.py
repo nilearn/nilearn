@@ -9,8 +9,10 @@ from nilearn.input_data import NiftiMasker
 
 def test_dict_learning():
     data, mask_img, components, rng = _make_canica_test_data(n_subjects=8)
-    mask = NiftiMasker(mask_img=mask_img).fit()
-    dict_init = mask.inverse_transform(components)
+    masker = NiftiMasker(mask_img=mask_img).fit()
+    mask = mask_img.get_data() != 0
+    flat_mask = mask.ravel()
+    dict_init = masker.inverse_transform(components[:, flat_mask])
     dict_learning = DictLearning(n_components=4, random_state=0,
                                  dict_init=dict_init,
                                  mask=mask_img,
@@ -26,20 +28,22 @@ def test_dict_learning():
         estimator.fit(data)
         maps[estimator] = estimator.masker_. \
             inverse_transform(estimator.components_).get_data()
-        maps[estimator] = np.reshape(np.rollaxis(maps[estimator], 3, 0),
-                                     (4, 400))
+        maps[estimator] = np.reshape(
+                        np.rollaxis(maps[estimator], 3, 0)[:, mask],
+                        (4, flat_mask.sum()))
 
+    masked_components = components[:, flat_mask]
     for this_dict_learning in [dict_learning]:
         these_maps = maps[this_dict_learning]
-        S = np.sqrt(np.sum(components ** 2, axis=1))
+        S = np.sqrt(np.sum(masked_components ** 2, axis=1))
         S[S == 0] = 1
-        components /= S[:, np.newaxis]
+        masked_components /= S[:, np.newaxis]
 
         S = np.sqrt(np.sum(these_maps ** 2, axis=1))
         S[S == 0] = 1
         these_maps /= S[:, np.newaxis]
 
-        K = np.abs(components.dot(these_maps.T))
+        K = np.abs(masked_components.dot(these_maps.T))
         recovered_maps = np.sum(K > 0.9)
         assert(recovered_maps >= 2)
 
