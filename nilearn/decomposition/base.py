@@ -18,6 +18,12 @@ from .._utils.niimg import _safe_get_data
 from ..input_data import NiftiMapsMasker
 from ..input_data.masker_validation import check_embedded_nifti_masker
 
+try:
+    # Python 3 compat
+    _basestring = basestring
+except NameError:
+    _basestring = str
+
 
 def mask_and_reduce(masker, imgs,
                     confounds=None,
@@ -299,7 +305,7 @@ class BaseDecomposition(BaseEstimator, CacheMixin):
             the affine is considered the same for all.
 
         """
-        if not hasattr(imgs, '__iter__'):
+        if isinstance(imgs, _basestring) or not hasattr(imgs, '__iter__'):
             # these classes are meant for list of 4D images
             # (multi-subject), we want it to work also on a single
             # subject, so we hack it.
