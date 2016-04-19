@@ -2,8 +2,8 @@
 Plotting tools in nilearn
 ==========================
 
-Nilearn comes with a set of plotting functions for an easy visualization of
-Nifti-like images types such as statistical maps overlayed on anatomical
+Nilearn comes with a set of plotting functions for easy visualization of
+Nifti-like images such as statistical maps overlayed on anatomical
 images or overlayed on glass brain image, anatomical images, functional/EPI
 images, region specific mask images.
 
@@ -52,7 +52,7 @@ plotting.plot_stat_map(localizer_tmap_filename, bg_img=localizer_anat_filename,
 ###############################################################################
 # Plotting statistical maps on glass brain image using function `plot_glass_brain`
 
-# Now, t-map image is overlayed on glass brain image as fixed background
+# Now, the t-map image is overlayed on glass brain image as fixed background
 plotting.plot_glass_brain(localizer_tmap_filename, title='plot_glass_brain',
                           threshold=3)
 
@@ -77,7 +77,7 @@ plotting.plot_roi(haxby_mask_filename, bg_img=haxby_anat_filename,
 # Import image processing tool
 from nilearn import image
 
-# compute mean of the functional image from haxby dataset in t dimension.
+# Compute the mean functional image from haxby dataset in t dimension.
 # Basically reducing the functional image from 4D to 3D
 mean_haxby_img = image.mean_img(haxby_func_filename)
 
