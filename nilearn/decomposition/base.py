@@ -299,12 +299,16 @@ class BaseDecomposition(BaseEstimator, CacheMixin):
             the affine is considered the same for all.
 
         """
-        if hasattr(imgs, '__iter__') and len(imgs) == 0:
+        if not hasattr(imgs, '__iter__'):
+            # these classes are meant for list of 4D images
+            # (multi-subject), we want it to work also on a single
+            # subject, so we hack it.
+            imgs = [imgs, ]
+        if len(imgs) == 0:
             # Common error that arises from a null glob. Capture
             # it early and raise a helpful message
             raise ValueError('Need one or more Niimg-like objects as input, '
                              'an empty list was given.')
-
         self.masker_ = check_embedded_nifti_masker(self)
 
         # Avoid warning with imgs != None
