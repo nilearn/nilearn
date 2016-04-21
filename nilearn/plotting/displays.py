@@ -500,7 +500,7 @@ class BaseSlicer(object):
             Parameters
             -----------
             img: Niimg-like object
-                See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
+                See http://nilearn.github.io/manipulating_images/manipulating_images.html#niimg.
                 If it is a masked array, only the non-masked part will be
                 plotted.
             threshold : a number, None
@@ -537,7 +537,7 @@ class BaseSlicer(object):
             Parameters
             -----------
             img: Niimg-like object
-                See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
+                See http://nilearn.github.io/manipulating_images/manipulating_images.html#niimg.
                 Provides image to plot.
             filled: boolean, optional
                 If filled=True, contours are displayed with color fillings.

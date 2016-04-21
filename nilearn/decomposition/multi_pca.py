@@ -88,7 +88,7 @@ class MultiPCA(BaseDecomposition, TransformerMixin):
         of `mask` and other NiftiMasker related parameters as initialization.
 
     `mask_img_` : Niimg-like object
-        See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
+        See http://nilearn.github.io/manipulating_images/manipulating_images.html#niimg.
         The mask of the data. If no mask was given at masker creation, contains
         the automatically computed mask.
 
@@ -137,7 +137,7 @@ class MultiPCA(BaseDecomposition, TransformerMixin):
         Parameters
         ----------
         imgs: list of Niimg-like objects
-            See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
+            See http://nilearn.github.io/manipulating_images/manipulating_images.html#niimg.
             Data on which the PCA must be calculated. If this is a list,
             the affine is considered the same for all.
 
