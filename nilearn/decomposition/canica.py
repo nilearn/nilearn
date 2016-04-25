@@ -76,6 +76,11 @@ class CanICA(MultiPCA):
         This parameter is passed to signal.clean. Please see the related
         documentation for details
 
+    incremental_group_pca: bool, optional
+        Whether to use an IncrementalPCA for the group PCA. This will
+        reduce memory usage possibly at the expense of precision. This
+        feature is only supported for scikit-learn versions 0.16 onwards.
+
     memory: instance of joblib.Memory or string
         Used to cache the masking process.
         By default, no caching is done. If a string is given, it is the
@@ -111,6 +116,7 @@ class CanICA(MultiPCA):
                  low_pass=None, high_pass=None, t_r=None,
                  target_affine=None, target_shape=None,
                  mask_strategy='epi', mask_args=None,
+                 incremental_group_pca=False,
                  memory=Memory(cachedir=None), memory_level=0,
                  n_jobs=1, verbose=0
                  ):
@@ -125,6 +131,7 @@ class CanICA(MultiPCA):
             low_pass=low_pass, high_pass=high_pass, t_r=t_r,
             target_affine=target_affine, target_shape=target_shape,
             mask_strategy=mask_strategy, mask_args=mask_args,
+            incremental_group_pca=incremental_group_pca,
             memory=memory, memory_level=memory_level,
             n_jobs=n_jobs, verbose=verbose)
         self.threshold = threshold
