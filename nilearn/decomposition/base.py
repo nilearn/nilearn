@@ -381,7 +381,7 @@ class BaseDecomposition(BaseEstimator, CacheMixin):
         if not hasattr(self, 'components_'):
             ValueError('Object has no components_ attribute. This is either '
                        'because fit has not been called or because'
-                       '_DecompositionEstimator has direcly been used')
+                       '_DecompositionEstimator has directly been used')
         self._check_components_()
         components_img_ = self.masker_.inverse_transform(self.components_)
         nifti_maps_masker = NiftiMapsMasker(

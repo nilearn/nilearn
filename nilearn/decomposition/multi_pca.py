@@ -159,7 +159,7 @@ class MultiPCA(BaseDecomposition, TransformerMixin):
         return self
 
     def _raw_fit(self, data):
-        """Helper function that direcly process unmasked data"""
+        """Helper function that directly process unmasked data"""
         if self.do_cca:
             S = np.sqrt(np.sum(data ** 2, axis=1))
             S[S == 0] = 1
