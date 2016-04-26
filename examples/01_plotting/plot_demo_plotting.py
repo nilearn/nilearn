@@ -3,20 +3,19 @@ Plotting tools in nilearn
 ==========================
 
 Nilearn comes with a set of plotting functions for easy visualization of
-Nifti-like images such as statistical maps overlayed on anatomical
-images or overlayed on glass brain image, anatomical images, functional/EPI
-images, region specific mask images.
+Nifti-like images such as statistical maps mapped onto anatomical images
+or onto glass brain representation, anatomical images, functional/EPI images,
+region specific mask images.
 
 See :ref:`plotting` for more details.
 """
 
 ###############################################################################
-# First, we retrieve the data from nilearn: haxby dataset to have EPI images
-# and masks, and localizer dataset to have contrast maps
+# First, we retrieve from nilearn provided (general-purpose) datasets
 
-# Import datasets module
 from nilearn import datasets
 
+# haxby dataset to have EPI images and masks
 haxby_dataset = datasets.fetch_haxby(n_subjects=1)
 
 # print basic information on the dataset
@@ -29,6 +28,7 @@ haxby_anat_filename = haxby_dataset.anat[0]
 haxby_mask_filename = haxby_dataset.mask_vt[0]
 haxby_func_filename = haxby_dataset.func[0]
 
+# localizer dataset to have contrast maps
 localizer_dataset = datasets.fetch_localizer_contrasts(
     ["left vs right button press"],
     n_subjects=2,
@@ -40,7 +40,6 @@ localizer_tmap_filename = localizer_dataset.tmaps[1]
 ###############################################################################
 # Plotting statistical maps using function `plot_stat_map`
 
-# Import plotting module
 from nilearn import plotting
 
 # Visualizing t-map image on subject specific anatomical image with manual
@@ -52,7 +51,8 @@ plotting.plot_stat_map(localizer_tmap_filename, bg_img=localizer_anat_filename,
 ###############################################################################
 # Plotting statistical maps on glass brain image using function `plot_glass_brain`
 
-# Now, the t-map image is overlayed on glass brain image as fixed background
+# Now, the t-map image is mapped on glass brain representation where glass
+# brain is always a fixed background template
 plotting.plot_glass_brain(localizer_tmap_filename, title='plot_glass_brain',
                           threshold=3)
 
