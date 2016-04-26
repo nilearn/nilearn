@@ -77,7 +77,7 @@ plotting.plot_roi(haxby_mask_filename, bg_img=haxby_anat_filename,
 # Import image processing tool
 from nilearn import image
 
-# Compute the mean functional image from haxby dataset in t dimension.
+# Compute the voxel_wise mean of functional images across time.
 # Basically reducing the functional image from 4D to 3D
 mean_haxby_img = image.mean_img(haxby_func_filename)
 
