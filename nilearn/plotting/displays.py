@@ -252,15 +252,13 @@ class GlassBrainAxes(BaseAxes):
 
         # set unselected brain hemisphere activations to 0
         if self.direction == 'l':
-            data_selection = data.copy()
             x_center, _, _, _ = np.dot(np.linalg.inv(affine),
                                        np.array([0, 0, 0, 1]))
-            data_selection[int(x_center):, :, :] = 0
+            data_selection = data[int(x_center):, :, :]
         elif self.direction == 'r':
-            data_selection = data.copy()
             x_center, _, _, _ = np.dot(np.linalg.inv(affine),
                                        np.array([0, 0, 0, 1]))
-            data_selection[:int(x_center), :, :] = 0
+            data_selection = data[:int(x_center), :, :]
         else:
             data_selection = data
 
