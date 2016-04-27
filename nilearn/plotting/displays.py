@@ -251,6 +251,7 @@ class GlassBrainAxes(BaseAxes):
             max_axis = '.yz'.index(self.direction)
 
         # set unselected brain hemisphere activations to 0
+
         if self.direction == 'l':
             x_center, _, _, _ = np.dot(np.linalg.inv(affine),
                                        np.array([0, 0, 0, 1]))
@@ -260,6 +261,10 @@ class GlassBrainAxes(BaseAxes):
                                        np.array([0, 0, 0, 1]))
             data_selection = data[:int(x_center), :, :]
         else:
+            data_selection = data
+
+        # We need to make sure data_selection is not empty in the x axis
+        if data_selection.shape[0] == 0:
             data_selection = data
 
         if not self._plot_abs:
