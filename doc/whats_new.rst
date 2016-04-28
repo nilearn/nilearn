@@ -21,6 +21,9 @@ New features
       img on another one (just resampling / interpolation, no
       coregistration)
 
+    - New display_mode options in plot_glass_brain and plot_connectome. It
+      is possible to plot right and left hemisphere projections separately.
+
 API changes summary
 ...................
     - Atlas fetcher :func:`nilearn.datasets.fetch_atlas_msdl` now returns directly

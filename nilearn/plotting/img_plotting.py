@@ -957,6 +957,9 @@ def plot_glass_brain(stat_map_img,
         Frontal, Axial, and Lateral). The brain glass schematics
         are added on top of the image.
 
+        The plotted image should be in MNI space for this function to work
+        properly.
+
         Parameters
         ----------
         stat_map_img : Niimg-like object
@@ -1076,6 +1079,9 @@ def plot_connectome(adjacency_matrix, node_coords,
                     edge_kwargs=None, node_kwargs=None,
                     colorbar=False):
     """Plot connectome on top of the brain glass schematics.
+
+        The plotted image should be in MNI space for this function to work
+        properly.
 
         Parameters
         ----------

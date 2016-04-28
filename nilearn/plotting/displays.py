@@ -264,6 +264,7 @@ class GlassBrainAxes(BaseAxes):
             data_selection = data
 
         # We need to make sure data_selection is not empty in the x axis
+        # This should be the case since we expect images in MNI space
         if data_selection.shape[0] == 0:
             data_selection = data
 
