@@ -157,7 +157,8 @@ def plot_brain_schematics(ax, direction, **kwargs):
            Useful for the caller to be able to set axes limits
 
     """
-    black_bg = ax.get_axis_bgcolor() == colors.colorConverter.to_rgba('k')
+    black_bg = colors.colorConverter.to_rgba(ax.get_axis_bgcolor()) \
+                    == colors.colorConverter.to_rgba('k')
 
     json_filename, transform = _get_json_and_transform(direction)
     with open(json_filename) as json_file:
