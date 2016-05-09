@@ -2,35 +2,41 @@
 More plotting tools from nilearn
 ================================
 
-In this example, we demonstrate how to display results benefitting from
-more plotting options available in nilearn.
+In this example, we demonstrate how to utilise plotting options from
+nilearn essential in visualizing brain image analysis results.
 
-All options demonstrated here are from existing plotting functions
-:func:nilearn.plotting.img_plotting. Particularly, we focus how to use
-different display modes `display_mode` to display results in specific
-slice directions and also positioning of coordinates on the slices and
-number of slices to display using `cut_coords`.
+We emphasize more on using parameters such as `display_mode` and `cut_coords`
+with plotting function :func:`nilearn.plotting.plot_stat_map`. Also,
+we show how to use various features such as `add_edges`, `add_contours`,
+`add_markers` essential in visualizing regions of interest images or
+mask images overlaying on subject specific anatomical/EPI image.
+The display features shown here are inherited from class
+:class:`nilearn.plotting.displays.OrthoSlicer`.
 
-We also demonstrate using various plotting objects from
-:class:nilearn.plotting.displays.OrthoSlicer consists of different types
-of display methods `add_overlay`, `add_contours`, `add_markers` for
-two step visualization of 3D maps.
+The parameter `display_mode` is used to draw brain slices along given
+specific directions where directions can be either of these 'ortho',
+'x', 'y', 'z', 'xy', 'xz', 'yz'. whereas parameter `cut_coords`
+is used to specify limited number of slices to visualize along given
+specific slice direction. The parameter `cut_coords` can also be used
+to draw the specific cuts in the slices by giving its particular
+coordinates in MNI space accordingly with particular slice direction.
+This helps us point to the activation specific location of the brain slices.
 
 See :ref:`plotting` for more details.
 """
 
 ###############################################################################
-# Retrieve the data from nilearn: haxby dataset to have EPI images and masks,
-# and localizer dataset to have contrast maps
+# First, we retrieve data from nilearn provided (general-purpose) datasets
 
-# Import datasets module
 from nilearn import datasets
 
+# haxby dataset to have anatomical image, EPI images and masks
 haxby_dataset = datasets.fetch_haxby(n_subjects=1)
 haxby_anat_filename = haxby_dataset.anat[0]
 haxby_mask_filename = haxby_dataset.mask_vt[0]
 haxby_func_filename = haxby_dataset.func[0]
 
+# localizer dataset to have contrast maps
 localizer_dataset = datasets.fetch_localizer_contrasts(
     ["left vs right button press"],
     n_subjects=2,
@@ -39,83 +45,179 @@ localizer_anat_filename = localizer_dataset.anats[1]
 localizer_cmap_filename = localizer_dataset.cmaps[1]
 
 ########################################
-# Plotting statistical maps in three slice directions and also manually
-# positioning the location of the coordinates on each slice direction
+# Now, we show from here how to visualize the retrieved datasets using plotting
+# tools from nilearn.
 
-# Import plotting module for visualization
 from nilearn import plotting
 
-# Visualizing with default option display_mode='ortho' and coordinates given as
-# a list. display_mode='ortho' implies visualizing in three slice directions.
+########################################
+# Visualizing contrast map in three different orthogonal views - 'saggital',
+# 'coronal' and 'axial' with coordinate positions in each view are given
+# of interest manually also with colorbar on the right side of the plots.
+
+# First argument is path to filename of the constrast map, optional argument
+# display_mode is given as string 'ortho' to visualize the map in three
+# specific directions xyz and optional argument cut_coords seen as integers
+# given in a list denotes coordinates of each slice in the order [x, y, z].
+# By default colorbar is True in plot_stat_map function without explicitly
+# stating it.
 plotting.plot_stat_map(localizer_cmap_filename, display_mode='ortho',
                        cut_coords=[36, -27, 60],
                        title="display_mode='ortho', cut_coords=[36, -27, 60]")
 
 ########################################
-# Now, plotting results in single direction 'z' with total number of slices to
-# be displayed=5
+# Visualizing contrast map in single view 'axial' with maximum number of
+# slices in this view are limited to 5. The coordinates to cut the slices
+# are located by itself.
 
-# This visualization requires display_mode given as string 'z' and cut_coords as
-# integer.
-# Note: the difference in cut_coords as integer and as list.
+# In this type of visualization, argument display_mode is given as string 'z'
+# for axial direction and cut_coords as integer 5 without a list implies that
+# number of cuts in the slices should be maximum of 5.
 plotting.plot_stat_map(localizer_cmap_filename, display_mode='z', cut_coords=5,
                        title="display_mode='z', cut_coords=5")
 
 ########################################
+# Visualizing contrast map in another single view 'saggital' and also showing
+# how to select two slices of particular interest manually by giving the
+# coordinates to cut each slice.
+
+# In this type, display_mode should be given as string 'x' for saggital view
+# and coordinates should be given as integers in a list
 plotting.plot_stat_map(localizer_cmap_filename, display_mode='x',
-                       cut_coords=(-36, 36),
-                       title="display_mode='x', cut_coords=(-36, 36)")
+                       cut_coords=[-36, 36],
+                       title="display_mode='x', cut_coords=[-36, 36]")
 
 ########################################
+# Now constrast map is visualized in 'coronal' view with single cut where
+# coordinates are located automatically
+
+# For coronal view, display_mode is given as string 'y' and cut_coords as
+# integer 1 not as a list for single cut
 plotting.plot_stat_map(localizer_cmap_filename, display_mode='y', cut_coords=1,
-                       title="display_mode='x', cut_coords=(-36, 36)")
+                       title="display_mode='y', cut_coords=1")
 
 ########################################
+# Now contrast map is shown without a colorbar on the right side.
+
+# argument colorbar should be given as False to show plots without a colorbar on
+# the right side.
 plotting.plot_stat_map(localizer_cmap_filename, display_mode='z',
                        cut_coords=1, colorbar=False,
                        title="display_mode='z', cut_coords=1, colorbar=False")
 
 ########################################
+# Now we visualize contrast map with two views - 'saggital' and 'axial' and
+# coordinates are given manually to select particular cuts in two views.
+
+# argument display_mode='xz' where 'x' for saggital and 'z' for axial view.
+# argument cut_coords should match with input number of views therefore two
+# integers should be given in a list to cut slices with coordinates
 plotting.plot_stat_map(localizer_cmap_filename, display_mode='xz',
-                       cut_coords=(36, 60),
-                       title="display_mode='xz', cut_coords=(36, 60)")
+                       cut_coords=[36, 60],
+                       title="display_mode='xz', cut_coords=[36, 60]")
 
 ########################################
+# Visualizing contrast map with 'coronal', 'saggital' views and coordinates are
+# given manually in two cuts with two views.
+
+# display_mode='yx' for coronal and saggital view and coordinates will be
+# assigned in the order of direction as [x, y, z]
 plotting.plot_stat_map(localizer_cmap_filename, display_mode='yx',
-                       cut_coords=(-27, 36),
-                       title="display_mode='yx', cut_coords=(-27, 36)")
+                       cut_coords=[-27, 36],
+                       title="display_mode='yx', cut_coords=[-27, 36]")
 
 ########################################
+# Visualizing contrast map with 'coronal' and 'axial' views with manual
+# positioning of coordinates with each directional view
+
 plotting.plot_stat_map(localizer_cmap_filename, display_mode='yz',
-                       cut_coords=(-27, 60),
-                       title="display_mode='yz', cut_coords=(-27, 60)")
+                       cut_coords=[-27, 60],
+                       title="display_mode='yz', cut_coords=[-27, 60]")
 
 ###############################################################################
-# demo display objects with add_* methods
+# In second part, we switch to demonstrating various features add_* from
+# nilearn where each specific feature will be helpful in projecting brain
+# imaging results for user specific interpretation.
 
-# Import image processing tool
+# Import image processing tool for basic processing of functional brain image
 from nilearn import image
 
+# Compute voxel-wise mean functional image across time dimension. Now we have
+# functional image in 3D assigned in mean_haxby_img
 mean_haxby_img = image.mean_img(haxby_func_filename)
 
-# Plot T1 outline on top of the mean EPI (useful for checking coregistration)
+########################################
+# Now lets see how to use `add_edges`, method useful for checking coregistration
+# by overlaying anatomical image as edges (red) on top of mean functional image
+# (background), both being of same subject.
+
+# First, we call plotting function `plot_anat` into variable display with first
+# argument being the background image. In this case, mean functional image.
 display = plotting.plot_anat(mean_haxby_img, title="add_edges")
+
+# We are now able to use add_edges method inherited in plotting object named as
+# display. First argument - anatomical image  and by default edges will be
+# displayed as red 'r', to choose different colors green 'g' and  blue 'b'.
 display.add_edges(haxby_anat_filename)
 
 ########################################
-# Plotting outline of the mask on top of the EPI
+# Plotting outline of the mask (red) on top of the mean EPI image with
+# `add_contours`. This method is useful for region specific interpretation
+# of brain images
+
+# As seen before, we call function `plot_anat` with first argument being the
+# mean of functional image (background image) and argument cut_coords
+# as list for manual cut with coordinates pointing at masked brain regions
 display = plotting.plot_anat(mean_haxby_img, title="add_contours",
-                             cut_coords=(28, -34, -22))
+                             cut_coords=[28, -34, -22])
+# Now use add_contours in display object with first argument should be
+# filename of mask image from haxby datasets and argument levels given as list
+# of values to select particular level in the contour to display and argument
+# colors specified as red 'r' to see edges as red in color.
+# See help on matplotlib.pyplot.contour to use more options with this method
 display.add_contours(haxby_mask_filename, levels=[0.5], colors='r')
 
-###############################################################################
-# demo saving plots to file
+########################################
+# Plotting outline of the mask (blue) with color fillings using same method
+# `add_contours`.
 
+display = plotting.plot_anat(mean_haxby_img,
+                             title="add_contours with filled=True",
+                             cut_coords=[28, -34, -22])
+
+# By default, no color fillings will be shown using `add_contours`. To see
+# contours with color fillings use argument filled=True. contour colors are
+# changed to blue 'b' with alpha=0.7 sets the transparency of color filiings.
+# See help on matplotlib.pyplot.contourf to use more options given that filled
+# should be True
+display.add_contours(haxby_mask_filename, filled=True, alpha=0.7,
+                     levels=[0.5], colors='b')
+
+#########################################
+# Plotting seed regions of interest as spheres using new feature `add_markers`
+# with MNI coordinates of interest.
+
+display = plotting.plot_anat(mean_haxby_img, title="add_markers",
+                             cut_coords=[28, -34, -22])
+
+# Coordinates of seed regions should be specified in first argument and second
+# argument marker_color denotes color of the sphere in this case yellow 'y'
+# and third argument marker_size denotes size of the sphere
+coords = [(28, -34, -22)]
+display.add_markers(coords, marker_color='y', marker_size=100)
+
+###############################################################################
+# Finally, saving the plots to file with two different ways
+
+# contrast map plotted with function `plot_stat_map` can be saved using an
+# inbuilt parameter output_file as filename + .extension as string. Valid
+# extensions are .png, .pdf, .svg
 plotting.plot_stat_map(localizer_cmap_filename,
                        title='Using plot_stat_map output_file',
                        output_file='plot_stat_map.png')
 
 ########################################
+# Another way of saving plots is using 'savefig' option from display object
 display = plotting.plot_stat_map(localizer_cmap_filename,
                                  title='Using display savefig')
 display.savefig('plot_stat_map_from_display.png')
