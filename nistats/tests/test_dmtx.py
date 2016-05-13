@@ -10,6 +10,7 @@ from __future__ import with_statement
 import numpy as np
 import os.path as osp
 import pandas as pd
+from nilearn._utils.testing import assert_raises_regex
 
 from nistats.design_matrix import (
     _convolve_regressors, make_design_matrix,
@@ -19,7 +20,7 @@ from nistats.experimental_paradigm import check_paradigm
 
 from nibabel.tmpdirs import InTemporaryDirectory
 
-from nose.tools import assert_true, assert_equal
+from nose.tools import assert_true, assert_equal, assert_raises
 from numpy.testing import assert_almost_equal, dec, assert_array_equal
 
 # Set the backend to avoid having DISPLAY problems
@@ -135,6 +136,16 @@ def test_design_matrix0c():
                 frame_times, drift_model='polynomial',
                 drift_order=3, add_regs=ax))
     assert_almost_equal(X[:, 0], ax[:, 0])
+    ax = np.random.randn(127, 4)
+    assert_raises_regex(
+        AssertionError,
+        "Incorrect specification of additional regressors:.",
+        make_design_matrix, frame_times, add_regs=ax)
+    ax = np.random.randn(128, 4)
+    assert_raises_regex(
+        ValueError,
+        "Incorrect number of additional regressor names.",
+        make_design_matrix, frame_times, add_regs=ax, add_reg_names='')
 
 
 def test_design_matrix0d():
