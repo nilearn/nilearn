@@ -196,6 +196,40 @@ def spm_dispersion_derivative(tr, oversampling=16, time_length=32., onset=0.):
     return dhrf
 
 
+def glover_dispersion_derivative(tr, oversampling=16, time_length=32.,
+                                 onset=0.):
+    """Implementation of the Glover dispersion derivative hrf model
+
+    Parameters
+    ----------
+    tr: float
+        scan repeat time, in seconds
+
+    oversampling: int, optional
+        temporal oversampling factor in seconds
+
+    time_length: float, optional
+        hrf kernel length, in seconds
+
+    onset : float, optional
+        onset of the response in seconds
+
+    Returns
+    -------
+    dhrf: array of shape(length / tr * oversampling), dtype=float
+          dhrf sampling on the oversampled time grid
+    """
+    dd = .01
+    dhrf = 1. / dd * (
+        - _gamma_difference_hrf(
+            tr, oversampling, time_length, onset,
+            delay=6, undershoot=12., dispersion=.9 + dd, ratio=.35)
+        + _gamma_difference_hrf(
+            tr, oversampling, time_length, onset, delay=6, undershoot=12.,
+            dispersion=.9, ratio=.35))
+    return dhrf
+
+
 def _sample_condition(exp_condition, frame_times, oversampling=16,
                      min_onset=-24):
     """Make a possibly oversampled event regressor from condition information.
@@ -329,15 +363,12 @@ def _regressor_names(con_name, hrf_model, fir_delays=None):
     names: list of strings,
         regressor names
     """
-    if hrf_model == 'glover':
+    if hrf_model in ['glover', 'spm']:
         return [con_name]
-    elif hrf_model == "glover + derivative":
+    elif hrf_model in ["glover + derivative", 'spm + derivative']:
         return [con_name, con_name + "_derivative"]
-    elif hrf_model == 'spm':
-        return [con_name]
-    elif hrf_model == 'spm + derivative':
-        return [con_name, con_name + "_derivative"]
-    elif hrf_model == 'spm + derivative + dispersion':
+    elif hrf_model in ['spm + derivative + dispersion',
+                       'glover + derivative + dispersion']:
         return [con_name, con_name + "_derivative", con_name + "_dispersion"]
     elif hrf_model == 'fir':
         return [con_name + "_delay_%d" % i for i in fir_delays]
@@ -367,8 +398,8 @@ def _hrf_kernel(hrf_model, tr, oversampling=16, fir_delays=None):
         samples of the hrf (the number depends on the hrf_model used)
     """
     acceptable_hrfs = [
-        'spm', 'spm + derivative', 'spm + derivative + dispersion',
-        'glover', 'glover + derivative', 'fir']
+        'spm', 'spm + derivative', 'spm + derivative + dispersion', 'fir',
+        'glover', 'glover + derivative', 'glover + derivative + dispersion']
     if hrf_model == 'spm':
         hkernel = [spm_hrf(tr, oversampling)]
     elif hrf_model == 'spm + derivative':
@@ -383,6 +414,10 @@ def _hrf_kernel(hrf_model, tr, oversampling=16, fir_delays=None):
     elif hrf_model == 'glover + derivative':
         hkernel = [glover_hrf(tr, oversampling),
                    glover_time_derivative(tr, oversampling)]
+    elif hrf_model == 'glover + derivative + dispersion':
+        hkernel = [glover_hrf(tr, oversampling),
+                   glover_time_derivative(tr, oversampling),
+                   glover_dispersion_derivative(tr, oversampling)]
     elif hrf_model == 'fir':
         hkernel = [np.hstack((np.zeros(f * oversampling),
                               np.ones(oversampling)))
@@ -439,6 +474,8 @@ def compute_regressor(exp_condition, hrf_model, frame_times, con_id='cond',
     'spm + time + dispersion': idem, plus dispersion derivative (3 regressors)
     'glover': this one corresponds to the Glover hrf
     'glover + derivative': the Glover hrf + time derivative (2 regressors)
+    'glover + derivative + dispersion': idem + dispersion derivative
+                                        (3 regressors)
     'fir': finite impulse response basis, a set of delayed dirac models
            with arbitrary length. This one currently assumes regularly spaced
            frame times (i.e. fixed time of repetition).

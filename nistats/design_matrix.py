@@ -16,6 +16,11 @@ Design matrices contain three different types of regressors:
    A hemodynamic model is one of:
    'spm' : linear filter used in the SPM software
    'glover' : linear filter estimated by G.Glover
+   'spm + derivative', 'glover + derivative': the same linear models,
+       plus their time derivative (2 regressors per condition)
+   'spm + derivative + dispersion', 'glover + derivative + dispersion':
+       idem plus the derivative wrt the dispersion parameter of the hrf
+       (3 regressors per condition)
    'fir' : finite impulse response model, generic linear filter
 
 2. User-specified regressors, that represent information available on
@@ -168,7 +173,8 @@ def _convolve_regressors(paradigm, hrf_model, frame_times, fir_delays=[0],
         for these to be valid paradigm descriptors
 
     hrf_model : {'spm', 'spm + derivative', 'spm + derivative + dispersion',
-        'glover', 'glover + derivative', 'fir'}
+        'glover', 'glover + derivative', 'glover + derivative + dispersion',
+        'fir'}
         String that specifies the hemodynamic response function
 
     frame_times : array of shape (n_scans,)
@@ -193,9 +199,10 @@ def _convolve_regressors(paradigm, hrf_model, frame_times, fir_delays=[0],
         if 'glover' or 'spm' then this is identical to the input names
         if 'glover + derivative' or 'spm + derivative', a second name is output
             i.e. '#name_derivative'
-        if 'spm + derivative + dispersion', a third name is used,
-            i.e. '#name_dispersion'
-        if 'fir', a the strings
+        if 'spm + derivative + dispersion' or
+            'glover + derivative + dispersion',
+            a third name is used, i.e. '#name_dispersion'
+        if 'fir', the regressos are numbered accoding to '#name_#delay'
     """
     regressor_names = []
     regressor_matrix = None
@@ -277,7 +284,8 @@ def make_design_matrix(
         Description of the experimental paradigm.
 
     hrf_model : {'spm', 'spm + derivative', 'spm + derivative + dispersion',
-        'glover', 'glover + derivative', 'fir'}, optional,
+        'glover', 'glover + derivative', 'glover + derivative + dispersion',
+        'fir'}, optional,
         Specifies the hemodynamic response function
 
     drift_model : string, optional
