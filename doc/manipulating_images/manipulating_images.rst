@@ -375,32 +375,31 @@ of the transformation matrix (i.e., affine).
 Image operations: creating a ROI mask manually
 ===============================================
 
-This section shows manual steps to create and further modify a ROI
-(region of interest) spatial mask. They represent a means for "data folding",
-that is, extracting and later analyzing data from a subset of voxels rather
-than the entire brain images. As a convenient side effect, this can help
-alleviate the curse of dimensionality (i.e., statistical problems that
-arise in the context of high-dimensional input variables).
+Computing Regions of Interest (ROI) mask by ourselves requires chain of image
+operations steps to follow for nicer representation of mask over specific
+target of interest. These chain of operations are easy to follow using nilearn
+and scipy Python libraries with list of functions available and these
+functions are very easy to use and we give clear guidelines how to follow each
+step sequentially starting with pre-image operations to post-image operations
+to visualization & interpretation at each step.
+
+Fetching datasets
+-----------------
+
+Data we use are haxby datasets for complete list of operations. Fetching
+datasets is easy, using a function :func:`nilearn.datasets.fetch_haxby` and
+data is automatically stored in your local folder. Please see the
+documentation for more details about haxby datasets and its experiments.
 
 Smoothing
 ---------
 
-Functional MRI data have a low signal-to-noise ratio (yet much better
-than EEG or MEG measurements).
-When using simple methods
-that are not robust to noise, it is useful to apply a spatial filtering
-kernel on the data. Such data smoothing is
-usually applied using a Gaussian function with 4mm to 12mm full-width at
-half-maximum (this is where the FWHM comes from).
-The function :func:`nilearn.image.smooth_img` accounts for potential
-anisotropy in the image affine (i.e., non-identical voxel size in all
-the three dimensions). Analogous to the majority of nilearn functions,
-it can also use file names as input parameters.
-
-
-.. literalinclude:: ../../examples/04_manipulating_images/plot_roi_extraction.py
-    :start-after: # Smooth the data
-    :end-before: # Run a T-test for face and houses
+After we have fetched our datasets, we do simple pre-processing step called as
+image smoothing on functional images using function :func:`nilearn.image.smooth_img`
+with parameter FWHM=6mm. The smoothed image can be seen in below plot, visualized
+using :func:`nilearn.plotting.plot_epi`. The coordinates on image are given
+manually with [x, y, z] = [-33, -24, -17]. Click on the plot to see full
+working example.
 
 .. figure:: ../auto_examples/04_manipulating_images/images/sphx_glr_plot_roi_extraction_001.png
     :target: ../auto_examples/04_manipulating_images/plot_roi_extraction.html
@@ -410,28 +409,14 @@ it can also use file names as input parameters.
 Selecting features
 ------------------
 
-Functional MRI data can be considered "high dimensional" given the
-p-versus-n ratio (e.g., p=~50,000-200,000 voxels for n=1000 samples).
-In this setting, machine-learning
-algorithms can perform poorly (i.e., curse-of-dimensionality problem).
-However, simple means from the realms of classical statistics can help
-reducing the number of voxels.
-
-The Student's t-test (:func:`scipy.stats.ttest_ind`) is an established
-method to determine whether two
-distributions are statistically different. It can be used to compare voxel
-time-series from two different experimental conditions
-(e.g., when houses or faces are shown to individuals during brain scanning).
-If the time-series distribution is similar in the two conditions, then the
-voxel is not very interesting to discriminate the condition.
-
-This test returns p-values that represent probabilities that the two
-time-series had been drawn from the same distribution. The lower is the p-value, the
-more discriminative is the voxel in distinguishing the two conditions.
-
-.. literalinclude:: ../../examples/04_manipulating_images/plot_roi_extraction.py
-    :start-after: # Run a T-test for face and houses
-    :end-before: # Build a mask from this statistical map
+Given the smoothed functional data, we select two features of interest with
+face and house experimental conditions. The method we use is a simple
+Student's t-test with scipy function :func:`scipy.stats.ttest_ind`. This
+method tells us whether there are any voxels which are statistically
+significant between two conditions. The below is the results visualized using
+:func:`nilearn.plotting.plot_stat_map` function after feature selection
+but without thresholding. In next step, we can threshold the statistical map
+using intensity value as denoted by the colorbar (right).
 
 .. figure:: ../auto_examples/04_manipulating_images/images/sphx_glr_plot_roi_extraction_002.png
     :target: ../auto_examples/04_manipulating_images/plot_roi_extraction.html
@@ -446,85 +431,74 @@ extended to several classes, using the
 Thresholding
 ------------
 
-Voxels with better p-values are kept as voxels of interest.
-Applying a threshold to an array
-is easy thanks to numpy indexing à la Matlab.
-
-.. literalinclude:: ../../examples/04_manipulating_images/plot_roi_extraction.py
-    :start-after: # Thresholding
-    :end-before: # Binarization and intersection with VT mask
+Now, we threshold the statistical map to have better representation of voxels of
+interest. The statistical values above threshold=5 will have most intense
+voxels representing the target of regions. We visualize the same below using
+same plotting function as used before :func:`nilearn.plotting.plot_stat_map`.
+As we can see that voxels are well represented with the brain areas responded
+to experimental conditions.
 
 .. figure:: ../auto_examples/04_manipulating_images/images/sphx_glr_plot_roi_extraction_003.png
     :target: ../auto_examples/04_manipulating_images/plot_roi_extraction.html
     :align: center
     :scale: 50%
 
-Mask intersection
------------------
+Mask intersection and dilation
+------------------------------
 
-We now want to restrict our investigation to the ventral temporal area. The
-corresponding spatial mask is provided in `haxby.mask_vt`.
-We want to compute the
-intersection of this provided mask with our self-computed mask.
-The first step is to load it with
-nibabel's **nibabel.load**. We can then use a logical "and" operation
--- **numpy.logical_and** -- to keep only voxels
-that have been selected in both masks. In neuroimaging jargon, this is
-called an "AND conjunction."
-
-.. literalinclude:: ../../examples/04_manipulating_images/plot_roi_extraction.py
-    :start-after: # Binarization and intersection with VT mask
-    :end-before: # Dilation
+We can post-process the results obtained with simple operations such as Mask
+intersection and dilation to represent to more precise targets of interest.
+For this, we use the mask (ventral temporal area) from haxby experiments and
+conjunt "AND" with our computed mask using numpy function numpy.logical_and to
+select only those voxels which are common in both masks. The below are results
+obtained and visualized using function :func:`nilearn.plotting.plot_roi`. On
+the other hand, we again do `morphological dilation
+# <http://en.wikipedia.org/wiki/Dilation_(morphology)>`_ called Mask Dilation
+to more compact blobs. The function is used from
+:func:`scipy.ndimage.binary_dilation`. You can see the difference between both
+mask operations in plots below visualized using :func:`nilearn.plotting.plot_roi`.
 
 .. figure:: ../auto_examples/04_manipulating_images/images/sphx_glr_plot_roi_extraction_004.png
     :target: ../auto_examples/04_manipulating_images/plot_roi_extraction.html
-    :align: center
+    :align: left
     :scale: 50%
-
-Mask dilation
--------------
-
-Tresholded functional brain images often contain scattered voxels
-across the brain.
-To consolidate such brain images towards more
-compact shapes, we use a `morphological dilation <http://en.wikipedia.org/wiki/Dilation_(morphology)>`_. This is a common step to be sure
-not to forget voxels located on the edge of a ROI.
-Put differently, such operations can fill "holes" in masked voxel
-representations.
-
-.. literalinclude:: ../../examples/04_manipulating_images/plot_roi_extraction.py
-    :start-after: # Dilation
-    :end-before: # Identification of connected components
-
 .. figure:: ../auto_examples/04_manipulating_images/images/sphx_glr_plot_roi_extraction_005.png
     :target: ../auto_examples/04_manipulating_images/plot_roi_extraction.html
-    :align: center
+    :align: right
     :scale: 50%
 
 Extracting connected components
 -------------------------------
 
-The function **scipy.ndimage.label** from the scipy Python library
-identifies immediately neighboring
-voxels in our voxels mask. It assigns a separate integer label to each
-one of them.
-
-.. literalinclude:: ../../examples/04_manipulating_images/plot_roi_extraction.py
-    :start-after: # Identification of connected components
-    :end-before: # Use the new ROIs to extract data maps in both ROIs
+Finally, we end with splitting the connected ROIs to two hemispheres into
+two separate region (ROI) of each hemisphere (one on the right 'R' and one
+on the left 'L') as shown in below two separate plots using function
+:func:`nilearn.plotting.plot_roi`. The function **scipy.ndimage.label**
+from the scipy Python library is used in this setting.
 
 .. figure:: ../auto_examples/04_manipulating_images/images/sphx_glr_plot_roi_extraction_006.png
     :target: ../auto_examples/04_manipulating_images/plot_roi_extraction.html
-    :align: center
+    :align: left
+    :scale: 50%
+.. figure:: ../auto_examples/04_manipulating_images/images/sphx_glr_plot_roi_extraction_007.png
+    :target: ../auto_examples/04_manipulating_images/plot_roi_extraction.html
+    :align: right
     :scale: 50%
 
 Saving the result
 -----------------
 
-The final voxel mask is saved using nibabel for further inspection
+The final voxel mask is saved using `nibabel.save` for further inspection
 with a software such as FSLView.
 
-.. literalinclude:: ../../examples/04_manipulating_images/plot_roi_extraction.py
-    :start-after: # save the ROI 'atlas' to a single output Nifti
-
 .. _nibabel: http://nipy.sourceforge.net/nibabel/
+
+.. topic:: **Code**
+
+    The complete script can be found :ref:`here
+    <sphx_glr_auto_examples_04_manipulating_images_plot_roi_extraction.py>`.
+
+.. seealso::
+
+     * :ref:`Automatic region extraction on 4D atlas images
+       <sphx_glr_auto_examples_04_manipulating_images_plot_extract_rois_smith_atlas.py>`.
