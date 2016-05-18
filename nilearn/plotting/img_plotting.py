@@ -234,7 +234,7 @@ def plot_img(img, cut_coords=None, output_file=None, display_mode='ortho',
             are .png, .pdf, .svg. If output_file is not None, the plot
             is saved to a file, and the display is closed.
         display_mode : {'ortho', 'x', 'y', 'z', 'xy', 'xz', 'yz'}
-            Choose the direction of the cuts: 'x' - saggital, 'y' - coronal,
+            Choose the direction of the cuts: 'x' - sagittal, 'y' - coronal,
             'z' - axial, 'ortho' - three cuts are performed in orthogonal
             directions.
         figure : integer or matplotlib figure, optional
@@ -415,7 +415,7 @@ def plot_anat(anat_img=MNI152TEMPLATE, cut_coords=None,
             are .png, .pdf, .svg. If output_file is not None, the plot
             is saved to a file, and the display is closed.
         display_mode : {'ortho', 'x', 'y', 'z', 'yx', 'xz', 'yz'}
-            Choose the direction of the cuts: 'x' - saggital, 'y' - coronal,
+            Choose the direction of the cuts: 'x' - sagittal, 'y' - coronal,
             'z' - axial, 'ortho' - three cuts are performed in orthogonal
             directions.
         figure : integer or matplotlib figure, optional
@@ -504,7 +504,7 @@ def plot_epi(epi_img=None, cut_coords=None, output_file=None,
             are .png, .pdf, .svg. If output_file is not None, the plot
             is saved to a file, and the display is closed.
         display_mode : {'ortho', 'x', 'y', 'z', 'yx', 'xz', 'yz'}
-            Choose the direction of the cuts: 'x' - saggital, 'y' - coronal,
+            Choose the direction of the cuts: 'x' - sagittal, 'y' - coronal,
             'z' - axial, 'ortho' - three cuts are performed in orthogonal
             directions.
         figure : integer or matplotlib figure, optional
@@ -585,7 +585,7 @@ def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None,
             are .png, .pdf, .svg. If output_file is not None, the plot
             is saved to a file, and the display is closed.
         display_mode : {'ortho', 'x', 'y', 'z', 'yx', 'xz', 'yz'}
-            Choose the direction of the cuts: 'x' - saggital, 'y' - coronal,
+            Choose the direction of the cuts: 'x' - sagittal, 'y' - coronal,
             'z' - axial, 'ortho' - three cuts are performed in orthogonal
             directions.
         figure : integer or matplotlib figure, optional
@@ -708,7 +708,7 @@ def plot_prob_atlas(maps_img, anat_img=MNI152TEMPLATE, view_type='auto',
             are .png, .pdf, .svg. If output_file is not None, the plot
             is saved to a file, and the display is closed.
         display_mode : {'ortho', 'x', 'y', 'z', 'yx', 'xz', 'yz'}
-            Choose the direction of the cuts: 'x' - saggital, 'y' - coronal,
+            Choose the direction of the cuts: 'x' - sagittal, 'y' - coronal,
             'z' - axial, 'ortho' - three cuts are performed in orthogonal
             directions.
         figure : integer or matplotlib figure, optional
@@ -859,7 +859,7 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
             are .png, .pdf, .svg. If output_file is not None, the plot
             is saved to a file, and the display is closed.
         display_mode : {'ortho', 'x', 'y', 'z', 'yx', 'xz', 'yz'}
-            Choose the direction of the cuts: 'x' - saggital, 'y' - coronal,
+            Choose the direction of the cuts: 'x' - sagittal, 'y' - coronal,
             'z' - axial, 'ortho' - three cuts are performed in orthogonal
             directions.
         colorbar : boolean, optional
@@ -971,9 +971,9 @@ def plot_glass_brain(stat_map_img,
             are .png, .pdf, .svg. If output_file is not None, the plot
             is saved to a file, and the display is closed.
         display_mode : string, optional. Default is 'ortho'.
-            Choose the direction of the cuts: 'x' - saggital, 'y' - coronal,
-            'z' - axial, 'l' - saggital left hemisphere only,
-            'r' - saggital right hemisphere only, 'ortho' - three cuts are
+            Choose the direction of the cuts: 'x' - sagittal, 'y' - coronal,
+            'z' - axial, 'l' - sagittal left hemisphere only,
+            'r' - sagittal right hemisphere only, 'ortho' - three cuts are
             performed in orthogonal directions. Possible values are: 'ortho',
             'x', 'y', 'z', 'xz', 'yx', 'yz', 'l', 'r', 'lr', 'lzr', 'lyr',
             'lzry', 'lyrz'.
@@ -1114,9 +1114,9 @@ def plot_connectome(adjacency_matrix, node_coords,
             are .png, .pdf, .svg. If output_file is not None, the plot
             is saved to a file, and the display is closed.
         display_mode : string, optional. Default is 'ortho'.
-            Choose the direction of the cuts: 'x' - saggital, 'y' - coronal,
-            'z' - axial, 'l' - saggital left hemisphere only,
-            'r' - saggital right hemisphere only, 'ortho' - three cuts are
+            Choose the direction of the cuts: 'x' - sagittal, 'y' - coronal,
+            'z' - axial, 'l' - sagittal left hemisphere only,
+            'r' - sagittal right hemisphere only, 'ortho' - three cuts are
             performed in orthogonal directions. Possible values are: 'ortho',
             'x', 'y', 'z', 'xz', 'yx', 'yz', 'l', 'r', 'lr', 'lzr', 'lyr',
             'lzry', 'lyrz'.

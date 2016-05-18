@@ -22,7 +22,7 @@ localizer_tmap_filename = localizer_dataset.tmaps[1]
 # demo glass brain plotting.
 from nilearn import plotting
 
-# Whole brain saggital cuts
+# Whole brain sagittal cuts
 plotting.plot_glass_brain(localizer_tmap_filename, threshold=3)
 
 plotting.plot_glass_brain(localizer_tmap_filename, threshold=3, colorbar=True)
@@ -39,23 +39,29 @@ plotting.plot_glass_brain(localizer_tmap_filename, threshold=3,
 plotting.show()
 
 ###############################################################################
-# Hemispheric saggital cuts
-plotting.plot_glass_brain(localizer_tmap_filename, threshold=3,
+# Hemispheric sagittal cuts
+title = 'plot_glass_brain with display_mode="lyrz"'
+plotting.plot_glass_brain(localizer_tmap_filename, threshold=3, title=title,
                           display_mode='lyrz')
 
+title = 'plot_glass_brain with display_mode="lzry"'
 plotting.plot_glass_brain(localizer_tmap_filename, threshold=3, colorbar=True,
-                          display_mode='lzry')
+                          display_mode='lzry', title=title)
 
-plotting.plot_glass_brain(localizer_tmap_filename, title='plot_glass_brain',
+title = 'plot_glass_brain with display_mode="lyr"'
+plotting.plot_glass_brain(localizer_tmap_filename, title=title,
                           black_bg=True, display_mode='lyr', threshold=3)
 
-plotting.plot_glass_brain(localizer_tmap_filename, title='plot_glass_brain',
+title = 'plot_glass_brain with display_mode="lzr"'
+plotting.plot_glass_brain(localizer_tmap_filename, title=title,
                           black_bg=True, display_mode='lzr', threshold=3)
 
+title = 'plot_glass_brain with display_mode="lyrz"'
 plotting.plot_glass_brain(localizer_tmap_filename, threshold=0, colorbar=True,
-                          plot_abs=False, display_mode='lyrz')
+                          title=title, plot_abs=False, display_mode='lyrz')
 
-plotting.plot_glass_brain(localizer_tmap_filename, threshold=3,
+title = 'plot_glass_brain with display_mode="lyrz"'
+plotting.plot_glass_brain(localizer_tmap_filename, threshold=3, title=title,
                           colorbar=True, plot_abs=False, display_mode='lyrz')
 
 plotting.show()

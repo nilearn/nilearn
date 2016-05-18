@@ -31,7 +31,8 @@ plotting.plot_glass_brain(
 
 ###############################################################################
 # Hemispheric sagittal cuts
-plotting.plot_glass_brain(
-    localizer_tmap_filename, display_mode='lyrz', threshold=3)
+title = 'plot_glass_brain with display_mode="lyrz"'
+plotting.plot_glass_brain(localizer_tmap_filename, title=title,
+                          display_mode='lyrz', threshold=3)
 
 plotting.show()
