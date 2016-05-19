@@ -655,7 +655,7 @@ def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None,
 
 
 def plot_prob_atlas(maps_img, anat_img=MNI152TEMPLATE, view_type='auto',
-                    threshold=None, linewidths=2.5, cut_coords=None,
+                    threshold='auto', linewidths=2.5, cut_coords=None,
                     output_file=None, display_mode='ortho',
                     figure=None, axes=None, title=None, annotate=True,
                     draw_cross=True, black_bg='auto', dim=False,
@@ -683,19 +683,21 @@ def plot_prob_atlas(maps_img, anat_img=MNI152TEMPLATE, view_type='auto',
             along with color fillings inside the contours.
             If view_type == 'continuous', maps are overlayed as continous
             colors irrespective of the number maps.
-        threshold : None, a str or a number, list of either str or number, optional
-            If threshold is a string it must finish with a percent sign,
-            e.g. "25.3%", and it is a percentile. Or if it is a number,
-            it should be a real number, in which case it is the value
-            to threshold at.
-            This option is served for two purposes, for contours and contour
-            fillings threshold serves to select the level of the maps
-            to display and same threshold is applied for color fillings.
-            For continuous overlays this threshold value serves to select
-            the maps which are greater than a given value or list of given
-            values. If None is given, the maps are thresholded with default
-            value.
-        linewidths : float, optional
+        threshold : 'auto', None, a str or a number, str or numbers in list
+            Optional parameter is used to threshold the maps image and the
+            values which lies above the threshold level will be visualized.
+            By default 'auto', maps are thresholded automatically by finding
+            a value with the input maps data.
+            If None, maps are visualized as it is without any threshold.
+            If string, it must finish with a percent sign, e.g., "25.3%",
+            thresholding is the percentile of values in input data. If single
+            string is provided, same percentile will be applied to each 3D map.
+            Otherwise, if list of percentiles are provided then each map is
+            thresholded with each percentile sequentially. Length of percentiles
+            given should match with number of 3D map in time (4th) dimension.
+            If number or list of numbers, given value will be used directly
+            to threshold the maps image without any percentile calculation.
+       linewidths : float, optional
             This option can be used to set the boundary thickness of the
             contours.
         cut_coords : None, a tuple of floats, or an integer
@@ -785,6 +787,9 @@ def plot_prob_atlas(maps_img, anat_img=MNI152TEMPLATE, view_type='auto',
             view_type = 'continuous'
 
     if threshold is None:
+        # selecting level to use in all three display types
+        threshold = max(threshold, 1e-6)
+    elif threshold == 'auto':
         # it will use default percentage,
         # strategy is to avoid maximum overlaps as possible
         if view_type == 'contours':
@@ -814,6 +819,7 @@ def plot_prob_atlas(maps_img, anat_img=MNI152TEMPLATE, view_type='auto',
                               name='threshold')
         # Get rid of background values in all cases
         thr = max(thr, 1e-6)
+
         if view_type == 'continuous':
             display.add_overlay(map_img, threshold=thr,
                                 cmap=cm.alpha_cmap(color))
