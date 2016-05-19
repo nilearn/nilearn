@@ -17,11 +17,14 @@ localizer_dataset = datasets.fetch_localizer_contrasts(
 localizer_tmap_filename = localizer_dataset.tmaps[1]
 
 ###############################################################################
-# demo glass brain plotting
+# Demo glass brain plotting
 from nilearn import plotting
 
 plotting.plot_glass_brain(localizer_tmap_filename, threshold=3)
 
+###############################################################################
+# On a black background (option "black_bg"), and with only the x and
+# the z view (option "display_mode").
 plotting.plot_glass_brain(
     localizer_tmap_filename, title='plot_glass_brain',
     black_bg=True, display_mode='xz', threshold=3)
