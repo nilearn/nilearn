@@ -15,14 +15,9 @@ from sklearn.utils import check_random_state
 from sklearn.utils.extmath import randomized_svd
 from .._utils.cache_mixin import CacheMixin, cache
 from .._utils.niimg import _safe_get_data
+from .._utils.compat import _basestring
 from ..input_data import NiftiMapsMasker
 from ..input_data.masker_validation import check_embedded_nifti_masker
-
-try:
-    # Python 3 compat
-    _basestring = basestring
-except NameError:
-    _basestring = str
 
 
 def mask_and_reduce(masker, imgs,
