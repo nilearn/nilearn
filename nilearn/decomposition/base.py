@@ -15,6 +15,7 @@ from sklearn.utils import check_random_state
 from sklearn.utils.extmath import randomized_svd
 from .._utils.cache_mixin import CacheMixin, cache
 from .._utils.niimg import _safe_get_data
+from .._utils.compat import _basestring
 from ..input_data import NiftiMapsMasker
 from ..input_data.masker_validation import check_embedded_nifti_masker
 
@@ -299,12 +300,16 @@ class BaseDecomposition(BaseEstimator, CacheMixin):
             the affine is considered the same for all.
 
         """
-        if hasattr(imgs, '__iter__') and len(imgs) == 0:
+        if isinstance(imgs, _basestring) or not hasattr(imgs, '__iter__'):
+            # these classes are meant for list of 4D images
+            # (multi-subject), we want it to work also on a single
+            # subject, so we hack it.
+            imgs = [imgs, ]
+        if len(imgs) == 0:
             # Common error that arises from a null glob. Capture
             # it early and raise a helpful message
             raise ValueError('Need one or more Niimg-like objects as input, '
                              'an empty list was given.')
-
         self.masker_ = check_embedded_nifti_masker(self)
 
         # Avoid warning with imgs != None
