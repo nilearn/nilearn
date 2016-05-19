@@ -697,7 +697,7 @@ def plot_prob_atlas(maps_img, anat_img=MNI152TEMPLATE, view_type='auto',
             given should match with number of 3D map in time (4th) dimension.
             If number or list of numbers, given value will be used directly
             to threshold the maps image without any percentile calculation.
-       linewidths : float, optional
+        linewidths : float, optional
             This option can be used to set the boundary thickness of the
             contours.
         cut_coords : None, a tuple of floats, or an integer
@@ -788,7 +788,7 @@ def plot_prob_atlas(maps_img, anat_img=MNI152TEMPLATE, view_type='auto',
 
     if threshold is None:
         # selecting level to use in all three display types
-        threshold = max(threshold, 1e-6)
+        threshold = 1e-6
     elif threshold == 'auto':
         # it will use default percentage,
         # strategy is to avoid maximum overlaps as possible
