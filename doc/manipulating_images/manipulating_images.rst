@@ -375,30 +375,29 @@ of the transformation matrix (i.e., affine).
 Image operations: creating a ROI mask manually
 ===============================================
 
-Computing Regions of Interest (ROI) mask by ourselves requires chain of image
-operations steps to follow for nicer representation of mask over specific
-target of interest. These chain of operations are easy to follow using nilearn
-and scipy Python libraries with list of functions available and these
-functions are very easy to use and we give clear guidelines how to follow each
-step sequentially starting with pre-image operations to post-image operations
-to visualization & interpretation at each step.
+Computing Regions of Interest (ROI) mask by ourselves requires a chain of image
+operations to do from the input data to a mask over specific targets of
+interest. These chains of operations are easy to set up using Nilearn and
+Scipy Python libraries. Here we give clear guidelines about these steps,
+starting with pre-image operations to post-image operations. The main point is
+that visualization & results checking be possible at each step.
 
 Fetching datasets
 -----------------
 
-Data we use are haxby datasets for complete list of operations. Fetching
-datasets is easy, using a function :func:`nilearn.datasets.fetch_haxby` and
-data is automatically stored in your local folder. Please see the
-documentation for more details about haxby datasets and its experiments.
+We rely on the Haxby dataset to demonstrate the complete list of operations.
+Fetching datasets is easy, using a function :func:`nilearn.datasets.fetch_haxby`
+and data is automatically stored in your local folder. Please see the
+documentation for more details about the Haxby datasets and its experiments.
 
 Smoothing
 ---------
 
-After we have fetched our datasets, we do simple pre-processing step called as
+After we have fetched the dataset, we do simple pre-processing step called as
 image smoothing on functional images using function :func:`nilearn.image.smooth_img`
 with parameter FWHM=6mm. The smoothed image can be seen in below plot, visualized
 using :func:`nilearn.plotting.plot_epi`. The coordinates on image are given
-manually with [x, y, z] = [-33, -24, -17]. Click on the plot to see full
+manually with [x, y, z] = [-24, -33, -17]. Click on the plot to see the full
 working example.
 
 .. figure:: ../auto_examples/04_manipulating_images/images/sphx_glr_plot_roi_extraction_001.png
@@ -432,11 +431,11 @@ Thresholding
 ------------
 
 Now, we threshold the statistical map to have better representation of voxels of
-interest. The statistical values above threshold=5 will have most intense
-voxels representing the target of regions. We visualize the same below using
+interest. The statistical values above threshold=5 correpond to the most intense
+voxels, that we take as target region. We visualize the same below using
 same plotting function as used before :func:`nilearn.plotting.plot_stat_map`.
-As we can see that voxels are well represented with the brain areas responded
-to experimental conditions.
+This displays voxels within the brain areas that respond strongly to
+experimental conditions.
 
 .. figure:: ../auto_examples/04_manipulating_images/images/sphx_glr_plot_roi_extraction_003.png
     :target: ../auto_examples/04_manipulating_images/plot_roi_extraction.html
@@ -447,12 +446,12 @@ Mask intersection and dilation
 ------------------------------
 
 We can post-process the results obtained with simple operations such as Mask
-intersection and dilation to represent to more precise targets of interest.
-For this, we use the mask (ventral temporal area) from haxby experiments and
-conjunt "AND" with our computed mask using numpy function numpy.logical_and to
-select only those voxels which are common in both masks. The below are results
-obtained and visualized using function :func:`nilearn.plotting.plot_roi`. On
-the other hand, we again do `morphological dilation
+intersection and dilation to regularize the mask definition. For this, we use
+the mask (ventral temporal area) from haxby experiments and conjunt "AND" with
+our computed mask using numpy function numpy.logical_and to select only those
+voxels which are common in both masks. Below are results obtained and
+visualized using function :func:`nilearn.plotting.plot_roi`. On the other
+hand, we again do `morphological dilation
 # <http://en.wikipedia.org/wiki/Dilation_(morphology)>`_ called Mask Dilation
 to more compact blobs. The function is used from
 :func:`scipy.ndimage.binary_dilation`. You can see the difference between both
@@ -471,8 +470,8 @@ Extracting connected components
 -------------------------------
 
 Finally, we end with splitting the connected ROIs to two hemispheres into
-two separate region (ROI) of each hemisphere (one on the right 'R' and one
-on the left 'L') as shown in below two separate plots using function
+two separate regions (ROIs), one in each hemisphere (one on the right 'R'
+and one on the left 'L') as shown in below two separate plots using function
 :func:`nilearn.plotting.plot_roi`. The function **scipy.ndimage.label**
 from the scipy Python library is used in this setting.
 

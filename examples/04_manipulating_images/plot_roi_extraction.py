@@ -2,7 +2,7 @@
 Computing a Region of Interest(ROI) mask manually
 =================================================
 
-This example shows manual steps to create and further modify a ROI spatial
+This example shows manual steps to create and further modify an ROI spatial
 mask. They represent a means for "data folding", i.e., extracting and then
 analyzing brain data from a subset of voxels rather than whole brain images.
 Example can also help alleviate curse of dimensionality (i.e., statistical
@@ -58,15 +58,14 @@ haxby_labels = session_target['labels']
 ##############################################################################
 # Build a statistical test to find voxels of interest
 # ---------------------------------------------------
-# **Smoothing**: Functional MRI data have a low signal-to-noise ratio (yet
-# much better than EEG or MEG measurements). When using methods that are not
-# robust to noise, it is useful to apply a spatial filtering kernel on the
-# data. Such data smoothing is usually applied using a Gaussian function with
-# 4mm to 12mm full-width at half-maximum (this is where the FWHM comes from).
-# The function :func:`nilearn.image.smooth_img` accounts for potential
-# anisotropy in the image affine (i.e., non-indentical voxel size in all the
-# three dimensions). Analogous to the majority of nilearn functions, smooth_img
-# function can also use file names as input parameters.
+# **Smoothing**: Functional MRI data have a low signal-to-noise ratio.
+# When using methods that are not robust to noise, it is useful to apply a
+# spatial filtering kernel on the data. Such data smoothing is usually applied
+# using a Gaussian function with 4mm to 12mm full-width at half-maximum (this
+# is where the FWHM comes from). The function :func:`nilearn.image.smooth_img`
+# accounts for potential anisotropy in the image affine (i.e., non-indentical
+# voxel size in all the three dimensions). Analogous to the majority of nilearn
+# functions, smooth_img function can also use file names as input parameters.
 
 # Smooth the data using image processing module from nilearn
 from nilearn import image
@@ -89,10 +88,11 @@ plot_epi(mean_img, title='Smoothed mean EPI', cut_coords=cut_coords)
 
 ##############################################################################
 # **Selecting features using T-test**: Functional MRI data can be considered
-# "high dimensional" given the p-versus-n ratio (e.g., p=~50,000-20,000 voxels
-# for n=1000 samples). In this setting, machine-learning algorithms can perform
-# poorly (i.e., curse-of-dimensionality problem). However, simple means from the
-# realms of classical statistics can help reducing the number of voxels.
+# "high dimensional" given the p-versus-n ratio (e.g., p=~20,000-200,000 voxels
+# for n=1000 samples or less). In this setting, machine-learning algorithms can
+# perform poorly due to the so-called curse of dimensionality. However, simple
+# means rom the realms of classical statistics can help reducing the number of
+# voxels.
 
 fmri_data = fmri_img.get_data()
 # number of voxels being x*y*z, samples in 4th dimension
@@ -100,7 +100,7 @@ print(fmri_data.shape)
 
 ##############################################################################
 # The Student’s t-test (:func:`scipy.stats.ttest_ind`) is an established method
-# to determine whether two distributions are statistically different. It can
+# to determine whether two distributions have a different mean value. It can
 # be used to compare voxel time-series from two different experimental
 # conditions (e.g., when houses or faces are shown to individuals during brain
 # scanning). If the time-series distribution is similar in the two conditions,
@@ -109,7 +109,7 @@ print(fmri_data.shape)
 from scipy import stats
 
 # This test returns p-values that represent probabilities that the two
-# time-series had been drawn from the same distribution. The lower is the
+# time-series were not drawn from the same distribution. The lower the
 # p-value, the more discriminative is the voxel in distinguishing the two
 # conditions (faces and houses).
 _, p_values = stats.ttest_ind(fmri_data[..., haxby_labels == b'face'],
@@ -144,12 +144,11 @@ plot_stat_map(log_p_values_img, mean_img,
 ##############################################################################
 # Build a mask from this statistical map (Improving the quality of the mask)
 # --------------------------------------------------------------------------
-# **Thresholding** - Voxels with better p-values are kept as voxels of interest.
+# **Thresholding** - Voxels with lower p-values are kept as voxels of interest.
 # Applying a threshold to an array is easy thanks to numpy indexing à la Matlab.
-# Most simple way of thresholding your data.
 
-# Note that we use log p-values data in array and voxels with better p-values
-# lies above value=5 and keeping values less than 5 to zero
+# Note that we use log p-values data; we force values below 5 to 0 by
+# thresholding.
 log_p_values[log_p_values < 5] = 0
 
 # Visualize the reduced voxels of interest using statistical image plotting
@@ -276,9 +275,8 @@ n_conds = len(condition_names)
 
 X1, X2 = np.zeros((n_cond_img, n_conds)), np.zeros((n_cond_img, n_conds))
 # Gathering data for each condition and then use transformer from masker
-# object transform() on each data. transformer extracts data in condition maps
-# with labels image as the reference for regions of target
-# image
+# object transform() on each data. The transformer extracts data in condition
+# maps where the target regions are specified by labels images
 for i, cond in enumerate(condition_names):
     cond_maps = new_img_like(
         fmri_img, fmri_data[..., haxby_labels == cond][..., :n_cond_img])
