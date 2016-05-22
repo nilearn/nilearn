@@ -650,7 +650,7 @@ class BaseSlicer(object):
                                    self._colorbar_margin['bottom'])]
         self._colorbar_ax = figure.add_axes(lt_wid_top_ht, axis_bgcolor='w')
 
-        our_cmap = cmap
+        our_cmap = mpl_cm.get_cmap(cmap)
         # edge case where the data has a single value
         # yields a cryptic matplotlib error message
         # when trying to plot the color bar

@@ -371,6 +371,7 @@ def test_plot_connectome():
                     node_size=[10, 20, 30, 40],
                     node_color=np.zeros((4, 3)),
                     edge_cmap='RdBu',
+                    colorbar=True,
                     node_kwargs={
                         'marker': 'v'},
                     edge_kwargs={
