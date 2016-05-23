@@ -16,6 +16,10 @@ from nilearn._utils.testing import generate_fake_fmri
 from nilearn._utils.testing import write_tmp_imgs, assert_raises_regex
 from nilearn._utils.exceptions import DimensionError
 
+_TEST_DIM_ERROR_MSG = ("Input data has incompatible dimensionality: "
+                       "Expected dimension is 3D and you provided "
+                       "a 4D image")
+
 
 def test_generate_regions_ts():
     """Minimal testing of generate_regions_ts()"""
@@ -110,7 +114,7 @@ def test_signals_extraction_with_labels():
     assert_true(np.all(data.std(axis=-1) > 0))
 
     # verify that 4D label images are refused
-    assert_raises_regex(DimensionError, "Data must be a 3D",
+    assert_raises_regex(DimensionError, _TEST_DIM_ERROR_MSG,
                         signal_extraction.img_to_signals_labels,
                         data_img, labels_4d_img)
 
@@ -136,10 +140,10 @@ def test_signals_extraction_with_labels():
         assert_true(labels_r == list(range(1, 9)))
 
     # Same thing, with mask.
-    assert_raises_regex(DimensionError, "Data must be a 3D",
+    assert_raises_regex(DimensionError, _TEST_DIM_ERROR_MSG,
                         signal_extraction.img_to_signals_labels, data_img,
                         labels_img, mask_img=mask_4d_img)
-    assert_raises_regex(DimensionError, "Data must be a 3D",
+    assert_raises_regex(DimensionError, _TEST_DIM_ERROR_MSG,
                         signal_extraction.signals_to_img_labels, data_img,
                         labels_img, mask_img=mask_4d_img)
 
@@ -227,7 +231,7 @@ def test_signal_extraction_with_maps():
     img = nibabel.Nifti1Image(data, np.eye(4))
 
     # verify that 4d masks are refused
-    assert_raises_regex(TypeError, "Data must be a 3D",
+    assert_raises_regex(TypeError, _TEST_DIM_ERROR_MSG,
                         signal_extraction.img_to_signals_maps, img, maps_img,
                         mask_img=mask_4d_img)
 
