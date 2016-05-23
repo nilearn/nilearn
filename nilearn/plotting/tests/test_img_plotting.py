@@ -58,6 +58,9 @@ def test_demo_plot_roi():
     # Test the black background code path
     demo_plot_roi(black_bg=True)
 
+    # Save execution time and memory
+    plt.close()
+
     with tempfile.NamedTemporaryFile(suffix='.png') as fp:
         out = demo_plot_roi(output_file=fp)
     assert_true(out is None)
@@ -87,6 +90,9 @@ def test_plot_anat():
         ortho_slicer.savefig(filename)
     finally:
         os.remove(filename)
+    
+    # Save execution time and memory
+    plt.close()
 
 
 def test_plot_functions():
@@ -122,6 +128,9 @@ def test_plot_glass_brain():
     # test plot_glass_brain with negative values
     plot_glass_brain(img, colorbar=True, plot_abs=False)
 
+    # Save execution time and memory
+    plt.close()
+
 
 def test_plot_stat_map():
     img = _generate_img()
@@ -149,6 +158,9 @@ def test_plot_stat_map():
     new_img = nibabel.Nifti1Image(data, aff)
     plot_stat_map(new_img, threshold=1000, colorbar=True)
 
+    # Save execution time and memory
+    plt.close()
+
 
 def test_plot_stat_map_threshold_for_affine_with_rotation():
     # threshold was not being applied when affine has a rotation
@@ -167,6 +179,9 @@ def test_plot_stat_map_threshold_for_affine_with_rotation():
     plotted_array = ax.images[0].get_array()
     # Given the high threshold the array should be entirely masked
     assert_true(plotted_array.mask.all())
+
+    # Save execution time and memory
+    plt.close()
 
 
 def test_plot_stat_map_threshold_for_uint8():
@@ -191,6 +206,9 @@ def test_plot_stat_map_threshold_for_uint8():
     # axis orientation seem to be flipped, hence (0, 0) -> (-1, 0)
     assert_true(plotted_array.mask[-1, 0])
 
+    # Save execution time and memory
+    plt.close()
+
 
 def test_plot_glass_brain_threshold_for_uint8():
     # mask was applied in [-threshold, threshold] which is problematic
@@ -214,6 +232,9 @@ def test_plot_glass_brain_threshold_for_uint8():
     # axis orientation seem to be flipped, hence (0, 0) -> (-1, 0)
     assert_true(plotted_array.mask[-1, 0])
 
+    # Save execution time and memory
+    plt.close()
+
 
 def test_save_plot():
     img = _generate_img()
@@ -235,6 +256,9 @@ def test_save_plot():
         finally:
             os.remove(filename)
 
+        # Save execution time and memory
+        plt.close()
+
 
 def test_display_methods():
     img = _generate_img()
@@ -253,6 +277,9 @@ def test_plot_with_axes_or_figure():
 
     ax = plt.subplot(111)
     plot_img(img, axes=ax)
+
+    # Save execution time and memory
+    plt.close()
 
 
 def test_plot_stat_map_colorbar_variations():
@@ -284,6 +311,9 @@ def test_plot_empty_slice():
     img = nibabel.Nifti1Image(data, mni_affine)
     plot_img(img, display_mode='y', threshold=1)
 
+    # Save execution time and memory
+    plt.close()
+
 
 def test_plot_img_invalid():
     # Check that we get a meaningful error message when we give a wrong
@@ -300,6 +330,9 @@ def test_plot_img_with_auto_cut_coords():
         plot_img(img, cut_coords=None, display_mode=display_mode,
                  black_bg=True)
 
+        # Save execution time and memory
+        plt.close()
+
 
 def test_plot_img_with_resampling():
     data = _generate_img().get_data()
@@ -313,6 +346,9 @@ def test_plot_img_with_resampling():
     display.add_contours(img, contours=2, linewidth=4,
                          colors=['limegreen', 'yellow'])
     display.add_edges(img, color='c')
+
+    # Save execution time and memory
+    plt.close()
 
 
 def test_plot_noncurrent_axes():
@@ -332,6 +368,9 @@ def test_plot_noncurrent_axes():
         ax_fh = niax.ax.get_figure()
         assert_equal(ax_fh, fh1, 'New axis %s should be in fh1.' % ax_name)
 
+    # Save execution time and memory
+    plt.close()
+
 
 def test_plot_connectome():
     node_color = ['green', 'blue', 'k', 'cyan']
@@ -347,6 +386,7 @@ def test_plot_connectome():
                   title='threshold=0.38',
                   node_size=10, node_color=node_color)
     plot_connectome(*args, **kwargs)
+    plt.close()
 
     # used to speed-up tests for the next plots
     kwargs['display_mode'] = 'x'
@@ -364,6 +404,7 @@ def test_plot_connectome():
                     os.path.getsize(filename) > 0)
     finally:
         os.remove(filename)
+    plt.close()
 
     # with node_kwargs, edge_kwargs and edge_cmap arguments
     plot_connectome(*args,
@@ -371,21 +412,25 @@ def test_plot_connectome():
                     node_size=[10, 20, 30, 40],
                     node_color=np.zeros((4, 3)),
                     edge_cmap='RdBu',
+                    colorbar=True,
                     node_kwargs={
                         'marker': 'v'},
                     edge_kwargs={
                         'linewidth': 4})
+    plt.close()
 
     # masked array support
     masked_adjacency_matrix = np.ma.masked_array(
         adjacency_matrix, np.abs(adjacency_matrix) < 0.5)
     plot_connectome(masked_adjacency_matrix, node_coords,
                     **kwargs)
+    plt.close()
 
     # sparse matrix support
     sparse_adjacency_matrix = sparse.coo_matrix(adjacency_matrix)
     plot_connectome(sparse_adjacency_matrix, node_coords,
                     **kwargs)
+    plt.close()
 
     # NaN matrix support
     nan_adjacency_matrix = np.array([[1., np.nan, 0.],
@@ -393,13 +438,16 @@ def test_plot_connectome():
                                      [np.nan, 2., 1.]])
     nan_node_coords = np.arange(3 * 3).reshape(3, 3)
     plot_connectome(nan_adjacency_matrix, nan_node_coords, **kwargs)
+    plt.close()
 
     # smoke-test where there is no edge to draw, e.g. when
     # edge_threshold is too high
     plot_connectome(*args, edge_threshold=1e12)
+    plt.close()
 
     # with colorbar=True
     plot_connectome(*args, colorbar=True)
+    plt.close()
 
 
 def test_plot_connectome_exceptions():
@@ -486,6 +534,7 @@ def test_singleton_ax_dim():
         shape[axis] = 1
         img = nibabel.Nifti1Image(np.ones(shape), np.eye(4))
         plot_stat_map(img, None, display_mode=direction)
+        plt.close()
 
 
 def test_plot_prob_atlas():
@@ -496,11 +545,14 @@ def test_plot_prob_atlas():
     img = nibabel.Nifti1Image(data_rng, affine)
     # Testing the 4D plot prob atlas with contours
     plot_prob_atlas(img, view_type='contours')
+    plt.close()
     # Testing the 4D plot prob atlas with contours
     plot_prob_atlas(img, view_type='filled_contours',
                     threshold=0.2)
+    plt.close()
     # Testing the 4D plot prob atlas with contours
     plot_prob_atlas(img, view_type='continuous')
+    plt.close()
 
 
 def test_get_colorbar_and_data_ranges_with_vmin():
