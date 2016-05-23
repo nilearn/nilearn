@@ -32,7 +32,7 @@ adhd = datasets.fetch_adhd(n_subjects=1)
 
 
 ###############################################################################
-# Masking: taking the signal in a sphere of radius 5 around Power coords
+# Masking: taking the signal in a sphere of radius 5mm around Power coords
 
 masker = input_data.NiftiSpheresMasker(seeds=power_coords,
                                        smoothing_fwhm=4,
@@ -51,6 +51,7 @@ timeseries = masker.fit_transform(adhd.func[0], confounds=adhd.confounds[0])
 # calculate connectivity and plot Power-264 correlation matrix
 connectivity = connectome.ConnectivityMeasure(kind='correlation')
 corr_matrix = connectivity.fit_transform([timeseries])[0]
+np.fill_diagonal(corr_matrix, 0)
 plt.imshow(corr_matrix, vmin=-1., vmax=1., cmap='RdBu_r')
 plt.colorbar()
 plt.title('Power 264 Connectivity')
@@ -76,26 +77,24 @@ estimator.fit(timeseries)
 plt.figure(figsize=(5, 5))
 plt.imshow(estimator.covariance_, interpolation="nearest",
            vmax=1, vmin=-1, cmap=plt.cm.RdBu_r)
-plt.title('Covariance')
+plt.title('Covariance matrix')
 
 # display the corresponding graph
 plotting.plot_connectome(estimator.covariance_,
                          power_coords,
-                         title='Covariance',
+                         title='Covariance connectome',
                          edge_threshold='99.8%',
                          node_size=20)
 
 # Display the sparse inverse covariance
 plt.figure(figsize=(5, 5))
-plt.imshow(-estimator.precision_, interpolation="nearest",
+plt.imshow(estimator.precision_, interpolation="nearest",
            vmax=1, vmin=-1, cmap=plt.cm.RdBu_r)
-
-# And display the labels
-plt.title('Sparse inverse covariance')
+plt.title('Precision matrix')
 
 # And now display the corresponding graph
-plotting.plot_connectome(-estimator.precision_, power_coords,
-                         title='Sparse inverse covariance',
+plotting.plot_connectome(estimator.precision_, power_coords,
+                         title='Precision connectome',
                          edge_threshold="99.8%",
                          node_size=20)
 plotting.show()
