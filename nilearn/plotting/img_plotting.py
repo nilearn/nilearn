@@ -966,11 +966,11 @@ def plot_glass_brain(stat_map_img,
             See http://nilearn.github.io/manipulating_images/manipulating_images.html#niimg.
             The statistical map image. It needs to be in MNI space
             in order to align with the brain schematics.
-        output_file : string, or None, optional.
+        output_file : string, or None, optional
             The name of an image file to export the plot to. Valid extensions
             are .png, .pdf, .svg. If output_file is not None, the plot
             is saved to a file, and the display is closed.
-        display_mode : string, optional. Default is 'ortho'.
+        display_mode : string, optional. Default is 'ortho'
             Choose the direction of the cuts: 'x' - sagittal, 'y' - coronal,
             'z' - axial, 'l' - sagittal left hemisphere only,
             'r' - sagittal right hemisphere only, 'ortho' - three cuts are
@@ -1082,6 +1082,9 @@ def plot_connectome(adjacency_matrix, node_coords,
 
         The plotted image should be in MNI space for this function to work
         properly.
+
+        In the case of 'l' and 'r' directions (for hemispheric projections),
+        markers in the coordinate x == 0 are included in both hemispheres.
 
         Parameters
         ----------

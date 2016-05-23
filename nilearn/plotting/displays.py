@@ -293,7 +293,11 @@ class GlassBrainAxes(BaseAxes):
         pass
 
     def _add_markers(self, marker_coords, marker_color, marker_size, **kwargs):
-        """Plot markers"""
+        """Plot markers
+
+           In the case of 'l' and 'r' directions (for hemispheric projections),
+           markers in the coordinate x == 0 are included in both hemispheres.
+        """
         marker_coords_2d = _coords_3d_to_2d(marker_coords, self.direction)
         xdata, ydata = marker_coords_2d.T
 
@@ -302,11 +306,9 @@ class GlassBrainAxes(BaseAxes):
             relevant_coords = []
             xcoords, ycoords, zcoords = marker_coords.T
             for cidx, xc in enumerate(xcoords):
-                if self.direction == 'r':
-                    if xc >= 0:
-                        relevant_coords.append(cidx)
-                elif self.direction == 'l':
-                    if xc < 0:
+                if self.direction == 'r' and xc >= 0:
+                    relevant_coords.append(cidx)
+                elif self.direction == 'l' and xc <= 0:
                         relevant_coords.append(cidx)
             xdata = xdata[relevant_coords]
             ydata = ydata[relevant_coords]
