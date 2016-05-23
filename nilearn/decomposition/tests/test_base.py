@@ -96,5 +96,11 @@ def test_base_decomposition():
                         'an empty list was given.',
                         base_decomposition.fit, [])
 
+    # Test passing masker arguments to estimator
+    base_decomposition = BaseDecomposition(target_affine=affine,
+                                           target_shape=shape[:3],
+                                           n_components=3, 
+                                           mask_strategy='background')
+    base_decomposition.fit(data)
 
 # Score is tested in multi_pca
