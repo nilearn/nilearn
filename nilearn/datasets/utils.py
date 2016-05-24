@@ -288,47 +288,48 @@ def _uncompress_file(file_, delete_archive=True, verbose=1):
     if verbose > 0:
         sys.stderr.write('Extracting data from %s...' % file_)
     data_dir = os.path.dirname(file_)
-    # We first try to see if it is a zip file
-    try:
-        filename, ext = os.path.splitext(file_)
-        with open(file_, "rb") as fd:
-            header = fd.read(4)
-        processed = False
-        if zipfile.is_zipfile(file_):
-            z = zipfile.ZipFile(file_)
-            z.extractall(data_dir)
-            z.close()
-            processed = True
-        elif ext == '.gz' or header.startswith(b'\x1f\x8b'):
-            import gzip
-            gz = gzip.open(file_)
-            if ext == '.tgz':
-                filename = filename + '.tar'
-            out = open(filename, 'wb')
-            shutil.copyfileobj(gz, out, 8192)
-            gz.close()
-            out.close()
-            # If file is .tar.gz, this will be handle in the next case
-            if delete_archive:
-                os.remove(file_)
-            file_ = filename
-            filename, ext = os.path.splitext(file_)
-            processed = True
-        if tarfile.is_tarfile(file_):
-            with contextlib.closing(tarfile.open(file_, "r")) as tar:
-                tar.extractall(path=data_dir)
-            processed = True
-        if not processed:
-            raise IOError(
-                    "[Uncompress] unknown archive file format: %s" % file_)
+    
+    filename, ext = os.path.splitext(file_)
+    with open(file_, "rb") as fd:
+        header = fd.read(4)
+    processed = False
+
+    # See it is a zip file first
+    if zipfile.is_zipfile(file_):
+        z = zipfile.ZipFile(file_)
+        z.extractall(data_dir)
+        z.close()
+        processed = True
+    # if not, check if gzip
+    elif ext == '.gz' or header.startswith(b'\x1f\x8b'):
+        import gzip
+        gz = gzip.open(file_)
+        if ext == '.tgz':
+            filename = filename + '.tar'
+        out = open(filename, 'wb')
+        shutil.copyfileobj(gz, out, 8192)
+        gz.close()
+        out.close()
+        # If file is .tar.gz, this will be handle in the next case
         if delete_archive:
             os.remove(file_)
-        if verbose > 0:
-            sys.stderr.write('.. done.\n')
-    except Exception as e:
-        if verbose > 0:
-            print('Error uncompressing file: %s' % e)
-        raise
+        file_ = filename
+        filename, ext = os.path.splitext(file_)
+        processed = True
+
+    # Tarfile id check afterward to handle the case .tar.gz
+    if tarfile.is_tarfile(file_):
+        with contextlib.closing(tarfile.open(file_, "r")) as tar:
+            tar.extractall(path=data_dir)
+        processed = True
+    if not processed:
+        raise IOError(
+            "[Uncompress] Could not uncompress file %s:"
+            "Archive file format unknown" % file_)
+    if delete_archive:
+        os.remove(file_)
+    if verbose > 0:
+        sys.stderr.write('.. done.\n')
 
 
 def _filter_column(array, col, criteria):
@@ -604,6 +605,13 @@ def movetree(src, dst):
         raise Exception(errors)
 
 
+def _clean_and_reraise(temp_dir, exception, prefix):
+    if os.path.exists(temp_dir):
+        shutil.rmtree(temp_dir)
+    return type(exception)(
+        prefix + str(exception)).with_traceback(sys.exc_info()[2])
+
+
 def _fetch_files(data_dir, files, resume=True, mock=False, verbose=1):
     """Load requested dataset, downloading it if needed or requested.
 
@@ -661,9 +669,6 @@ def _fetch_files(data_dir, files, resume=True, mock=False, verbose=1):
     if not os.path.exists(data_dir):
         os.makedirs(data_dir)
 
-    # Abortion flag, in case of error
-    abort = None
-
     files_ = []
     for file_, url, opts in files:
         # 3 possibilities:
@@ -678,9 +683,8 @@ def _fetch_files(data_dir, files, resume=True, mock=False, verbose=1):
         temp_target_file = os.path.join(temp_dir, file_)
         # Whether to keep existing files
         overwrite = opts.get('overwrite', False)
-        if (abort is None and
-                (overwrite or (not os.path.exists(target_file) and not
-                               os.path.exists(temp_target_file)))):
+        if (overwrite or (not os.path.exists(target_file) and
+                          not os.path.exists(temp_target_file))):
 
             # We may be in a global read-only repository. If so, we cannot
             # download files.
@@ -691,22 +695,23 @@ def _fetch_files(data_dir, files, resume=True, mock=False, verbose=1):
 
             if not os.path.exists(temp_dir):
                 os.mkdir(temp_dir)
-            md5sum = opts.get('md5sum', None)
 
+            md5sum = opts.get('md5sum', None)
             dl_file = _fetch_file(url, temp_dir, resume=resume,
                                   verbose=verbose, md5sum=md5sum,
                                   username=opts.get('username', None),
                                   password=opts.get('password', None),
                                   handlers=opts.get('handlers', []),
                                   overwrite=overwrite)
+
             if 'move' in opts:
-                # XXX: here, move is supposed to be a dir, it can be a name
                 move = os.path.join(temp_dir, opts['move'])
                 move_dir = os.path.dirname(move)
                 if not os.path.exists(move_dir):
                     os.makedirs(move_dir)
                 shutil.move(dl_file, move)
                 dl_file = move
+
             if 'uncompress' in opts:
                 try:
                     if not mock or os.path.getsize(dl_file) != 0:
@@ -714,14 +719,25 @@ def _fetch_files(data_dir, files, resume=True, mock=False, verbose=1):
                     else:
                         os.remove(dl_file)
                 except Exception as e:
-                    abort = str(e)
+                    raise _clean_and_reraise(
+                        temp_dir, e,
+                        "Fetching of file %s aborted because archive "
+                        "%s could not be uncompressed. Error:" %
+                        (file_, dl_file)
+                    )
+
             if 'callback' in opts:
                 try:
                     opts['callback'](temp_dir)
                 except Exception as e:
-                    abort = str(e)
-        if (abort is None and not os.path.exists(target_file) and not
-                os.path.exists(temp_target_file)):
+                    raise _clean_and_reraise(
+                        temp_dir, e,
+                        "Fetching of file %s aborted because specific "
+                        "post-processing failed. Error:" % file_
+                    )
+
+        if (not os.path.exists(target_file) and
+                not os.path.exists(temp_target_file)):
             if mock:
                 if not os.path.exists(os.path.dirname(temp_target_file)):
                     os.makedirs(os.path.dirname(temp_target_file))
@@ -730,14 +746,10 @@ def _fetch_files(data_dir, files, resume=True, mock=False, verbose=1):
                 target_file = None
             else:
                 warnings.warn('An error occured while fetching %s' % file_)
-                abort = ("Dataset has been downloaded but requested file was "
-                         "not provided:\nURL: %s\n"
-                         "Target file: %s\nDownloaded: %s" %
-                         (url, target_file, dl_file))
-        if abort is not None:
-            if os.path.exists(temp_dir):
-                shutil.rmtree(temp_dir)
-            raise IOError('Fetching aborted: ' + abort)
+                raise ValueError("Dataset has been downloaded but requested "
+                                 "file was not provided:\nURL: %s\n"
+                                 "Target file: %s\nDownloaded: %s" %
+                                 (url, target_file, dl_file))
         files_.append(target_file)
     # If needed, move files from temps directory to final directory.
     if os.path.exists(temp_dir):
