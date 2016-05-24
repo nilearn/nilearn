@@ -670,6 +670,7 @@ def _fetch_files(data_dir, files, resume=True, mock=False, verbose=1):
         os.makedirs(data_dir)
 
     files_ = []
+    downloaded_urls = []
     for file_, url, opts in files:
         # 3 possibilities:
         # - the file exists in data_dir, nothing to do.
@@ -697,44 +698,47 @@ def _fetch_files(data_dir, files, resume=True, mock=False, verbose=1):
                 os.mkdir(temp_dir)
 
             md5sum = opts.get('md5sum', None)
-            dl_file = _fetch_file(url, temp_dir, resume=resume,
-                                  verbose=verbose, md5sum=md5sum,
-                                  username=opts.get('username', None),
-                                  password=opts.get('password', None),
-                                  handlers=opts.get('handlers', []),
-                                  overwrite=overwrite)
 
-            if 'move' in opts:
-                move = os.path.join(temp_dir, opts['move'])
-                move_dir = os.path.dirname(move)
-                if not os.path.exists(move_dir):
-                    os.makedirs(move_dir)
-                shutil.move(dl_file, move)
-                dl_file = move
+            if not url in downloaded_urls:
+                dl_file = _fetch_file(url, temp_dir, resume=resume,
+                                      verbose=verbose, md5sum=md5sum,
+                                      username=opts.get('username', None),
+                                      password=opts.get('password', None),
+                                      handlers=opts.get('handlers', []),
+                                      overwrite=overwrite)
+                downloaded_urls.append(url)
 
-            if 'uncompress' in opts:
-                try:
-                    if not mock or os.path.getsize(dl_file) != 0:
-                        _uncompress_file(dl_file, verbose=verbose)
-                    else:
-                        os.remove(dl_file)
-                except Exception as e:
-                    raise _clean_and_reraise(
-                        temp_dir, e,
-                        "Fetching of file %s aborted because archive "
-                        "%s could not be uncompressed. Error:" %
-                        (file_, dl_file)
-                    )
+                if 'move' in opts:
+                    move = os.path.join(temp_dir, opts['move'])
+                    move_dir = os.path.dirname(move)
+                    if not os.path.exists(move_dir):
+                        os.makedirs(move_dir)
+                    shutil.move(dl_file, move)
+                    dl_file = move
 
-            if 'callback' in opts:
-                try:
-                    opts['callback'](temp_dir)
-                except Exception as e:
-                    raise _clean_and_reraise(
-                        temp_dir, e,
-                        "Fetching of file %s aborted because specific "
-                        "post-processing failed. Error:" % file_
-                    )
+                if 'uncompress' in opts:
+                    try:
+                        if not mock or os.path.getsize(dl_file) != 0:
+                            _uncompress_file(dl_file, verbose=verbose)
+                        else:
+                            os.remove(dl_file)
+                    except Exception as e:
+                        raise _clean_and_reraise(
+                            temp_dir, e,
+                            "Fetching of file %s aborted because archive "
+                            "%s could not be uncompressed. Error:" %
+                            (file_, dl_file)
+                        )
+
+                if 'callback' in opts:
+                    try:
+                        opts['callback'](temp_dir)
+                    except Exception as e:
+                        raise _clean_and_reraise(
+                            temp_dir, e,
+                            "Fetching of file %s aborted because specific "
+                            "post-processing failed. Error:" % file_
+                        )
 
         if (not os.path.exists(target_file) and
                 not os.path.exists(temp_target_file)):

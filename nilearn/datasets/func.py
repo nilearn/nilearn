@@ -1615,6 +1615,11 @@ def fetch_acpi(n_subjects=10, preprocessing='ANTS', scrubbing=False,
         # Here we use the file that provides URL for all others
         url = "https://s3.amazonaws.com/fcp-indi/data/Projects/ACPI"
 
+    if not preprocessing in ['ANTS', 'FNIRT']:
+        raise ValueError(
+            'Unknown value "%s" for preprocessing parameter. '
+            'Possible values are "ANTS" and "FNIRT".' % preprocessing)
+
     dataset_name = 'acpi'
     data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
                                 verbose=verbose)
