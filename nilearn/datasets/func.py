@@ -1575,10 +1575,10 @@ def fetch_acpi(n_subjects=10, preprocessing='ANTS', scrubbing=False,
 
     preprocessing: string, optional
         Preprocessing pipeline to use. Possible values are "ANTS" and "FNIRT".
-        ANTS is the default.
+        Default: "ANTS".
 
     scrubbing: boolean, optional
-        Whether or not to load scrubbed dataset. Default is False.
+        Whether or not to load scrubbed dataset. Default: False.
 
     global_signal_regression: boolean, optional
         Whether or not to load data where global signal has been regressed.
