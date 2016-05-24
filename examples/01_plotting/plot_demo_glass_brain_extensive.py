@@ -36,8 +36,6 @@ plotting.plot_glass_brain(localizer_tmap_filename, threshold=0, colorbar=True,
 plotting.plot_glass_brain(localizer_tmap_filename, threshold=3,
                           colorbar=True, plot_abs=False)
 
-plotting.show()
-
 ###############################################################################
 # Hemispheric sagittal cuts
 

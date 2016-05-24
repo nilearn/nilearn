@@ -145,6 +145,14 @@ Different display modes
      :target: ../auto_examples/01_plotting/plot_demo_more_plotting.html
      :scale: 50
 
+.. |plot_lzr| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_demo_glass_brain_extensive_006.png
+     :target: ../auto_examples/01_plotting/plot_demo_glass_brain_extensive.html
+     :scale: 50
+
+.. |plot_lyrz| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_demo_glass_brain_extensive_007.png
+     :target: ../auto_examples/01_plotting/plot_demo_glass_brain_extensive.html
+     :scale: 50
+
 
 ================= =========================================================
 ================= =========================================================
@@ -186,6 +194,18 @@ Different display modes
                    |hack|
                    Cutting in the y and z direction, with cuts manually
                    positionned
+
+|plot_lzr|         `Glass brain display_mode='lzr'`
+                   |hack|
+                   Glass brain and Connectome provide additional display modes
+                   due to the possibility of doing hemispheric projections.
+                   Check out: 'l', 'r', 'lr', 'lzr', 'lyr', 'lzry', 'lyrz'.
+
+|plot_lyrz|        `Glass brain display_mode='lyrz'`
+                   |hack|
+                   Glass brain and Connectome provide additional display modes
+                   due to the possibility of doing hemispheric projections.
+                   Check out: 'l', 'r', 'lr', 'lzr', 'lyr', 'lzry', 'lyrz'.
 
 
 ================= =========================================================
