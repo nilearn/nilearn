@@ -9,6 +9,7 @@ from sklearn.datasets.base import Bunch
 from .utils import _get_dataset_dir, _fetch_files, _get_dataset_descr
 
 from .._utils import check_niimg
+from ..image import new_img_like
 
 
 def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
@@ -116,6 +117,25 @@ def load_mni152_template():
 
     # XXX Should we load the image here?
     return check_niimg(path)
+
+
+def load_brain_mask():
+    """Load grey matter mask from MNI template
+
+    Returns
+    -------
+    mask_img: Masked Nifti-like image corresponding to grey matter
+
+    References
+    ----------
+    Refer to load_mni152_template function for more information about MNI
+    template
+    """
+    # Load MNI template
+    target_img = load_mni152_template()
+    mask_voxels = (target_img.get_data() > 0).astype(int)
+    mask_img = new_img_like(target_img, mask_voxels)
+    return mask_img
 
 
 def fetch_oasis_vbm(n_subjects=None, dartel_version=True, data_dir=None,
