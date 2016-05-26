@@ -119,12 +119,12 @@ def load_mni152_template():
     return check_niimg(path)
 
 
-def load_brain_mask():
-    """Load grey matter mask from MNI template
+def load_mni152_brain_mask():
+    """Load brain mask from MNI152 template
 
     Returns
     -------
-    mask_img: Masked Nifti-like image corresponding to grey matter
+    mask_img: Nifti-like mask image corresponding to grey and white matter.
 
     References
     ----------

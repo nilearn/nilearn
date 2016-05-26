@@ -144,8 +144,8 @@ def test_load_mni152_template():
     assert_equal(template_nii.get_header().get_zooms(), (2.0, 2.0, 2.0))
 
 
-def test_load_brain_mask():
-    brain_mask = struct.load_brain_mask()
+def test_load_mni152_brain_mask():
+    brain_mask = struct.load_mni152_brain_mask()
     assert_true(isinstance(brain_mask, nibabel.Nifti1Image))
     # standard MNI template shape
     assert_equal(brain_mask.shape, (91, 109, 91))
