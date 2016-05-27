@@ -7,25 +7,24 @@ test_signal.py for this.
 """
 # Author: Gael Varoquaux, Philippe Gervais
 # License: simplified BSD
-from tempfile import mkdtemp
-import shutil
 import os
+import shutil
 from distutils.version import LooseVersion
+from tempfile import mkdtemp
 
-from nose.tools import assert_true, assert_false, assert_raises
-from nose import SkipTest
+import nibabel
 import numpy as np
+from nibabel import Nifti1Image
+from nose import SkipTest
+from nose.tools import assert_true, assert_false, assert_raises
 from numpy.testing import assert_array_equal, assert_equal
 
-from nibabel import Nifti1Image
-import nibabel
-
-from nilearn.input_data.nifti_masker import NiftiMasker, filter_and_mask
 from nilearn._utils import testing
-from nilearn._utils.exceptions import DimensionError
-from nilearn.image import index_img
-from nilearn._utils.testing import assert_raises_regex
 from nilearn._utils.class_inspect import get_params
+from nilearn._utils.exceptions import DimensionError
+from nilearn._utils.testing import assert_raises_regex
+from nilearn.image import index_img
+from nilearn.input_data.nifti_masker import NiftiMasker, filter_and_mask
 
 
 def test_auto_mask():
@@ -322,8 +321,6 @@ def test_filter_and_mask_error():
                         "a 4D image.",
                         filter_and_mask,
                         data_img, mask_img, params)
-    assert_raises_regex(DimensionError, "Data must be a 3D", filter_and_mask,
-                         data_img, mask_img, params)
 
 
 def test_filter_and_mask():

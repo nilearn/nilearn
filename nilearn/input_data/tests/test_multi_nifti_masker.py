@@ -4,23 +4,21 @@ Test the multi_nifti_masker module
 # Author: Gael Varoquaux
 # License: simplified BSD
 import shutil
+from distutils.version import LooseVersion
 from tempfile import mkdtemp
 
-import sklearn
-
-from sklearn.externals.joblib import Memory
-from nose.tools import assert_true, assert_false, assert_raises, assert_equal
-from nose import SkipTest
-import numpy as np
-from numpy.testing import assert_array_equal
-
-from nibabel import Nifti1Image
 import nibabel
-from distutils.version import LooseVersion
+import numpy as np
+import sklearn
+from nibabel import Nifti1Image
+from nose import SkipTest
+from nose.tools import assert_true, assert_false, assert_raises, assert_equal
+from numpy.testing import assert_array_equal
+from sklearn.externals.joblib import Memory
 
-from nilearn.input_data.multi_nifti_masker import MultiNiftiMasker
-from nilearn._utils.testing import assert_raises_regex, write_tmp_imgs
 from nilearn._utils.exceptions import DimensionError
+from nilearn._utils.testing import assert_raises_regex, write_tmp_imgs
+from nilearn.input_data.multi_nifti_masker import MultiNiftiMasker
 
 
 def test_auto_mask():
@@ -147,9 +145,11 @@ def test_shelving():
                                affine=np.diag((2, 2, 2, 1)))
         cachedir = mkdtemp()
         try:
-            masker_shelved = MultiNiftiMasker(mask_img=mask_img, shelve=True)
-            masker_shelved.memory = Memory(cachedir=cachedir, mmap_mode='r',
-                                   verbose=0)
+            masker_shelved = MultiNiftiMasker(mask_img=mask_img,
+                                              memory=Memory(cachedir=cachedir,
+                                                            mmap_mode='r',
+                                                            verbose=0))
+            masker_shelved._activate_shelving()
             masker = MultiNiftiMasker(mask_img=mask_img)
             epis_shelved = masker_shelved.fit_transform([epi_img1, epi_img2])
             epis = masker.fit_transform([epi_img1, epi_img2])
