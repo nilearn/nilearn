@@ -8,6 +8,8 @@ import collections
 import itertools
 import warnings
 
+from sklearn.externals.joblib import Memory, Parallel, delayed
+
 from nilearn import _utils
 from nilearn import image
 from nilearn import masking
@@ -15,8 +17,6 @@ from nilearn._utils import CacheMixin
 from nilearn._utils.class_inspect import get_params
 from nilearn._utils.compat import _basestring, izip
 from nilearn._utils.niimg_conversions import _iter_check_niimg
-from sklearn.externals.joblib import Memory, Parallel, delayed
-
 from .nifti_masker import NiftiMasker, filter_and_mask
 
 
@@ -93,13 +93,6 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
         The number of CPUs to use to do the computation. -1 means
         'all CPUs', -2 'all CPUs but one', and so on.
 
-    shelve: boolean,
-        If True, the transform method will shelve the result on disk and return
-        an object region_signals with method get: region_signals.get() yields
-        the maked array.
-        Useful to parallelize the masking of records before entering a
-        sequential pipeline.
-
     verbose: integer, optional
         Indicate the level of verbosity. By default, nothing is printed
 
@@ -125,7 +118,6 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
                  target_affine=None, target_shape=None,
                  mask_strategy='background', mask_args=None,
                  memory=Memory(cachedir=None), memory_level=0,
-                 shelve=False,
                  n_jobs=1, verbose=0
                  ):
         # Mask is provided or computed
@@ -146,8 +138,9 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
         self.memory_level = memory_level
         self.n_jobs = n_jobs
 
-        self.shelve = shelve
         self.verbose = verbose
+
+        self._shelving = False
 
     def fit(self, imgs=None, y=None):
         """Compute the mask corresponding to the data
@@ -279,7 +272,7 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
         func = self._cache(filter_and_mask,
                            ignore=['verbose', 'memory', 'memory_level',
                                    'copy'],
-                           shelve=self.shelve)
+                           shelve=self._shelving)
         data = Parallel(n_jobs=n_jobs)(
             delayed(func)(imgs, self.mask_img_, params,
                           memory_level=self.memory_level,

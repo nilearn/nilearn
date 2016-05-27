@@ -5,15 +5,16 @@ Transformer used to apply basic transformations on MRI data.
 # License: simplified BSD
 
 from copy import copy as copy_object
+
 from sklearn.externals.joblib import Memory
 
-from .. import masking
-from .. import image
+from nilearn._utils.niimg_conversions import _check_same_fov
+from .base_masker import BaseMasker, filter_and_extract
 from .. import _utils
+from .. import image
+from .. import masking
 from .._utils import CacheMixin
 from .._utils.class_inspect import get_params
-from .base_masker import BaseMasker, filter_and_extract
-from nilearn._utils.niimg_conversions import _check_same_fov
 
 
 class _ExtractionFunctor(object):
@@ -142,13 +143,6 @@ class NiftiMasker(BaseMasker, CacheMixin):
         Rough estimator of the amount of memory used by caching. Higher value
         means more memory for caching.
 
-    shelve: boolean,
-        If true, the transform method will shelve the result on disk and return
-        an object region_signals with method get: region_signals.get() yields
-        the maked array.
-        Useful to parallelize the masking of records before entering a
-        sequential pipeline.
-
     verbose : integer, optional
         Indicate the level of verbosity. By default, nothing is printed
 
@@ -176,7 +170,6 @@ class NiftiMasker(BaseMasker, CacheMixin):
                  mask_strategy='background',
                  mask_args=None, sample_mask=None,
                  memory_level=1, memory=Memory(cachedir=None),
-                 shelve=False,
                  verbose=0
                  ):
         # Mask is provided or computed
@@ -197,8 +190,25 @@ class NiftiMasker(BaseMasker, CacheMixin):
 
         self.memory = memory
         self.memory_level = memory_level
-        self.shelve = shelve
         self.verbose = verbose
+
+        self._shelving = False
+
+    def _deactivate_shelving(self):
+        self._shelving = True
+
+    def _activate_shelving(self):
+        """Activate shelving.
+
+        When shelving is activated, the transform method will shelve the result
+        on disk and return an object region_signals with method get:
+        region_signals.get() yields the maked array.
+        Useful to parallelize the masking of records before entering a
+        sequential pipeline."""
+        self._shelving = True
+
+    def _toggle_shelving(self):
+        self._shelving = not self._shelving
 
     def _check_fitted(self):
         if not hasattr(self, 'mask_img_'):
@@ -294,7 +304,7 @@ class NiftiMasker(BaseMasker, CacheMixin):
         data = self._cache(filter_and_mask,
                            ignore=['verbose', 'memory', 'memory_level',
                                    'copy'],
-                           shelve=self.shelve)(
+                           shelve=self._shelving)(
             imgs, self.mask_img_, params,
             memory_level=self.memory_level,
             memory=self.memory,
