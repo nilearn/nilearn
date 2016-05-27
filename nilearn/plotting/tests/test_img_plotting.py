@@ -550,7 +550,7 @@ def test_plot_prob_atlas():
     plot_prob_atlas(img, view_type='continuous')
     plt.close()
     # Testing the 4D plot prob atlas with colormap
-    plot_prob_atlas(img, view_type='continuous', colorbar=True)
+    plot_prob_atlas(img, view_type='filled_contours', colorbar=True)
     plt.close()
 
 
