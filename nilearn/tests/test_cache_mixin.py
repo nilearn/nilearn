@@ -11,7 +11,7 @@ from distutils.version import LooseVersion
 import sklearn
 from nose.tools import assert_false, assert_true, assert_equal
 from sklearn.externals.joblib import Memory
-from sklearn.utils.testing import assert_raises_regex
+from sklearn.utils.testing import assert_raises_regexp
 
 import nilearn
 from nilearn._utils import cache_mixin, CacheMixin
@@ -169,7 +169,7 @@ def test_cache_shelving():
             assert_equal(res.get(), 2)
             assert_equal(len(glob.glob(job_glob)), 1)
         else:
-            assert_raises_regex(ValueError, 'Shelving is only available'
+            assert_raises_regexp(ValueError, 'Shelving is only available'
                                             ' if scikit-learn>=0.15'
                                             ' is installed.',
                                 cache_mixin.cache,
