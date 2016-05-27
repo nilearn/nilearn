@@ -61,6 +61,8 @@ def _edge_detect(image, high_threshold=.75, low_threshold=.4):
     # This code is loosely based on code by Stefan van der Waalt
     # Convert to floats to avoid overflows
     np_err = np.seterr(all='ignore')
+    # Replace NaNs by 0s to avoid meaningless outputs
+    image[np.isnan(image)] = 0
     img = signal.wiener(image.astype(np.float))
     np.seterr(**np_err)
     # Where the noise variance is 0, Wiener can create nans
