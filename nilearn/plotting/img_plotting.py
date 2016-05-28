@@ -683,21 +683,24 @@ def plot_prob_atlas(maps_img, anat_img=MNI152TEMPLATE, view_type='auto',
             along with color fillings inside the contours.
             If view_type == 'continuous', maps are overlayed as continous
             colors irrespective of the number maps.
-        threshold : 'auto', None, a str or a number, str or numbers in list
-            Optional parameter is used to threshold the maps image and the
-            values which lies above the threshold level will be visualized.
-            By default 'auto', maps are thresholded automatically by finding
-            a value with the input maps data.
-            If None, maps are visualized as it is without any threshold.
-            If string, it must finish with a percent sign, e.g., "25.3%",
-            thresholding is the percentile of values in input data. If a
-            single string is provided, the same percentile will be applied to
-            each 3D map. Otherwise, if a list of percentiles is provided, each
-            map is thresholded with each percentile sequentially. Length of
-            percentiles given should match with the number of 3D map in time
-            (4th) dimension.
+        threshold : 'auto', a str or a number, list of str or numbers, None
+            This parameter is optional and is used to threshold the maps image
+            using the given value or automized value. The values in the image
+            which lies above the threshold level will be visualized.
+            The default strategy, corresponding to 'auto', computes a threshold
+            level that seeks to minimize (yet not eliminate completely) the
+            overlap between several maps for a better visualization.
+            The threshold can also be expressed as a percentile over the values
+            of the whole atlas. In that case, the value must be specified as
+            string finishing with a percent sign, e.g., "25.3%".
+            If a single string is provided, the same percentile will be applied
+            over the whole atlas. Otherwise, if a list of percentiles is
+            provided, each 3D map is thresholded with certain percentile
+            sequentially. Length of percentiles given should match with the
+            number of 3D map in time (4th) dimension.
             If a number or a list of numbers, the given value will be used
             directly to threshold the maps without any percentile calculation.
+            If None, no threshold will be applied.
         linewidths : float, optional
             This option can be used to set the boundary thickness of the
             contours.
