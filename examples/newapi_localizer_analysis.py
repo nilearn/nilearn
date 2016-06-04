@@ -24,7 +24,6 @@ import pandas as pd
 from nilearn import plotting
 
 from nistats.first_level_model import FirstLevelModel
-from nistats.design_matrix import make_design_matrix
 from nistats import datasets
 
 
@@ -43,18 +42,14 @@ fmri_img = data.epi_img
 
 
 ### Perform a GLM analysis ########################################
-
-# @profile(precision=4)
-def profile_fmri(model, fmri_img, paradigm):
-    return model.fit(fmri_img, paradigm)
-
 first_level_model = FirstLevelModel(t_r, slice_time_ref,
                                     hrf_model='canonical with derivative',
-                                    n_jobs=7)
-first_level_model = profile_fmri(first_level_model, fmri_img, paradigm)
+                                    n_jobs=1, minimize_memory=True,
+                                    memory='my_cache')
+first_level_model = first_level_model.fit(fmri_img, paradigm)
+
 
 # Estimate contrasts #########################################
-
 # Specify the contrasts
 design_matrix = first_level_model.get_design_matrices()[0]
 contrast_matrix = np.eye(design_matrix.shape[1])
@@ -86,16 +81,16 @@ if not path.exists(write_dir):
     mkdir(write_dir)
 
 # contrast estimation 
-for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
+for index, (contrast_id, contrast_val) in enumerate(contrasts.items()[:-3]):
     print('  Contrast % 2i out of %i: %s' %
           (index + 1, len(contrasts), contrast_id))
-    z_map, = first_level_model.transform(contrast_val,
-                                         contrast_name=contrast_id,
-                                         output_z=True)
+    z_map = first_level_model.compute_contrast(contrast_val,
+                                               contrast_name=contrast_id,
+                                               output_type='z_score')
 
     # Create snapshots of the contrasts
     display = plotting.plot_stat_map(z_map, display_mode='z',
                                      threshold=3.0, title=contrast_id)
     display.savefig(path.join(write_dir, '%s_z_map.png' % contrast_id))
 
-plotting.show()
+# plotting.show()

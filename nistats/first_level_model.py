@@ -18,7 +18,6 @@ import time
 import sys
 
 import numpy as np
-import scipy.stats as sps
 import pandas as pd
 from nibabel import Nifti1Image
 
@@ -30,14 +29,10 @@ from nilearn._utils.class_inspect import get_params
 from nilearn.input_data import NiftiMasker
 from sklearn.externals.joblib import Parallel, delayed, cpu_count
 
-from nilearn.masking import compute_multi_epi_mask as compute_mask_sessions
-
 from .regression import OLSModel, ARModel
 from .design_matrix import make_design_matrix
-from .utils import multiple_mahalanobis, z_score, _basestring
-
-DEF_TINY = 1e-50
-DEF_DOFMAX = 1e10
+from .contrasts import compute_contrast
+from .utils import _basestring
 
 
 def percent_mean_scaling(Y, axis=0):
@@ -93,7 +88,16 @@ class GroupIterator(object):
             yield list_i
 
 
-def _group_iter_session_glm(Y, X, noise_model, bins, thread_id):
+def _minimize_memory_regression_results(results):
+    del results.Y
+    del results.model
+    del results.wY
+    del results.wresid
+    return results
+
+
+@profile
+def _group_iter_run_glm(Y, X, noise_model, bins, minimize_memory, thread_id):
     """Function for grouped iterations of given function
 
     Parameters
@@ -122,13 +126,13 @@ def _group_iter_session_glm(Y, X, noise_model, bins, thread_id):
     # fit the OLS model
     ols_result = OLSModel(X).fit(Y)
 
-    # compute and discretize the AR1 coefs
-    ar1 = ((ols_result.resid[1:] * ols_result.resid[:-1]).sum(axis=0) /
-           (ols_result.resid ** 2).sum(axis=0))
-    ar1 = (ar1 * bins).astype(np.int) * 1. / bins
-
-    # Fit the AR model acccording to current AR(1) estimates
     if noise_model == 'ar1':
+        # compute and discretize the AR1 coefs
+        ar1 = ((ols_result.resid[1:] * ols_result.resid[:-1]).sum(axis=0) /
+               (ols_result.resid ** 2).sum(axis=0))
+        del ols_result
+        ar1 = (ar1 * bins).astype(np.int) * 1. / bins
+        # Fit the AR model acccording to current AR(1) estimates
         results = {}
         labels = ar1 + (thread_id * 1000)
         # fit the model
@@ -136,13 +140,18 @@ def _group_iter_session_glm(Y, X, noise_model, bins, thread_id):
             model = ARModel(X, val)
             key = val + (thread_id * 1000)
             results[key] = model.fit(Y[:, labels == key])
+            if minimize_memory:
+                results[key] = _minimize_memory_regression_results(results[key])
+        del ar1
     else:
         labels = np.zeros(Y.shape[1]) + (thread_id * 1000)
         results = {0.0 + (thread_id * 1000): ols_result}
     return labels, results
 
 
-def session_glm(Y, X, noise_model='ar1', bins=100, n_jobs=1, verbose=0):
+@profile
+def run_glm(Y, X, noise_model='ar1', bins=100, n_jobs=1, verbose=0,
+            minimize_memory=False):
     """ GLM fit for an fMRI data matrix
 
     Parameters
@@ -191,8 +200,8 @@ def session_glm(Y, X, noise_model='ar1', bins=100, n_jobs=1, verbose=0):
     group_iter = GroupIterator(n_voxels, n_jobs)
 
     res = Parallel(n_jobs=n_jobs, verbose=verbose)(
-        delayed(_group_iter_session_glm)(Y[:, voxels], X, noise_model, bins,
-                                         thread_id)
+        delayed(_group_iter_run_glm)(Y[:, voxels], X, noise_model, bins,
+                                     minimize_memory, thread_id)
         for thread_id, voxels in enumerate(group_iter))
 
     labels, reg_res = zip(*res)
@@ -202,64 +211,6 @@ def session_glm(Y, X, noise_model='ar1', bins=100, n_jobs=1, verbose=0):
         results.update(reg)
 
     return labels, results
-
-
-def compute_contrast(labels, regression_result, con_val, contrast_type=None):
-    """ Compute the specified contrast given an estimated glm
-
-    Parameters
-    ----------
-    labels : array of shape (n_voxels,),
-        A map of values on voxels used to identify the corresponding model
-
-    results : dict,
-        With keys corresponding to the different labels
-        values are RegressionResults instances corresponding to the voxels.
-
-    con_val : numpy.ndarray of shape (p) or (q, p)
-        Where q = number of contrast vectors and p = number of regressors.
-
-    contrast_type : {None, 't', 'F'}, optional
-        Type of the contrast.  If None, then defaults to 't' for 1D
-        `con_val` and 'F' for 2D `con_val`
-
-    Returns
-    -------
-    con : Contrast instance,
-        Yields the statistics of the contrast (effects, variance, p-values)
-    """
-    con_val = np.asarray(con_val)
-    dim = 1
-    if con_val.ndim > 1:
-        dim = con_val.shape[0]
-
-    if contrast_type is None:
-        contrast_type = 't' if dim == 1 else 'F'
-
-    acceptable_contrast_types = ['t', 'F']
-    if contrast_type not in acceptable_contrast_types:
-        raise ValueError(
-            '"{0}" is not a known contrast type. Allowed types are {1}'.
-            format(contrast_type, acceptable_contrast_types))
-
-    effect_ = np.zeros((dim, labels.size))
-    var_ = np.zeros((dim, dim, labels.size))
-    if contrast_type == 't':
-        for label_ in regression_result:
-            label_mask = labels == label_
-            resl = regression_result[label_].Tcontrast(con_val)
-            effect_[:, label_mask] = resl.effect.T
-            var_[:, :, label_mask] = (resl.sd ** 2).T
-    else:
-        for label_ in regression_result:
-            label_mask = labels == label_
-            resl = regression_result[label_].Fcontrast(con_val)
-            effect_[:, label_mask] = resl.effect
-            var_[:, :, label_mask] = resl.covariance
-
-    dof_ = regression_result[label_].df_resid
-    return Contrast(effect=effect_, variance=var_, dof=dof_,
-                    contrast_type=contrast_type)
 
 
 def _check_list_length_match(list_1, list_2, var_name_1, var_name_2):
@@ -282,6 +233,14 @@ def _check_and_load_tables(tables_, var_name):
                             'string. A %s was provided at idx %d' %
                             (var_name, type(table), table_idx))
     return tables
+
+
+def _check_run_tables(run_imgs, tables_, tables_name):
+    if isinstance(tables_, (_basestring, pd.DataFrame)):
+        tables_ = [tables_]
+    _check_list_length_match(run_imgs, tables_, 'run_imgs', tables_name)
+    tables_ = _check_and_load_tables(tables_, tables_name)
+    return tables_
 
 
 class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
@@ -354,10 +313,9 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         If smoothing_fwhm is not None, it gives the size in millimeters of the
         spatial smoothing to apply to the signal.
 
-    memory: instance of joblib.Memory or string
-        Used to cache the masking process.
-        By default, no caching is done. If a string is given, it is the
-        path to the caching directory.
+    memory: string, optional
+        Path to the directory used to cache the masking process and the glm
+        fit. By default, no caching is done. Creates instance of joblib.Memory.
 
     memory_level: integer, optional
         Rough estimator of the amount of memory used by caching. Higher value
@@ -392,13 +350,14 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         values are RegressionResults instances corresponding to the voxels
     """
 
-    def __init__(self, t_r, slice_time_ref=0., hrf_model='canonical',
+    def __init__(self, t_r=None, slice_time_ref=None, hrf_model='canonical',
                  drift_model='cosine', period_cut=128, drift_order=1,
                  fir_delays=[0], min_onset=-24, mask=None, target_affine=None,
                  target_shape=None, low_pass=None, high_pass=None,
-                 smoothing_fwhm=None, memory=Memory(None), memory_level=1,
+                 smoothing_fwhm=None, memory=None, memory_level=1,
                  standardize=False, percent_signal_change=True,
-                 noise_model='ar1', verbose=1, n_jobs=1):
+                 noise_model='ar1', verbose=1, n_jobs=1,
+                 minimize_memory=False):
         # design matrix parameters
         self.t_r = t_r
         self.slice_time_ref = slice_time_ref
@@ -415,7 +374,7 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         self.low_pass = low_pass
         self.high_pass = high_pass
         self.smoothing_fwhm = smoothing_fwhm
-        self.memory = memory
+        self.memory = Memory(memory)
         self.memory_level = memory_level
         self.standardize = standardize
         self.percent_signal_change = percent_signal_change
@@ -424,6 +383,7 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         self.noise_model = noise_model
         self.verbose = verbose
         self.n_jobs = n_jobs
+        self.minimize_memory = minimize_memory
 
     def get_model_parameters(self, ignore=None):
         """Get model parameters as a dictionary.
@@ -440,7 +400,9 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         """
         return get_params(FirstLevelModel, self, ignore=ignore)
 
-    def fit(self, run_imgs, paradigms, confounds=None):
+    @profile
+    def fit(self, run_imgs, paradigms=None, confounds=None,
+            design_matrices=None):
         """ Fit the GLM
 
         For each run:
@@ -458,28 +420,40 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         paradigms: pandas Dataframe or string or list of pandas DataFrames or
                    strings,
             fMRI paradigms used to build design matrices. One paradigm expected
-            per run_img.
+            per run_img. Ignored in case designs is not None.
 
         confounds: pandas Dataframe or string or list of pandas DataFrames or
                    strings,
             Each column in a DataFrame corresponds to a confound variable
             to be included in the regression model of the respective run_img.
             The number of rows must match the number of volumes in the
-            respective run_img.
+            respective run_img. Ignored in case designs is not None.
+
+        design_matrices: pandas DataFrame or list of pandas DataFrames,
+            Design matrices that will be used to fit the GLM.
         """
         # Check arguments
         if isinstance(run_imgs, (_basestring, Nifti1Image)):
             run_imgs = [run_imgs]
-        if isinstance(paradigms, (_basestring, pd.DataFrame)):
-            paradigms = [paradigms]
-        _check_list_length_match(run_imgs, paradigms, 'run_imgs', 'paradigms')
-        paradigms = _check_and_load_tables(paradigms, 'paradigms')
+
+        if design_matrices is None:
+            if paradigms is None:
+                raise ValueError('paradigms or design matrices must be provided')
+            if self.t_r is None:
+                raise ValueError('t_r not given to FirstLevelModel object'
+                                 'to compute design from paradigm')
+            if self.slice_time_ref is None:
+                raise ValueError('slice_time_ref not given to FirstLevelModel'
+                                 'object to compute design from paradigm')
+        else:
+            design_matrices = _check_run_tables(run_imgs, design_matrices,
+                                                'design_matrices')
+
+        if paradigms is not None:
+            paradigms = _check_run_tables(run_imgs, paradigms, 'paradigms')
+
         if confounds is not None:
-            if isinstance(confounds, (_basestring, pd.DataFrame)):
-                confounds = [confounds]
-            _check_list_length_match(run_imgs, confounds, 'run_imgs',
-                                     'confounds')
-            confounds = _check_and_load_tables(confounds, 'confounds')
+            confounds = _check_run_tables(run_imgs, confounds, 'confounds')
 
         # Learn the mask
         if not isinstance(self.mask, NiftiMasker):
@@ -527,41 +501,57 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
 
             # Build the experimental design for the glm
             run_img = check_niimg(run_img, ensure_ndim=4)
-            n_scans = run_img.get_data().shape[3]
-            if confounds is not None:
-                confounds_matrix = confounds[run_idx].values
-                if confounds_matrix.shape[0] != n_scans:
-                    raise ValueError('Rows in confounds does not match n_scans'
-                                     ' in run_img at index %d' % (run_idx,))
-                confounds_names = confounds[run_idx].columns
+            if design_matrices is None:
+                n_scans = run_img.get_data().shape[3]
+                if confounds is not None:
+                    confounds_matrix = confounds[run_idx].values
+                    if confounds_matrix.shape[0] != n_scans:
+                        raise ValueError('Rows in confounds does not match'
+                                         'n_scans in run_img at index %d'
+                                         % (run_idx,))
+                    confounds_names = confounds[run_idx].columns
+                else:
+                    confounds_matrix = None
+                    confounds_names = None
+                start_time = self.slice_time_ref * self.t_r
+                end_time = (n_scans - self.slice_time_ref) * self.t_r
+                frame_times = np.linspace(start_time, end_time, n_scans)
+                design = make_design_matrix(frame_times, paradigms[run_idx],
+                                            self.hrf_model, self.drift_model,
+                                            self.period_cut, self.drift_order,
+                                            self.fir_delays, confounds_matrix,
+                                            confounds_names, self.min_onset)
             else:
-                confounds_matrix = None
-                confounds_names = None
-            start_time = self.slice_time_ref * self.t_r
-            end_time = (n_scans - self.slice_time_ref) * self.t_r
-            frame_times = np.linspace(start_time, end_time, n_scans)
-            design = make_design_matrix(frame_times, paradigms[run_idx],
-                                        self.hrf_model, self.drift_model,
-                                        self.period_cut, self.drift_order,
-                                        self.fir_delays, confounds_matrix,
-                                        confounds_names, self.min_onset)
+                design = design_matrices[run_idx]
             self.design_matrices_.append(design)
 
             # Compute GLM
-            Y = self.masker_.transform(run_img)
+            @profile
+            def masking(run_img):
+                return self.masker_.transform(run_img)
+            Y = masking(run_img)
+
+            # Y = self.masker_.transform(run_img)
             if self.percent_signal_change:
                 Y, _ = percent_mean_scaling(Y)
-            labels_, results_ = session_glm(Y, design,
-                                            noise_model=self.noise_model,
-                                            bins=100, n_jobs=self.n_jobs)
-            self.labels_.append(labels_)
-            self.results_.append(results_)
-            del run_img
+            if self.memory is not None:
+                mem_glm = self.memory.cache(run_glm)
+            else:
+                mem_glm = run_glm
+            labels, results = mem_glm(Y, design,
+                                      noise_model=self.noise_model,
+                                      bins=100, n_jobs=self.n_jobs,
+                                      minimize_memory=self.minimize_memory)
+            # if self.minimize_memory:
+            #     for key in results:
+            #         results[key] = _minimize_memory_regression_results(results[key])
+            self.labels_.append(labels)
+            self.results_.append(results)
             del Y
 
         # Report progress
         if self.verbose > 0:
-            sys.stderr.write("Computation of %d runs done in %i seconds"
+            sys.stderr.write("\nComputation of %d runs done in %i seconds\n"
                              % (n_runs, time.time() - t0))
 
         return self
@@ -579,21 +569,9 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         else:
             return self.design_matrices_
 
-    def compute_cache_dir():
-        pass
-
-    def compute_contrast():
-        pass
-
-    def save():
-        pass
-
-    def summary():
-        pass
-
-    def transform(self, con_vals, contrast_type=None, contrast_name='',
-                  output_z=True, output_stat=False, output_effects=False,
-                  output_variance=False):
+    def compute_contrast(self, contrast_def, contrast_name=None,
+                         stat_type=None,
+                         output_type='z_score'):
         """Generate different outputs corresponding to
         the contrasts provided e.g. z_map, t_map, effects and variance.
         In multi-session case, outputs the fixed effects map.
@@ -604,32 +582,29 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
             where ``n_col`` is the number of columns of the design matrix,
             numerical definition of the contrast (one array per run)
 
-        contrast_type : {'t', 'F'}, optional
-            type of the contrast
-
         contrast_name : str, optional
             name of the contrast
 
-        output_z : bool, optional
-            Return or not the corresponding z-stat image
+        stat_type : {'t', 'F'}, optional
+            type of the contrast
 
-        output_stat : bool, optional
-            Return or not the base (t/F) stat image
-
-        output_effects : bool, optional
-            Return or not the corresponding effect image
-
-        output_variance : bool, optional
-            Return or not the corresponding variance image
+        output_type : str, optional
+            Type of the output map. Can be 'z_score', 'stat', 'p_value',
+            'effect' or 'variance'
 
         Returns
         -------
-        output_images : list of Nifti1Images
-            The desired output images
+        output_image : Nifti1Image
+            The desired output image
 
         """
         if self.labels_ is None or self.results_ is None:
             raise ValueError('The model has not been fit yet')
+
+        if isinstance(contrast_def, (_basestring)):
+            raise ValueError('Formulas not implemented yet')
+        elif isinstance(contrast_def, (list, np.ndarray)):
+            con_vals = contrast_def
 
         if isinstance(con_vals, np.ndarray):
             con_vals = [con_vals]
@@ -643,216 +618,19 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
                 self.labels_, self.results_, con_vals)):
             if np.all(con_val == 0):
                 warn('Contrast for session %d is null' % i)
+                continue
             contrast_ = compute_contrast(labels_, results_, con_val,
-                                         contrast_type)
+                                         stat_type)
             if contrast is None:
                 contrast = contrast_
             else:
                 contrast = contrast + contrast_
 
-        if output_z or output_stat:
-            # compute the contrast and stat
-            contrast.z_score()
-
+        estimate_ = getattr(contrast, output_type)()
         # Prepare the returned images
-        do_outputs = [output_z, output_stat, output_effects, output_variance]
-        estimates = ['z_score_', 'stat_', 'effect', 'variance']
-        descrips = ['z statistic', 'Statistical value', 'Estimated effect',
-                    'Estimated variance']
-        output_images = []
-        for do_output, estimate, descrip in zip(
-                do_outputs, estimates, descrips):
-            if not do_output:
-                continue
-            estimate_ = getattr(contrast, estimate)
-            if estimate_.ndim == 3:
-                shape_ = estimate_.shape
-                estimate_ = np.reshape(estimate_,
-                                       (shape_[0] * shape_[1], shape_[2]))
-            output = self.masker_.inverse_transform(estimate_)
-            output.get_header()['descrip'] = (
-                '%s of contrast %s' % (descrip, contrast_name))
-            output_images.append(output)
-        return output_images
-
-    def fit_transform(
-        self, design_matrices, fmri_images, con_vals, contrast_type=None,
-        contrast_name='', output_z=True, output_stat=False,
-        output_effects=False, output_variance=False):
-        """ Fit then transform. For more details,
-        see FirstLevelGLM.fit and FirstLevelGLM.transform documentation"""
-        return self.fit(design_matrices, fmri_images).transform(
-            con_vals, contrast_type, contrast_name, output_z=True,
-            output_stat=False, output_effects=False, output_variance=False)
-
-
-
-
-
-class Contrast(object):
-    """ The contrast class handles the estimation of statistical contrasts
-    on a given model: student (t) or Fisher (F).
-    The important feature is that it supports addition,
-    thus opening the possibility of fixed-effects models.
-
-    The current implementation is meant to be simple,
-    and could be enhanced in the future on the computational side
-    (high-dimensional F constrasts may lead to memory breakage).
-    """
-
-    def __init__(self, effect, variance, dof=DEF_DOFMAX, contrast_type='t',
-                 tiny=DEF_TINY, dofmax=DEF_DOFMAX):
-        """
-        Parameters
-        ----------
-        effect : array of shape (contrast_dim, n_voxels)
-            the effects related to the contrast
-
-        variance : array of shape (contrast_dim, contrast_dim, n_voxels)
-            the associated variance estimate
-
-        dof : scalar
-            the degrees of freedom of the resiudals
-
-        contrast_type: {'t', 'F'}
-            specification of the contrast type
-        """
-        if variance.ndim != 3:
-            raise ValueError('Variance array should have 3 dimensions')
-        if effect.ndim != 2:
-            raise ValueError('Variance array should have 2 dimensions')
-        if variance.shape[0] != variance.shape[1]:
-            raise ValueError('Inconsistent shape for the variance estimate')
-        if ((variance.shape[1] != effect.shape[0]) or
-            (variance.shape[2] != effect.shape[1])):
-            raise ValueError('Effect and variance have inconsistent shape')
-
-        self.effect = effect
-        self.variance = variance
-        self.dof = float(dof)
-        self.dim = effect.shape[0]
-        if self.dim > 1 and contrast_type is 't':
-            print('Automatically converted multi-dimensional t to F contrast')
-            contrast_type = 'F'
-        self.contrast_type = contrast_type
-        self.stat_ = None
-        self.p_value_ = None
-        self.baseline = 0
-        self.tiny = tiny
-        self.dofmax = dofmax
-
-    def stat(self, baseline=0.0):
-        """ Return the decision statistic associated with the test of the
-        null hypothesis: (H0) 'contrast equals baseline'
-
-        Parameters
-        ----------
-        baseline : float, optional
-            Baseline value for the test statistic
-
-        Returns
-        -------
-        stat: 1-d array, shape=(n_voxels,)
-            statistical values, one per voxel
-        """
-        self.baseline = baseline
-
-        # Case: one-dimensional contrast ==> t or t**2
-        if self.dim == 1:
-            # avoids division by zero
-            stat = (self.effect - baseline) / np.sqrt(
-                np.maximum(self.variance, self.tiny))
-            if self.contrast_type == 'F':
-                stat = stat ** 2
-        # Case: F contrast
-        elif self.contrast_type == 'F':
-            # F = |t|^2/q ,  |t|^2 = e^t inv(v) e
-            if self.effect.ndim == 1:
-                self.effect = self.effect[np.newaxis]
-            if self.variance.ndim == 1:
-                self.variance = self.variance[np.newaxis, np.newaxis]
-            stat = (multiple_mahalanobis(
-                    self.effect - baseline, self.variance) / self.dim)
-        # Unknwon stat
-        else:
-            raise ValueError('Unknown statistic type')
-        self.stat_ = stat
-        return stat.ravel()
-
-    def p_value(self, baseline=0.0):
-        """Return a parametric estimate of the p-value associated
-        with the null hypothesis: (H0) 'contrast equals baseline'
-
-        Parameters
-        ----------
-        baseline : float, optional
-            baseline value for the test statistic
-
-        Returns
-        -------
-        p_values : 1-d array, shape=(n_voxels,)
-            p-values, one per voxel
-        """
-        if self.stat_ is None or not self.baseline == baseline:
-            self.stat_ = self.stat(baseline)
-        # Valid conjunction as in Nichols et al, Neuroimage 25, 2005.
-        if self.contrast_type == 't':
-            p_values = sps.t.sf(self.stat_, np.minimum(self.dof, self.dofmax))
-        elif self.contrast_type == 'F':
-            p_values = sps.f.sf(self.stat_, self.dim, np.minimum(
-                    self.dof, self.dofmax))
-        else:
-            raise ValueError('Unknown statistic type')
-        self.p_value_ = p_values
-        return p_values
-
-    def z_score(self, baseline=0.0):
-        """Return a parametric estimation of the z-score associated
-        with the null hypothesis: (H0) 'contrast equals baseline'
-
-        Parameters
-        ----------
-        baseline: float, optional,
-                  Baseline value for the test statistic
-
-        Returns
-        -------
-        z_score: 1-d array, shape=(n_voxels,)
-            statistical values, one per voxel
-
-        """
-        if self.p_value_ is None or not self.baseline == baseline:
-            self.p_value_ = self.p_value(baseline)
-
-        # Avoid inf values kindly supplied by scipy.
-        self.z_score_ = z_score(self.p_value_)
-        return self.z_score_
-
-    def __add__(self, other):
-        """Addition of selfwith others, Yields an new Contrast instance
-        This should be used only on indepndent contrasts"""
-        if self.contrast_type != other.contrast_type:
-            raise ValueError(
-                'The two contrasts do not have consistant type dimensions')
-        if self.dim != other.dim:
-            raise ValueError(
-                'The two contrasts do not have compatible dimensions')
-        effect_ = self.effect + other.effect
-        variance_ = self.variance + other.variance
-        dof_ = self.dof + other.dof
-        return Contrast(effect=effect_, variance=variance_, dof=dof_,
-                        contrast_type=self.contrast_type)
-
-    def __rmul__(self, scalar):
-        """Multiplication of the contrast by a scalar"""
-        scalar = float(scalar)
-        effect_ = self.effect * scalar
-        variance_ = self.variance * scalar ** 2
-        dof_ = self.dof
-        return Contrast(effect=effect_, variance=variance_, dof=dof_,
-                        contrast_type=self.contrast_type)
-
-    __mul__ = __rmul__
-
-    def __div__(self, scalar):
-        return self.__rmul__(1 / float(scalar))
+        output = self.masker_.inverse_transform(estimate_)
+        if contrast_name is None:
+            contrast_name = str(con_vals)
+        output.get_header()['descrip'] = (
+            '%s of contrast %s' % (output_type, contrast_name))
+        return output
