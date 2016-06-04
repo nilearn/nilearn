@@ -569,6 +569,21 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         else:
             return self.design_matrices_
 
+    def _all_runs_contrast(self, con_vals, stat_type):
+        contrast = None
+        for i, (labels_, results_, con_val) in enumerate(zip(
+                self.labels_, self.results_, con_vals)):
+            if np.all(con_val == 0):
+                warn('Contrast for session %d is null' % i)
+                continue
+            contrast_ = compute_contrast(labels_, results_, con_val,
+                                         stat_type)
+            if contrast is None:
+                contrast = contrast_
+            else:
+                contrast = contrast + contrast_
+        return contrast
+
     def compute_contrast(self, contrast_def, contrast_name=None,
                          stat_type=None,
                          output_type='z_score'):
@@ -613,18 +628,11 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
                 'contrasts must be a sequence of %d session contrasts' %
                 len(self.results_))
 
-        contrast = None
-        for i, (labels_, results_, con_val) in enumerate(zip(
-                self.labels_, self.results_, con_vals)):
-            if np.all(con_val == 0):
-                warn('Contrast for session %d is null' % i)
-                continue
-            contrast_ = compute_contrast(labels_, results_, con_val,
-                                         stat_type)
-            if contrast is None:
-                contrast = contrast_
-            else:
-                contrast = contrast + contrast_
+        if self.memory is not None:
+            mem_contrast = self.memory.cache(self._all_runs_contrast)
+        else:
+            mem_contrast = self._all_runs_contrast
+        contrast = mem_contrast(con_vals, stat_type)
 
         estimate_ = getattr(contrast, output_type)()
         # Prepare the returned images
