@@ -16,6 +16,7 @@ effects on contrasts
 from warnings import warn
 import time
 import sys
+import os
 
 import numpy as np
 import pandas as pd
@@ -27,15 +28,16 @@ from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._utils import CacheMixin
 from nilearn._utils.class_inspect import get_params
 from nilearn.input_data import NiftiMasker
-from sklearn.externals.joblib import Parallel, delayed, cpu_count
+from sklearn.externals.joblib import Parallel, delayed
 
-from .regression import OLSModel, ARModel
+from .regression import OLSModel, ARModel, concatenate_regression_results
 from .design_matrix import make_design_matrix
 from .contrasts import compute_contrast
 from .utils import _basestring
+from .utils import GroupIterator
 
 
-def percent_mean_scaling(Y, axis=0):
+def mean_scaling(Y, axis=0):
     """Scaling of the data to have percent of baseline change columnwise
 
     Parameters
@@ -61,33 +63,6 @@ def percent_mean_scaling(Y, axis=0):
     return Y, mean
 
 
-class GroupIterator(object):
-    """Group iterator
-
-    Provides group of features for search_light loop
-    that may be used with Parallel.
-
-    Parameters
-    ----------
-    n_features : int
-        Total number of features
-
-    n_jobs : int, optional
-        The number of CPUs to use to do the computation. -1 means
-        'all CPUs'. Defaut is 1
-    """
-    def __init__(self, n_features, n_jobs=1):
-        self.n_features = n_features
-        if n_jobs == -1:
-            n_jobs = cpu_count()
-        self.n_jobs = n_jobs
-
-    def __iter__(self):
-        split = np.array_split(np.arange(self.n_features), self.n_jobs)
-        for list_i in split:
-            yield list_i
-
-
 def _minimize_memory_regression_results(results):
     del results.Y
     del results.model
@@ -96,57 +71,12 @@ def _minimize_memory_regression_results(results):
     return results
 
 
-@profile
-def _group_iter_run_glm(Y, X, noise_model, bins, minimize_memory, thread_id):
-    """Function for grouped iterations of given function
+def _OLSModel_fit(X, Y):
+    return OLSModel(X).fit(Y)
 
-    Parameters
-    -----------
-    Y : array of shape (n_time_points, n_voxels)
-        The fMRI data.
 
-    X : array of shape (n_time_points, n_regressors)
-        The design matrix.
-
-    noise_model : {'ar1', 'ols'}, optional
-        The temporal variance model. Defaults to 'ar1'.
-
-    bins : int, optional
-        Maximum number of discrete bins for the AR(1) coef histogram.
-
-    Returns
-    -------
-    labels : array of shape (n_voxels,),
-        A map of values on voxels used to identify the corresponding model.
-
-    results : dict,
-        Keys correspond to the different labels values
-        values are RegressionResults instances corresponding to the voxels.
-    """
-    # fit the OLS model
-    ols_result = OLSModel(X).fit(Y)
-
-    if noise_model == 'ar1':
-        # compute and discretize the AR1 coefs
-        ar1 = ((ols_result.resid[1:] * ols_result.resid[:-1]).sum(axis=0) /
-               (ols_result.resid ** 2).sum(axis=0))
-        del ols_result
-        ar1 = (ar1 * bins).astype(np.int) * 1. / bins
-        # Fit the AR model acccording to current AR(1) estimates
-        results = {}
-        labels = ar1 + (thread_id * 1000)
-        # fit the model
-        for val in np.unique(ar1):
-            model = ARModel(X, val)
-            key = val + (thread_id * 1000)
-            results[key] = model.fit(Y[:, labels == key])
-            if minimize_memory:
-                results[key] = _minimize_memory_regression_results(results[key])
-        del ar1
-    else:
-        labels = np.zeros(Y.shape[1]) + (thread_id * 1000)
-        results = {0.0 + (thread_id * 1000): ols_result}
-    return labels, results
+def _ARModel_fit(X, val, Y):
+    return ARModel(X, val).fit(Y)
 
 
 @profile
@@ -196,19 +126,37 @@ def run_glm(Y, X, noise_model='ar1', bins=100, n_jobs=1, verbose=0,
             ' You provided X with shape {0} and Y with shape {1}'.\
                 format(X.shape, Y.shape))
 
+    # Create the model
+    # model = OLSModel(X)
+    # Parallelize model fit by voxel groups
     n_voxels = Y.shape[1]
     group_iter = GroupIterator(n_voxels, n_jobs)
+    ols_result = Parallel(n_jobs=n_jobs, verbose=verbose)(
+        delayed(_OLSModel_fit)(X, Y[:, voxels]) for voxels in group_iter)
+    ols_result = concatenate_regression_results(ols_result)
 
-    res = Parallel(n_jobs=n_jobs, verbose=verbose)(
-        delayed(_group_iter_run_glm)(Y[:, voxels], X, noise_model, bins,
-                                     minimize_memory, thread_id)
-        for thread_id, voxels in enumerate(group_iter))
+    if noise_model == 'ar1':
+        # compute and discretize the AR1 coefs
+        ar1 = ((ols_result.resid[1:] * ols_result.resid[:-1]).sum(axis=0) /
+               (ols_result.resid ** 2).sum(axis=0))
+        del ols_result
+        ar1 = (ar1 * bins).astype(np.int) * 1. / bins
+        # Fit the AR model acccording to current AR(1) estimates
+        results = {}
+        labels = ar1
+        # Parallelize by creating a job per ARModel
+        vals = np.unique(ar1)
+        ar_result = Parallel(n_jobs=n_jobs, verbose=verbose)(
+            delayed(_ARModel_fit)(X, val, Y[:, labels == val]) for val in vals)
+        for val, result in zip(vals, ar_result):
+            # We save memory if inspecting model details is not necessary
+            if minimize_memory:
+                result = _minimize_memory_regression_results(result)
+            results[val] = result
 
-    labels, reg_res = zip(*res)
-    labels = np.concatenate(labels)
-    results = {}
-    for reg in reg_res:
-        results.update(reg)
+    else:
+        labels = np.zeros(Y.shape[1])
+        results = {0.0: ols_result}
 
     return labels, results
 
@@ -244,7 +192,7 @@ def _check_run_tables(run_imgs, tables_, tables_name):
 
 
 class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
-    """ Implementation of the General Linear Model for Single-session fMRI data
+    """ Implementation of the General Linear Model for single session fMRI data
 
     Parameters
     ----------
@@ -325,10 +273,16 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         If standardize is True, the time-series are centered and normed:
         their variance is put to 1 in the time dimension.
 
-    percent_signal_change: bool, optional,
-        If True, fMRI signals are scaled to percent of the mean value
+    signal_scaling: bool, optional,
+        If True, fMRI signals are scaled to the mean value of scaling_axis
         Incompatible with standardize (standardize=False is enforced when\
-        percent_signal_change is True).
+        signal_scaling is True).
+
+    scaling_axis: int or tuple, optional,
+        Axis used for signal scaling. 0 refers to mean scaling each voxel with
+        respect to time, 1 refers to mean scaling each time point with respect
+        to all voxels and (0, 1) refers to scaling with respect to voxels and
+        time, which is known as grand mean scaling.
 
     noise_model : {'ar1', 'ols'}, optional
         The temporal variance model. Defaults to 'ar1'
@@ -355,9 +309,9 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
                  fir_delays=[0], min_onset=-24, mask=None, target_affine=None,
                  target_shape=None, low_pass=None, high_pass=None,
                  smoothing_fwhm=None, memory=None, memory_level=1,
-                 standardize=False, percent_signal_change=True,
+                 standardize=False, signal_scaling=True, scaling_axis=0,
                  noise_model='ar1', verbose=1, n_jobs=1,
-                 minimize_memory=False):
+                 minimize_memory=False, subject_id=''):
         # design matrix parameters
         self.t_r = t_r
         self.slice_time_ref = slice_time_ref
@@ -374,16 +328,22 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         self.low_pass = low_pass
         self.high_pass = high_pass
         self.smoothing_fwhm = smoothing_fwhm
-        self.memory = Memory(memory)
+        if memory is not None:
+            self.memory = Memory(os.path.join(memory, 'first_level_cache',
+                                 subject_id))
+        else:
+            self.memory = Memory(None)
         self.memory_level = memory_level
         self.standardize = standardize
-        self.percent_signal_change = percent_signal_change
-        if self.percent_signal_change:
+        self.signal_scaling = signal_scaling
+        if self.signal_scaling:
             self.standardize = False
+        self.scaling_axis = scaling_axis
         self.noise_model = noise_model
         self.verbose = verbose
         self.n_jobs = n_jobs
         self.minimize_memory = minimize_memory
+        self.subject_id = subject_id
 
     def get_model_parameters(self, ignore=None):
         """Get model parameters as a dictionary.
@@ -532,8 +492,8 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
             Y = masking(run_img)
 
             # Y = self.masker_.transform(run_img)
-            if self.percent_signal_change:
-                Y, _ = percent_mean_scaling(Y)
+            if self.signal_scaling:
+                Y, _ = mean_scaling(Y, self.scaling_axis)
             if self.memory is not None:
                 mem_glm = self.memory.cache(run_glm)
             else:
@@ -542,9 +502,6 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
                                       noise_model=self.noise_model,
                                       bins=100, n_jobs=self.n_jobs,
                                       minimize_memory=self.minimize_memory)
-            # if self.minimize_memory:
-            #     for key in results:
-            #         results[key] = _minimize_memory_regression_results(results[key])
             self.labels_.append(labels)
             self.results_.append(results)
             del Y

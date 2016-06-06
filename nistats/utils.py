@@ -7,8 +7,36 @@ import scipy.linalg as spl
 import numpy as np
 from scipy.stats import norm
 from warnings import warn
+from sklearn.externals.joblib import cpu_count
 
 py3 = sys.version_info[0] >= 3
+
+
+class GroupIterator(object):
+    """Group iterator
+
+    Provides group of features for search_light loop
+    that may be used with Parallel.
+
+    Parameters
+    ----------
+    n_features : int
+        Total number of features
+
+    n_jobs : int, optional
+        The number of CPUs to use to do the computation. -1 means
+        'all CPUs'. Defaut is 1
+    """
+    def __init__(self, n_features, n_jobs=1):
+        self.n_features = n_features
+        if n_jobs == -1:
+            n_jobs = cpu_count()
+        self.n_jobs = n_jobs
+
+    def __iter__(self):
+        split = np.array_split(np.arange(self.n_features), self.n_jobs)
+        for list_i in split:
+            yield list_i
 
 
 def z_score(pvalue):

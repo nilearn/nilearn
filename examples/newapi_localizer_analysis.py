@@ -40,14 +40,11 @@ paradigm = pd.read_csv(paradigm_file, sep=' ', header=None, index_col=None)
 paradigm.columns = ['session', 'name', 'onset']
 fmri_img = data.epi_img
 
-
 ### Perform a GLM analysis ########################################
 first_level_model = FirstLevelModel(t_r, slice_time_ref,
                                     hrf_model='canonical with derivative',
-                                    n_jobs=1, minimize_memory=True,
-                                    memory='my_cache')
+                                    minimize_memory=True)
 first_level_model = first_level_model.fit(fmri_img, paradigm)
-
 
 # Estimate contrasts #########################################
 # Specify the contrasts
@@ -81,7 +78,7 @@ if not path.exists(write_dir):
     mkdir(write_dir)
 
 # contrast estimation 
-for index, (contrast_id, contrast_val) in enumerate(contrasts.items()[:-3]):
+for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
     print('  Contrast % 2i out of %i: %s' %
           (index + 1, len(contrasts), contrast_id))
     z_map = first_level_model.compute_contrast(contrast_val,
@@ -93,4 +90,4 @@ for index, (contrast_id, contrast_val) in enumerate(contrasts.items()[:-3]):
                                      threshold=3.0, title=contrast_id)
     display.savefig(path.join(write_dir, '%s_z_map.png' % contrast_id))
 
-# plotting.show()
+plotting.show()
