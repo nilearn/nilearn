@@ -203,7 +203,7 @@ class OLSModel(object):
         beta = np.dot(self.calc_beta, wY)
         wresid = wY - np.dot(self.wdesign, beta)
         dispersion = np.sum(wresid ** 2, 0) / (self.wdesign.shape[0] -
-                                                self.wdesign.shape[1])
+                                               self.wdesign.shape[1])
         lfit = RegressionResults(beta, Y, self,
                                  wY, wresid, dispersion=dispersion,
                                  cov=self.normalized_cov_beta)
@@ -243,7 +243,6 @@ class ARModel(OLSModel):
                 self.rho.shape = (1,)
             self.order = self.rho.shape[0]
         super(ARModel, self).__init__(design)
-
 
     def whiten(self, X):
         """ Whiten a series of columns according to AR(p) covariance structure
@@ -330,3 +329,17 @@ class RegressionResults(LikelihoodModelResults):
     def MSE(self):
         """ Mean square (error) """
         return self.SSE / self.df_resid
+
+
+def concatenate_regression_results(results):
+    """Concatenate results from a parallelized regression"""
+    theta = np.concatenate([result.theta for result in results], axis=1)
+    Y = np.concatenate([result.Y for result in results], axis=1)
+    model = results[0].model
+    wY = np.concatenate([result.wY for result in results], axis=1)
+    wresid = np.concatenate([result.wresid for result in results], axis=1)
+    dispersion = np.concatenate([result.dispersion for result in results],
+                                axis=0)
+    cov = results[0].cov
+    return RegressionResults(theta, Y, model, wY, wresid,
+                             dispersion=dispersion, cov=cov)
