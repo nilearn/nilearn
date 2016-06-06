@@ -79,7 +79,6 @@ def _ARModel_fit(X, val, Y):
     return ARModel(X, val).fit(Y)
 
 
-@profile
 def run_glm(Y, X, noise_model='ar1', bins=100, n_jobs=1, verbose=0,
             minimize_memory=False):
     """ GLM fit for an fMRI data matrix
@@ -294,6 +293,16 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         The number of CPUs to use to do the computation. -1 means
         'all CPUs', -2 'all CPUs but one', and so on.
 
+    minimize_memory : boolean, optional
+        Gets rid of some variables on the model fit results that are not
+        necessary for contrast computation and would only be useful for
+        further inspection of model details. This has an important impact
+        on memory consumption. True by default.
+
+    subject_id : string, optional
+        id of the subject of this first_level_model instance. Will be used
+        to create subject specific memory cache if caching allowed.
+
     Attributes
     ----------
     labels : array of shape (n_voxels,),
@@ -311,7 +320,7 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
                  smoothing_fwhm=None, memory=None, memory_level=1,
                  standardize=False, signal_scaling=True, scaling_axis=0,
                  noise_model='ar1', verbose=1, n_jobs=1,
-                 minimize_memory=False, subject_id=''):
+                 minimize_memory=True, subject_id=''):
         # design matrix parameters
         self.t_r = t_r
         self.slice_time_ref = slice_time_ref
@@ -360,7 +369,6 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         """
         return get_params(FirstLevelModel, self, ignore=ignore)
 
-    @profile
     def fit(self, run_imgs, paradigms=None, confounds=None,
             design_matrices=None):
         """ Fit the GLM
@@ -486,10 +494,7 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
             self.design_matrices_.append(design)
 
             # Compute GLM
-            @profile
-            def masking(run_img):
-                return self.masker_.transform(run_img)
-            Y = masking(run_img)
+            Y = self.masker_.transform(run_img)
 
             # Y = self.masker_.transform(run_img)
             if self.signal_scaling:
@@ -518,7 +523,7 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
 
         Returns
         -------
-        design_matrices : list of DataFrames,
+        design_matrices : list of pandas DataFrames,
             Holds the design matrices computed for the corresponding run_imgs
         """
         if self.design_matrices_ is None:
