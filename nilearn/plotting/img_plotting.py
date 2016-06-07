@@ -9,10 +9,10 @@ Only matplotlib is required.
 # License: BSD
 
 # Standard library imports
+import collections
 import functools
 import numbers
 import warnings
-import collections
 
 # Standard scientific libraries imports (more specific imports are
 # delayed, so that the part module can be used without them).
@@ -24,6 +24,7 @@ from .._utils.numpy_conversions import as_ndarray
 from .._utils.compat import _basestring
 from .._utils.niimg import _safe_get_data
 
+import matplotlib
 import matplotlib.pyplot as plt
 
 from .. import _utils
@@ -72,7 +73,7 @@ def _get_colorbar_and_data_ranges(stat_map_data, vmax, symmetric_cbar, kwargs,
         # Avoid dealing with masked_array:
         if hasattr(stat_map_data, '_mask'):
             stat_map_data = np.asarray(
-                    stat_map_data[np.logical_not(stat_map_data._mask)])
+                stat_map_data[np.logical_not(stat_map_data._mask)])
         stat_map_max = np.nanmax(stat_map_data)
         if force_min_stat_map_value is None:
             stat_map_min = np.nanmin(stat_map_data)
@@ -140,9 +141,10 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None,
         warnings.warn(nan_msg)
 
     if isinstance(cut_coords, numbers.Number) and display_mode == 'ortho':
-        raise ValueError("The input given for display_mode='ortho' needs to be "
-                         "a list of 3d world coordinates in (x, y, z). "
-                         "You provided single cut, cut_coords={0}".format(cut_coords))
+        raise ValueError(
+            "The input given for display_mode='ortho' needs to be "
+            "a list of 3d world coordinates in (x, y, z). "
+            "You provided single cut, cut_coords={0}".format(cut_coords))
 
     if img is not False and img is not None:
         img = _utils.check_niimg_3d(img, dtype='auto')
@@ -331,6 +333,7 @@ class _MNI152Template(SpatialImage):
 
     def __repr__(self):
         return "<MNI152Template>"
+
 
 # The constant that we use as a default in functions
 MNI152TEMPLATE = _MNI152Template()
@@ -656,9 +659,9 @@ def plot_prob_atlas(maps_img, anat_img=MNI152TEMPLATE, view_type='auto',
                     output_file=None, display_mode='ortho',
                     figure=None, axes=None, title=None, annotate=True,
                     draw_cross=True, black_bg='auto', dim=False,
+                    colorbar=False,
                     cmap=plt.cm.gist_rainbow, vmin=None, vmax=None,
                     alpha=0.5, **kwargs):
-
     """ Plot the probabilistic atlases onto the anatomical image
         by default MNI template
 
@@ -739,6 +742,8 @@ def plot_prob_atlas(maps_img, anat_img=MNI152TEMPLATE, view_type='auto',
             pronounced effect.
         cmap : matplotlib colormap, optional
             The colormap for the atlas maps
+        colorbar : boolean, optional
+            If True, display a colorbar on the right of the plots.
         vmin : float
             Lower bound for plotting, passed to matplotlib.pyplot.imshow
         vmax : float
@@ -800,7 +805,6 @@ def plot_prob_atlas(maps_img, anat_img=MNI152TEMPLATE, view_type='auto',
         threshold = [threshold] * n_maps
 
     filled = view_type.startswith('filled')
-
     for (map_img, color, thr) in zip(iter_img(maps_img), color_list,
                                      threshold):
         data = map_img.get_data()
@@ -817,8 +821,28 @@ def plot_prob_atlas(maps_img, anat_img=MNI152TEMPLATE, view_type='auto',
             display.add_contours(map_img, levels=[thr],
                                  linewidths=linewidths,
                                  colors=[color], filled=filled,
-                                 alpha=alpha, linestyles='solid')
-
+                                 alpha=alpha, linestyles='solid', )
+    if colorbar:
+        display._colorbar = True
+        # Create a colormap from color list to feed display
+        cmap = matplotlib.colors.LinearSegmentedColormap.from_list(
+            'segmented colors', color_list, n_maps + 1)
+        display._show_colorbar(cmap, matplotlib.colors.Normalize(1,
+                                                                 n_maps + 1))
+        tick_locator = matplotlib.ticker.MaxNLocator(nbins=10)
+        display.locator = tick_locator
+        display._cbar.update_ticks()
+        tick_location = np.round(np.linspace(1,
+                                             n_maps,
+                                             min(n_maps, 10))).astype('int')
+        display._cbar.set_ticks(tick_location + .5)
+        display._cbar.set_ticklabels(tick_location)
+        left, bottom, width, height = display._colorbar_ax.\
+            get_position().bounds
+        display._colorbar_ax.set_position([left, bottom, width, height * 0.95])
+        display._colorbar_ax.annotate('Map #', xy=(1, 1.03), ha='right',
+                                      va='bottom',
+                                      xycoords='axes fraction')
     if output_file is not None:
         display.savefig(output_file)
         display.close()
@@ -1051,6 +1075,7 @@ def plot_glass_brain(stat_map_img,
     def display_factory(display_mode):
         return functools.partial(get_projector(display_mode),
                                  alpha=alpha, plot_abs=plot_abs)
+
     display = _plot_img_with_bg(img=stat_map_img,
                                 output_file=output_file,
                                 display_mode=display_mode,
