@@ -71,13 +71,13 @@ class BaseAxes(object):
 
     def draw_2d(self, data_2d, data_bounds, bounding_box,
                 type='imshow', **kwargs):
-        # kwargs massaging
+        # kwargs messaging
         kwargs['origin'] = 'upper'
 
         if self.direction == 'y':
             (xmin, xmax), (_, _), (zmin, zmax) = data_bounds
             (xmin_, xmax_), (_, _), (zmin_, zmax_) = bounding_box
-        elif self.direction == 'x':
+        elif self.direction in 'xlr':
             (_, _), (xmin, xmax), (zmin, zmax) = data_bounds
             (_, _), (xmin_, xmax_), (zmin_, zmax_) = bounding_box
         elif self.direction == 'z':
@@ -112,7 +112,7 @@ class BaseAxes(object):
         return xmin, xmax, ymin, ymax
 
     def draw_left_right(self, size, bg_color, **kwargs):
-        if self.direction == 'x':
+        if self.direction in 'xlr':
             return
         ax = self.ax
         ax.text(.1, .95, 'L',
@@ -189,11 +189,15 @@ def _get_index_from_direction(direction):
     """
     directions = ['x', 'y', 'z']
     try:
-        index = directions.index(direction)
+        # l and r are subcases of x
+        if direction in 'lr':
+            index = 0
+        else:
+            index = directions.index(direction)
     except ValueError:
         message = (
             '{0} is not a valid direction. '
-            "Allowed values are 'x', 'y' and 'z'").format(direction)
+            "Allowed values are 'l', 'r', 'x', 'y' and 'z'").format(direction)
         raise ValueError(message)
     return index
 
@@ -210,6 +214,10 @@ def _coords_3d_to_2d(coords_3d, direction, return_direction=False):
 
     return coords_3d[:, dimensions]
 
+
+###############################################################################
+# class GlassBrainAxes
+###############################################################################
 
 class GlassBrainAxes(BaseAxes):
     """An MPL axis-like object that displays a 2D projection of 3D
@@ -237,7 +245,28 @@ class GlassBrainAxes(BaseAxes):
                 The affine of the volume
 
         """
-        max_axis = 'xyz'.index(self.direction)
+        if self.direction in 'xlr':
+            max_axis = 0
+        else:
+            max_axis = '.yz'.index(self.direction)
+
+        # set unselected brain hemisphere activations to 0
+
+        if self.direction == 'l':
+            x_center, _, _, _ = np.dot(np.linalg.inv(affine),
+                                       np.array([0, 0, 0, 1]))
+            data_selection = data[int(x_center):, :, :]
+        elif self.direction == 'r':
+            x_center, _, _, _ = np.dot(np.linalg.inv(affine),
+                                       np.array([0, 0, 0, 1]))
+            data_selection = data[:int(x_center), :, :]
+        else:
+            data_selection = data
+
+        # We need to make sure data_selection is not empty in the x axis
+        # This should be the case since we expect images in MNI space
+        if data_selection.shape[0] == 0:
+            data_selection = data
 
         if not self._plot_abs:
             # get the shape of the array we are projecting to
@@ -248,13 +277,13 @@ class GlassBrainAxes(BaseAxes):
             # current projection
             a1, a2 = np.indices(new_shape)
             inds = [a1, a2]
-            inds.insert(max_axis, np.abs(data).argmax(axis=max_axis))
+            inds.insert(max_axis, np.abs(data_selection).argmax(axis=max_axis))
 
             # take the values where the absolute value of the projection
             # is the highest
-            maximum_intensity_data = data[inds]
+            maximum_intensity_data = data_selection[inds]
         else:
-            maximum_intensity_data = np.abs(data).max(axis=max_axis)
+            maximum_intensity_data = np.abs(data_selection).max(axis=max_axis)
 
         return np.rot90(maximum_intensity_data)
 
@@ -264,10 +293,26 @@ class GlassBrainAxes(BaseAxes):
         pass
 
     def _add_markers(self, marker_coords, marker_color, marker_size, **kwargs):
-        """Plot markers"""
-        marker_coords_2d = _coords_3d_to_2d(marker_coords, self.direction)
+        """Plot markers
 
+           In the case of 'l' and 'r' directions (for hemispheric projections),
+           markers in the coordinate x == 0 are included in both hemispheres.
+        """
+        marker_coords_2d = _coords_3d_to_2d(marker_coords, self.direction)
         xdata, ydata = marker_coords_2d.T
+
+        # Allow markers only in their respective hemisphere when appropriate
+        if self.direction in 'lr':
+            relevant_coords = []
+            xcoords, ycoords, zcoords = marker_coords.T
+            for cidx, xc in enumerate(xcoords):
+                if self.direction == 'r' and xc >= 0:
+                    relevant_coords.append(cidx)
+                elif self.direction == 'l' and xc <= 0:
+                        relevant_coords.append(cidx)
+            xdata = xdata[relevant_coords]
+            ydata = ydata[relevant_coords]
+            marker_color = marker_color[relevant_coords]
 
         defaults = {'marker': 'o',
                     'zorder': 1000}
@@ -328,6 +373,19 @@ class GlassBrainAxes(BaseAxes):
         abs_norm = colors.Normalize(vmin=0,
                                     vmax=vmax)
         value_to_color = plt.cm.ScalarMappable(norm=norm, cmap=cmap).to_rgba
+
+        # Allow lines only in their respective hemisphere when appropriate
+        if self.direction in 'lr':
+            relevant_lines = []
+            for lidx, line in enumerate(line_coords):
+                if self.direction == 'r':
+                    if line[0, 0] >= 0 and line[1, 0] >= 0:
+                        relevant_lines.append(lidx)
+                elif self.direction == 'l':
+                    if line[0, 0] < 0 and line[1, 0] < 0:
+                        relevant_lines.append(lidx)
+            line_coords = np.array(line_coords)[relevant_lines]
+            line_values = line_values[relevant_lines]
 
         for start_end_point_3d, line_value in zip(
                 line_coords, line_values):
@@ -432,10 +490,10 @@ class BaseSlicer(object):
             if leave_space:
                 figsize[0] += 3.4
             figure = plt.figure(figure, figsize=figsize,
-                            facecolor=facecolor)
+                                facecolor=facecolor)
         if isinstance(axes, plt.Axes):
             assert axes.figure is figure, ("The axes passed are not "
-                    "in the figure")
+                                           "in the figure")
 
         if axes is None:
             axes = [0., 0., 1., 1.]
@@ -583,17 +641,20 @@ class BaseSlicer(object):
         (xmin, xmax), (ymin, ymax), (zmin, zmax) = data_bounds
 
         xmin_, xmax_, ymin_, ymax_, zmin_, zmax_ = \
-                                        xmin, xmax, ymin, ymax, zmin, zmax
+            xmin, xmax, ymin, ymax, zmin, zmax
 
         if hasattr(data, 'mask') and isinstance(data.mask, np.ndarray):
             not_mask = np.logical_not(data.mask)
             xmin_, xmax_, ymin_, ymax_, zmin_, zmax_ = \
-                    get_mask_bounds(new_img_like(img, not_mask, affine))
+                get_mask_bounds(new_img_like(img, not_mask, affine))
 
         data_2d_list = []
         for display_ax in self.axes.values():
             try:
                 data_2d = display_ax.transform_to_2d(data, affine)
+                # To obtain the brain left view, we simply invert the x axis
+                if display_ax.direction == 'l':
+                    display_ax.ax.invert_xaxis()
             except IndexError:
                 # We are cutting outside the indices of the data
                 data_2d = None
@@ -608,7 +669,6 @@ class BaseSlicer(object):
                                         if d is not None])
 
         bounding_box = (xmin_, xmax_), (ymin_, ymax_), (zmin_, zmax_)
-
         ims = []
         to_iterate_over = zip(self.axes.values(), data_2d_list)
         for display_ax, data_2d in to_iterate_over:
@@ -766,7 +826,7 @@ class BaseSlicer(object):
                 function.
         """
         kwargs = kwargs.copy()
-        if not 'color' in kwargs:
+        if 'color' not in kwargs:
             if self._black_bg:
                 kwargs['color'] = 'w'
             else:
@@ -776,12 +836,12 @@ class BaseSlicer(object):
         if left_right:
             for display_ax in self.axes.values():
                 display_ax.draw_left_right(size=size, bg_color=bg_color,
-                                       **kwargs)
+                                           **kwargs)
 
         if positions:
             for display_ax in self.axes.values():
                 display_ax.draw_position(size=size, bg_color=bg_color,
-                                       **kwargs)
+                                         **kwargs)
 
     def close(self):
         """ Close the figure. This is necessary to avoid leaking memory.
@@ -910,16 +970,18 @@ class OrthoSlicer(BaseSlicer):
         total_width = float(sum(width_dict.values()))
         for ax, width in width_dict.items():
             width_dict[ax] = width / total_width * (x1 - x0)
-        x_ax = display_ax_dict.get('x', dummy_ax)
-        y_ax = display_ax_dict.get('y', dummy_ax)
-        z_ax = display_ax_dict.get('z', dummy_ax)
+
+        direction_ax = []
+        for d in self._cut_displayed:
+            direction_ax.append(display_ax_dict.get(d, dummy_ax).ax)
         left_dict = dict()
-        left_dict[y_ax.ax] = x0
-        left_dict[x_ax.ax] = x0 + width_dict[y_ax.ax]
-        left_dict[z_ax.ax] = x0 + width_dict[x_ax.ax] + width_dict[y_ax.ax]
+        for idx, ax in enumerate(direction_ax):
+            left_dict[ax] = x0
+            for prev_ax in direction_ax[:idx]:
+                left_dict[ax] += width_dict[prev_ax]
 
         return transforms.Bbox([[left_dict[axes], y0],
-                          [left_dict[axes] + width_dict[axes], y1]])
+                               [left_dict[axes] + width_dict[axes], y1]])
 
     def draw_cross(self, cut_coords=None, **kwargs):
         """ Draw a crossbar on the plot to show where the cut is
@@ -945,7 +1007,7 @@ class OrthoSlicer(BaseSlicer):
         x, y, z = coords['x'], coords['y'], coords['z']
 
         kwargs = kwargs.copy()
-        if not 'color' in kwargs:
+        if 'color' not in kwargs:
             if self._black_bg:
                 kwargs['color'] = '.8'
             else:
@@ -1277,6 +1339,9 @@ class OrthoProjector(OrthoSlicer):
                 ax._add_lines(line_coords, adjacency_matrix_values, edge_cmap,
                               vmin=edge_vmin, vmax=edge_vmax,
                               **edge_kwargs)
+            # To obtain the brain left view, we simply invert the x axis
+            if ax.direction == 'l':
+                ax.ax.invert_xaxis()
 
         if colorbar:
             self._colorbar = colorbar
@@ -1312,13 +1377,50 @@ class YZProjector(OrthoProjector):
     _cut_displayed = 'yz'
 
 
+class LYRZProjector(OrthoProjector):
+    _cut_displayed = 'lyrz'
+
+
+class LZRYProjector(OrthoProjector):
+    _cut_displayed = 'lzry'
+
+
+class LZRProjector(OrthoProjector):
+    _cut_displayed = 'lzr'
+
+
+class LYRProjector(OrthoProjector):
+    _cut_displayed = 'lyr'
+
+
+class LRProjector(OrthoProjector):
+    _cut_displayed = 'lr'
+
+
+class LProjector(OrthoProjector):
+    _cut_displayed = 'l'
+    _default_figsize = [2.6, 2.3]
+
+
+class RProjector(OrthoProjector):
+    _cut_displayed = 'r'
+    _default_figsize = [2.6, 2.3]
+
+
 PROJECTORS = dict(ortho=OrthoProjector,
                   xz=XZProjector,
                   yz=YZProjector,
                   yx=YXProjector,
                   x=XProjector,
                   y=YProjector,
-                  z=ZProjector)
+                  z=ZProjector,
+                  lzry=LZRYProjector,
+                  lyrz=LYRZProjector,
+                  lyr=LYRProjector,
+                  lzr=LZRProjector,
+                  lr=LRProjector,
+                  l=LProjector,
+                  r=RProjector)
 
 
 def get_create_display_fun(display_mode, class_dict):
