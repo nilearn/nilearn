@@ -32,7 +32,7 @@ subject_data = fetch_spm_multimodal_fmri()
 # experimental paradigm meta-params
 tr = 2.
 drift_model = 'Cosine'
-hrf_model = 'Canonical With Derivative'
+hrf_model = 'spm + derivative'
 period_cut = 128.
 
 # resample the images

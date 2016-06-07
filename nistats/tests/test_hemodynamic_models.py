@@ -7,7 +7,7 @@ import warnings
 from nistats.hemodynamic_models import (
     spm_hrf, spm_time_derivative, spm_dispersion_derivative,
     _resample_regressor, _orthogonalize, _sample_condition,
-    _regressor_names, _hrf_kernel, glover_hrf,
+    _regressor_names, _hrf_kernel, glover_hrf, glover_dispersion_derivative,
     glover_time_derivative, compute_regressor)
 
 
@@ -36,6 +36,10 @@ def test_glover_hrf():
     h = glover_hrf(2.0)
     assert_almost_equal(h.sum(), 1)
     assert_equal(len(h), 256)
+    h = glover_dispersion_derivative(2.0)
+    assert_almost_equal(h.sum(), 0)
+    assert_equal(len(h), 256)
+
 
 
 def test_glover_time_derivative():
@@ -156,12 +160,15 @@ def test_names():
     """
     name = 'con'
     assert_equal(_regressor_names(name, 'spm'), ['con'])
-    assert_equal(_regressor_names(name, 'spm_time'), ['con', 'con_derivative'])
-    assert_equal(_regressor_names(name, 'spm_time_dispersion'),
+    assert_equal(_regressor_names(name, 'spm + derivative'),
+                 ['con', 'con_derivative'])
+    assert_equal(_regressor_names(name, 'spm + derivative + dispersion'),
         ['con', 'con_derivative', 'con_dispersion'])
-    assert_equal(_regressor_names(name, 'canonical'), ['con'])
-    assert_equal(_regressor_names(name, 'canonical with derivative'),
+    assert_equal(_regressor_names(name, 'glover'), ['con'])
+    assert_equal(_regressor_names(name, 'glover + derivative'),
         ['con', 'con_derivative'])
+    assert_equal(_regressor_names(name, 'glover + derivative + dispersion'),
+        ['con', 'con_derivative', 'con_dispersion'])
 
 
 def test_hkernel():
@@ -171,16 +178,16 @@ def test_hkernel():
     h = _hrf_kernel('spm', tr)
     assert_almost_equal(h[0], spm_hrf(tr))
     assert_equal(len(h), 1)
-    h = _hrf_kernel('spm_time', tr)
+    h = _hrf_kernel('spm + derivative', tr)
     assert_almost_equal(h[1], spm_time_derivative(tr))
     assert_equal(len(h), 2)
-    h = _hrf_kernel('spm_time_dispersion', tr)
+    h = _hrf_kernel('spm + derivative + dispersion', tr)
     assert_almost_equal(h[2], spm_dispersion_derivative(tr))
     assert_equal(len(h), 3)
-    h = _hrf_kernel('canonical', tr)
+    h = _hrf_kernel('glover', tr)
     assert_almost_equal(h[0], glover_hrf(tr))
     assert_equal(len(h), 1)
-    h = _hrf_kernel('canonical with derivative', tr)
+    h = _hrf_kernel('glover + derivative', tr)
     assert_almost_equal(h[1], glover_time_derivative(tr))
     assert_almost_equal(h[0], glover_hrf(tr))
     assert_equal(len(h), 2)

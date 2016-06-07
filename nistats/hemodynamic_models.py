@@ -53,8 +53,8 @@ def _gamma_difference_hrf(tr, oversampling=16, time_length=32., onset=0.,
     """
     dt = tr / oversampling
     time_stamps = np.linspace(0, time_length, float(time_length) / dt)
-    time_stamps -= onset / dt
-    hrf = gamma.pdf(time_stamps, delay / dispersion, dt / dispersion) - \
+    time_stamps -= onset
+    hrf = gamma.pdf(time_stamps, delay / dispersion, dt / dispersion) -\
         ratio * gamma.pdf(
         time_stamps, undershoot / u_dispersion, dt / u_dispersion)
     hrf /= hrf.sum()
@@ -136,8 +136,8 @@ def spm_time_derivative(tr, oversampling=16, time_length=32., onset=0.):
           dhrf sampling on the provided grid
     """
     do = .1
-    dhrf = 1. / do * (spm_hrf(tr, oversampling, time_length, onset + do) -
-                      spm_hrf(tr, oversampling, time_length, onset))
+    dhrf = 1. / do * (spm_hrf(tr, oversampling, time_length, onset) -
+                      spm_hrf(tr, oversampling, time_length, onset + do))
     return dhrf
 
 
@@ -161,8 +161,8 @@ def glover_time_derivative(tr, oversampling=16, time_length=32., onset=0.):
           dhrf sampling on the provided grid
     """
     do = .1
-    dhrf = 1. / do * (glover_hrf(tr, oversampling, time_length, onset + do) -
-                      glover_hrf(tr, oversampling, time_length, onset))
+    dhrf = 1. / do * (glover_hrf(tr, oversampling, time_length, onset) -
+                      glover_hrf(tr, oversampling, time_length, onset + do))
     return dhrf
 
 
@@ -189,9 +189,44 @@ def spm_dispersion_derivative(tr, oversampling=16, time_length=32., onset=0.):
           dhrf sampling on the oversampled time grid
     """
     dd = .01
-    dhrf = 1. / dd * (_gamma_difference_hrf(tr, oversampling, time_length,
-                                           onset, dispersion=1. + dd) -
-                      spm_hrf(tr, oversampling, time_length, onset))
+    dhrf = 1. / dd * (
+        - _gamma_difference_hrf(tr, oversampling, time_length,
+                                onset, dispersion=1. + dd)
+        + _gamma_difference_hrf(tr, oversampling, time_length, onset))
+    return dhrf
+
+
+def glover_dispersion_derivative(tr, oversampling=16, time_length=32.,
+                                 onset=0.):
+    """Implementation of the Glover dispersion derivative hrf model
+
+    Parameters
+    ----------
+    tr: float
+        scan repeat time, in seconds
+
+    oversampling: int, optional
+        temporal oversampling factor in seconds
+
+    time_length: float, optional
+        hrf kernel length, in seconds
+
+    onset : float, optional
+        onset of the response in seconds
+
+    Returns
+    -------
+    dhrf: array of shape(length / tr * oversampling), dtype=float
+          dhrf sampling on the oversampled time grid
+    """
+    dd = .01
+    dhrf = 1. / dd * (
+        - _gamma_difference_hrf(
+            tr, oversampling, time_length, onset,
+            delay=6, undershoot=12., dispersion=.9 + dd, ratio=.35)
+        + _gamma_difference_hrf(
+            tr, oversampling, time_length, onset, delay=6, undershoot=12.,
+            dispersion=.9, ratio=.35))
     return dhrf
 
 
@@ -302,9 +337,10 @@ def _orthogonalize(X):
     """
     if X.size == X.shape[0]:
         return X
-    from scipy.linalg import pinv
+    from scipy.linalg import pinv, norm
     for i in range(1, X.shape[1]):
-        X[:, i] -= np.dot(X[:, i], np.dot(X[:, :i], pinv(X[:, :i])))
+        X[:, i] -= np.dot(np.dot(X[:, i], X[:, :i]), pinv(X[:, :i]))
+        # X[:, i] /= norm(X[:, i])
     return X
 
 
@@ -327,15 +363,12 @@ def _regressor_names(con_name, hrf_model, fir_delays=None):
     names: list of strings,
         regressor names
     """
-    if hrf_model == 'canonical':
+    if hrf_model in ['glover', 'spm']:
         return [con_name]
-    elif hrf_model == "canonical with derivative":
+    elif hrf_model in ["glover + derivative", 'spm + derivative']:
         return [con_name, con_name + "_derivative"]
-    elif hrf_model == 'spm':
-        return [con_name]
-    elif hrf_model == 'spm_time':
-        return [con_name, con_name + "_derivative"]
-    elif hrf_model == 'spm_time_dispersion':
+    elif hrf_model in ['spm + derivative + dispersion',
+                       'glover + derivative + dispersion']:
         return [con_name, con_name + "_derivative", con_name + "_dispersion"]
     elif hrf_model == 'fir':
         return [con_name + "_delay_%d" % i for i in fir_delays]
@@ -364,26 +397,34 @@ def _hrf_kernel(hrf_model, tr, oversampling=16, fir_delays=None):
     hkernel : list of arrays
         samples of the hrf (the number depends on the hrf_model used)
     """
+    acceptable_hrfs = [
+        'spm', 'spm + derivative', 'spm + derivative + dispersion', 'fir',
+        'glover', 'glover + derivative', 'glover + derivative + dispersion']
     if hrf_model == 'spm':
         hkernel = [spm_hrf(tr, oversampling)]
-    elif hrf_model == 'spm_time':
+    elif hrf_model == 'spm + derivative':
         hkernel = [spm_hrf(tr, oversampling),
                    spm_time_derivative(tr, oversampling)]
-    elif hrf_model == 'spm_time_dispersion':
+    elif hrf_model == 'spm + derivative + dispersion':
         hkernel = [spm_hrf(tr, oversampling),
                    spm_time_derivative(tr, oversampling),
                    spm_dispersion_derivative(tr, oversampling)]
-    elif hrf_model == 'canonical':
+    elif hrf_model == 'glover':
         hkernel = [glover_hrf(tr, oversampling)]
-    elif hrf_model == 'canonical with derivative':
+    elif hrf_model == 'glover + derivative':
         hkernel = [glover_hrf(tr, oversampling),
                    glover_time_derivative(tr, oversampling)]
+    elif hrf_model == 'glover + derivative + dispersion':
+        hkernel = [glover_hrf(tr, oversampling),
+                   glover_time_derivative(tr, oversampling),
+                   glover_dispersion_derivative(tr, oversampling)]
     elif hrf_model == 'fir':
         hkernel = [np.hstack((np.zeros(f * oversampling),
                               np.ones(oversampling)))
                    for f in fir_delays]
     else:
-        raise ValueError('Unknown hrf model')
+        raise ValueError('"{0}" is not a known hrf model. Use one of {1}'.
+                         format(hrf_model, acceptable_hrfs))
     return hkernel
 
 
@@ -397,9 +438,9 @@ def compute_regressor(exp_condition, hrf_model, frame_times, con_id='cond',
         yields description of events for this condition as a
         (onsets, durations, amplitudes) triplet
 
-    hrf_model : {'spm', 'spm_time', 'spm_time_dispersion', 'canonical',
-        'canonical_derivative', 'fir'}
-        Name of the hrf model to be used.
+    hrf_model : {'spm', 'spm + derivative', 'spm + derivative + dispersion',
+        'glover', 'glover + derivative', 'fir'}
+        Name of the hrf model to be used
 
     frame_times : array of shape (n_scans)
         the desired sampling times
@@ -428,18 +469,20 @@ def compute_regressor(exp_condition, hrf_model, frame_times, con_id='cond',
     Notes
     -----
     The different hemodynamic models can be understood as follows:
-    'spm': this is the hrf model used in spm
-    'spm_time': this is the spm model plus its time derivative (2 regressors)
-    'spm_time_dispersion': idem, plus dispersion derivative (3 regressors)
-    'canonical': this one corresponds to the Glover hrf
-    'canonical_derivative': the Glover hrf + time derivative (2 regressors)
+    'spm': this is the hrf model used in SPM
+    'spm + derivative': SPM model plus its time derivative (2 regressors)
+    'spm + time + dispersion': idem, plus dispersion derivative (3 regressors)
+    'glover': this one corresponds to the Glover hrf
+    'glover + derivative': the Glover hrf + time derivative (2 regressors)
+    'glover + derivative + dispersion': idem + dispersion derivative
+                                        (3 regressors)
     'fir': finite impulse response basis, a set of delayed dirac models
            with arbitrary length. This one currently assumes regularly spaced
            frame times (i.e. fixed time of repetition).
     It is expected that spm standard and Glover model would not yield
     large differences in most cases.
 
-    In case of canonical and spm models, the derived regressors are
+    In case of glover and spm models, the derived regressors are
     orthogonalized wrt the main one.
     """
     # this is the average tr in this session, not necessarily the true tr
