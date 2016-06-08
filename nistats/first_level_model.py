@@ -258,7 +258,7 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         with keys corresponding to the different labels values
         values are RegressionResults instances corresponding to the voxels
     """
-    def __init__(self, t_r=None, slice_time_ref=None, hrf_model='canonical',
+    def __init__(self, t_r=None, slice_time_ref=None, hrf_model='glover',
                  drift_model='cosine', period_cut=128, drift_order=1,
                  fir_delays=[0], min_onset=-24, mask=None, target_affine=None,
                  target_shape=None, low_pass=None, high_pass=None,

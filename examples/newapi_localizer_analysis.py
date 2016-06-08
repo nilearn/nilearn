@@ -42,7 +42,7 @@ fmri_img = data.epi_img
 
 ### Perform a GLM analysis ########################################
 first_level_model = FirstLevelModel(t_r, slice_time_ref,
-                                    hrf_model='canonical with derivative',
+                                    hrf_model='glover + derivative',
                                     minimize_memory=True)
 first_level_model = first_level_model.fit(fmri_img, paradigm)
 
