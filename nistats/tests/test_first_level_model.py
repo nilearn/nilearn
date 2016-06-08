@@ -11,8 +11,9 @@ import numpy as np
 
 from nibabel import load, Nifti1Image, save
 
-from nistats.glm import (
-    percent_mean_scaling, session_glm, FirstLevelGLM, compute_contrast)
+from nistats.first_level_model import (mean_scaling, run_glm,
+                                       FirstLevelModel)
+from nistats.contrasts import compute_contrast
 
 from nose.tools import assert_true, assert_equal, assert_raises
 from numpy.testing import (assert_array_almost_equal, assert_almost_equal,
@@ -60,12 +61,12 @@ def test_high_level_glm_one_session():
     shapes, rk = [(7, 8, 9, 15)], 3
     mask, fmri_data, design_matrices = generate_fake_fmri_data(shapes, rk)
 
-    single_session_model = FirstLevelGLM(mask=None).fit(
+    single_session_model = FirstLevelModel(mask=None).fit(
         fmri_data[0], design_matrices[0])
     assert_true(isinstance(single_session_model.masker_.mask_img_,
                            Nifti1Image))
 
-    single_session_model = FirstLevelGLM(mask=mask).fit(
+    single_session_model = FirstLevelModel(mask=mask).fit(
         fmri_data[0], design_matrices[0])
     z1, = single_session_model.transform(np.eye(rk)[:1])
     assert_true(isinstance(z1, Nifti1Image))
@@ -76,15 +77,15 @@ def test_high_level_glm_with_data():
     shapes, rk = ((7, 8, 7, 15), (7, 8, 7, 16)), 3
     mask, fmri_data, design_matrices = write_fake_fmri_data(shapes, rk)
 
-    multi_session_model = FirstLevelGLM(mask=None).fit(
+    multi_session_model = FirstLevelModel(mask=None).fit(
         fmri_data, design_matrices)
     n_voxels = multi_session_model.masker_.mask_img_.get_data().sum()
     z_image, = multi_session_model.transform([np.eye(rk)[1]] * 2)
     assert_equal(np.sum(z_image.get_data() != 0), n_voxels)
-    assert_true(z_image.get_data().std() < 3. )
+    assert_true(z_image.get_data().std() < 3.)
 
     # with mask
-    multi_session_model = FirstLevelGLM(mask=mask).fit(
+    multi_session_model = FirstLevelModel(mask=mask).fit(
         fmri_data, design_matrices)
     z_image, effect_image, variance_image = multi_session_model.transform(
         [np.eye(rk)[:2]] * 2, output_effects=True, output_variance=True)
@@ -98,7 +99,7 @@ def test_high_level_glm_with_paths():
     shapes, rk = ((7, 8, 7, 15), (7, 8, 7, 14)), 3
     with InTemporaryDirectory():
         mask_file, fmri_files, design_files = write_fake_fmri_data(shapes, rk)
-        multi_session_model = FirstLevelGLM(mask=None).fit(
+        multi_session_model = FirstLevelModel(mask=None).fit(
             fmri_files, design_files)
         z_image, = multi_session_model.transform([np.eye(rk)[1]] * 2)
         assert_array_equal(z_image.get_affine(), load(mask_file).get_affine())
@@ -114,9 +115,9 @@ def test_high_level_glm_null_contrasts():
     shapes, rk = ((7, 8, 7, 15), (7, 8, 7, 19)), 3
     mask, fmri_data, design_matrices = generate_fake_fmri_data(shapes, rk)
 
-    multi_session_model = FirstLevelGLM(mask=None).fit(
+    multi_session_model = FirstLevelModel(mask=None).fit(
         fmri_data, design_matrices)
-    single_session_model = FirstLevelGLM(mask=None).fit(
+    single_session_model = FirstLevelModel(mask=None).fit(
         fmri_data[0], design_matrices[0])
     z1, = multi_session_model.transform([np.eye(rk)[:1], np.zeros((1, rk))],
                                         output_z=False, output_stat=True)
@@ -264,13 +265,13 @@ def test_fmri_inputs():
         des.to_csv(des_fname)
         for fi in func_img, FUNCFILE:
             for d in des, des_fname:
-                FirstLevelGLM().fit(fi, d)
-                FirstLevelGLM(mask=None).fit([fi], d)
-                FirstLevelGLM(mask=mask).fit(fi, [d])
-                FirstLevelGLM(mask=mask).fit([fi], [d])
-                FirstLevelGLM(mask=mask).fit([fi, fi], [d, d])
-                FirstLevelGLM(mask=None).fit((fi, fi), (d, d))
+                FirstLevelModel().fit(fi, d)
+                FirstLevelModel(mask=None).fit([fi], d)
+                FirstLevelModel(mask=mask).fit(fi, [d])
+                FirstLevelModel(mask=mask).fit([fi], [d])
+                FirstLevelModel(mask=mask).fit([fi, fi], [d, d])
+                FirstLevelModel(mask=None).fit((fi, fi), (d, d))
                 assert_raises(
-                    ValueError, FirstLevelGLM(mask=None).fit, [fi, fi], d)
+                    ValueError, FirstLevelModel(mask=None).fit, [fi, fi], d)
                 assert_raises(
-                    ValueError, FirstLevelGLM(mask=None).fit, fi, [d, d])
+                    ValueError, FirstLevelModel(mask=None).fit, fi, [d, d])

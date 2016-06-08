@@ -6,11 +6,6 @@ nistats.regression.
 
 It contains the GLM and contrast classes that are meant to be the main objects
 of fMRI data analyses.
-
-It is important to note that the GLM is meant as a one-session General Linear
-Model. But inference can be performed on multiple sessions by computing fixed
-effects on contrasts
-
 """
 
 from warnings import warn
@@ -19,7 +14,6 @@ import sys
 import os
 
 import numpy as np
-import pandas as pd
 from nibabel import Nifti1Image
 
 from sklearn.base import BaseEstimator, TransformerMixin, clone
@@ -30,15 +24,15 @@ from nilearn._utils.class_inspect import get_params
 from nilearn.input_data import NiftiMasker
 from sklearn.externals.joblib import Parallel, delayed
 
-from .regression import OLSModel, ARModel, concatenate_regression_results
+from .regression import OLSModel, ARModel
 from .design_matrix import make_design_matrix
-from .contrasts import compute_contrast
-from .utils import _basestring
-from .utils import GroupIterator
+from .contrasts import _summary_contrast
+from .utils import _basestring, _check_run_tables
 
 
 def mean_scaling(Y, axis=0):
-    """Scaling of the data to have percent of baseline change columnwise
+    """Scaling of the data to have percent of baseline change along the
+    specified axis
 
     Parameters
     ----------
@@ -63,19 +57,7 @@ def mean_scaling(Y, axis=0):
     return Y, mean
 
 
-def _minimize_memory_regression_results(results):
-    del results.Y
-    del results.model
-    del results.wY
-    del results.wresid
-    return results
-
-
-def _OLSModel_fit(X, Y):
-    return OLSModel(X).fit(Y)
-
-
-def _ARModel_fit(X, val, Y):
+def _ar_model_fit(X, val, Y):
     return ARModel(X, val).fit(Y)
 
 
@@ -126,13 +108,7 @@ def run_glm(Y, X, noise_model='ar1', bins=100, n_jobs=1, verbose=0,
                 format(X.shape, Y.shape))
 
     # Create the model
-    # model = OLSModel(X)
-    # Parallelize model fit by voxel groups
-    n_voxels = Y.shape[1]
-    group_iter = GroupIterator(n_voxels, n_jobs)
-    ols_result = Parallel(n_jobs=n_jobs, verbose=verbose)(
-        delayed(_OLSModel_fit)(X, Y[:, voxels]) for voxels in group_iter)
-    ols_result = concatenate_regression_results(ols_result)
+    ols_result = OLSModel(X).fit(Y)
 
     if noise_model == 'ar1':
         # compute and discretize the AR1 coefs
@@ -146,11 +122,11 @@ def run_glm(Y, X, noise_model='ar1', bins=100, n_jobs=1, verbose=0,
         # Parallelize by creating a job per ARModel
         vals = np.unique(ar1)
         ar_result = Parallel(n_jobs=n_jobs, verbose=verbose)(
-            delayed(_ARModel_fit)(X, val, Y[:, labels == val]) for val in vals)
+            delayed(_ar_model_fit)(X, val, Y[:, labels == val]) for val in vals)
         for val, result in zip(vals, ar_result):
             # We save memory if inspecting model details is not necessary
-            if minimize_memory:
-                result = _minimize_memory_regression_results(result)
+            # if minimize_memory:
+            #     result = _minimize_memory_regression_results(result)
             results[val] = result
 
     else:
@@ -158,36 +134,6 @@ def run_glm(Y, X, noise_model='ar1', bins=100, n_jobs=1, verbose=0,
         results = {0.0: ols_result}
 
     return labels, results
-
-
-def _check_list_length_match(list_1, list_2, var_name_1, var_name_2):
-    if len(list_1) != len(list_2):
-        raise ValueError(
-            'len(%s) %d does not match len(%s) %d'
-            % (var_name_1, len(list_1), var_name_2, len(list_2)))
-
-
-def _check_and_load_tables(tables_, var_name):
-    tables = []
-    for table_idx, table in enumerate(tables_):
-        if isinstance(table, _basestring):
-            loaded = pd.read_csv(table, index_col=0)
-            tables.append(loaded)
-        elif isinstance(table, pd.DataFrame):
-            tables.append(table)
-        else:
-            raise TypeError('%s can only be a pandas DataFrames or a'
-                            'string. A %s was provided at idx %d' %
-                            (var_name, type(table), table_idx))
-    return tables
-
-
-def _check_run_tables(run_imgs, tables_, tables_name):
-    if isinstance(tables_, (_basestring, pd.DataFrame)):
-        tables_ = [tables_]
-    _check_list_length_match(run_imgs, tables_, 'run_imgs', tables_name)
-    tables_ = _check_and_load_tables(tables_, tables_name)
-    return tables_
 
 
 class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
@@ -312,7 +258,6 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         with keys corresponding to the different labels values
         values are RegressionResults instances corresponding to the voxels
     """
-
     def __init__(self, t_r=None, slice_time_ref=None, hrf_model='canonical',
                  drift_model='cosine', period_cut=128, drift_order=1,
                  fir_delays=[0], min_onset=-24, mask=None, target_affine=None,
@@ -495,8 +440,6 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
 
             # Compute GLM
             Y = self.masker_.transform(run_img)
-
-            # Y = self.masker_.transform(run_img)
             if self.signal_scaling:
                 Y, _ = mean_scaling(Y, self.scaling_axis)
             if self.memory is not None:
@@ -531,33 +474,17 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         else:
             return self.design_matrices_
 
-    def _all_runs_contrast(self, con_vals, stat_type):
-        contrast = None
-        for i, (labels_, results_, con_val) in enumerate(zip(
-                self.labels_, self.results_, con_vals)):
-            if np.all(con_val == 0):
-                warn('Contrast for session %d is null' % i)
-                continue
-            contrast_ = compute_contrast(labels_, results_, con_val,
-                                         stat_type)
-            if contrast is None:
-                contrast = contrast_
-            else:
-                contrast = contrast + contrast_
-        return contrast
-
     def compute_contrast(self, contrast_def, contrast_name=None,
-                         stat_type=None,
-                         output_type='z_score'):
+                         stat_type=None, output_type='z_score'):
         """Generate different outputs corresponding to
         the contrasts provided e.g. z_map, t_map, effects and variance.
         In multi-session case, outputs the fixed effects map.
 
         Parameters
         ----------
-        con_vals : array or list of arrays of shape (n_col) or (n_dim, n_col)
+        contrast_def : array of shape (n_col)
             where ``n_col`` is the number of columns of the design matrix,
-            numerical definition of the contrast (one array per run)
+            (one array per run)
 
         contrast_name : str, optional
             name of the contrast
@@ -578,22 +505,20 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         if self.labels_ is None or self.results_ is None:
             raise ValueError('The model has not been fit yet')
 
-        if isinstance(contrast_def, (_basestring)):
-            raise ValueError('Formulas not implemented yet')
-        elif isinstance(contrast_def, (list, np.ndarray)):
+        if isinstance(contrast_def, np.ndarray):
             con_vals = contrast_def
+        else:
+            raise ValueError('contrast_def must be an array')
 
         if isinstance(con_vals, np.ndarray):
             con_vals = [con_vals]
         if len(con_vals) != len(self.results_):
-            raise ValueError(
-                'contrasts must be a sequence of %d session contrasts' %
-                len(self.results_))
+            con_vals = con_vals * len(self.results_)
 
         if self.memory is not None:
-            mem_contrast = self.memory.cache(self._all_runs_contrast)
+            mem_contrast = self.memory.cache(_summary_contrast)
         else:
-            mem_contrast = self._all_runs_contrast
+            mem_contrast = _summary_contrast
         contrast = mem_contrast(con_vals, stat_type)
 
         estimate_ = getattr(contrast, output_type)()

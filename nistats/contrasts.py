@@ -1,3 +1,4 @@
+from warnings import warn
 import numpy as np
 import scipy.stats as sps
 
@@ -64,6 +65,26 @@ def compute_contrast(labels, regression_result, con_val, contrast_type=None):
     dof_ = regression_result[label_].df_resid
     return Contrast(effect=effect_, variance=var_, dof=dof_,
                     contrast_type=contrast_type)
+
+
+def _summary_contrast(labels, results, con_vals, stat_type):
+    """Computes the summary contrast assuming fixed effects.
+
+    Adds the contrasts given by the consideration of corresponding items in
+    the labels, results and con_vals lists.
+    """
+    contrast = None
+    for i, (lab, res, con_val) in enumerate(zip(labels, results, con_vals)):
+        if np.all(con_val == 0):
+            warn('Contrast for session %d is null' % i)
+            continue
+        contrast_ = compute_contrast(lab, res, con_val,
+                                     stat_type)
+        if contrast is None:
+            contrast = contrast_
+        else:
+            contrast = contrast + contrast_
+    return contrast
 
 
 class Contrast(object):

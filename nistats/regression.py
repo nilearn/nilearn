@@ -331,15 +331,57 @@ class RegressionResults(LikelihoodModelResults):
         return self.SSE / self.df_resid
 
 
-def concatenate_regression_results(results):
-    """Concatenate results from a parallelized regression"""
-    theta = np.concatenate([result.theta for result in results], axis=1)
-    Y = np.concatenate([result.Y for result in results], axis=1)
-    model = results[0].model
-    wY = np.concatenate([result.wY for result in results], axis=1)
-    wresid = np.concatenate([result.wresid for result in results], axis=1)
-    dispersion = np.concatenate([result.dispersion for result in results],
-                                axis=0)
-    cov = results[0].cov
-    return RegressionResults(theta, Y, model, wY, wresid,
-                             dispersion=dispersion, cov=cov)
+class SimpleRegressionResults():
+    """This class contains only information of the model fit necessary
+    for contast computation.
+
+    Its intended to save memory when details of the model are unnecessary.
+    """
+    def __init__(self, results):
+        """See LikelihoodModelResults constructor.
+
+        The only difference is that the whitened Y and residual values
+        are stored for a regression model.
+        """
+        LikelihoodModelResults.__init__(self, results.theta, None, None,
+                                        results.cov, results.dispersion,
+                                        results.nuisance)
+
+    def logL(self, Y):
+        """
+        The maximized log-likelihood
+        """
+        raise ValueError('can not use this method for simple results')
+
+    def resid(self, Y):
+        """
+        Residuals from the fit.
+        """
+        return Y - self.predicted
+
+    def norm_resid(self, Y):
+        """
+        Residuals, normalized to have unit length.
+
+        Notes
+        -----
+        Is this supposed to return "stanardized residuals,"
+        residuals standardized
+        to have mean zero and approximately unit variance?
+
+        d_i = e_i / sqrt(MS_E)
+
+        Where MS_E = SSE / (n - k)
+
+        See: Montgomery and Peck 3.2.1 p. 68
+             Davidson and MacKinnon 15.2 p 662
+        """
+        return self.resid(Y) * pos_recipr(np.sqrt(self.dispersion))
+
+    def predicted(self):
+        """ Return linear predictor values from a design matrix.
+        """
+        beta = self.theta
+        # the LikelihoodModelResults has parameters named 'theta'
+        X = self.model.design
+        return np.dot(X, beta)
