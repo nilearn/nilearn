@@ -9,12 +9,6 @@ if (LooseVersion(sklearn.__version__) < LooseVersion('0.15') or
 else:
     from sklearn.feature_selection import f_regression
 
-try:
-    # scikit-learn < 0.16
-    from sklearn.utils import check_arrays as check_array
-except:
-    # scikit-learn >= 0.16
-    from sklearn.utils import check_array
 
 try:
     # scikit-learn < 0.16
@@ -24,7 +18,6 @@ except:
     from sklearn.cross_validation import check_cv
 
 # atleast2d_or_csr
-# XXX change this to check_array too
 try:
     from sklearn.utils import atleast2d_or_csr
 except ImportError:

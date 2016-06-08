@@ -31,7 +31,7 @@ from sklearn.utils.extmath import safe_sparse_dot
 from sklearn import clone
 
 from .._utils.fixes import check_cv
-from .._utils.fixes import check_array
+from .._utils.fixes import atleast2d_or_csr
 from .._utils.fixes import ParameterGrid
 from .._utils.fixes import check_X_y
 from .._utils.fixes import check_is_fitted
@@ -326,7 +326,7 @@ class Decoder(BaseEstimator):
 
         # Load data and target
         X = self.masker_.transform(niimgs)
-        X = check_array(X)
+        X = atleast2d_or_csr(X)
         X, y = check_X_y(X, y, ['csr', 'csc', 'coo'], dtype=np.float,
                          multi_output=True, y_numeric=True)
 
@@ -368,7 +368,7 @@ class Decoder(BaseEstimator):
             niimgs = index_img(niimgs, index)
 
         X = self.masker_.transform(niimgs)
-        X = check_array(X)
+        X = atleast2d_or_csr(X)
 
         n_features = self.coef_.shape[1]
         if X.shape[1] != n_features:
@@ -399,7 +399,7 @@ class Decoder(BaseEstimator):
             y = y[index]
 
         X = self.masker_.transform(niimgs)
-        X = check_array(X)
+        X = atleast2d_or_csr(X)
         X, y = check_X_y(X, y, ['csr', 'csc', 'coo'], dtype=np.float,
                          multi_output=True, y_numeric=True)
 
