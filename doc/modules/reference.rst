@@ -85,6 +85,8 @@ uses.
    fetch_megatrawls_netmats
    fetch_cobre
    load_mni152_template
+   load_mni152_brain_mask
+   fetch_brain_gm_mask
 
 .. _decoding_ref:
 

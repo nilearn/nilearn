@@ -151,7 +151,7 @@ def test_load_mni152_brain_mask():
     assert_equal(brain_mask.shape, (91, 109, 91))
 
 
-def test_fetch_mni152_grey_matter_mask():
-    grey_matter_img = struct.fetch_mni152_grey_matter_mask()
+@with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
+def test_fetch_brain_gm_mask():
+    grey_matter_img = struct.fetch_brain_gm_mask(data_dir=tst.tmpdir, verbose=0)
     assert_true(isinstance(grey_matter_img, nibabel.Nifti1Image))
-    assert_equal(grey_matter_img.shape, (91, 109, 91))
