@@ -3,7 +3,10 @@ Decoding with decoder metaestimator: face vs house recognition
 ==============================================================
 
 Here is a simple example of decoding with a the decoder metaestimator,
-reproducing the Haxby 2001 study on a face vs house discrimination task.
+reproducing a face vs house discrimination task on the study "Distributed and
+Overlapping Representations of Faces and Objects in Ventral Temporal Cortex"
+(Science 2001).
+
 """
 
 #########################################################################
