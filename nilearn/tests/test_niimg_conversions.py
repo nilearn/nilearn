@@ -434,12 +434,13 @@ def test_concat_niimgs():
                         auto_resample=False)
 
     # test list of 4D niimgs as input
-    tmpimg1 = tempfile.mktemp(suffix='.nii')
-    tmpimg2 = tempfile.mktemp(suffix='.nii')
+    tempdir = tempfile.mkdtemp()
+    tmpimg1 = os.path.join(tempdir, '1.nii')
+    tmpimg2 = os.path.join(tempdir, '2.nii')
     try:
         nibabel.save(img1, tmpimg1)
         nibabel.save(img3, tmpimg2)
-        concatenated = _utils.concat_niimgs([tmpimg1, tmpimg2])
+        concatenated = _utils.concat_niimgs(os.path.join(tempdir, '*'))
         assert_array_equal(
             concatenated.get_data()[..., 0], img1.get_data())
         assert_array_equal(
@@ -447,6 +448,8 @@ def test_concat_niimgs():
     finally:
         _remove_if_exists(tmpimg1)
         _remove_if_exists(tmpimg2)
+        if os.path.exists(tempdir):
+            os.removedirs(tempdir)
 
     img5d = Nifti1Image(np.ones((2, 2, 2, 2, 2)), affine)
     assert_raises_regex(TypeError, 'Concatenated images must be 3D or 4D. '
