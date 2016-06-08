@@ -506,26 +506,24 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
             raise ValueError('The model has not been fit yet')
 
         if isinstance(contrast_def, np.ndarray):
-            con_vals = contrast_def
+            con_val = contrast_def
         else:
             raise ValueError('contrast_def must be an array')
 
-        if isinstance(con_vals, np.ndarray):
-            con_vals = [con_vals]
-        if len(con_vals) != len(self.results_):
-            con_vals = con_vals * len(self.results_)
-
         if self.memory is not None:
-            mem_contrast = self.memory.cache(_summary_contrast)
+            arg_ignore = ['labels', 'results']
+            mem_contrast = self.memory.cache(_summary_contrast,
+                                             ignore=arg_ignore)
         else:
             mem_contrast = _summary_contrast
-        contrast = mem_contrast(con_vals, stat_type)
+        contrast = mem_contrast(self.labels_, self.results_, con_val,
+                                stat_type)
 
         estimate_ = getattr(contrast, output_type)()
         # Prepare the returned images
         output = self.masker_.inverse_transform(estimate_)
         if contrast_name is None:
-            contrast_name = str(con_vals)
+            contrast_name = str(con_val)
         output.get_header()['descrip'] = (
             '%s of contrast %s' % (output_type, contrast_name))
         return output
