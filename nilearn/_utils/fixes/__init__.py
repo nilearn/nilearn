@@ -1,7 +1,6 @@
 from distutils.version import LooseVersion
 import sklearn
 
-# f_regression
 
 if (LooseVersion(sklearn.__version__) < LooseVersion('0.15') or
           sklearn.__version__ == '0.15-git'):
