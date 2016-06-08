@@ -54,23 +54,34 @@ class DictLearning(BaseDecomposition, TransformerMixin):
         parameters.
 
     n_components: int
-        Number of components to extract
+        Number of components to extract.
+
+    batch_size : int, optional, default=20
+        The number of samples to take in each batch.
 
     n_epochs: float
-        Number of epochs the algorithm should run on the data
+        Number of epochs the algorithm should run on the data.
 
     alpha: float, optional, default=1
-        Sparsity controlling parameter
+        Sparsity controlling parameter.
 
     dict_init: Niimg-like object, optional
         Initial estimation of dictionary maps. Would be computed from CanICA if
-        not provided
+        not provided.
 
     reduction_ratio: 'auto' or float between 0. and 1.
         - Between 0. or 1. : controls data reduction in the temporal domain.
           1. means no reduction, < 1. calls for an SVD based reduction.
         - if set to 'auto', estimator will set the number of components per
           reduced session to be n_components.
+
+    method : {'lars', 'cd'}
+        Coding method used by sklearn backend. Below are the possible values.
+        lars: uses the least angle regression method to solve the lasso problem
+        (linear_model.lars_path)
+        cd: uses the coordinate descent method to compute the
+        Lasso solution (linear_model.Lasso). Lars will be faster if
+        the estimated components are sparse.
 
     random_state: int or RandomState
         Pseudo number generator state used for random sampling.
@@ -93,15 +104,15 @@ class DictLearning(BaseDecomposition, TransformerMixin):
 
     low_pass: None or float, optional
         This parameter is passed to signal.clean. Please see the related
-        documentation for details
+        documentation for details.
 
     high_pass: None or float, optional
         This parameter is passed to signal.clean. Please see the related
-        documentation for details
+        documentation for details.
 
     t_r: float, optional
         This parameter is passed to signal.clean. Please see the related
-        documentation for details
+        documentation for details.
 
     memory: instance of joblib.Memory or string
         Used to cache the masking process.
@@ -117,7 +128,7 @@ class DictLearning(BaseDecomposition, TransformerMixin):
         'all CPUs', -2 'all CPUs but one', and so on.
 
     verbose: integer, optional
-        Indicate the level of verbosity. By default, nothing is printed
+        Indicate the level of verbosity. By default, nothing is printed.
 
     References
     ----------
@@ -130,32 +141,26 @@ class DictLearning(BaseDecomposition, TransformerMixin):
 
     def __init__(self, n_components=20,
                  n_epochs=1, alpha=10, reduction_ratio='auto', dict_init=None,
-                 random_state=None,
-                 mask=None, smoothing_fwhm=4,
-                 standardize=True, detrend=True,
-                 low_pass=None, high_pass=None, t_r=None,
-                 target_affine=None, target_shape=None,
-                 mask_strategy='epi', mask_args=None,
-                 memory=Memory(cachedir=None), memory_level=0,
-                 n_jobs=1, verbose=0,
-                 ):
+                 random_state=None, batch_size=20, method="cd", mask=None,
+                 smoothing_fwhm=4, standardize=True, detrend=True,
+                 low_pass=None, high_pass=None, t_r=None, target_affine=None,
+                 target_shape=None, mask_strategy='epi', mask_args=None,
+                 n_jobs=1, verbose=0, memory=Memory(cachedir=None),
+                 memory_level=0):
         BaseDecomposition.__init__(self, n_components=n_components,
-                                   random_state=random_state,
-                                   mask=mask,
+                                   random_state=random_state, mask=mask,
                                    smoothing_fwhm=smoothing_fwhm,
-                                   standardize=standardize,
-                                   detrend=detrend,
+                                   standardize=standardize, detrend=detrend,
                                    low_pass=low_pass, high_pass=high_pass,
-                                   t_r=t_r,
-                                   target_affine=target_affine,
+                                   t_r=t_r, target_affine=target_affine,
                                    target_shape=target_shape,
                                    mask_strategy=mask_strategy,
-                                   mask_args=mask_args,
-                                   memory=memory,
-                                   memory_level=memory_level,
-                                   n_jobs=n_jobs,
+                                   mask_args=mask_args, memory=memory,
+                                   memory_level=memory_level, n_jobs=n_jobs,
                                    verbose=verbose)
         self.n_epochs = n_epochs
+        self.batch_size = batch_size
+        self.method = method
         self.alpha = alpha
         self.reduction_ratio = reduction_ratio
         self.dict_init = dict_init
@@ -169,13 +174,9 @@ class DictLearning(BaseDecomposition, TransformerMixin):
                             do_cca=True, threshold=float(self.n_components),
                             n_init=1,
                             # mask parameter is not useful as we bypass masking
-                            mask=self.masker_,
-                            random_state=self.random_state,
-                            memory=self.memory,
-                            memory_level=self.memory_level,
-                            n_jobs=self.n_jobs,
-                            verbose=self.verbose
-                            )
+                            mask=self.masker_, random_state=self.random_state,
+                            memory=self.memory, memory_level=self.memory_level,
+                            n_jobs=self.n_jobs, verbose=self.verbose)
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore", UserWarning)
                 # We use protected function _raw_fit as data
@@ -188,18 +189,16 @@ class DictLearning(BaseDecomposition, TransformerMixin):
         self.components_init_ = components
 
     def _init_loadings(self, data):
-        self._loadings_init = self._cache(_compute_loadings,
-                                          func_memory_level=2)(
-            self.components_init_,
-            data)
+        self.loadings_init_ = self._cache(_compute_loadings)(
+            self.components_init_, data)
 
     def fit(self, imgs, y=None, confounds=None):
-        """Compute the mask and the ICA maps across subjects
+        """Compute the mask and component maps across subjects
 
         Parameters
         ----------
         imgs: list of Niimg-like objects
-            See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
+            See http://nilearn.github.io/manipulating_images/manipulating_images.html#niimg.
             Data on which PCA must be calculated. If this is a list,
             the affine is considered the same for all.
 
@@ -217,49 +216,38 @@ class DictLearning(BaseDecomposition, TransformerMixin):
                                n_components=self.n_components,
                                random_state=self.random_state,
                                memory_level=max(0, self.memory_level - 1),
-                               n_jobs=self.n_jobs,
-                               memory=self.memory)
+                               n_jobs=self.n_jobs, memory=self.memory)
         if self.verbose:
             print('[DictLearning] Learning initial components')
         self._init_dict(data)
-
         self._raw_fit(data)
+        return self
 
     def _raw_fit(self, data):
-        """Compute the mask and the maps across subjects, using raw_data. Can
-        only be called directly is dict_init and mask_img, or
-        components_init_ is provided
+        """Helper function that direcly process unmasked data
 
         Parameters
         ----------
         data: ndarray,
             Shape (n_samples, n_features)
         """
-        n_samples, n_features = data.shape
+        _, n_features = data.shape
 
         if self.verbose:
             print('[DictLearning] Computing initial loadings')
         self._init_loadings(data)
 
-        dict_init = self._loadings_init
+        dict_init = self.loadings_init_
 
-        n_iter = ((n_features - 1) // 20 + 1) * self.n_epochs
+        n_iter = ((n_features - 1) // self.batch_size + 1) * self.n_epochs
 
         if self.verbose:
             print('[DictLearning] Learning dictionary')
-        self.components_, dictionary = self._cache(dict_learning_online,
-                                                   func_memory_level=2)(
-            data.T,
-            self.n_components,
-            alpha=self.alpha,
-            n_iter=n_iter,
-            batch_size=20,
-            method='cd',
-            dict_init=dict_init,
-            verbose=max(0, self.verbose - 1),
-            random_state=self.random_state,
-            return_code=True,
-            shuffle=True,
+        self.components_, _ = self._cache(dict_learning_online)(
+            data.T, self.n_components, alpha=self.alpha, n_iter=n_iter,
+            batch_size=self.batch_size, method=self.method,
+            dict_init=dict_init, verbose=max(0, self.verbose - 1),
+            random_state=self.random_state, return_code=True, shuffle=True,
             n_jobs=1)
         self.components_ = self.components_.T
         # Unit-variance scaling
@@ -267,10 +255,9 @@ class DictLearning(BaseDecomposition, TransformerMixin):
         S[S == 0] = 1
         self.components_ /= S[:, np.newaxis]
 
-        # flip signs in each composant so that positive part is l1 larger
-        # than negative part
-        # Empirically this yield more positive looking maps
-        # than with setting the max to be positive
+        # Flip signs in each composant so that positive part is l1 larger
+        # than negative part. Empirically this yield more positive looking maps
+        # than with setting the max to be positive.
         for component in self.components_:
             if np.sum(component > 0) < np.sum(component < 0):
                 component *= -1

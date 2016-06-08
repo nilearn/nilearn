@@ -1,3 +1,14 @@
+0.2.5
+=====
+
+Changelog
+---------
+
+New features
+............
+    - New display_mode options in plot_glass_brain and plot_connectome. It
+      is possible to plot right and left hemisphere projections separately.
+
 0.2.4
 =====
 

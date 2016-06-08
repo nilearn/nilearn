@@ -198,8 +198,11 @@ def test_5d():
     masker = NiftiMasker(mask_img=mask_img)
     masker.fit()
     testing.assert_raises_regex(
-        DimensionError, 'Data must be a 4D Niimg-like object but you provided'
-        ' a list of 4D images.', masker.transform, data_5d)
+        DimensionError,
+        "Input data has incompatible dimensionality: "
+        "Expected dimension is 4D and you provided "
+        "a list of 4D images \(5D\).",
+        masker.transform, data_5d)
 
 
 def test_sessions():
@@ -313,5 +316,9 @@ def test_filter_and_mask():
     masker = NiftiMasker()
     params = get_params(NiftiMasker, masker)
 
-    assert_raises_regex(DimensionError, "Data must be a 3D", filter_and_mask,
-                         data_img, mask_img, params)
+    assert_raises_regex(DimensionError,
+                        "Input data has incompatible dimensionality: "
+                        "Expected dimension is 3D and you provided "
+                        "a 4D image.",
+                        filter_and_mask,
+                        data_img, mask_img, params)

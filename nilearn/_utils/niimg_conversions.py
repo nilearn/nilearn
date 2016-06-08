@@ -178,7 +178,7 @@ def check_niimg(niimg, ensure_ndim=None, atleast_4d=False, dtype=None,
     Parameters
     ----------
     niimg: Niimg-like object
-        See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
+        See http://nilearn.github.io/manipulating_images/manipulating_images.html#niimg.
         If niimg is a string, consider it as a path to Nifti image and
         call nibabel.load on it. The '~' symbol is expanded to the user home
         folder.
@@ -288,7 +288,7 @@ def check_niimg_3d(niimg, dtype=None):
     Parameters
     ----------
     niimg: Niimg-like object
-        See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
+        See http://nilearn.github.io/manipulating_images/manipulating_images.html#niimg.
         If niimg is a string, consider it as a path to Nifti image and
         call nibabel.load on it. If it is an object, check if get_data()
         and get_affine() methods are present, raise TypeError otherwise.
@@ -322,7 +322,7 @@ def check_niimg_4d(niimg, return_iterator=False, dtype=None):
     Parameters
     ----------
     niimg: 4D Niimg-like object
-        See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
+        See http://nilearn.github.io/manipulating_images/manipulating_images.html#niimg.
         If niimgs is an iterable, checks if data is really 4D. Then,
         considering that it is a list of niimg and load them one by one.
         If niimg is a string, consider it as a path to Nifti image and
@@ -367,7 +367,7 @@ def concat_niimgs(niimgs, dtype=np.float32, ensure_ndim=None,
     Parameters
     ----------
     niimgs: iterable of Niimg-like objects
-        See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
+        See http://nilearn.github.io/manipulating_images/manipulating_images.html#niimg.
         Niimgs to concatenate.
 
     dtype: numpy dtype, optional

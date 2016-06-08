@@ -80,7 +80,7 @@ def load_niimg(niimg, dtype=None):
     -----------
 
     niimg: Niimg-like object
-        See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
+        See http://nilearn.github.io/manipulating_images/manipulating_images.html#niimg.
         Image to load.
 
     dtype: {dtype, "auto"}

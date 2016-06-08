@@ -27,8 +27,8 @@ different heuristics to find cutting coordinates.
      :target: ../auto_examples/01_plotting/plot_demo_glass_brain_extensive.html
      :scale: 50
 
-.. |plot_connectome| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_inverse_covariance_connectome_002.png
-     :target: ../auto_examples/03_connectivity/plot_inverse_covariance_connectome.html
+.. |plot_connectome| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_adhd_spheres_003.png
+     :target: ../auto_examples/03_connectivity/plot_adhd_spheres.html
      :scale: 50
 
 .. |plot_anat| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_demo_plotting_003.png
@@ -125,7 +125,7 @@ Different display modes
      :target: ../auto_examples/01_plotting/plot_demo_more_plotting.html
      :scale: 50
 
-.. |plot_x_small| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_demo_more_plotting_004.png
+.. |plot_y_small| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_demo_more_plotting_004.png
      :target: ../auto_examples/01_plotting/plot_demo_more_plotting.html
      :scale: 50
 
@@ -145,10 +145,18 @@ Different display modes
      :target: ../auto_examples/01_plotting/plot_demo_more_plotting.html
      :scale: 50
 
+.. |plot_lzr| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_demo_glass_brain_extensive_006.png
+     :target: ../auto_examples/01_plotting/plot_demo_glass_brain_extensive.html
+     :scale: 50
+
+.. |plot_lyrz| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_demo_glass_brain_extensive_007.png
+     :target: ../auto_examples/01_plotting/plot_demo_glass_brain_extensive.html
+     :scale: 50
+
 
 ================= =========================================================
 ================= =========================================================
-|plot_ortho|       `display_mode='ortho', cut_coords=(36, -27, 60)` 
+|plot_ortho|       `display_mode='ortho', cut_coords=[36, -27, 60]`
                    |hack|
                    Ortho slicer: 3 cuts along the x, y, z directions
 
@@ -157,14 +165,14 @@ Different display modes
                    Cutting in the z direction, specifying the number of
                    cuts
 
-|plot_x|           `display_mode='x', cut_coords=(-36, 36)`
+|plot_x|           `display_mode='x', cut_coords=[-36, 36]`
                    |hack|
                    Cutting in the x direction, specifying the exact
                    cuts
 
-|plot_x_small|     `display_mode='x', cut_coords=1`
+|plot_y_small|     `display_mode='y', cut_coords=1`
                    |hack|
-                   Cutting in the x direction, with only 1 cut, that is
+                   Cutting in the y direction, with only 1 cut, that is
                    automatically positionned
 
 |plot_z_small|     `display_mode='z', cut_coords=1, colorbar=False`
@@ -172,26 +180,38 @@ Different display modes
                    Cutting in the z direction, with only 1 cut, that is
                    automatically positionned
 
-|plot_xz|          `display_mode='xz', cut_coords=(36, 60)`
+|plot_xz|          `display_mode='xz', cut_coords=[36, 60]`
                    |hack|
                    Cutting in the x and z direction, with cuts manually
                    positionned
 
-|plot_yx|          `display_mode='yx', cut_coords=(-27, 36)`
+|plot_yx|          `display_mode='yx', cut_coords=[-27, 36]`
                    |hack|
                    Cutting in the y and x direction, with cuts manually
                    positionned
 
-|plot_yz|          `display_mode='yz', cut_coords=(-27, 60)`
+|plot_yz|          `display_mode='yz', cut_coords=[-27, 60]`
                    |hack|
                    Cutting in the y and z direction, with cuts manually
                    positionned
 
+|plot_lzr|         `Glass brain display_mode='lzr'`
+                   |hack|
+                   Glass brain and Connectome provide additional display modes
+                   due to the possibility of doing hemispheric projections.
+                   Check out: 'l', 'r', 'lr', 'lzr', 'lyr', 'lzry', 'lyrz'.
+
+|plot_lyrz|        `Glass brain display_mode='lyrz'`
+                   |hack|
+                   Glass brain and Connectome provide additional display modes
+                   due to the possibility of doing hemispheric projections.
+                   Check out: 'l', 'r', 'lr', 'lzr', 'lyr', 'lzry', 'lyrz'.
+
 
 ================= =========================================================
 
-Adding overlays, edges and contours
-====================================
+Adding overlays, edges, contours, contour fillings and markers
+==============================================================
 
 To add overlays, contours, or edges, use the return value of the plotting
 functions. Indeed, these return a display object, such as the
@@ -206,6 +226,18 @@ plot, and has methods to add overlays, contours or edge maps::
 
 .. |plot_contours| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_demo_more_plotting_010.png
      :target: ../auto_examples/01_plotting/plot_demo_more_plotting.html
+     :scale: 50
+
+.. |plot_fill| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_demo_more_plotting_011.png
+     :target: ../auto_examples/01_plotting/plot_demo_more_plotting.html
+     :scale: 50
+
+.. |plot_markers| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_demo_more_plotting_012.png
+     :target: ../auto_examples/01_plotting/plot_demo_more_plotting.html
+     :scale: 50
+
+.. |plot_overlay| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_overlay_002.png
+     :target: ../auto_examples/_01_plotting/plot_overlay.html
      :scale: 50
 
 ================= =========================================================
@@ -227,13 +259,23 @@ plot, and has methods to add overlays, contours or edge maps::
                    |hack|
                    **Example:** :ref:`sphx_glr_auto_examples_01_plotting_plot_haxby_masks.py`
 
+|plot_fill|        `display.add_contours(img, filled=True, alpha=0.7, levels=[0.5], colors='b')`
+                   |hack|
+                   Add a plot of `img` with contours filled with colors
 
-**add_overlay**   `display.add_overlay(img, cmap=plotting.cm.purple_green, threshold=3)`
+|plot_overlay|    `display.add_overlay(img, cmap=plotting.cm.purple_green, threshold=3)`
                   |hack|
                   Add a new overlay on the existing figure
                   |hack|
                   **Example:** :ref:`sphx_glr_auto_examples_01_plotting_plot_overlay.py`
 
+|plot_markers|    `display.add_markers(coords, marker_color='y', marker_size=100)`
+                  |hack|
+                  Add seed based MNI coordinates as spheres on top of
+                  statistical image or EPI image. This is useful for seed
+                  based regions specific interpretation of brain images.
+                  |hack|
+                  **Example:** :ref:`sphx_glr_auto_examples_03_connectivity_plot_seed_based_correlation.py`
 
 ================= =========================================================
 

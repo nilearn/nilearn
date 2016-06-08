@@ -21,7 +21,7 @@ print('First subject functional nifti image (4D) is at: %s' %
 
 ##########################################################################
 # Coordinates of Default Mode Network
-dmn_coords = [(0, -52, 18), (-46, -68, 32), (46, -68, 32), (0, 50, -5)]
+dmn_coords = [(0, -52, 18), (-46, -68, 32), (46, -68, 32), (1, 50, -5)]
 labels = [
     'Posterior Cingulate Cortex',
     'Left Temporoparietal junction',
@@ -72,4 +72,11 @@ from nilearn import plotting
 
 plotting.plot_connectome(cve.precision_, dmn_coords,
                          title="Default Mode Network Connectivity")
+
+# Display connectome with hemispheric projections.
+# Notice (0, -52, 18) is included in both hemispheres since x == 0.
+title = "Connectivity projected on hemispheres"
+plotting.plot_connectome(cve.precision_, dmn_coords, title=title,
+                         display_mode='lyrz')
+
 plotting.show()
