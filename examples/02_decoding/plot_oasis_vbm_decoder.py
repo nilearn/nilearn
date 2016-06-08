@@ -41,14 +41,11 @@ ____
 #          Gael Varoquaux, Apr 2014
 #          Andres Hoyos-Idrobo, Dec 2015
 import numpy as np
-from scipy import linalg
-import matplotlib.pyplot as plt
-from nilearn import datasets
-from nilearn.input_data import NiftiMasker
 
 n_subjects = 100  # more subjects requires more memory
 
 ### Load Oasis dataset ########################################################
+from nilearn import datasets
 oasis_dataset = datasets.fetch_oasis_vbm(n_subjects=n_subjects)
 gray_matter_map_filenames = oasis_dataset.gray_matter_maps
 age = oasis_dataset.ext_vars['age'].astype(float)
@@ -60,6 +57,7 @@ print('First white-matter anatomy image (3D) is located at: %s' %
       oasis_dataset.white_matter_maps[0])  # 3D data
 
 ### Preprocess data ###########################################################
+from nilearn.input_data import NiftiMasker
 nifti_masker = NiftiMasker(standardize=False, smoothing_fwhm=2,
                            memory='nilearn_cache')
 
@@ -99,9 +97,12 @@ bg_filename = gray_matter_map_filenames[0]
 z_slice = 0
 from nilearn.image.resampling import coord_transform
 affine = weight_img.get_affine()
+
+from scipy import linalg
 _, _, k_slice = coord_transform(0, 0, z_slice, linalg.inv(affine))
 k_slice = np.round(k_slice)
 
+import matplotlib.pyplot as plt
 fig = plt.figure(figsize=(5.5, 7.5), facecolor='k')
 
 weight_slice_data = weight_img.get_data()[..., k_slice]

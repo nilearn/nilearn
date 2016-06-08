@@ -12,20 +12,15 @@ Overlapping Representations of Faces and Objects in Ventral Temporal Cortex"
 #########################################################################
 # Load Haxby dataset
 import numpy as np
-import nibabel
-from nilearn.image import new_img_like
-from nilearn.image import mean_img
-from nilearn.datasets import fetch_haxby
-from nilearn.decoding import Decoder
-from nilearn.plotting import plot_stat_map, show
-
 
 # Load the Haxby dataset
+from nilearn.datasets import fetch_haxby
 data_files = fetch_haxby(n_subjects=1)
 
 func_filenames = data_files.func[0]
 labels_filenames = data_files.session_target[0]
 
+from nilearn.image import mean_img
 background_img = mean_img(func_filenames)
 
 # Load Target labels
@@ -40,6 +35,7 @@ condition_mask_train = np.logical_and(condition_mask, labels['chunks'] <= 6)
 condition_mask_test = np.logical_and(condition_mask, labels['chunks'] > 6)
 
 ### Prediction with Decoder ###################################################
+from nilearn.decoding import Decoder
 decoder = Decoder(estimator='svc_l2', screening_percentile=20, cv=3,
                   mask_strategy='epi', standardize=True, smoothing_fwhm=4,
                   n_jobs=1)
@@ -55,6 +51,7 @@ print("=== DECODER ===")
 print("Prediction accuracy: %f" % prediction_accuracy)
 print("")
 
+from nilearn.plotting import plot_stat_map, show
 plot_stat_map(weight_img, background_img, cut_coords=[-34, -16],
               display_mode="yz")
 
