@@ -3,7 +3,7 @@
 import numpy as np
 import warnings
 
-from . import check_array
+from . import atleast2d_or_csr
 
 
 class NotFittedError(ValueError, AttributeError):
@@ -81,12 +81,12 @@ def check_X_y(X, y, accept_sparse=None, dtype="numeric", order=None, copy=False,
     y_converted : object
         The converted and validated y.
     """
-    X = check_array(X, accept_sparse, dtype, order, copy, force_all_finite,
-                    ensure_2d, allow_nd, ensure_min_samples,
-                    ensure_min_features, warn_on_dtype, estimator)
+    X = atleast2d_or_csr(X, accept_sparse, dtype, order, copy, force_all_finite,
+                         ensure_2d, allow_nd, ensure_min_samples,
+                         ensure_min_features, warn_on_dtype, estimator)
     if multi_output:
-        y = check_array(y, 'csr', force_all_finite=True, ensure_2d=False,
-                        dtype=None)
+        y = atleast2d_or_csr(y, 'csr', force_all_finite=True, ensure_2d=False,
+                             dtype=None)
     else:
         y = column_or_1d(y, warn=True)
         _assert_all_finite(y)
