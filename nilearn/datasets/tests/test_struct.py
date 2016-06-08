@@ -149,3 +149,9 @@ def test_load_mni152_brain_mask():
     assert_true(isinstance(brain_mask, nibabel.Nifti1Image))
     # standard MNI template shape
     assert_equal(brain_mask.shape, (91, 109, 91))
+
+
+def test_fetch_mni152_grey_matter_mask():
+    grey_matter_img = struct.fetch_mni152_grey_matter_mask()
+    assert_true(isinstance(grey_matter_img, nibabel.Nifti1Image))
+    assert_equal(grey_matter_img.shape, (91, 109, 91))

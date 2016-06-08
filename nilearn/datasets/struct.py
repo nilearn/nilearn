@@ -4,12 +4,13 @@ Downloading NeuroImaging datasets: structural datasets
 import warnings
 import os
 import numpy as np
+from scipy import ndimage
 from sklearn.datasets.base import Bunch
 
 from .utils import _get_dataset_dir, _fetch_files, _get_dataset_descr
 
 from .._utils import check_niimg
-from ..image import new_img_like
+from ..image import new_img_like, resample_to_img
 
 
 def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
@@ -136,6 +137,56 @@ def load_mni152_brain_mask():
     mask_voxels = (target_img.get_data() > 0).astype(int)
     mask_img = new_img_like(target_img, mask_voxels)
     return mask_img
+
+
+def fetch_mni152_grey_matter_mask(data_dir=None, resume=True, verbose=1):
+    """Downloads ICBM152 template first, then loads computed 'gm' mask image.
+
+    The output 'gm' mask image will be resampled to MNI152 template space.
+
+    Parameters
+    ----------
+    data_dir: str, optional
+        Path of the data directory. Used to force storage in a specified
+        location. Defaults to None.
+
+    resume: bool, optional
+        If True, try resuming partially downloaded data. Defaults to True.
+
+    verbose: int, optional
+        verbosity level (0 means no message).
+
+    Returns
+    -------
+    gm_mask_img: Nifti image
+        Corresponding to brain grey matter resampled to MNI152 template space.
+
+    See Also
+    --------
+    nilearn.datasets.fetch_icbm152_2009: for details regarding the ICBM152
+        template.
+
+    nilearn.datasets.load_mni152_template: for details regarding MNI152 template.
+
+    nilearn.image.resample_to_img: to resample source image to target image.
+    """
+    # Fetching ICBM152 grey matter mask image
+    icbm = fetch_icbm152_2009(data_dir=data_dir, resume=resume, verbose=verbose)
+    icbm_gm = icbm['gm']
+
+    brain_mask = load_mni152_brain_mask()
+    # resampling grey matter mask from ICBM to MNI template
+    gm_resampled_img = resample_to_img(icbm_gm, brain_mask)
+
+    gm_map = gm_resampled_img.get_data()
+    # getting one fifth of the values
+    gm_mask = (gm_map > 0.2)
+
+    gm_mask = ndimage.binary_closing(gm_mask, iterations=2)
+    gm_mask = np.logical_and(gm_mask, brain_mask.get_data()).astype(np.int)
+
+    gm_img = new_img_like(gm_resampled_img, gm_mask)
+    return gm_img
 
 
 def fetch_oasis_vbm(n_subjects=None, dartel_version=True, data_dir=None,
