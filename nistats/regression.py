@@ -331,7 +331,7 @@ class RegressionResults(LikelihoodModelResults):
         return self.SSE / self.df_resid
 
 
-class SimpleRegressionResults():
+class SimpleRegressionResults(LikelihoodModelResults):
     """This class contains only information of the model fit necessary
     for contast computation.
 
@@ -343,9 +343,15 @@ class SimpleRegressionResults():
         The only difference is that the whitened Y and residual values
         are stored for a regression model.
         """
-        LikelihoodModelResults.__init__(self, results.theta, None, None,
-                                        results.cov, results.dispersion,
-                                        results.nuisance)
+        self.theta = results.theta
+        self.cov = results.cov
+        self.dispersion = results.dispersion
+        self.nuisance = results.nuisance
+
+        self.df_total = results.Y.shape[0]
+        self.df_model = results.model.df_model
+        # put this as a parameter of LikelihoodModel
+        self.df_resid = self.df_total - self.df_model
 
     def logL(self, Y):
         """

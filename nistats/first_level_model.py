@@ -24,7 +24,7 @@ from nilearn._utils.class_inspect import get_params
 from nilearn.input_data import NiftiMasker
 from sklearn.externals.joblib import Parallel, delayed
 
-from .regression import OLSModel, ARModel
+from .regression import OLSModel, ARModel, SimpleRegressionResults
 from .design_matrix import make_design_matrix
 from .contrasts import _summary_contrast
 from .utils import _basestring, _check_run_tables
@@ -61,8 +61,7 @@ def _ar_model_fit(X, val, Y):
     return ARModel(X, val).fit(Y)
 
 
-def run_glm(Y, X, noise_model='ar1', bins=100, n_jobs=1, verbose=0,
-            minimize_memory=False):
+def run_glm(Y, X, noise_model='ar1', bins=100, n_jobs=1, verbose=0):
     """ GLM fit for an fMRI data matrix
 
     Parameters
@@ -124,10 +123,9 @@ def run_glm(Y, X, noise_model='ar1', bins=100, n_jobs=1, verbose=0,
         ar_result = Parallel(n_jobs=n_jobs, verbose=verbose)(
             delayed(_ar_model_fit)(X, val, Y[:, labels == val]) for val in vals)
         for val, result in zip(vals, ar_result):
-            # We save memory if inspecting model details is not necessary
-            # if minimize_memory:
-            #     result = _minimize_memory_regression_results(result)
             results[val] = result
+        del vals
+        del ar_result
 
     else:
         labels = np.zeros(Y.shape[1])
@@ -448,9 +446,12 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
                 mem_glm = run_glm
             labels, results = mem_glm(Y, design,
                                       noise_model=self.noise_model,
-                                      bins=100, n_jobs=self.n_jobs,
-                                      minimize_memory=self.minimize_memory)
+                                      bins=100, n_jobs=self.n_jobs)
             self.labels_.append(labels)
+            # We save memory if inspecting model details is not necessary
+            if self.minimize_memory:
+                for key in results:
+                    results[key] = SimpleRegressionResults(results[key])
             self.results_.append(results)
             del Y
 
