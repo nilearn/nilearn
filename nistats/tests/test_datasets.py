@@ -5,30 +5,83 @@ from nose.tools import assert_true, assert_false, assert_equal, assert_raises
 import nibabel
 from nilearn._utils.testing import (mock_request, wrap_chunk_read_,
                                     FetchFilesMock, assert_raises_regex)
+from nilearn.datasets.tests import test_utils as tst
+from nilearn.datasets import utils, func
 from nilearn._utils.compat import _basestring
+from nose import with_setup
+
 from nistats import datasets
 
-tmpdir = None
-file_mock = None
+
 currdir = os.path.dirname(os.path.abspath(__file__))
 datadir = os.path.join(currdir, 'data')
 
 
+def setup_mock():
+    return tst.setup_mock(utils, func)
+
+
+def teardown_mock():
+    return tst.teardown_mock(utils, func)
+
+@with_setup(setup_mock, teardown_mock)
 def test_fetch_localizer():
-    dataset = datasets.fetch_localizer_first_level(data_dir=tmpdir)
+    dataset = datasets.fetch_localizer_first_level()
     assert_true(isinstance(dataset.paradigm, _basestring))
     assert_true(isinstance(dataset.epi_img, _basestring))
 
 
+@with_setup(setup_mock, teardown_mock)
+@with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
 def test_fetch_spm_auditory():
-    dataset = datasets.fetch_spm_auditory(data_dir=tmpdir)
+    import nibabel as nib
+    import shutil
+    saf = ["fM00223/fM00223_%03i.img" % index for index in range(4, 100)]
+    saf_ = ["fM00223/fM00223_%03i.hdr" % index for index in range(4, 100)]
+
+    data_dir = os.path.join(tst.tmpdir, 'spm_auditory')
+    os.mkdir(data_dir)
+    subject_dir = os.path.join(data_dir, 'sub001')
+    os.mkdir(subject_dir)
+    os.mkdir(os.path.join(subject_dir, 'fM00223'))
+    os.mkdir(os.path.join(subject_dir, 'sM00223'))
+
+    path_img = os.path.join(tst.tmpdir, 'tmp.img')
+    path_hdr = os.path.join(tst.tmpdir, 'tmp.hdr')
+    nib.save(nib.Nifti1Image(np.zeros((2, 3, 4)), np.eye(4)), path_img)
+    shutil.copy(path_img, os.path.join(subject_dir, "sM00223/sM00223_002.img"))
+    shutil.copy(path_hdr, os.path.join(subject_dir, "sM00223/sM00223_002.hdr"))
+    for file_ in saf:
+        shutil.copy(path_img, os.path.join(subject_dir, file_))
+    for file_ in saf_:
+        shutil.copy(path_hdr, os.path.join(subject_dir, file_))
+
+    dataset = datasets.fetch_spm_auditory(data_dir=tst.tmpdir)
     assert_true(isinstance(dataset.anat, _basestring))
     assert_true(isinstance(dataset.func[0], _basestring))
     assert_equal(len(dataset.func), 96)
 
 
+@with_setup(setup_mock, teardown_mock)
+@with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
 def test_fetch_spm_multimodal():
-    dataset = datasets.fetch_spm_multimodal_fmri(data_dir=tmpdir)
+    data_dir = os.path.join(tst.tmpdir, 'spm_multimodal_fmri')
+    os.mkdir(data_dir)
+    subject_dir = os.path.join(data_dir, 'sub001')
+    os.mkdir(subject_dir)
+    os.mkdir(os.path.join(subject_dir, 'fMRI'))
+    os.mkdir(os.path.join(subject_dir, 'sMRI'))
+    open(os.path.join(subject_dir, 'sMRI', 'smri.img'), 'a').close()
+    for session in [0, 1]:
+        open(os.path.join(subject_dir, 'fMRI',
+                          'trials_ses%i.mat' % (session + 1)), 'a').close()
+        dir_ = os.path.join(subject_dir, 'fMRI', 'Session%d' % (session + 1))
+        os.mkdir(dir_)
+        for i in range(390):
+            open(os.path.join(dir_, 'fMETHODS-000%i-%i-01.img' %
+                              (session + 5, i)), 'a').close()
+
+    dataset = datasets.fetch_spm_multimodal_fmri(data_dir=tst.tmpdir)
     assert_true(isinstance(dataset.anat, _basestring))
     assert_true(isinstance(dataset.func1[0], _basestring))
     assert_equal(len(dataset.func1), 390)
@@ -39,8 +92,24 @@ def test_fetch_spm_multimodal():
     assert_true(dataset.trials_ses2, _basestring)
 
 
+@with_setup(setup_mock, teardown_mock)
+@with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
 def test_fiac():
-    dataset = datasets.fetch_fiac_first_level(data_dir=tmpdir)
+    # Create dummy 'files'
+    fiac_dir = os.path.join(tst.tmpdir, 'fiac')
+    fiac0_dir = os.path.join(fiac_dir, 'fiac0')
+    os.mkdir(fiac_dir)
+    os.mkdir(fiac0_dir)
+    for session in [1, 2]:
+        # glob func data for session session + 1
+        session_func = os.path.join(fiac0_dir, 'run%i.nii.gz' % session)
+        open(session_func, 'a').close()
+        sess_dmtx = os.path.join(fiac0_dir, 'run%i_design.npz' % session)
+        open(sess_dmtx, 'a').close()
+    mask = os.path.join(fiac0_dir, 'mask.nii.gz')
+    open(mask, 'a').close()
+
+    dataset = datasets.fetch_fiac_first_level(data_dir=tst.tmpdir)
     assert_true(isinstance(dataset.func1, _basestring))
     assert_true(isinstance(dataset.func2, _basestring))
     assert_true(isinstance(dataset.design_matrix1, _basestring))
