@@ -2,7 +2,7 @@
 Computing a Region of Interest(ROI) mask manually
 =================================================
 
-This example shows manual steps to create and further modify an ROI spatial
+This example shows manual steps to create and further modify a ROI spatial
 mask. They represent a means for "data folding", i.e., extracting and then
 analyzing brain data from a subset of voxels rather than whole brain images.
 Example can also help alleviate curse of dimensionality (i.e., statistical
@@ -12,28 +12,39 @@ We demonstrate how to compute a ROI mask using **T-test** and then how simple
 image operations can be used before and after computing ROI to improve the
 quality of the computed mask.
 
+These chains of operations are easy to set up using Nilearn and Scipy Python
+libraries. Here we give clear guidelines about these steps, starting with
+pre-image operations to post-image operations. The main point is that
+visualization & results checking be possible at each step.
+
 See also :doc:`plot_extract_rois_smith_atlas` for automatic ROI extraction
 of brain connected networks given in 4D image.
 """
 
 ##############################################################################
-# Coordinates of the slice we will be using for visualization
+# Coordinates of the slice we are interested in each direction. We will be
+# using them for visualization.
 
 # cut in x-direction
-sagittal = -24
+sagittal = -33
 # cut in y-direction
-coronal = -33
+coronal = -24
 # cut in z-direction
 axial = -17
 
 # coordinates displaying should be prepared as a list
-cut_coords = [coronal, sagittal, axial]
+cut_coords = [sagittal, coronal, axial]
 
 ##############################################################################
 # Loading the data
 # ----------------
-# We load from nilearn provided datasets module
+# We rely on the Haxby datasets and its experiments to demonstrate the complete
+# list of operations. Fetching datasets is easy, shipping with Nilearn using a
+# function named as `fetch_haxby`. The data will then be automatically stored
+# in a home directory with "nilearn_data" folder in your computer. From which,
+# we process data using paths of the Nifti images.
 
+# We load data from nilearn by import datasets
 from nilearn import datasets
 
 # First, we fetch single subject specific data with haxby datasets: to have
@@ -56,6 +67,11 @@ session_target = np.recfromcsv(haxby_dataset.session_target[0], delimiter=" ")
 haxby_labels = session_target['labels']
 
 ##############################################################################
+# We have the datasets in hand especially paths to the locations. Now, we do
+# simple pre-processing step called as image smoothing on functional images
+# and then build a statistical test on smoothed images.
+
+##############################################################################
 # Build a statistical test to find voxels of interest
 # ---------------------------------------------------
 # **Smoothing**: Functional MRI data have a low signal-to-noise ratio.
@@ -73,7 +89,7 @@ from nilearn import image
 # Functional data
 fmri_filename = haxby_dataset.func[0]
 # smoothing: first argument as functional data filename and smoothing value
-# (integer) in second argument. Output returns in Nifti like image.
+# (integer) in second argument. Output returns in Nifti image.
 fmri_img = image.smooth_img(fmri_filename, fwhm=6)
 
 # Visualize the mean of the smoothed EPI image using plotting function
@@ -87,24 +103,31 @@ mean_img = image.mean_img(fmri_img)
 plot_epi(mean_img, title='Smoothed mean EPI', cut_coords=cut_coords)
 
 ##############################################################################
-# **Selecting features using T-test**: Functional MRI data can be considered
-# "high dimensional" given the p-versus-n ratio (e.g., p=~20,000-200,000 voxels
-# for n=1000 samples or less). In this setting, machine-learning algorithms can
-# perform poorly due to the so-called curse of dimensionality. However, simple
-# means rom the realms of classical statistics can help reducing the number of
-# voxels.
+# Given the smoothed functional data stored in variable 'fmri_img', we then
+# select two features of interest with face and house experimental conditions.
+# The method we will be using is a simple Student's t-test. The below section
+# gives us brief motivation example about why selecting features in high
+# dimensional FMRI data setting.
+
+##############################################################################
+# Functional MRI data can be considered "high dimensional" given the p-versus-n
+# ratio (e.g., p=~20,000-200,000 voxels for n=1000 samples or less). In this
+# setting, machine-learning algorithms can perform poorly due to the so-called
+# curse of dimensionality. However, simple means from the realms of classical
+# statistics can help reducing the number of voxels.
 
 fmri_data = fmri_img.get_data()
 # number of voxels being x*y*z, samples in 4th dimension
 print(fmri_data.shape)
 
 ##############################################################################
-# The Student’s t-test (:func:`scipy.stats.ttest_ind`) is an established method
-# to determine whether two distributions have a different mean value. It can
-# be used to compare voxel time-series from two different experimental
-# conditions (e.g., when houses or faces are shown to individuals during brain
-# scanning). If the time-series distribution is similar in the two conditions,
-# then the voxel is not very interesting to discriminate the condition.
+# **Selecting features using T-test**: The Student's t-test
+# (:func:`scipy.stats.ttest_ind`) is an established method to determine whether
+# two distributions have a different mean value. It can be used to compare voxel
+# time-series from two different experimental conditions (e.g., when houses or
+# faces are shown to individuals during brain scanning). If the time-series
+# distribution is similar in the two conditions, then the voxel is not very
+# interesting to discriminate the condition.
 
 from scipy import stats
 
@@ -141,11 +164,18 @@ log_p_values_img = new_img_like(fmri_img, log_p_values)
 plot_stat_map(log_p_values_img, mean_img,
               title="p-values", cut_coords=cut_coords)
 
+#############################################################################
+# **Selecting features using f_classif**: Feature selection method is also
+# available in the scikit-learn Python package, where it has been extended to
+# several classes, using the `sklearn.feature_selection.f_classif` function.
+
 ##############################################################################
 # Build a mask from this statistical map (Improving the quality of the mask)
 # --------------------------------------------------------------------------
-# **Thresholding** - Voxels with lower p-values are kept as voxels of interest.
-# Applying a threshold to an array is easy thanks to numpy indexing à la Matlab.
+# **Thresholding** - We build the t-map to have better representation of voxels
+# of interest and voxels with lower p-values correspond to the most intense
+# voxels. This can be done easily by applying a threshold to a t-map data in
+# array.
 
 # Note that we use log p-values data; we force values below 5 to 0 by
 # thresholding.
@@ -162,6 +192,11 @@ plot_stat_map(log_p_values_img, mean_img,
               colorbar=False, cut_coords=cut_coords)
 
 ##############################################################################
+# We can post-process the results obtained with simple operations such as mask
+# intersection and dilation to regularize the mask definition. The idea of using
+# these operations are to have more compact or sparser blobs.
+
+##############################################################################
 # **Binarization** and **Intersection** with Ventral Temporal (VT) mask - We
 # now want to restrict our investigation to the VT area. The corresponding
 # spatial mask is provided in haxby_dataset.mask_vt. We want to compute the
@@ -172,18 +207,18 @@ bin_p_values = (log_p_values != 0)
 # VT mask
 mask_vt_filename = haxby_dataset.mask_vt[0]
 
-# The first step is to load VT mask with nilearn's utilities check_niimg
-# function and same time convert data type numbers to boolean type
-from nilearn._utils import check_niimg
+# The first step is to load VT mask with nibabel function and same time convert
+# data type numbers to boolean type
+import nibabel
 
-vt = check_niimg(mask_vt_filename).get_data().astype(bool)
+vt = nibabel.load(mask_vt_filename).get_data().astype(bool)
 
-# We can then use a logical "and" operation – numpy.logical_and – to keep only
+# We can then use a logical "and" operation - numpy.logical_and - to keep only
 # voxels that have been selected in both masks. In neuroimaging jargon, this
 # is called an "AND conjunction". We use already imported numpy as np
 bin_p_values_and_vt = np.logical_and(bin_p_values, vt)
 
-# Visualizing the Mask intersection results using plotting function `plot_roi`,
+# Visualizing the mask intersection results using plotting function `plot_roi`,
 # a function which can be used for visualizing target specific voxels.
 from nilearn.plotting import plot_roi, show
 
@@ -222,7 +257,10 @@ dil_bin_p_values_and_vt_img = new_img_like(
 plot_roi(dil_bin_p_values_and_vt_img, mean_img,
          title='Dilated mask', cut_coords=cut_coords,
          annotate=False)
-
+#############################################################################
+# Finally, we end with splitting the connected ROIs to two hemispheres into two
+# separate regions (ROIs). The function `scipy.ndimage.label` from the scipy
+# Python library.
 
 ##############################################################################
 # **Identification of connected components** - The function
