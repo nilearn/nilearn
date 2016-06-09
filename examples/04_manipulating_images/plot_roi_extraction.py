@@ -1,5 +1,5 @@
 """
-Computing a Region of Interest(ROI) mask manually
+Computing a Region of Interest (ROI) mask manually
 =================================================
 
 This example shows manual steps to create and further modify an ROI spatial
