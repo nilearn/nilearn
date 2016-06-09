@@ -415,7 +415,7 @@ interest. The complete operations are listed below:
 
 .. topic:: **Code**
 
-    The complete script can be found :ref:`here
+    A complete script of above steps with full description can be found :ref:`here
     <sphx_glr_auto_examples_04_manipulating_images_plot_roi_extraction.py>`.
 
 .. seealso::
