@@ -562,6 +562,7 @@ def test_plot_prob_atlas():
     plt.close()
     # threshold=None
     plot_prob_atlas(img, threshold=None)
+    plt.close()
 
 
 def test_get_colorbar_and_data_ranges_with_vmin():
