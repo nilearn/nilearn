@@ -121,7 +121,7 @@ def load_mni152_template():
 
 
 def load_mni152_brain_mask():
-    """Load brain mask from MNI152 template
+    """Load brain mask from MNI152 T1 template
 
     .. versionadded:: 0.2.5
 
@@ -131,13 +131,13 @@ def load_mni152_brain_mask():
 
     References
     ----------
-    Refer to load_mni152_template function for more information about MNI
-    template
+    Refer to load_mni152_template function for more information about the MNI152
+    T1 template
 
     See Also
     --------
-    nilearn.datasets.load_mni152_template for details about version of MNI152
-        template and related.
+    nilearn.datasets.load_mni152_template for details about version of the
+        MNI152 T1 template and related.
     """
     # Load MNI template
     target_img = load_mni152_template()
@@ -146,7 +146,8 @@ def load_mni152_brain_mask():
     return mask_img
 
 
-def fetch_brain_gm_mask(data_dir=None, threshold=0.2, resume=True, verbose=1):
+def fetch_icbm152_brain_gm_mask(data_dir=None, threshold=0.2, resume=True,
+                                verbose=1):
     """Downloads ICBM152 template first, then loads 'gm' mask image.
 
     .. versionadded:: 0.2.5
@@ -171,7 +172,7 @@ def fetch_brain_gm_mask(data_dir=None, threshold=0.2, resume=True, verbose=1):
     Returns
     -------
     gm_mask_img: Nifti image
-        Corresponding to brain grey matter resampled to MNI152 template space.
+        Corresponding to brain grey matter from ICBM152 template.
 
     Notes
     -----
