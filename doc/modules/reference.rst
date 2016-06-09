@@ -77,6 +77,7 @@ uses.
    fetch_haxby
    fetch_haxby_simple
    fetch_icbm152_2009
+   fetch_icbm152_brain_gm_mask
    fetch_localizer_contrasts
    fetch_localizer_calculation_task
    fetch_miyawaki2008
@@ -85,6 +86,7 @@ uses.
    fetch_megatrawls_netmats
    fetch_cobre
    load_mni152_template
+   load_mni152_brain_mask
 
 .. _decoding_ref:
 

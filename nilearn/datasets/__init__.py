@@ -2,7 +2,9 @@
 Helper functions to download NeuroImaging datasets
 """
 
-from .struct import (fetch_icbm152_2009, load_mni152_template, fetch_oasis_vbm)
+from .struct import (fetch_icbm152_2009, load_mni152_template,
+                     load_mni152_brain_mask, fetch_oasis_vbm,
+                     fetch_icbm152_brain_gm_mask)
 from .func import (fetch_haxby_simple, fetch_haxby, fetch_nyu_rest,
                    fetch_adhd, fetch_miyawaki2008,
                    fetch_localizer_contrasts, fetch_abide_pcp,
@@ -26,4 +28,5 @@ __all__ = ['fetch_icbm152_2009', 'load_mni152_template', 'fetch_oasis_vbm',
            'fetch_atlas_smith_2009',
            'fetch_atlas_yeo_2011', 'fetch_mixed_gambles', 'fetch_atlas_aal',
            'fetch_megatrawls_netmats', 'fetch_cobre',
-           'fetch_atlas_basc_multiscale_2015', 'fetch_coords_dosenbach_2010']
+           'fetch_atlas_basc_multiscale_2015', 'fetch_coords_dosenbach_2010',
+           'load_mni152_brain_mask', 'fetch_icbm152_brain_gm_mask']

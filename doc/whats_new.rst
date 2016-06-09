@@ -9,6 +9,12 @@ New features
     - New display_mode options in plot_glass_brain and plot_connectome. It
       is possible to plot right and left hemisphere projections separately.
 
+    - A function to load canonical brain mask image in MNI template space,
+      :func:`nilearn.datasets.load_mni152_brain_mask`
+
+    - A function to load brain grey matter mask image,
+      :func:`nilearn.datasets.fetch_brain_gm_mask`
+
 0.2.4
 =====
 
