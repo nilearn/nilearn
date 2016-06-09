@@ -352,7 +352,7 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
             Design matrices that will be used to fit the GLM.
         """
         # Check arguments
-        if not isinstance(run_imgs, list):
+        if not isinstance(run_imgs, (list, tuple)):
             run_imgs = [run_imgs]
         for rimg in run_imgs:
             if not isinstance(rimg, (_basestring, Nifti1Image)):
@@ -495,9 +495,11 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
 
         Parameters
         ----------
-        contrast_def : array of shape (n_col)
+        contrast_def : array or list of arrays of shape (n_col) or (n_run, n_col)
             where ``n_col`` is the number of columns of the design matrix,
-            (one array per run)
+            (one array per run). If only one array is provided when there
+            are several runs, it will be assumed that the same contrast is
+            desired for all runs
 
         contrast_name : str, optional
             name of the contrast
@@ -519,9 +521,19 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
             raise ValueError('The model has not been fit yet')
 
         if isinstance(contrast_def, np.ndarray):
-            con_val = contrast_def
+            con_vals = [contrast_def]
+        elif isinstance(contrast_def, (list, tuple)):
+            con_vals = contrast_def
+            for cidx, con in enumerate(contrast_def):
+                if not isinstance(con, np.ndarray):
+                    raise ValueError('contrast_def at index %i is not an'
+                                     ' array' % cidx)
         else:
             raise ValueError('contrast_def must be an array')
+        n_runs = len(self.labels_)
+        if len(con_vals) != n_runs:
+            warn('One contrast given, assuming it for all %d runs' % n_runs)
+            con_vals = con_vals * n_runs
         if isinstance(output_type, _basestring):
             if output_type not in ['z_score', 'stat', 'p_value', 'eff', 'var']:
                 raise ValueError('output_type must be "z_score", "stat",'
@@ -536,14 +548,14 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
                                              ignore=arg_ignore)
         else:
             mem_contrast = _summary_contrast
-        contrast = mem_contrast(self.labels_, self.results_, con_val,
+        contrast = mem_contrast(self.labels_, self.results_, con_vals,
                                 stat_type)
 
         estimate_ = getattr(contrast, output_type)()
         # Prepare the returned images
         output = self.masker_.inverse_transform(estimate_)
         if contrast_name is None:
-            contrast_name = str(con_val)
+            contrast_name = str(con_vals)
         output.get_header()['descrip'] = (
             '%s of contrast %s' % (output_type, contrast_name))
         return output

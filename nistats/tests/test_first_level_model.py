@@ -62,13 +62,13 @@ def test_high_level_glm_one_session():
     mask, fmri_data, design_matrices = generate_fake_fmri_data(shapes, rk)
 
     single_session_model = FirstLevelModel(mask=None).fit(
-        fmri_data[0], design_matrices[0])
+        fmri_data[0], design_matrices=design_matrices[0])
     assert_true(isinstance(single_session_model.masker_.mask_img_,
                            Nifti1Image))
 
     single_session_model = FirstLevelModel(mask=mask).fit(
-        fmri_data[0], design_matrices[0])
-    z1, = single_session_model.transform(np.eye(rk)[:1])
+        fmri_data[0], design_matrices=design_matrices[0])
+    z1 = single_session_model.compute_contrast(np.eye(rk)[:1])
     assert_true(isinstance(z1, Nifti1Image))
 
 
@@ -78,20 +78,28 @@ def test_high_level_glm_with_data():
     mask, fmri_data, design_matrices = write_fake_fmri_data(shapes, rk)
 
     multi_session_model = FirstLevelModel(mask=None).fit(
-        fmri_data, design_matrices)
+        fmri_data, design_matrices=design_matrices)
     n_voxels = multi_session_model.masker_.mask_img_.get_data().sum()
-    z_image, = multi_session_model.transform([np.eye(rk)[1]] * 2)
+    z_image = multi_session_model.compute_contrast(np.eye(rk)[1])
     assert_equal(np.sum(z_image.get_data() != 0), n_voxels)
     assert_true(z_image.get_data().std() < 3.)
 
     # with mask
     multi_session_model = FirstLevelModel(mask=mask).fit(
-        fmri_data, design_matrices)
-    z_image, effect_image, variance_image = multi_session_model.transform(
-        [np.eye(rk)[:2]] * 2, output_effects=True, output_variance=True)
+        fmri_data, design_matrices=design_matrices)
+    z_image = multi_session_model.compute_contrast(
+        np.eye(rk)[:2], output_type='z_score')
+    p_value = multi_session_model.compute_contrast(
+        np.eye(rk)[:2], output_type='p_value')
+    stat_image = multi_session_model.compute_contrast(
+        np.eye(rk)[:2], output_type='stat')
+    effect_image = multi_session_model.compute_contrast(
+        np.eye(rk)[:2], output_type='eff')
+    variance_image = multi_session_model.compute_contrast(
+        np.eye(rk)[:2], output_type='var')
     assert_array_equal(z_image.get_data() == 0., load(mask).get_data() == 0.)
     assert_true(
-        (variance_image.get_data()[load(mask).get_data() > 0, 0] > .001).all())
+        (variance_image.get_data()[load(mask).get_data() > 0] > .001).all())
 
 
 def test_high_level_glm_with_paths():
@@ -100,8 +108,8 @@ def test_high_level_glm_with_paths():
     with InTemporaryDirectory():
         mask_file, fmri_files, design_files = write_fake_fmri_data(shapes, rk)
         multi_session_model = FirstLevelModel(mask=None).fit(
-            fmri_files, design_files)
-        z_image, = multi_session_model.transform([np.eye(rk)[1]] * 2)
+            fmri_files, design_matrices=design_files)
+        z_image = multi_session_model.compute_contrast(np.eye(rk)[1])
         assert_array_equal(z_image.get_affine(), load(mask_file).get_affine())
         assert_true(z_image.get_data().std() < 3.)
         # Delete objects attached to files to avoid WindowsError when deleting
@@ -116,13 +124,14 @@ def test_high_level_glm_null_contrasts():
     mask, fmri_data, design_matrices = generate_fake_fmri_data(shapes, rk)
 
     multi_session_model = FirstLevelModel(mask=None).fit(
-        fmri_data, design_matrices)
+        fmri_data, design_matrices=design_matrices)
     single_session_model = FirstLevelModel(mask=None).fit(
-        fmri_data[0], design_matrices[0])
-    z1, = multi_session_model.transform([np.eye(rk)[:1], np.zeros((1, rk))],
-                                        output_z=False, output_stat=True)
-    z2, = single_session_model.transform([np.eye(rk)[:1]],
-                                         output_z=False, output_stat=True)
+        fmri_data[0], design_matrices=design_matrices[0])
+    z1 = multi_session_model.compute_contrast([np.eye(rk)[:1],
+                                               np.zeros((1, rk))],
+                                              output_type='stat')
+    z2 = single_session_model.compute_contrast(np.eye(rk)[:1],
+                                               output_type='stat')
     np.testing.assert_almost_equal(z1.get_data(), z2.get_data())
 
 
@@ -265,12 +274,12 @@ def test_fmri_inputs():
         des.to_csv(des_fname)
         for fi in func_img, FUNCFILE:
             for d in des, des_fname:
-                FirstLevelModel().fit(fi, d)
-                FirstLevelModel(mask=None).fit([fi], d)
-                FirstLevelModel(mask=mask).fit(fi, [d])
-                FirstLevelModel(mask=mask).fit([fi], [d])
-                FirstLevelModel(mask=mask).fit([fi, fi], [d, d])
-                FirstLevelModel(mask=None).fit((fi, fi), (d, d))
+                FirstLevelModel().fit(fi, design_matrices=d)
+                FirstLevelModel(mask=None).fit([fi], design_matrices=d)
+                FirstLevelModel(mask=mask).fit(fi, design_matrices=[d])
+                FirstLevelModel(mask=mask).fit([fi], design_matrices=[d])
+                FirstLevelModel(mask=mask).fit([fi, fi], design_matrices=[d, d])
+                FirstLevelModel(mask=None).fit((fi, fi), design_matrices=(d, d))
                 assert_raises(
                     ValueError, FirstLevelModel(mask=None).fit, [fi, fi], d)
                 assert_raises(

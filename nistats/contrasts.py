@@ -67,13 +67,13 @@ def compute_contrast(labels, regression_result, con_val, contrast_type=None):
                     contrast_type=contrast_type)
 
 
-def _summary_contrast(labels, results, con_val, stat_type):
+def _summary_contrast(labels, results, con_vals, stat_type):
     """Computes the summary contrast assuming fixed effects.
 
     Adds the same contrast applied to all labels and results lists.
     """
     contrast = None
-    for i, (lab, res) in enumerate(zip(labels, results)):
+    for i, (lab, res, con_val) in enumerate(zip(labels, results, con_vals)):
         if np.all(con_val == 0):
             warn('Contrast for session %d is null' % i)
             continue
