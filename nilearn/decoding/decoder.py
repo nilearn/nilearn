@@ -110,8 +110,8 @@ class Decoder(BaseEstimator):
 
     screening_percentile: int, float, optional, in the closed interval [0, 100]
         Perform an univariate feature selection based on the Anova F-value for
-        the input data. A float according to a percentile of the highest scores.
-        Defaults to 20.
+        the input data. A float according to a percentile of the highest
+        scores. Defaults to 20.
 
     pos_label: str or None
         The positive class label in case of a binary classification. It is
@@ -188,8 +188,7 @@ class Decoder(BaseEstimator):
 
 
     def _gather_fit_results(self, results, classes_to_predict, score_func):
-        """ Posprocessing of the results
-        """
+        """Posprocessing of the results"""
         coefs = {}
         intercepts = {}
         cv_true = {}
@@ -629,7 +628,7 @@ def _check_scorer(estimator, scoring, pos_label, y):
     Make use of pos_label when classification is binary
     and scoring method requires it.
     """
-    if not scoring in SCORINGS.keys():
+    if scoring not in SCORINGS.keys():
         scoring = None
         warnings.warn("Scoring was not recogniced, it's going"
                       "be setted according to the estimation problem")
