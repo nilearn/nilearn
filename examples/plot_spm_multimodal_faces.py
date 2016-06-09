@@ -19,11 +19,12 @@ print(__doc__)
 import numpy as np
 from scipy.io import loadmat
 import pandas as pd
+from nibabel import Nifti1Image
 
 # imports for GLM business
 from nilearn.image import concat_imgs, resample_img, mean_img
 from nistats.design_matrix import make_design_matrix
-from nistats.glm import FirstLevelGLM
+from nistats.first_level_model import FirstLevelModel
 from nistats.datasets import fetch_spm_multimodal_fmri
 
 # fetch spm multimodal_faces data
@@ -43,6 +44,8 @@ print('Resampling the second image (this takes time)...')
 fmri_img[1] = resample_img(fmri_img[1], affine, shape[:3])
 # Create mean image for display
 mean_image = mean_img(fmri_img)
+for idx, img in enumerate(fmri_img):
+    fmri_img[idx] = Nifti1Image(img.get_data(), img.affine)
 
 # make design matrices
 design_matrices = []
@@ -81,7 +84,7 @@ contrasts = {
 
 # fit GLM
 print('Fitting a GLM')
-fmri_glm = FirstLevelGLM(standardize=False).fit(fmri_img, design_matrices)
+fmri_glm = FirstLevelModel(standardize=False).fit(fmri_img, design_matrices)
 
 # compute contrast maps
 print('Computing contrasts')
@@ -89,8 +92,8 @@ from nilearn import plotting
 
 for contrast_id, contrast_val in contrasts.items():
     print("\tcontrast id: %s" % contrast_id)
-    z_map, = fmri_glm.transform(
-        [contrast_val] * 2, contrast_name=contrast_id, output_z=True)
+    z_map = fmri_glm.transform(
+        contrast_val, contrast_name=contrast_id, output_type='z_score')
     plotting.plot_stat_map(
         z_map, bg_img=mean_image, threshold=3.0, display_mode='z',
         cut_coords=3, black_bg=True, title=contrast_id)

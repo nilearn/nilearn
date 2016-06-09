@@ -117,7 +117,7 @@ class Contrast(object):
         if variance.ndim != 3:
             raise ValueError('Variance array should have 3 dimensions')
         if effect.ndim != 2:
-            raise ValueError('Variance array should have 2 dimensions')
+            raise ValueError('Effect array should have 2 dimensions')
         if variance.shape[0] != variance.shape[1]:
             raise ValueError('Inconsistent shape for the variance estimate')
         if ((variance.shape[1] != effect.shape[0]) or
@@ -138,11 +138,11 @@ class Contrast(object):
         self.tiny = tiny
         self.dofmax = dofmax
 
-    def effect(self):
-        return self.effect
+    def eff(self):
+        return self.effect[0, :]
 
-    def variance(self):
-        return self.variance
+    def var(self):
+        return self.variance[0, 0, :]
 
     def stat(self, baseline=0.0):
         """ Return the decision statistic associated with the test of the

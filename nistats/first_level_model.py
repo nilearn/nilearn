@@ -344,8 +344,12 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
             Design matrices that will be used to fit the GLM.
         """
         # Check arguments
-        if isinstance(run_imgs, (_basestring, Nifti1Image)):
+        if not isinstance(run_imgs, list):
             run_imgs = [run_imgs]
+        for rimg in run_imgs:
+            if not isinstance(rimg, (_basestring, Nifti1Image)):
+                raise ValueError('run_imgs must be Niimg-like object or list'
+                                 ' of Niimg-like objects')
 
         if design_matrices is None:
             if paradigms is None:
@@ -495,7 +499,7 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
 
         output_type : str, optional
             Type of the output map. Can be 'z_score', 'stat', 'p_value',
-            'effect' or 'variance'
+            'eff' or 'var'
 
         Returns
         -------
@@ -510,6 +514,13 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
             con_val = contrast_def
         else:
             raise ValueError('contrast_def must be an array')
+        if isinstance(output_type, _basestring):
+            if output_type not in ['z_score', 'stat', 'p_value', 'eff', 'var']:
+                raise ValueError('output_type must be "z_score", "stat",'
+                                 ' "p_value","eff" or "var"')
+        else:
+            raise ValueError('output_type must be "z_score", "stat",'
+                             ' "p_value","eff" or "var"')
 
         if self.memory is not None:
             arg_ignore = ['labels', 'results']
