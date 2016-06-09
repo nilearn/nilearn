@@ -26,9 +26,9 @@ from functools import partial
 import numpy as np
 
 from sklearn.metrics import (r2_score, mean_absolute_error,
-               mean_squared_error, accuracy_score, f1_score,
-               average_precision_score,
-               precision_score, recall_score)
+                             mean_squared_error, accuracy_score, f1_score,
+                             average_precision_score,
+                             precision_score, recall_score)
 from sklearn.metrics.cluster import adjusted_rand_score
 from sklearn.base import is_classifier
 from . import type_of_target
