@@ -2,7 +2,7 @@
 Computing a Region of Interest(ROI) mask manually
 =================================================
 
-This example shows manual steps to create and further modify a ROI spatial
+This example shows manual steps to create and further modify an ROI spatial
 mask. They represent a means for "data folding", i.e., extracting and then
 analyzing brain data from a subset of voxels rather than whole brain images.
 Example can also help alleviate curse of dimensionality (i.e., statistical
@@ -337,7 +337,6 @@ for i in np.arange(2):
 
 show()
 
-import nibabel
 # save the ROI 'atlas' to a single output Nifti
 nibabel.save(new_img_like(fmri_img, labels),
              'mask_atlas.nii')
