@@ -685,8 +685,8 @@ def plot_prob_atlas(maps_img, anat_img=MNI152TEMPLATE, view_type='auto',
             colors irrespective of the number maps.
         threshold : 'auto', a str or a number, list of str or numbers, None
             This parameter is optional and is used to threshold the maps image
-            using the given value or automized value. The values in the image
-            which lies above the threshold level will be visualized.
+            using the given value or automatically selected value. The values
+            in the image above the threshold level will be visualized.
             The default strategy, corresponding to 'auto', computes a threshold
             level that seeks to minimize (yet not eliminate completely) the
             overlap between several maps for a better visualization.
@@ -696,8 +696,8 @@ def plot_prob_atlas(maps_img, anat_img=MNI152TEMPLATE, view_type='auto',
             If a single string is provided, the same percentile will be applied
             over the whole atlas. Otherwise, if a list of percentiles is
             provided, each 3D map is thresholded with certain percentile
-            sequentially. Length of percentiles given should match with the
-            number of 3D map in time (4th) dimension.
+            sequentially. Length of percentiles given should match the number
+            of 3D map in time (4th) dimension.
             If a number or a list of numbers, the given value will be used
             directly to threshold the maps without any percentile calculation.
             If None, no threshold will be applied.
