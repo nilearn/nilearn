@@ -92,6 +92,16 @@ def _safe_cache(memory, func, **kwargs):
     return memory.cache(func, **kwargs)
 
 
+class _ShelvedFunc(object):
+    """Work around for Python 2, for which pickle fails on instance method"""
+    def __init__(self, func):
+        self.func = func
+        self.func_name = func.__name__ + '_shelved'
+
+    def __call__(self, *args, **kwargs):
+            return self.func.call_and_shelve(*args, **kwargs)
+
+
 def cache(func, memory, func_memory_level=None, memory_level=None,
           shelve=False, **kwargs):
     """ Return a joblib.Memory object.
@@ -119,7 +129,7 @@ def cache(func, memory, func_memory_level=None, memory_level=None,
         be cached or not (if user_memory_level is equal of greater than
         func_memory_level the function is cached)
 
-    shelve: boolean,
+    shelve: bool
         Whether to return a joblib MemorizedResult, callable by a .get()
         method, instead of the return value of func
 
@@ -168,18 +178,8 @@ def cache(func, memory, func_memory_level=None, memory_level=None,
         if LooseVersion(sklearn.__version__) < LooseVersion('0.15'):
             raise ValueError('Shelving is only available if'
                              ' scikit-learn >= 0.15 is installed.')
-        cached_func = _shelved_func(cached_func)
+        cached_func = _ShelvedFunc(cached_func)
     return cached_func
-
-
-class _shelved_func(object):
-    """Work around for Python 2, for which pickle fails on instance method"""
-    def __init__(self, func):
-        self.func = func
-        self.func_name = func.__name__ + '_shelved'
-
-    def __call__(self, *args, **kwargs):
-            return self.func.call_and_shelve(*args, **kwargs)
 
 
 class CacheMixin(object):
@@ -211,7 +211,7 @@ class CacheMixin(object):
             The memory_level from which caching must be enabled for the wrapped
             function.
 
-        shelve: boolean,
+        shelve: bool
             Whether to return a joblib MemorizedResult, callable by a .get()
             method, instead of the return value of func
 
