@@ -8,13 +8,13 @@ from copy import copy as copy_object
 
 from sklearn.externals.joblib import Memory
 
-from nilearn._utils.niimg_conversions import _check_same_fov
 from .base_masker import BaseMasker, filter_and_extract
 from .. import _utils
 from .. import image
 from .. import masking
 from .._utils import CacheMixin
 from .._utils.class_inspect import get_params
+from .._utils.niimg_conversions import _check_same_fov
 
 
 class _ExtractionFunctor(object):

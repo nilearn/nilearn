@@ -10,13 +10,13 @@ import warnings
 
 from sklearn.externals.joblib import Memory, Parallel, delayed
 
-from nilearn import _utils
-from nilearn import image
-from nilearn import masking
-from nilearn._utils import CacheMixin
-from nilearn._utils.class_inspect import get_params
-from nilearn._utils.compat import _basestring, izip
-from nilearn._utils.niimg_conversions import _iter_check_niimg
+from .. import _utils
+from .. import image
+from .. import masking
+from .._utils import CacheMixin
+from .._utils.class_inspect import get_params
+from .._utils.compat import _basestring, izip
+from .._utils.niimg_conversions import _iter_check_niimg
 from .nifti_masker import NiftiMasker, filter_and_mask
 
 
