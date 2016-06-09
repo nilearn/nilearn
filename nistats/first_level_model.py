@@ -356,10 +356,10 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
                 raise ValueError('paradigms or design matrices must be provided')
             if self.t_r is None:
                 raise ValueError('t_r not given to FirstLevelModel object'
-                                 'to compute design from paradigm')
+                                 ' to compute design from paradigm')
             if self.slice_time_ref is None:
                 raise ValueError('slice_time_ref not given to FirstLevelModel'
-                                 'object to compute design from paradigm')
+                                 ' object to compute design from paradigm')
         else:
             design_matrices = _check_run_tables(run_imgs, design_matrices,
                                                 'design_matrices')

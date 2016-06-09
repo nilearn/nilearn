@@ -32,6 +32,7 @@ subject_data = fetch_spm_multimodal_fmri()
 
 # experimental paradigm meta-params
 tr = 2.
+slice_time_ref = 0.
 drift_model = 'Cosine'
 hrf_model = 'spm + derivative'
 period_cut = 128.
@@ -84,7 +85,8 @@ contrasts = {
 
 # fit GLM
 print('Fitting a GLM')
-fmri_glm = FirstLevelModel(standardize=False).fit(fmri_img, design_matrices)
+fmri_glm = FirstLevelModel(tr, slice_time_ref, standardize=False)
+fmri_glm = fmri_glm.fit(fmri_img, design_matrices)
 
 # compute contrast maps
 print('Computing contrasts')
