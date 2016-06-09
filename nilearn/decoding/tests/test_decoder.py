@@ -11,6 +11,7 @@ from sklearn.feature_selection import SelectPercentile
 from nilearn.input_data import NiftiMasker
 from nilearn.decoding.decoder import (Decoder, MNI152_BRAIN_VOLUME,
                                       _check_estimator,
+                                      _check_masking,
                                       _check_feature_screening,
                                       _get_mask_volume)
 
@@ -60,10 +61,36 @@ mni152_brain_mask = (
 #     pass
 
 
-# def test_check_masking():
-#     (mask, smoothing_fwhm, target_affine, target_shape,
-#      standardize, mask_strategy, memory, memory_level)
-#     pass
+def test_check_masking():
+
+    smoothing_fwhm = 4
+    target_affine = np.eye(4)
+    target_shape = (5, 5, 5)
+    standardize = True
+    mask_strategy = 'epi'
+    memory = None
+    memory_level = 1
+    smoothing_fwhm_test = 8
+
+    masker_test = NiftiMasker(smoothing_fwhm=smoothing_fwhm_test,
+                              target_affine=target_affine,
+                              target_shape=target_shape,
+                              standardize=standardize,
+                              mask_strategy=mask_strategy, memory=memory,
+                              memory_level=memory_level)
+    masks = [None, masker_test]
+    for mask in masks:
+        masker = _check_masking(mask, smoothing_fwhm=smoothing_fwhm,
+                                target_affine=target_affine,
+                                target_shape=target_shape,
+                                standardize=standardize,
+                                mask_strategy=mask_strategy, memory=memory,
+                                memory_level=memory_level)
+        if mask is None:
+            assert_is_instance(masker, BaseEstimator)
+        else:
+            assert_true(masker.smoothing_fwhm == smoothing_fwhm_test)
+
 
 
 # def test_check_param_grid():
@@ -133,7 +160,8 @@ def test_get_mask_volume():
 
 if __name__ == '__main__':
 
-    test_get_mask_volume()
-    test_feature_screening()
+    test_check_masking()
+    # test_get_mask_volume()
+    # test_feature_screening()
     # test_decoder()
     # test_check_estimator()

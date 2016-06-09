@@ -487,10 +487,11 @@ def _check_masking(mask, smoothing_fwhm, target_affine, target_shape,
     # mask is a masker object
     elif isinstance(mask, (NiftiMasker, MultiNiftiMasker)):
         try:
+            masker = clone(mask)
             if hasattr(mask, 'mask_img_'):
                 mask_img = mask.mask_img_
-            masker = clone(mask)
-            masker.mask_img_ = mask_img
+                masker.set_param(mask_img=mask_img)
+                masker.fit()
         except TypeError as e:
             # Workaround for a joblib bug: in joblib 0.6, a Memory object
             # with cachedir = None cannot be cloned.
@@ -507,11 +508,11 @@ def _check_masking(mask, smoothing_fwhm, target_affine, target_shape,
         for param_name in ['target_affine', 'target_shape',
                            'smoothing_fwhm', 'mask_strategy',
                            'memory', 'memory_level']:
-            if getattr(masker, param_name) is not None:
+            if getattr(mask, param_name) is not None:
                 warnings.warn('Parameter %s of the masker overriden'
                               % param_name)
-                setattr(masker, param_name, locals()[param_name])
-        if getattr(masker, 'mask_img_') is not None:
+                masker.set_params(**{param_name: getattr(mask, param_name)})
+        if hasattr(mask, 'mask_img_'):
             warnings.warn('The mask_img_ of the masker will be copied')
     return masker
 
