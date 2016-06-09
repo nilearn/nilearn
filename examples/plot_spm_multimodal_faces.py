@@ -94,7 +94,7 @@ from nilearn import plotting
 
 for contrast_id, contrast_val in contrasts.items():
     print("\tcontrast id: %s" % contrast_id)
-    z_map = fmri_glm.transform(
+    z_map = fmri_glm.compute_contrast(
         contrast_val, contrast_name=contrast_id, output_type='z_score')
     plotting.plot_stat_map(
         z_map, bg_img=mean_image, threshold=3.0, display_mode='z',
