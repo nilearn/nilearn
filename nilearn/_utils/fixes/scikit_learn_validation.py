@@ -13,9 +13,25 @@ class NotFittedError(ValueError, AttributeError):
     """
 
 
-def check_X_y(X, y, accept_sparse=None, dtype="numeric", order=None, copy=False,
-              force_all_finite=True, ensure_2d=True, allow_nd=False,
-              multi_output=False, ensure_min_samples=1,
+class DataConversionWarning(UserWarning):
+    """Warning used to notify implicit data conversions happening in the code.
+
+    This warning occurs when some input data needs to be converted or
+    interpreted in a way that may not match the user's expectations.
+
+    For example, this warning may occur when the user
+        - passes an integer array to a function which expects float input and
+        will convert the input
+        - requests a non-copying operation, but a copy is required to meet the
+        implementation's data-type expectations;
+        - passes an input whose
+        shape can be interpreted ambiguously.
+    """
+
+
+def check_X_y(X, y, accept_sparse=None, dtype="numeric", order=None,
+              copy=False, force_all_finite=True, ensure_2d=True,
+              allow_nd=False, multi_output=False, ensure_min_samples=1,
               ensure_min_features=1, y_numeric=False,
               warn_on_dtype=False, estimator=None):
     """Input validation for standard estimators.
@@ -81,9 +97,10 @@ def check_X_y(X, y, accept_sparse=None, dtype="numeric", order=None, copy=False,
     y_converted : object
         The converted and validated y.
     """
-    X = atleast2d_or_csr(X, accept_sparse, dtype, order, copy, force_all_finite,
-                         ensure_2d, allow_nd, ensure_min_samples,
-                         ensure_min_features, warn_on_dtype, estimator)
+    X = atleast2d_or_csr(X, accept_sparse, dtype, order, copy,
+                         force_all_finite, ensure_2d, allow_nd,
+                         ensure_min_samples, ensure_min_features,
+                         warn_on_dtype, estimator)
     if multi_output:
         y = atleast2d_or_csr(y, 'csr', force_all_finite=True, ensure_2d=False,
                              dtype=None)

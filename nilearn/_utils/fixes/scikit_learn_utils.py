@@ -111,8 +111,8 @@ def type_of_target(y):
     >>> type_of_target(np.array([[0, 1], [1, 1]]))
     'multilabel-indicator'
     """
-    valid = ((isinstance(y, (Sequence, spmatrix)) or hasattr(y, '__array__'))
-             and not isinstance(y, _basestring))
+    valid = ((isinstance(y, (Sequence, spmatrix)) or
+              hasattr(y, '__array__')) and not isinstance(y, _basestring))
 
     if not valid:
         raise ValueError('Expected array-like (array or non-string sequence), '
@@ -129,8 +129,8 @@ def type_of_target(y):
 
     # The old sequence of sequences format
     try:
-        if (not hasattr(y[0], '__array__') and isinstance(y[0], Sequence)
-                and not isinstance(y[0], _basestring)):
+        if (not hasattr(y[0], '__array__') and
+            isinstance(y[0], Sequence) and not isinstance(y[0], _basestring)):
             raise ValueError('You appear to be using a legacy multi-label data'
                              ' representation. Sequence of sequences are no'
                              ' longer supported; use a binary array or sparse'
