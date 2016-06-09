@@ -12,52 +12,6 @@ brain images.
     :local:
     :depth: 1
 
-Masking data manually
-=====================
-
-Extracting a brain mask
-------------------------
-
-If we do not have a spatial mask of the target regions, a brain mask
-can be easily extracted from the fMRI data by the
-:func:`nilearn.masking.compute_epi_mask` function:
-
-.. figure:: ../auto_examples/01_plotting/images/sphx_glr_plot_visualization_002.png
-    :target: ../auto_examples/01_plotting/plot_visualization.html
-    :align: right
-    :scale: 50%
-
-.. literalinclude:: ../../examples/01_plotting/plot_visualization.py
-     :start-after: # Extracting a brain mask
-     :end-before: # Applying the mask to extract the corresponding time series
-
-
-.. _mask_4d_2_3d:
-
-From 4D Nifti images to 2D data arrays
---------------------------------------
-
-fMRI data is usually represented as a 4D block of data: 3 spatial
-dimensions and one time dimension. In practice, we are usually
-interested in working on the voxel time-series in the
-brain. It is thus convenient to apply a brain mask in order to convert the
-4D brain images representation into a restructured 2D data representation,
-`voxel` **x** `time`, as depicted below:
-
-.. image:: ../images/masking.jpg
-    :align: center
-    :width: 100%
-
-
-.. literalinclude:: ../../examples/01_plotting/plot_visualization.py
-     :start-after: # Applying the mask to extract the corresponding time series
-     :end-before: # Find voxels of interest
-
-.. figure:: ../auto_examples/01_plotting/images/sphx_glr_plot_visualization_003.png
-    :target: ../auto_examples/01_plotting/plot_visualization.html
-    :align: center
-    :scale: 50
-
 .. _preprocessing_functions:
 
 Functions for data preparation steps
@@ -160,6 +114,52 @@ of the transformation matrix (i.e., affine).
 
     >>> import numpy as np
     >>> target_affine = np.diag((3, 3, 3))
+
+Masking data manually
+=====================
+
+Extracting a brain mask
+------------------------
+
+If we do not have a spatial mask of the target regions, a brain mask
+can be easily extracted from the fMRI data by the
+:func:`nilearn.masking.compute_epi_mask` function:
+
+.. figure:: ../auto_examples/01_plotting/images/sphx_glr_plot_visualization_002.png
+    :target: ../auto_examples/01_plotting/plot_visualization.html
+    :align: right
+    :scale: 50%
+
+.. literalinclude:: ../../examples/01_plotting/plot_visualization.py
+     :start-after: # Extracting a brain mask
+     :end-before: # Applying the mask to extract the corresponding time series
+
+
+.. _mask_4d_2_3d:
+
+From 4D Nifti images to 2D data arrays
+--------------------------------------
+
+fMRI data is usually represented as a 4D block of data: 3 spatial
+dimensions and one time dimension. In practice, we are usually
+interested in working on the voxel time-series in the
+brain. It is thus convenient to apply a brain mask in order to convert the
+4D brain images representation into a restructured 2D data representation,
+`voxel` **x** `time`, as depicted below:
+
+.. image:: ../images/masking.jpg
+    :align: center
+    :width: 100%
+
+
+.. literalinclude:: ../../examples/01_plotting/plot_visualization.py
+     :start-after: # Applying the mask to extract the corresponding time series
+     :end-before: # Find voxels of interest
+
+.. figure:: ../auto_examples/01_plotting/images/sphx_glr_plot_visualization_003.png
+    :target: ../auto_examples/01_plotting/plot_visualization.html
+    :align: center
+    :scale: 50
 
 
 Image operations: creating a ROI mask manually
