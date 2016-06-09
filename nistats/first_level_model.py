@@ -14,6 +14,7 @@ import sys
 import os
 
 import numpy as np
+import glob
 from nibabel import Nifti1Image
 
 from sklearn.base import BaseEstimator, TransformerMixin, clone
@@ -263,7 +264,7 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
                  smoothing_fwhm=None, memory=None, memory_level=1,
                  standardize=False, signal_scaling=True, scaling_axis=0,
                  noise_model='ar1', verbose=1, n_jobs=1,
-                 minimize_memory=True, subject_id=''):
+                 minimize_memory=True, model_id=None):
         # design matrix parameters
         self.t_r = t_r
         self.slice_time_ref = slice_time_ref
@@ -281,8 +282,15 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         self.high_pass = high_pass
         self.smoothing_fwhm = smoothing_fwhm
         if memory is not None:
-            self.memory = Memory(os.path.join(memory, 'first_level_cache',
-                                 subject_id))
+            first_level_cache_path = os.path.join(memory, 'first_level_cache')
+            if model_id is None:
+                model_paths = glob.glob(os.path.join(first_level_cache_path,
+                                        'model_*'))
+                model_paths.sort()
+                last_m = int(os.path.basename(model_paths[-1].split('_')[1]))
+                model_id = 'model_%03d' % (last_m + 1)
+            self.memory = Memory(os.path.join(first_level_cache_path,
+                                              model_id))
         else:
             self.memory = Memory(None)
         self.memory_level = memory_level
@@ -295,7 +303,7 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         self.verbose = verbose
         self.n_jobs = n_jobs
         self.minimize_memory = minimize_memory
-        self.subject_id = subject_id
+        self.model_id = model_id
 
     def get_model_parameters(self, ignore=None):
         """Get model parameters as a dictionary.
