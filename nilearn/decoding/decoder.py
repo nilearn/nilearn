@@ -30,6 +30,7 @@ from sklearn.base import is_classifier
 from sklearn.utils.extmath import safe_sparse_dot
 from sklearn import clone
 
+from .._utils.compat import _basestring
 from .._utils.fixes import check_cv
 from .._utils.fixes import atleast2d_or_csr
 from .._utils.fixes import ParameterGrid
@@ -300,7 +301,7 @@ class Decoder(BaseEstimator):
             in the inner cross validation loop.
         """
         # Setup memory, parallel and masker
-        if isinstance(self.memory, basestring) or self.memory is None:
+        if isinstance(self.memory, _basestring) or self.memory is None:
             self.memory = Memory(cachedir=self.memory, verbose=self.verbose)
 
         parallel = Parallel(n_jobs=self.n_jobs, verbose=self.verbose,
@@ -319,7 +320,7 @@ class Decoder(BaseEstimator):
         if not hasattr(self.masker_, 'mask_img_'):
             self.masker_.fit(niimgs)
         else:
-            if isinstance(self.masker_, basestring):
+            if isinstance(self.masker_, _basestring):
                 self.masker_.fit()
         self.mask_img_ = self.masker_.mask_img_
         mask_volume = _get_mask_volume(self.mask_img_)

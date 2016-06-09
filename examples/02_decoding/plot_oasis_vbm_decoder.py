@@ -21,8 +21,8 @@ usage.
 
 Note that for an actual predictive modeling study of aging, the study
 should be ran on the full set of subjects. Also, parameters such as the
-smoothing applied to the data and the number of features selected by the
-Anova step should be set by nested cross-validation, as they impact
+smoothing should be applied to the data and the number of features selected by
+the Anova step should be set by nested cross-validation, as they impact
 significantly the prediction score.
 
 Brain mapping with mass univariate
@@ -44,7 +44,7 @@ import numpy as np
 
 n_subjects = 100  # more subjects requires more memory
 
-### Load Oasis dataset ########################################################
+# Load Oasis dataset
 from nilearn import datasets
 oasis_dataset = datasets.fetch_oasis_vbm(n_subjects=n_subjects)
 gray_matter_map_filenames = oasis_dataset.gray_matter_maps
@@ -56,7 +56,7 @@ print('First gray-matter anatomy image (3D) is located at: %s' %
 print('First white-matter anatomy image (3D) is located at: %s' %
       oasis_dataset.white_matter_maps[0])  # 3D data
 
-### Preprocess data ###########################################################
+# Preprocess data
 from nilearn.input_data import NiftiMasker
 nifti_masker = NiftiMasker(standardize=False, smoothing_fwhm=2,
                            memory='nilearn_cache')
@@ -65,7 +65,7 @@ gm_maps_masked = nifti_masker.fit_transform(gray_matter_map_filenames)
 n_samples, n_features = gm_maps_masked.shape
 print("%d samples, %d features" % (n_subjects, n_features))
 
-### Prediction with Decoder ###################################################
+# Prediction with Decoder
 # remove features with too low between-subject variance
 gm_maps_masked = nifti_masker.fit_transform(gray_matter_map_filenames)
 gm_maps_masked[:, gm_maps_masked.var(0) < 0.01] = 0.
@@ -78,7 +78,7 @@ from nilearn.decoding import Decoder
 decoder = Decoder(estimator='svr', mask=nifti_masker,
                   screening_percentile=2, n_jobs=1)
 
-### Fit and predict
+# Fit and predict
 decoder.fit(niimgs, age)
 age_pred = decoder.predict(niimgs)
 

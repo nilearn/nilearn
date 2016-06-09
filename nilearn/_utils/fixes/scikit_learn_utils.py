@@ -10,6 +10,8 @@ from scipy.sparse.base import spmatrix
 from scipy.sparse import dok_matrix
 from scipy.sparse import lil_matrix
 
+from .._utils.compact import _basestring
+
 
 def _is_integral_float(y):
     return y.dtype.kind == 'f' and np.all(y.astype(int) == y)
@@ -110,7 +112,7 @@ def type_of_target(y):
     'multilabel-indicator'
     """
     valid = ((isinstance(y, (Sequence, spmatrix)) or hasattr(y, '__array__'))
-             and not isinstance(y, basestring))
+             and not isinstance(y, _basestring))
 
     if not valid:
         raise ValueError('Expected array-like (array or non-string sequence), '
@@ -128,7 +130,7 @@ def type_of_target(y):
     # The old sequence of sequences format
     try:
         if (not hasattr(y[0], '__array__') and isinstance(y[0], Sequence)
-                and not isinstance(y[0], basestring)):
+                and not isinstance(y[0], _basestring)):
             raise ValueError('You appear to be using a legacy multi-label data'
                              ' representation. Sequence of sequences are no'
                              ' longer supported; use a binary array or sparse'
@@ -138,7 +140,7 @@ def type_of_target(y):
 
     # Invalid inputs
     if y.ndim > 2 or (y.dtype == object and len(y) and
-                      not isinstance(y.flat[0], basestring)):
+                      not isinstance(y.flat[0], _basestring)):
         return 'unknown'  # [[[1, 2]]] or [obj_1] and not ["label_1"]
 
     if y.ndim == 2 and y.shape[1] == 0:

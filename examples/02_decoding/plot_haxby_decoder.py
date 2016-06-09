@@ -2,18 +2,18 @@
 Decoding with decoder metaestimator: face vs house recognition
 ==============================================================
 
-Here is a simple example of decoding with a the decoder metaestimator,
-reproducing a face vs house discrimination task on the study "Distributed and
-Overlapping Representations of Faces and Objects in Ventral Temporal Cortex"
-(Science 2001).
+Here is a simple example of decoding with the decoder metaestimator,
+reproducing a face vs house discrimination task on the study Haxby 2001.
+
+    * J.V. Haxby et al. "Distributed and Overlapping Representations of Faces
+      and Objects in Ventral Temporal Cortex", Science vol 293 (2001),
+      p 2425.-2430.
 
 """
 
-#########################################################################
-# Load Haxby dataset
 import numpy as np
 
-# Load the Haxby dataset
+# Load Haxby dataset
 from nilearn.datasets import fetch_haxby
 data_files = fetch_haxby(n_subjects=1)
 
@@ -34,13 +34,13 @@ condition_mask = np.logical_or(target == "face", target == "house")
 condition_mask_train = np.logical_and(condition_mask, labels['chunks'] <= 6)
 condition_mask_test = np.logical_and(condition_mask, labels['chunks'] > 6)
 
-### Prediction with Decoder ###################################################
+# Prediction with Decoder
 from nilearn.decoding import Decoder
 decoder = Decoder(estimator='svc_l2', screening_percentile=20, cv=3,
                   mask_strategy='epi', standardize=True, smoothing_fwhm=4,
                   n_jobs=1)
 
-### Fit and predict
+# Fit and predict
 decoder.fit(func_filenames, target, index=condition_mask_train)
 y_pred = decoder.predict(func_filenames, index=condition_mask_test)
 
