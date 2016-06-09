@@ -120,8 +120,8 @@ def cache(func, memory, func_memory_level=None, memory_level=None,
         func_memory_level the function is cached)
 
     shelve: boolean,
-        Whether to return a MemorizedResult, callable by a .get() method,
-        instead of the return value of func
+        Whether to return a joblib MemorizedResult, callable by a .get()
+        method, instead of the return value of func
 
     kwargs: keyword arguments
         The keyword arguments passed to memory.cache
@@ -165,6 +165,9 @@ def cache(func, memory, func_memory_level=None, memory_level=None,
         memory = Memory(cachedir=None, verbose=verbose)
     cached_func = _safe_cache(memory, func, **kwargs)
     if shelve:
+        if LooseVersion(sklearn.__version__) < LooseVersion('0.15'):
+            raise ValueError('Shelving is only available if'
+                             ' scikit-learn >= 0.15 is installed.')
         cached_func = _shelved_func(cached_func)
     return cached_func
 
@@ -177,7 +180,6 @@ class _shelved_func(object):
 
     def __call__(self, *args, **kwargs):
             return self.func.call_and_shelve(*args, **kwargs)
-
 
 
 class CacheMixin(object):
@@ -210,8 +212,8 @@ class CacheMixin(object):
             function.
 
         shelve: boolean,
-            Whether to return a MemorizedResult, callable by a .get() method,
-            instead of the return value of func
+            Whether to return a joblib MemorizedResult, callable by a .get()
+            method, instead of the return value of func
 
         Returns
         -------
@@ -222,12 +224,6 @@ class CacheMixin(object):
             returned.
 
         """
-
-        if shelve and (
-                    LooseVersion(sklearn.__version__) < LooseVersion('0.15')):
-            raise ValueError('Shelving is only available if scikit-learn>=0.15'
-                             ' is installed.')
-
         verbose = getattr(self, 'verbose', 0)
 
         # Creates attributes if they don't exist

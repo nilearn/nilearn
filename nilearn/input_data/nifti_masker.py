@@ -194,22 +194,6 @@ class NiftiMasker(BaseMasker, CacheMixin):
 
         self._shelving = False
 
-    def _deactivate_shelving(self):
-        self._shelving = True
-
-    def _activate_shelving(self):
-        """Activate shelving.
-
-        When shelving is activated, the transform method will shelve the result
-        on disk and return an object region_signals with method get:
-        region_signals.get() yields the maked array.
-        Useful to parallelize the masking of records before entering a
-        sequential pipeline."""
-        self._shelving = True
-
-    def _toggle_shelving(self):
-        self._shelving = not self._shelving
-
     def _check_fitted(self):
         if not hasattr(self, 'mask_img_'):
             raise ValueError('It seems that %s has not been fitted. '

@@ -149,7 +149,7 @@ def test_shelving():
                                               memory=Memory(cachedir=cachedir,
                                                             mmap_mode='r',
                                                             verbose=0))
-            masker_shelved._activate_shelving()
+            masker_shelved._shelving = True
             masker = MultiNiftiMasker(mask_img=mask_img)
             epis_shelved = masker_shelved.fit_transform([epi_img1, epi_img2])
             epis = masker.fit_transform([epi_img1, epi_img2])
