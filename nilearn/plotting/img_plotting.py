@@ -683,13 +683,13 @@ def plot_prob_atlas(maps_img, anat_img=MNI152TEMPLATE, view_type='auto',
             along with color fillings inside the contours.
             If view_type == 'continuous', maps are overlayed as continous
             colors irrespective of the number maps.
-        threshold : 'auto', a str or a number, list of str or numbers, None
+        threshold : a str or a number, list of str or numbers, None
             This parameter is optional and is used to threshold the maps image
             using the given value or automatically selected value. The values
             in the image above the threshold level will be visualized.
-            The default strategy, corresponding to 'auto', computes a threshold
-            level that seeks to minimize (yet not eliminate completely) the
-            overlap between several maps for a better visualization.
+            The default strategy, computes a threshold level that seeks to
+            minimize (yet not eliminate completely) the overlap between several
+            maps for a better visualization.
             The threshold can also be expressed as a percentile over the values
             of the whole atlas. In that case, the value must be specified as
             string finishing with a percent sign, e.g., "25.3%".
@@ -700,7 +700,8 @@ def plot_prob_atlas(maps_img, anat_img=MNI152TEMPLATE, view_type='auto',
             of 3D map in time (4th) dimension.
             If a number or a list of numbers, the given value will be used
             directly to threshold the maps without any percentile calculation.
-            If None, no threshold will be applied.
+            If None, a very small threshold is applied to remove numerical
+            noise from the maps background.
         linewidths : float, optional
             This option can be used to set the boundary thickness of the
             contours.
@@ -791,7 +792,6 @@ def plot_prob_atlas(maps_img, anat_img=MNI152TEMPLATE, view_type='auto',
             view_type = 'continuous'
 
     if threshold is None:
-        # selecting level to use in all three display types
         threshold = 1e-6
     elif threshold == 'auto':
         # it will use default percentage,
