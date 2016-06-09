@@ -10,7 +10,7 @@ from scipy.sparse.base import spmatrix
 from scipy.sparse import dok_matrix
 from scipy.sparse import lil_matrix
 
-from ..compact import _basestring
+from ..compat import _basestring
 
 
 def _is_integral_float(y):
