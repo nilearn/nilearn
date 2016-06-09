@@ -332,7 +332,7 @@ class Decoder(BaseEstimator):
                          multi_output=True, y_numeric=True)
 
         # Setup model
-        if not isinstance(self.estimator, basestring):
+        if not isinstance(self.estimator, _basestring):
             warnings.warn('Use a custom estimator at your own risk.')
 
         estimator = ESTIMATOR_CATALOG.get(self.estimator, self.estimator)
@@ -491,7 +491,7 @@ def _check_masking(mask, smoothing_fwhm, target_affine, target_shape,
                    standardize, mask_strategy, memory, memory_level):
     """Setup a nifti masker."""
     # mask is an image, not a masker
-    if isinstance(mask, basestring) or (mask is None):
+    if isinstance(mask, _basestring) or (mask is None):
         masker = NiftiMasker(mask_img=mask,
                              smoothing_fwhm=smoothing_fwhm,
                              target_affine=target_affine,
