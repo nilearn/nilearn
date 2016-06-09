@@ -66,6 +66,7 @@ for idx in range(2):
 
     # build design matrix
     frame_times = np.arange(n_scans) * tr
+    import pdb; pdb.set_trace()  # breakpoint fc0c0fe5 //
     design_matrix = make_design_matrix(
         frame_times, paradigm, hrf_model=hrf_model, drift_model=drift_model,
         period_cut=period_cut)
@@ -85,7 +86,7 @@ contrasts = {
 
 # fit GLM
 print('Fitting a GLM')
-fmri_glm = FirstLevelModel(tr, slice_time_ref, standardize=False)
+fmri_glm = FirstLevelModel(tr, slice_time_ref)
 fmri_glm = fmri_glm.fit(fmri_img, design_matrices)
 
 # compute contrast maps
