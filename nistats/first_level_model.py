@@ -11,23 +11,20 @@ of fMRI data analyses.
 from warnings import warn
 import time
 import sys
-import os
 
 import numpy as np
-import glob
 from nibabel import Nifti1Image
 
 from sklearn.base import BaseEstimator, TransformerMixin, clone
 from sklearn.externals.joblib import Memory
 from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._utils import CacheMixin
-from nilearn._utils.class_inspect import get_params
 from nilearn.input_data import NiftiMasker
 from sklearn.externals.joblib import Parallel, delayed
 
 from .regression import OLSModel, ARModel, SimpleRegressionResults
 from .design_matrix import make_design_matrix
-from .contrasts import _summary_contrast
+from .contrasts import _fixed_effect_contrast
 from .utils import _basestring, _check_run_tables
 
 
@@ -59,6 +56,7 @@ def mean_scaling(Y, axis=0):
 
 
 def _ar_model_fit(X, val, Y):
+    """Wrapper for fit method of ARModel to allow parallelization with joblib"""
     return ARModel(X, val).fit(Y)
 
 
@@ -193,14 +191,6 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         This parameter is passed to nilearn.image.resample_img. Please see the
         related documentation for details.
 
-    low_pass: False or float, optional
-        This parameter is passed to nilearn.signal.clean.
-        Please see the related documentation for details.
-
-    high_pass: False or float, optional
-        This parameter is passed to nilearn.signal.clean.
-        Please see the related documentation for details.
-
     smoothing_fwhm: float, optional
         If smoothing_fwhm is not None, it gives the size in millimeters of the
         spatial smoothing to apply to the signal.
@@ -217,16 +207,14 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         If standardize is True, the time-series are centered and normed:
         their variance is put to 1 in the time dimension.
 
-    signal_scaling: bool, optional,
-        If True, fMRI signals are scaled to the mean value of scaling_axis
-        Incompatible with standardize (standardize=False is enforced when\
-        signal_scaling is True).
-
-    scaling_axis: int or tuple, optional,
-        Axis used for signal scaling. 0 refers to mean scaling each voxel with
-        respect to time, 1 refers to mean scaling each time point with respect
-        to all voxels and (0, 1) refers to scaling with respect to voxels and
-        time, which is known as grand mean scaling.
+    signal_scaling: False, int or (int, int), optional,
+        If not False, fMRI signals are scaled to the mean value of scaling_axis
+        given, which can be 0, 1 or (0, 1). 0 refers to mean scaling each voxel
+        with respect to time, 1 refers to mean scaling each time point with
+        respect to all voxels and (0, 1) refers to scaling with respect to
+        voxels and time, which is known as grand mean scaling.
+        Incompatible with standardize (standardize=False is enforced when
+        signal_scaling is not False).
 
     noise_model : {'ar1', 'ols'}, optional
         The temporal variance model. Defaults to 'ar1'
@@ -244,10 +232,6 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         further inspection of model details. This has an important impact
         on memory consumption. True by default.
 
-    subject_id : string, optional
-        id of the subject of this first_level_model instance. Will be used
-        to create subject specific memory cache if caching allowed.
-
     Attributes
     ----------
     labels : array of shape (n_voxels,),
@@ -260,11 +244,10 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
     def __init__(self, t_r=None, slice_time_ref=None, hrf_model='glover',
                  drift_model='cosine', period_cut=128, drift_order=1,
                  fir_delays=[0], min_onset=-24, mask=None, target_affine=None,
-                 target_shape=None, low_pass=None, high_pass=None,
-                 smoothing_fwhm=None, memory=None, memory_level=1,
-                 standardize=False, signal_scaling=True, scaling_axis=0,
+                 target_shape=None, smoothing_fwhm=None, memory=Memory(None),
+                 memory_level=1, standardize=False, signal_scaling=0,
                  noise_model='ar1', verbose=1, n_jobs=1,
-                 minimize_memory=True, model_id=None):
+                 minimize_memory=True):
         # design matrix parameters
         self.t_r = t_r
         self.slice_time_ref = slice_time_ref
@@ -278,54 +261,33 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         self.mask = mask
         self.target_affine = target_affine
         self.target_shape = target_shape
-        self.low_pass = low_pass
-        self.high_pass = high_pass
         self.smoothing_fwhm = smoothing_fwhm
-        if memory is not None:
-            first_level_cache_path = os.path.join(memory, 'first_level_cache')
-            if model_id is None:
-                model_paths = glob.glob(os.path.join(first_level_cache_path,
-                                        'model_*'))
-                model_paths.sort()
-                last_m = int(os.path.basename(model_paths[-1].split('_')[1]))
-                model_id = 'model_%03d' % (last_m + 1)
-            self.memory = Memory(os.path.join(first_level_cache_path,
-                                              model_id))
+        if isinstance(memory, _basestring):
+            self.memory = Memory(memory)
         else:
-            self.memory = Memory(None)
+            self.memory = memory
         self.memory_level = memory_level
         self.standardize = standardize
-        self.signal_scaling = signal_scaling
-        if self.signal_scaling:
+        if signal_scaling in [0, 1, (0, 1)]:
+            self.scaling_axis = signal_scaling
+            self.signal_scaling = True
             self.standardize = False
-        self.scaling_axis = scaling_axis
+        elif signal_scaling is False:
+            self.signal_scaling = signal_scaling
+        else:
+            raise ValueError('signal_scaling must be "False", "0", "1"'
+                             ' or "(0, 1)"')
         self.noise_model = noise_model
         self.verbose = verbose
         self.n_jobs = n_jobs
         self.minimize_memory = minimize_memory
-        self.model_id = model_id
-
-    def get_model_parameters(self, ignore=None):
-        """Get model parameters as a dictionary.
-
-        Parameters
-        ----------
-        ignore: None or list of strings, optional
-            Names of the parameters that are not returned.
-
-        Returns
-        -------
-        params: dict
-            The dict of parameters
-        """
-        return get_params(FirstLevelModel, self, ignore=ignore)
 
     def fit(self, run_imgs, paradigms=None, confounds=None,
             design_matrices=None):
         """ Fit the GLM
 
         For each run:
-        1. create design matrix
+        1. create design matrix X
         2. do a masker job: fMRI_data -> Y
         3. fit regression to (Y, X)
 
@@ -352,13 +314,14 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
             Design matrices that will be used to fit the GLM.
         """
         # Check arguments
+        # Check imgs type
         if not isinstance(run_imgs, (list, tuple)):
             run_imgs = [run_imgs]
         for rimg in run_imgs:
             if not isinstance(rimg, (_basestring, Nifti1Image)):
                 raise ValueError('run_imgs must be Niimg-like object or list'
                                  ' of Niimg-like objects')
-
+        # check all information necessary to build design matrices is available
         if design_matrices is None:
             if paradigms is None:
                 raise ValueError('paradigms or design matrices must be provided')
@@ -371,7 +334,8 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         else:
             design_matrices = _check_run_tables(run_imgs, design_matrices,
                                                 'design_matrices')
-
+        # check the number of paradigm and confound files match number of runs
+        # Also check paradigm and confound files can be loaded as DataFrame
         if paradigms is not None:
             paradigms = _check_run_tables(run_imgs, paradigms, 'paradigms')
 
@@ -383,8 +347,7 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
             self.masker_ = NiftiMasker(
                 mask_img=self.mask, smoothing_fwhm=self.smoothing_fwhm,
                 target_affine=self.target_affine,
-                standardize=self.standardize, low_pass=self.low_pass,
-                high_pass=self.high_pass, mask_strategy='epi',
+                standardize=self.standardize, mask_strategy='epi',
                 t_r=self.t_r, memory=self.memory,
                 verbose=max(0, self.verbose - 1),
                 target_shape=self.target_shape,
@@ -414,10 +377,11 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
                 dt = time.time() - t0
                 # We use a max to avoid a division by zero
                 if run_idx == 0:
-                    remaining = 'estimating time remaining'
+                    remaining = 'go take a coffee, a big one'
                 else:
                     remaining = (100. - percent) / max(0.01, percent) * dt
                     remaining = '%i seconds remaining' % remaining
+                sys.stderr.write(" " * 100 + "\r")
                 sys.stderr.write(
                     "Computing run %d out of %d runs (%s)\r"
                     % (run_idx, n_runs, remaining))
@@ -474,19 +438,6 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
 
         return self
 
-    def get_design_matrices(self):
-        """Get design matrices computed during model fit
-
-        Returns
-        -------
-        design_matrices : list of pandas DataFrames,
-            Holds the design matrices computed for the corresponding run_imgs
-        """
-        if self.design_matrices_ is None:
-            raise ValueError('The model has not been fit yet')
-        else:
-            return self.design_matrices_
-
     def compute_contrast(self, contrast_def, contrast_name=None,
                          stat_type=None, output_type='z_score'):
         """Generate different outputs corresponding to
@@ -536,18 +487,18 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
             con_vals = con_vals * n_runs
         if isinstance(output_type, _basestring):
             if output_type not in ['z_score', 'stat', 'p_value', 'eff', 'var']:
-                raise ValueError('output_type must be "z_score", "stat",'
+                raise ValueError('output_type must be one of "z_score", "stat",'
                                  ' "p_value","eff" or "var"')
         else:
-            raise ValueError('output_type must be "z_score", "stat",'
+            raise ValueError('output_type must be one of "z_score", "stat",'
                              ' "p_value","eff" or "var"')
 
         if self.memory is not None:
             arg_ignore = ['labels', 'results']
-            mem_contrast = self.memory.cache(_summary_contrast,
+            mem_contrast = self.memory.cache(_fixed_effect_contrast,
                                              ignore=arg_ignore)
         else:
-            mem_contrast = _summary_contrast
+            mem_contrast = _fixed_effect_contrast
         contrast = mem_contrast(self.labels_, self.results_, con_vals,
                                 stat_type)
 

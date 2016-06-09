@@ -50,7 +50,7 @@ fmri_glm = FirstLevelModel(tr, slice_time_ref, noise_model='ar1',
 fmri_glm = fmri_glm.fit(fmri_img, paradigm)
 
 # specify contrasts
-design_matrix = fmri_glm.get_design_matrices()[0]
+design_matrix = fmri_glm.design_matrices_[0]
 contrast_matrix = np.eye(design_matrix.shape[1])
 contrasts = dict([(column, contrast_matrix[i])
                   for i, column in enumerate(design_matrix.columns)])

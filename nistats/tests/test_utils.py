@@ -1,13 +1,15 @@
 #!/usr/bin/env python
 
 import numpy as np
+import pandas as pd
 from scipy.stats import norm
 import scipy.linalg as spl
 from numpy.testing import assert_almost_equal, assert_array_almost_equal
-from nose.tools import assert_true, assert_equal
+from nose.tools import assert_true, assert_equal, assert_raises
 
 from nistats.utils import (multiple_mahalanobis, z_score, multiple_fast_inv,
-                     pos_recipr, full_rank)
+                           pos_recipr, full_rank, _check_run_tables,
+                           _check_and_load_tables, _check_list_length_match)
 
 
 def test_full_rank():
@@ -80,3 +82,21 @@ def test_pos_recipr():
     yield assert_equal, pos_recipr(-1), 0
     yield assert_equal, pos_recipr(0), 0
     yield assert_equal, pos_recipr(2), 0.5
+
+
+def test_img_table_checks():
+    # check matching lengths
+    assert_raises(ValueError, _check_list_length_match, [''] * 2, [''], "", "")
+    # check tables type and that can be loaded
+    assert_raises(ValueError, _check_and_load_tables, ['.csv', '.csv'], "")
+    assert_raises(TypeError, _check_and_load_tables,
+                  [np.array([0]), pd.DataFrame()], "")
+    assert_raises(ValueError, _check_and_load_tables,
+                  ['.csv', pd.DataFrame()], "")
+    # check high level wrapper keeps behavior
+    assert_raises(ValueError, _check_run_tables, [''] * 2, [''], "")
+    assert_raises(ValueError, _check_run_tables, [''] * 2, ['.csv', '.csv'], "")
+    assert_raises(TypeError, _check_run_tables, [''] * 2,
+                  [np.array([0]), pd.DataFrame()], "")
+    assert_raises(ValueError, _check_run_tables, [''] * 2,
+                  ['.csv', pd.DataFrame()], "")

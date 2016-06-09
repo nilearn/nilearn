@@ -47,7 +47,7 @@ first_level_model = first_level_model.fit(fmri_img, paradigm)
 
 # Estimate contrasts #########################################
 # Specify the contrasts
-design_matrix = first_level_model.get_design_matrices()[0]
+design_matrix = first_level_model.design_matrices_[0]
 contrast_matrix = np.eye(design_matrix.shape[1])
 contrasts = dict([(column, contrast_matrix[i])
                   for i, column in enumerate(design_matrix.columns)])

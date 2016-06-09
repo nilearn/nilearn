@@ -17,7 +17,7 @@ def _check_list_length_match(list_1, list_2, var_name_1, var_name_2):
     if len(list_1) != len(list_2):
         raise ValueError(
             'len(%s) %d does not match len(%s) %d'
-            % (var_name_1, len(list_1), var_name_2, len(list_2)))
+            % (str(var_name_1), len(list_1), str(var_name_2), len(list_2)))
 
 
 def _check_and_load_tables(tables_, var_name):
@@ -25,7 +25,10 @@ def _check_and_load_tables(tables_, var_name):
     tables = []
     for table_idx, table in enumerate(tables_):
         if isinstance(table, _basestring):
-            loaded = pd.read_csv(table, index_col=0)
+            try:
+                loaded = pd.read_csv(table, index_col=0)
+            except:
+                raise ValueError('table path %s could not be loaded' % table)
             tables.append(loaded)
         elif isinstance(table, pd.DataFrame):
             tables.append(table)
