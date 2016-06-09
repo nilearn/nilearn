@@ -86,7 +86,7 @@ def test_plot_anat():
         ortho_slicer.savefig(filename)
     finally:
         os.remove(filename)
-    
+
     # Save execution time and memory
     plt.close()
 
@@ -559,6 +559,9 @@ def test_plot_prob_atlas():
     plt.close()
     # Testing the 4D plot prob atlas with colormap
     plot_prob_atlas(img, view_type='filled_contours', colorbar=True)
+    plt.close()
+    # threshold=None
+    plot_prob_atlas(img, threshold=None)
     plt.close()
 
 
