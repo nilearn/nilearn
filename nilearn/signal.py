@@ -240,6 +240,7 @@ def butterworth(signals, sampling_rate, low_pass=None, high_pass=None,
         btype = 'low'
         critical_freq.append(_check_wn(btype, low_pass, nyq))
 
+
     if len(critical_freq) == 2:
         btype = 'band'
     else:
@@ -415,7 +416,7 @@ def clean(signals, sessions=None, detrend=True, standardize=True,
                       (list, tuple, _basestring, np.ndarray, type(None))):
         raise TypeError("confounds keyword has an unhandled type: %s"
                         % confounds.__class__)
-    
+
     # Read confounds
     if confounds is not None:
         if not isinstance(confounds, (list, tuple)):

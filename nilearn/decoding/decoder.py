@@ -7,7 +7,6 @@ with optional feature selection, and integrated parameter selection.
 #
 # License: simplified BSD
 
-import collections
 import itertools
 import warnings
 
@@ -40,7 +39,6 @@ from .._utils.fixes import check_scoring
 from .._utils.fixes import make_scorer
 
 from ..input_data import NiftiMasker, MultiNiftiMasker
-from ..image import index_img
 
 # Volume of a standard (MNI152) brain mask in mm^3
 MNI152_BRAIN_VOLUME = 1827243.
@@ -255,7 +253,7 @@ class Decoder(BaseEstimator):
         self.std_coef_img_ = std_coef_img
         return self
 
-    def fit(self, niimgs, y, index=None):
+    def fit(self, niimgs, y):
         """Fit the decoder
 
         Parameters
@@ -267,9 +265,6 @@ class Decoder(BaseEstimator):
         y: 1D array-like
            Target variable to predict. Must have exactly as many elements as
            3D images in niimg.
-
-        index: Any type compatible with numpy array indexing
-            Used for indexing the 4D NiImages in the fourth dimension.
 
         Attributes
         ----------
@@ -311,10 +306,6 @@ class Decoder(BaseEstimator):
                                       self.standardize, self.mask_strategy,
                                       self.memory, self.memory_level)
 
-        if index is not None and isinstance(index, collections.Iterable):
-            niimgs = index_img(niimgs, index)
-            y = y[index]
-
         # Fit masker
         if not hasattr(self.masker_, 'mask_img_'):
             self.masker_.fit(niimgs)
@@ -337,7 +328,7 @@ class Decoder(BaseEstimator):
         estimator = ESTIMATOR_CATALOG.get(self.estimator, self.estimator)
 
         is_classification_, self.is_binary_, classes_, classes_to_predict = \
-            _check_estimation(estimator, y, self.pos_label)
+            _check_estimator(estimator, y, self.pos_label)
 
         if classes_ is not None:
             self.classes_ = classes_
@@ -360,13 +351,10 @@ class Decoder(BaseEstimator):
         self._gather_fit_results(results, classes_to_predict, score_func)
         return self
 
-    def decision_function(self, niimgs, index=None):
+    def decision_function(self, niimgs):
         """Provide prediction values for new X which can be turned into
         a label by thresholding
         """
-        if index is not None and isinstance(index, collections.Iterable):
-            niimgs = index_img(niimgs, index)
-
         X = self.masker_.transform(niimgs)
         X = atleast2d_or_csr(X)
 
@@ -379,13 +367,13 @@ class Decoder(BaseEstimator):
                                           dense_output=True) + self.intercept_
         return decision_values
 
-    def predict(self, niimgs, index=None):
+    def predict(self, niimgs):
         """Predict a label for all X vectors indexed by the first axis"""
 
         check_is_fitted(self, "coef_")
         check_is_fitted(self, "masker_")
 
-        decision_values = self.decision_function(niimgs, index)
+        decision_values = self.decision_function(niimgs)
 
         if self.is_classification_:
             decisions = decision_values.argmax(axis=1)
@@ -393,10 +381,7 @@ class Decoder(BaseEstimator):
             return decision_labels
         return decision_values
 
-    def score(self, niimgs, y, index=None):
-        if index is not None and isinstance(index, collections.Iterable):
-            niimgs = index_img(niimgs, index)
-            y = y[index]
+    def score(self, niimgs, y):
 
         X = self.masker_.transform(niimgs)
         X = atleast2d_or_csr(X)
@@ -592,11 +577,15 @@ def _check_feature_screening(screening_percentile, mask_volume,
         return SelectPercentile(f_test, int(screening_percentile_))
 
 
-def _check_estimation(estimator, y, pos_label):
+def _check_estimator(estimator, y, pos_label):
     """Check estimation problem in respect to target type."""
     is_classification_ = is_classifier(estimator)
-    target_type = y.dtype.kind == 'i' or y.dtype.kind == 'S'
+
+    target_type = y.dtype.kind == 'i' or y.dtype.kind == 'S' or \
+        y.dtype == 'bool'
+
     is_binary = False
+
     if is_classification_ != target_type:
         warnings.warn(
             'Target seems to be for a %s problem but '
@@ -604,6 +593,7 @@ def _check_estimation(estimator, y, pos_label):
             'chosen estimator is for a %s problem.' % (
                 'classification' if target_type else 'regression',
                 'classification' if is_classification_ else 'regression'))
+
     if is_classification_:
         classes_ = classes_to_predict = np.unique(y)
         # If the problem is binary classification we compute only the

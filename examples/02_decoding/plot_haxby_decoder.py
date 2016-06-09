@@ -34,6 +34,19 @@ condition_mask = np.logical_or(target == "face", target == "house")
 condition_mask_train = np.logical_and(condition_mask, labels['chunks'] <= 6)
 condition_mask_test = np.logical_and(condition_mask, labels['chunks'] > 6)
 
+
+# Apply this sample mask to X (fMRI data) and y (behavioral labels)
+# Because the data is in one single large 4D image, we need to use
+# index_img to do the split easily
+from nilearn.image import index_img
+
+from nilearn.image import index_img
+func_filenames = data_files.func[0]
+X_train = index_img(func_filenames, condition_mask_train)
+X_test = index_img(func_filenames, condition_mask_test)
+y_train = target[condition_mask_train]
+y_test = target[condition_mask_test]
+
 # Prediction with Decoder
 from nilearn.decoding import Decoder
 decoder = Decoder(estimator='svc_l2', screening_percentile=20, cv=3,
@@ -41,8 +54,8 @@ decoder = Decoder(estimator='svc_l2', screening_percentile=20, cv=3,
                   n_jobs=1)
 
 # Fit and predict
-decoder.fit(func_filenames, target, index=condition_mask_train)
-y_pred = decoder.predict(func_filenames, index=condition_mask_test)
+decoder.fit(X_train, y_train)
+y_pred = decoder.predict(X_test)
 
 weight_img = decoder.coef_img_['house']
 prediction_accuracy = np.mean(decoder.cv_scores_)
