@@ -170,7 +170,7 @@ def test_cache_shelving():
             assert_equal(len(glob.glob(job_glob)), 1)
         else:
             assert_raises_regex(ValueError, 'Shelving is only available'
-                                            ' if scikit-learn>=0.15'
+                                            ' if scikit-learn >= 0.15'
                                             ' is installed.',
                                 cache_mixin.cache,
                                 f, mem, shelve=True)
