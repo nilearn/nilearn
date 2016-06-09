@@ -132,7 +132,7 @@ def test_session_glm():
     X, Y = np.random.randn(p, q), np.random.randn(p, n)
 
     # ols case
-    labels, results = session_glm(Y, X, 'ols')
+    labels, results = run_glm(Y, X, 'ols')
     assert_array_equal(labels, np.zeros(n))
     assert_equal(list(results.keys()), [0.0])
     assert_equal(results[0.0].theta.shape, (q, n))
@@ -140,22 +140,22 @@ def test_session_glm():
     assert_almost_equal(results[0.0].theta.var(), 1. / p, 1)
 
     # ar(1) case
-    labels, results = session_glm(Y, X, 'ar1')
+    labels, results = run_glm(Y, X, 'ar1')
     assert_equal(len(labels), n)
     assert_true(len(results.keys()) > 1)
     tmp = sum([val.theta.shape[1] for val in results.values()])
     assert_equal(tmp, n)
 
     # non-existant case
-    assert_raises(ValueError, session_glm, Y, X, 'ar2')
-    assert_raises(ValueError, session_glm, Y, X.T)
+    assert_raises(ValueError, run_glm, Y, X, 'ar2')
+    assert_raises(ValueError, run_glm, Y, X.T)
 
 
 def test_Tcontrast():
     # new API
     n, p, q = 100, 80, 10
     X, Y = np.random.randn(p, q), np.random.randn(p, n)
-    labels, results = session_glm(Y, X, 'ar1')
+    labels, results = run_glm(Y, X, 'ar1')
     con_val = np.eye(q)[0]
     z_vals = compute_contrast(labels, results, con_val).z_score()
     assert_almost_equal(z_vals.mean(), 0, 0)
@@ -167,7 +167,7 @@ def test_Fcontrast():
     n, p, q = 100, 80, 10
     X, Y = np.random.randn(p, q), np.random.randn(p, n)
     for model in ['ols', 'ar1']:
-        labels, results = session_glm(Y, X, model)
+        labels, results = run_glm(Y, X, model)
         for con_val in [np.eye(q)[0], np.eye(q)[:3]]:
             z_vals = compute_contrast(
                 labels, results, con_val, contrast_type='F').z_score()
@@ -179,7 +179,7 @@ def test_t_contrast_add():
     # new API
     n, p, q = 100, 80, 10
     X, Y = np.random.randn(p, q), np.random.randn(p, n)
-    lab, res = session_glm(Y, X, 'ols')
+    lab, res = run_glm(Y, X, 'ols')
     c1, c2 = np.eye(q)[0], np.eye(q)[1]
     con = compute_contrast(lab, res, c1) + compute_contrast(lab, res, c2)
     z_vals = con.z_score()
@@ -191,7 +191,7 @@ def test_F_contrast_add():
     # new API
     n, p, q = 100, 80, 10
     X, Y = np.random.randn(p, q), np.random.randn(p, n)
-    lab, res = session_glm(Y, X, 'ar1')
+    lab, res = run_glm(Y, X, 'ar1')
     c1, c2 = np.eye(q)[:2], np.eye(q)[2:4]
     con = compute_contrast(lab, res, c1) + compute_contrast(lab, res, c2)
     z_vals = con.z_score()
@@ -210,7 +210,7 @@ def test_contrast_mul():
     # new API
     n, p, q = 100, 80, 10
     X, Y = np.random.randn(p, q), np.random.randn(p, n)
-    lab, res = session_glm(Y, X, 'ar1')
+    lab, res = run_glm(Y, X, 'ar1')
     for c1 in [np.eye(q)[0], np.eye(q)[:3]]:
         con1 = compute_contrast(lab, res, c1)
         con2 = con1 * 2
@@ -225,7 +225,7 @@ def test_contrast_values():
     # but this test is circular and should be removed
     n, p, q = 100, 80, 10
     X, Y = np.random.randn(p, q), np.random.randn(p, n)
-    lab, res = session_glm(Y, X, 'ar1', bins=1)
+    lab, res = run_glm(Y, X, 'ar1', bins=1)
     # t test
     cval = np.eye(q)[0]
     con = compute_contrast(lab, res, cval)
@@ -246,7 +246,7 @@ def test_scaling():
     u = np.random.randn(*shape)
     mean = 100 * np.random.rand(shape[1]) + 1
     Y = u + mean
-    Y_, mean_ = percent_mean_scaling(Y)
+    Y_, mean_ = mean_scaling(Y)
     assert_almost_equal(Y_.mean(0), 0, 5)
     assert_almost_equal(mean_, mean, 0)
     assert_true(Y.std() > 1)
