@@ -1,4 +1,4 @@
-.. _data_manipulation:
+.. _masker_objects:
 
 =====================================================================
 From neuroimaging volumes to data matrices: the masker objects

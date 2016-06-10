@@ -14,23 +14,17 @@ brain images.
 
 .. _preprocessing_functions:
 
-Functions for data preparation steps
-=====================================
+Functions for data preparation and image transformations
+=========================================================
 
-.. currentmodule:: nilearn.input_data
-
-The :class:`NiftiMasker` can automatically perform important data preparation
-steps. These steps are also available as independent functions if you want to
-set up your own data preparation procedure:
+Nilearn comes with many simple function for simple data preparation and
+transformation. Note that if you want to perform these operations while
+loading the data into a data matrix, they are also integrated in the
+:ref:`masker objects <masker_objects>`.
 
 .. currentmodule:: nilearn
 
-* Resampling: :func:`nilearn.image.resample_img` and :func:`nilearn.image.resample_to_img`.
-  See the following examples:
 
-  * affine transforms on data and bounding boxes: :ref:`sphx_glr_auto_examples_04_manipulating_images_plot_affine_transformation.py`,
-  * resample an image to a template reference image: :ref:`sphx_glr_auto_examples_04_manipulating_images_plot_resample_to_template.py`.
- 
 * Computing the mean of images (along the time/4th dimension):
   :func:`nilearn.image.mean_img`
 * Applying numpy functions on an image or a list of images:
@@ -59,8 +53,8 @@ set up your own data preparation procedure:
 Resampling images
 =================
 
-Resampling one image to match another
--------------------------------------
+Resampling one image to match another one
+------------------------------------------
 
 :func:`nilearn.image.resample_to_img` resamples an image to a reference
 image.
@@ -72,24 +66,26 @@ image.
 .. image:: ../auto_examples/04_manipulating_images/images/sphx_glr_plot_resample_to_template_001.png
     :target: ../auto_examples/04_manipulating_images/plot_resample_to_template.html
     :scale: 55%
+.. image:: ../auto_examples/04_manipulating_images/images/sphx_glr_plot_resample_to_template_002.png
+    :target: ../auto_examples/04_manipulating_images/plot_resample_to_template.html
+    :scale: 55%
 
-Resampling specific target affine, shape, or resolution
---------------------------------------------------------
+This can be useful to display two images as overlays in some
+viewers (e.g., FSLView) that require all images to be on the same grid.
 
-The resampling procedure takes as input the
-`target_affine` to resample (resize, rotate...) images in order to match
-the spatial configuration defined by the new affine (i.e., matrix
-transforming from voxel space into world space).
+Resampling to a specific target affine, shape, or resolution
+-------------------------------------------------------------
+
+:func:`nilearn.image.resample_img` specifies the resampling in terms of
+the `target_affine` to match the spatial configuration defined by the new
+affine.
 
 Additionally, a `target_shape` can be used to resize images
 (i.e., cropping or padding with zeros) to match an expected data
 image dimensions (shape composed of x, y, and z).
 
-As a common use case, resampling can be a viable means to
-downsample image quality on purpose to increase processing speed
-and lower memory consumption of an analysis pipeline.
-In fact, certain image viewers (e.g., FSLView) also require images to be
-resampled to display overlays.
+Resampling can be useful to downsample images to increase processing
+speed and lower memory consumption.
 
 On an advanced note, automatic computation of offset and bounding box
 can be performed by specifying a 3x3 matrix instead of the 4x4 affine.
@@ -115,6 +111,10 @@ of the transformation matrix (i.e., affine).
     >>> import numpy as np
     >>> target_affine = np.diag((3, 3, 3))
 
+.. seealso::
+
+  :ref:`An example illustrating affine transforms on data and bounding boxes <sphx_glr_auto_examples_04_manipulating_images_plot_affine_transformation.py>`
+
 Masking data manually
 =====================
 
@@ -122,8 +122,12 @@ Extracting a brain mask
 ------------------------
 
 If we do not have a spatial mask of the target regions, a brain mask
-can be easily extracted from the fMRI data by the
-:func:`nilearn.masking.compute_epi_mask` function:
+can be computed from the data:
+
+- :func:`nilearn.masking.compute_background_mask` for brain images where
+  the brain stands out of a constant background. This is typically the
+  case when working on statistic maps output after a brain extraction
+- :func:`nilearn.masking.compute_epi_mask` for EPI images
 
 .. figure:: ../auto_examples/01_plotting/images/sphx_glr_plot_visualization_002.png
     :target: ../auto_examples/01_plotting/plot_visualization.html
@@ -151,6 +155,9 @@ brain. It is thus convenient to apply a brain mask in order to convert the
     :align: center
     :width: 100%
 
+Note that in an analysis pipeline, this operation is best done using the
+:ref:`masker objects <masker_objects>`. For completness, we give code to
+do it manually below:
 
 .. literalinclude:: ../../examples/01_plotting/plot_visualization.py
      :start-after: # Applying the mask to extract the corresponding time series
@@ -160,46 +167,51 @@ brain. It is thus convenient to apply a brain mask in order to convert the
     :target: ../auto_examples/01_plotting/plot_visualization.html
     :align: center
     :scale: 50
+.. figure:: ../auto_examples/01_plotting/images/sphx_glr_plot_visualization_003.png
+    :target: ../auto_examples/01_plotting/plot_visualization.html
+    :align: center
+    :scale: 50
+
 
 
 Image operations: creating a ROI mask manually
 ===============================================
 
-Computing Regions of Interest (ROI) mask by ourselves requires a chain of image
-operations to do from the input data to a mask over specific targets of
-interest. The complete operations are listed below:
+A region of interest (ROI) mask can be computed for instance with a
+statistical test. This requires a chain of image
+operations on the input data. Here is a possible recipe for computing an
+ROI mask:
 
- * Fetching datasets: We use Haxby datasets and its experiments. The whole datasets
-   can be fetched using a function :func:`nilearn.datasets.fetch_haxby`.
-   See the documentation for more details about the Haxby datasets and its experiments.
+ * **Smoothing**: Before a statistical test, it is often use to smooth a bit
+   the image using :func:`nilearn.image.smooth_img`, typically fwhm=6 for
+   fMRI.
 
- * Smoothing: Before building a statistical test, we do simple pre-processing step called
-   image smoothing on functional images using function :func:`nilearn.image.smooth_img`
-   with parameter given as fwhm=6.
+ * **Selecting voxels**: Given the smoothed data, we can select voxels
+   with a statistical test (eg opposing face and house experimental
+   conditions), for instance with a simple Student's t-test using scipy
+   function :func:`scipy.stats.ttest_ind`.
 
- * Selecting features: Given the smoothed functional data, we select two features of
-   interest with face and house experimental conditions. The method we use is a simple
-   Student's t-test with scipy function :func:`scipy.stats.ttest_ind`.
+ * **Thresholding**: Then we need threshold the statistical map to have
+   better representation of voxels of interest.
 
- * Thresholding: Now, we threshold the statistical map to have better representation of
-   voxels of interest.
+ * **Mask intersection and dilation**: Post-processing the results with
+   simple morphological operations, mask intersection and dilation. 
 
- * Mask intersection and dilation: Post-processing the results with simple
-   morphological operations, mask intersection and dilation. Here, we use the
-   mask from the experiments and our results to select only those voxels which
-   are common in both masks.
+   * we can use another mask, such as a grey-matter matter, to select
+     only the voxels which are common in both masks.
 
- * On the other hand, we again do `morphological dilation
-   # <http://en.wikipedia.org/wiki/Dilation_(morphology)>`_ called Mask Dilation
-   to more compact blobs. The function is used from
-   :func:`scipy.ndimage.binary_dilation`.
+   * we can do `morphological dilation
+     <http://en.wikipedia.org/wiki/Dilation_(morphology)>`_ to achieve
+     more compact blobs with more regular boundaries. The function is
+     used from :func:`scipy.ndimage.binary_dilation`.
 
- * Extracting connected components: We end with splitting the connected ROIs into two
-   separate regions (ROIs), one in each hemisphere. The function **scipy.ndimage.label**
-   from the scipy Python library is used in this setting.
+ * **Extracting connected components**: We end with splitting the connected
+   ROIs into two separate regions (ROIs), one in each hemisphere. The
+   function :func:`scipy.ndimage.label` from the scipy library is used.
 
- * Saving the result: The final voxel mask is saved using `nibabel.save` for further
-   inspection with a software such as FSLView.
+ * **Saving the result**: The final voxel mask is saved using
+   :func:`nibabel.save` for further inspection with a software such as
+   FSLView.
 
 .. _nibabel: http://nipy.sourceforge.net/nibabel/
 

@@ -63,16 +63,16 @@ shell):
     >>> from nilearn.image import smooth_img
     >>> result_img = smooth_img("dataset/subject_*.nii") # doctest: +SKIP
 
-  Note that the resulting is a 4D image.
+   Note that the resulting is a 4D image.
 
  * **Expanding the home directory** ``~`` is expanded to your home
    directory::
 
     >>> result_img = smooth_img("~/dataset/subject_01.nii") # doctest: +SKIP
 
-  Using ``~`` rather than specifying the details of the path is good
-  practice, as it will make it more likely that your script work on
-  different computers.
+   Using ``~`` rather than specifying the details of the path is good
+   practice, as it will make it more likely that your script work on
+   different computers.
 
 
 .. topic:: **Python globbing**
@@ -92,8 +92,8 @@ shell):
 
 .. _datasets:
 
-Fetching open datasets
-======================
+Fetching open datasets from Internet
+=====================================
 
 Nilearn provides dataset fetching function that
 automatically downloads reference
@@ -132,6 +132,8 @@ follows::
 
     For a list of all the data fetching functions in nilearn, see
     :ref:`datasets_ref`.
+
+|
 
 .. topic:: **nilearn_data: Where is the downloaded data stored?**
 
@@ -250,5 +252,7 @@ presented to the subject::
     data from CSV files and manipulate them.
 
 |
+
+.. _nibabel: http://nipy.sourceforge.net/nibabel/
 
 
