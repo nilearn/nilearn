@@ -617,7 +617,7 @@ def _unmask_3d(X, mask, order="C"):
     """Take masked data and bring them back to 3D (space only).
 
     Parameters
-    ==========
+    ----------
     X: numpy.ndarray
         Masked data. shape: (features,)
 
@@ -645,7 +645,7 @@ def _unmask_4d(X, mask, order="C"):
     """Take masked data and bring them back to 4D.
 
     Parameters
-    ==========
+    ----------
     X: numpy.ndarray
         Masked data. shape: (samples, features)
 
@@ -653,7 +653,7 @@ def _unmask_4d(X, mask, order="C"):
         Mask. mask.ndim must be equal to 4, and dtype *must* be bool.
 
     Returns
-    =======
+    -------
     data: numpy.ndarray
         Unmasked data.
         Shape: (mask.shape[0], mask.shape[1], mask.shape[2], X.shape[0])
@@ -678,7 +678,7 @@ def unmask(X, mask_img, order="F"):
     This function can be applied to a list of masked data.
 
     Parameters
-    ==========
+    ----------
     X: numpy.ndarray (or list of)
         Masked data. shape: (samples #, features #).
         If X is one-dimensional, it is assumed that samples# == 1.
@@ -687,7 +687,7 @@ def unmask(X, mask_img, order="F"):
         Must be 3-dimensional.
 
     Returns
-    =======
+    -------
     data: nibabel.Nift1Image object
         Unmasked data. Depending on the shape of X, data can have
         different shapes:
