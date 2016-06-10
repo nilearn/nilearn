@@ -14,12 +14,12 @@ brain images.
 
 .. _preprocessing_functions:
 
-Functions for data preparation and image transformations
+Functions for data preparation and image transformation
 =========================================================
 
-Nilearn comes with many simple function for simple data preparation and
+Nilearn comes with many simple functions for simple data preparation and
 transformation. Note that if you want to perform these operations while
-loading the data into a data matrix, they are also integrated in the
+loading the data into a data matrix, most are also integrated in the
 :ref:`masker objects <masker_objects>`.
 
 .. currentmodule:: nilearn
@@ -33,18 +33,6 @@ loading the data into a data matrix, they are also integrated in the
   inter-hemispherically):
   :func:`nilearn.image.swap_img_hemispheres`
 * Smoothing: :func:`nilearn.image.smooth_img`
-* Masking:
-
-  * compute from EPI images: :func:`nilearn.masking.compute_epi_mask`
-  * compute from images with a flat background:
-    :func:`nilearn.masking.compute_background_mask`
-  * compute for multiple sessions/subjects:
-    :func:`nilearn.masking.compute_multi_epi_mask`
-    :func:`nilearn.masking.compute_multi_background_mask`
-  * apply: :func:`nilearn.masking.apply_mask`
-  * intersect several masks (useful for multi sessions/subjects): :func:`nilearn.masking.intersect_masks`
-  * unmasking: :func:`nilearn.masking.unmask`
-
 * Cleaning signals (e.g., linear detrending, standardization,
   confound removal, low/high pass filtering): :func:`nilearn.signal.clean`
 
@@ -115,8 +103,30 @@ of the transformation matrix (i.e., affine).
 
   :ref:`An example illustrating affine transforms on data and bounding boxes <sphx_glr_auto_examples_04_manipulating_images_plot_affine_transformation.py>`
 
-Masking data manually
-=====================
+Accessing individual volumes in 4D images
+===========================================
+
+* :func:`nilearn.image.index_img`: selects one or more volumes in a 4D
+  image.
+
+* :func:`nilearn.image.iter_img`: loops over all the volumes of a 4D
+  image.
+
+Computing and applying spatial masks
+=====================================
+
+Relevant functions:
+
+* compute a mask from EPI images: :func:`nilearn.masking.compute_epi_mask`
+* compute a mask from images with a flat background:
+  :func:`nilearn.masking.compute_background_mask`
+* compute for multiple sessions/subjects:
+  :func:`nilearn.masking.compute_multi_epi_mask`
+  :func:`nilearn.masking.compute_multi_background_mask`
+* apply: :func:`nilearn.masking.apply_mask`
+* intersect several masks (useful for multi sessions/subjects): :func:`nilearn.masking.intersect_masks`
+* unmasking: :func:`nilearn.masking.unmask`
+
 
 Extracting a brain mask
 ------------------------
@@ -141,8 +151,8 @@ can be computed from the data:
 
 .. _mask_4d_2_3d:
 
-From 4D Nifti images to 2D data arrays
---------------------------------------
+Masking data: from 4D Nifti images to 2D data arrays
+---------------------------------------------------------------
 
 fMRI data is usually represented as a 4D block of data: 3 spatial
 dimensions and one time dimension. In practice, we are usually
@@ -166,11 +176,7 @@ do it manually below:
 .. figure:: ../auto_examples/01_plotting/images/sphx_glr_plot_visualization_003.png
     :target: ../auto_examples/01_plotting/plot_visualization.html
     :align: center
-    :scale: 50
-.. figure:: ../auto_examples/01_plotting/images/sphx_glr_plot_visualization_003.png
-    :target: ../auto_examples/01_plotting/plot_visualization.html
-    :align: center
-    :scale: 50
+    :scale: 40
 
 
 
