@@ -284,9 +284,24 @@ def test_first_level_model_contrast_computation():
         model = FirstLevelModel(t_r, slice_time_ref, mask=mask,
                                 drift_model='polynomial', drift_order=3,
                                 minimize_memory=False)
-        model = model.fit(func_img, paradigm)
-        # c1, c2 = np.eye(7)[0], np.eye(q)[1]
-
-
-def test_first_level_model_contrast_value_checks():
-    pass
+        c1, c2, cnull = np.eye(7)[0], np.eye(7)[1], np.zeros(7)
+        # asking for contrast before model fit gives error
+        assert_raises(ValueError, model.compute_contrast, c1)
+        # fit model
+        model = model.fit([func_img, func_img], [paradigm, paradigm])
+        # smoke test for different contrasts in fixed effects
+        model.compute_contrast([c1, c2])
+        # smoke test for same contrast in fixed effects
+        model.compute_contrast([c2, c2])
+        # smoke test for contrast that will be repeated
+        model.compute_contrast(c2)
+        # smoke test for one null contrast in group
+        model.compute_contrast([c2, cnull])
+        # only passing null contrasts should give back a value error
+        assert_raises(ValueError, model.compute_contrast, cnull)
+        assert_raises(ValueError, model.compute_contrast, [cnull, cnull])
+        # passing wrong parameters
+        assert_raises(ValueError, model.compute_contrast, [])
+        assert_raises(ValueError, model.compute_contrast, [c1, []])
+        assert_raises(ValueError, model.compute_contrast, c1, '', '')
+        assert_raises(ValueError, model.compute_contrast, c1, '', [])

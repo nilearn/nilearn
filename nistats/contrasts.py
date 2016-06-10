@@ -82,6 +82,8 @@ def _fixed_effect_contrast(labels, results, con_vals, contrast_type=None):
             contrast = contrast_
         else:
             contrast = contrast + contrast_
+    if contrast is None:
+        raise ValueError('all contrasts provided were null contrasts')
     return contrast
 
 

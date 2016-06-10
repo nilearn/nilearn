@@ -281,6 +281,9 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         self.verbose = verbose
         self.n_jobs = n_jobs
         self.minimize_memory = minimize_memory
+        # attributes
+        self.labels_ = None
+        self.results_ = None
 
     def fit(self, run_imgs, paradigms=None, confounds=None,
             design_matrices=None):
@@ -480,7 +483,7 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
                     raise ValueError('contrast_def at index %i is not an'
                                      ' array' % cidx)
         else:
-            raise ValueError('contrast_def must be an array')
+            raise ValueError('contrast_def must be an array or list of arrays')
         n_runs = len(self.labels_)
         if len(con_vals) != n_runs:
             warn('One contrast given, assuming it for all %d runs' % n_runs)
