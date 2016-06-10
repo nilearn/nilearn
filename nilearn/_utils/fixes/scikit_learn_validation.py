@@ -99,12 +99,9 @@ def check_X_y(X, y, accept_sparse=None, dtype="numeric", order=None,
     """
 
     X = check_array(X, accept_sparse, dtype=dtype, order=order, copy=copy,)
-                    # force_all_finite, ensure_2d, allow_nd,
-                    # ensure_min_samples, ensure_min_features,
-                    # warn_on_dtype, estimator)
+
     if multi_output:
-        y = check_array(y, 'csr', force_all_finite=True, ensure_2d=False,
-                        dtype=None)
+        y = check_array(y, 'csr', dtype=None, ensure_2d=False)
     else:
         y = column_or_1d(y, warn=True)
         _assert_all_finite(y)
