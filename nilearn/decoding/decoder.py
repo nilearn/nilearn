@@ -387,9 +387,6 @@ class Decoder(BaseEstimator):
         X = self.masker_.transform(niimgs)
         X, y = check_X_y(X, y, ['csr', 'csc', 'coo'], dtype=np.float,
                          multi_output=True, y_numeric=True)
-        #                  multi_output=True, y_numeric=True)
-
-                "%s" % str(uniques))
 
         scorer, _, _ = _check_scorer(self, self.scoring_, self.pos_label, y)
         return scorer(self, niimgs, y)
