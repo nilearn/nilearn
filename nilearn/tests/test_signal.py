@@ -14,7 +14,7 @@ import nibabel
 # Use nisignal here to avoid name collisions (using nilearn.signal is
 # not possible)
 from nilearn import signal as nisignal
-from nilearn.signal import clean, clean_img
+from nilearn.signal import clean
 import scipy.signal
 
 
@@ -365,21 +365,6 @@ def test_clean_confounds():
                                                   detrend=False,
                                                   ).mean(),
                                    np.zeros((20, 2)))
-
-
-def test_clean_img():
-
-    data = np.random.random((10, 10, 10, 100)) + .5
-    data_flat = data.T.reshape(100, -1)
-    data_img = nibabel.Nifti1Image(data, np.eye(4))
-
-    data_img_ = clean_img(data_img, detrend=True, standardize=False,
-                          low_pass=0.1)
-    data_flat_ = clean(data_flat, detrend=True, standardize=False,
-                       low_pass=0.1)
-
-    np.testing.assert_almost_equal(data_img_.get_data().T.reshape(100, -1),
-                                   data_flat_)
 
 
 def test_high_variance_confounds():
