@@ -44,6 +44,17 @@ def test_t_contrast_add():
     assert_almost_equal(z_vals.std(), 1, 0)
 
 
+def test_fixed_effect_contrast():
+    n, p, q = 100, 80, 10
+    X, Y = np.random.randn(p, q), np.random.randn(p, n)
+    lab, res = run_glm(Y, X, 'ols')
+    c1, c2 = np.eye(q)[0], np.eye(q)[1]
+    con = compute_contrast([lab, lab], [res, res], [c1, c2])
+    z_vals = con.z_score()
+    assert_almost_equal(z_vals.mean(), 0, 0)
+    assert_almost_equal(z_vals.std(), 1, 0)
+
+
 def test_F_contrast_add():
     # new API
     n, p, q = 100, 80, 10
