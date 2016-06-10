@@ -184,7 +184,6 @@ class Decoder(BaseEstimator):
         self.n_jobs = n_jobs
         self.verbose = verbose
 
-
     def _gather_fit_results(self, results, classes_to_predict, score_func):
         """Posprocessing of the results"""
         coefs = {}
@@ -638,12 +637,10 @@ def _check_scorer(estimator, scoring, pos_label, y):
     is_mae = score_func is mean_absolute_error
     is_regression_score = is_r2 or is_mae or is_mse
 
-    is_accuracy = score_func is accuracy_score
-    is_aprecision = score_func is average_precision_score
+    # Scoreres that require pos_label
     is_recall = score_func is recall_score
     is_pressision = score_func is precision_score
     is_f1 = score_func is f1_score
-
 
     if not estimator.is_classification_ and not is_regression_score:
         raise ValueError('Wrong scoring method `%s` for regression.' % scoring)

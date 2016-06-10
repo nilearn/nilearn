@@ -40,7 +40,6 @@ condition_mask_test = np.logical_and(condition_mask, labels['chunks'] > 6)
 # index_img to do the split easily
 from nilearn.image import index_img
 
-from nilearn.image import index_img
 func_filenames = data_files.func[0]
 X_train = index_img(func_filenames, condition_mask_train)
 X_test = index_img(func_filenames, condition_mask_test)

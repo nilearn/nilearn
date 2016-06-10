@@ -4,7 +4,7 @@ import warnings
 import os
 import numpy as np
 import nibabel
-from sklearn.svm import LinearSVC, LinearSVR
+from sklearn.svm import LinearSVC, SVR
 from sklearn.linear_model import (LogisticRegression, RidgeClassifier,
                                   Ridge)
 from sklearn.base import BaseEstimator
@@ -12,6 +12,7 @@ from sklearn.datasets import load_iris
 from sklearn.metrics import accuracy_score
 
 from nilearn.input_data import NiftiMasker
+from nilearn.decoding.tests.test_same_api import to_niimgs
 # from nilearn.image import index_img
 from nilearn._utils.testing import assert_warns
 from nilearn.decoding.decoder import (Decoder, MNI152_BRAIN_VOLUME,
@@ -22,14 +23,8 @@ from nilearn.decoding.decoder import (Decoder, MNI152_BRAIN_VOLUME,
                                       _check_feature_screening,
                                       _get_mask_volume)
 
-
-
 mni152_brain_mask = (
     "/usr/share/fsl/data/standard/MNI152_T1_1mm_brain_mask.nii.gz")
-
-# Data used in almost all tests
-# from .test_same_api import to_niimgs
-from nilearn.decoding.tests.test_same_api import to_niimgs
 
 
 def test_decoder_score():
@@ -51,11 +46,9 @@ def test_decoder_score():
             gnc.fit(X_, y)
             accuracy = gnc.score(X_, y)
             assert_equal(accuracy, accuracy_score(y, gnc.predict(X_)))
-
     # X_test = index_img(X_, range(100))
     # assert_raises(ValueError, gnc.fit, X_test, y)
     # assert_raises(NotFittedError, gnc.fit, X_, y[:-2])
-
 
 
 def test_check_masking():
@@ -99,7 +92,7 @@ y_multiclass = np.hstack([[0] * 35, [1] * 30, [2] * 35])
 
 
 ridge = Ridge()
-svr = LinearSVR()
+svr = SVR(kernel='linear')
 
 svc = LinearSVC()
 logistic_l1 = LogisticRegression(penalty='l1')
@@ -216,7 +209,8 @@ def test_feature_screening():
                     BaseEstimator)
             else:
                 assert_warns(UserWarning, _check_feature_screening,
-                    screening_percentile, MNI152_BRAIN_VOLUME * 2, is_classif)
+                             screening_percentile, MNI152_BRAIN_VOLUME * 2,
+                             is_classif)
 
 
 def test_get_mask_volume():
@@ -226,8 +220,3 @@ def test_get_mask_volume():
     else:
         warnings.warn("Couldn't find %s (for testing)" % (
             mni152_brain_mask))
-
-
-if __name__ == '__main__':
-    test_decoder_score()
-
