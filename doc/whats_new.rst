@@ -13,7 +13,7 @@ New features
       :func:`nilearn.datasets.load_mni152_brain_mask`
 
     - A function to load brain grey matter mask image,
-      :func:`nilearn.datasets.fetch_brain_gm_mask`
+      :func:`nilearn.datasets.fetch_icbm152_brain_gm_mask`
 
 0.2.4
 =====
