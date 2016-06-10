@@ -778,3 +778,54 @@ def math_img(formula, **imgs):
         raise
 
     return new_img_like(niimg, result, niimg.get_affine())
+
+
+def load_niimg(niimg, ensure_ndim=None, atleast_4d=False, dtype=None,
+               wildcards=True):
+    """Load a Niimg-like object from filenames or list of filenames.
+
+    Parameters
+    ----------
+    niimg: Niimg-like object
+        See http://nilearn.github.io/manipulating_images/manipulating_images.html#niimg.
+        If niimg is a string, consider it as a path to Nifti image and
+        call nibabel.load on it. The '~' symbol is expanded to the user home
+        folder.
+        If it is an object, check if get_data()
+        and get_affine() methods are present, raise TypeError otherwise.
+
+    ensure_ndim: integer {3, 4}, optional
+        Indicate the dimensionality of the expected niimg. An
+        error is raised if the niimg is of another dimensionality.
+
+    atleast_4d: boolean, optional
+        Indicates if a 3d image should be turned into a single-scan 4d niimg.
+
+    dtype: {dtype, "auto"}
+        Data type toward which the data should be converted. If "auto", the
+        data will be converted to int32 if dtype is discrete and float32 if it
+        is continuous.
+
+    wildcards: boolean, optional
+        Use niimg as a regular expression to get a list of matching input
+        filenames.
+        If multiple files match, the returned list is sorted using an ascending
+        order.
+        If no file matches the regular expression, a ValueError exception is
+        raised.
+
+    Returns
+    -------
+    result: 3D/4D Niimg-like object
+        Result can be nibabel.Nifti1Image or the input, as-is. It is guaranteed
+        that the returned object has get_data() and get_affine() methods.
+
+    Notes
+    -----
+    In nilearn, special care has been taken to make image manipulation easy.
+    This method is a kind of pre-requisite for any data processing method in
+    nilearn because it checks if data have a correct format and loads them if
+    necessary.
+    """
+    return check_niimg(niimg, ensure_ndim=ensure_ndim, atleast_4d=atleast_4d,
+                       dtype=dtype, wildcards=wildcards)
