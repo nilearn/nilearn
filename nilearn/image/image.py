@@ -778,3 +778,123 @@ def math_img(formula, **imgs):
         raise
 
     return new_img_like(niimg, result, niimg.get_affine())
+
+
+def clean_img(imgs, sessions=None, detrend=True, standardize=True,
+              confounds=None, low_pass=None, high_pass=None, t_r=2.5):
+    """Improve SNR on masked fMRI signals.
+
+    This function can do several things on the input signals, in
+    the following order:
+
+    - detrend
+    - standardize
+    - remove confounds
+    - low- and high-pass filter
+
+    Low-pass filtering improves specificity.
+
+    High-pass filtering should be kept small, to keep some
+    sensitivity.
+
+    Filtering is only meaningful on evenly-sampled signals.
+
+    .. versionaddded:: 0.2.5
+
+    Parameters
+    ==========
+    imgs: Niimg-like object
+         See http://nilearn.github.io/manipulating_images/manipulating_images.html#niimg.
+         4D image. The signals in the last dimension are filtered.
+
+    sessions : numpy array, optional
+        Add a session level to the cleaning process. Each session will be
+        cleaned independently. Must be a 1D array of n_samples elements.
+
+    detrend: bool
+        If detrending should be applied on timeseries (before
+        confound removal)
+
+    standardize: bool
+        If True, returned signals are set to unit variance.
+
+    confounds: numpy.ndarray, str or list of
+        Confounds timeseries. Shape must be
+        (instant number, confound number), or just (instant number,)
+        The number of time instants in signals and confounds must be
+        identical (i.e. signals.shape[0] == confounds.shape[0]).
+        If a string is provided, it is assumed to be the name of a csv file
+        containing signals as columns, with an optional one-line header.
+        If a list is provided, all confounds are removed from the input
+        signal, as if all were in the same array.
+
+    low_pass, high_pass: float
+        Respectively low and high cutoff frequencies, in Hertz.
+
+    t_r: float, optional
+        Repetition time, in second (sampling period).
+
+    Returns
+    =======
+    cleaned_img: Niimg-like object
+        Input images, cleaned. Same shape as `imgs`.
+
+    Notes
+    =====
+    Confounds removal is based on a projection on the orthogonal
+    of the signal space. See `Friston, K. J., A. P. Holmes,
+    K. J. Worsley, J.-P. Poline, C. D. Frith, et R. S. J. Frackowiak.
+    "Statistical Parametric Maps in Functional Imaging: A General
+    Linear Approach". Human Brain Mapping 2, no 4 (1994): 189-210.
+    <http://dx.doi.org/10.1002/hbm.460020402>`_
+
+    See Also
+    ========
+        nilearn.signal.clean
+    """
+    # Avoid circular import
+    from .image import new_img_like
+
+    imgs_ = check_niimg_4d(imgs)
+    data = signal.clean(
+        imgs_.get_data().reshape(-1, imgs.shape[-1]).T, sessions=sessions,
+        detrend=detrend, standardize=standardize, confounds=confounds,
+        low_pass=low_pass, high_pass=high_pass, t_r=2.5).T.reshape(imgs.shape)
+    return new_img_like(imgs, data)
+
+
+def load_niimg(img, wildcards=True, dtype=None):
+    """Load a Niimg-like object from filenames or list of filenames.
+
+    .. versionaddded:: 0.2.5
+
+    Parameters
+    ----------
+    img: Niimg-like object
+        See http://nilearn.github.io/manipulating_images/manipulating_images.html#niimg.
+        If niimg is a string, consider it as a path to Nifti image and
+        call nibabel.load on it. The '~' symbol is expanded to the user home
+        folder.
+        If it is an object, check if get_data()
+        and get_affine() methods are present, raise TypeError otherwise.
+
+    wildcards: bool, optional
+        Use niimg as a regular expression to get a list of matching input
+        filenames.
+        If multiple files match, the returned list is sorted using an ascending
+        order.
+        If no file matches the regular expression, a ValueError exception is
+        raised.
+
+    dtype: {dtype, "auto"}
+        Data type toward which the data should be converted. If "auto", the
+        data will be converted to int32 if dtype is discrete and float32 if it
+        is continuous.
+
+    Returns
+    -------
+    result: 3D/4D Niimg-like object
+        Result can be nibabel.Nifti1Image or the input, as-is. It is guaranteed
+        that the returned object has get_data() and get_affine() methods.
+    """
+    return check_niimg(img, wildcards=wildcards, dtype=dtype)

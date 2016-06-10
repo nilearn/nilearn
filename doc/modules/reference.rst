@@ -146,14 +146,16 @@ uses.
    :toctree: generated/
    :template: function.rst
 
-   crop_img
+   clean_img
    concat_imgs
    copy_img
+   crop_img
+   high_variance_confounds
    index_img
    iter_img
-   high_variance_confounds
-   mean_img
+   load_img
    math_img
+   mean_img
    new_img_like
    resample_img
    resample_to_img

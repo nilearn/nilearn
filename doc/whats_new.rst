@@ -15,6 +15,12 @@ New features
     - A function to load brain grey matter mask image,
       :func:`nilearn.datasets.fetch_icbm152_brain_gm_mask`
 
+    - New function :func:`nilearn.image.load_img` loads data from a filename or a
+      list of filenames.
+
+    - New function :func:`nilearn.image.clean_img` applies the cleaning function
+      :func:`nilearn.signal.clean` on all voxels.
+
 0.2.4
 =====
 

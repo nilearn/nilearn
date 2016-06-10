@@ -18,6 +18,7 @@ from distutils.version import LooseVersion
 
 from ._utils.compat import _basestring
 from ._utils.numpy_conversions import csv_to_array
+from ._utils import check_niimg_4d
 
 NP_VERSION = distutils.version.LooseVersion(np.version.short_version).version
 
@@ -409,6 +410,10 @@ def clean(signals, sessions=None, detrend=True, standardize=True,
        "Statistical Parametric Maps in Functional Imaging: A General
        Linear Approach". Human Brain Mapping 2, no 4 (1994): 189-210.
        <http://dx.doi.org/10.1002/hbm.460020402>`_
+
+       See Also
+       ========
+           nilearn.image.clean_img
     """
 
     if not isinstance(confounds,
@@ -510,3 +515,5 @@ def clean(signals, sessions=None, detrend=True, standardize=True,
         signals *= np.sqrt(signals.shape[0])  # for unit variance
 
     return signals
+
+

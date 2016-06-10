@@ -9,6 +9,7 @@ import os.path
 import numpy as np
 from nose.tools import assert_true, assert_false, assert_raises
 from sklearn.utils.testing import assert_less
+import nibabel
 
 # Use nisignal here to avoid name collisions (using nilearn.signal is
 # not possible)
@@ -367,6 +368,7 @@ def test_clean_confounds():
 
 
 def test_high_variance_confounds():
+
     # C and F order might take different paths in the function. Check that the
     # result is identical.
     n_features = 1001

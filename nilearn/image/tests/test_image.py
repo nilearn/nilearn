@@ -13,6 +13,7 @@ import numpy as np
 from numpy.testing import assert_array_equal, assert_allclose
 from nilearn._utils.testing import assert_raises_regex
 
+from nilearn import signal
 from nilearn.image import image
 from nilearn.image import resampling
 from nilearn.image import concat_imgs
@@ -496,3 +497,20 @@ def test_math_img():
             assert_array_equal(result.get_affine(),
                                expected_result.get_affine())
             assert_equal(result.shape, expected_result.shape)
+
+
+def test_clean_img():
+
+    rng = np.random.RandomState(0)
+
+    data = rng.randn(10, 10, 10, 100) + .5
+    data_flat = data.T.reshape(100, -1)
+    data_img = nibabel.Nifti1Image(data, np.eye(4))
+
+    data_img_ = image.clean_img(
+        data_img, detrend=True, standardize=False, low_pass=0.1)
+    data_flat_ = signal.clean(
+        data_flat, detrend=True, standardize=False, low_pass=0.1)
+
+    np.testing.assert_almost_equal(data_img_.get_data().T.reshape(100, -1),
+                                   data_flat_)
