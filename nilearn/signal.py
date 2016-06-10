@@ -413,7 +413,7 @@ def clean(signals, sessions=None, detrend=True, standardize=True,
 
        See Also
        ========
-           clean_img
+           nilearn.image.clean_img
     """
 
     if not isinstance(confounds,
@@ -517,82 +517,3 @@ def clean(signals, sessions=None, detrend=True, standardize=True,
     return signals
 
 
-def clean_img(niimg, sessions=None, detrend=True, standardize=True,
-          confounds=None, low_pass=None, high_pass=None, t_r=2.5):
-    """Improve SNR on masked fMRI signals.
-
-       This function can do several things on the input signals, in
-       the following order:
-
-       - detrend
-       - standardize
-       - remove confounds
-       - low- and high-pass filter
-
-       Low-pass filtering improves specificity.
-
-       High-pass filtering should be kept small, to keep some
-       sensitivity.
-
-       Filtering is only meaningful on evenly-sampled signals.
-
-       Parameters
-       ==========
-       imgs: Niimg-like object
-            See http://nilearn.github.io/manipulating_images/manipulating_images.html#niimg.
-            4D image. The signals in the last dimension are filtered.
-
-       sessions : numpy array, optional
-           Add a session level to the cleaning process. Each session will be
-           cleaned independently. Must be a 1D array of n_samples elements.
-
-       confounds: numpy.ndarray, str or list of
-           Confounds timeseries. Shape must be
-           (instant number, confound number), or just (instant number,)
-           The number of time instants in signals and confounds must be
-           identical (i.e. signals.shape[0] == confounds.shape[0]).
-           If a string is provided, it is assumed to be the name of a csv file
-           containing signals as columns, with an optional one-line header.
-           If a list is provided, all confounds are removed from the input
-           signal, as if all were in the same array.
-
-       t_r: float
-           Repetition time, in second (sampling period).
-
-       low_pass, high_pass: float
-           Respectively low and high cutoff frequencies, in Hertz.
-
-       detrend: bool
-           If detrending should be applied on timeseries (before
-           confound removal)
-
-       standardize: bool
-           If True, returned signals are set to unit variance.
-
-       Returns
-       =======
-       cleaned_signals: numpy.ndarray
-           Input signals, cleaned. Same shape as `signals`.
-
-       Notes
-       =====
-       Confounds removal is based on a projection on the orthogonal
-       of the signal space. See `Friston, K. J., A. P. Holmes,
-       K. J. Worsley, J.-P. Poline, C. D. Frith, et R. S. J. Frackowiak.
-       "Statistical Parametric Maps in Functional Imaging: A General
-       Linear Approach". Human Brain Mapping 2, no 4 (1994): 189-210.
-       <http://dx.doi.org/10.1002/hbm.460020402>`_
-
-       See Also
-       ========
-           clean
-    """
-    # Avoir circular import
-    from .image import new_img_like
-
-    img = check_niimg_4d(niimg)
-    data = clean(img.get_data().reshape(-1, img.shape[-1]).T,
-                 sessions=sessions, detrend=detrend, standardize=standardize,
-                 confounds=confounds, low_pass=low_pass, high_pass=high_pass,
-                 t_r=2.5).T.reshape(img.shape)
-    return new_img_like(img, data)
