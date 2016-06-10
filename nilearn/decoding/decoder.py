@@ -226,7 +226,7 @@ class Decoder(BaseEstimator):
         for k in range(len(cv_pred)):
             # if is classification this corresponds to y_prob
             y_pred = np.vstack([cv_pred[k][c] for c in classes]).T
-            y_true = cv_true[k][cv_true[k].keys()[0]]
+            y_true = cv_true[k][list(cv_true[k].keys())[0]]
 
             if self.is_classification_:
                 y_pred = self.classes_[np.argmax(y_pred, axis=1)]
@@ -615,7 +615,7 @@ def _check_scorer(estimator, scoring, pos_label, y):
     Make use of pos_label when classification is binary
     and scoring method requires it.
     """
-    if scoring not in SCORINGS.keys():
+    if scoring not in list(SCORINGS.keys()):
         scoring = None
         warnings.warn("Scoring was not recogniced, it's going"
                       "be setted according to the estimation problem")

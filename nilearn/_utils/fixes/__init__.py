@@ -24,6 +24,14 @@ except ImportError:
     # Changed in 0.15
     from sklearn.utils import check_array as atleast2d_or_csr
 
+
+try:
+    # scikit-learn >= 0.16
+    from sklearn.utils.validation import check_arrays as check_array
+except ImportError:
+    from sklearn.utils.validation import check_array
+
+
 # roc_auc_score
 try:
     from sklearn.metrics import roc_auc_score
