@@ -266,7 +266,7 @@ def test_first_level_model_glm_computation():
         results1 = model.results_[0]
         labels2, results2 = run_glm(model.masker_.transform(func_img),
                                     model.design_matrices_[0], 'ar1')
-        assert_array_equal(labels1, labels2)
+        assert_almost_equal(labels1, labels2)
         assert_equal(len(results1), len(results2))
 
 
