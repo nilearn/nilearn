@@ -3,7 +3,7 @@ from __future__ import with_statement
 import numpy as np
 
 from nistats.first_level_model import run_glm
-from nistats.contrasts import compute_contrast
+from nistats.contrasts import compute_contrast, _fixed_effect_contrast
 
 from numpy.testing import assert_almost_equal
 
@@ -49,7 +49,7 @@ def test_fixed_effect_contrast():
     X, Y = np.random.randn(p, q), np.random.randn(p, n)
     lab, res = run_glm(Y, X, 'ols')
     c1, c2 = np.eye(q)[0], np.eye(q)[1]
-    con = compute_contrast([lab, lab], [res, res], [c1, c2])
+    con = _fixed_effect_contrast([lab, lab], [res, res], [c1, c2])
     z_vals = con.z_score()
     assert_almost_equal(z_vals.mean(), 0, 0)
     assert_almost_equal(z_vals.std(), 1, 0)

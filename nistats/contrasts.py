@@ -67,7 +67,7 @@ def compute_contrast(labels, regression_result, con_val, contrast_type=None):
                     contrast_type=contrast_type)
 
 
-def _fixed_effect_contrast(labels, results, con_vals, stat_type):
+def _fixed_effect_contrast(labels, results, con_vals, contrast_type=None):
     """Computes the summary contrast assuming fixed effects.
 
     Adds the same contrast applied to all labels and results lists.
@@ -77,8 +77,7 @@ def _fixed_effect_contrast(labels, results, con_vals, stat_type):
         if np.all(con_val == 0):
             warn('Contrast for session %d is null' % i)
             continue
-        contrast_ = compute_contrast(lab, res, con_val,
-                                     stat_type)
+        contrast_ = compute_contrast(lab, res, con_val, contrast_type)
         if contrast is None:
             contrast = contrast_
         else:
