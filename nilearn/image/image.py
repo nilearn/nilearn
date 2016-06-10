@@ -809,6 +809,13 @@ def clean_img(imgs, sessions=None, detrend=True, standardize=True,
            Add a session level to the cleaning process. Each session will be
            cleaned independently. Must be a 1D array of n_samples elements.
 
+       detrend: bool
+           If detrending should be applied on timeseries (before
+           confound removal)
+
+       standardize: bool
+           If True, returned signals are set to unit variance.
+
        confounds: numpy.ndarray, str or list of
            Confounds timeseries. Shape must be
            (instant number, confound number), or just (instant number,)
@@ -819,18 +826,11 @@ def clean_img(imgs, sessions=None, detrend=True, standardize=True,
            If a list is provided, all confounds are removed from the input
            signal, as if all were in the same array.
 
-       t_r: float, optional
-           Repetition time, in second (sampling period).
-
        low_pass, high_pass: float
            Respectively low and high cutoff frequencies, in Hertz.
 
-       detrend: bool
-           If detrending should be applied on timeseries (before
-           confound removal)
-
-       standardize: bool
-           If True, returned signals are set to unit variance.
+       t_r: float, optional
+           Repetition time, in second (sampling period).
 
        Returns
        =======
