@@ -3,7 +3,11 @@
 import numpy as np
 import warnings
 
+from sklearn.utils.validation import check_consistent_length
+
+
 from . import atleast2d_or_csr
+
 
 
 class NotFittedError(ValueError, AttributeError):
@@ -140,19 +144,19 @@ def column_or_1d(y, warn=False):
     raise ValueError("bad input shape {0}".format(shape))
 
 
-def check_consistent_length(*arrays):
-    """Check that all arrays have consistent first dimensions.
-    Checks whether all objects in arrays have the same shape or length.
-    Parameters
-    ----------
-    *arrays : list or tuple of input objects.
-        Objects that will be checked for consistent length.
-    """
+# def check_consistent_length(*arrays):
+#     """Check that all arrays have consistent first dimensions.
+#     Checks whether all objects in arrays have the same shape or length.
+#     Parameters
+#     ----------
+#     *arrays : list or tuple of input objects.
+#         Objects that will be checked for consistent length.
+#     """
 
-    uniques = np.unique([_num_samples(X) for X in arrays if X is not None])
-    if len(uniques) > 1:
-        raise ValueError("Found arrays with inconsistent numbers of samples: "
-                         "%s" % str(uniques))
+#     uniques = np.unique([_num_samples(X) for X in arrays if X is not None])
+#     if len(uniques) > 1:
+#         raise ValueError("Found arrays with inconsistent numbers of samples: "
+#                          "%s" % str(uniques))
 
 
 def _assert_all_finite(X):
@@ -167,25 +171,25 @@ def _assert_all_finite(X):
                          " or a value too large for %r." % X.dtype)
 
 
-def _num_samples(x):
-    """Return number of samples in array-like x."""
-    if hasattr(x, 'fit'):
-        # Don't get num_samples from an ensembles length!
-        raise TypeError('Expected sequence or array-like, got '
-                        'estimator %s' % x)
-    if not hasattr(x, '__len__') and not hasattr(x, 'shape'):
-        if hasattr(x, '__array__'):
-            x = np.asarray(x)
-        else:
-            raise TypeError("Expected sequence or array-like, got %s" %
-                            type(x))
-    if hasattr(x, 'shape'):
-        if len(x.shape) == 0:
-            raise TypeError("Singleton array %r cannot be considered"
-                            " a valid collection." % x)
-        return x.shape[0]
-    else:
-        return len(x)
+# def _num_samples(x):
+#     """Return number of samples in array-like x."""
+#     if hasattr(x, 'fit'):
+#         # Don't get num_samples from an ensembles length!
+#         raise TypeError('Expected sequence or array-like, got '
+#                         'estimator %s' % x)
+#     if not hasattr(x, '__len__') and not hasattr(x, 'shape'):
+#         if hasattr(x, '__array__'):
+#             x = np.asarray(x)
+#         else:
+#             raise TypeError("Expected sequence or array-like, got %s" %
+#                             type(x))
+#     if hasattr(x, 'shape'):
+#         if len(x.shape) == 0:
+#             raise TypeError("Singleton array %r cannot be considered"
+#                             " a valid collection." % x)
+#         return x.shape[0]
+#     else:
+#         return len(x)
 
 
 def check_is_fitted(estimator, attributes, msg=None, all_or_any=all):

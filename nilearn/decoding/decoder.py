@@ -64,8 +64,6 @@ SCORINGS = dict(r2=r2_score,
                 precision_score=precision_score,
                 f1_score=f1_score)
 
-# REQUIRES_POS_LABEL = ['f1_score', 'precision_score', 'recall_score']
-
 
 class Decoder(BaseEstimator):
     """A wrapper for popular classification/regression strategies for
@@ -317,6 +315,7 @@ class Decoder(BaseEstimator):
         # Load data and target
         X = self.masker_.transform(niimgs)
         X = atleast2d_or_csr(X)
+
         X, y = check_X_y(X, y, ['csr', 'csc', 'coo'], dtype=np.float,
                          multi_output=True, y_numeric=True)
 
@@ -371,7 +370,6 @@ class Decoder(BaseEstimator):
 
         check_is_fitted(self, "coef_")
         check_is_fitted(self, "masker_")
-        # check_is_fitted(self, "masker_")
 
         decision_values = self.decision_function(niimgs)
 

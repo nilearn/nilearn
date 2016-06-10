@@ -111,11 +111,11 @@ def test_check_param_grid():
 
     for _, (regressor, param) in regressors.items():
         param_grid = _check_param_grid(regressor, X, y_regression, None)
-        assert_equal(param_grid.keys()[0], param)
+        assert_equal(list(param_grid.keys())[0], param)
 
     for _, (classifier, param) in classifiers.items():
         param_grid = _check_param_grid(classifier, X, y_classif, None)
-        assert_equal(param_grid.keys()[0], param)
+        assert_equal(list(param_grid.keys())[0], param)
 
 
 def test_check_estimator():
