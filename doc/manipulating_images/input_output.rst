@@ -28,7 +28,7 @@ All Nilearn functions accept file names as arguments::
 Nilearn can operate on either file names or `NiftiImage objects
 <http://nipy.org/nibabel/nibabel_images.html>`_. The later represent the
 data loaded in memory. In the example above, the
-function :func:`smooth_img` returns a NiftiImage object, which can then
+function :func:`smooth_img` returns a Nifti1Image object, which can then
 be readily passed to other nilearn functions.
 
 In nilearn, we often use the term *"niimg"* as abbreviation that denotes
@@ -52,12 +52,12 @@ subjects.
 File name matching: "globbing" and user path expansion
 ------------------------------------------------------
 
-You can specific files with *wildcard* matching patterns (as in Unix
+You can specify files with *wildcard* matching patterns (as in Unix
 shell):
 
  * **Matching multiple files**: suppose the dataset folder contains
-   subject_01.nii to subject_03.nii ``dataset/subject_*.nii`` is a glob
-   expression matching all filenames::
+   subject_01.nii, subject_03.nii, and subject_03.nii; 
+   ``dataset/subject_*.nii`` is a glob expression matching all filenames::
 
     >>> # Example with a smoothing process:
     >>> from nilearn.image import smooth_img
@@ -83,7 +83,7 @@ shell):
     .. warning::
 
         Unlike nilearn's path expansion, the result of :func:`glob.glob` is
-        not sorted and depending on the computer you are running they
+        not sorted and, depending on the computer you are running, they
         might not be in alphabetic order. We advise you to rely on
         nilearn's path expansion.
 
@@ -210,8 +210,8 @@ objects":
 **Niimg:** A Niimg-like object can be one of the following:
 
   * A string with a file path to a Nifti or Analyse image
-  * Any object exposing ``get_data()`` and ``get_affine()`` methods, typically
-    a ``Nifti1Image`` from nibabel_.
+  * An ``SpatialImage`` from nibabel, ie an object exposing ``get_data()``
+    and ``get_affine()`` methods, typically a ``Nifti1Image`` from nibabel_.
 
 **Niimg-4D:** Similarly, some functions require 4D Nifti-like
 data, which we call Niimgs or Niimg-4D. Accepted input arguments are:

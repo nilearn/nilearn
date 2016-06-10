@@ -53,10 +53,10 @@ image.
 
 .. image:: ../auto_examples/04_manipulating_images/images/sphx_glr_plot_resample_to_template_001.png
     :target: ../auto_examples/04_manipulating_images/plot_resample_to_template.html
-    :scale: 55%
+    :width: 45%
 .. image:: ../auto_examples/04_manipulating_images/images/sphx_glr_plot_resample_to_template_002.png
     :target: ../auto_examples/04_manipulating_images/plot_resample_to_template.html
-    :scale: 55%
+    :width: 45%
 
 This can be useful to display two images as overlays in some
 viewers (e.g., FSLView) that require all images to be on the same grid.
@@ -82,13 +82,13 @@ of the transformation matrix (i.e., affine).
 
 .. image:: ../auto_examples/04_manipulating_images/images/sphx_glr_plot_affine_transformation_002.png
     :target: ../auto_examples/04_manipulating_images/plot_affine_transformation.html
-    :scale: 33%
+    :width: 30%
 .. image:: ../auto_examples/04_manipulating_images/images/sphx_glr_plot_affine_transformation_004.png
     :target: ../auto_examples/04_manipulating_images/plot_affine_transformation.html
-    :scale: 33%
+    :width: 30%
 .. image:: ../auto_examples/04_manipulating_images/images/sphx_glr_plot_affine_transformation_003.png
     :target: ../auto_examples/04_manipulating_images/plot_affine_transformation.html
-    :scale: 33%
+    :width: 30%
 
 
 .. topic:: **Special case: resampling to a given voxel size**
@@ -215,9 +215,9 @@ ROI mask:
    ROIs into two separate regions (ROIs), one in each hemisphere. The
    function :func:`scipy.ndimage.label` from the scipy library is used.
 
- * **Saving the result**: The final voxel mask is saved using
-   **nibabel.save** for further inspection with a software such as
-   FSLView.
+ * **Saving the result**: The final voxel mask is saved to disk using
+   the 'to_filename' method of the image object.
+   (or **nibabel.save**).
 
 .. _nibabel: http://nipy.sourceforge.net/nibabel/
 
