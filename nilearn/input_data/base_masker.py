@@ -98,7 +98,7 @@ def filter_and_extract(imgs, extraction_function,
                                 memory_level=memory_level)(imgs)
 
     # Temporal
-    # ========
+    # --------
     # Detrending (optional)
     # Filtering
     # Confounds removing (from csv file or numpy array)

@@ -30,7 +30,7 @@ def _edge_detect(image, high_threshold=.75, low_threshold=.4):
     """ Edge detection for 2D images based on Canny filtering.
 
         Parameters
-        ==========
+        ----------
         image: 2D array
             The image on which edge detection is applied
         high_threshold: float, optional
@@ -41,14 +41,14 @@ def _edge_detect(image, high_threshold=.75, low_threshold=.4):
             thresholding: decrease this to extract wider edges
 
         Returns
-        ========
+        --------
         grad_mag: 2D array of floats
             The magnitude of the gradient
         edge_mask: 2D array of booleans
             A mask of where have edges been detected
 
         Notes
-        ======
+        ------
         This function is based on a Canny filter, however it has been
         taylored to visualization purposes on brain images: don't use it
         in the general case.
@@ -106,12 +106,12 @@ def _edge_map(image):
     """ Return a maps of edges suitable for visualization.
 
         Parameters
-        ==========
+        ----------
         image: 2D array
             The image that the edges are extracted from.
 
         Returns
-        ========
+        --------
         edge_mask: 2D masked array
             A mask of the edge as a masked array with parts without
             edges masked and the large extents detected with lower

@@ -38,7 +38,7 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
     signals from large-scale networks obtained by prior PCA or ICA.
 
     Parameters
-    ==========
+    ----------
     maps_img: 4D niimg-like object
         See http://nilearn.github.io/manipulating_images/manipulating_images.html#niimg.
         Set of continuous maps. One representative time course per map is
@@ -96,13 +96,13 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
         Indicate the level of verbosity. By default, nothing is printed
 
     Notes
-    =====
+    -----
     With the default value for resampling_target, every 3D image processed by
     transform() will be resampled to the shape of maps_img. It may lead to a
     very large memory consumption if the voxel number in labels_img is large.
 
     See also
-    ========
+    --------
     nilearn.input_data.NiftiMasker
     nilearn.input_data.NiftiLabelsMasker
     """
@@ -322,13 +322,13 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
         Any mask given at initialization is taken into account.
 
         Parameters
-        ==========
+        ----------
         region_signals: 2D numpy.ndarray
             Signal for each region.
             shape: (number of scans, number of regions)
 
         Returns
-        =======
+        -------
         voxel_signals: nibabel.Nifti1Image
             Signal for each voxel. shape: that of maps.
         """

@@ -40,7 +40,7 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
     clustering.
 
     Parameters
-    ==========
+    ----------
     labels_img: Niimg-like object
         See http://nilearn.github.io/manipulating_images/manipulating_images.html#niimg.
         Region definitions, as one image of labels.
@@ -97,7 +97,7 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
         Indicate the level of verbosity. By default, nothing is printed
 
     See also
-    ========
+    --------
     nilearn.input_data.NiftiMasker
     """
     # memory and memory_level are used by CacheMixin.
@@ -268,13 +268,13 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
         Any mask given at initialization is taken into account.
 
         Parameters
-        ==========
+        ----------
         signals (2D numpy.ndarray)
             Signal for each region.
             shape: (number of scans, number of regions)
 
         Returns
-        =======
+        -------
         voxel_signals (Nifti1Image)
             Signal for each voxel
             shape: (number of scans, number of voxels)

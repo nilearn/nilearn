@@ -27,7 +27,7 @@ def _standardize(signals, detrend=False, normalize=True):
     """ Center and norm a given signal (time is along first axis)
 
     Parameters
-    ==========
+    ----------
     signals: numpy.ndarray
         Timeseries to standardize
 
@@ -39,7 +39,7 @@ def _standardize(signals, detrend=False, normalize=True):
         to unit energy (sum of squares).
 
     Returns
-    =======
+    -------
     std_signals: numpy.ndarray
         copy of signals, normalized.
     """
@@ -76,7 +76,7 @@ def _mean_of_squares(signals, n_batches=20):
     but uses a lot less memory.
 
     Parameters
-    ==========
+    ----------
     signals : numpy.ndarray, shape (n_samples, n_features)
         signal whose mean of squares must be computed.
 
@@ -108,7 +108,7 @@ def _detrend(signals, inplace=False, type="linear", n_batches=10):
     case and uses a lot less memory.
 
     Parameters
-    ==========
+    ----------
     signals : numpy.ndarray
         This parameter must be two-dimensional.
         Signals to detrend. A signal is a column.
@@ -127,12 +127,12 @@ def _detrend(signals, inplace=False, type="linear", n_batches=10):
         the value, the lower the memory consumption.
 
     Returns
-    =======
+    -------
     detrended_signals: numpy.ndarray
         Detrended signals. The shape is that of 'signals'.
 
     Notes
-    =====
+    -----
 
     If a signal of lenght 1 is given, it is returned unchanged.
 
@@ -140,7 +140,7 @@ def _detrend(signals, inplace=False, type="linear", n_batches=10):
     signals = as_float_array(signals, copy=not inplace)
     if signals.shape[0] == 1:
         warnings.warn('Detrending of 3D signal has been requested but '
-            'would lead to zero values. Skipping.')
+                      'would lead to zero values. Skipping.')
         return signals
 
     signals -= np.mean(signals, axis=0)
@@ -169,10 +169,11 @@ def _detrend(signals, inplace=False, type="linear", n_batches=10):
 def _check_wn(btype, freq, nyq):
     wn = freq / float(nyq)
     if wn > 1.:
-        warnings.warn('The frequency specified for the %s pass filter is '
-                'too high to be handled by a digital filter (superior to '
-                'nyquist frequency). It has been lowered to %.2f (nyquist '
-                'frequency).' % (btype, nyq))
+        warnings.warn(
+            'The frequency specified for the %s pass filter is '
+            'too high to be handled by a digital filter (superior to '
+            'nyquist frequency). It has been lowered to %.2f (nyquist '
+            'frequency).' % (btype, nyq))
         wn = 1.
     return wn
 
@@ -278,7 +279,7 @@ def high_variance_confounds(series, n_confounds=5, percentile=2.,
     variance.
 
     Parameters
-    ==========
+    ----------
     series: numpy.ndarray
         Timeseries. A timeseries is a column in the "series" array.
         shape (sample number, feature number)
@@ -295,12 +296,12 @@ def high_variance_confounds(series, n_confounds=5, percentile=2.,
         If True, detrend timeseries before processing.
 
     Returns
-    =======
+    -------
     v: numpy.ndarray
         highest variance confounds. Shape: (samples, n_confounds)
 
     Notes
-    ======
+    -----
     This method is related to what has been published in the literature
     as 'CompCor' (Behzadi NeuroImage 2007).
 
@@ -313,7 +314,7 @@ def high_variance_confounds(series, n_confounds=5, percentile=2.,
       highest singular values.
 
     See also
-    ========
+    --------
     nilearn.image.high_variance_confounds
     """
 
@@ -365,7 +366,7 @@ def clean(signals, sessions=None, detrend=True, standardize=True,
     Filtering is only meaningful on evenly-sampled signals.
 
     Parameters
-    ==========
+    ----------
     signals: numpy.ndarray
         Timeseries. Must have shape (instant number, features number).
         This array is not modified.
@@ -398,12 +399,12 @@ def clean(signals, sessions=None, detrend=True, standardize=True,
         If True, returned signals are set to unit variance.
 
     Returns
-    =======
+    -------
     cleaned_signals: numpy.ndarray
         Input signals, cleaned. Same shape as `signals`.
 
     Notes
-    =====
+    -----
     Confounds removal is based on a projection on the orthogonal
     of the signal space. See `Friston, K. J., A. P. Holmes,
     K. J. Worsley, J.-P. Poline, C. D. Frith, et R. S. J. Frackowiak.
@@ -412,7 +413,7 @@ def clean(signals, sessions=None, detrend=True, standardize=True,
     <http://dx.doi.org/10.1002/hbm.460020402>`_
 
     See Also
-    ========
+    --------
         nilearn.image.clean_img
     """
 
