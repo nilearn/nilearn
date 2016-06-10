@@ -33,6 +33,8 @@ def test_decoder_score():
     y = 2 * (y > 0) - 1
     X_, mask_img = to_niimgs(X, (2, 2, 2))
 
+    print X.shape, y.shape
+
     masker = NiftiMasker(mask_img=mask_img).fit()
 
     for estimator in ['svc', 'logistic_l2']:
@@ -153,6 +155,9 @@ class DummyDecoder(BaseEstimator):
         self.classes_ = ['baseline', 'cellphone']
 
     def fit(X, y):
+        pass
+
+    def predict(X):
         pass
 
 

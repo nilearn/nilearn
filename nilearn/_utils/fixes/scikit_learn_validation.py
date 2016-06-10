@@ -6,7 +6,6 @@ import warnings
 from . import check_array
 
 
-
 class NotFittedError(ValueError, AttributeError):
     """Exception class to raise if estimator is used before fitting
     This class inherits from both ValueError and AttributeError to help with
@@ -98,10 +97,11 @@ def check_X_y(X, y, accept_sparse=None, dtype="numeric", order=None,
     y_converted : object
         The converted and validated y.
     """
-    X = check_array(X, accept_sparse, dtype, order, copy,
-                    force_all_finite, ensure_2d, allow_nd,
-                    ensure_min_samples, ensure_min_features,
-                    warn_on_dtype, estimator)
+
+    X = check_array(X, accept_sparse, dtype=dtype, order=order, copy=copy,)
+                    # force_all_finite, ensure_2d, allow_nd,
+                    # ensure_min_samples, ensure_min_features,
+                    # warn_on_dtype, estimator)
     if multi_output:
         y = check_array(y, 'csr', force_all_finite=True, ensure_2d=False,
                         dtype=None)
