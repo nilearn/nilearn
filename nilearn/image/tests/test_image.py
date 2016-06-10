@@ -501,7 +501,9 @@ def test_math_img():
 
 def test_clean_img():
 
-    data = np.random.random((10, 10, 10, 100)) + .5
+    rng = np.random.RandomState(0)
+
+    data = rng.randn(10, 10, 10, 100) + .5
     data_flat = data.T.reshape(100, -1)
     data_img = nibabel.Nifti1Image(data, np.eye(4))
 
