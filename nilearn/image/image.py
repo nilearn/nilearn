@@ -863,7 +863,7 @@ def clean_img(imgs, sessions=None, detrend=True, standardize=True,
     return new_img_like(imgs, data)
 
 
-def load_niimg(img, wildcards=True, dtype=None):
+def load_img(img, wildcards=True, dtype=None):
     """Load a Niimg-like object from filenames or list of filenames.
 
     .. versionaddded:: 0.2.5
