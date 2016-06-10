@@ -14,7 +14,6 @@
 
 import sys
 import os
-import shutil
 import sphinx
 
 # If extensions (or modules to document with autodoc) are in another

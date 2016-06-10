@@ -99,19 +99,23 @@ gl.fit(np.concatenate(subject_time_series))
 atlas_imgs = image.iter_img(msdl_atlas_dataset.maps)
 atlas_region_coords = [plotting.find_xyz_cut_coords(img) for img in atlas_imgs]
 
-title = "GraphLasso"
-plotting.plot_connectome(-gl.precision_, atlas_region_coords,
-                         edge_threshold='90%',
-                         title="Sparse inverse covariance (GraphLasso)")
 plotting.plot_connectome(gl.covariance_,
                          atlas_region_coords, edge_threshold='90%',
-                         title="Covariance")
-plot_matrices(gl.covariance_, gl.precision_, title)
+                         title="Covariance",
+                         display_mode="lzr")
+plotting.plot_connectome(-gl.precision_, atlas_region_coords,
+                         edge_threshold='90%',
+                         title="Sparse inverse covariance (GraphLasso)",
+                         display_mode="lzr",
+                         edge_vmax=.5, edge_vmin=-.5)
+plot_matrices(gl.covariance_, gl.precision_, "GraphLasso")
 
 title = "GroupSparseCovariance"
 plotting.plot_connectome(-gsc.precisions_[..., 0],
                          atlas_region_coords, edge_threshold='90%',
-                         title=title)
+                         title=title,
+                         display_mode="lzr",
+                         edge_vmax=.5, edge_vmin=-.5)
 plot_matrices(gsc.covariances_[..., 0],
               gsc.precisions_[..., 0], title)
 

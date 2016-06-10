@@ -60,9 +60,8 @@ plotting.plot_glass_brain(localizer_tmap_filename,
                           black_bg=True, display_mode='lzr', threshold=3)
 
 ###############################################################################
-title = 'plot_glass_brain with display_mode="lyrz"'
 plotting.plot_glass_brain(localizer_tmap_filename, threshold=0, colorbar=True,
-                          title='plot_glass_brain with display_mode="lyzr"',
+                          title='plot_glass_brain with display_mode="lyrz"',
                           plot_abs=False, display_mode='lyrz')
 
 plotting.show()
