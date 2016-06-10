@@ -216,7 +216,7 @@ ROI mask:
    function :func:`scipy.ndimage.label` from the scipy library is used.
 
  * **Saving the result**: The final voxel mask is saved using
-   :func:`nibabel.save` for further inspection with a software such as
+   **nibabel.save** for further inspection with a software such as
    FSLView.
 
 .. _nibabel: http://nipy.sourceforge.net/nibabel/
