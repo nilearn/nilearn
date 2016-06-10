@@ -64,7 +64,7 @@ SCORINGS = dict(r2=r2_score,
                 precision_score=precision_score,
                 f1_score=f1_score)
 
-REQUIRES_POS_LABEL = [f1_score, precision_score, recall_score]
+# REQUIRES_POS_LABEL = ['f1_score', 'precision_score', 'recall_score']
 
 
 class Decoder(BaseEstimator):
@@ -310,7 +310,7 @@ class Decoder(BaseEstimator):
         if not hasattr(self.masker_, 'mask_img_'):
             self.masker_.fit(niimgs)
         else:
-            if isinstance(self.masker_, _basestring):
+            if isinstance(self.masker_.mask_img, _basestring):
                 self.masker_.fit()
         self.mask_img_ = self.masker_.mask_img_
         mask_volume = _get_mask_volume(self.mask_img_)
@@ -372,6 +372,7 @@ class Decoder(BaseEstimator):
 
         check_is_fitted(self, "coef_")
         check_is_fitted(self, "masker_")
+        # check_is_fitted(self, "masker_")
 
         decision_values = self.decision_function(niimgs)
 
@@ -384,11 +385,13 @@ class Decoder(BaseEstimator):
     def score(self, niimgs, y):
 
         X = self.masker_.transform(niimgs)
-        X = atleast2d_or_csr(X)
         X, y = check_X_y(X, y, ['csr', 'csc', 'coo'], dtype=np.float,
                          multi_output=True, y_numeric=True)
+        #                  multi_output=True, y_numeric=True)
 
-        scorer, _ = _check_scorer(self, self.scoring_, self.pos_label, y)
+                "%s" % str(uniques))
+
+        scorer, _, _ = _check_scorer(self, self.scoring_, self.pos_label, y)
         return scorer(self, niimgs, y)
 
 
@@ -490,7 +493,7 @@ def _check_masking(mask, smoothing_fwhm, target_affine, target_shape,
             masker = clone(mask)
             if hasattr(mask, 'mask_img_'):
                 mask_img = mask.mask_img_
-                masker.set_param(mask_img=mask_img)
+                masker.set_params(mask_img=mask_img)
                 masker.fit()
         except TypeError as e:
             # Workaround for a joblib bug: in joblib 0.6, a Memory object
@@ -590,7 +593,6 @@ def _check_estimator(estimator, y, pos_label):
     if is_classification_ != target_type:
         warnings.warn(
             'Target seems to be for a %s problem but '
-            'Target seems to be for a %s problem but '
             'chosen estimator is for a %s problem.' % (
                 'classification' if target_type else 'regression',
                 'classification' if is_classification_ else 'regression'))
@@ -630,8 +632,6 @@ def _check_scorer(estimator, scoring, pos_label, y):
     elif scoring is None and not estimator.is_classification_:
         scoring = 'r2'
 
-    # Check that the passed scoring does not raise an Exception
-    scorer = check_scoring(estimator, scoring)
     # Getting the scoring function
     score_func = SCORINGS[scoring]
 
@@ -640,6 +640,13 @@ def _check_scorer(estimator, scoring, pos_label, y):
     is_mse = score_func is mean_squared_error
     is_mae = score_func is mean_absolute_error
     is_regression_score = is_r2 or is_mae or is_mse
+
+    is_accuracy = score_func is accuracy_score
+    is_aprecision = score_func is average_precision_score
+    is_recall = score_func is recall_score
+    is_pressision = score_func is precision_score
+    is_f1 = score_func is f1_score
+
 
     if not estimator.is_classification_ and not is_regression_score:
         raise ValueError('Wrong scoring method `%s` for regression.' % scoring)
@@ -650,7 +657,9 @@ def _check_scorer(estimator, scoring, pos_label, y):
     # Check that pos_label is correctly set if needed
     is_binary = estimator.is_binary_
     y_kind = np.array(y).dtype.kind
-    if is_binary and y_kind == 'S' and score_func in REQUIRES_POS_LABEL:
+
+    # Check classifires that require pos label
+    if is_binary and y_kind == 'S' and (is_f1 or is_pressision or is_recall):
 
         if pos_label is None:
             raise ValueError('Decoder must be given a pos_label in '
@@ -662,7 +671,10 @@ def _check_scorer(estimator, scoring, pos_label, y):
                 'which contains the classes `%s` and `%s`.' % (
                     pos_label, estimator.classes_[0], estimator.classes_[1]))
 
-    if estimator.is_binary_ and score_func in REQUIRES_POS_LABEL:
+    # Check that the passed scoring does not raise an Exception
+    scorer = check_scoring(estimator, scoring)
+
+    if estimator.is_binary_ and (is_f1 or is_pressision or is_recall):
         scorer = make_scorer(score_func, pos_label=pos_label)
 
     return scorer, scoring, score_func
