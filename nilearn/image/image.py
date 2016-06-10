@@ -794,10 +794,6 @@ def load_niimg(niimg, ensure_ndim=None, atleast_4d=False, dtype=None,
         If it is an object, check if get_data()
         and get_affine() methods are present, raise TypeError otherwise.
 
-    ensure_ndim: integer {3, 4}, optional
-        Indicate the dimensionality of the expected niimg. An
-        error is raised if the niimg is of another dimensionality.
-
     atleast_4d: boolean, optional
         Indicates if a 3d image should be turned into a single-scan 4d niimg.
 
@@ -827,5 +823,5 @@ def load_niimg(niimg, ensure_ndim=None, atleast_4d=False, dtype=None,
     nilearn because it checks if data have a correct format and loads them if
     necessary.
     """
-    return check_niimg(niimg, ensure_ndim=ensure_ndim, atleast_4d=atleast_4d,
-                       dtype=dtype, wildcards=wildcards)
+    return check_niimg(niimg, atleast_4d=atleast_4d, dtype=dtype,
+                       wildcards=wildcards)
