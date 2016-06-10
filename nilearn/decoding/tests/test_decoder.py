@@ -29,8 +29,8 @@ mni152_brain_mask = (
     "/usr/share/fsl/data/standard/MNI152_T1_1mm_brain_mask.nii.gz")
 
 # Data used in almost all tests
-# from .test_same_api import to_niimgs
-from nilearn.decoding.tests.test_same_api import to_niimgs
+from .test_same_api import to_niimgs
+# from nilearn.decoding.tests.test_same_api import to_niimgs
 
 
 def test_decoder_score():
