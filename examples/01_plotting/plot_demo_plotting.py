@@ -29,13 +29,9 @@ haxby_mask_filename = haxby_dataset.mask_vt[0]
 haxby_func_filename = haxby_dataset.func[0]
 
 # localizer dataset to have contrast maps
-localizer_dataset = datasets.fetch_localizer_contrasts(
-    ["left vs right button press"],
-    n_subjects=2,
-    get_anats=True,
-    get_tmaps=True)
-localizer_anat_filename = localizer_dataset.anats[1]
-localizer_tmap_filename = localizer_dataset.tmaps[1]
+localizer_dataset = datasets.fetch_localizer_button_task(get_anats=True)
+localizer_anat_filename = localizer_dataset.anats[0]
+localizer_tmap_filename = localizer_dataset.tmaps[0]
 
 ###############################################################################
 # Plotting statistical maps using function `plot_stat_map`
