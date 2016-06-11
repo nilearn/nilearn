@@ -799,7 +799,7 @@ def clean_img(imgs, sessions=None, detrend=True, standardize=True,
 
     Filtering is only meaningful on evenly-sampled signals.
 
-    .. versionaddded:: 0.2.5
+    .. versionadded:: 0.2.5
 
     Parameters
     ==========
@@ -866,7 +866,7 @@ def clean_img(imgs, sessions=None, detrend=True, standardize=True,
 def load_img(img, wildcards=True, dtype=None):
     """Load a Niimg-like object from filenames or list of filenames.
 
-    .. versionaddded:: 0.2.5
+    .. versionadded:: 0.2.5
 
     Parameters
     ----------

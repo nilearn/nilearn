@@ -65,6 +65,7 @@ plotting.show()
 
 #########################################################################
 # |
+#
 # ______
 #
 # To recap, all the nilearn tools can take data as filenames or in-memory
