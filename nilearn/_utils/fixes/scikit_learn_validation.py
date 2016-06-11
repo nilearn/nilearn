@@ -98,7 +98,8 @@ def check_X_y(X, y, accept_sparse=None, dtype="numeric", order=None,
         The converted and validated y.
     """
 
-    X = check_array(X, accept_sparse, dtype=dtype, copy=copy,)
+    X = check_array(X, accept_sparse, dtype=dtype, copy=copy,
+                    ensure_2d=ensure_2d)
 
     if multi_output:
         y = check_array(y, 'csr', dtype=None, ensure_2d=False)
