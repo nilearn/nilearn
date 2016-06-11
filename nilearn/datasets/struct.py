@@ -12,6 +12,11 @@ from .utils import _get_dataset_dir, _fetch_files, _get_dataset_descr
 from .._utils import check_niimg, niimg
 from ..image import new_img_like
 
+_package_directory = os.path.dirname(os.path.abspath(__file__))
+# Useful for the very simple examples
+MNI152_FILE_PATH = os.path.join(_package_directory, "data",
+                             "avg152T1_brain.nii.gz")
+
 
 def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
     """Download and load the ICBM152 template (dated 2009)
@@ -113,11 +118,7 @@ def load_mni152_template():
     Human Brain Mapping 2009 Annual Meeting, DOI: 10.1016/S1053-8119(09)70884-5
 
     """
-    package_directory = os.path.dirname(os.path.abspath(__file__))
-    path = os.path.join(package_directory, "data", "avg152T1_brain.nii.gz")
-
-    # XXX Should we load the image here?
-    return check_niimg(path)
+    return check_niimg(MNI152_FILE_PATH)
 
 
 def load_mni152_brain_mask():
