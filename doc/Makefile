@@ -38,12 +38,21 @@ clean:
 	-rm -rf generated/*
 	-rm -rf modules/generated/*
 
+sym_links:
+	# Make sym-links to share the cache across various example
+	# directories
+	-cd ../examples/01_plotting/ && ln -s ../nilearn_cache
+	-cd ../examples/02_decoding/ && ln -s ../nilearn_cache
+	-cd ../examples/03_connectivity/ && ln -s ../nilearn_cache
+	-cd ../examples/04_manipulating_images/ && ln -s ../nilearn_cache
+	-cd ../examples/05_advanced/ && ln -s ../nilearn_cache
+
 force_html: force html
 
 force:
 	find . -name \*.rst -exec touch {} \;
 
-html:
+html:	sym_links
 	# These two lines make the build a bit more lengthy, and the
 	# the embedding of images more robust
 	rm -rf $(BUILDDIR)/html/_images
@@ -52,7 +61,7 @@ html:
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
 
-html-strict:
+html-strict:	sym_links
 	# Build html documentation using a strict mode: Warnings are
 	# considered as errors.
 	make check
