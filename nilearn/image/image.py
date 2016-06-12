@@ -31,7 +31,7 @@ def high_variance_confounds(imgs, n_confounds=5, percentile=2.,
         variance.
 
         Parameters
-        ==========
+        ----------
         imgs: Niimg-like object
             See http://nilearn.github.io/manipulating_images/manipulating_images.html#niimg.
             4D image.
@@ -53,12 +53,12 @@ def high_variance_confounds(imgs, n_confounds=5, percentile=2.,
             If True, detrend signals before processing.
 
         Returns
-        =======
+        -------
         v: numpy.ndarray
             highest variance confounds. Shape: (number of scans, n_confounds)
 
         Notes
-        ======
+        ------
         This method is related to what has been published in the literature
         as 'CompCor' (Behzadi NeuroImage 2007).
 
@@ -71,7 +71,7 @@ def high_variance_confounds(imgs, n_confounds=5, percentile=2.,
           highest singular values.
 
         See also
-        ========
+        --------
         nilearn.signal.high_variance_confounds
     """
     from .. import masking
@@ -100,18 +100,18 @@ def _fast_smooth_array(arr):
     normalisation to preserve the local average value.
 
     Parameters
-    ==========
+    ----------
     arr: numpy.ndarray
         4D array, with image number as last dimension. 3D arrays are
         also accepted.
 
     Returns
-    =======
+    -------
     smoothed_arr: numpy.ndarray
         Smoothed array.
 
     Note
-    ====
+    ----
     Rather than calling this function directly, users are encouraged
     to call the high-level function :func:`smooth_img` with
     fwhm='fast'.
@@ -146,7 +146,7 @@ def _smooth_array(arr, affine, fwhm=None, ensure_finite=True, copy=True):
     Apply a Gaussian filter along the three first dimensions of arr.
 
     Parameters
-    ==========
+    ----------
     arr: numpy.ndarray
         4D array, with image number as last dimension. 3D arrays are also
         accepted.
@@ -176,12 +176,12 @@ def _smooth_array(arr, affine, fwhm=None, ensure_finite=True, copy=True):
         is performed in-place.
 
     Returns
-    =======
+    -------
     filtered_arr: numpy.ndarray
         arr, filtered.
 
     Notes
-    =====
+    -----
     This function is most efficient with arr in C order.
     """
 
@@ -221,7 +221,7 @@ def smooth_img(imgs, fwhm):
     In all cases, non-finite values in input image are replaced by zeros.
 
     Parameters
-    ==========
+    ----------
     imgs: Niimg-like object or iterable of Niimg-like objects
         See http://nilearn.github.io/manipulating_images/manipulating_images.html#niimg.
         Image(s) to smooth.
@@ -237,7 +237,7 @@ def smooth_img(imgs, fwhm):
         of non-finite values is needed)
 
     Returns
-    =======
+    -------
     filtered_img: nibabel.Nifti1Image or list of.
         Input image, filtered. If imgs is an iterable, then filtered_img is a
         list.
@@ -273,7 +273,7 @@ def _crop_img_to(img, slices, copy=True):
     accordingly
 
     Parameters
-    ==========
+    ----------
     img: Niimg-like object
         See http://nilearn.github.io/manipulating_images/manipulating_images.html#niimg.
         Img to be cropped. If slices has less entries than img
@@ -290,7 +290,7 @@ def _crop_img_to(img, slices, copy=True):
         Default: True
 
     Returns
-    =======
+    -------
     cropped_img: Niimg-like object
         See http://nilearn.github.io/manipulating_images/manipulating_images.html#niimg.
         Cropped version of the input image
@@ -326,7 +326,7 @@ def crop_img(img, rtol=1e-8, copy=True):
     avoid sampling issues later on.
 
     Parameters
-    ==========
+    ----------
     img: Niimg-like object
         See http://nilearn.github.io/manipulating_images/manipulating_images.html#niimg.
         img to be cropped.
@@ -340,7 +340,7 @@ def crop_img(img, rtol=1e-8, copy=True):
         Specifies whether cropped data is copied or not.
 
     Returns
-    =======
+    -------
     cropped_img: image
         Cropped version of the input image
     """
@@ -408,7 +408,7 @@ def mean_img(imgs, target_affine=None, target_shape=None,
     computed separately, and the resulting mean is computed after.
 
     Parameters
-    ==========
+    ----------
 
     imgs: Niimg-like object or iterable of Niimg-like objects
         See http://nilearn.github.io/manipulating_images/manipulating_images.html#niimg.
@@ -432,12 +432,12 @@ def mean_img(imgs, target_affine=None, target_shape=None,
         'all CPUs'.
 
     Returns
-    =======
+    -------
     mean: nibabel.Nifti1Image
         mean image
 
     See Also
-    ========
+    --------
     nilearn.image.math_img : For more general operations on images
 
     """
@@ -802,7 +802,7 @@ def clean_img(imgs, sessions=None, detrend=True, standardize=True,
     .. versionadded:: 0.2.5
 
     Parameters
-    ==========
+    ----------
     imgs: Niimg-like object
          See http://nilearn.github.io/manipulating_images/manipulating_images.html#niimg.
          4D image. The signals in the last dimension are filtered.
@@ -835,12 +835,12 @@ def clean_img(imgs, sessions=None, detrend=True, standardize=True,
         Repetition time, in second (sampling period).
 
     Returns
-    =======
+    -------
     cleaned_img: Niimg-like object
         Input images, cleaned. Same shape as `imgs`.
 
     Notes
-    =====
+    -----
     Confounds removal is based on a projection on the orthogonal
     of the signal space. See `Friston, K. J., A. P. Holmes,
     K. J. Worsley, J.-P. Poline, C. D. Frith, et R. S. J. Frackowiak.
@@ -849,7 +849,7 @@ def clean_img(imgs, sessions=None, detrend=True, standardize=True,
     <http://dx.doi.org/10.1002/hbm.460020402>`_
 
     See Also
-    ========
+    --------
         nilearn.signal.clean
     """
     # Avoid circular import

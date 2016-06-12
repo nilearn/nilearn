@@ -1,6 +1,6 @@
 """
 Transformer for computing seeds signals.
-=======
+-------
 Mask nifti images by spherical volumes for seed-region analyses
 """
 import numpy as np
@@ -88,7 +88,7 @@ def _iter_signals_from_spheres(seeds, niimg, radius, allow_overlap,
                                mask_img=None):
     """Utility function to iterate over spheres.
     Parameters
-    ==========
+    ----------
     seeds: List of triplets of coordinates in native space
         Seed definitions. List of coordinates of the seeds in the same space
         as the images (typically MNI or TAL).
@@ -146,7 +146,7 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
     obtained from prior knowledge.
 
     Parameters
-    ==========
+    ----------
     seeds: List of triplet of coordinates in native space
         Seed definitions. List of coordinates of the seeds in the same space
         as the images (typically MNI or TAL).
@@ -200,7 +200,7 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
         Indicate the level of verbosity. By default, nothing is printed.
 
     See also
-    ========
+    --------
     nilearn.input_data.NiftiMasker
     """
     # memory and memory_level are used by CacheMixin.

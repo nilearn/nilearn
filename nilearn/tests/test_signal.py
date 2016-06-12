@@ -25,7 +25,7 @@ def generate_signals(n_features=17, n_confounds=5, length=41,
     All returned signals have no trends at all (to machine precision).
 
     Parameters
-    ==========
+    ----------
     n_features, n_confounds : int, optional
         respectively number of features to generate, and number of confounds
         to use for generating noise signals.
@@ -41,7 +41,7 @@ def generate_signals(n_features=17, n_confounds=5, length=41,
         gives the contiguousness of the output arrays.
 
     Returns
-    =======
+    -------
     signals : numpy.ndarray, shape (length, n_features)
         unperturbed signals.
 
@@ -85,12 +85,12 @@ def generate_trends(n_features=17, length=41):
     """Generate linearly-varying signals, with zero mean.
 
     Parameters
-    ==========
+    ----------
     n_features, length : int
         respectively number of signals and number of samples to generate.
 
     Returns
-    =======
+    -------
     trends : numpy.ndarray, shape (length, n_features)
         output signals, one per column.
     """

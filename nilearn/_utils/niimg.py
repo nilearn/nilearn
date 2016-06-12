@@ -115,12 +115,12 @@ def copy_img(img):
     """Copy an image to a nibabel.Nifti1Image.
 
     Parameters
-    ==========
+    ----------
     img: image
         nibabel SpatialImage object to copy.
 
     Returns
-    =======
+    -------
     img_copy: image
         copy of input (data, affine and header)
     """
