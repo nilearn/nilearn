@@ -12,6 +12,8 @@ instance: `A supervised clustering approach for fMRI-based inference of
 brain states <https://hal.inria.fr/inria-00589201>`_, Michel et al,
 Pattern Recognition 2011.
 
+The big picture discussion corresponding to this example can be found
+in the documentation section :ref:`parcellating_brain`.
 """
 
 ##################################################################
