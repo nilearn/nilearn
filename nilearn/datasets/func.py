@@ -778,7 +778,7 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
     if n_subjects is None:
         n_subjects = 94  # 94 subjects available
     if (isinstance(n_subjects, numbers.Number) and
-                    (n_subjects > 94) or (n_subjects < 1)):
+                    ((n_subjects > 94) or (n_subjects < 1))):
         warnings.warn("Wrong value for \'n_subjects\' (%d). The maximum "
                       "value will be used instead (\'n_subjects=94\')")
         n_subjects = 94  # 94 subjects available
