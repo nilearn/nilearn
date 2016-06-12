@@ -21,6 +21,10 @@ from nilearn import plotting
 plotting.plot_img(MNI152_FILE_PATH)
 
 #########################################################################
+# This is not a very pretty plot. We just used the simplest possible
+# code. There is a whole :ref:`section of the documentation <plotting>`
+# on making prettier code.
+#
 # **Exercise**: Try plotting one of your own files. In the above,
 # MNI152_FILE_PATH is nothing more than a string with a path pointing to
 # a nifti image. You can replace it with a string pointing to a file on

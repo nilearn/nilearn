@@ -34,7 +34,8 @@ localizer_anat_filename = localizer_dataset.anats[0]
 localizer_tmap_filename = localizer_dataset.tmaps[0]
 
 ###############################################################################
-# Plotting statistical maps using function `plot_stat_map`
+# Plotting statistical maps with function `plot_stat_map`
+# --------------------------------------------------------
 
 from nilearn import plotting
 
@@ -45,22 +46,25 @@ plotting.plot_stat_map(localizer_tmap_filename, bg_img=localizer_anat_filename,
                        cut_coords=[36, -27, 66])
 
 ###############################################################################
-# Plotting statistical maps on glass brain image using function `plot_glass_brain`
-
+# Plotting statistical maps in a glass brain with function `plot_glass_brain`
+# ---------------------------------------------------------------------------
+#
 # Now, the t-map image is mapped on glass brain representation where glass
 # brain is always a fixed background template
 plotting.plot_glass_brain(localizer_tmap_filename, title='plot_glass_brain',
                           threshold=3)
 
 ###############################################################################
-# Plotting anatomical images using function `plot_anat`
-
+# Plotting anatomical images with function `plot_anat`
+# -----------------------------------------------------
+#
 # Visualizing anatomical image of haxby dataset
 plotting.plot_anat(haxby_anat_filename, title="plot_anat")
 
 ###############################################################################
-# Plotting ROIs (here the mask) using function `plot_roi`
-
+# Plotting ROIs (here the mask) with function `plot_roi`
+# -------------------------------------------------------
+#
 # Visualizing ventral temporal region image from haxby dataset overlayed on
 # subject specific anatomical image with coordinates positioned automatically on
 # region of interest (roi)
@@ -68,7 +72,8 @@ plotting.plot_roi(haxby_mask_filename, bg_img=haxby_anat_filename,
                   title="plot_roi")
 
 ###############################################################################
-# Plotting EPI image using function `plot_epi`
+# Plotting EPI image with function `plot_epi`
+# ---------------------------------------------
 
 # Import image processing tool
 from nilearn import image
@@ -80,4 +85,7 @@ mean_haxby_img = image.mean_img(haxby_func_filename)
 # Visualizing mean image (3D)
 plotting.plot_epi(mean_haxby_img, title="plot_epi")
 
+###############################################################################
+# A call to plotting.show is needed to display the plots when running
+# in script mode (ie outside IPython)
 plotting.show()

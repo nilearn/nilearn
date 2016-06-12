@@ -4,10 +4,8 @@
 Clustering to parcellate the brain in regions
 ==============================================
 
-.. topic:: **Page summary**
-
-    This page discusses how clustering can be used to parcellate the
-    brain into homogeneous regions from functional imaging data.
+This page discusses how clustering can be used to parcellate the brain
+into homogeneous regions from functional imaging data.
 
 |
 
