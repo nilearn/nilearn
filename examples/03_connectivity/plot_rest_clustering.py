@@ -14,17 +14,19 @@ Pattern Recognition 2011.
 
 """
 
-### Load nyu_rest dataset #####################################################
+##################################################################
+# Download ADHD dataset
 
-import numpy as np
 from nilearn import datasets
-from nilearn import input_data
-from nilearn.plotting import plot_roi, plot_epi, show
 dataset = datasets.fetch_adhd(n_subjects=1)
 
 # print basic information on the dataset
 print('First subject functional nifti image (4D) is at: %s' %
       dataset.func[0])  # 4D data
+
+##################################################################
+# Transform nifti files to a data matrix with the NiftiMasker
+from nilearn import input_data
 
 # This is resting-state data: the background has not been removed yet,
 # thus we need to use mask_strategy='epi' to compute the mask from the
@@ -34,9 +36,10 @@ nifti_masker = input_data.NiftiMasker(memory='nilearn_cache',
                                       standardize=False)
 func_filename = dataset.func[0]
 fmri_masked = nifti_masker.fit_transform(func_filename)
-mask = nifti_masker.mask_img_.get_data().astype(np.bool)
+mask = nifti_masker.mask_img_.get_data().astype(bool)
 
-### Ward ######################################################################
+##################################################################
+# Perform Ward clustering
 
 # Compute connectivity matrix: which voxel is connected to which
 from sklearn.feature_extraction import image
@@ -63,7 +66,9 @@ ward = FeatureAgglomeration(n_clusters=2000, connectivity=connectivity,
 ward.fit(fmri_masked)
 print("Ward agglomeration 2000 clusters: %.2fs" % (time.time() - start))
 
-### Show result ###############################################################
+##################################################################
+# Show results
+from nilearn.plotting import plot_roi, plot_epi, show
 
 # Unmask data
 # Avoid 0 label
@@ -77,6 +82,7 @@ mean_func_img = mean_img(func_filename)
 
 first_plot = plot_roi(labels_img, mean_func_img, title="Ward parcellation",
                       display_mode='xz')
+
 # labels_img is a Nifti1Image object, it can be saved to file with the
 # following code:
 labels_img.to_filename('parcellation.nii')

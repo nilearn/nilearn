@@ -20,7 +20,8 @@ be given by a call to fit_transform).
 
 """
 
-### Load nyu_rest dataset #####################################################
+#####################################################################
+# Load ADHD dataset
 from nilearn import datasets
 # Here we use only 3 subjects to get faster-running code. For better
 # results, simply increase this number
@@ -32,7 +33,9 @@ func_filename = dataset.func[0]
 print('First subject functional nifti image (4D) is at: %s' %
       dataset.func[0])  # 4D data
 
-### Preprocess ################################################################
+
+#####################################################################
+# Preprocess
 from nilearn.input_data import NiftiMasker
 
 # This is resting-state data: the background has not been removed yet,
@@ -47,7 +50,8 @@ data_masked = masker.fit_transform(func_filename)
 fmri_data = data_masked
 
 
-### Apply ICA #################################################################
+#####################################################################
+# Apply ICA
 
 from sklearn.decomposition import FastICA
 n_components = 10
@@ -65,7 +69,9 @@ components_masked[np.abs(components_masked) < .8] = 0
 # representation
 component_img = masker.inverse_transform(components_masked)
 
-### Visualize the results #####################################################
+#####################################################################
+# Visualize the results
+
 # Show some interesting components
 from nilearn import image
 from nilearn.plotting import plot_stat_map, show
