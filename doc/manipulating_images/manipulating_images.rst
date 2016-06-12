@@ -34,7 +34,13 @@ loading the data into a data matrix, most are also integrated in the
   :func:`nilearn.image.swap_img_hemispheres`
 * Smoothing: :func:`nilearn.image.smooth_img`
 * Cleaning signals (e.g., linear detrending, standardization,
-  confound removal, low/high pass filtering): :func:`nilearn.signal.clean`
+  confound removal, low/high pass filtering):
+  :func:`nilearn.image.clean_img`
+  
+  .. seealso::
+     
+     To apply this cleaning on signal matrices rather than images:
+     :func:`nilearn.signal.clean`
 
 .. _resampling:
 
@@ -111,6 +117,20 @@ Accessing individual volumes in 4D images
 
 * :func:`nilearn.image.iter_img`: loops over all the volumes of a 4D
   image.
+
+.. seealso::
+
+   * :func:`nilearn.image.concat_imgs`: merge multiple 3D (or 4D) images
+     into one 4D image by concatenation along the 4th (time) axis
+
+   * :func:`nilearn.image.load_img`: load an image into memory. The
+     benefit of this function is that it will convert various
+     representations, such as filename, list of filenames, wildcards,
+     list of in-memory objects, to an in-memory NiftiImage.
+
+   * :func:`nilearn.image.new_img_like`: given data in a numpy array,
+     creates a new image using an existing reference image for the
+     metadata.
 
 Computing and applying spatial masks
 =====================================
