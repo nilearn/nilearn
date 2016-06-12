@@ -149,8 +149,7 @@ log_p_values[log_p_values > 10.] = 10.
 from nilearn.plotting import plot_stat_map
 
 # Before visualizing, we transform the computed p-values to Nifti-like image
-# using function `new_img_like` from nilearn. Otherwise, an error will be
-# raised.
+# using function `new_img_like` from nilearn.
 from nilearn.image import new_img_like
 
 # First argument being a reference image and second argument should be p-values
@@ -207,11 +206,11 @@ bin_p_values = (log_p_values != 0)
 # VT mask
 mask_vt_filename = haxby_dataset.mask_vt[0]
 
-# The first step is to load VT mask with nibabel function and same time convert
-# data type numbers to boolean type
-import nibabel
+# The first step is to load VT mask and same time convert data type
+# numbers to boolean type
+from nilearn.image import load_img
 
-vt = nibabel.load(mask_vt_filename).get_data().astype(bool)
+vt = load_img(mask_vt_filename).get_data().astype(bool)
 
 # We can then use a logical "and" operation - numpy.logical_and - to keep only
 # voxels that have been selected in both masks. In neuroimaging jargon, this
@@ -322,6 +321,9 @@ for i, cond in enumerate(condition_names):
     X1[:, i], X2[:, i] = mask_data[:, 0], mask_data[:, 1]
 condition_names[condition_names.index(b'scrambledpix')] = b'scrambled'
 
+##############################################################################
+# save the ROI 'atlas' to a Nifti file
+new_img_like(fmri_img, labels).to_filename('mask_atlas.nii.gz')
 
 ##############################################################################
 # Plot the average in the different condition names
@@ -337,6 +339,4 @@ for i in np.arange(2):
 
 show()
 
-# save the ROI 'atlas' to a single output Nifti
-nibabel.save(new_img_like(fmri_img, labels),
-             'mask_atlas.nii')
+
