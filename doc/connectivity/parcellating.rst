@@ -1,8 +1,8 @@
 .. _parcellating_brain:
 
-==================================
-Parcellating the brain in regions
-==================================
+==============================================
+Clustering to parcellate the brain in regions
+==============================================
 
 .. topic:: **Page summary**
 
