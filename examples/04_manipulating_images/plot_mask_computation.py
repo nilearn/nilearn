@@ -49,35 +49,35 @@ plot_roi(masker.mask_img_, miyawaki_mean_img,
 ###############################################################################
 # From raw EPI data
 
-# Load NYU resting-state dataset
-nyu_dataset = datasets.fetch_nyu_rest(n_subjects=1)
-nyu_filename = nyu_dataset.func[0]
+# Load AHDH resting-state dataset
+dataset = datasets.fetch_adhd(n_subjects=1)
+epi_filename = dataset.func[0]
 
-# Restrict nyu to 100 frames to speed up computation
+# Restrict to 100 frames to speed up computation
 from nilearn.image import index_img
-nyu_img = index_img(nyu_filename, slice(0, 100))
+epi_img = index_img(epi_filename, slice(0, 100))
 
 # To display the background
-nyu_mean_img = image.mean_img(nyu_img)
+mean_img = image.mean_img(epi_img)
 
 
 # Simple mask extraction from EPI images
 # We need to specify an 'epi' mask_strategy, as this is raw EPI data
 masker = NiftiMasker(mask_strategy='epi')
-masker.fit(nyu_img)
-plot_roi(masker.mask_img_, nyu_mean_img, title='EPI automatic mask')
+masker.fit(epi_img)
+plot_roi(masker.mask_img_, mean_img, title='EPI automatic mask')
 
 # Generate mask with strong opening
 masker = NiftiMasker(mask_strategy='epi', mask_args=dict(opening=10))
-masker.fit(nyu_img)
-plot_roi(masker.mask_img_, nyu_mean_img, title='EPI Mask with strong opening')
+masker.fit(epi_img)
+plot_roi(masker.mask_img_, mean_img, title='EPI Mask with strong opening')
 
 # Generate mask with a high lower cutoff
 masker = NiftiMasker(mask_strategy='epi',
                      mask_args=dict(upper_cutoff=.9, lower_cutoff=.8,
                                     opening=False))
-masker.fit(nyu_img)
-plot_roi(masker.mask_img_, nyu_mean_img,
+masker.fit(epi_img)
+plot_roi(masker.mask_img_, mean_img,
          title='EPI Mask: high lower_cutoff')
 
 ###############################################################################
@@ -86,8 +86,8 @@ plot_roi(masker.mask_img_, nyu_mean_img,
 # trended vs detrended
 trended = NiftiMasker(mask_strategy='epi')
 detrended = NiftiMasker(mask_strategy='epi', detrend=True)
-trended_data = trended.fit_transform(nyu_img)
-detrended_data = detrended.fit_transform(nyu_img)
+trended_data = trended.fit_transform(epi_img)
+detrended_data = detrended.fit_transform(epi_img)
 
 # The timeseries are numpy arrays, so we can manipulate them with numpy
 import numpy as np
