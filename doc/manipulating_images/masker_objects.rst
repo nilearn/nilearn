@@ -186,7 +186,7 @@ voxels that appear as bright in the EPI image.
     :target: ../auto_examples/04_manipulating_images/plot_mask_computation.html
     :scale: 50%
 
-
+.. _masker_preprocessing_steps:
 
 Common data preparation steps: smoothing, filtering, resampling
 ----------------------------------------------------------------
