@@ -23,8 +23,6 @@ from nilearn.plotting import plot_roi, plot_epi, show
 dataset = datasets.fetch_adhd(n_subjects=1)
 
 # print basic information on the dataset
-print('First subject anatomical nifti image (3D) is at: %s' %
-      dataset.anat_anon[0])
 print('First subject functional nifti image (4D) is at: %s' %
       dataset.func[0])  # 4D data
 
