@@ -57,7 +57,7 @@ html:	sym_links
 	# the embedding of images more robust
 	rm -rf $(BUILDDIR)/html/_images
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
-	touch $(BUILDDIR)/html .nojekyll
+	touch $(BUILDDIR)/html/.nojekyll
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
 
@@ -65,13 +65,13 @@ html-strict:	sym_links
 	# Build html documentation using a strict mode: Warnings are
 	# considered as errors.
 	make check
-	touch $(BUILDDIR)/html .nojekyll
+	touch $(BUILDDIR)/html/.nojekyll
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
 
 html-noplot:
 	$(SPHINXBUILD) -D plot_gallery=0 -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
-	touch $(BUILDDIR)/html .nojekyll
+	touch $(BUILDDIR)/html/.nojekyll
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
 
