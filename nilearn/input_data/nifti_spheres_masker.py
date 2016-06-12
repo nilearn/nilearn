@@ -1,6 +1,7 @@
 """
-Transformer for computing seeds signals.
--------
+Transformer for computing seeds signals
+----------------------------------------
+
 Mask nifti images by spherical volumes for seed-region analyses
 """
 import numpy as np
