@@ -864,8 +864,10 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
 
     if isinstance(n_subjects, numbers.Number):
         subject_mask = np.arange(1, n_subjects + 1)
+        subject_id_max = n_subjects
     else:
         subject_mask = np.array(n_subjects)
+        subject_id_max = np.max(n_subjects)
         n_subjects = len(n_subjects)
     subject_ids = ["S%02d" % s for s in subject_mask]
     data_types = ["c map"]
@@ -878,7 +880,7 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
                   "X concerns S, "
                   "X label XL, X identifier XI, "
                   "X format XF, X description XD, "
-                  'S identifier IN %r, ' % (tuple(subject_ids), ) +
+                  'S identifier <= "%s", ' % (subject_id_max, ) +
                   'X type IN(%(types)s), X label "%(label)s"')
 
     urls = ["%sbrainomics_data_%d.zip?rql=%s&vid=data-zip"
