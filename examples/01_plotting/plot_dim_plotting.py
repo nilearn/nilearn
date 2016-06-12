@@ -16,13 +16,9 @@ display ROIs on top of a background image.
 
 from nilearn import datasets
 
-localizer_dataset = datasets.fetch_localizer_contrasts(
-    ["left vs right button press"],
-    n_subjects=2,
-    get_anats=True,
-    get_tmaps=True)
-localizer_anat_filename = localizer_dataset.anats[1]
-localizer_tmap_filename = localizer_dataset.tmaps[1]
+localizer_dataset = datasets.fetch_localizer_button_task(get_anats=True)
+localizer_anat_filename = localizer_dataset.anats[0]
+localizer_tmap_filename = localizer_dataset.tmaps[0]
 
 # Plotting: vary the 'dim' of the background
 from nilearn import plotting

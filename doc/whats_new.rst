@@ -6,7 +6,9 @@ Changelog
 
 New features
 ............
-    - New display_mode options in plot_glass_brain and plot_connectome. It
+
+    - New display_mode options in :func:`nilearn.plotting.plot_glass_brain`
+      and :func:`nilearn.plotting.plot_connectome`. It
       is possible to plot right and left hemisphere projections separately.
 
     - A function to load canonical brain mask image in MNI template space,
@@ -20,6 +22,15 @@ New features
 
     - New function :func:`nilearn.image.clean_img` applies the cleaning function
       :func:`nilearn.signal.clean` on all voxels.
+
+    - New simple data downloader
+      :func:`nilearn.datasets.fetch_localizer_button_task` to simplify
+      some examples.
+
+    - The dataset function 
+      :func:`nilearn.datasets.fetch_localizer_contrasts` can now download
+      a specific list of subjects rather than a range of subjects.
+
 
 0.2.4
 =====

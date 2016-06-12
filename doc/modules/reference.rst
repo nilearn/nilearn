@@ -78,6 +78,7 @@ uses.
    fetch_haxby_simple
    fetch_icbm152_2009
    fetch_icbm152_brain_gm_mask
+   fetch_localizer_button_task
    fetch_localizer_contrasts
    fetch_localizer_calculation_task
    fetch_miyawaki2008

@@ -6,6 +6,8 @@ import os
 import re
 import json
 import numpy as np
+import numbers
+
 import nibabel
 from sklearn.datasets.base import Bunch
 
@@ -721,8 +723,8 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
             "visual click vs visual sentences",
             "auditory&visual motor vs cognitive processing"}
 
-    n_subjects: int, optional
-        The number of subjects to load. If None is given,
+    n_subjects: int or list, optional
+        The number or list of subjects to load. If None is given,
         all 94 subjects are used.
 
     get_tmaps: boolean
@@ -769,13 +771,19 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
     individual functional cognitive networks."
     BMC neuroscience 8.1 (2007): 91.
 
+    See Also
+    ---------
+    nilearn.datasets.fetch_localizer_calculation_task
+    nilearn.datasets.fetch_localizer_button_task
+
     """
     if isinstance(contrasts, _basestring):
         raise ValueError('Contrasts should be a list of strings, but '
                          'a single string was given: "%s"' % contrasts)
     if n_subjects is None:
         n_subjects = 94  # 94 subjects available
-    if (n_subjects > 94) or (n_subjects < 1):
+    if (isinstance(n_subjects, numbers.Number) and
+                    ((n_subjects > 94) or (n_subjects < 1))):
         warnings.warn("Wrong value for \'n_subjects\' (%d). The maximum "
                       "value will be used instead (\'n_subjects=94\')")
         n_subjects = 94  # 94 subjects available
@@ -858,8 +866,15 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
     #   is generated on the remote server)
     # - Local (cached) version of the files can be checked for each contrast
     opts = {'uncompress': True}
-    subject_ids = ["S%02d" % s for s in range(1, n_subjects + 1)]
-    subject_id_max = subject_ids[-1]
+
+    if isinstance(n_subjects, numbers.Number):
+        subject_mask = np.arange(1, n_subjects + 1)
+        subject_id_max = "S%02d" % n_subjects
+    else:
+        subject_mask = np.array(n_subjects)
+        subject_id_max = "S%02d" % np.max(n_subjects)
+        n_subjects = len(n_subjects)
+    subject_ids = ["S%02d" % s for s in subject_mask]
     data_types = ["c map"]
     if get_tmaps:
         data_types.append("t map")
@@ -949,7 +964,7 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
     files = files[:-1]
     # join_by sorts the output along the key
     csv_data = join_by('subject_id', csv_data, csv_data2,
-                       usemask=False, asrecarray=True)[:n_subjects]
+                       usemask=False, asrecarray=True)[subject_mask - 1]
     if get_anats:
         anats = files[-n_subjects:]
         files = files[:-n_subjects]
@@ -963,13 +978,9 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
                  ext_vars=csv_data, description=fdescr)
 
 
-def fetch_localizer_calculation_task(n_subjects=None, data_dir=None, url=None,
+def fetch_localizer_calculation_task(n_subjects=1, data_dir=None, url=None,
                                      verbose=1):
     """Fetch calculation task contrast maps from the localizer.
-
-    This function is only a caller for the fetch_localizer_contrasts in order
-    to simplify examples reading and understanding.
-    The 'calculation (auditory and visual cue)' contrast is used.
 
     Parameters
     ----------
@@ -994,6 +1005,18 @@ def fetch_localizer_calculation_task(n_subjects=None, data_dir=None, url=None,
         Dictionary-like object, the interest attributes are :
         'cmaps': string list, giving paths to nifti contrast maps
 
+    Notes
+    ------
+
+    This function is only a caller for the fetch_localizer_contrasts in order
+    to simplify examples reading and understanding.
+    The 'calculation (auditory and visual cue)' contrast is used.
+
+    See Also
+    ---------
+    nilearn.datasets.fetch_localizer_button_task
+    nilearn.datasets.fetch_localizer_contrasts
+
     """
     data = fetch_localizer_contrasts(["calculation (auditory and visual cue)"],
                                      n_subjects=n_subjects,
@@ -1003,6 +1026,57 @@ def fetch_localizer_calculation_task(n_subjects=None, data_dir=None, url=None,
     data.pop('tmaps')
     data.pop('masks')
     data.pop('anats')
+    return data
+
+
+def fetch_localizer_button_task(n_subjects=[2, ], data_dir=None, url=None,
+                                get_anats=False, verbose=1):
+    """Fetch left vs right button press contrast maps from the localizer.
+
+    Parameters
+    ----------
+    n_subjects: int or list, optional
+        The number or list of subjects to load. If None is given,
+        all 94 subjects are used.
+
+    data_dir: string, optional
+        Path of the data directory. Used to force data storage in a specified
+        location.
+
+    url: string, optional
+        Override download URL. Used for test only (or if you setup a mirror of
+        the data).
+
+    get_anats: boolean
+        Whether individual structural images should be fetched or not.
+
+    verbose: int, optional
+        verbosity level (0 means no message).
+
+    Returns
+    -------
+    data: Bunch
+        Dictionary-like object, the interest attributes are :
+        'cmaps': string list, giving paths to nifti contrast maps
+
+    Notes
+    ------
+
+    This function is only a caller for the fetch_localizer_contrasts in order
+    to simplify examples reading and understanding.
+    The 'left vs right button press' contrast is used.
+
+    See Also
+    ---------
+    nilearn.datasets.fetch_localizer_calculation_task
+    nilearn.datasets.fetch_localizer_contrasts
+
+    """
+    data = fetch_localizer_contrasts(["left vs right button press"],
+                                     n_subjects=n_subjects,
+                                     get_tmaps=True, get_masks=False,
+                                     get_anats=get_anats, data_dir=data_dir,
+                                     url=url, resume=True, verbose=verbose)
     return data
 
 
