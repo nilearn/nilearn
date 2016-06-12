@@ -357,8 +357,8 @@ def test_fetch_localizer_button_task():
     # Disabled: cannot be tested without actually fetching covariates CSV file
     # All subjects
     dataset = func.fetch_localizer_button_task(data_dir=tst.tmpdir,
-                                                    url=local_url,
-                                                    verbose=0)
+                                               url=local_url,
+                                               verbose=0)
     assert_true(isinstance(dataset.ext_vars, np.recarray))
     assert_true(isinstance(dataset.cmaps[0], _basestring))
     assert_equal(dataset.ext_vars.size, 1)
@@ -366,9 +366,9 @@ def test_fetch_localizer_button_task():
 
     # 20 subjects
     dataset = func.fetch_localizer_button_task(n_subjects=20,
-                                                    data_dir=tst.tmpdir,
-                                                    url=local_url,
-                                                    verbose=0)
+                                               data_dir=tst.tmpdir,
+                                               url=local_url,
+                                               verbose=0)
     assert_true(isinstance(dataset.ext_vars, np.recarray))
     assert_true(isinstance(dataset.cmaps[0], _basestring))
     assert_equal(dataset.ext_vars.size, 20)

@@ -771,6 +771,11 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
     individual functional cognitive networks."
     BMC neuroscience 8.1 (2007): 91.
 
+    See Also
+    ---------
+    nilearn.datasets.fetch_localizer_calculation_task
+    nilearn.datasets.fetch_localizer_button_task
+
     """
     if isinstance(contrasts, _basestring):
         raise ValueError('Contrasts should be a list of strings, but '
@@ -1007,6 +1012,11 @@ def fetch_localizer_calculation_task(n_subjects=1, data_dir=None, url=None,
     to simplify examples reading and understanding.
     The 'calculation (auditory and visual cue)' contrast is used.
 
+    See Also
+    ---------
+    nilearn.datasets.fetch_localizer_button_task
+    nilearn.datasets.fetch_localizer_contrasts
+
     """
     data = fetch_localizer_contrasts(["calculation (auditory and visual cue)"],
                                      n_subjects=n_subjects,
@@ -1055,6 +1065,11 @@ def fetch_localizer_button_task(n_subjects=[2, ], data_dir=None, url=None,
     This function is only a caller for the fetch_localizer_contrasts in order
     to simplify examples reading and understanding.
     The 'left vs right button press' contrast is used.
+
+    See Also
+    ---------
+    nilearn.datasets.fetch_localizer_calculation_task
+    nilearn.datasets.fetch_localizer_contrasts
 
     """
     data = fetch_localizer_contrasts(["left vs right button press"],
