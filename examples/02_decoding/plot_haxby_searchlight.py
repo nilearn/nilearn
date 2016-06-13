@@ -30,7 +30,7 @@ conditions = np.recfromtxt(haxby_dataset.conditions_target[0])['f0']
 from nilearn.image import index_img
 condition_mask = np.logical_or(conditions == b'face', conditions == b'house')
 
-fmri_img = index_img(fmri_img, condition_mask)
+fmri_img = index_img(fmri_filename, condition_mask)
 y, session = y[condition_mask], session[condition_mask]
 conditions = conditions[condition_mask]
 
