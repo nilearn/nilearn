@@ -152,6 +152,8 @@ follows::
     Note that you can copy that folder to another user's computers to
     avoid the initial dataset download on the first fetching call.
 
+    You can check in which directory nilearn will store the data with the
+    function :func:`nilearn.datasets.get_data_dirs`.
 
 
 |
