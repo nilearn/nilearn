@@ -141,8 +141,8 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
 
     t_r: float
         This parameter indicates repetition times of the experimental runs.
-        It is necessary to correctly consider times in the design matrix.
-        This parameter is also passed to nilearn.signal.clean.
+        In seconds. It is necessary to correctly consider times in the design
+        matrix. This parameter is also passed to nilearn.signal.clean.
         Please see the related documentation for details.
 
     slice_time_ref: float, optional (default 0.)
@@ -170,7 +170,7 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
 
     fir_delays : array of shape(n_onsets) or list, optional
         In case of FIR design, yields the array of delays used in the FIR
-        model.
+        model, in seconds.
 
     min_onset : float, optional
         This parameter specifies the minimal onset relative to the design
