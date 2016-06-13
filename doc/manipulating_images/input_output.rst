@@ -87,6 +87,9 @@ shell):
         might not be in alphabetic order. We advise you to rely on
         nilearn's path expansion.
 
+    To load data with globbing, we suggest that you use
+    :func:`nilearn.image.load_img`.
+
 
 .. currentmodule:: nilearn.datasets
 
