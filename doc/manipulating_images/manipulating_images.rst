@@ -132,6 +132,14 @@ Accessing individual volumes in 4D images
      creates a new image using an existing reference image for the
      metadata.
 
+|
+
+.. topic:: **Examples**
+
+   * :ref:`sphx_glr_auto_examples_plot_3d_and_4d_niimg.py`
+
+   * :ref:`sphx_glr_auto_examples_01_plotting_plot_overlay.py`
+
 Computing and applying spatial masks
 =====================================
 

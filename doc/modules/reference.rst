@@ -86,6 +86,7 @@ uses.
    fetch_oasis_vbm
    fetch_megatrawls_netmats
    fetch_cobre
+   get_data_dirs
    load_mni152_template
    load_mni152_brain_mask
 

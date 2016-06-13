@@ -31,6 +31,8 @@ New features
       :func:`nilearn.datasets.fetch_localizer_contrasts` can now download
       a specific list of subjects rather than a range of subjects.
 
+    - New function :func:`nilearn.datasets.get_data_dirs` to check where
+      nilearn downloads data.
 
 0.2.4
 =====
