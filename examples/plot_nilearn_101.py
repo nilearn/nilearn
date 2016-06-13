@@ -35,14 +35,16 @@ plotting.plot_img(MNI152_FILE_PATH)
 # -------------------------------------
 #
 # Let's use an image-smoothing function from nilearn:
+# :func:`nilearn.image.smooth_img`
+#
+# Functions containing 'img' can take either a filename or an image as input.
+#
+# Here we give as inputs the image filename and the smoothing value in mm
 from nilearn import image
-
-# functions containing 'img' can take either a filename or an image as input.
-# Inputs here are given as: image filename and smoothing value in mm
 smooth_anat_img = image.smooth_img(MNI152_FILE_PATH, fwhm=3)
 
-# While we are giving a file name as input, the object that is returned
-# is an in-memory object:
+# While we are giving a file name as input, the function returns
+# an in-memory object:
 print(smooth_anat_img)
 
 #########################################################################
