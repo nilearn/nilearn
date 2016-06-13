@@ -53,7 +53,7 @@ class DimensionError(TypeError):
                 "Expected dimension is {0}D and you provided a "
                 "{1}{2}D image{3}{4}. "
                 "See http://nilearn.github.io/manipulating_images/"
-                "manipulating_images.html#niimg."
+                "input_output.html."
                 .format(self.required_dimension + self.stack_counter,
                         "list of " * self.stack_counter,
                         self.file_dimension,

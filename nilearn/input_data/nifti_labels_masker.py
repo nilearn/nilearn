@@ -42,14 +42,14 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
     Parameters
     ----------
     labels_img: Niimg-like object
-        See http://nilearn.github.io/manipulating_images/manipulating_images.html#niimg.
+        See http://nilearn.github.io/manipulating_images/input_output.html.
         Region definitions, as one image of labels.
 
     background_label: number, optional
         Label used in labels_img to represent background.
 
     mask_img: Niimg-like object, optional
-        See http://nilearn.github.io/manipulating_images/manipulating_images.html#niimg.
+        See http://nilearn.github.io/manipulating_images/input_output.html.
         Mask to apply to regions before extracting signals.
 
     smoothing_fwhm: float, optional
@@ -202,7 +202,7 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
         Parameters
         ----------
         imgs: 3D/4D Niimg-like object
-            See http://nilearn.github.io/manipulating_images/manipulating_images.html#niimg.
+            See http://nilearn.github.io/manipulating_images/input_output.html.
             Images to process. It must boil down to a 4D image with scans
             number as last dimension.
 
