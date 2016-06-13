@@ -13,7 +13,7 @@ Here we discover how to work with 3D and 4D niimgs.
 #
 # Let's first check where the data is downloaded on our disk:
 from nilearn import datasets
-print(datasets.get_data_dirs())
+print('Datasets are stored in: %r' % datasets.get_data_dirs())
 
 ###############################################################################
 # Let's now retrieve a motor contrast from a localizer experiment
@@ -49,7 +49,7 @@ rsn = datasets.fetch_atlas_smith_2009()['rsn10']
 print(rsn)
 
 ###############################################################################
-# It is a 4D nifti file. We load it into the memory to print it's
+# It is a 4D nifti file. We load it into the memory to print its
 # shape.
 from nilearn import image
 print(image.load_img(rsn).shape)
