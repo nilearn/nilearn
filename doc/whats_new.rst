@@ -4,6 +4,10 @@
 Changelog
 ---------
 
+The 0.2.5 release includes plotting for connectomes and glass brain with
+hemisphere-specific projection, as well as more didactic examples and
+improved documentation.
+
 New features
 ............
 
@@ -33,6 +37,26 @@ New features
 
     - New function :func:`nilearn.datasets.get_data_dirs` to check where
       nilearn downloads data.
+
+Contributors
+-------------
+
+Contributors (from ``git shortlog -ns 0.2.4..0.2.5``)::
+
+    55  Gael Varoquaux
+    39  Alexandre Abraham
+    26  Martin Perez-Guevara
+    20  Kamalakar Daddy
+     8  amadeuskanaan
+     3  Alexandre Abadie
+     3  Arthur Mensch
+     3  Elvis Dohmatob
+     3  Loïc Estève
+     2  Jerome Dockes
+     1  Alexandre M. S
+     1  Bertrand Thirion
+     1  Ivan Gonzalez
+     1  robbisg
 
 0.2.4
 =====
