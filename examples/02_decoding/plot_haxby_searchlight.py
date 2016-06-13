@@ -22,7 +22,6 @@ print('Anatomical nifti image (3D) is located at: %s' % haxby_dataset.mask)
 print('Functional nifti image (4D) is located at: %s' % haxby_dataset.func[0])
 
 fmri_filename = haxby_dataset.func[0]
-fmri_img = load_img(fmri_filename)
 y, session = np.loadtxt(haxby_dataset.session_target[0]).astype('int').T
 conditions = np.recfromtxt(haxby_dataset.conditions_target[0])['f0']
 
