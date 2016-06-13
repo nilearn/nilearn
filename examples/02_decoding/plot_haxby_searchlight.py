@@ -12,9 +12,8 @@ the fMRI (see the generated figures).
 #########################################################################
 # Load Haxby dataset
 import numpy as np
-import nibabel
 from nilearn import datasets
-from nilearn.image import new_img_like
+from nilearn.image import new_img_like, load_img
 
 haxby_dataset = datasets.fetch_haxby_simple()
 
@@ -23,7 +22,6 @@ print('Anatomical nifti image (3D) is located at: %s' % haxby_dataset.mask)
 print('Functional nifti image (4D) is located at: %s' % haxby_dataset.func[0])
 
 fmri_filename = haxby_dataset.func[0]
-fmri_img = nibabel.load(fmri_filename)
 y, session = np.loadtxt(haxby_dataset.session_target[0]).astype('int').T
 conditions = np.recfromtxt(haxby_dataset.conditions_target[0])['f0']
 
@@ -32,7 +30,7 @@ conditions = np.recfromtxt(haxby_dataset.conditions_target[0])['f0']
 from nilearn.image import index_img
 condition_mask = np.logical_or(conditions == b'face', conditions == b'house')
 
-fmri_img = index_img(fmri_img, condition_mask)
+fmri_img = index_img(fmri_filename, condition_mask)
 y, session = y[condition_mask], session[condition_mask]
 conditions = conditions[condition_mask]
 
@@ -44,7 +42,7 @@ conditions = conditions[condition_mask]
 #   should be processed (we only keep the slice z = 26 and the back of the
 #   brain to speed up computation)
 
-mask_img = nibabel.load(haxby_dataset.mask)
+mask_img = load_img(haxby_dataset.mask)
 
 # .astype() makes a copy.
 process_mask = mask_img.get_data().astype(np.int)
