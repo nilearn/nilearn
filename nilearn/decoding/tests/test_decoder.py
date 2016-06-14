@@ -1,5 +1,5 @@
 from nose.tools import (assert_equal, assert_true, assert_false,
-                        assert_raises, assert_is_instance)
+                        assert_raises)
 import warnings
 import os
 import numpy as np
@@ -78,7 +78,7 @@ def test_check_masking():
     for mask in masks:
         masker = _check_masking(mask, smoothing_fwhm=smoothing_fwhm, **kwargs)
         if mask is None:
-            assert_is_instance(masker, BaseEstimator)
+            assert_true(isinstance(masker, BaseEstimator))
         else:
             assert_true(masker.smoothing_fwhm == smoothing_fwhm_test)
 
@@ -207,9 +207,9 @@ def test_feature_screening():
                               screening_percentile, MNI152_BRAIN_VOLUME,
                               is_classif)
             elif screening_percentile == 20:
-                assert_is_instance(_check_feature_screening(
+                assert_true(isinstance(_check_feature_screening(
                     screening_percentile, MNI152_BRAIN_VOLUME, is_classif),
-                    BaseEstimator)
+                    BaseEstimator))
             else:
                 assert_warns(UserWarning, _check_feature_screening,
                              screening_percentile, MNI152_BRAIN_VOLUME * 2,
