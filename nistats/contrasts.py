@@ -139,10 +139,14 @@ class Contrast(object):
         self.tiny = tiny
         self.dofmax = dofmax
 
-    def eff(self):
+    def effect_size(self):
+        """Make access to summary statistics more straightforward when
+        computing contrasts"""
         return self.effect[0, :]
 
-    def var(self):
+    def effect_variance(self):
+        """Make access to summary statistics more straightforward when
+        computing contrasts"""
         return self.variance[0, 0, :]
 
     def stat(self, baseline=0.0):

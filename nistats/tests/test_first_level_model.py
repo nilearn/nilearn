@@ -93,9 +93,9 @@ def test_high_level_glm_with_data():
     stat_image = multi_session_model.compute_contrast(
         np.eye(rk)[:2], output_type='stat')
     effect_image = multi_session_model.compute_contrast(
-        np.eye(rk)[:2], output_type='eff')
+        np.eye(rk)[:2], output_type='effect_size')
     variance_image = multi_session_model.compute_contrast(
-        np.eye(rk)[:2], output_type='var')
+        np.eye(rk)[:2], output_type='effect_variance')
     assert_array_equal(z_image.get_data() == 0., load(mask).get_data() == 0.)
     assert_true(
         (variance_image.get_data()[load(mask).get_data() > 0] > .001).all())

@@ -463,7 +463,7 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
 
         output_type : str, optional
             Type of the output map. Can be 'z_score', 'stat', 'p_value',
-            'eff' or 'var'
+            'effect_size' or 'effect_variance'
 
         Returns
         -------
@@ -489,12 +489,13 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
             warn('One contrast given, assuming it for all %d runs' % n_runs)
             con_vals = con_vals * n_runs
         if isinstance(output_type, _basestring):
-            if output_type not in ['z_score', 'stat', 'p_value', 'eff', 'var']:
+            if output_type not in ['z_score', 'stat', 'p_value', 'effect_size',
+                                   'effect_variance']:
                 raise ValueError('output_type must be one of "z_score", "stat",'
-                                 ' "p_value","eff" or "var"')
+                                 ' "p_value","effect_size" or "effect_variance"')
         else:
             raise ValueError('output_type must be one of "z_score", "stat",'
-                             ' "p_value","eff" or "var"')
+                             ' "p_value","effect_size" or "effect_variance"')
 
         if self.memory is not None:
             arg_ignore = ['labels', 'results']
