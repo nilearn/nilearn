@@ -1,3 +1,10 @@
+"""
+Test the decoder module
+"""
+
+# Author: Andres Hoyos-Idrobo
+# License: simplified BSD
+
 from nose.tools import (assert_equal, assert_true, assert_false,
                         assert_raises)
 import warnings
@@ -28,6 +35,11 @@ mni152_brain_mask = (
 
 
 def test_decoder_score():
+    """
+    Testing the decoder score method
+    """
+
+    # using the isis dataset
     iris = load_iris()
     X, y = iris.data, iris.target
     y = 2 * (y > 0) - 1
@@ -35,6 +47,7 @@ def test_decoder_score():
 
     masker = NiftiMasker(mask_img=mask_img).fit()
 
+    # testing two classifiers
     for estimator in ['svc', 'logistic_l2']:
         for mask in [None, masker]:
             gnc = Decoder(estimator=estimator, mask=mask,
@@ -46,17 +59,17 @@ def test_decoder_score():
             gnc.fit(X_, y)
             accuracy = gnc.score(X_, y)
             assert_equal(accuracy, accuracy_score(y, gnc.predict(X_)))
-    # X_test = index_img(X_, range(100))
-    # assert_raises(ValueError, gnc.fit, X_test, y)
-    # assert_raises(NotFittedError, gnc.fit, X_, y[:-2])
 
 
 def test_check_masking():
 
+    # Create toy mask_img
     mask = np.ones((5, 5, 5), np.bool)
     mask_img = nibabel.Nifti1Image(mask.astype(np.int),
                                    np.eye(4))
 
+    # Using two different smoothing_fwhm to compare overriding of this param
+    # after masker fitting
     smoothing_fwhm = 4
     smoothing_fwhm_test = 8
 
@@ -67,13 +80,17 @@ def test_check_masking():
               'memory': None,
               'memory_level': 1}
 
+    # the masker shold be fitted
     masker_test_1 = NiftiMasker(smoothing_fwhm=smoothing_fwhm_test, **kwargs)
+    # assigning a mask_img
     masker_test_2 = NiftiMasker(mask_img=mask_img,
                                 smoothing_fwhm=smoothing_fwhm_test, **kwargs)
+    # assigning all the params
     masker_test_3 = NiftiMasker(mask_img=mask_img,
                                 smoothing_fwhm=smoothing_fwhm_test,
                                 **kwargs).fit()
 
+    # Testing various mask inputs
     masks = [None, masker_test_1, masker_test_2, masker_test_3]
     for mask in masks:
         masker = _check_masking(mask, smoothing_fwhm=smoothing_fwhm, **kwargs)
@@ -83,17 +100,21 @@ def test_check_masking():
             assert_true(masker.smoothing_fwhm == smoothing_fwhm_test)
 
 
+# Crate a test dataset
 rand = np.random.RandomState(0)
 X = rand.rand(100, 10)
+# Create different targets
 y_regression = rand.rand(100)
 y_classif = np.hstack([[-1] * 50, [1] * 50])
 y_classif_str = np.hstack([['face'] * 50, ['house'] * 50])
 y_multiclass = np.hstack([[0] * 35, [1] * 30, [2] * 35])
 
 
+# Test estimators
+# Regression
 ridge = Ridge()
 svr = SVR(kernel='linear')
-
+# Classification
 svc = LinearSVC()
 logistic_l1 = LogisticRegression(penalty='l1')
 logistic_l2 = LogisticRegression(penalty='l2')
@@ -102,6 +123,8 @@ ridge_classifier = RidgeClassifier()
 
 def test_check_param_grid():
 
+    # testing several estimators, each one with its specific regularization
+    # parameter
     regressors = {'ridge': (ridge, 'alpha'),
                   'svr': (svr, 'C')}
     classifiers = {'svc': (svc, 'C'),
@@ -109,10 +132,11 @@ def test_check_param_grid():
                    'logistic_l2': (logistic_l2, 'C'),
                    'ridge_classifier': (ridge_classifier, 'alpha')}
 
+    # Regression
     for _, (regressor, param) in regressors.items():
         param_grid = _check_param_grid(regressor, X, y_regression, None)
         assert_equal(list(param_grid.keys())[0], param)
-
+    # Classification
     for _, (classifier, param) in classifiers.items():
         param_grid = _check_param_grid(classifier, X, y_classif, None)
         assert_equal(list(param_grid.keys())[0], param)
@@ -123,6 +147,7 @@ def test_check_estimator():
     regressors = [ridge, svr]
     classifiers = [svc, logistic_l1, logistic_l2, ridge_classifier]
 
+    # Regression
     for regressor in regressors:
         is_classification, is_binary, classes, classes_to_predict = \
             _check_estimator(regressor, y_regression, None)
@@ -132,6 +157,7 @@ def test_check_estimator():
 
         assert_false(is_classification)
 
+    # Classification
     for classifier in classifiers:
         is_classification, is_binary, classes, classes_to_predict = \
             _check_estimator(classifier, y_regression, None)
@@ -150,6 +176,7 @@ class DummyDecoder(BaseEstimator):
     def __init__(self, is_classification=True, is_binary=True):
         self.is_classification_ = is_classification
         self.is_binary_ = is_binary
+        # dummy classes
         self.classes_ = ['baseline', 'cellphone']
 
     def fit(X, y):
@@ -216,6 +243,7 @@ def test_feature_screening():
                              is_classif)
 
 
+# XXX this test is repeated, taken form test_space_net
 def test_get_mask_volume():
     if os.path.isfile(mni152_brain_mask):
         assert_equal(MNI152_BRAIN_VOLUME, _get_mask_volume(nibabel.load(
