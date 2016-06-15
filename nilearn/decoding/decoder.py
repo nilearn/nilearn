@@ -44,13 +44,13 @@ from ..input_data import NiftiMasker, MultiNiftiMasker
 MNI152_BRAIN_VOLUME = 1827243.
 
 ESTIMATOR_CATALOG = dict(
-    svc_l1=LinearSVC(penalty='l1', dual=False, class_weight='auto'),
-    svc_l2=LinearSVC(penalty='l2', class_weight='auto'),
-    svc=LinearSVC(penalty='l2', class_weight='auto'),
-    logistic_l1=LogisticRegression(penalty='l1', class_weight='auto'),
-    logistic_l2=LogisticRegression(penalty='l2', class_weight='auto'),
-    logistic=LogisticRegression(penalty='l2', class_weight='auto'),
-    ridge_classifier=RidgeClassifier(class_weight='auto'),
+    svc_l1=LinearSVC(penalty='l1', dual=False),
+    svc_l2=LinearSVC(penalty='l2'),
+    svc=LinearSVC(penalty='l2'),
+    logistic_l1=LogisticRegression(penalty='l1'),
+    logistic_l2=LogisticRegression(penalty='l2'),
+    logistic=LogisticRegression(penalty='l2'),
+    ridge_classifier=RidgeClassifier(),
     ridge_regression=Ridge(),
     svr=SVR(kernel='linear'),
 )

@@ -48,7 +48,7 @@ def test_decoder_score():
     masker = NiftiMasker(mask_img=mask_img).fit()
 
     # testing two classifiers
-    for estimator in ['svc', 'logistic_l2']:
+    for estimator in ['svc', 'ridge_classifier']:
         for mask in [None, masker]:
             gnc = Decoder(estimator=estimator, mask=mask,
                           standardize=False,
