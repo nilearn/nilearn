@@ -377,7 +377,7 @@ def fetch_atlas_varoquaux_2011(data_dir=None, url=None, resume=True,
     url = 'https://team.inria.fr/parietal/files/2015/01/MSDL_rois.zip'
     opts = {'uncompress': True}
 
-    dataset_name = "varoquaux_2011_atlas"
+    dataset_name = "varoquaux_2011"
     files = [(os.path.join('MSDL_rois', 'msdl_rois_labels.csv'), url, opts),
              (os.path.join('MSDL_rois', 'msdl_rois.nii'), url, opts)]
 
