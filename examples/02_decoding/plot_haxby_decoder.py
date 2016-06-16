@@ -11,8 +11,6 @@ reproducing a face vs house discrimination task on the study Haxby 2001.
 
 """
 
-import numpy as np
-
 # Load Haxby dataset
 from nilearn.datasets import fetch_haxby
 data_files = fetch_haxby(n_subjects=1)
@@ -24,6 +22,7 @@ from nilearn.image import mean_img
 background_img = mean_img(func_filenames)
 
 # Load Target labels
+import numpy as np
 labels = np.recfromcsv(labels_filenames, delimiter=" ")
 
 # Restrict to face and house conditions
@@ -57,7 +56,7 @@ decoder = Decoder(estimator='svc_l2', screening_percentile=20, cv=3,
 decoder.fit(X_train, y_train)
 y_pred = decoder.predict(X_test)
 
-weight_img = decoder.coef_img_['house']
+weight_img = decoder.coef_img_[b"house"]
 prediction_accuracy = np.mean(decoder.cv_scores_)
 
 print("=== DECODER ===")
