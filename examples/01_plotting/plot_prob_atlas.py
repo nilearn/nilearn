@@ -29,7 +29,7 @@ harvard_oxford = datasets.fetch_atlas_harvard_oxford('cort-prob-2mm')
 harvard_oxford_sub = datasets.fetch_atlas_harvard_oxford('sub-prob-2mm')
 
 # Multi Subject Dictionary Learning Atlas
-msdl = datasets.fetch_atlas_msdl()
+msdl = datasets.fetch_atlas_varoquaux_2011()
 
 # Smith ICA Atlas and Brain Maps 2009
 smith = datasets.fetch_atlas_smith_2009()
@@ -42,7 +42,8 @@ from nilearn import plotting
 
 atlas_types = {'Harvard_Oxford': harvard_oxford.maps,
                'Harvard_Oxford sub': harvard_oxford_sub.maps,
-               'MSDL': msdl.maps, 'Smith 2009 10 RSNs': smith.rsn10,
+               'Varoquaux 2011': msdl.maps,
+               'Smith 2009 10 RSNs': smith.rsn10,
                'Smith2009 20 RSNs': smith.rsn20,
                'Smith2009 70 RSNs': smith.rsn70,
                'Smith2009 20 Brainmap': smith.bm20,

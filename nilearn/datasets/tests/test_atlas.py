@@ -229,8 +229,8 @@ def test_fetch_atlas_destrieux_2009():
 
 @with_setup(setup_mock, teardown_mock)
 @with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
-def test_fetch_atlas_msdl():
-    datadir = os.path.join(tst.tmpdir, 'msdl_atlas')
+def test_fetch_atlas_varoquaux_2011():
+    datadir = os.path.join(tst.tmpdir, 'varoquaux_2011_atlas')
     os.mkdir(datadir)
     os.mkdir(os.path.join(datadir, 'MSDL_rois'))
     data_dir = os.path.join(datadir, 'MSDL_rois', 'msdl_rois_labels.csv')
@@ -244,7 +244,7 @@ def test_fetch_atlas_msdl():
         csv_file.write(header.encode())
         np.savetxt(csv_file, csv, delimiter=',', fmt='%s')
 
-    dataset = atlas.fetch_atlas_msdl(data_dir=tst.tmpdir, verbose=0)
+    dataset = atlas.fetch_atlas_varoquaux_2011(data_dir=tst.tmpdir, verbose=0)
     assert_true(isinstance(dataset.labels, list))
     assert_true(isinstance(dataset.region_coords, list))
     assert_true(isinstance(dataset.networks, list))
