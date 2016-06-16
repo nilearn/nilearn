@@ -343,12 +343,6 @@ def fetch_atlas_msdl(data_dir=None, url=None, resume=True, verbose=1):
                  networks=net_names, description=fdescr)
 
 
-@deprecated('This function has been replace by fetch_coords_power_2011 and '
-            'will be removed in nilearn 0.2.5')
-def fetch_atlas_power_2011():
-    return fetch_coords_power_2011()
-
-
 def fetch_coords_power_2011():
     """Download and load the Power et al. brain atlas composed of 264 ROIs.
 
