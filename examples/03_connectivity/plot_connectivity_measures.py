@@ -12,7 +12,7 @@ standard measures.
 
 # Fetch dataset
 import nilearn.datasets
-atlas = nilearn.datasets.fetch_atlas_msdl()
+atlas = nilearn.datasets.fetch_atlas_varoquaux_2011()
 dataset = nilearn.datasets.fetch_adhd(n_subjects=30)
 
 

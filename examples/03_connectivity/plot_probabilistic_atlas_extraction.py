@@ -22,7 +22,7 @@ with the highest values.
 ############################################################################
 # Retrieve the atlas and the data
 from nilearn import datasets
-atlas = datasets.fetch_atlas_msdl()
+atlas = datasets.fetch_atlas_varoquaux_2011()
 # Loading atlas image stored in 'maps'
 atlas_filename = atlas['maps']
 # Loading atlas data stored in 'labels'

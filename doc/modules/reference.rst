@@ -65,7 +65,7 @@ uses.
    fetch_atlas_craddock_2012
    fetch_atlas_destrieux_2009
    fetch_atlas_harvard_oxford
-   fetch_atlas_msdl
+   fetch_atlas_varoquaux_2011
    fetch_coords_power_2011
    fetch_atlas_smith_2009
    fetch_atlas_yeo_2011

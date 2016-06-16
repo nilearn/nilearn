@@ -132,7 +132,7 @@ better our imperfect knowledge of boundaries in brain images (notably
 because of inter-subject registration errors). One example of such an
 atlas well suited to resting-state data analysis is the `MSDL atlas
 <https://team.inria.fr/parietal/research/spatial_patterns/spatial-patterns-in-resting-state/>`_
-(:func:`nilearn.datasets.fetch_atlas_msdl`).
+(:func:`nilearn.datasets.fetch_atlas_varoquaux_2011`).
 
 Probabilistic atlases are represented as a set of continuous maps, in a
 4D nifti image. Visualization the atlas thus requires to visualize each
@@ -184,7 +184,7 @@ the same considerations on using confounds regressors apply.
    Try to compute the correlation matrix of the first subject of the ADHD
    dataset downloaded with :func:`nilearn.datasets.fetch_adhd`
    with the MSDL atlas downloaded via
-   :func:`nilearn.datasets.fetch_atlas_msdl`.
+   :func:`nilearn.datasets.fetch_atlas_varoquaux_2011`.
 
    **Hint:** The example above has the solution.
 
@@ -200,8 +200,8 @@ connectome".
 
 We can display it with the :func:`nilearn.plotting.plot_connectome`
 function that take the matrix, and coordinates of the nodes in MNI space.
-In the case of the MSDL atlas
-(:func:`nilearn.datasets.fetch_atlas_msdl`), the CSV file readily comes
+In the case of the MSDL Varoquaux 2011 atlas
+(:func:`nilearn.datasets.fetch_atlas_varoquaux_2011`), the CSV file readily comes
 with MNI coordinates for each region (see for instance example:
 :ref:`sphx_glr_auto_examples_03_connectivity_plot_probabilistic_atlas_extraction.py`).
 
@@ -209,7 +209,7 @@ with MNI coordinates for each region (see for instance example:
     For doctesting
 
     >>> from nilearn import datasets
-    >>> atlas_filename = datasets.fetch_atlas_msdl().maps # doctest: +SKIP
+    >>> atlas_filename = datasets.fetch_atlas_varoquaux_2011().maps # doctest: +SKIP
 
 For another atlas this information can be computed for each region with
 the :func:`nilearn.plotting.find_xyz_cut_coords` function

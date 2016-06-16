@@ -279,8 +279,59 @@ def fetch_atlas_harvard_oxford(atlas_name, data_dir=None,
     return Bunch(maps=atlas_img, labels=new_names)
 
 
+@deprecated('This function has been replaced by fetch_atlas_varoquaux_2011 '
+            'and will be removed in nilearn 0.2.6')
 def fetch_atlas_msdl(data_dir=None, url=None, resume=True, verbose=1):
     """Download and load the MSDL brain atlas.
+
+    Parameters
+    ----------
+    data_dir: string, optional
+        Path of the data directory. Used to force data storage in a specified
+        location. Default: None
+
+    url: string, optional
+        Override download URL. Used for test only (or if you setup a mirror of
+        the data).
+
+    Returns
+    -------
+    data: sklearn.datasets.base.Bunch
+        Dictionary-like object, the interest attributes are :
+
+        - 'maps': str, path to nifti file containing regions definition.
+        - 'labels': string list containing the labels of the regions.
+        - 'region_coords': tuple list (x, y, z) containing coordinates
+          of each region in MNI space.
+        - 'networks': string list containing names of the networks.
+        - 'description': description about the atlas.
+
+
+    References
+    ----------
+    :Download:
+        https://team.inria.fr/parietal/files/2015/01/MSDL_rois.zip
+
+    :Paper to cite:
+        `Multi-subject dictionary learning to segment an atlas of brain
+        spontaneous activity <http://hal.inria.fr/inria-00588898/en>`_
+        Gael Varoquaux, Alexandre Gramfort, Fabian Pedregosa, Vincent Michel,
+        Bertrand Thirion. Information Processing in Medical Imaging, 2011,
+        pp. 562-573, Lecture Notes in Computer Science.
+
+    :Other references:
+        `Learning and comparing functional connectomes across subjects
+        <http://hal.inria.fr/hal-00812911/en>`_.
+        Gael Varoquaux, R.C. Craddock NeuroImage, 2013.
+
+    """
+    return fetch_atlas_varoquaux_2011(data_dir=data_dir, url=url,
+                                      resume=resume, verbose=verbose)
+
+
+def fetch_atlas_varoquaux_2011(data_dir=None, url=None, resume=True,
+                               verbose=1):
+    """Download and load the MSDL Varoquaux 2011 brain atlas.
 
     Parameters
     ----------
@@ -326,7 +377,7 @@ def fetch_atlas_msdl(data_dir=None, url=None, resume=True, verbose=1):
     url = 'https://team.inria.fr/parietal/files/2015/01/MSDL_rois.zip'
     opts = {'uncompress': True}
 
-    dataset_name = "msdl_atlas"
+    dataset_name = "varoquaux_2011_atlas"
     files = [(os.path.join('MSDL_rois', 'msdl_rois_labels.csv'), url, opts),
              (os.path.join('MSDL_rois', 'msdl_rois.nii'), url, opts)]
 

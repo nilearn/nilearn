@@ -24,7 +24,7 @@ with less control over the plot (see below)
 
 from nilearn import datasets, plotting, image
 
-atlas_data = datasets.fetch_atlas_msdl()
+atlas_data = datasets.fetch_atlas_varoquaux_2011()
 atlas_filename = atlas_data.maps
 
 # First plot the map for the PCC: index 4 in the atlas
