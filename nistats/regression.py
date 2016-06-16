@@ -203,7 +203,7 @@ class OLSModel(object):
         beta = np.dot(self.calc_beta, wY)
         wresid = wY - np.dot(self.wdesign, beta)
         dispersion = np.sum(wresid ** 2, 0) / (self.wdesign.shape[0] -
-                                                self.wdesign.shape[1])
+                                               self.wdesign.shape[1])
         lfit = RegressionResults(beta, Y, self,
                                  wY, wresid, dispersion=dispersion,
                                  cov=self.normalized_cov_beta)
@@ -243,7 +243,6 @@ class ARModel(OLSModel):
                 self.rho.shape = (1,)
             self.order = self.rho.shape[0]
         super(ARModel, self).__init__(design)
-
 
     def whiten(self, X):
         """ Whiten a series of columns according to AR(p) covariance structure
@@ -330,3 +329,65 @@ class RegressionResults(LikelihoodModelResults):
     def MSE(self):
         """ Mean square (error) """
         return self.SSE / self.df_resid
+
+
+class SimpleRegressionResults(LikelihoodModelResults):
+    """This class contains only information of the model fit necessary
+    for contast computation.
+
+    Its intended to save memory when details of the model are unnecessary.
+    """
+    def __init__(self, results):
+        """See LikelihoodModelResults constructor.
+
+        The only difference is that the whitened Y and residual values
+        are stored for a regression model.
+        """
+        self.theta = results.theta
+        self.cov = results.cov
+        self.dispersion = results.dispersion
+        self.nuisance = results.nuisance
+
+        self.df_total = results.Y.shape[0]
+        self.df_model = results.model.df_model
+        # put this as a parameter of LikelihoodModel
+        self.df_resid = self.df_total - self.df_model
+
+    def logL(self, Y):
+        """
+        The maximized log-likelihood
+        """
+        raise ValueError('can not use this method for simple results')
+
+    def resid(self, Y):
+        """
+        Residuals from the fit.
+        """
+        return Y - self.predicted
+
+    def norm_resid(self, Y):
+        """
+        Residuals, normalized to have unit length.
+
+        Notes
+        -----
+        Is this supposed to return "stanardized residuals,"
+        residuals standardized
+        to have mean zero and approximately unit variance?
+
+        d_i = e_i / sqrt(MS_E)
+
+        Where MS_E = SSE / (n - k)
+
+        See: Montgomery and Peck 3.2.1 p. 68
+             Davidson and MacKinnon 15.2 p 662
+        """
+        return self.resid(Y) * pos_recipr(np.sqrt(self.dispersion))
+
+    def predicted(self):
+        """ Return linear predictor values from a design matrix.
+        """
+        beta = self.theta
+        # the LikelihoodModelResults has parameters named 'theta'
+        X = self.model.design
+        return np.dot(X, beta)

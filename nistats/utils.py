@@ -7,8 +7,45 @@ import scipy.linalg as spl
 import numpy as np
 from scipy.stats import norm
 from warnings import warn
+import pandas as pd
 
 py3 = sys.version_info[0] >= 3
+
+
+def _check_list_length_match(list_1, list_2, var_name_1, var_name_2):
+    """Check length match of two given lists to raise error if necessary"""
+    if len(list_1) != len(list_2):
+        raise ValueError(
+            'len(%s) %d does not match len(%s) %d'
+            % (str(var_name_1), len(list_1), str(var_name_2), len(list_2)))
+
+
+def _check_and_load_tables(tables_, var_name):
+    """Check tables can be loaded in DataFrame to raise error if necessary"""
+    tables = []
+    for table_idx, table in enumerate(tables_):
+        if isinstance(table, _basestring):
+            try:
+                loaded = pd.read_csv(table, index_col=0)
+            except:
+                raise ValueError('table path %s could not be loaded' % table)
+            tables.append(loaded)
+        elif isinstance(table, pd.DataFrame):
+            tables.append(table)
+        else:
+            raise TypeError('%s can only be a pandas DataFrames or a'
+                            'string. A %s was provided at idx %d' %
+                            (var_name, type(table), table_idx))
+    return tables
+
+
+def _check_run_tables(run_imgs, tables_, tables_name):
+    """Check fMRI runs and corresponding tables to raise error if necessary"""
+    if isinstance(tables_, (_basestring, pd.DataFrame)):
+        tables_ = [tables_]
+    _check_list_length_match(run_imgs, tables_, 'run_imgs', tables_name)
+    tables_ = _check_and_load_tables(tables_, tables_name)
+    return tables_
 
 
 def z_score(pvalue):

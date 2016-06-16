@@ -23,39 +23,31 @@ import numpy as np
 import pandas as pd
 from nilearn import plotting
 
-from nistats.glm import FirstLevelGLM
-from nistats.design_matrix import make_design_matrix
+from nistats.first_level_model import FirstLevelModel
 from nistats import datasets
 
 
 ### Data and analysis parameters #######################################
 
 # timing
-n_scans = 128
-tr = 2.4
-frame_times = np.linspace(0.5 * tr, (n_scans - .5) * tr, n_scans)
+t_r = 2.4
+slice_time_ref = 0.5
 
 # data
 data = datasets.fetch_localizer_first_level()
 paradigm_file = data.paradigm
-fmri_img = data.epi_img
-
-### Design matrix ########################################
-
 paradigm = pd.read_csv(paradigm_file, sep=' ', header=None, index_col=None)
 paradigm.columns = ['session', 'name', 'onset']
-n_conditions = len(paradigm.name.unique())
-design_matrix = make_design_matrix(
-    frame_times, paradigm, hrf_model='glover + derivative',
-    drift_model='cosine', period_cut=128)
+fmri_img = data.epi_img
 
 ### Perform a GLM analysis ########################################
+first_level_model = FirstLevelModel(t_r, slice_time_ref,
+                                    hrf_model='glover + derivative')
+first_level_model = first_level_model.fit(fmri_img, paradigm)
 
-fmri_glm = FirstLevelGLM().fit(fmri_img, design_matrix)
-
-### Estimate contrasts #########################################
-
+# Estimate contrasts #########################################
 # Specify the contrasts
+design_matrix = first_level_model.design_matrices_[0]
 contrast_matrix = np.eye(design_matrix.shape[1])
 contrasts = dict([(column, contrast_matrix[i])
                   for i, column in enumerate(design_matrix.columns)])
@@ -88,8 +80,9 @@ if not path.exists(write_dir):
 for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
     print('  Contrast % 2i out of %i: %s' %
           (index + 1, len(contrasts), contrast_id))
-    z_map, = fmri_glm.transform(contrast_val, contrast_name=contrast_id,
-                                output_z=True)
+    z_map = first_level_model.compute_contrast(contrast_val,
+                                               contrast_name=contrast_id,
+                                               output_type='z_score')
 
     # Create snapshots of the contrasts
     display = plotting.plot_stat_map(z_map, display_mode='z',

@@ -34,7 +34,7 @@ from nilearn import plotting
 from nilearn.image import mean_img
 import nibabel as nib
 
-from nistats.glm import FirstLevelGLM
+from nistats.first_level_model import FirstLevelModel
 from nistats import datasets
 
 
@@ -51,10 +51,9 @@ design_files = [data['design_matrix1'], data['design_matrix2']]
 design_matrices = [pd.DataFrame(np.load(df)['X']) for df in design_files]
 
 # GLM specification
-fmri_glm = FirstLevelGLM(data['mask'], standardize=False, noise_model='ar1')
-
+fmri_glm = FirstLevelModel(mask=data['mask'], minimize_memory=True)
 # GLM fitting
-fmri_glm.fit(fmri_img, design_matrices)
+fmri_glm = fmri_glm.fit(fmri_img, design_matrices=design_matrices)
 
 # compute fixed effects of the two runs and compute related images
 n_columns = design_matrices[0].shape[1]
@@ -75,8 +74,8 @@ for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
     print('  Contrast % 2i out of %i: %s' % (
         index + 1, len(contrasts), contrast_id))
     z_image_path = path.join(write_dir, '%s_z_map.nii' % contrast_id)
-    z_map, = fmri_glm.transform(
-        [contrast_val] * 2, contrast_name=contrast_id, output_z=True)
+    z_map = fmri_glm.compute_contrast(
+        contrast_val, contrast_name=contrast_id, output_type='z_score')
     nib.save(z_map, z_image_path)
 
     # make a snapshot of the contrast activation

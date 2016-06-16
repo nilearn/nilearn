@@ -16,11 +16,9 @@ from nistats.design_matrix import (
     _convolve_regressors, make_design_matrix,
     _cosine_drift, plot_design_matrix, check_design_matrix)
 
-from nistats.experimental_paradigm import check_paradigm
-
 from nibabel.tmpdirs import InTemporaryDirectory
 
-from nose.tools import assert_true, assert_equal, assert_raises
+from nose.tools import assert_true, assert_equal
 from numpy.testing import assert_almost_equal, dec, assert_array_equal
 
 # Set the backend to avoid having DISPLAY problems
@@ -159,6 +157,18 @@ def test_design_matrix0d():
     assert_equal(X.shape[1], 8)
 
 
+def test_convolve_regressors():
+    # tests for convolve_regressors helper function
+    conditions = ['c0', 'c1']
+    onsets = [20, 40]
+    paradigm = pd.DataFrame({'name': conditions,
+                             'onset': onsets})
+    # names not passed -> default names
+    frame_times = np.arange(100)
+    f, names = _convolve_regressors(paradigm, 'glover', frame_times)
+    assert_equal(names, ['c0', 'c1'])
+
+
 def test_design_matrix1():
     # basic test based on basic_paradigm and glover hrf
     tr = 1.0
@@ -166,52 +176,10 @@ def test_design_matrix1():
     paradigm = basic_paradigm()
     hrf_model = 'glover'
     X, names = design_matrix_light(frame_times, paradigm, hrf_model=hrf_model,
-                            drift_model='polynomial', drift_order=3)
+                                   drift_model='polynomial', drift_order=3)
     assert_equal(len(names), 7)
-
-
-def test_convolve_regressors():
-    # tests for convolve_regressors helper function
-    conditions = ['c0', 'c1']
-    onsets = [20, 40]
-    paradigm = pd.DataFrame({'name': conditions,
-                          'onset': onsets})
-    # names not passed -> default names
-    frame_times = np.arange(100)
-    f, names = _convolve_regressors(paradigm, 'glover', frame_times)
-    assert_equal(names, ['c0', 'c1'])
-
-
-def test_design_matrix1b():
-    # idem test_design_matrix1, but different test
-    tr = 1.0
-    frame_times = np.linspace(0, 127 * tr, 128)
-    paradigm = basic_paradigm()
-    hrf_model = 'glover'
-    X, names = design_matrix_light(frame_times, paradigm, hrf_model=hrf_model,
-                        drift_model='polynomial', drift_order=3)
     assert_equal(X.shape, (128, 7))
-
-
-def test_design_matrix1c():
-    # idem test_design_matrix1, but different test
-    tr = 1.0
-    frame_times = np.linspace(0, 127 * tr, 128)
-    paradigm = basic_paradigm()
-    hrf_model = 'glover'
-    X, names = design_matrix_light(frame_times, paradigm, hrf_model=hrf_model,
-                        drift_model='polynomial', drift_order=3)
     assert_true((X[:, - 1] == 1).all())
-
-
-def test_design_matrix1d():
-    # idem test_design_matrix1, but different test
-    tr = 1.0
-    frame_times = np.linspace(0, 127 * tr, 128)
-    paradigm = basic_paradigm()
-    hrf_model = 'glover'
-    X, names = design_matrix_light(frame_times, paradigm, hrf_model=hrf_model,
-                        drift_model='polynomial', drift_order=3)
     assert_true((np.isnan(X) == 0).all())
 
 
@@ -469,7 +437,7 @@ def test_csv_io():
     frame_times = np.linspace(0, 127 * tr, 128)
     paradigm = modulated_event_paradigm()
     DM = make_design_matrix(frame_times, paradigm, hrf_model='glover',
-                   drift_model='polynomial', drift_order=3)
+                            drift_model='polynomial', drift_order=3)
     path = 'design_matrix.csv'
     with InTemporaryDirectory():
         DM.to_csv(path)
@@ -488,7 +456,7 @@ def test_spm_1():
     conditions = ['c0', 'c0', 'c0', 'c1', 'c1', 'c1', 'c2', 'c2', 'c2']
     onsets = [30, 50, 70, 10, 30, 80, 30, 40, 60]
     paradigm = pd.DataFrame({'name': conditions,
-                          'onset': onsets})
+                             'onset': onsets})
     X1 = make_design_matrix(frame_times, paradigm, drift_model='blank')
     _, matrix, _ = check_design_matrix(X1)
     spm_design_matrix = DESIGN_MATRIX['arr_0']
@@ -504,8 +472,8 @@ def test_spm_2():
     onsets = [30, 50, 70, 10, 30, 80, 30, 40, 60]
     duration = 10 * np.ones(9)
     paradigm = pd.DataFrame({'name': conditions,
-                          'onset': onsets,
-                          'duration': duration})
+                             'onset': onsets,
+                             'duration': duration})
     X1 = make_design_matrix(frame_times, paradigm, drift_model='blank')
     spm_design_matrix = DESIGN_MATRIX['arr_1']
     _, matrix, _ = check_design_matrix(X1)
