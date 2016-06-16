@@ -237,7 +237,7 @@ def test_first_level_model_design_creation():
         # check design computation is identical
         n_scans = func_img.get_data().shape[3]
         start_time = slice_time_ref * t_r
-        end_time = (n_scans - slice_time_ref) * t_r
+        end_time = (n_scans - 1 + slice_time_ref) * t_r
         frame_times = np.linspace(start_time, end_time, n_scans)
         design = make_design_matrix(frame_times, paradigm,
                                     drift_model='polynomial', drift_order=3)

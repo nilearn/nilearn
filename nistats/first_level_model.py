@@ -404,7 +404,7 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
                     confounds_matrix = None
                     confounds_names = None
                 start_time = self.slice_time_ref * self.t_r
-                end_time = (n_scans - self.slice_time_ref) * self.t_r
+                end_time = (n_scans - 1 + self.slice_time_ref) * self.t_r
                 frame_times = np.linspace(start_time, end_time, n_scans)
                 design = make_design_matrix(frame_times, paradigms[run_idx],
                                             self.hrf_model, self.drift_model,
