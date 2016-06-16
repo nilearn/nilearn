@@ -17,6 +17,7 @@ except:
     # scikit-learn >= 0.16
     from sklearn.cross_validation import check_cv
 
+
 # atleast2d_or_csr
 try:
     from sklearn.utils import atleast2d_or_csr

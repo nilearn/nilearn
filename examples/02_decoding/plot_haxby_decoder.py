@@ -28,7 +28,7 @@ labels = np.recfromcsv(labels_filenames, delimiter=" ")
 
 # Restrict to face and house conditions
 target = labels['labels']
-condition_mask = np.logical_or(target == "face", target == "house")
+condition_mask = np.logical_or(target == b"face", target == b"house")
 
 # Split data into train and test samples, using the chunks
 condition_mask_train = np.logical_and(condition_mask, labels['chunks'] <= 6)
@@ -45,6 +45,7 @@ X_train = index_img(func_filenames, condition_mask_train)
 X_test = index_img(func_filenames, condition_mask_test)
 y_train = target[condition_mask_train]
 y_test = target[condition_mask_test]
+
 
 # Prediction with Decoder
 from nilearn.decoding import Decoder
