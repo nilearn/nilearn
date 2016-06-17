@@ -258,7 +258,7 @@ def fetch_fiac_first_level(data_dir=None, verbose=1):
     def _glob_fiac_data():
         """glob data from subject_dir."""
         _subject_data = {}
-        subject_dir = os.path.join(data_dir, 'nipy-data-0.2/data/fiac/fiac0')
+        subject_dir = os.path.join(data_dir, 'fiac/fiac0')
         for session in [1, 2]:
             # glob func data for session session + 1
             session_func = os.path.join(subject_dir, 'run%i.nii.gz' % session)
