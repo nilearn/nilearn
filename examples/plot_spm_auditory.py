@@ -70,9 +70,9 @@ for contrast_id, contrast_val in contrasts.items():
     t_map = fmri_glm.compute_contrast(contrasts[contrast_id],
                 contrast_name=contrast_id, output_type='stat')
     eff_map = fmri_glm.compute_contrast(contrasts[contrast_id],
-                contrast_name=contrast_id, output_type='eff')
+                contrast_name=contrast_id, output_type='effect_size')
     var_map = fmri_glm.compute_contrast(contrasts[contrast_id],
-                contrast_name=contrast_id, output_type='var')
+                contrast_name=contrast_id, output_type='effect_variance')
     # store stat maps to disk
     for dtype, out_map in zip(['z', 't', 'effects', 'variance'],
                               [z_map, t_map, eff_map, var_map]):
