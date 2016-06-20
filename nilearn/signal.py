@@ -347,7 +347,7 @@ def _ensure_float(data):
 
 
 def clean(signals, sessions=None, detrend=True, standardize=True,
-          confounds=None, low_pass=None, high_pass=None, t_r=2.5):
+          confounds=None, low_pass=None, high_pass=None, t_r=None):
     """Improve SNR on masked fMRI signals.
 
     This function can do several things on the input signals, in
@@ -416,6 +416,10 @@ def clean(signals, sessions=None, detrend=True, standardize=True,
     --------
         nilearn.image.clean_img
     """
+    if t_r is None:
+        warnings.warn('Repetition time (t_r) value not found. '
+                            'Setting t_r as 2.5')
+        t_r = 2.5
 
     if not isinstance(confounds,
                       (list, tuple, _basestring, np.ndarray, type(None))):
@@ -472,7 +476,7 @@ def clean(signals, sessions=None, detrend=True, standardize=True,
                 clean(signals[sessions == s],
                       detrend=detrend, standardize=standardize,
                       confounds=session_confounds, low_pass=low_pass,
-                      high_pass=high_pass, t_r=2.5)
+                      high_pass=high_pass, t_r=t_r)
 
     # detrend
     signals = _ensure_float(signals)
