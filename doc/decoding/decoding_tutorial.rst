@@ -68,56 +68,39 @@ corresponding category.
 Loading the data into Python
 ----------------------------
 
-Launch IPython::
+.. topic:: **Full code example**
 
-  ipython --matplotlib
+   A full example, with explanation, can be found on
+   :ref:`sphx_glr_auto_examples_plot_decoding_tutorial.py`
 
-First, load the data using nilearn data downloading function,
-:func:`nilearn.datasets.fetch_haxby` (if the data is not present
-on the disk, it can take a while to download about 310 Mo of data
-from the Internet):
+* **Starting an environment**: Launch IPython via "ipython --matplotlib"
+  in a terminal, or use the Jupyter notebook.
 
-.. literalinclude:: ../../examples/plot_haxby_simple.py
-    :start-after: # Retrieve and load the Haxby dataset
-    :end-before: # Load the behavioral labels
+* **Fetching the data**: In the tutorial, we load the data using nilearn
+  data downloading function, :func:`nilearn.datasets.fetch_haxby` (if the
+  data is not present on the disk, it can take a while to download about
+  310 Mo of data from the Internet):
 
-The ``haxby_dataset`` object has several entries that contain paths to the files
-downloaded on the disk::
+  It return an object with several entries that contain paths to the
+  files downloaded on the disk.
 
-    >>> print(haxby_dataset)  # doctest: +SKIP
-    {'anat': ['/home/user/nilearn_data/haxby2001/subj1/anat.nii.gz'],
-    'func': ['/home/user/nilearn_data/haxby2001/subj1/bold.nii.gz'],
-    'mask_face': ['/home/user/nilearn_data/haxby2001/subj1/mask8b_face_vt.nii.gz'],
-    'mask_face_little': ['/home/user/nilearn_data/haxby2001/subj1/mask8_face_vt.nii.gz'],
-    'mask_house': ['/home/user/nilearn_data/haxby2001/subj1/mask8b_house_vt.nii.gz'],
-    'mask_house_little': ['/home/user/nilearn_data/haxby2001/subj1/mask8_house_vt.nii.gz'],
-    'mask_vt': ['/home/user/nilearn_data/haxby2001/subj1/mask4_vt.nii.gz'],
-    'session_target': ['/home/user/nilearn_data/haxby2001/subj1/labels.txt']}
+* **Loading the behavioral labels**: Behavioral information is often stored
+  in a text file such as a CSV, and must be load with
+  **numpy.recfromcsv** or `pandas <http://pandas.pydata.org/>`_
 
+* **Preparing the fMRI data**: we use the
+  :class:`nilearn.input_data.NiftiMasker` to apply the `mask_vt` mask to
+  the 4D fMRI data, so that its shape becomes (n_samples, n_features)
+  (see :ref:`mask_4d_2_3d` for a discussion on using masks).
 
-We load the behavioral labels from the corresponding text file and limit
-our analysis to the `face` and `cat` conditions:
-
-.. literalinclude:: ../../examples/plot_haxby_simple.py
-    :start-after: # Load the behavioral labels
-    :end-before: # Prepare the data: apply the mask
-
-.. currentmodule:: nilearn.input_data
-
-Then we prepare the fMRI data: we use the :class:`NiftiMasker` to apply the
-`mask_vt` mask to the 4D fMRI data, so that its shape becomes (n_samples,
-n_features) (see :ref:`mask_4d_2_3d` for a discussion on using masks).
-
+* **Sample mask**: Masking some of the data points may be useful to
+  restrict to a specific pair of conditions (*eg* cats versus faces).
 
 .. note::
 
    Seemingly minor data preparation can matter a lot on the final score,
    for instance standardizing the data.
 
-
-.. literalinclude:: ../../examples/plot_haxby_simple.py
-    :start-after: # Prepare the data: apply the mask
-    :end-before: # The decoding
 
 .. seealso::
 
@@ -138,18 +121,13 @@ An estimator object
 To perform decoding we construct an estimator, predicting a condition
 label **y** given a set **X** of images.
 
-We use here a simple `Support Vector Classification
+In the tutorial, we use a simple `Support Vector Classification
 <http://scikit-learn.org/stable/modules/svm.html>`_ (or SVC) with a
-linear kernel. We first import the correct module from scikit-learn and we
-define the classifier, :class:`sklearn.svm.SVC`:
+linear kernel. The corresponding class, :class:`sklearn.svm.SVC`, needs
+to be imported from the scikit-learn.
 
-.. literalinclude:: ../../examples/plot_haxby_simple.py
-    :start-after: # Here we use a Support Vector Classification, with a linear kernel
-    :end-before: # And we run it
-
-
-The documentation of the object details all parameters. In IPython, it
-can be displayed as follows::
+Note that the documentation of the object details all parameters. In
+IPython, it can be displayed as follows::
 
     In [10]: svc?
     Type:             SVC
@@ -183,10 +161,6 @@ In scikit-learn, the prediction objects have two important methods:
   Here, we just have to give the new set of images (as the target should be
   unknown):
 
-.. literalinclude:: ../../examples/plot_haxby_simple.py
-    :start-after: # And we run it
-    :end-before: # Compute prediction scores using cross-validation
-
 .. warning::
 
     **Do not predict on data used by the fit:** the prediction that we obtain
@@ -208,15 +182,6 @@ the *same* set of data. We need to use a cross-validation to split the data
 into different sets, called "folds", in a `K-Fold strategy
 <https://en.wikipedia.org/wiki/Cross-validation_(statistics)#k-fold_cross-validation>`_.
 
-We use a cross-validation object,
-:class:`sklearn.cross_validation.KFold`, that simply generates the
-indexes of the folds within a loop.
-
-.. literalinclude:: ../../examples/plot_haxby_simple.py
-    :start-after: # Compute prediction scores using cross-validation
-    :end-before: print(cv_scores)
-
-
 .. for doctests:
    >>> cv = 2
 
@@ -225,13 +190,15 @@ There is a specific function,
 the score for the different folds of cross-validation::
 
   >>> from sklearn.cross_validation import cross_val_score
-  >>> cv_scores = cross_val_score(svc, fmri_masked, target, cv=cv)  # doctest: +SKIP
+  >>> cv_scores = cross_val_score(svc, fmri_masked, target, cv=5)  # doctest: +SKIP
+
+`cv=5` stipulates a 5-fold cross-validation.
 
 You can speed up the computation by using n_jobs=-1, which will spread
 the computation equally across all processors (but will probably not work
 under Windows)::
 
- >>> cv_scores = cross_val_score(svc, fmri_masked, target, cv=cv, n_jobs=-1, verbose=10) #doctest: +SKIP
+ >>> cv_scores = cross_val_score(svc, fmri_masked, target, cv=5, n_jobs=-1, verbose=10) #doctest: +SKIP
 
 **Prediction accuracy**: We can take a look at the results of the
 `cross_val_score` function::
@@ -258,17 +225,14 @@ In these regards, leave one out is often one of the worst options.
 Here, in the Haxby example, we are going to leave a session out, in order
 to have a test set independent from the train set. For this, we are going
 to use the session label, present in the behavioral data file, and
-:class:`sklearn.cross_validation.LeaveOneLabelOut`::
+:class:`sklearn.cross_validation.LeaveOneLabelOut`.
 
-    >>> from sklearn.cross_validation import LeaveOneLabelOut
-    >>> session_label = labels['chunks']  # doctest: +SKIP
-    >>> # We need to remember to remove the rest conditions
-    >>> session_label = session_label[condition_mask]  # doctest: +SKIP
-    >>> cv = LeaveOneLabelOut(labels=session_label)  # doctest: +SKIP
-    >>> cv_scores = cross_val_score(svc, fmri_masked, target, cv=cv)  # doctest: +SKIP
-    >>> print(cv_scores)  # doctest: +SKIP
-    [ 1.          0.61111111  0.94444444  0.88888889  0.88888889  0.94444444
-      0.72222222  0.94444444  0.5         0.72222222  0.5         0.55555556]
+.. note::
+
+   Full code for the above can be found on
+   :ref:`sphx_glr_auto_examples_plot_decoding_tutorial.py`
+
+|
 
 .. topic:: **Exercise**
    :class: green
@@ -355,13 +319,15 @@ We can visualize the weights of the decoder:
 - we then create a figure and plot as a background the first EPI image
 - finally we plot the SVC's weights after masking the zero values
 
-.. literalinclude:: ../../examples/plot_haxby_simple.py
-    :start-after: # Retrieve the discriminating weights and save them
-    :end-before: # Visualize the discriminating weights over the mean EPI
 
-.. figure:: ../auto_examples/images/sphx_glr_plot_haxby_simple_001.png
-   :target: ../auto_examples/plot_haxby_simple.html
+.. figure:: ../auto_examples/images/sphx_glr_plot_decoding_tutorial_002.png
+   :target: ../auto_examples/plot_decoding_tutorial.html
    :scale: 65
+
+.. note::
+
+   Full code for the above can be found on
+   :ref:`sphx_glr_auto_examples_plot_decoding_tutorial.py`
 
 
 .. seealso::
