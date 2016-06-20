@@ -63,16 +63,20 @@ to the subjects from the brain activation.
 These conditions are presented as string into a CSV file. The numpy function
 `recfromcsv` is very useful to load this kind of data.
 
-.. literalinclude:: ../../examples/plot_haxby_simple.py
-    :start-after: # Load the behavioral labels
-    :end-before: # Keep only data corresponding to faces or cats
+.. literalinclude:: ../../examples/plot_decoding_tutorial.py
+    :start-after: # We use numpy to load them in an array.
+    :end-before: ###########################################################################
 
+.. seealso::
+
+   * `pandas <http://pandas.pydata.org/>`_ is a very useful Python
+     library to load CSV files and process their data
 
 For example, we will now remove the *rest* condition from our dataset.
 This can be done as follows:
 
-.. literalinclude:: ../../examples/plot_haxby_simple.py
-    :start-after: # Keep only data corresponding to faces or cats
+.. literalinclude:: ../../examples/plot_decoding_tutorial.py
+    :start-after: # mask of the samples belonging to the condition.
     :end-before: ###########################################################################
 
 
@@ -116,8 +120,8 @@ We use masking to convert 4D data (i.e. 3D volume over time) into 2D data
 Applying a mask
 ................
 
-.. figure:: ../auto_examples/images/sphx_glr_plot_haxby_simple_002.png
-    :target: ../auto_examples/plot_haxby_simple.html
+.. figure:: ../auto_examples/images/sphx_glr_plot_decoding_tutorial_002.png
+    :target: ../auto_examples/plot_decoding_tutorial.html
     :align: right
     :scale: 30%
 
@@ -130,8 +134,8 @@ The :class:`NiftiMasker` can be seen as a *tube* that transforms data
 from 4D images to 2D arrays, but first it needs to 'fit' this data in
 order to learn simple parameters from it, such as its shape:
 
-.. literalinclude:: ../../examples/plot_haxby_simple.py
-    :start-after: # Prepare the data: apply the mask
+.. literalinclude:: ../../examples/plot_decoding_tutorial.py
+    :start-after: # Now we use the NiftiMasker.
     :end-before: ###########################################################################
 
 
@@ -158,9 +162,9 @@ scikit-learn, using its `fit`, `predict` or `transform` methods.
 Here, we use scikit-learn Support Vector Classification to learn how to
 predict the category of picture seen by the subject:
 
-.. literalinclude:: ../../examples/plot_haxby_simple.py
-    :start-after: # The decoding
-    :end-before: ###########################################################################
+.. literalinclude:: ../../examples/plot_decoding_tutorial.py
+    :start-after: # We first fit it on the data
+    :end-before: # Let's measure the error rate:
 
 
 We will not detail it here since there is a very good documentation about it in the
@@ -176,8 +180,8 @@ masked but also the results of an algorithm), the masker is clever and
 can take data of dimension 1D (resp. 2D) to convert it back to 3D
 (resp. 4D).
 
-.. literalinclude:: ../../examples/plot_haxby_simple.py
-    :start-after: # Retrieve the discriminating weights and save them
+.. literalinclude:: ../../examples/plot_decoding_tutorial.py
+    :start-after: # For this, we can call inverse_transform on the NiftiMasker:
     :end-before: ###########################################################################
 
 Here we want to see the discriminating weights of some voxels.
@@ -189,11 +193,11 @@ Again the visualization code is simple. We can use an fMRI slice as a
 background and plot the weights. Brighter points have a higher
 discriminating weight.
 
-.. literalinclude:: ../../examples/plot_haxby_simple.py
-    :start-after: # Visualize the discriminating weights over the mean EPI
+.. literalinclude:: ../../examples/plot_decoding_tutorial.py
+    :start-after: # We can plot the weights, using the subject's anatomical as a background
     :end-before: ###########################################################################
-.. figure:: ../auto_examples/images/sphx_glr_plot_haxby_simple_001.png
-    :target: ../auto_examples/plot_haxby_simple.html
+.. figure:: ../auto_examples/images/sphx_glr_plot_decoding_tutorial_002.png
+    :target: ../auto_examples/plot_decoding_tutorial.html
     :align: center
     :scale: 50%
 
