@@ -417,6 +417,9 @@ def clean(signals, sessions=None, detrend=True, standardize=True,
         nilearn.image.clean_img
     """
 
+    if isinstance(low_pass, bool) or isinstance(high_pass, bool):
+        raise TypeError("high pass and low pass must be float or None")
+
     if not isinstance(confounds,
                       (list, tuple, _basestring, np.ndarray, type(None))):
         raise TypeError("confounds keyword has an unhandled type: %s"
