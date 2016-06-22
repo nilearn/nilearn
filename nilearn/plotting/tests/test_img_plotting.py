@@ -859,7 +859,7 @@ def test_invalid_in_display_mode_cut_coords_all_plots():
 
 
 def test_outlier_cut_coords():
-    """ Test to plot a few cuts that are out of the """
+    """ Test to plot a subset of a large set of cuts found for a small area."""
     bg_img = load_mni152_template()
 
     data = np.zeros((79, 95, 79))
