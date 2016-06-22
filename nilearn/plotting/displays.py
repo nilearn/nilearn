@@ -584,7 +584,7 @@ class BaseSlicer(object):
         kwargs.setdefault('interpolation', 'nearest')
         ims = self._map_show(img, type='imshow', threshold=threshold, **kwargs)
 
-        if colorbar:
+        if colorbar and ims:
             self._show_colorbar(ims[0].cmap, ims[0].norm, threshold)
 
         plt.draw_if_interactive()
