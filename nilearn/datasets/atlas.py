@@ -2,7 +2,7 @@
 Downloading NeuroImaging datasets: atlas datasets
 """
 import os
-import xml.etree.ElementTree
+from xml.etree import ElementTree
 import numpy as np
 
 from sklearn.datasets.base import Bunch
@@ -227,7 +227,6 @@ def fetch_atlas_harvard_oxford(atlas_name, data_dir=None,
         resume=resume, verbose=verbose)
 
     names = {}
-    from xml.etree import ElementTree
     names[0] = 'Background'
     for label in ElementTree.parse(label_file).findall('.//label'):
         names[int(label.get('index')) + 1] = label.text
@@ -619,7 +618,7 @@ def fetch_atlas_aal(version='SPM12', data_dir=None, url=None, resume=True,
     fdescr = _get_dataset_descr(dataset_name)
 
     # We return the labels contained in the xml file as a dictionary
-    xml_tree = xml.etree.ElementTree.parse(labels_file)
+    xml_tree = ElementTree.parse(labels_file)
     root = xml_tree.getroot()
     labels = []
     indices = []
@@ -773,3 +772,117 @@ def fetch_coords_dosenbach_2010():
                   networks=out_csv['network'], description=fdescr)
 
     return Bunch(**params)
+
+
+def fetch_atlas_juelich_histological(atlas_name, data_dir=None,
+                                     symmetric_split=False,
+                                     resume=True, verbose=1):
+    """Loads Juelich histological atlases from FSL if installed.
+
+    Parameters
+    ----------
+    atlas_name: string
+        Name of atlas to load. Can be:
+        cort-maxprob-thr0-1mm,  cort-maxprob-thr0-2mm,
+        cort-maxprob-thr25-1mm, cort-maxprob-thr25-2mm,
+        cort-maxprob-thr50-1mm, cort-maxprob-thr50-2mm,
+        sub-maxprob-thr0-1mm,  sub-maxprob-thr0-2mm,
+        sub-maxprob-thr25-1mm, sub-maxprob-thr25-2mm,
+        sub-maxprob-thr50-1mm, sub-maxprob-thr50-2mm,
+        cort-prob-1mm, cort-prob-2mm,
+        sub-prob-1mm, sub-prob-2mm
+
+    data_dir: string, optional
+        Path of data directory. It can be FSL installation directory
+        (which is dependent on your installation).
+
+    symmetric_split: bool, optional
+        If True, split every symmetric region in left and right parts.
+        Effectively doubles the number of regions. Default: False.
+        Not implemented for probabilistic atlas (*-prob-* atlases)
+
+    Returns
+    -------
+    data: sklearn.datasets.base.Bunch
+        dictionary-like object, keys are:
+
+        - "maps": nibabel.Nifti1Image, 4D maps if a probabilistic atlas is
+          requested and 3D labels if a maximum probabilistic atlas was
+          requested.
+
+        - "labels": string list, labels of the regions in the atlas.
+    """
+    atlas_items = ('maxprob-thr0-1mm', 'maxprob-thr0-2mm', 'prob-1mm',
+                   'prob-2mm', 'maxprob-thr25-1mm', 'maxprob-thr25-2mm',
+                   'maxprob-thr50-1mm', 'maxprob-thr50-2mm')
+
+    if atlas_name not in atlas_items:
+        raise ValueError("Invalid atlas name: {0}. Please chose an atlas "
+                         "among:\n{1}".format(atlas_name,
+                                              '\n'.join(atlas_items)))
+
+    # For practical reasons, we mimic the FSL data directory here.
+    dataset_name = 'fsl'
+    # Environment variables
+    default_paths = []
+    for env_var in ['FSL_DIR', 'FSLDIR']:
+        path = os.getenv(env_var)
+        if path is not None:
+            default_paths.extend(path.split(':'))
+    if len(default_paths) == 0:
+        raise ValueError("Please export FSL_DIR or FSLDIR in your environ."
+                         " This can be done by sourcing the fsl.sh "
+                         "configuration file, for example.")
+
+    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
+                                default_paths=default_paths, verbose=verbose)
+    opts = dict(uncompress=True)
+    root = os.path.join('data', 'atlases')
+    atlas_file = os.path.join(root, 'Juelich',
+                              'Juelich-' + atlas_name + '.nii.gz')
+    label_file = os.path.join(data_dir, root, 'Juelich.xml')
+    atlas_img = os.path.join(data_dir, atlas_file)
+
+    names = {}
+    for label in ElementTree.parse(label_file).findall('.//label'):
+        names[int(label.get('index'))] = label.text
+    names = list(names.values())
+    if not symmetric_split:
+        return Bunch(maps=atlas_img, labels=names)
+
+    atlas_img = check_niimg(atlas_img)
+    atlas = atlas_img.get_data()
+
+    labels = np.unique(atlas)
+    # Build a mask of both halves of the brain
+    middle_ind = (atlas.shape[0] - 1) // 2
+    # Put zeros on the median plane
+    atlas[middle_ind, ...] = 0
+    # Split every zone crossing the median plane into two parts.
+    left_atlas = atlas.copy()
+    left_atlas[middle_ind:, ...] = 0
+    right_atlas = atlas.copy()
+    right_atlas[:middle_ind, ...] = 0
+
+    new_label = 0
+    new_atlas = atlas.copy()
+    # Assumes that the background label is zero.
+    new_names = [names[0]]
+    for label, name in zip(labels[1:], names[1:]):
+        new_label += 1
+        left_elements = (left_atlas == label).sum()
+        right_elements = (right_atlas == label).sum()
+        n_elements = float(left_elements + right_elements)
+        if (left_elements / n_elements < 0.05 or
+                right_elements / n_elements < 0.05):
+            new_atlas[atlas == label] = new_label
+            new_names.append(name)
+            continue
+        new_atlas[right_atlas == label] = new_label
+        new_names.append(name + ', left part')
+        new_label += 1
+        new_atlas[left_atlas == label] = new_label
+        new_names.append(name + ', right part')
+
+    atlas_img = new_img_like(atlas_img, new_atlas, atlas_img.get_affine())
+    return Bunch(maps=atlas_img, labels=new_names)

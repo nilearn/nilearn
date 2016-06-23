@@ -336,3 +336,60 @@ def test_fetch_coords_dosenbach_2010():
     assert_equal(len(bunch.labels), 160)
     assert_equal(len(np.unique(bunch.networks)), 6)
     assert_not_equal(bunch.description, '')
+
+
+@with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
+def test_fail_fetch_atlas_juelich_histological():
+    # specify non-existing atlas item
+    assert_raises_regex(ValueError, 'Invalid atlas name',
+                        atlas.fetch_atlas_juelich_histological,
+                        'not_inside')
+
+    # specify existing atlas item
+    target_atlas = 'maxprob-thr0-2mm'
+    target_atlas_fname = 'Juelich-' + target_atlas + '.nii.gz'
+
+    ho_dir = os.path.join(tst.tmpdir, 'fsl', 'data', 'atlases')
+    os.makedirs(ho_dir)
+    nifti_dir = os.path.join(ho_dir, 'Juelich')
+    os.makedirs(nifti_dir)
+
+    target_atlas_nii = os.path.join(nifti_dir, target_atlas_fname)
+
+    # Create false atlas
+    atlas_data = np.zeros((10, 10, 10), dtype=int)
+
+    # Create an interhemispheric map
+    atlas_data[:, :2, :] = 1
+
+    # Create a left map
+    atlas_data[:5, 3:5, :] = 2
+
+    # Create a right map, with one voxel on the left side
+    atlas_data[5:, 7:9, :] = 3
+    atlas_data[4, 7, 0] = 3
+
+    nibabel.Nifti1Image(atlas_data, np.eye(4) * 3).to_filename(
+        target_atlas_nii)
+
+    dummy = open(os.path.join(ho_dir, 'Juelich.xml'), 'w')
+    dummy.write("<?xml version='1.0' encoding='us-ascii'?>\n"
+                "<data>\n"
+                '<label index="0" x="48" y="94" z="35">R1</label>\n'
+                '<label index="1" x="25" y="70" z="32">R2</label>\n'
+                '<label index="2" x="33" y="73" z="63">R3</label>\n'
+                "</data>")
+    dummy.close()
+
+    ho = atlas.fetch_atlas_juelich_histological(target_atlas,
+                                                data_dir=tst.tmpdir,
+                                                symmetric_split=True)
+
+    assert_true(isinstance(ho.maps, nibabel.Nifti1Image))
+    assert_true(isinstance(ho.labels, list))
+    assert_equal(len(ho.labels), 5)
+    assert_equal(ho.labels[0], "Background")
+    assert_equal(ho.labels[1], "R1, left part")
+    assert_equal(ho.labels[2], "R1, right part")
+    assert_equal(ho.labels[3], "R2")
+    assert_equal(ho.labels[4], "R3")
