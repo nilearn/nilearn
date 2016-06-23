@@ -2,6 +2,7 @@
 Downloading NeuroImaging datasets: atlas datasets
 """
 import os
+import warnings
 from xml.etree import ElementTree
 import numpy as np
 
@@ -144,6 +145,61 @@ def fetch_atlas_destrieux_2009(lateralized=True, data_dir=None, url=None,
     return Bunch(**params)
 
 
+def _grab_atlas(atlas_img, label_file, symmetric_split=False,
+                add_background=True):
+    """Helper function for handling logic for grabbig an atlas.
+    """
+    names = {}
+    if add_background:
+        names[0] = 'Background'
+    for label in ElementTree.parse(label_file).findall('.//label'):
+        index = int(label.get('index'))
+        if add_background:
+            index += 1
+        names[index] = label.text
+    names = list(names.values())
+
+    if not symmetric_split:
+        return Bunch(maps=atlas_img, labels=names)
+
+    atlas_img = check_niimg(atlas_img)
+    atlas = atlas_img.get_data()
+
+    labels = np.unique(atlas)
+    # Build a mask of both halves of the brain
+    middle_ind = (atlas.shape[0] - 1) // 2
+    # Put zeros on the median plane
+    atlas[middle_ind, ...] = 0
+    # Split every zone crossing the median plane into two parts.
+    left_atlas = atlas.copy()
+    left_atlas[middle_ind:, ...] = 0
+    right_atlas = atlas.copy()
+    right_atlas[:middle_ind, ...] = 0
+
+    new_label = 0
+    new_atlas = atlas.copy()
+    # Assumes that the background label is zero.
+    new_names = [names[0]]
+    for label, name in zip(labels[1:], names[1:]):
+        new_label += 1
+        left_elements = (left_atlas == label).sum()
+        right_elements = (right_atlas == label).sum()
+        n_elements = float(left_elements + right_elements)
+        if (left_elements / n_elements < 0.05 or
+                right_elements / n_elements < 0.05):
+            new_atlas[atlas == label] = new_label
+            new_names.append(name)
+            continue
+        new_atlas[right_atlas == label] = new_label
+        new_names.append(name + ', left part')
+        new_label += 1
+        new_atlas[left_atlas == label] = new_label
+        new_names.append(name + ', right part')
+
+    atlas_img = new_img_like(atlas_img, new_atlas, atlas_img.get_affine())
+    return Bunch(maps=atlas_img, labels=new_names)
+
+
 def fetch_atlas_harvard_oxford(atlas_name, data_dir=None,
                                symmetric_split=False,
                                resume=True, verbose=1):
@@ -198,6 +254,10 @@ def fetch_atlas_harvard_oxford(atlas_name, data_dir=None,
         raise ValueError("Invalid atlas name: {0}. Please chose an atlas "
                          "among:\n{1}".format(
                              atlas_name, '\n'.join(atlas_items)))
+    if symmetric_split and atlas_name in ("cort-prob-1mm", "cort-prob-2mm",
+                                          "sub-prob-1mm", "sub-prob-2mm"):
+        raise ValueError("Region splitting not supported for probabilistic "
+                         "atlases")
 
     url = 'http://www.nitrc.org/frs/download.php/7700/HarvardOxford.tgz'
 
@@ -226,56 +286,7 @@ def fetch_atlas_harvard_oxford(atlas_name, data_dir=None,
         [(atlas_file, url, opts), (label_file, url, opts)],
         resume=resume, verbose=verbose)
 
-    names = {}
-    names[0] = 'Background'
-    for label in ElementTree.parse(label_file).findall('.//label'):
-        names[int(label.get('index')) + 1] = label.text
-    names = list(names.values())
-
-    if not symmetric_split:
-        return Bunch(maps=atlas_img, labels=names)
-
-    if atlas_name in ("cort-prob-1mm", "cort-prob-2mm",
-                      "sub-prob-1mm", "sub-prob-2mm"):
-        raise ValueError("Region splitting not supported for probabilistic "
-                         "atlases")
-
-    atlas_img = check_niimg(atlas_img)
-    atlas = atlas_img.get_data()
-
-    labels = np.unique(atlas)
-    # Build a mask of both halves of the brain
-    middle_ind = (atlas.shape[0] - 1) // 2
-    # Put zeros on the median plane
-    atlas[middle_ind, ...] = 0
-    # Split every zone crossing the median plane into two parts.
-    left_atlas = atlas.copy()
-    left_atlas[middle_ind:, ...] = 0
-    right_atlas = atlas.copy()
-    right_atlas[:middle_ind, ...] = 0
-
-    new_label = 0
-    new_atlas = atlas.copy()
-    # Assumes that the background label is zero.
-    new_names = [names[0]]
-    for label, name in zip(labels[1:], names[1:]):
-        new_label += 1
-        left_elements = (left_atlas == label).sum()
-        right_elements = (right_atlas == label).sum()
-        n_elements = float(left_elements + right_elements)
-        if (left_elements / n_elements < 0.05 or
-                right_elements / n_elements < 0.05):
-            new_atlas[atlas == label] = new_label
-            new_names.append(name)
-            continue
-        new_atlas[right_atlas == label] = new_label
-        new_names.append(name + ', left part')
-        new_label += 1
-        new_atlas[left_atlas == label] = new_label
-        new_names.append(name + ', right part')
-
-    atlas_img = new_img_like(atlas_img, new_atlas, atlas_img.get_affine())
-    return Bunch(maps=atlas_img, labels=new_names)
+    return _grab_atlas(atlas_img, label_file, symmetric_split=symmetric_split)
 
 
 def fetch_atlas_msdl(data_dir=None, url=None, resume=True, verbose=1):
@@ -829,60 +840,21 @@ def fetch_atlas_juelich_histological(atlas_name, data_dir=None,
         path = os.getenv(env_var)
         if path is not None:
             default_paths.extend(path.split(':'))
+
+    # handle case where data not found in default locations
     if len(default_paths) == 0:
-        raise ValueError("Please export FSL_DIR or FSLDIR in your environ."
-                         " This can be done by sourcing the fsl.sh "
-                         "configuration file, for example.")
+        warnings.warn("Neither FSL_DIR or FSLDIR in your environ found in."
+                      " environ. You can export by sourcing the fsl.sh "
+                      "configuration file, for example.")
 
     data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
                                 default_paths=default_paths, verbose=verbose)
-    opts = dict(uncompress=True)
     root = os.path.join('data', 'atlases')
     atlas_file = os.path.join(root, 'Juelich',
                               'Juelich-' + atlas_name + '.nii.gz')
     label_file = os.path.join(data_dir, root, 'Juelich.xml')
     atlas_img = os.path.join(data_dir, atlas_file)
-
-    names = {}
-    for label in ElementTree.parse(label_file).findall('.//label'):
-        names[int(label.get('index'))] = label.text
-    names = list(names.values())
-    if not symmetric_split:
-        return Bunch(maps=atlas_img, labels=names)
-
     atlas_img = check_niimg(atlas_img)
-    atlas = atlas_img.get_data()
 
-    labels = np.unique(atlas)
-    # Build a mask of both halves of the brain
-    middle_ind = (atlas.shape[0] - 1) // 2
-    # Put zeros on the median plane
-    atlas[middle_ind, ...] = 0
-    # Split every zone crossing the median plane into two parts.
-    left_atlas = atlas.copy()
-    left_atlas[middle_ind:, ...] = 0
-    right_atlas = atlas.copy()
-    right_atlas[:middle_ind, ...] = 0
-
-    new_label = 0
-    new_atlas = atlas.copy()
-    # Assumes that the background label is zero.
-    new_names = [names[0]]
-    for label, name in zip(labels[1:], names[1:]):
-        new_label += 1
-        left_elements = (left_atlas == label).sum()
-        right_elements = (right_atlas == label).sum()
-        n_elements = float(left_elements + right_elements)
-        if (left_elements / n_elements < 0.05 or
-                right_elements / n_elements < 0.05):
-            new_atlas[atlas == label] = new_label
-            new_names.append(name)
-            continue
-        new_atlas[right_atlas == label] = new_label
-        new_names.append(name + ', left part')
-        new_label += 1
-        new_atlas[left_atlas == label] = new_label
-        new_names.append(name + ', right part')
-
-    atlas_img = new_img_like(atlas_img, new_atlas, atlas_img.get_affine())
-    return Bunch(maps=atlas_img, labels=new_names)
+    return _grab_atlas(atlas_img, label_file, symmetric_split=symmetric_split,
+                       add_background=False)

@@ -349,9 +349,9 @@ def test_fail_fetch_atlas_juelich_histological():
     target_atlas = 'maxprob-thr0-2mm'
     target_atlas_fname = 'Juelich-' + target_atlas + '.nii.gz'
 
-    ho_dir = os.path.join(tst.tmpdir, 'fsl', 'data', 'atlases')
-    os.makedirs(ho_dir)
-    nifti_dir = os.path.join(ho_dir, 'Juelich')
+    juelich_dir = os.path.join(tst.tmpdir, 'fsl', 'data', 'atlases')
+    os.makedirs(juelich_dir)
+    nifti_dir = os.path.join(juelich_dir, 'Juelich')
     os.makedirs(nifti_dir)
 
     target_atlas_nii = os.path.join(nifti_dir, target_atlas_fname)
@@ -372,7 +372,7 @@ def test_fail_fetch_atlas_juelich_histological():
     nibabel.Nifti1Image(atlas_data, np.eye(4) * 3).to_filename(
         target_atlas_nii)
 
-    dummy = open(os.path.join(ho_dir, 'Juelich.xml'), 'w')
+    dummy = open(os.path.join(juelich_dir, 'Juelich.xml'), 'w')
     dummy.write("<?xml version='1.0' encoding='us-ascii'?>\n"
                 "<data>\n"
                 '<label index="0" x="48" y="94" z="35">R1</label>\n'
@@ -381,15 +381,14 @@ def test_fail_fetch_atlas_juelich_histological():
                 "</data>")
     dummy.close()
 
-    ho = atlas.fetch_atlas_juelich_histological(target_atlas,
-                                                data_dir=tst.tmpdir,
-                                                symmetric_split=True)
+    juelich = atlas.fetch_atlas_juelich_histological(target_atlas,
+                                                     data_dir=tst.tmpdir,
+                                                     symmetric_split=True)
 
-    assert_true(isinstance(ho.maps, nibabel.Nifti1Image))
-    assert_true(isinstance(ho.labels, list))
-    assert_equal(len(ho.labels), 5)
-    assert_equal(ho.labels[0], "Background")
-    assert_equal(ho.labels[1], "R1, left part")
-    assert_equal(ho.labels[2], "R1, right part")
-    assert_equal(ho.labels[3], "R2")
-    assert_equal(ho.labels[4], "R3")
+    assert_true(isinstance(juelich.maps, nibabel.Nifti1Image))
+    assert_true(isinstance(juelich.labels, list))
+    assert_equal(len(juelich.labels), 4)
+    assert_equal(juelich.labels[0], "R1")
+    assert_equal(juelich.labels[1], "R2, left part")
+    assert_equal(juelich.labels[2], "R2, right part")
+    assert_equal(juelich.labels[3], "R3")
