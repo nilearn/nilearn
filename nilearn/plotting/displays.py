@@ -584,7 +584,8 @@ class BaseSlicer(object):
         kwargs.setdefault('interpolation', 'nearest')
         ims = self._map_show(img, type='imshow', threshold=threshold, **kwargs)
 
-        if colorbar:
+        # `ims` can be empty in some corner cases, look at test_img_plotting.test_outlier_cut_coords.
+        if colorbar and ims:
             self._show_colorbar(ims[0].cmap, ims[0].norm, threshold)
 
         plt.draw_if_interactive()
