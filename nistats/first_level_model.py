@@ -241,7 +241,7 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         with keys corresponding to the different labels values
         values are RegressionResults instances corresponding to the voxels
     """
-    def __init__(self, t_r=None, slice_time_ref=None, hrf_model='glover',
+    def __init__(self, t_r=None, slice_time_ref=0., hrf_model='glover',
                  drift_model='cosine', period_cut=128, drift_order=1,
                  fir_delays=[0], min_onset=-24, mask=None, target_affine=None,
                  target_shape=None, smoothing_fwhm=None, memory=Memory(None),
@@ -331,9 +331,6 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
             if self.t_r is None:
                 raise ValueError('t_r not given to FirstLevelModel object'
                                  ' to compute design from paradigm')
-            if self.slice_time_ref is None:
-                raise ValueError('slice_time_ref not given to FirstLevelModel'
-                                 ' object to compute design from paradigm')
         else:
             design_matrices = _check_run_tables(run_imgs, design_matrices,
                                                 'design_matrices')
