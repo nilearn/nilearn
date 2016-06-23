@@ -27,6 +27,7 @@ from sklearn.externals.joblib import Memory, Parallel, delayed
 from sklearn.cross_validation import check_cv
 from sklearn.preprocessing import LabelBinarizer
 from sklearn.metrics import accuracy_score
+from .._utils.fixes import check_X_y
 from .._utils.compat import _basestring
 from .._utils.fixes import atleast2d_or_csr
 from .._utils.cache_mixin import CacheMixin
@@ -774,6 +775,9 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
                                        mask_strategy='epi', t_r=self.t_r,
                                        memory=self.memory_)
         X = self.masker_.fit_transform(X)
+
+        X, y = check_X_y(X, y, ['csr', 'csc', 'coo'], dtype=np.float,
+                         multi_output=True, y_numeric=True)
 
         # misc
         self.Xmean_ = X.mean(axis=0)
