@@ -227,7 +227,8 @@ def plot_img(img, cut_coords=None, output_file=None, display_mode='ortho',
             The MNI coordinates of the point where the cut is performed
             If display_mode is 'ortho', this should be a 3-tuple: (x, y, z)
             For display_mode == 'x', 'y', or 'z', then these are the
-            coordinates of each cut in the corresponding direction.
+            coordinates of each cut in the corresponding direction. A single
+            slice requires a comma to make the input a tuple, eg: (10.0,).
             If None is given, the cuts is calculated automaticaly.
             If display_mode is 'x', 'y' or 'z', cut_coords can be an integer,
             in which case it specifies the number of cuts to perform
@@ -409,7 +410,8 @@ def plot_anat(anat_img=MNI152TEMPLATE, cut_coords=None,
             The MNI coordinates of the point where the cut is performed
             If display_mode is 'ortho', this should be a 3-tuple: (x, y, z)
             For display_mode == 'x', 'y', or 'z', then these are the
-            coordinates of each cut in the corresponding direction.
+            coordinates of each cut in the corresponding direction. A single
+            slice requires a comma to make the input a tuple, eg: (10.0,).
             If None is given, the cuts is calculated automaticaly.
             If display_mode is 'x', 'y' or 'z', cut_coords can be an integer,
             in which case it specifies the number of cuts to perform
@@ -498,7 +500,8 @@ def plot_epi(epi_img=None, cut_coords=None, output_file=None,
             The MNI coordinates of the point where the cut is performed
             If display_mode is 'ortho', this should be a 3-tuple: (x, y, z)
             For display_mode == 'x', 'y', or 'z', then these are the
-            coordinates of each cut in the corresponding direction.
+            coordinates of each cut in the corresponding direction. A single
+            slice requires a comma to make the input a tuple, eg: (10.0,).
             If None is given, the cuts is calculated automaticaly.
             If display_mode is 'x', 'y' or 'z', cut_coords can be an integer,
             in which case it specifies the number of cuts to perform
@@ -581,7 +584,8 @@ def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None,
             MNI coordinates and order.
             If display_mode is 'ortho', this should be a 3-tuple: (x, y, z)
             For display_mode == 'x', 'y', or 'z', then these are the
-            coordinates of each cut in the corresponding direction.
+            coordinates of each cut in the corresponding direction. A single
+            slice requires a comma to make the input a tuple, eg: (10.0,).
             If None is given, the cuts is calculated automaticaly.
         output_file : string, or None, optional
             The name of an image file to export the plot to. Valid extensions
@@ -709,7 +713,8 @@ def plot_prob_atlas(maps_img, anat_img=MNI152TEMPLATE, view_type='auto',
             The MNI coordinates of the point where the cut is performed
             If display_mode is 'ortho', this should be a 3-tuple: (x, y, z)
             For display_mode == 'x', 'y', or 'z', then these are the
-            coordinates of each cut in the corresponding direction.
+            coordinates of each cut in the corresponding direction. A single
+            slice requires a comma to make the input a tuple, eg: (10.0,).
             If None is given, the cuts is calculated automaticaly.
             If display_mode is 'x', 'y' or 'z', cut_coords can be an integer,
             in which case it specifies the number of cuts to perform
@@ -884,7 +889,8 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
             The MNI coordinates of the point where the cut is performed
             If display_mode is 'ortho', this should be a 3-tuple: (x, y, z)
             For display_mode == 'x', 'y', or 'z', then these are the
-            coordinates of each cut in the corresponding direction.
+            coordinates of each cut in the corresponding direction. A single
+            slice requires a comma to make the input a tuple, eg: (10.0,).
             If None is given, the cuts is calculated automaticaly.
             If display_mode is 'x', 'y' or 'z', cut_coords can be an integer,
             in which case it specifies the number of cuts to perform
