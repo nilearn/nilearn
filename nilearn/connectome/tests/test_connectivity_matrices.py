@@ -327,6 +327,10 @@ def test_sym_to_vec():
     vec = np.array([1., sqrt(2), 1., sqrt(2), sqrt(2), 1.])
     assert_array_almost_equal(sym_to_vec(sym), vec)
 
+    vec = np.array([1., 1., 1.])
+    assert_array_almost_equal(sym_to_vec(sym, keep_diagonal=False), vec)
+
+
 
 def test_prec_to_partial():
     prec = np.array([[2., -1., 1.], [-1., 2., -1.], [1., -1., 1.]])
