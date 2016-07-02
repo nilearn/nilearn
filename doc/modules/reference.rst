@@ -75,6 +75,7 @@ uses.
    fetch_abide_pcp
    fetch_adhd
    fetch_haxby
+   fetch_haxby_simple
    fetch_icbm152_2009
    fetch_icbm152_brain_gm_mask
    fetch_localizer_button_task
