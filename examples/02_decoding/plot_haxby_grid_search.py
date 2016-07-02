@@ -37,15 +37,20 @@ a separator.
 # Load the Haxby dataset
 from nilearn import datasets
 import numpy as np
-haxby_dataset = datasets.fetch_haxby_simple()
+haxby_dataset = datasets.fetch_haxby()
 
 # print basic information on the dataset
 print('Mask nifti image (3D) is located at: %s' % haxby_dataset.mask)
 print('Functional nifti image (4D) are located at: %s' % haxby_dataset.func[0])
 
 # Load the behavioral data
-y, session = np.loadtxt(haxby_dataset.session_target[0]).astype('int').T
-conditions = np.recfromtxt(haxby_dataset.conditions_target[0])['f0']
+labels = np.recfromcsv(haxby_dataset.session_target[0], delimiter=" ")
+conditions = labels['labels']
+categories = np.unique(conditions)
+y = np.zeros_like(conditions)
+for c, category in enumerate(categories):
+    y[conditions == category] = c
+session = labels['chunks']
 
 # Keep only data corresponding to shoes or bottles
 condition_mask = np.logical_or(conditions == b'shoe', conditions == b'bottle')

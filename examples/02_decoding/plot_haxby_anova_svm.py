@@ -11,7 +11,7 @@ using a feature selection, followed by an SVM.
 # Retrieve the files of the Haxby dataset
 from nilearn import datasets
 
-haxby_dataset = datasets.fetch_haxby_simple()
+haxby_dataset = datasets.fetch_haxby()
 
 # print basic information on the dataset
 print('Mask nifti image (3D) is located at: %s' % haxby_dataset.mask)
@@ -21,8 +21,13 @@ print('Functional nifti image (4D) is located at: %s' %
 #############################################################################
 # Load the behavioral data
 import numpy as np
-y, session = np.loadtxt(haxby_dataset.session_target[0]).astype("int").T
-conditions = np.recfromtxt(haxby_dataset.conditions_target[0])['f0']
+labels = np.recfromcsv(haxby_dataset.session_target[0], delimiter=" ")
+conditions = labels['labels']
+categories = np.unique(conditions)
+y = np.zeros_like(conditions)
+for c, category in enumerate(categories):
+    y[conditions == category] = c
+session = labels['chunks']
 
 # Restrict to faces and houses
 condition_mask = np.logical_or(conditions == b'face', conditions == b'house')

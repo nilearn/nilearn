@@ -11,7 +11,7 @@ cross-validated accuracy and the confusion matrix.
 # Load the Haxby data dataset
 from nilearn import datasets
 import numpy as np
-haxby_dataset = datasets.fetch_haxby_simple()
+haxby_dataset = datasets.fetch_haxby()
 
 # Print basic information on the dataset
 print('Mask nifti images are located at: %s' % haxby_dataset.mask)
@@ -21,8 +21,13 @@ func_filename = haxby_dataset.func[0]
 mask_filename = haxby_dataset.mask
 
 # Load the behavioral data that we will predict
-y, session = np.loadtxt(haxby_dataset.session_target[0]).astype('int').T
-conditions = np.recfromtxt(haxby_dataset.conditions_target[0])['f0']
+labels = np.recfromcsv(haxby_dataset.session_target[0], delimiter=" ")
+conditions = labels['labels']
+categories = np.unique(conditions)
+y = np.zeros_like(conditions)
+for c, category in enumerate(categories):
+    y[conditions == category] = c
+session = labels['chunks']
 
 # Remove the rest condition, it is not very interesting
 non_rest = conditions != b'rest'

@@ -6,7 +6,7 @@ from .struct import (fetch_icbm152_2009, load_mni152_template,
                      load_mni152_brain_mask, fetch_oasis_vbm,
                      fetch_icbm152_brain_gm_mask,
                      MNI152_FILE_PATH)
-from .func import (fetch_haxby_simple, fetch_haxby, fetch_nyu_rest,
+from .func import (fetch_haxby, fetch_haxby_simple, fetch_nyu_rest,
                    fetch_adhd, fetch_miyawaki2008,
                    fetch_localizer_contrasts, fetch_abide_pcp,
                    fetch_localizer_button_task,

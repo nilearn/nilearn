@@ -15,15 +15,20 @@ import numpy as np
 from nilearn import datasets
 from nilearn.image import new_img_like, load_img
 
-haxby_dataset = datasets.fetch_haxby_simple()
+haxby_dataset = datasets.fetch_haxby()
 
 # print basic information on the dataset
 print('Anatomical nifti image (3D) is located at: %s' % haxby_dataset.mask)
 print('Functional nifti image (4D) is located at: %s' % haxby_dataset.func[0])
 
 fmri_filename = haxby_dataset.func[0]
-y, session = np.loadtxt(haxby_dataset.session_target[0]).astype('int').T
-conditions = np.recfromtxt(haxby_dataset.conditions_target[0])['f0']
+labels = np.recfromcsv(haxby_dataset.session_target[0], delimiter=" ")
+conditions = labels['labels']
+categories = np.unique(conditions)
+y = np.zeros_like(conditions)
+for c, category in enumerate(categories):
+    y[conditions == category] = c
+session = labels['chunks']
 
 #########################################################################
 # Restrict to faces and houses
