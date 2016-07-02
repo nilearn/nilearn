@@ -11,7 +11,7 @@ using a feature selection, followed by an SVM.
 # Retrieve the files of the Haxby dataset
 from nilearn import datasets
 
-haxby_dataset = datasets.fetch_haxby_simple()
+haxby_dataset = datasets.fetch_haxby()
 
 # print basic information on the dataset
 print('Mask nifti image (3D) is located at: %s' % haxby_dataset.mask)
