@@ -10,6 +10,7 @@ import numbers
 
 import nibabel
 from sklearn.datasets.base import Bunch
+from sklearn.utils import deprecated
 
 from .utils import (_get_dataset_dir, _fetch_files, _get_dataset_descr,
                     _read_md5_sum_file, _tree, _filter_columns)
@@ -18,6 +19,8 @@ from .._utils.compat import BytesIO, _basestring, _urllib
 from .._utils.numpy_conversions import csv_to_array
 
 
+@deprecated("fetch_haxby_simple will be removed in future releases. "
+            "Use 'fetch_haxby' instead.")
 def fetch_haxby_simple(data_dir=None, url=None, resume=True, verbose=1):
     """Download and load a simple example haxby dataset.
 

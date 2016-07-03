@@ -29,54 +29,6 @@ def teardown_mock():
     return tst.teardown_mock(utils, func)
 
 
-@with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
-def test_fetch_haxby_simple():
-    local_url = "file:" + _urllib.request.pathname2url(os.path.join(tst.datadir,
-        "pymvpa-exampledata.tar.bz2"))
-    haxby = func.fetch_haxby_simple(data_dir=tst.tmpdir, url=local_url,
-                                    verbose=0)
-    datasetdir = os.path.join(tst.tmpdir, 'haxby2001_simple', 'pymvpa-exampledata')
-    for key, file in [
-            ('session_target', 'attributes.txt'),
-            ('func', 'bold.nii.gz'),
-            ('conditions_target', 'attributes_literal.txt')]:
-        assert_equal(haxby[key], [os.path.join(datasetdir, file)])
-        assert_true(os.path.exists(os.path.join(datasetdir, file)))
-
-    assert_equal(haxby['mask'], os.path.join(datasetdir, 'mask.nii.gz'))
-
-
-@with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
-def test_fail_fetch_haxby_simple():
-    # Test a dataset fetching failure to validate sandboxing
-    local_url = "file:" + _urllib.request.pathname2url(os.path.join(tst.datadir,
-        "pymvpa-exampledata.tar.bz2"))
-    datasetdir = os.path.join(tst.tmpdir, 'haxby2001_simple', 'pymvpa-exampledata')
-    os.makedirs(datasetdir)
-    # Create a dummy file. If sandboxing is successful, it won't be overwritten
-    dummy = open(os.path.join(datasetdir, 'attributes.txt'), 'w')
-    dummy.write('stuff')
-    dummy.close()
-
-    path = 'pymvpa-exampledata'
-
-    opts = {'uncompress': True}
-    files = [
-        (os.path.join(path, 'attributes.txt'), local_url, opts),
-        # The following file does not exists. It will cause an abortion of
-        # the fetching procedure
-        (os.path.join(path, 'bald.nii.gz'), local_url, opts)
-    ]
-
-    assert_raises(IOError, utils._fetch_files,
-                  os.path.join(tst.tmpdir, 'haxby2001_simple'), files,
-                  verbose=0)
-    dummy = open(os.path.join(datasetdir, 'attributes.txt'), 'r')
-    stuff = dummy.read(5)
-    dummy.close()
-    assert_equal(stuff, 'stuff')
-
-
 @with_setup(setup_mock, teardown_mock)
 @with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
 def test_fetch_haxby():
@@ -96,6 +48,37 @@ def test_fetch_haxby():
         assert_equal(len(haxby.mask_house_little), i)
         tst.mock_url_request.reset()
         assert_not_equal(haxby.description, '')
+
+
+@with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
+def test_fail_fetch_haxby():
+    # Test a dataset fetching failure to validate sandboxing
+    local_url = "file:" + _urllib.request.pathname2url(os.path.join(tst.datadir,
+        "pymvpa-exampledata.tar.bz2"))
+    datasetdir = os.path.join(tst.tmpdir, 'haxby2001', 'pymvpa-exampledata')
+    os.makedirs(datasetdir)
+    # Create a dummy file. If sandboxing is successful, it won't be overwritten
+    dummy = open(os.path.join(datasetdir, 'attributes.txt'), 'w')
+    dummy.write('stuff')
+    dummy.close()
+
+    path = 'pymvpa-exampledata'
+
+    opts = {'uncompress': True}
+    files = [
+        (os.path.join(path, 'attributes.txt'), local_url, opts),
+        # The following file does not exists. It will cause an abortion of
+        # the fetching procedure
+        (os.path.join(path, 'bald.nii.gz'), local_url, opts)
+    ]
+
+    assert_raises(IOError, utils._fetch_files,
+                  os.path.join(tst.tmpdir, 'haxby2001'), files,
+                  verbose=0)
+    dummy = open(os.path.join(datasetdir, 'attributes.txt'), 'r')
+    stuff = dummy.read(5)
+    dummy.close()
+    assert_equal(stuff, 'stuff')
 
 
 @with_setup(setup_mock, teardown_mock)
