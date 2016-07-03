@@ -52,9 +52,13 @@ fmri_masked = nifti_masker.fit_transform(func_filename)
 # Restrict to faces and houses
 import numpy as np
 labels = np.recfromcsv(haxby_dataset.session_target[0], delimiter=" ")
-conditions_encoded = labels['labels']
+conditions = labels['labels']
+categories = np.unique(conditions)
+conditions_encoded = np.zeros_like(conditions)
+for c, category in enumerate(categories):
+    conditions_encoded[conditions == category] = c
 sessions = labels['chunks']
-condition_mask = np.logical_or(conditions_encoded == b'face', conditions_encoded == b'house')
+condition_mask = np.logical_or(conditions == b'face', conditions == b'house')
 conditions_encoded = conditions_encoded[condition_mask]
 fmri_masked = fmri_masked[condition_mask]
 
@@ -69,9 +73,9 @@ grouped_conditions_encoded = np.empty((2 * n_sessions, 1))
 for s in range(n_sessions):
     session_mask = sessions[condition_mask] == s
     session_house_mask = np.logical_and(session_mask,
-                                        conditions_encoded[condition_mask] == b'house')
+                                        conditions[condition_mask] == b'house')
     session_face_mask = np.logical_and(session_mask,
-                                       conditions_encoded[condition_mask] == b'face')
+                                       conditions[condition_mask] == b'face')
     grouped_fmri_masked[2 * s] = fmri_masked[session_house_mask].mean(0)
     grouped_fmri_masked[2 * s + 1] = fmri_masked[session_face_mask].mean(0)
     grouped_conditions_encoded[2 * s] = conditions_encoded[
