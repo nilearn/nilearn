@@ -22,17 +22,12 @@ print('Functional nifti image (4D) is located at: %s' %
 # Load the behavioral data
 import numpy as np
 labels = np.recfromcsv(haxby_dataset.session_target[0], delimiter=" ")
-conditions = labels['labels']
-categories = np.unique(conditions)
-y = np.zeros_like(conditions)
-for c, category in enumerate(categories):
-    y[conditions == category] = c
+y = labels['labels']
 session = labels['chunks']
 
 # Restrict to faces and houses
-condition_mask = np.logical_or(conditions == b'face', conditions == b'house')
+condition_mask = np.logical_or(y == b'face', y == b'house')
 y = y[condition_mask]
-conditions = conditions[condition_mask]
 
 # We have 2 conditions
 n_conditions = np.size(np.unique(y))

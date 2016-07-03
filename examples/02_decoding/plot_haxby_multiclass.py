@@ -22,20 +22,15 @@ mask_filename = haxby_dataset.mask
 
 # Load the behavioral data that we will predict
 labels = np.recfromcsv(haxby_dataset.session_target[0], delimiter=" ")
-conditions = labels['labels']
-categories = np.unique(conditions)
-y = np.zeros_like(conditions)
-for c, category in enumerate(categories):
-    y[conditions == category] = c
+y = labels['labels']
 session = labels['chunks']
 
 # Remove the rest condition, it is not very interesting
-non_rest = conditions != b'rest'
-conditions = conditions[non_rest]
+non_rest = y != b'rest'
 y = y[non_rest]
 
 # Get the labels of the numerical conditions represented by the vector y
-unique_conditions, order = np.unique(conditions, return_index=True)
+unique_conditions, order = np.unique(y, return_index=True)
 # Sort the conditions by the order of appearance
 unique_conditions = unique_conditions[np.argsort(order)]
 

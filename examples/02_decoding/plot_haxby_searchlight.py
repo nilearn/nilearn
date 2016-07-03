@@ -23,21 +23,16 @@ print('Functional nifti image (4D) is located at: %s' % haxby_dataset.func[0])
 
 fmri_filename = haxby_dataset.func[0]
 labels = np.recfromcsv(haxby_dataset.session_target[0], delimiter=" ")
-conditions = labels['labels']
-categories = np.unique(conditions)
-y = np.zeros_like(conditions)
-for c, category in enumerate(categories):
-    y[conditions == category] = c
+y = labels['labels']
 session = labels['chunks']
 
 #########################################################################
 # Restrict to faces and houses
 from nilearn.image import index_img
-condition_mask = np.logical_or(conditions == b'face', conditions == b'house')
+condition_mask = np.logical_or(y == b'face', y == b'house')
 
 fmri_img = index_img(fmri_filename, condition_mask)
 y, session = y[condition_mask], session[condition_mask]
-conditions = conditions[condition_mask]
 
 #########################################################################
 # Prepare masks

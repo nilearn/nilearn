@@ -45,17 +45,12 @@ print('Functional nifti image (4D) are located at: %s' % haxby_dataset.func[0])
 
 # Load the behavioral data
 labels = np.recfromcsv(haxby_dataset.session_target[0], delimiter=" ")
-conditions = labels['labels']
-categories = np.unique(conditions)
-y = np.zeros_like(conditions)
-for c, category in enumerate(categories):
-    y[conditions == category] = c
+y = labels['labels']
 session = labels['chunks']
 
 # Keep only data corresponding to shoes or bottles
-condition_mask = np.logical_or(conditions == b'shoe', conditions == b'bottle')
+condition_mask = np.logical_or(y == b'shoe', y == b'bottle')
 y = y[condition_mask]
-conditions = conditions[condition_mask]
 
 ###########################################################################
 # Prepare the data with the NiftiMasker
