@@ -19,6 +19,72 @@ from .._utils.compat import BytesIO, _basestring, _urllib
 from .._utils.numpy_conversions import csv_to_array
 
 
+@deprecated("fetch_haxby_simple will be removed in future releases. "
+            "Use 'fetch_haxby' instead.")
+def fetch_haxby_simple(data_dir=None, url=None, resume=True, verbose=1):
+    """Download and load a simple example haxby dataset.
+
+    Parameters
+    ----------
+    data_dir: string, optional
+        Path of the data directory. Used to force data storage in a specified
+        location. Default: None
+
+    Returns
+    -------
+    data: sklearn.datasets.base.Bunch
+        Dictionary-like object, interest attributes are:
+        'func': list of string.  Path to nifti file with bold data.
+        'session_target': list of string. Path to text file containing session and
+        target data.
+        'mask': string. Path to nifti mask file.
+        'session': list of string. Path to text file containing labels
+        (can be used for LeaveOneLabelOut cross validation for example).
+
+    References
+    ----------
+    `Haxby, J., Gobbini, M., Furey, M., Ishai, A., Schouten, J.,
+    and Pietrini, P. (2001). Distributed and overlapping representations of
+    faces and objects in ventral temporal cortex. Science 293, 2425-2430.`
+
+    Notes
+    -----
+    PyMVPA provides a tutorial using this dataset :
+    http://www.pymvpa.org/tutorial.html
+
+    More informations about its structure :
+    http://dev.pymvpa.org/datadb/haxby2001.html
+
+    See `additional information
+    <http://www.sciencemag.org/content/293/5539/2425>`_
+    """
+    # URL of the dataset. It is optional because a test uses it to test dataset
+    # downloading
+    if url is None:
+        url = 'http://www.pymvpa.org/files/pymvpa_exampledata.tar.bz2'
+
+    opts = {'uncompress': True}
+    files = [
+            (os.path.join('pymvpa-exampledata', 'attributes.txt'), url, opts),
+            (os.path.join('pymvpa-exampledata', 'bold.nii.gz'), url, opts),
+            (os.path.join('pymvpa-exampledata', 'mask.nii.gz'), url, opts),
+            (os.path.join('pymvpa-exampledata', 'attributes_literal.txt'),
+             url, opts),
+    ]
+
+    dataset_name = 'haxby2001_simple'
+    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
+                                verbose=verbose)
+    files = _fetch_files(data_dir, files, resume=resume, verbose=verbose)
+
+    # There is a common file for the two versions of Haxby
+    fdescr = _get_dataset_descr('haxby2001')
+
+    # List of length 1 are used because haxby_simple is single-subject
+    return Bunch(func=[files[1]], session_target=[files[0]], mask=files[2],
+                 conditions_target=[files[3]], description=fdescr)
+
+
 def fetch_haxby(data_dir=None, n_subjects=1, fetch_stimuli=False,
                 url=None, resume=True, verbose=1):
     """Download and loads complete haxby dataset
@@ -141,13 +207,6 @@ def fetch_haxby(data_dir=None, n_subjects=1, fetch_stimuli=False,
             mask=mask,
             description=fdescr,
             **kwargs)
-
-
-@deprecated("fetch_haxby_simple will be removed in future releases. "
-            "Calling 'fetch_haxby' instead.")
-def fetch_haxby_simple(data_dir=None, url=None, resume=True, verbose=1):
-    return fetch_haxby(data_dir=data_dir, url=url, resume=resume,
-                       verbose=verbose)
 
 
 def fetch_nyu_rest(n_subjects=None, sessions=[1], data_dir=None, resume=True,
