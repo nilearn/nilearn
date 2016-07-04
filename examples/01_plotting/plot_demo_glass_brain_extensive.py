@@ -9,8 +9,9 @@ negative values).
 Second part, goes through same options but selected of the same glass brain
 function but plotting is seen with contours.
 
-See :ref:`plotting` for more plotting functionalities and Section 4.3. for
-more details about display objects in Nilearn.
+See :ref:`plotting` for more plotting functionalities and
+:ref:`Section 4.3 <display_modules>` for more details about display objects
+in Nilearn.
 
 Also, see :func:`nilearn.datasets.fetch_localizer_button_task` for details
 about the plotting data and its experiments.
@@ -26,10 +27,7 @@ about the plotting data and its experiments.
 # Let us first see where the data will be downloded and stored on our disk:
 #
 from nilearn import datasets
-print('Datasets are stored in: %r' % datasets.get_data_dirs())
-
-###############################################################################
-# All datasets that are shipped with nilearn will be stored at this location
+print('Datasets shipped with nilearn are stored in: %r' % datasets.get_data_dirs())
 
 ###############################################################################
 # Let us now retrieve a motor task contrast maps corresponding to second subject
@@ -95,8 +93,8 @@ plotting.plot_glass_brain(tmap_filename, threshold=0, colorbar=True,
 # which we can use specific display features which are inherited automatically.
 # In this case, we focus on using add_contours
 # First, we initialize the plotting function into "display" and first
-# argument set to None since statistical results must be initialized
-# calling with add_contours
+# argument set to None since we want an empty glass brain to plotting the
+# statistical maps with "add_contours"
 display = plotting.plot_glass_brain(None)
 # Here, we project statistical maps
 display.add_contours(tmap_filename)
