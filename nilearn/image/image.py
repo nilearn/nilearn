@@ -674,6 +674,7 @@ def threshold_img(img, threshold, mask_img=None):
     img_data = np.nan_to_num(img_data)
 
     if mask_img is not None:
+        mask_img = check_niimg_3d(mask_img)
         if not _check_same_fov(img, mask_img):
             mask_img = resampling.resample_img(mask_img, target_affine=affine,
                                                target_shape=img.shape[:3],
