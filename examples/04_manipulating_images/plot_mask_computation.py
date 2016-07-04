@@ -17,7 +17,6 @@ underlying mask extraction routine
 """
 
 
-
 ###############################################################################
 # From already masked data
 from nilearn.input_data import NiftiMasker
@@ -49,7 +48,7 @@ plot_roi(masker.mask_img_, miyawaki_mean_img,
 ###############################################################################
 # From raw EPI data
 
-# Load AHDH resting-state dataset
+# Load ADHD resting-state dataset
 dataset = datasets.fetch_adhd(n_subjects=1)
 epi_filename = dataset.func[0]
 

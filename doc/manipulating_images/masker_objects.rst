@@ -92,8 +92,8 @@ Custom data loading: loading only the first 100 time points
 ------------------------------------------------------------
 
 Suppose we want to restrict a dataset to the first 100 frames. Below, we load
-a resting-state dataset with :func:`fetch_fetch_nyu_rest()
-<nilearn.datasets.fetch_nyu_rest>`, restrict it to 100 frames and
+a resting-state dataset with :func:`fetch_adhd()
+<nilearn.datasets.fetch_adhd>`, restrict it to 100 frames and
 build a new niimg object that we can give to the masker. Although
 possible, there is no need to save your data to a file to pass it to a
 :class:`NiftiMasker`. Simply use :func:`nilearn.image.index_img` to apply a
@@ -101,7 +101,7 @@ slice and create a :ref:`Niimg <niimg>` in memory:
 
 
 .. literalinclude:: ../../examples/04_manipulating_images/plot_mask_computation.py
-    :start-after: Load NYU resting-state dataset
+    :start-after: Load ADHD resting-state dataset
     :end-before: # To display the background
 
 Controlling how the mask is computed from the data
