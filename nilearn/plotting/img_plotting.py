@@ -447,12 +447,12 @@ def plot_anat(anat_img=MNI152TEMPLATE, cut_coords=None,
             you wish to save figures with a black background, you
             will need to pass "facecolor='k', edgecolor='k'"
             to matplotlib.pyplot.savefig.
-        dim : float, optional
+        dim : float, 'auto' (by default), optional
             Dimming factor applied to background image. By default, automatic
-            heuristics are applied. Accepted float values, where a
-            typical span is -1 to 1 (-1 = increase contrast; 1 = decrease
-            contrast), but larger values can be used for a more
-            pronounced effect. 0 means no dimming.
+            heuristics are applied based upon the image intensity.
+            Accepted float values, where a typical span is -1 to 1
+            (-1 = increase contrast; 1 = decrease contrast), but larger
+            values can be used for a more pronounced effect. 0 means no dimming.
         cmap : matplotlib colormap, optional
             The colormap for the anat
         vmin : float
@@ -617,12 +617,12 @@ def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None,
             values below the threshold (in absolute value) are plotted
             as transparent. If auto is given, the threshold is determined
             magically by analysis of the image.
-        dim : float, optional
+        dim : float, 'auto' (by default), optional
             Dimming factor applied to background image. By default, automatic
-            heuristics are applied. Accepted float values, where a
-            typical span is -1 to 1 (-1 = increase contrast; 1 = decrease
-            contrast), but larger values can be used for a more
-            pronounced effect. 0 means no dimming.
+            heuristics are applied based upon the background image intensity.
+            Accepted float values, where a typical span is -1 to 1
+            (-1 = increase contrast; 1 = decrease contrast), but larger values
+            can be used for a more pronounced effect. 0 means no dimming.
         vmin : float
             Lower bound for plotting, passed to matplotlib.pyplot.imshow
         vmax : float
@@ -741,12 +741,12 @@ def plot_prob_atlas(maps_img, anat_img=MNI152TEMPLATE, view_type='auto',
             you wish to save figures with a black background, you
             will need to pass "facecolor='k', edgecolor='k'" to pylab's
             savefig.
-        dim : float, optional
+        dim : float, 'auto' (by default), optional
             Dimming factor applied to background image. By default, automatic
-            heuristics are applied. Accepted float values, where a
-            typical span is -1 to 1 (-1 = increase contrast; 1 = decrease
-            contrast), but larger values can be used for a more
-            pronounced effect. 0 means no dimming.
+            heuristics are applied based upon the background image intensity.
+            Accepted float values, where a typical span is -1 to 1
+            (-1 = increase contrast; 1 = decrease contrast), but larger values
+            can be used for a more pronounced effect. 0 means no dimming.
         cmap : matplotlib colormap, optional
             The colormap for the atlas maps
         colorbar : boolean, optional
@@ -932,12 +932,12 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
             or from vmin to vmax. Setting to 'auto' will select the latter if
             the range of the whole image is either positive or negative.
             Note: The colormap will always be set to range from -vmax to vmax.
-        dim : float, optional
+        dim : float, 'auto' (by default), optional
             Dimming factor applied to background image. By default, automatic
-            heuristics are applied. Accepted float values, where a
-            typical scan is -1 to 1 (-1 = increase constrast; 1 = decrease
-            contrast), but larger values can be used for a more
-            pronounced effect. 0 means no dimming.
+            heuristics are applied based upon the background image intensity.
+            Accepted float values, where a typical scan is -1 to 1
+            (-1 = increase constrast; 1 = decrease contrast), but larger values
+            can be used for a more pronounced effect. 0 means no dimming.
         vmax : float
             Upper bound for plotting, passed to matplotlib.pyplot.imshow
 

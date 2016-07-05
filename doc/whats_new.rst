@@ -6,6 +6,14 @@ Changelog
 
 The new minimum required version of scikit-learn is 0.14.1
 
+API changes summary
+...................
+
+    - default option for `dim` argument in plotting functions which uses MNI
+      template as a background image is now changed to 'auto' mode. Meaning
+      that an automatic contrast setting on background image is applied by
+      default.
+
 New features
 ............
 
