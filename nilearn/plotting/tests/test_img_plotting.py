@@ -82,7 +82,7 @@ def test_plot_anat():
     finally:
         os.remove(filename)
 
-    ortho_slicer = plot_anat(img, dim=True)
+    ortho_slicer = plot_anat(img, dim='auto')
     filename = tempfile.mktemp(suffix='.png')
     try:
         ortho_slicer.savefig(filename)

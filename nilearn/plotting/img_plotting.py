@@ -339,7 +339,7 @@ class _MNI152Template(SpatialImage):
 MNI152TEMPLATE = _MNI152Template()
 
 
-def _load_anat(anat_img=MNI152TEMPLATE, dim=False, black_bg='auto'):
+def _load_anat(anat_img=MNI152TEMPLATE, dim='auto', black_bg='auto'):
     """ Internal function used to load anatomy, for optional diming
     """
     vmin = None
@@ -394,7 +394,7 @@ def _load_anat(anat_img=MNI152TEMPLATE, dim=False, black_bg='auto'):
 def plot_anat(anat_img=MNI152TEMPLATE, cut_coords=None,
               output_file=None, display_mode='ortho', figure=None,
               axes=None, title=None, annotate=True, threshold=None,
-              draw_cross=True, black_bg='auto', dim=False, cmap=plt.cm.gray,
+              draw_cross=True, black_bg='auto', dim='auto', cmap=plt.cm.gray,
               vmin=None, vmax=None, **kwargs):
     """ Plot cuts of an anatomical image (by default 3 cuts:
         Frontal, Axial, and Lateral)
@@ -447,12 +447,12 @@ def plot_anat(anat_img=MNI152TEMPLATE, cut_coords=None,
             you wish to save figures with a black background, you
             will need to pass "facecolor='k', edgecolor='k'"
             to matplotlib.pyplot.savefig.
-        dim : boolean or float, optional
-            Dimming factor applied to background image. If True, automatic
+        dim : float, optional
+            Dimming factor applied to background image. By default, automatic
             heuristics are applied. Accepted float values, where a
             typical span is -1 to 1 (-1 = increase contrast; 1 = decrease
             contrast), but larger values can be used for a more
-            pronounced effect.
+            pronounced effect. 0 means no dimming.
         cmap : matplotlib colormap, optional
             The colormap for the anat
         vmin : float
@@ -560,7 +560,7 @@ def plot_epi(epi_img=None, cut_coords=None, output_file=None,
 def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None,
              output_file=None, display_mode='ortho', figure=None, axes=None,
              title=None, annotate=True, draw_cross=True, black_bg='auto',
-             alpha=0.7, cmap=plt.cm.gist_ncar, dim=True, vmin=None, vmax=None,
+             alpha=0.7, cmap=plt.cm.gist_ncar, dim='auto', vmin=None, vmax=None,
              **kwargs):
     """ Plot cuts of an ROI/mask image (by default 3 cuts: Frontal, Axial, and
         Lateral)
@@ -617,12 +617,12 @@ def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None,
             values below the threshold (in absolute value) are plotted
             as transparent. If auto is given, the threshold is determined
             magically by analysis of the image.
-        dim : boolean or float, optional
-            Dimming factor applied to background image. If True, automatic
+        dim : float, optional
+            Dimming factor applied to background image. By default, automatic
             heuristics are applied. Accepted float values, where a
             typical span is -1 to 1 (-1 = increase contrast; 1 = decrease
             contrast), but larger values can be used for a more
-            pronounced effect.
+            pronounced effect. 0 means no dimming.
         vmin : float
             Lower bound for plotting, passed to matplotlib.pyplot.imshow
         vmax : float
@@ -658,7 +658,7 @@ def plot_prob_atlas(maps_img, anat_img=MNI152TEMPLATE, view_type='auto',
                     threshold='auto', linewidths=2.5, cut_coords=None,
                     output_file=None, display_mode='ortho',
                     figure=None, axes=None, title=None, annotate=True,
-                    draw_cross=True, black_bg='auto', dim=False,
+                    draw_cross=True, black_bg='auto', dim='auto',
                     colorbar=False,
                     cmap=plt.cm.gist_rainbow, vmin=None, vmax=None,
                     alpha=0.5, **kwargs):
@@ -741,12 +741,12 @@ def plot_prob_atlas(maps_img, anat_img=MNI152TEMPLATE, view_type='auto',
             you wish to save figures with a black background, you
             will need to pass "facecolor='k', edgecolor='k'" to pylab's
             savefig.
-        dim : boolean or float, optional
-            Dimming factor applied to background image. If True, automatic
+        dim : float, optional
+            Dimming factor applied to background image. By default, automatic
             heuristics are applied. Accepted float values, where a
             typical span is -1 to 1 (-1 = increase contrast; 1 = decrease
             contrast), but larger values can be used for a more
-            pronounced effect.
+            pronounced effect. 0 means no dimming.
         cmap : matplotlib colormap, optional
             The colormap for the atlas maps
         colorbar : boolean, optional
@@ -866,7 +866,7 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
                   figure=None, axes=None, title=None, threshold=1e-6,
                   annotate=True, draw_cross=True, black_bg='auto',
                   cmap=cm.cold_hot, symmetric_cbar="auto",
-                  dim=True, vmax=None, **kwargs):
+                  dim='auto', vmax=None, **kwargs):
     """ Plot cuts of an ROI/mask image (by default 3 cuts: Frontal, Axial, and
         Lateral)
 
@@ -932,6 +932,12 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
             or from vmin to vmax. Setting to 'auto' will select the latter if
             the range of the whole image is either positive or negative.
             Note: The colormap will always be set to range from -vmax to vmax.
+        dim : float, optional
+            Dimming factor applied to background image. By default, automatic
+            heuristics are applied. Accepted float values, where a
+            typical scan is -1 to 1 (-1 = increase constrast; 1 = decrease
+            contrast), but larger values can be used for a more
+            pronounced effect. 0 means no dimming.
         vmax : float
             Upper bound for plotting, passed to matplotlib.pyplot.imshow
 
