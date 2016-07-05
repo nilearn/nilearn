@@ -250,6 +250,10 @@ def test_clean_detrending():
                              length=n_samples)
     x = signals + trends
 
+    # test boolean is not given to signal.clean
+    assert_raises(TypeError, nisignal.clean, x, low_pass=False)
+    assert_raises(TypeError, nisignal.clean, x, high_pass=False)
+
     # This should remove trends
     x_detrended = nisignal.clean(x, standardize=False, detrend=True,
                                  low_pass=None, high_pass=None)
