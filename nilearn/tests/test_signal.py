@@ -356,6 +356,8 @@ def test_clean_confounds():
                   confounds=filename1)
     assert_raises(TypeError, nisignal.clean, signals,
                   confounds=[None])
+    assert_raises(ValueError, nisignal.clean, signals, t_r=None,
+                  low_pass=.01)
 
     # Test without standardizing that constant parts of confounds are
     # accounted for
