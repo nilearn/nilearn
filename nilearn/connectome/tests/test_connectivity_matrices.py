@@ -324,11 +324,12 @@ def test_geometric_mean_errors():
 
 def test_sym_to_vec():
     sym = np.ones((3, 3))
-    vec = np.array([1., sqrt(2), 1., sqrt(2), sqrt(2), 1.])
+    sqrt2 = 1. / sqrt(2.)
+    vec = np.array([sqrt2, 1., sqrt2, 1., 1., sqrt2])
     assert_array_almost_equal(sym_to_vec(sym), vec)
 
     vec = np.array([1., 1., 1.])
-    assert_array_almost_equal(sym_to_vec(sym, keep_diagonal=False), vec)
+    assert_array_almost_equal(sym_to_vec(sym, discard_diagonal=True), vec)
 
 
 
