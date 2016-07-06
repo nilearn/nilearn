@@ -29,7 +29,7 @@ matrix:
       # still having the package version available through conda
     - env: DISTRIB="conda" PYTHON_VERSION="2.6"
            NUMPY_VERSION="1.6.2" SCIPY_VERSION="0.11.0"
-           SCIKIT_LEARN_VERSION="0.13" MATPLOTLIB_VERSION="1.1.1"
+           SCIKIT_LEARN_VERSION="0.14.1" MATPLOTLIB_VERSION="1.1.1"
            NIBABEL_VERSION="1.1.0"
     # Python 3.4 with intermediary versions
     - env: DISTRIB="conda" PYTHON_VERSION="3.4"
