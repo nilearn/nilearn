@@ -104,7 +104,6 @@ def check_array(array, accept_sparse=None, dtype="numeric", order=None,
     return array
 
 
-
 class DataConversionWarning(UserWarning):
     """Warning used to notify implicit data conversions happening in the code.
 
