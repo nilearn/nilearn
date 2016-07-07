@@ -13,6 +13,8 @@ from scipy import sparse
 
 from nilearn._utils.testing import assert_raises_regex
 from nilearn.image.resampling import coord_transform
+from nilearn.datasets import load_mni152_template
+from nilearn.plotting.find_cuts import find_cut_slices
 from nilearn.plotting.img_plotting import (MNI152TEMPLATE, plot_anat, plot_img,
                                            plot_roi, plot_stat_map, plot_epi,
                                            plot_glass_brain, plot_connectome,
@@ -854,3 +856,28 @@ def test_invalid_in_display_mode_cut_coords_all_plots():
                             "be a list of 3d world coordinates.",
                             plot_func,
                             img, display_mode='ortho', cut_coords=2)
+
+
+def test_outlier_cut_coords():
+    """ Test to plot a subset of a large set of cuts found for a small area."""
+    bg_img = load_mni152_template()
+
+    data = np.zeros((79, 95, 79))
+    affine = np.array([[  -2.,    0.,    0.,   78.],
+                       [   0.,    2.,    0., -112.],
+                       [   0.,    0.,    2.,  -70.],
+                       [   0.,    0.,    0.,    1.]])
+
+    # Color a cube around a corner area:
+    x, y, z = 20, 22, 60
+    x_map, y_map, z_map = coord_transform(x, y, z,
+                                          np.linalg.inv(affine))
+
+    data[int(x_map) - 1:int(x_map) + 1,
+         int(y_map) - 1:int(y_map) + 1,
+         int(z_map) - 1:int(z_map) + 1] = 1
+    img = nibabel.Nifti1Image(data, affine)
+    cuts = find_cut_slices(img, n_cuts=20, direction='z')
+
+    p = plot_stat_map(img, display_mode='z', cut_coords=cuts[-4:],
+                      bg_img=bg_img)

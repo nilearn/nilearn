@@ -226,6 +226,8 @@ Different display modes
 
 ================= =========================================================
 
+.. _display_modules:
+
 Adding overlays, edges, contours, contour fillings and markers
 ==============================================================
 

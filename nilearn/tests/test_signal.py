@@ -250,6 +250,10 @@ def test_clean_detrending():
                              length=n_samples)
     x = signals + trends
 
+    # test boolean is not given to signal.clean
+    assert_raises(TypeError, nisignal.clean, x, low_pass=False)
+    assert_raises(TypeError, nisignal.clean, x, high_pass=False)
+
     # This should remove trends
     x_detrended = nisignal.clean(x, standardize=False, detrend=True,
                                  low_pass=None, high_pass=None)
@@ -356,6 +360,8 @@ def test_clean_confounds():
                   confounds=filename1)
     assert_raises(TypeError, nisignal.clean, signals,
                   confounds=[None])
+    assert_raises(ValueError, nisignal.clean, signals, t_r=None,
+                  low_pass=.01)
 
     # Test without standardizing that constant parts of confounds are
     # accounted for

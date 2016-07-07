@@ -1,3 +1,14 @@
+0.2.6
+=====
+
+Changelog
+---------
+
+The new minimum required version of scikit-learn is 0.14.1
+
+New features
+............
+
 0.2.5
 =====
 

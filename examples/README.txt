@@ -5,11 +5,6 @@
     directory. If you install nilearn manually, make sure you have followed
     :ref:`the instructions <installation>`.
 
-.. note::
-
-    A few examples may not run with scikit-learn versions older than
-    0.14.1.
-
 
 .. contents:: **Contents**
     :local:

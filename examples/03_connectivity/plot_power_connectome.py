@@ -20,7 +20,7 @@ from nilearn import datasets, connectome, plotting, input_data
 # Atlas and dataset fetching
 
 # Fetch the coordinates of power atlas
-power = datasets.fetch_atlas_power_2011()
+power = datasets.fetch_coords_power_2011()
 power_coords = np.vstack((
     power.rois['x'],
     power.rois['y'],

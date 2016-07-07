@@ -554,13 +554,13 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
         This parameter is passed to image.resample_img. Please see the
         related documentation for details.
 
-    low_pass : False or float, optional, (default None)
+    low_pass: None or float, optional
         This parameter is passed to signal.clean. Please see the related
-        documentation for details.
+        documentation for details
 
-    high_pass : False or float, optional (default None)
-        This parameter is passed to signal. Clean. Please see the related
-        documentation for details.
+    high_pass: None or float, optional
+        This parameter is passed to signal.clean. Please see the related
+        documentation for details
 
     t_r : float, optional (default None)
         This parameter is passed to signal.clean. Please see the related
@@ -1013,13 +1013,13 @@ class SpaceNetClassifier(BaseSpaceNet):
         This parameter is passed to image.resample_img. Please see the
         related documentation for details.
 
-    low_pass : False or float, optional, (default None)
+    low_pass: None or float, optional
         This parameter is passed to signal.clean. Please see the related
-        documentation for details.
+        documentation for details
 
-    high_pass : False or float, optional (default None)
-        This parameter is passed to signal. Clean. Please see the related
-        documentation for details.
+    high_pass: None or float, optional
+        This parameter is passed to signal.clean. Please see the related
+        documentation for details
 
     t_r : float, optional (default None)
         This parameter is passed to signal.clean. Please see the related
@@ -1201,12 +1201,12 @@ class SpaceNetRegressor(BaseSpaceNet):
         This parameter is passed to image.resample_img. Please see the
         related documentation for details.
 
-    low_pass : False or float, optional, (default None)
+    low_pass: None or float, optional
         This parameter is passed to signal.clean. Please see the related
         documentation for details
 
-    high_pass : False or float, optional (default None)
-        This parameter is passed to signal. Clean. Please see the related
+    high_pass: None or float, optional
+        This parameter is passed to signal.clean. Please see the related
         documentation for details
 
     t_r : float, optional (default None)
