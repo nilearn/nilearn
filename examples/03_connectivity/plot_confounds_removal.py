@@ -37,7 +37,7 @@ confounds = np.hstack((current_volume_motion, previous_volume_motion,
 # Signals within noisy ROIs, such as WM and CSF, are assumed to reflect noise.
 # The anatomical CompCor approach removes the first principal components
 # of noisy ROIs.
-# 
+#
 # First, we define the tissue masks.
 # As we do not have an anatomical image, we are relying on group-level masks.
 # Note that subject-specific masks would give more accurate results.
@@ -50,7 +50,7 @@ mask_images = {'gm': icbm152.gm, 'wm': icbm152.wm, 'csf': icbm152.csf}
 ##########################################################################
 # and use them to compute binary masks.
 from nilearn import image
-for tissue_name, threshold in zip(['wm', 'gm', 'csf'], ['.9', '.3', '.3']):
+for tissue_name, threshold in zip(['wm', 'gm', 'csf'], ['.9', '.5', '.3']):
     mask_images[tissue_name] = image.math_img('img > ' + threshold,
                                               img=mask_images[tissue_name])
 
@@ -79,7 +79,7 @@ for tissue_name, mask_img in mask_images.items():
 ##########################################################################
 # and intersect them with a brain mask computed from the mean functional image.
 from nilearn import masking
-func_mask_img = masking.compute_epi_mask(mean_func_img)
+func_mask_img = masking.compute_epi_mask(mean_func_img, opening=0)
 for tissue_name, mask_img in mask_images.items():
     mask_images[tissue_name] = image.math_img("img1 * img2", img1=mask_img,
                                               img2=func_mask_img)
@@ -90,52 +90,47 @@ for tissue_name, mask_img in mask_images.items():
 from nilearn import plotting
 cut_coords = (15, 8, 32)  # corpus callosum
 display = plotting.plot_anat(mean_func_img, cut_coords=cut_coords)
-display.add_contours(mask_images['gm'], colors='y')
-display.add_contours(mask_images['wm'], colors='m')
-display.add_contours(mask_images['csf'], colors='g')
+for tissue_name, colors in zip(['gm', 'wm', 'csf'], 'ymg'):
+    display.add_contours(mask_images[tissue_name], colors=colors)
 
 ##########################################################################
 # Now we are ready to compute the voxel-wise signals within the
 # WM and CSF masks, and perform a PCA to extract the top 5 components.
+# All is done by the function **nilearn.image.high_variance_confounds**,
+# with the parameter **percentile** set to **100.**, to include all the voxels
+# of the mask.
 import numpy as np
-from sklearn.decomposition import PCA
-from nilearn import input_data
-pca = PCA(n_components=5)  # object to compute principal components
 for tissue_name in ['wm', 'csf']:
-    # Use NiftiMasker to extract signals within masks
-    tissue_masker = input_data.NiftiMasker(mask_img=mask_images[tissue_name],
-                                           standardize=True)
-    tissue_signals = tissue_masker.fit_transform(func_filename)
-    tissue_confounds = pca.fit(tissue_signals.T).components_.T
+    tissue_confounds = image.high_variance_confounds(
+        func_filename, mask_img=mask_images[tissue_name], n_confounds=5,
+        percentile=100.)
     confounds = np.hstack((confounds, tissue_confounds))
 
 #######################################################
 # Exploring confounds contribution to GM voxels signals
-# ----------------------------------------------------
+# -----------------------------------------------------
 # Typically motion has a dramatic impact on voxels within the contour of the
 # brain.
 
 #######################################################################
 # We compute GM voxels signals
 from nilearn import input_data
-brain_masker = input_data.NiftiMasker(mask_img=mask_images['gm'],
-                                      memory='nilearn_cache',
-                                      standardize=True)
-brain_signals = brain_masker.fit_transform(func_filename)
+gm_masker = input_data.NiftiMasker(mask_img=mask_images['gm'],
+                                   memory='nilearn_cache',
+                                   standardize=True)
+gm_signals = gm_masker.fit_transform(func_filename)
 
 #######################################################################
 # and predict voxels signals from confounds.
 from sklearn import linear_model
 regr = linear_model.LinearRegression(normalize=True)
-regr.fit(confounds, brain_signals)
-total_variance = np.sum(brain_signals ** 2, axis=0)
-residual_variance = np.sum((regr.predict(confounds) - brain_signals) ** 2,
+regr.fit(confounds, gm_signals)
+total_variance = np.sum(gm_signals ** 2, axis=0)
+residual_variance = np.sum((regr.predict(confounds) - gm_signals) ** 2,
                            axis=0)
-total_variance[total_variance == 0] = 1.  # avoid problems with zero devision
-residual_variance[total_variance == 0] = 1.
 variance_percent = 100. - 100. * residual_variance / total_variance
 # Transform from array to image
-variance_img = brain_masker.inverse_transform(variance_percent)
+variance_img = gm_masker.inverse_transform(variance_percent)
 
 #######################################################################
 # The variance map shows the percent of variance explained by confounds.
@@ -150,16 +145,16 @@ display = plotting.plot_stat_map(variance_img, bg_img=mean_func_img,
 
 #######################################################################
 # We use the same masker, but include confounds.
-cleaned_brain_signals = brain_masker.fit_transform(func_filename,
-                                                   confounds=confounds)
+cleaned_gm_signals = gm_masker.fit_transform(func_filename,
+                                             confounds=confounds)
 
 #######################################################################
 # We plot the histogram of voxel-to-voxel correlations for a selection of
 # voxels.
 import matplotlib.pylab as plt
-selected_voxels = range(0, brain_signals.shape[1], 10)
-plt.figure()
-for signals, label, color in zip([brain_signals, cleaned_brain_signals],
+selected_voxels = range(0, gm_signals.shape[1], 10)
+plt.figure(figsize=(8, 4))
+for signals, label, color in zip([gm_signals, cleaned_gm_signals],
                                  ['with confounds', 'without confounds'],
                                  'rb'):
     selected_signals = signals[:, selected_voxels]
