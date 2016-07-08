@@ -196,7 +196,8 @@ def _geometric_mean(matrices, init=None, max_iter=10, tol=1e-7):
 def sym_to_vec(symmetric, discard_diagonal=False, isometric=True):
     """Return the flattened lower triangular part of an array.
 
-    If diagonal is kept, off-diagonal elements are multiplied by sqrt(2).
+    If diagonal is kept, diagonal elements are divided by sqrt(2) to conserve
+    the norm.
 
     Acts on the last two dimensions of the array if not 2-dimensional.
 
@@ -209,7 +210,7 @@ def sym_to_vec(symmetric, discard_diagonal=False, isometric=True):
 
     discard_diagonal : boolean, optional
         If True, the values of the diagonal are not returned.
-        Default is True.
+        Default is False.
 
     Returns
     -------
