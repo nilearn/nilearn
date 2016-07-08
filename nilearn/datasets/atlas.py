@@ -334,9 +334,9 @@ def fetch_atlas_msdl(data_dir=None, url=None, resume=True, verbose=1):
                                 verbose=verbose)
     files = _fetch_files(data_dir, files, resume=resume, verbose=verbose)
     csv_data = np.recfromcsv(files[0])
-    labels = csv_data['name'].tolist()
+    labels = [name.strip() for name in csv_data['name'].tolist()]
     region_coords = csv_data[['x', 'y', 'z']].tolist()
-    net_names = csv_data['net_name'].tolist()
+    net_names = [net_name.strip() for net_name in csv_data['net_name'].tolist()]
     fdescr = _get_dataset_descr(dataset_name)
 
     return Bunch(maps=files[1], labels=labels, region_coords=region_coords,
