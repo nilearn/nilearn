@@ -158,6 +158,11 @@ display = plotting.plot_anat(mean_haxby_img, title="add_edges")
 display.add_edges(haxby_anat_filename)
 
 ########################################
+# Note that the edges of a non-coregistered anatomical image may partially
+# match a mean functional image, because plotting is done in real world space.
+# So one has to look at fine details.
+
+########################################
 # Plotting outline of the mask (red) on top of the mean EPI image with
 # `add_contours`. This method is useful for region specific interpretation
 # of brain images
