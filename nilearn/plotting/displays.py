@@ -746,12 +746,9 @@ class BaseSlicer(object):
 
         Parameters
         ----------
-        map: 3D ndarray
-            The 3D map to be plotted. If it is a masked array, only
-            the non-masked part will be plotted.
-        affine: 4x4 ndarray
-            The affine matrix giving the transformation from voxel
-            indices to world space.
+        img: Niimg-like object
+            See http://nilearn.github.io/manipulating_images/input_output.html.
+            Provides image to plot.
         color: matplotlib color: string or (r, g, b) value
             The color used to display the edge map
         """
