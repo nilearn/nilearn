@@ -20,11 +20,11 @@ func_filename = adhd.func[0]
 
 # Read the 6 motion parameters from the confounds file
 import numpy as np
-csv_confounds = np.recfromcsv(adhd.confounds[0], delimiter='\t')
-current_volume_motion = [
-    csv_confounds[name] for name in ('motionx', 'motiony', 'motionz',
-                                     'motionpitch', 'motionroll', 'motionyaw')]
-current_volume_motion = np.array(current_volume_motion).T
+csv_confounds = np.recfromcsv(adhd.confounds[0], delimiter='\t',
+                              usecols=('motionx', 'motiony', 'motionz',
+                                       'motionpitch', 'motionroll',
+                                       'motionyaw'))
+current_volume_motion = csv_confounds.view(dtype=float).reshape(-1, 6)
 previous_volume_motion = np.vstack((current_volume_motion[0],
                                     current_volume_motion[:-1]))
 confounds = np.hstack((current_volume_motion, previous_volume_motion,
@@ -81,8 +81,8 @@ for tissue_name, mask_img in mask_images.items():
 from nilearn import masking
 func_mask_img = masking.compute_epi_mask(mean_func_img, opening=0)
 for tissue_name, mask_img in mask_images.items():
-    mask_images[tissue_name] = image.math_img("img1 * img2", img1=mask_img,
-                                              img2=func_mask_img)
+    mask_images[tissue_name] = masking.intersect_masks(
+        [func_mask_img, mask_img], threshold=1, connected=False)
 
 ##########################################################################
 # We check the masks quality by plotting their contours
