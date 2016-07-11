@@ -31,8 +31,7 @@ def filter_and_mask(imgs, mask_img_, parameters,
                     memory_level=0, memory=Memory(cachedir=None),
                     verbose=0,
                     confounds=None,
-                    copy=True,
-                    return_affine=True):
+                    copy=True):
     imgs = _utils.check_niimg(imgs, atleast_4d=True, ensure_ndim=4)
 
     # Check whether resampling is truly necessary. If so, crop mask
@@ -57,10 +56,7 @@ def filter_and_mask(imgs, mask_img_, parameters,
     # earlier)
     # Optionally: 'doctor_nan', remove voxels with NaNs, other option
     # for later: some form of imputation
-    if return_affine:
-        return data, affine
-    else:
-        return data
+    return data
 
 
 class NiftiMasker(BaseMasker, CacheMixin):
@@ -294,8 +290,7 @@ class NiftiMasker(BaseMasker, CacheMixin):
             memory=self.memory,
             verbose=self.verbose,
             confounds=confounds,
-            copy=copy,
-            return_affine=False
+            copy=copy
         )
 
         return data

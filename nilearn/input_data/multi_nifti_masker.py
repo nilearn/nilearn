@@ -280,7 +280,7 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
                           verbose=self.verbose,
                           confounds=cfs,
                           copy=copy,
-                          return_affine=False)
+                          )
             for imgs, cfs in izip(niimg_iter, confounds))
         return data
 

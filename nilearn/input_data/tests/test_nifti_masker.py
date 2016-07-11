@@ -334,5 +334,5 @@ def test_filter_and_mask():
     params = get_params(NiftiMasker, masker)
 
     # Test return_affine = False
-    data = filter_and_mask(data_img, mask_img, params, return_affine=False)
+    data = filter_and_mask(data_img, mask_img, params)
     assert_equal(data.shape, (5, 24000))
