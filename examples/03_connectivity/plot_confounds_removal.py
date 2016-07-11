@@ -59,9 +59,8 @@ for tissue_name, threshold in zip(['wm', 'gm', 'csf'], ['.9', '.5', '.3']):
 from scipy import ndimage
 for tissue_name in ['wm', 'csf']:
     mask_img = mask_images[tissue_name]
-    eroded_mask_data = mask_img.get_data()
-    for n_erosions in range(2):
-        eroded_mask_data = ndimage.binary_erosion(eroded_mask_data)
+    eroded_mask_data = ndimage.binary_erosion(mask_img.get_data(),
+                                              iterations=2)
     mask_images[tissue_name] = image.new_img_like(mask_img, eroded_mask_data)
 
 ##########################################################################
@@ -121,21 +120,25 @@ gm_masker = input_data.NiftiMasker(mask_img=mask_images['gm'],
 gm_signals = gm_masker.fit_transform(func_filename)
 
 #######################################################################
-# and predict voxels signals from confounds.
+# and predict GM voxels signals from confounds.
 from sklearn import linear_model
 regr = linear_model.LinearRegression(normalize=True)
 regr.fit(confounds, gm_signals)
-total_variance = np.sum(gm_signals ** 2, axis=0)
-residual_variance = np.sum((regr.predict(confounds) - gm_signals) ** 2,
-                           axis=0)
-variance_percent = 100. - 100. * residual_variance / total_variance
+predicted_gm_signals = regr.predict(confounds)
+n_samples, n_features = confounds.shape
+mean_square_regression = np.sum(predicted_gm_signals ** 2,
+                                axis=0) / (n_features - 1)
+mean_square_error = np.sum((predicted_gm_signals - gm_signals) ** 2,
+                           axis=0) / (n_samples - n_features)
+f_statistic = mean_square_regression / mean_square_error
 # Transform from array to image
-variance_img = gm_masker.inverse_transform(variance_percent)
+f_statistic_img = gm_masker.inverse_transform(f_statistic)
 
 #######################################################################
-# The variance map shows the percent of variance explained by confounds.
-display = plotting.plot_stat_map(variance_img, bg_img=mean_func_img,
-                                 cut_coords=cut_coords, vmax=100.)
+# The F-map reflects the overall fit of the linear model
+# explaining the GM voxel-wise timeseries by the confounds.
+display = plotting.plot_stat_map(f_statistic_img, bg_img=mean_func_img,
+                                 display_mode='z', cut_coords=3)
 
 ############################################################################
 # Visualizing the impact of confounds removal on voxel-to-voxel connectivity
