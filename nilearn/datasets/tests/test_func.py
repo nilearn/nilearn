@@ -11,14 +11,13 @@ import nibabel
 from sklearn.utils import check_random_state
 
 from nose import with_setup
-from nose.tools import (assert_true, assert_equal, assert_raises,
-                        assert_not_equal)
+from nose.tools import assert_true, assert_equal, assert_not_equal
 from . import test_utils as tst
 
 from nilearn.datasets import utils, func
 from nilearn._utils.testing import assert_raises_regex
 
-from nilearn._utils.compat import _basestring, _urllib
+from nilearn._utils.compat import _basestring
 
 
 def setup_mock():
@@ -48,37 +47,6 @@ def test_fetch_haxby():
         assert_equal(len(haxby.mask_house_little), i)
         tst.mock_url_request.reset()
         assert_not_equal(haxby.description, '')
-
-
-@with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
-def test_fail_fetch_haxby():
-    # Test a dataset fetching failure to validate sandboxing
-    local_url = "file:" + _urllib.request.pathname2url(os.path.join(tst.datadir,
-        "pymvpa-exampledata.tar.bz2"))
-    datasetdir = os.path.join(tst.tmpdir, 'haxby2001', 'pymvpa-exampledata')
-    os.makedirs(datasetdir)
-    # Create a dummy file. If sandboxing is successful, it won't be overwritten
-    dummy = open(os.path.join(datasetdir, 'attributes.txt'), 'w')
-    dummy.write('stuff')
-    dummy.close()
-
-    path = 'pymvpa-exampledata'
-
-    opts = {'uncompress': True}
-    files = [
-        (os.path.join(path, 'attributes.txt'), local_url, opts),
-        # The following file does not exists. It will cause an abortion of
-        # the fetching procedure
-        (os.path.join(path, 'bald.nii.gz'), local_url, opts)
-    ]
-
-    assert_raises(IOError, utils._fetch_files,
-                  os.path.join(tst.tmpdir, 'haxby2001'), files,
-                  verbose=0)
-    dummy = open(os.path.join(datasetdir, 'attributes.txt'), 'r')
-    stuff = dummy.read(5)
-    dummy.close()
-    assert_equal(stuff, 'stuff')
 
 
 @with_setup(setup_mock, teardown_mock)
