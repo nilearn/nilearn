@@ -269,9 +269,8 @@ class NiftiMasker(BaseMasker, CacheMixin):
 
         Returns
         -------
-        region_signals: 2D numpy.ndarray or MemorizedResult
-            Signal for each voxel inside the mask. If shelving is activated,
-            array is retrieved by calling region_signals.get()
+        region_signals: 2D numpy.ndarray
+            Signal for each voxel inside the mask.
             shape: (number of scans, number of voxels)
         """
 
