@@ -138,11 +138,11 @@ def cache(func, memory, func_memory_level=None, memory_level=None,
 
     Returns
     -------
-    mem: joblib.MemorizedFunc
-        object that wraps the function func. This object may be
-        a no-op, if the requested level is lower than the value given
-        to _cache()). For consistency, a joblib.Memory object is always
-        returned.
+    mem: joblib.MemorizedFunc, wrapped in _ShelvedFunc if shelving
+        Object that wraps the function func to cache its further call.
+        This object may be a no-op, if the requested level is lower
+        than the value given to _cache()).
+        For consistency, a callable object is always returned.
     """
     verbose = kwargs.get('verbose', 0)
 
@@ -217,12 +217,11 @@ class CacheMixin(object):
 
         Returns
         -------
-        mem: joblib.Memory
-            object that wraps the function func. This object may be
-            a no-op, if the requested level is lower than the value given
-            to _cache()). For consistency, a joblib.Memory object is always
-            returned.
-
+        mem: joblib.MemorizedFunc, wrapped in _ShelvedFunc if shelving
+            Object that wraps the function func to cache its further call.
+            This object may be a no-op, if the requested level is lower
+            than the value given to _cache()).
+            For consistency, a callable object is always returned.
         """
         verbose = getattr(self, 'verbose', 0)
 
