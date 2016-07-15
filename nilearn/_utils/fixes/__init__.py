@@ -38,8 +38,8 @@ try:
     from sklearn.utils import check_is_fitted
 except ImportError:
     # scikit-learn < 0.16
-    from .scikit_learn_validation import check_X_y
-    from .scikit_learn_validation import check_is_fitted
+    from .sklearn_validation import check_X_y
+    from .sklearn_validation import check_is_fitted
 
 
 __all__ = ['f_regression', 'atleast2d_or_csr', 'roc_auc_score',
