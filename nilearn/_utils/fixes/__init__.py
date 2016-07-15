@@ -11,11 +11,11 @@ else:
 
 
 try:
-    # scikit-learn < 0.16
-    from sklearn.cross_validation import _check_cv as check_cv
-except:
     # scikit-learn >= 0.16
     from sklearn.cross_validation import check_cv
+except:
+    # scikit-learn < 0.16
+    from sklearn.cross_validation import _check_cv as check_cv
 
 
 # atleast2d_or_csr
