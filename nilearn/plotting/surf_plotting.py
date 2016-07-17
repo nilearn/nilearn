@@ -37,6 +37,9 @@ def check_surf_data(surf_data):
             data = np.squeeze(data)
         else:
             raise ValueError('Format of data file not recognized.')
+    # if the input is a numpy array
+    elif isinstance(surf_data, np.ndarray):
+        data = np.squeeze(surf_data)
     return data
 
 
@@ -193,13 +196,16 @@ def plot_surf_stat_map(surf_mesh, hemi, stat_map=None, bg_map=None,
 
         if stat_map is not None:
             stat_map_data = check_surf_data(stat_map)
+            if len(stat_map_data.shape) is not 1:
+                raise ValueError('stat_map can only have one dimension'
+                                 'but has %i dimensions'%len(stat_map_data.shape))
             if stat_map_data.shape[0] != coords.shape[0]:
                 raise ValueError('The stat_map does not have the same number '
                                  'of vertices as the mesh. For plotting of '
                                  'rois or labels use plot_roi_surf instead')
             stat_map_faces = np.mean(stat_map_data[faces], axis=1)
 
-            # Call _get_colorbar_and_data_ranges to derive symmetric vmin and vmax
+            # Call _get_colorbar_and_data_ranges to derive symmetric vmin, vmax
             # And colorbar limits depending on symmetric_cbar settings
             cbar_vmin, cbar_vmax, vmin, vmax = \
                 _get_colorbar_and_data_ranges(stat_map_faces, vmax,
