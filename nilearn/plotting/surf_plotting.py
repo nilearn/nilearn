@@ -16,7 +16,7 @@ from mpl_toolkits.mplot3d import Axes3D
 
 
 # function to figure out datatype and load data
-def check_surf_data(surf_data, gii_darray=0):
+def check_surf_data(surf_data):
     # if the input is a filename, load it
     if isinstance(surf_data, _basestring):
         if (surf_data.endswith('nii') or surf_data.endswith('nii.gz') or
@@ -30,7 +30,11 @@ def check_surf_data(surf_data, gii_darray=0):
         elif surf_data.endswith('label'):
             data = nibabel.freesurfer.io.read_label(surf_data)
         elif surf_data.endswith('gii'):
-            data = gifti.read(surf_data).darrays[gii_darray].data
+            gii = gifti.read(surf_data)
+            data = np.zeros((len(gii.darrays[0].data), len(gii.darrays)))
+            for arr in range(len(gii.darrays)):
+                data[:, arr] = gii.darrays[arr].data
+            data = np.squeeze(data)
         else:
             raise ValueError('Format of data file not recognized.')
     return data
@@ -56,7 +60,7 @@ def check_surf_mesh(surf_mesh):
 def plot_surf_stat_map(surf_mesh, hemi, stat_map=None, bg_map=None,
                        view='lateral', threshold=None, cmap='coolwarm',
                        alpha='auto', vmax=None, symmetric_cbar="auto",
-                       bg_on_stat=False, darkness=1, gii_darray=0,
+                       bg_on_stat=False, darkness=1,
                        output_file=None, **kwargs):
 
     """ Plotting of surfaces with optional background and stats map
@@ -173,7 +177,7 @@ def plot_surf_stat_map(surf_mesh, hemi, stat_map=None, bg_map=None,
         face_colors[:, :3] = .5*face_colors[:, :3]
 
         if bg_map is not None:
-            bg_data = check_surf_data(bg_map, gii_darray=gii_darray)
+            bg_data = check_surf_data(bg_map)
             if bg_data.shape[0] != coords.shape[0]:
                 raise ValueError('The bg_map does not have the same number '
                                  'of vertices as the mesh.')
@@ -188,7 +192,7 @@ def plot_surf_stat_map(surf_mesh, hemi, stat_map=None, bg_map=None,
         face_colors[:, 3] = alpha*face_colors[:, 3]
 
         if stat_map is not None:
-            stat_map_data = check_surf_data(stat_map, gii_darray=gii_darray)
+            stat_map_data = check_surf_data(stat_map)
             if stat_map_data.shape[0] != coords.shape[0]:
                 raise ValueError('The stat_map does not have the same number '
                                  'of vertices as the mesh. For plotting of '
