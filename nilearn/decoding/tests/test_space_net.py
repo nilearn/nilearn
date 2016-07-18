@@ -362,12 +362,12 @@ def test_checking_inputs_length():
     y = 2 * (y > 0) - 1
     X_, mask = to_niimgs(X, (2, 2, 2))
 
-    # Remove one sample from y
+    # Remove ten samples from y
     y = y[:-10]
 
-    gnc = SpaceNetClassifier(mask=mask, alphas=1. / .01 / X.shape[0],
-                             l1_ratios=1., tol=1e-10,
-                             standardize=False, verbose=0,
-                             screening_percentile=100.)
+    for model in [SpaceNetRegressor, SpaceNetClassifier]:
 
-    assert_raises(ValueError, gnc.fit, X_, y)
+        assert_raises(ValueError, model(mask=mask,
+                                        alphas=1. / .01 / X.shape[0],
+                                        l1_ratios=1., tol=1e-10,
+                                        screening_percentile=100.).fit, X_, y)
