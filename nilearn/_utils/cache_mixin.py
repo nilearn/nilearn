@@ -11,6 +11,8 @@ import shutil
 from distutils.version import LooseVersion
 
 import nibabel
+import sklearn
+
 from sklearn.externals.joblib import Memory
 
 MEMORY_CLASSES = (Memory, )
@@ -90,8 +92,18 @@ def _safe_cache(memory, func, **kwargs):
     return memory.cache(func, **kwargs)
 
 
+class _ShelvedFunc(object):
+    """Work around for Python 2, for which pickle fails on instance method"""
+    def __init__(self, func):
+        self.func = func
+        self.func_name = func.__name__ + '_shelved'
+
+    def __call__(self, *args, **kwargs):
+            return self.func.call_and_shelve(*args, **kwargs)
+
+
 def cache(func, memory, func_memory_level=None, memory_level=None,
-          **kwargs):
+          shelve=False, **kwargs):
     """ Return a joblib.Memory object.
 
     The memory_level determines the level above which the wrapped
@@ -117,16 +129,20 @@ def cache(func, memory, func_memory_level=None, memory_level=None,
         be cached or not (if user_memory_level is equal of greater than
         func_memory_level the function is cached)
 
+    shelve: bool
+        Whether to return a joblib MemorizedResult, callable by a .get()
+        method, instead of the return value of func
+
     kwargs: keyword arguments
         The keyword arguments passed to memory.cache
 
     Returns
     -------
-    mem: joblib.MemorizedFunc
-        object that wraps the function func. This object may be
-        a no-op, if the requested level is lower than the value given
-        to _cache()). For consistency, a joblib.Memory object is always
-        returned.
+    mem: joblib.MemorizedFunc, wrapped in _ShelvedFunc if shelving
+        Object that wraps the function func to cache its further call.
+        This object may be a no-op, if the requested level is lower
+        than the value given to _cache()).
+        For consistency, a callable object is always returned.
     """
     verbose = kwargs.get('verbose', 0)
 
@@ -157,7 +173,13 @@ def cache(func, memory, func_memory_level=None, memory_level=None,
                           stacklevel=2)
     else:
         memory = Memory(cachedir=None, verbose=verbose)
-    return _safe_cache(memory, func, **kwargs)
+    cached_func = _safe_cache(memory, func, **kwargs)
+    if shelve:
+        if LooseVersion(sklearn.__version__) < LooseVersion('0.15'):
+            raise ValueError('Shelving is only available if'
+                             ' scikit-learn >= 0.15 is installed.')
+        cached_func = _ShelvedFunc(cached_func)
+    return cached_func
 
 
 class CacheMixin(object):
@@ -171,7 +193,7 @@ class CacheMixin(object):
     cache level (self._memory_level) is greater than the value given as a
     parameter to self._cache(). See _cache() documentation for details.
     """
-    def _cache(self, func, func_memory_level=1, **kwargs):
+    def _cache(self, func, func_memory_level=1, shelve=False, **kwargs):
         """Return a joblib.Memory object.
 
         The memory_level determines the level above which the wrapped
@@ -189,16 +211,18 @@ class CacheMixin(object):
             The memory_level from which caching must be enabled for the wrapped
             function.
 
+        shelve: bool
+            Whether to return a joblib MemorizedResult, callable by a .get()
+            method, instead of the return value of func
+
         Returns
         -------
-        mem: joblib.Memory
-            object that wraps the function func. This object may be
-            a no-op, if the requested level is lower than the value given
-            to _cache()). For consistency, a joblib.Memory object is always
-            returned.
-
+        mem: joblib.MemorizedFunc, wrapped in _ShelvedFunc if shelving
+            Object that wraps the function func to cache its further call.
+            This object may be a no-op, if the requested level is lower
+            than the value given to _cache()).
+            For consistency, a callable object is always returned.
         """
-
         verbose = getattr(self, 'verbose', 0)
 
         # Creates attributes if they don't exist
@@ -251,4 +275,5 @@ class CacheMixin(object):
             self.memory_level = 1
 
         return cache(func, self.memory, func_memory_level=func_memory_level,
-                     memory_level=self.memory_level, **kwargs)
+                     memory_level=self.memory_level, shelve=shelve,
+                     **kwargs)

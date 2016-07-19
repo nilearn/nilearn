@@ -5,19 +5,19 @@ Transformer used to apply basic transformations on MRI data.
 # License: simplified BSD
 
 from copy import copy as copy_object
+
 from sklearn.externals.joblib import Memory
 
-from .. import masking
-from .. import image
+from .base_masker import BaseMasker, filter_and_extract
 from .. import _utils
+from .. import image
+from .. import masking
 from .._utils import CacheMixin
 from .._utils.class_inspect import get_params
-from .base_masker import BaseMasker, filter_and_extract
-from nilearn._utils.niimg_conversions import _check_same_fov
+from .._utils.niimg_conversions import _check_same_fov
 
 
 class _ExtractionFunctor(object):
-
     func_name = 'nifti_masker_extractor'
 
     def __init__(self, mask_img_):
@@ -32,7 +32,6 @@ def filter_and_mask(imgs, mask_img_, parameters,
                     verbose=0,
                     confounds=None,
                     copy=True):
-
     imgs = _utils.check_niimg(imgs, atleast_4d=True, ensure_ndim=4)
 
     # Check whether resampling is truly necessary. If so, crop mask
@@ -57,8 +56,7 @@ def filter_and_mask(imgs, mask_img_, parameters,
     # earlier)
     # Optionally: 'doctor_nan', remove voxels with NaNs, other option
     # for later: some form of imputation
-
-    return data, affine
+    return data
 
 
 class NiftiMasker(BaseMasker, CacheMixin):
@@ -160,6 +158,7 @@ class NiftiMasker(BaseMasker, CacheMixin):
     nilearn.masking.apply_mask
     nilearn.signal.clean
     """
+
     def __init__(self, mask_img=None, sessions=None, smoothing_fwhm=None,
                  standardize=False, detrend=False,
                  low_pass=None, high_pass=None, t_r=None,
@@ -189,6 +188,8 @@ class NiftiMasker(BaseMasker, CacheMixin):
         self.memory_level = memory_level
         self.verbose = verbose
 
+        self._shelving = False
+
     def _check_fitted(self):
         if not hasattr(self, 'mask_img_'):
             raise ValueError('It seems that %s has not been fitted. '
@@ -210,8 +211,8 @@ class NiftiMasker(BaseMasker, CacheMixin):
         # Load data (if filenames are given, load them)
         if self.verbose > 0:
             print("[%s.fit] Loading data from %s" % (
-                            self.__class__.__name__,
-                            _utils._repr_niimgs(imgs)[:200]))
+                self.__class__.__name__,
+                _utils._repr_niimgs(imgs)[:200]))
 
         # Compute the mask if not given by the user
         if self.mask_img is None:
@@ -279,13 +280,16 @@ class NiftiMasker(BaseMasker, CacheMixin):
         params = get_params(self.__class__, self,
                             ignore=['mask_img', 'mask_args', 'mask_strategy'])
 
-        data, _ = self._cache(filter_and_mask,
-                              ignore=['verbose', 'memory', 'memory_level', 'copy'])(
-                                    imgs, self.mask_img_, params,
-                                    memory_level=self.memory_level,
-                                    memory=self.memory,
-                                    verbose=self.verbose,
-                                    confounds=confounds,
-                                    copy=copy
+        data = self._cache(filter_and_mask,
+                           ignore=['verbose', 'memory', 'memory_level',
+                                   'copy'],
+                           shelve=self._shelving)(
+            imgs, self.mask_img_, params,
+            memory_level=self.memory_level,
+            memory=self.memory,
+            verbose=self.verbose,
+            confounds=confounds,
+            copy=copy
         )
+
         return data
