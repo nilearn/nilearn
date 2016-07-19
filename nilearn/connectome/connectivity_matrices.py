@@ -193,7 +193,7 @@ def _geometric_mean(matrices, init=None, max_iter=10, tol=1e-7):
     return gmean
 
 
-def sym_to_vec(symmetric, discard_diagonal=False, isometric=True):
+def sym_to_vec(symmetric, discard_diagonal=False):
     """Return the flattened lower triangular part of an array.
 
     If diagonal is kept, diagonal elements are divided by sqrt(2) to conserve
