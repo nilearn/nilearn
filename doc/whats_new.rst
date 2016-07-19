@@ -9,6 +9,10 @@ The new minimum required version of scikit-learn is 0.14.1
 New features
 ............
 
+    - Add an option to select only off-diagonal elements in sym_to_vec. Also,
+      the scaling of matrices is modified: we divide the diagonal by sqrt(2)
+      instead of multiplying the off-diagonal elements.
+
 0.2.5
 =====
 
