@@ -18,7 +18,7 @@ Functional connectivity of the seed region to all other cortical nodes in the
 same hemisphere is calculated using Pearson product-moment correlation
 coefficient.
 
-The :func:`nilearn.plotting.surf_plotting.plot_surf_stat_map` function is used
+The :func:`nilearn.plotting.plot_surf_stat_map` function is used
 to plot the resulting statistical map on the (inflated) pial surface.
 
 See :ref:`plotting` for more details.
