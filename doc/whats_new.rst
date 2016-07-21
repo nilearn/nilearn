@@ -13,6 +13,12 @@ New features
       the scaling of matrices is modified: we divide the diagonal by sqrt(2)
       instead of multiplying the off-diagonal elements.
 
+API changes summary
+...................
+
+    - Scikit-learn validation tools have been imported and are now used to check
+      consistency of input data, in SpaceNet for example.
+
 0.2.5
 =====
 
