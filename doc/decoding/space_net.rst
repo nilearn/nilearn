@@ -26,7 +26,7 @@ SpaceNet implements spatial penalties which improve brain decoding power as well
   `[Gramfort et al. 2013] <https://hal.inria.fr/hal-00839984>`_ (option: ),
 
 * penalty="graph-net": GraphNet prior `[Grosenick et al. 2013]
-  <https://hal.inria.fr/hal-00839984>`_)
+  <https://www.ncbi.nlm.nih.gov/pubmed/23298747>`_)
 
 These regularize classification and regression
 problems in brain imaging. The result are brain maps which are both
@@ -37,7 +37,7 @@ Ridge, etc. for yielding more interpretable maps and improved
 prediction scores is now well established `[Baldassarre et al. 2012]
 <http://www0.cs.ucl.ac.uk/staff/M.Pontil/reading/neurosparse_prni.pdf>`_,
 `[Gramfort et al. 2013] <https://hal.inria.fr/hal-00839984>`_,
-`[Grosenick et al. 2013] <https://hal.inria.fr/hal-00839984>`_.
+`[Grosenick et al. 2013] <https://www.ncbi.nlm.nih.gov/pubmed/23298747>`_.
 
 
 Note that TV-L1 prior leads to a difficult optimization problem, and so
