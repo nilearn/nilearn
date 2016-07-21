@@ -354,3 +354,20 @@ def test_space_net_one_alpha_no_crash():
     for model in [SpaceNetRegressor, SpaceNetClassifier]:
         model(n_alphas=1, mask=mask).fit(X, y)
         model(alphas=None, n_alphas=2, mask=mask).fit(X, y)
+
+
+def test_checking_inputs_length():
+    iris = load_iris()
+    X, y = iris.data, iris.target
+    y = 2 * (y > 0) - 1
+    X_, mask = to_niimgs(X, (2, 2, 2))
+
+    # Remove ten samples from y
+    y = y[:-10]
+
+    for model in [SpaceNetRegressor, SpaceNetClassifier]:
+
+        assert_raises(ValueError, model(mask=mask,
+                                        alphas=1. / .01 / X.shape[0],
+                                        l1_ratios=1., tol=1e-10,
+                                        screening_percentile=100.).fit, X_, y)
