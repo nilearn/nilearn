@@ -255,11 +255,11 @@ class GlassBrainAxes(BaseAxes):
         if self.direction == 'l':
             x_center, _, _, _ = np.dot(np.linalg.inv(affine),
                                        np.array([0, 0, 0, 1]))
-            data_selection = data[int(x_center):, :, :]
+            data_selection = data[:int(x_center), :, :]
         elif self.direction == 'r':
             x_center, _, _, _ = np.dot(np.linalg.inv(affine),
                                        np.array([0, 0, 0, 1]))
-            data_selection = data[:int(x_center), :, :]
+            data_selection = data[int(x_center):, :, :]
         else:
             data_selection = data
 
