@@ -75,8 +75,9 @@ uses.
    fetch_abide_pcp
    fetch_adhd
    fetch_haxby
-   fetch_haxby_simple
    fetch_icbm152_2009
+   fetch_icbm152_brain_gm_mask
+   fetch_localizer_button_task
    fetch_localizer_contrasts
    fetch_localizer_calculation_task
    fetch_miyawaki2008
@@ -84,7 +85,9 @@ uses.
    fetch_oasis_vbm
    fetch_megatrawls_netmats
    fetch_cobre
+   get_data_dirs
    load_mni152_template
+   load_mni152_brain_mask
 
 .. _decoding_ref:
 
@@ -144,14 +147,16 @@ uses.
    :toctree: generated/
    :template: function.rst
 
-   crop_img
+   clean_img
    concat_imgs
    copy_img
+   crop_img
+   high_variance_confounds
    index_img
    iter_img
-   high_variance_confounds
-   mean_img
+   load_img
    math_img
+   mean_img
    new_img_like
    resample_img
    resample_to_img

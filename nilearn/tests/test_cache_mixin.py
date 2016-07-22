@@ -1,14 +1,15 @@
 """
 Test the _utils.cache_mixin module
 """
+import glob
+import json
 import os
 import shutil
 import tempfile
-import json
-import glob
+from distutils.version import LooseVersion
 
+import sklearn
 from nose.tools import assert_false, assert_true, assert_equal
-
 from sklearn.externals.joblib import Memory
 
 import nilearn
@@ -152,3 +153,27 @@ def test_cache_mixin_wrong_dirs():
         finally:
             if os.path.exists(expand_cache_dir):
                 shutil.rmtree(expand_cache_dir)
+
+
+def test_cache_shelving():
+    try:
+        temp_dir = tempfile.mkdtemp()
+        job_glob = os.path.join(temp_dir, 'joblib', 'nilearn', 'tests',
+                                'test_cache_mixin', 'f', '*')
+        mem = Memory(cachedir=temp_dir, verbose=0)
+        if LooseVersion(sklearn.__version__) >= LooseVersion('0.15'):
+            res = cache_mixin.cache(f, mem, shelve=True)(2)
+            assert_equal(res.get(), 2)
+            assert_equal(len(glob.glob(job_glob)), 1)
+            res = cache_mixin.cache(f, mem, shelve=True)(2)
+            assert_equal(res.get(), 2)
+            assert_equal(len(glob.glob(job_glob)), 1)
+        else:
+            assert_raises_regex(ValueError, 'Shelving is only available'
+                                            ' if scikit-learn >= 0.15'
+                                            ' is installed.',
+                                cache_mixin.cache,
+                                f, mem, shelve=True)
+    finally:
+        del mem
+        shutil.rmtree(temp_dir, ignore_errors=True)

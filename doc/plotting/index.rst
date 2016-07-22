@@ -10,6 +10,20 @@ neuroimaging volumes with nilearn.
 Nilearn comes with plotting function to display brain maps coming from
 Nifti-like images, in the :mod:`nilearn.plotting` module.
 
+.. contents:: **Contents**
+    :local:
+    :depth: 1
+
+.. topic:: **Code examples**
+
+   Nilearn has a whole section of the example gallery on plotting.
+
+   A small tour of the plotting functions can be found in the example
+   :ref:`sphx_glr_auto_examples_01_plotting_plot_demo_plotting.py`.
+
+   Finally, note that, as always in the nilearn documentation, clicking
+   on a figure will take you to the code that generates it.
+
 .. currentmodule:: nilearn.plotting
 
 Different plotting functions
@@ -105,6 +119,8 @@ different heuristics to find cutting coordinates.
     >>> from nilearn import plotting
     >>> display = plotting.plot_stat_map(img)     # doctest: +SKIP
     >>> display.close()     # doctest: +SKIP
+
+|
 
 .. seealso::
 
@@ -209,6 +225,8 @@ Different display modes
 
 
 ================= =========================================================
+
+.. _display_modules:
 
 Adding overlays, edges, contours, contour fillings and markers
 ==============================================================

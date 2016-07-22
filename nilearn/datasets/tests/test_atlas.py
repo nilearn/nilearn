@@ -6,20 +6,20 @@ Test the datasets module
 
 import os
 import shutil
-import csv
 import numpy as np
 
 import nibabel
 
 from nose import with_setup
-from nose.tools import assert_true, assert_equal, assert_not_equal
+from nose.tools import (assert_true, assert_equal, assert_raises,
+                        assert_not_equal)
 
 from nilearn._utils.testing import assert_raises_regex
 from . import test_utils as tst
 
-from nilearn._utils.compat import _basestring
+from nilearn._utils.compat import _basestring, _urllib
 
-from nilearn.datasets import utils, atlas, struct
+from nilearn.datasets import utils, atlas
 
 
 def setup_mock():
@@ -90,6 +90,64 @@ def test_get_dataset_dir():
                         'in the following directories, but',
                         utils._get_dataset_dir,
                         'test', test_file, verbose=0)
+
+
+@with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
+def test_downloader():
+
+    # Sandboxing test
+    # ===============
+
+    # When nilearn downloads a file, everything is first downloaded in a
+    # temporary directory (sandbox) and moved to the "real" data directory if
+    # all files are present. In case of error, the sandbox is deleted.
+
+    # To test this feature, we do as follow:
+    # - create the data dir with a file that has a specific content
+    # - try to download the dataset but make it fail on purpose (by requesting a
+    #   file that is not in the archive)
+    # - check that the previously created file is untouched :
+    #   - if sandboxing is faulty, the file would be replaced by the file of the
+    #     archive
+    #   - if sandboxing works, the file must be untouched.
+
+    local_url = "file:" + _urllib.request.pathname2url(
+        os.path.join(tst.datadir, "craddock_2011_parcellations.tar.gz"))
+    datasetdir = os.path.join(tst.tmpdir, 'craddock_2012')
+    os.makedirs(datasetdir)
+
+    # Create a dummy file. If sandboxing is successful, it won't be overwritten
+    dummy = open(os.path.join(datasetdir, 'random_all.nii.gz'), 'w')
+    dummy.write('stuff')
+    dummy.close()
+
+    opts = {'uncompress': True}
+    files = [
+        ('random_all.nii.gz', local_url, opts),
+        # The following file does not exists. It will cause an abortion of
+        # the fetching procedure
+        ('bald.nii.gz', local_url, opts)
+    ]
+
+    assert_raises(IOError, utils._fetch_files,
+                  os.path.join(tst.tmpdir, 'craddock_2012'), files,
+                  verbose=0)
+    dummy = open(os.path.join(datasetdir, 'random_all.nii.gz'), 'r')
+    stuff = dummy.read(5)
+    dummy.close()
+    assert_equal(stuff, 'stuff')
+
+    # Downloading test
+    # ================
+
+    # Now, we use the regular downloading feature. This will override the dummy
+    # file created before.
+
+    atlas.fetch_atlas_craddock_2012(data_dir=tst.tmpdir, url=local_url)
+    dummy = open(os.path.join(datasetdir, 'random_all.nii.gz'), 'r')
+    stuff = dummy.read()
+    dummy.close()
+    assert_equal(stuff, '')
 
 
 @with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)

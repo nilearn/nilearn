@@ -27,6 +27,7 @@ from sklearn.externals.joblib import Memory, Parallel, delayed
 from sklearn.cross_validation import check_cv
 from sklearn.preprocessing import LabelBinarizer
 from sklearn.metrics import accuracy_score
+from .._utils.fixes import check_X_y
 from .._utils.compat import _basestring
 from .._utils.fixes import atleast2d_or_csr
 from .._utils.cache_mixin import CacheMixin
@@ -553,13 +554,13 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
         This parameter is passed to image.resample_img. Please see the
         related documentation for details.
 
-    low_pass : False or float, optional, (default None)
+    low_pass: None or float, optional
         This parameter is passed to signal.clean. Please see the related
-        documentation for details.
+        documentation for details
 
-    high_pass : False or float, optional (default None)
-        This parameter is passed to signal. Clean. Please see the related
-        documentation for details.
+    high_pass: None or float, optional
+        This parameter is passed to signal.clean. Please see the related
+        documentation for details
 
     t_r : float, optional (default None)
         This parameter is passed to signal.clean. Please see the related
@@ -739,7 +740,7 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
         Parameters
         ----------
         X : list of Niimg-like objects
-            See http://nilearn.github.io/manipulating_images/manipulating_images.html#niimg
+            See http://nilearn.github.io/manipulating_images/input_output.html
             Data on which model is to be fitted. If this is a list,
             the affine is considered the same for all.
 
@@ -774,6 +775,9 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
                                        mask_strategy='epi', t_r=self.t_r,
                                        memory=self.memory_)
         X = self.masker_.fit_transform(X)
+
+        X, y = check_X_y(X, y, ['csr', 'csc', 'coo'], dtype=np.float,
+                         multi_output=True, y_numeric=True)
 
         # misc
         self.Xmean_ = X.mean(axis=0)
@@ -931,7 +935,7 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
         Parameters
         ----------
         X : list of Niimg-like objects
-            See http://nilearn.github.io/manipulating_images/manipulating_images.html#niimg
+            See http://nilearn.github.io/manipulating_images/input_output.html
             Data on prediction is to be made. If this is a list,
             the affine is considered the same for all.
 
@@ -1009,13 +1013,13 @@ class SpaceNetClassifier(BaseSpaceNet):
         This parameter is passed to image.resample_img. Please see the
         related documentation for details.
 
-    low_pass : False or float, optional, (default None)
+    low_pass: None or float, optional
         This parameter is passed to signal.clean. Please see the related
-        documentation for details.
+        documentation for details
 
-    high_pass : False or float, optional (default None)
-        This parameter is passed to signal. Clean. Please see the related
-        documentation for details.
+    high_pass: None or float, optional
+        This parameter is passed to signal.clean. Please see the related
+        documentation for details
 
     t_r : float, optional (default None)
         This parameter is passed to signal.clean. Please see the related
@@ -1135,7 +1139,7 @@ class SpaceNetClassifier(BaseSpaceNet):
         Parameters
         ----------
         X : list of Niimg-like objects
-            See http://nilearn.github.io/manipulating_images/manipulating_images.html#niimg
+            See http://nilearn.github.io/manipulating_images/input_output.html
             Data on which model is to be fitted. If this is a list,
             the affine is considered the same for all.
 
@@ -1197,12 +1201,12 @@ class SpaceNetRegressor(BaseSpaceNet):
         This parameter is passed to image.resample_img. Please see the
         related documentation for details.
 
-    low_pass : False or float, optional, (default None)
+    low_pass: None or float, optional
         This parameter is passed to signal.clean. Please see the related
         documentation for details
 
-    high_pass : False or float, optional (default None)
-        This parameter is passed to signal. Clean. Please see the related
+    high_pass: None or float, optional
+        This parameter is passed to signal.clean. Please see the related
         documentation for details
 
     t_r : float, optional (default None)

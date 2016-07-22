@@ -1,51 +1,91 @@
 .. _parcellating_brain:
 
-==================================
-Parcellating the brain in regions
-==================================
+==============================================
+Clustering to parcellate the brain in regions
+==============================================
 
-.. topic:: **Page summary**
+This page discusses how clustering can be used to parcellate the brain
+into homogeneous regions from functional imaging data.
 
-    This page demonstrates how clustering can be used to parcellate the
-    brain into homogeneous regions from resting-state time series.
+|
 
+.. topic:: **Reference**
 
-A resting-state dataset
-========================
+   A big-picture reference on the use of clustering for brain
+   parcellations.
+
+    Thirion, et al. `"Which fMRI clustering gives good brain
+    parcellations?."
+    <http://journal.frontiersin.org/article/10.3389/fnins.2014.00167/full>`_
+    Frontiers in neuroscience 8.167 (2014): 13.
+
+Data loading and massaging
+===========================
+
+Resting-state data
+-------------------
 
 .. currentmodule:: nilearn.datasets
 
-Here, we use a `resting-state <http://www.nitrc.org/projects/nyu_trt/>`_ 
-dataset from test-retest study performed at NYU. Details on the data 
-can be found in the documentation for the downloading function 
-:func:`fetch_nyu_rest`.
+Clustering is commonly applied to resting-state data, but any brain
+functional data will give rise of a functional parcellation, capturing
+intrinsic brain architecture in the case of resting-state data.
+In the examples, we use rest data downloaded with the function 
+:func:`fetch_adhd` (see :ref:`loading_data`).
 
-Preprocessing: loading and masking
-==================================
+Loading and masking and with NiftiMasker
+-----------------------------------------
 
-We fetch the data from Internet and load it with a dedicated function
-(see :ref:`loading_data`):
+Before clustering, the brain volumes need to be turned to a data matrix,
+for instance of time-series. The :class:`nilearn.input_data.NiftiMasker`
+extract these on a mask. If no mask is given with the data, the masker
+can compute one.
 
-.. literalinclude:: ../../examples/03_connectivity/plot_rest_clustering.py
-    :start-after: ### Load nyu_rest dataset #####################################################
-    :end-before: ### Ward ######################################################################
+The masker can perform important :ref:`preprocessing operations
+<masker_preprocessing_steps>`, such as detrending signals, standardizing
+them, removing confounds, or smoothing the images.
 
-No mask is given with the data so we let the masker compute one.
-The result is a niimg from which we extract a numpy array that is
-used to mask our original images.
+.. topic:: **Example code**
 
-Applying Ward clustering
+   All the steps discussed in this section can be seen implemented in
+   :ref:`a full code example
+   <sphx_glr_auto_examples_03_connectivity_plot_rest_clustering.py>`.
+
+Applying clustering
 ==========================
+
+.. topic:: **Which clustering to use**
+
+    The question of which clustering method to use is in itself subject
+    to debate. There are many clustering methods; their computational
+    cost will vary, as well as their results. A `well-cited empirical
+    comparison
+    <http://journal.frontiersin.org/article/10.3389/fnins.2014.00167/full>`_
+    suggests that:
+
+    * For a large number of clusters, it is preferable to use Ward
+      agglomerative clustering with spatial constraints
+
+    * For a small number of clusters, it is preferable to use Kmeans
+      clustering after spatially-smoothing the data.
+
+    Both clustering algorithms (as well as many others) are provided by
+    `scikit-learn
+    <http://scikit-learn.org/stable/modules/clustering.html>`_. Ward
+    clustering is the easiest to use, as it can be done with the Feature
+    agglomeration object. It is also very fast. We detail it bellow.
+
+|
 
 **Compute a connectivity matrix**
 Before applying Ward's method, we compute a spatial neighborhood matrix,
 aka connectivity matrix. This is useful to constrain clusters to form
 contiguous parcels (see `the scikit-learn documentation
-<http://scikit-learn.org/stable//modules/clustering.html#adding-connectivity-constraints>`_)
+<http://scikit-learn.org/stable/modules/clustering.html#adding-connectivity-constraints>`_)
 
-.. literalinclude:: ../../examples/03_connectivity/plot_rest_clustering.py
-    :start-after: # Compute connectivity matrix: which voxel is connected to which
-    :end-before: # Computing the ward for the first time, this is long...
+This is done from the mask computed by the masker: a niimg from which we
+extract a numpy array and then the connectivity matrix.
+
 
 **Ward clustering principle**
 Ward's algorithm is a hierarchical clustering algorithm: it
@@ -62,74 +102,47 @@ the *memory* parameter is used to cache the computed component tree. You
 can give it either a *joblib.Memory* instance or the name of a directory
 used for caching.
 
-Running the Ward algorithm
----------------------------
 
-Here we simply launch Ward's algorithm to find 1000 clusters and we time it.
+.. note::
 
-.. literalinclude:: ../../examples/03_connectivity/plot_rest_clustering.py
-    :start-after: # Computing the ward for the first time, this is long...
-    :end-before: # Compute the ward with more clusters, should be faster
+    The Ward clustering computing 1000 parcels runs typically in about 10
+    seconds. Admitedly, this is very fast.
 
-This runs in about 10 seconds (depending on your computer configuration). Now,
-we are not satisfied of the result and we want to cluster the picture in 2000
-elements.
 
-.. literalinclude:: ../../examples/03_connectivity/plot_rest_clustering.py
-    :start-after: # Compute the ward with more clusters, should be faster
-    :end-before: ### Show result ############################################################### 
+Using and visualizing the resulting parcellation
+==================================================
 
-Now that the component tree has been computed, computation is must faster
-thanks to caching. You should have the result in less than 1 second.
+.. currentmodule:: nilearn.input_data
 
-Post-Processing and visualizing the parcels
-============================================
+Visualizing the parcellation
+-----------------------------
 
-Unmasking
----------
+For every scikit-learn clustering object, the labels of the parcellation
+are found its `labels_` after fitting it to the data. To turn them into a
+brain image, we need to unmask them with the :class:`NiftiMasker`
+*inverse_transform* method.
 
-After applying the ward, we must unmask the data. This can be done simply :
-
-.. literalinclude:: ../../examples/03_connectivity/plot_rest_clustering.py
-    :start-after: # Unmask data
-    :end-before: # Display the labels 
-
-You can see that masked data is filled with -1 values. This is done for the
-sake of visualization. In fact, clusters are labeled from 0 to
-(n_clusters - 1). By putting every background value to -1, we assure that
-they will not mess with the visualization.
-
-Label visualization
---------------------
+Note that by default, clusters are labeled from 0 to
+(n_clusters - 1), and the label 0 may be confused with a background.
 
 To visualize the clusters, we assign random colors to each cluster
 for the labels visualization.
-
-.. literalinclude:: ../../examples/03_connectivity/plot_rest_clustering.py
-    :start-after: ### Show result ###############################################################
-    :end-before: # Display the original data
-
 
 .. figure:: ../auto_examples/03_connectivity/images/sphx_glr_plot_rest_clustering_001.png
    :target: ../auto_examples/03_connectivity/plot_rest_clustering.html
    :align: center
    :scale: 80
 
-Compressed picture
-------------------
+Compressed representation
+--------------------------
 
-By transforming a picture in a new one in which the value of each voxel
-is the mean value of the cluster it belongs to, we are creating a
-compressed version of the original picture. We can obtain this
-representation thanks to a two-step procedure :
+The clustering can be used to transform the data into a smaller
+representation, taking the average on each parcel:
 
 - call *ward.transform* to obtain the mean value of each cluster (for each
   scan)
 - call *ward.inverse_transform* on the previous result to turn it back into
   the masked picture shape
-
-.. literalinclude:: ../../examples/03_connectivity/plot_rest_clustering.py
-    :start-after: # Display the original data
 
 .. |left_img| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_rest_clustering_002.png
    :target: ../auto_examples/03_connectivity/plot_rest_clustering.html
@@ -143,4 +156,13 @@ representation thanks to a two-step procedure :
 
 We can see that using only 2000 parcels, the original image is well
 approximated.
+
+|
+
+.. topic:: **Example code**
+
+   All the steps discussed in this section can be seen implemented in
+   :ref:`a full code example
+   <sphx_glr_auto_examples_03_connectivity_plot_rest_clustering.py>`.
+
 

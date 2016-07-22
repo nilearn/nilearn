@@ -1,6 +1,6 @@
 """
-The Haxby dataset: face vs house in object recognition
-=======================================================
+Decoding with ANOVA + SVM: face vs house in the Haxby dataset
+===============================================================
 
 This example does a simple but efficient decoding on the Haxby dataset:
 using a feature selection, followed by an SVM.
@@ -11,7 +11,7 @@ using a feature selection, followed by an SVM.
 # Retrieve the files of the Haxby dataset
 from nilearn import datasets
 
-haxby_dataset = datasets.fetch_haxby_simple()
+haxby_dataset = datasets.fetch_haxby()
 
 # print basic information on the dataset
 print('Mask nifti image (3D) is located at: %s' % haxby_dataset.mask)
@@ -21,13 +21,13 @@ print('Functional nifti image (4D) is located at: %s' %
 #############################################################################
 # Load the behavioral data
 import numpy as np
-y, session = np.loadtxt(haxby_dataset.session_target[0]).astype("int").T
-conditions = np.recfromtxt(haxby_dataset.conditions_target[0])['f0']
+labels = np.recfromcsv(haxby_dataset.session_target[0], delimiter=" ")
+y = labels['labels']
+session = labels['chunks']
 
 # Restrict to faces and houses
-condition_mask = np.logical_or(conditions == b'face', conditions == b'house')
+condition_mask = np.logical_or(y == b'face', y == b'house')
 y = y[condition_mask]
-conditions = conditions[condition_mask]
 
 # We have 2 conditions
 n_conditions = np.size(np.unique(y))

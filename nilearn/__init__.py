@@ -1,6 +1,6 @@
 """
 Machine Learning module for NeuroImaging in python
-==================================================
+--------------------------------------------------
 
 Documentation is available in the docstrings and online at
 http://nilearn.github.io.

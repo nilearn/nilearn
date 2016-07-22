@@ -268,6 +268,16 @@ To loop over each individual volume of a 4D image, use :func:`image.iter_img`::
 
 |
 
+
+.. topic:: **Warm up examples**
+
+   The two following examples may be useful to get familiar with data
+   representation in nilearn:
+
+   * :ref:`sphx_glr_auto_examples_plot_nilearn_101.py`
+
+   * :ref:`sphx_glr_auto_examples_plot_3d_and_4d_niimg.py`
+
 ____
 
 Now, if you want out-of-the-box methods to process neuroimaging data, jump

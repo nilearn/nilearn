@@ -1,6 +1,6 @@
 """
 Functions to do automatic visualization of Niimg-like objects
-See http://nilearn.github.io/manipulating_images/manipulating_images.html#niimg.
+See http://nilearn.github.io/manipulating_images/input_output.html
 
 Only matplotlib is required.
 """
@@ -222,7 +222,7 @@ def plot_img(img, cut_coords=None, output_file=None, display_mode='ortho',
         Parameters
         ----------
         img: Niimg-like object
-            See http://nilearn.github.io/manipulating_images/manipulating_images.html#niimg.
+            See http://nilearn.github.io/manipulating_images/input_output.html
         cut_coords: None, a tuple of floats, or an integer
             The MNI coordinates of the point where the cut is performed
             If display_mode is 'ortho', this should be a 3-tuple: (x, y, z)
@@ -402,7 +402,7 @@ def plot_anat(anat_img=MNI152TEMPLATE, cut_coords=None,
         Parameters
         ----------
         anat_img : Niimg-like object
-            See http://nilearn.github.io/manipulating_images/manipulating_images.html#niimg.
+            See http://nilearn.github.io/manipulating_images/input_output.html
             The anatomical image to be used as a background. If None is
             given, nilearn tries to find a T1 template.
         cut_coords : None, a tuple of floats, or an integer
@@ -568,11 +568,11 @@ def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None,
         Parameters
         ----------
         roi_img : Niimg-like object
-            See http://nilearn.github.io/manipulating_images/manipulating_images.html#niimg.
+            See http://nilearn.github.io/manipulating_images/input_output.html
             The ROI/mask image, it could be binary mask or an atlas or ROIs
             with integer values.
         bg_img : Niimg-like object
-            See http://nilearn.github.io/manipulating_images/manipulating_images.html#niimg.
+            See http://nilearn.github.io/manipulating_images/input_output.html
             The background image that the ROI/mask will be plotted on top of.
             If nothing is specified, the MNI152 template will be used.
             To turn off background image, just pass "bg_img=False".
@@ -655,7 +655,7 @@ def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None,
 
 
 def plot_prob_atlas(maps_img, anat_img=MNI152TEMPLATE, view_type='auto',
-                    threshold=None, linewidths=2.5, cut_coords=None,
+                    threshold='auto', linewidths=2.5, cut_coords=None,
                     output_file=None, display_mode='ortho',
                     figure=None, axes=None, title=None, annotate=True,
                     draw_cross=True, black_bg='auto', dim=False,
@@ -670,31 +670,38 @@ def plot_prob_atlas(maps_img, anat_img=MNI152TEMPLATE, view_type='auto',
         maps_img : Niimg-like object or the filename
             4D image of the probabilistic atlas maps
         anat_img : Niimg-like object
-            See http://nilearn.github.io/manipulating_images/manipulating_images.html#niimg.
+            See http://nilearn.github.io/manipulating_images/input_output.html
             The anatomical image to be used as a background.
             If nothing is specified, the MNI152 template will be used.
             To turn off background image, just pass "anat_img=False".
         view_type : {'auto', 'contours', 'filled_contours', 'continuous'}, optional
-            By default view_type == 'auto', which means maps are overlayed as
-            contours if number of maps to display are more or
-            overlayed as continuous colors if number of maps are less.
+            By default view_type == 'auto', means maps will be displayed
+            automatically using any one of the three view types. The automatic
+            selection of view type depends on the total number of maps.
             If view_type == 'contours', maps are overlayed as contours
             If view_type == 'filled_contours', maps are overlayed as contours
             along with color fillings inside the contours.
             If view_type == 'continuous', maps are overlayed as continous
             colors irrespective of the number maps.
-        threshold : None, a str or a number, list of either str or number, optional
-            If threshold is a string it must finish with a percent sign,
-            e.g. "25.3%", and it is a percentile. Or if it is a number,
-            it should be a real number, in which case it is the value
-            to threshold at.
-            This option is served for two purposes, for contours and contour
-            fillings threshold serves to select the level of the maps
-            to display and same threshold is applied for color fillings.
-            For continuous overlays this threshold value serves to select
-            the maps which are greater than a given value or list of given
-            values. If None is given, the maps are thresholded with default
-            value.
+        threshold : a str or a number, list of str or numbers, None
+            This parameter is optional and is used to threshold the maps image
+            using the given value or automatically selected value. The values
+            in the image above the threshold level will be visualized.
+            The default strategy, computes a threshold level that seeks to
+            minimize (yet not eliminate completely) the overlap between several
+            maps for a better visualization.
+            The threshold can also be expressed as a percentile over the values
+            of the whole atlas. In that case, the value must be specified as
+            string finishing with a percent sign, e.g., "25.3%".
+            If a single string is provided, the same percentile will be applied
+            over the whole atlas. Otherwise, if a list of percentiles is
+            provided, each 3D map is thresholded with certain percentile
+            sequentially. Length of percentiles given should match the number
+            of 3D map in time (4th) dimension.
+            If a number or a list of numbers, the given value will be used
+            directly to threshold the maps without any percentile calculation.
+            If None, a very small threshold is applied to remove numerical
+            noise from the maps background.
         linewidths : float, optional
             This option can be used to set the boundary thickness of the
             contours.
@@ -785,6 +792,8 @@ def plot_prob_atlas(maps_img, anat_img=MNI152TEMPLATE, view_type='auto',
             view_type = 'continuous'
 
     if threshold is None:
+        threshold = 1e-6
+    elif threshold == 'auto':
         # it will use default percentage,
         # strategy is to avoid maximum overlaps as possible
         if view_type == 'contours':
@@ -814,6 +823,7 @@ def plot_prob_atlas(maps_img, anat_img=MNI152TEMPLATE, view_type='auto',
                               name='threshold')
         # Get rid of background values in all cases
         thr = max(thr, 1e-6)
+
         if view_type == 'continuous':
             display.add_overlay(map_img, threshold=thr,
                                 cmap=cm.alpha_cmap(color))
@@ -863,10 +873,10 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
         Parameters
         ----------
         stat_map_img : Niimg-like object
-            See http://nilearn.github.io/manipulating_images/manipulating_images.html#niimg.
+            See http://nilearn.github.io/manipulating_images/input_output.html
             The statistical map image
         bg_img : Niimg-like object
-            See http://nilearn.github.io/manipulating_images/manipulating_images.html#niimg.
+            See http://nilearn.github.io/manipulating_images/input_output.html
             The background image that the ROI/mask will be plotted on top of.
             If nothing is specified, the MNI152 template will be used.
             To turn off background image, just pass "bg_img=False".
@@ -987,7 +997,7 @@ def plot_glass_brain(stat_map_img,
         Parameters
         ----------
         stat_map_img : Niimg-like object
-            See http://nilearn.github.io/manipulating_images/manipulating_images.html#niimg.
+            See http://nilearn.github.io/manipulating_images/input_output.html
             The statistical map image. It needs to be in MNI space
             in order to align with the brain schematics.
         output_file : string, or None, optional

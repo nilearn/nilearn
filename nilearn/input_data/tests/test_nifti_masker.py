@@ -7,25 +7,24 @@ test_signal.py for this.
 """
 # Author: Gael Varoquaux, Philippe Gervais
 # License: simplified BSD
-from tempfile import mkdtemp
-import shutil
 import os
+import shutil
 from distutils.version import LooseVersion
+from tempfile import mkdtemp
 
-from nose.tools import assert_true, assert_false, assert_raises
-from nose import SkipTest
-import numpy as np
-from numpy.testing import assert_array_equal
-
-from nibabel import Nifti1Image
 import nibabel
+import numpy as np
+from nibabel import Nifti1Image
+from nose import SkipTest
+from nose.tools import assert_true, assert_false, assert_raises
+from numpy.testing import assert_array_equal, assert_equal
 
-from nilearn.input_data.nifti_masker import NiftiMasker, filter_and_mask
 from nilearn._utils import testing
-from nilearn._utils.exceptions import DimensionError
-from nilearn.image import index_img
-from nilearn._utils.testing import assert_raises_regex
 from nilearn._utils.class_inspect import get_params
+from nilearn._utils.exceptions import DimensionError
+from nilearn._utils.testing import assert_raises_regex
+from nilearn.image import index_img
+from nilearn.input_data.nifti_masker import NiftiMasker, filter_and_mask
 
 
 def test_auto_mask():
@@ -305,7 +304,7 @@ def test_compute_epi_mask():
                              mask4.get_data()[3:12, 3:12]))
 
 
-def test_filter_and_mask():
+def test_filter_and_mask_error():
     data = np.zeros([20, 30, 40, 5])
     mask = np.zeros([20, 30, 40, 2])
     mask[10, 15, 20, :] = 1
@@ -322,3 +321,18 @@ def test_filter_and_mask():
                         "a 4D image.",
                         filter_and_mask,
                         data_img, mask_img, params)
+
+
+def test_filter_and_mask():
+    data = np.zeros([20, 30, 40, 5])
+    mask = np.ones([20, 30, 40])
+
+    data_img = nibabel.Nifti1Image(data, np.eye(4))
+    mask_img = nibabel.Nifti1Image(mask, np.eye(4))
+
+    masker = NiftiMasker()
+    params = get_params(NiftiMasker, masker)
+
+    # Test return_affine = False
+    data = filter_and_mask(data_img, mask_img, params)
+    assert_equal(data.shape, (5, 24000))

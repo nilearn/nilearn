@@ -7,14 +7,11 @@ See :ref:`plotting` for more plotting functionalities.
 
 
 ###############################################################################
-# Retrieve the data
+# Retrieve data from Internet
 from nilearn import datasets
 
-localizer_dataset = datasets.fetch_localizer_contrasts(
-    ["left vs right button press"],
-    n_subjects=2,
-    get_tmaps=True)
-localizer_tmap_filename = localizer_dataset.tmaps[1]
+localizer_dataset = datasets.fetch_localizer_button_task()
+localizer_tmap_filename = localizer_dataset.tmaps[0]
 
 ###############################################################################
 # Demo glass brain plotting using whole brain sagittal cuts
@@ -31,8 +28,8 @@ plotting.plot_glass_brain(
 
 ###############################################################################
 # Hemispheric sagittal cuts
-title = 'plot_glass_brain with display_mode="lyrz"'
-plotting.plot_glass_brain(localizer_tmap_filename, title=title,
+plotting.plot_glass_brain(localizer_tmap_filename,
+                          title='plot_glass_brain with display_mode="lyrz"',
                           display_mode='lyrz', threshold=3)
 
 plotting.show()

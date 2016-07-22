@@ -1,236 +1,171 @@
 .. _data_manipulation:
 
 =====================================================================
-Manipulating brain volume: input/output, masking, ROIs, smoothing...
+Manipulating images: resampling, smoothing, masking, ROIs...
 =====================================================================
 
-This chapter introduces the data structure of brain images and tools to
-manipulation these.
+This chapter discusses how nilearn can be used to do simple operations on
+brain images.
 
 
 .. contents:: **Chapters contents**
     :local:
     :depth: 1
 
+.. _preprocessing_functions:
+
+Functions for data preparation and image transformation
+=========================================================
+
+Nilearn comes with many simple functions for simple data preparation and
+transformation. Note that if you want to perform these operations while
+loading the data into a data matrix, most are also integrated in the
+:ref:`masker objects <masker_objects>`.
+
+.. currentmodule:: nilearn
 
 
-.. _loading_data:
+* Computing the mean of images (along the time/4th dimension):
+  :func:`nilearn.image.mean_img`
+* Applying numpy functions on an image or a list of images:
+  :func:`nilearn.image.math_img`
+* Swapping voxels of both hemisphere (e.g., useful to homogenize masks
+  inter-hemispherically):
+  :func:`nilearn.image.swap_img_hemispheres`
+* Smoothing: :func:`nilearn.image.smooth_img`
+* Cleaning signals (e.g., linear detrending, standardization,
+  confound removal, low/high pass filtering):
+  :func:`nilearn.image.clean_img`
+  
+  .. seealso::
+     
+     To apply this cleaning on signal matrices rather than images:
+     :func:`nilearn.signal.clean`
 
-Loading data
-============
+.. _resampling:
 
-.. currentmodule:: nilearn.datasets
+Resampling images
+=================
 
-.. _datasets:
+Resampling one image to match another one
+------------------------------------------
 
-Fetching open datasets
-----------------------
+:func:`nilearn.image.resample_to_img` resamples an image to a reference
+image.
 
-The nilearn package provides a dataset fetching utility that
-automatically downloads reference
-datasets and atlases. Dataset fetching functions can be imported from
-:mod:`nilearn.datasets`::
+.. topic:: **Example**
 
-    >>> from nilearn import datasets
-    >>> haxby_dataset = datasets.fetch_haxby(n_subjects=1)  # doctest: +SKIP
+    * :ref:`sphx_glr_auto_examples_04_manipulating_images_plot_resample_to_template.py`
 
-They return a data structure that contains different pieces of
-information on the retrieved dataset, including the
-file names on hard disk::
+.. image:: ../auto_examples/04_manipulating_images/images/sphx_glr_plot_resample_to_template_001.png
+    :target: ../auto_examples/04_manipulating_images/plot_resample_to_template.html
+    :width: 45%
+.. image:: ../auto_examples/04_manipulating_images/images/sphx_glr_plot_resample_to_template_002.png
+    :target: ../auto_examples/04_manipulating_images/plot_resample_to_template.html
+    :width: 45%
 
-    >>> # The different files
-    >>> print(sorted(list(haxby_dataset.keys())))  # doctest: +SKIP
-    ['anat', 'description', 'func', 'mask', 'mask_face', 'mask_face_little',
-    'mask_house', 'mask_house_little', 'mask_vt', 'session_target']
-    >>> # Path to first functional file
-    >>> print(haxby_dataset.func[0])  # doctest: +SKIP
-    /.../nilearn_data/haxby2001/subj1/bold.nii.gz
+This can be useful to display two images as overlays in some
+viewers (e.g., FSLView) that require all images to be on the same grid.
 
-Explanation and further resources of the dataset at hand can be retrieved as
-follows::
+Resampling to a specific target affine, shape, or resolution
+-------------------------------------------------------------
 
-    >>> print(haxby_dataset.description)  # doctest: +SKIP
-    Haxby 2001 results
+:func:`nilearn.image.resample_img` specifies the resampling in terms of
+the `target_affine` to match the spatial configuration defined by the new
+affine.
+
+Additionally, a `target_shape` can be used to resize images
+(i.e., cropping or padding with zeros) to match an expected data
+image dimensions (shape composed of x, y, and z).
+
+Resampling can be useful to downsample images to increase processing
+speed and lower memory consumption.
+
+On an advanced note, automatic computation of offset and bounding box
+can be performed by specifying a 3x3 matrix instead of the 4x4 affine.
+In this case, nilearn computes automatically the translation part
+of the transformation matrix (i.e., affine).
+
+.. image:: ../auto_examples/04_manipulating_images/images/sphx_glr_plot_affine_transformation_002.png
+    :target: ../auto_examples/04_manipulating_images/plot_affine_transformation.html
+    :width: 30%
+.. image:: ../auto_examples/04_manipulating_images/images/sphx_glr_plot_affine_transformation_004.png
+    :target: ../auto_examples/04_manipulating_images/plot_affine_transformation.html
+    :width: 30%
+.. image:: ../auto_examples/04_manipulating_images/images/sphx_glr_plot_affine_transformation_003.png
+    :target: ../auto_examples/04_manipulating_images/plot_affine_transformation.html
+    :width: 30%
 
 
-    Notes
-    -----
-    Results from a classical fMRI study that...
+.. topic:: **Special case: resampling to a given voxel size**
 
-|
+   Specifying a 3x3 matrix that is diagonal as a target_affine fixes the
+   voxel size. For instance to resample to 3x3x3 mm voxels::
+
+    >>> import numpy as np
+    >>> target_affine = np.diag((3, 3, 3))
 
 .. seealso::
 
-    For a list of all the data fetching functions in nilearn, see
-    :ref:`datasets_ref`.
+  :ref:`An example illustrating affine transforms on data and bounding boxes <sphx_glr_auto_examples_04_manipulating_images_plot_affine_transformation.py>`
 
-.. topic:: **nilearn_data: Where is the downloaded data stored?**
+Accessing individual volumes in 4D images
+===========================================
 
-    The fetching functions download the reference datasets to the disk.
-    They save it locally for future use, in one of the
-    following directories (in order of priority, if present):
+* :func:`nilearn.image.index_img`: selects one or more volumes in a 4D
+  image.
 
-     * the folder specified by `data_dir` parameter in the fetching function
-     * the global environment variable `NILEARN_SHARED_DATA`
-     * the user environment variable `NILEARN_DATA`
-     * the `nilearn_data` folder in the user home folder
+* :func:`nilearn.image.iter_img`: loops over all the volumes of a 4D
+  image.
 
-    The two different environment variables (NILEARN_SHARED_DATA and
-    NILEARN_DATA) are provided for multi-user systems, to distinguish a
-    global dataset repository that may be read-only at the user-level.
-    Note that you can copy that folder to another user's computers to
-    avoid the initial dataset download on the first fetching call.
+.. seealso::
 
+   * :func:`nilearn.image.concat_imgs`: merge multiple 3D (or 4D) images
+     into one 4D image by concatenation along the 4th (time) axis
 
-Loading your own data: filenames or Nibabel objects
-----------------------------------------------------
+   * :func:`nilearn.image.load_img`: load an image into memory. The
+     benefit of this function is that it will convert various
+     representations, such as filename, list of filenames, wildcards,
+     list of in-memory objects, to an in-memory NiftiImage.
 
-Function in nilearn can take filenames or nibabel in-memory object.
-
-Using your own data images in nilearn is as simple as giving the file
-name, or list of file name strings ::
-
-    >>> # dataset folder contains subject1.nii and subject2.nii
-    >>> from nilearn.image import smooth_img
-    >>> result_img = smooth_img(['dataset/subject1.nii', 'dataset/subject2.nii']) # doctest: +SKIP
-
-``result_img`` is a 4D in-memory image, containing the data of both
-subjects.
-
-**Filename matching** Nilearn also provides a "wildcard" pattern to list
-many files with one expression:
-
- * **Matching multiple files**: suppose the dataset folder contains
-   subject_01.nii to subject_03.nii ``dataset/subject_*.nii`` is a glob
-   expression matching all filenames::
-
-    >>> # Example with a smoothing process:
-    >>> from nilearn.image import smooth_img
-    >>> result_img = smooth_img("dataset/subject_*.nii") # doctest: +SKIP
-
- * **Expanding the home directory** ``~`` is expanded to your home
-   directory::
-
-    >>> result_img = smooth_img("~/dataset/subject_01.nii") # doctest: +SKIP
-
-.. topic:: **Python globbing**
-
-    For more complicated use cases, Python also provides functions to work
-    with file paths, in particular, :func:`glob.glob`.
-
-    .. warning::
-
-        Unlike nilearn's path expansion, the result of :func:`glob.glob` is
-        not sorted and depending on the computer you are running they
-        might not be in alphabetic order. We advise you to rely on
-        nilearn's path expansion.
-
-Understanding neuroimaging data
-===============================
-
-Nifti and Analyze data
------------------------
-
-For volumetric data, nilearn works with data stored as in the Nifti
-structure (via the nibabel_ package).
-
-The `NifTi <http://nifti.nimh.nih.gov/>`_ data structure (also used in
-Analyze files) is the standard way of sharing data in neuroimaging
-research. Three main components are:
-
-:data:
-    raw scans in form of a numpy array: ``data = img.get_data()``
-:affine:
-    returns the transformation matrix that maps
-    from voxel indices of the numpy array to actual real-world
-    locations of the brain:
-    ``affine = img.get_affine()``
-:header:
-    low-level informations about the data (slice duration, etc.):
-    ``header = img.get_header()``
-
-If you need to load the data without using nilearn, read the nibabel_
-documentation.
-
-
-.. topic:: **Dataset formatting: data shape**
-
-    It is important to appreciate two main representations for
-    storing and accessing more than one Nifti images, that is sets
-    of MRI scans:
-
-    - a big 4D matrix representing (3D MRI + 1D for time), stored in a single
-      Nifti file.
-      `FSL <http://www.fmrib.ox.ac.uk/fsl/>`_ users tend to
-      prefer this format.
-    - several 3D matrices representing each time point (single 3D volume) of the
-      session, stored in set of 3D Nifti or analyse files.
-      `SPM <http://www.fil.ion.ucl.ac.uk/spm/>`_ users tend
-      to prefer this format.
-
-.. _niimg:
-
-Niimg-like objects
--------------------
-
-Nilearn functions take as input argument what we call "Niimg-like
-objects":
-
-**Niimg:** A Niimg-like object can be one of the following:
-
-  * A string with a file path to a Nifti or Analyse image
-  * Any object exposing ``get_data()`` and ``get_affine()`` methods, typically
-    a ``Nifti1Image`` from nibabel_.
-
-**Niimg-4D:** Similarly, some functions require 4D Nifti-like
-data, which we call Niimgs or Niimg-4D. Accepted input arguments are:
-
-  * A path to a 4D Nifti image
-  * List of paths to 3D Nifti images
-  * 4D Nifti-like object
-  * List of 3D Nifti-like objects
-
-.. topic:: **Image affines**
-
-   If you provide a sequence of Nifti images, all of them must have the same
-   affine.
-
-Text files: phenotype or behavior
-----------------------------------
-
-Phenotypic or behavioral data are often provided as text or CSV
-(Comma Separated Values) file. They
-can be loaded with `numpy.genfromtxt` but you may have to specify some options
-(typically `skip_header` ignores column titles if needed).
-
-For the Haxby datasets, we can load the categories of the images
-presented to the subject::
-
-    >>> from nilearn import datasets
-    >>> haxby_dataset = datasets.fetch_haxby(n_subjects=1)  # doctest: +SKIP
-    >>> import numpy as np
-    >>> labels = np.recfromcsv(haxby_dataset.session_target[0], delimiter=" ")  # doctest: +SKIP
-    >>> stimuli = labels['labels']  # doctest: +SKIP
-    >>> print(np.unique(stimuli))  # doctest: +SKIP
-    ['bottle' 'cat' 'chair' 'face' 'house' 'rest' 'scissors' 'scrambledpix'
-     'shoe']
-
-.. topic:: **Reading CSV with pandas**
-
-    `Pandas <http://pandas.pydata.org/>`_ is a powerful package to read
-    data from CSV files and manipulate them.
+   * :func:`nilearn.image.new_img_like`: given data in a numpy array,
+     creates a new image using an existing reference image for the
+     metadata.
 
 |
 
-Masking data manually
-=====================
+.. topic:: **Examples**
+
+   * :ref:`sphx_glr_auto_examples_plot_3d_and_4d_niimg.py`
+
+   * :ref:`sphx_glr_auto_examples_01_plotting_plot_overlay.py`
+
+Computing and applying spatial masks
+=====================================
+
+Relevant functions:
+
+* compute a mask from EPI images: :func:`nilearn.masking.compute_epi_mask`
+* compute a mask from images with a flat background:
+  :func:`nilearn.masking.compute_background_mask`
+* compute for multiple sessions/subjects:
+  :func:`nilearn.masking.compute_multi_epi_mask`
+  :func:`nilearn.masking.compute_multi_background_mask`
+* apply: :func:`nilearn.masking.apply_mask`
+* intersect several masks (useful for multi sessions/subjects): :func:`nilearn.masking.intersect_masks`
+* unmasking: :func:`nilearn.masking.unmask`
+
 
 Extracting a brain mask
 ------------------------
 
 If we do not have a spatial mask of the target regions, a brain mask
-can be easily extracted from the fMRI data by the
-:func:`nilearn.masking.compute_epi_mask` function:
+can be computed from the data:
+
+- :func:`nilearn.masking.compute_background_mask` for brain images where
+  the brain stands out of a constant background. This is typically the
+  case when working on statistic maps output after a brain extraction
+- :func:`nilearn.masking.compute_epi_mask` for EPI images
 
 .. figure:: ../auto_examples/01_plotting/images/sphx_glr_plot_visualization_002.png
     :target: ../auto_examples/01_plotting/plot_visualization.html
@@ -244,8 +179,8 @@ can be easily extracted from the fMRI data by the
 
 .. _mask_4d_2_3d:
 
-From 4D Nifti images to 2D data arrays
---------------------------------------
+Masking data: from 4D Nifti images to 2D data arrays
+---------------------------------------------------------------
 
 fMRI data is usually represented as a 4D block of data: 3 spatial
 dimensions and one time dimension. In practice, we are usually
@@ -258,6 +193,9 @@ brain. It is thus convenient to apply a brain mask in order to convert the
     :align: center
     :width: 100%
 
+Note that in an analysis pipeline, this operation is best done using the
+:ref:`masker objects <masker_objects>`. For completness, we give code to
+do it manually below:
 
 .. literalinclude:: ../../examples/01_plotting/plot_visualization.py
      :start-after: # Applying the mask to extract the corresponding time series
@@ -266,265 +204,57 @@ brain. It is thus convenient to apply a brain mask in order to convert the
 .. figure:: ../auto_examples/01_plotting/images/sphx_glr_plot_visualization_003.png
     :target: ../auto_examples/01_plotting/plot_visualization.html
     :align: center
-    :scale: 50
+    :scale: 40
 
-.. _preprocessing_functions:
-
-Functions for data preparation steps
-=====================================
-
-.. currentmodule:: nilearn.input_data
-
-The :class:`NiftiMasker` can automatically perform important data preparation
-steps. These steps are also available as independent functions if you want to
-set up your own data preparation procedure:
-
-.. currentmodule:: nilearn
-
-* Resampling: :func:`nilearn.image.resample_img` and :func:`nilearn.image.resample_to_img`.
-  See the following examples:
-
-  * affine transforms on data and bounding boxes: :ref:`sphx_glr_auto_examples_04_manipulating_images_plot_affine_transformation.py`,
-  * resample an image to a template reference image: :ref:`sphx_glr_auto_examples_04_manipulating_images_plot_resample_to_template.py`.
- 
-* Computing the mean of images (along the time/4th dimension):
-  :func:`nilearn.image.mean_img`
-* Applying numpy functions on an image or a list of images:
-  :func:`nilearn.image.math_img`
-* Swapping voxels of both hemisphere (e.g., useful to homogenize masks
-  inter-hemispherically):
-  :func:`nilearn.image.swap_img_hemispheres`
-* Smoothing: :func:`nilearn.image.smooth_img`
-* Masking:
-
-  * compute from EPI images: :func:`nilearn.masking.compute_epi_mask`
-  * compute from images with a flat background:
-    :func:`nilearn.masking.compute_background_mask`
-  * compute for multiple sessions/subjects:
-    :func:`nilearn.masking.compute_multi_epi_mask`
-    :func:`nilearn.masking.compute_multi_background_mask`
-  * apply: :func:`nilearn.masking.apply_mask`
-  * intersect several masks (useful for multi sessions/subjects): :func:`nilearn.masking.intersect_masks`
-  * unmasking: :func:`nilearn.masking.unmask`
-
-* Cleaning signals (e.g., linear detrending, standardization,
-  confound removal, low/high pass filtering): :func:`nilearn.signal.clean`
-
-.. _resampling:
-
-Resampling images
-=================
-
-Resampling one image to match another
--------------------------------------
-
-:func:`nilearn.image.resample_to_img` resamples an image to a reference
-image.
-
-.. topic:: **Example**
-
-    * :ref:`sphx_glr_auto_examples_04_manipulating_images_plot_resample_to_template.py`
-
-.. image:: ../auto_examples/04_manipulating_images/images/sphx_glr_plot_resample_to_template_001.png
-    :target: ../auto_examples/04_manipulating_images/plot_resample_to_template.html
-    :scale: 55%
-
-Resampling specific target affine, shape, or resolution
---------------------------------------------------------
-
-The resampling procedure takes as input the
-`target_affine` to resample (resize, rotate...) images in order to match
-the spatial configuration defined by the new affine (i.e., matrix
-transforming from voxel space into world space).
-
-Additionally, a `target_shape` can be used to resize images
-(i.e., cropping or padding with zeros) to match an expected data
-image dimensions (shape composed of x, y, and z).
-
-As a common use case, resampling can be a viable means to
-downsample image quality on purpose to increase processing speed
-and lower memory consumption of an analysis pipeline.
-In fact, certain image viewers (e.g., FSLView) also require images to be
-resampled to display overlays.
-
-On an advanced note, automatic computation of offset and bounding box
-can be performed by specifying a 3x3 matrix instead of the 4x4 affine.
-In this case, nilearn computes automatically the translation part
-of the transformation matrix (i.e., affine).
-
-.. image:: ../auto_examples/04_manipulating_images/images/sphx_glr_plot_affine_transformation_002.png
-    :target: ../auto_examples/04_manipulating_images/plot_affine_transformation.html
-    :scale: 33%
-.. image:: ../auto_examples/04_manipulating_images/images/sphx_glr_plot_affine_transformation_004.png
-    :target: ../auto_examples/04_manipulating_images/plot_affine_transformation.html
-    :scale: 33%
-.. image:: ../auto_examples/04_manipulating_images/images/sphx_glr_plot_affine_transformation_003.png
-    :target: ../auto_examples/04_manipulating_images/plot_affine_transformation.html
-    :scale: 33%
-
-
-.. topic:: **Special case: resampling to a given voxel size**
-
-   Specifying a 3x3 matrix that is diagonal as a target_affine fixes the
-   voxel size. For instance to resample to 3x3x3 mm voxels::
-
-    >>> import numpy as np
-    >>> target_affine = np.diag((3, 3, 3))
 
 
 Image operations: creating a ROI mask manually
 ===============================================
 
-This section shows manual steps to create and further modify a ROI
-(region of interest) spatial mask. They represent a means for "data folding",
-that is, extracting and later analyzing data from a subset of voxels rather
-than the entire brain images. As a convenient side effect, this can help
-alleviate the curse of dimensionality (i.e., statistical problems that
-arise in the context of high-dimensional input variables).
+A region of interest (ROI) mask can be computed for instance with a
+statistical test. This requires a chain of image
+operations on the input data. Here is a possible recipe for computing an
+ROI mask:
 
-Smoothing
----------
+ * **Smoothing**: Before a statistical test, it is often use to smooth a bit
+   the image using :func:`nilearn.image.smooth_img`, typically fwhm=6 for
+   fMRI.
 
-Functional MRI data have a low signal-to-noise ratio (yet much better
-than EEG or MEG measurements).
-When using simple methods
-that are not robust to noise, it is useful to apply a spatial filtering
-kernel on the data. Such data smoothing is
-usually applied using a Gaussian function with 4mm to 12mm full-width at
-half-maximum (this is where the FWHM comes from).
-The function :func:`nilearn.image.smooth_img` accounts for potential
-anisotropy in the image affine (i.e., non-identical voxel size in all
-the three dimensions). Analogous to the majority of nilearn functions,
-it can also use file names as input parameters.
+ * **Selecting voxels**: Given the smoothed data, we can select voxels
+   with a statistical test (eg opposing face and house experimental
+   conditions), for instance with a simple Student's t-test using scipy
+   function :func:`scipy.stats.ttest_ind`.
 
+ * **Thresholding**: Then we need threshold the statistical map to have
+   better representation of voxels of interest.
 
-.. literalinclude:: ../../examples/04_manipulating_images/plot_roi_extraction.py
-    :start-after: # Smooth the data
-    :end-before: # Run a T-test for face and houses
+ * **Mask intersection and dilation**: Post-processing the results with
+   simple morphological operations, mask intersection and dilation. 
 
-.. figure:: ../auto_examples/04_manipulating_images/images/sphx_glr_plot_roi_extraction_001.png
-    :target: ../auto_examples/04_manipulating_images/plot_roi_extraction.html
-    :align: center
-    :scale: 50%
+   * we can use another mask, such as a grey-matter matter, to select
+     only the voxels which are common in both masks.
 
-Selecting features
-------------------
+   * we can do `morphological dilation
+     <http://en.wikipedia.org/wiki/Dilation_(morphology)>`_ to achieve
+     more compact blobs with more regular boundaries. The function is
+     used from :func:`scipy.ndimage.binary_dilation`.
 
-Functional MRI data can be considered "high dimensional" given the
-p-versus-n ratio (e.g., p=~50,000-200,000 voxels for n=1000 samples).
-In this setting, machine-learning
-algorithms can perform poorly (i.e., curse-of-dimensionality problem).
-However, simple means from the realms of classical statistics can help
-reducing the number of voxels.
+ * **Extracting connected components**: We end with splitting the connected
+   ROIs into two separate regions (ROIs), one in each hemisphere. The
+   function :func:`scipy.ndimage.label` from the scipy library is used.
 
-The Student's t-test (:func:`scipy.stats.ttest_ind`) is an established
-method to determine whether two
-distributions are statistically different. It can be used to compare voxel
-time-series from two different experimental conditions
-(e.g., when houses or faces are shown to individuals during brain scanning).
-If the time-series distribution is similar in the two conditions, then the
-voxel is not very interesting to discriminate the condition.
-
-This test returns p-values that represent probabilities that the two
-time-series had been drawn from the same distribution. The lower is the p-value, the
-more discriminative is the voxel in distinguishing the two conditions.
-
-.. literalinclude:: ../../examples/04_manipulating_images/plot_roi_extraction.py
-    :start-after: # Run a T-test for face and houses
-    :end-before: # Build a mask from this statistical map
-
-.. figure:: ../auto_examples/04_manipulating_images/images/sphx_glr_plot_roi_extraction_002.png
-    :target: ../auto_examples/04_manipulating_images/plot_roi_extraction.html
-    :align: center
-    :scale: 50%
-
-This feature selection method is available in the scikit-learn Python
-package, where it has been
-extended to several classes, using the
-:func:`sklearn.feature_selection.f_classif` function.
-
-Thresholding
-------------
-
-Voxels with better p-values are kept as voxels of interest.
-Applying a threshold to an array
-is easy thanks to numpy indexing à la Matlab.
-
-.. literalinclude:: ../../examples/04_manipulating_images/plot_roi_extraction.py
-    :start-after: # Thresholding
-    :end-before: # Binarization and intersection with VT mask
-
-.. figure:: ../auto_examples/04_manipulating_images/images/sphx_glr_plot_roi_extraction_003.png
-    :target: ../auto_examples/04_manipulating_images/plot_roi_extraction.html
-    :align: center
-    :scale: 50%
-
-Mask intersection
------------------
-
-We now want to restrict our investigation to the ventral temporal area. The
-corresponding spatial mask is provided in `haxby.mask_vt`.
-We want to compute the
-intersection of this provided mask with our self-computed mask.
-The first step is to load it with
-nibabel's **nibabel.load**. We can then use a logical "and" operation
--- **numpy.logical_and** -- to keep only voxels
-that have been selected in both masks. In neuroimaging jargon, this is
-called an "AND conjunction."
-
-.. literalinclude:: ../../examples/04_manipulating_images/plot_roi_extraction.py
-    :start-after: # Binarization and intersection with VT mask
-    :end-before: # Dilation
-
-.. figure:: ../auto_examples/04_manipulating_images/images/sphx_glr_plot_roi_extraction_004.png
-    :target: ../auto_examples/04_manipulating_images/plot_roi_extraction.html
-    :align: center
-    :scale: 50%
-
-Mask dilation
--------------
-
-Tresholded functional brain images often contain scattered voxels
-across the brain.
-To consolidate such brain images towards more
-compact shapes, we use a `morphological dilation <http://en.wikipedia.org/wiki/Dilation_(morphology)>`_. This is a common step to be sure
-not to forget voxels located on the edge of a ROI.
-Put differently, such operations can fill "holes" in masked voxel
-representations.
-
-.. literalinclude:: ../../examples/04_manipulating_images/plot_roi_extraction.py
-    :start-after: # Dilation
-    :end-before: # Identification of connected components
-
-.. figure:: ../auto_examples/04_manipulating_images/images/sphx_glr_plot_roi_extraction_005.png
-    :target: ../auto_examples/04_manipulating_images/plot_roi_extraction.html
-    :align: center
-    :scale: 50%
-
-Extracting connected components
--------------------------------
-
-The function **scipy.ndimage.label** from the scipy Python library
-identifies immediately neighboring
-voxels in our voxels mask. It assigns a separate integer label to each
-one of them.
-
-.. literalinclude:: ../../examples/04_manipulating_images/plot_roi_extraction.py
-    :start-after: # Identification of connected components
-    :end-before: # Use the new ROIs to extract data maps in both ROIs
-
-.. figure:: ../auto_examples/04_manipulating_images/images/sphx_glr_plot_roi_extraction_006.png
-    :target: ../auto_examples/04_manipulating_images/plot_roi_extraction.html
-    :align: center
-    :scale: 50%
-
-Saving the result
------------------
-
-The final voxel mask is saved using nibabel for further inspection
-with a software such as FSLView.
-
-.. literalinclude:: ../../examples/04_manipulating_images/plot_roi_extraction.py
-    :start-after: # save the ROI 'atlas' to a single output Nifti
+ * **Saving the result**: The final voxel mask is saved to disk using
+   the 'to_filename' method of the image object.
+   (or **nibabel.save**).
 
 .. _nibabel: http://nipy.sourceforge.net/nibabel/
+
+.. topic:: **Code**
+
+    A complete script of above steps with full description can be found :ref:`here
+    <sphx_glr_auto_examples_04_manipulating_images_plot_roi_extraction.py>`.
+
+.. seealso::
+
+     * :ref:`Automatic region extraction on 4D atlas images
+       <sphx_glr_auto_examples_04_manipulating_images_plot_extract_rois_smith_atlas.py>`.

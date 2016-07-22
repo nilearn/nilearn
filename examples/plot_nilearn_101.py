@@ -1,61 +1,80 @@
 """
-Basic nilearn example
-=====================
+Basic nilearn example: manipulating and looking at data
+=======================================================
 
 A simple example showing how to load an existing Nifti file and use
 basic nilearn functionalities.
 """
 
-# Import the os module, for file manipulation
-import os
-
-#########################################################################
 # Let us use a Nifti file that is shipped with nilearn
-from nilearn.datasets import data
+from nilearn.datasets import MNI152_FILE_PATH
 
-anat_filename = os.path.join(os.path.dirname(data.__file__),
-                             'avg152T1_brain.nii.gz')
-print('anat_filename: %s' % anat_filename)
-
-#########################################################################
-# Using simple function from nilearn for image manipulation
-from nilearn import image
-
-# functions containing 'img' can take either a filename or an image as input.
-# Inputs here are given as: image filename and smoothing value in mm
-smooth_anat_img = image.smooth_img(anat_filename, 3)
-
-# While we are giving a file name as input, the object that is returned
-# is a 'nibabel' object. It has data, and an affine stored in object.
-anat_data = smooth_anat_img.get_data()
-print('anat_data has shape: %s' % str(anat_data.shape))
-anat_affine = smooth_anat_img.get_affine()
-print('anat_affine has affine:\n%s' % anat_affine)
-
-# Finally, object can also be passed to nilearn function
-# First input now is a image/object with same smoothing value
-smooth_anat_img = image.smooth_img(smooth_anat_img, 3)
+# Note that the variable MNI152_FILE_PATH is just a path to a Nifti file
+print('Path to MNI152 template: %r' % MNI152_FILE_PATH)
 
 #########################################################################
-# Visualization using plotting tool `plot_anat` from nilearn
+# A first step: looking at our data
+# ----------------------------------
+#
+# Let's quickly plot this file:
 from nilearn import plotting
-
-# positioning of the image coordinates given as a list [x, y, z]
-cut_coords = [0, 0, 0]
-
-# Like all functions in nilearn, plotting can be given filenames
-plotting.plot_anat(anat_filename, cut_coords=cut_coords,
-                   title='Anatomy image')
-
-# Or nibabel objects
-plotting.plot_anat(smooth_anat_img,
-                   cut_coords=cut_coords,
-                   title='Smoothed anatomy image')
+plotting.plot_img(MNI152_FILE_PATH)
 
 #########################################################################
-# Saving smoothed image to file
-smooth_anat_img.to_filename('smooth_anat_img.nii.gz')
+# This is not a very pretty plot. We just used the simplest possible
+# code. There is a whole :ref:`section of the documentation <plotting>`
+# on making prettier code.
+#
+# **Exercise**: Try plotting one of your own files. In the above,
+# MNI152_FILE_PATH is nothing more than a string with a path pointing to
+# a nifti image. You can replace it with a string pointing to a file on
+# your disk. Note that it should be a 3D volume, and not a 4D volume.
 
 #########################################################################
-# Finally, showing plots when used inside a terminal
+# Simple image manipulation: smoothing
+# -------------------------------------
+#
+# Let's use an image-smoothing function from nilearn:
+# :func:`nilearn.image.smooth_img`
+#
+# Functions containing 'img' can take either a filename or an image as input.
+#
+# Here we give as inputs the image filename and the smoothing value in mm
+from nilearn import image
+smooth_anat_img = image.smooth_img(MNI152_FILE_PATH, fwhm=3)
+
+# While we are giving a file name as input, the function returns
+# an in-memory object:
+print(smooth_anat_img)
+
+#########################################################################
+# This is an in-memory object. We can pass it to nilearn function, for
+# instance to look at it
+plotting.plot_img(smooth_anat_img)
+
+#########################################################################
+# We could also pass it to the smoothing function
+more_smooth_anat_img = image.smooth_img(smooth_anat_img, fwhm=3)
+plotting.plot_img(more_smooth_anat_img)
+
+#########################################################################
+# Saving results to a file
+# -------------------------
+#
+# We can save any in-memory object as follows:
+more_smooth_anat_img.to_filename('more_smooth_anat_img.nii.gz')
+
+#########################################################################
+# Finally, calling plotting.show() is necessary to display the figure
+# when running as a script outside IPython
 plotting.show()
+
+#########################################################################
+# |
+#
+# ______
+#
+# To recap, all the nilearn tools can take data as filenames or in-memory
+# objects, and return brain volumes as in-memory objects. These can be
+# passed on to other nilearn tools, or saved to disk.
+

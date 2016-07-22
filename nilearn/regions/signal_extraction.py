@@ -26,18 +26,18 @@ def img_to_signals_labels(imgs, labels_img, mask_img=None,
     performs no resampling.
 
     Parameters
-    ==========
+    ----------
     imgs: 4D Niimg-like object
-        See http://nilearn.github.io/manipulating_images/manipulating_images.html#niimg.
+        See http://nilearn.github.io/manipulating_images/input_output.html.
         input images.
 
     labels_img: Niimg-like object
-        See http://nilearn.github.io/manipulating_images/manipulating_images.html#niimg.
+        See http://nilearn.github.io/manipulating_images/input_output.html.
         regions definition as labels. By default, the label zero is used to
         denote an absence of region. Use background_label to change it.
 
     mask_img: Niimg-like object
-        See http://nilearn.github.io/manipulating_images/manipulating_images.html#niimg.
+        See http://nilearn.github.io/manipulating_images/input_output.html.
         Mask to apply to labels before extracting signals. Every point
         outside the mask is considered as background (i.e. no region).
 
@@ -48,7 +48,7 @@ def img_to_signals_labels(imgs, labels_img, mask_img=None,
         ordering of output array ("C" or "F"). Defaults to "F".
 
     Returns
-    =======
+    -------
     signals: numpy.ndarray
         Signals extracted from each region. One output signal is the mean
         of all input signals in a given region. If some regions are entirely
@@ -60,7 +60,7 @@ def img_to_signals_labels(imgs, labels_img, mask_img=None,
         the region with label labels[n].
 
     See also
-    ========
+    --------
     nilearn.regions.signals_to_img_labels
     nilearn.regions.img_to_signals_maps
     """
@@ -121,12 +121,12 @@ def signals_to_img_labels(signals, labels_img, mask_img=None,
     labels_img, mask_img must have the same shapes and affines.
 
     Parameters
-    ==========
+    ----------
     signals: numpy.ndarray
         2D array with shape: (scan number, number of regions in labels_img)
 
     labels_img: Niimg-like object
-        See http://nilearn.github.io/manipulating_images/manipulating_images.html#niimg.
+        See http://nilearn.github.io/manipulating_images/input_output.html.
         Region definitions using labels.
 
     mask_img: Niimg-like object, optional
@@ -140,13 +140,13 @@ def signals_to_img_labels(signals, labels_img, mask_img=None,
         ordering of output array ("C" or "F"). Defaults to "F".
 
     Returns
-    =======
+    -------
     img: nibabel.Nifti1Image
         Reconstructed image. dtype is that of "signals", affine and shape are
         those of labels_img.
 
     See also
-    ========
+    --------
     nilearn.regions.img_to_signals_labels
     nilearn.regions.signals_to_img_maps
     """
@@ -201,18 +201,18 @@ def img_to_signals_maps(imgs, maps_img, mask_img=None):
     This function is applicable to regions defined by maps.
 
     Parameters
-    ==========
+    ----------
     imgs: Niimg-like object
-        See http://nilearn.github.io/manipulating_images/manipulating_images.html#niimg.
+        See http://nilearn.github.io/manipulating_images/input_output.html.
         Input images.
 
     maps_img: Niimg-like object
-        See http://nilearn.github.io/manipulating_images/manipulating_images.html#niimg.
+        See http://nilearn.github.io/manipulating_images/input_output.html.
         regions definition as maps (array of weights).
         shape: imgs.shape + (region number, )
 
     mask_img: Niimg-like object
-        See http://nilearn.github.io/manipulating_images/manipulating_images.html#niimg.
+        See http://nilearn.github.io/manipulating_images/input_output.html.
         mask to apply to regions before extracting signals. Every point
         outside the mask is considered as background (i.e. outside of any
         region).
@@ -221,7 +221,7 @@ def img_to_signals_maps(imgs, maps_img, mask_img=None):
         ordering of output array ("C" or "F"). Defaults to "F".
 
     Returns
-    =======
+    -------
     region_signals: numpy.ndarray
         Signals extracted from each region.
         Shape is: (scans number, number of regions intersecting mask)
@@ -231,7 +231,7 @@ def img_to_signals_maps(imgs, maps_img, mask_img=None):
         signal region_signals[:, n].
 
     See also
-    ========
+    --------
     nilearn.regions.img_to_signals_labels
     nilearn.regions.signals_to_img_maps
     """
@@ -275,28 +275,28 @@ def signals_to_img_maps(region_signals, maps_img, mask_img=None):
     region_signals, mask_img must have the same shapes and affines.
 
     Parameters
-    ==========
+    ----------
     region_signals: numpy.ndarray
         signals to process, as a 2D array. A signal is a column. There must
         be as many signals as maps.
         In pseudo-code: region_signals.shape[1] == maps_img.shape[-1]
 
     maps_img: Niimg-like object
-        See http://nilearn.github.io/manipulating_images/manipulating_images.html#niimg.
+        See http://nilearn.github.io/manipulating_images/input_output.html.
         Region definitions using maps.
 
     mask_img: Niimg-like object, optional
-        See http://nilearn.github.io/manipulating_images/manipulating_images.html#niimg.
+        See http://nilearn.github.io/manipulating_images/input_output.html.
         Boolean array giving voxels to process. integer arrays also accepted,
         zero meaning False.
 
     Returns
-    =======
+    -------
     img: nibabel.Nifti1Image
         Reconstructed image. affine and shape are those of maps_img.
 
     See also
-    ========
+    --------
     nilearn.regions.signals_to_img_labels
     nilearn.regions.img_to_signals_maps
     """
@@ -332,7 +332,7 @@ def _trim_maps(maps, mask, keep_empty=False, order="F"):
     must be performed before calling this function.
 
     Parameters
-    ==========
+    ----------
     maps: numpy.ndarray
         Set of maps, defining some regions.
 
@@ -348,7 +348,7 @@ def _trim_maps(maps, mask, keep_empty=False, order="F"):
         Ordering of the output maps array (trimmed_maps).
 
     Returns
-    =======
+    -------
     trimmed_maps: numpy.ndarray
         New set of maps, computed as intersection of each input map and mask.
         Empty maps are discarded if keep_empty is False, thus the number of

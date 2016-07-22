@@ -10,16 +10,12 @@ Function :func:`nilearn.image.resample_img` could also be used to achieve this.
 
 ###############################################################################
 # First we load the required datasets using the nilearn datasets module.
-from nilearn.datasets import fetch_localizer_contrasts
+from nilearn.datasets import fetch_localizer_button_task
 from nilearn.datasets import load_mni152_template
 
 template = load_mni152_template()
 
-localizer_dataset = fetch_localizer_contrasts(
-    ["left vs right button press"],
-    n_subjects=1,
-    get_anats=True,
-    get_tmaps=True)
+localizer_dataset = fetch_localizer_button_task(get_anats=True)
 
 localizer_tmap_filename = localizer_dataset.tmaps[0]
 localizer_anat_filename = localizer_dataset.anats[0]
@@ -32,16 +28,20 @@ resampled_localizer_tmap = resample_to_img(localizer_tmap_filename, template)
 
 ###############################################################################
 # Let's check the shape and affine have been correctly updated.
-from nilearn.image import index_img
 
-original_shape = index_img([localizer_dataset.tmaps[0]], 0).shape
-original_affine = index_img([localizer_dataset.tmaps[0]], 0).get_affine()
+# First load the original t-map in memory:
+from nilearn.image import load_img
+tmap_img = load_img(localizer_dataset.tmaps[0])
+
+original_shape = tmap_img.shape
+original_affine = tmap_img.get_affine()
 
 resampled_shape = resampled_localizer_tmap.shape
 resampled_affine = resampled_localizer_tmap.get_affine()
 
-template_shape = index_img([template], 0).shape
-template_affine = index_img([template], 0).get_affine()
+template_img = load_img(template)
+template_shape = template_img.shape
+template_affine = template_img.get_affine()
 print("""Shape comparison:
 - Original t-map image shape : {0}
 - Resampled t-map image shape: {1}

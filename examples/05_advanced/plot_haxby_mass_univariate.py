@@ -32,7 +32,7 @@ References
 ##############################################################################
 # Load Haxby dataset
 from nilearn import datasets
-haxby_dataset = datasets.fetch_haxby_simple()
+haxby_dataset = datasets.fetch_haxby()
 
 # print basic information on the dataset
 print('Mask nifti image (3D) is located at: %s' % haxby_dataset.mask)
@@ -51,9 +51,13 @@ fmri_masked = nifti_masker.fit_transform(func_filename)
 ##############################################################################
 # Restrict to faces and houses
 import numpy as np
-conditions_encoded, sessions = np.loadtxt(
-    haxby_dataset.session_target[0]).astype("int").T
-conditions = np.recfromtxt(haxby_dataset.conditions_target[0])['f0']
+labels = np.recfromcsv(haxby_dataset.session_target[0], delimiter=" ")
+conditions = labels['labels']
+categories = np.unique(conditions)
+conditions_encoded = np.zeros_like(conditions)
+for c, category in enumerate(categories):
+    conditions_encoded[conditions == category] = c
+sessions = labels['chunks']
 condition_mask = np.logical_or(conditions == b'face', conditions == b'house')
 conditions_encoded = conditions_encoded[condition_mask]
 fmri_masked = fmri_masked[condition_mask]

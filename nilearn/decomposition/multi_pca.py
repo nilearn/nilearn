@@ -51,11 +51,11 @@ class MultiPCA(BaseDecomposition, TransformerMixin):
         This parameter is passed to image.resample_img. Please see the
         related documentation for details.
 
-    low_pass: False or float, optional
+    low_pass: None or float, optional
         This parameter is passed to signal.clean. Please see the related
         documentation for details
 
-    high_pass: False or float, optional
+    high_pass: None or float, optional
         This parameter is passed to signal.clean. Please see the related
         documentation for details
 
@@ -88,7 +88,7 @@ class MultiPCA(BaseDecomposition, TransformerMixin):
         of `mask` and other NiftiMasker related parameters as initialization.
 
     `mask_img_` : Niimg-like object
-        See http://nilearn.github.io/manipulating_images/manipulating_images.html#niimg.
+        See http://nilearn.github.io/manipulating_images/input_output.html.
         The mask of the data. If no mask was given at masker creation, contains
         the automatically computed mask.
 
@@ -137,7 +137,7 @@ class MultiPCA(BaseDecomposition, TransformerMixin):
         Parameters
         ----------
         imgs: list of Niimg-like objects
-            See http://nilearn.github.io/manipulating_images/manipulating_images.html#niimg.
+            See http://nilearn.github.io/manipulating_images/input_output.html.
             Data on which the PCA must be calculated. If this is a list,
             the affine is considered the same for all.
 

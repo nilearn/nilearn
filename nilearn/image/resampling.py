@@ -1,6 +1,6 @@
 """
 Utilities to resample a Niimg-like object
-See http://nilearn.github.io/manipulating_images/manipulating_images.html#niimg.
+See http://nilearn.github.io/manipulating_images/input_output.html.
 """
 # Author: Gael Varoquaux, Alexandre Abraham, Michael Eickenberg
 # License: simplified BSD
@@ -127,7 +127,7 @@ def get_bounds(shape, affine):
     The coordinates returned correspond to the **center** of the corner voxels.
 
     Parameters
-    ==========
+    ----------
     shape: tuple
         shape of the array. Must have 3 integer values.
 
@@ -136,7 +136,7 @@ def get_bounds(shape, affine):
         and world-space coordinates.
 
     Returns
-    =======
+    -------
     coord: list of tuples
         coord[i] is a 2-tuple giving minimal and maximal coordinates along
         i-th axis.
@@ -164,7 +164,7 @@ def get_mask_bounds(img):
         Parameters
         ----------
         img: Niimg-like object
-            See http://nilearn.github.io/manipulating_images/manipulating_images.html#niimg.
+            See http://nilearn.github.io/manipulating_images/input_output.html.
             The image to inspect. Zero values are considered as
             background.
 
@@ -275,7 +275,7 @@ def resample_img(img, target_affine=None, target_shape=None,
     Parameters
     ----------
     img: Niimg-like object
-        See http://nilearn.github.io/manipulating_images/manipulating_images.html#niimg.
+        See http://nilearn.github.io/manipulating_images/input_output.html.
         Image(s) to resample.
 
     target_affine: numpy.ndarray, optional
@@ -302,7 +302,7 @@ def resample_img(img, target_affine=None, target_shape=None,
         Fortran ordering.
 
     Returns
-    =======
+    -------
     resampled: nibabel.Nifti1Image
         input image, resampled to have respectively target_shape and
         target_affine as shape and affine.
@@ -312,7 +312,7 @@ def resample_img(img, target_affine=None, target_shape=None,
     nilearn.image.resample_to_img
 
     Notes
-    =====
+    -----
 
     **BoundingBoxError**
     If a 4x4 transformation matrix (target_affine) is given and all of the
@@ -499,11 +499,11 @@ def resample_to_img(source_img, target_img,
     Parameters
     ----------
     source_img: Niimg-like object
-        See http://nilearn.github.io/manipulating_images/manipulating_images.html#niimg.
+        See http://nilearn.github.io/manipulating_images/input_output.html.
         Image(s) to resample.
 
     target_img: Niimg-like object
-        See http://nilearn.github.io/manipulating_images/manipulating_images.html#niimg.
+        See http://nilearn.github.io/manipulating_images/input_output.html.
         Reference image taken for resampling.
 
     interpolation: str, optional
@@ -553,7 +553,7 @@ def reorder_img(img, resample=None):
         Parameters
         -----------
         img: Niimg-like object
-            See http://nilearn.github.io/manipulating_images/manipulating_images.html#niimg.
+            See http://nilearn.github.io/manipulating_images/input_output.html.
             Image to reorder.
 
         resample: None or string in {'continuous', 'nearest'}, optional

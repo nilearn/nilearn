@@ -145,7 +145,7 @@ def group_sparse_covariance(subjects, alpha, max_iter=50, tol=1e-3, verbose=0,
     but cubic on number of features (subjects[0].shape[1]).
 
     Parameters
-    ==========
+    ----------
     subjects : list of numpy.ndarray
         input subjects. Each subject is a 2D array, whose columns contain
         signals. Each array shape must be (sample number, feature number).
@@ -191,7 +191,7 @@ def group_sparse_covariance(subjects, alpha, max_iter=50, tol=1e-3, verbose=0,
         numerical problems, but increases computation time a lot.
 
     Returns
-    =======
+    -------
     emp_covs : numpy.ndarray, shape (n_features, n_features, n_subjects)
         empirical covariances matrices
 
@@ -199,7 +199,7 @@ def group_sparse_covariance(subjects, alpha, max_iter=50, tol=1e-3, verbose=0,
         estimated precision matrices
 
     Notes
-    =====
+    -----
     The present algorithm is based on:
 
     Jean Honorio and Dimitris Samaras.
@@ -929,7 +929,7 @@ class GroupSparseCovarianceCV(BaseEstimator, CacheMixin):
             subjects must have the same number of features (i.e. of columns.)
 
         Returns
-        =======
+        -------
         self: GroupSparseCovarianceCV
             the object instance itself.
         """

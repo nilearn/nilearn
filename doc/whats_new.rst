@@ -1,13 +1,83 @@
+0.2.6
+=====
+
+Changelog
+---------
+
+The new minimum required version of scikit-learn is 0.14.1
+
+New features
+............
+
+    - Add an option to select only off-diagonal elements in sym_to_vec. Also,
+      the scaling of matrices is modified: we divide the diagonal by sqrt(2)
+      instead of multiplying the off-diagonal elements.
+
+API changes summary
+...................
+
+    - Scikit-learn validation tools have been imported and are now used to check
+      consistency of input data, in SpaceNet for example.
+
 0.2.5
 =====
 
 Changelog
 ---------
 
+The 0.2.5 release includes plotting for connectomes and glass brain with
+hemisphere-specific projection, as well as more didactic examples and
+improved documentation.
+
 New features
 ............
-    - New display_mode options in plot_glass_brain and plot_connectome. It
+
+    - New display_mode options in :func:`nilearn.plotting.plot_glass_brain`
+      and :func:`nilearn.plotting.plot_connectome`. It
       is possible to plot right and left hemisphere projections separately.
+
+    - A function to load canonical brain mask image in MNI template space,
+      :func:`nilearn.datasets.load_mni152_brain_mask`
+
+    - A function to load brain grey matter mask image,
+      :func:`nilearn.datasets.fetch_icbm152_brain_gm_mask`
+
+    - New function :func:`nilearn.image.load_img` loads data from a filename or a
+      list of filenames.
+
+    - New function :func:`nilearn.image.clean_img` applies the cleaning function
+      :func:`nilearn.signal.clean` on all voxels.
+
+    - New simple data downloader
+      :func:`nilearn.datasets.fetch_localizer_button_task` to simplify
+      some examples.
+
+    - The dataset function 
+      :func:`nilearn.datasets.fetch_localizer_contrasts` can now download
+      a specific list of subjects rather than a range of subjects.
+
+    - New function :func:`nilearn.datasets.get_data_dirs` to check where
+      nilearn downloads data.
+
+Contributors
+-------------
+
+Contributors (from ``git shortlog -ns 0.2.4..0.2.5``)::
+
+    55  Gael Varoquaux
+    39  Alexandre Abraham
+    26  Martin Perez-Guevara
+    20  Kamalakar Daddy
+     8  amadeuskanaan
+     3  Alexandre Abadie
+     3  Arthur Mensch
+     3  Elvis Dohmatob
+     3  Loïc Estève
+     2  Jerome Dockes
+     1  Alexandre M. S
+     1  Bertrand Thirion
+     1  Ivan Gonzalez
+     1  robbisg
 
 0.2.4
 =====

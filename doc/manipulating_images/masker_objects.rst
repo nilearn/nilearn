@@ -1,65 +1,17 @@
-.. _extracting_data:
+.. _masker_objects:
 
-=====================================================
-Data preparation: data loading and signal extraction
-=====================================================
+=====================================================================
+From neuroimaging volumes to data matrices: the masker objects
+=====================================================================
 
-.. contents:: **Contents**
+This chapter introduces the maskers: objects that go from
+neuroimaging volumes, on the disk or in memory, to data matrices, eg of
+time series.
+
+.. contents:: **Chapters contents**
     :local:
     :depth: 1
 
-|
-
-.. currentmodule:: nilearn.image
-
-File names or image objects
-=============================
-
-File names and objects, 3D and 4D images
------------------------------------------
-
-All Nilearn functions accept file names as arguments::
-
-    >>> from nilearn import image
-    >>> smoothed_img = image.smooth_img('/home/user/t_map001.nii')  # doctest: +SKIP
-
-Nilearn can operate on either file names or `NiftiImage objects
-<http://nipy.org/nibabel/nibabel_images.html>`_. The later represent the
-data loaded in memory. In the example above, the
-function :func:`smooth_img` returns a NiftiImage object, which can then
-be readily passed to other nilearn functions.
-
-In nilearn, we often use the term *"niimg"* as abbreviation that denotes
-either a file name or a `NiftiImage object
-<http://nipy.org/nibabel/nibabel_images.html>`_. 
-
-Niimgs can be 3D or 4D. A 4D niimg may for instance represent a time
-series of 3D images. It can be **a list of file names**, if these contain
-3D information.
-
-.. _filename_matching:
-
-File name matching: "globbing" and user path expansion
-------------------------------------------------------
-
-You can specific files with *wildcard* matching patterns (as in Unix
-shell):
-
-* To retrieve all t maps::
-
-    >>> smoothed_imgs = image.smooth_img('/home/user/t_map*.nii')  # doctest: +SKIP
-
-  Note that the resulting is a 4D image.
-
-* The ``~`` symbol is also expanded to the user home folder::
-
-    >>> smoothed_imgs = image.smooth_img('~/t_map001.nii')  # doctest: +SKIP
-
-  Using ``~`` rather than specifying the details of the path is good
-  practice, as it will make it more likely that your script work on
-  different computers.
-
-|
 
 The concept of "masker" objects
 ===============================
@@ -140,8 +92,8 @@ Custom data loading: loading only the first 100 time points
 ------------------------------------------------------------
 
 Suppose we want to restrict a dataset to the first 100 frames. Below, we load
-a resting-state dataset with :func:`fetch_fetch_nyu_rest()
-<nilearn.datasets.fetch_nyu_rest>`, restrict it to 100 frames and
+a resting-state dataset with :func:`fetch_adhd()
+<nilearn.datasets.fetch_adhd>`, restrict it to 100 frames and
 build a new niimg object that we can give to the masker. Although
 possible, there is no need to save your data to a file to pass it to a
 :class:`NiftiMasker`. Simply use :func:`nilearn.image.index_img` to apply a
@@ -149,7 +101,7 @@ slice and create a :ref:`Niimg <niimg>` in memory:
 
 
 .. literalinclude:: ../../examples/04_manipulating_images/plot_mask_computation.py
-    :start-after: Load NYU resting-state dataset
+    :start-after: Load ADHD resting-state dataset
     :end-before: # To display the background
 
 Controlling how the mask is computed from the data
@@ -234,7 +186,7 @@ voxels that appear as bright in the EPI image.
     :target: ../auto_examples/04_manipulating_images/plot_mask_computation.html
     :scale: 50%
 
-
+.. _masker_preprocessing_steps:
 
 Common data preparation steps: smoothing, filtering, resampling
 ----------------------------------------------------------------
@@ -314,7 +266,8 @@ properties, before conversion to voxel signals.
    :class: green
 
    You can, more as a training than as an exercise, try to play with
-   the parameters in :ref:`sphx_glr_auto_examples_plot_haxby_simple.py`.
+   the parameters in
+   :ref:`sphx_glr_auto_examples_plot_decoding_tutorial.py`.
    Try to enable detrending and run the script:
    does it have a big impact on the result?
 

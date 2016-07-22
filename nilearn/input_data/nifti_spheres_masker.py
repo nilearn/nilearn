@@ -1,6 +1,7 @@
 """
-Transformer for computing seeds signals.
-=======
+Transformer for computing seeds signals
+----------------------------------------
+
 Mask nifti images by spherical volumes for seed-region analyses
 """
 import numpy as np
@@ -88,12 +89,12 @@ def _iter_signals_from_spheres(seeds, niimg, radius, allow_overlap,
                                mask_img=None):
     """Utility function to iterate over spheres.
     Parameters
-    ==========
+    ----------
     seeds: List of triplets of coordinates in native space
         Seed definitions. List of coordinates of the seeds in the same space
         as the images (typically MNI or TAL).
     imgs: 3D/4D Niimg-like object
-        See http://nilearn.github.io/manipulating_images/manipulating_images.html#niimg.
+        See http://nilearn.github.io/manipulating_images/input_output.html.
         Images to process. It must boil down to a 4D image with scans
         number as last dimension.
     radius: float, optional
@@ -103,7 +104,7 @@ def _iter_signals_from_spheres(seeds, niimg, radius, allow_overlap,
         If False, an error is raised if the maps overlaps (ie at least two
         maps have a non-zero value for the same voxel). Default is False.
     mask_img: Niimg-like object, optional
-        See http://nilearn.github.io/manipulating_images/manipulating_images.html#niimg.
+        See http://nilearn.github.io/manipulating_images/input_output.html.
         Mask to apply to regions before extracting signals.
     """
     X, A = _apply_mask_and_get_affinity(seeds, niimg, radius,
@@ -146,7 +147,7 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
     obtained from prior knowledge.
 
     Parameters
-    ==========
+    ----------
     seeds: List of triplet of coordinates in native space
         Seed definitions. List of coordinates of the seeds in the same space
         as the images (typically MNI or TAL).
@@ -156,7 +157,7 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
         Default is None (signal is extracted on a single voxel).
 
     mask_img: Niimg-like object, optional
-        See http://nilearn.github.io/manipulating_images/manipulating_images.html#niimg.
+        See http://nilearn.github.io/manipulating_images/input_output.html.
         Mask to apply to regions before extracting signals.
 
     allow_overlap: boolean, optional
@@ -175,11 +176,11 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
         This parameter is passed to signal.clean. Please see the related
         documentation for details.
 
-    low_pass: False or float, optional
+    low_pass: None or float, optional
         This parameter is passed to signal.clean. Please see the related
         documentation for details.
 
-    high_pass: False or float, optional
+    high_pass: None or float, optional
         This parameter is passed to signal.clean. Please see the related
         documentation for details.
 
@@ -200,7 +201,7 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
         Indicate the level of verbosity. By default, nothing is printed.
 
     See also
-    ========
+    --------
     nilearn.input_data.NiftiMasker
     """
     # memory and memory_level are used by CacheMixin.
@@ -286,7 +287,7 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
         Parameters
         ----------
         imgs: 3D/4D Niimg-like object
-            See http://nilearn.github.io/manipulating_images/manipulating_images.html#niimg.
+            See http://nilearn.github.io/manipulating_images/input_output.html.
             Images to process. It must boil down to a 4D image with scans
             number as last dimension.
 

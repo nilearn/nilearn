@@ -80,7 +80,7 @@ def load_niimg(niimg, dtype=None):
     -----------
 
     niimg: Niimg-like object
-        See http://nilearn.github.io/manipulating_images/manipulating_images.html#niimg.
+        See http://nilearn.github.io/manipulating_images/input_output.html.
         Image to load.
 
     dtype: {dtype, "auto"}
@@ -115,12 +115,12 @@ def copy_img(img):
     """Copy an image to a nibabel.Nifti1Image.
 
     Parameters
-    ==========
+    ----------
     img: image
         nibabel SpatialImage object to copy.
 
     Returns
-    =======
+    -------
     img_copy: image
         copy of input (data, affine and header)
     """
