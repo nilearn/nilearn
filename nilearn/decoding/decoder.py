@@ -20,6 +20,9 @@ from sklearn.preprocessing import LabelBinarizer
 from sklearn.feature_selection import SelectPercentile
 from sklearn.feature_selection import f_classif, f_regression
 from sklearn.svm.bounds import l1_min_c
+from sklearn.grid_search import ParameterGrid
+from sklearn.metrics.scorer import check_scoring
+from sklearn.metrics.scorer import make_scorer
 from sklearn.metrics import (r2_score, f1_score, precision_score, recall_score,
                              accuracy_score, mean_absolute_error,
                              mean_squared_error, average_precision_score)
@@ -32,11 +35,9 @@ from sklearn import clone
 from .._utils.compat import _basestring
 from .._utils.fixes import check_cv
 from .._utils.fixes import atleast2d_or_csr
-from .._utils.fixes import ParameterGrid
+
 from .._utils.fixes import check_X_y
 from .._utils.fixes import check_is_fitted
-from .._utils.fixes import check_scoring
-from .._utils.fixes import make_scorer
 
 from ..input_data import NiftiMasker, MultiNiftiMasker
 
