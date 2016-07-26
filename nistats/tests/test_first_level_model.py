@@ -1,7 +1,7 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 """
-Test the glm utilities.
+Test the first level model.
 """
 from __future__ import with_statement
 
@@ -296,6 +296,16 @@ def test_first_level_model_contrast_computation():
         model.compute_contrast([c2, c2])
         # smoke test for contrast that will be repeated
         model.compute_contrast(c2)
+        model.compute_contrast(c2, 'F')
+        model.compute_contrast(c2, 't', 'z_score')
+        model.compute_contrast(c2, 't', 'stat')
+        model.compute_contrast(c2, 't', 'p_value')
+        model.compute_contrast(c2, None, 'effect_size')
+        model.compute_contrast(c2, None, 'effect_variance')
+        # formula should work (passing varible name directly)
+        model.compute_contrast('c0')
+        model.compute_contrast('c1')
+        model.compute_contrast('c2')
         # smoke test for one null contrast in group
         model.compute_contrast([c2, cnull])
         # only passing null contrasts should give back a value error
