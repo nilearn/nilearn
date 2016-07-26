@@ -11,12 +11,8 @@ of fMRI data analyses.
 from warnings import warn
 import time
 import sys
-import os
-import glob
-import json
 
 import numpy as np
-import pandas as pd
 from nibabel import Nifti1Image
 
 from sklearn.base import BaseEstimator, TransformerMixin, clone
@@ -30,7 +26,7 @@ from patsy import DesignInfo
 from .regression import OLSModel, ARModel, SimpleRegressionResults
 from .design_matrix import make_design_matrix
 from .contrasts import _fixed_effect_contrast
-from .utils import _basestring, _check_run_tables, get_bids_files
+from .utils import _basestring, _check_run_tables
 
 
 def mean_scaling(Y, axis=0):
@@ -226,6 +222,9 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
 
     verbose : integer, optional
         Indicate the level of verbosity. By default, nothing is printed.
+        If 0 will print nothing. If 1 will print progress by computation of
+        each run. If 2 will print timing details of masker and GLM. If 3 will
+        print masker computation details.
 
     n_jobs : integer, optional
         The number of CPUs to use to do the computation. -1 means
@@ -236,10 +235,6 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         necessary for contrast computation and would only be useful for
         further inspection of model details. This has an important impact
         on memory consumption. True by default.
-
-    subject_id: string, optional
-        Identifies the model in case it is passed to a `SecondLevelModel`
-        object. Particularly to match confounders by subject_id.
 
     Attributes
     ----------
@@ -255,8 +250,8 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
                  fir_delays=[0], min_onset=-24, mask=None, target_affine=None,
                  target_shape=None, smoothing_fwhm=None, memory=Memory(None),
                  memory_level=1, standardize=False, signal_scaling=0,
-                 noise_model='ar1', verbose=1, n_jobs=1,
-                 minimize_memory=True, subject_id=None):
+                 noise_model='ar1', verbose=0, n_jobs=1,
+                 minimize_memory=True):
         # design matrix parameters
         self.t_r = t_r
         if t_r > 10:
@@ -295,7 +290,6 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         # attributes
         self.labels_ = None
         self.results_ = None
-        self.subject_id = subject_id
 
     def fit(self, run_imgs=None, events=None, confounds=None,
             design_matrices=None):
@@ -369,7 +363,7 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
                 target_affine=self.target_affine,
                 standardize=self.standardize, mask_strategy='epi',
                 t_r=self.t_r, memory=self.memory,
-                verbose=max(0, self.verbose),
+                verbose=max(0, self.verbose - 2),
                 target_shape=self.target_shape,
                 memory_level=self.memory_level)
             self.masker_.fit(run_imgs[0])
@@ -406,7 +400,7 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
                 else:
                     remaining = (100. - percent) / max(0.01, percent) * dt
                     remaining = '%i seconds remaining' % remaining
-                # sys.stderr.write(" " * 100 + "\r")
+
                 sys.stderr.write(
                     "Computing run %d out of %d runs (%s)\n"
                     % (run_idx + 1, n_runs, remaining))
@@ -437,12 +431,15 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
                 design = design_matrices[run_idx]
             self.design_matrices_.append(design)
 
-            # Compute GLM
-            t_masking = time.time()
-            print 'start masking'
+            # Mask and prepare data for GLM
+            if self.verbose > 1:
+                t_masking = time.time()
+                print 'Starting masker computation'
             Y = self.masker_.transform(run_img)
             t_masking = time.time() - t_masking
-            print 'masking took %d seconds' % t_masking
+            if self.verbose > 1:
+                print 'Masker took %d seconds' % t_masking
+
             if self.signal_scaling:
                 Y, _ = mean_scaling(Y, self.scaling_axis)
             if self.memory is not None:
@@ -450,12 +447,18 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
                 mem_glm = self.memory.cache(run_glm, ignore=arg_ignore)
             else:
                 mem_glm = run_glm
-            t_glm = time.time()
+
+            # compute GLM
+            if self.verbose > 1:
+                t_glm = time.time()
+                print 'Starting GLM computation'
             labels, results = mem_glm(Y, design.as_matrix(),
                                       noise_model=self.noise_model,
                                       bins=100, n_jobs=self.n_jobs)
-            t_glm = time.time() - t_glm
-            print 'glm took %d seconds' % t_glm
+            if self.verbose > 1:
+                t_glm = time.time() - t_glm
+                print 'GLM took %d seconds' % t_glm
+
             self.labels_.append(labels)
             # We save memory if inspecting model details is not necessary
             if self.minimize_memory:
@@ -488,9 +491,7 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
             the linear constraint of the Patsy library. Basically one can use
             the name of the conditions as they appear in the design matrix of
             the fitted model combined with operators /*+- and numbers.
-            Nonetheless all contrasts assume the baseline of the tested effect
-            as 0, so specifying a different baseline in a formula will have no
-            effect. Please checks the patsy documentation for formula examples:
+            Please checks the patsy documentation for formula examples:
             http://patsy.readthedocs.io/en/latest/API-reference.html#patsy.DesignInfo.linear_constraint
 
         stat_type : {'t', 'F'}, optional
@@ -503,7 +504,7 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         Returns
         -------
         output : Nifti1Image
-            The desired output image from a fixed effects computation.
+            The desired output image
 
         """
         if self.labels_ is None or self.results_ is None:
@@ -516,19 +517,13 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         else:
             raise ValueError('contrast_def must be an array or str or list of'
                              ' (array or str)')
-        # We reinterpret formulas as vectors only if design has column names.
-        des_names = np.unique(self.design_matrices_[0].columns.tolist())
-        if len(des_names) == len(self.design_matrices_[0].columns):
-            di = DesignInfo(self.design_matrices_[0].columns.tolist())
-            for cidx, con in enumerate(con_vals):
-                if not isinstance(con, np.ndarray):
-                    con_vals[cidx] = di.linear_constraint(con).coefs
-        else:
-            for cidx, con in enumerate(con_vals):
-                if not isinstance(con, np.ndarray):
-                    raise ValueError('can not interpret formula when design'
-                                     ' do not contain columns with unique '
-                                     'names')
+
+        # Translate formulas to vectors with patsy
+        design_info = DesignInfo(self.design_matrices_[0].columns.tolist())
+        for cidx, con in enumerate(con_vals):
+            if not isinstance(con, np.ndarray):
+                con_vals[cidx] = design_info.linear_constraint(con).coefs
+
         n_runs = len(self.labels_)
         if len(con_vals) != n_runs:
             warn('One contrast given, assuming it for all %d runs' % n_runs)
@@ -542,15 +537,6 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
             raise ValueError('output_type must be one of "z_score", "stat",'
                              ' "p_value","effect_size" or "effect_variance"')
 
-        # if self.memory is not None:
-        #     arg_ignore = ['labels', 'results']
-        #     mem_contrast = self.memory.cache(_fixed_effect_contrast,
-        #                                      ignore=arg_ignore)
-        # else:
-        #     mem_contrast = _fixed_effect_contrast
-        # contrast = mem_contrast(self.labels_, self.results_, con_vals,
-        #                         stat_type)
-
         contrast = _fixed_effect_contrast(self.labels_, self.results_,
                                           con_vals, stat_type)
 
@@ -562,166 +548,3 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
             '%s of contrast %s' % (output_type, contrast_name))
 
         return output
-
-
-def first_level_models_from_bids(dataset_path, task_id, model_id=None,
-                                 model_init=None):
-    """Return first and second level model objects and inputs to fit.
-
-    Assuming no subjects lacks a task. Problem inferring subjects.
-
-    Parameters
-    ----------
-    dataset_path: str
-    task_id: str
-    model: str, optional
-    model_init: dict, optional
-
-    Returns
-    -------
-    models: list of `FirstLevelModel` objects
-    models_fit_kwargs: list of dict
-    """
-    # check arguments
-    if not isinstance(dataset_path, str):
-        raise TypeError('dataset_path must be a string, instead %s was given' %
-                        type(task_id))
-    if not os.path.exists(dataset_path):
-        raise ValueError('given path do not exist: %s' % dataset_path)
-    if not isinstance(task_id, str):
-        raise TypeError('task_id must be a string, instead %s was given' %
-                        type(task_id))
-    if model_id is not None and not isinstance(model_id, str):
-        raise TypeError('model must be a string, instead %s was given' %
-                        type(task_id))
-    if model_init is not None and not isinstance(model_init, dict):
-        raise TypeError('model_init must be a dict, instead %s was given' %
-                        type(model_init))
-
-    # check derivatives folder is present
-    derivatives_path = os.path.join(dataset_path, 'derivatives')
-    if not os.path.exists(derivatives_path):
-        raise ValueError('derivatives folder does not exist in given dataset')
-
-    # Get acq specs for models. RepetitionTime and SliceTimingReference.
-    # Only if not given in model_init dictionary
-    # Throw warning if no bold.json is found
-    TR = None
-    SliceTimingRef = 0.0
-    if model_init is not None and 't_r' in model_init:
-        warn('RepetitionTime given in model_init as %d' % model_init['t_r'])
-        if 'slice_time_ref' not in model_init:
-            warn('slice_time_ref was not given and so it is assumed that the '
-                 'slice timing reference is 0.0 percent of the repetition '
-                 'time')
-    else:
-        filters = [('task', task_id)]
-        for possible_path in [derivatives_path, dataset_path]:
-            img_specs = get_bids_files(possible_path, file_folder='func',
-                                       file_tag='bold', file_type='json',
-                                       filters=filters)
-            if img_specs:
-                break
-        if not img_specs:
-            warn('No bold.json file found in derivatives folder or dataset '
-                 'folder. t_r can not be inferred and will need to be set '
-                 'manually in the list of models, otherwise their fit will '
-                 'throw an exception')
-        else:
-            specs = json.load(open(img_specs[0], 'r'))
-            if 'RepetitionTime' in specs:
-                TR = float(specs['RepetitionTime'])
-            else:
-                warn('RepetitionTime not found in file %s. t_r can not be '
-                     'inferred and will need to be set manually in the '
-                     'list of models. Otherwise their fit will throw an '
-                     ' exception' % img_specs[0])
-            if 'SliceTimingRef' in specs:
-                SliceTimingRef = float(specs['SliceTimingRef'])
-            else:
-                warn('SliceTimingRef not found in file %s. It will be assumed'
-                     ' that the slice timing reference is 0.0 percent of the '
-                     'repetition time. If it is not the case it will need to '
-                     'be set manually in the generated list of models' %
-                     img_specs[0])
-
-    # Infer subjects in dataset
-    if glob.glob(os.path.join(derivatives_path, 'ses-*')):
-        sub_folders = glob.glob(os.path.join(derivatives_path, 'ses-*',
-                                             'sub-*'))
-    else:
-        sub_folders = glob.glob(os.path.join(derivatives_path, 'sub-*'))
-    sub_ids = [os.path.basename(s).split('-')[1] for s in sub_folders]
-    sub_ids = sorted(list(set(sub_ids)))
-
-    # Build fit_kwargs dictionaries to pass to their respective models fit
-    # Events and confounds files must match number of imgs (runs)
-    models = []
-    models_fit_kwargs = []
-    for sub_id in sub_ids:
-        # Create model
-        model_kwargs = {'t_r': TR, 'slice_time_ref': SliceTimingRef,
-                        'subject_id': sub_id}
-        if model_init is not None:
-            model_kwargs.update(model_init)
-        model = FirstLevelModel(**model_kwargs)
-        models.append(model)
-
-        # Obtain model fit kwargs
-        model_fit_kwargs = {}
-
-        # Get preprocessed imgs
-        filters = [('task', task_id)]
-        imgs = get_bids_files(derivatives_path, file_folder='func',
-                              file_tag='bold', file_type='nii*', sub_id=sub_id,
-                              filters=filters)
-        model_fit_kwargs['run_imgs'] = imgs
-
-        # If model_id is provided we add it to the search constraints for
-        # events and confounds
-        if model_id is not None:
-            filters.append(('model', model_id))
-        # Get events. If not found in derivatives check for original data.
-        # There might be no need to preprocess events to specify model, still
-        # throw a warning
-        for possible_path in [derivatives_path, dataset_path]:
-            events = get_bids_files(possible_path, file_folder='func',
-                                    file_tag='events', file_type='tsv',
-                                    sub_id=sub_id, filters=filters)
-            if events:
-                if len(events) != len(imgs):
-                    raise ValueError('%d events.tsv files found for %d bold '
-                                     'files. Same number of event files as '
-                                     'the number of runs is expected' %
-                                     (len(events), len(imgs)))
-                events = [pd.read_csv(e, sep='\t', index_col=None)
-                          for e in events]
-                for e in events:
-                    e.columns = ['name' if col == 'trial_type' else col
-                                 for col in e.columns]
-                if possible_path == dataset_path:
-                    warn('events taken from directory containing raw data. '
-                         'Is it the case that there was no need to preprocess '
-                         'the events for the model?')
-                model_fit_kwargs['events'] = events
-                break
-        if not events:
-            raise ValueError('No events.tsv files found')
-
-        # Get confounds. If not found it will be assumed there are none.
-        # If there are confounds, they are assumed to be present for all runs.
-        confounds = get_bids_files(derivatives_path, file_folder='func',
-                                   file_tag='confounds', file_type='tsv',
-                                   sub_id=sub_id, filters=filters)
-        if confounds:
-            if len(confounds) != len(imgs):
-                raise ValueError('%d confounds.tsv files found for %d bold '
-                                 'files. Same number of confound files as '
-                                 'the number of runs is expected' %
-                                 (len(events), len(imgs)))
-            confounds = [pd.read_csv(c, sep='\t', index_col=None)
-                         for c in confounds]
-            model_fit_kwargs['confounds'] = confounds
-        models_fit_kwargs.append(model_fit_kwargs)
-
-    return models, models_fit_kwargs
