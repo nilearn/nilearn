@@ -436,8 +436,8 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
                 t_masking = time.time()
                 print 'Starting masker computation'
             Y = self.masker_.transform(run_img)
-            t_masking = time.time() - t_masking
             if self.verbose > 1:
+                t_masking = time.time() - t_masking
                 print 'Masker took %d seconds' % t_masking
 
             if self.signal_scaling:
