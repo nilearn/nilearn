@@ -49,7 +49,7 @@ def generate_fake_fmri_data(shapes, rk=3, affine=np.eye(4)):
         data[1:-1, 1:-1, 1:-1] += 100
         fmri_data.append(Nifti1Image(data, affine))
         design_matrices.append(pd.DataFrame(np.random.randn(shape[3], rk),
-                                            columns=['', '', '']))
+                                            columns=['a', 'b', 'c']))
     mask = Nifti1Image((np.random.rand(*shape[:3]) > .5).astype(np.int8),
                        affine)
     return mask, fmri_data, design_matrices
