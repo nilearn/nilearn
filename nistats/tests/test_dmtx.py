@@ -18,7 +18,7 @@ from nistats.design_matrix import (
 
 from nibabel.tmpdirs import InTemporaryDirectory
 
-from nose.tools import assert_true, assert_equal
+from nose.tools import assert_true, assert_equal, assert_raises
 from numpy.testing import assert_almost_equal, dec, assert_array_equal
 
 # Set the backend to avoid having DISPLAY problems
@@ -413,6 +413,18 @@ def test_design_matrix20():
 
     # check that the drifts are not constant
     assert_true(np.all(np.diff(X[:, -2]) != 0))
+
+
+def test_design_matrix21():
+    # basic test on repeated names of user supplied regressors
+    tr = 1.0
+    frame_times = np.linspace(0, 127 * tr, 128)
+    paradigm = basic_paradigm()
+    hrf_model = 'glover'
+    ax = np.random.randn(128, 4)
+    assert_raises(ValueError, design_matrix_light, frame_times, paradigm,
+                  hrf_model=hrf_model, drift_model='polynomial', drift_order=3,
+                  add_regs=ax, add_reg_names=['aha'] * ax.shape[1])
 
 
 def test_fir_block():
