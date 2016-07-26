@@ -291,7 +291,7 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         self.labels_ = None
         self.results_ = None
 
-    def fit(self, run_imgs=None, events=None, confounds=None,
+    def fit(self, run_imgs, events=None, confounds=None,
             design_matrices=None):
         """ Fit the GLM
 
