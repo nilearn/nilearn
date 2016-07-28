@@ -39,14 +39,14 @@ class BaseAxes(object):
     def __init__(self, ax, direction, coord):
         """ An MPL axis-like object that displays a cut of 3D volumes
 
-            Parameters
-            ==========
-            ax: a MPL axes instance
-                The axes in which the plots will be drawn
-            direction: {'x', 'y', 'z'}
-                The directions of the view
-            coord: float
-                The coordinate along the direction of the cut
+        Parameters
+        ----------
+        ax: a MPL axes instance
+            The axes in which the plots will be drawn
+        direction: {'x', 'y', 'z'}
+            The directions of the view
+        coord: float
+            The coordinate along the direction of the cut
 
         """
         self.ax = ax
@@ -67,17 +67,23 @@ class BaseAxes(object):
         new_object_bounds = self.get_object_bounds()
 
         if new_object_bounds != old_object_bounds:
+            # The bounds of the object do not take into account a possible
+            # inversion of the axis. As such, we check if the axis was inverted
+            # before resetting the bounds and re-invert it after if needed.
+            inverted = self.ax.get_xlim()[0] > self.ax.get_xlim()[1]
             self.ax.axis(self.get_object_bounds())
+            if inverted:
+                self.ax.invert_xaxis()
 
     def draw_2d(self, data_2d, data_bounds, bounding_box,
                 type='imshow', **kwargs):
-        # kwargs massaging
+        # kwargs messaging
         kwargs['origin'] = 'upper'
 
         if self.direction == 'y':
             (xmin, xmax), (_, _), (zmin, zmax) = data_bounds
             (xmin_, xmax_), (_, _), (zmin_, zmax_) = bounding_box
-        elif self.direction == 'x':
+        elif self.direction in 'xlr':
             (_, _), (xmin, xmax), (zmin, zmax) = data_bounds
             (_, _), (xmin_, xmax_), (zmin_, zmax_) = bounding_box
         elif self.direction == 'z':
@@ -112,7 +118,7 @@ class BaseAxes(object):
         return xmin, xmax, ymin, ymax
 
     def draw_left_right(self, size, bg_color, **kwargs):
-        if self.direction == 'x':
+        if self.direction in 'xlr':
             return
         ax = self.ax
         ax.text(.1, .95, 'L',
@@ -147,12 +153,12 @@ class CutAxes(BaseAxes):
     def transform_to_2d(self, data, affine):
         """ Cut the 3D volume into a 2D slice
 
-            Parameters
-            ==========
-            data: 3D ndarray
-                The 3D volume to cut
-            affine: 4x4 ndarray
-                The affine of the volume
+        Parameters
+        ----------
+        data: 3D ndarray
+            The 3D volume to cut
+        affine: 4x4 ndarray
+            The affine of the volume
         """
         coords = [0, 0, 0]
         coords['xyz'.index(self.direction)] = self.coord
@@ -189,11 +195,15 @@ def _get_index_from_direction(direction):
     """
     directions = ['x', 'y', 'z']
     try:
-        index = directions.index(direction)
+        # l and r are subcases of x
+        if direction in 'lr':
+            index = 0
+        else:
+            index = directions.index(direction)
     except ValueError:
         message = (
             '{0} is not a valid direction. '
-            "Allowed values are 'x', 'y' and 'z'").format(direction)
+            "Allowed values are 'l', 'r', 'x', 'y' and 'z'").format(direction)
         raise ValueError(message)
     return index
 
@@ -211,6 +221,10 @@ def _coords_3d_to_2d(coords_3d, direction, return_direction=False):
     return coords_3d[:, dimensions]
 
 
+###############################################################################
+# class GlassBrainAxes
+###############################################################################
+
 class GlassBrainAxes(BaseAxes):
     """An MPL axis-like object that displays a 2D projection of 3D
     volumes with a schematic view of the brain.
@@ -227,17 +241,38 @@ class GlassBrainAxes(BaseAxes):
 
     def transform_to_2d(self, data, affine):
         """ Returns the maximum of the absolute value of the 3D volume
-            along an axis.
+        along an axis.
 
-            Parameters
-            ==========
-            data: 3D ndarray
-                The 3D volume
-            affine: 4x4 ndarray
-                The affine of the volume
+        Parameters
+        ----------
+        data: 3D ndarray
+            The 3D volume
+        affine: 4x4 ndarray
+            The affine of the volume
 
         """
-        max_axis = 'xyz'.index(self.direction)
+        if self.direction in 'xlr':
+            max_axis = 0
+        else:
+            max_axis = '.yz'.index(self.direction)
+
+        # set unselected brain hemisphere activations to 0
+
+        if self.direction == 'l':
+            x_center, _, _, _ = np.dot(np.linalg.inv(affine),
+                                       np.array([0, 0, 0, 1]))
+            data_selection = data[:int(x_center), :, :]
+        elif self.direction == 'r':
+            x_center, _, _, _ = np.dot(np.linalg.inv(affine),
+                                       np.array([0, 0, 0, 1]))
+            data_selection = data[int(x_center):, :, :]
+        else:
+            data_selection = data
+
+        # We need to make sure data_selection is not empty in the x axis
+        # This should be the case since we expect images in MNI space
+        if data_selection.shape[0] == 0:
+            data_selection = data
 
         if not self._plot_abs:
             # get the shape of the array we are projecting to
@@ -248,13 +283,13 @@ class GlassBrainAxes(BaseAxes):
             # current projection
             a1, a2 = np.indices(new_shape)
             inds = [a1, a2]
-            inds.insert(max_axis, np.abs(data).argmax(axis=max_axis))
+            inds.insert(max_axis, np.abs(data_selection).argmax(axis=max_axis))
 
             # take the values where the absolute value of the projection
             # is the highest
-            maximum_intensity_data = data[inds]
+            maximum_intensity_data = data_selection[inds]
         else:
-            maximum_intensity_data = np.abs(data).max(axis=max_axis)
+            maximum_intensity_data = np.abs(data_selection).max(axis=max_axis)
 
         return np.rot90(maximum_intensity_data)
 
@@ -264,10 +299,26 @@ class GlassBrainAxes(BaseAxes):
         pass
 
     def _add_markers(self, marker_coords, marker_color, marker_size, **kwargs):
-        """Plot markers"""
-        marker_coords_2d = _coords_3d_to_2d(marker_coords, self.direction)
+        """Plot markers
 
+        In the case of 'l' and 'r' directions (for hemispheric projections),
+        markers in the coordinate x == 0 are included in both hemispheres.
+        """
+        marker_coords_2d = _coords_3d_to_2d(marker_coords, self.direction)
         xdata, ydata = marker_coords_2d.T
+
+        # Allow markers only in their respective hemisphere when appropriate
+        if self.direction in 'lr':
+            relevant_coords = []
+            xcoords, ycoords, zcoords = marker_coords.T
+            for cidx, xc in enumerate(xcoords):
+                if self.direction == 'r' and xc >= 0:
+                    relevant_coords.append(cidx)
+                elif self.direction == 'l' and xc <= 0:
+                        relevant_coords.append(cidx)
+            xdata = xdata[relevant_coords]
+            ydata = ydata[relevant_coords]
+            marker_color = marker_color[relevant_coords]
 
         defaults = {'marker': 'o',
                     'zorder': 1000}
@@ -281,23 +332,23 @@ class GlassBrainAxes(BaseAxes):
                    vmin=None, vmax=None, **kwargs):
         """Plot lines
 
-            Parameters
-            ----------
-            line_coords: list of numpy arrays of shape (2, 3)
-                3d coordinates of lines start points and end points.
-            line_values: array_like
-                values of the lines.
-            cmap: colormap
-                colormap used to map line_values to a color.
-            vmin: float, optional, default: None
-            vmax: float, optional, default: None
-                If not None, either or both of these values will be used to
-                as the minimum and maximum values to color lines. If None are
-                supplied the maximum absolute value within the given threshold
-                will be used as minimum (multiplied by -1) and maximum
-                coloring levels.
-            kwargs: dict
-                additional arguments to pass to matplotlib Line2D.
+        Parameters
+        ----------
+        line_coords: list of numpy arrays of shape (2, 3)
+            3d coordinates of lines start points and end points.
+        line_values: array_like
+            values of the lines.
+        cmap: colormap
+            colormap used to map line_values to a color.
+        vmin: float, optional, default: None
+        vmax: float, optional, default: None
+            If not None, either or both of these values will be used to
+            as the minimum and maximum values to color lines. If None are
+            supplied the maximum absolute value within the given threshold
+            will be used as minimum (multiplied by -1) and maximum
+            coloring levels.
+        kwargs: dict
+            additional arguments to pass to matplotlib Line2D.
         """
         # colormap for colorbar
         self.cmap = cmap
@@ -328,6 +379,19 @@ class GlassBrainAxes(BaseAxes):
         abs_norm = colors.Normalize(vmin=0,
                                     vmax=vmax)
         value_to_color = plt.cm.ScalarMappable(norm=norm, cmap=cmap).to_rgba
+
+        # Allow lines only in their respective hemisphere when appropriate
+        if self.direction in 'lr':
+            relevant_lines = []
+            for lidx, line in enumerate(line_coords):
+                if self.direction == 'r':
+                    if line[0, 0] >= 0 and line[1, 0] >= 0:
+                        relevant_lines.append(lidx)
+                elif self.direction == 'l':
+                    if line[0, 0] < 0 and line[1, 0] < 0:
+                        relevant_lines.append(lidx)
+            line_coords = np.array(line_coords)[relevant_lines]
+            line_values = line_values[relevant_lines]
 
         for start_end_point_3d, line_value in zip(
                 line_coords, line_values):
@@ -365,17 +429,17 @@ class BaseSlicer(object):
     def __init__(self, cut_coords, axes=None, black_bg=False, **kwargs):
         """ Create 3 linked axes for plotting orthogonal cuts.
 
-            Parameters
-            ----------
-            cut_coords: 3 tuple of ints
-                The cut position, in world space.
-            axes: matplotlib axes object, optional
-                The axes that will be subdivided in 3.
-            black_bg: boolean, optional
-                If True, the background of the figure will be put to
-                black. If you wish to save figures with a black background,
-                you will need to pass "facecolor='k', edgecolor='k'"
-                to matplotlib.pyplot.savefig.
+        Parameters
+        ----------
+        cut_coords: 3 tuple of ints
+            The cut position, in world space.
+        axes: matplotlib axes object, optional
+            The axes that will be subdivided in 3.
+        black_bg: boolean, optional
+            If True, the background of the figure will be put to
+            black. If you wish to save figures with a black background,
+            you will need to pass "facecolor='k', edgecolor='k'"
+            to matplotlib.pyplot.savefig.
 
         """
         self.cut_coords = cut_coords
@@ -432,10 +496,10 @@ class BaseSlicer(object):
             if leave_space:
                 figsize[0] += 3.4
             figure = plt.figure(figure, figsize=figsize,
-                            facecolor=facecolor)
+                                facecolor=facecolor)
         if isinstance(axes, plt.Axes):
             assert axes.figure is figure, ("The axes passed are not "
-                    "in the figure")
+                                           "in the figure")
 
         if axes is None:
             axes = [0., 0., 1., 1.]
@@ -452,27 +516,27 @@ class BaseSlicer(object):
               alpha=1, **kwargs):
         """ Write a title to the view.
 
-            Parameters
-            ----------
-            text: string
-                The text of the title
-            x: float, optional
-                The horizontal position of the title on the frame in
-                fraction of the frame width.
-            y: float, optional
-                The vertical position of the title on the frame in
-                fraction of the frame height.
-            size: integer, optional
-                The size of the title text.
-            color: matplotlib color specifier, optional
-                The color of the font of the title.
-            bgcolor: matplotlib color specifier, optional
-                The color of the background of the title.
-            alpha: float, optional
-                The alpha value for the background.
-            kwargs:
-                Extra keyword arguments are passed to matplotlib's text
-                function.
+        Parameters
+        ----------
+        text: string
+            The text of the title
+        x: float, optional
+            The horizontal position of the title on the frame in
+            fraction of the frame width.
+        y: float, optional
+            The vertical position of the title on the frame in
+            fraction of the frame height.
+        size: integer, optional
+            The size of the title text.
+        color: matplotlib color specifier, optional
+            The color of the font of the title.
+        bgcolor: matplotlib color specifier, optional
+            The color of the background of the title.
+        alpha: float, optional
+            The alpha value for the background.
+        kwargs:
+            Extra keyword arguments are passed to matplotlib's text
+            function.
         """
         if color is None:
             color = 'k' if self._black_bg else 'w'
@@ -497,21 +561,21 @@ class BaseSlicer(object):
     def add_overlay(self, img, threshold=1e-6, colorbar=False, **kwargs):
         """ Plot a 3D map in all the views.
 
-            Parameters
-            -----------
-            img: Niimg-like object
-                See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
-                If it is a masked array, only the non-masked part will be
-                plotted.
-            threshold : a number, None
-                If None is given, the maps are not thresholded.
-                If a number is given, it is used to threshold the maps:
-                values below the threshold (in absolute value) are
-                plotted as transparent.
-            colorbar: boolean, optional
-                If True, display a colorbar on the right of the plots.
-            kwargs:
-                Extra keyword arguments are passed to imshow.
+        Parameters
+        -----------
+        img: Niimg-like object
+            See http://nilearn.github.io/manipulating_images/input_output.html.
+            If it is a masked array, only the non-masked part will be
+            plotted.
+        threshold : a number, None
+            If None is given, the maps are not thresholded.
+            If a number is given, it is used to threshold the maps:
+            values below the threshold (in absolute value) are
+            plotted as transparent.
+        colorbar: boolean, optional
+            If True, display a colorbar on the right of the plots.
+        kwargs:
+            Extra keyword arguments are passed to imshow.
         """
         if colorbar and self._colorbar:
             raise ValueError("This figure already has an overlay with a "
@@ -526,7 +590,8 @@ class BaseSlicer(object):
         kwargs.setdefault('interpolation', 'nearest')
         ims = self._map_show(img, type='imshow', threshold=threshold, **kwargs)
 
-        if colorbar:
+        # `ims` can be empty in some corner cases, look at test_img_plotting.test_outlier_cut_coords.
+        if colorbar and ims:
             self._show_colorbar(ims[0].cmap, ims[0].norm, threshold)
 
         plt.draw_if_interactive()
@@ -534,20 +599,20 @@ class BaseSlicer(object):
     def add_contours(self, img, filled=False, **kwargs):
         """ Contour a 3D map in all the views.
 
-            Parameters
-            -----------
-            img: Niimg-like object
-                See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
-                Provides image to plot.
-            filled: boolean, optional
-                If filled=True, contours are displayed with color fillings.
-            kwargs:
-                Extra keyword arguments are passed to contour, see the
-                documentation of pylab.contour
-                Useful, arguments are typical "levels", which is a
-                list of values to use for plotting a contour, and
-                "colors", which is one color or a list of colors for
-                these contours.
+        Parameters
+        -----------
+        img: Niimg-like object
+            See http://nilearn.github.io/manipulating_images/input_output.html.
+            Provides image to plot.
+        filled: boolean, optional
+            If filled=True, contours are displayed with color fillings.
+        kwargs:
+            Extra keyword arguments are passed to contour, see the
+            documentation of pylab.contour
+            Useful, arguments are typical "levels", which is a
+            list of values to use for plotting a contour, and
+            "colors", which is one color or a list of colors for
+            these contours.
         """
         self._map_show(img, type='contour', **kwargs)
         if filled:
@@ -583,17 +648,20 @@ class BaseSlicer(object):
         (xmin, xmax), (ymin, ymax), (zmin, zmax) = data_bounds
 
         xmin_, xmax_, ymin_, ymax_, zmin_, zmax_ = \
-                                        xmin, xmax, ymin, ymax, zmin, zmax
+            xmin, xmax, ymin, ymax, zmin, zmax
 
         if hasattr(data, 'mask') and isinstance(data.mask, np.ndarray):
             not_mask = np.logical_not(data.mask)
             xmin_, xmax_, ymin_, ymax_, zmin_, zmax_ = \
-                    get_mask_bounds(new_img_like(img, not_mask, affine))
+                get_mask_bounds(new_img_like(img, not_mask, affine))
 
         data_2d_list = []
         for display_ax in self.axes.values():
             try:
                 data_2d = display_ax.transform_to_2d(data, affine)
+                # To obtain the brain left view, we simply invert the x axis
+                if display_ax.direction == 'l':
+                    display_ax.ax.invert_xaxis()
             except IndexError:
                 # We are cutting outside the indices of the data
                 data_2d = None
@@ -608,7 +676,6 @@ class BaseSlicer(object):
                                         if d is not None])
 
         bounding_box = (xmin_, xmax_), (ymin_, ymax_), (zmin_, zmax_)
-
         ims = []
         to_iterate_over = zip(self.axes.values(), data_2d_list)
         for display_ax, data_2d in to_iterate_over:
@@ -621,7 +688,7 @@ class BaseSlicer(object):
     def _show_colorbar(self, cmap, norm, threshold=None):
         """
         Parameters
-        ==========
+        ----------
         cmap: a matplotlib colormap
             The colormap used
         norm: a matplotlib.colors.Normalize object
@@ -650,7 +717,7 @@ class BaseSlicer(object):
                                    self._colorbar_margin['bottom'])]
         self._colorbar_ax = figure.add_axes(lt_wid_top_ht, axis_bgcolor='w')
 
-        our_cmap = cmap
+        our_cmap = mpl_cm.get_cmap(cmap)
         # edge case where the data has a single value
         # yields a cryptic matplotlib error message
         # when trying to plot the color bar
@@ -683,16 +750,14 @@ class BaseSlicer(object):
     def add_edges(self, img, color='r'):
         """ Plot the edges of a 3D map in all the views.
 
-            Parameters
-            -----------
-            map: 3D ndarray
-                The 3D map to be plotted. If it is a masked array, only
-                the non-masked part will be plotted.
-            affine: 4x4 ndarray
-                The affine matrix giving the transformation from voxel
-                indices to world space.
-            color: matplotlib color: string or (r, g, b) value
-                The color used to display the edge map
+        Parameters
+        ----------
+        img: Niimg-like object
+            See http://nilearn.github.io/manipulating_images/input_output.html.
+            The 3D map to be plotted.
+            If it is a masked array, only the non-masked part will be plotted.
+        color: matplotlib color: string or (r, g, b) value
+            The color used to display the edge map
         """
         img = reorder_img(img, resample='continuous')
         data = img.get_data()
@@ -751,22 +816,22 @@ class BaseSlicer(object):
     def annotate(self, left_right=True, positions=True, size=12, **kwargs):
         """ Add annotations to the plot.
 
-            Parameters
-            ----------
-            left_right: boolean, optional
-                If left_right is True, annotations indicating which side
-                is left and which side is right are drawn.
-            positions: boolean, optional
-                If positions is True, annotations indicating the
-                positions of the cuts are drawn.
-            size: integer, optional
-                The size of the text used.
-            kwargs:
-                Extra keyword arguments are passed to matplotlib's text
-                function.
+        Parameters
+        ----------
+        left_right: boolean, optional
+            If left_right is True, annotations indicating which side
+            is left and which side is right are drawn.
+        positions: boolean, optional
+            If positions is True, annotations indicating the
+            positions of the cuts are drawn.
+        size: integer, optional
+            The size of the text used.
+        kwargs:
+            Extra keyword arguments are passed to matplotlib's text
+            function.
         """
         kwargs = kwargs.copy()
-        if not 'color' in kwargs:
+        if 'color' not in kwargs:
             if self._black_bg:
                 kwargs['color'] = 'w'
             else:
@@ -776,12 +841,12 @@ class BaseSlicer(object):
         if left_right:
             for display_ax in self.axes.values():
                 display_ax.draw_left_right(size=size, bg_color=bg_color,
-                                       **kwargs)
+                                           **kwargs)
 
         if positions:
             for display_ax in self.axes.values():
                 display_ax.draw_position(size=size, bg_color=bg_color,
-                                       **kwargs)
+                                         **kwargs)
 
     def close(self):
         """ Close the figure. This is necessary to avoid leaking memory.
@@ -791,14 +856,14 @@ class BaseSlicer(object):
     def savefig(self, filename, dpi=None):
         """ Save the figure to a file
 
-            Parameters
-            ==========
-            filename: string
-                The file name to save to. It's extension determines the
-                file type, typically '.png', '.svg' or '.pdf'.
+        Parameters
+        ----------
+        filename: string
+            The file name to save to. It's extension determines the
+            file type, typically '.png', '.svg' or '.pdf'.
 
-            dpi: None or scalar
-                The resolution in dots per inch.
+        dpi: None or scalar
+            The resolution in dots per inch.
         """
         facecolor = edgecolor = 'k' if self._black_bg else 'w'
         self.frame_axes.figure.savefig(filename, dpi=dpi,
@@ -812,21 +877,21 @@ class BaseSlicer(object):
 
 class OrthoSlicer(BaseSlicer):
     """ A class to create 3 linked axes for plotting orthogonal
-        cuts of 3D maps.
+    cuts of 3D maps.
 
-        Attributes
-        ----------
+    Attributes
+    ----------
 
-        axes: dictionnary of axes
-            The 3 axes used to plot each view.
-        frame_axes: axes
-            The axes framing the whole set of views.
+    axes: dictionnary of axes
+        The 3 axes used to plot each view.
+    frame_axes: axes
+        The axes framing the whole set of views.
 
-        Notes
-        -----
+    Notes
+    -----
 
-        The extent of the different axes are adjusted to fit the data
-        best in the viewing area.
+    The extent of the different axes are adjusted to fit the data
+    best in the viewing area.
     """
     _cut_displayed = 'yxz'
     _axes_class = CutAxes
@@ -910,28 +975,30 @@ class OrthoSlicer(BaseSlicer):
         total_width = float(sum(width_dict.values()))
         for ax, width in width_dict.items():
             width_dict[ax] = width / total_width * (x1 - x0)
-        x_ax = display_ax_dict.get('x', dummy_ax)
-        y_ax = display_ax_dict.get('y', dummy_ax)
-        z_ax = display_ax_dict.get('z', dummy_ax)
+
+        direction_ax = []
+        for d in self._cut_displayed:
+            direction_ax.append(display_ax_dict.get(d, dummy_ax).ax)
         left_dict = dict()
-        left_dict[y_ax.ax] = x0
-        left_dict[x_ax.ax] = x0 + width_dict[y_ax.ax]
-        left_dict[z_ax.ax] = x0 + width_dict[x_ax.ax] + width_dict[y_ax.ax]
+        for idx, ax in enumerate(direction_ax):
+            left_dict[ax] = x0
+            for prev_ax in direction_ax[:idx]:
+                left_dict[ax] += width_dict[prev_ax]
 
         return transforms.Bbox([[left_dict[axes], y0],
-                          [left_dict[axes] + width_dict[axes], y1]])
+                               [left_dict[axes] + width_dict[axes], y1]])
 
     def draw_cross(self, cut_coords=None, **kwargs):
         """ Draw a crossbar on the plot to show where the cut is
-            performed.
+        performed.
 
-            Parameters
-            ----------
-            cut_coords: 3-tuple of floats, optional
-                The position of the cross to draw. If none is passed, the
-                ortho_slicer's cut coordinates are used.
-            kwargs:
-                Extra keyword arguments are passed to axhline
+        Parameters
+        ----------
+        cut_coords: 3-tuple of floats, optional
+            The position of the cross to draw. If none is passed, the
+            ortho_slicer's cut coordinates are used.
+        kwargs:
+            Extra keyword arguments are passed to axhline
         """
         if cut_coords is None:
             cut_coords = self.cut_coords
@@ -945,7 +1012,7 @@ class OrthoSlicer(BaseSlicer):
         x, y, z = coords['x'], coords['y'], coords['z']
 
         kwargs = kwargs.copy()
-        if not 'color' in kwargs:
+        if 'color' not in kwargs:
             if self._black_bg:
                 kwargs['color'] = '.8'
             else:
@@ -979,21 +1046,21 @@ class OrthoSlicer(BaseSlicer):
 
 class BaseStackedSlicer(BaseSlicer):
     """ A class to create linked axes for plotting stacked
-        cuts of 3D maps.
+    cuts of 2D maps.
 
-        Attributes
-        ----------
+    Attributes
+    ----------
 
-        axes: dictionnary of axes
-            The axes used to plot each view.
-        frame_axes: axes
-            The axes framing the whole set of views.
+    axes: dictionnary of axes
+        The axes used to plot each view.
+    frame_axes: axes
+        The axes framing the whole set of views.
 
-        Notes
-        -----
+    Notes
+    -----
 
-        The extent of the different axes are adjusted to fit the data
-        best in the viewing area.
+    The extent of the different axes are adjusted to fit the data
+    best in the viewing area.
     """
     @classmethod
     def find_cut_coords(cls, img=None, threshold=None, cut_coords=None):
@@ -1081,15 +1148,15 @@ class BaseStackedSlicer(BaseSlicer):
 
     def draw_cross(self, cut_coords=None, **kwargs):
         """ Draw a crossbar on the plot to show where the cut is
-            performed.
+        performed.
 
-            Parameters
-            ----------
-            cut_coords: 3-tuple of floats, optional
-                The position of the cross to draw. If none is passed, the
-                ortho_slicer's cut coordinates are used.
-            kwargs:
-                Extra keyword arguments are passed to axhline
+        Parameters
+        ----------
+        cut_coords: 3-tuple of floats, optional
+            The position of the cross to draw. If none is passed, the
+            ortho_slicer's cut coordinates are used.
+        kwargs:
+            Extra keyword arguments are passed to axhline
         """
         return
 
@@ -1154,37 +1221,37 @@ class OrthoProjector(OrthoSlicer):
                   ):
         """Plot undirected graph on each of the axes
 
-            Parameters
-            ----------
-            adjacency_matrix: numpy array of shape (n, n)
-                represents the edges strengths of the graph. Assumed to be
-                a symmetric matrix.
-            node_coords: numpy array_like of shape (n, 3)
-                3d coordinates of the graph nodes in world space.
-            node_color: color or sequence of colors
-                color(s) of the nodes.
-            node_size: scalar or array_like
-                size(s) of the nodes in points^2.
-            edge_cmap: colormap
-                colormap used for representing the strength of the edges.
-            edge_vmin: float, optional, default: None
-            edge_vmax: float, optional, default: None
-                If not None, either or both of these values will be used to
-                as the minimum and maximum values to color edges. If None are
-                supplied the maximum absolute value within the given threshold
-                will be used as minimum (multiplied by -1) and maximum
-                coloring levels.
-            edge_threshold: str or number
-                If it is a number only the edges with a value greater than
-                edge_threshold will be shown.
-                If it is a string it must finish with a percent sign,
-                e.g. "25.3%", and only the edges with a abs(value) above
-                the given percentile will be shown.
-            edge_kwargs: dict
-                will be passed as kwargs for each edge matlotlib Line2D.
-            node_kwargs: dict
-                will be passed as kwargs to the plt.scatter call that plots all
-                the nodes in one go.
+        Parameters
+        ----------
+        adjacency_matrix: numpy array of shape (n, n)
+            represents the edges strengths of the graph. Assumed to be
+            a symmetric matrix.
+        node_coords: numpy array_like of shape (n, 3)
+            3d coordinates of the graph nodes in world space.
+        node_color: color or sequence of colors
+            color(s) of the nodes.
+        node_size: scalar or array_like
+            size(s) of the nodes in points^2.
+        edge_cmap: colormap
+            colormap used for representing the strength of the edges.
+        edge_vmin: float, optional, default: None
+        edge_vmax: float, optional, default: None
+            If not None, either or both of these values will be used to
+            as the minimum and maximum values to color edges. If None are
+            supplied the maximum absolute value within the given threshold
+            will be used as minimum (multiplied by -1) and maximum
+            coloring levels.
+        edge_threshold: str or number
+            If it is a number only the edges with a value greater than
+            edge_threshold will be shown.
+            If it is a string it must finish with a percent sign,
+            e.g. "25.3%", and only the edges with a abs(value) above
+            the given percentile will be shown.
+        edge_kwargs: dict
+            will be passed as kwargs for each edge matlotlib Line2D.
+        node_kwargs: dict
+            will be passed as kwargs to the plt.scatter call that plots all
+            the nodes in one go.
 
         """
         # set defaults
@@ -1277,6 +1344,9 @@ class OrthoProjector(OrthoSlicer):
                 ax._add_lines(line_coords, adjacency_matrix_values, edge_cmap,
                               vmin=edge_vmin, vmax=edge_vmax,
                               **edge_kwargs)
+            # To obtain the brain left view, we simply invert the x axis
+            if ax.direction == 'l':
+                ax.ax.invert_xaxis()
 
         if colorbar:
             self._colorbar = colorbar
@@ -1312,13 +1382,50 @@ class YZProjector(OrthoProjector):
     _cut_displayed = 'yz'
 
 
+class LYRZProjector(OrthoProjector):
+    _cut_displayed = 'lyrz'
+
+
+class LZRYProjector(OrthoProjector):
+    _cut_displayed = 'lzry'
+
+
+class LZRProjector(OrthoProjector):
+    _cut_displayed = 'lzr'
+
+
+class LYRProjector(OrthoProjector):
+    _cut_displayed = 'lyr'
+
+
+class LRProjector(OrthoProjector):
+    _cut_displayed = 'lr'
+
+
+class LProjector(OrthoProjector):
+    _cut_displayed = 'l'
+    _default_figsize = [2.6, 2.3]
+
+
+class RProjector(OrthoProjector):
+    _cut_displayed = 'r'
+    _default_figsize = [2.6, 2.3]
+
+
 PROJECTORS = dict(ortho=OrthoProjector,
                   xz=XZProjector,
                   yz=YZProjector,
                   yx=YXProjector,
                   x=XProjector,
                   y=YProjector,
-                  z=ZProjector)
+                  z=ZProjector,
+                  lzry=LZRYProjector,
+                  lyrz=LYRZProjector,
+                  lyr=LYRProjector,
+                  lzr=LZRProjector,
+                  lr=LRProjector,
+                  l=LProjector,
+                  r=RProjector)
 
 
 def get_create_display_fun(display_mode, class_dict):

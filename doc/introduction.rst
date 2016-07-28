@@ -201,7 +201,7 @@ the file name::
 
    The filename could be given as "~/t_map000.nii' as nilearn expands "~" to
    the home directory.
-   :ref:`See more on file name matchings <extracting_data>`.
+   :ref:`See more on file name matchings <filename_matching>`.
 
 
 .. image:: auto_examples/01_plotting/images/sphx_glr_plot_demo_glass_brain_001.png
@@ -267,6 +267,16 @@ To loop over each individual volume of a 4D image, use :func:`image.iter_img`::
         <sphx_glr_auto_examples_04_manipulating_images_plot_smooth_mean_image.py>`
 
 |
+
+
+.. topic:: **Warm up examples**
+
+   The two following examples may be useful to get familiar with data
+   representation in nilearn:
+
+   * :ref:`sphx_glr_auto_examples_plot_nilearn_101.py`
+
+   * :ref:`sphx_glr_auto_examples_plot_3d_and_4d_niimg.py`
 
 ____
 

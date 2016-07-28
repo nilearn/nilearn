@@ -13,6 +13,8 @@ There are 3 different display types:
 
 3. "continuous", maps are shown as just color overlays.
 
+A colorbar can optionally be added.
+
 The :func:`nilearn.plotting.plot_prob_atlas` function displays each map
 with each different color which are picked randomly from the colormap
 which is already defined.
@@ -22,7 +24,7 @@ See :ref:`plotting` for more information to know how to tune the parameters.
 # Load 4D probabilistic atlases
 from nilearn import datasets
 
-# Harvard Oxford Atlas
+# Harvard Oxford Atlasf
 harvard_oxford = datasets.fetch_atlas_harvard_oxford('cort-prob-2mm')
 harvard_oxford_sub = datasets.fetch_atlas_harvard_oxford('sub-prob-2mm')
 
@@ -43,7 +45,6 @@ atlas_types = {'Harvard_Oxford': harvard_oxford.maps,
                'MSDL': msdl.maps, 'Smith 2009 10 RSNs': smith.rsn10,
                'Smith2009 20 RSNs': smith.rsn20,
                'Smith2009 70 RSNs': smith.rsn70,
-               'Smith2009 10 Brainmap': smith.bm10,
                'Smith2009 20 Brainmap': smith.bm20,
                'Smith2009 70 Brainmap': smith.bm70,
                'ICBM tissues': (icbm['wm'], icbm['gm'], icbm['csf'])}
@@ -51,4 +52,8 @@ atlas_types = {'Harvard_Oxford': harvard_oxford.maps,
 for name, atlas in sorted(atlas_types.items()):
     plotting.plot_prob_atlas(atlas, title=name)
 
+# An optional colorbar can be set
+plotting.plot_prob_atlas(smith.bm10, title='Smith2009 10 Brainmap (with'
+                                           ' colorbar)',
+                         colorbar=True)
 plotting.show()

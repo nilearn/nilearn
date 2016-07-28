@@ -75,6 +75,17 @@ def _index_img(img, index):
         copy_header=True)
 
 
+def _resolve_globbing(path):
+    if isinstance(path, _basestring):
+        path_list = sorted(glob.glob(os.path.expanduser(path)))
+        # Raise an error in case the niimgs list is empty.
+        if len(path_list) == 0:
+            raise ValueError("No files matching path: %s" % path)
+        path = path_list
+
+    return path
+
+
 def _iter_check_niimg(niimgs, ensure_ndim=None, atleast_4d=False,
                       target_fov=None, dtype=None,
                       memory=Memory(cachedir=None),
@@ -84,7 +95,7 @@ def _iter_check_niimg(niimgs, ensure_ndim=None, atleast_4d=False,
     Parameters
     ----------
 
-    niimgs: list of niimg
+    niimgs: list of niimg or glob pattern
         Image to iterate over
 
     ensure_ndim: integer, optional
@@ -107,12 +118,7 @@ def _iter_check_niimg(niimgs, ensure_ndim=None, atleast_4d=False,
         check_niimg, check_niimg_3d, check_niimg_4d
     """
     # If niimgs is a string, use glob to expand it to the matching filenames.
-    if isinstance(niimgs, _basestring):
-        niimgs_list = glob.glob(os.path.expanduser(niimgs))
-        # Raise an error in case the niimgs list is empty.
-        if len(niimgs_list) == 0:
-            raise ValueError("No files matching path: %s" % niimgs)
-        niimgs = niimgs_list
+    niimgs = _resolve_globbing(niimgs)
 
     ref_fov = None
     resample_to_first_img = False
@@ -178,7 +184,7 @@ def check_niimg(niimg, ensure_ndim=None, atleast_4d=False, dtype=None,
     Parameters
     ----------
     niimg: Niimg-like object
-        See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
+        See http://nilearn.github.io/manipulating_images/input_output.html.
         If niimg is a string, consider it as a path to Nifti image and
         call nibabel.load on it. The '~' symbol is expanded to the user home
         folder.
@@ -288,7 +294,7 @@ def check_niimg_3d(niimg, dtype=None):
     Parameters
     ----------
     niimg: Niimg-like object
-        See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
+        See http://nilearn.github.io/manipulating_images/input_output.html.
         If niimg is a string, consider it as a path to Nifti image and
         call nibabel.load on it. If it is an object, check if get_data()
         and get_affine() methods are present, raise TypeError otherwise.
@@ -322,7 +328,7 @@ def check_niimg_4d(niimg, return_iterator=False, dtype=None):
     Parameters
     ----------
     niimg: 4D Niimg-like object
-        See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
+        See http://nilearn.github.io/manipulating_images/input_output.html.
         If niimgs is an iterable, checks if data is really 4D. Then,
         considering that it is a list of niimg and load them one by one.
         If niimg is a string, consider it as a path to Nifti image and
@@ -366,8 +372,8 @@ def concat_niimgs(niimgs, dtype=np.float32, ensure_ndim=None,
 
     Parameters
     ----------
-    niimgs: iterable of Niimg-like objects
-        See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
+    niimgs: iterable of Niimg-like objects or glob pattern
+        See http://nilearn.github.io/manipulating_images/input_output.html.
         Niimgs to concatenate.
 
     dtype: numpy dtype, optional
@@ -410,6 +416,9 @@ def concat_niimgs(niimgs, dtype=np.float32, ensure_ndim=None,
     ndim = None
     if ensure_ndim is not None:
         ndim = ensure_ndim - 1
+
+    # If niimgs is a string, use glob to expand it to the matching filenames.
+    niimgs = _resolve_globbing(niimgs)
 
     # First niimg is extracted to get information and for new_img_like
     first_niimg = None

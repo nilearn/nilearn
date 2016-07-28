@@ -175,7 +175,11 @@ for color, name in (((1, 0, 0), 'red'),
         alpha_max=1, name=name)
 
 
+# Save colormaps in the scope of the module
 locals().update(_cmap_d)
+# Register cmaps in matplotlib too
+for k, v in _cmap_d.items():
+    _cm.register_cmap(name=k, cmap=v)
 
 
 ################################################################################

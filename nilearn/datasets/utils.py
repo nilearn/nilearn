@@ -170,6 +170,56 @@ def _chunk_read_(response, local_file, chunk_size=8192, report_hook=None,
     return
 
 
+def get_data_dirs(data_dir=None):
+    """ Returns the directories in which nilearn looks for data.
+
+    This is typically useful for the end-user to check where the data is
+    downloaded and stored.
+
+    Parameters
+    ----------
+    data_dir: string, optional
+        Path of the data directory. Used to force data storage in a specified
+        location. Default: None
+
+    Returns
+    -------
+    paths: list of strings
+        Paths of the dataset directories.
+
+    Notes
+    -----
+    This function retrieves the datasets directories using the following
+    priority :
+    1. defaults system paths
+    2. the keyword argument data_dir
+    3. the global environment variable NILEARN_SHARED_DATA
+    4. the user environment variable NILEARN_DATA
+    5. nilearn_data in the user home folder
+    """
+    # We build an array of successive paths by priority
+    # The boolean indicates if it is a pre_dir: in that case, we won't add the
+    # dataset name to the path.
+    paths = []
+
+    # Check data_dir which force storage in a specific location
+    if data_dir is not None:
+        paths.extend(data_dir.split(os.pathsep))
+
+    # If data_dir has not been specified, then we crawl default locations
+    if data_dir is None:
+        global_data = os.getenv('NILEARN_SHARED_DATA')
+        if global_data is not None:
+            paths.extend(global_data.split(os.pathsep))
+
+        local_data = os.getenv('NILEARN_DATA')
+        if local_data is not None:
+            paths.extend(local_data.split(os.pathsep))
+
+        paths.append(os.path.expanduser('~/nilearn_data'))
+    return paths
+
+
 def _get_dataset_dir(dataset_name, data_dir=None, default_paths=None,
                      verbose=1):
     """ Create if necessary and returns data directory of given dataset.
@@ -205,31 +255,13 @@ def _get_dataset_dir(dataset_name, data_dir=None, default_paths=None,
     4. the user environment variable NILEARN_DATA
     5. nilearn_data in the user home folder
     """
-    # We build an array of successive paths by priority
-    # The boolean indicates if it is a pre_dir: in that case, we won't add the
-    # dataset name to the path.
     paths = []
-
-    # Check data_dir which force storage in a specific location
-    if data_dir is not None:
-        paths.extend([(d, False) for d in data_dir.split(os.pathsep)])
-
-    # Search possible system paths
+    # Search possible data-specific system paths
     if default_paths is not None:
         for default_path in default_paths:
             paths.extend([(d, True) for d in default_path.split(os.pathsep)])
 
-    # If data_dir has not been specified, then we crawl default locations
-    if data_dir is None:
-        global_data = os.getenv('NILEARN_SHARED_DATA')
-        if global_data is not None:
-            paths.extend([(d, False) for d in global_data.split(os.pathsep)])
-
-        local_data = os.getenv('NILEARN_DATA')
-        if local_data is not None:
-            paths.extend([(d, False) for d in local_data.split(os.pathsep)])
-
-        paths.append((os.path.expanduser('~/nilearn_data'), False))
+    paths.extend([(d, False) for d in get_data_dirs(data_dir=data_dir)])
 
     if verbose > 2:
         print('Dataset search paths: %s' % paths)

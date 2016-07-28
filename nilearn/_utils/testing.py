@@ -147,7 +147,7 @@ def write_tmp_imgs(*imgs, **kwargs):
     the block.
 
     Parameters
-    ==========
+    ----------
     imgs: Nifti1Image
         Several Nifti images. Every format understood by nibabel.save is
         accepted.
@@ -163,7 +163,7 @@ def write_tmp_imgs(*imgs, **kwargs):
         matching glob is returned.
 
     Returns
-    =======
+    -------
     filenames: string or list of
         filename(s) where input images have been written. If a single image
         has been given as input, a single string is returned. Otherwise, a
@@ -302,14 +302,14 @@ def generate_regions_ts(n_features, n_regions,
     """Generate some regions as timeseries.
 
     Parameters
-    ==========
+    ----------
     overlap: int
         Number of overlapping voxels between two regions (more or less)
     window: str
         Name of a window in scipy.signal. e.g. "hamming".
 
     Returns
-    =======
+    -------
     regions: numpy.ndarray
         regions, nepresented as signals.
         shape (n_features, n_regions)
@@ -347,7 +347,7 @@ def generate_maps(shape, n_regions, overlap=0, border=1,
                   window="boxcar", rand_gen=None, affine=np.eye(4)):
     """Generate a 4D volume containing several maps.
     Parameters
-    ==========
+    ----------
     n_regions: int
         number of regions to generate
 
@@ -361,7 +361,7 @@ def generate_maps(shape, n_regions, overlap=0, border=1,
         number of background voxels on each side of the 3D volumes.
 
     Returns
-    =======
+    -------
     maps: nibabel.Nifti1Image
         4D array, containing maps.
     """
@@ -379,7 +379,7 @@ def generate_labeled_regions(shape, n_regions, rand_gen=None, labels=None,
     """Generate a 3D volume with labeled regions.
 
     Parameters
-    ==========
+    ----------
     shape: tuple
         shape of returned array
 
@@ -397,7 +397,7 @@ def generate_labeled_regions(shape, n_regions, rand_gen=None, labels=None,
         affine of returned image
 
     Returns
-    =======
+    -------
     regions: nibabel.Nifti1Image
         data has shape "shape", containing region labels.
     """
@@ -445,7 +445,7 @@ def generate_fake_fmri(shape=(10, 11, 12), length=17, kind="noise",
     to 'rest' or 'baseline' condition.
 
     Parameters
-    ==========
+    ----------
     shape: tuple, optional
         Shape of 3D volume
 
@@ -472,7 +472,7 @@ def generate_fake_fmri(shape=(10, 11, 12), length=17, kind="noise",
         'classification' or 'regression'.
 
     Returns
-    =======
+    -------
     fmri: nibabel.Nifti1Image
         fake fmri signal.
         shape: shape + (length,)
@@ -594,7 +594,7 @@ def generate_group_sparse_gaussian_graphs(
     """Generate signals drawn from a sparse Gaussian graphical model.
 
     Parameters
-    ==========
+    ----------
     n_subjects : int, optional
         number of subjects
 
@@ -616,7 +616,7 @@ def generate_group_sparse_gaussian_graphs(
         verbosity level (0 means no message).
 
     Returns
-    =======
+    -------
     subjects : list of numpy.ndarray, shape for each (n_samples, n_features)
         subjects[n] is the signals for subject n. They are provided as a numpy
         len(subjects) = n_subjects. n_samples varies according to the subject.
@@ -699,7 +699,7 @@ def skip_if_running_nose(msg=''):
     """ Raise a SkipTest if we appear to be running the nose test loader.
 
     Parameters
-    ==========
+    ----------
     msg: string, optional
         The message issued when SkipTest is raised
     """

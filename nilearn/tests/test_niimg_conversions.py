@@ -100,7 +100,10 @@ def test_check_niimg_3d():
 
     # Test dimensionality error
     img = Nifti1Image(np.zeros((10, 10, 10)), np.eye(4))
-    assert_raises_regex(TypeError, 'Data must be a 3D',
+    assert_raises_regex(TypeError,
+                        "Input data has incompatible dimensionality: "
+                        "Expected dimension is 3D and you provided a list "
+                        "of 3D images \(4D\).",
                         _utils.check_niimg_3d, [img, img])
 
     # Check that a filename does not raise an error
@@ -156,9 +159,11 @@ def test_check_niimg_4d():
         assert_array_equal(img_1.get_affine(), img_2.get_affine())
 
     # This should raise an error: a 3D img is given and we want a 4D
-    assert_raises_regex(DimensionError, 'Data must be a 4D Niimg-like object '
-                                        'but you provided a 3D',
-                                        _utils.check_niimg_4d, img_3d)
+    assert_raises_regex(DimensionError,
+                        "Input data has incompatible dimensionality: "
+                        "Expected dimension is 4D and you provided a "
+                        "3D image.",
+                        _utils.check_niimg_4d, img_3d)
 
     # Test a Niimg-like object that does not hold a shape attribute
     phony_img = PhonyNiimage()
@@ -187,13 +192,17 @@ def test_check_niimg():
 
     assert_raises_regex(
         DimensionError,
-        'Data must be a 2D Niimg-like object but you provided a list of list '
-        'of list of 3D images.', _utils.check_niimg, img_3_3d, ensure_ndim=2)
+        "Input data has incompatible dimensionality: "
+        "Expected dimension is 2D and you provided "
+        "a list of list of list of 3D images \(6D\)",
+        _utils.check_niimg, img_3_3d, ensure_ndim=2)
 
     assert_raises_regex(
         DimensionError,
-        'Data must be a 4D Niimg-like object but you provided a list of list '
-        'of 4D images.', _utils.check_niimg, img_2_4d, ensure_ndim=4)
+        "Input data has incompatible dimensionality: "
+        "Expected dimension is 4D and you provided "
+        "a list of list of 4D images \(6D\)",
+        _utils.check_niimg, img_2_4d, ensure_ndim=4)
 
 
 def test_check_niimg_wildcards():
@@ -402,15 +411,16 @@ def test_concat_niimgs():
 
     # Regression test for #601. Dimensionality of first image was not checked
     # properly
-    assert_raises_regex(DimensionError, 'Data must be a 4D Niimg-like object but '
-                        'you provided',
+    _dimension_error_msg = ("Input data has incompatible dimensionality: "
+                            "Expected dimension is 4D and you provided "
+                            "a list of 4D images \(5D\)")
+    assert_raises_regex(DimensionError, _dimension_error_msg,
                         _utils.concat_niimgs, [img4d], ensure_ndim=4)
 
     # check basic concatenation with equal shape/affine
     concatenated = _utils.concat_niimgs((img1, img3, img1))
 
-    assert_raises_regex(DimensionError, 'Data must be a 4D Niimg-like object but '
-                        'you provided',
+    assert_raises_regex(DimensionError, _dimension_error_msg,
                         _utils.concat_niimgs, [img1, img4d])
 
     # smoke-test auto_resample
@@ -424,12 +434,13 @@ def test_concat_niimgs():
                         auto_resample=False)
 
     # test list of 4D niimgs as input
-    tmpimg1 = tempfile.mktemp(suffix='.nii')
-    tmpimg2 = tempfile.mktemp(suffix='.nii')
+    tempdir = tempfile.mkdtemp()
+    tmpimg1 = os.path.join(tempdir, '1.nii')
+    tmpimg2 = os.path.join(tempdir, '2.nii')
     try:
         nibabel.save(img1, tmpimg1)
         nibabel.save(img3, tmpimg2)
-        concatenated = _utils.concat_niimgs([tmpimg1, tmpimg2])
+        concatenated = _utils.concat_niimgs(os.path.join(tempdir, '*'))
         assert_array_equal(
             concatenated.get_data()[..., 0], img1.get_data())
         assert_array_equal(
@@ -437,6 +448,8 @@ def test_concat_niimgs():
     finally:
         _remove_if_exists(tmpimg1)
         _remove_if_exists(tmpimg2)
+        if os.path.exists(tempdir):
+            os.removedirs(tempdir)
 
     img5d = Nifti1Image(np.ones((2, 2, 2, 2, 2)), affine)
     assert_raises_regex(TypeError, 'Concatenated images must be 3D or 4D. '

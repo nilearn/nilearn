@@ -40,16 +40,16 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
     clustering.
 
     Parameters
-    ==========
+    ----------
     labels_img: Niimg-like object
-        See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
+        See http://nilearn.github.io/manipulating_images/input_output.html.
         Region definitions, as one image of labels.
 
     background_label: number, optional
         Label used in labels_img to represent background.
 
     mask_img: Niimg-like object, optional
-        See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
+        See http://nilearn.github.io/manipulating_images/input_output.html.
         Mask to apply to regions before extracting signals.
 
     smoothing_fwhm: float, optional
@@ -64,11 +64,11 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
         This parameter is passed to signal.clean. Please see the related
         documentation for details
 
-    low_pass: False or float, optional
+    low_pass: None or float, optional
         This parameter is passed to signal.clean. Please see the related
         documentation for details
 
-    high_pass: False or float, optional
+    high_pass: None or float, optional
         This parameter is passed to signal.clean. Please see the related
         documentation for details
 
@@ -97,7 +97,7 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
         Indicate the level of verbosity. By default, nothing is printed
 
     See also
-    ========
+    --------
     nilearn.input_data.NiftiMasker
     """
     # memory and memory_level are used by CacheMixin.
@@ -202,7 +202,7 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
         Parameters
         ----------
         imgs: 3D/4D Niimg-like object
-            See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
+            See http://nilearn.github.io/manipulating_images/input_output.html.
             Images to process. It must boil down to a 4D image with scans
             number as last dimension.
 
@@ -268,13 +268,13 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
         Any mask given at initialization is taken into account.
 
         Parameters
-        ==========
+        ----------
         signals (2D numpy.ndarray)
             Signal for each region.
             shape: (number of scans, number of regions)
 
         Returns
-        =======
+        -------
         voxel_signals (Nifti1Image)
             Signal for each voxel
             shape: (number of scans, number of voxels)

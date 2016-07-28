@@ -21,8 +21,8 @@
 .. |connectome| image:: auto_examples/03_connectivity/images/sphx_glr_plot_inverse_covariance_connectome_004.png
      :target: auto_examples/03_connectivity/plot_inverse_covariance_connectome.html
 
-.. |haxby_weights| image:: auto_examples/images/sphx_glr_plot_haxby_simple_001.png
-   :target: auto_examples/plot_haxby_simple.html
+.. |haxby_weights| image:: auto_examples/images/sphx_glr_plot_decoding_tutorial_002.png
+   :target: auto_examples/plot_decoding_tutorial.html
 
 .. |oasis_weights| image:: auto_examples/02_decoding/images/sphx_glr_plot_oasis_vbm_002.png
    :target: auto_examples/02_decoding/plot_oasis_vbm.html

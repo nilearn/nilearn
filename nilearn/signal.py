@@ -18,6 +18,7 @@ from distutils.version import LooseVersion
 
 from ._utils.compat import _basestring
 from ._utils.numpy_conversions import csv_to_array
+from ._utils import check_niimg_4d
 
 NP_VERSION = distutils.version.LooseVersion(np.version.short_version).version
 
@@ -26,7 +27,7 @@ def _standardize(signals, detrend=False, normalize=True):
     """ Center and norm a given signal (time is along first axis)
 
     Parameters
-    ==========
+    ----------
     signals: numpy.ndarray
         Timeseries to standardize
 
@@ -38,7 +39,7 @@ def _standardize(signals, detrend=False, normalize=True):
         to unit energy (sum of squares).
 
     Returns
-    =======
+    -------
     std_signals: numpy.ndarray
         copy of signals, normalized.
     """
@@ -75,7 +76,7 @@ def _mean_of_squares(signals, n_batches=20):
     but uses a lot less memory.
 
     Parameters
-    ==========
+    ----------
     signals : numpy.ndarray, shape (n_samples, n_features)
         signal whose mean of squares must be computed.
 
@@ -107,7 +108,7 @@ def _detrend(signals, inplace=False, type="linear", n_batches=10):
     case and uses a lot less memory.
 
     Parameters
-    ==========
+    ----------
     signals : numpy.ndarray
         This parameter must be two-dimensional.
         Signals to detrend. A signal is a column.
@@ -126,12 +127,12 @@ def _detrend(signals, inplace=False, type="linear", n_batches=10):
         the value, the lower the memory consumption.
 
     Returns
-    =======
+    -------
     detrended_signals: numpy.ndarray
         Detrended signals. The shape is that of 'signals'.
 
     Notes
-    =====
+    -----
 
     If a signal of lenght 1 is given, it is returned unchanged.
 
@@ -139,7 +140,7 @@ def _detrend(signals, inplace=False, type="linear", n_batches=10):
     signals = as_float_array(signals, copy=not inplace)
     if signals.shape[0] == 1:
         warnings.warn('Detrending of 3D signal has been requested but '
-            'would lead to zero values. Skipping.')
+                      'would lead to zero values. Skipping.')
         return signals
 
     signals -= np.mean(signals, axis=0)
@@ -168,10 +169,11 @@ def _detrend(signals, inplace=False, type="linear", n_batches=10):
 def _check_wn(btype, freq, nyq):
     wn = freq / float(nyq)
     if wn > 1.:
-        warnings.warn('The frequency specified for the %s pass filter is '
-                'too high to be handled by a digital filter (superior to '
-                'nyquist frequency). It has been lowered to %.2f (nyquist '
-                'frequency).' % (btype, nyq))
+        warnings.warn(
+            'The frequency specified for the %s pass filter is '
+            'too high to be handled by a digital filter (superior to '
+            'nyquist frequency). It has been lowered to %.2f (nyquist '
+            'frequency).' % (btype, nyq))
         wn = 1.
     return wn
 
@@ -274,46 +276,46 @@ def butterworth(signals, sampling_rate, low_pass=None, high_pass=None,
 def high_variance_confounds(series, n_confounds=5, percentile=2.,
                             detrend=True):
     """ Return confounds time series extracted from series with highest
-        variance.
+    variance.
 
-        Parameters
-        ==========
-        series: numpy.ndarray
-            Timeseries. A timeseries is a column in the "series" array.
-            shape (sample number, feature number)
+    Parameters
+    ----------
+    series: numpy.ndarray
+        Timeseries. A timeseries is a column in the "series" array.
+        shape (sample number, feature number)
 
-        n_confounds: int, optional
-            Number of confounds to return
+    n_confounds: int, optional
+        Number of confounds to return
 
-        percentile: float, optional
-            Highest-variance series percentile to keep before computing the
-            singular value decomposition, 0. <= `percentile` <= 100.
-            series.shape[0] * percentile / 100 must be greater than n_confounds
+    percentile: float, optional
+        Highest-variance series percentile to keep before computing the
+        singular value decomposition, 0. <= `percentile` <= 100.
+        series.shape[0] * percentile / 100 must be greater than n_confounds
 
-        detrend: bool, optional
-            If True, detrend timeseries before processing.
+    detrend: bool, optional
+        If True, detrend timeseries before processing.
 
-        Returns
-        =======
-        v: numpy.ndarray
-            highest variance confounds. Shape: (samples, n_confounds)
+    Returns
+    -------
+    v: numpy.ndarray
+        highest variance confounds. Shape: (samples, n_confounds)
 
-        Notes
-        ======
-        This method is related to what has been published in the literature
-        as 'CompCor' (Behzadi NeuroImage 2007).
+    Notes
+    -----
+    This method is related to what has been published in the literature
+    as 'CompCor' (Behzadi NeuroImage 2007).
 
-        The implemented algorithm does the following:
+    The implemented algorithm does the following:
 
-        - compute sum of squares for each time series (no mean removal)
-        - keep a given percentile of series with highest variances (percentile)
-        - compute an svd of the extracted series
-        - return a given number (n_confounds) of series from the svd with
-          highest singular values.
+    - compute sum of squares for each time series (no mean removal)
+    - keep a given percentile of series with highest variances (percentile)
+    - compute an svd of the extracted series
+    - return a given number (n_confounds) of series from the svd with
+      highest singular values.
 
-        See also
-        ========
-        nilearn.image.high_variance_confounds
+    See also
+    --------
+    nilearn.image.high_variance_confounds
     """
 
     if detrend:
@@ -348,73 +350,85 @@ def clean(signals, sessions=None, detrend=True, standardize=True,
           confounds=None, low_pass=None, high_pass=None, t_r=2.5):
     """Improve SNR on masked fMRI signals.
 
-       This function can do several things on the input signals, in
-       the following order:
-       - detrend
-       - standardize
-       - remove confounds
-       - low- and high-pass filter
+    This function can do several things on the input signals, in
+    the following order:
 
-       Low-pass filtering improves specificity.
+    - detrend
+    - standardize
+    - remove confounds
+    - low- and high-pass filter
 
-       High-pass filtering should be kept small, to keep some
-       sensitivity.
+    Low-pass filtering improves specificity.
 
-       Filtering is only meaningful on evenly-sampled signals.
+    High-pass filtering should be kept small, to keep some
+    sensitivity.
 
-       Parameters
-       ==========
-       signals: numpy.ndarray
-           Timeseries. Must have shape (instant number, features number).
-           This array is not modified.
+    Filtering is only meaningful on evenly-sampled signals.
+
+    Parameters
+    ----------
+    signals: numpy.ndarray
+        Timeseries. Must have shape (instant number, features number).
+        This array is not modified.
 
     sessions : numpy array, optional
         Add a session level to the cleaning process. Each session will be
         cleaned independently. Must be a 1D array of n_samples elements.
 
-       confounds: numpy.ndarray, str or list of
-           Confounds timeseries. Shape must be
-           (instant number, confound number), or just (instant number,)
-           The number of time instants in signals and confounds must be
-           identical (i.e. signals.shape[0] == confounds.shape[0]).
-           If a string is provided, it is assumed to be the name of a csv file
-           containing signals as columns, with an optional one-line header.
-           If a list is provided, all confounds are removed from the input
-           signal, as if all were in the same array.
+    confounds: numpy.ndarray, str or list of
+        Confounds timeseries. Shape must be
+        (instant number, confound number), or just (instant number,)
+        The number of time instants in signals and confounds must be
+        identical (i.e. signals.shape[0] == confounds.shape[0]).
+        If a string is provided, it is assumed to be the name of a csv file
+        containing signals as columns, with an optional one-line header.
+        If a list is provided, all confounds are removed from the input
+        signal, as if all were in the same array.
 
-       t_r: float
-           Repetition time, in second (sampling period).
+    t_r: float
+        Repetition time, in second (sampling period).
 
-       low_pass, high_pass: float
-           Respectively low and high cutoff frequencies, in Hertz.
+    low_pass, high_pass: float
+        Respectively low and high cutoff frequencies, in Hertz.
 
-       detrend: bool
-           If detrending should be applied on timeseries (before
-           confound removal)
+    detrend: bool
+        If detrending should be applied on timeseries (before
+        confound removal)
 
-       standardize: bool
-           If True, returned signals are set to unit variance.
+    standardize: bool
+        If True, returned signals are set to unit variance.
 
-       Returns
-       =======
-       cleaned_signals: numpy.ndarray
-           Input signals, cleaned. Same shape as `signals`.
+    Returns
+    -------
+    cleaned_signals: numpy.ndarray
+        Input signals, cleaned. Same shape as `signals`.
 
-       Notes
-       =====
-       Confounds removal is based on a projection on the orthogonal
-       of the signal space. See `Friston, K. J., A. P. Holmes,
-       K. J. Worsley, J.-P. Poline, C. D. Frith, et R. S. J. Frackowiak.
-       "Statistical Parametric Maps in Functional Imaging: A General
-       Linear Approach". Human Brain Mapping 2, no 4 (1994): 189-210.
-       <http://dx.doi.org/10.1002/hbm.460020402>`_
+    Notes
+    -----
+    Confounds removal is based on a projection on the orthogonal
+    of the signal space. See `Friston, K. J., A. P. Holmes,
+    K. J. Worsley, J.-P. Poline, C. D. Frith, et R. S. J. Frackowiak.
+    "Statistical Parametric Maps in Functional Imaging: A General
+    Linear Approach". Human Brain Mapping 2, no 4 (1994): 189-210.
+    <http://dx.doi.org/10.1002/hbm.460020402>`_
+
+    See Also
+    --------
+        nilearn.image.clean_img
     """
+
+    if isinstance(low_pass, bool):
+        raise TypeError("low pass must be float or None but you provided "
+                        "low_pass='{0}'".format(low_pass))
+    if isinstance(high_pass, bool):
+        raise TypeError("high pass must be float or None but you provided "
+                        "high_pass='{0}'".format(high_pass))
 
     if not isinstance(confounds,
                       (list, tuple, _basestring, np.ndarray, type(None))):
         raise TypeError("confounds keyword has an unhandled type: %s"
                         % confounds.__class__)
-    
+
     # Read confounds
     if confounds is not None:
         if not isinstance(confounds, (list, tuple)):
@@ -502,6 +516,10 @@ def clean(signals, sessions=None, detrend=True, standardize=True,
                 signals -= confounds.dot(inv).dot(confounds.T).dot(signals)
 
     if low_pass is not None or high_pass is not None:
+        if t_r is None:
+            raise ValueError("Repetition time (t_r) must be specified for "
+                             "filtering")
+
         signals = butterworth(signals, sampling_rate=1. / t_r,
                               low_pass=low_pass, high_pass=high_pass)
 
@@ -510,3 +528,5 @@ def clean(signals, sessions=None, detrend=True, standardize=True,
         signals *= np.sqrt(signals.shape[0])  # for unit variance
 
     return signals
+
+

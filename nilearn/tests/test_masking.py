@@ -23,6 +23,10 @@ np_version = (np.version.full_version if hasattr(np.version, 'full_version')
               else np.version.short_version)
 np_version = distutils.version.LooseVersion(np_version).version
 
+_TEST_DIM_ERROR_MSG = ("Input data has incompatible dimensionality: "
+                       "Expected dimension is 3D and you provided "
+                       "a %s image")
+
 
 def test_compute_epi_mask():
     mean_image = np.ones((9, 9, 3))
@@ -133,7 +137,7 @@ def test_apply_mask():
 
     # veriy that 4D masks are rejected
     mask_img_4d = Nifti1Image(np.ones((40, 40, 40, 2)), np.eye(4))
-    assert_raises_regex(DimensionError, "Data must be a 3D",
+    assert_raises_regex(DimensionError, _TEST_DIM_ERROR_MSG % "4D",
                         masking.apply_mask, data_img, mask_img_4d)
 
     # Check that 3D data is accepted
@@ -146,7 +150,7 @@ def test_apply_mask():
     assert_equal(sorted(data_3d.tolist()), [3., 4., 12.])
 
     # Check data shape and affine
-    assert_raises_regex(DimensionError, "Data must be a 3D",
+    assert_raises_regex(DimensionError, _TEST_DIM_ERROR_MSG % "2D",
                         masking.apply_mask, data_img,
                         Nifti1Image(mask[20, ...], affine))
     assert_raises(ValueError, masking.apply_mask,

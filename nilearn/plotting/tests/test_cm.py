@@ -19,3 +19,7 @@ def test_replace_inside():
     if hasattr(plt.cm, 'gnuplot'):
         # gnuplot is only in recent version of MPL
         replace_inside(plt.cm.gnuplot, plt.cm.gnuplot2, .2, .8)
+
+
+def test_cm_preload():
+    plt.imshow([list(range(10))], cmap="cold_hot")

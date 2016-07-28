@@ -193,9 +193,11 @@ def _geometric_mean(matrices, init=None, max_iter=10, tol=1e-7):
     return gmean
 
 
-def sym_to_vec(symmetric):
-    """Return the flattened lower triangular part of an array, after
-    multiplying above the diagonal elements by sqrt(2).
+def sym_to_vec(symmetric, discard_diagonal=False):
+    """Return the flattened lower triangular part of an array.
+
+    If diagonal is kept, diagonal elements are divided by sqrt(2) to conserve
+    the norm.
 
     Acts on the last two dimensions of the array if not 2-dimensional.
 
@@ -206,15 +208,27 @@ def sym_to_vec(symmetric):
     symmetric : numpy.ndarray, shape (..., n_features, n_features)
         Input array.
 
+    discard_diagonal : boolean, optional
+        If True, the values of the diagonal are not returned.
+        Default is False.
+
     Returns
     -------
-    output : numpy.ndarray, shape (..., n_features * (n_features + 1) / 2)
-        The output flattened lower triangular part of symmetric.
+    output : numpy.ndarray
+        The output flattened lower triangular part of symmetric. Shape is
+        (..., n_features * (n_features + 1) / 2) if discard_diagonal is False and
+        (..., (n_features - 1) * n_features / 2) otherwise.
+
+
     """
-    scaling = sqrt(2) * np.ones(symmetric.shape[-2:])
-    np.fill_diagonal(scaling, 1.)
+    if discard_diagonal:
+        # No scaling, we directly return the values
+        tril_mask = np.tril(np.ones(symmetric.shape[-2:]), k=-1).astype(np.bool)
+        return symmetric[..., tril_mask]
+    scaling = np.ones(symmetric.shape[-2:])
+    np.fill_diagonal(scaling, sqrt(2.))
     tril_mask = np.tril(np.ones(symmetric.shape[-2:])).astype(np.bool)
-    return symmetric[..., tril_mask] * scaling[tril_mask]
+    return symmetric[..., tril_mask] / scaling[tril_mask]
 
 
 def _cov_to_corr(covariance):

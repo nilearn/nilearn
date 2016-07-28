@@ -97,3 +97,12 @@ plt.xlabel('Classification accuracy')
 plt.grid(True)
 plt.tight_layout()
 plt.show()
+
+
+######################################################################
+# Plot the mean connectome with hemispheric saggital cuts
+for kind in kinds:
+    nilearn.plotting.plot_connectome(mean_connectivity_matrix[kind],
+                                     region_coords, edge_threshold='98%',
+                                     title=kind, display_mode='lzry')
+plt.show()

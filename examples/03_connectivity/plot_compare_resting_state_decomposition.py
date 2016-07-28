@@ -28,7 +28,7 @@ func_filenames = adhd_dataset.func  # list of 4D nifti files for each subject
 print('First functional nifti image (4D) is at: %s' %
       adhd_dataset.func[0])  # 4D data
 
-#################################s#############################################
+###############################################################################
 # Create two decomposition estimators
 from nilearn.decomposition import DictLearning, CanICA
 

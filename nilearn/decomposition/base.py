@@ -15,6 +15,7 @@ from sklearn.utils import check_random_state
 from sklearn.utils.extmath import randomized_svd
 from .._utils.cache_mixin import CacheMixin, cache
 from .._utils.niimg import _safe_get_data
+from .._utils.compat import _basestring
 from ..input_data import NiftiMapsMasker
 from ..input_data.masker_validation import check_embedded_nifti_masker
 
@@ -39,7 +40,7 @@ def mask_and_reduce(masker, imgs,
         Instance used to mask provided data.
 
     imgs: list of 4D Niimg-like objects
-        See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
+        See http://nilearn.github.io/manipulating_images/input_output.html.
         List of subject data to mask, reduce and stack.
 
     confounds: CSV file path or 2D matrix, optional
@@ -201,11 +202,11 @@ class BaseDecomposition(BaseEstimator, CacheMixin):
         This parameter is passed to signal.clean. Please see the related
         documentation for details
 
-    low_pass: False or float, optional
+    low_pass: None or float, optional
         This parameter is passed to signal.clean. Please see the related
         documentation for details
 
-    high_pass: False or float, optional
+    high_pass: None or float, optional
         This parameter is passed to signal.clean. Please see the related
         documentation for details
 
@@ -253,7 +254,7 @@ class BaseDecomposition(BaseEstimator, CacheMixin):
     Attributes
     ----------
     `mask_img_` : Niimg-like object
-        See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
+        See http://nilearn.github.io/manipulating_images/input_output.html.
         The mask of the data. If no mask was given at masker creation, contains
         the automatically computed mask.
 
@@ -294,17 +295,21 @@ class BaseDecomposition(BaseEstimator, CacheMixin):
         Parameters
         ----------
         imgs: list of Niimg-like objects
-            See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
+            See http://nilearn.github.io/manipulating_images/input_output.html.
             Data on which the mask is calculated. If this is a list,
             the affine is considered the same for all.
 
         """
-        if hasattr(imgs, '__iter__') and len(imgs) == 0:
+        if isinstance(imgs, _basestring) or not hasattr(imgs, '__iter__'):
+            # these classes are meant for list of 4D images
+            # (multi-subject), we want it to work also on a single
+            # subject, so we hack it.
+            imgs = [imgs, ]
+        if len(imgs) == 0:
             # Common error that arises from a null glob. Capture
             # it early and raise a helpful message
             raise ValueError('Need one or more Niimg-like objects as input, '
                              'an empty list was given.')
-
         self.masker_ = check_embedded_nifti_masker(self)
 
         # Avoid warning with imgs != None
@@ -335,7 +340,7 @@ class BaseDecomposition(BaseEstimator, CacheMixin):
         Parameters
         ----------
         imgs: iterable of Niimg-like objects
-            See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
+            See http://nilearn.github.io/manipulating_images/input_output.html.
             Data to be projected
 
         confounds: CSV file path or 2D matrix
@@ -381,7 +386,7 @@ class BaseDecomposition(BaseEstimator, CacheMixin):
         if not hasattr(self, 'components_'):
             ValueError('Object has no components_ attribute. This is either '
                        'because fit has not been called or because'
-                       '_DecompositionEstimator has direcly been used')
+                       '_DecompositionEstimator has directly been used')
         self._check_components_()
         components_img_ = self.masker_.inverse_transform(self.components_)
         nifti_maps_masker = NiftiMapsMasker(
@@ -412,7 +417,7 @@ class BaseDecomposition(BaseEstimator, CacheMixin):
         Parameters
         ----------
         imgs: iterable of Niimg-like objects
-            See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
+            See http://nilearn.github.io/manipulating_images/input_output.html.
             Data to be scored
 
         confounds: CSV file path or 2D matrix

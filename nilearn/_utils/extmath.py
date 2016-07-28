@@ -17,19 +17,19 @@ def fast_abs_percentile(data, percentile=80):
     """ A fast version of the percentile of the absolute value.
 
     Parameters
-    ==========
+    ----------
     data: ndarray, possibly masked array
         The input data
     percentile: number between 0 and 100
         The percentile that we are asking for
 
     Returns
-    =======
+    -------
     value: number
         The score at percentile
 
     Notes
-    =====
+    -----
 
     This is a faster, and less accurate version of
     scipy.stats.scoreatpercentile(np.abs(data), percentile)
@@ -55,7 +55,7 @@ def is_spd(M, decimal=15, verbose=1):
     The check is performed by checking that all eigenvalues are positive.
 
     Parameters
-    ==========
+    ----------
     M: numpy.ndarray
         symmetric positive definite matrix.
 
@@ -63,7 +63,7 @@ def is_spd(M, decimal=15, verbose=1):
         verbosity level (0 means no message)
 
     Returns
-    =======
+    -------
     answer: boolean
         True if matrix is symmetric positive definite, False otherwise.
     """

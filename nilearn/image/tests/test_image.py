@@ -15,6 +15,7 @@ import numpy as np
 from numpy.testing import assert_array_equal, assert_allclose
 from nilearn._utils.testing import assert_raises_regex
 
+from nilearn import signal
 from nilearn.image import image
 from nilearn.image import resampling
 from nilearn.image import concat_imgs
@@ -306,7 +307,10 @@ def test_concat_imgs():
 
 def test_index_img():
     img_3d = nibabel.Nifti1Image(np.ones((3, 4, 5)), np.eye(4))
-    testing.assert_raises_regex(TypeError, '4D Niimg-like',
+    testing.assert_raises_regex(TypeError,
+                                "Input data has incompatible dimensionality: "
+                                "Expected dimension is 4D and you provided "
+                                "a 3D image.",
                                 image.index_img, img_3d, 0)
 
     affine = np.array([[1., 2., 3., 4.],
@@ -338,9 +342,11 @@ def test_index_img():
 
 def test_iter_img():
     img_3d = nibabel.Nifti1Image(np.ones((3, 4, 5)), np.eye(4))
-    img_3d_iter = image.iter_img(img_3d)
-    assert_true(isinstance(img_3d_iter, collections.Iterable))
-    assert_equal(len(list(img_3d_iter)), 1)
+    testing.assert_raises_regex(TypeError,
+                                "Input data has incompatible dimensionality: "
+                                "Expected dimension is 4D and you provided "
+                                "a 3D image.",
+                                image.iter_img, img_3d)
 
     affine = np.array([[1., 2., 3., 4.],
                        [5., 6., 7., 8.],
@@ -493,3 +499,20 @@ def test_math_img():
             assert_array_equal(result.get_affine(),
                                expected_result.get_affine())
             assert_equal(result.shape, expected_result.shape)
+
+
+def test_clean_img():
+
+    rng = np.random.RandomState(0)
+
+    data = rng.randn(10, 10, 10, 100) + .5
+    data_flat = data.T.reshape(100, -1)
+    data_img = nibabel.Nifti1Image(data, np.eye(4))
+
+    data_img_ = image.clean_img(
+        data_img, detrend=True, standardize=False, low_pass=0.1)
+    data_flat_ = signal.clean(
+        data_flat, detrend=True, standardize=False, low_pass=0.1)
+
+    np.testing.assert_almost_equal(data_img_.get_data().T.reshape(100, -1),
+                                   data_flat_)

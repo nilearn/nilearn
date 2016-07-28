@@ -49,7 +49,10 @@ def test_nifti_labels_masker():
 
     # verify that 4D mask arguments are refused
     masker = NiftiLabelsMasker(labels11_img, mask_img=mask_img_4d)
-    testing.assert_raises_regex(DimensionError, "Data must be a 3D",
+    testing.assert_raises_regex(DimensionError,
+                                "Input data has incompatible dimensionality: "
+                                "Expected dimension is 3D and you provided "
+                                "a 4D image.",
                                 masker.fit)
 
     # check exception when transform() called without prior fit()

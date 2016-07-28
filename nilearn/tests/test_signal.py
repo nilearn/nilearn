@@ -9,6 +9,7 @@ import os.path
 import numpy as np
 from nose.tools import assert_true, assert_false, assert_raises
 from sklearn.utils.testing import assert_less
+import nibabel
 
 # Use nisignal here to avoid name collisions (using nilearn.signal is
 # not possible)
@@ -24,7 +25,7 @@ def generate_signals(n_features=17, n_confounds=5, length=41,
     All returned signals have no trends at all (to machine precision).
 
     Parameters
-    ==========
+    ----------
     n_features, n_confounds : int, optional
         respectively number of features to generate, and number of confounds
         to use for generating noise signals.
@@ -40,7 +41,7 @@ def generate_signals(n_features=17, n_confounds=5, length=41,
         gives the contiguousness of the output arrays.
 
     Returns
-    =======
+    -------
     signals : numpy.ndarray, shape (length, n_features)
         unperturbed signals.
 
@@ -84,12 +85,12 @@ def generate_trends(n_features=17, length=41):
     """Generate linearly-varying signals, with zero mean.
 
     Parameters
-    ==========
+    ----------
     n_features, length : int
         respectively number of signals and number of samples to generate.
 
     Returns
-    =======
+    -------
     trends : numpy.ndarray, shape (length, n_features)
         output signals, one per column.
     """
@@ -249,6 +250,10 @@ def test_clean_detrending():
                              length=n_samples)
     x = signals + trends
 
+    # test boolean is not given to signal.clean
+    assert_raises(TypeError, nisignal.clean, x, low_pass=False)
+    assert_raises(TypeError, nisignal.clean, x, high_pass=False)
+
     # This should remove trends
     x_detrended = nisignal.clean(x, standardize=False, detrend=True,
                                  low_pass=None, high_pass=None)
@@ -355,6 +360,8 @@ def test_clean_confounds():
                   confounds=filename1)
     assert_raises(TypeError, nisignal.clean, signals,
                   confounds=[None])
+    assert_raises(ValueError, nisignal.clean, signals, t_r=None,
+                  low_pass=.01)
 
     # Test without standardizing that constant parts of confounds are
     # accounted for
@@ -367,6 +374,7 @@ def test_clean_confounds():
 
 
 def test_high_variance_confounds():
+
     # C and F order might take different paths in the function. Check that the
     # result is identical.
     n_features = 1001

@@ -13,12 +13,13 @@ from sklearn.utils import check_random_state
 from nose import with_setup, SkipTest
 from nose.tools import (assert_true, assert_equal, assert_raises,
                         assert_not_equal)
+
 from . import test_utils as tst
 
 from nilearn.datasets import utils, func
 from nilearn._utils.testing import assert_raises_regex
 
-from nilearn._utils.compat import _basestring, _urllib
+from nilearn._utils.compat import _basestring
 
 
 def setup_mock():
@@ -27,54 +28,6 @@ def setup_mock():
 
 def teardown_mock():
     return tst.teardown_mock(utils, func)
-
-
-@with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
-def test_fetch_haxby_simple():
-    local_url = "file:" + _urllib.request.pathname2url(os.path.join(tst.datadir,
-        "pymvpa-exampledata.tar.bz2"))
-    haxby = func.fetch_haxby_simple(data_dir=tst.tmpdir, url=local_url,
-                                    verbose=0)
-    datasetdir = os.path.join(tst.tmpdir, 'haxby2001_simple', 'pymvpa-exampledata')
-    for key, file in [
-            ('session_target', 'attributes.txt'),
-            ('func', 'bold.nii.gz'),
-            ('conditions_target', 'attributes_literal.txt')]:
-        assert_equal(haxby[key], [os.path.join(datasetdir, file)])
-        assert_true(os.path.exists(os.path.join(datasetdir, file)))
-
-    assert_equal(haxby['mask'], os.path.join(datasetdir, 'mask.nii.gz'))
-
-
-@with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
-def test_fail_fetch_haxby_simple():
-    # Test a dataset fetching failure to validate sandboxing
-    local_url = "file:" + _urllib.request.pathname2url(os.path.join(tst.datadir,
-        "pymvpa-exampledata.tar.bz2"))
-    datasetdir = os.path.join(tst.tmpdir, 'haxby2001_simple', 'pymvpa-exampledata')
-    os.makedirs(datasetdir)
-    # Create a dummy file. If sandboxing is successful, it won't be overwritten
-    dummy = open(os.path.join(datasetdir, 'attributes.txt'), 'w')
-    dummy.write('stuff')
-    dummy.close()
-
-    path = 'pymvpa-exampledata'
-
-    opts = {'uncompress': True}
-    files = [
-        (os.path.join(path, 'attributes.txt'), local_url, opts),
-        # The following file does not exists. It will cause an abortion of
-        # the fetching procedure
-        (os.path.join(path, 'bald.nii.gz'), local_url, opts)
-    ]
-
-    assert_raises(IOError, utils._fetch_files,
-                  os.path.join(tst.tmpdir, 'haxby2001_simple'), files,
-                  verbose=0)
-    dummy = open(os.path.join(datasetdir, 'attributes.txt'), 'r')
-    stuff = dummy.read(5)
-    dummy.close()
-    assert_equal(stuff, 'stuff')
 
 
 @with_setup(setup_mock, teardown_mock)
@@ -286,6 +239,33 @@ def test_fetch_localizer_contrasts():
     assert_equal(len(dataset.tmaps), 94)
     assert_not_equal(dataset.description, '')
 
+    # grab a given list of subjects
+    dataset2 = func.fetch_localizer_contrasts(["checkerboard"],
+                                              n_subjects=[2, 3, 5],
+                                              data_dir=tst.tmpdir,
+                                              url=local_url,
+                                              get_anats=True,
+                                              get_masks=True,
+                                              get_tmaps=True,
+                                              verbose=0)
+
+    # Check that we are getting only 3 subjects
+    assert_equal(dataset2.ext_vars.size, 3)
+    assert_equal(len(dataset2.anats), 3)
+    assert_equal(len(dataset2.cmaps), 3)
+    assert_equal(len(dataset2.masks), 3)
+    assert_equal(len(dataset2.tmaps), 3)
+    np.testing.assert_array_equal(dataset2.ext_vars,
+                                  dataset.ext_vars[[1, 2, 4]])
+    np.testing.assert_array_equal(dataset2.anats,
+                                  np.array(dataset.anats)[[1, 2, 4]])
+    np.testing.assert_array_equal(dataset2.cmaps,
+                                  np.array(dataset.cmaps)[[1, 2, 4]])
+    np.testing.assert_array_equal(dataset2.masks,
+                                  np.array(dataset.masks)[[1, 2, 4]])
+    np.testing.assert_array_equal(dataset2.tmaps,
+                                  np.array(dataset.tmaps)[[1, 2, 4]])
+
 
 @with_setup(setup_mock, teardown_mock)
 @with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
@@ -303,14 +283,45 @@ def test_fetch_localizer_calculation_task():
                                                     verbose=0)
     assert_true(isinstance(dataset.ext_vars, np.recarray))
     assert_true(isinstance(dataset.cmaps[0], _basestring))
-    assert_equal(dataset.ext_vars.size, 94)
-    assert_equal(len(dataset.cmaps), 94)
+    assert_equal(dataset.ext_vars.size, 1)
+    assert_equal(len(dataset.cmaps), 1)
 
     # 20 subjects
     dataset = func.fetch_localizer_calculation_task(n_subjects=20,
                                                     data_dir=tst.tmpdir,
                                                     url=local_url,
                                                     verbose=0)
+    assert_true(isinstance(dataset.ext_vars, np.recarray))
+    assert_true(isinstance(dataset.cmaps[0], _basestring))
+    assert_equal(dataset.ext_vars.size, 20)
+    assert_equal(len(dataset.cmaps), 20)
+    assert_not_equal(dataset.description, '')
+
+
+@with_setup(setup_mock, teardown_mock)
+@with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
+def test_fetch_localizer_button_task():
+    local_url = "file://" + tst.datadir
+    ids = np.asarray(['S%2d' % i for i in range(94)])
+    ids = ids.view(dtype=[('subject_id', 'S3')])
+    tst.mock_fetch_files.add_csv('cubicwebexport.csv', ids)
+    tst.mock_fetch_files.add_csv('cubicwebexport2.csv', ids)
+
+    # Disabled: cannot be tested without actually fetching covariates CSV file
+    # All subjects
+    dataset = func.fetch_localizer_button_task(data_dir=tst.tmpdir,
+                                               url=local_url,
+                                               verbose=0)
+    assert_true(isinstance(dataset.ext_vars, np.recarray))
+    assert_true(isinstance(dataset.cmaps[0], _basestring))
+    assert_equal(dataset.ext_vars.size, 1)
+    assert_equal(len(dataset.cmaps), 1)
+
+    # 20 subjects
+    dataset = func.fetch_localizer_button_task(n_subjects=20,
+                                               data_dir=tst.tmpdir,
+                                               url=local_url,
+                                               verbose=0)
     assert_true(isinstance(dataset.ext_vars, np.recarray))
     assert_true(isinstance(dataset.cmaps[0], _basestring))
     assert_equal(dataset.ext_vars.size, 20)

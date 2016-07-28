@@ -27,6 +27,7 @@ from sklearn.externals.joblib import Memory, Parallel, delayed
 from sklearn.cross_validation import check_cv
 from sklearn.preprocessing import LabelBinarizer
 from sklearn.metrics import accuracy_score
+from .._utils.fixes import check_X_y
 from .._utils.compat import _basestring
 from .._utils.fixes import atleast2d_or_csr
 from .._utils.cache_mixin import CacheMixin
@@ -65,12 +66,12 @@ def _adjust_screening_percentile(screening_percentile, mask_img,
     if mask_volume > MNI152_BRAIN_VOLUME:
         warnings.warn(
             "Brain mask is bigger than the volume of a standard "
-            "humain brain. SpaceNet is probably not tuned to "
+            "human brain. SpaceNet is probably not tuned to "
             "be used on such data.", stacklevel=2)
     elif mask_volume < .005 * MNI152_BRAIN_VOLUME:
         warnings.warn(
             "Brain mask is smaller than .5% of the volume "
-            "humain brain. SpaceNet is probably not tuned to"
+            "human brain. SpaceNet is probably not tuned to"
             "be used on such data.", stacklevel=2)
 
     if screening_percentile < 100:
@@ -97,9 +98,9 @@ def _crop_mask(mask):
     idx = np.where(mask)
     if idx[0].size == 0:
         raise ValueError("Empty mask: if you have given a mask, it is "
-                          "empty, and if you have not given a mask, the "
-                          "mask-extraction routines have failed. Please "
-                          "provide an appropriate mask.")
+                         "empty, and if you have not given a mask, the "
+                         "mask-extraction routines have failed. Please "
+                         "provide an appropriate mask.")
     i_min = max(idx[0].min() - 1, 0)
     i_max = idx[0].max()
     j_min = max(idx[1].min() - 1, 0)
@@ -123,7 +124,7 @@ def _univariate_feature_screening(
         Response Vector.
 
     mask: ndarray or booleans, shape (nx, ny, nz)
-        Mask definining brain Rois.
+        Mask defining brain Rois.
 
     is_classif: bool
         Flag telling whether the learning task is classification or regression.
@@ -248,7 +249,7 @@ class _EarlyStoppingCallback(object):
     """Out-of-bag early stopping
 
         A callable that returns True when the test error starts
-        rising. We use a Spearman correlation (btween X_test.w and y_test)
+        rising. We use a Spearman correlation (between X_test.w and y_test)
         for scoring.
     """
 
@@ -545,7 +546,7 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
 
     target_affine : 3x3 or 4x4 matrix, optional (default None)
         This parameter is passed to image.resample_img. An important use-case
-        of this parameter is for downsamping the input data to a coarser
+        of this parameter is for downsampling the input data to a coarser
         resolution (to speed of the model fit). Please see the related
         documentation for details.
 
@@ -553,13 +554,13 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
         This parameter is passed to image.resample_img. Please see the
         related documentation for details.
 
-    low_pass : False or float, optional, (default None)
+    low_pass: None or float, optional
         This parameter is passed to signal.clean. Please see the related
-        documentation for details.
+        documentation for details
 
-    high_pass : False or float, optional (default None)
-        This parameter is passed to signal. Clean. Please see the related
-        documentation for details.
+    high_pass: None or float, optional
+        This parameter is passed to signal.clean. Please see the related
+        documentation for details
 
     t_r : float, optional (default None)
         This parameter is passed to signal.clean. Please see the related
@@ -586,7 +587,7 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
         Defines the iterations for the solver.
 
     tol : float, optional (default 5e-4)
-        Defines the tolerance for convergence for the backend fista solver.
+        Defines the tolerance for convergence for the backend FISTA solver.
 
     verbose : int, optional (default 1)
         Verbosity level.
@@ -633,8 +634,9 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
          It is available only when parameter intercept is set to True.
 
     `cv_` : list of pairs of lists
-         Each pair are are the list of indices for the train and test
-         samples for the corresponding fold.
+         List of the (n_folds,) folds. For the corresponding fold,
+         each pair is composed of two lists of indices,
+         one for the train samples and one for the test samples.
 
     `cv_scores_` : ndarray, shape (n_alphas, n_folds) or (n_l1_ratios, n_alphas, n_folds)
         Scores (misclassification) for each alpha, and on each fold
@@ -684,7 +686,7 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
 
     def check_params(self):
         """Makes sure parameters are sane"""
-        if not self.l1_ratios is None:
+        if self.l1_ratios is not None:
             l1_ratios = self.l1_ratios
             if isinstance(l1_ratios, numbers.Number):
                 l1_ratios = [l1_ratios]
@@ -695,7 +697,7 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
                             l1_ratio))
                 elif l1_ratio == 0. or l1_ratio == 1.:
                     warnings.warn(
-                        ("Specified l1_ratio = %g. It's adived to only "
+                        ("Specified l1_ratio = %g. It's advised to only "
                          "specify values of l1_ratio strictly between 0 "
                          "and 1." % l1_ratio))
         if not (0. <= self.screening_percentile <= 100.):
@@ -714,7 +716,7 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
                     ",".join(self.SUPPORTED_LOSSES[:-1]), "," if len(
                         self.SUPPORTED_LOSSES) > 2 else "",
                     self.SUPPORTED_LOSSES[-1], self.loss))
-        if not self.loss is None and not self.is_classif and (
+        if self.loss is not None and not self.is_classif and (
                 self.loss == "logistic"):
             raise ValueError(
                 ("'logistic' loss is only available for classification "
@@ -738,7 +740,7 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
         Parameters
         ----------
         X : list of Niimg-like objects
-            See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg
+            See http://nilearn.github.io/manipulating_images/input_output.html
             Data on which model is to be fitted. If this is a list,
             the affine is considered the same for all.
 
@@ -774,6 +776,9 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
                                        memory=self.memory_)
         X = self.masker_.fit_transform(X)
 
+        X, y = check_X_y(X, y, ['csr', 'csc', 'coo'], dtype=np.float,
+                         multi_output=True, y_numeric=True)
+
         # misc
         self.Xmean_ = X.mean(axis=0)
         self.Xstd_ = X.std(axis=0)
@@ -788,7 +793,7 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
         alphas = self.alphas
         if isinstance(alphas, numbers.Number):
             alphas = [alphas]
-        if not self.loss is None:
+        if self.loss is not None:
             loss = self.loss
         elif self.is_classif:
             loss = "logistic"
@@ -809,7 +814,7 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
 
         # generate fold indices
         case1 = (None in [alphas, l1_ratios]) and self.n_alphas > 1
-        case2 = (not alphas is None) and min(len(l1_ratios), len(alphas)) > 1
+        case2 = (alphas is not None) and min(len(l1_ratios), len(alphas)) > 1
         if case1 or case2:
             self.cv_ = list(check_cv(self.cv, X=X, y=y,
                                      classifier=self.is_classif))
@@ -930,7 +935,7 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
         Parameters
         ----------
         X : list of Niimg-like objects
-            See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg
+            See http://nilearn.github.io/manipulating_images/input_output.html
             Data on prediction is to be made. If this is a list,
             the affine is considered the same for all.
 
@@ -1008,13 +1013,13 @@ class SpaceNetClassifier(BaseSpaceNet):
         This parameter is passed to image.resample_img. Please see the
         related documentation for details.
 
-    low_pass : False or float, optional, (default None)
+    low_pass: None or float, optional
         This parameter is passed to signal.clean. Please see the related
-        documentation for details.
+        documentation for details
 
-    high_pass : False or float, optional (default None)
-        This parameter is passed to signal. Clean. Please see the related
-        documentation for details.
+    high_pass: None or float, optional
+        This parameter is passed to signal.clean. Please see the related
+        documentation for details
 
     t_r : float, optional (default None)
         This parameter is passed to signal.clean. Please see the related
@@ -1057,7 +1062,7 @@ class SpaceNetClassifier(BaseSpaceNet):
         Rough estimator of the amount of memory used by caching. Higher value
         means more memory for caching.
 
-    cv : int, a cv generator instance, or None (default 10)
+    cv : int, a cv generator instance, or None (default 8)
         The input specifying which cross-validation generator to use.
         It can be an integer, in which case it is the number of folds in a
         KFold, None, in which case 3 fold is used, or another object, that
@@ -1086,7 +1091,7 @@ class SpaceNetClassifier(BaseSpaceNet):
         It is available only when parameter intercept is set to True.
 
     `cv_` : list of pairs of lists
-        Each pair are are the list of indices for the train and test
+        Each pair are the list of indices for the train and test
         samples for the corresponding fold.
 
     `cv_scores_` : 2d array of shape (n_alphas, n_folds)
@@ -1134,7 +1139,7 @@ class SpaceNetClassifier(BaseSpaceNet):
         Parameters
         ----------
         X : list of Niimg-like objects
-            See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg
+            See http://nilearn.github.io/manipulating_images/input_output.html
             Data on which model is to be fitted. If this is a list,
             the affine is considered the same for all.
 
@@ -1196,12 +1201,12 @@ class SpaceNetRegressor(BaseSpaceNet):
         This parameter is passed to image.resample_img. Please see the
         related documentation for details.
 
-    low_pass : False or float, optional, (default None)
+    low_pass: None or float, optional
         This parameter is passed to signal.clean. Please see the related
         documentation for details
 
-    high_pass : False or float, optional (default None)
-        This parameter is passed to signal. Clean. Please see the related
+    high_pass: None or float, optional
+        This parameter is passed to signal.clean. Please see the related
         documentation for details
 
     t_r : float, optional (default None)
@@ -1244,7 +1249,7 @@ class SpaceNetRegressor(BaseSpaceNet):
         Rough estimator of the amount of memory used by caching. Higher value
         means more memory for caching.
 
-    cv : int, a cv generator instance, or None (default 10)
+    cv : int, a cv generator instance, or None (default 8)
         The input specifying which cross-validation generator to use.
         It can be an integer, in which case it is the number of folds in a
         KFold, None, in which case 3 fold is used, or another object, that

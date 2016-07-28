@@ -154,7 +154,7 @@ def fetch_atlas_harvard_oxford(atlas_name, data_dir=None,
     directory.
 
     Parameters
-    ==========
+    ----------
     atlas_name: string
         Name of atlas to load. Can be:
         cort-maxprob-thr0-1mm,  cort-maxprob-thr0-2mm,
@@ -176,7 +176,7 @@ def fetch_atlas_harvard_oxford(atlas_name, data_dir=None,
         Not implemented for probabilistic atlas (*-prob-* atlases)
 
     Returns
-    =======
+    -------
     data: sklearn.datasets.base.Bunch
         dictionary-like object, keys are:
 
@@ -334,19 +334,13 @@ def fetch_atlas_msdl(data_dir=None, url=None, resume=True, verbose=1):
                                 verbose=verbose)
     files = _fetch_files(data_dir, files, resume=resume, verbose=verbose)
     csv_data = np.recfromcsv(files[0])
-    labels = csv_data['name'].tolist()
+    labels = [name.strip() for name in csv_data['name'].tolist()]
     region_coords = csv_data[['x', 'y', 'z']].tolist()
-    net_names = csv_data['net_name'].tolist()
+    net_names = [net_name.strip() for net_name in csv_data['net_name'].tolist()]
     fdescr = _get_dataset_descr(dataset_name)
 
     return Bunch(maps=files[1], labels=labels, region_coords=region_coords,
                  networks=net_names, description=fdescr)
-
-
-@deprecated('This function has been replace by fetch_coords_power_2011 and '
-            'will be removed in nilearn 0.2.5')
-def fetch_atlas_power_2011():
-    return fetch_coords_power_2011()
 
 
 def fetch_coords_power_2011():
