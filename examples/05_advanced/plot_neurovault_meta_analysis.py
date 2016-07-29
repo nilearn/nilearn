@@ -11,20 +11,31 @@ documentation for more details.
 """
 import scipy
 
-from nilearn.datasets import neurovault as nv
+from nilearn.datasets.neurovault import fetch_neurovault_ids
 from nilearn.image import new_img_like, load_img, math_img
 
 
 ######################################################################
 # Fetch images for "successful stop minus go"-like protocols.
 
-# Only 7 images match our critera; set max_images to 7
-# so that if we already have them we won't look for more.
-nv_data = nv.fetch_neurovault(
-    max_images=7,
-    cognitive_paradigm_cogatlas=nv.Contains('stop signal'),
-    contrast_definition=nv.Contains('succ', 'stop', 'go'),
-    map_type='T map')
+# These are the images we are interested in,
+# in order to save time we specify their ids explicitly.
+stop_go_image_ids = (151, 3041, 3042, 2676, 2675, 2818, 2834)
+
+# These ids were determined by querying neurovault like this:
+
+# from nilearn.datasets.neurovault import fetch_neurovault_filtered, Contains
+
+# nv_data = fetch_neurovault_filtered(
+#     max_images=7,
+#     cognitive_paradigm_cogatlas=Contains('stop signal'),
+#     contrast_definition=Contains('succ', 'stop', 'go'),
+#     map_type='T map')
+
+# print([meta['id'] for meta in nv_data['images_meta']])
+
+
+nv_data = fetch_neurovault_ids(image_ids=stop_go_image_ids)
 
 images_meta = nv_data['images_meta']
 collections = nv_data['collections_meta']
@@ -35,9 +46,9 @@ collections = nv_data['collections_meta']
 from nilearn import plotting
 
 for im in images_meta:
-    plotting.plot_glass_brain(im['absolute_path'],
-                              title='image {0}: {1}'.format(im['id'],
-                                    im['contrast_definition']))
+    plotting.plot_glass_brain(
+        im['absolute_path'],
+        title='image {0}: {1}'.format(im['id'], im['contrast_definition']))
 
 ######################################################################
 # Compute statistics
@@ -71,8 +82,8 @@ for collection in [col for col in collections
             "", this_meta['id'], deg_of_freedom))
 
         # Convert data, create new image.
-        z_img = new_img_like(nii,
-                    t_to_z(nii.get_data(), deg_of_freedom=deg_of_freedom))
+        z_img = new_img_like(
+            nii, t_to_z(nii.get_data(), deg_of_freedom=deg_of_freedom))
 
         z_imgs.append(z_img)
         image_z_niis.append(nii)
@@ -86,7 +97,7 @@ nii = math_img('np.sum(z_imgs, axis=3) / np.sqrt(z_imgs.shape[3])',
                z_imgs=z_imgs)
 
 plotting.plot_stat_map(nii, display_mode='z', threshold=6,
-                        cut_coords=cut_coords, vmax=12)
+                       cut_coords=cut_coords, vmax=12)
 
 
 plotting.show()

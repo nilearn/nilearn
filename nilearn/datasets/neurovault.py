@@ -2953,15 +2953,16 @@ def _move_col_id(im_terms, col_terms):
     return im_terms, col_terms
 
 
-def fetch_neurovault(max_images=100,
-                     collection_terms=basic_collection_terms(),
-                     collection_filter=_empty_filter,
-                     image_terms=basic_image_terms(),
-                     image_filter=_empty_filter,
-                     collection_ids=None, image_ids=None,
-                     mode='download_new', neurovault_data_dir=None,
-                     fetch_neurosynth_words=False, fetch_reduced_rep=False,
-                     download_manager=None, vectorize_words=True, **kwargs):
+def _fetch_neurovault_impl(
+        max_images=100,
+        collection_terms=basic_collection_terms(),
+        collection_filter=_empty_filter,
+        image_terms=basic_image_terms(),
+        image_filter=_empty_filter,
+        collection_ids=None, image_ids=None,
+        mode='download_new', neurovault_data_dir=None,
+        fetch_neurosynth_words=False, fetch_reduced_rep=False,
+        download_manager=None, vectorize_words=True, **kwarg_image_filters):
     """Download data from neurovault.org and neurosynth.org.
 
     Any downloaded data is saved on the local disk and subsequent
@@ -3057,10 +3058,11 @@ def fetch_neurovault(max_images=100,
         ``DownloadManager`` for fine-grained control of how metadata
         is handled.
 
-    Keyword arguments are understood to be filter terms for images, so
-    for example ``map_type='Z map'`` means only download Z-maps;
-    ``collection_id=35`` means download images from collection 35
-    only.
+    kwarg_image_filters
+        Keyword arguments are understood to be filter terms for
+        images, so for example ``map_type='Z map'`` means only
+        download Z-maps; ``collection_id=35`` means download images
+        from collection 35 only.
 
     Returns
     -------
@@ -3182,7 +3184,7 @@ def fetch_neurovault(max_images=100,
             'fetch_neurovault: using default value of 100 for max_images. '
             'Set max_images to another value or None if you want more images.')
     collection_terms = dict(collection_terms)
-    image_terms = dict(image_terms, **kwargs)
+    image_terms = dict(image_terms, **kwarg_image_filters)
     image_terms, collection_terms = _move_col_id(image_terms, collection_terms)
 
     neurovault_data_dir = neurovault_directory(neurovault_data_dir)
@@ -3221,6 +3223,343 @@ def fetch_neurovault(max_images=100,
              [meta.get('neurosynth_words_absolute_path') for
               meta in images_meta])
     return result
+
+
+def fetch_neurovault_filtered(
+        max_images=100,
+        collection_terms=basic_collection_terms(),
+        collection_filter=_empty_filter,
+        image_terms=basic_image_terms(),
+        image_filter=_empty_filter,
+        mode='download_new', neurovault_data_dir=None,
+        fetch_neurosynth_words=False, fetch_reduced_rep=False,
+        download_manager=None, vectorize_words=True, **kwarg_image_filters):
+    """Download data from neurovault.org and neurosynth.org using filters.
+
+    Any downloaded data is saved on the local disk and subsequent
+    calls to this function will first look for the data locally before
+    querying the server for more if necessary.
+
+    We explore the metadata for Neurovault collections and images,
+    keeping those that match a certain set of criteria, until we have
+    skimmed through the whole database or until an (optional) maximum
+    number of images to fetch has been reached.
+
+    Parameters
+    ----------
+    max_images : int, optional (default=100)
+        Maximum number of images to fetch. Ignored if `collection_ids`
+        or `image_ids` is used.
+
+    collection_terms : dict, optional (default=basic_collection_terms())
+        Key, value pairs used to filter collection
+        metadata. Collections for which
+        ``collection_metadata['key'] == value`` is not ``True`` for
+        every key, value pair will be discarded.
+        Ignored if `collection_ids` or `image_ids` is used.
+        See documentation for ``basic_collection_terms`` for a
+        description of the default selection criteria.
+
+    collection_filter : Callable, optional (default=_empty_filter)
+        Collections for which `collection_filter(collection_metadata)`
+        is ``False`` will be discarded. Ignored if `collection_ids` or
+        `image_ids` is used.
+
+    image_terms : dict, optional (default=basic_image_terms())
+        Key, value pairs used to filter image metadata. Images for
+        which ``image_metadata['key'] == value`` is not ``True`` for
+        every key, value pair will be discarded. Ignored if
+        `collection_ids` or `image_ids` is used.
+        See documentation for ``basic_image_terms`` for a
+        description of the default selection criteria.
+
+    image_filter : Callable, optional (default=_empty_filter)
+        Images for which `image_filter(image_metadata)` is ``False``
+        will be discarded. Ignored if `collection_ids` or `image_ids`
+        is used.
+
+    mode : {'download_new', 'overwrite', 'offline'}
+        When to fetch an image from the server rather than the local
+        disk.
+
+        - 'download_new' (the default) means download only files that
+          are not already on disk (regardless of modify date).
+        - 'overwrite' means ignore files on disk and overwrite them.
+        - 'offline' means load only data from disk; don't query server.
+
+    neurovault_data_dir : str, optional (default=None)
+        The directory we want to use for Neurovault data. Another
+        directory may be used if the one that was specified is not
+        valid.
+
+    fetch_neurosynth_words : bool, optional (default=False)
+        Wether to collect words from Neurosynth.
+
+    fetch_reduced_rep : bool, optional (default=False)
+        Wether to collect subsampled representations of images
+        available on Neurovault.
+
+    download_manager : BaseDownloadManager, optional (default=None)
+        The download manager used to handle data from neurovault.org.
+        If ``None``, one is constructed (an ``SQLiteDownloadManager``).
+        See documentation for ``SQLiteDownloadManager`` or
+        ``DownloadManager`` for fine-grained control of how metadata
+        is handled.
+
+    kwarg_image_filters
+        Keyword arguments are understood to be filter terms for
+        images, so for example ``map_type='Z map'`` means only
+        download Z-maps; ``collection_id=35`` means download images
+        from collection 35 only.
+
+    Returns
+    -------
+    Bunch
+        A dict-like object which exposes its items as attributes. It contains:
+
+            - 'images', the paths to downloaded files.
+            - 'images_meta', the metadata for the images in a list of
+              dictionaries.
+            - 'collections_meta', the metadata for the
+              collections.
+            - 'description', a short description of the Neurovault dataset.
+
+        If `fetch_neurosynth_words` was set, it also contains:
+
+            - 'vocabulary', a list of words
+            - 'word_frequencies', the weight of the words returned by
+              neurosynth.org for each image, such that the weight of word
+              `vocabulary[j]` for the image found in `images[i]` is
+              `word_frequencies[i, j]`
+
+    Notes
+    -----
+    The default behaviour is to store the most important fields (which
+    you can define) of metadata in an ``sqlite`` database, which is
+    actually just a file but can be queried like an SQL database. So
+    in addition to the ``Bunch`` returned by this function, if you
+    find it more convenient, you can access the data through this
+    other interface once it has been downloaded. See the documentation
+    for ``read_sql_query``, ``local_database_connection`` and
+    ``local_database_cursor`` for details.
+
+    Images and collections from disk are fetched before remote data.
+
+    Some helpers are provided in the ``neurovault`` module to express
+    filtering criteria in a less verbose manner:
+
+        ``ResultFilter``, ``IsNull``, ``NotNull``, ``NotEqual``,
+        ``GreaterOrEqual``, ``GreaterThan``, ``LessOrEqual``,
+        ``LessThan``, ``IsIn``, ``NotIn``, ``Contains``,
+        ``NotContains``, ``Pattern``.
+
+    Some authors have included many fields in the metadata they
+    provide; in order to make it easier to figure out which fields are
+    interesting to you, ``show_neurovault_image_keys`` and
+    ``show_neurovault_collection_keys`` could be of help.  They print
+    the field names that were seen in metadata and the types of the
+    values that were associated to them. For this information, you can
+    also have a look at the module-level variables
+    ``_IMAGE_BASIC_FIELDS``, ``_COLLECTION_BASIC_FIELDS``,
+    ``_ALL_COLLECTION_FIELDS`` and ``_ALL_IMAGE_FIELDS``.
+
+    If you pass a single value to match against the collection id
+    (wether as the 'id' field of the collection metadata or as the
+    'collection_id' field of the image metadata), the server is
+    directly queried for that collection, so
+    ``fetch_neurovault(collection_id=40)`` is as efficient as
+    ``fetch_neurovault(collection_ids=[40])`` (but in the former
+    version the other filters will still be applied). This is not true
+    for the image ids. If you pass a single value to match against any
+    of the fields listed in ``_COL_FILTERS_AVAILABLE_ON_SERVER``,
+    i.e., 'DOI', 'name', and 'owner_name', these filters can be
+    applied by the server, limiting the amount of metadata we have to
+    download: filtering on those fields makes the fetching faster
+    because the filtering takes place on the server side.
+
+    In `download_new` mode, if a file exists on disk, it is not
+    downloaded again, even if the version on the server is newer. Use
+    `overwrite` mode to force a new download (you can filter on the
+    field ``modify_date`` to re-download the files that are newer on
+    the server - see Examples section).
+
+    Tries to yield `max_images` images; stops early if we have fetched
+    all the images matching the filters or if an uncaught exception is
+    raised during download
+
+    References
+    ----------
+
+    .. [1] Gorgolewski KJ, Varoquaux G, Rivera G, Schwartz Y, Ghosh SS,
+       Maumet C, Sochat VV, Nichols TE, Poldrack RA, Poline J-B,
+       Yarkoni T and Margulies DS (2015) NeuroVault.org: a web-based
+       repository for collecting and sharing unthresholded
+       statistical maps of the human brain. Front. Neuroinform. 9:8.
+       doi: 10.3389/fninf.2015.00008
+
+    .. [2] Yarkoni, Tal, Russell A. Poldrack, Thomas E. Nichols, David
+       C. Van Essen, and Tor D. Wager. "Large-scale automated synthesis
+       of human functional neuroimaging data." Nature methods 8, no. 8
+       (2011): 665-670.
+
+    Examples
+    --------
+    To download **all** the collections and images from Neurovault::
+
+        fetch_neurovault(max_images=None, collection_terms={}, image_terms={})
+
+    To further limit the default selection to collections which
+    specify a DOI (which reference a published paper, as they may be
+    more likely to contain good images)::
+
+        fetch_neurovault(
+            max_images=None,
+            collection_terms=dict(basic_collection_terms(), DOI=NotNull()))
+
+    To update all the images (matching the default filters)::
+
+        newest = read_sql_query(
+            "SELECT MAX(modify_date) AS max_date FROM images")['max_date'][0]
+
+        fetch_neurovault(
+            max_images=None, mode='overwrite', modify_date=GreaterThan(newest))
+
+    """
+    return _fetch_neurovault_impl(
+        max_images=max_images, collection_terms=collection_terms,
+        collection_filter=collection_filter, image_terms=image_terms,
+        image_filter=image_filter, mode=mode,
+        neurovault_data_dir=neurovault_data_dir,
+        fetch_neurosynth_words=fetch_neurosynth_words,
+        fetch_reduced_rep=fetch_reduced_rep,
+        download_manager=download_manager,
+        vectorize_words=vectorize_words, **kwarg_image_filters)
+
+
+def fetch_neurovault_ids(
+        collection_ids=(), image_ids=(),
+        mode='download_new', neurovault_data_dir=None,
+        fetch_neurosynth_words=False, fetch_reduced_rep=False,
+        download_manager=None, vectorize_words=True):
+    """Download images and collections from neurovault.org and neurosynth.org.
+
+    Any downloaded data is saved on the local disk and subsequent
+    calls to this function will first look for the data locally before
+    querying the server for more if necessary.
+
+    This is the fast way to get the data from the server if we already
+    know which images or collections we want.
+
+    Parameters
+    ----------
+
+    collection_ids : Container, optional (default=None)
+        If not ``None``, ignore filters and terms and just download
+        all collections from this list (and if specified all the
+        images from `image_ids`)
+
+    image_ids : Container, optional (default=None)
+        If not ``None``, ignore filters and terms and just download
+        all images from this list (and if specified all the
+        collections from `collection_ids`)
+
+    mode : {'download_new', 'overwrite', 'offline'}
+        When to fetch an image from the server rather than the local
+        disk.
+
+        - 'download_new' (the default) means download only files that
+          are not already on disk (regardless of modify date).
+        - 'overwrite' means ignore files on disk and overwrite them.
+        - 'offline' means load only data from disk; don't query server.
+
+    neurovault_data_dir : str, optional (default=None)
+        The directory we want to use for Neurovault data. Another
+        directory may be used if the one that was specified is not
+        valid.
+
+    fetch_neurosynth_words : bool, optional (default=False)
+        Wether to collect words from Neurosynth.
+
+    fetch_reduced_rep : bool, optional (default=False)
+        Wether to collect subsampled representations of images
+        available on Neurovault.
+
+    download_manager : BaseDownloadManager, optional (default=None)
+        The download manager used to handle data from neurovault.org.
+        If ``None``, one is constructed (an ``SQLiteDownloadManager``).
+        See documentation for ``SQLiteDownloadManager`` or
+        ``DownloadManager`` for fine-grained control of how metadata
+        is handled.
+
+    Returns
+    -------
+    Bunch
+        A dict-like object which exposes its items as attributes. It contains:
+
+            - 'images', the paths to downloaded files.
+            - 'images_meta', the metadata for the images in a list of
+              dictionaries.
+            - 'collections_meta', the metadata for the
+              collections.
+            - 'description', a short description of the Neurovault dataset.
+
+        If `fetch_neurosynth_words` was set, it also contains:
+
+            - 'vocabulary', a list of words
+            - 'word_frequencies', the weight of the words returned by
+              neurosynth.org for each image, such that the weight of word
+              `vocabulary[j]` for the image found in `images[i]` is
+              `word_frequencies[i, j]`
+
+
+    Raises
+    ------
+    RuntimeError
+        If one of the explicitely required images or collections
+        cannot be fetched.
+
+    Notes
+    -----
+    The default behaviour is to store the most important fields (which
+    you can define) of metadata in an ``sqlite`` database, which is
+    actually just a file but can be queried like an SQL database. So
+    in addition to the ``Bunch`` returned by this function, if you
+    find it more convenient, you can access the data through this
+    other interface once it has been downloaded. See the documentation
+    for ``read_sql_query``, ``local_database_connection`` and
+    ``local_database_cursor`` for details.
+
+    Images and collections from disk are fetched before remote data.
+
+    In `download_new` mode, if a file exists on disk, it is not
+    downloaded again, even if the version on the server is newer. Use
+    `overwrite` mode to force a new download (you can filter on the
+    field ``modify_date`` to re-download the files that are newer on
+    the server - see Examples section).
+
+    References
+    ----------
+
+    .. [1] Gorgolewski KJ, Varoquaux G, Rivera G, Schwartz Y, Ghosh SS,
+       Maumet C, Sochat VV, Nichols TE, Poldrack RA, Poline J-B,
+       Yarkoni T and Margulies DS (2015) NeuroVault.org: a web-based
+       repository for collecting and sharing unthresholded
+       statistical maps of the human brain. Front. Neuroinform. 9:8.
+       doi: 10.3389/fninf.2015.00008
+
+    .. [2] Yarkoni, Tal, Russell A. Poldrack, Thomas E. Nichols, David
+       C. Van Essen, and Tor D. Wager. "Large-scale automated synthesis
+       of human functional neuroimaging data." Nature methods 8, no. 8
+       (2011): 665-670.
+
+    """
+    return _fetch_neurovault_impl(
+        collection_ids=collection_ids, image_ids=image_ids,
+        neurovault_data_dir=neurovault_data_dir,
+        fetch_neurosynth_words=fetch_neurosynth_words,
+        fetch_reduced_rep=fetch_reduced_rep,
+        download_manager=download_manager,
+        vectorize_words=vectorize_words)
 
 
 def _absolute_paths_incorrect():
@@ -3281,10 +3620,10 @@ def refresh_db(**kwargs):
     _logger.debug('Refreshing local database.')
     download_manager = SQLiteDownloadManager(
         neurovault_data_dir=neurovault_directory(), **kwargs)
-    fetch_neurovault(image_terms={}, collection_terms={},
-                     download_manager=download_manager,
-                     mode='offline', fetch_neurosynth_words=True,
-                     vectorize_words=False, max_images=None)
+    _fetch_neurovault_impl(image_terms={}, collection_terms={},
+                           download_manager=download_manager,
+                           mode='offline', fetch_neurosynth_words=True,
+                           vectorize_words=False, max_images=None)
     _logger.debug('Removing unexisting images from database.')
     connection = local_database_cursor()
     connection.execute(

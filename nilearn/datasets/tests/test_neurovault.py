@@ -746,7 +746,7 @@ def test_chain_local_and_remote():
 
 def test_fetch_neurovault_filtered():
     with _TemporaryDirectory() as temp_dir:
-        data = neurovault.fetch_neurovault(
+        data = neurovault.fetch_neurovault_filtered(
             max_images=1, fetch_neurosynth_words=True,
             fetch_reduced_rep=True, mode='overwrite')
         if data is not None:
@@ -785,7 +785,7 @@ def test_fetch_neurovault_filtered():
             assert_false(neurovault._absolute_paths_incorrect())
 
             assert_warns(
-                Warning, neurovault.fetch_neurovault,
+                Warning, neurovault.fetch_neurovault_filtered,
                 download_manager=TestDownloadManager(
                     max_images=2,
                     neurovault_data_dir=neurovault.neurovault_directory()))
@@ -793,15 +793,15 @@ def test_fetch_neurovault_filtered():
         os.chmod(temp_dir, stat.S_IREAD)
         if os.access(temp_dir, os.W_OK):
             return
-        assert_warns(Warning, neurovault.fetch_neurovault)
+        assert_warns(Warning, neurovault.fetch_neurovault_filtered)
 
 
-def test_fetch_neurovault_explicit():
+def test_fetch_neurovault_ids():
     # test using explicit id list instead of filters,
     # and downloading an image which has no collection dir
     # or metadata yet.
     with _TemporaryDirectory():
-        data = neurovault.fetch_neurovault(image_ids=[111])
+        data = neurovault.fetch_neurovault_ids(image_ids=[111])
         if data is not None:
             assert_equal(data['images_meta'][0]['id'], 111)
             assert_equal(os.path.dirname(data['images'][0]),
