@@ -364,14 +364,6 @@ _ALL_COLLECTION_FIELDS['used_temporal_derivatives'] = bool
 
 _ALL_COLLECTION_FIELDS_SQL = _translate_types_to_sql(_ALL_COLLECTION_FIELDS)
 
-_KNOWN_BAD_COLLECTION_IDS = (16, 835)  # The files don't seem to exist
-_KNOWN_BAD_IMAGE_IDS = (
-    96, 97, 98,                    # The following maps are not brain maps
-    338, 339,                      # And the following are crap
-    335,                           # 335 is a duplicate of 336
-    3360, 3362, 3364,              # These are mean images, and not Z maps
-    1202, 1163, 1931, 1101, 1099)  # Ugly / obviously not Z maps
-
 
 class MaxImagesReached(StopIteration):
     """Exception class to signify enough images have been fetched."""
@@ -666,6 +658,11 @@ class _SpecialValue(object):
     def __rne__(self, other):
         return self.__ne__(other)
 
+    def __repr__(self):
+        if hasattr(self, 'repr_arg_'):
+            return '{0}({1!r})'.format(self.__class__.__name__, self.repr_arg_)
+        return '{0}()'.format(self.__class__.__name__)
+
 
 class IsNull(_SpecialValue):
     """Special value used to filter terms.
@@ -749,6 +746,7 @@ class NotEqual(_SpecialValue):
     """
     def __init__(self, negated):
         self.negated_ = negated
+        self.repr_arg_ = self.negated_
 
     def __eq__(self, other):
         return not self.negated_ == other
@@ -759,6 +757,7 @@ class _OrderComp(_SpecialValue):
     def __init__(self, bound):
         self.bound_ = bound
         self._cast = type(bound)
+        self.repr_arg_ = self.bound_
 
     def __eq__(self, other):
         try:
@@ -899,15 +898,14 @@ class IsIn(_SpecialValue):
     """Special value used to filter terms.
 
     An instance of this class is constructed with
-    `IsIn(container)`. It will allways be equal to, and only to, any
-    value for which ``value in container`` is ``True``.
+    `IsIn(*accepted)`. It will allways be equal to, and only to, any
+    value for which ``value in accepted`` is ``True``.
 
     Parameters
     ----------
     accepted : container
-        By container we mean any type which exposes a __contains__
-        method. A value will pass through the filter if it is present
-        in `accepted`.
+        A value will pass through the filter if it is present in
+        `accepted`.
 
     See Also
     --------
@@ -926,33 +924,36 @@ class IsIn(_SpecialValue):
     Examples
     --------
     >>> from nilearn.datasets.neurovault import IsIn
-    >>> countable = IsIn(range(11))
+    >>> countable = IsIn(*range(11))
     >>> 7 == countable
     True
     >>> countable == 12
     False
 
     """
-    def __init__(self, accepted):
+    def __init__(self, *accepted):
         self.accepted_ = accepted
 
     def __eq__(self, other):
         return other in self.accepted_
+
+    def __repr__(self):
+        return '{0}{1!r}'.format(
+            self.__class__.__name__, self.accepted_)
 
 
 class NotIn(_SpecialValue):
     """Special value used to filter terms.
 
     An instance of this class is constructed with
-    `NotIn(container)`. It will allways be equal to, and only to, any
-    value for which ``value in container`` is ``False``.
+    `NotIn(*rejected)`. It will allways be equal to, and only to, any
+    value for which ``value in rejected`` is ``False``.
 
     Parameters
     ----------
     rejected : container
-        By container we mean any type which exposes a __contains__
-        method. A value will pass through the filter if it is absent
-        from `rejected`.
+        A value will pass through the filter if it is absent from
+        `rejected`.
 
     See Also
     --------
@@ -969,11 +970,15 @@ class NotIn(_SpecialValue):
     nilearn.datasets.neurovault.Pattern.
 
     """
-    def __init__(self, rejected):
+    def __init__(self, *rejected):
         self.rejected_ = rejected
 
     def __eq__(self, other):
         return other not in self.rejected_
+
+    def __repr__(self):
+        return '{0}{1!r}'.format(
+            self.__class__.__name__, self.rejected_)
 
 
 class Contains(_SpecialValue):
@@ -1014,8 +1019,8 @@ class Contains(_SpecialValue):
     False
 
     """
-    def __init__(self, *args):
-        self.must_be_contained_ = args
+    def __init__(self, *must_be_contained):
+        self.must_be_contained_ = must_be_contained
 
     def __eq__(self, other):
         if not isinstance(other, Container):
@@ -1025,20 +1030,24 @@ class Contains(_SpecialValue):
                 return False
         return True
 
+    def __repr__(self):
+        return '{0}{1!r}'.format(
+            self.__class__.__name__, self.must_be_contained_)
+
 
 class NotContains(_SpecialValue):
     """Special value used to filter terms.
 
     An instance of this class is constructed with
-    `Contains(*must_not_be_contained)`. It will allways be equal to,
-    and only to, any value for which ``item in value`` is ``False``
-    for every item in ``must_be_contained``.
+    `NotContains(*must_not_be_contained)`. It will allways be equal
+    to, and only to, any value for which ``item in value`` is
+    ``False`` for every item in ``must_not_be_contained``.
 
     Parameters
     ----------
-    must_be_contained : container
+    must_not_be_contained : container
         A value will pass through the filter if it does not contain
-        any of the items in must_be_contained.
+        any of the items in must_not_be_contained.
 
     See Also
     --------
@@ -1055,8 +1064,8 @@ class NotContains(_SpecialValue):
     nilearn.datasets.neurovault.Pattern.
 
     """
-    def __init__(self, *args):
-        self.must_not_be_contained_ = args
+    def __init__(self, *must_not_be_contained):
+        self.must_not_be_contained_ = must_not_be_contained
 
     def __eq__(self, other):
         if not isinstance(other, Container):
@@ -1065,6 +1074,10 @@ class NotContains(_SpecialValue):
             if item in other:
                 return False
         return True
+
+    def __repr__(self):
+        return '{0}{1!r}'.format(
+            self.__class__.__name__, self.must_not_be_contained_)
 
 
 class Pattern(_SpecialValue):
@@ -1123,6 +1136,10 @@ class Pattern(_SpecialValue):
                 self.pattern_, other, self.flags_) is None:
             return False
         return True
+
+    def __repr__(self):
+        return '{0}(pattern={1!r}, flags={2})'.format(
+            self.__class__.__name__, self.pattern_, self.flags_)
 
 
 class ResultFilter(object):
@@ -1281,6 +1298,9 @@ class ResultFilter(object):
 
         """
         self.callable_filters_.append(callable_filter)
+
+    def __str__(self):
+        return self.__class__.__name__
 
 
 def _simple_download(url, target_file, temp_dir):
@@ -2408,14 +2428,15 @@ class _ServerDataScroller(object):
              collection_terms, collection_filter,
              _COL_FILTERS_AVAILABLE_ON_SERVER)
         self.collection_filter_ = ResultFilter(
-            {'id': NotIn(ignored_collection_ids)}).AND(self.collection_filter_)
+            {'id': NotIn(*ignored_collection_ids)}).AND(
+                self.collection_filter_)
 
         (self.image_terms_,
          self.image_filter_) = _move_unknown_terms_to_local_filter(
              image_terms, image_filter,
              _IM_FILTERS_AVAILABLE_ON_SERVER)
         self.image_filter_ = ResultFilter(
-            {'id': NotIn(ignored_image_ids)}).AND(self.image_filter_)
+            {'id': NotIn(*ignored_image_ids)}).AND(self.image_filter_)
 
         self.scroll_mode_ = 'filtered'
 
@@ -2682,8 +2703,12 @@ def _scroll_local_data(neurovault_dir,
         image_terms = {}
     if wanted_collection_ids is not None or wanted_image_ids is not None:
         collection_filter = _empty_filter
-        image_filter = ResultFilter({'id': IsIn(wanted_image_ids)}).OR(
-            ResultFilter(collection_id=IsIn(wanted_collection_ids)))
+        if wanted_collection_ids is None:
+            wanted_collection_ids = ()
+        if wanted_image_ids is None:
+            wanted_image_ids = ()
+        image_filter = ResultFilter({'id': IsIn(*wanted_image_ids)}).OR(
+            ResultFilter(collection_id=IsIn(*wanted_collection_ids)))
         max_images = None
     else:
         collection_filter = ResultFilter(
@@ -2881,14 +2906,8 @@ def _chain_local_and_remote(neurovault_dir, mode='download_new',
 
 
 def basic_collection_terms():
-    """Return a term filter that excludes empty collections.
-
-    Collections contained in ``_KNOWN_BAD_COLLECTION_IDS`` are also
-    excluded.
-
-    """
-    return {'number_of_images': NotNull(),
-            'id': NotIn(_KNOWN_BAD_COLLECTION_IDS)}
+    """Return a term filter that excludes empty collections."""
+    return {'number_of_images': NotNull()}
 
 
 def basic_image_terms():
@@ -2902,13 +2921,11 @@ def basic_image_terms():
         - It is thresholded.
         - Its map type is one of "ROI/mask", "anatomical", or "parcellation".
         - Its image type is "atlas"
-        - Its id is in ``_KNOWN_BAD_IMAGE_IDS``.
 
     """
     return {'not_mni': False, 'is_valid': True, 'is_thresholded': False,
-            'map_type': NotIn(('ROI/mask', 'anatomical', 'parcellation')),
-            'image_type': NotEqual('atlas'),
-            'id': NotIn(_KNOWN_BAD_IMAGE_IDS)}
+            'map_type': NotIn('ROI/mask', 'anatomical', 'parcellation'),
+            'image_type': NotEqual('atlas')}
 
 
 def _move_col_id(im_terms, col_terms):
@@ -3481,10 +3498,6 @@ def local_database_connection():
         "ISFILE", 1, os.path.isfile)
     local_database_connection.connection_.create_function(
         "ISDIR", 1, os.path.isdir)
-    local_database_connection.connection_.create_function(
-        "KNOWN_BAD_IM_ID", 1, _KNOWN_BAD_IMAGE_IDS.__contains__)
-    local_database_connection.connection_.create_function(
-        "KNOWN_BAD_COL_ID", 1, _KNOWN_BAD_COLLECTION_IDS.__contains__)
     return local_database_connection.connection_
 
 
@@ -3551,9 +3564,7 @@ def _create_schema(cursor, im_fields=_IMAGE_BASIC_FIELDS,
             """CREATE VIEW valid_images AS SELECT * FROM images WHERE
             not_mni=0 AND is_valid=1 AND is_thresholded=0 AND
             map_type NOT IN ('ROI/mask', 'anatomical', 'parcellation') AND
-            image_type!='atlas' AND
-            KNOWN_BAD_COL_ID(collection_id)=0 AND
-            KNOWN_BAD_IM_ID(id)=0""")
+            image_type!='atlas'""")
     except sqlite3.OperationalError:
         _logger.debug("Failed to create 'valid_images' view: {0}".format(
             traceback.format_exc()))
@@ -3657,8 +3668,6 @@ def read_sql_query(query, bindings=(), as_columns=True, curs=None,
         - Are unthresholded.
         - Are not ROI/mask, anatomical or parcellation maps.
         - Are not atlases.
-        - Are not in ``_KNOWN_BAD_IMAGE_IDS``.
-        - Are not in a collection that is in ``_KNOWN_BAD_COLLECTION_IDS``.
 
     When selecting collections, you may want to consider using the
     view ``valid_collections`` rather than the whole table. This view
