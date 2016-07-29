@@ -1,12 +1,10 @@
 """
 Test image pre-processing functions
 """
-
 from nose.tools import assert_true, assert_false, assert_equal
 from distutils.version import LooseVersion
 from nose import SkipTest
 
-import collections
 import platform
 import os
 import nibabel

@@ -1,30 +1,21 @@
 """
 Downloading NeuroImaging datasets: functional datasets (task + resting-state)
 """
-
-import collections
-import glob
-import json
-import io
+import warnings
 import os
 import re
-import sys
-import warnings
-from itertools import chain
-
+import json
 import numpy as np
 import numbers
 
 import nibabel
 from sklearn.datasets.base import Bunch
-from sklearn.feature_extraction import DictVectorizer
 from sklearn.utils import deprecated
-
 
 from .utils import (_get_dataset_dir, _fetch_files, _get_dataset_descr,
                     _read_md5_sum_file, _tree, _filter_columns)
 from .._utils import check_niimg
-from .._utils.compat import BytesIO, _basestring, _urllib, _http
+from .._utils.compat import BytesIO, _basestring, _urllib
 from .._utils.numpy_conversions import csv_to_array
 
 
@@ -39,22 +30,13 @@ def fetch_haxby_simple(data_dir=None, url=None, resume=True, verbose=1):
         Path of the data directory. Used to force data storage in a specified
         location. Default: None
 
-    resume: bool
-        Whether to resume download of a partly-downloaded file.
-
-    query_server: bool, optional (default: True)
-        if False, then only cached data is used.
-
-    verbose: int
-        Verbosity level (0 means no message).
-
     Returns
     -------
     data: sklearn.datasets.base.Bunch
         Dictionary-like object, interest attributes are:
         'func': list of string.  Path to nifti file with bold data.
-        'session_target': list of string. Path to text file containing session
-        and target data.
+        'session_target': list of string. Path to text file containing session and
+        target data.
         'mask': string. Path to nifti mask file.
         'session': list of string. Path to text file containing labels
         (can be used for LeaveOneLabelOut cross validation for example).
@@ -83,18 +65,17 @@ def fetch_haxby_simple(data_dir=None, url=None, resume=True, verbose=1):
 
     opts = {'uncompress': True}
     files = [
-        (os.path.join('pymvpa-exampledata', 'attributes.txt'), url, opts),
-        (os.path.join('pymvpa-exampledata', 'bold.nii.gz'), url, opts),
-        (os.path.join('pymvpa-exampledata', 'mask.nii.gz'), url, opts),
-        (os.path.join('pymvpa-exampledata', 'attributes_literal.txt'),
-         url, opts),
+            (os.path.join('pymvpa-exampledata', 'attributes.txt'), url, opts),
+            (os.path.join('pymvpa-exampledata', 'bold.nii.gz'), url, opts),
+            (os.path.join('pymvpa-exampledata', 'mask.nii.gz'), url, opts),
+            (os.path.join('pymvpa-exampledata', 'attributes_literal.txt'),
+             url, opts),
     ]
 
     dataset_name = 'haxby2001_simple'
     data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
                                 verbose=verbose)
-    files = _fetch_files(data_dir, files, resume=resume,
-                         query_server=query_server, verbose=verbose)
+    files = _fetch_files(data_dir, files, resume=resume, verbose=verbose)
 
     # There is a common file for the two versions of Haxby
     fdescr = _get_dataset_descr('haxby2001')
@@ -105,7 +86,7 @@ def fetch_haxby_simple(data_dir=None, url=None, resume=True, verbose=1):
 
 
 def fetch_haxby(data_dir=None, n_subjects=1, fetch_stimuli=False,
-                url=None, resume=True, query_server=True, verbose=1):
+                url=None, resume=True, verbose=1):
     """Download and loads complete haxby dataset
 
     Parameters
@@ -120,15 +101,6 @@ def fetch_haxby(data_dir=None, n_subjects=1, fetch_stimuli=False,
     fetch_stimuli: boolean, optional
         Indicate if stimuli images must be downloaded. They will be presented
         as a dictionnary of categories.
-
-    resume: bool
-        Whether to resume download of a partly-downloaded file.
-
-    query_server: bool, optional (default: True)
-        if False, then only cached data is used.
-
-    verbose: int
-        Verbosity level (0 means no message).
 
     Returns
     -------
@@ -179,14 +151,12 @@ def fetch_haxby(data_dir=None, n_subjects=1, fetch_stimuli=False,
     # Get the mask
     url_mask = 'https://www.nitrc.org/frs/download.php/7868/mask.nii.gz'
     mask = _fetch_files(data_dir, [('mask.nii.gz', url_mask, {})],
-                        resume=resume, query_server=query_server,
                         verbose=verbose)[0]
 
     # Dataset files
     if url is None:
         url = 'http://data.pymvpa.org/datasets/haxby2001/'
     md5sums = _fetch_files(data_dir, [('MD5SUMS', url + 'MD5SUMS', {})],
-                           resume=resume, query_server=query_server,
                            verbose=verbose)[0]
     md5sums = _read_md5_sum_file(md5sums)
 
@@ -198,17 +168,16 @@ def fetch_haxby(data_dir=None, n_subjects=1, fetch_stimuli=False,
     n_files = len(sub_files)
 
     files = [
-        (os.path.join('subj%d' % i, sub_file),
-         url + 'subj%d-2010.01.14.tar.gz' % i,
-         {'uncompress': True,
-          'md5sum': md5sums.get('subj%d-2010.01.14.tar.gz' % i, None)})
-        for i in range(1, n_subjects + 1)
-        for sub_file in sub_files
-        if not (sub_file == 'anat.nii.gz' and i == 6)  # no anat for sub. 6
+            (os.path.join('subj%d' % i, sub_file),
+             url + 'subj%d-2010.01.14.tar.gz' % i,
+             {'uncompress': True,
+              'md5sum': md5sums.get('subj%d-2010.01.14.tar.gz' % i, None)})
+            for i in range(1, n_subjects + 1)
+            for sub_file in sub_files
+            if not (sub_file == 'anat.nii.gz' and i == 6)  # no anat for sub. 6
     ]
 
-    files = _fetch_files(data_dir, files, resume=resume,
-                         query_server=query_server, verbose=verbose)
+    files = _fetch_files(data_dir, files, resume=resume, verbose=verbose)
 
     if n_subjects == 6:
         files.append(None)  # None value because subject 6 has no anat
@@ -219,7 +188,7 @@ def fetch_haxby(data_dir=None, n_subjects=1, fetch_stimuli=False,
                           url + 'stimuli-2010.01.14.tar.gz',
                           {'uncompress': True})]
         readme = _fetch_files(data_dir, stimuli_files, resume=resume,
-                              query_server=query_server, verbose=verbose)[0]
+                              verbose=verbose)[0]
         kwargs['stimuli'] = _tree(os.path.dirname(readme), pattern='*.jpg',
                                   dictionary=True)
 
@@ -227,21 +196,21 @@ def fetch_haxby(data_dir=None, n_subjects=1, fetch_stimuli=False,
 
     # return the data
     return Bunch(
-        anat=files[7::n_files],
-        func=files[0::n_files],
-        session_target=files[1::n_files],
-        mask_vt=files[2::n_files],
-        mask_face=files[3::n_files],
-        mask_house=files[4::n_files],
-        mask_face_little=files[5::n_files],
-        mask_house_little=files[6::n_files],
-        mask=mask,
-        description=fdescr,
-        **kwargs)
+            anat=files[7::n_files],
+            func=files[0::n_files],
+            session_target=files[1::n_files],
+            mask_vt=files[2::n_files],
+            mask_face=files[3::n_files],
+            mask_house=files[4::n_files],
+            mask_face_little=files[5::n_files],
+            mask_house_little=files[6::n_files],
+            mask=mask,
+            description=fdescr,
+            **kwargs)
 
 
 def fetch_nyu_rest(n_subjects=None, sessions=[1], data_dir=None, resume=True,
-                   query_server=True, verbose=1):
+                   verbose=1):
     """Download and loads the NYU resting-state test-retest dataset.
 
     Parameters
@@ -256,15 +225,6 @@ def fetch_nyu_rest(n_subjects=None, sessions=[1], data_dir=None, resume=True,
     data_dir: string, optional
         Path of the data directory. Used to force data storage in a specified
         location. Default: None
-
-    resume: bool
-        Whether to resume download of a partly-downloaded file.
-
-    query_server: bool, optional (default: True)
-        if False, then only cached data is used.
-
-    verbose: int
-        Verbosity level (0 means no message).
 
     Returns
     -------
@@ -407,7 +367,7 @@ def fetch_nyu_rest(n_subjects=None, sessions=[1], data_dir=None, resume=True,
         n_subjects = len(subs_a) + len(subs_b)
     if n_subjects > max_subjects:
         warnings.warn('Warning: there are only %d subjects' % max_subjects)
-        n_subjects = max_subjects
+        n_subjects = 25
 
     anat_anon = []
     anat_skull = []
@@ -425,11 +385,11 @@ def fetch_nyu_rest(n_subjects=None, sessions=[1], data_dir=None, resume=True,
     data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
                                 verbose=verbose)
     anat_anon = _fetch_files(data_dir, anat_anon, resume=resume,
-                             query_server=query_server, verbose=verbose)
+                             verbose=verbose)
     anat_skull = _fetch_files(data_dir, anat_skull, resume=resume,
-                              query_server=query_server, verbose=verbose)
+                              verbose=verbose)
     func = _fetch_files(data_dir, func, resume=resume,
-                        query_server=query_server, verbose=verbose)
+                        verbose=verbose)
 
     fdescr = _get_dataset_descr(dataset_name)
 
@@ -437,8 +397,8 @@ def fetch_nyu_rest(n_subjects=None, sessions=[1], data_dir=None, resume=True,
                  session=session, description=fdescr)
 
 
-def fetch_adhd(n_subjects=None, data_dir=None, url=None, resume=True,
-               query_server=True, verbose=1):
+def fetch_adhd(n_subjects=30, data_dir=None, url=None, resume=True,
+               verbose=1):
     """Download and load the ADHD resting-state dataset.
 
     Parameters
@@ -455,15 +415,6 @@ def fetch_adhd(n_subjects=None, data_dir=None, url=None, resume=True,
     url: string, optional
         Override download URL. Used for test only (or if you setup a mirror of
         the data). Default: None
-
-    resume: bool
-        Whether to resume download of a partly-downloaded file.
-
-    query_server: bool, optional (default: True)
-        if False, then only cached data is used.
-
-    verbose: int
-        Verbosity level (0 means no message).
 
     Returns
     -------
@@ -511,10 +462,10 @@ def fetch_adhd(n_subjects=None, data_dir=None, url=None, resume=True,
 
     # First, get the metadata
     phenotypic = ('ADHD200_40subs_motion_parameters_and_phenotypics.csv',
-                  url + '7781/adhd40_metadata.tgz', opts)
+        url + '7781/adhd40_metadata.tgz', opts)
 
     phenotypic = _fetch_files(data_dir, [phenotypic], resume=resume,
-                              query_server=query_server, verbose=verbose)[0]
+                              verbose=verbose)[0]
 
     # Load the csv file
     phenotypic = np.genfromtxt(phenotypic, names=True, delimiter=',',
@@ -535,39 +486,18 @@ def fetch_adhd(n_subjects=None, data_dir=None, url=None, resume=True,
 
     functionals = _fetch_files(
         data_dir, zip(functionals, archives, (opts,) * n_subjects),
-        resume=resume, query_server=query_server, verbose=verbose)
+        resume=resume, verbose=verbose)
 
     confounds = _fetch_files(
         data_dir, zip(confounds, archives, (opts,) * n_subjects),
-        resume=resume, query_server=query_server, verbose=verbose)
+        resume=resume, verbose=verbose)
 
     return Bunch(func=functionals, confounds=confounds,
                  phenotypic=phenotypic, description=fdescr)
 
 
-def fetch_miyawaki2008(data_dir=None, url=None, resume=True,
-                       query_server=True, verbose=1):
+def fetch_miyawaki2008(data_dir=None, url=None, resume=True, verbose=1):
     """Download and loads Miyawaki et al. 2008 dataset (153MB)
-
-    Parameters
-    ----------
-
-    data_dir: string, optional
-        Path of the data directory. Used to force data storage in a specified
-        location. Default: None
-
-    url: string, optional
-        Override download URL. Used for test only (or if you setup a mirror of
-        the data).
-
-    resume: bool
-        Whether to resume download of a partly-downloaded file.
-
-    query_server: bool, optional (default: True)
-        if False, then only cached data is used.
-
-    verbose: int
-        Verbosity level (0 means no message).
 
     Returns
     -------
@@ -678,14 +608,13 @@ def fetch_miyawaki2008(data_dir=None, url=None, resume=True,
     file_mask = [(os.path.join('mask', m), url, opts) for m in file_mask]
 
     file_names = func_figure + func_random + \
-        label_figure + label_random + \
-        file_mask
+                 label_figure + label_random + \
+                 file_mask
 
     dataset_name = 'miyawaki2008'
     data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
                                 verbose=verbose)
-    files = _fetch_files(data_dir, file_names, resume=resume,
-                         query_server=query_server, verbose=verbose)
+    files = _fetch_files(data_dir, file_names, resume=resume, verbose=verbose)
 
     # Fetch the background image
     bg_img = _fetch_files(data_dir, [('bg.nii.gz', url, opts)], resume=resume,
@@ -705,8 +634,7 @@ def fetch_miyawaki2008(data_dir=None, url=None, resume=True,
 
 def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
                               get_masks=False, get_anats=False,
-                              data_dir=None, url=None, resume=True,
-                              query_server=True, verbose=1):
+                              data_dir=None, url=None, resume=True, verbose=1):
     """Download and load Brainomics Localizer dataset (94 subjects).
 
     "The Functional Localizer is a simple and fast acquisition
@@ -822,9 +750,6 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
     resume: bool
         Whether to resume download of a partly-downloaded file.
 
-    query_server: bool, optional (default: True)
-        if False, then only cached data is used.
-
     verbose: int
         Verbosity level (0 means no message).
 
@@ -915,7 +840,7 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
         "right button press (visual cue)": "right visual click",
         "right button press": "right auditory & visual click",
         "right vs left button press": "right auditory & visual click "
-            + "vs left auditory&visual click",
+           + "vs left auditory&visual click",
         "button press (auditory cue) vs sentence listening":
             "auditory click vs auditory sentences",
         "button press (visual cue) vs sentence reading":
@@ -969,8 +894,8 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
     urls = ["%sbrainomics_data_%d.zip?rql=%s&vid=data-zip"
             % (root_url, i,
                _urllib.parse.quote(base_query % {"types": rql_types,
-                                                 "label": c},
-                                   safe=',()'))
+                                          "label": c},
+                            safe=',()'))
             for c, i in zip(contrasts_wrapped, contrasts_indices)]
     filenames = []
     for subject_id in subject_ids:
@@ -986,9 +911,9 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
     if get_masks:
         urls.append("%sbrainomics_data_masks.zip?rql=%s&vid=data-zip"
                     % (root_url,
-                       _urllib.parse.quote(base_query % {
-                           "types": '"boolean mask"',
-                           "label": "mask"}, safe=',()')))
+                       _urllib.parse.quote(base_query % {"types": '"boolean mask"',
+                                                  "label": "mask"},
+                                    safe=',()')))
         for subject_id in subject_ids:
             file_path = os.path.join(
                 "brainomics_data", subject_id, "boolean_mask_mask.nii.gz")
@@ -998,9 +923,9 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
     if get_anats:
         urls.append("%sbrainomics_data_anats.zip?rql=%s&vid=data-zip"
                     % (root_url,
-                       _urllib.parse.quote(base_query % {
-                           "types": '"normalized T1"',
-                           "label": "anatomy"}, safe=',()')))
+                       _urllib.parse.quote(base_query % {"types": '"normalized T1"',
+                                                  "label": "anatomy"},
+                                    safe=',()')))
         for subject_id in subject_ids:
             file_path = os.path.join(
                 "brainomics_data", subject_id,
@@ -1010,13 +935,13 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
     # Fetch subject characteristics (separated in two files)
     if url is None:
         url_csv = ("%sdataset/cubicwebexport.csv?rql=%s&vid=csvexport"
-                   % (root_url,
-                      _urllib.parse.quote("Any X WHERE X is Subject")))
+                   % (root_url, _urllib.parse.quote("Any X WHERE X is Subject")))
         url_csv2 = ("%sdataset/cubicwebexport2.csv?rql=%s&vid=csvexport"
                     % (root_url,
-                       _urllib.parse.quote(
-                           "Any X,XI,XD WHERE X is QuestionnaireRun, "
-                           "X identifier XI, X datetime XD", safe=',')))
+                       _urllib.parse.quote("Any X,XI,XD WHERE X is QuestionnaireRun, "
+                                    "X identifier XI, X datetime "
+                                    "XD", safe=',')
+                       ))
     else:
         url_csv = "%s/cubicwebexport.csv" % url
         url_csv2 = "%s/cubicwebexport2.csv" % url
@@ -1028,8 +953,7 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
     data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
                                 verbose=verbose)
     fdescr = _get_dataset_descr(dataset_name)
-    files = _fetch_files(data_dir, filenames, resume=resume,
-                         query_server=query_server, verbose=verbose)
+    files = _fetch_files(data_dir, filenames, verbose=verbose)
     anats = None
     masks = None
     tmaps = None
@@ -1057,8 +981,7 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
                  ext_vars=csv_data, description=fdescr)
 
 
-def fetch_localizer_calculation_task(n_subjects=None, data_dir=None, url=None,
-                                     resume=True, query_server=True,
+def fetch_localizer_calculation_task(n_subjects=1, data_dir=None, url=None,
                                      verbose=1):
     """Fetch calculation task contrast maps from the localizer.
 
@@ -1076,14 +999,8 @@ def fetch_localizer_calculation_task(n_subjects=None, data_dir=None, url=None,
         Override download URL. Used for test only (or if you setup a mirror of
         the data).
 
-    resume: bool
-        Whether to resume download of a partly-downloaded file.
-
-    query_server: bool, optional (default: True)
-        if False, then only cached data is used.
-
-    verbose: int
-        Verbosity level (0 means no message).
+    verbose: int, optional
+        verbosity level (0 means no message).
 
     Returns
     -------
@@ -1108,8 +1025,7 @@ def fetch_localizer_calculation_task(n_subjects=None, data_dir=None, url=None,
                                      n_subjects=n_subjects,
                                      get_tmaps=False, get_masks=False,
                                      get_anats=False, data_dir=data_dir,
-                                     url=url, resume=resume, verbose=verbose,
-                                     query_server=query_server)
+                                     url=url, resume=True, verbose=verbose)
     data.pop('tmaps')
     data.pop('masks')
     data.pop('anats')
@@ -1169,9 +1085,8 @@ def fetch_localizer_button_task(n_subjects=[2, ], data_dir=None, url=None,
 
 def fetch_abide_pcp(data_dir=None, n_subjects=None, pipeline='cpac',
                     band_pass_filtering=False, global_signal_regression=False,
-                    derivatives=['func_preproc'], quality_checked=True,
-                    url=None, resume=True, query_server=True, verbose=1,
-                    **kwargs):
+                    derivatives=['func_preproc'],
+                    quality_checked=True, url=None, verbose=1, **kwargs):
     """ Fetch ABIDE dataset
 
     Fetch the Autism Brain Imaging Data Exchange (ABIDE) dataset wrt criteria
@@ -1188,15 +1103,6 @@ def fetch_abide_pcp(data_dir=None, n_subjects=None, pipeline='cpac',
     n_subjects: int, optional
         The number of subjects to load. If None is given,
         all 94 subjects are used.
-
-    resume: bool
-        Whether to resume download of a partly-downloaded file.
-
-    query_server: bool, optional (default: True)
-        if False, then only cached data is used.
-
-    verbose: int
-        Verbosity level (0 means no message).
 
     pipeline: string, optional
         Possible pipelines are "ccs", "cpac", "dparsf" and "niak"
@@ -1301,7 +1207,6 @@ def fetch_abide_pcp(data_dir=None, n_subjects=None, pipeline='cpac',
     # Fetch the phenotypic file and load it
     csv = 'Phenotypic_V1_0b_preprocessed1.csv'
     path_csv = _fetch_files(data_dir, [(csv, url + '/' + csv, {})],
-                            resume=resume, query_server=query_server,
                             verbose=verbose)[0]
 
     # Note: the phenotypic file contains string that contains comma which mess
@@ -1314,8 +1219,7 @@ def fetch_abide_pcp(data_dir=None, n_subjects=None, pipeline='cpac',
 
         # This regexp replaces commas between double quotes
         for line in pheno_f:
-            pheno.append(re.sub(r',(?=[^"]*"(?:[^"]*"[^"]*")*[^"]*$)',
-                         ";", line))
+            pheno.append(re.sub(r',(?=[^"]*"(?:[^"]*"[^"]*")*[^"]*$)', ";", line))
 
     # bytes (encode()) needed for python 2/3 compat with numpy
     pheno = '\n'.join(pheno).encode()
@@ -1403,7 +1307,7 @@ def _load_mixed_gambles(zmap_imgs):
 
 
 def fetch_mixed_gambles(n_subjects=1, data_dir=None, url=None, resume=True,
-                        return_raw_data=False, query_server=True, verbose=0):
+                        return_raw_data=False, verbose=0):
     """Fetch Jimura "mixed gambles" dataset.
 
     Parameters
@@ -1420,11 +1324,8 @@ def fetch_mixed_gambles(n_subjects=1, data_dir=None, url=None, resume=True,
         Override download URL. Used for test only (or if you setup a mirror of
         the data).
 
-    resume: bool
-        Whether to resume download of a partly-downloaded file.
-
-    query_server: bool, optional (default: True)
-        if False, then only cached data is used.
+    resume: bool, optional (default True)
+        If true, try resuming download if possible.
 
     verbose: int, optional (default 0)
         Defines the level of verbosity of the output.
@@ -1468,8 +1369,7 @@ def fetch_mixed_gambles(n_subjects=1, data_dir=None, url=None, resume=True,
              for j in range(n_subjects)]
     data_dir = _get_dataset_dir('jimura_poldrack_2012_zmaps',
                                 data_dir=data_dir)
-    zmap_fnames = _fetch_files(data_dir, files, resume=resume,
-                               query_server=query_server, verbose=verbose)
+    zmap_fnames = _fetch_files(data_dir, files, resume=resume, verbose=verbose)
     subject_id = np.repeat(np.arange(n_subjects), 6 * 8)
     data = Bunch(zmaps=zmap_fnames,
                  subject_id=subject_id)
@@ -1740,523 +1640,3 @@ def fetch_cobre(n_subjects=10, data_dir=None, url=None, verbose=1):
 
     return Bunch(func=func, mat_files=mat, phenotypic=csv_array,
                  description=fdescr)
-
-
-def _build_nv_url(base_url, filts=None):
-    """Build a NeuroVault URL with the given filters.
-
-    Parameters
-    ----------
-    base_url: string
-        NeuroVault URL (for collections, images, etc.)
-
-    filts: object, optional
-        If filts is a dict, then key-value pairs are added to the
-        querystring of the URL. Otherwise, it is ignored.
-    """
-    if filts and isinstance(filts, dict):
-        url = '?'.join(base_url,
-                       '&'.join(['='.join(it) for it in filts.items()]))
-    else:
-        url = base_url
-    return url
-
-
-def _get_nv_json(url, local_file=None, overwrite=False,
-                 verbose=2):
-    """Download NeuroVault json metadata; load/save locally if local_file.
-
-    Parameters
-    ----------
-    url: string
-        URL to download the metadata from.
-
-    local_file: string, optional
-        Path to store the downloaded metadata to.
-
-    overwrite: bool, optional
-        If True, will re-download the data, even if it has been
-        previously downloaded.
-
-    verbose: int, optional
-        Defines the level of verbosity of the output.
-        """
-    opts = dict(overwrite=overwrite)
-
-    if not local_file:
-        # Didnt' request to save locally, but _fetch_files
-        #  requires it. So, dump to a temp location.
-        import tempfile
-        fp, filepath = tempfile.mkstemp()
-        data_dir = os.path.dirname(filepath)
-        filename = os.path.basename(filepath)
-        os.close(fp)  # Avoid any potential conflict
-        opts['overwrite'] = True
-        opts['move'] = filepath
-    else:
-        data_dir = os.path.dirname(local_file)
-        filename = os.path.basename(local_file)
-        opts['move'] = local_file  # make sure
-
-    fil = _fetch_files(data_dir=data_dir,
-                       files=[(filename, url, opts)],
-                       verbose=verbose)  # necessary for proper url print
-    with io.open(fil[0], 'r', encoding='utf8') as fp:
-        meta = json.load(fp)
-
-    # Cleanup
-    if local_file is None:
-        os.remove(os.path.join(data_dir, filename))
-    return meta
-
-
-def _get_nv_collections_json(url, data_dir, overwrite=False, query_server=True,
-                             verbose=2):
-    """Get remote list of collections (don't cache locally).
-
-    If offline, aggregate collections metadata from directories.
-    Result is unfiltered.
-
-    Parameters
-    ----------
-    url: string
-        URL to download the metadata from.
-
-    data_dir: string
-        Path to store the downloaded metadata to.
-
-    overwrite: bool, optional
-        If True, will re-download the data, even if it has been
-        previously downloaded.
-
-    query_server: bool, optional (default: True)
-        if False, then only cached data is used.
-
-    verbose: int, optional
-        Defines the level of verbosity of the output.
-    """
-    try:
-        if query_server:  # Fall through to cached copies below, if not.
-            return _get_nv_json(url, overwrite=overwrite, verbose=verbose)
-    except (_urllib.error.URLError, _urllib.error.HTTPError) as ue:
-        if ue.reason[0] != 8:  # connection error
-            raise
-        elif overwrite:  # must requery... fail.
-            raise
-        print("Working offline...")
-
-    except (_http.client.BadStatusLine):
-        if overwrite:
-            raise
-        print("Working offline...")
-
-    # Sort collections, so same order is achieved online & offline
-    collection_dirs = [os.path.basename(p)
-                       for p in glob.glob(os.path.join(data_dir, '*'))
-                       if os.path.isdir(p)]
-    collection_dirs = sorted(collection_dirs,
-                             lambda k1, k2: int(k1) - int(k2))
-
-    coll_meta = dict(results=[], next=None)
-    for cdir in collection_dirs:
-        coll_meta_path = os.path.join(data_dir, cdir,
-                                      'collection_metadata.json')
-        if os.path.exists(coll_meta_path):
-            with io.open(coll_meta_path, 'r', encoding='utf8') as fp:
-                coll_meta['results'].append(json.load(fp))
-    return coll_meta
-
-
-def _filter_nv_results(results, filts):
-    """Filter NeuroVault metadata.
-
-    Parameters
-    ----------
-    results: object
-        If Iterable, then filts will be applied to each
-        element.
-
-    filts: list
-        List of lambda functions that will be applied to
-        each value in the list of dicts. If the lambda
-        function returns False, the item is discarded.
-    """
-    if isinstance(filts, collections.Iterable):
-        for filt in filts:
-            results = [r for r in results if filt(r)]
-    return results
-
-
-def _fetch_nv_terms(image_ids, data_dir=None, verbose=2, query_server=True,
-                    url='http://neurosynth.org/api/v2/decode/'):
-    """ Grab terms for each NeuroVault image, decoded with neurosynth.
-
-    Parameters
-    ----------
-    image_ids: list
-        List of neurovault image IDs (int).
-
-    data_dir: string, optional (default None)
-        Path of the data directory. Used to force data storage in a specified
-        location. Default: None.
-
-    verbose: int, optional (default 0)
-        Defines the level of verbosity of the output.
-
-    url: string, optional (default None)
-        Override download URL. Used for test only (or if you setup a mirror of
-        the data).
-
-    query_server: bool, optional (default: True)
-        if False, then only cached data is used.
-
-    Outputs
-    -------
-
-    Dict, key: term, value: score for each image ID.
-
-    """
-
-    # Massage inputs
-    data_dir = data_dir or _get_dataset_dir('neurosynth')
-    print_frequency = (200 / verbose) if verbose else np.inf
-
-    terms = list()
-    vectorizer = DictVectorizer()
-    for ii, image_id in enumerate(image_ids):
-        if verbose and ii % print_frequency == 0:
-            max_fetch_idx = min(ii + print_frequency, len(image_ids))
-            if ii == 0:
-                sys.stderr.write("Fetching terms for images (of %d)" % (
-                    len(image_ids)))
-            sys.stderr.write(" %d-%d" % (ii + 1, max_fetch_idx))
-
-        # Fetch the terms
-        terms_url = url + '?neurovault=%d' % image_id
-        output_file = 'terms-for-image-%d.json' % image_id
-        file_tuple = ((output_file, terms_url, {'move': output_file}),)
-        elevations = _fetch_files(data_dir, file_tuple, verbose=verbose,
-                                  query_server=query_server)[0]
-        if elevations is None:
-            if verbose >= 3:
-                print("No terms for image %s; skipping." % image_id)
-            terms.append({})
-            continue
-
-        # Read and process the terms.
-        try:
-            with io.open(elevations, 'r', encoding='utf8') as fp:
-                data = json.load(fp)['data']
-        except Exception as e:
-            if verbose >= 2:
-                print("Exception downloading term for image %s: %s" % (
-                    image_id, e))
-            if os.path.exists(elevations):
-                os.remove(elevations)
-            terms.append({})
-        else:
-            data = data['values']
-            terms.append(data if data is not None else {})
-    if verbose:
-        sys.stderr.write(" done.\n")
-
-    # Transform and filter the terms.
-    X = vectorizer.fit_transform(terms).toarray()  # noqa
-    all_terms = dict([(name, X[:, idx])
-                      for name, idx in vectorizer.vocabulary_.items()])
-    good_terms = dict([(t, v) for t, v in all_terms.items()
-                       if np.sum(v[v > 0]) > 0.])
-    return good_terms
-
-
-def fetch_neurovault(max_images=np.inf,
-                     query_server=True,
-                     fetch_terms=False,
-                     exclude_unpublished=False,
-                     exclude_known_bad_images=True,
-                     collection_ids=(),
-                     image_ids=(), image_type=None, map_types=(),
-                     collection_filters=(), image_filters=(),
-                     data_dir=None, url="http://neurovault.org/api",
-                     resume=True, overwrite=False, verbose=2):
-    """Fetch public statistical maps from NeuroVault.org.
-
-       Image data downloaded is matched by `collection_filters` and
-       `image_filters`, if specified.
-
-       On each request, even if data are stored locally, this function
-       will requery NeuroVault for the latest colllections.
-       Metadata for previously queried collections and images, as well
-       as downloaded images, are cached to disk.
-
-       Currently, no check is done to see if a collection or image has
-       changed. To invalidate the cache and download new data, use the
-       `resume=True` flag, with appropriate filters to limit the amount
-       of metadata being downloaded.
-
-    Parameters
-    ----------
-    max_images: int, optional (default np.inf)
-        Maximum # of images to download from the database.
-        Useful for testing out filters and analyses if downloads are slow.
-
-    query_server: bool, optional (default: True)
-        if False, then only cached data is used.
-
-    fetch_terms: bool
-        Whether to fetch terms related to each image from
-        NeuroSynth.org.
-
-    exclude_unpublished: bool, optional (default: False)
-        Exclude any images that belong to a collection without a DOI.
-
-    exclude_known_bad_images: bool
-        Append filters to remove known bad collections,
-        image ids, and images with parameter values that
-        indicate the data are not useful.
-
-    collection_ids: list, optional (default: None)
-        A list of integer IDs of collections to search for images.
-        Negative IDs are *excluded*.
-        If None, all collections will be searched.
-
-    image_ids: list, optional (default: None)
-        A list of integer IDs of images to download.
-        Negative IDs are *excluded*.
-        If None, all images will be searched.
-
-    image_type: string, optional (default: None)
-        A string of image type to include.
-        These include: "statistic_map". See the NeuroVault
-        website for an update-to-date list.
-
-    map_types: string or list, optional (default: None)
-        A string, or list of strings, of map types to include.
-        These include: "F map", "T map", "Z map". See the NeuroVault
-        website for an update-to-date list.
-
-    collection_filters: list or dict, optional (default None)
-        Filters to limit data retrieval and return via the NeuroVault API.
-        If a list, each element should be a function that
-            returns True if the collection metadata is a match.
-            Filtering is applied after metadata is downloaded.
-        If a dict, each key-value pair is an API filter.
-            The key will be checked for equality to the value.
-            Keys are applied before metadata download, limiting
-            the number of rows returned and possibly the number
-            of round trips made.
-        (see http://neurovault.org/api-docs#collapseCollections for
-         API keys and collection metadata keys)
-
-    image_filters: list or dict, optional (default None)
-        Filters to limit data retrieval and return via the NeuroVault API.
-        If a list, each element should be a function that
-            returns True if the image metadata is a match.
-            Filtering is applied after metadata is downloaded.
-            Matched image metadata will trigger actual image download.
-        If a dict, each key-value pair is an API filter.
-            The key will be checked for equality to the value.
-            Keys are applied before metadata download, limiting
-            the number of rows returned and possibly the number
-            of round trips made.
-        (see http://neurovault.org/api-docs#collapseImages for
-         API keys and collection metadata keys)
-
-    data_dir: string, optional (default None)
-        Path of the data directory. Used to force data storage in a specified
-        location. Default: None.
-
-    url: string, optional (default None)
-        Override download URL. Used for test only (or if you setup a mirror of
-        the data).
-
-    overwrite: bool, optional (default False)
-        If True, re-download cached image metadata and data.
-
-    resume: bool, optional (default True)
-        If True, try resuming download if possible.
-
-    verbose: int, optional (default 0)
-        Defines the level of verbosity of the output.
-
-    Returns
-    -------
-    data: Bunch
-        Dictionary-like object, the interest attributes are :
-        'collections': dict of dicts (one per collection)
-            Metadata about each collection (key: collection ID)
-            See http://neurovault.org/api-docs#collapseCollections
-            for all available fields.
-        'images': list of dicts
-            Metadata of image; parallel array to func_files.
-            See http://neurovault.org/api-docs#collapseImages
-            for available fields.
-            Also includes `local_path` (path to downloaded image)
-            and `collection_id` (which indexes into `collections`)
-        'func_files': list of strings
-            Paths to betamaps.
-
-    References
-    ----------
-    [1] Gorgolewski KJ, Varoquaux G, Rivera G, Schwartz Y, Ghosh SS, Maumet C,
-        Sochat VV, Nichols TE, Poldrack RA, Poline J-B, Yarkoni T and
-        Margulies DS (2015) NeuroVault.org: a web-based repository for
-        collecting and sharing unthresholded statistical maps of the human
-        brain. Front. Neuroinform. 9:8.
-        doi: 10.3389/fninf.2015.00008
-    """
-
-    # Massage parameters, convert into image filters.
-    if exclude_known_bad_images:
-        bad_collects = [16]
-        bad_image_ids = [
-            96, 97, 98,                    # The following maps are not brain maps
-            338, 339,                      # And the following are crap
-            335,                           # 335 is a duplicate of 336
-            3360, 3362, 3364,              # These are mean images, and not Z maps
-            1202, 1163, 1931, 1101, 1099]  # Ugly / obviously not Z maps
-        collection_ids = chain(collection_ids, [-bid for bid in bad_collects])
-        image_ids = chain(image_ids, [-bid for bid in bad_image_ids])
-        image_filters = chain(image_filters,
-                              [lambda im: im.get('perc_bad_voxels', 0) < 100,
-                               lambda im: im.get('brain_coverage', 100) > 0])
-    if exclude_unpublished:
-        collection_filters = chain(collection_filters,
-                                   [lambda col: col.get('DOI') is not None])
-    if collection_ids:  # positive: include; negative: exclude
-        collection_ids = tuple(collection_ids)  # consume more than once
-        _pos_col_ids = [cid for cid in collection_ids if cid >= 0]
-        _neg_col_ids = [-cid for cid in collection_ids if cid < 0]
-        if _pos_col_ids:
-            collection_filters = chain(collection_filters,
-                                       [lambda c: c.get('id') in _pos_col_ids])
-        if _neg_col_ids:
-            collection_filters = chain(collection_filters,
-                                       [lambda c: c.get('id') not in _neg_col_ids])
-    if image_ids:  # positive: include; negative: exclude
-        image_ids = tuple(image_ids)  # consume more than once
-        _pos_im_ids = [iid for iid in image_ids if iid >= 0]
-        _neg_im_ids = [-iid for iid in image_ids if iid < 0]
-        if _pos_im_ids:
-            image_filters = chain(image_filters,
-                                  [lambda im: im.get('id') in _pos_im_ids])
-        if _neg_im_ids:
-            image_filters = chain(image_filters,
-                                  [lambda im: im.get('id') not in _neg_im_ids])
-    if image_type:
-        image_filters = chain(image_filters,
-                              [lambda im: im.get('image_type') == image_type])
-    if map_types and isinstance(map_types, _basestring):
-        map_types = [map_types]
-    if map_types:
-        image_filters = chain(image_filters,
-                              [lambda im: im.get('map_type') in map_types])
-    image_filters = tuple(image_filters)  # convert to tuples, we need to consume
-    collection_filters = tuple(collection_filters)  # these filters many times.
-    data_dir = _get_dataset_dir('neurovault', data_dir=data_dir)
-
-    collects = dict()
-    images = []
-    func_files = []
-
-    # Retrieve the relevant collects
-    collections_url = _build_nv_url(base_url=url + '/collections',
-                                    filts=collection_filters)
-    coll_meta = dict(next=collections_url)
-    while len(func_files) < max_images and coll_meta['next'] is not None:
-        # GET up to 100 collections, but without caching, and filter results.
-        coll_meta = _get_nv_collections_json(coll_meta['next'],
-                                             data_dir=data_dir,
-                                             overwrite=overwrite,
-                                             query_server=query_server,
-                                             verbose=verbose)
-        good_coll = _filter_nv_results(results=coll_meta['results'],
-                                       filts=collection_filters)
-
-        # Retrieve image metadata
-        for coll in good_coll:
-            collections_dir = os.path.join(data_dir, str(coll['id']))
-            base_url = url + '/collections/%d/images' % coll['id']
-            images_url = _build_nv_url(base_url=base_url,
-                                       filts=image_filters)
-
-            # Save collection metadata for all matching collections,
-            #   even if no images are matched / downloaded,
-            coll_meta_path = os.path.join(collections_dir,
-                                          'collection_metadata.json')
-            if not os.path.exists(collections_dir):
-                os.makedirs(collections_dir)
-            with open(coll_meta_path, 'w') as fp:
-                json.dump(coll, fp)
-
-            # Return the collections metadata for all matching collections,
-            #   even if no images are matched.
-            collects[coll['id']] = coll
-
-            # Search for matching images
-            imgs_meta_url = images_url
-            while len(func_files) < max_images and imgs_meta_url is not None:
-                prefix = re.sub('[\?=]', '_', os.path.basename(imgs_meta_url))
-                filename = '%s_metadata.json' % prefix
-                local_path = os.path.join(collections_dir, filename)
-
-                tmp_meta = _get_nv_json(imgs_meta_url, local_path,
-                                        overwrite=overwrite, verbose=verbose)
-                all_images, imgs_meta_url = tmp_meta['results'], tmp_meta['next']
-
-                good_images = _filter_nv_results(results=all_images,
-                                                 filts=image_filters)
-
-                # Finally, we have images to download.
-                # 2. Save off collection and image metadata.
-                # 3. Download the image.
-                for im in good_images:
-                    im_url = im['file']
-                    im_filename = os.path.basename(im['file'])
-
-                    # Download file
-                    try:
-                        real_image_path = _fetch_files(
-                            collections_dir,
-                            files=[(im_filename, im_url, {})],
-                            verbose=verbose, query_server=query_server)[0]
-                    except Exception as e:
-                        print("ERROR: failed to download image %d (col=%d): %s" % (
-                            im['id'], coll['id'], e))
-                        continue
-                    if real_image_path is None:
-                        continue
-
-                    # Save metadata
-                    im_basename = os.path.splitext(im_filename)[0]
-                    im_name = im_basename + '_metadata.json'
-                    im_path = os.path.join(collections_dir, im_name)
-                    with open(im_path, 'w') as fp:
-                        json.dump(im, fp)
-
-                    # Add to output struct
-                    im.update(dict(collection_id=coll['id'],
-                                   local_path=real_image_path))  # keep copy
-                    images.append(im)
-                    func_files.append(im['local_path'])
-
-                    # Stopping criterion
-                    if len(func_files) >= max_images:
-                        break
-
-    # Do term fetching after everything else.
-    if fetch_terms:
-        terms = _fetch_nv_terms([im['id'] for im in images],
-                                query_server=query_server, verbose=verbose)
-    else:
-        terms = dict()
-
-    if verbose > 0:
-        print('Done.')
-
-    # Flatten the struct
-    bunch = Bunch(func_files=func_files, images=images,
-                  collections=collects)
-    if fetch_terms:
-        bunch['terms'] = terms
-    return bunch

@@ -85,9 +85,9 @@ uses.
    fetch_oasis_vbm
    fetch_megatrawls_netmats
    fetch_cobre
+   fetch_neurovault
    get_data_dirs
    load_mni152_template
-   fetch_neurovault
    load_mni152_brain_mask
 
 .. _decoding_ref:

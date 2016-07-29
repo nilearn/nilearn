@@ -1,26 +1,41 @@
-NeuroVault
+Neurovault statistical maps
+
 
 Notes
 -----
-NeuroVault contains collections of statistical maps of the human brain.
-Such maps are acquired by scientists all around the world using brain imaging
-techniques such as MRI or PET in a combined effort to map the functions and
-structures of the brain. These include thresholded and unthresholded statistical
-maps.
+Neurovault is a public repository of unthresholded statistical
+maps, parcellations, and atlases of the human brain. You can read
+about it and browse the images it contains at www.neurovault.org.
 
-Collections represent images with some relationship to each other.
-All data should be transformed into MNI space.
-
+Additionally, it is possible to ask Neurosynth to anotate the maps
+we have downloaded.  Neurosynth is a platform for large-scale,
+automated synthesis of fMRI data. It can be used to perform decoding.
+You can find out more about Neurosynth at www.neurosynth.org.
 
 Content
 -------
-    :'func_files': A list of functional images that were downloaded.
-    :'images_meta': A list of dicts of metadata about each image.
-    :'collections': A dict of metadata (id, metadata) for each collection.
+    :'images': Nifti images representing the statistical maps.
+    :'images_meta': Dictionaries containing metadata for each image.
+    :'collections_meta': Dictionaries containing metadata for collections.
+    :'vocabulary': A list of words retrieved from neurosynth.org
+    :'word_frequencies': For each image, the weights of the words
+                         from 'vocabulary'.
+
 
 References
 ----------
-Gorgolewski KJ, Varoquaux G, Rivera G, Schwartz Y, Ghosh SS, Maumet C, Sochat VV, Nichols TE, Poldrack RA, Poline J-B, Yarkoni T and Margulies DS (2015) NeuroVault.org: a web-based repository for collecting and sharing unthresholded statistical maps of the human brain. Front. Neuroinform. 9:8. doi: 10.3389/fninf.2015.00008
+.. [1] Gorgolewski KJ, Varoquaux G, Rivera G, Schwartz Y, Ghosh SS,
+   Maumet C, Sochat VV, Nichols TE, Poldrack RA, Poline J-B, Yarkoni
+   T and Margulies DS (2015) NeuroVault.org: a web-based repository
+   for collecting and sharing unthresholded statistical maps of the
+   human brain. Front. Neuroinform. 9:8.  doi:
+   10.3389/fninf.2015.00008
+
+.. [2] Yarkoni, Tal, Russell A. Poldrack, Thomas E. Nichols, David
+   C. Van Essen, and Tor D. Wager. "Large-scale automated synthesis
+   of human functional neuroimaging data." Nature methods 8, no. 8
+   (2011): 665-670.
+
 
 License
 -------

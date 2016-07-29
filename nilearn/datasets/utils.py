@@ -443,7 +443,7 @@ def _filter_columns(array, filters, combination='and'):
 
 def _fetch_file(url, data_dir, resume=True, overwrite=False,
                 md5sum=None, username=None, password=None, handlers=[],
-                query_server=True, verbose=1):
+                verbose=1):
     """Load requested file, downloading it if needed or requested.
 
     Parameters
@@ -474,9 +474,6 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False,
         urllib handlers passed to urllib.request.build_opener. Used by
         advanced users to customize request handling.
 
-    query_server: bool, optional
-        If False, raises an exception if the file does not exist.
-
     verbose: int, optional
         verbosity level (0 means no message).
 
@@ -503,13 +500,11 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False,
     temp_file_name = file_name + ".part"
     full_name = os.path.join(data_dir, file_name)
     temp_full_name = os.path.join(data_dir, temp_file_name)
-    if not os.path.exists(full_name):
-        if not query_server:
-            raise IOError("File not found and query_server==False")
-    elif overwrite:
-        os.remove(full_name)
-    else:
-        return full_name
+    if os.path.exists(full_name):
+        if overwrite:
+            os.remove(full_name)
+        else:
+            return full_name
     if os.path.exists(temp_full_name):
         if overwrite:
             os.remove(temp_full_name)
@@ -574,6 +569,15 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False,
             # Complete the reporting hook
             sys.stderr.write(' ...done. ({0:.0f} seconds, {1:.0f} min)\n'
                              .format(dt, dt // 60))
+    except (_urllib.error.HTTPError, _urllib.error.URLError) as e:
+        if 'Error while fetching' not in str(e):
+            # For some odd reason, the error message gets doubled up
+            #   (possibly from the re-raise), so only add extra info
+            #   if it's not already there.
+            e.reason = ("%s| Error while fetching file %s; "
+                          "dataset fetching aborted." % (
+                            str(e.reason), file_name))
+        raise
     finally:
         if local_file is not None:
             if not local_file.closed:
@@ -632,8 +636,7 @@ def movetree(src, dst):
         raise Exception(errors)
 
 
-def _fetch_files(data_dir, files, resume=True, mock=False, query_server=True,
-                 verbose=1):
+def _fetch_files(data_dir, files, resume=True, mock=False, verbose=1):
     """Load requested dataset, downloading it if needed or requested.
 
     This function retrieves files from the hard drive or download them from
@@ -666,9 +669,6 @@ def _fetch_files(data_dir, files, resume=True, mock=False, query_server=True,
     mock: boolean, optional
         If true, create empty files if the file cannot be downloaded. Test use
         only.
-
-    query_server: bool, optional
-        If False and the file does not exist, will return None for that file.
 
     verbose: int, optional
         verbosity level (0 means no message).
@@ -710,13 +710,8 @@ def _fetch_files(data_dir, files, resume=True, mock=False, query_server=True,
         temp_target_file = os.path.join(temp_dir, file_)
         # Whether to keep existing files
         overwrite = opts.get('overwrite', False)
-        do_fetch_file = overwrite or (not os.path.exists(target_file) and
-                                      not os.path.exists(temp_target_file))
-        if do_fetch_file and not query_server:
-            files_.append(None)
-            continue
-
-        elif do_fetch_file and abort is None:
+        if (abort is None and (overwrite or (not os.path.exists(target_file) and not
+                os.path.exists(temp_target_file)))):
 
             # We may be in a global read-only repository. If so, we cannot
             # download files.
