@@ -52,8 +52,8 @@ def test_high_level_glm_with_paths():
         # asking for contrast before model fit gives error
         assert_raises(ValueError, model.compute_contrast, [])
         # fit model
-        Y = [func_img]*4
-        X = pd.DataFrame([[1]]*4)
+        Y = [func_img] * 4
+        X = pd.DataFrame([[1]] * 4)
         model = model.fit(Y, design_matrix=X)
         c1 = np.eye(len(model.design_matrix_.columns))[0]
         z_image = model.compute_contrast(c1, None, 'z_score')
