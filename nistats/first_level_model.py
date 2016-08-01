@@ -222,9 +222,9 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
 
     verbose : integer, optional
         Indicate the level of verbosity. By default, nothing is printed.
-        If 0 will print nothing. If 1 will print progress by computation of
-        each run. If 2 will print timing details of masker and GLM. If 3 will
-        print masker computation details.
+        If 0 prints nothing. If 1 prints progress by computation of
+        each run. If 2 prints timing details of masker and GLM. If 3 
+        prints masker computation details.
 
     n_jobs : integer, optional
         The number of CPUs to use to do the computation. -1 means
