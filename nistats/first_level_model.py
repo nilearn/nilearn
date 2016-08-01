@@ -251,7 +251,7 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
                  target_shape=None, smoothing_fwhm=None, memory=Memory(None),
                  memory_level=1, standardize=False, signal_scaling=0,
                  noise_model='ar1', verbose=0, n_jobs=1,
-                 minimize_memory=True):
+                 minimize_memory=True, model_id=None):
         # design matrix parameters
         self.t_r = t_r
         self.slice_time_ref = slice_time_ref
@@ -288,6 +288,7 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         # attributes
         self.labels_ = None
         self.results_ = None
+        self.model_id = model_id
 
     def fit(self, run_imgs, events=None, confounds=None,
             design_matrices=None):
