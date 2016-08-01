@@ -104,11 +104,11 @@ class SecondLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
 
         regressors: pandas DataFrame, optional
             Must contain a model_id column. All other columns are
-            considered as confounders and included in the model. If
+            considered as regressors and included in the model. If
             design_matrix is provided then this argument is ignored.
             The resulting second level design matrix uses the same column
             names as in the given DataFrame for regressors. At least two columns
-            are expected, "model_id" and at least one confounder.
+            are expected, "model_id" and at least one regressor.
 
         design_matrix: pandas DataFrame, optional
             Design matrix to fit the GLM. The number of rows
@@ -198,9 +198,9 @@ class SecondLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
                 raise ValueError('regressors DataFrame must contain column'
                                  '"model_id"')
             if len(regressors.columns) < 2:
-                raise ValueError('confound should contain at least 2 columns'
+                raise ValueError('regressors should contain at least 2 columns'
                                  'one called "model_id" and the other with'
-                                 'a given confounder')
+                                 'a given regressor')
 
         # check design matrix
         if design_matrix is not None:
