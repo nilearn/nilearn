@@ -446,3 +446,31 @@ def plot_design_matrix(design_matrix, rescale=True, ax=None):
     ax.set_xticks(range(len(names)))
     ax.set_xticklabels(names, rotation=60, ha='right')
     return ax
+
+
+def _create_second_level_design(maps_table, confounds=None):
+    """Infers a second level design from a maps table.
+
+    The maps table is a pandas DataFrame with at least columns 'map_name' and
+    'subject_id', confounds is also a pandas DataFrame with at least two
+    columns 'subject_id' and one confounder.
+    """
+    maps_name = maps_table['map_name'].tolist()
+    subjects_id = maps_table['subject_id'].tolist()
+    confounds_name = []
+    if confounds is not None:
+        confounds_name = confounds.columns.tolist()
+        confounds_name.remove('subject_id')
+    design_columns = (np.unique(maps_name).tolist() +
+                      np.unique(subjects_id).tolist() +
+                      confounds_name)
+    design = pd.DataFrame(columns=design_columns)
+    for ridx, row in maps_table.iterrows():
+        design.loc[ridx] = [0] * len(design_columns)
+        design.loc[ridx, row['map_name']] = 1
+        design.loc[ridx, row['subject_id']] = 1
+        if confounds is not None:
+            conrow = confounds['subject_id'] == row['subject_id']
+            for conf_name in confounds_name:
+                design.loc[ridx, conf_name] = confounds[conrow][conf_name].values
+    return design
