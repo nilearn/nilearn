@@ -16,7 +16,7 @@ from .first_level_model import run_glm
 from .regression import OLSModel, SimpleRegressionResults
 from .contrasts import compute_contrast
 from .utils import _basestring
-from .design_matrix import _create_second_level_design
+from .design_matrix import create_second_level_design
 
 
 class SecondLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
@@ -47,6 +47,8 @@ class SecondLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
 
     verbose : integer, optional
         Indicate the level of verbosity. By default, nothing is printed.
+        If 0 prints nothing. If 1 prints final computation time.
+        If 2 prints masker computation details.
 
     n_jobs : integer, optional
         The number of CPUs to use to do the computation. -1 means
@@ -66,10 +68,10 @@ class SecondLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         self.labels_ = None
         self.results_ = None
 
-    def fit(self, first_level_input, first_level_conditions=None,
+    def fit(self, second_level_input, first_level_conditions=None,
             confounds=None, design_matrix=None,
             first_level_conditions_name=None):
-        """ Fit the GLM
+        """ Fit the second-level GLM
 
         1. create design matrix
         2. do a masker job: fMRI_data -> Y
@@ -77,106 +79,105 @@ class SecondLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
 
         Parameters
         ----------
-        first_level_input: list of `FirstLevelModel` objects or pandas
-                           DataFrame or list of Niimg-like objects.
+        second_level_input: list of `FirstLevelModel` objects or pandas
+                            DataFrame or list of Niimg-like objects.
             If list of `FirstLevelModel` objects, then first_level_conditions
             must be provided. If a pandas DataFrame, then must contain columns
-            subject_id, map_name, effects_map_path. If list of Niimg-like
-            objects then this will be taken literally as Y for the model fit
+            model_id, map_name, effects_map_path. If list of Niimg-like
+            objects then this is taken literally as Y for the model fit
             and design_matrix must be provided.
 
         first_level_conditions: list of (str or array) or None
-            If first_level_input is a list of `FirstLevelModel` objects then
+            If second_level_input is a list of `FirstLevelModel` objects then
             it is mandatory to provide a list of contrast definitions to pass
-            to the compute_contrast method of `FirstLevelModel` which can be
-            a str or array. Check the compute_contrast documentation of
-            `FirstLevelModel` for more details on the contrast definitions.
+            to the compute_contrast method of `FirstLevelModel`. The contrast
+            definitions can be a str or array. Check the compute_contrast
+            documentation of `FirstLevelModel` for more details on the
+            contrast definitions.
 
-            If first_level_input is a pandas DataFrame then a list of strings
-            is expected with the names of maps that will be part of the model.
-            None indicates that all maps should be included.
+            If second_level_input is a pandas DataFrame then a list of strings
+            is expected with the names of maps to include in the model.
+            If first_level_conditions is set to None then all maps are included
 
-            If first_level_input is a list of Niimg-like objects then this
-            argument will be ignored.
+            If second_level_input is a list of Niimg-like objects then this
+            argument is ignored.
 
         confounds: pandas DataFrame, optional
-            Must contain a subject_id column. All other columns will be
+            Must contain a model_id column. All other columns are
             considered as confounders and included in the model. If
-            design_matrix is provided then this argument will be ignored.
-            The resulting second level design matrix will use the same column
+            design_matrix is provided then this argument is ignored.
+            The resulting second level design matrix uses the same column
             names as in the given DataFrame for confounds. At least two columns
-            are expected, "subject_id" and at least one confounder.
+            are expected, "model_id" and at least one confounder.
 
         design_matrix: pandas DataFrame, optional
-            Design matrix that will be used to fit the GLM. The number of rows
+            Design matrix to fit the GLM. The number of rows
             in the design matrix must agree with the size of the list in
-            first_level_conditions. Careful that the order of maps given
+            first_level_conditions. Ensure that the order of maps given
             by first_level_conditions or inferred directly from
-            first_level_input when first_level_conditions is None correctly
-            match the order of the rows in the design matrix.
+            second_level_input matches the order of the rows in the design
+            matrix.
 
         first_level_conditions_name: list of str or None,
-            This argument only applies when first_level_input is a list of
+            This argument only applies when second_level_input is a list of
             `FirstLevelModel` objects. It specifies the name of the columns
             corresponding to the provided first_level_conditions.
-            If None then the column names will be generated with the form
+            If None then the column names are generated with the form
             'con_00'.
         """
         # Check parameters
         # check first level input
-        if isinstance(first_level_input, FirstLevelModel):
-            raise ValueError('A second level model requires a list with at'
-                             'least two first level models.')
-        elif isinstance(first_level_input, list):
-            if len(first_level_input) < 2:
+        if isinstance(second_level_input, list):
+            if len(second_level_input) < 2:
                 raise ValueError('A second level model requires a list with at'
-                                 'least two first level models.')
+                                 'least two first level models or niimgs')
             # Check FirstLevelModel objects case
-            if isinstance(first_level_input[0], FirstLevelModel):
+            if isinstance(second_level_input[0], FirstLevelModel):
                 if first_level_conditions is None:
-                    raise ValueError('First level models input require'
+                    raise ValueError('First level models input requires'
                                      'first_level_conditions to be provided')
-                for midx, first_level_model in enumerate(first_level_input):
+                for midx, first_level_model in enumerate(second_level_input):
                     if not isinstance(first_level_model, FirstLevelModel):
                         raise ValueError(' object at idx %d is %s instead of'
                                          ' FirstLevelModel object' %
                                          (midx, type(first_level_model)))
                     if confounds is not None:
-                        if first_level_model.subject_id is None:
-                            raise ValueError('In case confounds are provided '
-                                             'first level objects need to '
-                                             'provide the attribute subject_id'
-                                             ' to match rows appropriately'
-                                             '. model at idx %d do not provide'
-                                             ' it. It can be set by doing '
-                                             'model.subject_id = "01"')
+                        if first_level_model.model_id is None:
+                            raise ValueError(
+                                'In case confounds are provided, first level '
+                                'objects need to provide the attribute '
+                                'model_id to match rows appropriately. Model '
+                                'at idx %d do not provide it. To set it, you '
+                                'can do first_level_model.model_id = "01"' %
+                                (midx))
             # Check niimgs case
-            elif isinstance(first_level_input[0], (str, Nifti1Image)):
+            elif isinstance(second_level_input[0], (str, Nifti1Image)):
                 if design_matrix is None:
-                    raise ValueError('With list of niimgs as first_level_input'
+                    raise ValueError('With list of niimgs as second_level_input'
                                      ' a design matrix must be provided')
-                for midx, niimg in enumerate(first_level_input):
+                for midx, niimg in enumerate(second_level_input):
                     if not isinstance(niimg, (str, Nifti1Image)):
                         raise ValueError(' object at idx %d is %s instead of'
                                          ' Niimg-like object' %
                                          (midx, type(niimg)))
         # Check pandas dataframe case
-        elif isinstance(first_level_input, pd.DataFrame):
-            for col in ['subject_id', 'map_name', 'effects_map_path']:
-                if col not in first_level_input.columns:
-                    raise ValueError('first_level_input DataFrame must contain'
-                                     ' columns subject_id, map_name and'
+        elif isinstance(second_level_input, pd.DataFrame):
+            for col in ['model_id', 'map_name', 'effects_map_path']:
+                if col not in second_level_input.columns:
+                    raise ValueError('second_level_input DataFrame must contain'
+                                     ' columns model_id, map_name and'
                                      ' effects_map_path')
             if first_level_conditions is not None:
                 for cond in first_level_conditions:
                     if not isinstance(cond, str):
-                        raise ValueError('When first_level_input is a'
+                        raise ValueError('When second_level_input is a'
                                          ' DataFrame, first_level_conditions '
                                          'must be a list of str')
         else:
-            raise ValueError('first_level_input must be a list of'
+            raise ValueError('second_level_input must be a list of'
                              ' `FirstLevelModel` objects, a pandas DataFrame'
-                             ' or a list Niimg-like objects')
+                             ' or a list Niimg-like objects. Instead %s '
+                             'was provided' % type(second_level_input))
 
         # check conditions if provided
         if first_level_conditions is not None:
@@ -193,12 +194,12 @@ class SecondLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         if confounds is not None:
             if not isinstance(confounds, pd.DataFrame):
                 raise ValueError('confounds must be a pandas DataFrame')
-            if 'subject_id' not in confounds.columns:
+            if 'model_id' not in confounds.columns:
                 raise ValueError('confounds DataFrame must contain column'
-                                 '"subject_id"')
+                                 '"model_id"')
             if len(confounds.columns) < 2:
                 raise ValueError('confound should contain at least 2 columns'
-                                 'one called "subject_id" and the other with'
+                                 'one called "model_id" and the other with'
                                  'a given confounder')
 
         # check design matrix
@@ -220,57 +221,55 @@ class SecondLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
                                      'list of strings')
 
         # Build the design matrix X and list of imgs Y for GLM fit
-        if isinstance(first_level_input, pd.DataFrame):
+        if isinstance(second_level_input, pd.DataFrame):
+            maps_table = second_level_input
             # Get only first level conditions if provided
             if first_level_conditions is not None:
                 for condition in first_level_conditions:
-                    if condition not in first_level_input['map_name'].tolist():
+                    if condition not in maps_table['map_name'].tolist():
                         raise ValueError('condition %s not present in'
-                                         ' first_level_input' % condition)
-                in_cond = first_level_input.apply(lambda x: x['map_name'] in
-                                                  first_level_conditions,
-                                                  axis=1)
-                first_level_input = first_level_input[in_cond]
+                                         ' second_level_input' % condition)
+                in_cond = maps_table.apply(
+                    lambda x: x['map_name'] in first_level_conditions, axis=1)
+                maps_table = maps_table[in_cond]
             # Create design matrix if necessary
             if design_matrix is None:
-                design = _create_second_level_design(first_level_input,
-                                                     confounds)
-            # get effect maps
-            effects_maps = first_level_input['effects_map_path'].tolist()
+                design_matrix = create_second_level_design(maps_table,
+                                                           confounds)
+            # get effect maps for fixed effects GLM
+            effects_maps = maps_table['effects_map_path'].tolist()
 
-        elif isinstance(first_level_input[0], FirstLevelModel):
+        elif isinstance(second_level_input[0], FirstLevelModel):
             # Check models were fit
-            for midx, model in enumerate(first_level_input):
+            for midx, model in enumerate(second_level_input):
                 if model.labels_ is None:
                     raise ValueError('Model at idx %d has not been fit' % midx)
             # Get the first level model maps
-            design_df = pd.DataFrame(columns=['map_name', 'subject_id'])
+            maps_table = pd.DataFrame(columns=['map_name', 'model_id'])
             effects_maps = []
-            for model in first_level_input:
+            for model in second_level_input:
                 for con_idx, con_def in enumerate(first_level_conditions):
                     con_name = 'con_%02d' % con_idx
                     if first_level_conditions_name:
                         con_name = first_level_conditions_name[con_idx]
-                    design_df.loc[len(design_df)] = [con_name,
-                                                     model.subject_id]
+                    maps_table.loc[len(maps_table)] = [con_name,
+                                                     model.model_id]
                     eff_map = model.compute_contrast(con_def,
                                                      output_type='effect_size')
                     effects_maps.append(eff_map)
             # Get the design matrix
             if design_matrix is None:
-                design = _create_second_level_design(design_df, confounds)
+                design_matrix = create_second_level_design(maps_table,
+                                                           confounds)
 
         else:
-            design = design_matrix
-            effects_maps = first_level_input
+            effects_maps = second_level_input
 
         # set design matrix, given or computed
-        if design_matrix is None:
-            self.design_matrix_ = design
-        else:
-            self.design_matrix_ = design = design_matrix
+        self.design_matrix_ = design_matrix
+
         # check design matrix X and effect maps Y agree on number of rows
-        if len(effects_maps) != design.shape[0]:
+        if len(effects_maps) != design_matrix.shape[0]:
             raise ValueError('design_matrix X number of rows do not agree with'
                              ' number of maps Y considered')
         # check niimgs
@@ -307,8 +306,8 @@ class SecondLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
             mem_glm = self.memory.cache(run_glm, ignore=arg_ignore)
         else:
             mem_glm = run_glm
-        labels, results = mem_glm(Y, design.as_matrix(), n_jobs=self.n_jobs,
-                                  noise_model='ols')
+        labels, results = mem_glm(Y, design_matrix.as_matrix(),
+                                  n_jobs=self.n_jobs, noise_model='ols')
         # We save memory if inspecting model details is not necessary
         if self.minimize_memory:
             for key in results:
@@ -328,22 +327,16 @@ class SecondLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
                          output_type='z_score'):
         """Generate different outputs corresponding to
         the contrasts provided e.g. z_map, t_map, effects and variance.
-        In multi-session case, outputs the fixed effects map.
 
         Parameters
         ----------
-        contrast_def : str or array of shape (n_col) or list of (string or
-                       array of shape (n_col))
+        contrast_def : str or array of shape (n_col)
             where ``n_col`` is the number of columns of the design matrix,
-            (one array per run). If only one array is provided when there
-            are several runs, it will be assumed that the same contrast is
-            desired for all runs. The string can be a formula compatible with
-            the linear constraint of the Patsy library. Basically one can use
-            the name of the conditions as they appear in the design matrix of
+            The string can be a formula compatible with the linear constraint
+            of the Patsy library. Basically one can use the name of the 
+            conditions as they appear in the design matrix of
             the fitted model combined with operators /*+- and numbers.
-            Nonetheless all contrasts assume the baseline of the tested effect
-            as 0, so specifying a different baseline in a formula will have no
-            effect. Please checks the patsy documentation for formula examples:
+            Please checks the patsy documentation for formula examples:
             http://patsy.readthedocs.io/en/latest/API-reference.html#patsy.DesignInfo.linear_constraint
 
         stat_type : {'t', 'F'}, optional
@@ -369,10 +362,10 @@ class SecondLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
             if np.all(con_val == 0):
                 raise ValueError('Contrast is null')
         else:
-            des_names = np.unique(self.design_matrix_.columns.tolist())
-            if len(des_names) == len(self.design_matrix_.columns):
-                di = DesignInfo(self.design_matrix_.columns.tolist())
-                con_val = di.linear_constraint(contrast_def).coefs
+            design_names = np.unique(self.design_matrix_.columns.tolist())
+            if len(design_names) == len(self.design_matrix_.columns):
+                design_info = DesignInfo(self.design_matrix_.columns.tolist())
+                con_val = design_info.linear_constraint(contrast_def).coefs
             else:
                 raise ValueError('can not interpret formula when design'
                                  ' do not contain columns with unique '
@@ -383,10 +376,10 @@ class SecondLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
             if output_type not in ['z_score', 'stat', 'p_value', 'effect_size',
                                    'effect_variance']:
                 raise ValueError('output_type must be one of "z_score", "stat"'
-                                 ' ,"p_value", "effect_size" or "effect_variance"')
+                                 ', "p_value", "effect_size" or "effect_variance"')
         else:
             raise ValueError('output_type must be one of "z_score", "stat",'
-                             ' "p_value","effect_size" or "effect_variance"')
+                             ' "p_value", "effect_size" or "effect_variance"')
 
         if self.memory is not None:
             arg_ignore = ['labels', 'results']
