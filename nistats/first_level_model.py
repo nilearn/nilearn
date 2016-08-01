@@ -290,7 +290,7 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         self.results_ = None
         self.model_id = model_id
 
-    def fit(self, run_imgs, events=None, confounds=None,
+    def fit(self, run_imgs, events=None, regressors=None,
             design_matrices=None):
         """ Fit the GLM
 
@@ -312,9 +312,9 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
             expected per run_img. Ignored in case designs is not None.
             If string, then a path to a csv file is expected.
 
-        confounds: pandas Dataframe or string or list of pandas DataFrames or
+        regressors: pandas Dataframe or string or list of pandas DataFrames or
                    strings,
-            Each column in a DataFrame corresponds to a confound variable
+            Each column in a DataFrame corresponds to a regressor variable
             to be included in the regression model of the respective run_img.
             The number of rows must match the number of volumes in the
             respective run_img. Ignored in case designs is not None.
@@ -322,7 +322,7 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
 
         design_matrices: pandas DataFrame or list of pandas DataFrames,
             Design matrices that will be used to fit the GLM. If given it
-            takes precedence over events and confounds.
+            takes precedence over events and regressors.
         """
         # Check arguments
         # Check imgs type
@@ -347,8 +347,8 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         if events is not None:
             events = _check_run_tables(run_imgs, events, 'events')
 
-        if confounds is not None:
-            confounds = _check_run_tables(run_imgs, confounds, 'confounds')
+        if regressors is not None:
+            regressors = _check_run_tables(run_imgs, regressors, 'regressors')
 
         # Learn the mask
         if self.mask is False:
@@ -408,24 +408,24 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
             run_img = check_niimg(run_img, ensure_ndim=4)
             if design_matrices is None:
                 n_scans = run_img.get_data().shape[3]
-                if confounds is not None:
-                    confounds_matrix = confounds[run_idx].values
-                    if confounds_matrix.shape[0] != n_scans:
-                        raise ValueError('Rows in confounds does not match'
+                if regressors is not None:
+                    regressors_matrix = regressors[run_idx].values
+                    if regressors_matrix.shape[0] != n_scans:
+                        raise ValueError('Rows in regressors does not match'
                                          'n_scans in run_img at index %d'
                                          % (run_idx,))
-                    confounds_names = confounds[run_idx].columns.tolist()
+                    regressors_names = regressors[run_idx].columns.tolist()
                 else:
-                    confounds_matrix = None
-                    confounds_names = None
+                    regressors_matrix = None
+                    regressors_names = None
                 start_time = self.slice_time_ref * self.t_r
                 end_time = (n_scans - 1 + self.slice_time_ref) * self.t_r
                 frame_times = np.linspace(start_time, end_time, n_scans)
                 design = make_design_matrix(frame_times, events[run_idx],
                                             self.hrf_model, self.drift_model,
                                             self.period_cut, self.drift_order,
-                                            self.fir_delays, confounds_matrix,
-                                            confounds_names, self.min_onset)
+                                            self.fir_delays, regressors_matrix,
+                                            regressors_names, self.min_onset)
             else:
                 design = design_matrices[run_idx]
             self.design_matrices_.append(design)

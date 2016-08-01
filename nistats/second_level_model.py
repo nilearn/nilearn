@@ -69,7 +69,7 @@ class SecondLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         self.results_ = None
 
     def fit(self, second_level_input, first_level_conditions=None,
-            confounds=None, design_matrix=None,
+            regressors=None, design_matrix=None,
             first_level_conditions_name=None):
         """ Fit the second-level GLM
 
@@ -102,12 +102,12 @@ class SecondLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
             If second_level_input is a list of Niimg-like objects then this
             argument is ignored.
 
-        confounds: pandas DataFrame, optional
+        regressors: pandas DataFrame, optional
             Must contain a model_id column. All other columns are
             considered as confounders and included in the model. If
             design_matrix is provided then this argument is ignored.
             The resulting second level design matrix uses the same column
-            names as in the given DataFrame for confounds. At least two columns
+            names as in the given DataFrame for regressors. At least two columns
             are expected, "model_id" and at least one confounder.
 
         design_matrix: pandas DataFrame, optional
@@ -141,10 +141,10 @@ class SecondLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
                         raise ValueError(' object at idx %d is %s instead of'
                                          ' FirstLevelModel object' %
                                          (midx, type(first_level_model)))
-                    if confounds is not None:
+                    if regressors is not None:
                         if first_level_model.model_id is None:
                             raise ValueError(
-                                'In case confounds are provided, first level '
+                                'In case regressors are provided, first level '
                                 'objects need to provide the attribute '
                                 'model_id to match rows appropriately. Model '
                                 'at idx %d do not provide it. To set it, you '
@@ -190,14 +190,14 @@ class SecondLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
             else:
                 raise ValueError('first_level_conditions is not a list')
 
-        # check confounds
-        if confounds is not None:
-            if not isinstance(confounds, pd.DataFrame):
-                raise ValueError('confounds must be a pandas DataFrame')
-            if 'model_id' not in confounds.columns:
-                raise ValueError('confounds DataFrame must contain column'
+        # check regressors
+        if regressors is not None:
+            if not isinstance(regressors, pd.DataFrame):
+                raise ValueError('regressors must be a pandas DataFrame')
+            if 'model_id' not in regressors.columns:
+                raise ValueError('regressors DataFrame must contain column'
                                  '"model_id"')
-            if len(confounds.columns) < 2:
+            if len(regressors.columns) < 2:
                 raise ValueError('confound should contain at least 2 columns'
                                  'one called "model_id" and the other with'
                                  'a given confounder')
@@ -235,7 +235,7 @@ class SecondLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
             # Create design matrix if necessary
             if design_matrix is None:
                 design_matrix = create_second_level_design(maps_table,
-                                                           confounds)
+                                                           regressors)
             # get effect maps for fixed effects GLM
             effects_maps = maps_table['effects_map_path'].tolist()
 
@@ -260,7 +260,7 @@ class SecondLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
             # Get the design matrix
             if design_matrix is None:
                 design_matrix = create_second_level_design(maps_table,
-                                                           confounds)
+                                                           regressors)
 
         else:
             effects_maps = second_level_input
