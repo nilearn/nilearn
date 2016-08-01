@@ -14,7 +14,8 @@ from nilearn._utils.testing import assert_raises_regex
 
 from nistats.design_matrix import (
     _convolve_regressors, make_design_matrix,
-    _cosine_drift, plot_design_matrix, check_design_matrix)
+    _cosine_drift, plot_design_matrix, check_design_matrix,
+    create_second_level_design)
 
 from nibabel.tmpdirs import InTemporaryDirectory
 
@@ -491,3 +492,26 @@ def test_spm_2():
     _, matrix, _ = check_design_matrix(X1)
     assert_true(((spm_design_matrix - matrix) ** 2).sum() /
                 (spm_design_matrix ** 2).sum() < .1)
+
+
+def _first_level_dataframe():
+    conditions = ['map_name', 'model_id', 'map_path']
+    names = ['con_01', 'con_02', 'con_01', 'con_02']
+    subjects = ['01', '01', '02', '02']
+    maps = ['', '', '', '']
+    dataframe = pd.DataFrame({'map_name': names,
+                              'model_id': subjects,
+                              'effects_map_path': maps})
+    return dataframe
+
+
+def test_create_second_level_design():
+    first_level_input = _first_level_dataframe()
+    regressors = [['01', 0.1], ['02', 0.75]]
+    regressors = pd.DataFrame(regressors, columns=['model_id', 'f1'])
+    design = create_second_level_design(first_level_input, regressors)
+    expected_design = np.array([[1, 0, 1, 0, 0.1], [0, 1, 1, 0, 0.1],
+                                [1, 0, 0, 1, 0.75], [0, 1, 0, 1, 0.75]])
+    assert_array_equal(design, expected_design)
+    assert_true(len(design.columns) == 2 + 2 + 1)
+    assert_true(len(design) == 2 + 2)
