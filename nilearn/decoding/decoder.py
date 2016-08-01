@@ -27,6 +27,7 @@ from sklearn.metrics import (r2_score, f1_score, precision_score, recall_score,
 from sklearn.base import BaseEstimator
 from sklearn.base import is_classifier
 from sklearn.utils.extmath import safe_sparse_dot
+from sklearn.metrics import make_scorer
 from sklearn import clone
 
 from .._utils.compat import _basestring
@@ -38,7 +39,6 @@ from .._utils.fixes import check_is_fitted
 
 from .._utils.fixes import ParameterGrid
 from .._utils.fixes import check_scoring
-from .._utils.fixes import make_scorer
 
 from ..input_data import NiftiMasker, MultiNiftiMasker
 
