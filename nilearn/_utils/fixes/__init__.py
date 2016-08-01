@@ -23,13 +23,6 @@ except ImportError:
     # Changed in 0.15
     from sklearn.utils import check_array as atleast2d_or_csr
 
-# XXX remove this
-# roc_auc_score
-try:
-    from sklearn.metrics import roc_auc_score
-except ImportError:
-    from sklearn.metrics import auc as roc_auc_score
-
 try:
     from sklearn.utils import check_X_y
     from sklearn.utils import check_is_fitted
@@ -46,11 +39,10 @@ except ImportError:
 
 try:
     from sklearn.metrics import check_scoring
-    from sklearn.metrics import make_scorer
 except ImportError:
     # scikit-learn < 0.15
     from .sklearn_metrics import check_scoring
-    from .sklearn_metrics import make_scorer
 
 __all__ = ['f_regression', 'atleast2d_or_csr', 'roc_auc_score',
-           'check_X_y', 'check_is_fitted', 'check_cv']
+           'check_X_y', 'check_is_fitted', 'check_cv', 'check_scoring',
+           'ParameterGrid']
