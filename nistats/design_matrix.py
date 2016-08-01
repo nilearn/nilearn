@@ -456,7 +456,10 @@ def create_second_level_design(maps_table, regressors=None):
     maps_table: pandas DataFrame
         Contains at least columns 'map_name' and 'model_id'
     regressors: pandas DataFrame, optional
-        If given, contains at least two columns, 'model_id' and one regressor
+        If given, contains at least two columns, 'model_id' and one regressor.
+        regressors and maps_table do not need to agree on their shape,
+        information between them is matched based on the 'model_id' column
+        that both must have.
 
     Returns
     -------
