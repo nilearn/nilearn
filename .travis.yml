@@ -26,7 +26,7 @@ env:
       NUMPY_VERSION="1.7.1" SCIPY_VERSION="0.11.0"
       SCIKIT_LEARN_VERSION="0.14.1" MATPLOTLIB_VERSION="1.1.1"
       NIBABEL_VERSION="1.1.0" PANDAS_VERSION="0.13.0"
-    # Most recent versions
+    # Most recent versions (Python 3)
     - DISTRIB="conda" PYTHON_VERSION="3.4"
       NUMPY_VERSION="*" SCIPY_VERSION="*"
       SCIKIT_LEARN_VERSION="*" MATPLOTLIB_VERSION="*"
