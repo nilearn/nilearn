@@ -464,13 +464,18 @@ def create_second_level_design(maps_table, confounds=None):
     design_columns = (np.unique(maps_name).tolist() +
                       np.unique(subjects_id).tolist() +
                       confounds_name)
-    design = pd.DataFrame(columns=design_columns)
+    design_matrix = pd.DataFrame(columns=design_columns)
     for ridx, row in maps_table.iterrows():
-        design.loc[ridx] = [0] * len(design_columns)
-        design.loc[ridx, row['map_name']] = 1
-        design.loc[ridx, row['model_id']] = 1
+        design_matrix.loc[ridx] = [0] * len(design_columns)
+        design_matrix.loc[ridx, row['map_name']] = 1
+        design_matrix.loc[ridx, row['model_id']] = 1
         if confounds is not None:
             conrow = confounds['model_id'] == row['model_id']
             for conf_name in confounds_name:
-                design.loc[ridx, conf_name] = confounds[conrow][conf_name].values
-    return design
+                design_matrix.loc[ridx, conf_name] = confounds[conrow][conf_name].values
+
+    # check column names are unique
+    if len(np.unique(design_columns)) != len(design_columns):
+        raise ValueError('Design matrix columns do not have unique names')
+
+    return design_matrix

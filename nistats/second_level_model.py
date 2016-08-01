@@ -362,14 +362,8 @@ class SecondLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
             if np.all(con_val == 0):
                 raise ValueError('Contrast is null')
         else:
-            design_names = np.unique(self.design_matrix_.columns.tolist())
-            if len(design_names) == len(self.design_matrix_.columns):
-                design_info = DesignInfo(self.design_matrix_.columns.tolist())
-                con_val = design_info.linear_constraint(contrast_def).coefs
-            else:
-                raise ValueError('can not interpret formula when design'
-                                 ' do not contain columns with unique '
-                                 'names')
+            design_info = DesignInfo(self.design_matrix_.columns.tolist())
+            con_val = design_info.linear_constraint(contrast_def).coefs
 
         # check output type
         if isinstance(output_type, _basestring):
