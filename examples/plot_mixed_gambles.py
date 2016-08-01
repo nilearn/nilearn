@@ -13,6 +13,7 @@ More specifically:
 4. A GLM is applied to the dataset (effect/covariance,
    then contrast estimation)
 
+Author : Martin Perez-Guevara: 2016
 """
 print(__doc__)
 
