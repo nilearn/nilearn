@@ -92,9 +92,9 @@ def test_fmri_inputs():
                   ['3', 'a', FUNCFILE]]
         niidf = pd.DataFrame(dfrows, columns=dfcols)
         niimgs = [FUNCFILE, FUNCFILE, FUNCFILE]
-        flcondstr = ['a']
-        flcondval = [np.array([1])]
-        confounds = pd.DataFrame([['1', 1], ['2', 2], ['3', 3]],
+        flcondstr = [('a', 'a')]
+        flcondval = [('a', np.array([1]))]
+        regressors = pd.DataFrame([['1', 1], ['2', 2], ['3', 3]],
                                  columns=['model_id', 'conf1'])
         sdes = pd.DataFrame(X[:3, :3], columns=['a', 'b', 'c'])
 
@@ -102,18 +102,17 @@ def test_fmri_inputs():
         # First level models as input
         SecondLevelModel(mask=mask).fit(flms, flcondstr)
         SecondLevelModel().fit(flms, flcondval)
-        SecondLevelModel().fit(flms, flcondval, confounds)
+        SecondLevelModel().fit(flms, flcondval, regressors)
         SecondLevelModel().fit(flms, flcondval, None, sdes)
         # dataframes as input
         SecondLevelModel().fit(niidf, None)
-        SecondLevelModel().fit(niidf, None, confounds)
-        SecondLevelModel().fit(niidf, None, confounds, sdes)
+        SecondLevelModel().fit(niidf, None, regressors)
+        SecondLevelModel().fit(niidf, None, regressors, sdes)
         SecondLevelModel().fit(niidf, None, None, sdes)
         SecondLevelModel().fit(niidf, flcondstr)
-        SecondLevelModel().fit(niidf, flcondstr, confounds)
-        SecondLevelModel().fit(niidf, flcondstr, confounds, sdes)
+        SecondLevelModel().fit(niidf, flcondstr, regressors)
+        SecondLevelModel().fit(niidf, flcondstr, regressors, sdes)
         SecondLevelModel().fit(niidf, flcondstr, None, sdes)
-        SecondLevelModel().fit(niidf, flcondstr, None, sdes, [''])
         # niimgs as input
         SecondLevelModel().fit(niimgs, None, None, sdes)
         # test wrong input errors
@@ -128,17 +127,13 @@ def test_fmri_inputs():
         # test niimgs requirements
         assert_raises(ValueError, SecondLevelModel().fit, niimgs)
         assert_raises(ValueError, SecondLevelModel().fit, niimgs + [[]], sdes)
-        # test first_level_conditions, confounds, design and names
+        # test first_level_conditions, regressors, and design
         assert_raises(ValueError, SecondLevelModel().fit, flms, ['', []])
         assert_raises(ValueError, SecondLevelModel().fit, flms, flcondval, [])
         assert_raises(ValueError, SecondLevelModel().fit, flms, flcondval,
-                      confounds['conf1'])
+                      regressors['conf1'])
         assert_raises(ValueError, SecondLevelModel().fit, flms, flcondval,
                       None, [])
-        assert_raises(ValueError, SecondLevelModel().fit, flms, flcondval,
-                      None, sdes, [])
-        assert_raises(ValueError, SecondLevelModel().fit, flms, flcondval,
-                      None, sdes, [[]])
 
 
 def _first_level_dataframe():
@@ -159,16 +154,16 @@ def test_create_second_level_design():
         FUNCFILE = FUNCFILE[0]
         first_level_input = _first_level_dataframe()
         first_level_input['effects_map_path'] = [FUNCFILE] * 4
-        confounds = [['01', 0.1], ['02', 0.75]]
-        confounds = pd.DataFrame(confounds, columns=['model_id', 'f1'])
-        design = create_second_level_design(first_level_input, confounds)
+        regressors = [['01', 0.1], ['02', 0.75]]
+        regressors = pd.DataFrame(regressors, columns=['model_id', 'f1'])
+        design = create_second_level_design(first_level_input, regressors)
         expected_design = np.array([[1, 0, 1, 0, 0.1], [0, 1, 1, 0, 0.1],
                                     [1, 0, 0, 1, 0.75], [0, 1, 0, 1, 0.75]])
         assert_array_equal(design, expected_design)
         assert_true(len(design.columns) == 2 + 2 + 1)
         assert_true(len(design) == 2 + 2)
         model = SecondLevelModel(mask=mask).fit(first_level_input,
-                                                confounds=confounds)
+                                                regressors=regressors)
         design = model.design_matrix_
         assert_array_equal(design, expected_design)
         assert_true(len(design.columns) == 2 + 2 + 1)

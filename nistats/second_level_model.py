@@ -56,7 +56,7 @@ class SecondLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
 
     """
     def __init__(self, mask=None, smoothing_fwhm=None,
-                 memory=None, memory_level=1, verbose=1,
+                 memory=None, memory_level=1, verbose=0,
                  n_jobs=1, minimize_memory=True):
         self.mask = mask
         self.smoothing_fwhm = smoothing_fwhm
@@ -69,8 +69,7 @@ class SecondLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         self.results_ = None
 
     def fit(self, second_level_input, first_level_conditions=None,
-            regressors=None, design_matrix=None,
-            first_level_conditions_name=None):
+            regressors=None, design_matrix=None):
         """ Fit the second-level GLM
 
         1. create design matrix
@@ -87,17 +86,23 @@ class SecondLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
             objects then this is taken literally as Y for the model fit
             and design_matrix must be provided.
 
-        first_level_conditions: list of (str or array) or None
+        first_level_conditions: list of (str, (str or array)) pairs
+                                or list of (str, str) pairs or None
             If second_level_input is a list of `FirstLevelModel` objects then
-            it is mandatory to provide a list of contrast definitions to pass
+            it is mandatory to provide a list with contrast names as first item
+            (employed as column names in the design matrix) and contrast
+            definitions as second item. The contrast definitions are passed
             to the compute_contrast method of `FirstLevelModel`. The contrast
             definitions can be a str or array. Check the compute_contrast
             documentation of `FirstLevelModel` for more details on the
             contrast definitions.
 
-            If second_level_input is a pandas DataFrame then a list of strings
-            is expected with the names of maps to include in the model.
+            If second_level_input is a pandas DataFrame then a list with
+            column names as first item (employed in the design matrix) and their
+            corresponding map name as second item, where the map names correspond
+            to those in the second_level_input map_name column.
             If first_level_conditions is set to None then all maps are included
+            and the map_name is used as the column names in the design matrix.
 
             If second_level_input is a list of Niimg-like objects then this
             argument is ignored.
@@ -112,18 +117,11 @@ class SecondLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
 
         design_matrix: pandas DataFrame, optional
             Design matrix to fit the GLM. The number of rows
-            in the design matrix must agree with the size of the list in
-            first_level_conditions. Ensure that the order of maps given
-            by first_level_conditions or inferred directly from
-            second_level_input matches the order of the rows in the design
-            matrix.
-
-        first_level_conditions_name: list of str or None,
-            This argument only applies when second_level_input is a list of
-            `FirstLevelModel` objects. It specifies the name of the columns
-            corresponding to the provided first_level_conditions.
-            If None then the column names are generated with the form
-            'con_00'.
+            in the design matrix must agree with the number of maps derived
+            from second_level_input and first_level_conditions.
+            Ensure that the order of maps given by first_level_conditions
+            or inferred directly from a second_level_input dataframe matches
+            the order of the rows in the design matrix.
         """
         # Check parameters
         # check first level input
@@ -168,11 +166,11 @@ class SecondLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
                                      ' columns model_id, map_name and'
                                      ' effects_map_path')
             if first_level_conditions is not None:
-                for cond in first_level_conditions:
-                    if not isinstance(cond, str):
+                for name, cond in first_level_conditions:
+                    if not isinstance(cond, str) and isinstance(name, str):
                         raise ValueError('When second_level_input is a'
                                          ' DataFrame, first_level_conditions '
-                                         'must be a list of str')
+                                         'must be (str, str) pair')
         else:
             raise ValueError('second_level_input must be a list of'
                              ' `FirstLevelModel` objects, a pandas DataFrame'
@@ -182,13 +180,17 @@ class SecondLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         # check conditions if provided
         if first_level_conditions is not None:
             if isinstance(first_level_conditions, list):
-                for cidx, cond in enumerate(first_level_conditions):
+                for cidx, (name, cond) in enumerate(first_level_conditions):
+                    if not isinstance(name, str):
+                        raise ValueError('condition name at idx %d is %s '
+                                         'instead of str' % (cidx, type(name)))
                     if not isinstance(cond, (str, np.ndarray)):
                         raise ValueError('condition at idx %d is %s instead of'
                                          ' str or array' %
                                          (cidx, type(cond)))
             else:
-                raise ValueError('first_level_conditions is not a list')
+                raise ValueError('first_level_conditions is not a list. '
+                                 'It is %s instead' % type(first_level_conditions))
 
         # check regressors
         if regressors is not None:
@@ -207,30 +209,19 @@ class SecondLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
             if not isinstance(design_matrix, pd.DataFrame):
                 raise ValueError('design matrix must be a pandas DataFrame')
 
-        # check condition names
-        if first_level_conditions_name is not None:
-            if not isinstance(first_level_conditions_name, (list, tuple)):
-                raise ValueError('first_level_conditions_name must be a '
-                                 'list of strings')
-            if len(first_level_conditions_name) != len(first_level_conditions):
-                raise ValueError('length of first_level_conditions_name and'
-                                 ' first_level_conditions must match')
-            for name in first_level_conditions_name:
-                if not isinstance(name, str):
-                    raise ValueError('first_level_conditions_name must be a '
-                                     'list of strings')
 
         # Build the design matrix X and list of imgs Y for GLM fit
         if isinstance(second_level_input, pd.DataFrame):
             maps_table = second_level_input
             # Get only first level conditions if provided
             if first_level_conditions is not None:
-                for condition in first_level_conditions:
+                for name, condition in first_level_conditions:
                     if condition not in maps_table['map_name'].tolist():
                         raise ValueError('condition %s not present in'
                                          ' second_level_input' % condition)
+                condition_list = zip(*first_level_conditions)[1]
                 in_cond = maps_table.apply(
-                    lambda x: x['map_name'] in first_level_conditions, axis=1)
+                    lambda x: x['map_name'] in condition_list, axis=1)
                 maps_table = maps_table[in_cond]
             # Create design matrix if necessary
             if design_matrix is None:
@@ -248,12 +239,9 @@ class SecondLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
             maps_table = pd.DataFrame(columns=['map_name', 'model_id'])
             effects_maps = []
             for model in second_level_input:
-                for con_idx, con_def in enumerate(first_level_conditions):
-                    con_name = 'con_%02d' % con_idx
-                    if first_level_conditions_name:
-                        con_name = first_level_conditions_name[con_idx]
+                for con_name, con_def in first_level_conditions:
                     maps_table.loc[len(maps_table)] = [con_name,
-                                                     model.model_id]
+                                                       model.model_id]
                     eff_map = model.compute_contrast(con_def,
                                                      output_type='effect_size')
                     effects_maps.append(eff_map)
