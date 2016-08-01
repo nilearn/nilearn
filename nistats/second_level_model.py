@@ -12,58 +12,11 @@ from nilearn.input_data import NiftiMasker
 from patsy import DesignInfo
 
 from .first_level_model import FirstLevelModel
+from .first_level_model import run_glm
 from .regression import OLSModel, SimpleRegressionResults
 from .contrasts import compute_contrast
 from .utils import _basestring
 from .design_matrix import _create_second_level_design
-
-
-def run_glm(Y, X, n_jobs=1, verbose=0):
-    """ GLM fit for an fMRI data matrix
-
-    Parameters
-    ----------
-    Y : array of shape (n_time_points, n_voxels)
-        The fMRI data.
-
-    X : array of shape (n_time_points, n_regressors)
-        The design matrix.
-
-    noise_model : {'ar1', 'ols'}, optional
-        The temporal variance model. Defaults to 'ar1'.
-
-    bins : int, optional
-        Maximum number of discrete bins for the AR(1) coef histogram.
-
-    n_jobs : int, optional
-        The number of CPUs to use to do the computation. -1 means
-        'all CPUs'.
-
-    verbose : int, optional
-        The verbosity level. Defaut is 0
-
-    Returns
-    -------
-    labels : array of shape (n_voxels,),
-        A map of values on voxels used to identify the corresponding model.
-
-    results : dict,
-        Keys correspond to the different labels values
-        values are RegressionResults instances corresponding to the voxels.
-    """
-
-    if Y.shape[0] != X.shape[0]:
-        raise ValueError(
-            'The number of rows of Y should match the number of rows of X.'
-            ' You provided X with shape {0} and Y with shape {1}'.\
-                format(X.shape, Y.shape))
-
-    # Create the model
-    ols_result = OLSModel(X).fit(Y)
-    labels = np.zeros(Y.shape[1])
-    results = {0.0: ols_result}
-
-    return labels, results
 
 
 class SecondLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
@@ -350,10 +303,12 @@ class SecondLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         # Fit the model
         Y = self.masker_.transform(effects_maps)
         if self.memory is not None:
-            mem_glm = self.memory.cache(run_glm)
+            arg_ignore = ['n_jobs', 'noise_model']
+            mem_glm = self.memory.cache(run_glm, ignore=arg_ignore)
         else:
             mem_glm = run_glm
-        labels, results = mem_glm(Y, design.as_matrix(), n_jobs=self.n_jobs)
+        labels, results = mem_glm(Y, design.as_matrix(), n_jobs=self.n_jobs,
+                                  noise_model='ols')
         # We save memory if inspecting model details is not necessary
         if self.minimize_memory:
             for key in results:
