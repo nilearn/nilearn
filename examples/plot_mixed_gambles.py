@@ -50,7 +50,7 @@ mask_filename = data.mask_img
 # create first_level_input
 df_columns = [subjects_id, behavioral_target, zmap_paths]
 df_columns = zip(*df_columns)
-df_column_names = ['subject_id', 'map_name', 'effects_map_path']
+df_column_names = ['model_id', 'map_name', 'effects_map_path']
 first_level_df = pd.DataFrame(df_columns, columns=df_column_names)
 
 # estimate second level model
