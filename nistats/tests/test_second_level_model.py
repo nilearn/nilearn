@@ -11,9 +11,9 @@ import numpy as np
 
 from nibabel import load, Nifti1Image, save
 
-from nistats.first_level_model import FirstLevelModel
-from nistats.second_level_model import SecondLevelModel, run_glm
-from nistats.design_matrix import _create_second_level_design
+from nistats.first_level_model import FirstLevelModel, run_glm
+from nistats.second_level_model import SecondLevelModel
+from nistats.design_matrix import create_second_level_design
 
 from nose.tools import assert_true, assert_equal, assert_raises
 from numpy.testing import (assert_almost_equal, assert_array_equal)
@@ -64,23 +64,6 @@ def test_high_level_glm_with_paths():
         del z_image, FUNCFILE, func_img, model
 
 
-def test_run_glm():
-    # New API
-    n, p, q = 100, 80, 10
-    X, Y = np.random.randn(p, q), np.random.randn(p, n)
-
-    # ols case
-    labels, results = run_glm(Y, X, 'ols')
-    assert_array_equal(labels, np.zeros(n))
-    assert_equal(list(results.keys()), [0.0])
-    assert_equal(results[0.0].theta.shape, (q, n))
-    assert_almost_equal(results[0.0].theta.mean(), 0, 1)
-    assert_almost_equal(results[0.0].theta.var(), 1. / p, 1)
-
-    # non-existant case
-    assert_raises(ValueError, run_glm, Y, X.T)
-
-
 def test_fmri_inputs():
     # Test processing of FMRI inputs
     with InTemporaryDirectory():
@@ -97,14 +80,14 @@ def test_fmri_inputs():
         des.to_csv(des_fname)
 
         # prepare correct input first level models
-        flm = FirstLevelModel(subject_id='1').fit(FUNCFILE, design_matrices=des)
+        flm = FirstLevelModel(model_id='1').fit(FUNCFILE, design_matrices=des)
         flms = [flm, flm, flm]
         # prepare correct input dataframe and lists
         shapes = ((7, 8, 9, 1),)
         _, FUNCFILE, _ = write_fake_fmri_data(shapes)
         FUNCFILE = FUNCFILE[0]
 
-        dfcols = ['subject_id', 'map_name', 'effects_map_path']
+        dfcols = ['model_id', 'map_name', 'effects_map_path']
         dfrows = [['1', 'a', FUNCFILE], ['2', 'a', FUNCFILE],
                   ['3', 'a', FUNCFILE]]
         niidf = pd.DataFrame(dfrows, columns=dfcols)
@@ -112,7 +95,7 @@ def test_fmri_inputs():
         flcondstr = ['a']
         flcondval = [np.array([1])]
         confounds = pd.DataFrame([['1', 1], ['2', 2], ['3', 3]],
-                                 columns=['subject_id', 'conf1'])
+                                 columns=['model_id', 'conf1'])
         sdes = pd.DataFrame(X[:3, :3], columns=['a', 'b', 'c'])
 
         # smoke tests with correct input
@@ -141,7 +124,7 @@ def test_fmri_inputs():
         assert_raises(ValueError, SecondLevelModel().fit, flms + [''],
                       flcondval)
         # test dataframe requirements
-        assert_raises(ValueError, SecondLevelModel().fit, niidf['subject_id'])
+        assert_raises(ValueError, SecondLevelModel().fit, niidf['model_id'])
         # test niimgs requirements
         assert_raises(ValueError, SecondLevelModel().fit, niimgs)
         assert_raises(ValueError, SecondLevelModel().fit, niimgs + [[]], sdes)
@@ -159,12 +142,12 @@ def test_fmri_inputs():
 
 
 def _first_level_dataframe():
-    conditions = ['map_name', 'subject_id', 'map_path']
+    conditions = ['map_name', 'model_id', 'map_path']
     names = ['con_01', 'con_02', 'con_01', 'con_02']
     subjects = ['01', '01', '02', '02']
     maps = ['', '', '', '']
     dataframe = pd.DataFrame({'map_name': names,
-                              'subject_id': subjects,
+                              'model_id': subjects,
                               'effects_map_path': maps})
     return dataframe
 
@@ -177,8 +160,8 @@ def test_create_second_level_design():
         first_level_input = _first_level_dataframe()
         first_level_input['effects_map_path'] = [FUNCFILE] * 4
         confounds = [['01', 0.1], ['02', 0.75]]
-        confounds = pd.DataFrame(confounds, columns=['subject_id', 'f1'])
-        design = _create_second_level_design(first_level_input, confounds)
+        confounds = pd.DataFrame(confounds, columns=['model_id', 'f1'])
+        design = create_second_level_design(first_level_input, confounds)
         expected_design = np.array([[1, 0, 1, 0, 0.1], [0, 1, 1, 0, 0.1],
                                     [1, 0, 0, 1, 0.75], [0, 1, 0, 1, 0.75]])
         assert_array_equal(design, expected_design)
@@ -205,7 +188,7 @@ def test_second_level_model_glm_computation():
         model = model.fit(Y, design_matrix=X)
         labels1 = model.labels_
         results1 = model.results_
-        labels2, results2 = run_glm(model.masker_.transform(Y), X)
+        labels2, results2 = run_glm(model.masker_.transform(Y), X, 'ols')
         assert_almost_equal(labels1, labels2, decimal=1)
         assert_equal(len(results1), len(results2))
 
