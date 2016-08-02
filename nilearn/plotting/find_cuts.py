@@ -19,25 +19,26 @@ from .._utils import check_niimg_3d
 from .._utils.niimg import _safe_get_data
 from ..image.resampling import get_mask_bounds, coord_transform
 from ..image.image import _smooth_array
+from ..masking import apply_mask, unmask, intersect_masks
 
 ################################################################################
 # Functions for automatic choice of cuts coordinates
 ################################################################################
 
 
-def find_xyz_cut_coords(img, mask=None, activation_threshold=None):
-    """ Find the center of the largest activation connected component.
+def find_xyz_cut_coords(img, mask=None, activation_threshold='auto'):
+    """ Find the center of mass of the largest activation connected component.
 
         Parameters
         -----------
         img : 3D Nifti1Image
             The brain map.
-        mask : 3D ndarray, boolean, optional
-            An optional brain mask.
-        activation_threshold : float, optional
-            The lower threshold to the positive activation. If None, the
+        mask : 3D Nifti1Image
+            An optional brain mask. The mask must not be empty.
+        activation_threshold : 'auto' or float, optional (default 'auto')
+            The lower threshold to the positive activation. If 'auto', the
             activation threshold is computed using the 80% percentile of
-            the absolute value of the map.
+            the absolute value of activation.
 
         Returns
         -------
@@ -53,66 +54,72 @@ def find_xyz_cut_coords(img, mask=None, activation_threshold=None):
     img = check_niimg_3d(img)
     data = _safe_get_data(img)
 
-    # To speed up computations, we work with partial views of the array,
-    # and keep track of the offset
-    offset = np.zeros(3)
+    # We have 3 potential masks here:
+    # - a mask provided by the user
+    # - the activation threshold
+    # - if data is a masked_array, the associated mask
 
-    # Deal with masked arrays:
-    if hasattr(data, 'mask'):
-        not_mask = np.logical_not(data.mask)
-        if mask is None:
-            mask = not_mask
-        else:
-            mask *= not_mask
-        data = np.asarray(data)
-
-    # Get rid of potential memmapping
-    data = as_ndarray(data)
-    my_map = data.copy()
+    masks = []
     if mask is not None:
-        # check against empty mask
-        if mask.sum() == 0.:
-            warnings.warn(
-                "Provided mask is empty. Returning center of mass instead.")
-            cut_coords = ndimage.center_of_mass(np.abs(my_map)) + offset
-            x_map, y_map, z_map = cut_coords
-            return np.asarray(coord_transform(x_map, y_map, z_map,
-                                              img.get_affine())).tolist()
-        slice_x, slice_y, slice_z = ndimage.find_objects(mask)[0]
-        my_map = my_map[slice_x, slice_y, slice_z]
-        mask = mask[slice_x, slice_y, slice_z]
-        my_map *= mask
-        offset += [slice_x.start, slice_y.start, slice_z.start]
+        masks.append[mask]
+
+    # Account for numerical noise
+    if activation_threshold is None:
+        activation_threshold = 1e-7
+
+    # If threshold is auto, it is computed later on masked data
+    if activation_threshold is not None and activation_threshold != 'auto':
+        masks.append(new_img_like(img, np.abs(data) >= activation_threshold))
+
+    if hasattr(data, 'mask'):
+        masks.append(new_img_like(np.logical_not(data.mask.astype(np.int8))))
+
+    if len(masks) > 0:
+        mask = intersect_masks(masks, threshold=1)
+        data = unmask(apply_mask([img], mask)[0], mask)
+    else:
+        # Get rid of potential memmapping
+        data = as_ndarray(data)
+        # XXX Is that necessary given _saf_get_data?
+        data = data.copy()
 
     # Testing min and max is faster than np.all(my_map == 0)
-    if (my_map.max() == 0) and (my_map.min() == 0):
-        return .5 * np.array(data.shape)
-    if activation_threshold is None:
-        activation_threshold = fast_abs_percentile(my_map[my_map != 0].ravel(),
-                                                   80)
-    mask = np.abs(my_map) > activation_threshold - 1.e-15
-    # mask may be zero everywhere in rare cases
-    if mask.max() == 0:
-        return .5 * np.array(data.shape)
-    mask = largest_connected_component(mask)
-    slice_x, slice_y, slice_z = ndimage.find_objects(mask)[0]
-    my_map = my_map[slice_x, slice_y, slice_z]
-    mask = mask[slice_x, slice_y, slice_z]
-    my_map *= mask
-    offset += [slice_x.start, slice_y.start, slice_z.start]
+    if (data.max() == 0) and (data.min() == 0):
+        raise ValueError('No non-zero values found (or all masked). '
+                         'Cannot compute center of mass.')
+
+    # If thresholding is auto, we compute it now
+    non_zero = np.abs(data) > 0.
+    if activation_threshold == 'auto':
+        activation_threshold = fast_abs_percentile(
+            data[data != 0].ravel(), 80)
+        non_zero = np.abs(data) >= activation_threshold - 1.e-15
+        if non_zero.max() == 0:
+            raise ValueError('All voxels were masked by the auto threshold. '
+                             'Please disable it or provide a custom value.')
+
+    largest = largest_connected_component(non_zero)
+    del non_zero
+    slice_x, slice_y, slice_z = ndimage.find_objects(largest)[0]
+    data = data[slice_x, slice_y, slice_z]
+    largest = largest[slice_x, slice_y, slice_z]
+    data *= largest
 
     # For the second threshold, we use a mean, as it is much faster,
     # althought it is less robust
-    second_threshold = np.abs(np.mean(my_map[mask]))
-    second_mask = (np.abs(my_map) > second_threshold)
+    # XXX Can somebody explain what this code does?
+    second_threshold = np.abs(np.mean(data[largest]))
+    second_mask = (np.abs(data) > second_threshold)
     if second_mask.sum() > 50:
-        my_map *= largest_connected_component(second_mask)
-    cut_coords = ndimage.center_of_mass(np.abs(my_map))
-    x_map, y_map, z_map = cut_coords + offset
+        data *= largest_connected_component(second_mask)
+    c_x, c_y, c_z = ndimage.center_of_mass(np.abs(data))
 
     # Return as a list of scalars
-    return np.asarray(coord_transform(x_map, y_map, z_map,
-                                      img.get_affine())).tolist()
+    return np.asarray(coord_transform(
+        c_x + slice_x.start,
+        c_y + slice_y.start,
+        c_z + slice_z.start,
+        img.get_affine())).tolist()
 
 
 def _get_auto_mask_bounds(img):
