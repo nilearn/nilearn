@@ -75,23 +75,31 @@ confounds = np.hstack((current_volume_motion, preceding_volume_motion,
 ##########################################################################
 # We give the paths to probabilistic group masks.
 icbm152 = datasets.fetch_icbm152_2009()
-mask_images = {'gm': icbm152.gm, 'wm': icbm152.wm, 'csf': icbm152.csf}
+mask_images = {'GM': icbm152.gm, 'WM': icbm152.wm, 'CSF': icbm152.csf}
+print("\n".join(mask_images.values()))
+
+##########################################################################
+# We can visualize these masks using :function:`nilearn.plotting.plot_anat`.
+# For this, we need to transform the images from 3D to 4D.
 from nilearn import plotting
-for mask_img in mask_images.values():
-    plotting.plot_anat(mask_img)
+from nilearn._utils import check_niimg
+for tissue_name, mask_img in mask_images.items():
+    mask_img_4d = check_niimg(mask_img, atleast_4d=True)
+    plotting.plot_anat(
+        mask_img_4d, display_mode='z', cut_coords=1, title=tissue_name)
 
 ##########################################################################
 # We use **nilearn.image.math_img** to convert probabilistic masks to binary
 # masks with thresholds being adjusted manually.
 from nilearn import image
-for tissue_name, threshold in zip(['wm', 'gm', 'csf'], ['.9', '.5', '.3']):
+for tissue_name, threshold in zip(['WM', 'GM', 'CSF'], ['.9', '.5', '.3']):
     mask_images[tissue_name] = image.math_img('img > ' + threshold,
                                               img=mask_images[tissue_name])
 
 ##########################################################################
 # We erode WM and CSF masks, to avoid including any signal of neuronal origin.
 from scipy import ndimage
-for tissue_name in ['wm', 'csf']:
+for tissue_name in ['WM', 'CSF']:
     mask_img = mask_images[tissue_name]
     eroded_mask_data = ndimage.binary_erosion(mask_img.get_data(),
                                               iterations=2)
@@ -116,16 +124,16 @@ for tissue_name, mask_img in mask_images.items():
 # We check the masks quality by plotting them as contours
 # on top of the mean functional image.
 display = plotting.plot_anat(mean_func_img)
-for tissue_name, colors in zip(['gm', 'wm', 'csf'], 'ymg'):
+for tissue_name, colors in zip(['GM', 'WM', 'CSF'], 'ymg'):
     display.add_contours(mask_images[tissue_name], colors=colors)
 
 ##########################################################################
 # Now we are ready to compute the voxel-wise signals within the
 # WM and CSF masks, and perform a PCA to extract the top 5 components.
-# All is done by the function **nilearn.image.high_variance_confounds**,
+# All is done by the function :function:`nilearn.image.high_variance_confounds`,
 # with the parameter **percentile** set to **100.**, to include all the voxels
 # of the mask.
-for tissue_name in ['wm', 'csf']:
+for tissue_name in ['WM', 'CSF']:
     tissue_confounds = image.high_variance_confounds(
         func_filename, mask_img=mask_images[tissue_name], n_confounds=5,
         percentile=100.)
@@ -143,11 +151,12 @@ for tissue_name in ['wm', 'csf']:
 
 #######################################################################
 # We compute GM voxels signals with
-# :class:`nilearn.input_data.NiftiSpheresMasker`
+# :class:`nilearn.input_data.NiftiMasker`
 from nilearn import input_data
-gm_masker = input_data.NiftiMasker(mask_img=mask_images['gm'],
+gm_masker = input_data.NiftiMasker(mask_img=mask_images['GM'],
                                    memory='nilearn_cache',
-                                   standardize=True)
+                                   standardize=True,
+                                   verbose=1)
 gm_signals = gm_masker.fit_transform(func_filename)
 
 #######################################################################
@@ -183,9 +192,12 @@ cleaned_gm_signals = gm_masker.fit_transform(func_filename,
                                              confounds=confounds)
 
 #######################################################################
-# Finally, we compute the voxel-to-voxel correlations for a selection of voxels
+# Finally, we compute the voxel-to-voxel Pearson'r correlations for a selection
+# of voxels
+from sklearn.covariance import EmpiricalCovariance
 from nilearn import connectome
-connectivity_measure = connectome.ConnectivityMeasure(kind='correlation')
+connectivity_measure = connectome.ConnectivityMeasure(
+    cov_estimator=EmpiricalCovariance(), kind='correlation')
 selected_voxels = range(0, gm_signals.shape[1], 20)
 correlations = connectivity_measure.fit_transform(
     [gm_signals[:, selected_voxels]])[0]
@@ -195,7 +207,7 @@ cleaned_correlations = connectivity_measure.fit_transform(
 #######################################################################
 # and plot their histograms.
 import matplotlib.pylab as plt
-plt.figure()
+plt.figure(figsize=(8, 4))
 for correlation_values, label, color in zip(
         [correlations, cleaned_correlations],
         ['with confounds', 'without confounds'],
