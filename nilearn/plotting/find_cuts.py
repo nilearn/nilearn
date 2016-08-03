@@ -26,15 +26,15 @@ from ..masking import apply_mask, unmask, intersect_masks
 ################################################################################
 
 
-def find_xyz_cut_coords(img, mask=None, activation_threshold='auto'):
+def find_xyz_cut_coords(img, mask_img=None, activation_threshold='auto'):
     """ Find the center of mass of the largest activation connected component.
 
         Parameters
         -----------
         img : 3D Nifti1Image
             The brain map.
-        mask : 3D Nifti1Image
-            An optional brain mask. The mask must not be empty.
+        mask_img : 3D Nifti1Image, optional
+            An optional brain mask. If provided, it must not be empty.
         activation_threshold : 'auto' or float, optional (default 'auto')
             The lower threshold to the positive activation. If 'auto', the
             activation threshold is computed using the 80% percentile of
@@ -59,9 +59,9 @@ def find_xyz_cut_coords(img, mask=None, activation_threshold='auto'):
     # - the activation threshold
     # - if data is a masked_array, the associated mask
 
-    masks = []
-    if mask is not None:
-        masks.append[mask]
+    mask_imgs = []
+    if mask_img is not None:
+        mask_imgs.append[mask_img]
 
     # Account for numerical noise
     if activation_threshold is None:
@@ -69,13 +69,15 @@ def find_xyz_cut_coords(img, mask=None, activation_threshold='auto'):
 
     # If threshold is auto, it is computed later on masked data
     if activation_threshold is not None and activation_threshold != 'auto':
-        masks.append(new_img_like(img, np.abs(data) >= activation_threshold))
+        mask_imgs.append(new_img_like(img, np.abs(data) >=
+                                      activation_threshold))
 
     if hasattr(data, 'mask'):
-        masks.append(new_img_like(np.logical_not(data.mask.astype(np.int8))))
+        mask_imgs.append(new_img_like(
+            np.logical_not(data.mask.astype(np.int8))))
 
-    if len(masks) > 0:
-        mask = intersect_masks(masks, threshold=1)
+    if len(mask_imgs) > 0:
+        mask = intersect_masks(mask_imgs, threshold=1)
         data = unmask(apply_mask([img], mask)[0], mask)
     else:
         # Get rid of potential memmapping
