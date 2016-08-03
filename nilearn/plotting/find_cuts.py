@@ -61,7 +61,7 @@ def find_xyz_cut_coords(img, mask_img=None, activation_threshold='auto'):
 
     mask_imgs = []
     if mask_img is not None:
-        mask_imgs.append[mask_img]
+        mask_imgs.append(mask_img)
 
     # Account for numerical noise
     if activation_threshold is None:
@@ -78,7 +78,10 @@ def find_xyz_cut_coords(img, mask_img=None, activation_threshold='auto'):
 
     if len(mask_imgs) > 0:
         mask = intersect_masks(mask_imgs, threshold=1)
-        data = unmask(apply_mask([img], mask)[0], mask)
+        if mask.get_data().max() == 0:
+            raise ValueError('Masking or thresholding masks all data: '
+                             'Center of mass cannot be determined.')
+        data = unmask(apply_mask([img], mask)[0], mask).get_data()
     else:
         # Get rid of potential memmapping
         data = as_ndarray(data)

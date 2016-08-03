@@ -14,7 +14,8 @@ def test_find_cut_coords():
     # identity affine
     affine = np.eye(4)
     img = nibabel.Nifti1Image(data, affine)
-    x, y, z = find_xyz_cut_coords(img, mask=np.ones(data.shape, np.bool))
+    mask_img = nibabel.Nifti1Image(np.ones(data.shape, dtype=np.int8), affine)
+    x, y, z = find_xyz_cut_coords(img, mask_img=mask_img)
     np.testing.assert_allclose((x, y, z),
                                (x_map, y_map, z_map),
                                # Need such a high tolerance for the test to
@@ -24,7 +25,8 @@ def test_find_cut_coords():
     # non-trivial affine
     affine = np.diag([1. / 2, 1 / 3., 1 / 4., 1.])
     img = nibabel.Nifti1Image(data, affine)
-    x, y, z = find_xyz_cut_coords(img, mask=np.ones(data.shape, np.bool))
+    mask_img = nibabel.Nifti1Image(np.ones(data.shape, dtype=np.int8), affine)
+    x, y, z = find_xyz_cut_coords(img, mask_img=mask_img)
     np.testing.assert_allclose((x, y, z),
                                (x_map / 2., y_map / 3., z_map / 4.),
                                # Need such a high tolerance for the test to
@@ -36,10 +38,10 @@ def test_find_cut_coords():
     data = np.ones((36, 43, 36))
     affine = np.eye(4)
     img = nibabel.Nifti1Image(data, affine)
-    x, y, z = find_xyz_cut_coords(img, activation_threshold=1.1)
-    np.testing.assert_array_equal(
-        np.array([x, y, z]),
-        0.5 * np.array(data.shape).astype(np.float))
+    np.testing.assert_raises_regex(
+        ValueError, 'Masking or thresholding masks all data',
+        find_xyz_cut_coords, img, activation_threshold=1.1
+    )
 
     # regression test (cf. #922)
     # pseudo-4D images as input (i.e., X, Y, Z, 1)
@@ -140,10 +142,12 @@ def test_tranform_cut_coords():
 
 def test_find_cuts_empty_mask_no_crash():
     img = nibabel.Nifti1Image(np.ones((2, 2, 2)), np.eye(4))
-    mask = np.zeros((2, 2, 2)).astype(np.bool)
-    cut_coords = assert_warns(UserWarning, find_xyz_cut_coords, img,
-                              mask=mask)
-    np.testing.assert_array_equal(cut_coords, [.5, .5, .5])
+    mask_img = nibabel.Nifti1Image(np.zeros((2, 2, 2), dtype=np.int8),
+                                   np.eye(4))
+    np.testing.assert_raises_regex(
+        ValueError, 'Masking or thresholding masks all data',
+        find_xyz_cut_coords, img, mask_img=mask_img,
+    )
 
 
 def test_fast_abs_percentile_no_index_error_find_cuts():
