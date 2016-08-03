@@ -67,7 +67,13 @@ class BaseAxes(object):
         new_object_bounds = self.get_object_bounds()
 
         if new_object_bounds != old_object_bounds:
+            # The bounds of the object do not take into account a possible
+            # inversion of the axis. As such, we check if the axis was inverted
+            # before resetting the bounds and re-invert it after if needed.
+            inverted = self.ax.get_xlim()[0] > self.ax.get_xlim()[1]
             self.ax.axis(self.get_object_bounds())
+            if inverted:
+                self.ax.invert_xaxis()
 
     def draw_2d(self, data_2d, data_bounds, bounding_box,
                 type='imshow', **kwargs):
