@@ -15,7 +15,7 @@ from ..image import new_img_like
 _package_directory = os.path.dirname(os.path.abspath(__file__))
 # Useful for the very simple examples
 MNI152_FILE_PATH = os.path.join(_package_directory, "data",
-                             "avg152T1_brain.nii.gz")
+                                "avg152T1_brain.nii.gz")
 
 
 def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
@@ -60,6 +60,13 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
     -----
     For more information about this dataset's structure:
     http://www.bic.mni.mcgill.ca/ServicesAtlases/ICBM152NLin2009
+
+    See Also
+    --------
+    nilearn.datasets.load_mni152_template: to fetch easily MNI152 T1 template.
+
+    nilearn.datasets.fetch_icbm152_brain_gm_mask: to fetch only grey matter
+        mask template.
     """
     if url is None:
         url = "http://www.bic.mni.mcgill.ca/~vfonov/icbm/2009/" \
@@ -89,7 +96,7 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
     sub_files = _fetch_files(data_dir, filenames, resume=resume,
                              verbose=verbose)
 
-    fdescr = _get_dataset_descr(dataset_name)
+    fdescr = _get_dataset_descr(dataset_name).splitlines()
 
     params = dict([('description', fdescr)] + list(zip(keys, sub_files)))
     return Bunch(**params)
