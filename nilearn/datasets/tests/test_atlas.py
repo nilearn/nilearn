@@ -394,3 +394,18 @@ def test_fetch_coords_dosenbach_2010():
     assert_equal(len(bunch.labels), 160)
     assert_equal(len(np.unique(bunch.networks)), 6)
     assert_not_equal(bunch.description, '')
+
+
+def test_fetch_coords_gordon_2014():
+    bunch = atlas.fetch_coords_gordon_2014()
+    assert_equal(len(bunch.rois), 333)
+    assert_equal(len(bunch.networks), 333)
+    # assert_not_equal(bunch.description, '')
+
+
+@with_setup(setup_mock, teardown_mock)
+@with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
+def test_fetch_atlas_gordon_2014():
+    data = atlas.fetch_atlas_gordon_2014(data_dir=tst.tmpdir,
+                                         verbose=0)
+    assert_equal(len(tst.mock_url_request.urls), 1)

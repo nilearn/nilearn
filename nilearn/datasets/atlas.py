@@ -807,13 +807,13 @@ def fetch_coords_gordon_2014():
     # We add the ROI number to its name, since names are not unique
     rois = [
         (float(x), float(y), float(z))
-        for coords in out_csv['Centroid (MNI)']
-        for (x, y, z) in coords.split(' ')
+        for coords in out_csv['centroid_mni']
+        for (x, y, z) in [coords.decode().split(' ')]
     ]
-    params = dict(ids=out_csv['ParcelID'], rois=rois,
-                  networks=out_csv['Community'],
-                  hemisphere=out_csv['Hem'],
-                  surface=out_csv['Surface area (mm2)'],
+    params = dict(ids=out_csv['parcelid'], rois=rois,
+                  networks=out_csv['community'],
+                  hemisphere=out_csv['hem'],
+                  surface=out_csv['surface_area_mm2'],
                   description=fdescr)
 
     return Bunch(**params)
