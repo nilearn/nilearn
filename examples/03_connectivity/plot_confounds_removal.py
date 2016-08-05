@@ -17,7 +17,8 @@ In this example, 24 movement regressors [1] are used to estimate head motion.
 Physiological noise is assessed with the application of anatomical CompCor [2]:
 10 significant principal components are derived from white matter (WM) and
 cerebrospinal fluid (CSF) regions in which the time-series data are unlikely
-to be modulated by neural activity.
+to be modulated by neural activity. This confounds model is compared to a less
+careful model with the same number of confounds.
 
 References
 ----------
@@ -39,8 +40,8 @@ func_filename = adhd.func[0]
 
 ##########################################################################
 # Data include the functional image and a csv file of possible confounds.
-print(adhd.func)
-print(adhd.confounds)
+print(func_filename)
+print(adhd.confounds[0])
 
 ######################################
 # Friston et al. 24 motion parameters model
@@ -57,9 +58,9 @@ csv_confounds = np.recfromcsv(adhd.confounds[0], delimiter='\t',
 current_volume_motion = csv_confounds.view(dtype=float).reshape(-1, 6)
 preceding_volume_motion = np.vstack((current_volume_motion[0],
                                      current_volume_motion[:-1]))
-confounds = np.hstack((current_volume_motion, preceding_volume_motion,
-                       current_volume_motion ** 2,
-                       preceding_volume_motion ** 2))
+motion_confounds = np.hstack((current_volume_motion, preceding_volume_motion,
+                              current_volume_motion ** 2,
+                              preceding_volume_motion ** 2))
 
 ##########################################################################
 # Anatomical CompCor
@@ -79,7 +80,7 @@ mask_images = {'GM': icbm152.gm, 'WM': icbm152.wm, 'CSF': icbm152.csf}
 print("\n".join(mask_images.values()))
 
 ##########################################################################
-# We can visualize these masks using :function:`nilearn.plotting.plot_anat`.
+# We can visualize these masks using `nilearn.plotting.plot_anat`.
 # For this, we need to transform the images from 3D to 4D.
 from nilearn import plotting
 from nilearn._utils import check_niimg
@@ -130,17 +131,24 @@ for tissue_name, colors in zip(['GM', 'WM', 'CSF'], 'ymg'):
 ##########################################################################
 # Now we are ready to compute the voxel-wise signals within the
 # WM and CSF masks, and perform a PCA to extract the top 5 components.
-# All is done by the function :function:`nilearn.image.high_variance_confounds`,
+# All is done by the function `nilearn.image.high_variance_confounds`,
 # with the parameter **percentile** set to **100.**, to include all the voxels
 # of the mask.
-for tissue_name in ['WM', 'CSF']:
-    tissue_confounds = image.high_variance_confounds(
-        func_filename, mask_img=mask_images[tissue_name], n_confounds=5,
-        percentile=100.)
-    confounds = np.hstack((confounds, tissue_confounds))
+wm_confounds = image.high_variance_confounds(
+    func_filename, mask_img=mask_images['WM'], n_confounds=5, percentile=100.)
+csf_confounds = image.high_variance_confounds(
+    func_filename, mask_img=mask_images['CSF'], n_confounds=5, percentile=100.)
 
 #######################################################################
 # The so-computed CompCor confounds are stacked to motion confounds.
+confounds1 = np.hstack((motion_confounds, wm_confounds, csf_confounds))
+print('Careful model includes {0} confounds.'.format(confounds1.shape[1]))
+
+#######################################################################
+# For comparison, we compute less careful confounds of the same number
+hv_confounds = image.high_variance_confounds(func_filename, n_confounds=10)
+confounds2 = np.hstack((current_volume_motion, hv_confounds))
+print('Gross model includes {0} confounds.'.format(confounds2.shape[1]))
 
 #######################################################################
 # Exploring confounds contribution to GM voxels signals
@@ -162,23 +170,33 @@ gm_signals = gm_masker.fit_transform(func_filename)
 #######################################################################
 # and predict them from confounds.
 from sklearn import linear_model
+f_statistic_images = {}
 regr = linear_model.LinearRegression(normalize=True)
-regr.fit(confounds, gm_signals)
-predicted_gm_signals = regr.predict(confounds)
-n_samples, n_features = confounds.shape
-mean_square_regression = np.sum(predicted_gm_signals ** 2,
-                                axis=0) / (n_features - 1)
-mean_square_error = np.sum((predicted_gm_signals - gm_signals) ** 2,
-                           axis=0) / (n_samples - n_features)
-f_statistic = mean_square_regression / mean_square_error
-# Transform from array to image
-f_statistic_img = gm_masker.inverse_transform(f_statistic)
+for (confounds, label) in zip([confounds1, confounds2],
+                              ['careful confounds', 'gross confounds']):
+    regr.fit(confounds, gm_signals)
+    predicted_gm_signals = regr.predict(confounds)
+    n_samples, n_features = confounds.shape
+    mean_square_regression = np.sum(predicted_gm_signals ** 2,
+                                    axis=0) / (n_features - 1)
+    mean_square_error = np.sum((predicted_gm_signals - gm_signals) ** 2,
+                               axis=0) / (n_samples - n_features)
+    f_statistic = mean_square_regression / mean_square_error
+    # Transform from array to image
+    f_statistic_images[label] = gm_masker.inverse_transform(f_statistic)
 
 #######################################################################
 # The F-map reflects the overall fit of the linear model explaining the GM
 # voxel-wise time-series by the confounds.
-display = plotting.plot_stat_map(f_statistic_img, bg_img=mean_func_img,
-                                 display_mode='z', cut_coords=3)
+for (title, f_statistic_img) in f_statistic_images.items():
+    display = plotting.plot_stat_map(f_statistic_img,
+                                     bg_img=mean_func_img,
+                                     display_mode='z',
+#                                     cut_coords=[-20., 20.],
+#                                     vmax=100.,
+                                     title=title,
+#                                     cmap=plotting.cm.purple_green
+                                     threshold=10.)
 
 ############################################################################
 # Visualizing the impact of confounds removal on voxel-to-voxel connectivity
@@ -188,8 +206,10 @@ display = plotting.plot_stat_map(f_statistic_img, bg_img=mean_func_img,
 
 #######################################################################
 # We use the same masker, but include confounds.
-cleaned_gm_signals = gm_masker.fit_transform(func_filename,
-                                             confounds=confounds)
+cleaned_gm_signals1 = gm_masker.fit_transform(func_filename,
+                                              confounds=confounds1)
+cleaned_gm_signals2 = gm_masker.fit_transform(func_filename,
+                                              confounds=confounds2)
 
 #######################################################################
 # Finally, we compute the voxel-to-voxel Pearson'r correlations for a selection
@@ -198,23 +218,25 @@ from sklearn.covariance import EmpiricalCovariance
 from nilearn import connectome
 connectivity_measure = connectome.ConnectivityMeasure(
     cov_estimator=EmpiricalCovariance(), kind='correlation')
-selected_voxels = range(0, gm_signals.shape[1], 20)
-correlations = connectivity_measure.fit_transform(
-    [gm_signals[:, selected_voxels]])[0]
-cleaned_correlations = connectivity_measure.fit_transform(
-    [cleaned_gm_signals[:, selected_voxels]])[0]
+selected_voxels = range(0, gm_signals.shape[1], 10)
+correlations = {}
+labels = ['no confounds\nremoval', 'careful confounds\nremoval',
+          'gross confounds\nremoval']
+for (signals, label) in zip(
+        [gm_signals, cleaned_gm_signals1, cleaned_gm_signals2], labels):
+    correlations[label] = connectivity_measure.fit_transform(
+        [signals[:, selected_voxels]])[0]
 
 #######################################################################
 # and plot their histograms.
 import matplotlib.pylab as plt
 plt.figure(figsize=(8, 4))
-for correlation_values, label, color in zip(
-        [correlations, cleaned_correlations],
-        ['with confounds', 'without confounds'],
-        'rb'):
+for label, color in zip(labels, 'rgb'):
+    correlation_values = correlations[label]
     plt.hist(correlation_values[np.triu_indices_from(correlation_values, k=1)],
              color=color, alpha=.3, bins=100, lw=0, label=label)
 
-plt.legend()
+plt.vlines(0, plt.ylim()[0], plt.ylim()[1])
+plt.legend(loc='center left')
 plt.xlabel('correlation values')
 plt.show()
