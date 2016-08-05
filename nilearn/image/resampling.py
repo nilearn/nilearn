@@ -449,6 +449,10 @@ def resample_img(img, target_affine=None, target_shape=None,
     # If A is diagonal, ndimage.affine_transform is clever enough to use a
     # better algorithm.
     if np.all(np.diag(np.diag(A)) == A):
+        if LooseVersion(scipy.__version__) >= LooseVersion('0.18'):
+            # The way affine_transform deals with 1D affine and offset has
+            # changed in 0.18
+            b = np.dot(A, b)
         A = np.diag(A)
     else:
         b = np.dot(A, b)
