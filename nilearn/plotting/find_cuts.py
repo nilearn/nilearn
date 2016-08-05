@@ -29,6 +29,9 @@ from ..masking import apply_mask, unmask, intersect_masks
 def find_xyz_cut_coords(img, mask_img=None, activation_threshold='auto'):
     """ Find the center of mass of the largest activation connected component.
 
+        In case of empty image or if all the values are masked, the center of
+        the image is returned.
+
         Parameters
         -----------
         img : 3D Nifti1Image
@@ -53,6 +56,10 @@ def find_xyz_cut_coords(img, mask_img=None, activation_threshold='auto'):
     # we reduce to a single 3D image to find the coordinates
     img = check_niimg_3d(img)
     data = _safe_get_data(img)
+
+    # Compute center of the image to return in case of error
+    center = np.asarray(coord_transform(
+        *(.5 * np.array(data.shape)), affine=img.get_affine())).tolist()
 
     # We have 3 potential masks here:
     # - a mask provided by the user
@@ -79,8 +86,9 @@ def find_xyz_cut_coords(img, mask_img=None, activation_threshold='auto'):
     if len(mask_imgs) > 0:
         mask = intersect_masks(mask_imgs, threshold=1)
         if mask.get_data().max() == 0:
-            raise ValueError('Masking or thresholding masks all data: '
-                             'Center of mass cannot be determined.')
+            warnings.warn('Could not determine cut coords: '
+                          'Masking or thresholding masks all data.')
+            return center
         data = unmask(apply_mask([img], mask)[0], mask).get_data()
     else:
         # Get rid of potential memmapping
@@ -90,9 +98,9 @@ def find_xyz_cut_coords(img, mask_img=None, activation_threshold='auto'):
 
     # Testing min and max is faster than np.all(my_map == 0)
     if (data.max() == 0) and (data.min() == 0):
-        raise ValueError('No non-zero values found (or all masked). '
-                         'Cannot compute center of mass.')
-
+        warnings.warn('Could not determine cut coords: '
+                      'No non-zero values found (or all masked).')
+        return center
     # If thresholding is auto, we compute it now
     non_zero = np.abs(data) > 0.
     if activation_threshold == 'auto':
@@ -100,9 +108,9 @@ def find_xyz_cut_coords(img, mask_img=None, activation_threshold='auto'):
             data[data != 0].ravel(), 80)
         non_zero = np.abs(data) >= activation_threshold - 1.e-15
         if non_zero.max() == 0:
-            raise ValueError('All voxels were masked by the auto threshold. '
-                             'Please disable it or provide a custom value.')
-
+            warnings.warn('Could not determine cut coords: '
+                          'All voxels were masked by the auto threshold.')
+            return center
     largest = largest_connected_component(non_zero)
     del non_zero
     slice_x, slice_y, slice_z = ndimage.find_objects(largest)[0]

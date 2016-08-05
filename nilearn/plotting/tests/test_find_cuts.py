@@ -38,10 +38,9 @@ def test_find_cut_coords():
     data = np.ones((36, 43, 36))
     affine = np.eye(4)
     img = nibabel.Nifti1Image(data, affine)
-    np.testing.assert_raises_regex(
-        ValueError, 'Masking or thresholding masks all data',
-        find_xyz_cut_coords, img, activation_threshold=1.1
-    )
+    x, y, z = find_xyz_cut_coords(img, activation_threshold=1.1)
+    np.testing.assert_array_equal(
+        np.array([x, y, z]), 0.5 * np.array(data.shape).astype(np.float))
 
     # regression test (cf. #922)
     # pseudo-4D images as input (i.e., X, Y, Z, 1)
@@ -144,10 +143,9 @@ def test_find_cuts_empty_mask_no_crash():
     img = nibabel.Nifti1Image(np.ones((2, 2, 2)), np.eye(4))
     mask_img = nibabel.Nifti1Image(np.zeros((2, 2, 2), dtype=np.int8),
                                    np.eye(4))
-    np.testing.assert_raises_regex(
-        ValueError, 'Masking or thresholding masks all data',
-        find_xyz_cut_coords, img, mask_img=mask_img,
-    )
+    cut_coords = assert_warns(UserWarning, find_xyz_cut_coords, img,
+                              mask_img=mask_img)
+    np.testing.assert_array_equal(cut_coords, [1., 1., 1.])
 
 
 def test_fast_abs_percentile_no_index_error_find_cuts():
