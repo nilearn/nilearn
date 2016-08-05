@@ -773,3 +773,136 @@ def fetch_coords_dosenbach_2010():
                   networks=out_csv['network'], description=fdescr)
 
     return Bunch(**params)
+
+
+def fetch_coords_gordon_2014():
+    """Load the Gordon et al 2014 ROI centroids.
+
+    Returns
+    -------
+    data: sklearn.datasets.base.Bunch
+        dictionary-like object, contains:
+        - "ids": the ID of the ROIs in the original atlas
+        - "rois": coordinates of 160 ROIs in MNI space
+        - "networks": networks names
+        - "hemisphere": L or R (left or right)
+        - "surface": the surface of the ROIs in millimeters
+
+    See also
+    --------
+        nilearn.datasets.fetch_atlas_gordon_2014
+
+    References
+    ----------
+    Gordon, E. M., Laumann, T. O., Adeyemo, B., Huckins, J. F., Kelley, W. M., &
+    Petersen, S. E., "Generation and evaluation of a cortical area
+    parcellation from resting-state correlations", 2014, Cerebral cortex, bhu239.
+    """
+    dataset_name = 'gordon_2014'
+    fdescr = _get_dataset_descr(dataset_name)
+    package_directory = os.path.dirname(os.path.abspath(__file__))
+    csv = os.path.join(package_directory, "data", "gordon_2014.csv")
+    out_csv = np.recfromcsv(csv, delimiter=',')
+
+    # We add the ROI number to its name, since names are not unique
+    rois = [
+        (float(x), float(y), float(z))
+        for coords in out_csv['Centroid (MNI)']
+        for (x, y, z) in coords.split(' ')
+    ]
+    params = dict(ids=out_csv['ParcelID'], rois=rois,
+                  networks=out_csv['Community'],
+                  hemisphere=out_csv['Hem'],
+                  surface=out_csv['Surface area (mm2)'],
+                  description=fdescr)
+
+    return Bunch(**params)
+
+
+def fetch_atlas_gordon_2014(coordinate_system='MNI', resolution=2,
+                            data_dir=None, url=None, resume=True, verbose=1):
+    """Download and returns Gordon et al. 2014 atlas
+
+    The provided images are in MNI152 or 711-2b space.
+
+    Parameters
+    ----------
+    coordinate_system: string, optional (default MNI)
+        Determine the coordinate space in which the atlas is normalized. Valid
+        options are "MNI" and "711-2b".
+
+    resolution: integer, optional (default 2)
+        Resolution of the atlas in millimeters. It is the same in all
+        directions.
+
+    data_dir: string, optional
+        directory where data should be downloaded and unpacked.
+
+    url: string, optional
+        url of file to download.
+
+    resume: bool, optional (default True)
+        whether to resumed download of a partly-downloaded file.
+
+    verbose: int, optional (default 1)
+        verbosity level (0 means no message).
+
+    See also
+    --------
+        nilearn.datasets.fetch_coords_gordon_2014
+
+    Returns
+    -------
+    data: sklearn.datasets.base.Bunch
+        dictionary-like object, keys are:
+        - "atlas": path to the Nifti file containing the atlas
+        - "ids": the ID of the ROIs in the original atlas
+        - "rois": coordinates of 160 ROIs if coordinate system is MNI
+        - "networks": networks names
+        - "hemisphere": L or R (left or right)
+        - "surface": the surface of the ROIs in millimeters
+
+    References
+    ----------
+    Gordon, E. M., Laumann, T. O., Adeyemo, B., Huckins, J. F., Kelley, W. M., &
+    Petersen, S. E., "Generation and evaluation of a cortical area
+    parcellation from resting-state correlations", 2014, Cerebral cortex, bhu239.
+
+    See http://www.nil.wustl.edu/labs/petersen/Resources.html for more
+    information on this parcellation.
+    """
+
+    if url is None:
+        url = ("http://www.nil.wustl.edu/labs/petersen/Resources_files/"
+               "Parcels.zip")
+    dataset_name = "gordon_2014"
+    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
+                                verbose=verbose)
+
+    valid_coordinate_systems = ['MNI', '711-2b']
+
+    if not coordinate_system in valid_coordinate_systems:
+        raise ValueError('Unknown coordinate system {0}. '
+                         'Valid options are {1}'.format(
+                             coordinate_system, valid_coordinate_systems))
+
+    if not resolution in [1, 2, 3]:
+        raise ValueError('Invalid resolution {0}. '
+                         'Valid options are 1, 2 or 3.'.format(resolution))
+
+    target_file = 'Parcels_{0}_{1}.nii'.format(
+        coordinate_system, str(resolution) * 3)
+
+    atlas = _fetch_files(data_dir, [(target_file, url, {"uncompress": True})],
+                         resume=resume, verbose=verbose)
+
+    fdescr = _get_dataset_descr(dataset_name)
+    dataset = fetch_coords_gordon_2014()
+    dataset.description = fdescr
+    dataset.atlas = atlas
+
+    if coordinate_system != 'MNI':
+        # Centroids coordinates are in MNI they make no sense in other systems
+        del dataset['rois']
+
+    return dataset
