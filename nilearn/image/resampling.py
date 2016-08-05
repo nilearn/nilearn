@@ -215,7 +215,7 @@ class BoundingBoxError(ValueError):
 ###############################################################################
 # Resampling
 
-def _resample_one_img(data, A, A_inv, b, target_shape,
+def _resample_one_img(data, A, b, target_shape,
                       interpolation_order, out, copy=True):
     "Internal function for resample_img, do not use"
     if data.dtype.kind in ('i', 'u'):
@@ -246,7 +246,7 @@ def _resample_one_img(data, A, A_inv, b, target_shape,
 
     # The resampling itself
     ndimage.affine_transform(data, A,
-                             offset=np.dot(A_inv, b),
+                             offset=b,
                              output_shape=target_shape,
                              output=out,
                              order=interpolation_order)
@@ -261,7 +261,7 @@ def _resample_one_img(data, A, A_inv, b, target_shape,
     if has_not_finite:
         # We need to resample the mask of not_finite values
         not_finite = ndimage.affine_transform(not_finite, A,
-                                            offset=np.dot(A_inv, b),
+                                            offset=b,
                                             output_shape=target_shape,
                                             order=0)
         out[not_finite] = np.nan
@@ -445,17 +445,14 @@ def resample_img(img, target_affine=None, target_shape=None,
     else:
         transform_affine = np.dot(linalg.inv(affine), target_affine)
     A, b = to_matrix_vector(transform_affine)
-    A_inv = linalg.inv(A)
     # If A is diagonal, ndimage.affine_transform is clever enough to use a
     # better algorithm.
     if np.all(np.diag(np.diag(A)) == A):
-        if LooseVersion(scipy.__version__) >= LooseVersion('0.18'):
-            # The way affine_transform deals with 1D affine and offset has
-            # changed in 0.18
-            b = np.dot(A, b)
+        if LooseVersion(scipy.__version__) < LooseVersion('0.18'):
+            # Before scipy 0.18, ndimage.affine_transform was applying a
+            # different logic to the offset for diagonal affine
+            b = np.dot(linalg.inv(A), b)
         A = np.diag(A)
-    else:
-        b = np.dot(A, b)
 
     data_shape = list(data.shape)
     # Make sure that we have a list here
@@ -485,7 +482,7 @@ def resample_img(img, target_affine=None, target_shape=None,
     # separable in the extra dimensions. This reduces the
     # computational cost
     for ind in np.ndindex(*other_shape):
-        _resample_one_img(data[all_img + ind], A, A_inv, b, target_shape,
+        _resample_one_img(data[all_img + ind], A, b, target_shape,
                           interpolation_order,
                           out=resampled_data[all_img + ind],
                           copy=not input_img_is_string)

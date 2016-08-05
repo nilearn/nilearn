@@ -14,6 +14,10 @@ API changes summary
       that an automatic contrast setting on background image is applied by
       default.
 
+    - Scikit-learn validation tools have been imported and are now used to check
+      consistency of input data, in SpaceNet for example.
+
+
 New features
 ............
 
@@ -21,11 +25,12 @@ New features
       the scaling of matrices is modified: we divide the diagonal by sqrt(2)
       instead of multiplying the off-diagonal elements.
 
-API changes summary
-...................
+Bug fix
+........
 
-    - Scikit-learn validation tools have been imported and are now used to check
-      consistency of input data, in SpaceNet for example.
+    - Scipy 0.18 introduces a bug in a corner-case of resampling. Nilearn
+      0.2.5 can give wrong results with scipy 0.18, but this is fixed in
+      0.2.6.
 
 0.2.5
 =====
