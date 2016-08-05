@@ -21,6 +21,10 @@ New features
       the scaling of matrices is modified: we divide the diagonal by sqrt(2)
       instead of multiplying the off-diagonal elements.
 
+    - Add Gordon et al. 2014 atlas. Coordinates are directly available through
+      :func:`nilearn.datasets.fetch_coords_gordon_2014` and the whole atlas
+      through :func:`nilearn.datasets.fetch_atlas_gordon_2014`.
+
 API changes summary
 ...................
 
