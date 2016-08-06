@@ -343,8 +343,8 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         else:
             design_matrices = _check_run_tables(run_imgs, design_matrices,
                                                 'design_matrices')
-        # check the number of events and confound files match number of runs
-        # Also check events and confound files can be loaded as DataFrame
+        # Check that number of events and confound files match number of runs
+        # Also check that events and confound files can be loaded as DataFrame
         if events is not None:
             events = _check_run_tables(run_imgs, events, 'events')
 
