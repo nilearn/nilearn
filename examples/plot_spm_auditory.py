@@ -66,13 +66,13 @@ if not os.path.exists(output_dir):
 for contrast_id, contrast_val in contrasts.items():
     print("\tcontrast id: %s" % contrast_id)
     z_map = fmri_glm.compute_contrast(contrasts[contrast_id],
-                contrast_name=contrast_id, output_type='z_score')
+                output_type='z_score')
     t_map = fmri_glm.compute_contrast(contrasts[contrast_id],
-                contrast_name=contrast_id, output_type='stat')
+                output_type='stat')
     eff_map = fmri_glm.compute_contrast(contrasts[contrast_id],
-                contrast_name=contrast_id, output_type='effect_size')
+                output_type='effect_size')
     var_map = fmri_glm.compute_contrast(contrasts[contrast_id],
-                contrast_name=contrast_id, output_type='effect_variance')
+                output_type='effect_variance')
     # store stat maps to disk
     for dtype, out_map in zip(['z', 't', 'effects', 'variance'],
                               [z_map, t_map, eff_map, var_map]):

@@ -81,7 +81,6 @@ for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
     print('  Contrast % 2i out of %i: %s' %
           (index + 1, len(contrasts), contrast_id))
     z_map = first_level_model.compute_contrast(contrast_val,
-                                               contrast_name=contrast_id,
                                                output_type='z_score')
 
     # Create snapshots of the contrasts
