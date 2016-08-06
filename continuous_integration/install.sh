@@ -84,6 +84,9 @@ if [[ "$DISTRIB" == "neurodebian" ]]; then
     create_new_venv
     bash <(wget -q -O- http://neuro.debian.net/_files/neurodebian-travis.sh)
     sudo apt-get install -qq python-scipy python-nose python-nibabel python-sklearn python-pandas
+    pip install numpy --upgrade
+    pip install nilearn
+    pip install patsy
 
 elif [[ "$DISTRIB" == "conda" ]]; then
     create_new_conda_env
@@ -94,6 +97,15 @@ elif [[ "$DISTRIB" == "conda" ]]; then
     if [ -n "$NIBABEL_VERSION" ]; then
         pip install nibabel=="$NIBABEL_VERSION"
     fi
+    if [["$PYTHON_VERSION" == "2.6"]]; then
+        # Install the minimum supported version of nilearn and patsy
+        pip install nilearn==0.2.0
+        pip install patsy==0.2.0
+    else
+        # Install the latest available version of nilearn and patsy
+        pip install nilearn
+        pip install patsy
+    fi
 
 else
     echo "Unrecognized distribution ($DISTRIB); cannot setup travis environment."
@@ -103,7 +115,5 @@ fi
 if [[ "$COVERAGE" == "true" ]]; then
     pip install coverage coveralls
 fi
-
-pip install nilearn
 
 python setup.py install

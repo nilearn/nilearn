@@ -31,7 +31,7 @@ _NISTATS_INSTALL_MSG = 'See %s for installation information.' % (
 #   collections.OrderedDict to preserve Python 2.6 compatibility.
 REQUIRED_MODULE_METADATA = (
     ('numpy', {
-        'min_version': '1.6.1',
+        'min_version': '1.7.1',
         'required_at_installation': True,
         'install_info': _NISTATS_INSTALL_MSG}),
     ('scipy', {
@@ -39,14 +39,22 @@ REQUIRED_MODULE_METADATA = (
         'required_at_installation': True,
         'install_info': _NISTATS_INSTALL_MSG}),
     ('nilearn', {
-        'min_version': '0.1.0',
+        'min_version': '0.2.0',
         'required_at_installation': True,
         'install_info': _NISTATS_INSTALL_MSG}),
     ('nibabel', {
         'min_version': '1.1.0',
         'required_at_installation': False}),
     ('pandas', {
-        'min_version': '0.12.0',
+        'min_version': '0.13.0',
+        'required_at_installation': True,
+        'install_info': _NISTATS_INSTALL_MSG}),
+    ('patsy', {
+        'min_version': '0.2.0',
+        'required_at_installation': True,
+        'install_info': _NISTATS_INSTALL_MSG}),
+    ('sklearn', {
+        'min_version': '0.14.1',
         'required_at_installation': True,
         'install_info': _NISTATS_INSTALL_MSG}),
     )
