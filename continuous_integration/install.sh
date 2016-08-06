@@ -98,9 +98,11 @@ elif [[ "$DISTRIB" == "conda" ]]; then
         pip install nibabel=="$NIBABEL_VERSION"
     fi
     if [["$PYTHON_VERSION" == "2.6"]]; then
+        # Install the minimum supported version of nilearn and patsy
         pip install nilearn==0.2.0
         pip install patsy==0.2.0
     else
+        # Install the latest available version of nilearn and patsy
         pip install nilearn
         pip install patsy
     fi
