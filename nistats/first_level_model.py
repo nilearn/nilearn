@@ -254,8 +254,6 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
                  minimize_memory=True):
         # design matrix parameters
         self.t_r = t_r
-        if t_r > 10:
-            warn('Repetition time of %d seconds? is it in seconds?' % t_r)
         self.slice_time_ref = slice_time_ref
         self.hrf_model = hrf_model
         self.drift_model = drift_model
