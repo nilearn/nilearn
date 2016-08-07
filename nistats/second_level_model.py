@@ -219,7 +219,7 @@ class SecondLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
                     if condition not in maps_table['map_name'].tolist():
                         raise ValueError('condition %s not present in'
                                          ' second_level_input' % condition)
-                condition_list = zip(*first_level_conditions)[1]
+                condition_list = list(zip(*first_level_conditions))[:][1]
                 in_cond = maps_table.apply(
                     lambda x: x['map_name'] in condition_list, axis=1)
                 maps_table = maps_table[in_cond]
