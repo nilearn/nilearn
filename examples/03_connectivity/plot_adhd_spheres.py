@@ -60,7 +60,9 @@ plt.tight_layout()
 
 
 ##########################################################################
-# Compute partial correlation matrix
+# Compute partial correlation matrix using object
+# :class:`nilearn.connectome.ConnectivityMeasure`: Its default covariance
+# estimator is Ledoit-Wolf, allowing to obtain accurate partial correlations.
 from nilearn.connectome import ConnectivityMeasure
 connectivity_measure = ConnectivityMeasure(kind='partial correlation')
 partial_correlation_matrix = connectivity_measure.fit_transform(
