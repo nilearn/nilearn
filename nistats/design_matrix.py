@@ -367,6 +367,9 @@ def make_design_matrix(
         matrix = drift
 
     names += dnames
+    # check column names are all unique
+    if len(np.unique(names)) != len(names):
+        raise ValueError('Design matrix columns do not have unique names')
 
     # step 4: Force the design matrix to be full rank at working precision
     matrix, _ = full_rank(matrix)

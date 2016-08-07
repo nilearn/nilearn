@@ -75,7 +75,7 @@ for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
         index + 1, len(contrasts), contrast_id))
     z_image_path = path.join(write_dir, '%s_z_map.nii' % contrast_id)
     z_map = fmri_glm.compute_contrast(
-        contrast_val, contrast_name=contrast_id, output_type='z_score')
+        contrast_val, output_type='z_score')
     nib.save(z_map, z_image_path)
 
     # make a snapshot of the contrast activation
