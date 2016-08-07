@@ -441,8 +441,7 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
             if self.signal_scaling:
                 Y, _ = mean_scaling(Y, self.scaling_axis)
             if self.memory is not None:
-                arg_ignore = ['n_jobs']
-                mem_glm = self.memory.cache(run_glm, ignore=arg_ignore)
+                mem_glm = self.memory.cache(run_glm, ignore=['n_jobs'])
             else:
                 mem_glm = run_glm
 
