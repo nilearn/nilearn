@@ -48,7 +48,7 @@ mask_filename = data.mask_img
 
 
 # Second level model #########################################
-# create first_level_input
+# create input for second-level analysis
 df_columns = [subjects_id, behavioral_target, zmap_paths]
 df_columns = zip(*df_columns)
 df_column_names = ['model_id', 'map_name', 'effects_map_path']
