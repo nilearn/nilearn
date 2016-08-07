@@ -50,10 +50,12 @@ time_series = masker.fit_transform(fmri_filenames, confounds=data.confounds)
 
 ##############################################################################
 # Compute and display a correlation matrix
-import numpy as np
-correlation_matrix = np.corrcoef(time_series.T)
+from nilearn.connectome import ConnectivityMeasure
+correlation_measure = ConnectivityMeasure(kind='correlation')
+correlation_matrix = correlation_measure.fit_transform([time_series])[0]
 
 # Plot the correlation matrix
+import numpy as np
 from matplotlib import pyplot as plt
 plt.figure(figsize=(10, 10))
 # Mask the main diagonal for visualization:
@@ -75,7 +77,7 @@ plt.subplots_adjust(left=.01, bottom=.3, top=.99, right=.62)
 time_series = masker.fit_transform(fmri_filenames)
 # Note how we did not specify confounds above. This is bad!
 
-correlation_matrix = np.corrcoef(time_series.T)
+correlation_matrix = correlation_measure.fit_transform([time_series])[0]
 
 # Mask the main diagonal for visualization:
 np.fill_diagonal(correlation_matrix, 0)
