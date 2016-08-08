@@ -204,3 +204,95 @@ def pos_recipr(X):
     return np.where(X <= 0, 0, 1. / X)
 
 _basestring = str if py3 else basestring
+
+# UTILITIES FOR THE BIDS STANDARD
+
+def get_bids_files(main_path, file_tag='*', file_type='*', sub_id='*',
+                   file_folder='*', filters=[], ref=False, sub_folder=True,
+                   allow_other_fields=True):
+    """Search for files in a BIDS dataset following given constraints.
+
+    Parameters
+    ----------
+    main_path: str
+
+    file_tag: str accepted by glob, optional (default: '*')
+
+    file_type: str accepted by glob, optional (default: '*')
+
+    sub_id: str accepted by glob, optional (default: '*')
+
+    file_folder: str accepted by glob, optional (default: '*')
+
+    filters: list of tuples (str, str), optional (default: [])
+        Filters are of the form (key, value). Only one filter per key allowed.
+        A file for which a filter do not apply will be discarded.
+
+    ref: boolean, optional (default: False)
+
+    sub_folder: boolean, optional (default: True)
+
+    allow_other_fields: boolean, optional (default: True)
+
+    Returns
+    -------
+    files: list of str or list of dict
+
+    """
+    if sub_folder:
+        files = os.path.join(main_path, 'ses-*')
+        if glob.glob(files):
+            files = os.path.join(main_path, 'ses-*', 'sub-%s' % sub_id,
+                                 file_folder, 'sub-%s*_%s.%s' %
+                                 (sub_id, file_tag, file_type))
+        else:
+            files = os.path.join(main_path, 'sub-%s' % sub_id, file_folder,
+                                 'sub-%s*_%s.%s' %
+                                 (sub_id, file_tag, file_type))
+    else:
+        files = os.path.join(main_path, '*%s.%s' % (file_tag, file_type))
+
+    files = glob.glob(files)
+    files.sort()
+    if filters:
+        if not allow_other_fields:
+            files = [file_ for file_ in files if
+                     len(os.path.basename(file_).split('_')) <=
+                     len(filters) + 1]
+        files = [parse_bids_filename(file_) for file_ in files]
+        for key, value in filters:
+            files = [file_ for file_ in files if (key in file_ and
+                                                  file_[key] == value)]
+    else:
+        files = [parse_bids_filename(file_) for file_ in files]
+
+    if ref:
+        return files
+    else:
+        return [ref_file['file_path'] for ref_file in files]
+
+
+def parse_bids_filename(img_path):
+    """Returns dictionary with parsed information from file name
+
+    Parameters
+    ----------
+    img_path: str
+
+    Returns
+    -------
+    reference: dict
+    """
+    reference = {}
+    reference['file_path'] = img_path
+    reference['file_basename'] = os.path.basename(img_path)
+    parts = reference['file_basename'].split('_')
+    tag, typ = parts[-1].split('.', 1)
+    reference['file_tag'] = tag
+    reference['file_type'] = typ
+    reference['file_fields'] = []
+    for part in parts[:-1]:
+        field, value = part.split('-')
+        reference['file_fields'].append(field)
+        reference[field] = value
+    return reference
