@@ -29,7 +29,7 @@ power_coords = np.vstack((
     power.rois['z'],
 )).T
 
-dosenbach = datasets.fetch_coords_dosenbach_2010()
+dosenbach = datasets.fetch_coords_dosenbach_2010(ordered_regions=True)
 dosenbach_coords = np.vstack((
     dosenbach.rois['x'],
     dosenbach.rois['y'],
@@ -49,7 +49,7 @@ power_masker = input_data.NiftiSpheresMasker(
     low_pass=0.1, high_pass=0.01, t_r=2.5)
 
 dosenbach_masker = input_data.NiftiSpheresMasker(
-    seeds=dosenbach_coords, smoothing_fwhm=4, radius=4.,
+    seeds=dosenbach_coords, smoothing_fwhm=4, radius=4.5,
     standardize=True, detrend=True,
     low_pass=0.1, high_pass=0.01, t_r=2.5)
 
