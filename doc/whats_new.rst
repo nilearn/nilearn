@@ -1,9 +1,10 @@
-0.2.6
-=====
+0.2.5.1
+=======
 
 Changelog
 ---------
 
+This is a bugfix release.
 The new minimum required version of scikit-learn is 0.14.1
 
 API changes summary
@@ -25,12 +26,17 @@ New features
       the scaling of matrices is modified: we divide the diagonal by sqrt(2)
       instead of multiplying the off-diagonal elements.
 
+    - Connectivity examples rely on
+      :class:`nilearn.connectome.ConnectivityMeasure`
+
 Bug fix
 ........
 
     - Scipy 0.18 introduces a bug in a corner-case of resampling. Nilearn
       0.2.5 can give wrong results with scipy 0.18, but this is fixed in
       0.2.6.
+
+    - Broken links and references fixed in docs
 
 0.2.5
 =====
