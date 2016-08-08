@@ -8,6 +8,8 @@ import numpy as np
 from scipy.stats import norm
 from warnings import warn
 import pandas as pd
+import os
+import glob
 
 py3 = sys.version_info[0] >= 3
 
@@ -205,7 +207,9 @@ def pos_recipr(X):
 
 _basestring = str if py3 else basestring
 
+
 # UTILITIES FOR THE BIDS STANDARD
+
 
 def get_bids_files(main_path, file_tag='*', file_type='*', sub_id='*',
                    file_folder='*', filters=[], ref=False, sub_folder=True,
