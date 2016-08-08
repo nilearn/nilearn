@@ -19,6 +19,7 @@ import glob
 import json
 
 import numpy as np
+import pandas as pd
 from nibabel import Nifti1Image
 
 from sklearn.base import BaseEstimator, TransformerMixin, clone
