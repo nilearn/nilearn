@@ -9,7 +9,7 @@ Simple example to show Nifti data visualization.
 # Fetch data
 from nilearn import datasets
 
-haxby_dataset = datasets.fetch_haxby(n_subjects=1)
+haxby_dataset = datasets.fetch_haxby(subjects=1)
 
 # print basic information on the dataset
 print('First anatomical nifti image (3D) located is at: %s' %

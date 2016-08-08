@@ -32,7 +32,7 @@ def teardown_mock():
 @with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
 def test_fetch_haxby():
     for i in range(1, 6):
-        haxby = func.fetch_haxby(data_dir=tst.tmpdir, n_subjects=i,
+        haxby = func.fetch_haxby(data_dir=tst.tmpdir, subjects=i,
                                  verbose=0)
         # subject_data + (md5 + mask if first subj)
         assert_equal(len(tst.mock_url_request.urls), 1 + 2 * (i == 1))
@@ -47,6 +47,20 @@ def test_fetch_haxby():
         assert_equal(len(haxby.mask_house_little), i)
         tst.mock_url_request.reset()
         assert_not_equal(haxby.description, '')
+
+    # subjects with list
+    subjects = [1, 2, 6]
+    haxby = func.fetch_haxby(data_dir=tst.tmpdir, subjects=subjects,
+                             verbose=0)
+    assert_equal(len(haxby.func), len(subjects))
+    assert_equal(len(haxby.mask_house_little), len(subjects))
+    assert_equal(len(haxby.anat), len(subjects))
+    assert_true(haxby.anat[2] is None)
+    assert_true(isinstance(haxby.mask, _basestring))
+    assert_equal(len(haxby.mask_face), len(subjects))
+    assert_equal(len(haxby.session_target), len(subjects))
+    assert_equal(len(haxby.mask_vt), len(subjects))
+    assert_equal(len(haxby.mask_face_little), len(subjects))
 
 
 @with_setup(setup_mock, teardown_mock)

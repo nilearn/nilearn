@@ -32,7 +32,7 @@ References
 ##############################################################################
 # Load Haxby dataset
 from nilearn import datasets
-haxby_dataset = datasets.fetch_haxby()
+haxby_dataset = datasets.fetch_haxby(subjects=1)
 
 # print basic information on the dataset
 print('Mask nifti image (3D) is located at: %s' % haxby_dataset.mask)

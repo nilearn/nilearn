@@ -15,7 +15,7 @@ import numpy as np
 from nilearn import datasets
 from nilearn.image import new_img_like, load_img
 
-haxby_dataset = datasets.fetch_haxby()
+haxby_dataset = datasets.fetch_haxby(subjects=1)
 
 # print basic information on the dataset
 print('Anatomical nifti image (3D) is located at: %s' % haxby_dataset.mask)

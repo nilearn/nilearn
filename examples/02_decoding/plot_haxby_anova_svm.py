@@ -11,6 +11,7 @@ using a feature selection, followed by an SVM.
 # Retrieve the files of the Haxby dataset
 from nilearn import datasets
 
+# By default 2nd subject will be fetched
 haxby_dataset = datasets.fetch_haxby()
 
 # print basic information on the dataset

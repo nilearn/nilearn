@@ -18,7 +18,7 @@ that have been defined via a standard GLM-based analysis.
 
 # Fetch data using nilearn dataset fetcher
 from nilearn import datasets
-haxby_dataset = datasets.fetch_haxby(n_subjects=1)
+haxby_dataset = datasets.fetch_haxby(subjects=1)
 func_filename = haxby_dataset.func[0]
 
 # Print basic information on the dataset

@@ -30,6 +30,9 @@ API changes summary
     - Scikit-learn validation tools have been imported and are now used to check
       consistency of input data, in SpaceNet for example.
 
+    - The parameter 'n_subjects' is deprecated and will be removed in future
+      releases. Use 'subjects' instead in :func:`nilearn.datasets.fetch_haxby`
+
 
 New features
 ............
