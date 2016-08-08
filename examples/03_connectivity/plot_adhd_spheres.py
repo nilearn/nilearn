@@ -60,23 +60,25 @@ plt.tight_layout()
 
 
 ##########################################################################
-# Compute precision matrices
-from sklearn.covariance import LedoitWolf
-cve = LedoitWolf()
-cve.fit(time_series)
-
+# Compute partial correlation matrix using object
+# :class:`nilearn.connectome.ConnectivityMeasure`: Its default covariance
+# estimator is Ledoit-Wolf, allowing to obtain accurate partial correlations.
+from nilearn.connectome import ConnectivityMeasure
+connectivity_measure = ConnectivityMeasure(kind='partial correlation')
+partial_correlation_matrix = connectivity_measure.fit_transform(
+    [time_series])[0]
 
 ##########################################################################
 # Display connectome
 from nilearn import plotting
 
-plotting.plot_connectome(cve.precision_, dmn_coords,
+plotting.plot_connectome(partial_correlation_matrix, dmn_coords,
                          title="Default Mode Network Connectivity")
 
 # Display connectome with hemispheric projections.
 # Notice (0, -52, 18) is included in both hemispheres since x == 0.
 title = "Connectivity projected on hemispheres"
-plotting.plot_connectome(cve.precision_, dmn_coords, title=title,
+plotting.plot_connectome(partial_correlation_matrix, dmn_coords, title=title,
                          display_mode='lyrz')
 
 plotting.show()
