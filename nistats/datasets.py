@@ -6,6 +6,7 @@ Author: Gael Varoquaux
 import os
 import re
 import glob
+import json
 import nibabel
 from sklearn.datasets.base import Bunch
 
@@ -15,6 +16,49 @@ from nilearn.datasets.utils import (
 SPM_AUDITORY_DATA_FILES = ["fM00223/fM00223_%03i.img" % index
                            for index in range(4, 100)]
 SPM_AUDITORY_DATA_FILES.append("sM00223/sM00223_002.img")
+
+
+def fetch_bids_dataset(dataset_name='ds000001', data_dir=None,
+                       verbose=1):
+    """Download bids dataset corresponding to given id"""
+    openfmri_api = 'https://openfmri.org/dataset/api'
+    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
+                                verbose=verbose)
+    files = _fetch_file(openfmri_api, data_dir)
+    json_api = json.load(open(files, 'r'))
+
+    def _bids_tgz_files(link_set, last_revision):
+        dataset_url_set = []
+        for link in link_set:
+            revision = link['revision']
+            file_type = link['url'][-3:]
+            if last_revision is None and file_type == 'tgz':
+                dataset_url_set.append(link['url'])
+            elif revision == last_revision and file_type == 'tgz':
+                dataset_url_set.append(link['url'])
+        return dataset_url_set
+
+    for i in range(len(json_api)):
+        if dataset_name == json_api[i]['accession_number']:
+            revision = json_api[i]['revision_set']
+            if revision:
+                last_revision = revision[-1]['revision_number']
+            else:
+                last_revision = None
+            dataset_url_set = _bids_tgz_files(json_api[i]['link_set'],
+                                              last_revision)
+            break
+
+    if not dataset_url_set:
+        raise ValueError('dataset %s not found' % dataset_name)
+    else:
+        # The options needed for _fetch_files
+        options = [(os.path.basename(dat_url), dat_url,
+                    {'uncompress': True}) for dat_url in dataset_url_set]
+        sub_files = _fetch_files(data_dir, options, resume=True,
+                                 verbose=verbose)
+
+    return sub_files
 
 
 def fetch_localizer_first_level(data_dir=None, verbose=1):
