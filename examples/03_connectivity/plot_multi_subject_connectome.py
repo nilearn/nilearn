@@ -89,26 +89,33 @@ from nilearn.connectome import GroupSparseCovarianceCV
 gsc = GroupSparseCovarianceCV(verbose=2)
 gsc.fit(subject_time_series)
 
-from sklearn import covariance
-gl = covariance.GraphLassoCV(verbose=2)
-gl.fit(np.concatenate(subject_time_series))
+from nilearn.connectome import ConnectivityMeasure
+from sklearn.covariance import GraphLassoCV
+gl_covariance_measure = ConnectivityMeasure(GraphLassoCV(verbose=2),
+                                            kind='covariance')
+gl_covariance = gl_covariance_measure.fit_transform(
+    [np.concatenate(subject_time_series)])[0]
 
+gl_precision_measure = ConnectivityMeasure(GraphLassoCV(verbose=2),
+                                           kind='precision')
+gl_precision = gl_covariance_measure.fit_transform(
+    [np.concatenate(subject_time_series)])[0]
 
 ##############################################################################
 # Displaying results
 atlas_imgs = image.iter_img(msdl_atlas_dataset.maps)
 atlas_region_coords = [plotting.find_xyz_cut_coords(img) for img in atlas_imgs]
 
-plotting.plot_connectome(gl.covariance_,
+plotting.plot_connectome(gl_covariance,
                          atlas_region_coords, edge_threshold='90%',
                          title="Covariance",
                          display_mode="lzr")
-plotting.plot_connectome(-gl.precision_, atlas_region_coords,
+plotting.plot_connectome(-gl_precision, atlas_region_coords,
                          edge_threshold='90%',
                          title="Sparse inverse covariance (GraphLasso)",
                          display_mode="lzr",
                          edge_vmax=.5, edge_vmin=-.5)
-plot_matrices(gl.covariance_, gl.precision_, "GraphLasso")
+plot_matrices(gl_covariance, gl_precision, "GraphLasso")
 
 title = "GroupSparseCovariance"
 plotting.plot_connectome(-gsc.precisions_[..., 0],

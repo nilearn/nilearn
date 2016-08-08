@@ -49,9 +49,14 @@ time_series = masker.fit_transform(data.func[0],
 ##############################################################################
 # Compute the sparse inverse covariance
 from sklearn.covariance import GraphLassoCV
-estimator = GraphLassoCV()
+from nilearn.connectome import ConnectivityMeasure
+covariance_measure = ConnectivityMeasure(cov_estimator=GraphLassoCV(),
+                                         kind='covariance')
+covariance_matrix = covariance_measure.fit_transform([time_series])[0]
 
-estimator.fit(time_series)
+precision_measure = ConnectivityMeasure(cov_estimator=GraphLassoCV(),
+                                        kind='precision')
+precision_matrix = covariance_measure.fit_transform([time_series])[0]
 
 ##############################################################################
 # Display the connectome matrix
@@ -61,7 +66,7 @@ from matplotlib import pyplot as plt
 plt.figure(figsize=(10, 10))
 
 # The covariance can be found at estimator.covariance_
-plt.imshow(estimator.covariance_, interpolation="nearest",
+plt.imshow(covariance_matrix, interpolation="nearest",
            vmax=1, vmin=-1, cmap=plt.cm.RdBu_r)
 # And display the labels
 x_ticks = plt.xticks(range(len(labels)), labels, rotation=90)
@@ -73,7 +78,7 @@ plt.title('Covariance')
 from nilearn import plotting
 coords = atlas.region_coords
 
-plotting.plot_connectome(estimator.covariance_, coords,
+plotting.plot_connectome(covariance_matrix, coords,
                          title='Covariance')
 
 
@@ -81,7 +86,7 @@ plotting.plot_connectome(estimator.covariance_, coords,
 # Display the sparse inverse covariance (we negate it to get partial
 # correlations)
 plt.figure(figsize=(10, 10))
-plt.imshow(-estimator.precision_, interpolation="nearest",
+plt.imshow(-precision_matrix, interpolation="nearest",
            vmax=1, vmin=-1, cmap=plt.cm.RdBu_r)
 # And display the labels
 x_ticks = plt.xticks(range(len(labels)), labels, rotation=90)
@@ -90,7 +95,7 @@ plt.title('Sparse inverse covariance')
 
 ##############################################################################
 # And now display the corresponding graph
-plotting.plot_connectome(-estimator.precision_, coords,
+plotting.plot_connectome(-precision_matrix, coords,
                          title='Sparse inverse covariance')
 
 plotting.show()
