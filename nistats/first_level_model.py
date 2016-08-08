@@ -14,6 +14,9 @@ Author: Bertrand Thirion, Martin Perez-Guevara, 2016
 from warnings import warn
 import time
 import sys
+import os
+import glob
+import json
 
 import numpy as np
 from nibabel import Nifti1Image
@@ -29,7 +32,7 @@ from patsy import DesignInfo
 from .regression import OLSModel, ARModel, SimpleRegressionResults
 from .design_matrix import make_design_matrix
 from .contrasts import _fixed_effect_contrast
-from .utils import _basestring, _check_run_tables
+from .utils import _basestring, _check_run_tables, get_bids_files
 
 
 def mean_scaling(Y, axis=0):
