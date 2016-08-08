@@ -12,7 +12,7 @@ See also the SpaceNet documentation: :ref:`space_net`.
 ##############################################################################
 # Load the Haxby dataset
 from nilearn.datasets import fetch_haxby
-data_files = fetch_haxby()
+data_files = fetch_haxby(subjects=1)
 
 # Load Target labels
 import numpy as np
