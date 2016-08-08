@@ -557,3 +557,166 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
             '%s of contrast %s' % (output_type, contrast_name))
 
         return output
+
+
+def first_level_models_from_bids(dataset_path, task_id, model_id=None,
+                                 model_init=None):
+    """Return first and second level model objects and inputs to fit.
+
+    Assuming no subjects lacks a task. Problem inferring subjects.
+
+    Parameters
+    ----------
+    dataset_path: str
+    task_id: str
+    model: str, optional
+    model_init: dict, optional
+
+    Returns
+    -------
+    models: list of `FirstLevelModel` objects
+    models_fit_kwargs: list of dict
+    """
+    # check arguments
+    if not isinstance(dataset_path, str):
+        raise TypeError('dataset_path must be a string, instead %s was given' %
+                        type(task_id))
+    if not os.path.exists(dataset_path):
+        raise ValueError('given path do not exist: %s' % dataset_path)
+    if not isinstance(task_id, str):
+        raise TypeError('task_id must be a string, instead %s was given' %
+                        type(task_id))
+    if model_id is not None and not isinstance(model_id, str):
+        raise TypeError('model must be a string, instead %s was given' %
+                        type(task_id))
+    if model_init is not None and not isinstance(model_init, dict):
+        raise TypeError('model_init must be a dict, instead %s was given' %
+                        type(model_init))
+
+    # check derivatives folder is present
+    derivatives_path = os.path.join(dataset_path, 'derivatives')
+    if not os.path.exists(derivatives_path):
+        raise ValueError('derivatives folder does not exist in given dataset')
+
+    # Get acq specs for models. RepetitionTime and SliceTimingReference.
+    # Only if not given in model_init dictionary
+    # Throw warning if no bold.json is found
+    TR = None
+    SliceTimingRef = 0.0
+    if model_init is not None and 't_r' in model_init:
+        warn('RepetitionTime given in model_init as %d' % model_init['t_r'])
+        if 'slice_time_ref' not in model_init:
+            warn('slice_time_ref was not given and so it is assumed that the '
+                 'slice timing reference is 0.0 percent of the repetition '
+                 'time')
+    else:
+        filters = [('task', task_id)]
+        for possible_path in [derivatives_path, dataset_path]:
+            img_specs = get_bids_files(possible_path, file_folder='func',
+                                       file_tag='bold', file_type='json',
+                                       filters=filters)
+            if img_specs:
+                break
+        if not img_specs:
+            warn('No bold.json file found in derivatives folder or dataset '
+                 'folder. t_r can not be inferred and will need to be set '
+                 'manually in the list of models, otherwise their fit will '
+                 'throw an exception')
+        else:
+            specs = json.load(open(img_specs[0], 'r'))
+            if 'RepetitionTime' in specs:
+                TR = float(specs['RepetitionTime'])
+            else:
+                warn('RepetitionTime not found in file %s. t_r can not be '
+                     'inferred and will need to be set manually in the '
+                     'list of models. Otherwise their fit will throw an '
+                     ' exception' % img_specs[0])
+            if 'SliceTimingRef' in specs:
+                SliceTimingRef = float(specs['SliceTimingRef'])
+            else:
+                warn('SliceTimingRef not found in file %s. It will be assumed'
+                     ' that the slice timing reference is 0.0 percent of the '
+                     'repetition time. If it is not the case it will need to '
+                     'be set manually in the generated list of models' %
+                     img_specs[0])
+
+    # Infer subjects in dataset
+    if glob.glob(os.path.join(derivatives_path, 'ses-*')):
+        sub_folders = glob.glob(os.path.join(derivatives_path, 'ses-*',
+                                             'sub-*'))
+    else:
+        sub_folders = glob.glob(os.path.join(derivatives_path, 'sub-*'))
+    sub_ids = [os.path.basename(s).split('-')[1] for s in sub_folders]
+    sub_ids = sorted(list(set(sub_ids)))
+
+    # Build fit_kwargs dictionaries to pass to their respective models fit
+    # Events and confounds files must match number of imgs (runs)
+    models = []
+    models_fit_kwargs = []
+    for sub_id in sub_ids:
+        # Create model
+        model_kwargs = {'t_r': TR, 'slice_time_ref': SliceTimingRef,
+                        'subject_id': sub_id}
+        if model_init is not None:
+            model_kwargs.update(model_init)
+        model = FirstLevelModel(**model_kwargs)
+        models.append(model)
+
+        # Obtain model fit kwargs
+        model_fit_kwargs = {}
+
+        # Get preprocessed imgs
+        filters = [('task', task_id)]
+        imgs = get_bids_files(derivatives_path, file_folder='func',
+                              file_tag='bold', file_type='nii*', sub_id=sub_id,
+                              filters=filters)
+        model_fit_kwargs['run_imgs'] = imgs
+
+        # If model_id is provided we add it to the search constraints for
+        # events and confounds
+        if model_id is not None:
+            filters.append(('model', model_id))
+        # Get events. If not found in derivatives check for original data.
+        # There might be no need to preprocess events to specify model, still
+        # throw a warning
+        for possible_path in [derivatives_path, dataset_path]:
+            events = get_bids_files(possible_path, file_folder='func',
+                                    file_tag='events', file_type='tsv',
+                                    sub_id=sub_id, filters=filters)
+            if events:
+                if len(events) != len(imgs):
+                    raise ValueError('%d events.tsv files found for %d bold '
+                                     'files. Same number of event files as '
+                                     'the number of runs is expected' %
+                                     (len(events), len(imgs)))
+                events = [pd.read_csv(e, sep='\t', index_col=None)
+                          for e in events]
+                for e in events:
+                    e.columns = ['name' if col == 'trial_type' else col
+                                 for col in e.columns]
+                if possible_path == dataset_path:
+                    warn('events taken from directory containing raw data. '
+                         'Is it the case that there was no need to preprocess '
+                         'the events for the model?')
+                model_fit_kwargs['events'] = events
+                break
+        if not events:
+            raise ValueError('No events.tsv files found')
+
+        # Get confounds. If not found it will be assumed there are none.
+        # If there are confounds, they are assumed to be present for all runs.
+        confounds = get_bids_files(derivatives_path, file_folder='func',
+                                   file_tag='confounds', file_type='tsv',
+                                   sub_id=sub_id, filters=filters)
+        if confounds:
+            if len(confounds) != len(imgs):
+                raise ValueError('%d confounds.tsv files found for %d bold '
+                                 'files. Same number of confound files as '
+                                 'the number of runs is expected' %
+                                 (len(events), len(imgs)))
+            confounds = [pd.read_csv(c, sep='\t', index_col=None)
+                         for c in confounds]
+            model_fit_kwargs['confounds'] = confounds
+        models_fit_kwargs.append(model_fit_kwargs)
+
+    return models, models_fit_kwargs
