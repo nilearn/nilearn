@@ -24,7 +24,11 @@ documentation <parcellation_time_series>` for more.
 """
 
 ##############################################################################
-# Retrieve the atlas and the data
+# From images to an ROI-to-ROI correlation matrix
+# -----------------------------------------------
+
+##############################################################################
+# Retrieve the atlas and the data.
 from nilearn import datasets
 
 dataset = datasets.fetch_atlas_harvard_oxford('cort-maxprob-thr25-2mm')
@@ -33,17 +37,17 @@ atlas_filename, labels = dataset.maps, dataset.labels
 print('Atlas ROIs are located in nifti image (4D) at: %s' %
       atlas_filename)  # 4D data
 
-# One subject of resting-state data
+# One subject of resting-state data.
 data = datasets.fetch_adhd(n_subjects=1)
 fmri_filename = data.func[0]
 confounds_filename = data.confounds[0]
 
 ##############################################################################
 # Extract signals on a parcellation defined by labels using the
-# NiftiLabelsMasker
+# NiftiLabelsMasker.
 from nilearn.input_data import NiftiLabelsMasker
 atlas_masker = NiftiLabelsMasker(labels_img=atlas_filename, standardize=True,
-                                 memory='nilearn_cache', verbose=5)
+                                 memory='nilearn_cache', verbose=1)
 
 # Here we go from nifti files to the signal time series in a numpy
 # array. Note how we give confounds to be regressed out during signal
@@ -51,12 +55,13 @@ atlas_masker = NiftiLabelsMasker(labels_img=atlas_filename, standardize=True,
 time_series = atlas_masker.fit_transform(fmri_filename,
                                          confounds=confounds_filename)
 
-
 ##############################################################################
-# Compute and display a correlation matrix
+# Compute and display a correlation matrix.
 from nilearn.connectome import ConnectivityMeasure
-correlation_measure = ConnectivityMeasure(kind='correlation')
-correlation_matrix = correlation_measure.fit_transform([time_series])[0]
+from sklearn.covariance import EmpiricalCovariance
+connectivity_measure = ConnectivityMeasure(
+    cov_estimator=EmpiricalCovariance(), kind='correlation')
+correlation_matrix = connectivity_measure.fit_transform([time_series])[0]
 
 # Plot the correlation matrix
 import numpy as np
@@ -75,13 +80,17 @@ plt.gca().yaxis.tick_right()
 plt.subplots_adjust(left=.01, bottom=.3, top=.99, right=.62)
 
 
+##############################################################################
+# Counfounding signals: a source of spurious correlations
+# -------------------------------------------------------
+
 ###############################################################################
-# Same thing without confounds, to stress the importance of confounds
+# Same thing without confounds, to stress the importance of confounds.
 
 time_series = atlas_masker.fit_transform(fmri_filename)
 # Note how we did not specify confounds above. This is bad!
 
-correlation_matrix = correlation_measure.fit_transform([time_series])[0]
+correlation_matrix = connectivity_measure.fit_transform([time_series])[0]
 
 # Mask the main diagonal for visualization:
 np.fill_diagonal(correlation_matrix, 0)
@@ -97,30 +106,38 @@ plt.subplots_adjust(left=.01, bottom=.3, top=.99, right=.62)
 plt.suptitle('No confounds', size=27)
 
 ###############################################################################
+# Do my counfounds model noise properly? Voxel-to-voxel connectivity tells!
+# -------------------------------------------------------------------------
+
+#######################################################################
 # Check the relevance of chosen confounds: The distribution of voxel-to-voxel
 # correlations should be tight and approximately centered to zero.
 
 #######################################################################
-# Compute voxel-wise time series with and without confounds removal, using
+# Firstly take a look at the confounds defined in the csv file.
+from nilearn._utils.numpy_conversions import csv_to_array
+confounds = csv_to_array(confounds_filename, names=True)
+confounds_names = confounds.dtype.names
+print('Csv file includes {0} confounds:\n{1}.'.format(
+    len(confounds_names), ', '.join(confounds_names)))
+
+#######################################################################
+# Now compute voxel-wise time series with and without confounds removal, using
 # NiftiMasker.
 from nilearn.input_data import NiftiMasker
-brain_masker = NiftiMasker(memory='nilearn_cache', verbose=5)
+brain_masker = NiftiMasker(memory='nilearn_cache', verbose=1)
 voxel_ts_raw = brain_masker.fit_transform(fmri_filename)
 voxel_ts_cleaned1 = brain_masker.fit_transform(fmri_filename,
                                                confounds=confounds_filename)
 
 # For comparison, compute voxels signals after high variance confounds removal
 from nilearn.image import high_variance_confounds
-hv_confounds = high_variance_confounds(fmri_filename, n_confounds=20)
+hv_confounds = high_variance_confounds(fmri_filename, n_confounds=17)
 voxel_ts_cleaned2 = brain_masker.fit_transform(fmri_filename,
                                                confounds=hv_confounds)
 
 ###############################################################################
-# Compute the voxel-to-voxel Pearson's r correlations
-from sklearn.covariance import EmpiricalCovariance
-from nilearn import connectome
-connectivity_measure = connectome.ConnectivityMeasure(
-    cov_estimator=EmpiricalCovariance(), kind='correlation')
+# Then compute the voxel-to-voxel correlations
 voxel_ts_all = [voxel_ts_raw, voxel_ts_cleaned1, voxel_ts_cleaned2]
 labels = ['no confounds\nremoved', 'file confounds',
           'high variance\nconfounds']
@@ -144,5 +161,9 @@ plt.vlines(0, ymin, ymax)
 plt.legend()
 plt.xlabel('voxel-to-voxel correlation values')
 plt.tight_layout()
+
+#######################################################################
+# The morale: High variance confounds do not succeed to capture all noise.
+# Motion regressors are mandatory !
 
 plt.show()
