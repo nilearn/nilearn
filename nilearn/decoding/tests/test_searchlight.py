@@ -62,3 +62,15 @@ def test_searchlight():
     sl.fit(data_img, cond)
     assert_equal(np.where(sl.scores_ == 1)[0].size, 33)
     assert_equal(sl.scores_[2, 2, 2], 1.)
+
+    # Regression test for #1216: if process_mask_img is not given, no masking is
+    # applied instead of using mask_img
+    mask = np.zeros((5, 5, 5), np.bool)
+    mask[0, 0, 0] = True
+    mask[0, 0, 1] = True
+    mask_img = nibabel.Nifti1Image(mask.astype(np.int), np.eye(4))
+
+    sl = searchlight.SearchLight(mask_img, radius=4,
+                                 n_jobs=n_jobs, scoring='accuracy', cv=cv)
+    sl.fit(data_img, cond)
+    assert_equal(np.where(sl.scores_ == 1)[0].size, 0)
