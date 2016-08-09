@@ -86,7 +86,7 @@ def from_matrix_vector(matrix, vector):
     return t
 
 
-def coord_transform(x, y, z, affine, squeeze=True):
+def coord_transform(x, y, z, affine):
     """ Convert the x, y, z coordinates from one image space to another
         space.
 
@@ -100,9 +100,6 @@ def coord_transform(x, y, z, affine, squeeze=True):
             The z coordinates in the input space
         affine : 2D 4x4 ndarray
             affine that maps from input to output space.
-        squeeze : boolean, optional (default True)
-            If True and only one point is given, a tuple of numbers is returned
-            instead of a tuple of nparrays.
 
         Returns
         -------
@@ -116,6 +113,7 @@ def coord_transform(x, y, z, affine, squeeze=True):
         Warning: The x, y and z have their Talairach ordering, not 3D
         numy image ordering.
     """
+    squeeze = (not hasattr(x, '__iter__'))
     coords = np.c_[np.atleast_1d(x).flat,
                    np.atleast_1d(y).flat,
                    np.atleast_1d(z).flat,
