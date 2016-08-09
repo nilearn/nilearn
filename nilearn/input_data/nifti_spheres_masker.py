@@ -52,7 +52,7 @@ def _apply_mask_and_get_affinity(seeds, niimg, radius, allow_overlap,
 
     mask_coords = np.asarray(list(zip(*mask_coords)))
     mask_coords = coord_transform(mask_coords[0], mask_coords[1],
-                                  mask_coords[2], affine)
+                                  mask_coords[2], affine, squeeze=False)
     mask_coords = np.asarray(mask_coords).T
 
     if (radius is not None and
