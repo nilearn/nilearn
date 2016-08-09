@@ -86,7 +86,7 @@ def from_matrix_vector(matrix, vector):
     return t
 
 
-def coord_transform(x, y, z, affine):
+def coord_transform(x, y, z, affine, squeeze=True):
     """ Convert the x, y, z coordinates from one image space to another
         space.
 
@@ -100,6 +100,9 @@ def coord_transform(x, y, z, affine):
             The z coordinates in the input space
         affine : 2D 4x4 ndarray
             affine that maps from input to output space.
+        squeeze : boolean, optional (default True)
+            If True and only one point is given, a tuple of numbers is returned
+            instead of a tuple of nparrays.
 
         Returns
         -------
@@ -118,7 +121,9 @@ def coord_transform(x, y, z, affine):
                    np.atleast_1d(z).flat,
                    np.ones_like(np.atleast_1d(z).flat)].T
     x, y, z, _ = np.dot(affine, coords)
-    return x.squeeze(), y.squeeze(), z.squeeze()
+    if squeeze:
+        return x.squeeze(), y.squeeze(), z.squeeze()
+    return x, y, z
 
 
 def get_bounds(shape, affine):

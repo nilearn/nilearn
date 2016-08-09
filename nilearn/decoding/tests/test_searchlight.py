@@ -67,7 +67,6 @@ def test_searchlight():
     # applied instead of using mask_img
     mask = np.zeros((5, 5, 5), np.bool)
     mask[0, 0, 0] = True
-    mask[0, 0, 1] = True
     mask_img = nibabel.Nifti1Image(mask.astype(np.int), np.eye(4))
 
     sl = searchlight.SearchLight(mask_img, radius=4,
