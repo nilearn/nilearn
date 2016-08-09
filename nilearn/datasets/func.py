@@ -198,16 +198,16 @@ def fetch_haxby(data_dir=None, n_subjects=None, subjects=[2],
              url + 'subj%d-2010.01.14.tar.gz' % i,
              {'uncompress': True,
               'md5sum': md5sums.get('subj%d-2010.01.14.tar.gz' % i, None)})
-            for i in subject_mask
+            for i in np.array(subjects)
             for sub_file in sub_files
             if not (sub_file == 'anat.nii.gz' and i == 6)  # no anat for sub. 6
     ]
 
     files = _fetch_files(data_dir, files, resume=resume, verbose=verbose)
 
-    if ((isinstance(subjects, numbers.Number) and subjects == 6) or
-            np.any(subject_mask == 6)):
-        files.append(None)  # None value because subject 6 has no anat
+    for id_6 in subjects:
+        if id_6 == 6:
+            files.append(None)  # None value because subject 6 has no anat
 
     kwargs = {}
     if fetch_stimuli:

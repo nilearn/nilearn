@@ -9,6 +9,15 @@ Bug fix
 
     - Change default dtype in :func:`nilearn.image.concat_imgs` to be the
       original type of the data (see #1238).
+API changes summary
+...................
+
+    - The parameter 'n_subjects' is deprecated and will be removed in future
+      release. Use 'subjects' instead in :func:`nilearn.datasets.fetch_haxby`
+
+    - The function :func:`nilearn.datasets.fetch_haxby` will now fetch the
+      data accepting input given in 'subjects' as a list than integer.
+
 
 API changes summary
 ...................
