@@ -287,7 +287,6 @@ class SearchLight(BaseEstimator):
         process_mask_coords = coord_transform(
             process_mask_coords[0], process_mask_coords[1],
             process_mask_coords[2], process_mask_affine, squeeze=False)
-        print(process_mask_coords)
         process_mask_coords = np.asarray(process_mask_coords).T
 
         X, A = _apply_mask_and_get_affinity(
