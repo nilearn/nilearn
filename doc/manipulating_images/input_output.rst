@@ -104,7 +104,7 @@ datasets and atlases. They can be imported from
 :mod:`nilearn.datasets`::
 
     >>> from nilearn import datasets
-    >>> haxby_dataset = datasets.fetch_haxby(subjects=1)  # doctest: +SKIP
+    >>> haxby_dataset = datasets.fetch_haxby(subjects=[1])  # doctest: +SKIP
 
 They return a data structure that contains different pieces of
 information on the retrieved dataset, including the
@@ -246,7 +246,7 @@ For the Haxby datasets, we can load the categories of the images
 presented to the subject::
 
     >>> from nilearn import datasets
-    >>> haxby_dataset = datasets.fetch_haxby(subjects=1)  # doctest: +SKIP
+    >>> haxby_dataset = datasets.fetch_haxby(subjects=[1])  # doctest: +SKIP
     >>> import numpy as np
     >>> labels = np.recfromcsv(haxby_dataset.session_target[0], delimiter=" ")  # doctest: +SKIP
     >>> stimuli = labels['labels']  # doctest: +SKIP

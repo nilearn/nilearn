@@ -11,7 +11,7 @@ cross-validated accuracy and the confusion matrix.
 # Load the Haxby data dataset
 from nilearn import datasets
 import numpy as np
-haxby_dataset = datasets.fetch_haxby(subjects=1)
+haxby_dataset = datasets.fetch_haxby(subjects=[1])
 
 # Print basic information on the dataset
 print('Mask nifti images are located at: %s' % haxby_dataset.mask)
