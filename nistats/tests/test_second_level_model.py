@@ -80,38 +80,38 @@ def test_fmri_inputs():
         des.to_csv(des_fname)
 
         # prepare correct input first level models
-        flm = FirstLevelModel(model_id='1').fit(FUNCFILE, design_matrices=des)
+        flm = FirstLevelModel(subject_id='1').fit(FUNCFILE, design_matrices=des)
         flms = [flm, flm, flm]
         # prepare correct input dataframe and lists
         shapes = ((7, 8, 9, 1),)
         _, FUNCFILE, _ = write_fake_fmri_data(shapes)
         FUNCFILE = FUNCFILE[0]
 
-        dfcols = ['model_id', 'map_name', 'effects_map_path']
+        dfcols = ['subject_id', 'map_name', 'effects_map_path']
         dfrows = [['1', 'a', FUNCFILE], ['2', 'a', FUNCFILE],
                   ['3', 'a', FUNCFILE]]
         niidf = pd.DataFrame(dfrows, columns=dfcols)
         niimgs = [FUNCFILE, FUNCFILE, FUNCFILE]
         flcondstr = [('a', 'a')]
         flcondval = [('a', np.array([1]))]
-        regressors = pd.DataFrame([['1', 1], ['2', 2], ['3', 3]],
-                                 columns=['model_id', 'conf1'])
+        confounds = pd.DataFrame([['1', 1], ['2', 2], ['3', 3]],
+                                 columns=['subject_id', 'conf1'])
         sdes = pd.DataFrame(X[:3, :3], columns=['a', 'b', 'c'])
 
         # smoke tests with correct input
         # First level models as input
         SecondLevelModel(mask=mask).fit(flms, flcondstr)
         SecondLevelModel().fit(flms, flcondval)
-        SecondLevelModel().fit(flms, flcondval, regressors)
+        SecondLevelModel().fit(flms, flcondval, confounds)
         SecondLevelModel().fit(flms, flcondval, None, sdes)
         # dataframes as input
         SecondLevelModel().fit(niidf, None)
-        SecondLevelModel().fit(niidf, None, regressors)
-        SecondLevelModel().fit(niidf, None, regressors, sdes)
+        SecondLevelModel().fit(niidf, None, confounds)
+        SecondLevelModel().fit(niidf, None, confounds, sdes)
         SecondLevelModel().fit(niidf, None, None, sdes)
         SecondLevelModel().fit(niidf, flcondstr)
-        SecondLevelModel().fit(niidf, flcondstr, regressors)
-        SecondLevelModel().fit(niidf, flcondstr, regressors, sdes)
+        SecondLevelModel().fit(niidf, flcondstr, confounds)
+        SecondLevelModel().fit(niidf, flcondstr, confounds, sdes)
         SecondLevelModel().fit(niidf, flcondstr, None, sdes)
         # niimgs as input
         SecondLevelModel().fit(niimgs, None, None, sdes)
@@ -123,26 +123,26 @@ def test_fmri_inputs():
         assert_raises(ValueError, SecondLevelModel().fit, flms + [''],
                       flcondval)
         # test dataframe requirements
-        assert_raises(ValueError, SecondLevelModel().fit, niidf['model_id'])
+        assert_raises(ValueError, SecondLevelModel().fit, niidf['subject_id'])
         # test niimgs requirements
         assert_raises(ValueError, SecondLevelModel().fit, niimgs)
         assert_raises(ValueError, SecondLevelModel().fit, niimgs + [[]], sdes)
-        # test first_level_conditions, regressors, and design
+        # test first_level_conditions, confounds, and design
         assert_raises(ValueError, SecondLevelModel().fit, flms, ['', []])
         assert_raises(ValueError, SecondLevelModel().fit, flms, flcondval, [])
         assert_raises(ValueError, SecondLevelModel().fit, flms, flcondval,
-                      regressors['conf1'])
+                      confounds['conf1'])
         assert_raises(ValueError, SecondLevelModel().fit, flms, flcondval,
                       None, [])
 
 
 def _first_level_dataframe():
-    conditions = ['map_name', 'model_id', 'map_path']
+    conditions = ['map_name', 'subject_id', 'map_path']
     names = ['con_01', 'con_02', 'con_01', 'con_02']
     subjects = ['01', '01', '02', '02']
     maps = ['', '', '', '']
     dataframe = pd.DataFrame({'map_name': names,
-                              'model_id': subjects,
+                              'subject_id': subjects,
                               'effects_map_path': maps})
     return dataframe
 
@@ -154,16 +154,16 @@ def test_create_second_level_design():
         FUNCFILE = FUNCFILE[0]
         first_level_input = _first_level_dataframe()
         first_level_input['effects_map_path'] = [FUNCFILE] * 4
-        regressors = [['01', 0.1], ['02', 0.75]]
-        regressors = pd.DataFrame(regressors, columns=['model_id', 'f1'])
-        design = create_second_level_design(first_level_input, regressors)
+        confounds = [['01', 0.1], ['02', 0.75]]
+        confounds = pd.DataFrame(confounds, columns=['subject_id', 'f1'])
+        design = create_second_level_design(first_level_input, confounds)
         expected_design = np.array([[1, 0, 1, 0, 0.1], [0, 1, 1, 0, 0.1],
                                     [1, 0, 0, 1, 0.75], [0, 1, 0, 1, 0.75]])
         assert_array_equal(design, expected_design)
         assert_true(len(design.columns) == 2 + 2 + 1)
         assert_true(len(design) == 2 + 2)
         model = SecondLevelModel(mask=mask).fit(first_level_input,
-                                                regressors=regressors)
+                                                confounds=confounds)
         design = model.design_matrix_
         assert_array_equal(design, expected_design)
         assert_true(len(design.columns) == 2 + 2 + 1)
