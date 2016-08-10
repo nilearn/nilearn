@@ -21,17 +21,17 @@ from nistats.design_matrix import (create_second_level_design,
 import pandas as pd
 
 # Experimental paradigm has two conditions and 20 subjects
-column_names = ['map_name', 'model_id', 'map_path']
+column_names = ['map_name', 'subject_id', 'map_path']
 n_subjects = 20
 maps_name = ['language'] * n_subjects + ['consonants'] * n_subjects
 subject_list = ['sub-%02d' % i for i in range(1, n_subjects + 1)]
 maps_model = subject_list * 2
 maps_path = [''] * n_subjects * 2
 maps_table = pd.DataFrame({'map_name': maps_name,
-                           'model_id': maps_model,
+                           'subject_id': maps_model,
                            'effects_map_path': maps_path})
 # Specify extra information about the subjects to create additional regressors
-extra_info_subjects = pd.DataFrame({'model_id': subject_list,
+extra_info_subjects = pd.DataFrame({'subject_id': subject_list,
                                     'age': [i for i in range(15, 35)],
                                     'sex': [0, 1] * 10})
 
