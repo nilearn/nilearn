@@ -117,6 +117,58 @@ def _iter_signals_from_spheres(seeds, niimg, radius, allow_overlap,
         yield X[:, row]
 
 
+def _signals_to_img_seeds(seed_signals, seeds, radius, allow_overlap,
+                          affinitiy, mask_img=None):
+    """Create list of images from signals defined as seeds.
+
+    seed_signals, mask_img must have the same shapes and affines.
+
+    Parameters
+    ----------
+    seed_signals: numpy.ndarray
+        signals to process, as a 2D array. A signal is a column. There must
+        be as many signals as seeds.
+        In pseudo-code: seed_signals.shape[1] == A.shape[-1]
+
+    affinitiy: linked list sparse matrix Niimg-like object
+        See http://nilearn.github.io/manipulating_images/input_output.html.
+        Region definitions using maps.
+
+    mask_img: Niimg-like object, optional
+        See http://nilearn.github.io/manipulating_images/input_output.html.
+        Boolean array giving voxels to process. integer arrays also accepted,
+        zero meaning False.
+
+    Returns
+    -------
+    img: nibabel.Nifti1Image
+        Reconstructed image. affine and shape are those of A.
+    """
+
+    maps_img = _utils.check_niimg_4d(maps_img)
+    seeds_data = maps_img.get_data()
+    shape = maps_img.shape[:3]
+    affine = maps_img.get_affine()
+
+    if mask_img is not None:
+        raise ValueError('Not implemented yet')
+    else:
+        seeds_mask = np.ones(seeds_data.shape[:3], dtype=np.bool)
+
+    assert(seeds_mask.shape == seeds_data.shape[:3])
+
+    data = np.zeros(target_shape + (signals.shape[0],),
+                    dtype=signals.dtype, order=order)
+
+    for i, row in enumerate(affinity.rows):
+        if len(row) == 0:
+            raise ValueError('Sphere around seed #%i is empty' % i)
+        data[:, row] = signal_seeds
+
+    return _iter(masking.unmask(data, new_img_like(maps_img, maps_mask, affine))
+        for data in data[:, row])
+
+
 class _ExtractionFunctor(object):
 
     func_name = 'nifti_spheres_masker_extractor'
@@ -323,3 +375,28 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
             verbose=self.verbose)
 
         return signals
+
+    def inverse_transform(self, seed_signals):
+        """Compute within-sphere voxel signals from average sphere signals
+
+        Any mask given at initialization is taken into account.
+
+        Parameters
+        ----------
+        seed_signals: 2D numpy.ndarray
+            Signal for each sphere.
+            shape: (number of scans, number of seeds)
+
+        Returns
+        -------
+        voxel_signals: nibabel.Nifti1Image
+            Signal for each voxel. shape: that of seeds.
+        """
+        from ..regions import signal_extraction
+
+        self._check_fitted()
+
+        logger.log("computing image from signals", verbose=self.verbose)
+        data[A[i]] = seed_signals[i]
+        return signal_extraction.signals_to_img_maps(
+            region_signals, self.maps_img_, mask_img=self.mask_img_)
