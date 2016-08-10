@@ -456,7 +456,7 @@ def create_second_level_design(maps_table, confounds=None):
     maps_table: pandas DataFrame
         Contains at least columns 'map_name' and 'subject_id'
     confounds: pandas DataFrame, optional
-        If given, contains at least two columns, 'subject_id' and one regressor.
+        If given, contains at least two columns, 'subject_id' and one confound.
         confounds and maps_table do not need to agree on their shape,
         information between them is matched based on the 'subject_id' column
         that both must have.
