@@ -448,17 +448,17 @@ def plot_design_matrix(design_matrix, rescale=True, ax=None):
     return ax
 
 
-def create_second_level_design(maps_table, regressors=None):
-    """Infers a second level design from a maps table.
+def create_second_level_design(maps_table, confounds=None):
+    """Sets up a second level design from a maps table.
 
     Parameters
     ----------
     maps_table: pandas DataFrame
-        Contains at least columns 'map_name' and 'model_id'
-    regressors: pandas DataFrame, optional
-        If given, contains at least two columns, 'model_id' and one regressor.
-        regressors and maps_table do not need to agree on their shape,
-        information between them is matched based on the 'model_id' column
+        Contains at least columns 'map_name' and 'subject_id'
+    confounds: pandas DataFrame, optional
+        If given, contains at least two columns, 'subject_id' and one regressor.
+        confounds and maps_table do not need to agree on their shape,
+        information between them is matched based on the 'subject_id' column
         that both must have.
 
     Returns
@@ -467,23 +467,23 @@ def create_second_level_design(maps_table, regressors=None):
         The second level design matrix
     """
     maps_name = maps_table['map_name'].tolist()
-    subjects_id = maps_table['model_id'].tolist()
-    regressors_name = []
-    if regressors is not None:
-        regressors_name = regressors.columns.tolist()
-        regressors_name.remove('model_id')
+    subjects_id = maps_table['subject_id'].tolist()
+    confounds_name = []
+    if confounds is not None:
+        confounds_name = confounds.columns.tolist()
+        confounds_name.remove('subject_id')
     design_columns = (np.unique(maps_name).tolist() +
                       np.unique(subjects_id).tolist() +
-                      regressors_name)
+                      confounds_name)
     design_matrix = pd.DataFrame(columns=design_columns)
     for ridx, row in maps_table.iterrows():
         design_matrix.loc[ridx] = [0] * len(design_columns)
         design_matrix.loc[ridx, row['map_name']] = 1
-        design_matrix.loc[ridx, row['model_id']] = 1
-        if regressors is not None:
-            conrow = regressors['model_id'] == row['model_id']
-            for conf_name in regressors_name:
-                design_matrix.loc[ridx, conf_name] = regressors[conrow][conf_name].values
+        design_matrix.loc[ridx, row['subject_id']] = 1
+        if confounds is not None:
+            conrow = confounds['subject_id'] == row['subject_id']
+            for conf_name in confounds_name:
+                design_matrix.loc[ridx, conf_name] = confounds[conrow][conf_name].values
 
     # check column names are unique
     if len(np.unique(design_columns)) != len(design_columns):
