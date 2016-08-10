@@ -94,8 +94,8 @@ dosenbach_timeseries = dosenbach_masker.fit_transform(
 ###############################################################################
 # Correlation matrices estimation
 # -------------------------------
-# All starts with estimation of the signals **covariance**. Here the number of
-# samples
+# All starts with the estimation of the signals **covariance**. Here the number
+# of samples
 print(power_timeseries.shape[0])
 
 ###############################################################################
