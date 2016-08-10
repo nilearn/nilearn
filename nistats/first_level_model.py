@@ -564,7 +564,8 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
 
 
 def first_level_models_from_bids(dataset_path, task_id, model_id=None,
-                                 model_init=None):
+                                 model_init=None, preproc_variant=None,
+                                 preproc_space=None):
     """Return first and second level model objects and inputs to fit.
 
     Assuming no subjects lacks a task. Problem inferring subjects.
@@ -592,7 +593,7 @@ def first_level_models_from_bids(dataset_path, task_id, model_id=None,
                         type(task_id))
     if model_id is not None and not isinstance(model_id, str):
         raise TypeError('model must be a string, instead %s was given' %
-                        type(task_id))
+                        type(model_id))
     if model_init is not None and not isinstance(model_init, dict):
         raise TypeError('model_init must be a dict, instead %s was given' %
                         type(model_init))
@@ -615,17 +616,18 @@ def first_level_models_from_bids(dataset_path, task_id, model_id=None,
                  'time')
     else:
         filters = [('task', task_id)]
-        for possible_path in [derivatives_path, dataset_path]:
-            img_specs = get_bids_files(possible_path, file_folder='func',
+        img_specs = get_bids_files(derivatives_path, file_folder='func',
+                                   file_tag='preproc', file_type='json',
+                                   filters=filters)
+        if not img_specs:
+            img_specs = get_bids_files(dataset_path, file_folder='func',
                                        file_tag='bold', file_type='json',
                                        filters=filters)
-            if img_specs:
-                break
         if not img_specs:
-            warn('No bold.json file found in derivatives folder or dataset '
-                 'folder. t_r can not be inferred and will need to be set '
-                 'manually in the list of models, otherwise their fit will '
-                 'throw an exception')
+            warn('No preproc.json found in derivatives folder and no bold.json'
+                 ' in dataset folder. t_r can not be inferred and will need to'
+                 ' be set manually in the list of models, otherwise their fit '
+                 'will throw an exception')
         else:
             specs = json.load(open(img_specs[0], 'r'))
             if 'RepetitionTime' in specs:
@@ -654,7 +656,7 @@ def first_level_models_from_bids(dataset_path, task_id, model_id=None,
     sub_ids = sorted(list(set(sub_ids)))
 
     # Build fit_kwargs dictionaries to pass to their respective models fit
-    # Events and confounds files must match number of imgs (runs)
+    # Events and regressors files must match number of imgs (runs)
     models = []
     models_fit_kwargs = []
     for sub_id in sub_ids:
@@ -671,13 +673,22 @@ def first_level_models_from_bids(dataset_path, task_id, model_id=None,
 
         # Get preprocessed imgs
         filters = [('task', task_id)]
+        # If preproc_variant is provided we add it to the search constraints
+        # for preproc imgs. The same for preproc_space.
+        if preproc_variant is not None:
+            filters.append(('variant', preproc_variant))
+        if preproc_space is not None:
+            filters.append(('space', preproc_space))
+
         imgs = get_bids_files(derivatives_path, file_folder='func',
-                              file_tag='bold', file_type='nii*', sub_id=sub_id,
-                              filters=filters)
+                              file_tag='preproc', file_type='nii*',
+                              sub_id=sub_id, filters=filters)
         model_fit_kwargs['run_imgs'] = imgs
 
+        # Get events and extra regressors
+        filters = [('task', task_id)]
         # If model_id is provided we add it to the search constraints for
-        # events and confounds
+        # events and regressors
         if model_id is not None:
             filters.append(('model', model_id))
         # Get events. If not found in derivatives check for original data.
@@ -707,20 +718,20 @@ def first_level_models_from_bids(dataset_path, task_id, model_id=None,
         if not events:
             raise ValueError('No events.tsv files found')
 
-        # Get confounds. If not found it will be assumed there are none.
-        # If there are confounds, they are assumed to be present for all runs.
-        confounds = get_bids_files(derivatives_path, file_folder='func',
-                                   file_tag='confounds', file_type='tsv',
-                                   sub_id=sub_id, filters=filters)
-        if confounds:
-            if len(confounds) != len(imgs):
-                raise ValueError('%d confounds.tsv files found for %d bold '
+        # Get regressors. If not found it will be assumed there are none.
+        # If there are regressors, they are assumed to be present for all runs.
+        regressors = get_bids_files(derivatives_path, file_folder='func',
+                                    file_tag='confounds', file_type='tsv',
+                                    sub_id=sub_id, filters=filters)
+        if regressors:
+            if len(regressors) != len(imgs):
+                raise ValueError('%d regressors.tsv files found for %d bold '
                                  'files. Same number of confound files as '
                                  'the number of runs is expected' %
                                  (len(events), len(imgs)))
-            confounds = [pd.read_csv(c, sep='\t', index_col=None)
-                         for c in confounds]
-            model_fit_kwargs['confounds'] = confounds
+            regressors = [pd.read_csv(c, sep='\t', index_col=None)
+                          for c in regressors]
+            model_fit_kwargs['regressors'] = regressors
         models_fit_kwargs.append(model_fit_kwargs)
 
     return models, models_fit_kwargs

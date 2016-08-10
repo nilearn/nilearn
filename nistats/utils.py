@@ -296,7 +296,13 @@ def parse_bids_filename(img_path):
     reference['file_type'] = typ
     reference['file_fields'] = []
     for part in parts[:-1]:
-        field, value = part.split('-')
+        field = part.split('-')[0]
         reference['file_fields'].append(field)
-        reference[field] = value
+        # In derivatives is not clear if the source file name will
+        # be parsed as a field with no value.
+        if len(part.split('-')) > 1:
+            value = part.split('-')[1]
+            reference[field] = value
+        else:
+            reference[field] = None
     return reference
