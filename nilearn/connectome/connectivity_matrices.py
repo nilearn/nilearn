@@ -1,5 +1,5 @@
 import warnings
-from math import sqrt
+from math import sqrt, floor
 
 import numpy as np
 from scipy import linalg
@@ -231,6 +231,42 @@ def sym_to_vec(symmetric, discard_diagonal=False):
     return symmetric[..., tril_mask] / scaling[tril_mask]
 
 
+def vec_to_sym(vec):
+    """Return the symmetric array given its flattened lower triangular part.
+    Acts on the last dimension of the array if not 1-dimensional.
+    Parameters
+    ----------
+    vec : numpy.ndarray, shape (..., p * (p + 1) /2)
+        The input array.
+
+    Returns
+    -------
+    sym : numpy.ndarray, shape (..., p, p)
+        The output symmetric array.
+    """
+    n = vec.shape[-1]
+    # solve p * (p + 1) / 2 = n subj. to p > 0
+    # p ** 2 + p - 2n = 0 & p > 0
+    # p = - 1 / 2 + sqrt( 1 + 8 * n) / 2
+    p = (sqrt(8 * n + 1) - 1.) / 2
+    if p > floor(p):
+        raise ValueError(
+            "Vector of unstuitable shape {0} can not be transformed to "
+            "a symmetric matrix.".format(vec.shape))
+
+    p = int(p)
+    mask = np.tril(np.ones((p, p))).astype(np.bool)
+    sym = np.zeros(vec.shape[:-1] + (p, p))
+    sym[..., mask] = vec.copy()  # avoid side effects
+    sym.swapaxes(-1, -2)[..., mask] = vec
+
+    # Rescale diagonal terms
+    mask.flat[::p + 1] = False
+    mask = np.logical_not(mask + mask.T)  # True for diagonal terms
+    sym[..., mask] *= sqrt(2)
+    return sym
+
+
 def cov_to_corr(covariance):
     """Return correlation matrix for a given covariance matrix.
 
@@ -284,6 +320,9 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
             "covariance", "precision"}, optional
         The matrix kind.
 
+    vectorize : bool, optional
+        Vectorize or not the connectivities.
+
     Attributes
     ----------
     `cov_estimator_` : estimator object
@@ -303,9 +342,10 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
     """
 
     def __init__(self, cov_estimator=LedoitWolf(store_precision=False),
-                 kind='covariance'):
+                 kind='covariance', vectorize=False):
         self.cov_estimator = cov_estimator
         self.kind = kind
+        self.vectorize = vectorize
 
     def fit(self, X, y=None):
         """Fit the covariance estimator to the given time series for each
@@ -357,12 +397,13 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
 
         Parameters
         ----------
-        X : list of numpy.ndarray with shapes (n_samples, n_features)
+        X : list of n_subjects numpy.ndarray with shapes \
+            (n_samples, n_features)
             The input subjects time series.
 
         Returns
         -------
-        output : numpy.ndarray, shape (n_samples, n_features, n_features)
+        output : numpy.ndarray, shape (n_subjects, n_features, n_features)
              The transformed connectivity matrices.
         """
         if self.kind == 'correlation':
@@ -390,4 +431,46 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
                                  '"covariance" and "precision", got kind '
                                  '"{}"'.format(self.kind))
 
-        return np.array(connectivities)
+        connectivities = np.array(connectivities)
+        if self.vectorize:
+            connectivities = sym_to_vec(connectivities)
+
+        return connectivities
+
+    def _check_fitted(self):
+        if not hasattr(self, "cov_estimator_"):
+            raise ValueError('It seems that {0} has not been fitted. '
+                             'You must call fit() before calling '
+                             'transform().'.format(self.__class__.__name__)
+                             )
+
+    def inverse_transform(self, connectivities):
+        """Returns connectivity matrices from vectorized or not connectivities.
+        If kind is 'tangent', the covariance matrices are reconstructed.
+
+        Parameters
+        ----------
+        connectivities : list of n_subjects numpy.ndarray with shapes\
+            (n_features, n_features) or (n_features * (n_features + 1) /2,)
+            Connectivities of each subject, vectorized or not.
+
+        Returns
+        -------
+        output : numpy.ndarray, shape (n_subjects, n_features, n_features)
+             The corresponding connectivity matrices.
+             If kind is 'tangent', the covariance matrices are reconstructed.
+        """
+        self._check_fitted()
+
+        connectivities = np.array(connectivities)
+        if self.vectorize:
+            connectivities = vec_to_sym(connectivities)
+
+        if self.kind == 'tangent':
+            mean_sqrt = _map_eigenvalues(lambda x: np.sqrt(x), self.mean_)
+            connectivities = [mean_sqrt.dot(
+                _map_eigenvalues(np.exp, displacement)).dot(mean_sqrt)
+                for displacement in connectivities]
+            connectivities = np.array(connectivities)
+
+        return connectivities
