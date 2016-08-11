@@ -98,7 +98,7 @@ def fetch_haxby(data_dir=None, n_subjects=None, subjects=[2],
     n_subjects: int, optional
         Number of subjects, from 1 to 6.
 
-        NOTE: n_subjects is deprecated from 0.2.6 and will be removed in 0.2.7
+        NOTE: n_subjects is deprecated from 0.2.6 and will be removed in 0.3
         Use `subjects` instead.
 
     subjects : list, optional
@@ -148,20 +148,19 @@ def fetch_haxby(data_dir=None, n_subjects=None, subjects=[2],
     """
     if n_subjects is not None:
         warnings.warn("The parameter 'n_subjects' is deprecated from 0.2.6 "
-                      "and will be removed in nilearn 0.2.7 release. Use "
+                      "and will be removed in nilearn 0.3 release. Use "
                       "parameter 'subjects' instead.")
-        subjects = [n_subjects]
+        subjects = n_subjects
 
-    if isinstance(subjects, numbers.Number):
-        warnings.warn("subjects should be provided in list. Converting to list")
-        subjects = [subjects]
+    if isinstance(subjects, numbers.Number) and subjects > 6:
+        subjects = 6
 
-    if subjects is not None:
-        for subject_id in subjects:
-            if subject_id not in [1, 2, 3, 4, 5, 6]:
-                raise ValueError("You provided invalid subject number {0} in a "
+    if subjects is not None and isinstance(subjects, list):
+        for sub_id in subjects:
+            if sub_id not in [1, 2, 3, 4, 5, 6]:
+                raise ValueError("You provided invalid subject id {0} in a "
                                  "list. Subjects must be selected in "
-                                 "[1, 2, 3, 4, 5, 6]".format(subject_id))
+                                 "[1, 2, 3, 4, 5, 6]".format(sub_id))
 
     dataset_name = 'haxby2001'
     data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
@@ -189,21 +188,26 @@ def fetch_haxby(data_dir=None, n_subjects=None, subjects=[2],
     if subjects is None:
         subjects = []
 
+    if isinstance(subjects, numbers.Number):
+        subject_mask = np.arange(1, subjects + 1)
+    else:
+        subject_mask = np.array(subjects)
+
     files = [
             (os.path.join('subj%d' % i, sub_file),
              url + 'subj%d-2010.01.14.tar.gz' % i,
              {'uncompress': True,
               'md5sum': md5sums.get('subj%d-2010.01.14.tar.gz' % i, None)})
-            for i in np.array(subjects)
+            for i in subject_mask
             for sub_file in sub_files
             if not (sub_file == 'anat.nii.gz' and i == 6)  # no anat for sub. 6
     ]
 
     files = _fetch_files(data_dir, files, resume=resume, verbose=verbose)
 
-    for id_6 in subjects:
-        if id_6 == 6:
-            files.append(None)  # None value because subject 6 has no anat
+    if ((isinstance(subjects, numbers.Number) and subjects == 6) or
+            np.any(subject_mask == 6)):
+        files.append(None)  # None value because subject 6 has no anat
 
     kwargs = {}
     if fetch_stimuli:

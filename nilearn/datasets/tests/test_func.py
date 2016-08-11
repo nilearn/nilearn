@@ -63,7 +63,8 @@ def test_fetch_haxby():
     assert_equal(len(haxby.mask_face_little), len(subjects))
 
     subjects = ['a', 8]
-    message = "You provided invalid subject number {0} in a list"
+    message = "You provided invalid subject id {0} in a list"
+
     for sub_id in subjects:
         assert_raises_regex(ValueError,
                             message.format(sub_id),
