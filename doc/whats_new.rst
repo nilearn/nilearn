@@ -4,7 +4,11 @@
 Changelog
 ---------
 
-XXX
+Bug fix
+........
+
+    - Change default dtype in :func:`nilearn.image.concat_niimg` to be the
+      original type of the data (see #1238).
 
 0.2.5.1
 =======
