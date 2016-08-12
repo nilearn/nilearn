@@ -9,7 +9,7 @@ from scipy import linalg
 import matplotlib.pyplot as plt
 
 from nilearn import datasets
-haxby_dataset = datasets.fetch_haxby(subjects=[1])
+haxby_dataset = datasets.fetch_haxby()
 
 # print basic information on the dataset
 print('First subject anatomical nifti image (3D) is at: %s' %
@@ -22,7 +22,7 @@ from nilearn import image
 func_filename = haxby_dataset.func[0]
 mean_img = image.mean_img(func_filename)
 
-z_slice = -24
+z_slice = -14
 from nilearn.image.resampling import coord_transform
 affine = mean_img.affine
 _, _, k_slice = coord_transform(0, 0, z_slice,
