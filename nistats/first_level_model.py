@@ -656,7 +656,7 @@ def first_level_models_from_bids(dataset_path, task_id, model_id=None,
     sub_ids = sorted(list(set(sub_ids)))
 
     # Build fit_kwargs dictionaries to pass to their respective models fit
-    # Events and regressors files must match number of imgs (runs)
+    # Events and confounds files must match number of imgs (runs)
     models = []
     models_fit_kwargs = []
     for sub_id in sub_ids:
@@ -685,10 +685,10 @@ def first_level_models_from_bids(dataset_path, task_id, model_id=None,
                               sub_id=sub_id, filters=filters)
         model_fit_kwargs['run_imgs'] = imgs
 
-        # Get events and extra regressors
+        # Get events and extra confounds
         filters = [('task', task_id)]
         # If model_id is provided we add it to the search constraints for
-        # events and regressors
+        # events and confounds
         if model_id is not None:
             filters.append(('model', model_id))
         # Get events. If not found in derivatives check for original data.
@@ -718,20 +718,20 @@ def first_level_models_from_bids(dataset_path, task_id, model_id=None,
         if not events:
             raise ValueError('No events.tsv files found')
 
-        # Get regressors. If not found it will be assumed there are none.
-        # If there are regressors, they are assumed to be present for all runs.
-        regressors = get_bids_files(derivatives_path, file_folder='func',
+        # Get confounds. If not found it will be assumed there are none.
+        # If there are confounds, they are assumed to be present for all runs.
+        confounds = get_bids_files(derivatives_path, file_folder='func',
                                     file_tag='confounds', file_type='tsv',
                                     sub_id=sub_id, filters=filters)
-        if regressors:
-            if len(regressors) != len(imgs):
-                raise ValueError('%d regressors.tsv files found for %d bold '
+        if confounds:
+            if len(confounds) != len(imgs):
+                raise ValueError('%d confounds.tsv files found for %d bold '
                                  'files. Same number of confound files as '
                                  'the number of runs is expected' %
                                  (len(events), len(imgs)))
-            regressors = [pd.read_csv(c, sep='\t', index_col=None)
-                          for c in regressors]
-            model_fit_kwargs['regressors'] = regressors
+            confounds = [pd.read_csv(c, sep='\t', index_col=None)
+                          for c in confounds]
+            model_fit_kwargs['confounds'] = confounds
         models_fit_kwargs.append(model_fit_kwargs)
 
     return models, models_fit_kwargs
