@@ -12,7 +12,7 @@ See also the SpaceNet documentation: :ref:`space_net`.
 ##############################################################################
 # Load the Haxby dataset
 from nilearn.datasets import fetch_haxby
-data_files = fetch_haxby(subjects=[1])
+data_files = fetch_haxby()
 
 # Load Target labels
 import numpy as np
@@ -57,7 +57,7 @@ from nilearn.plotting import plot_stat_map, show
 coef_img = decoder.coef_img_
 plot_stat_map(coef_img, background_img,
               title="graph-net: accuracy %g%%" % accuracy,
-              cut_coords=(-34, -16), display_mode="yz")
+              cut_coords=(-52, -5), display_mode="yz")
 
 # Save the coefficients to a nifti file
 coef_img.to_filename('haxby_graph-net_weights.nii')
@@ -75,7 +75,7 @@ print("TV-l1 classification accuracy : %g%%" % accuracy)
 coef_img = decoder.coef_img_
 plot_stat_map(coef_img, background_img,
               title="tv-l1: accuracy %g%%" % accuracy,
-              cut_coords=(-34, -16), display_mode="yz")
+              cut_coords=(-52, -5), display_mode="yz")
 
 # Save the coefficients to a nifti file
 coef_img.to_filename('haxby_tv-l1_weights.nii')

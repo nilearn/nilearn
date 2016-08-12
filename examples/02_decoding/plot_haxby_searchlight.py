@@ -15,7 +15,8 @@ import numpy as np
 from nilearn import datasets
 from nilearn.image import new_img_like, load_img
 
-haxby_dataset = datasets.fetch_haxby(subjects=[1])
+# We fetch 2nd subject from haxby datasets (which is default)
+haxby_dataset = datasets.fetch_haxby()
 
 # print basic information on the dataset
 print('Anatomical nifti image (3D) is located at: %s' % haxby_dataset.mask)
@@ -101,13 +102,13 @@ mean_fmri = image.mean_img(fmri_img)
 
 from nilearn.plotting import plot_stat_map, show
 plot_stat_map(new_img_like(mean_fmri, searchlight.scores_), mean_fmri,
-              title="Searchlight", display_mode="z", cut_coords=[-16],
+              title="Searchlight", display_mode="z", cut_coords=[-18],
               colorbar=False)
 
 # F_score results
 p_ma = np.ma.array(p_unmasked, mask=np.logical_not(process_mask))
 plot_stat_map(new_img_like(mean_fmri, p_ma), mean_fmri,
               title="F-scores", display_mode="z",
-              cut_coords=[-16], colorbar=False)
+              cut_coords=[-18], colorbar=False)
 
 show()

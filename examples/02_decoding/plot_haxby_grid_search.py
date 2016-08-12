@@ -37,7 +37,8 @@ a separator.
 # Load the Haxby dataset
 from nilearn import datasets
 import numpy as np
-haxby_dataset = datasets.fetch_haxby(subjects=[1])
+# by default 2nd subject data will be fetched on which we run our analysis
+haxby_dataset = datasets.fetch_haxby()
 
 # print basic information on the dataset
 print('Mask nifti image (3D) is located at: %s' % haxby_dataset.mask)
