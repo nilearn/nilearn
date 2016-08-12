@@ -739,7 +739,7 @@ def fetch_atlas_basc_multiscale_2015(version='sym', data_dir=None,
     return Bunch(**params)
 
 
-def fetch_coords_dosenbach_2010(ordered_regions=False):
+def fetch_coords_dosenbach_2010(ordered_regions=True):
     """Load the Dosenbach et al. 160 ROIs. These ROIs cover
     much of the cerebral cortex and cerebellum and are assigned to 6
     networks.
