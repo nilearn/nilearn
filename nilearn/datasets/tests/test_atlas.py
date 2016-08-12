@@ -397,4 +397,4 @@ def test_fetch_coords_dosenbach_2010():
     np.testing.assert_array_equal(bunch.networks, np.sort(bunch.networks))
 
     bunch = atlas.fetch_coords_dosenbach_2010(ordered_regions=False)
-    assert_not_equal(bunch.networks, np.sort(bunch.networks))
+    assert_true(np.any(bunch.networks != np.sort(bunch.networks)))
