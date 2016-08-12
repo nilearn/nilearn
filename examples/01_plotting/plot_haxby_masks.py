@@ -9,7 +9,7 @@ from scipy import linalg
 import matplotlib.pyplot as plt
 
 from nilearn import datasets
-haxby_dataset = datasets.fetch_haxby(subjects=[1])
+haxby_dataset = datasets.fetch_haxby()
 
 # print basic information on the dataset
 print('First subject anatomical nifti image (3D) is at: %s' %
