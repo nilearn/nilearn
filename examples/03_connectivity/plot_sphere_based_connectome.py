@@ -5,7 +5,7 @@ Extract signals on spheres from an atlas and plot a connectome
 This example shows how to extract signals from spherical regions
 centered on coordinates from Power-264 atlas [1] and Dosenbach-160 [2].
 We estimate connectome using **sparse inverse covariance**, to recover
-the functional brain networks structure.
+the functional brain **networks structure**.
 
 References
 ----------
@@ -18,8 +18,8 @@ using fMRI.", 2010, Science 329, 1358-1361.
 """
 
 ###############################################################################
-# fMRI data and Power atlas loading
-# ---------------------------------
+# Load fMRI data and Power atlas
+# ------------------------------
 
 ###############################################################################
 # We are going to use a single subject from the ADHD dataset.
@@ -40,8 +40,8 @@ power = datasets.fetch_coords_power_2011()
 print('Power atlas comes with {0}.'.format(power.keys()))
 
 ###############################################################################
-# Computing within spheres averaged time-series
-# ---------------------------------------------
+# Compute within spheres averaged time-series
+# -------------------------------------------
 
 ###############################################################################
 # We can compute the mean signal within **spheres** of a fixed radius around
@@ -74,12 +74,12 @@ timeseries = spheres_masker.fit_transform(fmri_filename,
                                           confounds=confounds_filename)
 
 ###############################################################################
-# Correlation matrix computation
-# ------------------------------
+# Estimate correlations
+# ---------------------
 
 ###############################################################################
-# All starts with the estimation of the signals **covariance**. Here the number
-# of ROIs exceeds the number of samples,
+# All starts with the estimation of the signals **covariance** matrix. Here the
+# number of ROIs exceeds the number of samples,
 print('time series has {0} samples'.format(timeseries.shape[0]))
 
 ###############################################################################
@@ -99,16 +99,8 @@ matrix = covariance_estimator.covariance_
 print('Covariance matrix has shape {0}.'.format(matrix.shape))
 
 ###############################################################################
-# Now remember that our signals have been **standardized** by the masker. So we
-# already have our pairwise correlations available with no further effort.
-
-# check diagonal is 1.
-print('Covariance matrix has diagonal {0}.'.format(
-    np.unique(np.diagonal(matrix))))
-
-###############################################################################
-# Matrix and graph plotting
-# -------------------------
+# Plot matrix and graph
+# ---------------------
 
 ###############################################################################
 # We use `matplotlib` plotting functions to visualize our correlation matrix
@@ -116,23 +108,21 @@ print('Covariance matrix has diagonal {0}.'.format(
 import matplotlib.pyplot as plt
 from nilearn import plotting
 
-# Set diagonal to zero, to emphasize structure
-np.fill_diagonal(matrix, 0)
-vmax = np.max(np.abs(matrix))
-
-plt.imshow(matrix, vmin=-vmax, vmax=vmax, cmap='RdBu_r',
-           interpolation='nearest')
+plt.imshow(matrix, vmin=-1., vmax=1., cmap='RdBu_r', interpolation='nearest')
 plt.colorbar()
 plt.title('Power correlation matrix')
 
 # Tweak edge_threshold to keep only the strongest connections.
-plotting.plot_connectome(matrix, coords,
-                         edge_threshold='99.8%', node_size=20,
-                         title='Power correlation connectome')
+plotting.plot_connectome(matrix, coords, title='Power correlation graph',
+                         edge_threshold='99.8%', node_size=20, colorbar=True)
 
 ###############################################################################
-# Dosenbach connectome
-# --------------------
+# Note the 1. on the matrix diagonal: These are the signals variances, set to
+# 1. by the `spheres_masker`.
+
+###############################################################################
+# Connectome extracted from Dosenbach's atlas
+# -------------------------------------------
 
 ###############################################################################
 # We repeat the same steps for Dosenbach's atlas.
@@ -156,17 +146,12 @@ covariance_estimator.fit(timeseries)
 matrix = covariance_estimator.covariance_
 
 plt.figure()
-np.fill_diagonal(matrix, 0)
-vmax = np.max(np.abs(matrix))
-plt.imshow(matrix, vmin=-vmax, vmax=vmax, cmap='RdBu_r',
-           interpolation='nearest')
+plt.imshow(matrix, vmin=-1., vmax=1., cmap='RdBu_r', interpolation='nearest')
 plt.colorbar()
 plt.title('Dosenbach correlation matrix')
 
-plotting.plot_connectome(matrix, coords,
-                         edge_threshold="99.7%", node_size=20,
-                         title='Dosenbach correlation connectome',
-                         colorbar=True)
+plotting.plot_connectome(matrix, coords, title='Dosenbach correlation graph',
+                         edge_threshold="99.7%", node_size=20, colorbar=True)
 
 ###############################################################################
 # We can easily identify the Dosenbach's networks from the matrix blocks.
