@@ -9,6 +9,7 @@ Bug fix
 
     - Change default dtype in :func:`nilearn.image.concat_imgs` to be the
       original type of the data (see #1238).
+
 API changes summary
 ...................
 
