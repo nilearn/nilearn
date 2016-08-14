@@ -125,7 +125,6 @@ plotting.plot_connectome(partial_correlation_matrix, dmn_coords, title=title,
 # 12 mm... One way is to use Kendall coefficient [1] to explore the homogenity
 # of times-series within the sphere.
 
-# We increase the radius to explore its impact on connectivity.
 masker = input_data.NiftiSpheresMasker(
     dmn_coords, radius=12., mask_img=icbm152_grey_mask,
     detrend=True, low_pass=0.1, high_pass=0.01, t_r=2.5,
@@ -133,6 +132,27 @@ masker = input_data.NiftiSpheresMasker(
 
 time_series = masker.fit_transform(func_filename,
                                    confounds=[confound_filename])
+
+gm_masker = input_data.NiftiMasker(
+    mask_img=icbm152_grey_mask,
+    detrend=True, low_pass=0.1, high_pass=0.01, t_r=2.5,
+    memory='nilearn_cache', memory_level=1, verbose=2)
+
+gm_time_series = masker.fit_transform(func_filename,
+                                   confounds=[confound_filename])
+print time_series.shape
+time_series -= time_series.mean(axis=1)[:, np.newaxis]
+
+#    from sklearn import covariance
+#    covariance_estimator = covariance.EmpiricalCovariance()
+#    covariance_estimator.fit(time_series.T)
+#    covariance_matrix = covariance_estimator.covariance_
+#    ts_ranks = covariance_matrix.sum(axis=0)
+ts_ranks = np.sum(time_series ** 2, axis=0)
+n_times, n_voxels = time_series.shape
+constant = (n_voxels ** 2) * n_times * (n_times ** 2 - 1) / (12. * (
+    n_voxels - 1))
+kundall[radius] = 1. - ts_ranks / constant
 
 partial_correlation_matrix2 = connectivity_measure.fit_transform(
     [time_series])[0]
