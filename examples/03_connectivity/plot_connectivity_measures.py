@@ -1,6 +1,6 @@
 """
-Comparing different functional connectivity measures
-====================================================
+Functional connectivity measures for group analysis of connectomes
+===================================================================
 
 This example compares different measures of functional connectivity between
 regions of interest : correlation, partial correlation, as well as a measure
