@@ -1,8 +1,8 @@
 """
-Producing single subject maps of seed-based correlation
-========================================================
+Producing single subject maps of seed-to-voxel correlation
+==========================================================
 
-This example shows how to produce seed-based correlation maps for a single
+This example shows how to produce seed-to-voxel correlation maps for a single
 subject based on resting-state fMRI scans. These maps depict the temporal
 correlation of a **seed region** with the **rest of the brain**.
 
