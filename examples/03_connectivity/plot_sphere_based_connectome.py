@@ -7,8 +7,8 @@ centered on coordinates from Power-264 atlas [1] and Dosenbach-160 [2].
 We estimate connectome using **sparse inverse covariance**, to recover
 the functional brain **networks structure**.
 
-References
-----------
+**References**
+
 [1] Power, Jonathan D., et al. "Functional network organization of the
 human brain." Neuron 72.4 (2011): 665-678.
 
@@ -20,8 +20,7 @@ using fMRI.", 2010, Science 329, 1358-1361.
 ###############################################################################
 # Load fMRI data and Power atlas
 # ------------------------------
-
-###############################################################################
+#
 # We are going to use a single subject from the ADHD dataset.
 from nilearn import datasets
 
@@ -42,19 +41,14 @@ print('Power atlas comes with {0}.'.format(power.keys()))
 ###############################################################################
 # Compute within spheres averaged time-series
 # -------------------------------------------
-
-###############################################################################
+#
 # We can compute the mean signal within **spheres** of a fixed radius around
 # a sequence of (x, y, z) coordinates with the object
 # :class:`nilearn.input_data.NiftiSpheresMasker`.
 # So we collect the regions coordinates in a numpy array
 import numpy as np
 
-coords = np.vstack((
-    power.rois['x'],
-    power.rois['y'],
-    power.rois['z'],
-)).T
+coords = np.vstack((power.rois['x'], power.rois['y'], power.rois['z'])).T
 
 print('Stacked power coordinates in array of shape {0}.'.format(coords.shape))
 
@@ -76,8 +70,7 @@ timeseries = spheres_masker.fit_transform(fmri_filename,
 ###############################################################################
 # Estimate correlations
 # ---------------------
-
-###############################################################################
+#
 # All starts with the estimation of the signals **covariance** matrix. Here the
 # number of ROIs exceeds the number of samples,
 print('time series has {0} samples'.format(timeseries.shape[0]))
@@ -101,8 +94,7 @@ print('Covariance matrix has shape {0}.'.format(matrix.shape))
 ###############################################################################
 # Plot matrix and graph
 # ---------------------
-
-###############################################################################
+#
 # We use `matplotlib` plotting functions to visualize our correlation matrix
 # and display the graph of connections with `nilearn.plotting.plot_connectome`.
 import matplotlib.pyplot as plt
@@ -118,13 +110,13 @@ plotting.plot_connectome(matrix, coords, title='Power correlation graph',
 
 ###############################################################################
 # Note the 1. on the matrix diagonal: These are the signals variances, set to
-# 1. by the `spheres_masker`.
+# 1. by the `spheres_masker`. Hence the covariance of the signal is a
+# correlation matrix
 
 ###############################################################################
 # Connectome extracted from Dosenbach's atlas
 # -------------------------------------------
-
-###############################################################################
+#
 # We repeat the same steps for Dosenbach's atlas.
 dosenbach = datasets.fetch_coords_dosenbach_2010()
 
