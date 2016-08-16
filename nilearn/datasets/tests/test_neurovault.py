@@ -5,7 +5,6 @@ Test the neurovault module.
 # License: simplified BSD
 
 import os
-import warnings
 import stat
 try:
     from os.path import samefile
@@ -20,10 +19,7 @@ import re
 import numpy as np
 from nose import SkipTest
 from nose.tools import (assert_true, assert_false, assert_equal, assert_raises)
-try:
-    from nose.tools import assert_warns
-except ImportError:
-    assert_warns = None
+from sklearn.utils.testing import assert_warns
 
 from nilearn.datasets import neurovault
 
@@ -36,20 +32,6 @@ def _same_stat(path_1, path_2):
 
 if samefile is None:
     samefile = _same_stat
-
-
-def _verif_warn(warning_type, f, *args, **kwargs):
-    with warnings.catch_warnings(record=True) as w:
-        warnings.simplefilter('always')
-        f(*args, **kwargs)
-        try:
-            assert issubclass(w[0].category, warning_type)
-        except IndexError:
-            raise AssertionError('Warning not raised by {0}'.format(f))
-
-
-if assert_warns is None:
-    assert_warns = _verif_warn
 
 
 _EXAMPLE_IM_META = {
@@ -160,26 +142,6 @@ class _TemporaryDirectory(object):
                 os.chmod(os.path.join(root, name),
                          stat.S_IWUSR | stat.S_IRUSR)
         shutil.rmtree(self.temp_dir_)
-
-
-def test_translate_types_to_sql():
-    py_types = {'some_int': int, 'some_float': float,
-                'some_str': str, 'some_bool': bool, 'some_dict': dict}
-    sql_types = neurovault._translate_types_to_sql(py_types)
-    assert_equal(sql_types['some_int'], 'INTEGER')
-    assert_equal(sql_types['some_float'], 'REAL')
-    assert_equal(sql_types['some_str'], 'TEXT')
-    assert_equal(sql_types['some_bool'], 'INTEGER')
-    assert_equal(sql_types['some_dict'], '')
-
-
-def test_to_supported_type():
-    assert_equal(neurovault._to_supported_type(0), 0)
-    assert_equal(neurovault._to_supported_type(None), None)
-    assert_equal(neurovault._to_supported_type('abc'), 'abc')
-    assert_equal(neurovault._to_supported_type({'a': 0}), json.dumps({'a': 0}))
-    assert_equal(neurovault._to_supported_type(u'\u2019'), u'\u2019')
-    assert_equal(neurovault._to_supported_type(os), u'{0}'.format(os))
 
 
 def test_remove_none_strings():
@@ -515,18 +477,6 @@ def test_checked_get_dataset_dir():
                       'neurovault', temp_dir, write_required=True)
 
 
-def test_neurovault_metadata_db_path():
-    with _TemporaryDirectory() as temp_dir:
-        os.remove(os.path.join(temp_dir, '.neurovault_metadata.db'))
-        assert_equal(neurovault.neurovault_metadata_db_path(),
-                     os.path.join(temp_dir, '.neurovault_metadata.db'))
-        os.remove(os.path.join(temp_dir, '.neurovault_metadata.db'))
-        os.chmod(temp_dir, stat.S_IREAD)
-        if os.access(temp_dir, os.W_OK):
-            return
-        assert_warns(Warning, neurovault.neurovault_metadata_db_path)
-
-
 def test_neurovault_directory():
     nv_dir = neurovault.neurovault_directory()
     assert_true(os.path.isdir(nv_dir))
@@ -638,40 +588,6 @@ def test_download_manager():
         assert_false(os.path.isdir(temp_dir))
 
 
-def test_sqlite_download_manager():
-    with _TemporaryDirectory():
-        download_manager = neurovault.SQLiteDownloadManager(
-            neurovault_data_dir=neurovault.neurovault_directory())
-        with download_manager:
-            assert_false(download_manager.connection_ is None)
-            download_manager._add_to_images(_EXAMPLE_IM_META)
-            download_manager._add_to_collections(_EXAMPLE_COL_META)
-        assert_true(download_manager.connection_ is None)
-
-        im_110_info = neurovault.read_sql_query(
-            """SELECT valid_images.id AS image_id,
-            collections.id AS collection_id,
-            collections.owner AS owner FROM
-            valid_images INNER JOIN collections ON
-            valid_images.collection_id=collections.id""")
-
-        assert_equal(im_110_info['image_id'][0], 110)
-        assert_equal(im_110_info['collection_id'][0], 35)
-        assert_equal(im_110_info['owner'][0], 52)
-        almost_all_image_fields = list(neurovault._ALL_IMAGE_FIELDS_SQL.keys())
-        almost_all_image_fields.remove('id')
-        almost_all_image_fields.remove('Age')
-        download_manager = neurovault.SQLiteDownloadManager(
-            neurovault_data_dir=neurovault.neurovault_directory(),
-            image_fields=almost_all_image_fields)
-        with download_manager:
-            download_manager._update_schema()
-        images = neurovault.read_sql_query("SELECT * FROM images")
-        assert_true('Go_No_Go' in images.keys())
-        assert_true('id' in images.keys())
-        assert_false('Age' in images.keys())
-
-
 def test_json_add_collection_dir():
     with _TemporaryDirectory() as data_temp_dir:
         coll_dir = os.path.join(data_temp_dir, 'collection_1')
@@ -744,48 +660,18 @@ def test_chain_local_and_remote():
             neurovault.neurovault_directory(), 'bad_mode')))
 
 
-def test_fetch_neurovault_filtered():
+def test_fetch_neurovault():
     with _TemporaryDirectory() as temp_dir:
-        data = neurovault.fetch_neurovault_filtered(
+        data = neurovault.fetch_neurovault(
             max_images=1, fetch_neurosynth_words=True,
             fetch_reduced_rep=True, mode='overwrite')
         if data is not None:
             assert_equal(len(data.images), 1)
-            neurovault.show_neurovault_image_keys(max_images=1)
-            neurovault.show_neurovault_collection_keys(max_images=1)
-            assert_true(neurovault._nv_schema_exists(
-                neurovault.local_database_cursor()))
-            assert_true('collection_id' in neurovault.column_names(
-                neurovault.local_database_cursor(), 'images'))
             meta = data.images_meta[0]
             assert_false(meta['not_mni'])
-            db_data = neurovault.read_sql_query(
-                """SELECT id, absolute_path,
-                neurosynth_words_absolute_path FROM images WHERE id=?""",
-                (meta['id'],))
-            assert_equal(db_data['absolute_path'][0], meta['absolute_path'])
-            db_rows = neurovault.read_sql_query(
-                "SELECT * FROM images", as_columns=False)
-            assert_equal(db_rows[0]['absolute_path'],
-                         db_data['absolute_path'][0])
-            assert_raises(ValueError, neurovault.read_sql_query,
-                          """SELECT images.id AS id,
-                          collections.id AS id FROM
-                          images INNER JOIN collections""")
-            assert_false(neurovault._absolute_paths_incorrect())
-            neurovault.read_sql_query(
-                "UPDATE images SET absolute_path='bad_path'")
-            assert_true(neurovault._absolute_paths_incorrect())
-            neurovault.refresh_db()
-            assert_false(neurovault._absolute_paths_incorrect())
-            neurovault.read_sql_query(
-                "UPDATE collections SET absolute_path='bad'")
-            assert_true(neurovault._absolute_paths_incorrect())
-            neurovault.recompute_db()
-            assert_false(neurovault._absolute_paths_incorrect())
 
             assert_warns(
-                Warning, neurovault.fetch_neurovault_filtered,
+                UserWarning, neurovault.fetch_neurovault,
                 download_manager=TestDownloadManager(
                     max_images=2,
                     neurovault_data_dir=neurovault.neurovault_directory()))
@@ -793,7 +679,7 @@ def test_fetch_neurovault_filtered():
         os.chmod(temp_dir, stat.S_IREAD)
         if os.access(temp_dir, os.W_OK):
             return
-        assert_warns(Warning, neurovault.fetch_neurovault_filtered)
+        assert_warns(UserWarning, neurovault.fetch_neurovault)
 
 
 def test_fetch_neurovault_ids():
@@ -814,17 +700,5 @@ def test_move_col_id():
     assert_equal(im_terms, {'not_mni': False})
     assert_equal(col_terms, {'id': 1})
 
-    assert_warns(Warning, neurovault._move_col_id,
+    assert_warns(UserWarning, neurovault._move_col_id,
                  {'collection_id': 1, 'not_mni': False}, {'id': 2})
-
-
-def test_filter_field_names():
-    assert_equal(neurovault._filter_field_names('a', {}),
-                 neurovault.OrderedDict())
-    assert_equal(neurovault._filter_field_names(('a-b',), {'a_b': 0}),
-                 neurovault.OrderedDict({'a_b': 0}))
-
-
-def test_get_len():
-    assert_equal(neurovault._get_len('abc'), 3)
-    assert_equal(neurovault._get_len(10), 0)
