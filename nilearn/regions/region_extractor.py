@@ -3,6 +3,7 @@ Better brain parcellations for Region of Interest analysis
 """
 
 import numbers
+import warnings
 import numpy as np
 
 from scipy.ndimage import label
@@ -169,7 +170,14 @@ def connected_regions(maps_img, min_region_size=1350,
         index_of_each_map.extend([index] * len(regions))
         all_regions_imgs.extend(regions)
 
-    regions_extracted_img = concat_niimgs(all_regions_imgs)
+    if len(all_regions_imgs) == 0 and (label_maps == 0).all():
+        warnings.warn("No regions are found to be extracted. Check if the "
+                      "given 'maps_img' is not empty. "
+                      "Returning empty image.")
+        empty_img = new_img_like(maps_img, label_maps)
+        all_regions_imgs.append(empty_img)
+
+    regions_extracted_img = concat_niimgs(all_regions_imgs, ensure_ndim=4)
 
     return regions_extracted_img, index_of_each_map
 
