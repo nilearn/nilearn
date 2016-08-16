@@ -739,10 +739,16 @@ def fetch_atlas_basc_multiscale_2015(version='sym', data_dir=None,
     return Bunch(**params)
 
 
-def fetch_coords_dosenbach_2010():
+def fetch_coords_dosenbach_2010(ordered_regions=True):
     """Load the Dosenbach et al. 160 ROIs. These ROIs cover
     much of the cerebral cortex and cerebellum and are assigned to 6
     networks.
+
+    Parameters
+    ----------
+    ordered_regions : bool, optional
+        ROIs from same networks are grouped together and ordered with respect
+        to their names and their locations (anterior to posterior).
 
     Returns
     -------
@@ -762,6 +768,9 @@ def fetch_coords_dosenbach_2010():
     package_directory = os.path.dirname(os.path.abspath(__file__))
     csv = os.path.join(package_directory, "data", "dosenbach_2010.csv")
     out_csv = np.recfromcsv(csv)
+
+    if ordered_regions:
+        out_csv = np.sort(out_csv, order=['network', 'name', 'y'])
 
     # We add the ROI number to its name, since names are not unique
     names = out_csv['name']

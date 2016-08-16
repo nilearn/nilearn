@@ -293,7 +293,7 @@ plot, and has methods to add overlays, contours or edge maps::
                   statistical image or EPI image. This is useful for seed
                   based regions specific interpretation of brain images.
                   |hack|
-                  **Example:** :ref:`sphx_glr_auto_examples_03_connectivity_plot_seed_based_correlation.py`
+                  **Example:** :ref:`sphx_glr_auto_examples_03_connectivity_plot_seed_to_voxel_correlation.py`
 
 ================= =========================================================
 

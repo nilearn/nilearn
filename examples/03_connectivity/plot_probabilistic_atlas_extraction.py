@@ -50,10 +50,12 @@ print(time_series.shape)
 
 ############################################################################
 # Build and display a correlation matrix
-import numpy as np
-correlation_matrix = np.corrcoef(time_series.T)
+from nilearn.connectome import ConnectivityMeasure
+correlation_measure = ConnectivityMeasure(kind='correlation')
+correlation_matrix = correlation_measure.fit_transform([time_series])[0]
 
 # Display the correlation matrix
+import numpy as np
 from matplotlib import pyplot as plt
 plt.figure(figsize=(10, 10))
 # Mask out the major diagonal

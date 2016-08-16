@@ -1,6 +1,6 @@
 """
-Comparing different functional connectivity measures
-====================================================
+Functional connectivity measures for group analysis of connectomes
+===================================================================
 
 This example compares different measures of functional connectivity between
 regions of interest : correlation, partial correlation, as well as a measure
@@ -13,7 +13,7 @@ standard measures.
 # Fetch dataset
 import nilearn.datasets
 atlas = nilearn.datasets.fetch_atlas_msdl()
-dataset = nilearn.datasets.fetch_adhd(n_subjects=30)
+dataset = nilearn.datasets.fetch_adhd(n_subjects=20)
 
 
 ######################################################################
@@ -21,18 +21,17 @@ dataset = nilearn.datasets.fetch_adhd(n_subjects=30)
 import nilearn.input_data
 masker = nilearn.input_data.NiftiMapsMasker(
     atlas.maps, resampling_target="maps", detrend=True,
-    low_pass=None, high_pass=None, t_r=2.5, standardize=False,
+    low_pass=.1, high_pass=.01, t_r=2.5, standardize=False,
     memory='nilearn_cache', memory_level=1)
 subjects = []
 sites = []
 adhds = []
-for func_file, phenotypic in zip(dataset.func, dataset.phenotypic):
-    # keep only 3 sites, to save computation time
-    if phenotypic['site'] in [b'"NYU"', b'"OHSU"', b'"NeuroImage"']:
-        time_series = masker.fit_transform(func_file)
-        subjects.append(time_series)
-        sites.append(phenotypic['site'])
-        adhds.append(phenotypic['adhd'])  # ADHD/control label
+for func_file, confound_file, phenotypic in zip(
+        dataset.func, dataset.confounds, dataset.phenotypic):
+    time_series = masker.fit_transform(func_file, confounds=confound_file)
+    subjects.append(time_series)
+    sites.append(phenotypic['site'])
+    adhds.append(phenotypic['adhd'])  # ADHD/control label
 
 
 ######################################################################
@@ -54,7 +53,7 @@ for kind in kinds:
 
 
 ######################################################################
-# Plot the mean connectome
+# Plot the mean connectome with hemispheric saggital cuts
 import numpy as np
 import nilearn.plotting
 labels = atlas.labels
@@ -62,7 +61,7 @@ region_coords = atlas.region_coords
 for kind in kinds:
     nilearn.plotting.plot_connectome(mean_connectivity_matrix[kind],
                                      region_coords, edge_threshold='98%',
-                                     title=kind)
+                                     title=kind, display_mode='lzry')
 
 
 ######################################################################
@@ -96,13 +95,4 @@ plt.yticks(positions, yticks)
 plt.xlabel('Classification accuracy')
 plt.grid(True)
 plt.tight_layout()
-plt.show()
-
-
-######################################################################
-# Plot the mean connectome with hemispheric saggital cuts
-for kind in kinds:
-    nilearn.plotting.plot_connectome(mean_connectivity_matrix[kind],
-                                     region_coords, edge_threshold='98%',
-                                     title=kind, display_mode='lzry')
 plt.show()
