@@ -173,11 +173,11 @@ def connected_regions(maps_img, min_region_size=1350,
     if len(all_regions_imgs) == 0:
         warnings.warn("No regions are found to be extracted. Check if the "
                       "given 'maps_img' is not empty. "
-                      "Returning empty image.", stacklevel=2)
-        empty_img = new_img_like(maps_img, label_maps)
-        all_regions_imgs.append(empty_img)
+                      "Returning image as it is.", stacklevel=2)
+        input_img = new_img_like(maps_img, maps_img.get_data())
+        all_regions_imgs.append(input_img)
 
-    regions_extracted_img = concat_niimgs(all_regions_imgs, ensure_ndim=4)
+    regions_extracted_img = concat_niimgs(all_regions_imgs)
 
     return regions_extracted_img, index_of_each_map
 
