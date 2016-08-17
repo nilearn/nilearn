@@ -167,7 +167,6 @@ class CutAxes(BaseAxes):
                                                coords[1],
                                                coords[2],
                                                np.linalg.inv(affine))]
-        stop
         if self.direction == 'y':
             cut = np.rot90(data[:, y_map, :])
         elif self.direction == 'x':
