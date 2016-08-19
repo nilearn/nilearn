@@ -47,7 +47,7 @@ mask_img = load_img(haxby_dataset.mask)
 
 # .astype() makes a copy.
 process_mask = mask_img.get_data().astype(np.int)
-picked_slice = 27
+picked_slice = 29
 process_mask[..., (picked_slice + 1):] = 0
 process_mask[..., :picked_slice] = 0
 process_mask[:, 30:] = 0
@@ -100,15 +100,21 @@ p_unmasked = nifti_masker.inverse_transform(p_values).get_data()
 from nilearn import image
 mean_fmri = image.mean_img(fmri_img)
 
-from nilearn.plotting import plot_stat_map, show
-plot_stat_map(new_img_like(mean_fmri, searchlight.scores_), mean_fmri,
-              title="Searchlight", display_mode="z", cut_coords=[-18],
-              colorbar=False)
+from nilearn.plotting import plot_stat_map, plot_img, show
+searchlight_img = new_img_like(mean_fmri, searchlight.scores_)
+
+# Because scores are not a zero-center test statistics, we cannot use
+# plot_stat_map
+plot_img(searchlight_img, bg_img=mean_fmri,
+         title="Searchlight", display_mode="z", cut_coords=[-9],
+         vmin=.42, cmap='hot', threshold=.2, black_bg=True)
 
 # F_score results
 p_ma = np.ma.array(p_unmasked, mask=np.logical_not(process_mask))
-plot_stat_map(new_img_like(mean_fmri, p_ma), mean_fmri,
+f_score_img = new_img_like(mean_fmri, p_ma)
+plot_stat_map(f_score_img, mean_fmri,
               title="F-scores", display_mode="z",
-              cut_coords=[-18], colorbar=False)
+              cut_coords=[-9],
+              colorbar=False)
 
 show()
