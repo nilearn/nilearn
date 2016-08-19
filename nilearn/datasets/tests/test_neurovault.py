@@ -654,12 +654,6 @@ class TestDownloadManager(neurovault.BaseDownloadManager):
         raise neurovault.URLError('bad download')
 
 
-def test_chain_local_and_remote():
-    assert_raises(ValueError, lambda: list(
-        neurovault._chain_local_and_remote(
-            neurovault.neurovault_directory(), 'bad_mode')))
-
-
 def test_fetch_neurovault():
     with _TemporaryDirectory() as temp_dir:
         data = neurovault.fetch_neurovault(
@@ -687,6 +681,7 @@ def test_fetch_neurovault_ids():
     # and downloading an image which has no collection dir
     # or metadata yet.
     with _TemporaryDirectory():
+        assert_raises(ValueError, neurovault.fetch_neurovault_ids, mode='bad')
         data = neurovault.fetch_neurovault_ids(image_ids=[111])
         if data is not None:
             assert_equal(data['images_meta'][0]['id'], 111)

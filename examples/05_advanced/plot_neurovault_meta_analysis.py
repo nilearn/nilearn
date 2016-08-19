@@ -9,6 +9,8 @@ See :func:`nilearn.datasets.fetch_neurovault`
 documentation for more details.
 
 """
+# Author: Ben Cipollini
+# License: BSD
 import scipy
 
 from nilearn.datasets.neurovault import fetch_neurovault_ids

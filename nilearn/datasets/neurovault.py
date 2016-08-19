@@ -1723,7 +1723,17 @@ def _json_add_im_files_paths(file_name, force=True):
     return loaded
 
 
-class _ServerDataScroller(object):
+def _managed_method(attr='download_manager_'):
+    def wrapper(fun):
+        def wrapped(*args, **kwargs):
+            with getattr(args[0], attr):
+                for item in fun(*args, **kwargs):
+                    yield item
+        return wrapped
+    return wrapper
+
+
+class _DataScroller(object):
     """Iterate over neurovault.org results for a query.
 
     Parameters
@@ -1797,19 +1807,32 @@ class _ServerDataScroller(object):
         ``_DEFAULT_BATCH_SIZE`` will be used.
 
     """
-    def __init__(self, collection_terms=None, collection_filter=_empty_filter,
+    def __init__(self, neurovault_dir=None, download_mode='download_new',
+                 collection_terms=None, collection_filter=_empty_filter,
                  image_terms=None, image_filter=_empty_filter,
-                 ignored_collection_ids=set(), ignored_image_ids=set(),
                  wanted_collection_ids=None, wanted_image_ids=None,
                  download_manager=None, max_images=None,
                  max_consecutive_fails=10, max_fails_in_collection=5,
                  batch_size=None):
+        download_mode = download_mode.lower()
+        if download_mode not in ['overwrite', 'download_new', 'offline']:
+            raise ValueError(
+                'supported download modes are overwrite,'
+                ' download_new, offline; got {0}'.format(download_mode))
+        self.download_mode_ = download_mode
+        self.neurovault_dir_ = neurovault_directory(neurovault_dir)
         if collection_terms is None:
             collection_terms = {}
         if image_terms is None:
             image_terms = {}
-        ignored_collection_ids = set(ignored_collection_ids)
-        ignored_image_ids = set(ignored_image_ids)
+        if max_images is not None and max_images < 0:
+            max_images = None
+        self.collection_terms_ = collection_terms
+        self.collection_filter_ = collection_filter
+        self.image_terms_ = image_terms
+        self.image_filter_ = image_filter
+        self.visited_images_, self.visited_collections_ = set(), set()
+        self.max_images_ = max_images
         self.max_consecutive_fails_ = max_consecutive_fails
         self.max_fails_in_collection_ = max_fails_in_collection
         self.consecutive_fails_ = 0
@@ -1818,36 +1841,48 @@ class _ServerDataScroller(object):
 
         if download_manager is None:
             download_manager = BaseDownloadManager(
-                neurovault_data_dir=neurovault_directory(),
-                max_images=max_images)
-        download_manager.already_downloaded_ = len(ignored_image_ids)
+                neurovault_data_dir=self.neurovault_dir_,
+                max_images=self.max_images_)
         self.download_manager_ = download_manager
+        self.download_manager_.neurovault_data_dir_ = self.neurovault_dir_
+        self.wanted_image_ids_ = wanted_image_ids
+        self.wanted_collection_ids_ = wanted_collection_ids
+        self._prepare()
 
-        if wanted_collection_ids is not None or wanted_image_ids is not None:
-            self.collection_list_ = wanted_collection_ids
-            self.image_list_ = wanted_image_ids
-            self.ignored_collection_ids_ = ignored_collection_ids
-            self.ignored_image_ids_ = ignored_image_ids
+    def _prepare(self):
+
+        if (self.wanted_collection_ids_ is not None or
+            self.wanted_image_ids_ is not None):
+
+            self.max_images_ = None
             self.download_manager_.max_images_ = None
             self.scroll_mode_ = 'explicit'
             self.image_terms_ = {}
             self.image_filter_ = _empty_filter
+            self.collection_terms_ = {}
+            self.collection_filter_ = _empty_filter
+            self.local_collection_filter_ = _empty_filter
+            self.local_image_filter_ = ResultFilter(
+                {'id': IsIn(*self.wanted_image_ids_)}).OR(
+                    ResultFilter(
+                        collection_id=IsIn(*self.wanted_collection_ids_)))
+
             return
 
         (self.collection_terms_,
          self.collection_filter_) = _move_unknown_terms_to_local_filter(
-             collection_terms, collection_filter,
+             self.collection_terms_, self.collection_filter_,
              _COL_FILTERS_AVAILABLE_ON_SERVER)
-        self.collection_filter_ = ResultFilter(
-            {'id': NotIn(*ignored_collection_ids)}).AND(
-                self.collection_filter_)
 
         (self.image_terms_,
          self.image_filter_) = _move_unknown_terms_to_local_filter(
-             image_terms, image_filter,
+             self.image_terms_, self.image_filter_,
              _IM_FILTERS_AVAILABLE_ON_SERVER)
-        self.image_filter_ = ResultFilter(
-            {'id': NotIn(*ignored_image_ids)}).AND(self.image_filter_)
+
+        self.local_collection_filter_ = ResultFilter(
+            **self.collection_terms_).AND(self.collection_filter_)
+        self.local_image_filter_ = ResultFilter(**self.image_terms_).AND(
+            self.image_filter_)
 
         self.scroll_mode_ = 'filtered'
 
@@ -1924,6 +1959,7 @@ class _ServerDataScroller(object):
                 (n_im_in_collection if n_im_in_collection else 'no'),
                 ('s' if n_im_in_collection > 1 else ''), collection['id']))
 
+    @_managed_method()
     def _scroll_explicit(self):
         """Iterate over explicitely listed collections and images.
 
@@ -1949,16 +1985,16 @@ class _ServerDataScroller(object):
         """
         collection_urls = [
             urljoin(_NEUROVAULT_COLLECTIONS_URL, str(col_id)) for
-            col_id in self.collection_list_ or [] if
-            col_id not in self.ignored_collection_ids_]
+            col_id in self.wanted_collection_ids_ or [] if
+            col_id not in self.visited_collections_]
         for collection in _yield_from_url_list(collection_urls):
             for image in self._scroll_collection(collection):
-                self.ignored_image_ids_.add(image['id'])
+                self.visited_images_.add(image['id'])
                 yield image, collection
 
         image_urls = [urljoin(_NEUROVAULT_IMAGES_URL, str(im_id)) for
-                      im_id in self.image_list_ or [] if
-                      im_id not in self.ignored_image_ids_]
+                      im_id in self.wanted_image_ids_ or [] if
+                      im_id not in self.visited_images_]
         for image in _yield_from_url_list(image_urls):
             self.download_manager_.image(image)
             collection = _json_add_collection_dir(os.path.join(
@@ -1966,6 +2002,7 @@ class _ServerDataScroller(object):
                 'collection_metadata.json'))
             yield image, collection
 
+    @_managed_method()
     def _scroll_filtered(self):
         """Iterate over collections matching the specified filters.
 
@@ -2018,6 +2055,40 @@ class _ServerDataScroller(object):
                     break
                 yield image, collection
 
+    @_managed_method()
+    def _scroll_local(self):
+        _logger.debug('Reading local neurovault data.')
+        collections = glob(
+            os.path.join(
+                self.neurovault_dir_, '*', 'collection_metadata.json'))
+
+        for collection in filter(
+                self.local_collection_filter_,
+                map(_json_add_collection_dir, collections)):
+            images = glob(os.path.join(
+                collection['absolute_path'], 'image_*_metadata.json'))
+            for image in filter(self.local_image_filter_,
+                                map(_json_add_im_files_paths, images)):
+                if len(self.visited_images_) == self.max_images_:
+                    return
+                self.visited_images_.add(image['id'])
+                self.visited_collections_.add(collection['id'])
+                image, collection = self.download_manager_.update(
+                    image, collection)
+                yield image, collection
+
+        self.collection_filter_ = ResultFilter(
+            {'id': NotIn(*self.visited_collections_)}).AND(
+                self.collection_filter_)
+
+        self.image_filter_ = ResultFilter(
+            {'id': NotIn(*self.visited_images_)}).AND(
+                self.image_filter_)
+
+        found = len(self.visited_images_)
+        _logger.debug('{0} image{1} found on local disk.'.format(
+            ('No' if not found else found), ('s' if found > 1 else '')))
+
     def scroll(self):
         """Iterate over neurovault.org content.
 
@@ -2043,55 +2114,32 @@ class _ServerDataScroller(object):
             downloaded.
 
         """
-        self.consecutive_fails_ = 0
-        modes = {'filtered': self._scroll_filtered,
-                 'explicit': self._scroll_explicit}
-        with self.download_manager_:
-            for image, collection in modes[self.scroll_mode_]():
+        scroll_modes = {'filtered': self._scroll_filtered,
+                        'explicit': self._scroll_explicit}
+
+        if self.download_mode_ != 'overwrite':
+            for image, collection in self._scroll_local():
                 yield image, collection
 
+        if self.download_mode_ == 'offline':
+            return
+        if (self.max_images_ is not None and
+            len(self.visited_images_) >= self.max_images_):
+            return
 
-def _scroll_local_data(neurovault_dir,
-                       collection_terms=None, collection_filter=_empty_filter,
-                       image_terms=None, image_filter=_empty_filter,
-                       wanted_collection_ids=None, wanted_image_ids=None,
-                       max_images=None):
-    """Iterate over local Neurovault data matching a query."""
-
-    if collection_terms is None:
-        collection_terms = {}
-    if image_terms is None:
-        image_terms = {}
-    if wanted_collection_ids is not None or wanted_image_ids is not None:
-        collection_filter = _empty_filter
-        if wanted_collection_ids is None:
-            wanted_collection_ids = ()
-        if wanted_image_ids is None:
-            wanted_image_ids = ()
-        image_filter = ResultFilter({'id': IsIn(*wanted_image_ids)}).OR(
-            ResultFilter(collection_id=IsIn(*wanted_collection_ids)))
-        max_images = None
-    else:
-        collection_filter = ResultFilter(
-            **collection_terms).AND(collection_filter)
-        image_filter = ResultFilter(**image_terms).AND(image_filter)
-
-    if max_images is not None and max_images < 0:
-        max_images = None
-    found_images = 0
-    neurovault_dir = os.path.abspath(os.path.expanduser(neurovault_dir))
-    collections = glob(
-        os.path.join(neurovault_dir, '*', 'collection_metadata.json'))
-
-    for collection in filter(collection_filter,
-                             map(_json_add_collection_dir, collections)):
-        images = glob(os.path.join(
-            collection['absolute_path'], 'image_*_metadata.json'))
-        for image in filter(image_filter,
-                            map(_json_add_im_files_paths, images)):
-            if found_images == max_images:
+        _logger.debug('Reading server neurovault data.')
+        server_data = scroll_modes[self.scroll_mode_]()
+        while True:
+            try:
+                image, collection = next(server_data)
+            except StopIteration:
                 return
-            found_images += 1
+            except Exception:
+                _logger.exception(
+                    'Downloading data from server stopped early.')
+                warnings.warn(
+                    'Downloading data from Neurovault stopped early.')
+                return
             yield image, collection
 
 
@@ -2117,81 +2165,6 @@ def _move_unknown_terms_to_local_filter(terms, local_filter,
     local_terms, server_terms = _split_terms(terms, available_on_server)
     local_filter = ResultFilter(query_terms=local_terms).AND(local_filter)
     return server_terms, local_filter
-
-
-def _return_same(*args):
-    return args
-
-
-class _EmptyContext(object):
-
-    def __enter__(self):
-        pass
-
-    def __exit__(self, *args):
-        pass
-
-
-def _chain_local_and_remote(neurovault_dir, mode='download_new',
-                            collection_terms=None,
-                            collection_filter=_empty_filter,
-                            image_terms=None, image_filter=_empty_filter,
-                            wanted_collection_ids=None, wanted_image_ids=None,
-                            download_manager=None, max_images=None):
-    """Iterate over results from disk, then those found on neurovault.org"""
-    if collection_terms is None:
-        collection_terms = {}
-    if image_terms is None:
-        image_terms = {}
-    mode = mode.lower()
-    if mode not in ['overwrite', 'download_new', 'offline']:
-        raise ValueError(
-            'supported modes are overwrite,'
-            ' download_new, offline; got {0}'.format(mode))
-    image_ids, collection_ids = set(), set()
-    if mode == 'overwrite':
-        local_data = tuple()
-    else:
-        _logger.debug('Reading local neurovault data.')
-        local_data = _scroll_local_data(
-            neurovault_dir, collection_terms, collection_filter,
-            image_terms, image_filter, wanted_collection_ids,
-            wanted_image_ids, max_images)
-        context = (download_manager if download_manager is not None
-                   else _EmptyContext())
-        update = (download_manager.update if download_manager is not None
-                  else _return_same)
-        with context:
-            for image, collection in local_data:
-                image, collection = update(image, collection)
-                image_ids.add(image['id'])
-                collection_ids.add(collection['id'])
-                yield image, collection
-
-        _logger.debug('{0} image{1} found on local disk.'.format(
-            ('No' if not len(image_ids) else len(image_ids)),
-            ('s' if len(image_ids) > 1 else '')))
-    if mode == 'offline':
-        return
-    if max_images is not None and len(image_ids) >= max_images:
-        return
-
-    _logger.debug('Reading server neurovault data.')
-    server_data = _ServerDataScroller(collection_terms, collection_filter,
-                                      image_terms, image_filter,
-                                      collection_ids, image_ids,
-                                      wanted_collection_ids, wanted_image_ids,
-                                      download_manager, max_images).scroll()
-    while True:
-        try:
-            image, collection = next(server_data)
-        except StopIteration:
-            return
-        except Exception:
-            _logger.exception('Downloading data from server stopped early.')
-            warnings.warn('Downloading data from Neurovault stopped early.')
-            return
-        yield image, collection
 
 
 def basic_collection_terms():
@@ -2278,12 +2251,11 @@ def _fetch_neurovault_impl(
             fetch_neurosynth_words=fetch_neurosynth_words,
             fetch_reduced_rep=fetch_reduced_rep)
 
-    scroller = _chain_local_and_remote(
-        neurovault_dir=neurovault_data_dir, mode=mode,
-        collection_terms=collection_terms, collection_filter=collection_filter,
-        image_terms=image_terms, image_filter=image_filter,
-        wanted_collection_ids=collection_ids, wanted_image_ids=image_ids,
-        download_manager=download_manager, max_images=max_images)
+    scroller = _DataScroller(neurovault_data_dir, mode,
+                             collection_terms, collection_filter,
+                             image_terms, image_filter,
+                             collection_ids, image_ids,
+                             download_manager, max_images).scroll()
 
     scroller = list(scroller)
     if not scroller:
@@ -2631,6 +2603,7 @@ def fetch_neurovault_ids(
 
     """
     return _fetch_neurovault_impl(
+        mode=mode,
         collection_ids=collection_ids, image_ids=image_ids,
         neurovault_data_dir=neurovault_data_dir,
         fetch_neurosynth_words=fetch_neurosynth_words,
