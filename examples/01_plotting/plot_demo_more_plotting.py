@@ -167,7 +167,7 @@ display.add_edges(haxby_anat_filename)
 # `cut_coords` as list for manual cut with coordinates pointing at masked
 # brain regions
 display = plotting.plot_anat(mean_haxby_img, title="add_contours",
-                             cut_coords=[28, -34, -22])
+                             cut_coords=[-34, -39, -9])
 # Now use `add_contours` in display object with the path to a mask image from
 # the Haxby dataset as first argument and argument `levels` given as list
 # of values to select particular level in the contour to display and argument
@@ -181,7 +181,7 @@ display.add_contours(haxby_mask_filename, levels=[0.5], colors='r')
 
 display = plotting.plot_anat(mean_haxby_img,
                              title="add_contours with filled=True",
-                             cut_coords=[28, -34, -22])
+                             cut_coords=[-34, -39, -9])
 
 # By default, no color fillings will be shown using `add_contours`. To see
 # contours with color fillings use argument filled=True. contour colors are
@@ -196,12 +196,12 @@ display.add_contours(haxby_mask_filename, filled=True, alpha=0.7,
 # with MNI coordinates of interest.
 
 display = plotting.plot_anat(mean_haxby_img, title="add_markers",
-                             cut_coords=[28, -34, -22])
+                             cut_coords=[-34, -39, -9])
 
 # Coordinates of seed regions should be specified in first argument and second
 # argument `marker_color` denotes color of the sphere in this case yellow 'y'
 # and third argument `marker_size` denotes size of the sphere
-coords = [(28, -34, -22)]
+coords = [(-34, -39, -9)]
 display.add_markers(coords, marker_color='y', marker_size=100)
 
 ###############################################################################
