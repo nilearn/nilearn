@@ -129,6 +129,7 @@ import numpy as np
 #radii = np.arange(15) + 1.
 #radii = [2., 6., 8., 12., 20., 100.]
 radii = [2., 6., 12.]
+#radii = [2., 3.]
 seed_based_correlation_img = {}
 gm_masker = input_data.NiftiMasker(
     mask_img=icbm152_grey_mask,
@@ -154,6 +155,9 @@ raw_gm_masker = input_data.NiftiMasker(
     memory='nilearn_cache', memory_level=1, verbose=2)
 raw_gm_voxels_time_series = raw_gm_masker.fit_transform(func_filename)
 sphere_indicator_img = {}
+
+func_img = nibabel.load(func_filename)
+resampled_func_img = gm_masker.inverse_transform(gm_masker.transform(func_img))
 for radius in radii:
     raw_seed_masker = input_data.NiftiSpheresMasker(
         dmn_coords[:1], standardize=True, radius=radius,
@@ -161,49 +165,70 @@ for radius in radii:
         memory='nilearn_cache', memory_level=1, verbose=1)
     raw_seed_masker.fit()
     raw_sphere_time_series = _iter_signals_from_spheres(
-        raw_seed_masker.seeds_, nibabel.load(func_filename),
+        raw_seed_masker.seeds_, resampled_func_img,
         raw_seed_masker.radius,
         raw_seed_masker.allow_overlap,
         mask_img=raw_seed_masker.mask_img).next()
-    raw_sphere_to_gm_correlations = np.dot(
-        raw_gm_voxels_time_series.T,
-        (raw_sphere_time_series / raw_sphere_time_series.std(axis=0))) /\
-        raw_sphere_time_series.shape[0]
-    raw_sphere_gm_max_correlations = raw_sphere_to_gm_correlations.max(axis=1)
-    max_corr = raw_sphere_gm_max_correlations.max()
-    sphere_indicator = np.zeros(raw_sphere_gm_max_correlations.shape)
-    indices = np.argsort(raw_sphere_gm_max_correlations)[::-1]
-    for k in np.arange(10)[::-1] + 1:
-        sphere_indicator[indices[:k * raw_sphere_time_series.shape[1]]] = k
+    if False:
+        raw_sphere_to_gm_correlations = np.dot(
+            raw_gm_voxels_time_series.T,
+            (raw_sphere_time_series / raw_sphere_time_series.std(axis=0))) /\
+            raw_sphere_time_series.shape[0]
+        raw_sphere_gm_max_correlations = raw_sphere_to_gm_correlations.max(axis=1)
+        max_corr = raw_sphere_gm_max_correlations.max()
+        sphere_indicator = np.zeros(raw_sphere_gm_max_correlations.shape)
+        indices = np.argsort(raw_sphere_gm_max_correlations)[::-1]
+    #    for k in np.arange(10)[::-1] + 1:
+    #        sphere_indicator[indices[:k * raw_sphere_time_series.shape[1]]] = k
+    
+        sphere_indicator = np.zeros(raw_sphere_gm_max_correlations.shape)
+        for n, ts in enumerate(raw_sphere_time_series.T):
+            print n
+            raw_ts_to_gm_correlations = np.dot(
+                raw_gm_voxels_time_series.T, ts / ts.std()) / ts.shape[0]
+            index = np.argmax(raw_ts_to_gm_correlations)
+            sphere_indicator[index] = 1.
+    
+        assert(np.sum(sphere_indicator) == np.shape(raw_sphere_time_series)[1])
+        sphere_indicator_img[radius] = raw_gm_masker.inverse_transform(
+            sphere_indicator)
 
-    sphere_indicator = np.zeros(raw_sphere_gm_max_correlations.shape)
-    for n, ts in enumerate(raw_sphere_time_series.T):
-        print n
-        raw_ts_to_gm_correlations = np.dot(
-            raw_gm_voxels_time_series.T, ts / ts.std()) / ts.shape[0]
-        index = np.argmax(raw_ts_to_gm_correlations)
-        sphere_indicator[index] = 1.
-
-#    assert(np.sum(sphere_indicator) == np.shape(raw_sphere_time_series)[1])
+# Another way to compute the seed mask
+from nilearn import _utils
+from nilearn.image.resampling import coord_transform
+gm_mask_array = raw_gm_masker.mask_img.get_data()
+gm_mask_indices = zip(*np.where(gm_mask_array != 0))
+sphere_indicator2 = np.zeros(raw_sphere_gm_max_correlations.shape)
+i, j, k = gm_mask_indices[0], gm_mask_indices[1], gm_mask_indices[2]
+gm_mask_mni_coords = np.array(coord_transform(i, j, k,
+                                     raw_gm_masker.mask_img.affine)).T
+sphere_indicator_img = {}
+cleaned_spheres = {}
+for radius in radii:
+    within_sphere_mask = np.linalg.norm(
+        gm_mask_mni_coords - np.array(dmn_coords[:1]), axis=1) <= radius
+    cleaned_spheres[radius] = gm_voxels_time_series[:, within_sphere_mask == True]
     sphere_indicator_img[radius] = raw_gm_masker.inverse_transform(
-        sphere_indicator)
-
-from nilearn import image
-mean_func_img = image.mean_img(func_filename)
-
-for radius in [6.]:
-    display = plotting.plot_stat_map(seed_based_correlation_img[radius],
-                                     bg_img=mean_func_img,
-                                     cut_coords=dmn_coords[0], threshold=.25,
-                                     title=radius)
-    display.add_contours(sphere_indicator_img[radius])
+        within_sphere_mask)
 
 for radius in radii:
-    plotting.plot_roi(sphere_indicator_img[radius], cut_coords=dmn_coords[0],
-                      title=radius)
+    display = plotting.plot_roi(_utils.check_niimg(sphere_indicator_img[radius],
+                                atleast_4d=True),
+                                title='{0}'.format(radius),
+                                bg_img=icbm152_grey_mask)
+
+from nilearn import image
+if False:
+    mean_func_img = image.mean_img(func_filename)
+    for radius in [6.]:
+        display = plotting.plot_stat_map(seed_based_correlation_img[radius],
+                                         bg_img=mean_func_img,
+                                         cut_coords=dmn_coords[0], threshold=.25,
+                                         title=radius)
+        display.add_contours(sphere_indicator_img[radius])
 
 plotting.show()
-stop
+
 # Compute seed-to-voxel correlations within the spheres
 
 from nilearn.input_data.nifti_spheres_masker import _iter_signals_from_spheres
@@ -212,32 +237,31 @@ from nilearn import signal
 from sklearn.covariance import EmpiricalCovariance
 import numpy as np
 seed_time_series = {}
-cleaned_spheres = {}
 seed_masker = {}
 #radii = np.arange(15) + 1.
-radii = [2., 6., 8., 12., 20., 100.]
 seed_based_correlations = {}
 vox_to_vox_covariance = {}
 for radius in radii:
-    seed_masker[radius] = input_data.NiftiSpheresMasker(
-        dmn_coords[:1], radius=radius,
-        mask_img=icbm152_grey_mask,
-        detrend=True, standardize=False,
-        memory='nilearn_cache', memory_level=1, verbose=0)
-    seed_masker[radius].fit()
-    sphere = _iter_signals_from_spheres(
-        seed_masker[radius].seeds_, nibabel.load(func_filename),
-        seed_masker[radius].radius,
-        seed_masker[radius].allow_overlap,
-        mask_img=seed_masker[radius].mask_img).next()
-    cleaned_spheres[radius] = signal.clean(
-        sphere, confounds=[confound_filename], standardize=False)
-#    cleaned_spheres[radius] = sphere
-    seed_time_series[radius] = seed_masker[radius].fit_transform(
-        func_filename, confounds=[confound_filename])
-#    seed_based_correlations[radius] = np.dot(cleaned_spheres[radius].T,
-#                                     seed_time_series[radius]) / \
-#        seed_time_series[radius].shape[0]
+    if False:
+        seed_masker[radius] = input_data.NiftiSpheresMasker(
+            dmn_coords[:1], radius=radius,
+            mask_img=icbm152_grey_mask,
+            detrend=True, standardize=False,
+            memory='nilearn_cache', memory_level=1, verbose=0)
+        seed_masker[radius].fit()
+        sphere = _iter_signals_from_spheres(
+            seed_masker[radius].seeds_, resampled_func_img,
+            seed_masker[radius].radius,
+            seed_masker[radius].allow_overlap,
+            mask_img=seed_masker[radius].mask_img).next()
+        cleaned_spheres[radius] = signal.clean(
+            sphere, confounds=[confound_filename], standardize=False)
+    #    cleaned_spheres[radius] = sphere
+        seed_time_series[radius] = seed_masker[radius].fit_transform(
+            func_filename, confounds=[confound_filename])
+    #    seed_based_correlations[radius] = np.dot(cleaned_spheres[radius].T,
+    #                                     seed_time_series[radius]) / \
+    #        seed_time_series[radius].shape[0]
     time_series = cleaned_spheres[radius]
     time_series -= time_series.mean(axis=1)[:, np.newaxis]
     ts_ranks = np.sum(time_series ** 2, axis=0)
@@ -246,12 +270,43 @@ for radius in radii:
         n_voxels - 1))
     seed_based_correlations[radius] = 1. - ts_ranks / constant
     seed_based_correlations[radius] *= 100.
-
+    cleaned_spheres[radius] /= cleaned_spheres[radius].std(axis=0)
+    seed_signal = np.mean(cleaned_spheres[radius], axis=1)
+    seed_signal /= seed_signal.std()
+    seed_based_correlations[radius] = np.dot(
+        cleaned_spheres[radius].T, seed_signal) / np.shape(seed_signal)
     covariance_estimator = EmpiricalCovariance()
     covariance_estimator.fit(cleaned_spheres[radius])
     vox_to_vox_covariance[radius] = covariance_estimator.covariance_
 
+corr_img = {}
+for radius in radii:
+    cleaned_spheres[radius] /= cleaned_spheres[radius].std(axis=0)
+    seed_signal = np.mean(cleaned_spheres[radius], axis=1)
+    seed_signal /= seed_signal.std()
+    seed_based_correlations[radius] = np.dot(
+        cleaned_spheres[radius].T, seed_signal) / np.shape(seed_signal)
+###############################################################################
+    time_series = cleaned_spheres[radius]
+    time_series -= time_series.mean(axis=1)[:, np.newaxis]
+    ts_ranks = np.sum(time_series ** 2, axis=0)
+    n_times, n_voxels = time_series.shape
+    constant = (n_voxels ** 2) * n_times * (n_times ** 2 - 1) / (12. * (
+        n_voxels - 1))
+    seed_based_correlations[radius] = ts_ranks / constant
+    seed_based_correlations[radius] *= 100.
+###############################################################################
+    within_sphere_mask = np.linalg.norm(
+        gm_mask_mni_coords - np.array(dmn_coords[:1]), axis=1) <= radius
+    array = np.zeros(within_sphere_mask.shape)
+    array[within_sphere_mask == True] = seed_based_correlations[radius]
+    corr_img[radius] = raw_gm_masker.inverse_transform(array)
 
+for radius in radii:
+    plotting.plot_stat_map(corr_img[radius], title='{0}'.format(radius))
+
+plotting.show()
+stop
 plt.figure()
 plt.boxplot([np.triu(vox_to_vox_covariance[radius], k=1) for radius in radii],
             whis=np.inf)
