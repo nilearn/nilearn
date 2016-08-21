@@ -5,15 +5,15 @@ Extracting brain signal from spheres
 This example extracts brain signals from spheres described by the coordinates
 of their center in MNI space and a given radius in millimeters. In particular,
 this example extracts signals from Default Mode Network regions and computes
-partial correlations between them.
+inverse covariance between them.
 
 """
 
-##########################################################################
+###############################################################################
 # Data preparation
-#-----------------
+# ----------------
 
-##########################################################################
+###############################################################################
 # We retrieve the first subject data of the ADHD dataset.
 from nilearn import datasets
 adhd_dataset = datasets.fetch_adhd(n_subjects=1)
@@ -23,7 +23,7 @@ print('First subject functional nifti image (4D) is at: %s' %
       adhd_dataset.func[0])  # 4D data
 
 
-##########################################################################
+###############################################################################
 # We manually give coordinates of 4 regions from the Default Mode Network.
 dmn_coords = [(0, -52, 18), (-46, -68, 32), (46, -68, 32), (1, 50, -5)]
 labels = [
@@ -33,37 +33,37 @@ labels = [
     'Medial prefrontal cortex'
 ]
 
-##########################################################################
-# Signals extraction
-#-------------------
+###############################################################################
+# Within spheres average signal extraction
+# ----------------------------------------
 
-##########################################################################
+###############################################################################
 # It is advised to intersect the spheric regions with a grey matter mask.
 # Since we do not have subject grey mask, we resort to a less precise
 # group-level one.
 icbm152_grey_mask = datasets.fetch_icbm152_brain_gm_mask()
 
-##########################################################################
+###############################################################################
 # We extracts signal from sphere around DMN seeds.
 from nilearn import input_data
 
-masker = input_data.NiftiSpheresMasker(
-    dmn_coords, radius=6, mask_img=icbm152_grey_mask,
-    detrend=True, low_pass=0.1, high_pass=0.01, t_r=2.5, standardize=True,
+dmn_8mm_masker = input_data.NiftiSpheresMasker(
+    dmn_coords, radius=8.,
+    mask_img=icbm152_grey_mask, detrend=True, standardize=True,
     memory='nilearn_cache', memory_level=1, verbose=2)
 
 func_filename = adhd_dataset.func[0]
 confound_filename = adhd_dataset.confounds[0]
 
-time_series = masker.fit_transform(func_filename,
-                                   confounds=[confound_filename])
+dmn_8mm_average_time_series = dmn_8mm_masker.fit_transform(
+    func_filename, confounds=[confound_filename])
 
-##########################################################################
+###############################################################################
 # We display the time series and check visually their synchronization.
 import matplotlib.pyplot as plt
 plt.figure()
-for time_serie, label in zip(time_series.T, labels):
-    plt.plot(time_serie, label=label)
+for time_serie, label in zip(dmn_8mm_average_time_series.T, labels):
+    plt.plot(time_serie, label=label, lw=3.)
 
 plt.title('Default Mode Network Time Series')
 plt.xlabel('Scan number')
@@ -72,287 +72,180 @@ plt.legend()
 plt.tight_layout()
 
 
-##########################################################################
-# Partial correlations estimation
-#--------------------------------
+###############################################################################
+# Connectivity estimation
+# -----------------------
+
+###############################################################################
+# We can study the conditional dependence between the DMN spheres by
+# estimating the associated precision or inverse covariance matrix.
+# This can be done through the Ledoit-Wolf covariance estimator, well suited
+# when the number of ROIs is small compared to the number of samples.
+from sklearn.covariance import LedoitWolf
+estimator = LedoitWolf()
+
 
 ##########################################################################
-# We can compute partial correlation matrix using object
-# :class:`nilearn.connectome.ConnectivityMeasure`. We keep its default
-# covariance estimator Ledoit-Wolf, since it computes accurate partial
-# correlations when the number of ROIs is small.
-from nilearn.connectome import ConnectivityMeasure
-connectivity_measure = ConnectivityMeasure(kind='partial correlation')
-print(connectivity_measure)
-
-
-##########################################################################
-# *connectivity_measure* accepts a list of 2D time-series arrays from several
-# subjects and returns a list of their individual connectivity matrices.
-# So here we provide it with a one element list containing our subject ROIs
-# time-series, and then pick the computed matrix from the output list.
-partial_correlation_matrix = connectivity_measure.fit_transform(
-    [time_series])[0]
+# We fit the estimator with the DMN timeseries, and output the presion matrix
+estimator.fit(dmn_8mm_average_time_series)
+precision_matrix = estimator.precision_
 
 ##########################################################################
 # We can check that we got a square (n_spheres, n_spheres) connectivity matrix.
-print('partial correrlation matrix has shape {0}'.format(
-    partial_correlation_matrix.shape))
+print('inverse covariance matrix has shape {0}'.format(
+    precision_matrix.shape))
 
 ##########################################################################
 # Visualizing the connections
-#----------------------------
+# ---------------------------
 
 ##########################################################################
-# Display connectome
+# Negated precision coefficients are proportional to partial correlations,
+# revealing direct connections strength. We can display them with
+# the connectome dedicated function `nilearn.plotting.plot_connectome`.
+# Connectivity values are reflected by edges colors.
 from nilearn import plotting
 
-plotting.plot_connectome(partial_correlation_matrix, dmn_coords,
-                         title="Default Mode Network Connectivity",
-                         colorbar=True, edge_vmax=.5)
+# Tweak edges linewidth, for better visualization
+plotting.plot_connectome(-precision_matrix, dmn_coords, edge_kwargs={'lw': 4.},
+                         title="Default Mode Network Connectivity")
 
-# Display connectome with hemispheric projections.
+###############################################################################
+# We can display connectome with hemispheric projections.
 # Notice (0, -52, 18) is included in both hemispheres since x == 0.
 title = "Connectivity projected on hemispheres"
-plotting.plot_connectome(partial_correlation_matrix, dmn_coords, title=title,
+plotting.plot_connectome(-precision_matrix, dmn_coords, title=title,
+                         edge_kwargs={'lw': 4.},
                          display_mode='lyrz')
 
 ##########################################################################
-# Hesitating on the radius? Check the homogeniety of your signals!
-#-----------------------------------------------------------------
-
-from nilearn.input_data.nifti_spheres_masker import _iter_signals_from_spheres
-import nibabel
-from nilearn import signal
-from sklearn.covariance import EmpiricalCovariance
-import numpy as np
-#radii = np.arange(15) + 1.
-#radii = [2., 6., 8., 12., 20., 100.]
-radii = [2., 6., 12.]
-#radii = [2., 3.]
-seed_based_correlation_img = {}
-gm_masker = input_data.NiftiMasker(
-    mask_img=icbm152_grey_mask,
-    detrend=True, standardize=True,
-    memory='nilearn_cache', memory_level=1, verbose=2)
-gm_voxels_time_series = gm_masker.fit_transform(
-    func_filename, confounds=[confound_filename])
-for radius in radii:
-    seed_masker = input_data.NiftiSpheresMasker(
-        dmn_coords[:1], radius=radius, mask_img=icbm152_grey_mask,
-        detrend=True, low_pass=0.1, high_pass=0.01, t_r=2.5, standardize=True,
-        memory='nilearn_cache', memory_level=1, verbose=2)
-    seed_signal = seed_masker.fit_transform(
-        func_filename, confounds=[confound_filename])
-    seed_based_correlations = np.dot(
-        gm_voxels_time_series.T, seed_signal) / seed_signal.shape[0]
-    seed_based_correlation_img[radius] = gm_masker.inverse_transform(
-        seed_based_correlations.T)
-
-# Form seed image
-raw_gm_masker = input_data.NiftiMasker(
-    mask_img=icbm152_grey_mask, standardize=True,
-    memory='nilearn_cache', memory_level=1, verbose=2)
-raw_gm_voxels_time_series = raw_gm_masker.fit_transform(func_filename)
-sphere_indicator_img = {}
-
-func_img = nibabel.load(func_filename)
-resampled_func_img = gm_masker.inverse_transform(gm_masker.transform(func_img))
-for radius in radii:
-    raw_seed_masker = input_data.NiftiSpheresMasker(
-        dmn_coords[:1], standardize=True, radius=radius,
-        mask_img=icbm152_grey_mask,
-        memory='nilearn_cache', memory_level=1, verbose=1)
-    raw_seed_masker.fit()
-    raw_sphere_time_series = _iter_signals_from_spheres(
-        raw_seed_masker.seeds_, resampled_func_img,
-        raw_seed_masker.radius,
-        raw_seed_masker.allow_overlap,
-        mask_img=raw_seed_masker.mask_img).next()
-    if False:
-        raw_sphere_to_gm_correlations = np.dot(
-            raw_gm_voxels_time_series.T,
-            (raw_sphere_time_series / raw_sphere_time_series.std(axis=0))) /\
-            raw_sphere_time_series.shape[0]
-        raw_sphere_gm_max_correlations = raw_sphere_to_gm_correlations.max(axis=1)
-        max_corr = raw_sphere_gm_max_correlations.max()
-        sphere_indicator = np.zeros(raw_sphere_gm_max_correlations.shape)
-        indices = np.argsort(raw_sphere_gm_max_correlations)[::-1]
-    #    for k in np.arange(10)[::-1] + 1:
-    #        sphere_indicator[indices[:k * raw_sphere_time_series.shape[1]]] = k
-    
-        sphere_indicator = np.zeros(raw_sphere_gm_max_correlations.shape)
-        for n, ts in enumerate(raw_sphere_time_series.T):
-            print n
-            raw_ts_to_gm_correlations = np.dot(
-                raw_gm_voxels_time_series.T, ts / ts.std()) / ts.shape[0]
-            index = np.argmax(raw_ts_to_gm_correlations)
-            sphere_indicator[index] = 1.
-    
-        assert(np.sum(sphere_indicator) == np.shape(raw_sphere_time_series)[1])
-        sphere_indicator_img[radius] = raw_gm_masker.inverse_transform(
-            sphere_indicator)
-
-# Another way to compute the seed mask
-from nilearn import _utils
-from nilearn.image.resampling import coord_transform
-gm_mask_array = raw_gm_masker.mask_img.get_data()
-gm_mask_indices = zip(*np.where(gm_mask_array != 0))
-sphere_indicator2 = np.zeros(raw_sphere_gm_max_correlations.shape)
-i, j, k = gm_mask_indices[0], gm_mask_indices[1], gm_mask_indices[2]
-gm_mask_mni_coords = np.array(coord_transform(i, j, k,
-                                     raw_gm_masker.mask_img.affine)).T
-sphere_indicator_img = {}
-cleaned_spheres = {}
-for radius in radii:
-    within_sphere_mask = np.linalg.norm(
-        gm_mask_mni_coords - np.array(dmn_coords[:1]), axis=1) <= radius
-    cleaned_spheres[radius] = gm_voxels_time_series[:, within_sphere_mask == True]
-    sphere_indicator_img[radius] = raw_gm_masker.inverse_transform(
-        within_sphere_mask)
-
-for radius in radii:
-    display = plotting.plot_roi(_utils.check_niimg(sphere_indicator_img[radius],
-                                atleast_4d=True),
-                                title='{0}'.format(radius),
-                                bg_img=icbm152_grey_mask)
-
-from nilearn import image
-if False:
-    mean_func_img = image.mean_img(func_filename)
-    for radius in [6.]:
-        display = plotting.plot_stat_map(seed_based_correlation_img[radius],
-                                         bg_img=mean_func_img,
-                                         cut_coords=dmn_coords[0], threshold=.25,
-                                         title=radius)
-        display.add_contours(sphere_indicator_img[radius])
-
-plotting.show()
-
-# Compute seed-to-voxel correlations within the spheres
-
-from nilearn.input_data.nifti_spheres_masker import _iter_signals_from_spheres
-import nibabel
-from nilearn import signal
-from sklearn.covariance import EmpiricalCovariance
-import numpy as np
-seed_time_series = {}
-seed_masker = {}
-#radii = np.arange(15) + 1.
-seed_based_correlations = {}
-vox_to_vox_covariance = {}
-for radius in radii:
-    if False:
-        seed_masker[radius] = input_data.NiftiSpheresMasker(
-            dmn_coords[:1], radius=radius,
-            mask_img=icbm152_grey_mask,
-            detrend=True, standardize=False,
-            memory='nilearn_cache', memory_level=1, verbose=0)
-        seed_masker[radius].fit()
-        sphere = _iter_signals_from_spheres(
-            seed_masker[radius].seeds_, resampled_func_img,
-            seed_masker[radius].radius,
-            seed_masker[radius].allow_overlap,
-            mask_img=seed_masker[radius].mask_img).next()
-        cleaned_spheres[radius] = signal.clean(
-            sphere, confounds=[confound_filename], standardize=False)
-    #    cleaned_spheres[radius] = sphere
-        seed_time_series[radius] = seed_masker[radius].fit_transform(
-            func_filename, confounds=[confound_filename])
-    #    seed_based_correlations[radius] = np.dot(cleaned_spheres[radius].T,
-    #                                     seed_time_series[radius]) / \
-    #        seed_time_series[radius].shape[0]
-    time_series = cleaned_spheres[radius]
-    time_series -= time_series.mean(axis=1)[:, np.newaxis]
-    ts_ranks = np.sum(time_series ** 2, axis=0)
-    n_times, n_voxels = time_series.shape
-    constant = (n_voxels ** 2) * n_times * (n_times ** 2 - 1) / (12. * (
-        n_voxels - 1))
-    seed_based_correlations[radius] = 1. - ts_ranks / constant
-    seed_based_correlations[radius] *= 100.
-    cleaned_spheres[radius] /= cleaned_spheres[radius].std(axis=0)
-    seed_signal = np.mean(cleaned_spheres[radius], axis=1)
-    seed_signal /= seed_signal.std()
-    seed_based_correlations[radius] = np.dot(
-        cleaned_spheres[radius].T, seed_signal) / np.shape(seed_signal)
-    covariance_estimator = EmpiricalCovariance()
-    covariance_estimator.fit(cleaned_spheres[radius])
-    vox_to_vox_covariance[radius] = covariance_estimator.covariance_
-
-corr_img = {}
-for radius in radii:
-    cleaned_spheres[radius] /= cleaned_spheres[radius].std(axis=0)
-    seed_signal = np.mean(cleaned_spheres[radius], axis=1)
-    seed_signal /= seed_signal.std()
-    seed_based_correlations[radius] = np.dot(
-        cleaned_spheres[radius].T, seed_signal) / np.shape(seed_signal)
-###############################################################################
-    time_series = cleaned_spheres[radius]
-    time_series -= time_series.mean(axis=1)[:, np.newaxis]
-    ts_ranks = np.sum(time_series ** 2, axis=0)
-    n_times, n_voxels = time_series.shape
-    constant = (n_voxels ** 2) * n_times * (n_times ** 2 - 1) / (12. * (
-        n_voxels - 1))
-    seed_based_correlations[radius] = ts_ranks / constant
-    seed_based_correlations[radius] *= 100.
-###############################################################################
-    within_sphere_mask = np.linalg.norm(
-        gm_mask_mni_coords - np.array(dmn_coords[:1]), axis=1) <= radius
-    array = np.zeros(within_sphere_mask.shape)
-    array[within_sphere_mask == True] = seed_based_correlations[radius]
-    corr_img[radius] = raw_gm_masker.inverse_transform(array)
-
-for radius in radii:
-    plotting.plot_stat_map(corr_img[radius], title='{0}'.format(radius))
-
-plotting.show()
-stop
-plt.figure()
-plt.boxplot([np.triu(vox_to_vox_covariance[radius], k=1) for radius in radii],
-            whis=np.inf)
-plt.xticks(np.arange(len(radii)) + 1, radii)
-plt.show()
-stop
-# Create a mask describing one masked spheric ROI
+# Hesitating on the radius? Examin within spheres timeseries
+# ----------------------------------------------------------
 
 ##########################################################################
-# There is no concensus on the spheres radius. They may range from 4 mm to
-# 12 mm... One way is to use Kendall coefficient [1] to explore the homogenity
+# There is no concensus on the spheres radius: They may range across studies
+# from 4 mm to 12 mm... One way is to explore the homogenity
 # of times-series within the sphere.
 
-masker = input_data.NiftiSpheresMasker(
-    dmn_coords, radius=12., mask_img=icbm152_grey_mask,
-    detrend=True, low_pass=0.1, high_pass=0.01, t_r=2.5,
-    memory='nilearn_cache', memory_level=1, verbose=2)
+pcc_coords = dmn_coords[0]
+##########################################################################
+# We start by computing the grey matter voxel-wise time series.
 
-time_series = masker.fit_transform(func_filename,
-                                   confounds=[confound_filename])
-
+import numpy as np
+from nilearn.image.resampling import coord_transform
 gm_masker = input_data.NiftiMasker(
-    mask_img=icbm152_grey_mask,
-    detrend=True, low_pass=0.1, high_pass=0.01, t_r=2.5,
+    mask_img=icbm152_grey_mask, standardize=True, #low_pass=0.1, high_pass=0.01,
+    t_r=2.5, detrend=True, memory='nilearn_cache', memory_level=1, verbose=2)
+gm_voxels_time_series = gm_masker.fit_transform(func_filename,
+                                                confounds=[confound_filename])
+
+###############################################################################
+# Then compute voxels indices within the grey mask
+gm_mask_img = gm_masker.mask_img
+gm_mask_array = gm_mask_img.get_data()
+i, j, k = np.where(gm_mask_array != 0)
+gm_mask_mni_coords = np.array(coord_transform(i, j, k, gm_mask_img.affine)).T
+
+###############################################################################
+# and use them to extract the ones near/laying into within the PCC sphere 8mm
+sphere_8mm_mask = np.linalg.norm(gm_mask_mni_coords - pcc_coords, axis=1) <= 8.
+pcc_8mm_voxels_time_series = gm_voxels_time_series[:, sphere_8mm_mask]
+
+print(pcc_8mm_voxels_time_series.shape)
+###############################################################################
+# We can display the time-series of 8 random voxels and the average time series
+plt.figure()
+plt.plot(pcc_8mm_voxels_time_series[:, [3, 9, 16, 292, 531, 861, 150, 1708]])
+plt.title('PCC voxel-wise time-series')
+###############################################################################
+# Within spheres seed-to-voxel correlations
+# -----------------------------------------
+
+###############################################################################
+# We can compute the seed-to-voxel correlation within the sphere
+pcc_8mm_mean_time_series = dmn_8mm_average_time_series[:, 0]
+pcc_8mm_seed_to_voxel_correlation = np.dot(
+    pcc_8mm_voxels_time_series.T,
+    pcc_8mm_mean_time_series) / pcc_8mm_mean_time_series.shape[0]
+array = np.zeros(sphere_8mm_mask.shape)
+array[sphere_8mm_mask] = pcc_8mm_seed_to_voxel_correlation
+pcc_8mm_seed_to_voxel_correlation_img = gm_masker.inverse_transform(
+    array)
+
+###############################################################################
+# We can repeat the operation looping over the remaining seeds
+seeds_8mm_to_voxel_correlation_imgs = []
+for seed_coords, seed_8mm_mean_time_series in zip(
+        dmn_coords[1:], dmn_8mm_average_time_series[:, 1:]):
+    sphere_8mm_mask = np.linalg.norm(
+        gm_mask_mni_coords - seed_coords, axis=1) <= 8.
+    seed_8mm_voxels_time_series = gm_voxels_time_series[:, sphere_8mm_mask]
+    seed_8mm_to_voxel_correlation = np.dot(
+        seed_8mm_voxels_time_series.T,
+        seed_8mm_mean_time_series) / seed_8mm_mean_time_series.shape[0]
+    array = np.zeros(sphere_8mm_mask.shape)
+    array[sphere_8mm_mask] = seed_8mm_to_voxel_correlation
+    seeds_8mm_to_voxel_correlation_imgs.append(
+        gm_masker.inverse_transform(array))
+
+
+###############################################################################
+# and plot the associated correlation map.
+title = 'DMN 8mm seed-to-within seed voxels correlation maps'
+display = plotting.plot_stat_map(pcc_8mm_seed_to_voxel_correlation_img,
+                                 title=title, display_mode='z')
+
+# Now add as an overlay the maps for the MPFC and the left and right TPJ
+for seed_8mm_to_voxel_correlation_img in seeds_8mm_to_voxel_correlation_imgs:
+    display.add_overlay(seed_8mm_to_voxel_correlation_img)
+
+###############################################################################
+# Let's now repeat the same operation with 5mm radius.
+    sphere_mask = np.linalg.norm(gm_mask_mni_coords - pcc_coords, axis=1) <= radius
+    pcc_voxels_time_series = gm_voxels_time_series[:, sphere_mask]
+    masker = input_data.NiftiSpheresMasker(
+        [pcc_coords], radius=radius, mask_img=icbm152_grey_mask,
+        detrend=True, #low_pass=0.1, high_pass=0.01, t_r=2.5, 
+        standardize=True,
+        memory='nilearn_cache', memory_level=1, verbose=2)
+    pcc_mean_time_series = masker.fit_transform(func_filename,
+                                                confounds=[confound_filename])
+    pcc_seed_to_voxel_correlation = np.dot(
+        pcc_voxels_time_series.T,
+        pcc_mean_time_series) / pcc_mean_time_series.shape[0]
+    array = np.zeros(sphere_mask.shape)
+    array[sphere_mask] = pcc_seed_to_voxel_correlation
+    pcc_seed_to_voxel_correlation_img = gm_masker.inverse_transform(
+        array)
+    figure = plt.figure(figsize=(8, 8))
+    title = 'PCC {0}mm, {1} voxels'.format(radius,
+                                           pcc_voxels_time_series.shape[1])
+    plotting.plot_stat_map(
+        pcc_seed_to_voxel_correlation_img, cut_coords=[18],
+        title=title, display_mode='z', figure=figure)
+
+###############################################################################
+# Radius of 5mm seems preferable.
+
+###############################################################################
+# Connectome new try with better radius
+# -------------------------------------
+
+masker = input_data.NiftiSpheresMasker(
+    dmn_coords, radius=5., mask_img=icbm152_grey_mask,
+    detrend=True, #low_pass=0.1, high_pass=0.01, t_r=2.5,
+    standardize=True,
     memory='nilearn_cache', memory_level=1, verbose=2)
-
-gm_time_series = masker.fit_transform(func_filename,
-                                   confounds=[confound_filename])
-print time_series.shape
-time_series -= time_series.mean(axis=1)[:, np.newaxis]
-
-#    from sklearn import covariance
-#    covariance_estimator = covariance.EmpiricalCovariance()
-#    covariance_estimator.fit(time_series.T)
-#    covariance_matrix = covariance_estimator.covariance_
-#    ts_ranks = covariance_matrix.sum(axis=0)
-ts_ranks = np.sum(time_series ** 2, axis=0)
-n_times, n_voxels = time_series.shape
-constant = (n_voxels ** 2) * n_times * (n_times ** 2 - 1) / (12. * (
-    n_voxels - 1))
-kundall[radius] = 1. - ts_ranks / constant
-
-partial_correlation_matrix2 = connectivity_measure.fit_transform(
-    [time_series])[0]
-
-plotting.plot_connectome(partial_correlation_matrix2, dmn_coords,
-                         title="12 mm radius", edge_vmax=.5, colorbar=True)
-
+dmn_spheres_time_series = masker.fit_transform(func_filename,
+                                               confounds=[confound_filename])
+estimator = LedoitWolf()
+estimator.fit(dmn_spheres_time_series)
+precision_matrix = estimator.precision_
+plotting.plot_connectome(-precision_matrix, dmn_coords,
+                         title="Default Mode Network Connectivity",
+                         display_mode='lyrz', edge_kwargs={'lw': 4.})
 plotting.show()
+
+###############################################################################
+# We succeed to recover better hemispheric connection, and observe
+# anti-correlation between left and right regions of temporo-parietal junction.
