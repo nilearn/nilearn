@@ -37,14 +37,51 @@ print('First subject functional nifti image (4D) is at: {0}'.format(
 ###############################################################################
 # We give coordinates of the posterior cingulate cortex,  the medial prefrontal
 # cortex and the left and right angular gyrus, all part of the DMN.
+pcc_coords = (1, -55, 17)
+mpfc_coords = (0, 51, -7)
+lag_coords = (-47, -71, 29)
+rag_coords = (50, -64, 27)
 
-dmn_coords = [(1, -55, 17), (0, 51, -7), (-47, -71, 29), (50, -64, 27)]
+dmn_coords = [pcc_coords, mpfc_coords, lag_coords, rag_coords]
 labels = ['PCC', 'MPFC', 'lAG', 'rAG']
 
 ###############################################################################
 # It is advised to mask the spheres with grey matter. We don't have subject's
 # grey matter mask, we resort to a less precise group-level one.
 gm_mask_img = datasets.fetch_icbm152_brain_gm_mask()
+
+###############################################################################
+# Creating the ROIs
+#------------------
+#
+# We compute voxels indices within the grey mask
+# data in the gray mask image is stored in a 3D array
+import numpy as np
+
+gm_mask_array = gm_mask_img.get_data()
+i, j, k = np.where(gm_mask_array != 0)
+
+
+from nilearn.image.resampling import coord_transform
+gm_mask_mni_coords = np.array(coord_transform(i, j, k, gm_mask_img.affine)).T
+
+###############################################################################
+# We use the obtained coordinates to identify voxels lying inside the seeds.
+pcc_10mm_mask = np.linalg.norm(gm_mask_mni_coords - pcc_coords, axis=1) < 10.
+mpfc_10mm_mask = np.linalg.norm(gm_mask_mni_coords - mpfc_coords, axis=1) < 10.
+lag_10mm_mask = np.linalg.norm(gm_mask_mni_coords - lag_coords, axis=1) < 10.
+rag_10mm_mask = np.linalg.norm(gm_mask_mni_coords - rag_coords, axis=1) < 10.
+
+dmn_10mm_mask = pcc_10mm_mask + mpfc_10mm_mask + lag_10mm_mask + rag_10mm_mask
+
+from nilearn import masking
+dmn_10mm_mask_img = masking.unmask(dmn_10mm_mask, gm_mask_img)
+
+from nilearn import plotting
+plotting.plot_roi(dmn_10mm_mask_img, cut_coords=[0, -68, 28])
+
+###############################################################################
+# We can visualize 
 
 ###############################################################################
 # Computing average signals on 10mm radius spheres
@@ -101,7 +138,7 @@ estimator = LedoitWolf()
 estimator.fit(dmn_10mm_average_time_series)
 
 # negated precision coefficients are proportional to partial correlations.
-connectivity_matrix = -estimator.precision_
+connectivity_matrix = -estimator.precision_  # no it's not connectivity matrix
 
 ###############################################################################
 # We can check that we got a square (n_spheres, n_spheres) connectivity matrix.
@@ -122,8 +159,32 @@ title = "Connectivity projected on hemispheres"
 plotting.plot_connectome(connectivity_matrix, dmn_coords, title=title,
                          display_mode='lyrz')
 
+
+title = 'DMN 10mm seed-to-voxel correlation maps within-seeds'
+figure = plt.figure(figsize=(6, 6))
+display = plotting.plot_connectome(
+    connectivity_matrix, dmn_coords, node_size=0,
+    title=title, display_mode='z', figure=figure, edge_vmax=.6)
+
+display.add_overlay(dmn_10mm_mask_img)#, levels=[0, 1])
+plt.text(pcc_coords[0] + 10., pcc_coords[1] + 10., 'PCC')
+plt.text(mpfc_coords[0] + 10., mpfc_coords[1] + 10., 'MPFC')
+plt.text(lag_coords[0] + 10., lag_coords[1] + 10., 'lAG')
+plt.text(rag_coords[0] + 10., rag_coords[1] + 10., 'rAG')
+
+plotting.show()
+
+stop
+for label, seed_coords, seed_10mm_to_voxel_correlation_img in zip(
+        labels, dmn_coords, dmn_10mm_mask_imgs):
+    # Overlay the connectome display with the correlation map
+    display.add_overlay(seed_10mm_to_voxel_correlation_img, vmax=1., vmin=-1,
+                        cmap=plotting.cm.cold_hot)
+    plt.text(seed_coords[0] + 10., seed_coords[1] + 10., label)
+
+
 ##########################################################################
-# Notice that PCC is included in both hemispheres since x is near 0.
+# Notice that MPCC is included in both hemispheres since x == 0.
 
 ##########################################################################
 # Hesitating on the radius? Examine voxel-wise timeseries within spheres
@@ -141,6 +202,7 @@ gm_masker = input_data.NiftiMasker(
     mask_img=gm_mask_img, standardize=True,
     low_pass=0.1, t_r=2.5, high_pass=None, detrend=True,
     memory='nilearn_cache', memory_level=1, verbose=2)
+
 gm_voxels_time_series = gm_masker.fit_transform(func_filename,
                                                 confounds=[confound_filename])
 print('Gray matter voxel-wise signals stored in array of shape {0}'.format(
