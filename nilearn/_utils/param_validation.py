@@ -56,9 +56,9 @@ def check_threshold(threshold, data, percentile_func, name='threshold'):
         # value of the image data
         value_check = abs(data).max()
         if abs(threshold) > value_check:
-            warnings.warn("The given float value must not exceed %d. "
-                          "But, you have given threshold=%s " % (value_check,
-                                                                 threshold))
+            warnings.warn("The given float value must not exceed {0}. "
+                          "But, you have given threshold={1} ".format(value_check,
+                                                                      threshold))
     else:
         raise TypeError('%s should be either a number '
                         'or a string finishing with a percent sign' % (name, ))

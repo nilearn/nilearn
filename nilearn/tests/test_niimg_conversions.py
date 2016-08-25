@@ -457,6 +457,17 @@ def test_concat_niimgs():
                         [img5d, img5d])
 
 
+def test_concat_niimg_dtype():
+    shape = [2, 3, 4]
+    vols = [nibabel.Nifti1Image(
+        np.zeros(shape + [n_scans]).astype(np.int16), np.eye(4))
+            for n_scans in [1, 5]]
+    nimg = _utils.concat_niimgs(vols)
+    assert_equal(nimg.get_data_dtype(), np.float32)
+    nimg = _utils.concat_niimgs(vols, dtype=None)
+    assert_equal(nimg.get_data_dtype(), np.int16)
+
+
 def nifti_generator(buffer):
     for i in range(10):
         buffer.append(Nifti1Image(np.random.random((10, 10, 10)), np.eye(4)))

@@ -271,6 +271,31 @@ def test_raises_upon_3x3_affine_and_no_shape():
         target_shape=(10, 10, 10))
 
 
+def test_3x3_affine_bbox():
+    # Test that the bounding-box is properly computed when
+    # transforming with a negative affine component
+    # This is specifically to test for a change in behavior between
+    # scipy < 0.18 and scipy >= 0.18, which is an interaction between
+    # offset and a diagonal affine
+    image = np.ones((20, 30))
+    source_affine = np.eye(4)
+    # Give the affine an offset
+    source_affine[:2, 3] = np.array([96, 64])
+
+    # We need to turn this data into a nibabel image
+    img = Nifti1Image(image[:, :, np.newaxis], affine=source_affine)
+
+    target_affine_3x3 = np.eye(3) * 2
+    # One negative axes
+    target_affine_3x3[1] *= -1
+
+    img_3d_affine = resample_img(img, target_affine=target_affine_3x3)
+
+    # If the bounding box is computed wrong, the image will be only
+    # zeros
+    np.testing.assert_allclose(img_3d_affine.get_data().max(), image.max())
+
+
 def test_raises_bbox_error_if_data_outside_box():
     # Make some cases which should raise exceptions
 

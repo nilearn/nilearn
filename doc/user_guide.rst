@@ -25,4 +25,4 @@ User guide: table of contents
    manipulating_images/index.rst
    building_blocks/index.rst
    modules/reference.rst
-
+   auto_examples/index.rst
