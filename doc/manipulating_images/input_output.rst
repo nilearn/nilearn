@@ -180,13 +180,16 @@ research. Three main components are:
     returns the transformation matrix that maps
     from voxel indices of the numpy array to actual real-world
     locations of the brain:
-    ``affine = img.get_affine()``
+    ``affine = img.affine``
 :header:
     low-level informations about the data (slice duration, etc.):
-    ``header = img.get_header()``
+    ``header = img.header``
 
 If you need to load the data without using nilearn, read the nibabel_
 documentation.
+
+Note: For older versions of nibabel_, affine and header can be retrieved
+with ``get_affine()`` and ``get_header()``.
 
 
 .. topic:: **Dataset formatting: data shape**
@@ -216,7 +219,7 @@ objects":
 
   * A string with a file path to a Nifti or Analyse image
   * An ``SpatialImage`` from nibabel, ie an object exposing ``get_data()``
-    and ``get_affine()`` methods, typically a ``Nifti1Image`` from nibabel_.
+    and ``affine`` methods, typically a ``Nifti1Image`` from nibabel_.
 
 **Niimg-4D:** Similarly, some functions require 4D Nifti-like
 data, which we call Niimgs or Niimg-4D. Accepted input arguments are:

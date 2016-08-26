@@ -14,6 +14,7 @@ from ..image.resampling import coord_transform
 from .._utils import CacheMixin
 from .._utils.niimg_conversions import check_niimg_4d, check_niimg_3d
 from .._utils.class_inspect import get_params
+from .._utils.compat import get_affine
 from .. import image
 from .. import masking
 from .base_masker import filter_and_extract, BaseMasker
@@ -22,7 +23,7 @@ from .base_masker import filter_and_extract, BaseMasker
 def _apply_mask_and_get_affinity(seeds, niimg, radius, allow_overlap,
                                  mask_img=None):
     seeds = list(seeds)
-    affine = niimg.get_affine()
+    affine = get_affine(niimg)
 
     # Compute world coordinates of all in-mask voxels.
 

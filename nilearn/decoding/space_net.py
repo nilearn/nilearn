@@ -28,7 +28,7 @@ from sklearn.cross_validation import check_cv
 from sklearn.preprocessing import LabelBinarizer
 from sklearn.metrics import accuracy_score
 from .._utils.fixes import check_X_y
-from .._utils.compat import _basestring
+from .._utils.compat import _basestring, get_header
 from .._utils.fixes import atleast2d_or_csr
 from .._utils.cache_mixin import CacheMixin
 from ..input_data import NiftiMasker
@@ -54,7 +54,7 @@ def _get_mask_volume(mask_img):
     vol : float
         The computed volume.
     """
-    vox_dims = mask_img.get_header().get_zooms()[:3]
+    vox_dims = get_header(mask_img).get_zooms()[:3]
     return 1. * np.prod(vox_dims) * mask_img.get_data().astype(np.bool).sum()
 
 

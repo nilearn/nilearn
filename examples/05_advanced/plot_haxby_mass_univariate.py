@@ -125,7 +125,7 @@ mean_fmri_img = image.mean_img(func_filename)
 # Various plotting parameters
 z_slice = -17  # plotted slice
 from nilearn.image.resampling import coord_transform
-affine = signed_neg_log_pvals_unmasked.get_affine()
+affine = signed_neg_log_pvals_unmasked.affine
 from scipy import linalg
 _, _, k_slice = coord_transform(0, 0, z_slice,
                                 linalg.inv(affine))

@@ -24,7 +24,7 @@ mean_img = image.mean_img(func_filename)
 
 z_slice = -24
 from nilearn.image.resampling import coord_transform
-affine = mean_img.get_affine()
+affine = mean_img.affine
 _, _, k_slice = coord_transform(0, 0, z_slice,
                                 linalg.inv(affine))
 k_slice = np.round(k_slice)

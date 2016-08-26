@@ -163,7 +163,7 @@ from nilearn.image.resampling import coord_transform
 def index_to_xy_coord(x, y, z=10):
     '''Transforms data index to coordinates of the background + offset'''
     coords = coord_transform(x, y, z,
-                             affine=thresholded_score_map_img.get_affine())
+                             affine=thresholded_score_map_img.affine)
     return np.array(coords)[np.newaxis, :] + np.array([0, 1, 0])
 
 
