@@ -877,7 +877,7 @@ def load_img(img, wildcards=True, dtype=None):
         call nibabel.load on it. The '~' symbol is expanded to the user home
         folder.
         If it is an object, check if get_data()
-        and affine methods are present, raise TypeError otherwise.
+        and affine attributes are present, raise TypeError otherwise.
 
     wildcards: bool, optional
         Use niimg as a regular expression to get a list of matching input
@@ -896,6 +896,6 @@ def load_img(img, wildcards=True, dtype=None):
     -------
     result: 3D/4D Niimg-like object
         Result can be nibabel.Nifti1Image or the input, as-is. It is guaranteed
-        that the returned object has get_data() and affine methods.
+        that the returned object has get_data() and affine attributes.
     """
     return check_niimg(img, wildcards=wildcards, dtype=dtype)

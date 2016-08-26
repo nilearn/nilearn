@@ -189,7 +189,7 @@ def check_niimg(niimg, ensure_ndim=None, atleast_4d=False, dtype=None,
         call nibabel.load on it. The '~' symbol is expanded to the user home
         folder.
         If it is an object, check if get_data()
-        and affine methods are present, raise TypeError otherwise.
+        and affine attributes are present, raise TypeError otherwise.
 
     ensure_ndim: integer {3, 4}, optional
         Indicate the dimensionality of the expected niimg. An
@@ -218,7 +218,7 @@ def check_niimg(niimg, ensure_ndim=None, atleast_4d=False, dtype=None,
     -------
     result: 3D/4D Niimg-like object
         Result can be nibabel.Nifti1Image or the input, as-is. It is guaranteed
-        that the returned object has get_data() and affine methods.
+        that the returned object has get_data() and affine attributes.
 
     Notes
     -----
@@ -297,7 +297,7 @@ def check_niimg_3d(niimg, dtype=None):
         See http://nilearn.github.io/manipulating_images/input_output.html.
         If niimg is a string, consider it as a path to Nifti image and
         call nibabel.load on it. If it is an object, check if get_data()
-        and affine methods are present, raise TypeError otherwise.
+        and affine attributes are present, raise TypeError otherwise.
 
     dtype: {dtype, "auto"}
         Data type toward which the data should be converted. If "auto", the
@@ -308,7 +308,7 @@ def check_niimg_3d(niimg, dtype=None):
     -------
     result: 3D Niimg-like object
         Result can be nibabel.Nifti1Image or the input, as-is. It is guaranteed
-        that the returned object has get_data() and affine methods.
+        that the returned object has get_data() and affine attributes.
 
     Notes
     -----
@@ -333,7 +333,7 @@ def check_niimg_4d(niimg, return_iterator=False, dtype=None):
         considering that it is a list of niimg and load them one by one.
         If niimg is a string, consider it as a path to Nifti image and
         call nibabel.load on it. If it is an object, check if get_data
-        and affine methods are present, raise an Exception otherwise.
+        and affine attributes are present, raise an Exception otherwise.
 
     dtype: {dtype, "auto"}
         Data type toward which the data should be converted. If "auto", the

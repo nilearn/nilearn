@@ -64,31 +64,17 @@ else:
         return m.hexdigest()
 
 
-def get_affine(img):
-    """A function to return affine upon nibabel version.
-
-    nibabel > 2.0.0 returns img.affine otherwise img.get_affine()
-    """
-    if isinstance(img, _basestring):
-        img = nibabel.load(img)
-
-    if LooseVersion(nibabel.__version__) > LooseVersion('2.0.0'):
-        affine = img.affine
-    else:
-        affine = img.get_affine()
-
-    return affine
+if LooseVersion(nibabel.__version__) >= LooseVersion('2.0.0'):
+    def get_affine(img):
+        return img.affine
+else:
+    def get_affine(img):
+        return img.get_affine()
 
 
-def get_header(img):
-    """A function to return header info upon nibabel version
-    """
-    if isinstance(img, _basestring):
-        img = nibabel.load(img)
-
-    if LooseVersion(nibabel.__version__) > LooseVersion('2.0.0'):
-        header = img.header
-    else:
-        header = img.get_header()
-
-    return header
+if LooseVersion(nibabel.__version__) >= LooseVersion('2.0.0'):
+    def get_header(img):
+        return img.header
+else:
+    def get_header(img):
+        return img.get_header()
