@@ -219,7 +219,7 @@ objects":
 
   * A string with a file path to a Nifti or Analyse image
   * An ``SpatialImage`` from nibabel, ie an object exposing ``get_data()``
-    and ``affine`` attributes, typically a ``Nifti1Image`` from nibabel_.
+    method and ``affine`` attribute, typically a ``Nifti1Image`` from nibabel_.
 
 **Niimg-4D:** Similarly, some functions require 4D Nifti-like
 data, which we call Niimgs or Niimg-4D. Accepted input arguments are:
