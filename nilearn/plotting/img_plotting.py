@@ -307,7 +307,7 @@ class _MNI152Template(SpatialImage):
             data = data.astype(np.float)
             anat_mask = ndimage.morphology.binary_fill_holes(data > 0)
             data = np.ma.masked_array(data, np.logical_not(anat_mask))
-            self.affine = _get_affine(anat_img)
+            self._affine = _get_affine(anat_img)
             self.data = data
             self.vmax = data.max()
             self._shape = anat_img.shape
@@ -316,9 +316,14 @@ class _MNI152Template(SpatialImage):
         self.load()
         return self.data
 
+    @property
+    def affine(self):
+        self.load()
+        return self._affine
+
     def get_affine(self):
         self.load()
-        return self.affine
+        return self._affine
 
     @property
     def shape(self):

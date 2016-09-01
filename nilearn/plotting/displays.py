@@ -642,10 +642,7 @@ class BaseSlicer(object):
                                            copy=False)
             img = new_img_like(img, data, _utils.compat.get_affine(img))
 
-        if img.__class__.__name__ == '_MNI152Template':
-            affine = img.get_affine()
-        else:
-            affine = _utils.compat.get_affine(img)
+        affine = _utils.compat.get_affine(img)
         data = img.get_data()
         data_bounds = get_bounds(data.shape, affine)
         (xmin, xmax), (ymin, ymax), (zmin, zmax) = data_bounds
