@@ -32,21 +32,45 @@ def teardown_mock():
 @with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
 def test_fetch_haxby():
     for i in range(1, 6):
-        haxby = func.fetch_haxby(data_dir=tst.tmpdir, n_subjects=i,
+        haxby = func.fetch_haxby(data_dir=tst.tmpdir, subjects=[i],
                                  verbose=0)
         # subject_data + (md5 + mask if first subj)
         assert_equal(len(tst.mock_url_request.urls), 1 + 2 * (i == 1))
-        assert_equal(len(haxby.func), i)
-        assert_equal(len(haxby.anat), i)
-        assert_equal(len(haxby.session_target), i)
+        assert_equal(len(haxby.func), 1)
+        assert_equal(len(haxby.anat), 1)
+        assert_equal(len(haxby.session_target), 1)
         assert_true(haxby.mask is not None)
-        assert_equal(len(haxby.mask_vt), i)
-        assert_equal(len(haxby.mask_face), i)
-        assert_equal(len(haxby.mask_house), i)
-        assert_equal(len(haxby.mask_face_little), i)
-        assert_equal(len(haxby.mask_house_little), i)
+        assert_equal(len(haxby.mask_vt), 1)
+        assert_equal(len(haxby.mask_face), 1)
+        assert_equal(len(haxby.mask_house), 1)
+        assert_equal(len(haxby.mask_face_little), 1)
+        assert_equal(len(haxby.mask_house_little), 1)
         tst.mock_url_request.reset()
         assert_not_equal(haxby.description, '')
+
+    # subjects with list
+    subjects = [1, 2, 6]
+    haxby = func.fetch_haxby(data_dir=tst.tmpdir, subjects=subjects,
+                             verbose=0)
+    assert_equal(len(haxby.func), len(subjects))
+    assert_equal(len(haxby.mask_house_little), len(subjects))
+    assert_equal(len(haxby.anat), len(subjects))
+    assert_true(haxby.anat[2] is None)
+    assert_true(isinstance(haxby.mask, _basestring))
+    assert_equal(len(haxby.mask_face), len(subjects))
+    assert_equal(len(haxby.session_target), len(subjects))
+    assert_equal(len(haxby.mask_vt), len(subjects))
+    assert_equal(len(haxby.mask_face_little), len(subjects))
+
+    subjects = ['a', 8]
+    message = "You provided invalid subject id {0} in a list"
+
+    for sub_id in subjects:
+        assert_raises_regex(ValueError,
+                            message.format(sub_id),
+                            func.fetch_haxby,
+                            data_dir=tst.tmpdir,
+                            subjects=[sub_id])
 
 
 @with_setup(setup_mock, teardown_mock)

@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 
 from nilearn import datasets
 
-haxby_dataset = datasets.fetch_haxby(n_subjects=0, fetch_stimuli=True)
+haxby_dataset = datasets.fetch_haxby(subjects=[], fetch_stimuli=True)
 stimulus_information = haxby_dataset.stimuli
 
 for stim_type in sorted(stimulus_information.keys()):

@@ -85,8 +85,8 @@ def fetch_haxby_simple(data_dir=None, url=None, resume=True, verbose=1):
                  conditions_target=[files[3]], description=fdescr)
 
 
-def fetch_haxby(data_dir=None, n_subjects=1, fetch_stimuli=False,
-                url=None, resume=True, verbose=1):
+def fetch_haxby(data_dir=None, n_subjects=None, subjects=[2],
+                fetch_stimuli=False, url=None, resume=True, verbose=1):
     """Download and loads complete haxby dataset
 
     Parameters
@@ -97,6 +97,13 @@ def fetch_haxby(data_dir=None, n_subjects=1, fetch_stimuli=False,
 
     n_subjects: int, optional
         Number of subjects, from 1 to 6.
+
+        NOTE: n_subjects is deprecated from 0.2.6 and will be removed in 0.3
+        Use `subjects` instead.
+
+    subjects : list, optional
+        List of subjects to load from 1 to 6. By default, 2nd subject will be
+        loaded. Empty list returns no subject data.
 
     fetch_stimuli: boolean, optional
         Indicate if stimuli images must be downloaded. They will be presented
@@ -139,10 +146,21 @@ def fetch_haxby(data_dir=None, n_subjects=1, fetch_stimuli=False,
     Run 8 in subject 5 does not contain any task labels.
     The anatomical image for subject 6 is unavailable.
     """
+    if n_subjects is not None:
+        warnings.warn("The parameter 'n_subjects' is deprecated from 0.2.6 "
+                      "and will be removed in nilearn 0.3 release. Use "
+                      "parameter 'subjects' instead.")
+        subjects = n_subjects
 
-    if n_subjects > 6:
-        warnings.warn('Warning: there are only 6 subjects')
-        n_subjects = 6
+    if isinstance(subjects, numbers.Number) and subjects > 6:
+        subjects = 6
+
+    if subjects is not None and isinstance(subjects, list):
+        for sub_id in subjects:
+            if sub_id not in [1, 2, 3, 4, 5, 6]:
+                raise ValueError("You provided invalid subject id {0} in a "
+                                 "list. Subjects must be selected in "
+                                 "[1, 2, 3, 4, 5, 6]".format(sub_id))
 
     dataset_name = 'haxby2001'
     data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
@@ -167,19 +185,28 @@ def fetch_haxby(data_dir=None, n_subjects=1, fetch_stimuli=False,
                  'mask8_house_vt.nii.gz', 'anat.nii.gz']
     n_files = len(sub_files)
 
+    if subjects is None:
+        subjects = []
+
+    if isinstance(subjects, numbers.Number):
+        subject_mask = np.arange(1, subjects + 1)
+    else:
+        subject_mask = np.array(subjects)
+
     files = [
             (os.path.join('subj%d' % i, sub_file),
              url + 'subj%d-2010.01.14.tar.gz' % i,
              {'uncompress': True,
               'md5sum': md5sums.get('subj%d-2010.01.14.tar.gz' % i, None)})
-            for i in range(1, n_subjects + 1)
+            for i in subject_mask
             for sub_file in sub_files
             if not (sub_file == 'anat.nii.gz' and i == 6)  # no anat for sub. 6
     ]
 
     files = _fetch_files(data_dir, files, resume=resume, verbose=verbose)
 
-    if n_subjects == 6:
+    if ((isinstance(subjects, numbers.Number) and subjects == 6) or
+            np.any(subject_mask == 6)):
         files.append(None)  # None value because subject 6 has no anat
 
     kwargs = {}

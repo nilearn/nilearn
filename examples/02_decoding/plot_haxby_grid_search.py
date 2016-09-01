@@ -37,6 +37,7 @@ a separator.
 # Load the Haxby dataset
 from nilearn import datasets
 import numpy as np
+# by default 2nd subject data will be fetched on which we run our analysis
 haxby_dataset = datasets.fetch_haxby()
 
 # print basic information on the dataset
