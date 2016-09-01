@@ -4,6 +4,10 @@ Compatibility layer for Python 3/Python 2 single codebase
 import sys
 import hashlib
 
+from distutils.version import LooseVersion
+
+import nibabel
+
 
 if sys.version_info[0] == 3:
     import pickle
@@ -58,3 +62,17 @@ else:
         m = hashlib.md5()
         m.update(string)
         return m.hexdigest()
+
+
+if LooseVersion(nibabel.__version__) >= LooseVersion('2.0.0'):
+    def get_affine(img):
+        return img.affine
+
+    def get_header(img):
+        return img.header
+else:
+    def get_affine(img):
+        return img.get_affine()
+
+    def get_header(img):
+        return img.get_header()

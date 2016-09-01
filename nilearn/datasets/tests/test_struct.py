@@ -16,7 +16,7 @@ from . import test_utils as tst
 from nilearn.datasets import utils, struct
 from nilearn._utils.testing import assert_raises_regex
 
-from nilearn._utils.compat import _basestring
+from nilearn._utils.compat import _basestring, get_header
 
 
 def setup_mock():
@@ -141,7 +141,7 @@ def test_load_mni152_template():
     # All subjects
     template_nii = struct.load_mni152_template()
     assert_equal(template_nii.shape, (91, 109, 91))
-    assert_equal(template_nii.get_header().get_zooms(), (2.0, 2.0, 2.0))
+    assert_equal(get_header(template_nii).get_zooms(), (2.0, 2.0, 2.0))
 
 
 def test_load_mni152_brain_mask():

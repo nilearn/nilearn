@@ -640,9 +640,9 @@ class BaseSlicer(object):
             else:
                 data = np.ma.masked_inside(data, -threshold, threshold,
                                            copy=False)
-            img = new_img_like(img, data, img.get_affine())
+            img = new_img_like(img, data, _utils.compat.get_affine(img))
 
-        affine = img.get_affine()
+        affine = _utils.compat.get_affine(img)
         data = img.get_data()
         data_bounds = get_bounds(data.shape, affine)
         (xmin, xmax), (ymin, ymax), (zmin, zmax) = data_bounds
@@ -761,9 +761,9 @@ class BaseSlicer(object):
         """
         img = reorder_img(img, resample='continuous')
         data = img.get_data()
-        affine = img.get_affine()
+        affine = _utils.compat.get_affine(img)
         single_color_cmap = colors.ListedColormap([color])
-        data_bounds = get_bounds(data.shape, img.get_affine())
+        data_bounds = get_bounds(data.shape, _utils.compat.get_affine(img))
 
         # For each ax, cut the data and plot it
         for display_ax in self.axes.values():

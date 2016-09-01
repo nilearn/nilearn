@@ -17,7 +17,7 @@ from nibabel import Nifti1Image
 from nilearn.image.resampling import resample_img, resample_to_img, reorder_img
 from nilearn.image.resampling import from_matrix_vector, coord_transform
 from nilearn.image.resampling import BoundingBoxError
-from nilearn._utils import testing
+from nilearn._utils import testing, compat
 
 
 ###############################################################################
@@ -193,7 +193,7 @@ def test_resampling_error_checks():
     assert_false(np.may_share_memory(img_r.get_data(), img.get_data()))
 
     np.testing.assert_almost_equal(img_r.get_data(), img.get_data())
-    np.testing.assert_almost_equal(img_r.get_affine(), img.get_affine())
+    np.testing.assert_almost_equal(compat.get_affine(img_r), compat.get_affine(img))
 
     img_r = resample_img(img, target_affine=affine, target_shape=target_shape,
                          copy=False)
@@ -203,7 +203,7 @@ def test_resampling_error_checks():
                          copy=True)
     assert_false(np.may_share_memory(img_r.get_data(), img.get_data()))
     np.testing.assert_almost_equal(img_r.get_data(), img.get_data())
-    np.testing.assert_almost_equal(img_r.get_affine(), img.get_affine())
+    np.testing.assert_almost_equal(compat.get_affine(img_r), compat.get_affine(img))
 
 
 def test_4d_affine_bounding_box_error():
@@ -231,16 +231,16 @@ def test_4d_affine_bounding_box_error():
     # resample using 4D affine and specified target shape
     small_to_big_with_shape = resample_img(
         small_img,
-        target_affine=bigger_img.get_affine(),
+        target_affine=compat.get_affine(bigger_img),
         target_shape=bigger_img.shape)
     # resample using 3D affine and no target shape
     small_to_big_without_shape_3D_affine = resample_img(
         small_img,
-        target_affine=bigger_img.get_affine()[:3, :3])
+        target_affine=compat.get_affine(bigger_img)[:3, :3])
     # resample using 4D affine and no target shape
     small_to_big_without_shape = resample_img(
         small_img,
-        target_affine=bigger_img.get_affine())
+        target_affine=compat.get_affine(bigger_img))
 
     # The first 2 should pass
     assert_almost_equal(l2_norm(small_data),
@@ -490,10 +490,10 @@ def test_reorder_img():
         b = 0.5 * np.array(shape[:3])
         new_affine = from_matrix_vector(rot, b)
         rot_img = resample_img(ref_img, target_affine=new_affine)
-        np.testing.assert_array_equal(rot_img.get_affine(), new_affine)
+        np.testing.assert_array_equal(compat.get_affine(rot_img), new_affine)
         np.testing.assert_array_equal(rot_img.get_data().shape, shape)
         reordered_img = reorder_img(rot_img)
-        np.testing.assert_array_equal(reordered_img.get_affine()[:3, :3],
+        np.testing.assert_array_equal(compat.get_affine(reordered_img)[:3, :3],
                                       np.eye(3))
         np.testing.assert_almost_equal(reordered_img.get_data(),
                                        data)
@@ -512,7 +512,7 @@ def test_reorder_img():
     interpolation = 'nearest'
     reordered_img = reorder_img(ref_img, resample=interpolation)
     resampled_img = resample_img(ref_img,
-                                 target_affine=reordered_img.get_affine(),
+                                 target_affine=compat.get_affine(reordered_img),
                                  interpolation=interpolation)
     np.testing.assert_array_equal(reordered_img.get_data(),
                                   resampled_img.get_data())
@@ -538,15 +538,15 @@ def test_reorder_img():
         #sample = img.values_in_world(x, y, z)
         img2 = reorder_img(img)
         # Check that img has not been changed
-        np.testing.assert_array_equal(img.get_affine(),
-                                      orig_img.get_affine())
+        np.testing.assert_array_equal(compat.get_affine(img),
+                                      compat.get_affine(orig_img))
         np.testing.assert_array_equal(img.get_data(),
                                       orig_img.get_data())
         # Test that the affine is indeed diagonal:
-        np.testing.assert_array_equal(img2.get_affine()[:3, :3],
+        np.testing.assert_array_equal(compat.get_affine(img2)[:3, :3],
                                       np.diag(np.diag(
-                                              img2.get_affine()[:3, :3])))
-        assert_true(np.all(np.diag(img2.get_affine()) >= 0))
+                                              compat.get_affine(img2)[:3, :3])))
+        assert_true(np.all(np.diag(compat.get_affine(img2)) >= 0))
 
 
 def test_reorder_img_non_native_endianness():

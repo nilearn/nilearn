@@ -90,7 +90,7 @@ img_3d_affine = resample_img(img, target_affine=target_affine_3x3)
 img_4d_affine = resample_img(img, target_affine=target_affine_4x4)
 target_affine_mm_space_offset_changed = np.eye(4)
 target_affine_mm_space_offset_changed[:3, 3] = \
-    img_3d_affine.get_affine()[:3, 3]
+    img_3d_affine.affine[:3, 3]
 
 img_3d_affine_in_mm_space = resample_img(
     img_3d_affine,

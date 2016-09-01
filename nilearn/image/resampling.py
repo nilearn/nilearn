@@ -13,7 +13,7 @@ import scipy
 from scipy import ndimage, linalg
 
 from .. import _utils
-from .._utils.compat import _basestring
+from .._utils.compat import _basestring, get_affine
 
 ###############################################################################
 # Affine utils
@@ -185,7 +185,7 @@ def get_mask_bounds(img):
     """
     img = _utils.check_niimg_3d(img)
     mask = _utils.numpy_conversions._asarray(img.get_data(), dtype=np.bool)
-    affine = img.get_affine()
+    affine = get_affine(img)
     (xmin, xmax), (ymin, ymax), (zmin, zmax) = get_bounds(mask.shape, affine)
     slices = ndimage.find_objects(mask)
     if len(slices) == 0:
@@ -387,7 +387,7 @@ def resample_img(img, target_affine=None, target_shape=None,
         target_affine = np.asarray(target_affine)
 
     shape = img.shape
-    affine = img.get_affine()
+    affine = get_affine(img)
 
     if (np.all(np.array(target_shape) == shape[:3]) and
             np.allclose(target_affine, affine)):
@@ -540,7 +540,7 @@ def resample_to_img(source_img, target_img,
         target_shape = target.shape[:3]
 
     return resample_img(source_img,
-                        target_affine=target.get_affine(),
+                        target_affine=get_affine(target),
                         target_shape=target_shape,
                         interpolation=interpolation, copy=copy, order=order)
 
@@ -570,7 +570,7 @@ def reorder_img(img, resample=None):
     img = _utils.check_niimg(img)
     # The copy is needed in order not to modify the input img affine
     # see https://github.com/nilearn/nilearn/issues/325 for a concrete bug
-    affine = img.get_affine().copy()
+    affine = get_affine(img).copy()
     A, b = to_matrix_vector(affine)
 
     if not np.all((np.abs(A) > 0.001).sum(axis=0) == 1):

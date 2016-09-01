@@ -15,7 +15,7 @@ from sklearn.utils import deprecated
 from .utils import (_get_dataset_dir, _fetch_files, _get_dataset_descr,
                     _read_md5_sum_file, _tree, _filter_columns)
 from .._utils import check_niimg
-from .._utils.compat import BytesIO, _basestring, _urllib
+from .._utils.compat import BytesIO, _basestring, _urllib, get_affine
 from .._utils.numpy_conversions import csv_to_array
 
 
@@ -1273,7 +1273,7 @@ def _load_mixed_gambles(zmap_imgs):
     for zmap_img in zmap_imgs:
         # load subject data
         this_X = zmap_img.get_data()
-        affine = zmap_img.get_affine()
+        affine = get_affine(zmap_img)
         finite_mask = np.all(np.isfinite(this_X), axis=-1)
         this_mask = np.logical_and(np.all(this_X != 0, axis=-1),
                                    finite_mask)
