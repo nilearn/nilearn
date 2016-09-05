@@ -26,8 +26,7 @@ documentation <parcellation_time_series>` for more.
 ##############################################################################
 # From images to an ROI-to-ROI correlation matrix
 # -----------------------------------------------
-
-##############################################################################
+#
 # Retrieve the atlas and the data.
 from nilearn import datasets
 
@@ -83,8 +82,7 @@ plt.subplots_adjust(left=.01, bottom=.3, top=.99, right=.62)
 ##############################################################################
 # Counfounding signals: a source of spurious correlations
 # -------------------------------------------------------
-
-###############################################################################
+#
 # Same thing without confounds, to stress the importance of confounds.
 
 time_series = atlas_masker.fit_transform(fmri_filename)
@@ -108,8 +106,7 @@ plt.suptitle('No confounds', size=27)
 ###############################################################################
 # Do my counfounds model noise properly? Voxel-to-voxel connectivity tells!
 # -------------------------------------------------------------------------
-
-#######################################################################
+#
 # Check the relevance of chosen confounds: The distribution of voxel-to-voxel
 # correlations should be tight and approximately centered to zero.
 
@@ -122,23 +119,25 @@ print('Csv file includes {0} confounds:\n{1}.'.format(
     len(confounds_names), ', '.join(confounds_names)))
 
 #######################################################################
-# Now compute voxel-wise time series with and without confounds removal, using
-# NiftiMasker.
+# Now compute voxel-wise time series with and without confounds removal,
+# using NiftiMasker.
 from nilearn.input_data import NiftiMasker
 brain_masker = NiftiMasker(memory='nilearn_cache', verbose=1)
 voxel_ts_raw = brain_masker.fit_transform(fmri_filename)
-voxel_ts_cleaned1 = brain_masker.fit_transform(fmri_filename,
-                                               confounds=confounds_filename)
+voxel_ts_cleaned_csv = brain_masker.fit_transform(fmri_filename,
+                    	                          confounds=confounds_filename)
 
+#######################################################################
 # For comparison, compute voxels signals after high variance confounds removal
 from nilearn.image import high_variance_confounds
+# We compute the same number of confounds as in the csv file
 hv_confounds = high_variance_confounds(fmri_filename, n_confounds=17)
-voxel_ts_cleaned2 = brain_masker.fit_transform(fmri_filename,
-                                               confounds=hv_confounds)
+voxel_ts_cleaned_hv = brain_masker.fit_transform(fmri_filename,
+                   	                         confounds=hv_confounds)
 
 ###############################################################################
-# Then compute the voxel-to-voxel correlations
-voxel_ts_all = [voxel_ts_raw, voxel_ts_cleaned1, voxel_ts_cleaned2]
+# Next, compute the voxel-to-voxel correlations
+voxel_ts_all = [voxel_ts_raw, voxel_ts_cleaned_csv, voxel_ts_cleaned_hv]
 labels = ['no confounds\nremoved', 'file confounds',
           'high variance\nconfounds']
 # Use only 1% of voxels, to save computation time
@@ -163,7 +162,7 @@ plt.xlabel('voxel-to-voxel correlation values')
 plt.tight_layout()
 
 #######################################################################
-# The morale: High variance confounds do not succeed to capture all noise.
-# Motion regressors are mandatory !
+# The morale: High variance confounds do not succeed to capture all noise
+# sources. Motion regressors are mandatory !
 
 plt.show()
