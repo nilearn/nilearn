@@ -56,11 +56,8 @@ time_series = atlas_masker.fit_transform(fmri_filename,
 
 ##############################################################################
 # Compute and display a correlation matrix.
-from nilearn.connectome import ConnectivityMeasure
-from sklearn.covariance import EmpiricalCovariance
-connectivity_measure = ConnectivityMeasure(
-    cov_estimator=EmpiricalCovariance(), kind='correlation')
-correlation_matrix = connectivity_measure.fit_transform([time_series])[0]
+import numpy as np
+correlation_matrix = np.corrcoef(time_series.T)
 
 # Plot the correlation matrix
 import numpy as np
@@ -88,7 +85,7 @@ plt.subplots_adjust(left=.01, bottom=.3, top=.99, right=.62)
 time_series = atlas_masker.fit_transform(fmri_filename)
 # Note how we did not specify confounds above. This is bad!
 
-correlation_matrix = connectivity_measure.fit_transform([time_series])[0]
+correlation_matrix = np.corrcoef(time_series.T)
 
 # Mask the main diagonal for visualization:
 np.fill_diagonal(correlation_matrix, 0)
@@ -103,14 +100,14 @@ plt.gca().yaxis.tick_right()
 plt.subplots_adjust(left=.01, bottom=.3, top=.99, right=.62)
 plt.suptitle('No confounds', size=27)
 
-###############################################################################
+##############################################################################
 # Do my counfounds model noise properly? Voxel-to-voxel connectivity tells!
 # -------------------------------------------------------------------------
 #
 # Check the relevance of chosen confounds: The distribution of voxel-to-voxel
 # correlations should be tight and approximately centered to zero.
 
-#######################################################################
+##############################################################################
 # Firstly take a look at the confounds defined in the csv file.
 from nilearn._utils.numpy_conversions import csv_to_array
 confounds = csv_to_array(confounds_filename, names=True)
@@ -118,7 +115,7 @@ confounds_names = confounds.dtype.names
 print('Csv file includes {0} confounds:\n{1}.'.format(
     len(confounds_names), ', '.join(confounds_names)))
 
-#######################################################################
+##############################################################################
 # Now compute voxel-wise time series with and without confounds removal,
 # using NiftiMasker.
 from nilearn.input_data import NiftiMasker
@@ -127,32 +124,34 @@ voxel_ts_raw = brain_masker.fit_transform(fmri_filename)
 voxel_ts_cleaned_csv = brain_masker.fit_transform(fmri_filename,
                     	                          confounds=confounds_filename)
 
-#######################################################################
+##############################################################################
 # For comparison, compute voxels signals after high variance confounds removal
 from nilearn.image import high_variance_confounds
-# We compute the same number of confounds as in the csv file
+# We compute as many confounds as in the csv file
 hv_confounds = high_variance_confounds(fmri_filename, n_confounds=17)
 voxel_ts_cleaned_hv = brain_masker.fit_transform(fmri_filename,
-                   	                         confounds=hv_confounds)
+                                                 confounds=hv_confounds)
 
-###############################################################################
+##############################################################################
 # Next, compute the voxel-to-voxel correlations
-voxel_ts_all = [voxel_ts_raw, voxel_ts_cleaned_csv, voxel_ts_cleaned_hv]
-labels = ['no confounds\nremoved', 'file confounds',
-          'high variance\nconfounds']
+
 # Use only 1% of voxels, to save computation time
 selected_voxels = range(0, voxel_ts_raw.shape[1], 100)
-correlations = {}
-for voxel_ts, label in zip(voxel_ts_all, labels):
-    correlations[label] = connectivity_measure.fit_transform(
-        [voxel_ts[:, selected_voxels]])[0]
+correlation_matrix_raw = np.corrcoef(voxel_ts_raw[:, selected_voxels].T)
+correlation_matrix_cleaned_csv = np.corrcoef(
+    voxel_ts_cleaned_csv[:, selected_voxels].T)
+correlation_matrix_cleaned_hv = np.corrcoef(
+    voxel_ts_cleaned_hv[:, selected_voxels].T)
 
-#######################################################################
+##############################################################################
 # and plot their histograms.
+matrices = [correlation_matrix_raw, correlation_matrix_cleaned_csv,
+            correlation_matrix_cleaned_hv]
+labels = ['no confounds\nremoved', 'file confounds',
+          'high variance\nconfounds']
 plt.figure(figsize=(8, 3))
-for label, color in zip(labels, 'rgb'):
-    plt.hist(
-        correlations[label][np.triu_indices_from(correlations[label], k=1)],
+for matrix, label, color in zip(matrices, labels, 'rgb'):
+    plt.hist(matrix[np.triu_indices_from(matrix, k=1)],
         color=color, alpha=.4, bins=100, lw=0, label=label)
 
 [ymin, ymax] = plt.ylim()
@@ -161,7 +160,7 @@ plt.legend()
 plt.xlabel('voxel-to-voxel correlation values')
 plt.tight_layout()
 
-#######################################################################
+##############################################################################
 # The morale: High variance confounds do not succeed to capture all noise
 # sources. Motion regressors are mandatory !
 
