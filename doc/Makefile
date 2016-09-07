@@ -42,11 +42,11 @@ sym_links:
 	# Make sym-links to share the cache across various example
 	# directories
 	-cd ../examples/ && mkdir nilearn_cache
-	-cd ../examples/01_plotting/ && ln -s ../nilearn_cache
-	-cd ../examples/02_decoding/ && ln -s ../nilearn_cache
-	-cd ../examples/03_connectivity/ && ln -s ../nilearn_cache
-	-cd ../examples/04_manipulating_images/ && ln -s ../nilearn_cache
-	-cd ../examples/05_advanced/ && ln -s ../nilearn_cache
+	-cd ../examples/01_plotting/ && ln -sf ../nilearn_cache
+	-cd ../examples/02_decoding/ && ln -sf ../nilearn_cache
+	-cd ../examples/03_connectivity/ && ln -sf ../nilearn_cache
+	-cd ../examples/04_manipulating_images/ && ln -sf ../nilearn_cache
+	-cd ../examples/05_advanced/ && ln -sf ../nilearn_cache
 
 force_html: force html
 
