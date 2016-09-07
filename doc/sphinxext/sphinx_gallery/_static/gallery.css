@@ -110,14 +110,19 @@ div.sphx-glr-download {
 
 div.sphx-glr-download a {
   background-color: #ffc;
-  border: 1px solid #c2c22d;
-  border-radius: 4px;
   background-image: linear-gradient(to bottom, #FFC, #d5d57e);
+  border-radius: 4px;
+  border: 1px solid #c2c22d;
+  color: #000;
+  display: inline-block;
+  font-weight: bold;
   max-width: 45ex;
   padding: 1ex;
   text-align: center;
-  color: #000;
-  font-weight: bold;
+}
+
+div.sphx-glr-download code.download {
+  display: inline-block;
 }
 
 div.sphx-glr-download a:hover {
