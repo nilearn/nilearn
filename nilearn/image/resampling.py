@@ -113,12 +113,15 @@ def coord_transform(x, y, z, affine):
         Warning: The x, y and z have their Talairach ordering, not 3D
         numy image ordering.
     """
+    squeeze = (not hasattr(x, '__iter__'))
     coords = np.c_[np.atleast_1d(x).flat,
                    np.atleast_1d(y).flat,
                    np.atleast_1d(z).flat,
                    np.ones_like(np.atleast_1d(z).flat)].T
     x, y, z, _ = np.dot(affine, coords)
-    return x.squeeze(), y.squeeze(), z.squeeze()
+    if squeeze:
+        return x.squeeze(), y.squeeze(), z.squeeze()
+    return x, y, z
 
 
 def get_bounds(shape, affine):
