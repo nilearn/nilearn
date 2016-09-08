@@ -591,6 +591,20 @@ def test_coord_transform_trivial():
     np.testing.assert_array_equal(y + 1, y_)
     np.testing.assert_array_equal(z + 1, z_)
 
+    # Test the output in case of one item array
+    x, y, z = x[:1], y[:1], z[:1]
+    x_, y_, z_ = coord_transform(x, y, z, sform)
+    np.testing.assert_array_equal(x + 1, x_)
+    np.testing.assert_array_equal(y + 1, y_)
+    np.testing.assert_array_equal(z + 1, z_)
+
+    # Test the output in case of simple items
+    x, y, z = x[0], y[0], z[0]
+    x_, y_, z_ = coord_transform(x, y, z, sform)
+    np.testing.assert_array_equal(x + 1, x_)
+    np.testing.assert_array_equal(y + 1, y_)
+    np.testing.assert_array_equal(z + 1, z_)
+
 
 def test_resample_img_segmentation_fault():
     if os.environ.get('APPVEYOR') == 'True':
