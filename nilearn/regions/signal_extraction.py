@@ -11,6 +11,7 @@ import numpy as np
 from scipy import linalg, ndimage
 
 from .. import _utils
+from .._utils.niimg import _safe_get_data
 from .. import masking
 from ..image import new_img_like
 
@@ -87,17 +88,17 @@ def img_to_signals_labels(imgs, labels_img, mask_img=None,
             raise ValueError("mask_img and imgs affines must be identical")
 
     # Perform computation
-    labels_data = labels_img.get_data()
+    labels_data = _safe_get_data(labels_img, ensure_finite=True)
     labels = list(np.unique(labels_data))
     if background_label in labels:
         labels.remove(background_label)
 
     if mask_img is not None:
-        mask_data = mask_img.get_data()
+        mask_data = _safe_get_data(mask_img, ensure_finite=True)
         labels_data = labels_data.copy()
         labels_data[np.logical_not(mask_data)] = background_label
 
-    data = imgs.get_data()
+    data = _safe_get_data(imgs)
     signals = np.ndarray((data.shape[-1], len(labels)), order=order)
     for n, img in enumerate(np.rollaxis(data, -1)):
         signals[n] = np.asarray(ndimage.measurements.mean(img,
@@ -166,13 +167,13 @@ def signals_to_img_labels(signals, labels_img, mask_img=None,
             raise ValueError("mask_img and labels_img affines "
                              "must be identical")
 
-    labels_data = labels_img.get_data()
+    labels_data = _safe_get_data(labels_img, ensure_finite=True)
     labels = list(np.unique(labels_data))
     if background_label in labels:
         labels.remove(background_label)
 
     if mask_img is not None:
-        mask_data = mask_img.get_data()
+        mask_data = _safe_get_data(mask_img, ensure_finite=True)
         labels_data = labels_data.copy()
         labels_data[np.logical_not(mask_data)] = background_label
 
@@ -247,7 +248,7 @@ def img_to_signals_maps(imgs, maps_img, mask_img=None):
     if abs(_utils.compat.get_affine(maps_img) - affine).max() > 1e-9:
         raise ValueError("maps_img and imgs affines must be identical")
 
-    maps_data = maps_img.get_data()
+    maps_data = _safe_get_data(maps_img, ensure_finite=True)
 
     if mask_img is not None:
         mask_img = _utils.check_niimg_3d(mask_img)
@@ -256,13 +257,15 @@ def img_to_signals_maps(imgs, maps_img, mask_img=None):
         if abs(_utils.compat.get_affine(mask_img) - affine).max() > 1e-9:
             raise ValueError("mask_img and imgs affines must be identical")
         maps_data, maps_mask, labels = \
-                   _trim_maps(maps_data, mask_img.get_data(), keep_empty=True)
+                   _trim_maps(maps_data,
+                              _safe_get_data(mask_img, ensure_finite=True),
+                              keep_empty=True)
         maps_mask = _utils.as_ndarray(maps_mask, dtype=np.bool)
     else:
         maps_mask = np.ones(maps_data.shape[:3], dtype=np.bool)
         labels = np.arange(maps_data.shape[-1], dtype=np.int)
 
-    data = imgs.get_data()
+    data = _safe_get_data(imgs)
     region_signals = linalg.lstsq(maps_data[maps_mask, :],
                                   data[maps_mask, :])[0].T
 
@@ -302,7 +305,7 @@ def signals_to_img_maps(region_signals, maps_img, mask_img=None):
     """
 
     maps_img = _utils.check_niimg_4d(maps_img)
-    maps_data = maps_img.get_data()
+    maps_data = _safe_get_data(maps_img, ensure_finite=True)
     shape = maps_img.shape[:3]
     affine = _utils.compat.get_affine(maps_img)
 
@@ -313,8 +316,9 @@ def signals_to_img_maps(region_signals, maps_img, mask_img=None):
         if abs(_utils.compat.get_affine(mask_img) - affine).max() > 1e-9:
             raise ValueError("mask_img and maps_img affines must be "
                              "identical.")
-        maps_data, maps_mask, _ = _trim_maps(maps_data, mask_img.get_data(),
-                                             keep_empty=True)
+        maps_data, maps_mask, _ = _trim_maps(
+            maps_data, _safe_get_data(mask_img, ensure_finite=True),
+            keep_empty=True)
         maps_mask = _utils.as_ndarray(maps_mask, dtype=np.bool)
     else:
         maps_mask = np.ones(maps_data.shape[:3], dtype=np.bool)

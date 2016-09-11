@@ -223,6 +223,7 @@ def test_detrend():
     assert_less(abs(detrended.mean(axis=0)).max(),
                 20. * np.finfo(np.float).eps)
 
+
 def test_mean_of_squares():
     """Test _mean_of_squares."""
     n_samples = 11
@@ -249,6 +250,13 @@ def test_clean_detrending():
     trends = generate_trends(n_features=n_features,
                              length=n_samples)
     x = signals + trends
+
+    # if NANs, data out should be False with ensure_finite=True
+    y = signals + trends
+    y[20, 150] = np.nan
+    y[5, 500] = np.nan
+    y = nisignal.clean(y, ensure_finite=True)
+    assert_false(np.any(np.isnan(y)), False)
 
     # test boolean is not given to signal.clean
     assert_raises(TypeError, nisignal.clean, x, low_pass=False)

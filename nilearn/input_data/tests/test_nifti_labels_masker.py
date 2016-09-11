@@ -106,6 +106,24 @@ def test_nifti_labels_masker():
                                    get_affine(fmri11_img))
 
 
+def test_nifti_labels_masker_with_nans():
+    length = 3
+    n_regions = 9
+    fmri_img, mask_img = generate_random_img((13, 11, 12),
+                                             affine=np.eye(4), length=length)
+    labels_img = testing.generate_labeled_regions((13, 11, 12),
+                                                  affine=np.eye(4),
+                                                  n_regions=n_regions)
+    # nans
+    mask_data = mask_img.get_data()
+    mask_data[:, :, 7] = np.nan
+    mask_img = nibabel.Nifti1Image(mask_data, np.eye(4))
+
+    masker = NiftiLabelsMasker(labels_img, mask_img=mask_img)
+    sig = masker.fit_transform(fmri_img)
+    assert_equal(sig.shape, (length, n_regions))
+
+
 def test_nifti_labels_masker_resampling():
     # Test resampling in NiftiLabelsMasker
     shape1 = (10, 11, 12)

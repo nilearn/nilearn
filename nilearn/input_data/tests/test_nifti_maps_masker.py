@@ -122,6 +122,29 @@ def test_nifti_maps_masker():
         affine2)
 
 
+def test_nifti_maps_masker_with_nans():
+    length = 3
+    n_regions = 8
+    fmri_img, mask_img = generate_random_img((13, 11, 12),
+                                             affine=np.eye(4), length=length)
+    maps_img, maps_mask_img = testing.generate_maps((13, 11, 12), n_regions,
+                                                    affine=np.eye(4))
+
+    # nans
+    maps_data = maps_img.get_data()
+    mask_data = mask_img.get_data()
+
+    maps_data[:, 9, 9] = np.nan
+    mask_data[:, :, 7] = np.nan
+
+    maps_img = nibabel.Nifti1Image(maps_data, np.eye(4))
+    mask_img = nibabel.Nifti1Image(mask_data, np.eye(4))
+
+    masker = NiftiMapsMasker(maps_img, mask_img=mask_img)
+    sig = masker.fit_transform(fmri_img)
+    assert_equal(sig.shape, (length, n_regions))
+
+
 def test_nifti_maps_masker_2():
     # Test resampling in NiftiMapsMasker
     affine = np.eye(4)

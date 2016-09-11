@@ -14,7 +14,7 @@ import nibabel
 from .compat import _basestring, get_affine
 
 
-def _safe_get_data(img):
+def _safe_get_data(img, ensure_finite=False):
     """ Get the data in the image without having a side effect on the
         Nifti1Image object
     """
@@ -25,7 +25,12 @@ def _safe_get_data(img):
     # typically the line below can double memory usage
     # that's why we invoke a forced call to the garbage collector
     gc.collect()
-    return img.get_data()
+
+    data = img.get_data()
+    if ensure_finite:
+        data = np.nan_to_num(data)
+
+    return data
 
 
 def _get_target_dtype(dtype, target_dtype):
@@ -133,7 +138,7 @@ def _repr_niimgs(niimgs):
         filename = niimgs.get_filename()
         if filename is not None:
             return "%s('%s')" % (niimgs.__class__.__name__,
-                                filename)
+                                 filename)
         else:
             return "%s(\nshape=%s,\naffine=%s\n)" % \
                    (niimgs.__class__.__name__,

@@ -17,7 +17,7 @@ from sklearn.utils import gen_even_slices, as_float_array
 from distutils.version import LooseVersion
 
 from ._utils.compat import _basestring
-from ._utils.numpy_conversions import csv_to_array
+from ._utils.numpy_conversions import csv_to_array, as_ndarray
 from ._utils import check_niimg_4d
 
 NP_VERSION = distutils.version.LooseVersion(np.version.short_version).version
@@ -347,7 +347,8 @@ def _ensure_float(data):
 
 
 def clean(signals, sessions=None, detrend=True, standardize=True,
-          confounds=None, low_pass=None, high_pass=None, t_r=2.5):
+          confounds=None, low_pass=None, high_pass=None, t_r=2.5,
+          ensure_finite=False):
     """Improve SNR on masked fMRI signals.
 
     This function can do several things on the input signals, in
@@ -398,6 +399,10 @@ def clean(signals, sessions=None, detrend=True, standardize=True,
     standardize: bool
         If True, returned signals are set to unit variance.
 
+    ensure_finite: bool
+        If True, the non-infinite values (NANs and infs) found in the data
+        will be replaced by zeros.
+
     Returns
     -------
     cleaned_signals: numpy.ndarray
@@ -428,6 +433,16 @@ def clean(signals, sessions=None, detrend=True, standardize=True,
                       (list, tuple, _basestring, np.ndarray, type(None))):
         raise TypeError("confounds keyword has an unhandled type: %s"
                         % confounds.__class__)
+
+    if not isinstance(ensure_finite, bool):
+        raise ValueError("'ensure_finite' must be boolean type True or False "
+                         "but you provided ensure_finite={0}".format(ensure_finite))
+
+    if not isinstance(signals, np.ndarray):
+        signals = as_ndarray(signals)
+
+    if ensure_finite:
+        signals = np.nan_to_num(signals)
 
     # Read confounds
     if confounds is not None:
