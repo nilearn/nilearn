@@ -98,12 +98,11 @@ def _iter_signals_from_spheres(seeds, niimg, radius, allow_overlap,
         See http://nilearn.github.io/manipulating_images/input_output.html.
         Images to process. It must boil down to a 4D image with scans
         number as last dimension.
-    radius: float, optional
+    radius: float
         Indicates, in millimeters, the radius for the sphere around the seed.
-        Default is None (signal is extracted on a single voxel).
     allow_overlap: boolean
         If False, an error is raised if the maps overlaps (ie at least two
-        maps have a non-zero value for the same voxel). Default is False.
+        maps have a non-zero value for the same voxel).
     mask_img: Niimg-like object, optional
         See http://nilearn.github.io/manipulating_images/input_output.html.
         Mask to apply to regions before extracting signals.
