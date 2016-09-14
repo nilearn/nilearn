@@ -400,7 +400,7 @@ def clean(signals, sessions=None, detrend=True, standardize=True,
         If True, returned signals are set to unit variance.
 
     ensure_finite: bool
-        If True, the non-infinite values (NANs and infs) found in the data
+        If True, the infinite values (NANs and infs) found in the data
         will be replaced by zeros.
 
     Returns

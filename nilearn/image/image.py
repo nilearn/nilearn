@@ -837,7 +837,7 @@ def clean_img(imgs, sessions=None, detrend=True, standardize=True,
         Repetition time, in second (sampling period).
 
     ensure_finite: bool, optional
-        If True, the non-infinite values (NANs and infs) found in the images
+        If True, the infinite values (NANs and infs) found in the images
         will be replaced by zeros.
 
     Returns
