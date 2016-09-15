@@ -42,6 +42,8 @@ uses.
 
    sym_to_vec
    group_sparse_covariance
+   cov_to_corr
+   prec_to_partial
 
 .. _datasets_ref:
 
