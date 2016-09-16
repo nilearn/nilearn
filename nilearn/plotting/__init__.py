@@ -39,7 +39,7 @@ from . import cm
 from .img_plotting import plot_img, plot_anat, plot_epi, \
     plot_roi, plot_stat_map, plot_glass_brain, plot_connectome, \
     plot_prob_atlas, show
-from .surf_plotting import plot_surf_stat_map
+from .surf_plotting import plot_surf, plot_surf_stat_map, plot_surf_roi
 from .find_cuts import find_xyz_cut_coords, find_cut_slices
 
 __all__ = ['cm', 'plot_img', 'plot_anat', 'plot_epi',
