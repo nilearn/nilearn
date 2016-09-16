@@ -73,9 +73,7 @@ parcellation = nb.freesurfer.read_annot(destrieux)
 
 # Extract seed region: dorsal posterior cingulate gyrus
 region = 'G_cingul-Post-dorsal'
-labels = np.where(parcellation[0] == parcellation[2].index(region))
-labels_map = np.zeros(timeseries.shape[0])
-labels_map[labels] = 1
+labels = np.where(parcellation[0] == parcellation[2].index(region))[0]
 
 # Extract time series from seed region
 seed_timeseries = np.mean(timeseries[labels], axis=0)
@@ -91,7 +89,7 @@ stat_map[np.where(np.mean(timeseries, axis=1) == 0)] = 0
 
 ###############################################################################
 # Display ROI on surface
-plotting.plot_surf_roi(fsaverage5_pial, roi_map=labels_map, hemi='left',
+plotting.plot_surf_roi(fsaverage5_pial, roi_map=labels, hemi='left',
                        view='medial', bg_map=sulcal_depth_map, bg_on_data=True)
 
 # Display unthresholded stat map in lateral and medial view
