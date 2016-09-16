@@ -61,10 +61,9 @@ def check_surf_mesh(surf_mesh):
 
 
 def plot_surf(surf_mesh, surf_map=None, bg_map=None,
-              hemi='left', view='lateral', avg_method='mean',
-              threshold=None, cmap='coolwarm',
-              alpha='auto', bg_on_data=False, darkness=1,
-              vmin=None, vmax=None,
+              hemi='left', view='lateral', cmap=None,
+              avg_method='mean', threshold=None, alpha='auto',
+              bg_on_data=False, darkness=1, vmin=None, vmax=None,
               output_file=None, **kwargs):
 
     """ Plotting of surfaces with optional background and data
@@ -72,14 +71,17 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
             Parameters
             ----------
             surf_mesh: Surface object (to be defined)
-            hemi: {'left', 'right'}, hemisphere to display
             surf_map: Surface data (to be defined) to be displayed, optional
+            hemi: {'left', 'right'}, hemisphere to display. Default is 'left'
             bg_map: Surface data object (to be defined), optional,
                 background image to be plotted on the mesh underneath the
                 surf_data in greyscale, most likely a sulcal depth map for
                 realistic shading.
             view: {'lateral', 'medial', 'dorsal', 'ventral'}, view of the
                 surface that is rendered. Default is 'lateral'
+            cmap: colormap to use for plotting of the stat_map. Either a string
+                which is a name of a matplotlib colormap, or a matplotlib
+                colormap object. If None, matplolib default will be chosen
             avg_method: {'mean', 'median'} how to average vertex values to
                 derive the face value, mean results in smooth, median in sharp
                 boundaries
@@ -106,8 +108,6 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
                 The name of an image file to export plot to. Valid extensions
                 are .png, .pdf, .svg. If output_file is not None, the plot
                 is saved to a file, and the display is closed.
-            kwargs: extra keyword arguments, optional
-                Extra keyword arguments passed to matplotlib.pyplot.imshow
         """
 
     # load mesh and derive axes limits
@@ -149,15 +149,13 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
         else:
             alpha = 1
 
-    if cmap:
+    # if no cmap is given, set to matplotlib default
+    if cmap is None:
+        cmap = plt.cm.get_cmap(plt.rcParamsDefault['image.cmap'])
+    else:
         # if cmap is given as string, translate to matplotlib cmap
         if isinstance(cmap, _basestring):
             cmap = plt.cm.get_cmap(cmap)
-        else:
-            pass
-    # if no cmap is given, set to matplotlib default
-    else:
-        cmap = plt.cm.get_cmap(plt.rcParamsDefault['image.cmap'])
 
     # initiate figure and 3d axes
     fig = plt.figure()
@@ -244,7 +242,7 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
 
 def plot_surf_stat_map(surf_mesh, stat_map=None, bg_map=None,
                        hemi='left', view='lateral', threshold=None,
-                       cmap='coolwarm', alpha='auto', vmax=None,
+                       alpha='auto', vmax=None, cmap='coolwarm',
                        symmetric_cbar="auto", bg_on_data=False, darkness=1,
                        output_file=None, **kwargs):
 
@@ -268,7 +266,7 @@ def plot_surf_stat_map(surf_mesh, stat_map=None, bg_map=None,
                 as transparent.
             cmap: colormap to use for plotting of the stat_map. Either a string
                 which is a name of a matplotlib colormap, or a matplotlib
-                colormap object.
+                colormap object. Default is 'coolwarm'
             alpha: float, alpha level of the mesh (not the stat_map). If 'auto'
                 is chosen, alpha will default to .5 when no bg_map ist passed
                 and to 1 if a bg_map is passed.
@@ -291,8 +289,6 @@ def plot_surf_stat_map(surf_mesh, stat_map=None, bg_map=None,
                 The name of an image file to export plot to. Valid extensions
                 are .png, .pdf, .svg. If output_file is not None, the plot
                 is saved to a file, and the display is closed.
-            kwargs: extra keyword arguments, optional
-                Extra keyword arguments passed to matplotlib.pyplot.imshow
         """
 
     # Call _get_colorbar_and_data_ranges to derive symmetric vmin, vmax
