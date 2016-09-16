@@ -240,7 +240,7 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
         return fig
 
 
-def plot_surf_stat_map(surf_mesh, stat_map=None, bg_map=None,
+def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
                        hemi='left', view='lateral', threshold=None,
                        alpha='auto', vmax=None, cmap='coolwarm',
                        symmetric_cbar="auto", bg_on_data=False, darkness=1,
@@ -251,7 +251,7 @@ def plot_surf_stat_map(surf_mesh, stat_map=None, bg_map=None,
             Parameters
             ----------
             surf_mesh: Surface object (to be defined)
-            stat_map: Surface data (to be defined) to be displayed, optional
+            stat_map: Statistical map to be displayed (to be defined)
             hemi: {'left', 'right'}, hemisphere to display, default is 'left'
             bg_map: Surface data object (to be defined), optional,
                 background image to be plotted on the mesh underneath the
