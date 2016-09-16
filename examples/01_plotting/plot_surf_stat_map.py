@@ -90,27 +90,26 @@ for i in range(timeseries.shape[0]):
 stat_map[np.where(np.mean(timeseries, axis=1) == 0)] = 0
 
 ###############################################################################
+# Display ROI on surface
+plotting.plot_surf_roi(fsaverage5_pial, roi_map=labels_map, hemi='left',
+                       view='medial', bg_map=sulcal_depth_map, bg_on_data=True)
+
 # Display unthresholded stat map in lateral and medial view
-plotting.plot_surf_stat_map(fsaverage5_pial, stat_map=stat_map, hemi='left')
-plotting.plot_surf_stat_map(fsaverage5_pial, stat_map=stat_map, hemi='left',
-                            view='medial')
-
-# Display background values through stat map
-plotting.plot_surf_stat_map(fsaverage5_pial, stat_map=stat_map, hemi='left',
-                            bg_map=sulcal_depth_map, bg_on_data=True)
-
-# Display background values through stat map but less dark
+# dimmed background
 plotting.plot_surf_stat_map(fsaverage5_pial, stat_map=stat_map, hemi='left',
                             bg_map=sulcal_depth_map, bg_on_data=True,
                             darkness=.5)
+plotting.plot_surf_stat_map(fsaverage5_pial, stat_map=stat_map, hemi='left',
+                            view='medial', bg_map=sulcal_depth_map,
+                            bg_on_data=True, darkness=.5)
 
-# Display thresholded stat map with background map
+# Threshold stat_map
 plotting.plot_surf_stat_map(fsaverage5_pial, stat_map=stat_map, hemi='left',
                             bg_map=sulcal_depth_map, bg_on_data=True,
-                            threshold=.6)
+                            darkness=.5, threshold=.6)
 plotting.plot_surf_stat_map(fsaverage5_pial, stat_map=stat_map, hemi='left',
                             bg_map=sulcal_depth_map, bg_on_data=True,
-                            threshold=.6, view='medial')
+                            darkness=.5, threshold=.6, view='medial')
 
 # Display stat map with on inflated surface
 plotting.plot_surf_stat_map(fsaverage5_inflated, stat_map=stat_map,
@@ -127,6 +126,8 @@ plotting.plot_surf_stat_map(fsaverage5_pial, stat_map=stat_map, hemi='left',
 
 # saving plots to file
 plotting.plot_surf_stat_map(fsaverage5_pial, stat_map=stat_map, hemi='left',
+                            bg_map=sulcal_depth_map,
+                            bg_on_data=True, darkness=.5,
                             output_file='/tmp/plot_surf_stat_map.png')
 
 plotting.show()
