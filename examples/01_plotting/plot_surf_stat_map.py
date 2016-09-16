@@ -91,42 +91,42 @@ stat_map[np.where(np.mean(timeseries, axis=1) == 0)] = 0
 
 ###############################################################################
 # Display unthresholded stat map in lateral and medial view
-plotting.plot_surf_stat_map(fsaverage5_pial, 'left', stat_map=stat_map)
-plotting.plot_surf_stat_map(fsaverage5_pial, 'left', stat_map=stat_map,
+plotting.plot_surf_stat_map(fsaverage5_pial, stat_map=stat_map, hemi='left')
+plotting.plot_surf_stat_map(fsaverage5_pial, stat_map=stat_map, hemi='left',
                             view='medial')
 
 # Display background values through stat map
-plotting.plot_surf_stat_map(fsaverage5_pial, 'left', stat_map=stat_map,
-                            bg_map=sulcal_depth_map, bg_on_stat=True)
+plotting.plot_surf_stat_map(fsaverage5_pial, stat_map=stat_map, hemi='left',
+                            bg_map=sulcal_depth_map, bg_on_data=True)
 
 # Display background values through stat map but less dark
-plotting.plot_surf_stat_map(fsaverage5_pial, 'left', stat_map=stat_map,
-                            bg_map=sulcal_depth_map, bg_on_stat=True,
+plotting.plot_surf_stat_map(fsaverage5_pial, stat_map=stat_map, hemi='left',
+                            bg_map=sulcal_depth_map, bg_on_data=True,
                             darkness=.5)
 
 # Display thresholded stat map with background map
-plotting.plot_surf_stat_map(fsaverage5_pial, 'left', stat_map=stat_map,
-                            bg_map=sulcal_depth_map, bg_on_stat=True,
+plotting.plot_surf_stat_map(fsaverage5_pial, stat_map=stat_map, hemi='left',
+                            bg_map=sulcal_depth_map, bg_on_data=True,
                             threshold=.6)
-plotting.plot_surf_stat_map(fsaverage5_pial, 'left', stat_map=stat_map,
-                            bg_map=sulcal_depth_map, bg_on_stat=True,
+plotting.plot_surf_stat_map(fsaverage5_pial, stat_map=stat_map, hemi='left',
+                            bg_map=sulcal_depth_map, bg_on_data=True,
                             threshold=.6, view='medial')
 
 # Display stat map with on inflated surface
-plotting.plot_surf_stat_map(fsaverage5_inflated, 'left', stat_map=stat_map,
-                            bg_map=sulcal_depth_map, bg_on_stat=True,
-                            threshold=.6)
-plotting.plot_surf_stat_map(fsaverage5_inflated, 'left', stat_map=stat_map,
-                            bg_map=sulcal_depth_map, bg_on_stat=True,
-                            view='medial', threshold=.6)
+plotting.plot_surf_stat_map(fsaverage5_inflated, stat_map=stat_map,
+                            hemi='left', bg_map=sulcal_depth_map,
+                            bg_on_data=True, threshold=.6)
+plotting.plot_surf_stat_map(fsaverage5_inflated, stat_map=stat_map,
+                            hemi='left', bg_map=sulcal_depth_map,
+                            bg_on_data=True, view='medial', threshold=.6)
 
 # changing the colormap and alpha
-plotting.plot_surf_stat_map(fsaverage5_pial, 'left', stat_map=stat_map,
-                            bg_map=sulcal_depth_map, bg_on_stat=True,
+plotting.plot_surf_stat_map(fsaverage5_pial, stat_map=stat_map, hemi='left',
+                            bg_map=sulcal_depth_map, bg_on_data=True,
                             cmap='Spectral', threshold=.6, alpha=.7)
 
 # saving plots to file
-plotting.plot_surf_stat_map(fsaverage5_pial, 'left', stat_map=stat_map,
+plotting.plot_surf_stat_map(fsaverage5_pial, stat_map=stat_map, hemi='left',
                             output_file='/tmp/plot_surf_stat_map.png')
 
 plotting.show()
