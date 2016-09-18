@@ -1281,7 +1281,7 @@ def fetch_abide_pcp(data_dir=None, n_subjects=None, pipeline='cpac',
                 '/'.join([url, derivative, file_id + '_' + derivative + ext]),
                 {}
             )]
-            files.append(_fetch_files(data_dir, file_, verbose=verbose))
+            files.append(_fetch_files(data_dir, file_, verbose=verbose)[0])
         # Load derivatives if needed
         if ext == '.1D':
             files = [np.loadtxt(f) for f in files]
