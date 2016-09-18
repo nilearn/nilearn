@@ -391,7 +391,6 @@ def _filter_column(array, col, criteria):
         not isinstance(criteria, bytes) and
         not isinstance(criteria, tuple) and
             isinstance(criteria, collections.Iterable)):
-
         filter = np.zeros(array.shape[0], dtype=np.bool)
         for criterion in criteria:
             filter = np.logical_or(filter,
@@ -407,6 +406,10 @@ def _filter_column(array, col, criteria):
             return array[col] >= criteria[0]
         filter = array[col] <= criteria[1]
         return np.logical_and(filter, array[col] >= criteria[0])
+
+    # Handle strings with different encodings
+    if isinstance(criteria, (_basestring, bytes)):
+        criteria = np.array(criteria).astype(array[col].dtype.type)
 
     return array[col] == criteria
 
