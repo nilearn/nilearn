@@ -1,23 +1,15 @@
-0.2.5.3
-=======
+0.2.6
+=====
 
 Changelog
 ---------
 
-This is a minor bugfix release for BrainHack Vienne 2016 tutorial.
-
-Bug fix
-........
-
-    - Forgotten file in sphinx.     
-
-0.2.5.2
-=======
-
-Changelog
----------
-
-This is a minor bugfix release for BrainHack Vienne 2016 tutorial.
+This release enhances usage of several functions by fine tuning their
+parameters. It allows to select which Haxby subject to fetch. It also refactors
+documentation to make it easier to understand.
+Sphinw has been updated and nilearn is ready for new nibabel 2.1 version.
+Several bugs related to masks in Searchlight and ABIDE fetching have been
+resolved.
 
 Bug fix
 ........
