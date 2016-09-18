@@ -409,7 +409,7 @@ def _filter_column(array, col, criteria):
 
     # Handle strings with different encodings
     if isinstance(criteria, (_basestring, bytes)):
-        criteria = np.array(criteria).astype(array[col].dtype.type)
+        criteria = np.array(criteria).astype(array[col].dtype)
 
     return array[col] == criteria
 
