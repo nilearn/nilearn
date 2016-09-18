@@ -1,8 +1,10 @@
-0.2.6
+0.2.5.2
 =======
 
 Changelog
 ---------
+
+This is a minor bugfix release for BrainHack Vienne 2016 tutorial.
 
 Bug fix
 ........
@@ -10,6 +12,26 @@ Bug fix
     - Change default dtype in :func:`nilearn.image.concat_imgs` to be the
       original type of the data (see #1238).
 
+    - Fix SearchLight that did not run without process_mask or with one voxel
+      mask.
+
+    - Fix flipping of left hemisphere when plotting glass brain.
+
+    - Fix bug when downloading ABIDE timeseries
+
+Enhancements
+............
+
+   - Sphinx-gallery updated to version 0.1.3
+
+   - Refactoring of examples and documentation
+
+   - Better ordering of regions in
+     :func:`nilearn.datasets.fetch_coords_dosenbach_2010`
+
+   - Remove outdated power atlas example
+
+   
 API changes summary
 ...................
 
@@ -19,6 +41,7 @@ API changes summary
     - The function :func:`nilearn.datasets.fetch_haxby` will now fetch the
       data accepting input given in 'subjects' as a list than integer.
 
+    - Replace `get_affine` by `affine` with recent versions of nibabel.
 
 0.2.5.1
 =======
