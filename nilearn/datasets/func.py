@@ -1129,7 +1129,8 @@ def fetch_abide_pcp(data_dir=None, n_subjects=None, pipeline='cpac',
 
     n_subjects: int, optional
         The number of subjects to load. If None is given,
-        all 94 subjects are used.
+        all available subjects are used (this number depends on the
+        preprocessing pipeline used).
 
     pipeline: string, optional
         Possible pipelines are "ccs", "cpac", "dparsf" and "niak"
