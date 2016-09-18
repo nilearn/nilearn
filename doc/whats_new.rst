@@ -1,3 +1,16 @@
+0.2.5.3
+=======
+
+Changelog
+---------
+
+This is a minor bugfix release for BrainHack Vienne 2016 tutorial.
+
+Bug fix
+........
+
+    - Forgotten file in sphinx.     
+
 0.2.5.2
 =======
 
