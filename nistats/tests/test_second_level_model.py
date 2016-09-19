@@ -212,7 +212,7 @@ def test_second_level_model_contrast_computation():
         model.compute_contrast(c1, 'F', 'p_value')
         model.compute_contrast(c1, 'F', 'effect_size')
         model.compute_contrast(c1, 'F', 'effect_variance')
-        # formula should work (passing varible name directly)
+        # formula should work (passing variable name directly)
         model.compute_contrast('c1')
         # passing null contrast should give back a value error
         assert_raises(ValueError, model.compute_contrast, cnull)
