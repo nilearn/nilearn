@@ -120,7 +120,7 @@ plotting.plot_surf_stat_map(fsaverage5_inflated, stat_map=stat_map,
 # changing the colormap and alpha
 plotting.plot_surf_stat_map(fsaverage5_pial, stat_map=stat_map, hemi='left',
                             bg_map=sulcal_depth_map, bg_on_data=True,
-                            cmap='Spectral', threshold=.6, alpha=.7)
+                            cmap='Spectral', threshold=.6, alpha=.5)
 
 # saving plots to file
 plotting.plot_surf_stat_map(fsaverage5_pial, stat_map=stat_map, hemi='left',
