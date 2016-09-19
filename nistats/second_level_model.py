@@ -140,7 +140,8 @@ class SecondLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
                 if first_level_conditions is None:
                     raise ValueError('First level models input requires'
                                      'first_level_conditions to be provided')
-                for model_idx, first_level_model in enumerate(second_level_input):
+                models_input = enumerate(second_level_input)
+                for model_idx, first_level_model in models_input:
                     if not isinstance(first_level_model, FirstLevelModel):
                         raise ValueError(' object at idx %d is %s instead of'
                                          ' FirstLevelModel object' %
