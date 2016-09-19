@@ -50,7 +50,7 @@ from nilearn.plotting import plot_stat_map, show
 # Various plotting parameters
 z_slice = 45  # plotted slice
 from nilearn.image.resampling import coord_transform
-affine = neg_log_pvals_anova_unmasked.get_affine()
+affine = neg_log_pvals_anova_unmasked.affine
 _, _, k_slice = coord_transform(0, 0, z_slice,
                                 linalg.inv(affine))
 

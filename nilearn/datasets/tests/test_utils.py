@@ -262,6 +262,9 @@ def test_filter_columns():
 
     f = datasets.utils._filter_columns(values, {'STR': b'b'})
     assert_equal(np.sum(f), 167)
+    
+    f = datasets.utils._filter_columns(values, {'STR': u'b'})
+    assert_equal(np.sum(f), 167)
 
     f = datasets.utils._filter_columns(values, {'INT': 1, 'STR': b'b'})
     assert_equal(np.sum(f), 84)

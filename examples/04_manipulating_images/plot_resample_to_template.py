@@ -34,14 +34,14 @@ from nilearn.image import load_img
 tmap_img = load_img(localizer_dataset.tmaps[0])
 
 original_shape = tmap_img.shape
-original_affine = tmap_img.get_affine()
+original_affine = tmap_img.affine
 
 resampled_shape = resampled_localizer_tmap.shape
-resampled_affine = resampled_localizer_tmap.get_affine()
+resampled_affine = resampled_localizer_tmap.affine
 
 template_img = load_img(template)
 template_shape = template_img.shape
-template_affine = template_img.get_affine()
+template_affine = template_img.affine
 print("""Shape comparison:
 - Original t-map image shape : {0}
 - Resampled t-map image shape: {1}

@@ -11,7 +11,8 @@ decoding task.
 
 # Fetch data using nilearn dataset fetcher
 from nilearn import datasets
-haxby_dataset = datasets.fetch_haxby(n_subjects=1)
+# by default 2nd subject data will be fetched
+haxby_dataset = datasets.fetch_haxby()
 
 # print basic information on the dataset
 print('First subject anatomical nifti image (3D) located is at: %s' %
@@ -179,7 +180,7 @@ for classifier_name, classifier in sorted(classifiers.items()):
     weight_map = weight_img.get_data()
     threshold = np.max(np.abs(weight_map)) * 1e-3
     plot_stat_map(weight_img, bg_img=mean_epi_img,
-                  display_mode='z', cut_coords=[-17],
+                  display_mode='z', cut_coords=[-15],
                   threshold=threshold,
                   title='%s: face vs house' % classifier_name)
 

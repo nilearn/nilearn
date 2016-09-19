@@ -17,7 +17,7 @@ from nilearn import signal
 from nilearn.image import image
 from nilearn.image import resampling
 from nilearn.image import concat_imgs
-from nilearn._utils import testing, niimg_conversions
+from nilearn._utils import testing, niimg_conversions, compat
 from nilearn.image import new_img_like
 from nilearn.image import threshold_img
 from nilearn.image import iter_img
@@ -171,7 +171,7 @@ def test__crop_img_to():
     assert_true(cropped_img.shape == (2, 4, 3))
 
     # check that affine was adjusted correctly
-    assert_true((cropped_img.get_affine()[:3, 3] == new_origin).all())
+    assert_true((compat.get_affine(cropped_img)[:3, 3] == new_origin).all())
 
     # check that data was really not copied
     data[2:4, 1:5, 3:6] = 2
@@ -242,13 +242,13 @@ def test_mean_img():
         truth = np.mean(arrays, axis=0)
 
         mean_img = image.mean_img(imgs)
-        assert_array_equal(mean_img.get_affine(), affine)
+        assert_array_equal(compat.get_affine(mean_img), affine)
         assert_array_equal(mean_img.get_data(), truth)
 
         # Test with files
         with testing.write_tmp_imgs(*imgs) as imgs:
             mean_img = image.mean_img(imgs)
-            assert_array_equal(mean_img.get_affine(), affine)
+            assert_array_equal(compat.get_affine(mean_img), affine)
             if X64:
                 assert_array_equal(mean_img.get_data(), truth)
             else:
@@ -277,9 +277,9 @@ def test_mean_img_resample():
                                               target_affine=target_affine)
     assert_array_equal(resampled_mean_image.get_data(),
                        mean_img_with_resampling.get_data())
-    assert_array_equal(resampled_mean_image.get_affine(),
-                       mean_img_with_resampling.get_affine())
-    assert_array_equal(mean_img_with_resampling.get_affine(), target_affine)
+    assert_array_equal(compat.get_affine(resampled_mean_image),
+                       compat.get_affine(mean_img_with_resampling))
+    assert_array_equal(compat.get_affine(mean_img_with_resampling), target_affine)
 
 
 def test_swap_img_hemispheres():
@@ -326,8 +326,8 @@ def test_index_img():
         expected_data_3d = img_4d.get_data()[..., i]
         assert_array_equal(this_img.get_data(),
                            expected_data_3d)
-        assert_array_equal(this_img.get_affine(),
-                           img_4d.get_affine())
+        assert_array_equal(compat.get_affine(this_img),
+                           compat.get_affine(img_4d))
 
     for i in [fourth_dim_size, - fourth_dim_size - 1,
               [0, fourth_dim_size],
@@ -356,16 +356,16 @@ def test_iter_img():
         expected_data_3d = img_4d.get_data()[..., i]
         assert_array_equal(img.get_data(),
                            expected_data_3d)
-        assert_array_equal(img.get_affine(),
-                           img_4d.get_affine())
+        assert_array_equal(compat.get_affine(img),
+                           compat.get_affine(img_4d))
 
     with testing.write_tmp_imgs(img_4d) as img_4d_filename:
         for i, img in enumerate(image.iter_img(img_4d_filename)):
             expected_data_3d = img_4d.get_data()[..., i]
             assert_array_equal(img.get_data(),
                                expected_data_3d)
-            assert_array_equal(img.get_affine(),
-                               img_4d.get_affine())
+            assert_array_equal(compat.get_affine(img),
+                               compat.get_affine(img_4d))
         # enables to delete "img_4d_filename" on windows
         del img
 
@@ -374,16 +374,16 @@ def test_iter_img():
         expected_data_3d = img_4d.get_data()[..., i]
         assert_array_equal(img.get_data(),
                            expected_data_3d)
-        assert_array_equal(img.get_affine(),
-                           img_4d.get_affine())
+        assert_array_equal(compat.get_affine(img),
+                           compat.get_affine(img_4d))
 
     with testing.write_tmp_imgs(*img_3d_list) as img_3d_filenames:
         for i, img in enumerate(image.iter_img(img_3d_filenames)):
             expected_data_3d = img_4d.get_data()[..., i]
             assert_array_equal(img.get_data(),
                                expected_data_3d)
-            assert_array_equal(img.get_affine(),
-                               img_4d.get_affine())
+            assert_array_equal(compat.get_affine(img),
+                               compat.get_affine(img_4d))
         # enables to delete "img_3d_filename" on windows
         del img
 
@@ -400,7 +400,7 @@ def test_new_img_like_mgz():
 
     ref_img = nibabel.load(os.path.join(datadir, 'test.mgz'))
     data = np.ones(ref_img.get_data().shape, dtype=np.bool)
-    affine = ref_img.get_affine()
+    affine = compat.get_affine(ref_img)
     new_img_like(ref_img, data, affine, copy_header=False)
 
 
@@ -494,8 +494,8 @@ def test_math_img():
             result = math_img(formula, img1=imgs[0], img2=imgs[1])
             assert_array_equal(result.get_data(),
                                expected_result.get_data())
-            assert_array_equal(result.get_affine(),
-                               expected_result.get_affine())
+            assert_array_equal(compat.get_affine(result),
+                               compat.get_affine(expected_result))
             assert_equal(result.shape, expected_result.shape)
 
 

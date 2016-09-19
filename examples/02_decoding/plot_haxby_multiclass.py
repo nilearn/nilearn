@@ -11,6 +11,7 @@ cross-validated accuracy and the confusion matrix.
 # Load the Haxby data dataset
 from nilearn import datasets
 import numpy as np
+# By default 2nd subject from haxby datasets will be fetched.
 haxby_dataset = datasets.fetch_haxby()
 
 # Print basic information on the dataset

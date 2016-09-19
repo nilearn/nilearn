@@ -15,7 +15,7 @@ from .. import image
 from .. import masking
 from .._utils import CacheMixin
 from .._utils.class_inspect import get_params
-from .._utils.compat import _basestring, izip
+from .._utils.compat import _basestring, izip, get_affine
 from .._utils.niimg_conversions import _iter_check_niimg
 from .nifti_masker import NiftiMasker, filter_and_mask
 
@@ -209,7 +209,7 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
         if self.target_affine is not None:
             self.affine_ = self.target_affine
         else:
-            self.affine_ = self.mask_img_.get_affine()
+            self.affine_ = get_affine(self.mask_img_)
         # Load data in memory
         self.mask_img_.get_data()
         return self

@@ -14,6 +14,7 @@ from nilearn.input_data.nifti_labels_masker import NiftiLabelsMasker
 from nilearn._utils import testing, as_ndarray
 from nilearn._utils.exceptions import DimensionError
 from nilearn._utils.testing import assert_less
+from nilearn._utils.compat import get_affine
 
 
 def generate_random_img(shape, length=1, affine=np.eye(4),
@@ -101,8 +102,8 @@ def test_nifti_labels_masker():
     # Call inverse transform (smoke test)
     fmri11_img_r = masker11.inverse_transform(signals11)
     assert_equal(fmri11_img_r.shape, fmri11_img.shape)
-    np.testing.assert_almost_equal(fmri11_img_r.get_affine(),
-                                   fmri11_img.get_affine())
+    np.testing.assert_almost_equal(get_affine(fmri11_img_r),
+                                   get_affine(fmri11_img))
 
 
 def test_nifti_labels_masker_resampling():
@@ -139,20 +140,20 @@ def test_nifti_labels_masker_resampling():
                                resampling_target="labels")
 
     masker.fit()
-    np.testing.assert_almost_equal(masker.labels_img_.get_affine(),
-                                   labels33_img.get_affine())
+    np.testing.assert_almost_equal(get_affine(masker.labels_img_),
+                                   get_affine(labels33_img))
     assert_equal(masker.labels_img_.shape, labels33_img.shape)
 
-    np.testing.assert_almost_equal(masker.mask_img_.get_affine(),
-                                   masker.labels_img_.get_affine())
+    np.testing.assert_almost_equal(get_affine(masker.mask_img_),
+                                   get_affine(masker.labels_img_))
     assert_equal(masker.mask_img_.shape, masker.labels_img_.shape[:3])
 
     transformed = masker.transform(fmri11_img)
     assert_equal(transformed.shape, (length, n_regions))
 
     fmri11_img_r = masker.inverse_transform(transformed)
-    np.testing.assert_almost_equal(fmri11_img_r.get_affine(),
-                                   masker.labels_img_.get_affine())
+    np.testing.assert_almost_equal(get_affine(fmri11_img_r),
+                                   get_affine(masker.labels_img_))
     assert_equal(fmri11_img_r.shape,
                  (masker.labels_img_.shape[:3] + (length,)))
 
@@ -179,12 +180,12 @@ def test_nifti_labels_masker_resampling():
                                resampling_target="labels")
 
     masker.fit()
-    np.testing.assert_almost_equal(masker.labels_img_.get_affine(),
-                                   labels33_img.get_affine())
+    np.testing.assert_almost_equal(get_affine(masker.labels_img_),
+                                   get_affine(labels33_img))
     assert_equal(masker.labels_img_.shape, labels33_img.shape)
 
-    np.testing.assert_almost_equal(masker.mask_img_.get_affine(),
-                                   masker.labels_img_.get_affine())
+    np.testing.assert_almost_equal(get_affine(masker.mask_img_),
+                                   get_affine(masker.labels_img_))
     assert_equal(masker.mask_img_.shape, masker.labels_img_.shape[:3])
 
     uniq_labels = np.unique(masker.labels_img_.get_data())
@@ -197,8 +198,8 @@ def test_nifti_labels_masker_resampling():
     assert_less((transformed.var(axis=0) == 0).sum(), n_regions)
 
     fmri11_img_r = masker.inverse_transform(transformed)
-    np.testing.assert_almost_equal(fmri11_img_r.get_affine(),
-                                   masker.labels_img_.get_affine())
+    np.testing.assert_almost_equal(get_affine(fmri11_img_r),
+                                   get_affine(masker.labels_img_))
     assert_equal(fmri11_img_r.shape,
                  (masker.labels_img_.shape[:3] + (length,)))
 
@@ -214,7 +215,7 @@ def test_nifti_labels_masker_resampling():
 
     masker.fit_transform(fmri22_img)
     np.testing.assert_array_equal(
-        masker._resampled_labels_img_.get_affine(),
+        get_affine(masker._resampled_labels_img_),
         affine2)
 
     # Test with filenames
