@@ -11,15 +11,15 @@ standard measures.
 """
 
 # Fetch dataset
-import nilearn.datasets
-atlas = nilearn.datasets.fetch_atlas_msdl()
-dataset = nilearn.datasets.fetch_adhd(n_subjects=20)
+from nilearn import datasets
+atlas = datasets.fetch_atlas_msdl()
+dataset = datasets.fetch_adhd(n_subjects=20)
 
 
 ######################################################################
 # Extract regions time series signals
-import nilearn.input_data
-masker = nilearn.input_data.NiftiMapsMasker(
+from nilearn import input_data
+masker = input_data.NiftiMapsMasker(
     atlas.maps, resampling_target="maps", detrend=True,
     low_pass=.1, high_pass=.01, t_r=2.5, standardize=False,
     memory='nilearn_cache', memory_level=1)
@@ -36,12 +36,12 @@ for func_file, confound_file, phenotypic in zip(
 
 ######################################################################
 # Estimate connectivity
-import nilearn.connectome
+from nilearn import connectome
 kinds = ['tangent', 'partial correlation', 'correlation']
 individual_connectivity_matrices = {}
 mean_connectivity_matrix = {}
 for kind in kinds:
-    conn_measure = nilearn.connectome.ConnectivityMeasure(kind=kind)
+    conn_measure = connectome.ConnectivityMeasure(kind=kind)
     individual_connectivity_matrices[kind] = conn_measure.fit_transform(
         subjects)
     # Compute the mean connectivity
@@ -55,13 +55,13 @@ for kind in kinds:
 ######################################################################
 # Plot the mean connectome with hemispheric saggital cuts
 import numpy as np
-import nilearn.plotting
+from nilearn import plotting
 labels = atlas.labels
 region_coords = atlas.region_coords
 for kind in kinds:
-    nilearn.plotting.plot_connectome(mean_connectivity_matrix[kind],
-                                     region_coords, edge_threshold='98%',
-                                     title=kind, display_mode='lzry')
+    plotting.plot_connectome(mean_connectivity_matrix[kind],
+                             region_coords, edge_threshold='98%',
+                             title=kind, display_mode='lzry')
 
 
 ######################################################################
@@ -75,7 +75,7 @@ cv = StratifiedKFold(classes, n_folds=3)
 for kind in kinds:
     svc = LinearSVC()
     # Transform the connectivity matrices to 1D arrays
-    coonectivity_coefs = nilearn.connectome.sym_to_vec(
+    coonectivity_coefs = connectome.sym_to_vec(
         individual_connectivity_matrices[kind])
     cv_scores = cross_val_score(svc, coonectivity_coefs,
                                 adhds, cv=cv, scoring='accuracy')

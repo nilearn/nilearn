@@ -61,7 +61,7 @@ def filter_and_mask(imgs, mask_img_, parameters,
 
 
 class NiftiMasker(BaseMasker, CacheMixin):
-    """Class for masking of Niimg-like objects.
+    """Applying a mask to extract time-series from Niimg-like objects.
 
     NiftiMasker is useful when preprocessing (detrending, standardization,
     resampling, etc.) of in-mask voxels is necessary. Use case: working with
