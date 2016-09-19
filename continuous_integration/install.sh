@@ -83,21 +83,24 @@ create_new_conda_env() {
         # generation in the html documentation.
         # Make sure that MKL is not used
         conda remove --yes --features mkl || echo "MKL not installed"
+    else
+        # Make sure that MKL is not used
+        conda remove --yes --features mkl || echo "MKL not installed"
     fi
 }
 
 if [[ "$DISTRIB" == "neurodebian" ]]; then
     create_new_venv
-    pip install nose-timer
     bash <(wget -q -O- http://neuro.debian.net/_files/neurodebian-travis.sh)
-    sudo apt-get install -qq python-scipy python-nose python-nibabel python-sklearn python-pandas python-numpy
-    pip install numpy==1.7.1
+    sudo apt-get install -qq python-scipy python-nose python-nibabel python-sklearn python-pandas
+    deactivate
+    sudo pip install numpy==1.7.1 --force-reinstall
+    source testvenv/bin/activate
     pip install nilearn
     pip install patsy
 
 elif [[ "$DISTRIB" == "conda" ]]; then
     create_new_conda_env
-    pip install nose-timer
     # Note: nibabel is in setup.py install_requires so nibabel will
     # always be installed eventually. Defining NIBABEL_VERSION is only
     # useful if you happen to want a specific nibabel version rather
@@ -119,8 +122,6 @@ else
     echo "Unrecognized distribution ($DISTRIB); cannot setup travis environment."
     exit 1
 fi
-
-pip install psutil memory_profiler
 
 if [[ "$COVERAGE" == "true" ]]; then
     pip install coverage coveralls
