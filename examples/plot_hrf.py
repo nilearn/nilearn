@@ -1,11 +1,12 @@
-""" 
-Example of hemodynamic reponse functions.
-We consider the hrf model in SPM together with the hrf shape proposed
-by G.Glover, as well as their time and dispersion derivatives.
-
-Author: Bertrand Thirion, 2015.
 """
-print __doc__
+Example of hemodynamic reponse functions.
+=========================================
+We consider the hrf model in SPM together with the hrf shape proposed by G.Glover, as well as their time and dispersion derivatives.
+
+Requires matplotlib
+
+Author : Bertrand Thirion: 2009-2015
+"""
 
 import numpy as np
 import matplotlib.pyplot as plt
