@@ -9,7 +9,8 @@ More specifically:
 
 1. A sequence of subject fMRI button press contrasts is downloaded.
 2. a mask of the useful brain volume is computed
-3. A GLM is applied to the dataset (as fixed effects, then contrast estimation)
+3. A one-sample t-test is applied to the brain maps
+(as fixed effects, then contrast estimation)
 
 Author : Martin Perez-Guevara: 2016
 """
@@ -41,7 +42,7 @@ design_matrix = pd.DataFrame([1] * len(second_level_input),
                              columns=['left-right'])
 
 # Display subject t_maps
-subjects = [s[0] for s in data['ext_vars']]
+subjects = [subject_data[0] for subject_data in data['ext_vars']]
 fig, axes = plt.subplots(nrows=4, ncols=4)
 for cidx, tmap in enumerate(data['tmaps']):
     plotting.plot_glass_brain(tmap, colorbar=False, threshold=2.0,

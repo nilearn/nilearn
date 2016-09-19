@@ -32,7 +32,7 @@ maps_table = pd.DataFrame({'map_name': maps_name,
                            'effects_map_path': maps_path})
 # Specify extra information about the subjects to create additional regressors
 extra_info_subjects = pd.DataFrame({'subject_id': subject_list,
-                                    'age': [i for i in range(15, 35)],
+                                    'age': range(15, 35),
                                     'sex': [0, 1] * 10})
 
 # Create design matrix
