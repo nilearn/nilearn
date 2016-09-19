@@ -52,7 +52,7 @@ import numpy as np
 
 ###############################################################################
 # Retrieve the data
-nki_dataset = datasets.fetch_nki_enhanced_surface(n_subjects=1)
+nki_dataset = datasets.fetch_surf_nki_enhanced(n_subjects=1)
 
 # Fsaverage5 left hemisphere surface mesh files
 fsaverage5_pial = nki_dataset['fsaverage5_pial_left'][0]
