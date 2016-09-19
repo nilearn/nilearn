@@ -7,7 +7,7 @@ Changelog
 This release enhances usage of several functions by fine tuning their
 parameters. It allows to select which Haxby subject to fetch. It also refactors
 documentation to make it easier to understand.
-Sphinw has been updated and nilearn is ready for new nibabel 2.1 version.
+Sphinx-gallery has been updated and nilearn is ready for new nibabel 2.1 version.
 Several bugs related to masks in Searchlight and ABIDE fetching have been
 resolved.
 
