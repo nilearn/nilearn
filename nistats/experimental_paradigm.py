@@ -28,7 +28,7 @@ def check_paradigm(paradigm):
 
     Returns
     -------
-    name : array of shape (n_events,), dtype='s'
+    trial_type : array of shape (n_events,), dtype='s'
         Per-event experimental conditions identifier.
         Defaults to np.repeat('dummy', len(onsets)).
 
@@ -48,16 +48,16 @@ def check_paradigm(paradigm):
 
     onset = np.array(paradigm['onset'])
     n_events = len(onset)
-    name = np.repeat('dummy', n_events)
+    trial_type = np.repeat('dummy', n_events)
     duration = np.zeros(n_events)
     modulation = np.ones(n_events)
-    if 'name' in paradigm.keys():
-        name = np.array(paradigm['name'])
+    if 'trial_type' in paradigm.keys():
+        trial_type = np.array(paradigm['trial_type'])
     if 'duration' in paradigm.keys():
         duration = np.array(paradigm['duration']).astype(np.float)
     if 'modulation' in paradigm.keys():
         modulation = np.array(paradigm['modulation']).astype(np.float)
-    return name, onset, duration, modulation
+    return trial_type, onset, duration, modulation
 
 
 def paradigm_from_csv(csv_file):
