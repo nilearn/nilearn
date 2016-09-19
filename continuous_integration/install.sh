@@ -83,8 +83,8 @@ create_new_conda_env() {
 if [[ "$DISTRIB" == "neurodebian" ]]; then
     create_new_venv
     bash <(wget -q -O- http://neuro.debian.net/_files/neurodebian-travis.sh)
-    sudo apt-get install -qq python-scipy python-nose python-nibabel python-sklearn python-pandas
-    pip install numpy --upgrade
+    sudo apt-get install -qq python-scipy python-nose python-nibabel python-sklearn python-pandas python-numpy
+    pip install numpy==1.7.1
     pip install nilearn
     pip install patsy
 
