@@ -814,7 +814,6 @@ def fetch_atlas_allen_2011(data_dir=None, url=None, resume=True, verbose=1):
 
     References
     ----------
-
     E. Allen, et al, "A baseline for the multivariate comparison of resting
     state networks," Frontiers in Systems Neuroscience, vol. 5, p. 12, 2011.
 
@@ -863,3 +862,100 @@ def fetch_atlas_allen_2011(data_dir=None, url=None, resume=True, verbose=1):
     params.extend(list(zip(keys, sub_files)))
 
     return Bunch(**dict(params))
+
+
+def fetch_atlas_surf_destrieux(data_dir=None, url=None,
+                               resume=True, verbose=1):
+    """Download and load the Destrieux cortical atlas (dated 2009)
+        on the Freesurfer fsaverage5 surface
+
+    Parameters
+    ----------
+    data_dir: string, optional
+        Path of the data directory. Use to forec data storage in a non-
+        standard location. Default: None (meaning: default)
+    url: string, optional
+        Download URL of the dataset. Overwrite the default URL.
+
+    Returns
+    -------
+        data: sklearn.datasets.base.Bunch
+        dictionary-like object, contains:
+        - Cortical ROIs, lateralized or not (maps)
+        - Labels of the ROIs (labels)
+
+    References
+    ----------
+    Fischl, Bruce, et al. "Automatically parcellating the human cerebral
+    cortex." Cerebral cortex 14.1 (2004): 11-22.
+
+    Destrieux, C., et al. "A sulcal depth-based anatomical parcellation
+    of the cerebral cortex." NeuroImage 47 (2009): S151.
+    """
+
+    if url is None:
+        url = "https://www.nitrc.org/frs/download.php/"
+
+    dataset_name = 'destrieux_surface'
+    opts = dict()
+
+    fdescr = _get_dataset_descr(dataset_name)
+    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
+                                verbose=verbose)
+
+    # Download annot files, fsaverage surfaces and sulcal information
+    surf_file = os.path.join('fsaverage5', '%s.%s.gii')
+    surf_url = url + '%i/%s.%s.gii'
+    annot_file = '%s.aparc.a2009s.annot'
+    annot_url = url + '%i/%s.aparc.a2009s.annot'
+    surf_nids = {'lh annot': 0000, 'rh annot':0000,
+                 'lh pial': 0000, 'rh pial': 0000,
+                 'lh infl': 0000, 'rh infl': 0000,
+                 'lh sulc': 0000, 'rh sulc': 0000}
+
+    annots = []
+    pials = []
+    infls = []
+    sulcs = []
+    for hemi in [('lh', 'left'), ('rh', 'right')]:
+
+        annot = _fetch_files(data_dir,
+                            [(annot_file % (hemi[1]),
+                             annot_url % (surf_nids['%s annot' % hemi[0]],
+                                         hemi[0], 'annot'),
+                             {'move': annot_file % (hemi[1])})],
+                            resume=resume, verbose=verbose)
+        annots.append(annot)
+
+        pial = _fetch_files(data_dir,
+                            [(surf_file % ('pial', hemi[1]),
+                             surf_url % (surf_nids['%s pial' % hemi[0]],
+                                         hemi[0], 'pial'),
+                             {'move': surf_file % ('pial', hemi[1])})],
+                            resume=resume, verbose=verbose)
+        pials.append(pial)
+
+        infl = _fetch_files(data_dir,
+                            [(surf_file % ('pial_inflated', hemi[1]),
+                             surf_url % (surf_nids['%s infl' % hemi[0]],
+                                         hemi[0], 'inflated'),
+                             {'move': surf_file % ('pial_inflated', hemi[1])})],
+                            resume=resume, verbose=verbose)
+        infls.append(infl)
+
+        sulc = _fetch_files(data_dir,
+                            [(surf_file % ('sulc', hemi[1]),
+                             surf_url % (surf_nids['%s sulc' % hemi[0]],
+                                         hemi[0], 'sulc'),
+                             {'move': surf_file % ('sulc', hemi[1])})],
+                            resume=resume, verbose=verbose)
+        sulcs.append(sulc)
+
+    return Bunch(annot_left=annot[0], annot_right=annot[1],
+                 fsaverage5_pial_left=pials[0],
+                 fsaverage5_pial_right=pials[1],
+                 fsaverage5_infl_left=infls[0],
+                 fsaverage5_infl_right=infls[1],
+                 fsaverage5_sulc_left=sulcs[0],
+                 fsaverage5_sulc_right=sulcs[1],
+                 description=fdescr)
