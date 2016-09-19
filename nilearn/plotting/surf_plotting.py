@@ -175,7 +175,7 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
     if bg_map is not None or surf_map is not None:
 
         face_colors = np.ones((faces.shape[0], 4))
-        face_colors[:, :3] = .5*face_colors[:, :3]  # why this?
+        #face_colors[:, :3] = .5*face_colors[:, :3]  # why this?
 
         if bg_map is not None:
             bg_data = check_surf_data(bg_map)
@@ -357,7 +357,7 @@ def plot_surf_roi(surf_mesh, roi_map, bg_map=None,
         roi_map = np.zeros(v.shape[0])
         idx = 1
         for arr in roi_list:
-            roi_map[arr] = idx+1
+            roi_map[arr] = idx
             idx += 1
     else:
         # if roi_map is an array with values for all surface nodes
