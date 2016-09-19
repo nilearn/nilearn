@@ -2,7 +2,7 @@
 Group Sparse inverse covariance for multi-subject connectome
 =============================================================
 
-This example shows how to estimate a connectome on a groupe of subjects
+This example shows how to estimate a connectome on a group of subjects
 using the group sparse inverse covariance estimate.
 
 """
