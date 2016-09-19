@@ -1706,8 +1706,8 @@ def fetch_cobre(n_subjects=10, data_dir=None, url=None, verbose=1):
                  desc_phenotypic=files_keys_phen)
 
 
-def fetch_nki_enhanced_surface(n_subjects=30, data_dir=None,
-                               url=None, resume=True, verbose=1):
+def fetch_surf_nki_enhanced(n_subjects=30, data_dir=None,
+                            url=None, resume=True, verbose=1):
     """Download and load the NKI enhanced resting-state dataset,
        preprocessed and projected to the surface.
 
