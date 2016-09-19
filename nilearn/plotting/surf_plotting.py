@@ -350,11 +350,22 @@ def plot_surf_roi(surf_mesh, roi_map, bg_map=None,
         """
 
     v, _ = check_surf_mesh(surf_mesh)
-    roi_data = check_surf_data(roi_map)
 
-    if roi_data.shape[0] != v.shape[0]:
+    # if roi_map is a list of arrays with indices for different rois
+    if isinstance(roi_map, list):
+        roi_list = roi_map[:]
         roi_map = np.zeros(v.shape[0])
-        roi_map[roi_data] = 1
+        idx = 1
+        for arr in roi_list:
+            roi_map[arr] = idx+1
+            idx += 1
+    else:
+        # if roi_map is an array with values for all surface nodes
+        roi_data = check_surf_data(roi_map)
+        # or a single array with indices for a single roi
+        if roi_data.shape[0] != v.shape[0]:
+            roi_map = np.zeros(v.shape[0])
+            roi_map[roi_data] = 1
 
     display = plot_surf(surf_mesh, surf_map=roi_map, bg_map=bg_map,
                         hemi=hemi, view=view, avg_method='median',
