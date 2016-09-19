@@ -253,7 +253,8 @@ def fetch_fiac_first_level(data_dir=None, verbose=1):
     data_dir: string
         directory where data should be downloaded and unpacked.
     """
-    data_dir = _get_dataset_dir('', data_dir=data_dir, verbose=verbose)
+    data_dir = _get_dataset_dir('nipy-data-0.2/data', data_dir=data_dir,
+                                verbose=verbose)
 
     def _glob_fiac_data():
         """glob data from subject_dir."""
