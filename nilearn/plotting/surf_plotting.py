@@ -362,3 +362,61 @@ def plot_surf_roi(surf_mesh, roi_map, bg_map=None,
                         output_file=None, **kwargs)
 
     return display
+
+def plot_surf_roi(surf_mesh, roi_map, bg_map=None,
+                  hemi='left', view='lateral', alpha='auto',
+                  vmin=None, vmax=None, cmap='hsv',
+                  bg_on_data=False, darkness=1,
+                  output_file=None, **kwargs):
+
+    """ Plotting of surfaces with optional background and stats map
+
+            Parameters
+            ----------
+            surf_mesh: Surface object (to be defined)
+            roi_map: ROI map to be plotted on the mesh, can either be an array
+            with values for each node or an array, or list of arrays with
+            indices included in the/each ROI
+            hemi: {'left', 'right'}, hemisphere to display.
+                  Default is 'left'
+            bg_map: Surface data object (to be defined), optional,
+                background image to be plotted on the mesh underneath the
+                stat_map in greyscale, most likely a sulcal depth map for
+                realistic shading.
+            view: {'lateral', 'medial', 'dorsal', 'ventral'}, view of the
+                surface that is rendered. Default is 'lateral'
+            cmap: colormap to use for plotting of the rois. Either a string
+                which is a name of a matplotlib colormap, or a matplotlib
+                colormap object. Default is 'coolwarm'
+            alpha: float, alpha level of the mesh (not the stat_map). If 'auto'
+                is chosen, alpha will default to .5 when no bg_map ist passed
+                and to 1 if a bg_map is passed.
+            bg_on_data: boolean, if True, and a bg_map is specified, the
+                stat_map data is multiplied by the background image, so that
+                e.g. sulcal depth is visible beneath the stat_map. Beware
+                that this non-uniformly changes the stat_map values according
+                to e.g the sulcal depth.
+            darkness: float, between 0 and 1, specifying the darkness of the
+                background image. 1 indicates that the original values of the
+                background are used. .5 indicates the background values are
+                reduced by half before being applied.
+            output_file: string, or None, optional
+                The name of an image file to export plot to. Valid extensions
+                are .png, .pdf, .svg. If output_file is not None, the plot
+                is saved to a file, and the display is closed.
+        """
+
+    v, _ = check_surf_mesh(surf_mesh)
+    roi_data = check_surf_data(roi_map)
+
+    if roi_data.shape[0] != v.shape[0]:
+        roi_map = np.zeros(v.shape[0])
+        roi_map[roi_data] = 1
+
+    display = plot_surf(surf_mesh, surf_map=roi_map, bg_map=bg_map,
+                        hemi=hemi, view=view, avg_method='median',
+                        cmap=cmap, alpha=alpha, bg_on_data=bg_on_data,
+                        darkness=darkness, vmin=vmin, vmax=vmax,
+                        output_file=None, **kwargs)
+
+    return display
