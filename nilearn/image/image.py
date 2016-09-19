@@ -668,10 +668,8 @@ def threshold_img(img, threshold, mask_img=None):
     from .. import masking
 
     img = check_niimg(img)
-    img_data = img.get_data()
+    img_data = _safe_get_data(img, ensure_finite=True)
     affine = get_affine(img)
-
-    img_data = np.nan_to_num(img_data)
 
     if mask_img is not None:
         mask_img = check_niimg_3d(mask_img)
@@ -837,7 +835,7 @@ def clean_img(imgs, sessions=None, detrend=True, standardize=True,
         Repetition time, in second (sampling period).
 
     ensure_finite: bool, optional
-        If True, the infinite values (NANs and infs) found in the images
+        If True, the non-finite values (NaNs and infs) found in the images
         will be replaced by zeros.
 
     Returns

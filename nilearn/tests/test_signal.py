@@ -255,8 +255,9 @@ def test_clean_detrending():
     y = signals + trends
     y[20, 150] = np.nan
     y[5, 500] = np.nan
+    y[15, 14] = np.inf
     y = nisignal.clean(y, ensure_finite=True)
-    assert_false(np.any(np.isnan(y)), False)
+    assert_true(np.any(np.isfinite(y)), True)
 
     # test boolean is not given to signal.clean
     assert_raises(TypeError, nisignal.clean, x, low_pass=False)

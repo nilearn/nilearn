@@ -516,6 +516,8 @@ def test_clean_img():
                                    data_flat_)
     # if NANs
     data[:, 9, 9] = np.nan
+    # if infinity
+    data[:, 5, 5] = np.inf
     nan_img = nibabel.Nifti1Image(data, np.eye(4))
     clean_im = image.clean_img(nan_img, ensure_finite=True)
-    assert_false(np.any(np.isnan(clean_im.get_data())), False)
+    assert_true(np.any(np.isfinite(clean_im.get_data())), True)

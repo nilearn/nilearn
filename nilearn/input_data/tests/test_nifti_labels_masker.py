@@ -106,7 +106,7 @@ def test_nifti_labels_masker():
                                    get_affine(fmri11_img))
 
 
-def test_nifti_labels_masker_with_nans():
+def test_nifti_labels_masker_with_nans_and_infs():
     length = 3
     n_regions = 9
     fmri_img, mask_img = generate_random_img((13, 11, 12),
@@ -117,6 +117,7 @@ def test_nifti_labels_masker_with_nans():
     # nans
     mask_data = mask_img.get_data()
     mask_data[:, :, 7] = np.nan
+    mask_data[:, :, 4] = np.inf
     mask_img = nibabel.Nifti1Image(mask_data, np.eye(4))
 
     masker = NiftiLabelsMasker(labels_img, mask_img=mask_img)

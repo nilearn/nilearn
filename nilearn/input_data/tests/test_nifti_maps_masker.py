@@ -135,7 +135,9 @@ def test_nifti_maps_masker_with_nans():
     mask_data = mask_img.get_data()
 
     maps_data[:, 9, 9] = np.nan
+    maps_data[:, 5, 5] = np.inf
     mask_data[:, :, 7] = np.nan
+    mask_data[:, :, 5] = np.inf
 
     maps_img = nibabel.Nifti1Image(maps_data, np.eye(4))
     mask_img = nibabel.Nifti1Image(mask_data, np.eye(4))

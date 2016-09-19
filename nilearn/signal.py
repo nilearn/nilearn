@@ -400,7 +400,7 @@ def clean(signals, sessions=None, detrend=True, standardize=True,
         If True, returned signals are set to unit variance.
 
     ensure_finite: bool
-        If True, the infinite values (NANs and infs) found in the data
+        If True, the non-finite values (NANs and infs) found in the data
         will be replaced by zeros.
 
     Returns
@@ -442,7 +442,7 @@ def clean(signals, sessions=None, detrend=True, standardize=True,
         signals = as_ndarray(signals)
 
     if ensure_finite:
-        signals = np.nan_to_num(signals)
+        signals[np.logical_not(np.isfinite(signals))] = 0
 
     # Read confounds
     if confounds is not None:

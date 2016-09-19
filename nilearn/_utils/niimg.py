@@ -17,6 +17,20 @@ from .compat import _basestring, get_affine
 def _safe_get_data(img, ensure_finite=False):
     """ Get the data in the image without having a side effect on the
         Nifti1Image object
+
+    Parameters
+    ----------
+    img: Nifti image/object
+        Image to get data.
+
+    ensure_finite: bool
+        If True, non-finite values such as (NaNs and infs) found in the
+        image will be replaced by zeros.
+
+    Returns
+    -------
+    data: numpy array
+        get_data() return from Nifti image.
     """
     if hasattr(img, '_data_cache') and img._data_cache is None:
         # By loading directly dataobj, we prevent caching if the data is
@@ -28,7 +42,7 @@ def _safe_get_data(img, ensure_finite=False):
 
     data = img.get_data()
     if ensure_finite:
-        data = np.nan_to_num(data)
+        data[np.logical_not(np.isfinite(data))] = 0
 
     return data
 
