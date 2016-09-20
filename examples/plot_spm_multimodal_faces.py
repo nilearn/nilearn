@@ -50,7 +50,7 @@ for idx, img in enumerate(fmri_img):
 
 # make design matrices
 design_matrices = []
-for idx in range(2):
+for idx in range(len(fmri_img)):
     # build paradigm
     n_scans = fmri_img[idx].shape[-1]
     timing = loadmat(getattr(subject_data, "trials_ses%i" % (idx + 1)),
