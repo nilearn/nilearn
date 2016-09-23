@@ -35,6 +35,9 @@ from .design_matrix import make_design_matrix
 from .contrasts import _fixed_effect_contrast
 from .utils import _basestring, _check_run_tables, get_bids_files
 
+# ATTENTION THIS IS NOT SUPPOSED TO BE HERE
+from nilearn.masking import apply_mask
+
 
 def mean_scaling(Y, axis=0):
     """Scaling of the data to have percent of baseline change along the
@@ -448,10 +451,9 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
             # Mask and prepare data for GLM
             if self.verbose > 1:
                 t_masking = time.time()
-                sys.stderr.write('Starting masker computation')
+                sys.stderr.write('Starting masker computation \r')
 
             # ATTENTION THIS IS NOT SUPPOSED TO BE HERE
-            from nilearn.masking import apply_mask
             # Y = self.masker_.transform(run_img)
             Y = apply_mask(run_img, self.masker_.mask_img_)
 
