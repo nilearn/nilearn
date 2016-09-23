@@ -449,7 +449,12 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
             if self.verbose > 1:
                 t_masking = time.time()
                 sys.stderr.write('Starting masker computation')
-            Y = self.masker_.transform(run_img)
+
+            # ATTENTION THIS IS NOT SUPPOSED TO BE HERE
+            from nilearn.masking import apply_mask
+            # Y = self.masker_.transform(run_img)
+            Y = apply_mask(run_img, self.masker_.mask_img_)
+
             if self.verbose > 1:
                 t_masking = time.time() - t_masking
                 sys.stderr.write('Masker took %d seconds          \n' % t_masking)
