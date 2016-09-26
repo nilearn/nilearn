@@ -16,7 +16,8 @@ from .._utils.compat import _basestring, get_affine
 
 
 def fetch_allen_rsn_tmap_75_2011(data_dir=None, url=None, resume=True, verbose=1):
-    """Download and return file names for the Allen resting-state
+    """Download and return file names for the Allen fMRI resting-state network 
+    templates published in E. Allen, et al, Frontiers in Systems Neuroscience, 2011.
 
     The provided images are in MNI152 space.
 
