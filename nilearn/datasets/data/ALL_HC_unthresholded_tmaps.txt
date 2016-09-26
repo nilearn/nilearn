@@ -1,0 +1,7 @@
+Basal Ganglia, 21
+Auditory, 17
+Sensorimotor, 7, 23, 24, 38, 56, 29
+Visual, 46, 64, 67, 48, 39, 59
+Default-Mode, 50, 53, 25, 68
+Attentional, 34, 60, 52, 72, 71, 55
+Frontal, 42, 20, 47, 49
