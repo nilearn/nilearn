@@ -581,7 +581,7 @@ def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None,
             See http://nilearn.github.io/manipulating_images/input_output.html
             The background image that the ROI/mask will be plotted on top of.
             If nothing is specified, the MNI152 template will be used.
-            To turn off background image, just pass "bg_img=False".
+            To turn off background image, just pass "bg_img=None".
         cut_coords : None, or a tuple of floats
             The MNI coordinates of the point where the cut is performed, in
             MNI coordinates and order.
