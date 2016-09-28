@@ -413,7 +413,7 @@ def test_fetch_allen_rsn_tmap_75_2011():
                  "RSN_HC_unthresholded_tmaps.nii",
                  "rest_hcp_agg__component_ica_.nii"]
 
-    assert_equal(len(tst.mock_url_request.urls), 1)
+    assert_equal(len(tst.mock_url_request.urls), 3)
     for key, fn in zip(keys, filenames):
         assert_equal(bunch[key], os.path.join(tst.tmpdir, 'allen_rsn_2011', fn))
 
