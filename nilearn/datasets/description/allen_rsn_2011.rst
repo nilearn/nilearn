@@ -12,7 +12,7 @@ Content
     :'all_unthresh_tmaps': unthresholded t-maps of all 75 components
     :'rsn_unthresh_tmaps': unthresholded t-maps of 28 resting state networks
     :'aggregate_ic_comps': the aggregate ICA components
-    :'all_unthresh_labels': labels ad indices of the 28 RSN in the 'all_unthresh_tmaps' file
+    :'all_unthresh_labels': labels and indices of the 28 RSN in the 'all_unthresh_tmaps' file
 
 References
 ----------
