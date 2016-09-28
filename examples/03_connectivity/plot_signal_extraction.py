@@ -122,7 +122,7 @@ from nilearn.input_data import NiftiMasker
 brain_masker = NiftiMasker(memory='nilearn_cache', verbose=1)
 voxel_ts_raw = brain_masker.fit_transform(fmri_filename)
 voxel_ts_cleaned_csv = brain_masker.fit_transform(fmri_filename,
-                    	                          confounds=confounds_filename)
+                                                  confounds=confounds_filename)
 
 ##############################################################################
 # For comparison, compute voxels signals after high variance confounds removal
@@ -152,7 +152,7 @@ labels = ['no confounds\nremoved', 'file confounds',
 plt.figure(figsize=(8, 3))
 for matrix, label, color in zip(matrices, labels, 'rgb'):
     plt.hist(matrix[np.triu_indices_from(matrix, k=1)],
-        color=color, alpha=.4, bins=100, lw=0, label=label)
+             color=color, alpha=.4, bins=100, lw=0, label=label)
 
 [ymin, ymax] = plt.ylim()
 plt.vlines(0, ymin, ymax)
