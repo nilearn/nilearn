@@ -34,6 +34,8 @@ Design matrices contain three different types of regressors:
 
 Author: Bertrand Thirion, 2009-2015
 """
+from warnings import warn
+import sys
 import numpy as np
 from scipy import linalg
 import pandas as pd
@@ -488,5 +490,10 @@ def create_second_level_design(maps_table, confounds=None):
     # check column names are unique
     if len(np.unique(design_columns)) != len(design_columns):
         raise ValueError('Design matrix columns do not have unique names')
+
+    # check design matrix is not singular
+    if linalg.cond(design_matrix.as_matrix()) < (1. / sys.float_info.epsilon):
+        warn('Attention: Design matrix is singular. Aberrant estimates '
+             'are expected.')
 
     return design_matrix
