@@ -492,7 +492,7 @@ def create_second_level_design(maps_table, confounds=None):
         raise ValueError('Design matrix columns do not have unique names')
 
     # check design matrix is not singular
-    if linalg.cond(design_matrix.as_matrix()) < (1. / sys.float_info.epsilon):
+    if np.linalg.cond(design_matrix.as_matrix()) < (1. / sys.float_info.epsilon):
         warn('Attention: Design matrix is singular. Aberrant estimates '
              'are expected.')
 
