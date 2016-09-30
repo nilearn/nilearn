@@ -284,7 +284,7 @@ sphinx_gallery_conf = {
         'numpy': 'http://docs.scipy.org/doc/numpy-1.6.0',
         'scipy': 'http://docs.scipy.org/doc/scipy-0.11.0/reference',
         'nibabel': 'http://nipy.org/nibabel',
-        'sklearn': 'http://scikit-learn.org/stable'}
+        'sklearn': 'http://scikit-learn.org/0.17/'}
     }
 
 # Get rid of spurious warnings due to some interaction between
