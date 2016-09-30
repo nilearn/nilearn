@@ -441,7 +441,7 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
             Y = self.masker_.transform(run_img)
             if self.verbose > 1:
                 t_masking = time.time() - t_masking
-                sys.stderr.write('Masker took %d seconds' % t_masking)
+                sys.stderr.write('Masker took %d seconds          \n' % t_masking)
 
             if self.signal_scaling:
                 Y, _ = mean_scaling(Y, self.scaling_axis)
@@ -453,13 +453,13 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
             # compute GLM
             if self.verbose > 1:
                 t_glm = time.time()
-                sys.stderr.write('Starting GLM computation')
+                sys.stderr.write('Performing GLM computation\r')
             labels, results = mem_glm(Y, design.as_matrix(),
                                       noise_model=self.noise_model,
                                       bins=100, n_jobs=self.n_jobs)
             if self.verbose > 1:
                 t_glm = time.time() - t_glm
-                sys.stderr.write('GLM took %d seconds' % t_glm)
+                sys.stderr.write('GLM took %d seconds         \n' % t_glm)
 
             self.labels_.append(labels)
             # We save memory if inspecting model details is not necessary
