@@ -816,7 +816,7 @@ def clean_img(imgs, sessions=None, detrend=True, standardize=True,
     standardize: bool
         If True, returned signals are set to unit variance.
         The ``standardize`` parameter is deprecated and will be removed, use
-   	``normalize="std"`` to standardize.
+        ``normalize="std"`` to standardize.
 
     normalize: {'psc', 'std', None}, optional
         Signals normalization method.
