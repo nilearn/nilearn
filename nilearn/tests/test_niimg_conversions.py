@@ -115,6 +115,10 @@ def test_check_niimg_3d():
     with testing.write_tmp_imgs(data_img, create_files=True) as filename:
         _utils.check_niimg_3d(filename)
 
+    # check data dtype equal with dtype='auto'
+    img_check = _utils.check_niimg_3d(img, dtype='auto')
+    assert_equal(img.get_data().dtype.kind, img_check.get_data().dtype.kind)
+
 
 def test_check_niimg_4d():
     assert_raises_regex(TypeError, 'nibabel format',
@@ -204,6 +208,13 @@ def test_check_niimg():
         "Expected dimension is 4D and you provided "
         "a list of list of 4D images \(6D\)",
         _utils.check_niimg, img_2_4d, ensure_ndim=4)
+
+    # check data dtype equal with dtype='auto'
+    img_3d_check = _utils.check_niimg(img_3d, dtype='auto')
+    assert_equal(img_3d.get_data().dtype.kind, img_3d_check.get_data().dtype.kind)
+
+    img_4d_check = _utils.check_niimg(img_4d, dtype='auto')
+    assert_equal(img_4d.get_data().dtype.kind, img_4d_check.get_data().dtype.kind)
 
 
 def test_check_niimg_wildcards():
@@ -464,9 +475,9 @@ def test_concat_niimg_dtype():
         np.zeros(shape + [n_scans]).astype(np.int16), np.eye(4))
             for n_scans in [1, 5]]
     nimg = _utils.concat_niimgs(vols)
-    assert_equal(nimg.get_data_dtype(), np.float32)
+    assert_equal(nimg.get_data().dtype, np.float32)
     nimg = _utils.concat_niimgs(vols, dtype=None)
-    assert_equal(nimg.get_data_dtype(), np.int16)
+    assert_equal(nimg.get_data().dtype, np.int16)
 
 
 def nifti_generator(buffer):

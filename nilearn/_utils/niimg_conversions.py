@@ -455,7 +455,7 @@ def concat_niimgs(niimgs, dtype=np.float32, ensure_ndim=None,
 
     target_shape = first_niimg.shape[:3]
     if dtype == None:
-        dtype = first_niimg.get_data_dtype()
+        dtype = first_niimg.get_data().dtype
     data = np.ndarray(target_shape + (sum(lengths), ),
                       order="F", dtype=dtype)
     cur_4d_index = 0
