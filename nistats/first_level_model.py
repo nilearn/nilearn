@@ -222,9 +222,9 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
 
     verbose : integer, optional
         Indicate the level of verbosity. By default, nothing is printed.
-        If 0 will print nothing. If 1 will print progress by computation of
-        each run. If 2 will print timing details of masker and GLM. If 3 will
-        print masker computation details.
+        If 0 prints nothing. If 1 prints progress by computation of
+        each run. If 2 prints timing details of masker and GLM. If 3 
+        prints masker computation details.
 
     n_jobs : integer, optional
         The number of CPUs to use to do the computation. -1 means
@@ -235,6 +235,10 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         necessary for contrast computation and would only be useful for
         further inspection of model details. This has an important impact
         on memory consumption. True by default.
+
+    subject_id : string, optional
+        This id will be used to identify a `FirstLevelModel` when passed to
+        a `SecondLevelModel` object.
 
     Attributes
     ----------
@@ -251,7 +255,7 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
                  target_shape=None, smoothing_fwhm=None, memory=Memory(None),
                  memory_level=1, standardize=False, signal_scaling=0,
                  noise_model='ar1', verbose=0, n_jobs=1,
-                 minimize_memory=True):
+                 minimize_memory=True, subject_id=None):
         # design matrix parameters
         self.t_r = t_r
         self.slice_time_ref = slice_time_ref
@@ -288,6 +292,7 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         # attributes
         self.labels_ = None
         self.results_ = None
+        self.subject_id = subject_id
 
     def fit(self, run_imgs, events=None, confounds=None,
             design_matrices=None):
@@ -436,7 +441,7 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
             Y = self.masker_.transform(run_img)
             if self.verbose > 1:
                 t_masking = time.time() - t_masking
-                sys.stderr.write('Masker took %d seconds' % t_masking)
+                sys.stderr.write('Masker took %d seconds          \n' % t_masking)
 
             if self.signal_scaling:
                 Y, _ = mean_scaling(Y, self.scaling_axis)
@@ -448,13 +453,13 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
             # compute GLM
             if self.verbose > 1:
                 t_glm = time.time()
-                sys.stderr.write('Starting GLM computation')
+                sys.stderr.write('Performing GLM computation\r')
             labels, results = mem_glm(Y, design.as_matrix(),
                                       noise_model=self.noise_model,
                                       bins=100, n_jobs=self.n_jobs)
             if self.verbose > 1:
                 t_glm = time.time() - t_glm
-                sys.stderr.write('GLM took %d seconds' % t_glm)
+                sys.stderr.write('GLM took %d seconds         \n' % t_glm)
 
             self.labels_.append(labels)
             # We save memory if inspecting model details is not necessary
