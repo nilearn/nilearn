@@ -4,6 +4,7 @@ descr = """A set of python modules for neuroimaging..."""
 
 import sys
 import os
+import io
 
 from setuptools import setup, find_packages
 
@@ -18,7 +19,7 @@ def load_version():
     # load all vars into globals, otherwise
     #   the later function call using global vars doesn't work.
     globals_dict = {}
-    with open(os.path.join('nilearn', 'version.py')) as fp:
+    with io.open(os.path.join('nilearn', 'version.py'), mode='r', encoding='utf-8') as fp:
         exec(fp.read(), globals_dict)
 
     return globals_dict
@@ -36,8 +37,8 @@ os.chdir(os.path.dirname(os.path.abspath(__file__)))
 _VERSION_GLOBALS = load_version()
 DISTNAME = 'nilearn'
 DESCRIPTION = 'Statistical learning for neuroimaging in Python'
-with open('README.rst') as fp:
-    LONG_DESCRIPTION = fp.read()
+with open('README.rst', 'rb') as fp:
+    LONG_DESCRIPTION = fp.read().decode('utf-8')
 MAINTAINER = 'Gael Varoquaux'
 MAINTAINER_EMAIL = 'gael.varoquaux@normalesup.org'
 URL = 'http://nilearn.github.io'
