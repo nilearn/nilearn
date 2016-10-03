@@ -28,17 +28,6 @@ def _safe_get_data(img):
     return img.get_data()
 
 
-def _get_data_dtype(img):
-    """Returns the dtype of an image.
-    If the image is non standard (no get_data_dtype member), this function
-    relies on the data itself.
-    """
-    try:
-        return img.get_data_dtype()
-    except AttributeError:
-        return img.get_data().dtype
-
-
 def _get_target_dtype(dtype, target_dtype):
     """Returns a new dtype if conversion is needed
 
@@ -103,7 +92,7 @@ def load_niimg(niimg, dtype=None):
                         " not compatible with nibabel format:\n"
                         + short_repr(niimg))
 
-    dtype = _get_target_dtype(_get_data_dtype(niimg), dtype)
+    dtype = _get_target_dtype(niimg.get_data().dtype, dtype)
 
     if dtype is not None:
         niimg = new_img_like(niimg, niimg.get_data().astype(dtype),

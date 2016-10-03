@@ -7,7 +7,6 @@ from sklearn.externals.joblib import Memory
 
 from .. import _utils
 from .._utils import logger, CacheMixin
-from .._utils.niimg import _get_data_dtype
 from .._utils.class_inspect import get_params
 from .._utils.niimg_conversions import _check_same_fov
 from .._utils.compat import get_affine
@@ -276,7 +275,7 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
             # Check if there is an overlap.
 
             # If float, we set low values to 0
-            dtype = _get_data_dtype(self._resampled_maps_img_)
+            dtype = self._resampled_maps_img_.get_data().dtype
             data = self._resampled_maps_img_.get_data()
             if dtype.kind == 'f':
                 data[data < np.finfo(dtype).eps] = 0.
