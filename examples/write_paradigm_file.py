@@ -22,7 +22,7 @@ time = np.array([
 
 # corresponding onset types
 # onset types
-trial_type = np.array(
+trial_idx = np.array(
     [7, 7, 0, 2, 9, 4, 9, 3, 5, 9, 1, 6, 8, 8, 6, 6, 8, 0, 3, 4, 5, 8, 6,
      2, 9, 1, 6, 5, 9, 1, 7, 8, 6, 6, 1, 2, 9, 0, 7, 1, 8, 2, 7, 8, 3, 6,
      0, 0, 6, 8, 7, 7, 1, 1, 1, 5, 5, 0, 7, 0, 4, 2, 7, 9, 8, 0, 6, 3, 3,
@@ -32,11 +32,9 @@ condition_ids = ['damier_H', 'damier_V', 'clicDaudio', 'clicGaudio',
                  'clicDvideo', 'clicGvideo', 'calculaudio', 'calculvideo',
                  'phrasevideo', 'phraseaudio']
 
-cid = np.array([condition_ids[i] for i in trial_type])
-sess = np.zeros(np.size(time)).astype('int8')
-pdata = np.vstack((sess, cid, time)).T
-paradigm = pd.DataFrame({'name': cid, 'onset': time})
+trial_type = np.array([condition_ids[i] for i in trial_idx])
+events = pd.DataFrame({'trial_type': trial_type, 'onset': time})
 csvfile = 'localizer_paradigm.csv'
-paradigm.to_csv(csvfile)
+events.to_csv(csvfile)
 
 print("Created the paradigm file in %s " % csvfile)

@@ -37,7 +37,7 @@ slice_time_ref = 0.5
 data = datasets.fetch_localizer_first_level()
 paradigm_file = data.paradigm
 paradigm = pd.read_csv(paradigm_file, sep=' ', header=None, index_col=None)
-paradigm.columns = ['session', 'name', 'onset']
+paradigm.columns = ['session', 'trial_type', 'onset']
 fmri_img = data.epi_img
 
 ### Perform a GLM analysis ########################################
@@ -76,7 +76,7 @@ write_dir = 'results'
 if not path.exists(write_dir):
     mkdir(write_dir)
 
-# contrast estimation 
+# contrast estimation
 for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
     print('  Contrast % 2i out of %i: %s' %
           (index + 1, len(contrasts), contrast_id))

@@ -214,7 +214,7 @@ def test_fmri_inputs():
 def basic_paradigm():
     conditions = ['c0', 'c0', 'c0', 'c1', 'c1', 'c1', 'c2', 'c2', 'c2']
     onsets = [30, 70, 100, 10, 30, 90, 30, 40, 60]
-    paradigm = pd.DataFrame({'name': conditions,
+    paradigm = pd.DataFrame({'trial_type': conditions,
                              'onset': onsets})
     return paradigm
 

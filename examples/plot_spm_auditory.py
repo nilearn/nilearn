@@ -34,7 +34,7 @@ n_blocks = len(conditions)
 duration = epoch_duration * np.ones(n_blocks)
 onset = np.linspace(0, (n_blocks - 1) * epoch_duration, n_blocks)
 paradigm = pd.DataFrame(
-    {'onset': onset, 'duration': duration, 'name': conditions})
+    {'onset': onset, 'duration': duration, 'trial_type': conditions})
 
 # construct design matrix
 frame_times = np.linspace(0, (n_scans - 1) * tr, n_scans)

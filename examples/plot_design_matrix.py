@@ -36,7 +36,7 @@ hrf_model = 'glover'
 add_reg_names = ['tx', 'ty', 'tz', 'rx', 'ry', 'rz']
 
 # event-related design matrix
-paradigm = pd.DataFrame({'name': conditions, 'onset': onsets})
+paradigm = pd.DataFrame({'trial_type': conditions, 'onset': onsets})
 
 X1 = make_design_matrix(
     frame_times, paradigm, drift_model='polynomial', drift_order=3,
@@ -44,14 +44,14 @@ X1 = make_design_matrix(
 
 # block design matrix
 duration = 7. * np.ones(len(conditions))
-paradigm = pd.DataFrame({'name': conditions, 'onset': onsets,
+paradigm = pd.DataFrame({'trial_type': conditions, 'onset': onsets,
                       'duration': duration})
 
 X2 = make_design_matrix(frame_times, paradigm, drift_model='polynomial',
                         drift_order=3)
 
 # FIR model
-paradigm = pd.DataFrame({'name': conditions, 'onset': onsets})
+paradigm = pd.DataFrame({'trial_type': conditions, 'onset': onsets})
 hrf_model = 'FIR'
 X3 = make_design_matrix(frame_times, paradigm, hrf_model='fir',
                         drift_model='polynomial', drift_order=3,
