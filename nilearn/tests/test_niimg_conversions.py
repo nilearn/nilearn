@@ -280,6 +280,7 @@ def test_check_niimg_wildcards():
         glob_input = tmp_dir + globs
         assert_array_equal(_utils.check_niimg(glob_input).get_data()[..., 0],
                            img_3d.get_data())
+        del img_3d
     # Disabled globbing behavior should raise an ValueError exception
     with testing.write_tmp_imgs(img_3d,
                                 create_files=True,
