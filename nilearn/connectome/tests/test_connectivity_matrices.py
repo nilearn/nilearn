@@ -12,7 +12,8 @@ from sklearn.covariance import EmpiricalCovariance, LedoitWolf
 from nilearn._utils.extmath import is_spd
 from nilearn.connectome.connectivity_matrices import (
     _check_square, _check_spd, _map_eigenvalues, _form_symmetric,
-    _geometric_mean, sym_to_vec, _prec_to_partial, ConnectivityMeasure)
+    _geometric_mean, sym_to_vec, prec_to_partial, cov_to_corr,
+    ConnectivityMeasure)
 
 
 def grad_geometric_mean(mats, init=None, max_iter=10, tol=1e-7):
@@ -332,12 +333,17 @@ def test_sym_to_vec():
     assert_array_almost_equal(sym_to_vec(sym, discard_diagonal=True), vec)
 
 
-
+def test_cov_to_corr():
+    cov = np.array([[16., -6.], [-6., 4.]])
+    corr = np.array([[1., -.75], [-.75, 1.]])
+    assert_array_almost_equal(cov_to_corr(cov), corr)
+    
+    
 def test_prec_to_partial():
     prec = np.array([[2., -1., 1.], [-1., 2., -1.], [1., -1., 1.]])
     partial = np.array([[1., .5, -sqrt(2.) / 2.], [.5, 1., sqrt(2.) / 2.],
                         [-sqrt(2.) / 2., sqrt(2.) / 2., 1.]])
-    assert_array_almost_equal(_prec_to_partial(prec), partial)
+    assert_array_almost_equal(prec_to_partial(prec), partial)
 
 
 def test_connectivity_measure_errors():
