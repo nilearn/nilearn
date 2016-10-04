@@ -366,7 +366,7 @@ class GlassBrainAxes(BaseAxes):
                 )
         elif vmax is None:
             if vmin < 0:
-                vmin = -vmax
+                vmax = -vmin
             else:
                 raise ValueError(
                     "If vmin is set to a non-negative number "
