@@ -79,7 +79,6 @@ def test_nifti_maps_masker():
             masker11 = NiftiMapsMasker(labels11, mask_img=mask12,
                                        resampling_target=None)
             assert_raises(ValueError, masker11.fit)
-            del masker11
 
     masker11 = NiftiMapsMasker(labels11_img, mask_img=mask21_img,
                                resampling_target=None)
