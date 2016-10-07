@@ -849,8 +849,6 @@ def fetch_atlas_allen_2011(data_dir=None, url=None, resume=True, verbose=1):
 
     filenames = [(f, url + f, opts) for f in files]
 
-    package_directory = os.path.dirname(os.path.abspath(__file__))
-
     data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
                                 verbose=verbose)
     sub_files = _fetch_files(data_dir, filenames, resume=resume,
