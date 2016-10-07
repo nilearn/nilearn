@@ -784,7 +784,7 @@ def fetch_coords_dosenbach_2010(ordered_regions=True):
     return Bunch(**params)
 
 
-def fetch_allen_rsn_tmap_75_2011(data_dir=None, url=None, resume=True, verbose=1):
+def fetch_atlas_allen_2011(data_dir=None, url=None, resume=True, verbose=1):
     """Download and return file names for the Allen resting-state
 
     The provided images are in MNI152 space.

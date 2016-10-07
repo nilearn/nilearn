@@ -402,9 +402,8 @@ def test_fetch_coords_dosenbach_2010():
 
 @with_setup(setup_mock, teardown_mock)
 @with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
-def test_fetch_allen_rsn_tmap_75_2011():
-    bunch = atlas.fetch_allen_rsn_tmap_75_2011(data_dir=tst.tmpdir,
-                                               verbose=0)
+def test_fetch_atlas_allen_2011():
+    bunch = atlas.fetch_atlas_allen_2011(data_dir=tst.tmpdir, verbose=0)
     keys = ("all_unthresh_tmaps",
             "rsn_unthresh_tmaps",
             "aggregate_ic_comps")
