@@ -418,11 +418,11 @@ def fetch_atlas_smith_2009(data_dir=None, mirror='origin', url=None,
     Notes
     -----
     For more information about this dataset's structure:
-    http://www.fmrib.ox.ac.uk/analysis/brainmap+rsns/
+    http://www.fmrib.ox.ac.uk/datasets/brainmap+rsns/
     """
     if url is None:
         if mirror == 'origin':
-            url = "http://www.fmrib.ox.ac.uk/analysis/brainmap+rsns/"
+            url = "http://www.fmrib.ox.ac.uk/datasets/brainmap+rsns/"
         elif mirror == 'nitrc':
             url = [
                     'https://www.nitrc.org/frs/download.php/7730/',
