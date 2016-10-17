@@ -275,8 +275,8 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
             # Check if there is an overlap.
 
             # If float, we set low values to 0
-            dtype = self._resampled_maps_img_.get_data().dtype
             data = self._resampled_maps_img_.get_data()
+            dtype = data.dtype
             if dtype.kind == 'f':
                 data[data < np.finfo(dtype).eps] = 0.
 

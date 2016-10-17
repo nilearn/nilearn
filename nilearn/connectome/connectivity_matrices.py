@@ -231,7 +231,7 @@ def sym_to_vec(symmetric, discard_diagonal=False):
     return symmetric[..., tril_mask] / scaling[tril_mask]
 
 
-def _cov_to_corr(covariance):
+def cov_to_corr(covariance):
     """Return correlation matrix for a given covariance matrix.
 
     Parameters
@@ -249,7 +249,7 @@ def _cov_to_corr(covariance):
     return correlation
 
 
-def _prec_to_partial(precision):
+def prec_to_partial(precision):
     """Return partial correlation matrix for a given precision matrix.
 
     Parameters
@@ -262,7 +262,7 @@ def _prec_to_partial(precision):
     partial_correlation : 2D numpy.ndarray
         The 2D ouput partial correlation matrix.
     """
-    partial_correlation = -_cov_to_corr(precision)
+    partial_correlation = -cov_to_corr(precision)
     np.fill_diagonal(partial_correlation, 1.)
     return partial_correlation
 
@@ -369,7 +369,7 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
             covariances_std = [self.cov_estimator_.fit(
                 signal._standardize(x, detrend=False, normalize=True)
                 ).covariance_ for x in X]
-            connectivities = [_cov_to_corr(cov) for cov in covariances_std]
+            connectivities = [cov_to_corr(cov) for cov in covariances_std]
         else:
             covariances = [self.cov_estimator_.fit(x).covariance_ for x in X]
             if self.kind == 'covariance':
@@ -381,7 +381,7 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
             elif self.kind == 'precision':
                 connectivities = [linalg.inv(cov) for cov in covariances]
             elif self.kind == 'partial correlation':
-                connectivities = [_prec_to_partial(linalg.inv(cov))
+                connectivities = [prec_to_partial(linalg.inv(cov))
                                   for cov in covariances]
             else:
                 raise ValueError('Allowed connectivity kinds are '

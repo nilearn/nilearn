@@ -193,6 +193,7 @@ def write_tmp_imgs(*imgs, **kwargs):
                                                dir=None)
                     filenames.append(filename)
                     img.to_filename(filename)
+                    del img
 
                 if use_wildcards:
                     yield prefix + "*" + suffix
@@ -260,7 +261,7 @@ class FetchFilesMock (object):
 
     def add_csv(self, filename, content):
         self.csv_files[filename] = content
-    
+
     def __call__(self, *args, **kwargs):
         """Load requested dataset, downloading it if needed or requested.
 
