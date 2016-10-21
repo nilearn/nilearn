@@ -4,6 +4,19 @@
 Changelog
 ---------
 
+Enhancements
+............
+
+   - Add fetcher for Allen et al. 2011 RSN atlas in
+     :func:`nilearn.datasets.atlas.fetch_atlas_allen_2011`.
+   
+    
+0.2.6
+=====
+
+Changelog
+---------
+
 This release enhances usage of several functions by fine tuning their
 parameters. It allows to select which Haxby subject to fetch. It also refactors
 documentation to make it easier to understand.
@@ -35,10 +48,6 @@ Enhancements
      :func:`nilearn.datasets.fetch_coords_dosenbach_2010`.
 
    - Remove outdated power atlas example.
-
-   - Add fetcher for Allen et al. 2011 RSN atlas in
-     :func:`nilearn.datasets.atlas.fetch_atlas_allen_2011`.
-
 
 API changes summary
 ...................
