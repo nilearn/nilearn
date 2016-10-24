@@ -608,22 +608,26 @@ class BaseSlicer(object):
             If filled=True, contours are displayed with color fillings.
         kwargs:
             Extra keyword arguments are passed to contour, see the
-            documentation of pylab.contour
+            documentation of pylab.contour and see pylab.contourf documentation
+            for arguments related to contours with fillings.
             Useful, arguments are typical "levels", which is a
-            list of values to use for plotting a contour, and
+            list of values to use for plotting a contour or contour
+            fillings (if filled=True), and
             "colors", which is one color or a list of colors for
             these contours.
+            Note: if colors are not specified, default coloring choices
+            (from matplotlib) for contours and contours fillings can be
+            different.
         """
         self._map_show(img, type='contour', **kwargs)
         if filled:
-            colors = kwargs['colors']
-            levels = kwargs['levels']
-            if len(levels) <= 1:
-                # contour fillings levels should be given as (lower, upper).
-                levels.append(np.inf)
-            alpha = kwargs['alpha']
-            self._map_show(img, type='contourf', levels=levels, alpha=alpha,
-                           colors=colors[:3])
+            if 'levels' in kwargs:
+                levels = kwargs['levels']
+                if len(levels) <= 1:
+                    # contour fillings levels should be given as (lower, upper).
+                    levels.append(np.inf)
+
+            self._map_show(img, type='contourf', **kwargs)
 
         plt.draw_if_interactive()
 
