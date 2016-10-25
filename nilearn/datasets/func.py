@@ -85,7 +85,7 @@ def fetch_haxby_simple(data_dir=None, url=None, resume=True, verbose=1):
                  conditions_target=[files[3]], description=fdescr)
 
 
-def fetch_haxby(data_dir=None, n_subjects=None, subjects=[2],
+def fetch_haxby(data_dir=None, n_subjects=None, subjects=(2,),
                 fetch_stimuli=False, url=None, resume=True, verbose=1):
     """Download and loads complete haxby dataset
 
@@ -155,7 +155,8 @@ def fetch_haxby(data_dir=None, n_subjects=None, subjects=[2],
     if isinstance(subjects, numbers.Number) and subjects > 6:
         subjects = 6
 
-    if subjects is not None and isinstance(subjects, list):
+    if subjects is not None and (isinstance(subjects, list) or 
+                                 isinstance(subjects, tuple)):
         for sub_id in subjects:
             if sub_id not in [1, 2, 3, 4, 5, 6]:
                 raise ValueError("You provided invalid subject id {0} in a "
