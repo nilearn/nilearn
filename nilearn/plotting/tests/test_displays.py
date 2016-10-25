@@ -54,3 +54,5 @@ def test_contour_fillings_levels_in_add_contours():
                          alpha=0.1, levels=[0., 0.2])
 
     oslicer.add_contours(img, filled=True, levels=[0., 0.2])
+
+    oslicer.add_contours(img, filled=True, levels=[0.])

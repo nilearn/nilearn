@@ -616,7 +616,7 @@ class BaseSlicer(object):
             "colors", which is one color or a list of colors for
             these contours.
             Note: if colors are not specified, default coloring choices
-            (from matplotlib) for contours and contours fillings can be
+            (from matplotlib) for contours and contour_fillings can be
             different.
         """
         self._map_show(img, type='contour', **kwargs)
