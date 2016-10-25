@@ -904,58 +904,22 @@ def fetch_atlas_surf_destrieux(data_dir=None, url=None,
                                 verbose=verbose)
 
     # Download annot files, fsaverage surfaces and sulcal information
-    surf_file = os.path.join('fsaverage5', '%s.%s.gii')
-    surf_url = url + '%i/%s.%s.gii'
+    # surf_file = os.path.join('fsaverage5', '%s.%s.gii')
+    # surf_url = url + '%i/%s.%s.gii'
     annot_file = '%s.aparc.a2009s.annot'
     annot_url = url + '%i/%s.aparc.a2009s.annot'
-    surf_nids = {'lh annot': 0000, 'rh annot':0000,
-                 'lh pial': 0000, 'rh pial': 0000,
-                 'lh infl': 0000, 'rh infl': 0000,
-                 'lh sulc': 0000, 'rh sulc': 0000}
+    annot_nids = {'lh annot': 9343, 'rh annot':9342}
 
     annots = []
-    pials = []
-    infls = []
-    sulcs = []
     for hemi in [('lh', 'left'), ('rh', 'right')]:
 
         annot = _fetch_files(data_dir,
                             [(annot_file % (hemi[1]),
-                             annot_url % (surf_nids['%s annot' % hemi[0]],
-                                         hemi[0], 'annot'),
+                             annot_url % (annot_nids['%s annot' % hemi[0]],
+                                         hemi[0]),
                              {'move': annot_file % (hemi[1])})],
-                            resume=resume, verbose=verbose)
+                            resume=resume, verbose=verbose)[0]
         annots.append(annot)
 
-        pial = _fetch_files(data_dir,
-                            [(surf_file % ('pial', hemi[1]),
-                             surf_url % (surf_nids['%s pial' % hemi[0]],
-                                         hemi[0], 'pial'),
-                             {'move': surf_file % ('pial', hemi[1])})],
-                            resume=resume, verbose=verbose)
-        pials.append(pial)
-
-        infl = _fetch_files(data_dir,
-                            [(surf_file % ('pial_inflated', hemi[1]),
-                             surf_url % (surf_nids['%s infl' % hemi[0]],
-                                         hemi[0], 'inflated'),
-                             {'move': surf_file % ('pial_inflated', hemi[1])})],
-                            resume=resume, verbose=verbose)
-        infls.append(infl)
-
-        sulc = _fetch_files(data_dir,
-                            [(surf_file % ('sulc', hemi[1]),
-                             surf_url % (surf_nids['%s sulc' % hemi[0]],
-                                         hemi[0], 'sulc'),
-                             {'move': surf_file % ('sulc', hemi[1])})],
-                            resume=resume, verbose=verbose)
-        sulcs.append(sulc)
-
-    return Bunch(annot_left=annot[0], annot_right=annot[1],
-                 fsaverage5_pial_left=pials[0],
-                 fsaverage5_pial_right=pials[1],
-                 fsaverage5_infl_left=infls[0],
-                 fsaverage5_infl_right=infls[1],
-                 fsaverage5_sulc_left=sulcs[0],
-                 fsaverage5_sulc_right=sulcs[1],
+    return Bunch(annot_left=annots[0], annot_right=annots[1],
                  description=fdescr)

@@ -46,4 +46,4 @@ __all__ = ['cm', 'plot_img', 'plot_anat', 'plot_epi',
            'plot_roi', 'plot_stat_map', 'plot_glass_brain',
            'plot_connectome', 'plot_prob_atlas',
            'find_xyz_cut_coords', 'find_cut_slices',
-           'show', 'plot_surf_stat_map']
+           'show', 'plot_surf', 'plot_surf_roi', 'plot_surf_stat_map']

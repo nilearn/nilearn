@@ -1809,42 +1809,6 @@ def fetch_surf_nki_enhanced(n_subjects=30, data_dir=None,
     phenotypic = phenotypic[[np.where(phenotypic['Subject'] == i)[0][0]
                              for i in int_ids]]
 
-    # Download fsaverage surfaces and sulcal information
-    surf_file = os.path.join('fsaverage5', '%s.%s.gii')
-    surf_url = url + '%i/%s.%s.gii'
-    surf_nids = {'lh pial': 8465, 'rh pial': 8468,
-                 'lh infl': 8464, 'rh infl': 8467,
-                 'lh sulc': 8466, 'rh sulc': 8469}
-
-    pials = []
-    infls = []
-    sulcs = []
-    for hemi in [('lh', 'left'), ('rh', 'right')]:
-
-        pial = _fetch_files(data_dir,
-                            [(surf_file % ('pial', hemi[1]),
-                             surf_url % (surf_nids['%s pial' % hemi[0]],
-                                         hemi[0], 'pial'),
-                             {'move': surf_file % ('pial', hemi[1])})],
-                            resume=resume, verbose=verbose)
-        pials.append(pial)
-
-        infl = _fetch_files(data_dir,
-                            [(surf_file % ('pial_inflated', hemi[1]),
-                             surf_url % (surf_nids['%s infl' % hemi[0]],
-                                         hemi[0], 'inflated'),
-                             {'move': surf_file % ('pial_inflated', hemi[1])})],
-                            resume=resume, verbose=verbose)
-        infls.append(infl)
-
-        sulc = _fetch_files(data_dir,
-                            [(surf_file % ('sulc', hemi[1]),
-                             surf_url % (surf_nids['%s sulc' % hemi[0]],
-                                         hemi[0], 'sulc'),
-                             {'move': surf_file % ('sulc', hemi[1])})],
-                            resume=resume, verbose=verbose)
-        sulcs.append(sulc)
-
     # Download subjects' datasets
     func_right = []
     func_left = []
@@ -1869,11 +1833,81 @@ def fetch_surf_nki_enhanced(n_subjects=30, data_dir=None,
         func_left.append(lh[0])
 
     return Bunch(func_left=func_left, func_right=func_right,
-                 fsaverage5_pial_left=pials[0],
-                 fsaverage5_pial_right=pials[1],
-                 fsaverage5_infl_left=infls[0],
-                 fsaverage5_infl_right=infls[1],
-                 fsaverage5_sulc_left=sulcs[0],
-                 fsaverage5_sulc_right=sulcs[1],
                  phenotypic=phenotypic,
                  description=fdescr)
+
+def fetch_surf_fsaverage5(data_dir=None, url=None, resume=True, verbose=1):
+    """ Download Freesurfer fsaverage5 surface
+    Parameters
+    ----------
+    data_dir: string, optional
+        Path of the data directory. Used to force data storage in a specified
+        location. Default: None
+
+    url: string, optional
+        Override download URL. Used for test only (or if you setup a mirror of
+        the data). Default: None
+
+    Returns
+    -------
+    data: sklearn.datasets.base.Bunch
+        Dictionary-like object, the interest attributes are :
+         -
+
+    References
+    ----------
+    Reuter et al, (2010). High-resolution intersubject averaging and a
+    coordinate system for the cortical surface. Hum Brain Mapp 8, 272-284.
+    URL http://dx.doi.org/10.1002/(sici)1097-0193(1999)8:4<272::aid-hbm10>3.0.
+    co;2-4
+    """
+    if url is None:
+        url = 'https://www.nitrc.org/frs/download.php/'
+
+    # Preliminary checks and declarations
+    dataset_name = 'fsaverage5'
+    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
+                                verbose=verbose)
+
+    # Download fsaverage surfaces and sulcal information
+    surf_file = '%s.%s.gii'
+    surf_url = url + '%i/%s.%s.gii'
+    surf_nids = {'lh pial': 9344, 'rh pial': 9345,
+                 'lh infl': 9346, 'rh infl': 9347,
+                 'lh sulc': 9348, 'rh sulc': 9349}
+
+    pials = []
+    infls = []
+    sulcs = []
+    for hemi in [('lh', 'left'), ('rh', 'right')]:
+
+        pial = _fetch_files(data_dir,
+                            [(surf_file % ('pial', hemi[1]),
+                                surf_url % (surf_nids['%s pial' % hemi[0]],
+                                            'pial', hemi[1]),
+                              {})],
+                            resume=resume, verbose=verbose)
+        pials.append(pial)
+
+        infl = _fetch_files(data_dir,
+                            [(surf_file % ('pial_inflated', hemi[1]),
+                              surf_url % (surf_nids['%s infl' % hemi[0]],
+                                          'pial_inflated', hemi[1]),
+                              {})],
+                            resume=resume, verbose=verbose)
+        infls.append(infl)
+
+        sulc = _fetch_files(data_dir,
+                            [(surf_file % ('sulc', hemi[1]),
+                              surf_url % (surf_nids['%s sulc' % hemi[0]],
+                                          'sulc', hemi[1]),
+                              {})],
+                            resume=resume, verbose=verbose)
+        sulcs.append(sulc)
+
+    return Bunch(pial_left=pials[0],
+                 pial_right=pials[1],
+                 infl_left=infls[0],
+                 infl_right=infls[1],
+                 sulc_left=sulcs[0],
+                 sulc_right=sulcs[1])
