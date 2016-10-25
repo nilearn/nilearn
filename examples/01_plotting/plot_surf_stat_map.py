@@ -54,22 +54,24 @@ import numpy as np
 # Retrieve the data
 nki_dataset = datasets.fetch_surf_nki_enhanced(n_subjects=1)
 
-# Fsaverage5 left hemisphere surface mesh files
-fsaverage5_pial = nki_dataset['fsaverage5_pial_left'][0]
-fsaverage5_inflated = nki_dataset['fsaverage5_infl_left'][0]
-sulcal_depth_map = nki_dataset['fsaverage5_sulc_left'][0]
-
-# Destrieux parcellation left hemisphere in fsaverage5 space
-# TO DO: include in nki_dataset for fetching
-destrieux = '/home/julia/nilearn_testing/lh.aparc.a2009s.annot'
-
 # NKI resting state data set of one subject left hemisphere in fsaverage5 space
 resting_state = nki_dataset['func_left'][0]
+
+# Destrieux parcellation left hemisphere in fsaverage5 space
+destrieux_atlas = datasets.fetch_atlas_surf_destrieux()
+parcellation = nb.freesurfer.read_annot(destrieux_atlas['annot_left'])
+
+# Retrieve fsaverage data
+fsaverage = datasets.fetch_surf_fsaverage5()
+
+# Fsaverage5 left hemisphere surface mesh files
+fsaverage5_pial = fsaverage['pial_left'][0]
+fsaverage5_inflated = fsaverage['infl_left'][0]
+sulcal_depth_map = fsaverage['sulc_left'][0]
 
 ###############################################################################
 # Load resting state time series and parcellation
 timeseries = plotting.surf_plotting.check_surf_data(resting_state)
-parcellation = nb.freesurfer.read_annot(destrieux)
 
 # Extract seed region: dorsal posterior cingulate gyrus
 region = 'G_cingul-Post-dorsal'
@@ -88,11 +90,6 @@ for i in range(timeseries.shape[0]):
 stat_map[np.where(np.mean(timeseries, axis=1) == 0)] = 0
 
 ###############################################################################
-# Display parcellation
-plotting.plot_surf_roi(fsaverage5_inflated, roi_map=parcellation[0],
-                       hemi='left', view='lateral', bg_map=sulcal_depth_map,
-                       bg_on_data=True, darkness=.5, cmap='gist_ncar')
-
 # Display ROI on surface
 plotting.plot_surf_roi(fsaverage5_pial, roi_map=labels, hemi='left',
                        view='medial', bg_map=sulcal_depth_map, bg_on_data=True)
@@ -106,31 +103,9 @@ plotting.plot_surf_stat_map(fsaverage5_pial, stat_map=stat_map, hemi='left',
                             view='medial', bg_map=sulcal_depth_map,
                             bg_on_data=True, darkness=.5)
 
-# Threshold stat_map
-plotting.plot_surf_stat_map(fsaverage5_pial, stat_map=stat_map, hemi='left',
-                            bg_map=sulcal_depth_map, bg_on_data=True,
-                            darkness=.5, threshold=.6)
-plotting.plot_surf_stat_map(fsaverage5_pial, stat_map=stat_map, hemi='left',
-                            bg_map=sulcal_depth_map, bg_on_data=True,
-                            darkness=.5, threshold=.6, view='medial')
-
-# Display stat map with on inflated surface
-plotting.plot_surf_stat_map(fsaverage5_inflated, stat_map=stat_map,
-                            hemi='left', bg_map=sulcal_depth_map,
-                            bg_on_data=True, threshold=.6)
-plotting.plot_surf_stat_map(fsaverage5_inflated, stat_map=stat_map,
-                            hemi='left', bg_map=sulcal_depth_map,
-                            bg_on_data=True, view='medial', threshold=.6)
-
-# changing the colormap and alpha
+# Displaying a thresholded stat map with a different colormap and transparency
 plotting.plot_surf_stat_map(fsaverage5_pial, stat_map=stat_map, hemi='left',
                             bg_map=sulcal_depth_map, bg_on_data=True,
                             cmap='Spectral', threshold=.6, alpha=.5)
-
-# saving plots to file
-plotting.plot_surf_stat_map(fsaverage5_pial, stat_map=stat_map, hemi='left',
-                            bg_map=sulcal_depth_map,
-                            bg_on_data=True, darkness=.5,
-                            output_file='/tmp/plot_surf_stat_map.png')
 
 plotting.show()

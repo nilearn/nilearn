@@ -85,7 +85,9 @@ uses.
    fetch_localizer_calculation_task
    fetch_miyawaki2008
    fetch_nyu_rest
-   fetch_nki_enhanced_surface
+   fetch_surf_nki_enhanced
+   fetch_surf_fsaverage5
+   fetch_atlas_surf_destrieux
    fetch_oasis_vbm
    fetch_megatrawls_netmats
    fetch_cobre
