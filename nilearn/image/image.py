@@ -628,7 +628,7 @@ def new_img_like(ref_niimg, data, affine=None, copy_header=False):
         header['scl_inter'] = 0.
         header['glmax'] = 0.
         header['cal_max'] = np.max(data) if data.size > 0 else 0.
-        header['cal_max'] = np.min(data) if data.size > 0 else 0.
+        header['cal_min'] = np.min(data) if data.size > 0 else 0.
     return ref_niimg.__class__(data, affine, header=header)
 
 
