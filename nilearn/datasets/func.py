@@ -101,9 +101,10 @@ def fetch_haxby(data_dir=None, n_subjects=None, subjects=(2,),
         NOTE: n_subjects is deprecated from 0.2.6 and will be removed in 0.3
         Use `subjects` instead.
 
-    subjects : list, optional
-        List of subjects to load from 1 to 6. By default, 2nd subject will be
-        loaded. Empty list returns no subject data.
+    subjects : list or int, optional
+        Either a list of subjects or the number of subjects to load, from 1 to
+        6. By default, 2nd subject will be loaded. Empty list returns no subject
+        data.
 
     fetch_stimuli: boolean, optional
         Indicate if stimuli images must be downloaded. They will be presented
@@ -155,7 +156,7 @@ def fetch_haxby(data_dir=None, n_subjects=None, subjects=(2,),
     if isinstance(subjects, numbers.Number) and subjects > 6:
         subjects = 6
 
-    if subjects is not None and (isinstance(subjects, list) or 
+    if subjects is not None and (isinstance(subjects, list) or
                                  isinstance(subjects, tuple)):
         for sub_id in subjects:
             if sub_id not in [1, 2, 3, 4, 5, 6]:
@@ -1223,7 +1224,7 @@ def fetch_abide_pcp(data_dir=None, n_subjects=None, pipeline='cpac',
     data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
                                 verbose=verbose)
     if url is None:
-        url = ('https://s3.amazonaws.com/fcp-indi/data/Projects/'
+        url = ('https://s3.amazonaws.com/fcp-indi-new/data/Projects/'
                'ABIDE_Initiative')
 
     if quality_checked:
