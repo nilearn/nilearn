@@ -1869,6 +1869,9 @@ def fetch_surf_fsaverage5(data_dir=None, url=None, resume=True, verbose=1):
     data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
                                 verbose=verbose)
 
+    # Dataset description
+    fdescr = _get_dataset_descr(dataset_name)
+
     # Download fsaverage surfaces and sulcal information
     surf_file = '%s.%s.gii'
     surf_url = url + '%i/%s.%s.gii'
@@ -1910,4 +1913,5 @@ def fetch_surf_fsaverage5(data_dir=None, url=None, resume=True, verbose=1):
                  infl_left=infls[0],
                  infl_right=infls[1],
                  sulc_left=sulcs[0],
-                 sulc_right=sulcs[1])
+                 sulc_right=sulcs[1],
+                 description=fdescr)

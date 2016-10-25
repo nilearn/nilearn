@@ -904,8 +904,6 @@ def fetch_atlas_surf_destrieux(data_dir=None, url=None,
                                 verbose=verbose)
 
     # Download annot files, fsaverage surfaces and sulcal information
-    # surf_file = os.path.join('fsaverage5', '%s.%s.gii')
-    # surf_url = url + '%i/%s.%s.gii'
     annot_file = '%s.aparc.a2009s.annot'
     annot_url = url + '%i/%s.aparc.a2009s.annot'
     annot_nids = {'lh annot': 9343, 'rh annot':9342}
