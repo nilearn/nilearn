@@ -103,9 +103,11 @@ plotting.plot_surf_stat_map(fsaverage5_pial, stat_map=stat_map, hemi='left',
                             view='medial', bg_map=sulcal_depth_map,
                             bg_on_data=True, darkness=.5)
 
-# Displaying a thresholded stat map with a different colormap and transparency
+# Many different options are available for plotting, for example thresholding,
+# using custom colormaps, setting transparency and saving to file
 plotting.plot_surf_stat_map(fsaverage5_pial, stat_map=stat_map, hemi='left',
                             bg_map=sulcal_depth_map, bg_on_data=True,
-                            cmap='Spectral', threshold=.6, alpha=.5)
+                            cmap='Spectral', threshold=.6, alpha=.5,
+                            output_file='/tmp/plot_surf_stat_map.png')
 
 plotting.show()

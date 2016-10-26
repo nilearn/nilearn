@@ -3,14 +3,15 @@ fsaverage5
 
 Notes
 -----
-Freesurfer fsaverage5 averaged subject surface data. 
+Fsaverage5 standard surface as distributed with Freesurfer (Dale et al, 1999, 
+Fischl et al, 1999) 
 
 Content
 -------
-    :'pial_left': pial surface data for the left hemisphere
-    :'pial_right': pial surface data for the right hemisphere
-    :'infl_left': inflated pial surface metadata for the left hemisphere
-    :'infl_right': inflated pial surface metadata for the right hemisphere
+    :'pial_left': pial surface mesh for the left hemisphere
+    :'pial_right': pial surface mesh for the right hemisphere
+    :'infl_left': inflated pial surface mesh for the left hemisphere
+    :'infl_right': inflated pial surface mesh for the right hemisphere
     :'sulc_left': sulcal depth data for the left hemisphere
     :'sulc_right': sulcal depth data for the right hemisphere
 

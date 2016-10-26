@@ -1852,7 +1852,12 @@ def fetch_surf_fsaverage5(data_dir=None, url=None, resume=True, verbose=1):
     -------
     data: sklearn.datasets.base.Bunch
         Dictionary-like object, the interest attributes are :
-         -
+         - 'pial_left': pial surface mesh for the left hemisphere
+         - 'pial_right': pial surface mesh for the right hemisphere
+         - 'infl_left': inflated pial surface mesh for the left hemisphere
+         - 'infl_right': inflated pial surface mesh for the right hemisphere
+         - 'sulc_left': sulcal depth data for the left hemisphere
+         - 'sulc_right': sulcal depth data for the right hemisphere
 
     References
     ----------
