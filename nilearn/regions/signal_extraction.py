@@ -265,7 +265,7 @@ def img_to_signals_maps(imgs, maps_img, mask_img=None):
         maps_mask = np.ones(maps_data.shape[:3], dtype=np.bool)
         labels = np.arange(maps_data.shape[-1], dtype=np.int)
 
-    data = _safe_get_data(imgs)
+    data = _safe_get_data(imgs, ensure_finite=True)
     region_signals = linalg.lstsq(maps_data[maps_mask, :],
                                   data[maps_mask, :])[0].T
 

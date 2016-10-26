@@ -5,7 +5,7 @@ non_overlappingt the underlying functions (clean(), img_to_signals_labels(), etc
 test_masking.py and test_signal.py for details.
 """
 
-from nose.tools import assert_raises, assert_equal
+from nose.tools import assert_raises, assert_equal, assert_true
 import numpy as np
 
 import nibabel
@@ -145,6 +145,7 @@ def test_nifti_maps_masker_with_nans():
     masker = NiftiMapsMasker(maps_img, mask_img=mask_img)
     sig = masker.fit_transform(fmri_img)
     assert_equal(sig.shape, (length, n_regions))
+    assert_true(np.all(np.isfinite(sig)))
 
 
 def test_nifti_maps_masker_2():
