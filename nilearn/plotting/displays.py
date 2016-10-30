@@ -596,7 +596,7 @@ class BaseSlicer(object):
 
         plt.draw_if_interactive()
 
-    def add_contours(self, img, filled=False, **kwargs):
+    def add_contours(self, img, threshold=1e-6, filled=False, **kwargs):
         """ Contour a 3D map in all the views.
 
         Parameters
@@ -604,6 +604,11 @@ class BaseSlicer(object):
         img: Niimg-like object
             See http://nilearn.github.io/manipulating_images/input_output.html.
             Provides image to plot.
+        threshold: a number, None
+            If None is given, the maps are not thresholded.
+            If a number is given, it is used to threshold the maps,
+            values below the threshold (in absolute value) are plotted
+            as transparent.
         filled: boolean, optional
             If filled=True, contours are displayed with color fillings.
         kwargs:
@@ -627,7 +632,7 @@ class BaseSlicer(object):
                     # contour fillings levels should be given as (lower, upper).
                     levels.append(np.inf)
 
-            self._map_show(img, type='contourf', **kwargs)
+            self._map_show(img, type='contourf', threshold=threshold, **kwargs)
 
         plt.draw_if_interactive()
 

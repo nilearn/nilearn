@@ -87,8 +87,8 @@ plotting.plot_glass_brain(tmap_filename, threshold=0, colorbar=True,
                           plot_abs=False, display_mode='lyrz')
 
 ###############################################################################
-# Demo glass brain plotting with contours
-# ----------------------------------------
+# Demo glass brain plotting with contours and with fillings
+# ---------------------------------------------------------
 # To plot maps with contours, we call the plotting function into variable from
 # which we can use specific display features which are inherited automatically.
 # In this case, we focus on using add_contours
@@ -101,6 +101,13 @@ display.add_contours(tmap_filename)
 # and a title
 display.title('"tmap_filename" on glass brain without threshold')
 
+# filled=True implies contours with fillings
+display = plotting.plot_glass_brain(None)
+# Here, we project statistical maps with filled=True
+display.add_contours(tmap_filename, filled=True)
+# and a title
+display.title('Same map but with fillings in the contours')
+
 ###############################################################################
 # With specific level (cut-off) in the statistical map
 
@@ -110,6 +117,11 @@ display = plotting.plot_glass_brain(None)
 display.add_contours(tmap_filename, levels=[3.], colors='r')
 display.title('"tmap_filename" on glass brain with threshold')
 
+# same demonstration with filled=True
+display = plotting.plot_glass_brain(None)
+display.add_contours(tmap_filename, filled=True, levels=[3.], colors='r')
+display.title('Same demonstration but using fillings inside contours')
+
 ##############################################################################
 # Black background
 
@@ -117,6 +129,11 @@ display.title('"tmap_filename" on glass brain with threshold')
 display = plotting.plot_glass_brain(None, black_bg=True)
 display.add_contours(tmap_filename, levels=[3.], colors='g')
 display.title('"tmap_filename" on glass brain with black background')
+
+# Note that black_bg should be set with plot_glass_brain
+display = plotting.plot_glass_brain(None, black_bg=True)
+display.add_contours(tmap_filename, filled=True, levels=[3.], colors='g')
+display.title('Glass brain with black background and filled in contours')
 
 ##############################################################################
 # Display contour projections in both hemispheres
@@ -126,6 +143,12 @@ display.title('"tmap_filename" on glass brain with black background')
 display = plotting.plot_glass_brain(None, display_mode='lr')
 display.add_contours(tmap_filename, levels=[3.], colors='r')
 display.title('"tmap_filename" on glass brain only "l" "r" hemispheres')
+
+# Filled contours in both hemispheres
+display = plotting.plot_glass_brain(None, display_mode='lr')
+display.add_contours(tmap_filename, filled=True, levels=[3.], colors='r')
+display.title('Filled contours on glass brain only "l" "r" hemispheres')
+
 ##############################################################################
 # With positive and negative sign of activations
 
@@ -135,17 +158,36 @@ display = plotting.plot_glass_brain(None, plot_abs=False, display_mode='lzry')
 display.add_contours(tmap_filename)
 display.title("Contours with both sign of activations without threshold")
 
-##############################################################################
-# Both sign (positive and negative) of activations with threshold
-
-# positive threshold implies positive value in a list and negative threshold
-# implies negative value (both values are used as cut-off)
 display = plotting.plot_glass_brain(None, plot_abs=False, display_mode='lzry')
-# positive level and negative level and each level with different colors as a
-# list. Additionally, with thick line widths
+display.add_contours(tmap_filename, filled=True)
+display.title("Filled contours with both sign of activations without threshold")
+
+
+##############################################################################
+import numpy as np
+# Displaying both signs (positive and negative) of activations with threshold
+
+display = plotting.plot_glass_brain(None, plot_abs=False, display_mode='lzry')
+# positive and negative values are given in a list to find the right cut-off
+# levels. Each value in a separate color which are also given in a list.
+# Additionally, we plot them with thick line widths
 display.add_contours(tmap_filename, levels=[-2.8, 3.], colors=['b', 'r'],
                      linewidths=4.)
-display.title('Contours with both sign of activations with threshold')
+display.title('Contours with sign of activations with threshold')
+
+# Same display demonstration as above but with fillings inside the contours
+# Unlike in previous plot, here we specify each sign at a time.
+
+# First, we fetch our display object with same parametes used as above
+display = plotting.plot_glass_brain(None, plot_abs=False, display_mode='lzry')
+
+# Second, we plot negative sign of activation with levels given as negative
+# activation value in a list. Upper bound should be kept to -infinity
+display.add_contours(tmap_filename, filled=True, levels=[-np.inf, -2.8],
+                     colors='b')
+# Next, within same plotting object we plot positive sign of activation
+display.add_contours(tmap_filename, filled=True, levels=[3.], colors='r')
+display.title('Now same plotting but with filled contours')
 
 # Finally, displaying them
 plotting.show()
