@@ -1224,7 +1224,7 @@ def fetch_abide_pcp(data_dir=None, n_subjects=None, pipeline='cpac',
     data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
                                 verbose=verbose)
     if url is None:
-        url = ('https://s3.amazonaws.com/fcp-indi-new/data/Projects/'
+        url = ('https://s3.amazonaws.com/fcp-indi/data/Projects/'
                'ABIDE_Initiative')
 
     if quality_checked:
