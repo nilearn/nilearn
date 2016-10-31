@@ -37,6 +37,9 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
     extracted (contrarily to NiftiLabelsMasker). Use case: Summarize brain
     signals from large-scale networks obtained by prior PCA or ICA.
 
+    Note that, Inf or NaN present in the given input images are automatically
+    put to zero rather than considered as missing data.
+
     Parameters
     ----------
     maps_img: 4D niimg-like object

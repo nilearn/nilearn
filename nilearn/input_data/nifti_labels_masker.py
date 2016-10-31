@@ -40,6 +40,9 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
     signals from clusters that were obtained by prior K-means or Ward
     clustering.
 
+    Note that, Inf or NaN present in the given input images are automatically
+    put to zero rather than considered as missing data.
+
     Parameters
     ----------
     labels_img: Niimg-like object
