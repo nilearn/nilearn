@@ -865,7 +865,7 @@ def clean_img(imgs, sessions=None, detrend=True, standardize=True,
         detrend=detrend, standardize=standardize, confounds=confounds,
         low_pass=low_pass, high_pass=high_pass, t_r=2.5,
         ensure_finite=ensure_finite).T.reshape(imgs.shape)
-    return new_img_like(imgs, data)
+    return new_img_like(imgs, data, copy_header=True)
 
 
 def load_img(img, wildcards=True, dtype=None):

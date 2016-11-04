@@ -42,7 +42,9 @@ def _safe_get_data(img, ensure_finite=False):
 
     data = img.get_data()
     if ensure_finite:
-        data[np.logical_not(np.isfinite(data))] = 0
+        non_finite_mask = np.logical_not(np.isfinite(data))
+        if non_finite_mask.sum() > 0: # any non_finite_mask values?
+            data[non_finite_mask] = 0
 
     return data
 

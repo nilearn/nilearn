@@ -97,11 +97,6 @@ def filter_and_extract(imgs, extraction_function,
                                 func_memory_level=2,
                                 memory_level=memory_level)(imgs)
 
-    if np.any(np.isnan(region_signals)):
-        ensure_finite = True
-    else:
-        ensure_finite = False
-
     # Temporal
     # --------
     # Detrending (optional)
@@ -122,8 +117,7 @@ def filter_and_extract(imgs, extraction_function,
             low_pass=parameters['low_pass'],
             high_pass=parameters['high_pass'],
             confounds=confounds,
-            sessions=sessions,
-            ensure_finite=ensure_finite)
+            sessions=sessions)
 
     return region_signals, aux
 

@@ -163,6 +163,9 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
                    verbose=self.verbose)
 
         self.maps_img_ = _utils.check_niimg_4d(self.maps_img)
+        self.maps_img_ = image.clean_img(self.maps_img_, detrend=False,
+                                         standardize=False,
+                                         ensure_finite=True)
 
         if self.mask_img is not None:
             logger.log("loading mask from %s" %
