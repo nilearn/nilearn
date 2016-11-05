@@ -14,9 +14,23 @@ import nibabel
 from .compat import _basestring, get_affine
 
 
-def _safe_get_data(img):
+def _safe_get_data(img, ensure_finite=False):
     """ Get the data in the image without having a side effect on the
         Nifti1Image object
+
+    Parameters
+    ----------
+    img: Nifti image/object
+        Image to get data.
+
+    ensure_finite: bool
+        If True, non-finite values such as (NaNs and infs) found in the
+        image will be replaced by zeros.
+
+    Returns
+    -------
+    data: numpy array
+        get_data() return from Nifti image.
     """
     if hasattr(img, '_data_cache') and img._data_cache is None:
         # By loading directly dataobj, we prevent caching if the data is
@@ -25,7 +39,14 @@ def _safe_get_data(img):
     # typically the line below can double memory usage
     # that's why we invoke a forced call to the garbage collector
     gc.collect()
-    return img.get_data()
+
+    data = img.get_data()
+    if ensure_finite:
+        non_finite_mask = np.logical_not(np.isfinite(data))
+        if non_finite_mask.sum() > 0: # any non_finite_mask values?
+            data[non_finite_mask] = 0
+
+    return data
 
 
 def _get_target_dtype(dtype, target_dtype):
@@ -133,7 +154,7 @@ def _repr_niimgs(niimgs):
         filename = niimgs.get_filename()
         if filename is not None:
             return "%s('%s')" % (niimgs.__class__.__name__,
-                                filename)
+                                 filename)
         else:
             return "%s(\nshape=%s,\naffine=%s\n)" % \
                    (niimgs.__class__.__name__,

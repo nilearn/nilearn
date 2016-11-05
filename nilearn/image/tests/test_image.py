@@ -514,3 +514,10 @@ def test_clean_img():
 
     np.testing.assert_almost_equal(data_img_.get_data().T.reshape(100, -1),
                                    data_flat_)
+    # if NANs
+    data[:, 9, 9] = np.nan
+    # if infinity
+    data[:, 5, 5] = np.inf
+    nan_img = nibabel.Nifti1Image(data, np.eye(4))
+    clean_im = image.clean_img(nan_img, ensure_finite=True)
+    assert_true(np.any(np.isfinite(clean_im.get_data())), True)

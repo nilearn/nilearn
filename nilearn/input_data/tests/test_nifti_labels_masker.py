@@ -5,7 +5,7 @@ not the underlying functions (clean(), img_to_signals_labels(), etc.). See
 test_masking.py and test_signal.py for details.
 """
 
-from nose.tools import assert_raises, assert_equal
+from nose.tools import assert_raises, assert_equal, assert_true
 import numpy as np
 
 import nibabel
@@ -104,6 +104,26 @@ def test_nifti_labels_masker():
     assert_equal(fmri11_img_r.shape, fmri11_img.shape)
     np.testing.assert_almost_equal(get_affine(fmri11_img_r),
                                    get_affine(fmri11_img))
+
+
+def test_nifti_labels_masker_with_nans_and_infs():
+    length = 3
+    n_regions = 9
+    fmri_img, mask_img = generate_random_img((13, 11, 12),
+                                             affine=np.eye(4), length=length)
+    labels_img = testing.generate_labeled_regions((13, 11, 12),
+                                                  affine=np.eye(4),
+                                                  n_regions=n_regions)
+    # nans
+    mask_data = mask_img.get_data()
+    mask_data[:, :, 7] = np.nan
+    mask_data[:, :, 4] = np.inf
+    mask_img = nibabel.Nifti1Image(mask_data, np.eye(4))
+
+    masker = NiftiLabelsMasker(labels_img, mask_img=mask_img)
+    sig = masker.fit_transform(fmri_img)
+    assert_equal(sig.shape, (length, n_regions))
+    assert_true(np.all(np.isfinite(sig)))
 
 
 def test_nifti_labels_masker_resampling():

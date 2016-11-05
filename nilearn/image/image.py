@@ -87,8 +87,8 @@ def high_variance_confounds(imgs, n_confounds=5, percentile=2.,
         sigs = np.reshape(sigs, (-1, sigs.shape[-1])).T
 
     return signal.high_variance_confounds(sigs, n_confounds=n_confounds,
-                                           percentile=percentile,
-                                           detrend=detrend)
+                                          percentile=percentile,
+                                          detrend=detrend)
 
 
 def _fast_smooth_array(arr):
@@ -668,10 +668,8 @@ def threshold_img(img, threshold, mask_img=None):
     from .. import masking
 
     img = check_niimg(img)
-    img_data = img.get_data()
+    img_data = _safe_get_data(img, ensure_finite=True)
     affine = get_affine(img)
-
-    img_data = np.nan_to_num(img_data)
 
     if mask_img is not None:
         mask_img = check_niimg_3d(mask_img)
@@ -782,7 +780,8 @@ def math_img(formula, **imgs):
 
 
 def clean_img(imgs, sessions=None, detrend=True, standardize=True,
-              confounds=None, low_pass=None, high_pass=None, t_r=2.5):
+              confounds=None, low_pass=None, high_pass=None, t_r=2.5,
+              ensure_finite=False):
     """Improve SNR on masked fMRI signals.
 
     This function can do several things on the input signals, in
@@ -835,6 +834,10 @@ def clean_img(imgs, sessions=None, detrend=True, standardize=True,
     t_r: float, optional
         Repetition time, in second (sampling period).
 
+    ensure_finite: bool, optional
+        If True, the non-finite values (NaNs and infs) found in the images
+        will be replaced by zeros.
+
     Returns
     -------
     cleaned_img: Niimg-like object
@@ -860,8 +863,9 @@ def clean_img(imgs, sessions=None, detrend=True, standardize=True,
     data = signal.clean(
         imgs_.get_data().reshape(-1, imgs.shape[-1]).T, sessions=sessions,
         detrend=detrend, standardize=standardize, confounds=confounds,
-        low_pass=low_pass, high_pass=high_pass, t_r=2.5).T.reshape(imgs.shape)
-    return new_img_like(imgs, data)
+        low_pass=low_pass, high_pass=high_pass, t_r=2.5,
+        ensure_finite=ensure_finite).T.reshape(imgs.shape)
+    return new_img_like(imgs, data, copy_header=True)
 
 
 def load_img(img, wildcards=True, dtype=None):
