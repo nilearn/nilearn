@@ -189,10 +189,12 @@ There is a specific function,
 :func:`sklearn.cross_validation.cross_val_score` that computes for you
 the score for the different folds of cross-validation::
 
-  >>> from sklearn.cross_validation import cross_val_score
+  >>> from sklearn.cross_validation import cross_val_score  # doctest: +SKIP
   >>> cv_scores = cross_val_score(svc, fmri_masked, target, cv=5)  # doctest: +SKIP
 
-`cv=5` stipulates a 5-fold cross-validation.
+`cv=5` stipulates a 5-fold cross-validation. Note that this function is located
+in `sklearn.model_selection.cross_val_score` in the newest version of
+scikit-learn.
 
 You can speed up the computation by using n_jobs=-1, which will spread
 the computation equally across all processors (but will probably not work

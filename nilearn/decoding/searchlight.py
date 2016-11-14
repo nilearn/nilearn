@@ -291,7 +291,7 @@ class SearchLight(BaseEstimator):
 
         X, A = _apply_mask_and_get_affinity(
             process_mask_coords, imgs, self.radius, True,
-            mask_img=process_mask_img)
+            mask_img=self.mask_img)
 
         estimator = self.estimator
         if isinstance(estimator, _basestring):

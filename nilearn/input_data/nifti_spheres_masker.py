@@ -14,6 +14,7 @@ from ..image.resampling import coord_transform
 from .._utils import CacheMixin
 from .._utils.niimg_conversions import check_niimg_4d, check_niimg_3d
 from .._utils.class_inspect import get_params
+from .._utils.compat import get_affine
 from .. import image
 from .. import masking
 from .base_masker import filter_and_extract, BaseMasker
@@ -22,7 +23,7 @@ from .base_masker import filter_and_extract, BaseMasker
 def _apply_mask_and_get_affinity(seeds, niimg, radius, allow_overlap,
                                  mask_img=None):
     seeds = list(seeds)
-    affine = niimg.get_affine()
+    affine = get_affine(niimg)
 
     # Compute world coordinates of all in-mask voxels.
 
@@ -97,12 +98,11 @@ def _iter_signals_from_spheres(seeds, niimg, radius, allow_overlap,
         See http://nilearn.github.io/manipulating_images/input_output.html.
         Images to process. It must boil down to a 4D image with scans
         number as last dimension.
-    radius: float, optional
+    radius: float
         Indicates, in millimeters, the radius for the sphere around the seed.
-        Default is None (signal is extracted on a single voxel).
     allow_overlap: boolean
         If False, an error is raised if the maps overlaps (ie at least two
-        maps have a non-zero value for the same voxel). Default is False.
+        maps have a non-zero value for the same voxel).
     mask_img: Niimg-like object, optional
         See http://nilearn.github.io/manipulating_images/input_output.html.
         Mask to apply to regions before extracting signals.

@@ -21,7 +21,7 @@ from .._utils import (check_niimg_4d, check_niimg_3d, check_niimg, as_ndarray,
                       _repr_niimgs)
 from .._utils.niimg_conversions import _index_img, _check_same_fov
 from .._utils.niimg import _safe_get_data
-from .._utils.compat import _basestring
+from .._utils.compat import _basestring, get_affine, get_header
 from .._utils.param_validation import check_threshold
 
 
@@ -87,8 +87,8 @@ def high_variance_confounds(imgs, n_confounds=5, percentile=2.,
         sigs = np.reshape(sigs, (-1, sigs.shape[-1])).T
 
     return signal.high_variance_confounds(sigs, n_confounds=n_confounds,
-                                           percentile=percentile,
-                                           detrend=detrend)
+                                          percentile=percentile,
+                                          detrend=detrend)
 
 
 def _fast_smooth_array(arr):
@@ -255,7 +255,7 @@ def smooth_img(imgs, fwhm):
     ret = []
     for img in imgs:
         img = check_niimg(img)
-        affine = img.get_affine()
+        affine = get_affine(img)
         filtered = _smooth_array(img.get_data(), affine, fwhm=fwhm,
                                  ensure_finite=True, copy=True)
         ret.append(new_img_like(img, filtered, affine, copy_header=True))
@@ -299,7 +299,7 @@ def _crop_img_to(img, slices, copy=True):
     img = check_niimg(img)
 
     data = img.get_data()
-    affine = img.get_affine()
+    affine = get_affine(img)
 
     cropped_data = data[slices]
     if copy:
@@ -373,7 +373,7 @@ def _compute_mean(imgs, target_affine=None,
 
     imgs = check_niimg(imgs)
     mean_data = _safe_get_data(imgs)
-    affine = imgs.get_affine()
+    affine = get_affine(imgs)
     # Free memory ASAP
     imgs = None
     if not mean_data.ndim in (3, 4):
@@ -388,7 +388,7 @@ def _compute_mean(imgs, target_affine=None,
         nibabel.Nifti1Image(mean_data, affine),
         target_affine=target_affine, target_shape=target_shape,
         copy=False)
-    affine = mean_data.get_affine()
+    affine = get_affine(mean_data)
     mean_data = mean_data.get_data()
 
     if smooth:
@@ -506,7 +506,7 @@ def swap_img_hemispheres(img):
     img = reorder_img(img)
 
     # create swapped nifti object
-    out_img = new_img_like(img, img.get_data()[::-1], img.get_affine(),
+    out_img = new_img_like(img, img.get_data()[::-1], get_affine(img),
                            copy_header=True)
 
     return out_img
@@ -606,15 +606,15 @@ def new_img_like(ref_niimg, data, affine=None, copy_header=False):
             and hasattr(ref_niimg, '__iter__')):
         ref_niimg = ref_niimg[0]
     if not (hasattr(ref_niimg, 'get_data')
-              and hasattr(ref_niimg,'get_affine')):
+              and hasattr(ref_niimg, 'get_affine')):
         if isinstance(ref_niimg, _basestring):
             ref_niimg = nibabel.load(ref_niimg)
         else:
             raise TypeError(('The reference image should be a niimg, %r '
-                            'was passed') % orig_ref_niimg )
+                            'was passed') % orig_ref_niimg)
 
     if affine is None:
-        affine = ref_niimg.get_affine()
+        affine = get_affine(ref_niimg)
     if data.dtype == bool:
         default_dtype = np.int8
         if (LooseVersion(nibabel.__version__) >= LooseVersion('1.2.0') and
@@ -623,12 +623,12 @@ def new_img_like(ref_niimg, data, affine=None, copy_header=False):
         data = as_ndarray(data, dtype=default_dtype)
     header = None
     if copy_header:
-        header = copy.deepcopy(ref_niimg.get_header())
+        header = copy.deepcopy(get_header(ref_niimg))
         header['scl_slope'] = 0.
         header['scl_inter'] = 0.
         header['glmax'] = 0.
         header['cal_max'] = np.max(data) if data.size > 0 else 0.
-        header['cal_max'] = np.min(data) if data.size > 0 else 0.
+        header['cal_min'] = np.min(data) if data.size > 0 else 0.
     return ref_niimg.__class__(data, affine, header=header)
 
 
@@ -668,10 +668,8 @@ def threshold_img(img, threshold, mask_img=None):
     from .. import masking
 
     img = check_niimg(img)
-    img_data = img.get_data()
-    affine = img.get_affine()
-
-    img_data = np.nan_to_num(img_data)
+    img_data = _safe_get_data(img, ensure_finite=True)
+    affine = get_affine(img)
 
     if mask_img is not None:
         mask_img = check_niimg_3d(mask_img)
@@ -778,11 +776,12 @@ def math_img(formula, **imgs):
                      .format(formula),) + exc.args)
         raise
 
-    return new_img_like(niimg, result, niimg.get_affine())
+    return new_img_like(niimg, result, get_affine(niimg))
 
 
 def clean_img(imgs, sessions=None, detrend=True, standardize=True,
-              confounds=None, low_pass=None, high_pass=None, t_r=2.5):
+              confounds=None, low_pass=None, high_pass=None, t_r=2.5,
+              ensure_finite=False):
     """Improve SNR on masked fMRI signals.
 
     This function can do several things on the input signals, in
@@ -835,6 +834,10 @@ def clean_img(imgs, sessions=None, detrend=True, standardize=True,
     t_r: float, optional
         Repetition time, in second (sampling period).
 
+    ensure_finite: bool, optional
+        If True, the non-finite values (NaNs and infs) found in the images
+        will be replaced by zeros.
+
     Returns
     -------
     cleaned_img: Niimg-like object
@@ -860,8 +863,9 @@ def clean_img(imgs, sessions=None, detrend=True, standardize=True,
     data = signal.clean(
         imgs_.get_data().reshape(-1, imgs.shape[-1]).T, sessions=sessions,
         detrend=detrend, standardize=standardize, confounds=confounds,
-        low_pass=low_pass, high_pass=high_pass, t_r=2.5).T.reshape(imgs.shape)
-    return new_img_like(imgs, data)
+        low_pass=low_pass, high_pass=high_pass, t_r=2.5,
+        ensure_finite=ensure_finite).T.reshape(imgs.shape)
+    return new_img_like(imgs, data, copy_header=True)
 
 
 def load_img(img, wildcards=True, dtype=None):
@@ -877,7 +881,7 @@ def load_img(img, wildcards=True, dtype=None):
         call nibabel.load on it. The '~' symbol is expanded to the user home
         folder.
         If it is an object, check if get_data()
-        and get_affine() methods are present, raise TypeError otherwise.
+        and affine attributes are present, raise TypeError otherwise.
 
     wildcards: bool, optional
         Use niimg as a regular expression to get a list of matching input
@@ -896,6 +900,6 @@ def load_img(img, wildcards=True, dtype=None):
     -------
     result: 3D/4D Niimg-like object
         Result can be nibabel.Nifti1Image or the input, as-is. It is guaranteed
-        that the returned object has get_data() and get_affine() methods.
+        that the returned object has get_data() and affine attributes.
     """
     return check_niimg(img, wildcards=wildcards, dtype=dtype)

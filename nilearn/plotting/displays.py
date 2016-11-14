@@ -67,13 +67,7 @@ class BaseAxes(object):
         new_object_bounds = self.get_object_bounds()
 
         if new_object_bounds != old_object_bounds:
-            # The bounds of the object do not take into account a possible
-            # inversion of the axis. As such, we check if the axis was inverted
-            # before resetting the bounds and re-invert it after if needed.
-            inverted = self.ax.get_xlim()[0] > self.ax.get_xlim()[1]
             self.ax.axis(self.get_object_bounds())
-            if inverted:
-                self.ax.invert_xaxis()
 
     def draw_2d(self, data_2d, data_bounds, bounding_box,
                 type='imshow', **kwargs):
@@ -100,6 +94,12 @@ class BaseAxes(object):
                                **kwargs)
 
         self.add_object_bounds((xmin_, xmax_, zmin_, zmax_))
+
+        # The bounds of the object do not take into account a possible
+        # inversion of the axis. As such, we check that the axis is properly
+        # inverted when direction is left
+        if self.direction == 'l' and not (ax.get_xlim()[0] > ax.get_xlim()[1]):
+            ax.invert_xaxis()
 
         return im
 
@@ -596,7 +596,7 @@ class BaseSlicer(object):
 
         plt.draw_if_interactive()
 
-    def add_contours(self, img, filled=False, **kwargs):
+    def add_contours(self, img, threshold=1e-6, filled=False, **kwargs):
         """ Contour a 3D map in all the views.
 
         Parameters
@@ -604,26 +604,35 @@ class BaseSlicer(object):
         img: Niimg-like object
             See http://nilearn.github.io/manipulating_images/input_output.html.
             Provides image to plot.
+        threshold: a number, None
+            If None is given, the maps are not thresholded.
+            If a number is given, it is used to threshold the maps,
+            values below the threshold (in absolute value) are plotted
+            as transparent.
         filled: boolean, optional
             If filled=True, contours are displayed with color fillings.
         kwargs:
             Extra keyword arguments are passed to contour, see the
-            documentation of pylab.contour
+            documentation of pylab.contour and see pylab.contourf documentation
+            for arguments related to contours with fillings.
             Useful, arguments are typical "levels", which is a
-            list of values to use for plotting a contour, and
+            list of values to use for plotting a contour or contour
+            fillings (if filled=True), and
             "colors", which is one color or a list of colors for
             these contours.
+            Note: if colors are not specified, default coloring choices
+            (from matplotlib) for contours and contour_fillings can be
+            different.
         """
         self._map_show(img, type='contour', **kwargs)
         if filled:
-            colors = kwargs['colors']
-            levels = kwargs['levels']
-            if len(levels) <= 1:
-                # contour fillings levels should be given as (lower, upper).
-                levels.append(np.inf)
-            alpha = kwargs['alpha']
-            self._map_show(img, type='contourf', levels=levels, alpha=alpha,
-                           colors=colors[:3])
+            if 'levels' in kwargs:
+                levels = kwargs['levels']
+                if len(levels) <= 1:
+                    # contour fillings levels should be given as (lower, upper).
+                    levels.append(np.inf)
+
+            self._map_show(img, type='contourf', threshold=threshold, **kwargs)
 
         plt.draw_if_interactive()
 
@@ -640,9 +649,9 @@ class BaseSlicer(object):
             else:
                 data = np.ma.masked_inside(data, -threshold, threshold,
                                            copy=False)
-            img = new_img_like(img, data, img.get_affine())
+            img = new_img_like(img, data, _utils.compat.get_affine(img))
 
-        affine = img.get_affine()
+        affine = _utils.compat.get_affine(img)
         data = img.get_data()
         data_bounds = get_bounds(data.shape, affine)
         (xmin, xmax), (ymin, ymax), (zmin, zmax) = data_bounds
@@ -659,9 +668,6 @@ class BaseSlicer(object):
         for display_ax in self.axes.values():
             try:
                 data_2d = display_ax.transform_to_2d(data, affine)
-                # To obtain the brain left view, we simply invert the x axis
-                if display_ax.direction == 'l':
-                    display_ax.ax.invert_xaxis()
             except IndexError:
                 # We are cutting outside the indices of the data
                 data_2d = None
@@ -761,9 +767,9 @@ class BaseSlicer(object):
         """
         img = reorder_img(img, resample='continuous')
         data = img.get_data()
-        affine = img.get_affine()
+        affine = _utils.compat.get_affine(img)
         single_color_cmap = colors.ListedColormap([color])
-        data_bounds = get_bounds(data.shape, img.get_affine())
+        data_bounds = get_bounds(data.shape, _utils.compat.get_affine(img))
 
         # For each ax, cut the data and plot it
         for display_ax in self.axes.values():

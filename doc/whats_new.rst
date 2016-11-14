@@ -1,14 +1,52 @@
 0.2.6
-=======
+=====
 
 Changelog
 ---------
+
+This release enhances usage of several functions by fine tuning their
+parameters. It allows to select which Haxby subject to fetch. It also refactors
+documentation to make it easier to understand.
+Sphinx-gallery has been updated and nilearn is ready for new nibabel 2.1 version.
+Several bugs related to masks in Searchlight and ABIDE fetching have been
+resolved.
 
 Bug fix
 ........
 
     - Change default dtype in :func:`nilearn.image.concat_imgs` to be the
       original type of the data (see #1238).
+
+    - Fix SearchLight that did not run without process_mask or with one voxel
+      mask.
+
+    - Fix flipping of left hemisphere when plotting glass brain.
+
+    - Fix bug when downloading ABIDE timeseries
+
+Enhancements
+............
+
+   - Sphinx-gallery updated to version 0.1.3
+
+   - Refactoring of examples and documentation
+
+   - Better ordering of regions in
+     :func:`nilearn.datasets.fetch_coords_dosenbach_2010`
+
+   - Remove outdated power atlas example
+
+   
+API changes summary
+...................
+
+    - The parameter 'n_subjects' is deprecated and will be removed in future
+      release. Use 'subjects' instead in :func:`nilearn.datasets.fetch_haxby`
+
+    - The function :func:`nilearn.datasets.fetch_haxby` will now fetch the
+      data accepting input given in 'subjects' as a list than integer.
+
+    - Replace `get_affine` by `affine` with recent versions of nibabel.
 
 0.2.5.1
 =======
@@ -29,7 +67,6 @@ API changes summary
 
     - Scikit-learn validation tools have been imported and are now used to check
       consistency of input data, in SpaceNet for example.
-
 
 New features
 ............

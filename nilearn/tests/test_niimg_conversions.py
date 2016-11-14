@@ -27,6 +27,7 @@ from nilearn._utils.testing import assert_raises_regex
 from nilearn._utils.testing import with_memory_profiler
 from nilearn._utils.testing import assert_memory_less_than
 from nilearn._utils.niimg_conversions import _iter_check_niimg
+from nilearn._utils.compat import get_affine as _get_affine
 
 
 class PhonyNiimage(nibabel.spatialimages.SpatialImage):
@@ -114,6 +115,10 @@ def test_check_niimg_3d():
     with testing.write_tmp_imgs(data_img, create_files=True) as filename:
         _utils.check_niimg_3d(filename)
 
+    # check data dtype equal with dtype='auto'
+    img_check = _utils.check_niimg_3d(img, dtype='auto')
+    assert_equal(img.get_data().dtype.kind, img_check.get_data().dtype.kind)
+
 
 def test_check_niimg_4d():
     assert_raises_regex(TypeError, 'nibabel format',
@@ -128,11 +133,11 @@ def test_check_niimg_4d():
     # Tests with return_iterator=False
     img_4d_1 = _utils.check_niimg_4d([img_3d, img_3d])
     assert_true(img_4d_1.get_data().shape == (10, 10, 10, 2))
-    assert_array_equal(img_4d_1.get_affine(), affine)
+    assert_array_equal(_get_affine(img_4d_1), affine)
 
     img_4d_2 = _utils.check_niimg_4d(img_4d_1)
     assert_array_equal(img_4d_2.get_data(), img_4d_2.get_data())
-    assert_array_equal(img_4d_2.get_affine(), img_4d_2.get_affine())
+    assert_array_equal(_get_affine(img_4d_2), _get_affine(img_4d_2))
 
     # Tests with return_iterator=True
     img_3d_iterator = _utils.check_niimg_4d([img_3d, img_3d],
@@ -147,7 +152,7 @@ def test_check_niimg_4d():
     for img_1, img_2 in zip(img_3d_iterator_1, img_3d_iterator_2):
         assert_true(img_1.get_data().shape == (10, 10, 10))
         assert_array_equal(img_1.get_data(), img_2.get_data())
-        assert_array_equal(img_1.get_affine(), img_2.get_affine())
+        assert_array_equal(_get_affine(img_1), _get_affine(img_2))
 
     img_3d_iterator_1 = _utils.check_niimg_4d([img_3d, img_3d],
                                               return_iterator=True)
@@ -156,7 +161,7 @@ def test_check_niimg_4d():
     for img_1, img_2 in zip(img_3d_iterator_1, img_3d_iterator_2):
         assert_true(img_1.get_data().shape == (10, 10, 10))
         assert_array_equal(img_1.get_data(), img_2.get_data())
-        assert_array_equal(img_1.get_affine(), img_2.get_affine())
+        assert_array_equal(_get_affine(img_1), _get_affine(img_2))
 
     # This should raise an error: a 3D img is given and we want a 4D
     assert_raises_regex(DimensionError,
@@ -203,6 +208,13 @@ def test_check_niimg():
         "Expected dimension is 4D and you provided "
         "a list of list of 4D images \(6D\)",
         _utils.check_niimg, img_2_4d, ensure_ndim=4)
+
+    # check data dtype equal with dtype='auto'
+    img_3d_check = _utils.check_niimg(img_3d, dtype='auto')
+    assert_equal(img_3d.get_data().dtype.kind, img_3d_check.get_data().dtype.kind)
+
+    img_4d_check = _utils.check_niimg(img_4d, dtype='auto')
+    assert_equal(img_4d.get_data().dtype.kind, img_4d_check.get_data().dtype.kind)
 
 
 def test_check_niimg_wildcards():
@@ -463,9 +475,9 @@ def test_concat_niimg_dtype():
         np.zeros(shape + [n_scans]).astype(np.int16), np.eye(4))
             for n_scans in [1, 5]]
     nimg = _utils.concat_niimgs(vols)
-    assert_equal(nimg.get_data_dtype(), np.float32)
+    assert_equal(nimg.get_data().dtype, np.float32)
     nimg = _utils.concat_niimgs(vols, dtype=None)
-    assert_equal(nimg.get_data_dtype(), np.int16)
+    assert_equal(nimg.get_data().dtype, np.int16)
 
 
 def nifti_generator(buffer):

@@ -13,7 +13,7 @@ from .utils import _get_dataset_dir, _fetch_files, _get_dataset_descr
 
 from .._utils import check_niimg
 from ..image import new_img_like
-from .._utils.compat import _basestring
+from .._utils.compat import _basestring, get_affine
 
 
 def fetch_atlas_craddock_2012(data_dir=None, url=None, resume=True, verbose=1):
@@ -275,7 +275,7 @@ def fetch_atlas_harvard_oxford(atlas_name, data_dir=None,
         new_atlas[left_atlas == label] = new_label
         new_names.append(name + ', right part')
 
-    atlas_img = new_img_like(atlas_img, new_atlas, atlas_img.get_affine())
+    atlas_img = new_img_like(atlas_img, new_atlas, get_affine(atlas_img))
     return Bunch(maps=atlas_img, labels=new_names)
 
 
@@ -418,11 +418,11 @@ def fetch_atlas_smith_2009(data_dir=None, mirror='origin', url=None,
     Notes
     -----
     For more information about this dataset's structure:
-    http://www.fmrib.ox.ac.uk/analysis/brainmap+rsns/
+    http://www.fmrib.ox.ac.uk/datasets/brainmap+rsns/
     """
     if url is None:
         if mirror == 'origin':
-            url = "http://www.fmrib.ox.ac.uk/analysis/brainmap+rsns/"
+            url = "http://www.fmrib.ox.ac.uk/datasets/brainmap+rsns/"
         elif mirror == 'nitrc':
             url = [
                     'https://www.nitrc.org/frs/download.php/7730/',

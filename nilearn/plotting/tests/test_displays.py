@@ -52,3 +52,14 @@ def test_contour_fillings_levels_in_add_contours():
     # In this case, we simply omit appending inf
     oslicer.add_contours(img, filled=True, colors='b',
                          alpha=0.1, levels=[0., 0.2])
+
+    # without passing colors and alpha. In this case, default values are
+    # chosen from matplotlib
+    oslicer.add_contours(img, filled=True, levels=[0., 0.2])
+
+    # levels with only one value
+    oslicer.add_contours(img, filled=True, levels=[0.])
+
+    # without passing levels, should work with default levels from
+    # matplotlib
+    oslicer.add_contours(img, filled=True)

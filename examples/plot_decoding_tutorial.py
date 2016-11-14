@@ -29,6 +29,7 @@ meant to be copied to analyze new data: many of the steps are unecessary.
 # The :func:`nilearn.datasets.fetch_haxby` function will download the
 # Haxby dataset if not present on the disk, in the nilear data directory.
 from nilearn import datasets
+# By default 2nd subject will be fetched
 haxby_dataset = datasets.fetch_haxby()
 fmri_filename = haxby_dataset.func[0]
 

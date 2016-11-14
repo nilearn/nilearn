@@ -16,7 +16,7 @@ See :ref:`plotting` for more details.
 from nilearn import datasets
 
 # haxby dataset to have EPI images and masks
-haxby_dataset = datasets.fetch_haxby(n_subjects=1)
+haxby_dataset = datasets.fetch_haxby()
 
 # print basic information on the dataset
 print('First subject anatomical nifti image (3D) is at: %s' %
