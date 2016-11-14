@@ -20,7 +20,7 @@ import numpy as np
 from scipy import stats
 from sklearn.decomposition import FastICA
 
-from nilearn.datasets import fetch_neurovault_filtered
+from nilearn.datasets import fetch_neurovault
 from nilearn.image import new_img_like, load_img
 
 
