@@ -5,9 +5,13 @@ import nibabel
 
 from nose.tools import assert_equal, assert_true, assert_not_equal
 
-from nilearn.regions import connected_regions, RegionExtractor
-from nilearn.regions.region_extractor import _threshold_maps_ratio
+from nilearn.regions import (connected_regions, RegionExtractor,
+                             extract_regions_labels_img)
+from nilearn.regions.region_extractor import (_threshold_maps_ratio,
+                                              _compute_regions_labels,
+                                              _remove_small_regions)
 
+from nilearn._utils import testing
 from nilearn._utils.testing import assert_raises_regex, generate_maps
 
 
@@ -149,3 +153,95 @@ def test_region_extractor_fit_and_transform():
         # smoke test NiftiMapsMasker transform inherited in Region Extractor
         signal = extractor.transform(img)
         assert_equal(expected_signal_shape, signal.shape)
+
+
+def test_error_messages_extract_regions_labels_img():
+    shape = (13, 11, 12)
+    affine = np.eye(4)
+    n_regions = 2
+    labels_img = testing.generate_labeled_regions(shape, affine=affine,
+                                                  n_regions=n_regions)
+    assert_raises_regex(ValueError,
+                        "Expected 'min_size' to be specified as integer.",
+                        extract_regions_labels_img,
+                        labels_img=labels_img, min_size='a')
+    assert_raises_regex(ValueError,
+                        "'connect_diag' must be specified as True or False.",
+                        extract_regions_labels_img,
+                        labels_img=labels_img, connect_diag=None)
+
+
+def test_compute_regions_labels():
+    data = np.array([[[0.,  1.,  0.],
+                      [0.,  1.,  1.],
+                      [0.,  0.,  0.]],
+                     [[0.,  0.,  0.],
+                      [1.,  0.,  0.],
+                      [0.,  1.,  0.]],
+                     [[0.,  0.,  1.],
+                      [1.,  0.,  0.],
+                      [0.,  1.,  1.]]])
+
+    #  with connect_diag=True we expect less features because diagonally
+    #  connected labels are not separated as features
+    label_map, n_labels = _compute_regions_labels(data, connect_diag=True)
+    features_extracted_diag = np.unique(label_map)
+    n_labels_diag = n_labels
+
+    # n_labels and features out in regions should be more now since
+    # connect_diag=False
+    label_map, n_labels = _compute_regions_labels(data, connect_diag=False)
+    features_extracted_wo_diag = np.unique(label_map)
+    n_labels_wo_diag = n_labels
+    assert_true(n_labels_wo_diag > n_labels_diag)
+    assert_true(len(features_extracted_wo_diag) > len(features_extracted_diag))
+
+
+def test_remove_small_regions():
+    data = np.array([[[0.,  1.,  0.],
+                      [0.,  1.,  1.],
+                      [0.,  0.,  0.]],
+                     [[0.,  0.,  0.],
+                      [1.,  0.,  0.],
+                      [0.,  1.,  0.]],
+                     [[0.,  0.,  1.],
+                      [1.,  0.,  0.],
+                      [0.,  1.,  1.]]])
+    sum_data = np.sum(data)
+    # To remove small regions, data should be labelled
+    label_map, n_labels = _compute_regions_labels(data, connect_diag=False)
+    sum_label_data = np.sum(label_map)
+
+    min_size = 10
+    # data can be act as mask_data to identify regions in label_map because
+    # features in label_map are built upon non-zeros in data
+    index = np.arange(n_labels + 1)
+    removed_data = _remove_small_regions(label_map, data, index, min_size)
+    sum_removed_data = np.sum(removed_data)
+
+    assert_true(sum_removed_data < sum_label_data)
+
+
+def test_extract_regions_labels_img():
+    shape = (13, 11, 12)
+    affine = np.eye(4)
+    n_regions = 9
+    labels_img = testing.generate_labeled_regions(shape, affine=affine,
+                                                  n_regions=n_regions)
+    labels_data = labels_img.get_data()
+    n_labels_wo_reg_ext = len(np.unique(labels_data))
+
+    # region extraction without specifying min_size
+    extracted_regions_on_labels_img = extract_regions_labels_img(labels_img)
+    extracted_regions_labels_data = extracted_regions_on_labels_img.get_data()
+    n_labels_wo_min = len(np.unique(extracted_regions_labels_data))
+
+    assert_true(n_labels_wo_reg_ext < n_labels_wo_min)
+
+    # with specifying min_size
+    extracted_regions_with_min = extract_regions_labels_img(labels_img,
+                                                            min_size=100)
+    extracted_regions_with_min_data = extracted_regions_with_min.get_data()
+    n_labels_with_min = len(np.unique(extracted_regions_with_min_data))
+
+    assert_true(n_labels_wo_min > n_labels_with_min)

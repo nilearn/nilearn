@@ -5,7 +5,7 @@ Better brain parcellations for Region of Interest analysis
 import numbers
 import numpy as np
 
-from scipy.ndimage import label
+from scipy import ndimage
 from scipy.stats import scoreatpercentile
 
 from sklearn.externals.joblib import Memory
@@ -67,6 +67,91 @@ def _threshold_maps_ratio(maps_img, threshold):
     return threshold_maps_img
 
 
+def _compute_regions_labels(label_data, connect_diag):
+    """ Helper function to assign an integer to each unique region found
+        in the label_data
+
+    Parameters
+    ----------
+    label_data : numpy.ndarray
+        Data to be labelled. Using scipy.ndimage.label
+
+    connect_diag : bool
+        If True, two voxels are considered in the same region if they are
+        connected along the diagonal (26-connectivity). If it is False,
+        two voxels are considered connected only if they are within the
+        same axis of x, y, or z direction.
+
+    Returns
+    -------
+    regions : numpy.ndarray
+        Assigned an integer to each unique region. Labelled data.
+
+    n_labels : int
+        Number of unique regions found in the input data.
+    """
+    # Assign integers
+    if connect_diag:
+        structure = np.ones((3, 3, 3), dtype=np.int)
+        regions, this_n_labels = ndimage.label(label_data, structure=structure)
+    else:
+        regions, this_n_labels = ndimage.label(label_data)
+
+    return regions, this_n_labels
+
+
+def _remove_small_regions(input_data, mask_data, index,
+                          min_size, search_sorted=False):
+    """Remove small regions from input_data of specified min_size
+
+    Parameters
+    ----------
+    input_data : numpy.ndarray
+        Values inside the regions defined by labels contained in input_data
+        are summed together to get the size and compare with given min_size.
+        For example, see scipy.ndimage.label
+
+    mask_data : numpy.ndarray
+        Data should contains labels assigned to the regions contained in given
+        input_data to tag values to work on. The data must be of same shape of
+        input_data.
+
+    index : numpy.ndarray
+        A sequence of label numbers of the regions to be measured corresponding
+        to input_data. For example, sequence can be generated using
+        np.arange(n_labels + 1)
+
+    min_size : int
+        Size of regions in input_data which falls below the specified min_size
+        will be discarded.
+
+    search_sorted : bool, optional
+        If True, indices are sorted to avoid gaps due to removed regions.
+
+    Returns
+    -------
+    out : numpy.ndarray
+        Data returned will have regions removed specified by min_size
+        Otherwise, if criterion is not met then same input data will be
+        returned.
+    """
+
+    region_sizes = ndimage.measurements.sum(input_data, labels=mask_data,
+                                            index=index)
+    labels_kept = region_sizes > min_size
+    if not np.all(labels_kept):
+        # Put to zero the indices not kept
+        rejected_labels_mask = np.in1d(
+            input_data, np.where(np.logical_not(labels_kept))[0]
+        ).reshape(input_data.shape)
+        input_data[rejected_labels_mask] = 0
+        if search_sorted:
+            # Reorder the indices to avoid gaps
+            input_data = np.searchsorted(np.where(labels_kept)[0],
+                                         input_data)
+    return input_data
+
+
 def connected_regions(maps_img, min_region_size=1350,
                       extract_type='local_regions', smoothing_fwhm=6,
                       mask_img=None):
@@ -114,6 +199,15 @@ def connected_regions(maps_img, min_region_size=1350,
     index_of_each_map: numpy array
         an array of list of indices where each index denotes the identity
         of each extracted region to their family of brain maps.
+
+    See Also
+    --------
+    nilearn.regions.extract_regions_labels_img : A function can be used for
+        extraction of regions on labels based atlas images.
+
+    nilearn.regions.RegionExtractor : A class can be used for both
+        region extraction on continuous type atlas images and
+        also time series signals extraction from regions extracted.
     """
     all_regions_imgs = []
     index_of_each_map = []
@@ -145,7 +239,7 @@ def connected_regions(maps_img, min_region_size=1350,
         if extract_type == 'local_regions':
             smooth_map = _smooth_array(map_3d, affine=affine, fwhm=smoothing_fwhm)
             seeds = _peak_local_max(smooth_map)
-            seeds_label, seeds_id = label(seeds)
+            seeds_label, seeds_id = ndimage.label(seeds)
             # Assign -1 to values which are 0. to indicate to ignore
             seeds_label[map_3d == 0.] = -1
             rw_maps = _random_walker(map_3d, seeds_label)
@@ -154,7 +248,7 @@ def connected_regions(maps_img, min_region_size=1350,
             label_maps = rw_maps
         else:
             # Connected component extraction
-            label_maps, n_labels = label(map_3d)
+            label_maps, n_labels = ndimage.label(map_3d)
 
         # Takes the size of each labelized region data
         labels_size = np.bincount(label_maps.ravel())
@@ -285,6 +379,11 @@ class RegionExtractor(NiftiMapsMasker):
       better brain parcellations from rest fMRI", Sparsity Techniques in
       Medical Imaging, Sep 2014, Boston, United States. pp.8
 
+    See Also
+    --------
+    nilearn.regions.extract_regions_labels_img : A function can be readily
+        used for extraction of regions on labels based atlas images.
+
     """
     def __init__(self, maps_img, mask_img=None, min_region_size=1350,
                  threshold=1., thresholding_strategy='ratio_n_voxels',
@@ -336,3 +435,83 @@ class RegionExtractor(NiftiMapsMasker):
         super(RegionExtractor, self).fit()
 
         return self
+
+
+def extract_regions_labels_img(labels_img, min_size=None, connect_diag=True):
+    """ Extract regions on a brain atlas image defined by labels (integers).
+
+    Takes the biggest connected components, separates them and assigns each
+    separated region a unique label.
+
+    Parameters
+    ----------
+
+    labels_img : Nifti-like image
+        An image which contains regions denoted as labels.
+
+    min_size : int, optional (default None)
+        Minimum size required to keep as a region after extraction. Removes
+        small or spurious regions. Simply sums over the regions to get the
+        size and discards regions of size which are less than min_size.
+
+    connect_diag : bool (default True)
+        If 'connect_diag' is True, two voxels are considered in the same region
+        if they are connected along the diagonal (26-connectivity). If it is
+        False, two voxels are considered connected only if they are within the
+        same x, y, or z direction.
+
+    Returns
+    -------
+    new_labels_img : Nifti-like image
+        A new image comprising of regions extracted on an input labels_img.
+
+    See Also
+    --------
+    nilearn.datasets.fetch_atlas_harvard_oxford : For labels type atlas images.
+
+    nilearn.regions.RegionExtractor : A class can be used for region extraction
+        on continuous type atlas images.
+
+    nilearn.regions.connected_regions : A function used for region extraction
+        on continuous type atlas images.
+
+    """
+    labels_img = check_niimg(labels_img)
+    labels_data = _safe_get_data(labels_img, ensure_finite=True)
+    affine = labels_img.get_affine()
+
+    if min_size is not None and not isinstance(min_size, numbers.Number):
+        raise ValueError("Expected 'min_size' to be specified as integer. "
+                         "You provided {0}".format(min_size))
+    if not isinstance(connect_diag, bool):
+        raise ValueError("'connect_diag' must be specified as True or False. "
+                         "You provided {0}".format(connect_diag))
+
+    unique_labels = set(np.unique(np.asarray(labels_data)))
+    unique_labels.remove(0)
+
+    new_labels_data = np.zeros(labels_data.shape, dtype=np.int)
+    current_max_label = 0
+    for label_id in unique_labels:
+        this_label_mask = (labels_data == label_id)
+        if not np.any(this_label_mask):
+            continue
+        # Extract regions assigned to each label id
+        regions, this_n_labels = _compute_regions_labels(
+            this_label_mask.astype(np.int), connect_diag=connect_diag)
+        regions = regions.copy()
+
+        if min_size is not None:
+            index = np.arange(this_n_labels + 1)
+            this_label_mask = this_label_mask.astype(np.int)
+            regions = _remove_small_regions(regions, this_label_mask,
+                                            index, min_size=min_size,
+                                            search_sorted=False)
+
+        new_labels_data[regions != 0] = regions[regions != 0] + current_max_label
+        current_max_label += this_n_labels
+
+    new_labels_img = new_img_like(labels_img, new_labels_data, affine=affine)
+
+    return new_labels_img
+

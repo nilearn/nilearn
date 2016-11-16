@@ -236,6 +236,7 @@ uses.
    :template: function.rst
 
    connected_regions
+   extract_regions_labels_img
    img_to_signals_labels
    signals_to_img_labels
    img_to_signals_maps
