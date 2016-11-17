@@ -12,7 +12,7 @@ from sklearn.externals.joblib import Memory
 
 from .. import masking
 from ..input_data import NiftiMapsMasker
-from .._utils import check_niimg, check_niimg_4d
+from .._utils import check_niimg, check_niimg_3d, check_niimg_4d
 from ..image import new_img_like, resample_img
 from ..image.image import _smooth_array, threshold_img
 from .._utils.niimg_conversions import concat_niimgs, _check_same_fov
@@ -447,7 +447,7 @@ def extract_regions_labels_img(labels_img, min_size=None, connect_diag=True):
     ----------
 
     labels_img : Nifti-like image
-        An image which contains regions denoted as labels.
+        A 3D image which contains regions denoted as labels.
 
     min_size : int, optional (default None)
         Minimum size required to keep as a region after extraction. Removes
@@ -476,7 +476,7 @@ def extract_regions_labels_img(labels_img, min_size=None, connect_diag=True):
         on continuous type atlas images.
 
     """
-    labels_img = check_niimg(labels_img)
+    labels_img = check_niimg_3d(labels_img)
     labels_data = _safe_get_data(labels_img, ensure_finite=True)
     affine = labels_img.get_affine()
 

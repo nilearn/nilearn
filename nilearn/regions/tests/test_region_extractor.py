@@ -172,15 +172,15 @@ def test_error_messages_extract_regions_labels_img():
 
 
 def test_compute_regions_labels():
-    data = np.array([[[0.,  1.,  0.],
-                      [0.,  1.,  1.],
-                      [0.,  0.,  0.]],
-                     [[0.,  0.,  0.],
-                      [1.,  0.,  0.],
-                      [0.,  1.,  0.]],
-                     [[0.,  0.,  1.],
-                      [1.,  0.,  0.],
-                      [0.,  1.,  1.]]])
+    data = np.array([[[0., 1., 0.],
+                      [0., 1., 1.],
+                      [0., 0., 0.]],
+                     [[0., 0., 0.],
+                      [1., 0., 0.],
+                      [0., 1., 0.]],
+                     [[0., 0., 1.],
+                      [1., 0., 0.],
+                      [0., 1., 1.]]])
 
     #  with connect_diag=True we expect less features because diagonally
     #  connected labels are not separated as features
@@ -198,15 +198,15 @@ def test_compute_regions_labels():
 
 
 def test_remove_small_regions():
-    data = np.array([[[0.,  1.,  0.],
-                      [0.,  1.,  1.],
-                      [0.,  0.,  0.]],
-                     [[0.,  0.,  0.],
-                      [1.,  0.,  0.],
-                      [0.,  1.,  0.]],
-                     [[0.,  0.,  1.],
-                      [1.,  0.,  0.],
-                      [0.,  1.,  1.]]])
+    data = np.array([[[0., 1., 0.],
+                      [0., 1., 1.],
+                      [0., 0., 0.]],
+                     [[0., 0., 0.],
+                      [1., 0., 0.],
+                      [0., 1., 0.]],
+                     [[0., 0., 1.],
+                      [1., 0., 0.],
+                      [0., 1., 1.]]])
     sum_data = np.sum(data)
     # To remove small regions, data should be labelled
     label_map, n_labels = _compute_regions_labels(data, connect_diag=False)
