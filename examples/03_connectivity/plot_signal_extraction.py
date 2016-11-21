@@ -147,8 +147,7 @@ correlation_matrix_cleaned_hv = np.corrcoef(
 # and plot their histograms.
 matrices = [correlation_matrix_raw, correlation_matrix_cleaned_csv,
             correlation_matrix_cleaned_hv]
-labels = ['no confounds\nremoved', 'file confounds',
-          'high variance\nconfounds']
+labels = ['none', 'file confounds', 'high variance\nconfounds']
 plt.figure(figsize=(8, 3))
 for matrix, label, color in zip(matrices, labels, 'rgb'):
     plt.hist(matrix[np.triu_indices_from(matrix, k=1)],
@@ -156,7 +155,7 @@ for matrix, label, color in zip(matrices, labels, 'rgb'):
 
 [ymin, ymax] = plt.ylim()
 plt.vlines(0, ymin, ymax)
-plt.legend()
+plt.legend(title='removed confounds')
 plt.xlabel('voxel-to-voxel correlation values')
 plt.tight_layout()
 
