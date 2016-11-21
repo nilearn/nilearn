@@ -27,14 +27,14 @@ documentation <parcellation_time_series>` for more.
 # From images to an ROI-to-ROI correlation matrix
 # -----------------------------------------------
 #
-# Retrieve the atlas and the data.
+# Retrieve the atlas and the functional data.
 from nilearn import datasets
 
 dataset = datasets.fetch_atlas_harvard_oxford('cort-maxprob-thr25-2mm')
 atlas_filename, labels = dataset.maps, dataset.labels
 
-print('Atlas ROIs are located in nifti image (4D) at: %s' %
-      atlas_filename)  # 4D data
+print('Atlas ROIs are located in nifti image (3D) at: %s' %
+      atlas_filename)  # 3D data
 
 # One subject of resting-state data.
 data = datasets.fetch_adhd(n_subjects=1)
