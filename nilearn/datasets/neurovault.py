@@ -53,7 +53,7 @@ class MaxImagesReached(StopIteration):
 
 
 def prepare_logging(level=logging.DEBUG):
-    """Get the root logger and add a handler to it if it doesn't have any.
+    """Get the root logger.
 
     Parameters
     ----------
@@ -72,19 +72,32 @@ def prepare_logging(level=logging.DEBUG):
         return logger
     logger.propagate = False
     logger.setLevel(logging.DEBUG)
-    console_logger = logging.StreamHandler()
-    console_logger.setLevel(level)
-    formatter = logging.Formatter('%(levelname)s: %(message)s')
-    console_logger.setFormatter(formatter)
-    logger.addHandler(console_logger)
     return logger
 
 
 _logger = prepare_logging(level=logging.INFO)
 
 
+def add_logging_to_console(level=logging.DEBUG):
+    console_logger = logging.StreamHandler()
+    console_logger.setLevel(level)
+    formatter = logging.Formatter('%(message)s')
+    console_logger.setFormatter(formatter)
+    _logger.addHandler(console_logger)
+
+
+def add_log_file(file_name, level=logging.DEBUG):
+    file_logger = logging.FileHandler(file_name)
+    file_logger.setLevel(level)
+    formatter = logging.Formatter('%(asctime)s: %(message)s')
+    file_logger.setFormatter(formatter)
+    _logger.addHandler(file_logger)
+
+
 def set_logging_level(level=logging.INFO):
-    _logger.handlers[0].setLevel(level)
+    for handler in _logger.handlers:
+        handler.setLevel(level)
+
 
 
 def _append_filters_to_query(query, filters):
@@ -163,7 +176,7 @@ def _get_batch(query, prefix_msg=''):
     """Given an URL, get the HTTP response and transform it to python dict.
 
     The URL is used to send an HTTP GET request and the response is
-    transformed into a dict.
+    transformed into a dictionary.
 
     Parameters
     ----------
@@ -1024,6 +1037,7 @@ def _simple_download(url, target_file, temp_dir):
     here we replace it with an ``URLError``.
 
     """
+    print('Downloading file {} to {}'.format(url, target_file))
     _logger.debug('Downloading file: {0}'.format(url))
     try:
         downloaded = _fetch_file(url, temp_dir, resume=False,
@@ -1439,6 +1453,7 @@ class DownloadManager(BaseDownloadManager):
         - Optionally, the reduced representations of the brain maps
           (in .npy files).
         - Optionally, for each image, the words weights associated to
+          it by Neurosynth.
 
     Parameters
     ----------
@@ -1622,6 +1637,9 @@ class DownloadManager(BaseDownloadManager):
         _write_metadata(image_info, metadata_file_path)
         # self.already_downloaded_ is incremented only after
         # this routine returns successfully.
+        print('Already fetched {0:6<} image{1}'.format(
+            self.already_downloaded_ + 1,
+            ('s' if self.already_downloaded_ + 1 > 1 else '')))
         _logger.info('Already fetched {0} image{1}.'.format(
             self.already_downloaded_ + 1,
             ('s' if self.already_downloaded_ + 1 > 1 else '')))
@@ -1654,7 +1672,7 @@ class DownloadManager(BaseDownloadManager):
             self.temp_dir_ = _get_temp_dir(self.suggested_temp_dir_)
 
     def finish(self):
-        """Cleanup after downlaod sespsion.
+        """Cleanup after download session.
 
         If ``self.start`` created a temporary directory for the
         download session, remove it.
@@ -1975,6 +1993,7 @@ class _DataScroller(object):
             _logger.debug('Reading server neurovault data.')
 
         for collection in _yield_from_url_list(collection_urls):
+            collection = self.download_manager_.collection(collection)
             for image in self._scroll_collection(collection):
                 self.visited_images_.add(image['id'])
                 yield image, collection
@@ -2047,6 +2066,7 @@ class _DataScroller(object):
     @_managed_method()
     def _scroll_local(self):
         _logger.debug('Reading local neurovault data.')
+        print('Reading local neurovault data.')
         collections = glob(
             os.path.join(
                 self.neurovault_dir_, '*', 'collection_metadata.json'))
@@ -2077,6 +2097,8 @@ class _DataScroller(object):
                 self.image_filter_)
 
         found = len(self.visited_images_)
+        print('{0} image{1} found on local disk.'.format(
+            ('No' if not found else found), ('s' if found > 1 else '')))
         _logger.debug('{0} image{1} found on local disk.'.format(
             ('No' if not found else found), ('s' if found > 1 else '')))
 
