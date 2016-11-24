@@ -136,8 +136,11 @@ def _remove_small_regions(input_data, mask_data, index,
         returned.
     """
 
-    region_sizes = ndimage.measurements.sum(input_data, labels=mask_data,
-                                            index=index)
+    # region_sizes = ndimage.measurements.sum(input_data, labels=mask_data,
+    #                                         index=index)
+    # region_sizes = ndimage.measurements.sum(np.ones(input_data.shape),
+    #                                         labels=mask_data, index=index)
+    _ , region_sizes = np.unique(input_data, return_counts=True)
     labels_kept = region_sizes > min_size
     if not np.all(labels_kept):
         # Put to zero the indices not kept
