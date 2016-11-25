@@ -101,7 +101,7 @@ def _compute_regions_labels(label_data, connect_diag):
 
 
 def _remove_small_regions(input_data, mask_data, index,
-                          min_size, search_sorted=False):
+                          min_size):
     """Remove small regions from input_data of specified min_size
 
     Parameters
@@ -125,9 +125,6 @@ def _remove_small_regions(input_data, mask_data, index,
         Size of regions in input_data which falls below the specified min_size
         will be discarded.
 
-    search_sorted : bool, optional
-        If True, indices are sorted to avoid gaps due to removed regions.
-
     Returns
     -------
     out : numpy.ndarray
@@ -136,22 +133,18 @@ def _remove_small_regions(input_data, mask_data, index,
         returned.
     """
 
-    # region_sizes = ndimage.measurements.sum(input_data, labels=mask_data,
-    #                                         index=index)
-    # region_sizes = ndimage.measurements.sum(np.ones(input_data.shape),
-    #                                         labels=mask_data, index=index)
     _ , region_sizes = np.unique(input_data, return_counts=True)
     labels_kept = region_sizes > min_size
     if not np.all(labels_kept):
         # Put to zero the indices not kept
-        rejected_labels_mask = np.in1d(
-            input_data, np.where(np.logical_not(labels_kept))[0]
+        rejected_labels_mask = np.in1d(input_data,
+                                       np.where(np.logical_not(labels_kept))[0]
         ).reshape(input_data.shape)
+        # Avoid modifying the input:
+        input_data = input_data.copy()
         input_data[rejected_labels_mask] = 0
-        if search_sorted:
-            # Reorder the indices to avoid gaps
-            input_data = np.searchsorted(np.where(labels_kept)[0],
-                                         input_data)
+        # Reorder the indices to avoid gaps
+        input_data = np.searchsorted(np.unique(input_data), input_data)
     return input_data
 
 
@@ -443,8 +436,8 @@ class RegionExtractor(NiftiMapsMasker):
 def extract_regions_labels_img(labels_img, min_size=None, connect_diag=True):
     """ Extract regions on a brain atlas image defined by labels (integers).
 
-    Takes the biggest connected components, separates them and assigns each
-    separated region a unique label.
+    For each label in an parcellations, separates out connected
+    components and assigns to each separated region a unique label.
 
     Parameters
     ----------
@@ -454,8 +447,7 @@ def extract_regions_labels_img(labels_img, min_size=None, connect_diag=True):
 
     min_size : int, optional (default None)
         Minimum size required to keep as a region after extraction. Removes
-        small or spurious regions. Simply sums over the regions to get the
-        size and discards regions of size which are less than min_size.
+        small or spurious regions.
 
     connect_diag : bool (default True)
         If 'connect_diag' is True, two voxels are considered in the same region
@@ -497,21 +489,19 @@ def extract_regions_labels_img(labels_img, min_size=None, connect_diag=True):
     current_max_label = 0
     for label_id in unique_labels:
         this_label_mask = (labels_data == label_id)
-        if not np.any(this_label_mask):
-            continue
         # Extract regions assigned to each label id
         regions, this_n_labels = _compute_regions_labels(
             this_label_mask.astype(np.int), connect_diag=connect_diag)
-        regions = regions.copy()
 
         if min_size is not None:
             index = np.arange(this_n_labels + 1)
             this_label_mask = this_label_mask.astype(np.int)
             regions = _remove_small_regions(regions, this_label_mask,
-                                            index, min_size=min_size,
-                                            search_sorted=False)
+                                            index, min_size=min_size)
+            this_n_labels = regions.max()
 
-        new_labels_data[regions != 0] = regions[regions != 0] + current_max_label
+        new_labels_data[regions != 0] = (regions[regions != 0]
+                                         + current_max_label)
         current_max_label += this_n_labels
 
     new_labels_img = new_img_like(labels_img, new_labels_data, affine=affine)
