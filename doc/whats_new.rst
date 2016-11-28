@@ -6,10 +6,10 @@ Changelog
 
 First release of nistats.
 
-Contributors (from ``git shortlog -ns 1.0``)::
+Contributors (from ``git shortlog -ns``)::
 
-   173  bthirion
-    57  Martin Perez-Guevara
+   180  bthirion
+    89  Martin Perez-Guevara
     20  Gael Varoquaux
      8  Loïc Estève
      3  AnaLu
