@@ -172,7 +172,7 @@ def _get_encoding(resp):
     return match.group(1)
 
 
-def _get_batch(query, prefix_msg=''):
+def _get_batch(query, prefix_msg='', timeout=10.):
     """Given an URL, get the HTTP response and transform it to python dict.
 
     The URL is used to send an HTTP GET request and the response is
@@ -185,6 +185,9 @@ def _get_batch(query, prefix_msg=''):
 
     prefix_msg : str, optional (default='')
         Prefix for all log messages.
+
+    timeout : float
+        Timeout in seconds.
 
     Returns
     -------
@@ -212,8 +215,9 @@ def _get_batch(query, prefix_msg=''):
     _logger.debug('{0}getting new batch: {1}'.format(
         prefix_msg, query))
     try:
-        resp = opener.open(request)
-    except URLError:
+        resp = opener.open(request, timeout=timeout)
+
+    except Exception:
         _logger.exception(
             'Could not download batch from {0}'.format(query))
         raise
