@@ -133,13 +133,13 @@ def _remove_small_regions(input_data, mask_data, index,
         returned.
     """
 
-    _ , region_sizes = np.unique(input_data, return_counts=True)
+    _, region_sizes = np.unique(input_data, return_counts=True)
     labels_kept = region_sizes > min_size
     if not np.all(labels_kept):
         # Put to zero the indices not kept
         rejected_labels_mask = np.in1d(input_data,
                                        np.where(np.logical_not(labels_kept))[0]
-        ).reshape(input_data.shape)
+                                       ).reshape(input_data.shape)
         # Avoid modifying the input:
         input_data = input_data.copy()
         input_data[rejected_labels_mask] = 0

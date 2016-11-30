@@ -81,7 +81,7 @@ def test_invalids_extract_types_in_connected_regions():
 def test_connected_regions():
     # 4D maps
     n_regions = 4
-    maps, _ = generate_maps((30, 30, 30), n_regions=n_regions)
+    maps, mask_img = generate_maps((30, 30, 30), n_regions=n_regions)
     # 3D maps
     map_img = np.zeros((30, 30, 30)) + 0.1 * np.random.randn(30, 30, 30)
     map_img = nibabel.Nifti1Image(map_img, affine=np.eye(4))
@@ -98,6 +98,24 @@ def test_connected_regions():
         connected_extraction_3d_img, _ = connected_regions(map_img, min_region_size=10,
                                                            extract_type=extract_type)
         assert_true(connected_extraction_3d_img.shape[-1] >= 1)
+
+    # Test input mask_img
+    extraction_with_mask_img, index = connected_regions(maps,
+                                                        mask_img=mask_img)
+    assert_true(extraction_with_mask_img.shape[-1] >= 1)
+
+    # mask_img with different shape
+    mask = np.zeros(shape=(10, 11, 12), dtype=np.int)
+    mask[1:-1, 1:-1, 1:-1] = 1
+    affine = np.array([[2., 0., 0., 0.],
+                       [0., 2., 0., 0.],
+                       [0., 0., 2., 0.],
+                       [0., 0., 0., 2.]])
+    mask_img = nibabel.Nifti1Image(mask, affine=affine)
+    extraction_not_same_fov_mask, _ = connected_regions(maps,
+                                                        mask_img=mask_img)
+    assert_equal(maps.shape[:3], extraction_not_same_fov_mask.shape[:3])
+    assert_not_equal(mask_img.shape, extraction_not_same_fov_mask.shape[:3])
 
 
 def test_invalid_threshold_strategies():
