@@ -14,11 +14,9 @@ More specifically:
 
 Author : Martin Perez-Guevara: 2016
 """
-print(__doc__)
 
 import os
 
-import numpy as np
 import pandas as pd
 from nilearn import plotting
 from scipy.stats import norm
@@ -27,21 +25,21 @@ import matplotlib.pyplot as plt
 from nilearn.datasets import fetch_localizer_contrasts
 from nistats.second_level_model import SecondLevelModel
 
-# Create writing directory
-write_dir = 'results'
-if not os.path.exists(write_dir):
-    os.makedirs(write_dir)
-
-# Get data ###################################################
+#########################################################################
+# Fetch dataset
+# --------------
+# We download a list of left vs right button press contrasts from a
+# localizer dataset.
 n_subjects = 16
 data = fetch_localizer_contrasts(["left vs right button press"], n_subjects,
                                  get_tmaps=True)
 
-second_level_input = data['cmaps']
-design_matrix = pd.DataFrame([1] * len(second_level_input),
-                             columns=['left-right'])
-
+#########################################################################
 # Display subject t_maps
+# ----------------------
+# We plot a grid with all the subjects t-maps thresholded at t = 2 for
+# simple visualization purposes. The button press effect is visible among
+# all subjects
 subjects = [subject_data[0] for subject_data in data['ext_vars']]
 fig, axes = plt.subplots(nrows=4, ncols=4)
 for cidx, tmap in enumerate(data['tmaps']):
@@ -50,22 +48,32 @@ for cidx, tmap in enumerate(data['tmaps']):
                               axes=axes[cidx / 4, cidx % 4],
                               plot_abs=False, display_mode='z')
 fig.suptitle('subjects t_map left-right button press')
-fig.savefig(os.path.join(write_dir, 'left-right_all_subjects.png'))
+fig.show()
 
+#########################################################################
 # Estimate second level model
+# ---------------------------
+# We define the input maps and the design matrix for the second level model
+# and fit it.
+second_level_input = data['cmaps']
+design_matrix = pd.DataFrame([1] * len(second_level_input),
+                             columns=['left-right'])
+
 second_level_model = SecondLevelModel(smoothing_fwhm=8.0)
 second_level_model = second_level_model.fit(second_level_input,
                                             design_matrix=design_matrix)
 
-# Estimate contrast #########################################
+#########################################################################
+# To estimate the contrast is very simple. We can just provide the column
+# name of the design matrix.
 z_map = second_level_model.compute_contrast('left-right',
                                             output_type='z_score')
 
-# Display group level z_map thresholded for p < 0.001
+#########################################################################
+# We threshold the second level contrast at uncorrected p < 0.001 and plot
 p_val = 0.001
 z_th = norm.isf(p_val)
 display = plotting.plot_glass_brain(z_map, threshold=z_th, colorbar=True,
                                     plot_abs=False, display_mode='z')
-display.savefig(os.path.join(write_dir, 'left-right_group.png'))
 
 plotting.show()
