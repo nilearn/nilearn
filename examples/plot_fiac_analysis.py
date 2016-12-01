@@ -42,7 +42,7 @@ from nistats import datasets
 
 #########################################################################
 # Prepare data and analysis parameters
-# ----------------------------------
+# --------------------------------------
 data = datasets.fetch_fiac_first_level()
 fmri_img = [data['func1'], data['func2']]
 mean_img_ = mean_img(fmri_img[0])
