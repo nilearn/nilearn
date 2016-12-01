@@ -94,8 +94,9 @@ if [[ "$DISTRIB" == "neurodebian" ]]; then
     bash <(wget -q -O- http://neuro.debian.net/_files/neurodebian-travis.sh)
     sudo apt-get install -qq python-scipy python-nose python-nibabel python-sklearn python-pandas
     deactivate
-    sudo pip install numpy==1.7.1 --force-reinstall
     source testvenv/bin/activate
+    pip install numpy==1.7.1 --force-reinstall
+    pip install scipy==0.11.0 --force-reinstall
     pip install nilearn
     pip install patsy
 
