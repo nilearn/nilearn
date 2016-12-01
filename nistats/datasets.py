@@ -254,7 +254,6 @@ def fetch_fiac_first_level(data_dir=None, verbose=1):
     """
     data_dir = _get_dataset_dir('fiac_nistats', data_dir=data_dir,
                                 verbose=verbose)
-    print data_dir
     def _glob_fiac_data():
         """glob data from subject_dir."""
         _subject_data = {}
