@@ -1,6 +1,6 @@
 """
 Simple example of GLM fitting in fMRI
-====================================
+======================================
 
 Full step-by-step example of fitting a GLM to experimental data and visualizing
 the results. This is done on two runs of one subject of the FIAC dataset.
