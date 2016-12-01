@@ -96,10 +96,10 @@ def test_fetch_spm_multimodal():
 @with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
 def test_fiac():
     # Create dummy 'files'
-    fiac_dir = os.path.join(tst.tmpdir, 'fiac')
+    fiac_dir = os.path.join(tst.tmpdir, 'fiac_nistats', 'nipy-data-0.2',
+                            'data', 'fiac')
     fiac0_dir = os.path.join(fiac_dir, 'fiac0')
-    os.mkdir(fiac_dir)
-    os.mkdir(fiac0_dir)
+    os.makedirs(fiac0_dir)
     for session in [1, 2]:
         # glob func data for session session + 1
         session_func = os.path.join(fiac0_dir, 'run%i.nii.gz' % session)
