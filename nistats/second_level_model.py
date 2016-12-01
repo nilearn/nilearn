@@ -1,3 +1,13 @@
+"""
+This module presents an interface to use the glm implemented in
+nistats.regression.
+
+It provides facilities to realize a second level analysis on lists of
+first level contrasts or directly on fitted first level models
+
+Author: Martin Perez-Guevara, 2016
+"""
+
 from warnings import warn
 import sys
 import time

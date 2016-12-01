@@ -6,6 +6,8 @@ nistats.regression.
 
 It contains the GLM and contrast classes that are meant to be the main objects
 of fMRI data analyses.
+
+Author: Bertrand Thirion, Martin Perez-Guevara, 2016
 """
 
 from warnings import warn
