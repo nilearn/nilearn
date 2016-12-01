@@ -27,6 +27,8 @@ import sys
 import traceback
 import warnings
 
+from .downloads import CODE_DOWNLOAD
+
 
 # Try Python 2 first, otherwise load from Python 3
 from textwrap import dedent
@@ -93,6 +95,10 @@ class Tee(object):
         self.file1.flush()
         self.file2.flush()
 
+    # When called from a local terminal seaborn needs it in Python3
+    def isatty(self):
+        self.file1.isatty()
+
 
 class MixedEncodingStringIO(StringIO):
     """Helper when both ASCII and unicode strings will be written"""
@@ -104,15 +110,6 @@ class MixedEncodingStringIO(StringIO):
 
 
 ###############################################################################
-CODE_DOWNLOAD = """**Total running time of the script:**
-({0:.0f} minutes {1:.3f} seconds)\n\n
-\n.. container:: sphx-glr-download
-
-    :download:`Download Python source code: {2} <{2}>`\n
-\n.. container:: sphx-glr-download
-
-    :download:`Download IPython notebook: {3} <{3}>`\n"""
-
 # The following strings are used when we have several pictures: we use
 # an html div tag that our CSS uses to turn the lists into horizontal
 # lists.
@@ -455,6 +452,7 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
         return "", []  # because string is an expected return type
 
     fhindex = open(os.path.join(src_dir, 'README.txt')).read()
+
     if not os.path.exists(target_dir):
         os.makedirs(target_dir)
     sorted_listdir = [fname for fname in sorted(os.listdir(src_dir))
@@ -561,6 +559,24 @@ def execute_code_block(code_block, example_globals,
     return code_output, time_elapsed
 
 
+def clean_modules():
+    """Remove "unload" seaborn from the name space
+
+    After a script is executed it can load a variety of setting that one
+    does not want to influence in other examples in the gallery."""
+
+    # Horrible code to 'unload' seaborn, so that it resets
+    # its default when is load
+    # Python does not support unloading of modules
+    # https://bugs.python.org/issue9072
+    for module in list(sys.modules.keys()):
+        if 'seaborn' in module:
+            del sys.modules[module]
+
+    # Reset Matplotlib to default
+    plt.rcdefaults()
+
+
 def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
     """Generate the rst file for a given example.
 
@@ -642,6 +658,8 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
             example_rst += text2string(bcontent) + '\n'
             example_nb.add_markdown_cell(text2string(bcontent))
 
+    clean_modules()
+
     # Writes md5 checksum if example has build correctly
     # not failed and was initially meant to run(no-plot shall not cache md5sum)
     if block_vars['execute_script']:
@@ -654,8 +672,10 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
     example_nb.save_file()
     with codecs.open(os.path.join(target_dir, base_image_name + '.rst'),
                      mode='w', encoding='utf-8') as f:
-        example_rst += CODE_DOWNLOAD.format(time_m, time_s, fname,
-                                            example_nb.file_name)
+        example_rst += "**Total running time of the script:**" \
+                       " ({0: .0f} minutes {1: .3f} seconds)\n\n".format(
+                           time_m, time_s)
+        example_rst += CODE_DOWNLOAD.format(fname, example_nb.file_name)
         example_rst += SPHX_GLR_SIG
         f.write(example_rst)
 
