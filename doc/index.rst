@@ -18,6 +18,13 @@
 .. |design_matrix| image:: auto_examples/images/thumb/sphx_glr_plot_design_matrix_thumb.png
      :target: auto_examples/plot_design_matrix.html
 
+.. |first_level| image:: auto_examples/images/thumb/sphx_glr_plot_localizer_analysis_thumb.png
+     :target: auto_examples/plot_localizer_analysis.html
+
+.. |second_level| image:: auto_examples/images/thumb/sphx_glr_plot_second_level_button_press_thumb.png
+     :target: auto_examples/plot_second_level_button_press.html
+
+
 .. raw:: html
 
    <div id="index-grid" class="section group">
@@ -34,6 +41,11 @@
 * |hrf|
 
 * |design_matrix|
+
+* |first_level|
+
+* |second_level|
+
 
 .. raw:: html
 
