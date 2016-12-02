@@ -35,7 +35,7 @@ uses.
 .. _hemodynamic_models_ref:
 
 :mod:`nistats.hemodynamic_models`: Hemodynamic Models
-====================================================
+=======================================================
 
 .. automodule:: nistats.hemodynamic_models
    :no-members:
@@ -60,7 +60,7 @@ uses.
 .. _design_matrix_ref:
 
 :mod:`nistats.design_matrix`: Design Matrix Creation
-====================================================
+=====================================================
 
 .. automodule:: nistats.design_matrix
    :no-members:
@@ -82,7 +82,7 @@ uses.
 .. _experimental_paradigm_ref:
 
 :mod:`nistats.experimental_paradigm`: Experimental Paradigm
-====================================================
+============================================================
 
 .. automodule:: nistats.experimental_paradigm
    :no-members:
@@ -175,7 +175,7 @@ uses.
 .. _second_level_model_ref:
 
 :mod:`nistats.second_level_model`: Second Level Model
-====================================================
+======================================================
 
 .. automodule:: nistats.second_level_model
    :no-members:
