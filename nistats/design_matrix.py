@@ -13,14 +13,14 @@ Design matrices contain three different types of regressors:
 1. Task-related regressors, that result from the convolution
    of the experimental paradigm regressors with hemodynamic models
    A hemodynamic model is one of:
-   'spm' : linear filter used in the SPM software
-   'glover' : linear filter estimated by G.Glover
-   'spm + derivative', 'glover + derivative': the same linear models,
-       plus their time derivative (2 regressors per condition)
-   'spm + derivative + dispersion', 'glover + derivative + dispersion':
-       idem plus the derivative wrt the dispersion parameter of the hrf
-       (3 regressors per condition)
-   'fir' : finite impulse response model, generic linear filter
+        'spm' : linear filter used in the SPM software
+        'glover' : linear filter estimated by G.Glover
+        'spm + derivative', 'glover + derivative': the same linear models,
+            plus their time derivative (2 regressors per condition)
+        'spm + derivative + dispersion', 'glover + derivative + dispersion':
+            idem plus the derivative wrt the dispersion parameter of the hrf
+            (3 regressors per condition)
+        'fir' : finite impulse response model, generic linear filter
 
 2. User-specified regressors, that represent information available on
    the data, e.g. motion parameters, physiological data resampled at

@@ -8,6 +8,7 @@ It contains the GLM and contrast classes that are meant to be the main objects
 of fMRI data analyses.
 
 Author: Bertrand Thirion, Martin Perez-Guevara, 2016
+
 """
 
 from warnings import warn
@@ -47,6 +48,7 @@ def mean_scaling(Y, axis=0):
 
     mean : array of shape (n_voxels,)
         The data mean.
+
     """
     mean = Y.mean(axis=axis)
     if (mean == 0).any():
@@ -95,6 +97,7 @@ def run_glm(Y, X, noise_model='ar1', bins=100, n_jobs=1, verbose=0):
     results : dict,
         Keys correspond to the different labels values
         values are RegressionResults instances corresponding to the voxels.
+
     """
     acceptable_noise_models = ['ar1', 'ols']
     if noise_model not in acceptable_noise_models:
@@ -225,7 +228,7 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
     verbose : integer, optional
         Indicate the level of verbosity. By default, nothing is printed.
         If 0 prints nothing. If 1 prints progress by computation of
-        each run. If 2 prints timing details of masker and GLM. If 3 
+        each run. If 2 prints timing details of masker and GLM. If 3
         prints masker computation details.
 
     n_jobs : integer, optional
@@ -250,6 +253,7 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
     results : dict,
         with keys corresponding to the different labels values
         values are RegressionResults instances corresponding to the voxels
+
     """
     def __init__(self, t_r=None, slice_time_ref=0., hrf_model='glover',
                  drift_model='cosine', period_cut=128, drift_order=1,
@@ -329,6 +333,7 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         design_matrices: pandas DataFrame or list of pandas DataFrames,
             Design matrices that will be used to fit the GLM. If given it
             takes precedence over events and confounds.
+
         """
         # Check arguments
         # Check imgs type
