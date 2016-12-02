@@ -41,8 +41,7 @@ clean:
 sym_links:
 	# Make sym-links to share the cache across various example
 	# directories
-	# -cd ../examples/ && mkdir nistats_cache
-	# -cd ../examples/xxxxx/ && ln -sf ../nistats_cache
+	# -cd ../examples/ && mkdir -p nistats_cache
 
 force_html: force html
 
