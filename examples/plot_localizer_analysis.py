@@ -25,7 +25,7 @@ from nistats import datasets
 
 #########################################################################
 # Prepare data and analysis parameters
-# ----------------------------------
+# -------------------------------------
 # Prepare timing
 t_r = 2.4
 slice_time_ref = 0.5

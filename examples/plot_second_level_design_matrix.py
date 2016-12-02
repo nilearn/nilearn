@@ -5,6 +5,7 @@ Example of second level design matrix
 Requires matplotlib
 
 Author : Martin Perez-Guevara: 2016
+
 """
 
 try:
@@ -18,7 +19,7 @@ import pandas as pd
 
 #########################################################################
 # Create a simple experimental paradigm
-# ----------------------------------
+# --------------------------------------
 # Experimental paradigm has two conditions and 20 subjects
 column_names = ['map_name', 'subject_id', 'map_path']
 n_subjects = 20
@@ -38,7 +39,7 @@ extra_info_subjects = pd.DataFrame({'subject_id': subject_list,
 
 #########################################################################
 # Create a second level design matrix
-# ---------------------
+# -----------------------------------
 
 design_matrix = create_second_level_design(maps_table, extra_info_subjects)
 

@@ -9,13 +9,14 @@ It shows activation related to a mental computation task,
 as opposed to narrative sentence reading/listening.
 
 Author: Bertrand.thirion, Virgile Fritsch, 2014--2015
+
 """
 from nilearn import datasets
 from nilearn.input_data import NiftiMasker
 
 #########################################################################
 # Prepare some images for a simple t test
-# ----------------------------------
+# ----------------------------------------
 # This is a simple manually performed second level analysis
 n_samples = 20
 localizer_dataset = datasets.fetch_localizer_calculation_task(

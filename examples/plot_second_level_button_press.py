@@ -10,13 +10,12 @@ More specifically:
 1. A sequence of subject fMRI button press contrasts is downloaded.
 2. a mask of the useful brain volume is computed
 3. A one-sample t-test is applied to the brain maps
+
 (as fixed effects, then contrast estimation)
 
 Author : Martin Perez-Guevara: 2016
+
 """
-
-import os
-
 import pandas as pd
 from nilearn import plotting
 from scipy.stats import norm
