@@ -93,6 +93,8 @@ if [[ "$DISTRIB" == "neurodebian" ]]; then
     create_new_venv
     bash <(wget -q -O- http://neuro.debian.net/_files/neurodebian-travis.sh)
     sudo apt-get install -qq python-nose python-nibabel python-sklearn python-pandas
+    sudo apt-get remove python-numpy
+    sudo apt-get remove python-scipy
     sudo pip install numpy==1.7.1 --upgrade
     sudo pip install scipy==0.11.0 --upgrade
     sudo pip install nilearn
