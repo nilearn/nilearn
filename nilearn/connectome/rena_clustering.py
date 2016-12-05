@@ -425,9 +425,7 @@ class ReNA(BaseEstimator):
         Xred : array like
         """
 
-        if not hasattr(self, "labels_"):
-            raise RuntimeError("This %s instance is not fitted yet!" % (
-                self.__class__.__name__))
+        check_is_fitted(self, "labels_")
 
         _, inverse = np.unique(self.labels_, return_inverse=True)
 
@@ -436,6 +434,7 @@ class ReNA(BaseEstimator):
         return Xred[..., inverse]
 
 
+# XXX this code is also replicated in the Metaestimator PR
 def _check_masking(mask, smoothing_fwhm, target_affine, target_shape,
                    standardize, mask_strategy, memory, memory_level):
     """Setup a nifti masker."""

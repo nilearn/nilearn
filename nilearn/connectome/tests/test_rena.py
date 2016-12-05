@@ -1,10 +1,9 @@
-from nose.tools import assert_equal, assert_true, assert_raises
-
-import numpy as np
+from nose.tools import assert_equal, assert_raises
 from sklearn.externals.joblib import Memory
 from nilearn._utils.testing import generate_fake_fmri
 from nilearn.connectome import ReNA
 from nilearn.input_data import NiftiMasker
+from nilearn.image import index_img
 
 
 def test_rena_clusterings():
@@ -22,4 +21,6 @@ def test_rena_clusterings():
     rena2 = ReNA(n_clusters=-2, mask=nifti_masker, memory=memory)
     assert_raises(ValueError, rena2.fit, data)
 
-    rena3 = ReNA(n_clusters=10, mask=None, scaling=True).fit(data)
+    rena3 = ReNA(n_clusters=10, mask=None, scaling=True)
+    data_red2 = rena3.fit_transform(index_img(data, 0))
+    data_compress2 = rena3.inverse_transform(data_red2)
