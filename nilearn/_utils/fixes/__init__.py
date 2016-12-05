@@ -35,10 +35,12 @@ except ImportError:
 try:
     from sklearn.utils import check_X_y
     from sklearn.utils import check_is_fitted
+    from sklearn.utils import check_array
 except ImportError:
     # scikit-learn < 0.16
     from .sklearn_validation import check_X_y
     from .sklearn_validation import check_is_fitted
+    from sklearn.utils import check_array
 
 __all__ = ['f_regression', 'atleast2d_or_csr', 'roc_auc_score',
            'check_X_y', 'check_is_fitted', 'check_cv']
