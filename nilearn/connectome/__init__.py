@@ -10,6 +10,9 @@ from .connectivity_matrices import (sym_to_vec, ConnectivityMeasure,
 from .group_sparse_cov import (GroupSparseCovariance,
     GroupSparseCovarianceCV, group_sparse_covariance)
 
+from rena_clustering import ReNA
+
 __all__ = ['sym_to_vec', 'ConnectivityMeasure',
            'GroupSparseCovariance', 'GroupSparseCovarianceCV',
-           'group_sparse_covariance', 'cov_to_corr', 'prec_to_partial']
+           'group_sparse_covariance', 'cov_to_corr', 'prec_to_partial',
+           'ReNA']
