@@ -445,15 +445,14 @@ class ReNA(BaseEstimator):
         cluster labels for each feature.
 
     `n_clusters_` : int
-        Number of clusters
+        Number of clusters.
 
-    `sizes_`: array-like (n_features,)
-        It contains the size of each cluster
-
+    `sizes_` : array-like (n_features,)
+        It contains the size of each cluster.
     """
     def __init__(self, n_clusters=2, mask=None, smoothing_fwhm=None,
                  standardize=True, target_affine=None, target_shape=None,
-                 mask_strategy='background', memory=None, memory_level=0,
+                 mask_strategy='background', memory=None, memory_level=1,
                  verbose=False, scaling=False, n_iter=10, threshold=1e-7,):
         self.n_clusters = n_clusters
         self.scaling = scaling
