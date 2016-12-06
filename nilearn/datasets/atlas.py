@@ -785,13 +785,14 @@ def fetch_coords_dosenbach_2010(ordered_regions=True):
 
 
 def fetch_atlas_allen_2011(data_dir=None, url=None, resume=True, verbose=1):
-    """Download and return file names for the Allen resting-state
+    """Download and return file names for the resting-state networks atlas
+    published by Allen et al. in 2011.
     The provided images are in MNI152 space.
     Parameters
     ----------
-    data_dir: string
+    data_dir: string, optional
         directory where data should be downloaded and unpacked.
-    url: string
+    url: string, optional
         url of file to download.
     resume: bool
         whether to resumed download of a partly-downloaded file.
@@ -801,10 +802,10 @@ def fetch_atlas_allen_2011(data_dir=None, url=None, resume=True, verbose=1):
     -------
     data: sklearn.datasets.base.Bunch
         dictionary-like object, keys are:
-            all_unthresh_tmaps
-            all_unthresh_rsn_labels
-            rsn_unthresh_tmaps
-            aggregate_ic_comps
+        - "all_unthresh_tmaps": T-maps of all 75 unthresholded components.
+        - "rsn_unthresh_tmaps": T-maps of 28 RSNs included in E. Allen et al.
+        - "all_unthresh_rsn_labels": Labels for the 28 RSNs.
+        - "aggregate_ic_comps": Aggregate ICA Components.
     References
     ----------
     Licence: unknown
@@ -824,8 +825,7 @@ def fetch_atlas_allen_2011(data_dir=None, url=None, resume=True, verbose=1):
     opts = {}
     files = ["ALL_HC_unthresholded_tmaps.nii",
              "RSN_HC_unthresholded_tmaps.nii",
-             "rest_hcp_agg__component_ica_.nii",
-            ]
+             "rest_hcp_agg__component_ica_.nii"]
 
     labels = {'Basal Ganglia': [21],
               'Auditory': [17],
@@ -833,7 +833,7 @@ def fetch_atlas_allen_2011(data_dir=None, url=None, resume=True, verbose=1):
               'Visual': [46, 64, 67, 48, 39, 59],
               'Default-Mode': [50, 53, 25, 68],
               'Attentional': [34, 60, 52, 72, 71, 55],
-              'Frontal': [ 42, 20, 47, 49],
+              'Frontal': [42, 20, 47, 49],
               }
 
     filenames = [(f, url + f, opts) for f in files]
@@ -847,6 +847,6 @@ def fetch_atlas_allen_2011(data_dir=None, url=None, resume=True, verbose=1):
 
     params = dict([('description', fdescr),
                    ('all_unthresh_rsn_labels', labels)] +
-                   list(zip(keys, sub_files)))
+                  list(zip(keys, sub_files)))
 
     return Bunch(**params)
