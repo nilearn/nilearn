@@ -7,7 +7,6 @@ from sklearn.externals.joblib import Memory
 
 from .. import _utils
 from .._utils import logger, CacheMixin
-from .._utils.niimg import _get_data_dtype
 from .._utils.class_inspect import get_params
 from .._utils.niimg_conversions import _check_same_fov
 from .._utils.compat import get_affine
@@ -37,6 +36,9 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
     NiftiMapsMasker is useful when data from overlapping volumes should be
     extracted (contrarily to NiftiLabelsMasker). Use case: Summarize brain
     signals from large-scale networks obtained by prior PCA or ICA.
+
+    Note that, Inf or NaN present in the given input images are automatically
+    put to zero rather than considered as missing data.
 
     Parameters
     ----------
@@ -161,6 +163,9 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
                    verbose=self.verbose)
 
         self.maps_img_ = _utils.check_niimg_4d(self.maps_img)
+        self.maps_img_ = image.clean_img(self.maps_img_, detrend=False,
+                                         standardize=False,
+                                         ensure_finite=True)
 
         if self.mask_img is not None:
             logger.log("loading mask from %s" %
@@ -276,8 +281,8 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
             # Check if there is an overlap.
 
             # If float, we set low values to 0
-            dtype = _get_data_dtype(self._resampled_maps_img_)
             data = self._resampled_maps_img_.get_data()
+            dtype = data.dtype
             if dtype.kind == 'f':
                 data[data < np.finfo(dtype).eps] = 0.
 

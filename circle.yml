@@ -37,11 +37,8 @@ dependencies:
 
 test:
   override:
-    - echo "ignore unit tests in circleCI"
-    # - make clean test test-coverage
-    # workaround - make html returns 0 even if examples fail to build
-    # (see https://github.com/sphinx-gallery/sphinx-gallery/issues/45)
-    - cat ~/log.txt && if grep -q "Traceback (most recent call last):" ~/log.txt; then false; else true; fi
+    # override is needed otherwise nosetests is run by default
+    - echo "Documentation has been built in the 'dependencies' step. No additional test to run"
 
 general:
   artifacts:
