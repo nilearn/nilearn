@@ -176,7 +176,7 @@ def _nn_connectivity(connectivity, threshold):
         (1. / connectivity.data, connectivity.nonzero()),
         (n_features, n_features)).tocsr()
 
-    inv_max = dia_matrix((1. / np.max(connectivity_, axis=0).toarray()[0], 0),
+    inv_max = dia_matrix((1. / connectivity_.max(axis=0).toarray()[0], 0),
                          shape=(n_features, n_features))
 
     connectivity_ = inv_max * connectivity_
@@ -229,7 +229,7 @@ def _reduce_data_and_connectivity(labels, n_labels, connectivity, masked_data,
         shape=(n_labels, n_features), dtype=np.float32).tocsc()
 
     inv_sum_col = dia_matrix(
-        (np.array(1. / np.sum(incidence, axis=1)).squeeze(), 0),
+        (np.array(1. / incidence.sum(axis=1)).squeeze(), 0),
         shape=(n_labels, n_labels))
 
     incidence = inv_sum_col * incidence
