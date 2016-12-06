@@ -1,6 +1,9 @@
 """Recursive nearest agglomeration (ReNA):
     fastclustering for approximation of structured signals
 """
+# Author: Andres Hoyos idrobo, Gael Varoquaux, Jonas Kahn and  Bertrand Thirion
+# License: simplified BSD
+
 import numpy as np
 import warnings
 from sklearn.externals.joblib import Memory
@@ -11,57 +14,109 @@ from .._utils.fixes import check_array, check_is_fitted
 from ..input_data import NiftiMasker, MultiNiftiMasker
 
 
-def _compute_weights(masker, data_matrix):
+def _compute_weights(masker, masked_data):
     """Compute the weights in the direction of each axis using the Euclidean
-    distance.
+    distance --i.e. weights = (weight_deep, weights_right, weight_down).
 
-    Note: Here we are assuming a square lattice (no diagonal connections)
+    Note: Here we assume a square lattice (no diagonal connections).
+
+    Parameters
+    ----------
+    masker : NiftiMasker
+        The nifti masker used to mask the data.
+
+    masked_data : numpy array of shape [n_samples, n_features]
+        Image in brain space transformed into 2D data matrix.
+
+    Returns
+    -------
+    weights : numpy array
+        Weights corresponding to all edges in the mask.
+        shape: (n_edges,)
     """
-    dims = len(masker.mask_img_.shape)
-    data_graph = masker.inverse_transform(data_matrix).get_data()
-    weights = []
+    data = masker.inverse_transform(masked_data).get_data()
 
-    for axis in range(dims):
-        weights.append(
-            np.sum(np.diff(data_graph, axis=axis) ** 2, axis=-1).ravel())
+    weights_deep = np.sum(np.diff(data, axis=2) ** 2, axis=-1).ravel()
+    weights_right = np.sum(np.diff(data, axis=1) ** 2, axis=-1).ravel()
+    weights_down = np.sum(np.diff(data, axis=0) ** 2, axis=-1).ravel()
 
-    return np.hstack(weights)
+    weights = np.hstack([weights_deep, weights_right, weights_down])
+
+    return weights
 
 
-def _compute_edges(data_graph, is_mask=False):
+def _make_edges_3d(vertices, is_mask):
+    """Create the edges set: Returns a list of edges for a 3D image.
+
+    Parameters
+    ----------
+    vertices : numpy.ndarray
+        The indices of the voxels.
+
+    is_mask : boolean
+        If is_mask is true, it returns the mask of edges.
+        Retruns 1 if the edge is contained in the mask, 0 otherwise.
+
+    Returns
+    -------
+    edges : numpy array
+        Edges corresponding to the image or mask.
+        shape: (1, n_edges) if_mask,
+               (2, n_edges) otherwise.
     """
-    """
-    dims = len(data_graph.shape)
-    edges = []
-    for axis in range(dims):
-        vertices_axis = np.swapaxes(data_graph, 0, axis)
 
-        if is_mask:
-            edges.append(np.logical_and(
-                vertices_axis[:-1].swapaxes(axis, 0).ravel(),
-                vertices_axis[1:].swapaxes(axis, 0).ravel()))
-        else:
-            edges.append(
-                np.vstack([vertices_axis[:-1].swapaxes(axis, 0).ravel(),
-                           vertices_axis[1:].swapaxes(axis, 0).ravel()]))
-    edges = np.hstack(edges)
+    if is_mask:
+        edges_deep = np.logical_and(vertices[:, :, :-1].ravel(),
+                                    vertices[:, :, 1:].ravel())
+        edges_right = np.logical_and(vertices[:, :-1].ravel(),
+                                     vertices[:, 1:].ravel())
+        edges_down = np.logical_and(vertices[:-1].ravel(),
+                                    vertices[1:].ravel())
+    else:
+        edges_deep = np.vstack([vertices[:, :, :-1].ravel(),
+                                vertices[:, :, 1:].ravel()])
+        edges_right = np.vstack([vertices[:, :-1].ravel(),
+                                 vertices[:, 1:].ravel()])
+        edges_down = np.vstack([vertices[:-1].ravel(),
+                                vertices[1:].ravel()])
+
+    edges = np.hstack([edges_deep, edges_right, edges_down])
 
     return edges
 
 
-def _create_ordered_edges(masker, data_matrix):
-    """
+def _make_edges_and_weights(masker, masked_data):
+    """Compute the weights to all edges in the mask.
+
+    Parameters
+    ----------
+    masker : NiftiMasker
+        The nifti masker used to mask the data.
+
+    masked_data : numpy array of shape [n_samples, n_features]
+        Image in brain space transformed into 2D data matrix.
+
+    Returns
+    -------
+    edges : numpy array
+
+    weights : numpy array
+
+    edges_mask : numpy array
     """
     mask = masker.mask_img_.get_data()
     shape = mask.shape
     n_features = np.prod(shape)
 
+    # Indexing each voxel
     vertices = np.arange(n_features).reshape(shape)
-    weights = _compute_weights(masker, data_matrix)
-    edges = _compute_edges(vertices)
-    edges_mask = _compute_edges(mask, is_mask=True)
 
-    # Apply the mask
+    weights = _compute_weights(masker, masked_data)
+
+    edges = _make_edges_3d(vertices, is_mask=False)
+    edges_mask = _make_edges_3d(mask, is_mask=True)
+
+    # Apply mask to edges and weights
     weights = weights[edges_mask]
     edges = edges[:, edges_mask]
 
@@ -73,17 +128,25 @@ def _create_ordered_edges(masker, data_matrix):
     return edges, weights, edges_mask
 
 
-def weighted_connectivity_graph(masker, data_matrix):
-    """ Creating weighted graph
+def weighted_connectivity_graph(masker, masked_data):
+    """ Creating weighted graph: data and topology are encoded by a
+    connectivity matrix.
 
-    data and topology, encoded by a connectivity matrix
+    Parameters
+    ----------
+    masked_data : numpy array of shape [n_samples, n_features]
+        Image in brain space transformed into 2D data matrix
 
+    Returns
+    -------
+    connectivity : a sparse COO matrix
     """
     n_features = masker.mask_img_.get_data().sum()
 
-    edges, weight, edges_mask = _create_ordered_edges(masker, data_matrix)
-    connectivity = coo_matrix(
-        (weight, edges), (n_features, n_features)).tocsr()
+    edges, weight, edges_mask = _make_edges_and_weights(masker, masked_data)
+
+    connectivity = coo_matrix((weight, edges),
+                              (n_features, n_features)).tocsr()
 
     # Making it symmetrical
     connectivity = (connectivity + connectivity.T) / 2
@@ -94,7 +157,18 @@ def weighted_connectivity_graph(masker, data_matrix):
 def _nn_connectivity(connectivity, threshold):
     """ Fast implementation of nearest neighbor connectivity
 
-    connectivity: weighted connectivity matrix
+    Parameters
+    ----------
+    connectivity : a sparse matrix in COOrdinate format.
+        Weighted connectivity matrix
+
+    threshold : float in the close interval [0, 1]
+        The treshold is setted to handle eccentricities.
+        In practice it is 1e-7.
+
+    Returns
+    -------
+    nn_connectivity : a sparse matrix in COOrdinate format.
     """
     n_features = connectivity.shape[0]
 
@@ -107,12 +181,13 @@ def _nn_connectivity(connectivity, threshold):
 
     connectivity_ = inv_max * connectivity_
 
-    # Dealing with eccentricities
+    # Dealing with eccentricities, there are probably many neares neighbors
     edge_mask = connectivity_.data > 1 - threshold
 
     j_idx = connectivity_.nonzero()[1][edge_mask]
     i_idx = connectivity_.nonzero()[0][edge_mask]
 
+    # Set weights to 1
     weight = np.ones_like(j_idx)
     edges = np.array((i_idx, j_idx))
 
@@ -121,9 +196,31 @@ def _nn_connectivity(connectivity, threshold):
     return nn_connectivity
 
 
-def reduce_data_and_connectivity(labels, n_labels, connectivity, data_matrix,
-                                 threshold):
-    """
+def _reduce_data_and_connectivity(labels, n_labels, connectivity, masked_data,
+                                  threshold):
+    """Perform feature grouping and reduce the connectivity matrix.
+
+    Parameters
+    ----------
+    labels : array like
+
+    n_labels : int
+
+    connectivity : a sparse matrix in COOrdinate format.
+
+    masked_data : array like
+        2D data matrix.
+
+    threshold : float in the close interval [0, 1]
+        The treshold is setted to handle eccentricities.
+        In practice it is 1e-7.
+
+    Returns
+    -------
+    reduced_connectivity : a sparse matrix in COOrdinate format.
+
+    reduced_masked_data: array like
+        2D data matrix.
     """
     n_features = len(labels)
 
@@ -137,8 +234,7 @@ def reduce_data_and_connectivity(labels, n_labels, connectivity, data_matrix,
 
     incidence = inv_sum_col * incidence
 
-    # reduced data
-    reduced_data_matrix = (incidence * data_matrix.T).T
+    reduced_masked_data = (incidence * masked_data.T).T
     reduced_connectivity = (incidence * connectivity) * incidence.T
 
     reduced_connectivity = reduced_connectivity - dia_matrix(
@@ -147,16 +243,44 @@ def reduce_data_and_connectivity(labels, n_labels, connectivity, data_matrix,
 
     i_idx, j_idx = reduced_connectivity.nonzero()
 
-    data_matrix_ = np.maximum(threshold, np.sum(
-        (reduced_data_matrix[:, i_idx] - reduced_data_matrix[:, j_idx]) ** 2, 0))
-    reduced_connectivity.data = data_matrix_
+    weights_ = np.sum(
+        (reduced_masked_data[:, i_idx] - reduced_masked_data[:, j_idx]) ** 2,
+        axis=0)
+    weights_ = np.maximum(threshold, weights_)
+    reduced_connectivity.data = weights_
 
-    return reduced_connectivity, reduced_data_matrix
+    return reduced_connectivity, reduced_masked_data
 
 
-def nearest_neighbor_grouping(connectivity, data_matrix, n_clusters,
+def nearest_neighbor_grouping(connectivity, masked_data, n_clusters,
                               threshold):
-    """ Cluster according to nn and reduce the data and connectivity
+    """Cluster using nearest agglomeration: merge clusters according to their
+    nearest neighbors, then the data and the connectivity are reduced.
+
+    Parameters
+    ----------
+    connectivity : a sparse matrix in COOrdinate format.
+        Weighted connectivity matrix
+
+    masked_data : numpy array of shape [n_samples, n_features]
+        Image in brain space transformed into 2D data matrix
+
+    n_clusters : int
+        The number of clusters to find.
+
+    threshold : float in the close interval [0, 1]
+        The treshold is setted to handle eccentricities.
+        In practice it is 1e-7.
+
+    Returns
+    -------
+    reduced_connectivity : a sparse matrix in COOrdinate format.
+
+    reduced_masked_data :  array like
+        2D data matrix.
+
+    labels : array like
+        It contains the clusters assignation.
     """
     # Nearest neighbor conenctivity
     nn_connectivity = _nn_connectivity(connectivity, threshold)
@@ -185,26 +309,52 @@ def nearest_neighbor_grouping(connectivity, data_matrix, n_clusters,
     n_labels, labels = csgraph.connected_components(nn_connectivity)
 
     # Reduction step: reduction by averaging
-    reduced_connectivity, reduced_data_matrix = reduce_data_and_connectivity(
-        labels, n_labels, connectivity, data_matrix, threshold)
+    reduced_connectivity, reduced_masked_data = _reduce_data_and_connectivity(
+        labels, n_labels, connectivity, masked_data, threshold)
 
-    return reduced_connectivity, reduced_data_matrix, labels
+    return reduced_connectivity, reduced_masked_data, labels
 
 
-def recursive_nearest_agglomeration(masker, data_matrix, n_clusters, n_iter,
+def recursive_nearest_agglomeration(masker, masked_data, n_clusters, n_iter,
                                     threshold):
+    """Recursive nearest agglomeration: it performs iteratively the nearest
+    neighbor grouping.
+
+    Parameters
+    ----------
+    connectivity : a sparse matrix in COOrdinate format.
+        Weighted connectivity matrix
+
+    masked_data : numpy array of shape [n_samples, n_features]
+        Image in brain space transformed into 2D data matrix
+
+    n_clusters : int
+        The number of clusters to find.
+
+    n_iter : int
+        Number of iterations.
+
+    threshold : float in the close interval [0, 1]
+        The treshold is setted to handle eccentricities.
+        In practice it is 1e-7.
+
+    Returns
+    -------
+    n_labels : int
+        Number of clusters.
+
+    labels : array
+        Cluster assignation.
     """
-    """
-    # Weighted connectivity matrix
-    connectivity = weighted_connectivity_graph(masker, data_matrix)
+    connectivity = weighted_connectivity_graph(masker, masked_data)
 
     # Initialization
     labels = np.arange(connectivity.shape[0])
     n_labels = connectivity.shape[0]
 
     for i in range(n_iter):
-        connectivity, data_matrix, reduced_labels = nearest_neighbor_grouping(
-            connectivity, data_matrix, n_clusters, threshold)
+        connectivity, masked_data, reduced_labels = nearest_neighbor_grouping(
+            connectivity, masked_data, n_clusters, threshold)
 
         labels = reduced_labels[labels]
         n_labels = connectivity.shape[0]
@@ -228,24 +378,24 @@ class ReNA(BaseEstimator):
         then its mask will be used. If no mask is it will be computed
         automatically by a NiftiMasker.
 
-    n_cluster: int, optional (default 2)
+    n_clusters : int, optional (default 2)
         The number of clusters to find.
 
-    scaling: bool, optional (default False)
+    scaling : bool, optional (default False)
 
-    memory: instance of joblib.Memory or string
+    memory : instance of joblib.Memory or string
         Used to cache the masking process.
         By default, no caching is done. If a string is given, it is the
         path to the caching directory.
 
-    memory_level: integer, optional (default 1)
+    memory_level : integer, optional (default 1)
         Rough estimator of the amount of memory used by caching. Higher value
         means more memory for caching.
 
     verbose : int, optional (default 1)
         Verbosity level.
 
-    smoothing_fwhm: float, optional
+    smoothing_fwhm : float, optional
         If smoothing_fwhm is not None, it gives the size in millimeters of the
         spatial smoothing to apply to the signal.
 
@@ -263,11 +413,11 @@ class ReNA(BaseEstimator):
         This parameter is passed to image.resample_img. Please see the
         related documentation for details.
 
-    low_pass: None or float, optional
+    low_pass : None or float, optional
         This parameter is passed to signal.clean. Please see the related
         documentation for details
 
-    high_pass: None or float, optional
+    high_pass : None or float, optional
         This parameter is passed to signal.clean. Please see the related
         documentation for details
 
@@ -275,10 +425,10 @@ class ReNA(BaseEstimator):
         This parameter is passed to signal.clean. Please see the related
         documentation for details.
 
-    n_iter: int, optional (default 10)
+    n_iter : int, optional (default 10)
         Number of iterations of the recursive nearest agglomeration
 
-    threshold: float in the opened interval (0., 1.), optional (default 1e-7)
+    threshold : float in the opened interval (0., 1.), optional (default 1e-7)
         Threshold used to handle eccentricities.
 
     Attributes
@@ -378,8 +528,8 @@ class ReNA(BaseEstimator):
 
         Returns
         -------
-        X : array
-
+        X : numpy array
+            2D data matrix of shape [n_sampels, n_clusters]
         """
 
         check_is_fitted(self, "masker_")
@@ -411,10 +561,9 @@ class ReNA(BaseEstimator):
 
         Returns
         -------
-        X : array
-
+        X : numpy array
+            2D data matrix of shape [n_samples, n_clusters].
         """
-
         self.fit(X)
         return self.transform(X)
 
@@ -422,7 +571,12 @@ class ReNA(BaseEstimator):
         """
         Parameters
         ----------
-        Xred : array like
+        Xred : numpy array
+            2D data matrix of shape [n_samples, n_features]
+
+        Returns
+        -------
+        X_inv : Niimg
         """
 
         check_is_fitted(self, "labels_")
@@ -431,7 +585,9 @@ class ReNA(BaseEstimator):
 
         if self.scaling:
             Xred = Xred / np.sqrt(self.sizes_)
-        return Xred[..., inverse]
+        X_inv = Xred[..., inverse]
+
+        return self.masker_.inverse_transform(X_inv)
 
 
 # XXX this code is also replicated in the Metaestimator PR
