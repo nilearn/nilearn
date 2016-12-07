@@ -166,8 +166,8 @@ for _cmapname in list(_cmaps_data.keys()):  # needed as dict changes within loop
 ################################################################################
 # A few transparent colormaps
 for color, name in (((1, 0, 0), 'red'),
-                    ((0, 1, 0), 'blue'),
-                    ((0, 0, 1), 'green'),
+                    ((0, 1, 0), 'green'),
+                    ((0, 0, 1), 'blue'),
                     ):
     _cmap_d['%s_transparent' % name] = alpha_cmap(color, name=name)
     _cmap_d['%s_transparent_full_alpha_range' % name] = alpha_cmap(
