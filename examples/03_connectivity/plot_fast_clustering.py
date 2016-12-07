@@ -24,7 +24,7 @@ in the documentation section :ref:`parcellating_brain`.
 # Download a rest dataset and turn it to a data matrix
 # -----------------------------------------------------
 #
-# We we download one subject of the ADHD dataset from Internet
+# We download one subject of the ADHD dataset from Internet
 
 from nilearn import datasets
 dataset = datasets.fetch_adhd(n_subjects=1)
@@ -87,13 +87,12 @@ print("ReNA 2000 clusters: %.2fs" % (time.time() - start))
 from nilearn.plotting import plot_roi, plot_epi, show
 import numpy as np
 
-# Unmask the labels
-
 # Avoid 0 label
 labels = rena.labels_ + 1
 # Shuffling the labels for visualization
 permutation = np.random.permutation(labels.shape[0])
 labels = permutation[labels]
+# Unmask the labels
 labels_img = nifti_masker.inverse_transform(labels)
 
 ##################################################################

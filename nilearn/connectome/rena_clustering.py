@@ -8,6 +8,7 @@ import numpy as np
 import warnings
 from sklearn.externals.joblib import Memory
 from sklearn.externals import six
+from sklearn.base import TransformerMixin, ClusterMixin
 from scipy.sparse import csgraph, coo_matrix, dia_matrix
 from sklearn.base import BaseEstimator, clone
 from .._utils.fixes import check_array, check_is_fitted
@@ -134,6 +135,8 @@ def weighted_connectivity_graph(masker, masked_data):
 
     Parameters
     ----------
+    masker : NiftiMasker instance
+
     masked_data : numpy array of shape [n_samples, n_features]
         Image in brain space transformed into 2D data matrix
 
@@ -198,13 +201,17 @@ def _nn_connectivity(connectivity, threshold):
 
 def _reduce_data_and_connectivity(labels, n_labels, connectivity, masked_data,
                                   threshold):
-    """Perform feature grouping and reduce the connectivity matrix.
+    """Perform feature grouping and reduce the connectivity matrix: during the
+    reduction step one changes the value of each cluster by their mean.
+    In addition, connected nodes are merged.
 
     Parameters
     ----------
     labels : array like
+        Containts the label assignation for each voxel.
 
     n_labels : int
+        The number of clusters in the current iteration.
 
     connectivity : a sparse matrix in COOrdinate format.
 
@@ -322,8 +329,7 @@ def recursive_nearest_agglomeration(masker, masked_data, n_clusters, n_iter,
 
     Parameters
     ----------
-    connectivity : a sparse matrix in COOrdinate format.
-        Weighted connectivity matrix
+    masker : NiftiMasker instance
 
     masked_data : numpy array of shape [n_samples, n_features]
         Image in brain space transformed into 2D data matrix
@@ -365,7 +371,7 @@ def recursive_nearest_agglomeration(masker, masked_data, n_clusters, n_iter,
     return n_labels, labels
 
 
-class ReNA(BaseEstimator):
+class ReNA(BaseEstimator, ClusterMixin, TransformerMixin):
     """
     Recursive nearest agglomeration.
     Recursively merges the pair of clusters according to 1-nearest neighbors
@@ -547,24 +553,6 @@ class ReNA(BaseEstimator):
             Xred = Xred * np.sqrt(self.sizes_)
 
         return Xred
-
-    def fit_transform(self, X, y=None):
-        """Fit to data, then perform the clustering (transformation)
-
-        Parameters
-        ----------
-        X : list of Niimg-like objects
-            See http://nilearn.github.io/manipulating_images/input_output.html
-            Data on which model is to be fitted. If this is a list,
-            the affine is considered the same for all.
-
-        Returns
-        -------
-        X : numpy array
-            2D data matrix of shape [n_samples, n_clusters].
-        """
-        self.fit(X)
-        return self.transform(X)
 
     def inverse_transform(self, Xred):
         """
