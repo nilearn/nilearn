@@ -786,8 +786,8 @@ def fetch_coords_dosenbach_2010(ordered_regions=True):
 
 def fetch_atlas_allen_2011(data_dir=None, url=None, resume=True, verbose=1):
     """Download and return file names for the resting-state networks atlas
-    published by Allen et al. in 2011.
-    The provided images are in MNI152 space.
+    published by Allen et al. in 2011. The provided images are in MNI152 space.
+
     Parameters
     ----------
     data_dir: string, optional
@@ -798,6 +798,7 @@ def fetch_atlas_allen_2011(data_dir=None, url=None, resume=True, verbose=1):
         whether to resumed download of a partly-downloaded file.
     verbose: int
         verbosity level (0 means no message).
+
     Returns
     -------
     data: sklearn.datasets.base.Bunch
@@ -806,6 +807,7 @@ def fetch_atlas_allen_2011(data_dir=None, url=None, resume=True, verbose=1):
         - "rsn_unthresh_tmaps": T-maps of 28 RSNs included in E. Allen et al.
         - "all_unthresh_rsn_labels": Labels for the 28 RSNs.
         - "aggregate_ic_comps": Aggregate ICA Components.
+
     References
     ----------
     Licence: unknown
