@@ -46,7 +46,7 @@ def _compute_weights(masker, masked_data):
     return weights
 
 
-def _make_edges_3d(vertices, is_mask):
+def _make_3d_edges(vertices, is_mask):
     """Create the edges set: Returns a list of edges for a 3D image.
 
     Parameters
@@ -100,10 +100,11 @@ def _make_edges_and_weights(masker, masked_data):
     Returns
     -------
     edges : numpy array
+        Array containing [edges_deep, edges_right, edges_down]
 
     weights : numpy array
-
-    edges_mask : numpy array
+        Weights corresponding to all edges in the mask.
+        shape: (n_edges,)
     """
     mask = masker.mask_img_.get_data()
     shape = mask.shape
@@ -114,8 +115,8 @@ def _make_edges_and_weights(masker, masked_data):
 
     weights = _compute_weights(masker, masked_data)
 
-    edges = _make_edges_3d(vertices, is_mask=False)
-    edges_mask = _make_edges_3d(mask, is_mask=True)
+    edges = _make_3d_edges(vertices, is_mask=False)
+    edges_mask = _make_3d_edges(mask, is_mask=True)
 
     # Apply mask to edges and weights
     weights = weights[edges_mask]
@@ -126,7 +127,7 @@ def _make_edges_and_weights(masker, masked_data):
     order = np.searchsorted(np.unique(edges.ravel()), np.arange(max_index + 1))
     edges = order[edges]
 
-    return edges, weights, edges_mask
+    return edges, weights
 
 
 def weighted_connectivity_graph(masker, masked_data):
@@ -146,7 +147,7 @@ def weighted_connectivity_graph(masker, masked_data):
     """
     n_features = masker.mask_img_.get_data().sum()
 
-    edges, weight, edges_mask = _make_edges_and_weights(masker, masked_data)
+    edges, weight = _make_edges_and_weights(masker, masked_data)
 
     connectivity = coo_matrix((weight, edges),
                               (n_features, n_features)).tocsr()
@@ -192,7 +193,7 @@ def _nn_connectivity(connectivity, threshold):
 
     # Set weights to 1
     weight = np.ones_like(j_idx)
-    edges = np.array((i_idx, j_idx))
+    edges = np.array([i_idx, j_idx])
 
     nn_connectivity = coo_matrix((weight, edges), (n_features, n_features))
 
@@ -296,21 +297,24 @@ def nearest_neighbor_grouping(connectivity, masked_data, n_clusters,
     n_labels = n_features - (nn_connectivity + nn_connectivity.T).nnz / 2
 
     if n_labels < n_clusters:
-        # cut some links to achieve the desired number of clusters
-        alpha = n_features - n_clusters
+        # remove edges so that the final number of clusters is not less than
+        # n_clusters (to achieve the desired number of clusters)
+        n_edges = n_features - n_clusters
 
-        nn_connectivity = nn_connectivity + nn_connectivity.T
+        nn_connectivity = (nn_connectivity + nn_connectivity.T)
 
-        edges_ = np.array(nn_connectivity.nonzero())
+        i_idx, j_idx = nn_connectivity.nonzero()
+        edges = np.array([i_idx, j_idx])
 
-        plop = edges_[0] - edges_[1]
+        # select n_edges to merge.
+        edge_mask = np.argsort(i_idx - j_idx)[:n_edges]
 
-        select = np.argsort(plop)[:alpha]
+        # Set weights to 1, and the connectivity matrix symetrical.
+        weight = np.ones(2 * n_edges)
+        edges = np.hstack([edges[:, edge_mask], edges[::-1, edge_mask]])
 
-        nn_connectivity = coo_matrix(
-            (np.ones(2 * alpha),
-             np.hstack((edges_[:, select], edges_[::-1, select]))),
-            (n_features, n_features))
+        nn_connectivity = coo_matrix((weight, edges),
+                                     (n_features, n_features))
 
     # Clustering step: getting the connected components of the nn matrix
     n_labels, labels = csgraph.connected_components(nn_connectivity)
@@ -322,9 +326,9 @@ def nearest_neighbor_grouping(connectivity, masked_data, n_clusters,
     return reduced_connectivity, reduced_masked_data, labels
 
 
-def recursive_nearest_agglomeration(masker, masked_data, n_clusters, n_iter,
-                                    threshold):
-    """Recursive nearest agglomeration: it performs iteratively the nearest
+def recursive_neighbor_agglomeration(masker, masked_data, n_clusters,
+                                     n_iter=10, threshold=1e-7):
+    """Recursive neighbor agglomeration: it performs iteratively the nearest
     neighbor grouping.
 
     Parameters
@@ -337,10 +341,10 @@ def recursive_nearest_agglomeration(masker, masked_data, n_clusters, n_iter,
     n_clusters : int
         The number of clusters to find.
 
-    n_iter : int
+    n_iter : int, optional (default 10)
         Number of iterations.
 
-    threshold : float in the close interval [0, 1]
+    threshold : float in the close interval [0, 1], optional (default 1e-7)
         The treshold is setted to handle eccentricities.
         In practice it is 1e-7.
 
@@ -372,8 +376,7 @@ def recursive_nearest_agglomeration(masker, masked_data, n_clusters, n_iter,
 
 
 class ReNA(BaseEstimator, ClusterMixin, TransformerMixin):
-    """
-    Recursive nearest agglomeration.
+    """Recursive Neighbor Agglomeration:
     Recursively merges the pair of clusters according to 1-nearest neighbors
     criterion.
 
@@ -432,9 +435,9 @@ class ReNA(BaseEstimator, ClusterMixin, TransformerMixin):
         documentation for details.
 
     n_iter : int, optional (default 10)
-        Number of iterations of the recursive nearest agglomeration
+        Number of iterations of the recursive neighbor agglomeration
 
-    threshold : float in the opened interval (0., 1.), optional (default 1e-7)
+    threshold : float in the open interval (0., 1.), optional (default 1e-7)
         Threshold used to handle eccentricities.
 
     Attributes
@@ -475,7 +478,7 @@ class ReNA(BaseEstimator, ClusterMixin, TransformerMixin):
         self.verbose = verbose
 
     def fit(self, X, y=None):
-        """Compute clustering of the data
+        """Compute clustering of the data.
 
         Parameters
         ----------
@@ -499,6 +502,10 @@ class ReNA(BaseEstimator, ClusterMixin, TransformerMixin):
             raise ValueError("n_clusters should be an integer greater than 0."
                              " %s was provided." % str(self.n_clusters))
 
+        if self.n_iter <= 0:
+            raise ValueError("n_iter should be an integer greater than 0."
+                             " %s was provided." % str(self.n_iter))
+
         self.masker_ = _check_masking(self.mask, self.smoothing_fwhm,
                                       self.target_affine, self.target_shape,
                                       self.standardize, self.mask_strategy,
@@ -506,11 +513,20 @@ class ReNA(BaseEstimator, ClusterMixin, TransformerMixin):
 
         X = self.masker_.fit_transform(X)
 
+        n_features = X.shape[1]
+
+        if self.n_clusters > n_features:
+            self.n_clusters = n_features
+            warnings.warn("n_clusters should be at most the number of "
+                          "features. Taking n_clusters = %s instead."
+                          % str(n_features))
+
         X = check_array(X, ensure_min_features=2)
 
-        n_labels, labels = self.memory_.cache(recursive_nearest_agglomeration)(
-            self.masker_, X, self.n_clusters, n_iter=self.n_iter,
-            threshold=self.threshold)
+        n_labels, labels = self.memory_.cache(
+            recursive_neighbor_agglomeration)(self.masker_, X, self.n_clusters,
+                                              n_iter=self.n_iter,
+                                              threshold=self.threshold)
 
         sizes = np.bincount(labels)
         sizes = sizes[sizes > 0]
@@ -521,8 +537,8 @@ class ReNA(BaseEstimator, ClusterMixin, TransformerMixin):
 
         return self
 
-    def transform(self, X):
-        """Apply clustering, reduce the dimensionality of the data
+    def transform(self, X, y=None):
+        """Apply clustering, reduce the dimensionality of the data.
 
         Parameters
         ----------
@@ -533,7 +549,7 @@ class ReNA(BaseEstimator, ClusterMixin, TransformerMixin):
 
         Returns
         -------
-        X : numpy array
+        Xred : numpy array
             2D data matrix of shape [n_sampels, n_clusters]
         """
 
@@ -544,10 +560,11 @@ class ReNA(BaseEstimator, ClusterMixin, TransformerMixin):
 
         unique_labels = np.unique(self.labels_)
 
-        nX = []
-        for l in unique_labels:
-            nX.append(np.mean(X[:, self.labels_ == l], axis=1))
-        Xred = np.array(nX).T
+        mean_cluster = []
+        for label in unique_labels:
+            mean_cluster.append(np.mean(X[:, self.labels_ == label], axis=1))
+
+        Xred = np.array(mean_cluster).T
 
         if self.scaling:
             Xred = Xred * np.sqrt(self.sizes_)
@@ -555,15 +572,18 @@ class ReNA(BaseEstimator, ClusterMixin, TransformerMixin):
         return Xred
 
     def inverse_transform(self, Xred):
-        """
+        """Transform the reduced 2D data matrix back to an image in brain
+        space.
+
         Parameters
         ----------
         Xred : numpy array
-            2D data matrix of shape [n_samples, n_features]
+            2D data matrix of shape [n_samples, n_clusters]
 
         Returns
         -------
-        X_inv : Niimg
+        X_inv : nibabel.Nifti1Image
+            shape: (n_x, n_y, n_z, n_samples)
         """
 
         check_is_fitted(self, "labels_")

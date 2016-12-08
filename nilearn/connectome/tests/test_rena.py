@@ -16,6 +16,7 @@ def test_rena_clusterings():
     data_compress = rena.inverse_transform(data_red)
 
     assert_equal(10, rena.n_clusters_)
+    assert_equal(data.shape, data_compress.shape)
 
     memory = Memory(cachedir=None)
     rena2 = ReNA(n_clusters=-2, mask=nifti_masker, memory=memory)
@@ -24,3 +25,6 @@ def test_rena_clusterings():
     rena3 = ReNA(n_clusters=10, mask=None, scaling=True)
     data_red2 = rena3.fit_transform(index_img(data, 0))
     data_compress2 = rena3.inverse_transform(data_red2)
+
+    rena4 = ReNA(n_iter=-2, mask=nifti_masker, memory=memory)
+    assert_raises(ValueError, rena4.fit, data)

@@ -128,8 +128,8 @@ plot_epi(nifti_masker.inverse_transform(fmri_masked[0]),
          display_mode='xz')
 
 
-# A reduced data can be create by taking the parcel-level average:
-# Note that, as many objects in the scikit-learn, the ReNA object exposes
+# A reduced data can be created by taking the parcel-level average:
+# Note that, as many scikit-learn objects, the ReNA object exposes
 # a transform method that modifies input features. Here it reduces their
 # dimension.
 # However, the data are in one single large 4D image, we need to use
