@@ -10,9 +10,8 @@ else:
     from sklearn.feature_selection import f_regression
 
 try:
-    if LooseVersion(sklearn.__version__) >= LooseVersion('0.18'):
-        from sklearn.model_selection import check_cv
-    # 0.18 > scikit-learn >= 0.16
+    #XXX this is going to be deprecated in sklearn 0.20
+    from sklearn.cross_validation import check_cv
     else:
         from sklearn.cross_validation import check_cv
 except ImportError:

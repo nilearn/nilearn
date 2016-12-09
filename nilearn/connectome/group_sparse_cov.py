@@ -13,7 +13,6 @@ import itertools
 import numpy as np
 import scipy.linalg
 
-import sklearn.cross_validation
 import sklearn.covariance
 from sklearn.utils.extmath import fast_logdet
 from sklearn.covariance import empirical_covariance
@@ -24,6 +23,7 @@ from sklearn.externals.joblib import Memory, delayed, Parallel
 from .._utils import CacheMixin
 from .._utils import logger
 from .._utils.extmath import is_spd
+from .._utils.fixes import check_cv
 
 
 def compute_alpha_max(emp_covs, n_samples):
@@ -942,8 +942,7 @@ class GroupSparseCovarianceCV(BaseEstimator, CacheMixin):
         # can have a different number of samples from the others.
         cv = []
         for k in range(n_subjects):
-            cv.append(sklearn.cross_validation.check_cv(
-                self.cv, subjects[k], None, classifier=False))
+            cv.append(check_cv(self.cv, subjects[k], None, classifier=False))
 
         path = list()  # List of (alpha, scores, covs)
         n_alphas = self.alphas

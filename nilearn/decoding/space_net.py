@@ -24,10 +24,10 @@ from sklearn.linear_model.base import LinearModel, center_data
 from sklearn.feature_selection import (SelectPercentile, f_regression,
                                        f_classif)
 from sklearn.externals.joblib import Memory, Parallel, delayed
-from sklearn.cross_validation import check_cv
 from sklearn.preprocessing import LabelBinarizer
 from sklearn.metrics import accuracy_score
 from .._utils.fixes import check_X_y
+from .._utils.fixes import check_cv
 from .._utils.compat import _basestring, get_header
 from .._utils.fixes import atleast2d_or_csr
 from .._utils.cache_mixin import CacheMixin
