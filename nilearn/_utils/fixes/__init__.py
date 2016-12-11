@@ -10,7 +10,7 @@ else:
     from sklearn.feature_selection import f_regression
 
 try:
-    # 0.18 > scikit-learn >= 0.16
+    # scikit-learn >= 0.16
     from sklearn.cross_validation import check_cv
 except ImportError:
     # scikit-learn < 0.16
