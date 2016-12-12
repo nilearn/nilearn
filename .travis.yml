@@ -19,7 +19,7 @@ env:
       NUMPY_VERSION="1.8.2" SCIPY_VERSION="0.13.3"
       SCIKIT_LEARN_VERSION="0.14.1"
       PANDAS_VERSION="0.13.0"
-    - DISTRIB="neurodebian" PYTHON_VERSION="2.7"
+    # - DISTRIB="neurodebian" PYTHON_VERSION="2.7"
     # Trying to get as close to the minimum required versions while
     # still having the package version available through conda
     - DISTRIB="conda" PYTHON_VERSION="2.6"
