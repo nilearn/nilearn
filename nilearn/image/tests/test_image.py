@@ -311,6 +311,18 @@ def test_index_img():
                                 "a 3D image.",
                                 image.index_img, img_3d, 0)
 
+    img_3d = nibabel.Nifti1Image(np.ones((3, 4, 5)), np.eye(4))
+    testing.assert_raises_regex(TypeError,
+                                "Input data has incompatible dimensionality: "
+                                "Expected dimension is 4D and you provided "
+                                "a 3D image.",
+                                image.index_img, img_3d, 1, accept_3d=True)
+
+    img_3d = nibabel.Nifti1Image(np.ones((3, 4, 5)), np.eye(4))
+    this_img = image.index_img(img_3d, 0, accept_3d=True)
+    assert_array_equal(this_img.get_data(),
+                       img_3d.get_data())
+
     affine = np.array([[1., 2., 3., 4.],
                        [5., 6., 7., 8.],
                        [9., 10., 11., 12.],
