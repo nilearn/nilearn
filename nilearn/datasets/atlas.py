@@ -790,9 +790,9 @@ def fetch_atlas_allen_2011(data_dir=None, url=None, resume=True, verbose=1):
 
     Parameters
     ----------
-    data_dir: string, optional
+    data_dir: str, optional
         directory where data should be downloaded and unpacked.
-    url: string, optional
+    url: str, optional
         url of file to download.
     resume: bool
         whether to resumed download of a partly-downloaded file.

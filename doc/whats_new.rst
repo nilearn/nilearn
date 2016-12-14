@@ -8,9 +8,9 @@ Enhancements
 ............
 
    - Add fetcher for Allen et al. 2011 RSN atlas in
-     :func:`nilearn.datasets.atlas.fetch_atlas_allen_2011`.
-   
-    
+     :func:`nilearn.datasets.fetch_atlas_allen_2011`.
+
+
 0.2.6
 =====
 
@@ -49,7 +49,7 @@ Enhancements
 
    - Remove outdated power atlas example.
 
-   
+
 API changes summary
 ...................
 
@@ -252,10 +252,10 @@ Bug fixes
      the size of a voxel
    - :class:`nilearn.regions.RegionExtractor` handles data containing Nans.
    - Confound regression does not force systematically the normalization of
-     the confounds. 
+     the confounds.
    - Force time series normalization in
      :class:`nilearn.connectome.ConnectivityMeasure`
-     and check dimensionality of the input. 
+     and check dimensionality of the input.
    - `nilearn._utils.numpy_conversions.csv_to_array` could consider
      valid CSV files as invalid.
 
