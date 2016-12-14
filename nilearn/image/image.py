@@ -527,7 +527,8 @@ def index_img(imgs, index, accept_3d=False):
         Used for indexing the 4D data array in the fourth dimension.
 
     accept_3d: bool, optional
-        If accept_3d is True, an index 0 will return the
+        If True, 3D images will also be accepted when index is 0, this returns
+        the whole content of `imgs`. If False, `imgs` must be a 4D image.
 
     Returns
     -------
