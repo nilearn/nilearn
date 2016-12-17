@@ -23,7 +23,7 @@ from sklearn.externals.joblib import Memory, delayed, Parallel
 from .._utils import CacheMixin
 from .._utils import logger
 from .._utils.extmath import is_spd
-from .._utils.fixes import check_cv
+from .._utils.fixes import check_cv, izip
 
 
 def compute_alpha_max(emp_covs, n_samples):
@@ -964,7 +964,7 @@ class GroupSparseCovarianceCV(BaseEstimator, CacheMixin):
 
         # Copying the cv generators to use them n_refinements times.
         cv_list = []
-        cv_ = itertools.izip(*cv)
+        cv_ = izip(*cv)
         for i in range(n_refinements):
             _, cv_ = itertools.tee(cv_)
             cv_list.append(cv_)
