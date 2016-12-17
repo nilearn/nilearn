@@ -942,7 +942,9 @@ class GroupSparseCovarianceCV(BaseEstimator, CacheMixin):
         # can have a different number of samples from the others.
         cv = []
         for k in range(n_subjects):
-            cv.append(check_cv(self.cv, subjects[k], None, classifier=False))
+            cv.append(check_cv(
+                self.cv, np.ones(subjects[k].shape[0]),
+                classifier=False).split(subjects[k]))
 
         path = list()  # List of (alpha, scores, covs)
         n_alphas = self.alphas
@@ -956,13 +958,21 @@ class GroupSparseCovarianceCV(BaseEstimator, CacheMixin):
             alpha_1, _ = compute_alpha_max(emp_covs, n_samples)
             alpha_0 = 1e-2 * alpha_1
             alphas = np.logspace(np.log10(alpha_0), np.log10(alpha_1),
-                               n_alphas)[::-1]
+                                 n_alphas)[::-1]
 
         covs_init = itertools.repeat(None)
+
+        # Copying the cv generators to use them n_refinements times.
+        cv_list = []
+        cv_ = itertools.izip(*cv)
+        for i in range(n_refinements):
+            _, cv_ = itertools.tee(cv_)
+            cv_list.append(cv_)
+
         for i in range(n_refinements):
             # Compute the cross-validated loss on the current grid
             train_test_subjs = []
-            for train_test in zip(*cv):
+            for train_test in cv_list[i]:
                 assert(len(train_test) == n_subjects)
                 train_test_subjs.append(list(zip(*[(subject[train, :],
                                                     subject[test, :])
