@@ -13,12 +13,13 @@ from abc import ABCMeta, abstractmethod
 import numpy as np
 from collections import Iterable
 
-from sklearn.utils import indexable, check_random_state
+from sklearn.utils import check_random_state
 from sklearn.utils.validation import _num_samples
 from sklearn.utils.multiclass import type_of_target
 from sklearn.externals.six import with_metaclass
 from sklearn.utils.fixes import bincount
 from sklearn.base import _pprint
+from .sklearn_validation import indexable
 
 try:
     from inspect import signature
