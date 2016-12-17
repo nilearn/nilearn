@@ -1,20 +1,12 @@
+# sklearn 0.18
 """
 The :mod:`sklearn.model_selection._split` module includes classes and
 functions to split the data based on a preset strategy.
 """
-
-# Author: Alexandre Gramfort <alexandre.gramfort@inria.fr>,
-#         Gael Varoquaux <gael.varoquaux@normalesup.org>,
-#         Olivier Girsel <olivier.grisel@ensta.org>
-#         Raghav R V <rvraghav93@gmail.com>
-# License: BSD 3 clause
-
-
 from __future__ import print_function
 from __future__ import division
 
 import warnings
-from collections import Iterable
 import numbers
 from abc import ABCMeta, abstractmethod
 
@@ -24,9 +16,13 @@ from sklearn.utils import indexable
 from sklearn.utils.validation import _num_samples
 from sklearn.utils.multiclass import type_of_target
 from sklearn.externals.six import with_metaclass
-from sklearn.utils.fixes import signature
 from sklearn.base import _pprint
 from sklearn.cross_validation import KFold, StratifiedKFold
+
+try:
+    from inspect import signature
+except ImportError:
+    from .funcsigs import signature
 
 
 class BaseCrossValidator(with_metaclass(ABCMeta)):
@@ -183,21 +179,15 @@ def check_cv(cv=3, y=None, classifier=False):
     if cv is None:
         cv = 3
 
+    # Using old cv API (sklearn < 0.20)
     if isinstance(cv, numbers.Integral):
         if (classifier and (y is not None) and
                 (type_of_target(y) in ('binary', 'multiclass'))):
-            return StratifiedKFold(cv)
+            cv_ = StratifiedKFold(y, cv)
         else:
-            return KFold(cv)
+            cv_ = KFold(y, cv)
 
-    if not hasattr(cv, 'split') or isinstance(cv, str):
-        if not isinstance(cv, Iterable) or isinstance(cv, str):
-            raise ValueError("Expected cv as an integer, cross-validation "
-                             "object (from sklearn.model_selection) "
-                             "or an iterable. Got %s." % cv)
-        return _CVIterableWrapper(cv)
-
-    return cv  # New style cv objects are passed without any modification
+    return _CVIterableWrapper(cv_)
 
 
 def _build_repr(self):

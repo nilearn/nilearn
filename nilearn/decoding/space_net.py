@@ -816,8 +816,8 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
         case1 = (None in [alphas, l1_ratios]) and self.n_alphas > 1
         case2 = (alphas is not None) and min(len(l1_ratios), len(alphas)) > 1
         if case1 or case2:
-            self.cv_ = list(check_cv(self.cv, X=X, y=y,
-                                     classifier=self.is_classif))
+            self.cv_ = list(check_cv(self.cv, y=y,
+                                     classifier=self.is_classif).split(X, y))
         else:
             # no cross-validation needed, user supplied all params
             self.cv_ = [(np.arange(n_samples), [])]
