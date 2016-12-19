@@ -131,7 +131,7 @@ def _make_edges_and_weights(masker, masked_data):
 
 
 def weighted_connectivity_graph(masker, masked_data):
-    """ Creating weighted graph: data and topology are encoded by a
+    """ Creating symmetric weighted graph: data and topology are encoded by a
     connectivity matrix.
 
     Parameters
@@ -144,6 +144,7 @@ def weighted_connectivity_graph(masker, masked_data):
     Returns
     -------
     connectivity : a sparse COO matrix
+        sparse matrix representation of the weighted adjacency graph
     """
     n_features = masker.mask_img_.get_data().sum()
 
@@ -158,15 +159,15 @@ def weighted_connectivity_graph(masker, masked_data):
     return connectivity
 
 
-def _nn_connectivity(connectivity, threshold):
+def _nn_connectivity(connectivity, threshold=1e-7):
     """ Fast implementation of nearest neighbor connectivity
 
     Parameters
     ----------
     connectivity : a sparse matrix in COOrdinate format.
-        Weighted connectivity matrix
+        sparse matrix representation of the weighted adjacency graph
 
-    threshold : float in the close interval [0, 1]
+    threshold : float in the close interval [0, 1], optional (default 1e-7)
         The treshold is setted to handle eccentricities.
         In practice it is 1e-7.
 
@@ -201,7 +202,7 @@ def _nn_connectivity(connectivity, threshold):
 
 
 def _reduce_data_and_connectivity(labels, n_labels, connectivity, masked_data,
-                                  threshold):
+                                  threshold=1e-7):
     """Perform feature grouping and reduce the connectivity matrix: during the
     reduction step one changes the value of each cluster by their mean.
     In addition, connected nodes are merged.
@@ -215,11 +216,12 @@ def _reduce_data_and_connectivity(labels, n_labels, connectivity, masked_data,
         The number of clusters in the current iteration.
 
     connectivity : a sparse matrix in COOrdinate format.
+        sparse matrix representation of the weighted adjacency graph
 
     masked_data : array like
         2D data matrix.
 
-    threshold : float in the close interval [0, 1]
+    threshold : float in the close interval [0, 1], optional (default 1e-7)
         The treshold is setted to handle eccentricities.
         In practice it is 1e-7.
 
@@ -261,14 +263,14 @@ def _reduce_data_and_connectivity(labels, n_labels, connectivity, masked_data,
 
 
 def nearest_neighbor_grouping(connectivity, masked_data, n_clusters,
-                              threshold):
+                              threshold=1e-7):
     """Cluster using nearest agglomeration: merge clusters according to their
     nearest neighbors, then the data and the connectivity are reduced.
 
     Parameters
     ----------
     connectivity : a sparse matrix in COOrdinate format.
-        Weighted connectivity matrix
+        sparse matrix representation of the weighted adjacency graph
 
     masked_data : numpy array of shape [n_samples, n_features]
         Image in brain space transformed into 2D data matrix
@@ -276,7 +278,7 @@ def nearest_neighbor_grouping(connectivity, masked_data, n_clusters,
     n_clusters : int
         The number of clusters to find.
 
-    threshold : float in the close interval [0, 1]
+    threshold : float in the close interval [0, 1], optional (default 1e-7)
         The treshold is setted to handle eccentricities.
         In practice it is 1e-7.
 
@@ -293,14 +295,12 @@ def nearest_neighbor_grouping(connectivity, masked_data, n_clusters,
     # Nearest neighbor conenctivity
     nn_connectivity = _nn_connectivity(connectivity, threshold)
     n_features = connectivity.shape[0]
-
     n_labels = n_features - (nn_connectivity + nn_connectivity.T).nnz / 2
 
     if n_labels < n_clusters:
         # remove edges so that the final number of clusters is not less than
         # n_clusters (to achieve the desired number of clusters)
         n_edges = n_features - n_clusters
-
         nn_connectivity = (nn_connectivity + nn_connectivity.T)
 
         i_idx, j_idx = nn_connectivity.nonzero()
@@ -308,7 +308,6 @@ def nearest_neighbor_grouping(connectivity, masked_data, n_clusters,
 
         # select n_edges to merge.
         edge_mask = np.argsort(i_idx - j_idx)[:n_edges]
-
         # Set weights to 1, and the connectivity matrix symetrical.
         weight = np.ones(2 * n_edges)
         edges = np.hstack([edges[:, edge_mask], edges[::-1, edge_mask]])
@@ -376,21 +375,24 @@ def recursive_neighbor_agglomeration(masker, masked_data, n_clusters,
 
 
 class ReNA(BaseEstimator, ClusterMixin, TransformerMixin):
-    """Recursive Neighbor Agglomeration:
+    """Recursive nearest agglomeration (ReNA):
     Recursively merges the pair of clusters according to 1-nearest neighbors
     criterion.
 
     Parameters
     ----------
-    mask : filename, niimg, NiftiMasker instance, optional default None)
-        Mask to be used on data. If an instance of masker is passed,
-        then its mask will be used. If no mask is it will be computed
-        automatically by a NiftiMasker.
-
     n_clusters : int, optional (default 2)
         The number of clusters to find.
 
     scaling : bool, optional (default False)
+        If scaling is True, each cluster is scaled by the square root of its
+        size, preserving the l2-norm of the image.
+
+    n_iter : int, optional (default 10)
+        Number of iterations of the recursive neighbor agglomeration
+
+    threshold : float in the open interval (0., 1.), optional (default 1e-7)
+        Threshold used to handle eccentricities.
 
     memory : instance of joblib.Memory or string
         Used to cache the masking process.
@@ -403,6 +405,11 @@ class ReNA(BaseEstimator, ClusterMixin, TransformerMixin):
 
     verbose : int, optional (default 1)
         Verbosity level.
+
+    mask : filename, niimg, NiftiMasker instance, optional default None)
+        Mask to be used on data. If an instance of masker is passed,
+        then its mask will be used. If no mask is passed, it will be computed
+        automatically by a NiftiMasker.
 
     smoothing_fwhm : float, optional
         If smoothing_fwhm is not None, it gives the size in millimeters of the
@@ -434,22 +441,8 @@ class ReNA(BaseEstimator, ClusterMixin, TransformerMixin):
         This parameter is passed to signal.clean. Please see the related
         documentation for details.
 
-    n_iter : int, optional (default 10)
-        Number of iterations of the recursive neighbor agglomeration
-
-    threshold : float in the open interval (0., 1.), optional (default 1e-7)
-        Threshold used to handle eccentricities.
-
     Attributes
     ----------
-    `masker_` : instance of NiftiMasker
-        The nifti masker used to mask the data.
-
-    `mask_img_` : Nifti like image
-        The mask of the data. If no mask was supplied by the user,
-        this attribute is the mask image computed automatically from the
-        data `X`.
-
     `labels_ ` : array-like, (n_features,)
         cluster labels for each feature.
 
@@ -458,6 +451,14 @@ class ReNA(BaseEstimator, ClusterMixin, TransformerMixin):
 
     `sizes_` : array-like (n_features,)
         It contains the size of each cluster.
+
+    `masker_` : instance of NiftiMasker
+        The nifti masker used to mask the data.
+
+    `mask_img_` : Nifti like image
+        The mask of the data. If no mask was supplied by the user,
+        this attribute is the mask image computed automatically from the
+        data `X`.
     """
     def __init__(self, n_clusters=2, mask=None, smoothing_fwhm=None,
                  standardize=True, target_affine=None, target_shape=None,

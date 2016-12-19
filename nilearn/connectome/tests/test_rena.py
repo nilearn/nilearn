@@ -1,4 +1,4 @@
-from nose.tools import assert_equal, assert_raises
+from nose.tools import assert_equal, assert_not_equal, assert_raises
 from sklearn.externals.joblib import Memory
 from nilearn._utils.testing import generate_fake_fmri
 from nilearn.connectome import ReNA
@@ -10,6 +10,8 @@ def test_rena_clusterings():
     data, mask_img = generate_fake_fmri(shape=(10, 11, 12), length=5)
 
     nifti_masker = NiftiMasker(mask_img=mask_img).fit()
+    n_voxels = nifti_masker.transform(data).shape[1]
+
     rena = ReNA(n_clusters=10, mask=nifti_masker, scaling=False)
 
     data_red = rena.fit_transform(data)
@@ -26,5 +28,11 @@ def test_rena_clusterings():
     data_red2 = rena3.fit_transform(index_img(data, 0))
     data_compress2 = rena3.inverse_transform(data_red2)
 
-    rena4 = ReNA(n_iter=-2, mask=nifti_masker, memory=memory)
-    assert_raises(ValueError, rena4.fit, data)
+    for n_iter in [-2, 0]:
+        rena4 = ReNA(n_iter=n_iter, mask=nifti_masker, memory=memory)
+        assert_raises(ValueError, rena4.fit, data)
+
+    for n_clusters in [1, 2, 4, 8]:
+        rena5 = ReNA(n_clusters=n_clusters, n_iter=1, mask=nifti_masker,
+                    memory=memory).fit(data)
+        assert_not_equal(n_clusters, rena5.n_clusters_)
