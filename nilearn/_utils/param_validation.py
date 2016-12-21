@@ -115,7 +115,7 @@ def _adjust_screening_percentile(screening_percentile, mask_img,
     original_screening_percentile = screening_percentile
     # correct screening_percentile according to the volume of the data mask
     mask_volume = _get_mask_volume(mask_img)
-    if mask_volume > MNI152_BRAIN_VOLUME:
+    if mask_volume > 1.1 * MNI152_BRAIN_VOLUME:
         warnings.warn(
             "Brain mask is bigger than the volume of a standard "
             "human brain. SpaceNet is probably not tuned to "
