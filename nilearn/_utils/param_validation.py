@@ -86,8 +86,8 @@ def _get_mask_volume(mask_img):
     return 1. * np.prod(vox_dims) * mask_img.get_data().astype(np.bool).sum()
 
 
-def adjust_screening_percentile(screening_percentile, mask_img,
-                                verbose=0):
+def _adjust_screening_percentile(screening_percentile, mask_img,
+                                 verbose=0):
     """Adjusts the screening percentile according to the MNI mask template.
     Parameters
     ----------

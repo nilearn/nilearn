@@ -1,12 +1,9 @@
-import os
-import warnings
 import itertools
 from functools import partial
 from nose import SkipTest
 from nose.tools import (assert_equal, assert_true, assert_false,
                         assert_raises)
 import numpy as np
-import nibabel
 from sklearn.datasets import load_iris
 from sklearn.utils import extmath
 from sklearn.linear_model import Lasso
@@ -15,10 +12,10 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score
 from nilearn._utils.testing import assert_raises_regex, assert_warns
 from nilearn.decoding.space_net import (
-    _EarlyStoppingCallback, _space_net_alpha_grid, MNI152_BRAIN_VOLUME,
-    path_scores, BaseSpaceNet, _crop_mask, _univariate_feature_screening,
-    _get_mask_volume, SpaceNetClassifier, SpaceNetRegressor,
-    _adjust_screening_percentile)
+    _EarlyStoppingCallback, _space_net_alpha_grid, path_scores, BaseSpaceNet,
+    _crop_mask, _univariate_feature_screening, SpaceNetClassifier,
+    SpaceNetRegressor)
+from nilearn._utils.param_validation import _adjust_screening_percentile
 from nilearn.decoding.space_net_solvers import (_graph_net_logistic,
                                                 _graph_net_squared_loss)
 
@@ -281,16 +278,6 @@ def test_univariate_feature_screening(dim=(11, 12, 13), n_samples=10):
         assert_equal(X_.shape[1], n_features_)
         assert_equal(mask_.sum(), n_features_)
         assert_true(n_features_ <= n_features)
-
-
-def test_get_mask_volume():
-    # Test that hard-coded standard mask volume can be corrected computed
-    if os.path.isfile(mni152_brain_mask):
-        assert_equal(MNI152_BRAIN_VOLUME, _get_mask_volume(nibabel.load(
-            mni152_brain_mask)))
-    else:
-        warnings.warn("Couldn't find %s (for testing)" % (
-            mni152_brain_mask))
 
 
 def test_space_net_classifier_subclass():

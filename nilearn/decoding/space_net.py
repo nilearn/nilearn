@@ -32,7 +32,7 @@ from sklearn.feature_selection import (SelectPercentile, f_regression,
 from sklearn.externals.joblib import Memory, Parallel, delayed
 from sklearn.preprocessing import LabelBinarizer
 from sklearn.metrics import accuracy_score
-from .._utils.param_validation import adjust_screening_percentile
+from .._utils.param_validation import _adjust_screening_percentile
 from .._utils.fixes import check_X_y
 from .._utils.fixes import check_cv
 from .._utils.compat import _basestring, get_header
@@ -800,7 +800,7 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
         w = np.zeros((n_problems, X.shape[1] + 1))
         self.all_coef_ = np.ndarray((n_problems, n_folds, X.shape[1]))
 
-        self.screening_percentile_ = adjust_screening_percentile(
+        self.screening_percentile_ = _adjust_screening_percentile(
                 self.screening_percentile, self.mask_img_,
                 verbose=self.verbose)
 
