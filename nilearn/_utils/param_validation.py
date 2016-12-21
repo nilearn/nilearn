@@ -5,7 +5,7 @@ import numpy as np
 import warnings
 import numbers
 
-from .compat import _basestring
+from .compat import _basestring, get_header
 
 
 # Volume of a standard (MNI152) brain mask in mm^3
@@ -82,7 +82,7 @@ def _get_mask_volume(mask_img):
     vol : float
         The computed volume.
     """
-    vox_dims = mask_img.get_header().get_zooms()[:3]
+    vox_dims = get_header(mask_img).get_zooms()[:3]
     return 1. * np.prod(vox_dims) * mask_img.get_data().astype(np.bool).sum()
 
 
