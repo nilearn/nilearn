@@ -72,6 +72,7 @@ def check_threshold(threshold, data, percentile_func, name='threshold'):
 
 def _get_mask_volume(mask_img):
     """Computes the volume of a brain mask in mm^3
+
     Parameters
     ----------
     mask_img : nibabel image object
@@ -89,6 +90,7 @@ def _get_mask_volume(mask_img):
 def _adjust_screening_percentile(screening_percentile, mask_img,
                                  verbose=0):
     """Adjusts the screening percentile according to the MNI mask template.
+
     Parameters
     ----------
     screening_percentile : float in the interval [0, 100]
