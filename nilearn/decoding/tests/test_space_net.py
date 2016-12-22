@@ -110,7 +110,7 @@ def test_params_correctly_propagated_in_constructors():
 
 def test_screening_space_net():
     screening_percentile = assert_warns(UserWarning,
-        _adjust_screening_percentile, 10, mask)
+                                        _adjust_screening_percentile, 10, mask)
     # We gave here a very small mask, judging by standards of brain size
     # thus the screening_percentile_ corrected for brain size should
     # be 100%
