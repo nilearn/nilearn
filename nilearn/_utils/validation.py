@@ -4,7 +4,6 @@ Utilities to check for valid instances
 import warnings
 
 from sklearn.base import clone
-from sklearn.externals.joblib import Memory
 from sklearn.feature_selection import (SelectPercentile, f_regression,
                                        f_classif)
 
@@ -13,10 +12,11 @@ from .compat import _basestring
 from ..input_data import NiftiMasker, MultiNiftiMasker
 
 
-def check_masking(mask, target_affine=None, target_shape=None,
-                  smoothing_fwhm=None, standardize=True,
-                  mask_strategy='epi', memory=None, memory_level=1):
+def check_masker(mask, target_affine=None, target_shape=None,
+                 smoothing_fwhm=None, standardize=True,
+                 mask_strategy='epi', memory=None, memory_level=1):
     """Setup a nifti masker.
+
     Parameters
     ----------
     mask : filename, niimg, NiftiMasker instance, optional default None)
@@ -72,27 +72,16 @@ def check_masking(mask, target_affine=None, target_shape=None,
                              standardize=standardize,
                              mask_strategy=mask_strategy,
                              memory=memory,
-                             memory_level=memory_level)
+                             memory_level=memory_level).fit()
     # mask is a masker object
     elif isinstance(mask, (NiftiMasker, MultiNiftiMasker)):
-        try:
-            masker = clone(mask)
-            if hasattr(mask, 'mask_img_'):
-                mask_img = mask.mask_img_
-                masker.set_params(mask_img=mask_img)
-                masker.fit()
-        except TypeError as e:
-            # Workaround for a joblib bug: in joblib 0.6, a Memory object
-            # with cachedir = None cannot be cloned.
-            masker_memory = mask.memory
-            if masker_memory.cachedir is None:
-                mask.memory = None
-                masker = clone(mask)
-                mask.memory = masker_memory
-                masker.memory = Memory(cachedir=None)
-            else:
-                # The error was raised for another reason
-                raise e
+        masker = clone(mask)
+        if hasattr(mask, 'mask_img_'):
+            warnings.warn('The mask_img_ of the masker will be copied')
+        if hasattr(mask, 'mask_img_'):
+            mask_img = mask.mask_img_
+            masker.set_params(mask_img=mask_img)
+            masker.fit()
 
         for param_name in ['target_affine', 'target_shape',
                            'smoothing_fwhm', 'mask_strategy',
@@ -101,8 +90,6 @@ def check_masking(mask, target_affine=None, target_shape=None,
                 warnings.warn('Parameter %s of the masker overriden'
                               % param_name)
                 masker.set_params(**{param_name: getattr(mask, param_name)})
-        if hasattr(mask, 'mask_img_'):
-            warnings.warn('The mask_img_ of the masker will be copied')
     return masker
 
 
