@@ -107,7 +107,7 @@ def _adjust_screening_percentile(screening_percentile, mask_img,
     verbose : int, optional (default 0)
         Verbosity level.
 
-    Retruns
+    Returns
     -------
     screening_percentile: float in the interval [0, 100]
         Percentile value for ANOVa univariate feature selection.
