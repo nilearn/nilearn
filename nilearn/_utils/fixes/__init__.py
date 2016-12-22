@@ -37,10 +37,5 @@ except ImportError:
     from .sklearn_validation import check_X_y
     from .sklearn_validation import check_is_fitted
 
-try:
-    from itertools import izip
-except ImportError:  #python3.x
-    izip = zip
-
 __all__ = ['f_regression', 'atleast2d_or_csr', 'roc_auc_score',
-           'check_X_y', 'check_is_fitted', 'check_cv', 'izip']
+           'check_X_y', 'check_is_fitted', 'check_cv']

@@ -13,7 +13,6 @@ import itertools
 import numpy as np
 import scipy.linalg
 
-import sklearn.covariance
 from sklearn.utils.extmath import fast_logdet
 from sklearn.covariance import empirical_covariance
 from sklearn.base import BaseEstimator
@@ -23,7 +22,8 @@ from sklearn.externals.joblib import Memory, delayed, Parallel
 from .._utils import CacheMixin
 from .._utils import logger
 from .._utils.extmath import is_spd
-from .._utils.fixes import check_cv, izip
+from .._utils.fixes import check_cv
+from .._utils.compat import izip
 
 
 def compute_alpha_max(emp_covs, n_samples):
