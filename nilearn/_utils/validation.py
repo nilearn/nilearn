@@ -2,7 +2,7 @@
 Utilities to check for valid instances
 """
 import warnings
-
+import nibabel
 from sklearn.base import clone
 from sklearn.feature_selection import (SelectPercentile, f_regression,
                                        f_classif)
@@ -13,8 +13,9 @@ from ..input_data import NiftiMasker, MultiNiftiMasker
 
 
 def check_masker(mask, target_affine=None, target_shape=None,
-                 smoothing_fwhm=None, standardize=True,
-                 mask_strategy='epi', memory=None, memory_level=1):
+                 smoothing_fwhm=None, standardize=True, t_r=None,
+                 low_pass=None, high_pass=None, mask_strategy='epi',
+                 memory=None, memory_level=1):
     """Setup a nifti masker.
 
     Parameters
@@ -23,6 +24,18 @@ def check_masker(mask, target_affine=None, target_shape=None,
         Mask to be used on data. If an instance of masker is passed,
         then its mask will be used. If no mask is it will be computed
         automatically by a NiftiMasker.
+
+    low_pass: None or float, optional
+        This parameter is passed to signal.clean. Please see the related
+        documentation for details
+
+    high_pass: None or float, optional
+        This parameter is passed to signal.clean. Please see the related
+        documentation for details
+
+    t_r : float, optional
+        This parameter is passed to signal.clean. Please see the related
+        documentation for details
 
     target_affine : 3x3 or 4x4 matrix, optional (default None)
         This parameter is passed to image.resample_img. An important use-case
@@ -64,31 +77,44 @@ def check_masker(mask, target_affine=None, target_shape=None,
         Mask to be used on data.
     """
     # mask is an image, not a masker
-    if isinstance(mask, _basestring) or (mask is None):
+    if isinstance(mask, (_basestring, nibabel.Nifti1Image)) or (mask is None):
         masker = NiftiMasker(mask_img=mask,
                              smoothing_fwhm=smoothing_fwhm,
                              target_affine=target_affine,
                              target_shape=target_shape,
                              standardize=standardize,
+                             t_r=t_r,
+                             low_pass=low_pass,
+                             high_pass=high_pass,
                              mask_strategy=mask_strategy,
                              memory=memory,
-                             memory_level=memory_level).fit()
+                             memory_level=memory_level)
+        if mask is None:
+            warnings.warn('The mask_img is None, the masker is not going to be'
+                          'fitted')
+        else:
+            masker.fit()
     # mask is a masker object
     elif isinstance(mask, (NiftiMasker, MultiNiftiMasker)):
         masker = clone(mask)
         if hasattr(mask, 'mask_img_'):
-            warnings.warn('The mask_img_ of the masker will be copied')
+            warnings.warn('All the parameters of the masker will be '
+                          'overridden. \n The mask_img_ of the masker will '
+                          'be copied')
+        else:
+            warnings.warn('All the parameters of the masker will be '
+                          'overridden')
+
         if hasattr(mask, 'mask_img_'):
             mask_img = mask.mask_img_
             masker.set_params(mask_img=mask_img)
+            # fit the masker to assign mask_img_
             masker.fit()
 
-        for param_name in ['target_affine', 'target_shape',
-                           'smoothing_fwhm', 'mask_strategy',
+        for param_name in ['target_affine', 'target_shape', 't_r', 'high_pass',
+                           'low_pass', 'smoothing_fwhm', 'mask_strategy',
                            'memory', 'memory_level']:
             if getattr(mask, param_name) is not None:
-                warnings.warn('Parameter %s of the masker overriden'
-                              % param_name)
                 masker.set_params(**{param_name: getattr(mask, param_name)})
     return masker
 

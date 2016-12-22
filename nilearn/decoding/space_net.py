@@ -18,7 +18,8 @@ import sys
 from functools import partial
 import numpy as np
 from scipy import stats, ndimage
-from sklearn.base import RegressorMixin, clone
+from sklearn.base import RegressorMixin
+#, clone
 from sklearn.utils.extmath import safe_sparse_dot
 from sklearn.linear_model.base import LinearModel, center_data
 from sklearn.feature_selection import (SelectPercentile, f_regression,
@@ -28,11 +29,12 @@ from sklearn.cross_validation import check_cv
 from sklearn.preprocessing import LabelBinarizer
 from sklearn.metrics import accuracy_score
 from .._utils.param_validation import _adjust_screening_percentile
+from .._utils.validation import check_masker
 from .._utils.fixes import check_X_y
 from .._utils.compat import _basestring
 from .._utils.fixes import atleast2d_or_csr
 from .._utils.cache_mixin import CacheMixin
-from ..input_data import NiftiMasker
+# from ..input_data import NiftiMasker
 from .objective_functions import _unmask
 from .space_net_solvers import (tvl1_solver, _graph_net_logistic,
                                 _graph_net_squared_loss)
@@ -584,7 +586,8 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
          each pair is composed of two lists of indices,
          one for the train samples and one for the test samples.
 
-    `cv_scores_` : ndarray, shape (n_alphas, n_folds) or (n_l1_ratios, n_alphas, n_folds)
+    `cv_scores_` : ndarray, shape (n_alphas, n_folds) or
+                   (n_l1_ratios, n_alphas, n_folds)
         Scores (misclassification) for each alpha, and on each fold
 
     `screening_percentile_` : float
@@ -709,17 +712,14 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
             tic = time.time()
 
         # nifti masking
-        if isinstance(self.mask, NiftiMasker):
-            self.masker_ = clone(self.mask)
-        else:
-            self.masker_ = NiftiMasker(mask_img=self.mask,
-                                       target_affine=self.target_affine,
-                                       target_shape=self.target_shape,
-                                       standardize=self.standardize,
-                                       low_pass=self.low_pass,
-                                       high_pass=self.high_pass,
-                                       mask_strategy='epi', t_r=self.t_r,
-                                       memory=self.memory_)
+        self.masker_ = check_masker(mask=self.mask,
+                                    target_affine=self.target_affine,
+                                    target_shape=self.target_shape,
+                                    standardize=self.standardize,
+                                    low_pass=self.low_pass,
+                                    high_pass=self.high_pass,
+                                    mask_strategy='epi', t_r=self.t_r,
+                                    memory=self.memory_)
         X = self.masker_.fit_transform(X)
 
         X, y = check_X_y(X, y, ['csr', 'csc', 'coo'], dtype=np.float,
