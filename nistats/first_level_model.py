@@ -33,7 +33,8 @@ from patsy import DesignInfo
 from .regression import OLSModel, ARModel, SimpleRegressionResults
 from .design_matrix import make_design_matrix
 from .contrasts import _fixed_effect_contrast
-from .utils import _basestring, _check_run_tables, get_bids_files
+from .utils import (_basestring, _check_run_tables, get_bids_files,
+                    parse_bids_filename)
 
 # ATTENTION THIS IS NOT SUPPOSED TO BE HERE
 from nilearn.masking import apply_mask
@@ -247,7 +248,7 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         further inspection of model details. This has an important impact
         on memory consumption. True by default.
 
-    subject_id : string, optional
+    subject_label : string, optional
         This id will be used to identify a `FirstLevelModel` when passed to
         a `SecondLevelModel` object.
 
@@ -267,7 +268,7 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
                  target_shape=None, smoothing_fwhm=None, memory=Memory(None),
                  memory_level=1, standardize=False, signal_scaling=0,
                  noise_model='ar1', verbose=0, n_jobs=1,
-                 minimize_memory=True, subject_id=None):
+                 minimize_memory=True, subject_label=None):
         # design matrix parameters
         self.t_r = t_r
         self.slice_time_ref = slice_time_ref
@@ -304,7 +305,7 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         # attributes
         self.labels_ = None
         self.results_ = None
-        self.subject_id = subject_id
+        self.subject_label = subject_label
 
     def fit(self, run_imgs, events=None, confounds=None,
             design_matrices=None):
@@ -673,22 +674,18 @@ def first_level_models_from_bids(dataset_path, task_id, model_init=None,
                      img_specs[0])
 
     # Infer subjects in dataset
-    if glob.glob(os.path.join(derivatives_path, 'ses-*')):
-        sub_folders = glob.glob(os.path.join(derivatives_path, 'ses-*',
-                                             'sub-*'))
-    else:
-        sub_folders = glob.glob(os.path.join(derivatives_path, 'sub-*'))
-    sub_ids = [os.path.basename(s).split('-')[1] for s in sub_folders]
-    sub_ids = sorted(list(set(sub_ids)))
+    sub_folders = glob.glob(os.path.join(derivatives_path, 'sub-*'))
+    sub_labels = [os.path.basename(s).split('-')[1] for s in sub_folders]
+    sub_labels = sorted(list(set(sub_labels)))
 
     # Build fit_kwargs dictionaries to pass to their respective models fit
     # Events and confounds files must match number of imgs (runs)
     models = []
     models_fit_kwargs = []
-    for sub_id in sub_ids:
+    for sub_label in sub_labels:
         # Create model
         model_kwargs = {'t_r': TR, 'slice_time_ref': SliceTimingRef,
-                        'subject_id': sub_id}
+                        'subject_label': sub_label}
         if model_init is not None:
             model_kwargs.update(model_init)
         model = FirstLevelModel(**model_kwargs)
@@ -708,7 +705,35 @@ def first_level_models_from_bids(dataset_path, task_id, model_init=None,
 
         imgs = get_bids_files(derivatives_path, file_folder='func',
                               file_tag='preproc', file_type='nii*',
-                              sub_id=sub_id, filters=filters)
+                              sub_label=sub_label, filters=filters)
+        # If there is more than one file for the same (ses, run), likely we
+        # have an issue of underspecification of filters.
+        run_check_list = []
+        # If more than one run is present the run field is mandatory in BIDS
+        # as well as the ses field if more than one session is present.
+        if len(imgs) > 1:
+            for img in imgs:
+                img_dict = parse_bids_filename(img)
+                if '_ses-' in img_dict['file_basename']:
+                    if (img_dict['ses'], img_dict['run']) in run_check_list:
+                        raise ValueError(
+                            'More than one nifti image found for the same run '
+                            '%s and session %s. Please verify that the '
+                            'preproc_variant and preproc_space labels were '
+                            'correctly specified.' %
+                            (img_dict['run'], img_dict['ses']))
+                    else:
+                        run_check_list.append((img_dict['ses'],
+                                              img_dict['run']))
+                else:
+                    if img_dict['run'] in run_check_list:
+                        raise ValueError(
+                            'More than one nifti image found for the same run '
+                            '%s. Please verify that the preproc_variant and '
+                            'preproc_space labels were correctly specified.' %
+                            img_dict['run'])
+                    else:
+                        run_check_list.append(img_dict['run'])
         model_fit_kwargs['run_imgs'] = imgs
 
         # Get events and extra confounds
@@ -719,7 +744,7 @@ def first_level_models_from_bids(dataset_path, task_id, model_init=None,
         for possible_path in [derivatives_path, dataset_path]:
             events = get_bids_files(possible_path, file_folder='func',
                                     file_tag='events', file_type='tsv',
-                                    sub_id=sub_id, filters=filters)
+                                    sub_label=sub_label, filters=filters)
             if events:
                 if len(events) != len(imgs):
                     raise ValueError('%d events.tsv files found for %d bold '
@@ -741,7 +766,7 @@ def first_level_models_from_bids(dataset_path, task_id, model_init=None,
         # If there are confounds, they are assumed to be present for all runs.
         confounds = get_bids_files(derivatives_path, file_folder='func',
                                    file_tag='confounds', file_type='tsv',
-                                   sub_id=sub_id, filters=filters)
+                                   sub_label=sub_label, filters=filters)
         if confounds:
             if len(confounds) != len(imgs):
                 raise ValueError('%d confounds.tsv files found for %d bold '

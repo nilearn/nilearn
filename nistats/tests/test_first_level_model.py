@@ -6,19 +6,22 @@ Test the first level model.
 from __future__ import with_statement
 
 import os
-
+import shutil
 import numpy as np
 
 from nibabel import load, Nifti1Image, save
 
-from nistats.first_level_model import (mean_scaling, run_glm,
-                                       FirstLevelModel)
+from nistats.first_level_model import (mean_scaling, run_glm, FirstLevelModel,
+                                       first_level_models_from_bids)
 from nistats.design_matrix import check_design_matrix, make_design_matrix
 
 from nose.tools import assert_true, assert_equal, assert_raises
 from numpy.testing import (assert_almost_equal, assert_array_equal)
 from nibabel.tmpdirs import InTemporaryDirectory
 import pandas as pd
+
+from nistats.tests.test_utils import create_fake_bids_dataset
+from nistats.utils import get_bids_files
 
 
 # This directory path
@@ -316,3 +319,52 @@ def test_first_level_model_contrast_computation():
         assert_raises(ValueError, model.compute_contrast, [c1, []])
         assert_raises(ValueError, model.compute_contrast, c1, '', '')
         assert_raises(ValueError, model.compute_contrast, c1, '', [])
+
+
+def test_first_level_models_from_bids():
+    with InTemporaryDirectory():
+        bids_path = create_fake_bids_dataset(n_sub=10, n_ses=2,
+                                             tasks=['localizer', 'main'],
+                                             n_runs=[1, 3])
+        # test arguments are provided correctly
+        assert_raises(TypeError, first_level_models_from_bids, 2, 'main')
+        assert_raises(ValueError, first_level_models_from_bids, 'lolo', 'main')
+        assert_raises(TypeError, first_level_models_from_bids, bids_path, 2)
+        assert_raises(TypeError, first_level_models_from_bids,
+                      bids_path, 'main', model_init=[])
+        # test output is as expected
+        models, fit_kwargs = first_level_models_from_bids(
+            bids_path, 'main', preproc_variant='some', preproc_space='MNI')
+        assert_true(len(models) == len(fit_kwargs))
+        assert_true(len(fit_kwargs[0]['events']) ==
+                    len(fit_kwargs[0]['run_imgs']))
+        assert_true(len(fit_kwargs[0]['confounds']) ==
+                    len(fit_kwargs[0]['run_imgs']))
+
+        # test issues with confound files. There should be only one confound
+        # file per img. An one per image or None. Case when one is missing
+        confound_files = get_bids_files(os.path.join(bids_path, 'derivatives'),
+                                        file_tag='confounds')
+        os.remove(confound_files[0])
+        assert_raises(ValueError, first_level_models_from_bids,
+                      bids_path, 'main')
+
+        # test issues with event files
+        events_files = get_bids_files(bids_path, file_tag='events')
+        os.remove(events_files[0])
+        # one file missing
+        assert_raises(ValueError, first_level_models_from_bids,
+                      bids_path, 'main')
+        for f in events_files[1:]:
+            os.remove(f)
+        # all files missing
+        assert_raises(ValueError, first_level_models_from_bids,
+                      bids_path, 'main')
+
+        # check runs are not repeated in obtained files
+        # In case different variant and spaces exist and are not selected we
+        # fail and ask for more specific information
+        shutil.rmtree(os.path.join(bids_path, 'derivatives'))
+        # issue if no derivatives folder is present
+        assert_raises(ValueError, first_level_models_from_bids,
+                      bids_path, 'main')
