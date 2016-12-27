@@ -209,50 +209,89 @@ _basestring = str if py3 else basestring
 
 
 # UTILITIES FOR THE BIDS STANDARD
-
-
-def get_bids_files(main_path, file_tag='*', file_type='*', sub_id='*',
-                   file_folder='*', filters=[], ref=False, sub_folder=True,
+def get_bids_files(main_path, file_tag='*', file_type='*', sub_label='*',
+                   file_folder='*', filters=[], parse=False, sub_folder=True,
                    allow_other_fields=True):
     """Search for files in a BIDS dataset following given constraints.
+
+    This utility function allows to filter files in the BIDS dataset by
+    any of the fields contained in the file names. Moreover it allows to search
+    for specific types of files or particular tags. The filter of files can
+    be inclusive or exclusive depending on the allow_other_fields.
+
+    One can get a simple list of file paths found or alternatively the parsed
+    version of the file name as a dictionary for each file found to do more
+    detailed operations on the file list.
 
     Parameters
     ----------
     main_path: str
+        Directory of the BIDS dataset
 
     file_tag: str accepted by glob, optional (default: '*')
+        The final tag of the desired files. For example 'bold' if one is
+        interested in the files related to the neuroimages.
 
     file_type: str accepted by glob, optional (default: '*')
+        The type of the desired files. For example to be able to request only
+        'nii' or 'json' files for the 'bold' tag.
 
-    sub_id: str accepted by glob, optional (default: '*')
+    sub_label: str accepted by glob, optional (default: '*')
+        Such a common filter is given as a direct option since it applies also
+        at the level of directories. the label is what follows the 'sub' field
+        in the BIDS convention as 'sub-label'.
 
     file_folder: str accepted by glob, optional (default: '*')
+        Inside the subject and optional session folders a final level of
+        folders is expected in the BIDS convention that groups files according
+        to different neuroimaging modalities and any other additions of the
+        dataset provider. For example the 'func' and 'anat' standard folders.
+        If given as the empty string '', files will be searched inside the
+        sub-label/ses-label directories.
 
     filters: list of tuples (str, str), optional (default: [])
-        Filters are of the form (key, value). Only one filter per key allowed.
-        A file for which a filter do not apply will be discarded.
+        Filters are of the form (field, label). Only one filter per field
+        allowed. A file for which a filter do not apply will be discarded.
+        Filter examples would be (ses, 01), (variant, smooth) and
+        (task, localizer).
 
-    ref: boolean, optional (default: False)
+    parse: boolean, optional (default: False)
+        Determines if the function should return a dictionary for each file
+        found with parsed information from the files names to be able to do
+        more complex selection operation on the files.
 
     sub_folder: boolean, optional (default: True)
+        Determines if the files searched are at the level of
+        subject/session folders or just below the dataset main folder.
+        Setting this option to False with other default values would return
+        all the files below the main directory, ignoring files in subject
+        or derivatives folders.
 
     allow_other_fields: boolean, optional (default: True)
+        In case filters are provided, this option detemines if the filters
+        provided for the search are supposed to be only fields in the file
+        name. If set to False then any file name that contains additional
+        fields will be removed from the results list.
 
     Returns
     -------
     files: list of str or list of dict
+        If parse is set to False (Default) then a list of file paths found
+        is returned. Otherwise a list of dictionaries for each file found
+        is returned with the same information given by the function 
+        parse_bids_filename(file_path).
 
     """
     if sub_folder:
-        files = os.path.join(main_path, 'ses-*')
+        files = os.path.join(main_path, 'sub-*', 'ses-*')
         if glob.glob(files):
-            files = os.path.join(main_path, 'ses-*', 'sub-%s' % sub_id,
+            files = os.path.join(main_path, 'sub-%s' % sub_label, 'ses-*',
                                  file_folder, 'sub-%s*_%s.%s' %
-                                 (sub_id, file_tag, file_type))
+                                 (sub_label, file_tag, file_type))
         else:
-            files = os.path.join(main_path, 'sub-%s' % sub_id, file_folder,
+            files = os.path.join(main_path, 'sub-%s' % sub_label, file_folder,
                                  'sub-%s*_%s.%s' %
-                                 (sub_id, file_tag, file_type))
+                                 (sub_label, file_tag, file_type))
     else:
         files = os.path.join(main_path, '*%s.%s' % (file_tag, file_type))
 
@@ -270,14 +309,14 @@ def get_bids_files(main_path, file_tag='*', file_type='*', sub_id='*',
     else:
         files = [parse_bids_filename(file_) for file_ in files]
 
-    if ref:
+    if parse:
         return files
     else:
         return [ref_file['file_path'] for ref_file in files]
 
 
 def parse_bids_filename(img_path):
-    """Returns dictionary with parsed information from file name
+    """Returns dictionary with parsed information from file path
 
     Parameters
     ----------
@@ -286,6 +325,18 @@ def parse_bids_filename(img_path):
     Returns
     -------
     reference: dict
+        returns a dictionary with all key-value pairs in the file name
+        parsed and other useful fields like 'file_path', 'file_basename',
+        'file_tag', 'file_type' and 'file_fields'.
+
+        The 'file_tag' field refers to the last part of the file under the
+        BIDS convention that is of the form *_tag.type. Contrary to the rest
+        of the file name it is not a key-value pair. This notion should be
+        revised in the case we are handling derivatives since so far the
+        convention will keep the tag prepended to any fields added in the
+        case of preprocessed files that also end with another tag. This parser
+        will consider any tag in the middle of the file name as a key with no
+        value and will be included in the 'file_fields' key.
     """
     reference = {}
     reference['file_path'] = img_path
