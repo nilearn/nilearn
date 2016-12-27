@@ -80,14 +80,14 @@ def test_fmri_inputs():
         des.to_csv(des_fname)
 
         # prepare correct input first level models
-        flm = FirstLevelModel(subject_id='1').fit(FUNCFILE, design_matrices=des)
+        flm = FirstLevelModel(subject_label='1').fit(FUNCFILE, design_matrices=des)
         flms = [flm, flm, flm]
         # prepare correct input dataframe and lists
         shapes = ((7, 8, 9, 1),)
         _, FUNCFILE, _ = write_fake_fmri_data(shapes)
         FUNCFILE = FUNCFILE[0]
 
-        dfcols = ['subject_id', 'map_name', 'effects_map_path']
+        dfcols = ['subject_label', 'map_name', 'effects_map_path']
         dfrows = [['1', 'a', FUNCFILE], ['2', 'a', FUNCFILE],
                   ['3', 'a', FUNCFILE]]
         niidf = pd.DataFrame(dfrows, columns=dfcols)
@@ -95,7 +95,7 @@ def test_fmri_inputs():
         flcondstr = [('a', 'a')]
         flcondval = [('a', np.array([1]))]
         confounds = pd.DataFrame([['1', 1], ['2', 2], ['3', 3]],
-                                 columns=['subject_id', 'conf1'])
+                                 columns=['subject_label', 'conf1'])
         sdes = pd.DataFrame(X[:3, :3], columns=['a', 'b', 'c'])
 
         # smoke tests with correct input
@@ -123,7 +123,7 @@ def test_fmri_inputs():
         assert_raises(ValueError, SecondLevelModel().fit, flms + [''],
                       flcondval)
         # test dataframe requirements
-        assert_raises(ValueError, SecondLevelModel().fit, niidf['subject_id'])
+        assert_raises(ValueError, SecondLevelModel().fit, niidf['subject_label'])
         # test niimgs requirements
         assert_raises(ValueError, SecondLevelModel().fit, niimgs)
         assert_raises(ValueError, SecondLevelModel().fit, niimgs + [[]], sdes)
@@ -137,12 +137,12 @@ def test_fmri_inputs():
 
 
 def _first_level_dataframe():
-    conditions = ['map_name', 'subject_id', 'map_path']
+    conditions = ['map_name', 'subject_label', 'map_path']
     names = ['con_01', 'con_02', 'con_01', 'con_02']
     subjects = ['01', '01', '02', '02']
     maps = ['', '', '', '']
     dataframe = pd.DataFrame({'map_name': names,
-                              'subject_id': subjects,
+                              'subject_label': subjects,
                               'effects_map_path': maps})
     return dataframe
 
@@ -155,7 +155,7 @@ def test_create_second_level_design():
         first_level_input = _first_level_dataframe()
         first_level_input['effects_map_path'] = [FUNCFILE] * 4
         confounds = [['01', 0.1], ['02', 0.75]]
-        confounds = pd.DataFrame(confounds, columns=['subject_id', 'f1'])
+        confounds = pd.DataFrame(confounds, columns=['subject_label', 'f1'])
         design = create_second_level_design(first_level_input, confounds)
         expected_design = np.array([[1, 0, 1, 0, 0.1], [0, 1, 1, 0, 0.1],
                                     [1, 0, 0, 1, 0.75], [0, 1, 0, 1, 0.75]])

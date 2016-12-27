@@ -456,11 +456,11 @@ def create_second_level_design(maps_table, confounds=None):
     Parameters
     ----------
     maps_table: pandas DataFrame
-        Contains at least columns 'map_name' and 'subject_id'
+        Contains at least columns 'map_name' and 'subject_label'
     confounds: pandas DataFrame, optional
-        If given, contains at least two columns, 'subject_id' and one confound.
+        If given, contains at least two columns, 'subject_label' and one confound.
         confounds and maps_table do not need to agree on their shape,
-        information between them is matched based on the 'subject_id' column
+        information between them is matched based on the 'subject_label' column
         that both must have.
 
     Returns
@@ -469,11 +469,11 @@ def create_second_level_design(maps_table, confounds=None):
         The second level design matrix
     """
     maps_name = maps_table['map_name'].tolist()
-    subjects_id = maps_table['subject_id'].tolist()
+    subjects_id = maps_table['subject_label'].tolist()
     confounds_name = []
     if confounds is not None:
         confounds_name = confounds.columns.tolist()
-        confounds_name.remove('subject_id')
+        confounds_name.remove('subject_label')
     design_columns = (np.unique(maps_name).tolist() +
                       np.unique(subjects_id).tolist() +
                       confounds_name)
@@ -481,9 +481,9 @@ def create_second_level_design(maps_table, confounds=None):
     for ridx, row in maps_table.iterrows():
         design_matrix.loc[ridx] = [0] * len(design_columns)
         design_matrix.loc[ridx, row['map_name']] = 1
-        design_matrix.loc[ridx, row['subject_id']] = 1
+        design_matrix.loc[ridx, row['subject_label']] = 1
         if confounds is not None:
-            conrow = confounds['subject_id'] == row['subject_id']
+            conrow = confounds['subject_label'] == row['subject_label']
             for conf_name in confounds_name:
                 design_matrix.loc[ridx, conf_name] = confounds[conrow][conf_name].values
 
