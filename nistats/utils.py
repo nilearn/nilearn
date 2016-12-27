@@ -223,6 +223,11 @@ def get_bids_files(main_path, file_tag='*', file_type='*', sub_label='*',
     version of the file name as a dictionary for each file found to do more
     detailed operations on the file list.
 
+    Notice that to search in the derivatives folder, it has to be given as
+    part of the main_path. This is useful since the current convention gives
+    exactly the same inner structure to derivatives than to the main BIDS
+    dataset folder, so we can search it in the same way.
+
     Parameters
     ----------
     main_path: str

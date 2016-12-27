@@ -1,15 +1,20 @@
 #!/usr/bin/env python
-
+import os
+import json
 import numpy as np
 import pandas as pd
 from scipy.stats import norm
 import scipy.linalg as spl
 from numpy.testing import assert_almost_equal, assert_array_almost_equal
 from nose.tools import assert_true, assert_equal, assert_raises
+from nibabel import load, Nifti1Image, save
+from nibabel.tmpdirs import InTemporaryDirectory
 
 from nistats.utils import (multiple_mahalanobis, z_score, multiple_fast_inv,
                            pos_recipr, full_rank, _check_run_tables,
-                           _check_and_load_tables, _check_list_length_match)
+                           _check_and_load_tables, _check_list_length_match,
+                           get_bids_files, parse_bids_filename)
+from nilearn.datasets.tests import test_utils as tst
 
 
 def test_full_rank():
@@ -100,3 +105,130 @@ def test_img_table_checks():
                   [np.array([0]), pd.DataFrame()], "")
     assert_raises(ValueError, _check_run_tables, [''] * 2,
                   ['.csv', pd.DataFrame()], "")
+
+
+def write_fake_bold_img(file_path, shape, rk=3, affine=np.eye(4)):
+    data = np.random.randn(*shape)
+    data[1:-1, 1:-1, 1:-1] += 100
+    save(Nifti1Image(data, affine), file_path)
+    return file_path
+
+
+def basic_paradigm():
+    conditions = ['c0', 'c0', 'c0', 'c1', 'c1', 'c1', 'c2', 'c2', 'c2']
+    onsets = [30, 70, 100, 10, 30, 90, 30, 40, 60]
+    paradigm = pd.DataFrame({'trial_type': conditions,
+                             'onset': onsets})
+    return paradigm
+
+
+def basic_confounds(length):
+    columns = ['RotX', 'RotY', 'RotZ', 'X', 'Y', 'Z']
+    data = np.random.rand(length, 6)
+    confounds = pd.DataFrame(data, columns=columns)
+    return confounds
+
+
+def create_fake_bids_dataset(base_dir='', n_sub=10, n_ses=2,
+                             tasks=['localizer', 'main'],
+                             n_runs=[1, 3], with_derivatives=True,
+                             with_confounds=True):
+    bids_path = os.path.join(base_dir, 'bids_dataset')
+    os.makedirs(bids_path)
+    # Create surface bids dataset
+    open(os.path.join(bids_path, 'README.txt'), 'w')
+    vox = 4
+    for subject in ['sub-%02d' % label for label in range(1, n_sub + 1)]:
+        for session in ['ses-%02d' % label for label in range(1, n_ses + 1)]:
+            subses_dir = os.path.join(bids_path, subject, session)
+            if session == 'ses-01':
+                anat_path = os.path.join(subses_dir, 'anat')
+                os.makedirs(anat_path)
+                anat_file = os.path.join(anat_path, subject + '_T1w.nii')
+                open(anat_file, 'w')
+            func_path = os.path.join(subses_dir, 'func')
+            os.makedirs(func_path)
+            for task, n_run in zip(tasks, n_runs):
+                for run in ['run-%02d' % label for label in range(1, n_run + 1)]:
+                    file_id = (subject + '_' + session + '_task-' + task +
+                               '_' + run)
+                    bold_path = os.path.join(func_path, file_id + '_bold.nii')
+                    write_fake_bold_img(bold_path, [vox, vox, vox, 100])
+                    events_path = os.path.join(func_path, file_id +
+                                               '_events.tsv')
+                    basic_paradigm().to_csv(events_path, sep='\t', index=None)
+                    param_path = os.path.join(func_path, file_id +
+                                              '_bold.json')
+                    with open(param_path, 'w') as param_file:
+                        json.dump({'RepetitionTime': 1.5}, param_file)
+
+    # Create derivatives files
+    if with_derivatives:
+        bids_path = os.path.join(base_dir, 'bids_dataset', 'derivatives')
+        os.makedirs(bids_path)
+        for subject in ['sub-%02d' % label for label in range(1, 11)]:
+            for session in ['ses-%02d' % label for label in range(1, 3)]:
+                subses_dir = os.path.join(bids_path, subject, session)
+                func_path = os.path.join(subses_dir, 'func')
+                os.makedirs(func_path)
+                for task, n_run in zip(tasks, n_runs):
+                    for run in ['run-%02d' % label for label in range(1, n_run + 1)]:
+                        file_id = (subject + '_' + session + '_task-' + task +
+                                   '_' + run)
+                        preproc = file_id + '_bold_space-MNI_variant-some_preproc.nii'
+                        preproc_path = os.path.join(func_path, preproc)
+                        write_fake_bold_img(preproc_path, [vox, vox, vox, 100])
+                        preproc = file_id + '_bold_space-T1w_variant-some_preproc.nii'
+                        preproc_path = os.path.join(func_path, preproc)
+                        write_fake_bold_img(preproc_path, [vox, vox, vox, 100])
+                        preproc = file_id + '_bold_space-T1w_variant-other_preproc.nii'
+                        preproc_path = os.path.join(func_path, preproc)
+                        write_fake_bold_img(preproc_path, [vox, vox, vox, 100])
+                        if with_confounds:
+                            confounds_path = os.path.join(func_path, file_id +
+                                                          '_confounds.tsv')
+                            basic_confounds(100).to_csv(confounds_path,
+                                                        sep='\t', index=None)
+    return 'bids_dataset'
+
+
+def test_get_bids_files():
+    with InTemporaryDirectory():
+        bids_path = create_fake_bids_dataset(n_sub=10, n_ses=2,
+                                             tasks=['localizer', 'main'],
+                                             n_runs=[1, 3])
+        selection = get_bids_files(bids_path)
+        assert_true(len(selection) == 250)
+        selection = get_bids_files(bids_path, file_tag='bold')
+        assert_true(len(selection) == 160)
+        selection = get_bids_files(bids_path, file_type='nii')
+        assert_true(len(selection) == 90)
+        selection = get_bids_files(bids_path, sub_label='01')
+        assert_true(len(selection) == 25)
+        selection = get_bids_files(bids_path, file_folder='anat')
+        assert_true(len(selection) == 10)
+        filters = [('task', 'main'), ('run', '01'), ('ses', '02')]
+        selection = get_bids_files(bids_path, file_tag='bold', filters=filters)
+        assert_true(len(selection) == 20)
+        selection = get_bids_files(bids_path, sub_folder=False)
+        assert_true(len(selection) == 1)
+        selection = get_bids_files(bids_path, file_folder='anat', parse=True)
+        assert_true(len(selection) == 10)
+        assert_true(isinstance(selection[0], dict))
+        selection = get_bids_files(bids_path + '/derivatives')
+        assert_true(len(selection) == 320)
+
+
+def test_parse_bids_filename():
+    fields = ['sub', 'ses', 'task', 'lolo']
+    labels = ['01', '01', 'langloc', 'lala']
+    file_name = 'sub-01_ses-01_task-langloc_lolo-lala_bold.nii'
+    file_path = os.path.join('dataset', 'sub-01', 'ses-01', 'func', file_name)
+    file_dict = parse_bids_filename(file_path)
+    for fidx, field in enumerate(fields):
+        assert_true(file_dict[field] == labels[fidx])
+    assert_true(file_dict['file_type'] == 'nii')
+    assert_true(file_dict['file_tag'] == 'bold')
+    assert_true(file_dict['file_path'] == file_path)
+    assert_true(file_dict['file_basename'] == file_name)
+    assert_true(file_dict['file_fields'] == fields)
