@@ -24,6 +24,21 @@ def setup_mock():
 def teardown_mock():
     return tst.teardown_mock(utils, func)
 
+
+@with_setup(setup_mock, teardown_mock)
+def test_fetch_bids_langloc_dataset():
+    datadir, dl_files = datasets.fetch_bids_langloc_dataset()
+    assert_true(isinstance(datadir, _basestring))
+    assert_true(isinstance(dl_files, list))
+
+
+@with_setup(setup_mock, teardown_mock)
+def test_fetch_bids_openfmri_dataset():
+    datadir, dl_files = datasets.fetch_bids_openfmri_dataset()
+    assert_true(isinstance(datadir, _basestring))
+    assert_true(isinstance(dl_files, list))
+
+
 @with_setup(setup_mock, teardown_mock)
 def test_fetch_localizer():
     dataset = datasets.fetch_localizer_first_level()

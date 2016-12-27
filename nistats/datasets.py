@@ -56,6 +56,9 @@ def fetch_bids_openfmri_dataset(dataset_name='ds000001', dataset_revision=None,
                                 data_dir=None, verbose=1):
     """Download latest revision of specified bids dataset.
 
+    Compressed files will not be uncompressed automatically due to the expected
+    great size of downloaded dataset.
+
     Parameters
     ----------
     dataset_name: string, optional
