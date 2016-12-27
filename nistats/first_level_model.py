@@ -151,7 +151,6 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
 
     Parameters
     ----------
-
     t_r : float
         This parameter indicates repetition times of the experimental runs.
         In seconds. It is necessary to correctly consider times in the design
@@ -570,24 +569,47 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         return output
 
 
-def first_level_models_from_bids(dataset_path, task_id, model_id=None,
-                                 model_init=None, preproc_variant=None,
-                                 preproc_space=None):
-    """Return first and second level model objects and inputs to fit.
-
-    Assuming no subjects lacks a task. Problem inferring subjects.
+def first_level_models_from_bids(dataset_path, task_id, model_init=None,
+                                 preproc_variant=None, preproc_space=None):
+    """Create FirstLevelModel objects and fit arguments from a BIDS dataset.
 
     Parameters
     ----------
     dataset_path: str
+        Directory of the highest level folder of the BIDS dataset. Should
+        contain subject folders and a derivatives folder.
+
     task_id: str
-    model: str, optional
+        Task_id as specified in the file names. Of the form _task-*_.
+
     model_init: dict, optional
+        Is posible to specify the parameters of the FirstLevelModel objects
+        as a dictionary. The same parameter initialization will be applied to
+        all FirstLevelModel objects.
+
+    preproc_variant: str, optional
+        Can specify a particular variant label of the preproc.nii images.
+        As they are specified in the file names.
+
+    preproc_space: str, optional
+        Can specify a particular space label of the preproc.nii images.
+        As they are specified in the file names.
 
     Returns
     -------
     models: list of `FirstLevelModel` objects
+        Each FirstLevelModel object corresponds to a subject. All runs from
+        different sessions are considered together for the same subject to run
+        a fixed effects analysis on them.
+
     models_fit_kwargs: list of dict
+        For each model there is a corresponding fit_kwargs dictionary. The
+        dictionary contain for certain 'run_imgs' and 'events' keys, and
+        optionally a 'confounds' key. For each run_img there is an events file
+        and a confounds file, so all three lists must have the same size.
+        fit_kwargs are provided as a dictionary to be easily passed to the
+        fit function of the models as model.fit(**kwargs), particularly when
+        no additional modifications of events or confounds is necessary.
     """
     # check arguments
     if not isinstance(dataset_path, str):
@@ -598,9 +620,6 @@ def first_level_models_from_bids(dataset_path, task_id, model_id=None,
     if not isinstance(task_id, str):
         raise TypeError('task_id must be a string, instead %s was given' %
                         type(task_id))
-    if model_id is not None and not isinstance(model_id, str):
-        raise TypeError('model must be a string, instead %s was given' %
-                        type(model_id))
     if model_init is not None and not isinstance(model_init, dict):
         raise TypeError('model_init must be a dict, instead %s was given' %
                         type(model_init))
@@ -694,10 +713,6 @@ def first_level_models_from_bids(dataset_path, task_id, model_id=None,
 
         # Get events and extra confounds
         filters = [('task', task_id)]
-        # If model_id is provided we add it to the search constraints for
-        # events and confounds
-        if model_id is not None:
-            filters.append(('model', model_id))
         # Get events. If not found in derivatives check for original data.
         # There might be no need to preprocess events to specify model, still
         # throw a warning
@@ -713,9 +728,6 @@ def first_level_models_from_bids(dataset_path, task_id, model_id=None,
                                      (len(events), len(imgs)))
                 events = [pd.read_csv(e, sep='\t', index_col=None)
                           for e in events]
-                for e in events:
-                    e.columns = ['name' if col == 'trial_type' else col
-                                 for col in e.columns]
                 if possible_path == dataset_path:
                     warn('events taken from directory containing raw data. '
                          'Is it the case that there was no need to preprocess '
@@ -728,8 +740,8 @@ def first_level_models_from_bids(dataset_path, task_id, model_id=None,
         # Get confounds. If not found it will be assumed there are none.
         # If there are confounds, they are assumed to be present for all runs.
         confounds = get_bids_files(derivatives_path, file_folder='func',
-                                    file_tag='confounds', file_type='tsv',
-                                    sub_id=sub_id, filters=filters)
+                                   file_tag='confounds', file_type='tsv',
+                                   sub_id=sub_id, filters=filters)
         if confounds:
             if len(confounds) != len(imgs):
                 raise ValueError('%d confounds.tsv files found for %d bold '
@@ -737,7 +749,7 @@ def first_level_models_from_bids(dataset_path, task_id, model_id=None,
                                  'the number of runs is expected' %
                                  (len(events), len(imgs)))
             confounds = [pd.read_csv(c, sep='\t', index_col=None)
-                          for c in confounds]
+                         for c in confounds]
             model_fit_kwargs['confounds'] = confounds
         models_fit_kwargs.append(model_fit_kwargs)
 
