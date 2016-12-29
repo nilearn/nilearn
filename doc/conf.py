@@ -287,7 +287,8 @@ sphinx_gallery_conf = {
         'scipy': 'http://docs.scipy.org/doc/scipy-0.11.0/reference',
         'nibabel': 'http://nipy.org/nibabel',
         'sklearn': 'http://scikit-learn.org/stable',
-        'patsy': 'http://patsy.readthedocs.io/en/latest/'}
+        'patsy': 'http://patsy.readthedocs.io/en/latest/',
+        'pandas': 'http://pandas.pydata.org/pandas-docs/stable/'}
     }
 
 # Get rid of spurious warnings due to some interaction between
