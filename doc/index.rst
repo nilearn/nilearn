@@ -7,8 +7,8 @@
 
     Nistats is a Python module for **fast and easy functional MRI statistical analysis**.
 
-    It leverages Nilearn, Nibabel and other python libraries from the python
-    scientific stack like Numpy and Pandas.
+    It leverages Nilearn, Nibabel and other Python libraries from the Python
+    scientific stack like Scipy, Numpy and Pandas.
 
 
 .. Here we are building the carrousel
