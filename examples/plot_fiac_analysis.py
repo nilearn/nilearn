@@ -35,10 +35,10 @@ from nistats.first_level_model import FirstLevelModel
 from nistats import datasets
 
 
-# # write directory
-# write_dir = path.join(getcwd(), 'results')
-# if not path.exists(write_dir):
-#     mkdir(write_dir)
+# write directory
+write_dir = path.join(getcwd(), 'results')
+if not path.exists(write_dir):
+    mkdir(write_dir)
 
 #########################################################################
 # Prepare data and analysis parameters
@@ -77,20 +77,20 @@ contrasts = {'SStSSp_minus_DStDSp': pad_vector([1, 0, 0, -1], n_columns),
              'Deactivation': pad_vector([-1, -1, -1, -1, 4], n_columns),
              'Effects_of_interest': np.eye(n_columns)[:5]}
 
-# print('Computing contrasts...')
+print('Computing contrasts...')
 for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
-    # print('  Contrast % 2i out of %i: %s' % (
-        # index + 1, len(contrasts), contrast_id))
-    # z_image_path = path.join(write_dir, '%s_z_map.nii' % contrast_id)
+    print('  Contrast % 2i out of %i: %s' % (
+        index + 1, len(contrasts), contrast_id))
+    z_image_path = path.join(write_dir, '%s_z_map.nii' % contrast_id)
     z_map = fmri_glm.compute_contrast(
         contrast_val, output_type='z_score')
-    # nib.save(z_map, z_image_path)
+    nib.save(z_map, z_image_path)
 
     # make a snapshot of the contrast activation
     if contrast_id == 'Effects_of_interest':
         display = plotting.plot_stat_map(
             z_map, bg_img=mean_img_, threshold=2.5, title=contrast_id)
-        # display.savefig(path.join(write_dir, '%s_z_map.png' % contrast_id))
+        display.savefig(path.join(write_dir, '%s_z_map.png' % contrast_id))
 
-# print('All the  results were witten in %s' % write_dir)
+print('All the  results were witten in %s' % write_dir)
 plotting.show()
