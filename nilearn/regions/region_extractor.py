@@ -3,6 +3,7 @@ Better brain parcellations for Region of Interest analysis
 """
 
 import numbers
+import collections
 import numpy as np
 
 from scipy import ndimage
@@ -433,7 +434,8 @@ class RegionExtractor(NiftiMapsMasker):
         return self
 
 
-def extract_regions_labels_img(labels_img, min_size=None, connect_diag=True):
+def extract_regions_labels_img(labels_img, min_size=None, connect_diag=True,
+                               labels=None):
     """ Extract regions on a brain atlas image defined by labels (integers).
 
     For each label in an parcellations, separates out connected
@@ -443,7 +445,8 @@ def extract_regions_labels_img(labels_img, min_size=None, connect_diag=True):
     ----------
 
     labels_img : Nifti-like image
-        A 3D image which contains regions denoted as labels.
+        A 3D image which contains regions denoted as labels. Each region
+        is assigned with integers.
 
     min_size : int, optional (default None)
         Minimum size required to keep as a region after extraction. Removes
@@ -454,6 +457,17 @@ def extract_regions_labels_img(labels_img, min_size=None, connect_diag=True):
         if they are connected along the diagonal (26-connectivity). If it is
         False, two voxels are considered connected only if they are within the
         same x, y, or z direction.
+
+    labels : 1D numpy array or list of str, (default None), optional
+        Each string in a list or array denote the name of the brain atlas
+        regions given in labels_img input. If provided, same names will be
+        re-assigned corresponding to each connected component based extraction
+        of regions relabelling. The total number of names should match with the
+        number of labels assigned in the image.
+
+        NOTE: The order of the names given in labels should be appropriately
+        matched with the unique labels (integers) assigned to each region
+        given in labels_img.
 
     Returns
     -------
@@ -481,13 +495,23 @@ def extract_regions_labels_img(labels_img, min_size=None, connect_diag=True):
     if not isinstance(connect_diag, bool):
         raise ValueError("'connect_diag' must be specified as True or False. "
                          "You provided {0}".format(connect_diag))
+    if labels is not None:
+        new_names = []
+        if (not isinstance(labels, collections.Iterable) and
+                isinstance(labels, _basestring)):
+            labels = [labels, ]
 
     unique_labels = set(np.unique(np.asarray(labels_data)))
     unique_labels.remove(0)
 
+    if labels is None:
+        this_labels = [None] * len(unique_labels)
+    else:
+        this_labels = labels
+
     new_labels_data = np.zeros(labels_data.shape, dtype=np.int)
     current_max_label = 0
-    for label_id in unique_labels:
+    for label_id, name in zip(unique_labels, this_labels):
         this_label_mask = (labels_data == label_id)
         # Extract regions assigned to each label id
         regions, this_n_labels = _compute_regions_labels(
@@ -503,8 +527,12 @@ def extract_regions_labels_img(labels_img, min_size=None, connect_diag=True):
         new_labels_data[regions != 0] = (regions[regions != 0]
                                          + current_max_label)
         current_max_label += this_n_labels
+        if name is not None:
+            new_names.extend([name] * this_n_labels)
 
     new_labels_img = new_img_like(labels_img, new_labels_data, affine=affine)
+    if labels is not None:
+        new_labels = new_names
+        return new_labels_img, new_labels
 
     return new_labels_img
-

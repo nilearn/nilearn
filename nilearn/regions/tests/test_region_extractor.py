@@ -263,3 +263,22 @@ def test_extract_regions_labels_img():
     n_labels_with_min = len(np.unique(extracted_regions_with_min_data))
 
     assert_true(n_labels_wo_min > n_labels_with_min)
+
+    # Test the names of the brain regions given in labels.
+    # Test labels for 9 regions in n_regions
+    labels = ['region_a', 'region_b', 'region_c', 'region_d', 'region_e',
+              'region_f', 'region_g', 'region_h', 'region_i']
+
+    # If labels are provided, first return will contain extracted labels image
+    # and second return will contain list of new names generated based on same
+    # name with assigned on both hemispheres for example.
+    extracted_reg, new_labels = extract_regions_labels_img(labels_img,
+                                                           labels=labels)
+    # new_labels returned must be equal or more than what was in labels.
+    assert_true(new_labels >= len(labels))
+
+    # labels given in numpy array
+    labels = np.asarray(labels)
+    extracted_reg2, new_labels2 = extract_regions_labels_img(labels_img,
+                                                             labels=labels)
+    assert_true(new_labels2 >= len(labels))
