@@ -6,7 +6,6 @@ import xml.etree.ElementTree
 import numpy as np
 
 from sklearn.datasets.base import Bunch
-from sklearn.utils import deprecated
 
 #from . import utils
 from .utils import _get_dataset_dir, _fetch_files, _get_dataset_descr
