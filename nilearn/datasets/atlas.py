@@ -866,39 +866,43 @@ def fetch_atlas_allen_2011(data_dir=None, url=None, resume=True, verbose=1):
 
 def fetch_atlas_surf_destrieux(data_dir=None, url=None,
                                resume=True, verbose=1):
-    """Download and load the Destrieux cortical atlas (dated 2009)
-        on the Freesurfer fsaverage5 surface
+    """Download and load Destrieux et al, 2010 cortical atlas.
+
+    This atlas returns 74 sulco-gyral structures per hemisphere distributed
+    with Freesurfer in fsaverage5 surface space.
 
     Parameters
     ----------
     data_dir: string, optional
-        Path of the data directory. Use to forec data storage in a non-
-        standard location. Default: None (meaning: default)
+        Path of the data directory. Use to force data storage in a non-
+        standard location. Default: None
     url: string, optional
         Download URL of the dataset. Overwrite the default URL.
+    resume: bool, optional (default True)
+        If true, try resuming download if possible.
+
+    verbose: int, optional (default 1)
+        Defines the level of verbosity of the output.
 
     Returns
     -------
         data: sklearn.datasets.base.Bunch
         dictionary-like object, contains:
-        - Cortical ROIs, lateralized or not (maps)
-        - Labels of the ROIs (labels)
+        - 'annot_left': parcellation on left hemisphere in
+                        freesurfer annot format
+        - 'annot_right': parcellation on right hemisphere in
+                         freesurfer annot format
 
     References
     ----------
-    Fischl, Bruce, et al. "Automatically parcellating the human cerebral
-    cortex." Cerebral cortex 14.1 (2004): 11-22.
-
-    Destrieux, C., et al. "A sulcal depth-based anatomical parcellation
-    of the cerebral cortex." NeuroImage 47 (2009): S151.
+    Destrieux, C., et al. "Automatic parcellation of human cortical gyri and
+    sulci using standard anatomical nomenclature." NeuroImage 53 (2010): 1-15.
     """
 
     if url is None:
         url = "https://www.nitrc.org/frs/download.php/"
 
     dataset_name = 'destrieux_surface'
-    opts = dict()
-
     fdescr = _get_dataset_descr(dataset_name)
     data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
                                 verbose=verbose)
@@ -906,17 +910,17 @@ def fetch_atlas_surf_destrieux(data_dir=None, url=None,
     # Download annot files, fsaverage surfaces and sulcal information
     annot_file = '%s.aparc.a2009s.annot'
     annot_url = url + '%i/%s.aparc.a2009s.annot'
-    annot_nids = {'lh annot': 9343, 'rh annot':9342}
+    annot_nids = {'lh annot': 9343, 'rh annot': 9342}
 
     annots = []
     for hemi in [('lh', 'left'), ('rh', 'right')]:
 
         annot = _fetch_files(data_dir,
-                            [(annot_file % (hemi[1]),
-                             annot_url % (annot_nids['%s annot' % hemi[0]],
-                                         hemi[0]),
-                             {'move': annot_file % (hemi[1])})],
-                            resume=resume, verbose=verbose)[0]
+                             [(annot_file % (hemi[1]),
+                               annot_url % (annot_nids['%s annot' % hemi[0]],
+                                            hemi[0]),
+                              {'move': annot_file % (hemi[1])})],
+                             resume=resume, verbose=verbose)[0]
         annots.append(annot)
 
     return Bunch(annot_left=annots[0], annot_right=annots[1],

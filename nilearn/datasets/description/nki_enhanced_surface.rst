@@ -3,8 +3,10 @@ NKI enhanced surface
 
 Notes
 -----
-NKI enhanced resting-state dataset, preprocessed and projected to the 
-fsaverage5 surface. Contains phenotypical metadata.
+Enhanced Nathan Kline Institute-Rockland Sample resting state fMRI data
+(TR=645ms) of 102 subjects, preprocessed and projected to the fsaverage5 surface
+according to https://github.com/fliem/nki_nilearn.
+Contains phenotypical metadata.
 
 Content
 -------
