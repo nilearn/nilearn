@@ -1,9 +1,8 @@
 """
-Demonstrate basic loading and plotting of a cortical surface atlas.
+Demonstrate basic loading and plotting of a cortical surface atlas
 ===================================================================
 The Destrieux parcellation (Destrieux et al, 2010) in fsaverage5 space as
-distributed with Freesurfer (Dale et al, 1999, Fischl et al, 1999) is used as
-the chosen atlas.
+distributed with Freesurfer is used as the chosen atlas.
 
 The :func:`nilearn.plotting.plot_surf_roi` function is used
 to plot the parcellation on the pial surface.
@@ -12,14 +11,6 @@ See :ref:`plotting` for more details.
 
 References
 ----------
-
-Dale et al, (1999). Cortical surface-based analysis.I. Segmentation and
-surface reconstruction. Neuroimage 9.
-URL http://dx.doi.org/10.1006/nimg.1998.0395
-
-Fischl et al, (1999). Cortical surface-based analysis. II: Inflation,
-flattening, and a surface-based coordinate system. Neuroimage 9.
-http://dx.doi.org/10.1006/nimg.1998.0396
 
 Destrieux et al, (2010). Automatic parcellation of human cortical gyri and
 sulci using standard anatomical nomenclature. NeuroImage, 53, 1.

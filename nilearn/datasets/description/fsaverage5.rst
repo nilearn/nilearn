@@ -3,8 +3,8 @@ fsaverage5
 
 Notes
 -----
-Fsaverage5 standard surface as distributed with Freesurfer (Dale et al, 1999, 
-Fischl et al, 1999) 
+Fsaverage5 standard surface as distributed with Freesurfer (Dale et al, 1999,
+Fischl et al, 1999)
 
 Content
 -------
@@ -17,7 +17,10 @@ Content
 
 References
 ----------
-Reuter et al, (2010). High-resolution intersubject averaging and a
-coordinate system for the cortical surface. Hum Brain Mapp 8, 272-284.
-URL http://dx.doi.org/10.1002/(sici)1097-0193(1999)8:4<272::aid-hbm10>3.0.
-co;2-4
+Dale et al, (1999). Cortical surface-based analysis.I. Segmentation and
+surface reconstruction. Neuroimage 9.
+http://dx.doi.org/10.1006/nimg.1998.0395
+
+Fischl et al, (1999). Cortical surface-based analysis. II: Inflation,
+flattening, and a surface-based coordinate system. Neuroimage 9.
+http://dx.doi.org/10.1006/nimg.1998.0396

@@ -304,6 +304,9 @@ uses.
    plot_glass_brain
    plot_connectome
    plot_prob_atlas
+   plot_surf
+   plot_surf_roi
+   plot_surf_stat_map
    show
 
 **Classes**:
