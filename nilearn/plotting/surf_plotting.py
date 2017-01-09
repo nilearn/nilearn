@@ -64,7 +64,7 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
               hemi='left', view='lateral', cmap=None,
               avg_method='mean', threshold=None, alpha='auto',
               bg_on_data=False, darkness=1, vmin=None, vmax=None,
-              output_file=None, **kwargs):
+              title=None, output_file=None, **kwargs):
 
     """ Plotting of surfaces with optional background and data
 
@@ -104,7 +104,8 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
                 reduced by half before being applied.
             vmin, vmax: lower / upper bound to plot surf_data values
                 If None , the values will be set to min/max of the data
-            output_file: string, or None, optional
+            title : str, figure title, optional
+            output_file: str, or None, optional
                 The name of an image file to export plot to. Valid extensions
                 are .png, .pdf, .svg. If output_file is not None, the plot
                 is saved to a file, and the display is closed.
@@ -232,6 +233,9 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
 
         p3dcollec.set_facecolors(face_colors)
 
+    if title is not None:
+        plt.title(title)
+
     # save figure if output file is given
     if output_file is not None:
         fig.savefig(output_file)
@@ -244,7 +248,7 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
                        hemi='left', view='lateral', threshold=None,
                        alpha='auto', vmax=None, cmap='coolwarm',
                        symmetric_cbar="auto", bg_on_data=False, darkness=1,
-                       output_file=None, **kwargs):
+                       title=None, output_file=None, **kwargs):
     """ Plotting a stats map on a surface mesh with optional background
 
             Parameters
@@ -284,7 +288,8 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
                 background image. 1 indicates that the original values of the
                 background are used. .5 indicates the background values are
                 reduced by half before being applied.
-            output_file: string, or None, optional
+            title : str, figure title, optional
+            output_file: str, or None, optional
                 The name of an image file to export plot to. Valid extensions
                 are .png, .pdf, .svg. If output_file is not None, the plot
                 is saved to a file, and the display is closed.
@@ -300,7 +305,7 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
                         hemi=hemi, view=view, avg_method='mean',
                         threshold=threshold, cmap=cmap,
                         alpha=alpha, bg_on_data=bg_on_data, darkness=1,
-                        vmax=vmax, output_file=None, **kwargs)
+                        vmax=vmax, title=title, output_file=None, **kwargs)
 
     return display
 
@@ -309,7 +314,7 @@ def plot_surf_roi(surf_mesh, roi_map, bg_map=None,
                   hemi='left', view='lateral', alpha='auto',
                   vmin=None, vmax=None, cmap='hsv',
                   bg_on_data=False, darkness=1,
-                  output_file=None, **kwargs):
+                  title=None, output_file=None, **kwargs):
 
     """ Plotting of surfaces with optional background and stats map
 
@@ -342,7 +347,8 @@ def plot_surf_roi(surf_mesh, roi_map, bg_map=None,
                 background image. 1 indicates that the original values of the
                 background are used. .5 indicates the background values are
                 reduced by half before being applied.
-            output_file: string, or None, optional
+            title : str, figure title, optional
+            output_file: str, or None, optional
                 The name of an image file to export plot to. Valid extensions
                 are .png, .pdf, .svg. If output_file is not None, the plot
                 is saved to a file, and the display is closed.
@@ -370,6 +376,6 @@ def plot_surf_roi(surf_mesh, roi_map, bg_map=None,
                         hemi=hemi, view=view, avg_method='median',
                         cmap=cmap, alpha=alpha, bg_on_data=bg_on_data,
                         darkness=darkness, vmin=vmin, vmax=vmax,
-                        output_file=None, **kwargs)
+                        title=title, output_file=None, **kwargs)
 
     return display

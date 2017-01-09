@@ -91,7 +91,8 @@ stat_map[np.where(np.mean(timeseries, axis=1) == 0)] = 0
 ###############################################################################
 # Display ROI on surface
 plotting.plot_surf_roi(fsaverage5_pial, roi_map=labels, hemi='left',
-                       view='medial', bg_map=sulcal_depth_map, bg_on_data=True)
+                       view='medial', bg_map=sulcal_depth_map, bg_on_data=True,
+                       title='PCC Seed')
 
 # Display unthresholded stat map in lateral and medial view
 # dimmed background
