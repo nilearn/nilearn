@@ -873,13 +873,14 @@ def fetch_atlas_surf_destrieux(data_dir=None, url=None,
 
     Parameters
     ----------
-    data_dir: string, optional
+    data_dir: str, optional
         Path of the data directory. Use to force data storage in a non-
         standard location. Default: None
-    url: string, optional
+
+    url: str, optional
         Download URL of the dataset. Overwrite the default URL.
     resume: bool, optional (default True)
-        If true, try resuming download if possible.
+        If True, try resuming download if possible.
 
     verbose: int, optional (default 1)
         Defines the level of verbosity of the output.
@@ -895,8 +896,8 @@ def fetch_atlas_surf_destrieux(data_dir=None, url=None,
 
     References
     ----------
-    Destrieux, C., et al. "Automatic parcellation of human cortical gyri and
-    sulci using standard anatomical nomenclature." NeuroImage 53 (2010): 1-15.
+    Destrieux et al. (2010), Automatic parcellation of human cortical gyri and
+    sulci using standard anatomical nomenclature. NeuroImage 53, 1-15.
     """
 
     if url is None:
