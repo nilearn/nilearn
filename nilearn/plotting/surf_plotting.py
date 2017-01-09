@@ -17,6 +17,18 @@ from .img_plotting import _get_colorbar_and_data_ranges
 
 # function to figure out datatype and load data
 def load_surf_data(surf_data):
+    """Loading data to be represented on a surface mesh.
+
+    Parameters
+    ----------
+    surf_data : Either file containing surface data, can be one of the
+                formats .gii, .mgz, .nii, .nii.gz, or Freesurfer specific
+                files such as .thickness, .curv, .sulc, .annot, .label
+                Or numpy array containing surface data.
+    Returns
+    --------
+    data : Numpy array containing surface data
+    """
     # if the input is a filename, load it
     if isinstance(surf_data, _basestring):
         if (surf_data.endswith('nii') or surf_data.endswith('nii.gz') or
@@ -36,7 +48,10 @@ def load_surf_data(surf_data):
                 data[:, arr] = gii.darrays[arr].data
             data = np.squeeze(data)
         else:
-            raise ValueError('Format of data file not recognized.')
+            raise ValueError('Format of data file not recognized. Expected file \
+                              formats are .gii, .mgz, .nii, .nii.gz, or \
+                              Freesurfer specific files such as .curv, \
+                              .sulc, .thickness, .annot, .label ')
     # if the input is a numpy array
     elif isinstance(surf_data, np.ndarray):
         data = np.squeeze(surf_data)
@@ -45,6 +60,20 @@ def load_surf_data(surf_data):
 
 # function to figure out datatype and load data
 def load_surf_mesh(surf_mesh):
+    """Loading a surface mesh geometry
+
+    Parameters
+    ----------
+    surf_mesh : Either file containing surface mesh geometry, can be one of the
+                formats: .gii or Freesurfer specific files such as
+                .orig, .pial, .sphere, .white, inflated
+                Or
+
+    Returns
+    --------
+    coords : Numpy array containing the x-y-z coordinates of the mesh vertices
+    faces : Numpy array containing the indices (into coords) of the mesh faces
+    """
     # if input is a filename, try to load it
     if isinstance(surf_mesh, _basestring):
         if (surf_mesh.endswith('orig') or surf_mesh.endswith('pial') or
@@ -55,7 +84,10 @@ def load_surf_mesh(surf_mesh):
             coords, faces = gifti.read(surf_mesh).getArraysFromIntent(nibabel.nifti1.intent_codes['NIFTI_INTENT_POINTSET'])[0].data, \
                             gifti.read(surf_mesh).getArraysFromIntent(nibabel.nifti1.intent_codes['NIFTI_INTENT_TRIANGLE'])[0].data
         else:
-            raise ValueError('Format of mesh file not recognized.')
+            raise ValueError('Format of mesh file not recognized. Expected file \
+                              formats are .gii, or Freesurfer specific files \
+                              such as .orig, .pial, .sphere, .white, \
+                              .inflated')
 
     return coords, faces
 
