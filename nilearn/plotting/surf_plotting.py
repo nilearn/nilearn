@@ -305,7 +305,8 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
                         hemi=hemi, view=view, avg_method='mean',
                         threshold=threshold, cmap=cmap,
                         alpha=alpha, bg_on_data=bg_on_data, darkness=1,
-                        vmax=vmax, title=title, output_file=None, **kwargs)
+                        vmax=vmax, title=title, output_file=output_file,
+                        **kwargs)
 
     return display
 
@@ -376,6 +377,7 @@ def plot_surf_roi(surf_mesh, roi_map, bg_map=None,
                         hemi=hemi, view=view, avg_method='median',
                         cmap=cmap, alpha=alpha, bg_on_data=bg_on_data,
                         darkness=darkness, vmin=vmin, vmax=vmax,
-                        title=title, output_file=None, **kwargs)
+                        title=title, output_file=output_file,
+                        **kwargs)
 
     return display
