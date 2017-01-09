@@ -3,9 +3,6 @@ Functions for surface visualization.
 Only matplotlib is required.
 """
 
-from nilearn._utils.compat import _basestring
-from .img_plotting import _get_colorbar_and_data_ranges
-
 # Import libraries
 import numpy as np
 import nibabel
@@ -13,6 +10,9 @@ from nibabel import gifti
 import matplotlib.pyplot as plt
 import matplotlib.tri as tri
 from mpl_toolkits.mplot3d import Axes3D
+
+from .._utils.compat import _basestring
+from .img_plotting import _get_colorbar_and_data_ranges
 
 
 # function to figure out datatype and load data
@@ -197,7 +197,7 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
             surf_map_data = load_surf_data(surf_map)
             if len(surf_map_data.shape) is not 1:
                 raise ValueError('surf_map can only have one dimension but has'
-                                 '%i dimensions' % len(surf_data_data.shape))
+                                 '%i dimensions' % len(surf_map_data.shape))
             if surf_map_data.shape[0] != coords.shape[0]:
                 raise ValueError('The surf_map does not have the same number '
                                  'of vertices as the mesh.')
@@ -245,7 +245,6 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
                        alpha='auto', vmax=None, cmap='coolwarm',
                        symmetric_cbar="auto", bg_on_data=False, darkness=1,
                        output_file=None, **kwargs):
-
     """ Plotting a stats map on a surface mesh with optional background
 
             Parameters

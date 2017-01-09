@@ -1,6 +1,6 @@
 """
-Demonstrate basic loading and plotting of cortical surface data on the example of seed-based resting state functional connectivity
-==================================================================================================================================
+Demonstrate basic loading and plotting of cortical surface data
+===============================================================
 The dataset that is a subset of the enhanced NKI Rockland sample
 (http://fcon_1000.projects.nitrc.org/indi/enhanced/, Nooner et al, 2012)
 

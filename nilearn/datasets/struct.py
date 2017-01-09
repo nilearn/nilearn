@@ -421,3 +421,96 @@ def fetch_oasis_vbm(n_subjects=None, dartel_version=True, data_dir=None,
         ext_vars=csv_data,
         data_usage_agreement=data_usage_agreement,
         description=fdescr)
+
+
+def fetch_surf_fsaverage5(data_dir=None, url=None, resume=True, verbose=1):
+
+    """ Download Freesurfer fsaverage5 surface
+
+    Parameters
+    ----------
+    data_dir: str, optional
+        Path of the data directory. Used to force data storage in a specified
+        location. Default: None
+
+    url: str, optional
+        Override download URL. Used for test only (or if you setup a mirror of
+        the data). Default: None
+
+    resume: bool, optional (default True)
+        If True, try resuming download if possible.
+
+    verbose: int, optional (default 1)
+        Defines the level of verbosity of the output.
+
+    Returns
+    -------
+    data: sklearn.datasets.base.Bunch
+        Dictionary-like object, the interest attributes are :
+         - 'pial_left': Gifti file, left hemisphere pial surface mesh
+         - 'pial_right': Gifti file, right hemisphere pial surface mesh
+         - 'infl_left': Gifti file, left hemisphere inflated pial surface mesh
+         - 'infl_right': Gifti file, right hemisphere inflated pial
+                         surface mesh
+         - 'sulc_left': Gifti file, left hemisphere sulcal depth data
+         - 'sulc_right': Gifti file, right hemisphere sulcal depth data
+
+    References
+    ----------
+    Fischl et al, (1999). High-resolution intersubject averaging and a
+    coordinate system for the cortical surface. Hum Brain Mapp 8, 272-284.
+    """
+    if url is None:
+        url = 'https://www.nitrc.org/frs/download.php/'
+
+    # Preliminary checks and declarations
+    dataset_name = 'fsaverage5'
+    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
+                                verbose=verbose)
+
+    # Dataset description
+    fdescr = _get_dataset_descr(dataset_name)
+
+    # Download fsaverage surfaces and sulcal information
+    surf_file = '%s.%s.gii'
+    surf_url = url + '%i/%s.%s.gii'
+    surf_nids = {'lh pial': 9344, 'rh pial': 9345,
+                 'lh infl': 9346, 'rh infl': 9347,
+                 'lh sulc': 9348, 'rh sulc': 9349}
+
+    pials = []
+    infls = []
+    sulcs = []
+    for hemi in [('lh', 'left'), ('rh', 'right')]:
+
+        pial = _fetch_files(data_dir,
+                            [(surf_file % ('pial', hemi[1]),
+                                surf_url % (surf_nids['%s pial' % hemi[0]],
+                                            'pial', hemi[1]),
+                              {})],
+                            resume=resume, verbose=verbose)
+        pials.append(pial)
+
+        infl = _fetch_files(data_dir,
+                            [(surf_file % ('pial_inflated', hemi[1]),
+                              surf_url % (surf_nids['%s infl' % hemi[0]],
+                                          'pial_inflated', hemi[1]),
+                              {})],
+                            resume=resume, verbose=verbose)
+        infls.append(infl)
+
+        sulc = _fetch_files(data_dir,
+                            [(surf_file % ('sulc', hemi[1]),
+                              surf_url % (surf_nids['%s sulc' % hemi[0]],
+                                          'sulc', hemi[1]),
+                              {})],
+                            resume=resume, verbose=verbose)
+        sulcs.append(sulc)
+
+    return Bunch(pial_left=pials[0],
+                 pial_right=pials[1],
+                 infl_left=infls[0],
+                 infl_right=infls[1],
+                 sulc_left=sulcs[0],
+                 sulc_right=sulcs[1],
+                 description=fdescr)
