@@ -1726,6 +1726,12 @@ def fetch_surf_nki_enhanced(n_subjects=10, data_dir=None,
         Override download URL. Used for test only (or if you setup a mirror of
         the data). Default: None
 
+    resume: bool, optional (default True)
+        If true, try resuming download if possible.
+
+    verbose: int, optional (default 1)
+        Defines the level of verbosity of the output.
+
     Returns
     -------
     data: sklearn.datasets.base.Bunch
