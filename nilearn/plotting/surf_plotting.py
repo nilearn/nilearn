@@ -16,7 +16,7 @@ from mpl_toolkits.mplot3d import Axes3D
 
 
 # function to figure out datatype and load data
-def check_surf_data(surf_data):
+def load_surf_data(surf_data):
     # if the input is a filename, load it
     if isinstance(surf_data, _basestring):
         if (surf_data.endswith('nii') or surf_data.endswith('nii.gz') or
@@ -44,7 +44,7 @@ def check_surf_data(surf_data):
 
 
 # function to figure out datatype and load data
-def check_surf_mesh(surf_mesh):
+def load_surf_mesh(surf_mesh):
     # if input is a filename, try to load it
     if isinstance(surf_mesh, _basestring):
         if (surf_mesh.endswith('orig') or surf_mesh.endswith('pial') or
@@ -111,7 +111,7 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
         """
 
     # load mesh and derive axes limits
-    coords, faces = check_surf_mesh(surf_mesh)
+    coords, faces = load_surf_mesh(surf_mesh)
     limits = [coords.min(), coords.max()]
 
     # set view
@@ -178,7 +178,7 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
         #face_colors[:, :3] = .5*face_colors[:, :3]  # why this?
 
         if bg_map is not None:
-            bg_data = check_surf_data(bg_map)
+            bg_data = load_surf_data(bg_map)
             if bg_data.shape[0] != coords.shape[0]:
                 raise ValueError('The bg_map does not have the same number '
                                  'of vertices as the mesh.')
@@ -194,7 +194,7 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
         # should it be possible to modify alpha of surf data as well?
 
         if surf_map is not None:
-            surf_map_data = check_surf_data(surf_map)
+            surf_map_data = load_surf_data(surf_map)
             if len(surf_map_data.shape) is not 1:
                 raise ValueError('surf_map can only have one dimension but has'
                                  '%i dimensions' % len(surf_data_data.shape))
@@ -349,7 +349,7 @@ def plot_surf_roi(surf_mesh, roi_map, bg_map=None,
                 is saved to a file, and the display is closed.
         """
 
-    v, _ = check_surf_mesh(surf_mesh)
+    v, _ = load_surf_mesh(surf_mesh)
 
     # if roi_map is a list of arrays with indices for different rois
     if isinstance(roi_map, list):
@@ -361,7 +361,7 @@ def plot_surf_roi(surf_mesh, roi_map, bg_map=None,
             idx += 1
     else:
         # if roi_map is an array with values for all surface nodes
-        roi_data = check_surf_data(roi_map)
+        roi_data = load_surf_data(roi_map)
         # or a single array with indices for a single roi
         if roi_data.shape[0] != v.shape[0]:
             roi_map = np.zeros(v.shape[0])

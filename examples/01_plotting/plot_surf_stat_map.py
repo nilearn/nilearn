@@ -70,7 +70,7 @@ sulcal_depth_map = fsaverage['sulc_left'][0]
 
 ###############################################################################
 # Load resting state time series and parcellation
-timeseries = plotting.surf_plotting.check_surf_data(resting_state)
+timeseries = plotting.surf_plotting.load_surf_data(resting_state)
 
 # Extract seed region: dorsal posterior cingulate gyrus
 region = 'G_cingul-Post-dorsal'
