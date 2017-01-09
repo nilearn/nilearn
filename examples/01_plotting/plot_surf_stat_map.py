@@ -107,6 +107,6 @@ plotting.plot_surf_stat_map(fsaverage5_pial, stat_map=stat_map, hemi='left',
 plotting.plot_surf_stat_map(fsaverage5_pial, stat_map=stat_map, hemi='left',
                             bg_map=sulcal_depth_map, bg_on_data=True,
                             cmap='Spectral', threshold=.6, alpha=.5,
-                            output_file='/tmp/plot_surf_stat_map.png')
+                            output_file='plot_surf_stat_map.png')
 
 plotting.show()
