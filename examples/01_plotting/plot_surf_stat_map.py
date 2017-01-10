@@ -111,8 +111,9 @@ plotting.plot_surf_stat_map(fsaverage5_pial, stat_map=stat_map, hemi='left',
 
 # The plots can be saved to file, in which case the display is closed after
 # creating the figure
-plotting.plot_surf_stat_map(fsaverage5_inflated, stat_map=stat_map, hemi='left',
-                            bg_map=sulcal_depth_map, bg_on_data=True,
-                            threshold=.6, output_file='plot_surf_stat_map.png')
+plotting.plot_surf_stat_map(fsaverage5_inflated, stat_map=stat_map,
+                            hemi='left', bg_map=sulcal_depth_map,
+                            bg_on_data=True, threshold=.6,
+                            output_file='plot_surf_stat_map.png')
 
 plotting.show()
