@@ -21,10 +21,10 @@ def load_surf_data(surf_data):
 
     Parameters
     ----------
-    surf_data : Either file containing surface data, can be one of the
-                formats .gii, .mgz, .nii, .nii.gz, or Freesurfer specific
-                files such as .thickness, .curv, .sulc, .annot, .label
-                Or numpy array containing surface data.
+    surf_data : Either a file containing surface data (valid format are .gii,
+                .mgz, .nii, .nii.gz, or Freesurfer specific files such as
+                .thickness, .curv, .sulc, .annot, .label) or a Numpy array
+                containing surface data.
     Returns
     --------
     data : Numpy array containing surface data
@@ -47,14 +47,15 @@ def load_surf_data(surf_data):
             for arr in range(len(gii.darrays)):
                 data[:, arr] = gii.darrays[arr].data
             data = np.squeeze(data)
-        else:
-            raise ValueError('Format of data file not recognized. Expected file \
-                              formats are .gii, .mgz, .nii, .nii.gz, or \
-                              Freesurfer specific files such as .curv, \
-                              .sulc, .thickness, .annot, .label ')
     # if the input is a numpy array
     elif isinstance(surf_data, np.ndarray):
         data = np.squeeze(surf_data)
+    else:
+        raise ValueError('The input type is not recognized. %r was given while \
+                          valid inputs are a Numpy array or one of the \
+                          following file formats: .gii, .mgz, .nii, .nii.gz, \
+                          Freesurfer specific files such as .curv,  .sulc, \
+                          .thickness, .annot, .label' % surf_data)
     return data
 
 
@@ -64,15 +65,18 @@ def load_surf_mesh(surf_mesh):
 
     Parameters
     ----------
-    surf_mesh : Either file containing surface mesh geometry, can be one of the
-                formats: .gii or Freesurfer specific files such as
-                .orig, .pial, .sphere, .white, inflated
-                Or
+    surf_mesh : Either a file containing surface mesh geometry (valid formats
+                are .gii or Freesurfer specific files such as .orig, .pial,
+                .sphere, .white, .inflated) or a list of two Numpy arrays,
+                the first containing the x-y-z coordinates of the mesh
+                vertices, the second containing the indices (into coords)
+                of the mesh faces
 
     Returns
     --------
-    coords : Numpy array containing the x-y-z coordinates of the mesh vertices
-    faces : Numpy array containing the indices (into coords) of the mesh faces
+    [coords, faces] : List of two Numpy arrays, the first containing the x-y-z
+                      coordinates of the mesh vertices, the second containing
+                      the indices (into coords) of the mesh faces
     """
     # if input is a filename, try to load it
     if isinstance(surf_mesh, _basestring):
@@ -81,15 +85,30 @@ def load_surf_mesh(surf_mesh):
                 surf_mesh.endswith('inflated')):
             coords, faces = nibabel.freesurfer.io.read_geometry(surf_mesh)
         elif surf_mesh.endswith('gii'):
-            coords, faces = gifti.read(surf_mesh).getArraysFromIntent(nibabel.nifti1.intent_codes['NIFTI_INTENT_POINTSET'])[0].data, \
-                            gifti.read(surf_mesh).getArraysFromIntent(nibabel.nifti1.intent_codes['NIFTI_INTENT_TRIANGLE'])[0].data
+            coords, faces = gifti.read(surf_mesh).getArraysFromIntent(
+             nibabel.nifti1.intent_codes['NIFTI_INTENT_POINTSET'])[0].data, \
+                            gifti.read(surf_mesh).getArraysFromIntent(
+             nibabel.nifti1.intent_codes['NIFTI_INTENT_TRIANGLE'])[0].data
+    elif isinstance(surf_mesh, list):
+        if len(surf_mesh == 2):
+            coords, faces = surf_mesh[0], surf_mesh[1]
         else:
-            raise ValueError('Format of mesh file not recognized. Expected file \
-                              formats are .gii, or Freesurfer specific files \
-                              such as .orig, .pial, .sphere, .white, \
-                              .inflated')
+            raise ValueError('If a list is given as input, it must have \
+                              two elements, the first is a Numpy array \
+                              containing the x-y-z coordinates of the mesh \
+                              vertices, the second is a Numpy array \
+                              containing  the indices (into coords) of the \
+                              mesh faces. The input was a list with %r \
+                              elements.' % len(surf_mesh))
+    else:
+        raise ValueError('The input type is not recognized. %r was given \
+                          while valid inputs are one of the following file \
+                          formats: .gii, Freesurfer specific files such as \
+                          .orig, .pial, .sphere, .white, .inflated \
+                          or a list containing two Numpy arrays \
+                          [vertex coordinates, face indices]' % surf_mesh)
 
-    return coords, faces
+    return [coords, faces]
 
 
 def plot_surf(surf_mesh, surf_map=None, bg_map=None,
@@ -102,8 +121,16 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
 
             Parameters
             ----------
-            surf_mesh: Surface object (to be defined)
-            surf_map: Surface data (to be defined) to be displayed, optional
+            surf_mesh: Surface mesh geometry, can be a file (valid formats are
+                       .gii or Freesurfer specific files such as .orig, .pial,
+                       .sphere, .white, .inflated) or a list of two Numpy
+                       arrays, the first containing the x-y-z coordinates of
+                       the mesh vertices, the second containing the indices
+                       (into coords) of the mesh faces
+            surf_map: Data to be displayed on the surface mesh, optional, can
+                      be a file (valid formats are .gii, .mgz, .nii, .nii.gz,
+                      or Freesurfer specific files such as .thickness, .curv,
+                      .sulc, .annot, .label) or a Numpy array
             hemi: {'left', 'right'}, hemisphere to display. Default is 'left'
             bg_map: Surface data object (to be defined), optional,
                 background image to be plotted on the mesh underneath the
@@ -144,7 +171,8 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
         """
 
     # load mesh and derive axes limits
-    coords, faces = load_surf_mesh(surf_mesh)
+    mesh = load_surf_mesh(surf_mesh)
+    coords, faces = mesh[0], mesh[1]
     limits = [coords.min(), coords.max()]
 
     # set view
@@ -208,7 +236,7 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
     if bg_map is not None or surf_map is not None:
 
         face_colors = np.ones((faces.shape[0], 4))
-        #face_colors[:, :3] = .5*face_colors[:, :3]  # why this?
+        # face_colors[:, :3] = .5*face_colors[:, :3]  # why this?
 
         if bg_map is not None:
             bg_data = load_surf_data(bg_map)
@@ -285,8 +313,16 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
 
             Parameters
             ----------
-            surf_mesh: Surface object (to be defined)
-            stat_map: Statistical map to be displayed (to be defined)
+            surf_mesh: Surface mesh geometry, can be a file (valid formats are
+                       .gii or Freesurfer specific files such as .orig, .pial,
+                       .sphere, .white, .inflated) or a list of two Numpy
+                       arrays, the first containing the x-y-z coordinates of
+                       the mesh vertices, the second containing the indices
+                       (into coords) of the mesh faces
+            stat_map: Statistical map to be displayed on the surface mesh, can
+                      be a file (valid formats are .gii, .mgz, .nii,
+                      .nii.gz, or Freesurfer specific files such as .thickness,
+                      .curv, .sulc, .annot, .label) or a Numpy array
             hemi: {'left', 'right'}, hemisphere to display, default is 'left'
             bg_map: Surface data object (to be defined), optional,
                 background image to be plotted on the mesh underneath the
@@ -353,10 +389,18 @@ def plot_surf_roi(surf_mesh, roi_map, bg_map=None,
 
             Parameters
             ----------
-            surf_mesh: Surface object (to be defined)
-            roi_map: ROI map to be plotted on the mesh, can either be an array
-            with values for each node or an array, or list of arrays with
-            indices included in the/each ROI
+            surf_mesh: Surface mesh geometry, can be a file (valid formats are
+                       .gii or Freesurfer specific files such as .orig, .pial,
+                       .sphere, .white, .inflated) or a list of two Numpy
+                       arrays, the first containing the x-y-z coordinates of
+                       the mesh vertices, the second containing the indices
+                       (into coords) of the mesh faces
+            roi_map: ROI map to be displayed on the surface mesh, can
+                      be a file (valid formats are .gii, .mgz, .nii, .nii.gz,
+                      or Freesurfer specific files such as .annot or .label),
+                      or a Numpy array containing a value for each vertex,
+                      or a list of Numpy arrays, one array per ROI which
+                      contains indices of all vertices included in that ROI
             hemi: {'left', 'right'}, hemisphere to display.
                   Default is 'left'
             bg_map: Surface data object (to be defined), optional,
