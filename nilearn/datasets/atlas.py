@@ -4,6 +4,7 @@ Downloading NeuroImaging datasets: atlas datasets
 import os
 import xml.etree.ElementTree
 import numpy as np
+import nibabel as nb
 
 from sklearn.datasets.base import Bunch
 
@@ -889,10 +890,12 @@ def fetch_atlas_surf_destrieux(data_dir=None, url=None,
     -------
         data: sklearn.datasets.base.Bunch
         dictionary-like object, contains:
-        - 'annot_left': parcellation on left hemisphere in
-                        freesurfer annot format
-        - 'annot_right': parcellation on right hemisphere in
-                         freesurfer annot format
+        - 'labels' : List of region labels
+        - 'map_left': Numpy array, index into 'labels' for each vertex on the
+                      left hemishpere of the fsaverage5 surface
+        - 'map_right': Numpy array, index into 'labels' for each vertex on the
+                       right hemishpere of the fsaverage5 surface
+
 
     References
     ----------
@@ -924,5 +927,8 @@ def fetch_atlas_surf_destrieux(data_dir=None, url=None,
                              resume=resume, verbose=verbose)[0]
         annots.append(annot)
 
-    return Bunch(annot_left=annots[0], annot_right=annots[1],
-                 description=fdescr)
+    annot_left = nb.freesurfer.read_annot(annots[0])
+    annot_right = nb.freesurfer.read_annot(annots[1])
+
+    return Bunch(labels=annot_left[2],  map_left=annot_left[0],
+                 map_right=annot_right[0], description=fdescr)

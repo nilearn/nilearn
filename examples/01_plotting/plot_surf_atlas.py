@@ -25,7 +25,7 @@ import nibabel as nb
 ###############################################################################
 # Destrieux parcellation left hemisphere in fsaverage5 space
 destrieux_atlas = datasets.fetch_atlas_surf_destrieux()
-parcellation = nb.freesurfer.read_annot(destrieux_atlas['annot_left'])
+parcellation = destrieux_atlas['map_left']
 
 # Retrieve fsaverage data
 fsaverage = datasets.fetch_surf_fsaverage5()
@@ -37,12 +37,12 @@ sulcal_depth_map = fsaverage['sulc_left'][0]
 
 ###############################################################################
 # Display Destrieux parcellation on fsaverage5 surface
-plotting.plot_surf_roi(fsaverage5_pial, roi_map=parcellation[0],
+plotting.plot_surf_roi(fsaverage5_pial, roi_map=parcellation,
                        hemi='left', view='lateral', bg_map=sulcal_depth_map,
                        bg_on_data=True, darkness=.5, cmap='gist_ncar')
 
 # Display Destrieux parcellation on inflated fsaverage5 surface
-plotting.plot_surf_roi(fsaverage5_inflated, roi_map=parcellation[0],
+plotting.plot_surf_roi(fsaverage5_inflated, roi_map=parcellation,
                        hemi='left', view='lateral', bg_map=sulcal_depth_map,
                        bg_on_data=True, darkness=.5, cmap='gist_ncar')
 
