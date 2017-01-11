@@ -474,6 +474,10 @@ def extract_regions_labels_img(labels_img, min_size=None, connect_diag=True,
     new_labels_img : Nifti-like image
         A new image comprising of regions extracted on an input labels_img.
 
+    new_labels : list
+        If labels are provided, new labels assigned to region extracted will
+        be returned. Otherwise, only new labels image will be returned.
+
     See Also
     --------
     nilearn.datasets.fetch_atlas_harvard_oxford : For labels type atlas images.
@@ -524,8 +528,8 @@ def extract_regions_labels_img(labels_img, min_size=None, connect_diag=True,
                                             index, min_size=min_size)
             this_n_labels = regions.max()
 
-        new_labels_data[regions != 0] = (regions[regions != 0]
-                                         + current_max_label)
+        cur_regions = regions[regions != 0] + current_max_label
+        new_labels_data[regions != 0] = cur_regions
         current_max_label += this_n_labels
         if name is not None:
             new_names.extend([name] * this_n_labels)

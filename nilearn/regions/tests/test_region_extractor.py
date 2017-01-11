@@ -273,6 +273,7 @@ def test_extract_regions_labels_img():
     # and second return will contain list of new names generated based on same
     # name with assigned on both hemispheres for example.
     extracted_reg, new_labels = extract_regions_labels_img(labels_img,
+                                                           min_size=100,
                                                            labels=labels)
     # new_labels returned must be equal or more than what was in labels.
     assert_true(new_labels >= len(labels))
