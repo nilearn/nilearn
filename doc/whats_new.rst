@@ -15,11 +15,9 @@ Changelog
 Enhancements
 ............
 
-    - A new function :func:`nilearn.regions.extract_regions_labels_img` can be
-      used for extraction of biggest connected components represented as
-      same label to regions apart with each region labelled as unique label.
-      This function is integrated and can be found in regions module in
-      nilearn.
+    - A new function :func:`nilearn.regions.connected_label_regions` to
+      extract the connected components represented as same label to regions
+      apart with each region labelled as unique label.
 
 
 Changelog

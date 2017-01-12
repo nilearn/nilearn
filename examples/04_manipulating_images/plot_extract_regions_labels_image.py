@@ -3,8 +3,8 @@ Breaking an atlas of labels in separated regions
 =================================================
 
 This example shows how to use
-:class:`nilearn.regions.extract_regions_labels_img`
-to assign each separated region of the atlas a unique label.
+:class:`nilearn.regions.connected_label_regions`
+to assign each spatially-separated region of the atlas a unique label.
 
 Indeed, often in a given atlas of labels, the same label (number) may
 be used in different connected regions, for instance a region in each
@@ -45,10 +45,10 @@ plotting.plot_roi(atlas_yeo, title='Original Yeo atlas',
 # Relabeling the atlas into separated regions
 # ---------------------------------------------
 #
-# Now we use the extract_regions_labels_img to break appart the networks
+# Now we use the connected_label_regions to break appart the networks
 # of the Yeo atlas into separated regions
-from nilearn.regions import extract_regions_labels_img
-region_labels = extract_regions_labels_img(atlas_yeo)
+from nilearn.regions import connected_label_regions
+region_labels = connected_label_regions(atlas_yeo)
 
 ################################################################################
 # Plotting the new regions
@@ -85,8 +85,8 @@ region_labels.to_filename('relabeled_yeo_atlas.nii.gz')
 # Using the parameter connect_diag=False we separate in addition two regions
 # that are connected only along the diagonal.
 
-region_labels_not_diag = extract_regions_labels_img(atlas_yeo,
-                                                    connect_diag=False)
+region_labels_not_diag = connected_label_regions(atlas_yeo,
+                                                 connect_diag=False)
 
 plotting.plot_roi(region_labels_not_diag,
                   title='Relabeling and connect_diag=False',
@@ -106,8 +106,8 @@ plotting.plot_roi(region_labels_not_diag,
 # In the above, we get around 110 regions, but many of these are very
 # small. We can remove them with the min_size parameter, keeping only the
 # regions that are bigger than 100 voxels.
-region_labels_min_size = extract_regions_labels_img(atlas_yeo, min_size=100,
-                                                    connect_diag=False)
+region_labels_min_size = connected_label_regions(atlas_yeo, min_size=100,
+                                                 connect_diag=False)
 
 plotting.plot_roi(region_labels_min_size, title='Relabeling and min_size',
                   cut_coords=(8, -4, 9), colorbar=True, cmap='Paired')

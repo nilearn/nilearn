@@ -199,7 +199,7 @@ def connected_regions(maps_img, min_region_size=1350,
 
     See Also
     --------
-    nilearn.regions.extract_regions_labels_img : A function can be used for
+    nilearn.regions.connected_label_regions : A function can be used for
         extraction of regions on labels based atlas images.
 
     nilearn.regions.RegionExtractor : A class can be used for both
@@ -378,7 +378,7 @@ class RegionExtractor(NiftiMapsMasker):
 
     See Also
     --------
-    nilearn.regions.extract_regions_labels_img : A function can be readily
+    nilearn.regions.connected_label_regions : A function can be readily
         used for extraction of regions on labels based atlas images.
 
     """
@@ -434,9 +434,10 @@ class RegionExtractor(NiftiMapsMasker):
         return self
 
 
-def extract_regions_labels_img(labels_img, min_size=None, connect_diag=True,
-                               labels=None):
-    """ Extract regions on a brain atlas image defined by labels (integers).
+def connected_label_regions(labels_img, min_size=None, connect_diag=True,
+                            labels=None):
+    """ Extract connected regions from a brain atlas image defined by labels
+    (integers).
 
     For each label in an parcellations, separates out connected
     components and assigns to each separated region a unique label.
@@ -474,13 +475,14 @@ def extract_regions_labels_img(labels_img, min_size=None, connect_diag=True,
     new_labels_img : Nifti-like image
         A new image comprising of regions extracted on an input labels_img.
 
-    new_labels : list
+    new_labels : list, optional
         If labels are provided, new labels assigned to region extracted will
         be returned. Otherwise, only new labels image will be returned.
 
     See Also
     --------
-    nilearn.datasets.fetch_atlas_harvard_oxford : For labels type atlas images.
+    nilearn.datasets.fetch_atlas_harvard_oxford : For an example of atlas with
+        labels.
 
     nilearn.regions.RegionExtractor : A class can be used for region extraction
         on continuous type atlas images.
@@ -518,8 +520,12 @@ def extract_regions_labels_img(labels_img, min_size=None, connect_diag=True,
     for label_id, name in zip(unique_labels, this_labels):
         this_label_mask = (labels_data == label_id)
         # Extract regions assigned to each label id
-        regions, this_n_labels = _compute_regions_labels(
-            this_label_mask.astype(np.int), connect_diag=connect_diag)
+        if connect_diag:
+            structure = np.ones((3, 3, 3), dtype=np.int)
+            regions, this_n_labels = ndimage.label(
+                this_label_mask.astype(np.int), structure=structure)
+        else:
+            regions, this_n_labels = ndimage.label(this_label_mask.astype(np.int))
 
         if min_size is not None:
             index = np.arange(this_n_labels + 1)
