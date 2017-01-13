@@ -19,7 +19,7 @@ env:
       NUMPY_VERSION="1.8.2" SCIPY_VERSION="0.13.3"
       SCIKIT_LEARN_VERSION="0.14.1"
       PANDAS_VERSION="0.13.0"
-    - DISTRIB="neurodebian" PYTHON_VERSION="2.7"
+    # - DISTRIB="neurodebian" PYTHON_VERSION="2.7"
     # Trying to get as close to the minimum required versions while
     # still having the package version available through conda
     - DISTRIB="conda" PYTHON_VERSION="2.6"
@@ -30,7 +30,7 @@ env:
     - DISTRIB="conda" PYTHON_VERSION="3.4"
       NUMPY_VERSION="*" SCIPY_VERSION="*"
       SCIKIT_LEARN_VERSION="*" MATPLOTLIB_VERSION="*"
-      PANDAS_VERSION="*" PATSY_VERSION="*"
+      PANDAS_VERSION="*"
     - DISTRIB="conda" PYTHON_VERSION="3.5"
       NUMPY_VERSION="*" SCIPY_VERSION="*"
       SCIKIT_LEARN_VERSION="*" MATPLOTLIB_VERSION="*" COVERAGE="true"
@@ -48,7 +48,7 @@ script:
     # Mainly for nose config settings
     - cp setup.cfg "$TEST_RUN_FOLDER"
     # We want to back out of the current working directory to make
-    # sure we are using nilearn installed in site-packages rather
+    # sure we are using nistats installed in site-packages rather
     # than the one from the current working directory
     # Parentheses (run in a subshell) are used to leave
     # the current directory unchanged

@@ -1,3 +1,10 @@
+"""
+This module is for contrast computation and operation on contrast to
+obtain fixed effect results.
+
+Author: Bertrand Thirion, Martin Perez-Guevara, 2016
+"""
+
 from warnings import warn
 import numpy as np
 import scipy.stats as sps

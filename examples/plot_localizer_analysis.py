@@ -1,6 +1,6 @@
 """
-GLM fitting in fMRI
-===================
+First level analysis of localizer dataset
+=========================================
 
 Full step-by-step example of fitting a GLM to experimental data and visualizing
 the results.
@@ -14,9 +14,6 @@ More specifically:
    then contrast estimation)
 
 """
-
-print(__doc__)
-
 from os import mkdir, path
 
 import numpy as np
@@ -26,26 +23,31 @@ from nilearn import plotting
 from nistats.first_level_model import FirstLevelModel
 from nistats import datasets
 
-
-### Data and analysis parameters #######################################
-
-# timing
+#########################################################################
+# Prepare data and analysis parameters
+# -------------------------------------
+# Prepare timing
 t_r = 2.4
 slice_time_ref = 0.5
 
-# data
+# Prepare data
 data = datasets.fetch_localizer_first_level()
 paradigm_file = data.paradigm
 paradigm = pd.read_csv(paradigm_file, sep=' ', header=None, index_col=None)
 paradigm.columns = ['session', 'trial_type', 'onset']
 fmri_img = data.epi_img
 
-### Perform a GLM analysis ########################################
+#########################################################################
+# Perform first level analysis
+# ----------------------------
+# Setup and fit GLM
 first_level_model = FirstLevelModel(t_r, slice_time_ref,
                                     hrf_model='glover + derivative')
 first_level_model = first_level_model.fit(fmri_img, paradigm)
 
-# Estimate contrasts #########################################
+#########################################################################
+# Estimate contrasts
+# ------------------
 # Specify the contrasts
 design_matrix = first_level_model.design_matrices_[0]
 contrast_matrix = np.eye(design_matrix.shape[1])
@@ -59,7 +61,8 @@ contrasts["video"] = contrasts["clicDvideo"] + contrasts["clicGvideo"] + \
 contrasts["computation"] = contrasts["calculaudio"] + contrasts["calculvideo"]
 contrasts["sentences"] = contrasts["phraseaudio"] + contrasts["phrasevideo"]
 
-# Short list or more relevant contrasts
+#########################################################################
+# Short list of more relevant contrasts
 contrasts = {
     "left-right": (contrasts["clicGaudio"] + contrasts["clicGvideo"]
                    - contrasts["clicDaudio"] - contrasts["clicDvideo"]),
@@ -71,11 +74,7 @@ contrasts = {
     "reading-visual": contrasts["phrasevideo"] - contrasts["damier_H"]
     }
 
-# write directory
-write_dir = 'results'
-if not path.exists(write_dir):
-    mkdir(write_dir)
-
+#########################################################################
 # contrast estimation
 for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
     print('  Contrast % 2i out of %i: %s' %
@@ -86,6 +85,5 @@ for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
     # Create snapshots of the contrasts
     display = plotting.plot_stat_map(z_map, display_mode='z',
                                      threshold=3.0, title=contrast_id)
-    display.savefig(path.join(write_dir, '%s_z_map.png' % contrast_id))
 
 plotting.show()

@@ -29,11 +29,13 @@ The required dependencies to use the software are:
 
 * Python >= 2.6
 * setuptools
-* Numpy >= 1.6.1
-* SciPy >= 0.9
+* Numpy >= 1.7.1
+* SciPy >= 0.11.0
 * Nibabel >= 1.1.0
-* Nilearn >= 0.1.3
-* Pandas >= 0.12
+* Nilearn >= 0.2.0
+* Pandas >= 0.13
+* Sklearn >= 0.14.1
+* Patsy >= 0.2.0
 
 If you are using nilearn plotting functionalities or running the
 examples, matplotlib >= 1.1.1 is required.

@@ -1,6 +1,6 @@
 """
-GLM fitting in fMRI
-===================
+Simple example of GLM fitting in fMRI
+======================================
 
 Full step-by-step example of fitting a GLM to experimental data and visualizing
 the results. This is done on two runs of one subject of the FIAC dataset.
@@ -22,9 +22,6 @@ More specifically:
 
 Author: Bertrand Thirion, 2015
 """
-
-print(__doc__)
-
 from os import mkdir, path, getcwd
 
 import numpy as np
@@ -43,31 +40,42 @@ write_dir = path.join(getcwd(), 'results')
 if not path.exists(write_dir):
     mkdir(write_dir)
 
-# Data and analysis parameters
+#########################################################################
+# Prepare data and analysis parameters
+# --------------------------------------
 data = datasets.fetch_fiac_first_level()
 fmri_img = [data['func1'], data['func2']]
 mean_img_ = mean_img(fmri_img[0])
 design_files = [data['design_matrix1'], data['design_matrix2']]
 design_matrices = [pd.DataFrame(np.load(df)['X']) for df in design_files]
 
+#########################################################################
+# GLM estimation
+# ----------------------------------
 # GLM specification
 fmri_glm = FirstLevelModel(mask=data['mask'], minimize_memory=True)
+
+#########################################################################
 # GLM fitting
 fmri_glm = fmri_glm.fit(fmri_img, design_matrices=design_matrices)
 
+#########################################################################
 # compute fixed effects of the two runs and compute related images
 n_columns = design_matrices[0].shape[1]
+
+
 def pad_vector(contrast_, n_columns):
     return np.hstack((contrast_, np.zeros(n_columns - len(contrast_))))
 
+
 contrasts = {'SStSSp_minus_DStDSp': pad_vector([1, 0, 0, -1], n_columns),
-            'DStDSp_minus_SStSSp': pad_vector([-1, 0, 0, 1], n_columns),
-            'DSt_minus_SSt': pad_vector([-1, -1, 1, 1], n_columns),
-            'DSp_minus_SSp': pad_vector([-1, 1, -1, 1], n_columns),
-            'DSt_minus_SSt_for_DSp': pad_vector([0, -1, 0, 1], n_columns),
-            'DSp_minus_SSp_for_DSt': pad_vector([0, 0, -1, 1], n_columns),
-            'Deactivation': pad_vector([-1, -1, -1, -1, 4], n_columns),
-            'Effects_of_interest': np.eye(n_columns)[:5]}
+             'DStDSp_minus_SStSSp': pad_vector([-1, 0, 0, 1], n_columns),
+             'DSt_minus_SSt': pad_vector([-1, -1, 1, 1], n_columns),
+             'DSp_minus_SSp': pad_vector([-1, 1, -1, 1], n_columns),
+             'DSt_minus_SSt_for_DSp': pad_vector([0, -1, 0, 1], n_columns),
+             'DSp_minus_SSp_for_DSt': pad_vector([0, 0, -1, 1], n_columns),
+             'Deactivation': pad_vector([-1, -1, -1, -1, 4], n_columns),
+             'Effects_of_interest': np.eye(n_columns)[:5]}
 
 print('Computing contrasts...')
 for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):

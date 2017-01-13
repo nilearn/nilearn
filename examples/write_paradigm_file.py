@@ -1,5 +1,6 @@
 """
-Examples of a paradigm .csv file generation: the neurospin/localizer paradigm.
+Example of a paradigm .csv file generation: the neurospin/localizer paradigm.
+=============================================================================
 
 See Pinel et al., BMC neuroscience 2007 for reference
 """
@@ -9,6 +10,7 @@ print(__doc__)
 import numpy as np
 import pandas as pd
 
+#########################################################################
 # onset times in milliseconds
 time = np.array([
         0., 2.4, 8.7, 11.4, 15., 18., 20.7, 23.7, 26.7, 29.7, 33., 35.4, 39.,
@@ -20,8 +22,8 @@ time = np.array([
         248.4, 251.7, 254.7, 257.4, 260.4, 264., 266.7, 269.7, 275.4, 278.4,
         284.4, 288., 291., 293.4, 296.7])
 
+#########################################################################
 # corresponding onset types
-# onset types
 trial_idx = np.array(
     [7, 7, 0, 2, 9, 4, 9, 3, 5, 9, 1, 6, 8, 8, 6, 6, 8, 0, 3, 4, 5, 8, 6,
      2, 9, 1, 6, 5, 9, 1, 7, 8, 6, 6, 1, 2, 9, 0, 7, 1, 8, 2, 7, 8, 3, 6,

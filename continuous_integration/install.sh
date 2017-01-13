@@ -52,9 +52,12 @@ print_conda_requirements() {
 }
 
 create_new_conda_env() {
-    # Deactivate the travis-provided virtual environment and setup a
-    # conda-based environment instead
-    deactivate
+    # Skip Travis related code on circle ci.
+    if [ -z $CIRCLECI ]; then
+        # Deactivate the travis-provided virtual environment and setup a
+        # conda-based environment instead
+        deactivate
+    fi
 
     # Use the miniconda installer for faster download / install of conda
     # itself
@@ -62,7 +65,8 @@ create_new_conda_env() {
         -O miniconda.sh
     chmod +x miniconda.sh && ./miniconda.sh -b
     export PATH=/home/travis/miniconda2/bin:$PATH
-    conda update --yes conda
+    echo $PATH
+    conda update --quiet --yes conda
 
     # Configure the conda environment and put it in the path using the
     # provided versions
@@ -73,7 +77,12 @@ create_new_conda_env() {
 
     if [[ "$INSTALL_MKL" == "true" ]]; then
         # Make sure that MKL is used
-        conda install --yes mkl
+        conda install --quiet --yes mkl
+    elif [[ -z $CIRCLECI ]]; then
+        # Travis doesn't use MKL but circle ci does for speeding up examples
+        # generation in the html documentation.
+        # Make sure that MKL is not used
+        conda remove --yes --features mkl || echo "MKL not installed"
     else
         # Make sure that MKL is not used
         conda remove --yes --features mkl || echo "MKL not installed"
@@ -82,11 +91,12 @@ create_new_conda_env() {
 
 if [[ "$DISTRIB" == "neurodebian" ]]; then
     create_new_venv
+    pip install nose-timer
     bash <(wget -q -O- http://neuro.debian.net/_files/neurodebian-travis.sh)
-    sudo apt-get install -qq python-scipy python-nose python-nibabel python-sklearn python-pandas
-    pip install numpy --upgrade
+    sudo apt-get install -qq python-scipy python-nose python-nibabel python-sklearn
     pip install nilearn
     pip install patsy
+
 
 elif [[ "$DISTRIB" == "conda" ]]; then
     create_new_conda_env

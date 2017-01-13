@@ -7,7 +7,7 @@ CYTHON ?= cython
 NOSETESTS ?= nosetests
 CTAGS ?= ctags
 
-all: clean test doc-noplot
+all: clean test doc-plot pdf
 
 clean-pyc:
 	find . -name "*.pyc" | xargs rm -f
@@ -53,12 +53,12 @@ ctags:
 	# Install with: sudo apt-get install exuberant-ctags
 	$(CTAGS) -R *
 
-.PHONY : doc
-doc:
+.PHONY : doc-plot
+doc-plot:
 	make -C doc html
 
-.PHONY : doc-noplot
-doc-noplot:
+.PHONY : doc
+doc:
 	make -C doc html-noplot
 
 .PHONY : pdf

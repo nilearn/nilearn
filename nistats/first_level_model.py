@@ -6,6 +6,9 @@ nistats.regression.
 
 It contains the GLM and contrast classes that are meant to be the main objects
 of fMRI data analyses.
+
+Author: Bertrand Thirion, Martin Perez-Guevara, 2016
+
 """
 
 from warnings import warn
@@ -45,6 +48,7 @@ def mean_scaling(Y, axis=0):
 
     mean : array of shape (n_voxels,)
         The data mean.
+
     """
     mean = Y.mean(axis=axis)
     if (mean == 0).any():
@@ -93,6 +97,7 @@ def run_glm(Y, X, noise_model='ar1', bins=100, n_jobs=1, verbose=0):
     results : dict,
         Keys correspond to the different labels values
         values are RegressionResults instances corresponding to the voxels.
+
     """
     acceptable_noise_models = ['ar1', 'ols']
     if noise_model not in acceptable_noise_models:
@@ -140,13 +145,13 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
     Parameters
     ----------
 
-    t_r: float
+    t_r : float
         This parameter indicates repetition times of the experimental runs.
         In seconds. It is necessary to correctly consider times in the design
         matrix. This parameter is also passed to nilearn.signal.clean.
         Please see the related documentation for details.
 
-    slice_time_ref: float, optional (default 0.)
+    slice_time_ref : float, optional (default 0.)
         This parameter indicates the time of the reference slice used in the
         slice timing preprocessing step of the experimental runs. It is
         expressed as a percentage of the t_r (time repetition), so it can have
@@ -178,29 +183,29 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         (in seconds). Events that start before (slice_time_ref * t_r +
         min_onset) are not considered.
 
-    mask: Niimg-like, NiftiMasker object or False, optional
+    mask : Niimg-like, NiftiMasker object or False, optional
         Mask to be used on data. If an instance of masker is passed,
         then its mask will be used. If no mask is given,
         it will be computed automatically by a NiftiMasker with default
         parameters. If False is given then the data will not be masked.
 
-    target_affine: 3x3 or 4x4 matrix, optional
+    target_affine : 3x3 or 4x4 matrix, optional
         This parameter is passed to nilearn.image.resample_img. Please see the
         related documentation for details.
 
-    target_shape: 3-tuple of integers, optional
+    target_shape : 3-tuple of integers, optional
         This parameter is passed to nilearn.image.resample_img. Please see the
         related documentation for details.
 
-    smoothing_fwhm: float, optional
+    smoothing_fwhm : float, optional
         If smoothing_fwhm is not None, it gives the size in millimeters of the
         spatial smoothing to apply to the signal.
 
-    memory: string, optional
+    memory : string, optional
         Path to the directory used to cache the masking process and the glm
         fit. By default, no caching is done. Creates instance of joblib.Memory.
 
-    memory_level: integer, optional
+    memory_level : integer, optional
         Rough estimator of the amount of memory used by caching. Higher value
         means more memory for caching.
 
@@ -208,7 +213,7 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         If standardize is True, the time-series are centered and normed:
         their variance is put to 1 in the time dimension.
 
-    signal_scaling: False, int or (int, int), optional,
+    signal_scaling : False, int or (int, int), optional,
         If not False, fMRI signals are scaled to the mean value of scaling_axis
         given, which can be 0, 1 or (0, 1). 0 refers to mean scaling each voxel
         with respect to time, 1 refers to mean scaling each time point with
@@ -223,7 +228,7 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
     verbose : integer, optional
         Indicate the level of verbosity. By default, nothing is printed.
         If 0 prints nothing. If 1 prints progress by computation of
-        each run. If 2 prints timing details of masker and GLM. If 3 
+        each run. If 2 prints timing details of masker and GLM. If 3
         prints masker computation details.
 
     n_jobs : integer, optional
@@ -248,6 +253,7 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
     results : dict,
         with keys corresponding to the different labels values
         values are RegressionResults instances corresponding to the voxels
+
     """
     def __init__(self, t_r=None, slice_time_ref=0., hrf_model='glover',
                  drift_model='cosine', period_cut=128, drift_order=1,
@@ -327,6 +333,7 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         design_matrices: pandas DataFrame or list of pandas DataFrames,
             Design matrices that will be used to fit the GLM. If given it
             takes precedence over events and confounds.
+
         """
         # Check arguments
         # Check imgs type
