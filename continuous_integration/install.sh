@@ -91,12 +91,9 @@ create_new_conda_env() {
 
 if [[ "$DISTRIB" == "neurodebian" ]]; then
     create_new_venv
-    pip install nose-timer
     bash <(wget -q -O- http://neuro.debian.net/_files/neurodebian-travis.sh)
-    sudo apt-get install -qq python-scipy python-nose python-nibabel python-sklearn
-    pip install nilearn
-    pip install patsy
-
+    sudo apt-get install -qq python-scipy python-nose python-nibabel\
+         python-sklearn python-pandas python-nilearn python-patsy
 
 elif [[ "$DISTRIB" == "conda" ]]; then
     create_new_conda_env
