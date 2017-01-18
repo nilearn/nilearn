@@ -51,11 +51,11 @@ def load_surf_data(surf_data):
     elif isinstance(surf_data, np.ndarray):
         data = np.squeeze(surf_data)
     else:
-        raise ValueError('The input type is not recognized. %r was given while \
-                          valid inputs are a Numpy array or one of the \
-                          following file formats: .gii, .mgz, .nii, .nii.gz, \
-                          Freesurfer specific files such as .curv,  .sulc, \
-                          .thickness, .annot, .label' % surf_data)
+        raise ValueError(('The input type is not recognized. %r was given '
+                          'while valid inputs are a Numpy array or one of the '
+                          'following file formats: .gii, .mgz, .nii, .nii.gz, '
+                          'Freesurfer specific files such as .curv,  .sulc, '
+                          '.thickness, .annot, .label') % surf_data)
     return data
 
 
@@ -85,28 +85,36 @@ def load_surf_mesh(surf_mesh):
                 surf_mesh.endswith('inflated')):
             coords, faces = nibabel.freesurfer.io.read_geometry(surf_mesh)
         elif surf_mesh.endswith('gii'):
-            coords, faces = gifti.read(surf_mesh).getArraysFromIntent(
-             nibabel.nifti1.intent_codes['NIFTI_INTENT_POINTSET'])[0].data, \
-                            gifti.read(surf_mesh).getArraysFromIntent(
-             nibabel.nifti1.intent_codes['NIFTI_INTENT_TRIANGLE'])[0].data
+            try:
+                coords = gifti.read(surf_mesh).getArraysFromIntent(
+                 nibabel.nifti1.intent_codes['NIFTI_INTENT_POINTSET'])[0].data
+            except IndexError:
+                raise ValueError('Gifti file needs to contain a data array '
+                                 'with intent NIFTI_INTENT_POINTSET')
+            try:
+                faces = gifti.read(surf_mesh).getArraysFromIntent(
+                 nibabel.nifti1.intent_codes['NIFTI_INTENT_TRIANGLE'])[0].data
+            except IndexError:
+                raise ValueError('Gifti file needs to contain a data array '
+                                 'with intent NIFTI_INTENT_TRIANGLE')
     elif isinstance(surf_mesh, list):
-        if len(surf_mesh == 2):
+        if len(surf_mesh) == 2:
             coords, faces = surf_mesh[0], surf_mesh[1]
         else:
-            raise ValueError('If a list is given as input, it must have \
-                              two elements, the first is a Numpy array \
-                              containing the x-y-z coordinates of the mesh \
-                              vertices, the second is a Numpy array \
-                              containing  the indices (into coords) of the \
-                              mesh faces. The input was a list with %r \
-                              elements.' % len(surf_mesh))
+            raise ValueError(('If a list is given as input, it must have '
+                              'two elements, the first is a Numpy array '
+                              'containing the x-y-z coordinates of the mesh '
+                              'vertices, the second is a Numpy array '
+                              'containing  the indices (into coords) of the '
+                              'mesh faces. The input was a list with '
+                              '%r elements.') % len(surf_mesh))
     else:
-        raise ValueError('The input type is not recognized. %r was given \
-                          while valid inputs are one of the following file \
-                          formats: .gii, Freesurfer specific files such as \
-                          .orig, .pial, .sphere, .white, .inflated \
-                          or a list containing two Numpy arrays \
-                          [vertex coordinates, face indices]' % surf_mesh)
+        raise ValueError(('The input type is not recognized. %r was given '
+                          'while valid inputs are one of the following file '
+                          'formats: .gii, Freesurfer specific files such as '
+                          '.orig, .pial, .sphere, .white, .inflated '
+                          'or a list containing two Numpy arrays '
+                          '[vertex coordinates, face indices]') % surf_mesh)
 
     return [coords, faces]
 
