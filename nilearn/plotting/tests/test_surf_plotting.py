@@ -3,9 +3,8 @@ import nibabel as nb
 import tempfile
 import os
 from nose.tools import assert_true, assert_false, assert_raises
-from numpy.testing import assert_array_equal, assert_equal
-
-
+from numpy.testing import assert_array_equal, assert_array_almost_equal, \
+                          assert_equal
 from nilearn.plotting.surf_plotting import load_surf_data, load_surf_mesh
 
 # def _generate_surf():
@@ -99,3 +98,40 @@ def test_load_surf_data_file_freesurfer():
     # nb.freesurfer.io.write_annot(filename_annot, labels, ctab, names)
     # assert_array_equal(load_surf_data(filename_annot), labels)
     # os.remove(filename_annot)
+
+
+def test_load_surf_mesh_list():
+    mesh = _generate_surf()
+    assert_equal(len(load_surf_mesh(mesh)), 2)
+    assert_array_equal(load_surf_mesh(mesh)[0], mesh[0])
+    assert_array_equal(load_surf_mesh(mesh)[1], mesh[1])
+    del mesh
+
+
+def test_load_surf_mesh_file_gii():
+    mesh = _generate_surf()
+    filename_gii_mesh = tempfile.mktemp(suffix='.gii')
+    coord_array = nb.gifti.GiftiDataArray(data=mesh[0],
+                                          intent=nb.nifti1.intent_codes[
+                                          'NIFTI_INTENT_POINTSET'])
+    face_array = nb.gifti.GiftiDataArray(data=mesh[1],
+                                         intent=nb.nifti1.intent_codes[
+                                         'NIFTI_INTENT_TRIANGLE'])
+    gii = nb.gifti.GiftiImage(darrays=[coord_array, face_array])
+    nb.gifti.write(gii, filename_gii_mesh)
+    assert_array_equal(load_surf_mesh(filename_gii_mesh)[0], mesh[0])
+    assert_array_equal(load_surf_mesh(filename_gii_mesh)[1], mesh[1])
+    os.remove(filename_gii_mesh)
+
+
+def test_load_surf_mesh_file_freesurfer():
+    mesh = _generate_surf()
+    for suff in ['.pial', '.inflated', '.white', '.orig', 'sphere']:
+        filename_fs_mesh = tempfile.mktemp(suffix=suff)
+        nb.freesurfer.write_geometry(filename_fs_mesh, mesh[0], mesh[1])
+        assert_equal(len(load_surf_mesh(filename_fs_mesh)), 2)
+        assert_array_almost_equal(load_surf_mesh(filename_fs_mesh)[0],
+                                  mesh[0])
+        assert_array_almost_equal(load_surf_mesh(filename_fs_mesh)[1],
+                                  mesh[1])
+        os.remove(filename_fs_mesh)
