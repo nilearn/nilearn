@@ -27,10 +27,12 @@ meant to be copied to analyze new data: many of the steps are unecessary.
 # .......................
 #
 # The :func:`nilearn.datasets.fetch_haxby` function will download the
-# Haxby dataset if not present on the disk, in the nilear data directory.
+# Haxby dataset if not present on the disk, in the nilearn data directory.
+# It can take a while to download about 310 Mo of data from the Internet.
 from nilearn import datasets
 # By default 2nd subject will be fetched
 haxby_dataset = datasets.fetch_haxby()
+# 'func' is a list of filenames: one for each subject
 fmri_filename = haxby_dataset.func[0]
 
 # print basic information on the dataset
@@ -268,9 +270,11 @@ show()
 # Further reading
 # ----------------
 #
-# * The :ref:`section of the documentation on decoding <decoding_tutorial>`
+# * The :ref:`section of the documentation on decoding <decoding>`
 #
 # * :ref:`sphx_glr_auto_examples_02_decoding_plot_haxby_anova_svm.py`
 #
 # * :ref:`space_net`
+#
+# ______________
 
