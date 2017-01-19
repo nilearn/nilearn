@@ -1,3 +1,7 @@
+
+**Dropped support for Python 2.6**
+
+
 0.2.6
 =====
 

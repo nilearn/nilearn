@@ -2,6 +2,7 @@
 """
 nilearn version, required package versions, and utilities for checking
 """
+from collections import OrderedDict
 # Author: Loic Esteve, Ben Cipollini
 # License: simplified BSD
 
@@ -27,8 +28,7 @@ _NILEARN_INSTALL_MSG = 'See %s for installation information.' % (
     'http://nilearn.github.io/introduction.html#installation')
 
 # This is a tuple to preserve order, so that dependencies are checked
-#   in some meaningful order (more => less 'core').  We avoid using
-#   collections.OrderedDict to preserve Python 2.6 compatibility.
+#   in some meaningful order (more => less 'core').
 REQUIRED_MODULE_METADATA = (
     ('numpy', {
         'min_version': '1.6.1',
