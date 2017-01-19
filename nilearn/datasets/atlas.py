@@ -785,8 +785,10 @@ def fetch_coords_dosenbach_2010(ordered_regions=True):
 
 
 def fetch_atlas_allen_2011(data_dir=None, url=None, resume=True, verbose=1):
-    """Download and return file names for the resting-state networks atlas
-    published by Allen et al. in 2011. The provided images are in MNI152 space.
+    """Download and return file names for the Allen and MIALAB ICA atlas
+    (dated 2011).
+
+    The provided images are in MNI152 space.
 
     Parameters
     ----------
@@ -803,16 +805,23 @@ def fetch_atlas_allen_2011(data_dir=None, url=None, resume=True, verbose=1):
     -------
     data: sklearn.datasets.base.Bunch
         dictionary-like object, keys are:
-        - "all_unthresh_tmaps": T-maps of all 75 unthresholded components.
-        - "rsn_unthresh_tmaps": T-maps of 28 RSNs included in E. Allen et al.
-        - "all_unthresh_rsn_labels": Labels for the 28 RSNs.
-        - "aggregate_ic_comps": Aggregate ICA Components.
+        - "maps": T-maps of all 75 unthresholded components.
+        - "rsn28": T-maps of 28 RSNs included in E. Allen et al.
+        - "networks": string list containing the names for the 28 RSNs.
+        - "rsn_indices": dict[rsn_name] -> list of int, indices in the "maps"
+                         file of the 28 RSNs.
+        - "comps": The aggregate ICA Components.
 
     References
     ----------
-    Licence: unknown
+
     E. Allen, et al, "A baseline for the multivariate comparison of resting
     state networks," Frontiers in Systems Neuroscience, vol. 5, p. 12, 2011.
+
+    Notes
+    -----
+    Licence: unknown
+
     See http://mialab.mrn.org/data/index.html for more information
     on this dataset.
     """
@@ -820,23 +829,24 @@ def fetch_atlas_allen_2011(data_dir=None, url=None, resume=True, verbose=1):
         url = "http://mialab.mrn.org/data/hcp/"
 
     dataset_name = "allen_rsn_2011"
-    keys = ("all_unthresh_tmaps",
-            "rsn_unthresh_tmaps",
-            "aggregate_ic_comps")
+    keys = ("maps",
+            "rsn28",
+            "components")
 
     opts = {}
     files = ["ALL_HC_unthresholded_tmaps.nii",
              "RSN_HC_unthresholded_tmaps.nii",
              "rest_hcp_agg__component_ica_.nii"]
 
-    labels = {'Basal Ganglia': [21],
-              'Auditory': [17],
-              'Sensorimotor': [7, 23, 24, 38, 56, 29],
-              'Visual': [46, 64, 67, 48, 39, 59],
-              'Default-Mode': [50, 53, 25, 68],
-              'Attentional': [34, 60, 52, 72, 71, 55],
-              'Frontal': [42, 20, 47, 49],
-              }
+    labels = [('Basal Ganglia', [21]),
+              ('Auditory', [17]),
+              ('Sensorimotor', [7, 23, 24, 38, 56, 29]),
+              ('Visual', [46, 64, 67, 48, 39, 59]),
+              ('Default-Mode', [50, 53, 25, 68]),
+              ('Attentional', [34, 60, 52, 72, 71, 55]),
+              ('Frontal', [42, 20, 47, 49])]
+
+    networks = [[name] * len(idxs) for name, idxs in labels]
 
     filenames = [(f, url + f, opts) for f in files]
 
@@ -847,8 +857,9 @@ def fetch_atlas_allen_2011(data_dir=None, url=None, resume=True, verbose=1):
 
     fdescr = _get_dataset_descr(dataset_name)
 
-    params = dict([('description', fdescr),
-                   ('all_unthresh_rsn_labels', labels)] +
-                  list(zip(keys, sub_files)))
+    params = [('description', fdescr),
+              ('rsn_indices', labels),
+              ('networks', networks)]
+    params.extend(list(zip(keys, sub_files)))
 
-    return Bunch(**params)
+    return Bunch(**dict(params))

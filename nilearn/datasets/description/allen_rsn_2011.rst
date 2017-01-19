@@ -9,10 +9,12 @@ subjects fMRI data.
 
 Content
 -------
-    :'all_unthresh_tmaps': unthresholded t-maps of all 75 components
-    :'rsn_unthresh_tmaps': unthresholded t-maps of 28 resting state networks
-    :'aggregate_ic_comps': the aggregate ICA components
-    :'all_unthresh_labels': labels and indices of the 28 RSN in the 'all_unthresh_tmaps' file
+    :"maps": T-maps of all 75 unthresholded components.
+    :"rsn28": T-maps of 28 RSNs included in E. Allen et al.
+    :"networks": string list containing the names for the 28 RSNs.
+    :"rsn_indices": dict[rsn_name] -> list of int, indices in the "maps"
+                    file of the 28 RSNs.
+    :"comps": The aggregate ICA Components.
 
 References
 ----------
