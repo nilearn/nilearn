@@ -2,7 +2,7 @@
 """
 nilearn version, required package versions, and utilities for checking
 """
-# Author: Loïc Estève, Ben Cipollini
+# Author: Loic Esteve, Ben Cipollini
 # License: simplified BSD
 
 # PEP0440 compatible formatted version, see:
