@@ -20,6 +20,10 @@ import numpy as np
 from scipy import stats, ndimage
 from sklearn.base import RegressorMixin, clone
 from sklearn.utils.extmath import safe_sparse_dot
+try:
+    from sklearn.utils import atleast2d_or_csr
+except ImportError: # sklearn 0.15
+    from sklearn.utils import check_array as atleast2d_or_csr
 from sklearn.linear_model.base import LinearModel, center_data
 from sklearn.feature_selection import (SelectPercentile, f_regression,
                                        f_classif)
@@ -29,7 +33,6 @@ from sklearn.preprocessing import LabelBinarizer
 from sklearn.metrics import accuracy_score
 from .._utils.fixes import check_X_y
 from .._utils.compat import _basestring, get_header
-from .._utils.fixes import atleast2d_or_csr
 from .._utils.cache_mixin import CacheMixin
 from ..input_data import NiftiMasker
 from .objective_functions import _unmask

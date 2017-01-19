@@ -1,3 +1,5 @@
+**Dropped support for scikit-learn 0.14** Minimum supported version is
+now 0.15.
 
 **Dropped support for Python 2.6**
 
