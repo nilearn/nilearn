@@ -2,30 +2,11 @@ import numpy as np
 import nibabel as nb
 import tempfile
 import os
-from nose.tools import assert_true, assert_false, assert_raises
+from nose.tools import assert_true, assert_false
 from numpy.testing import assert_array_equal, assert_array_almost_equal, \
                           assert_equal
+from nilearn._utils.testing import assert_raises_regex
 from nilearn.plotting.surf_plotting import load_surf_data, load_surf_mesh
-
-# def _generate_surf():
-#    data_positive = np.zeros((7, 7, 3))
-#    rng = np.random.RandomState(42)
-#    data_rng = rng.rand(7, 7, 3)
-#    data_positive[1:-1, 2:-1, 1:] = data_rng[1:-1, 2:-1, 1:]
-#    return nibabel.Nifti1Image(data_positive, mni_affine)
-
-# test cases:
-
-# load_surf_data
-# numpy array return numpy array of same size squeezed
-# files return numpy array
-# raise value error if none of the above
-
-# load_surf_mesh
-# list return same list
-# list that doesnt have exactly two entries
-# files return list
-# raise value error if none of the above
 
 
 def _generate_surf():
@@ -36,6 +17,7 @@ def _generate_surf():
 
 
 def test_load_surf_data_array():
+    # test loading and squeezing data from numpy array
     data_flat = np.zeros((20,))
     data_squeeze = np.zeros((20, 1, 3))
     assert_array_equal(load_surf_data(data_flat), np.zeros((20,)))
@@ -43,6 +25,7 @@ def test_load_surf_data_array():
 
 
 def test_load_surf_data_file_nii_gii():
+    # test loading of fake data from gifti file
     filename_gii = tempfile.mktemp(suffix='.gii')
     darray = nb.gifti.GiftiDataArray(data=np.zeros((20,)))
     gii = nb.gifti.GiftiImage(darrays=[darray])
@@ -50,6 +33,16 @@ def test_load_surf_data_file_nii_gii():
     assert_array_equal(load_surf_data(filename_gii), np.zeros((20,)))
     os.remove(filename_gii)
 
+    # test loading of data from empty gifti file
+    filename_gii_empty = tempfile.mktemp(suffix='.gii')
+    gii_empty = nb.gifti.GiftiImage()
+    nb.gifti.write(gii_empty, filename_gii_empty)
+    assert_raises_regex(ValueError,
+                        'must contain at least one data array',
+                        load_surf_data, filename_gii_empty)
+    os.remove(filename_gii_empty)
+
+    # test loading of fake data from nifti file
     filename_nii = tempfile.mktemp(suffix='.nii')
     filename_niigz = tempfile.mktemp(suffix='.nii.gz')
     nii = nb.Nifti1Image(np.zeros((20,)), affine=None)
@@ -62,8 +55,8 @@ def test_load_surf_data_file_nii_gii():
 
 
 def test_load_surf_data_file_freesurfer():
+    # test loading of fake data from sulc and thickness files
     data = np.zeros((20,))
-
     filename_sulc = tempfile.mktemp(suffix='.sulc')
     nb.freesurfer.io.write_morph_data(filename_sulc, data)
     assert_array_equal(load_surf_data(filename_sulc), np.zeros((20,)))
@@ -74,6 +67,7 @@ def test_load_surf_data_file_freesurfer():
     assert_array_equal(load_surf_data(filename_thick), np.zeros((20,)))
     os.remove(filename_thick)
 
+    # test loading of data from real label and annot files
     label_start = np.array([5900, 5899, 5901, 5902, 2638])
     label_end = np.array([8756, 6241, 8757, 1896, 6243])
     label = load_surf_data('data/test.label')
@@ -90,14 +84,17 @@ def test_load_surf_data_file_freesurfer():
     assert_equal(annot.shape, (10242,))
     del annot, annot_start, annot_end
 
-    # filename_annot = tempfile.mktemp(suffix='.annot')
-    # rng = np.random.RandomState(42)
-    # labels = rng.randint(1, 75, size=(20,))
-    # ctab = rng.randint(255, size=(76, 5))
-    # names = 76*['test']
-    # nb.freesurfer.io.write_annot(filename_annot, labels, ctab, names)
-    # assert_array_equal(load_surf_data(filename_annot), labels)
-    # os.remove(filename_annot)
+
+def test_load_surf_data_file_error():
+    data = np.zeros((20,))
+    wrong_suff = ['.vtk', '.obj', '.mnc', '.txt']
+    for suff in wrong_suff:
+        filename_wrong = tempfile.mktemp(suffix=suff)
+        np.savetxt(filename_wrong, data)
+        assert_raises_regex(ValueError,
+                            'input type is not recognized. %r was given'
+                            % filename_wrong, load_surf_data, filename_wrong)
+        os.remove(filename_wrong)
 
 
 def test_load_surf_mesh_list():
