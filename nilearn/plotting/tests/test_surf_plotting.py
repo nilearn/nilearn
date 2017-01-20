@@ -86,6 +86,7 @@ def test_load_surf_data_file_freesurfer():
 
 
 def test_load_surf_data_file_error():
+    # test if files with unexpected suffixes raise errors
     data = np.zeros((20,))
     wrong_suff = ['.vtk', '.obj', '.mnc', '.txt']
     for suff in wrong_suff:
@@ -98,15 +99,29 @@ def test_load_surf_data_file_error():
 
 
 def test_load_surf_mesh_list():
+    # test if correct list is returned
     mesh = _generate_surf()
     assert_equal(len(load_surf_mesh(mesh)), 2)
     assert_array_equal(load_surf_mesh(mesh)[0], mesh[0])
     assert_array_equal(load_surf_mesh(mesh)[1], mesh[1])
+    # test if incorrect list, array or dict raises error
+    assert_raises_regex(ValueError, 'it must have two elements',
+                        load_surf_mesh, [])
+    assert_raises_regex(ValueError, 'it must have two elements',
+                        load_surf_mesh, [mesh[0]])
+    assert_raises_regex(ValueError, 'it must have two elements',
+                        load_surf_mesh, [mesh[0], mesh[1], mesh[1]])
+    assert_raises_regex(ValueError, 'input type is not recognized',
+                        load_surf_mesh, mesh[0])
+    assert_raises_regex(ValueError, 'input type is not recognized',
+                        load_surf_mesh, dict())
     del mesh
 
 
 def test_load_surf_mesh_file_gii():
     mesh = _generate_surf()
+
+    # test if correct gii is loaded into correct list
     filename_gii_mesh = tempfile.mktemp(suffix='.gii')
     coord_array = nb.gifti.GiftiDataArray(data=mesh[0],
                                           intent=nb.nifti1.intent_codes[
@@ -120,6 +135,21 @@ def test_load_surf_mesh_file_gii():
     assert_array_equal(load_surf_mesh(filename_gii_mesh)[1], mesh[1])
     os.remove(filename_gii_mesh)
 
+    # test if incorrect gii raises error
+    filename_gii_mesh_no_point = tempfile.mktemp(suffix='.gii')
+    nb.gifti.write(nb.gifti.GiftiImage(darrays=[face_array, face_array]),
+                   filename_gii_mesh_no_point)
+    assert_raises_regex(ValueError, 'NIFTI_INTENT_POINTSET',
+                        load_surf_mesh, filename_gii_mesh_no_point)
+    os.remove(filename_gii_mesh_no_point)
+
+    filename_gii_mesh_no_face = tempfile.mktemp(suffix='.gii')
+    nb.gifti.write(nb.gifti.GiftiImage(darrays=[coord_array, coord_array]),
+                   filename_gii_mesh_no_face)
+    assert_raises_regex(ValueError, 'NIFTI_INTENT_TRIANGLE',
+                        load_surf_mesh, filename_gii_mesh_no_face)
+    os.remove(filename_gii_mesh_no_face)
+
 
 def test_load_surf_mesh_file_freesurfer():
     mesh = _generate_surf()
@@ -132,3 +162,16 @@ def test_load_surf_mesh_file_freesurfer():
         assert_array_almost_equal(load_surf_mesh(filename_fs_mesh)[1],
                                   mesh[1])
         os.remove(filename_fs_mesh)
+
+
+def test_load_surf_mesh_file_error():
+    # test if files with unexpected suffixes raise errors
+    mesh = _generate_surf()
+    wrong_suff = ['.vtk', '.obj', '.mnc', '.txt']
+    for suff in wrong_suff:
+        filename_wrong = tempfile.mktemp(suffix=suff)
+        nb.freesurfer.write_geometry(filename_wrong, mesh[0], mesh[1])
+        assert_raises_regex(ValueError,
+                            'input type is not recognized. %r was given'
+                            % filename_wrong, load_surf_data, filename_wrong)
+        os.remove(filename_wrong)
