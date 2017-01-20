@@ -39,11 +39,11 @@ from nilearn.input_data import NiftiMasker
 
 mask_filename = haxby_dataset.mask
 # For decoding, standardizing is often very important
-nifti_masker = NiftiMasker(mask_img=mask_filename, sessions=session,
-                           smoothing_fwhm=4, standardize=True,
-                           memory="nilearn_cache", memory_level=1)
+masker = NiftiMasker(mask_img=mask_filename, sessions=session,
+                     smoothing_fwhm=4, standardize=True,
+                     memory="nilearn_cache", memory_level=1)
 func_filename = haxby_dataset.func[0]
-X = nifti_masker.fit_transform(func_filename)
+X = masker.fit_transform(func_filename)
 # Apply our condition_mask
 X = X[condition_mask]
 session = session[condition_mask]
@@ -75,29 +75,6 @@ anova_svc.fit(X, y)
 y_pred = anova_svc.predict(X)
 
 #############################################################################
-# Visualize the results
-
-# Look at the SVC's discriminating weights
-coef = svc.coef_
-# reverse feature selection
-coef = feature_selection.inverse_transform(coef)
-# reverse masking
-weight_img = nifti_masker.inverse_transform(coef)
-
-
-# Create the figure
-from nilearn import image
-from nilearn.plotting import plot_stat_map, show
-
-# Plot the mean image because we have no anatomic data
-mean_img = image.mean_img(func_filename)
-
-plot_stat_map(weight_img, mean_img, title='SVM weights')
-
-# Saving the results as a Nifti file may also be important
-weight_img.to_filename('haxby_face_vs_house.nii')
-
-#############################################################################
 # Obtain prediction scores via cross validation
 
 from sklearn.cross_validation import LeaveOneLabelOut
@@ -121,5 +98,29 @@ classification_accuracy = np.mean(cv_scores)
 print("Classification accuracy: %.4f / Chance level: %f" %
       (classification_accuracy, 1. / n_conditions))
 # Classification accuracy: 0.9861 / Chance level: 0.5000
+
+
+#############################################################################
+# Visualize the results
+
+# Look at the SVC's discriminating weights
+coef = svc.coef_
+# reverse feature selection
+coef = feature_selection.inverse_transform(coef)
+# reverse masking
+weight_img = masker.inverse_transform(coef)
+
+
+# USe the mean image as a background to avoid relying on anatomic data
+from nilearn import image
+mean_img = image.mean_img(func_filename)
+
+# Create the figure
+from nilearn.plotting import plot_stat_map, show
+plot_stat_map(weight_img, mean_img, title='SVM weights')
+
+# Saving the results as a Nifti file may also be important
+weight_img.to_filename('haxby_face_vs_house.nii')
+
 
 show()
