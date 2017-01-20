@@ -273,6 +273,7 @@ show()
 # * The :ref:`section of the documentation on decoding <decoding>`
 #
 # * :ref:`sphx_glr_auto_examples_02_decoding_plot_haxby_anova_svm.py`
+#   For decoding without a precomputed mask
 #
 # * :ref:`space_net`
 #

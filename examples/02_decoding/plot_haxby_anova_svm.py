@@ -34,11 +34,13 @@ y = y[condition_mask]
 n_conditions = np.size(np.unique(y))
 
 #############################################################################
-# Prepare the fMRI data
+# Prepare the fMRI data: smooth and apply the mask
 from nilearn.input_data import NiftiMasker
 
 mask_filename = haxby_dataset.mask
+
 # For decoding, standardizing is often very important
+# note that we are also smoothing the data
 masker = NiftiMasker(mask_img=mask_filename, sessions=session,
                      smoothing_fwhm=4, standardize=True,
                      memory="nilearn_cache", memory_level=1)
@@ -77,7 +79,7 @@ y_pred = anova_svc.predict(X)
 #############################################################################
 # Obtain prediction scores via cross validation
 
-from sklearn.cross_validation import LeaveOneLabelOut
+from sklearn.cross_validation import LeaveOneLabelOut, cross_val_score
 
 # Define the cross-validation scheme used for validation.
 # Here we use a LeaveOneLabelOut cross-validation on the session label
@@ -85,11 +87,7 @@ from sklearn.cross_validation import LeaveOneLabelOut
 cv = LeaveOneLabelOut(session // 2)
 
 # Compute the prediction accuracy for the different folds (i.e. session)
-cv_scores = []
-for train, test in cv:
-    anova_svc.fit(X[train], y[train])
-    y_pred = anova_svc.predict(X[test])
-    cv_scores.append(np.sum(y_pred == y[test]) / float(np.size(y[test])))
+cv_scores = cross_val_score(anova_svc, X, y)
 
 # Return the corresponding mean prediction accuracy
 classification_accuracy = np.mean(cv_scores)
