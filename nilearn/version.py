@@ -2,7 +2,6 @@
 """
 nilearn version, required package versions, and utilities for checking
 """
-from collections import OrderedDict
 # Author: Loic Esteve, Ben Cipollini
 # License: simplified BSD
 
