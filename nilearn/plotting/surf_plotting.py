@@ -61,11 +61,11 @@ def load_surf_data(surf_data):
     elif isinstance(surf_data, np.ndarray):
         data = np.squeeze(surf_data)
     else:
-        raise ValueError(('The input type is not recognized. %r was given '
-                          'while valid inputs are a Numpy array or one of the '
-                          'following file formats: .gii, .mgz, .nii, .nii.gz, '
-                          'Freesurfer specific files such as .curv,  .sulc, '
-                          '.thickness, .annot, .label') % surf_data)
+        raise ValueError('The input type is not recognized. '
+                         'Valid inputs are a Numpy array or one of the '
+                         'following file formats: .gii, .mgz, .nii, .nii.gz, '
+                         'Freesurfer specific files such as .curv,  .sulc, '
+                         '.thickness, .annot, .label')
     return data
 
 
@@ -127,12 +127,12 @@ def load_surf_mesh(surf_mesh):
                               'mesh faces. The input was a list with '
                               '%r elements.') % len(surf_mesh))
     else:
-        raise ValueError(('The input type is not recognized. %r was given '
-                          'while valid inputs are one of the following file '
-                          'formats: .gii, Freesurfer specific files such as '
-                          '.orig, .pial, .sphere, .white, .inflated '
-                          'or a list containing two Numpy arrays '
-                          '[vertex coordinates, face indices]') % surf_mesh)
+        raise ValueError('The input type is not recognized. '
+                         'Valid inputs are one of the following file '
+                         'formats: .gii, Freesurfer specific files such as '
+                         '.orig, .pial, .sphere, .white, .inflated '
+                         'or a list containing two Numpy arrays '
+                         '[vertex coordinates, face indices]')
 
     return [coords, faces]
 
