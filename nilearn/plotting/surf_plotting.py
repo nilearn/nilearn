@@ -43,10 +43,20 @@ def load_surf_data(surf_data):
             data = nibabel.freesurfer.io.read_label(surf_data)
         elif surf_data.endswith('gii'):
             gii = gifti.read(surf_data)
-            data = np.zeros((len(gii.darrays[0].data), len(gii.darrays)))
-            for arr in range(len(gii.darrays)):
-                data[:, arr] = gii.darrays[arr].data
-            data = np.squeeze(data)
+            try:
+                data = np.zeros((len(gii.darrays[0].data), len(gii.darrays)))
+                for arr in range(len(gii.darrays)):
+                    data[:, arr] = gii.darrays[arr].data
+                data = np.squeeze(data)
+            except IndexError:
+                raise ValueError('Gifti must contain at least one data array')
+        else:
+            raise ValueError(('The input type is not recognized. %r was given '
+                              'while valid inputs are a Numpy array or one of '
+                              'the following file formats: .gii, .mgz, .nii, '
+                              '.nii.gz, Freesurfer specific files such as '
+                              '.curv,  .sulc, .thickness, .annot, '
+                              '.label') % surf_data)
     # if the input is a numpy array
     elif isinstance(surf_data, np.ndarray):
         data = np.squeeze(surf_data)
@@ -97,6 +107,14 @@ def load_surf_mesh(surf_mesh):
             except IndexError:
                 raise ValueError('Gifti file needs to contain a data array '
                                  'with intent NIFTI_INTENT_TRIANGLE')
+        else:
+            raise ValueError(('The input type is not recognized. %r was given '
+                              'while valid inputs are one of the following '
+                              'file formats: .gii, Freesurfer specific files '
+                              'such as .orig, .pial, .sphere, .white, '
+                              '.inflated or a list containing two Numpy '
+                              'arrays [vertex coordinates, face indices]'
+                              ) % surf_mesh)
     elif isinstance(surf_mesh, list):
         if len(surf_mesh) == 2:
             coords, faces = surf_mesh[0], surf_mesh[1]
