@@ -83,7 +83,7 @@ _____
    of events.
 
    The standard approach to decoding consists in fitting a first-level
-   GLM to retrieve one responce map (a beta map) per trial. This is
+   GLM to retrieve one response map (a beta map) per trial. This is
    sometimes known as "beta-series regressions" (see Mumford et al,
    *Deconvolving bold activation in event-related designs for multivoxel
    pattern classification analyses*, NeuroImage 2012). These maps can
@@ -110,7 +110,7 @@ Loading the data into nilearn
 
 * **Retrieving the data**: In the tutorial, we load the data using nilearn
   data downloading function, :func:`nilearn.datasets.fetch_haxby`.
-  However, all this function does is downloading the data and return 
+  However, all this function does is to download the data and return 
   paths to the files downloaded on the disk. To input your own data to
   nilearn, you can pass in the path to your own files 
   (:ref:`more on data input <loading_data>`).
@@ -127,7 +127,7 @@ Loading the data into nilearn
   (n_timepoints, n_voxels)
   (see :ref:`mask_4d_2_3d` for a discussion on using masks).
 
-* **Sample mask**: Masking some of the times points may be useful to
+* **Sample mask**: Masking some of the time points may be useful to
   restrict to a specific pair of conditions (*eg* cats versus faces).
 
 .. note::
