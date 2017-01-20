@@ -21,17 +21,19 @@ print('Functional nifti image (4D) is located at: %s' %
 
 #############################################################################
 # Load the behavioral data
+
 import numpy as np
-labels = np.recfromcsv(haxby_dataset.session_target[0], delimiter=" ")
-y = labels['labels']
-session = labels['chunks']
+# Load target information as string and give a numerical identifier to each
+behavioral = np.recfromcsv(haxby_dataset.session_target[0], delimiter=" ")
+conditions = behavioral['labels']
 
-# Restrict to faces and houses
-condition_mask = np.logical_or(y == b'face', y == b'house')
-y = y[condition_mask]
+# Restrict the analysis to faces and places
+condition_mask = np.logical_or(conditions == b'face', conditions == b'cat')
+conditions = conditions[condition_mask]
 
-# We have 2 conditions
-n_conditions = np.size(np.unique(y))
+# We now have 2 conditions
+print(np.unique(conditions))
+session = behavioral[condition_mask]
 
 #############################################################################
 # Prepare the fMRI data: smooth and apply the mask
@@ -41,14 +43,12 @@ mask_filename = haxby_dataset.mask
 
 # For decoding, standardizing is often very important
 # note that we are also smoothing the data
-masker = NiftiMasker(mask_img=mask_filename, sessions=session,
-                     smoothing_fwhm=4, standardize=True,
-                     memory="nilearn_cache", memory_level=1)
+masker = NiftiMasker(mask_img=mask_filename, smoothing_fwhm=4,
+                     standardize=True, memory="nilearn_cache", memory_level=1)
 func_filename = haxby_dataset.func[0]
 X = masker.fit_transform(func_filename)
 # Apply our condition_mask
 X = X[condition_mask]
-session = session[condition_mask]
 
 #############################################################################
 # Build the decoder
@@ -73,7 +73,7 @@ anova_svc = Pipeline([('anova', feature_selection), ('svc', svc)])
 #############################################################################
 # Fit the decoder and predict
 
-anova_svc.fit(X, y)
+anova_svc.fit(X, conditions)
 y_pred = anova_svc.predict(X)
 
 #############################################################################
@@ -83,18 +83,18 @@ from sklearn.cross_validation import LeaveOneLabelOut, cross_val_score
 
 # Define the cross-validation scheme used for validation.
 # Here we use a LeaveOneLabelOut cross-validation on the session label
-# divided by 2, which corresponds to a leave-two-session-out
-cv = LeaveOneLabelOut(session // 2)
+# which corresponds to a leave-one-session-out
+cv = LeaveOneLabelOut(session)
 
 # Compute the prediction accuracy for the different folds (i.e. session)
-cv_scores = cross_val_score(anova_svc, X, y)
+cv_scores = cross_val_score(anova_svc, X, conditions)
 
 # Return the corresponding mean prediction accuracy
-classification_accuracy = np.mean(cv_scores)
+classification_accuracy = cv_scores.mean()
 
 # Print the results
 print("Classification accuracy: %.4f / Chance level: %f" %
-      (classification_accuracy, 1. / n_conditions))
+      (classification_accuracy, 1. / len(np.unique(conditions))))
 # Classification accuracy: 0.9861 / Chance level: 0.5000
 
 
