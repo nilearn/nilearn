@@ -55,7 +55,7 @@ def load_surf_data(surf_data):
                               'while valid inputs are a Numpy array or one of '
                               'the following file formats: .gii, .mgz, .nii, '
                               '.nii.gz, Freesurfer specific files such as '
-                              '.curv,  .sulc, .thickness, .annot, '
+                              '.curv, .sulc, .thickness, .annot, '
                               '.label') % surf_data)
     # if the input is a numpy array
     elif isinstance(surf_data, np.ndarray):
