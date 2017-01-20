@@ -8,6 +8,9 @@ from numpy.testing import assert_array_equal, assert_array_almost_equal, \
 from nilearn._utils.testing import assert_raises_regex
 from nilearn.plotting.surf_plotting import load_surf_data, load_surf_mesh
 
+currdir = os.path.dirname(os.path.abspath(__file__))
+datadir = os.path.join(currdir, 'data')
+
 
 def _generate_surf():
     rng = np.random.RandomState(42)
@@ -70,7 +73,7 @@ def test_load_surf_data_file_freesurfer():
     # test loading of data from real label and annot files
     label_start = np.array([5900, 5899, 5901, 5902, 2638])
     label_end = np.array([8756, 6241, 8757, 1896, 6243])
-    label = load_surf_data('data/test.label')
+    label = load_surf_data(os.path.join(datadir, 'test.label'))
     assert_array_equal(label[:5], label_start)
     assert_array_equal(label[-5:], label_end)
     assert_equal(label.shape, (326,))
@@ -78,7 +81,7 @@ def test_load_surf_data_file_freesurfer():
 
     annot_start = np.array([24, 29, 28, 27, 24, 31, 11, 25, 0, 12])
     annot_end = np.array([16, 16, 16, 16, 16, 16, 16, 16, 16, 16])
-    annot = load_surf_data('data/test.annot')
+    annot = load_surf_data(os.path.join(datadir, 'test.annot'))
     assert_array_equal(annot[:10], annot_start)
     assert_array_equal(annot[-10:], annot_end)
     assert_equal(annot.shape, (10242,))
