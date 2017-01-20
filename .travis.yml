@@ -18,7 +18,7 @@ matrix:
     # Ubuntu 14.04 versions
     - env: DISTRIB="conda" PYTHON_VERSION="2.7"
            NUMPY_VERSION="1.8.2" SCIPY_VERSION="0.13.3"
-           SCIKIT_LEARN_VERSION="0.14.1" MATPLOTLIB_VERSION="1.3.1"
+           SCIKIT_LEARN_VERSION="0.15.1" MATPLOTLIB_VERSION="1.3.1"
     # Ubuntu 14.04 versions without matplotlib
     - env: DISTRIB="conda" PYTHON_VERSION="2.7"
            NUMPY_VERSION="1.8.2" SCIPY_VERSION="0.13.3"
@@ -27,9 +27,9 @@ matrix:
     - env: DISTRIB="neurodebian" PYTHON_VERSION="2.7"
       # Trying to get as close to the minimum required versions while
       # still having the package version available through conda
-    - env: DISTRIB="conda" PYTHON_VERSION="2.6"
-           NUMPY_VERSION="1.6.2" SCIPY_VERSION="0.11.0"
-           SCIKIT_LEARN_VERSION="0.14.1" MATPLOTLIB_VERSION="1.1.1"
+    - env: DISTRIB="conda" PYTHON_VERSION="2.7"
+           NUMPY_VERSION="1.8.2" SCIPY_VERSION="0.12.0"
+           SCIKIT_LEARN_VERSION="0.15.1" MATPLOTLIB_VERSION="1.3.1"
            NIBABEL_VERSION="1.1.0"
     # Python 3.4 with intermediary versions
     - env: DISTRIB="conda" PYTHON_VERSION="3.4"

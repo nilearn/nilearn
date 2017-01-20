@@ -24,7 +24,8 @@ from nilearn import datasets
 from nilearn.input_data import NiftiMasker
 from nilearn.mass_univariate import permuted_ols
 
-### Load Localizer contrast ###################################################
+##############################################################################
+# Load Localizer contrast
 n_samples = 94
 localizer_dataset = datasets.fetch_localizer_contrasts(
     ['left button press (auditory cue)'], n_subjects=n_samples)
@@ -42,14 +43,18 @@ contrast_map_filenames = [localizer_dataset.cmaps[i]
 tested_var = tested_var[mask_quality_check].astype(float).reshape((-1, 1))
 print("Actual number of subjects after quality check: %d" % n_samples)
 
-### Mask data #################################################################
+
+##############################################################################
+# Mask data
 nifti_masker = NiftiMasker(
     smoothing_fwhm=5,
     memory='nilearn_cache', memory_level=1)  # cache options
 fmri_masked = nifti_masker.fit_transform(contrast_map_filenames)
 
-### Anova (parametric F-scores) ###############################################
-from nilearn._utils.fixes import f_regression
+
+##############################################################################
+# Anova (parametric F-scores)
+from sklearn.feature_selection import f_regression
 _, pvals_anova = f_regression(fmri_masked, tested_var, center=True)
 pvals_anova *= fmri_masked.shape[1]
 pvals_anova[np.isnan(pvals_anova)] = 1
@@ -58,7 +63,9 @@ neg_log_pvals_anova = - np.log10(pvals_anova)
 neg_log_pvals_anova_unmasked = nifti_masker.inverse_transform(
     neg_log_pvals_anova)
 
-### Perform massively univariate analysis with permuted OLS ###################
+
+##############################################################################
+# Perform massively univariate analysis with permuted OLS
 neg_log_pvals_permuted_ols, _, _ = permuted_ols(
     tested_var, fmri_masked,
     model_intercept=True,
@@ -67,7 +74,9 @@ neg_log_pvals_permuted_ols, _, _ = permuted_ols(
 neg_log_pvals_permuted_ols_unmasked = nifti_masker.inverse_transform(
     np.ravel(neg_log_pvals_permuted_ols))
 
-### Visualization #############################################################
+
+##############################################################################
+# Visualization
 from nilearn.plotting import plot_stat_map, show
 
 # Various plotting parameters
