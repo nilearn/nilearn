@@ -23,7 +23,6 @@ predicting an output value.
 
    decoding_intro.rst
    estimator_choice.rst
-   decoding_simulated.rst
    space_net.rst
    searchlight.rst
 

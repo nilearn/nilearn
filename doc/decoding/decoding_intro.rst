@@ -439,7 +439,6 @@ To visualize the results, we need to:
 
 .. seealso::
 
-   * :ref:`decoding_simulated`
    * :ref:`space_net`
    * :ref:`searchlight`
 
