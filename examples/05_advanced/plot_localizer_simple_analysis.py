@@ -20,21 +20,27 @@ import matplotlib.pyplot as plt
 from nilearn import datasets
 from nilearn.input_data import NiftiMasker
 
-### Load Localizer contrast ###################################################
+
+############################################################################
+# Load Localizer contrast
 n_samples = 20
 localizer_dataset = datasets.fetch_localizer_calculation_task(
     n_subjects=n_samples)
 tested_var = np.ones((n_samples, 1))
 
-### Mask data #################################################################
+
+############################################################################
+# Mask data
 nifti_masker = NiftiMasker(
     smoothing_fwhm=5,
     memory='nilearn_cache', memory_level=1)  # cache options
 cmap_filenames = localizer_dataset.cmaps
 fmri_masked = nifti_masker.fit_transform(cmap_filenames)
 
-### Anova (parametric F-scores) ###############################################
-from nilearn._utils.fixes import f_regression
+
+############################################################################
+# Anova (parametric F-scores)
+from sklearn.feature_selection import f_regression
 _, pvals_anova = f_regression(fmri_masked, tested_var,
                               center=False)  # do not remove intercept
 pvals_anova *= fmri_masked.shape[1]
@@ -44,7 +50,8 @@ neg_log_pvals_anova = - np.log10(pvals_anova)
 neg_log_pvals_anova_unmasked = nifti_masker.inverse_transform(
     neg_log_pvals_anova)
 
-### Visualization #############################################################
+############################################################################
+# Visualization
 from nilearn.plotting import plot_stat_map, show
 
 # Various plotting parameters

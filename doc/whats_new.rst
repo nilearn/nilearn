@@ -1,5 +1,11 @@
-0.2.6.1
+0.3.0
 =======
+
+**Dropped support for scikit-learn 0.14** Minimum supported version is
+now 0.15.
+
+**Dropped support for Python 2.6**
+
 
 Changelog
 ---------
@@ -9,7 +15,6 @@ Enhancements
 
    - Add fetcher for Allen et al. 2011 RSN atlas in
      :func:`nilearn.datasets.fetch_atlas_allen_2011`.
-
 
 0.2.6
 =====

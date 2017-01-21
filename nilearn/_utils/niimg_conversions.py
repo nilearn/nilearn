@@ -473,4 +473,4 @@ def concat_niimgs(niimgs, dtype=np.float32, ensure_ndim=None,
         data[..., cur_4d_index:cur_4d_index + size] = niimg.get_data()
         cur_4d_index += size
 
-    return new_img_like(first_niimg, data, get_affine(first_niimg))
+    return new_img_like(first_niimg, data, get_affine(first_niimg), copy_header=True)

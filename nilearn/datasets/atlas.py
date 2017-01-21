@@ -6,7 +6,6 @@ import xml.etree.ElementTree
 import numpy as np
 
 from sklearn.datasets.base import Bunch
-from sklearn.utils import deprecated
 
 #from . import utils
 from .utils import _get_dataset_dir, _fetch_files, _get_dataset_descr
@@ -577,8 +576,7 @@ def fetch_atlas_aal(version='SPM12', data_dir=None, url=None, resume=True,
 
         - "maps": str. path to nifti file containing regions.
 
-        - "labels": dict. labels dictionary with their region id as key and
-                    name as value
+        - "labels": list of the names of the regions
 
     Notes
     -----
