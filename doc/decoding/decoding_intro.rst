@@ -286,7 +286,7 @@ to use the session label, present in the behavioral data file, and
     >>> classification_accuracy  # doctest: +SKIP
     0.76851...
 
-For disriminating human faces from cats, we measure a total prediction
+For discriminating human faces from cats, we measure a total prediction
 accuracy of *77%* across the different sessions.
 
 Choice of the prediction accuracy measure
@@ -297,8 +297,8 @@ the number of total errors. It is not always a sensible metric,
 especially in the case of very imbalanced classes, as in such situations
 choosing the dominant class can achieve a low number of errors.
 
-Other metrics, such as the AUC (Aera Under the Curve, for the ROC: the
-Reciever Operating Characteristic), can be used::
+Other metrics, such as the AUC (Area Under the Curve, for the ROC: the
+Receiver Operating Characteristic), can be used::
 
     >>> cv_scores = cross_val_score(svc, fmri_masked, target, cv=cv,  scoring='roc_auc')  # doctest: +SKIP
 

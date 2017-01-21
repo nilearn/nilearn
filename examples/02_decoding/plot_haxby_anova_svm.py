@@ -28,7 +28,7 @@ behavioral = np.recfromcsv(haxby_dataset.session_target[0], delimiter=" ")
 conditions = behavioral['labels']
 
 # Restrict the analysis to faces and places
-condition_mask = np.logical_or(conditions == b'face', conditions == b'cat')
+condition_mask = np.logical_or(conditions == b'face', conditions == b'house')
 conditions = conditions[condition_mask]
 
 # We now have 2 conditions
@@ -109,7 +109,7 @@ coef = feature_selection.inverse_transform(coef)
 weight_img = masker.inverse_transform(coef)
 
 
-# USe the mean image as a background to avoid relying on anatomic data
+# Use the mean image as a background to avoid relying on anatomical data
 from nilearn import image
 mean_img = image.mean_img(func_filename)
 
