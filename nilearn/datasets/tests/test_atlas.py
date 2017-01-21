@@ -404,9 +404,9 @@ def test_fetch_coords_dosenbach_2010():
 @with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
 def test_fetch_atlas_allen_2011():
     bunch = atlas.fetch_atlas_allen_2011(data_dir=tst.tmpdir, verbose=0)
-    keys = ("all_unthresh_tmaps",
-            "rsn_unthresh_tmaps",
-            "aggregate_ic_comps")
+    keys = ("maps",
+            "rsn28",
+            "comps")
 
     filenames = ["ALL_HC_unthresholded_tmaps.nii",
                  "RSN_HC_unthresholded_tmaps.nii",

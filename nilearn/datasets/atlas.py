@@ -809,6 +809,7 @@ def fetch_atlas_allen_2011(data_dir=None, url=None, resume=True, verbose=1):
         - "rsn_indices": dict[rsn_name] -> list of int, indices in the "maps"
                          file of the 28 RSNs.
         - "comps": The aggregate ICA Components.
+        - "description": details about the data release.
 
     References
     ----------
@@ -829,7 +830,7 @@ def fetch_atlas_allen_2011(data_dir=None, url=None, resume=True, verbose=1):
     dataset_name = "allen_rsn_2011"
     keys = ("maps",
             "rsn28",
-            "components")
+            "comps")
 
     opts = {}
     files = ["ALL_HC_unthresholded_tmaps.nii",
