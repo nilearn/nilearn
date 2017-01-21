@@ -5,9 +5,10 @@
 now 0.15.
 
 **Dropped support for Python 2.6**
-=======
-X.X.X
-=====
+
+
+0.3
+===
 
 Changelog
 ---------

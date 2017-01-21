@@ -204,11 +204,13 @@ def test_remove_small_regions():
     label_map, n_labels = ndimage.label(data)
     sum_label_data = np.sum(label_map)
 
+    affine = np.eye(4)
     min_size = 10
     # data can be act as mask_data to identify regions in label_map because
     # features in label_map are built upon non-zeros in data
     index = np.arange(n_labels + 1)
-    removed_data = _remove_small_regions(label_map, data, index, min_size)
+    removed_data = _remove_small_regions(label_map, data, index,
+                                         affine, min_size)
     sum_removed_data = np.sum(removed_data)
 
     assert_true(sum_removed_data < sum_label_data)
@@ -257,3 +259,19 @@ def test_connected_label_regions():
     extracted_reg2, new_labels2 = connected_label_regions(labels_img,
                                                           labels=labels)
     assert_true(new_labels2 >= len(labels))
+
+    # If number of labels provided are wrong (which means less than number of
+    # unique labels in labels_img), then we raise an error
+
+    # Test whether error raises
+    unique_labels = set(np.unique(np.asarray(labels_img.get_data())))
+    unique_labels.remove(0)
+
+    # labels given are less than n_regions=9
+    provided_labels = ['region_a', 'region_c', 'region_f',
+                       'region_g', 'region_h', 'region_i']
+
+    assert_true(len(provided_labels) < len(unique_labels))
+
+    np.testing.assert_raises(ValueError, connected_label_regions,
+                             labels_img, labels=provided_labels)

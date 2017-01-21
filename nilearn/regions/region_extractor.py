@@ -68,42 +68,11 @@ def _threshold_maps_ratio(maps_img, threshold):
     return threshold_maps_img
 
 
-def _compute_regions_labels(label_data, connect_diag):
-    """ Helper function to assign an integer to each unique region found
-        in the label_data
-
-    Parameters
-    ----------
-    label_data : numpy.ndarray
-        Data to be labelled. Using scipy.ndimage.label
-
-    connect_diag : bool
-        If True, two voxels are considered in the same region if they are
-        connected along the diagonal (26-connectivity). If it is False,
-        two voxels are considered connected only if they are within the
-        same axis of x, y, or z direction.
-
-    Returns
-    -------
-    regions : numpy.ndarray
-        Assigned an integer to each unique region. Labelled data.
-
-    n_labels : int
-        Number of unique regions found in the input data.
-    """
-    # Assign integers
-    if connect_diag:
-        structure = np.ones((3, 3, 3), dtype=np.int)
-        regions, this_n_labels = ndimage.label(label_data, structure=structure)
-    else:
-        regions, this_n_labels = ndimage.label(label_data)
-
-    return regions, this_n_labels
-
-
 def _remove_small_regions(input_data, mask_data, index,
-                          min_size):
-    """Remove small regions from input_data of specified min_size
+                          affine, min_size):
+    """Remove small regions in volume from input_data of specified min_size.
+
+    min_size should be specified in mm^3 (region size in volume).
 
     Parameters
     ----------
@@ -122,9 +91,13 @@ def _remove_small_regions(input_data, mask_data, index,
         to input_data. For example, sequence can be generated using
         np.arange(n_labels + 1)
 
-    min_size : int
+    affine : numpy.ndarray
+        Affine of input_data is used to convert size in voxels to size in
+        volume of region in mm^3.
+
+    min_size : float in mm^3
         Size of regions in input_data which falls below the specified min_size
-        will be discarded.
+        of volume in mm^3 will be discarded.
 
     Returns
     -------
@@ -135,7 +108,8 @@ def _remove_small_regions(input_data, mask_data, index,
     """
 
     _, region_sizes = np.unique(input_data, return_counts=True)
-    labels_kept = region_sizes > min_size
+    size_in_mm_3 = min_size * np.abs(np.linalg.det(affine[:3, :3]))
+    labels_kept = region_sizes > size_in_mm_3
     if not np.all(labels_kept):
         # Put to zero the indices not kept
         rejected_labels_mask = np.in1d(input_data,
@@ -449,9 +423,9 @@ def connected_label_regions(labels_img, min_size=None, connect_diag=True,
         A 3D image which contains regions denoted as labels. Each region
         is assigned with integers.
 
-    min_size : int, optional (default None)
-        Minimum size required to keep as a region after extraction. Removes
-        small or spurious regions.
+    min_size : float, in mm^3 optional (default None)
+        Minimum region size in volume required to keep after extraction.
+        Removes small or spurious regions.
 
     connect_diag : bool (default True)
         If 'connect_diag' is True, two voxels are considered in the same region
@@ -501,14 +475,22 @@ def connected_label_regions(labels_img, min_size=None, connect_diag=True,
     if not isinstance(connect_diag, bool):
         raise ValueError("'connect_diag' must be specified as True or False. "
                          "You provided {0}".format(connect_diag))
+
+    unique_labels = set(np.unique(np.asarray(labels_data)))
+    unique_labels.remove(0)
+
     if labels is not None:
+        if len(unique_labels) != len(labels):
+            raise ValueError("The number of labels: {0} provided as input "
+                             "in labels={1} does not match with the number of "
+                             "unique labels in labels_img: {2}. Please provide "
+                             "appropriate match with unique number of labels in "
+                             "labels_img."
+                             .format(len(labels), labels, len(unique_labels)))
         new_names = []
         if (not isinstance(labels, collections.Iterable) and
                 isinstance(labels, _basestring)):
             labels = [labels, ]
-
-    unique_labels = set(np.unique(np.asarray(labels_data)))
-    unique_labels.remove(0)
 
     if labels is None:
         this_labels = [None] * len(unique_labels)
@@ -531,7 +513,7 @@ def connected_label_regions(labels_img, min_size=None, connect_diag=True,
             index = np.arange(this_n_labels + 1)
             this_label_mask = this_label_mask.astype(np.int)
             regions = _remove_small_regions(regions, this_label_mask,
-                                            index, min_size=min_size)
+                                            index, affine, min_size=min_size)
             this_n_labels = regions.max()
 
         cur_regions = regions[regions != 0] + current_max_label
