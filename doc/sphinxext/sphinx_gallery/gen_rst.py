@@ -83,7 +83,7 @@ from .downloads import CODE_DOWNLOAD
 from .py_source_parser import (get_docstring_and_rest,
                                split_code_and_text_blocks)
 
-from .notebook import jupyter_notebook, text2string, save_notebook
+from .notebook import jupyter_notebook, save_notebook
 
 try:
     basestring
@@ -243,15 +243,14 @@ def save_figures(image_path, fig_count, gallery_conf):
 
     Returns
     -------
-    figure_list : list of str
-        strings containing the full path to each figure
     images_rst : str
         rst code to embed the images in the document
+    fig_num : int
+        number of figures saved
     """
     figure_list = []
 
-    fig_numbers = plt.get_fignums()
-    for fig_num in fig_numbers:
+    for fig_num in plt.get_fignums():
         # Set the fig_num figure as the current figure as we can't
         # save a figure that's not the current figure.
         fig = plt.figure(fig_num)
@@ -282,8 +281,32 @@ def save_figures(image_path, fig_count, gallery_conf):
             figure_list.append(current_fig)
         mlab.close(all=True)
 
-    # Depending on whether we have one or more figures, we're using a
-    # horizontal list or a single rst call to 'image'.
+    return figure_rst(figure_list, gallery_conf['src_dir'])
+
+
+def figure_rst(figure_list, sources_dir):
+    """Given a list of paths to figures generate the corresponding rst
+
+    Depending on whether we have one or more figures, we use a
+    single rst call to 'image' or a horizontal list.
+
+    Parameters
+    ----------
+    figure_list : list of str
+        Strings are the figures' absolute paths
+    sources_dir : str
+        absolute path of Sphinx documentation sources
+
+    Returns
+    -------
+    images_rst : str
+        rst code to embed the images in the document
+    fig_num : int
+        number of figures saved
+    """
+
+    figure_list = [os.path.relpath(figure_path, sources_dir)
+                   for figure_path in figure_list]
     images_rst = ""
     if len(figure_list) == 1:
         figure_name = figure_list[0]
@@ -293,7 +316,7 @@ def save_figures(image_path, fig_count, gallery_conf):
         for figure_name in figure_list:
             images_rst += HLIST_IMAGE_TEMPLATE % figure_name.lstrip('/')
 
-    return figure_list, images_rst
+    return images_rst, len(figure_list)
 
 
 def scale_image(in_fname, out_fname, max_width, max_height):
@@ -381,7 +404,8 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
         print(80 * '_')
         return "", []  # because string is an expected return type
 
-    fhindex = open(os.path.join(src_dir, 'README.txt')).read()
+    with open(os.path.join(src_dir, 'README.txt')) as fid:
+        fhindex = fid.read()
     # Add empty lines to avoid bug in issue #165
     fhindex += "\n\n"
 
@@ -391,6 +415,7 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
                       if fname.endswith('.py')]
     entries_text = []
     computation_times = []
+    build_target_dir = os.path.relpath(target_dir, gallery_conf['src_dir'])
     for fname in sorted_listdir:
         amount_of_code, time_elapsed = \
             generate_file_rst(fname, target_dir, src_dir, gallery_conf)
@@ -399,12 +424,12 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
         intro = extract_intro(new_fname)
         write_backreferences(seen_backrefs, gallery_conf,
                              target_dir, fname, intro)
-        this_entry = _thumbnail_div(target_dir, fname, intro) + """
+        this_entry = _thumbnail_div(build_target_dir, fname, intro) + """
 
 .. toctree::
    :hidden:
 
-   /%s/%s\n""" % (target_dir, fname[:-3])
+   /%s/%s\n""" % (build_target_dir, fname[:-3])
         entries_text.append((amount_of_code, this_entry))
 
     # sort to have the smallest entries in the beginning
@@ -457,9 +482,8 @@ def execute_code_block(code_block, example_globals,
         if my_stdout:
             stdout = CODE_OUTPUT.format(indent(my_stdout, u' ' * 4))
         os.chdir(cwd)
-        fig_list, images_rst = save_figures(
-            block_vars['image_path'], block_vars['fig_count'], gallery_conf)
-        fig_num = len(fig_list)
+        images_rst, fig_num = save_figures(block_vars['image_path'],
+                                           block_vars['fig_count'], gallery_conf)
 
     except Exception:
         formatted_exception = traceback.format_exc()
@@ -520,7 +544,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
         seconds required to run the script
     """
 
-    src_file = os.path.join(src_dir, fname)
+    src_file = os.path.normpath(os.path.join(src_dir, fname))
     example_file = os.path.join(target_dir, fname)
     shutil.copyfile(src_file, example_file)
     script_blocks = split_code_and_text_blocks(src_file)
@@ -537,9 +561,11 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
 
     base_image_name = os.path.splitext(fname)[0]
     image_fname = 'sphx_glr_' + base_image_name + '_{0:03}.png'
+    build_image_dir = os.path.relpath(image_dir, gallery_conf['src_dir'])
     image_path_template = os.path.join(image_dir, image_fname)
 
-    ref_fname = example_file.replace(os.path.sep, '_')
+    ref_fname = os.path.relpath(example_file, gallery_conf['src_dir'])
+    ref_fname = ref_fname.replace(os.path.sep, '_')
     example_rst = """\n\n.. _sphx_glr_{0}:\n\n""".format(ref_fname)
 
     filename_pattern = gallery_conf.get('filename_pattern')
@@ -564,7 +590,8 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
     time_elapsed = 0
     block_vars = {'execute_script': execute_script, 'fig_count': 0,
                   'image_path': image_path_template, 'src_file': src_file}
-    print('Executing file %s' % src_file)
+    if block_vars['execute_script']:
+        print('Executing file %s' % src_file)
     for blabel, bcontent in script_blocks:
         if blabel == 'code':
             code_output, rtime = execute_code_block(bcontent,
@@ -585,7 +612,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
                 example_rst += codestr2rst(bcontent) + '\n'
 
         else:
-            example_rst += text2string(bcontent) + '\n'
+            example_rst += bcontent + '\n\n'
 
     clean_modules()
 
@@ -610,6 +637,7 @@ def generate_file_rst(fname, target_dir, src_dir, gallery_conf):
         example_rst += SPHX_GLR_SIG
         f.write(example_rst)
 
-    print("{0} ran in : {1:.2g} seconds\n".format(src_file, time_elapsed))
+    if block_vars['execute_script']:
+        print("{0} ran in : {1:.2g} seconds\n".format(src_file, time_elapsed))
 
     return amount_of_code, time_elapsed
