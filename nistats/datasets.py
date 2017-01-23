@@ -91,6 +91,7 @@ def fetch_bids_openfmri_dataset(dataset_name='ds000001', dataset_revision=None,
     files = _fetch_file(openfmri_api, data_dir)
     json_api = json.load(open(files, 'r'))
 
+    dataset_url_set = []
     for i in range(len(json_api)):
         # We look for the desired dataset in the json api file
         if dataset_name == json_api[i]['accession_number']:
@@ -101,7 +102,6 @@ def fetch_bids_openfmri_dataset(dataset_name='ds000001', dataset_revision=None,
                     dataset_revision = revision[-1]['revision_number']
             # After selecting the revision we download all its files
             link_set = json_api[i]['link_set']
-            dataset_url_set = []
             for link in link_set:
                 revision = link['revision']
                 if revision == dataset_revision:
