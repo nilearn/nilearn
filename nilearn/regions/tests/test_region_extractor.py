@@ -199,7 +199,6 @@ def test_remove_small_regions():
                      [[0., 0., 1.],
                       [1., 0., 0.],
                       [0., 1., 1.]]])
-    sum_data = np.sum(data)
     # To remove small regions, data should be labelled
     label_map, n_labels = ndimage.label(data)
     sum_label_data = np.sum(label_map)

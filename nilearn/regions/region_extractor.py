@@ -482,10 +482,10 @@ def connected_label_regions(labels_img, min_size=None, connect_diag=True,
     if labels is not None:
         if len(unique_labels) != len(labels):
             raise ValueError("The number of labels: {0} provided as input "
-                             "in labels={1} does not match with the number of "
-                             "unique labels in labels_img: {2}. Please provide "
-                             "appropriate match with unique number of labels in "
-                             "labels_img."
+                             "in labels={1} does not match with the number "
+                             "of unique labels in labels_img: {2}. "
+                             "Please provide appropriate match with unique "
+                             "number of labels in labels_img."
                              .format(len(labels), labels, len(unique_labels)))
         new_names = []
         if (not isinstance(labels, collections.Iterable) and
