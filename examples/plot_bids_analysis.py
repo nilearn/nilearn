@@ -16,7 +16,6 @@ More specifically:
 
 Author : Martin Perez-Guevara: 2016
 """
-import pandas as pd
 import os
 from nilearn import plotting
 from scipy.stats import norm
@@ -32,7 +31,7 @@ from nistats.second_level_model import SecondLevelModel
 # We download a partial example BIDS dataset. It contains only the necessary
 # information to run an statistical analysis using Nistats. The raw data
 # subject folders only contain bold.json and events.tsv files, while the
-# derivatives folder with preprocessed files contain preproc.nii and 
+# derivatives folder with preprocessed files contain preproc.nii and
 # confounds.tsv files.
 data_dir, _ = fetch_bids_langloc_dataset()
 
@@ -84,11 +83,11 @@ for midx, (model, model_kwargs) in enumerate(zip(models, fit_kwargs)):
     model.fit(**model_kwargs)
     zmap = model.compute_contrast('language-string')
     plotting.plot_glass_brain(zmap, colorbar=False, threshold=norm.isf(0.001),
-                              title=('sub-' + model.subject_id),
+                              title=('sub-' + model.subject_label),
                               axes=axes[midx / 5, midx % 5],
                               plot_abs=False, display_mode='l')
 fig.suptitle('subjects z_map language netowrk (language - string)')
-fig.show()
+plt.show()
 
 #########################################################################
 # Second level model estimation

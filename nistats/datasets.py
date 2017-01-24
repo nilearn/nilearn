@@ -38,7 +38,7 @@ def fetch_bids_langloc_dataset(data_dir=None, verbose=1):
     downloaded_files: list of string
         Absolute paths of downloaded files on disk
     """
-    data_dir = os.path.join('/media/mfpgt/bigdata/PHD_related/dataset')
+    data_dir = os.path.join('/media/mfpgt/bigdata/PHD_related/bids_langloc_dataset')
     # url = 'ftp://ftp.cea.fr/pub/dsv/madic/download/nipy'
     # dataset_name = "languagelocalizer"
     # data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
