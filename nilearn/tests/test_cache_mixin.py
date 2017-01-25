@@ -24,6 +24,8 @@ def f(x):
 
 
 def test_check_memory():
+    # Test if _check_memory returns a memory object with the cachedir equal to
+    # input path
     try:
         temp_dir = tempfile.mkdtemp()
 
