@@ -31,6 +31,8 @@ __CACHE_CHECKED = dict()
 
 
 def _check_memory(memory, verbose=False):
+    if memory is None:
+        memory = Memory(cachedir=None, verbose=verbose)
     if isinstance(memory, _basestring):
         cache_dir = memory
         if nilearn.EXPAND_PATH_WILDCARDS:
