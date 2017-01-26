@@ -45,6 +45,8 @@ collections = nv_data['collections_meta']
 ######################################################################
 # Visualize the data
 
+print('\nplotting glass brain for collected images\n')
+
 from nilearn import plotting
 
 for im in images_meta:
@@ -65,40 +67,38 @@ def t_to_z(t_scores, deg_of_freedom):
 # Compute z values
 mean_maps = []
 z_imgs = []
-ids = set()
+current_collection = None
+
 print("\nComputing maps...")
-for collection in [col for col in collections
-                   if not(col['id'] in ids or ids.add(col['id']))]:
-    print("\n\nCollection {0}:".format(collection['id']))
 
-    # convert t to z
-    image_z_niis = []
-    for this_meta in images_meta:
-        if this_meta['collection_id'] != collection['id']:
-            # We don't want to load this image
-            continue
-        # Load and validate the downloaded image.
-        nii = load_img(this_meta['absolute_path'])
-        deg_of_freedom = this_meta['number_of_subjects'] - 2
-        print("     Image {1}: degrees of freedom: {2}".format(
-            "", this_meta['id'], deg_of_freedom))
 
-        # Convert data, create new image.
-        z_img = new_img_like(
-            nii, t_to_z(nii.get_data(), deg_of_freedom=deg_of_freedom))
+# convert t to z for all images
+for this_meta in images_meta:
+    if this_meta['collection_id'] != current_collection:
+        print("\n\nCollection {0}:".format(collection['id']))
+        current_collection = this_meta['collection_id']
 
-        z_imgs.append(z_img)
-        image_z_niis.append(nii)
+    # Load and validate the downloaded image.
+    t_img = load_img(this_meta['absolute_path'])
+    deg_of_freedom = this_meta['number_of_subjects'] - 2
+    print("     Image {1}: degrees of freedom: {2}".format(
+        "", this_meta['id'], deg_of_freedom))
+
+    # Convert data, create new image.
+    z_img = new_img_like(
+        t_img, t_to_z(t_img.get_data(), deg_of_freedom=deg_of_freedom))
+
+    z_imgs.append(z_img)
 
 
 ######################################################################
 # Plot the combined z maps
 
 cut_coords = [-15, -8, 6, 30, 46, 62]
-nii = math_img('np.sum(z_imgs, axis=3) / np.sqrt(z_imgs.shape[3])',
-               z_imgs=z_imgs)
+meta_analysis_img = math_img('np.sum(z_imgs, axis=3) / np.sqrt(z_imgs.shape[3])',
+                             z_imgs=z_imgs)
 
-plotting.plot_stat_map(nii, display_mode='z', threshold=6,
+plotting.plot_stat_map(meta_analysis_img, display_mode='z', threshold=6,
                        cut_coords=cut_coords, vmax=12)
 
 
