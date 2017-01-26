@@ -27,10 +27,12 @@ meant to be copied to analyze new data: many of the steps are unecessary.
 # .......................
 #
 # The :func:`nilearn.datasets.fetch_haxby` function will download the
-# Haxby dataset if not present on the disk, in the nilear data directory.
+# Haxby dataset if not present on the disk, in the nilearn data directory.
+# It can take a while to download about 310 Mo of data from the Internet.
 from nilearn import datasets
 # By default 2nd subject will be fetched
 haxby_dataset = datasets.fetch_haxby()
+# 'func' is a list of filenames: one for each subject
 fmri_filename = haxby_dataset.func[0]
 
 # print basic information on the dataset
@@ -84,15 +86,15 @@ print(fmri_masked.shape)
 #
 # We use numpy to load them in an array.
 import numpy as np
-# Load target information as string and give a numerical identifier to each
-labels = np.recfromcsv(haxby_dataset.session_target[0], delimiter=" ")
-print(labels)
+# Load behavioral information
+behavioral = np.recfromcsv(haxby_dataset.session_target[0], delimiter=" ")
+print(behavioral)
 
 ###########################################################################
-# Retrieve the behavioral targets, that we are going to predict in the
-# decoding
-target = labels['labels']
-print(target)
+# Retrieve the experimental conditions, that we are going to use as
+# prediction targets in the decoding
+conditions = behavioral['labels']
+print(conditions)
 
 ###########################################################################
 # Restrict the analysis to cats and faces
@@ -103,7 +105,7 @@ print(target)
 #
 # To keep only data corresponding to faces or cats, we create a
 # mask of the samples belonging to the condition.
-condition_mask = np.logical_or(target == b'face', target == b'cat')
+condition_mask = np.logical_or(conditions == b'face', conditions == b'cat')
 
 # We apply this mask in the sampe direction to restrict the
 # classification to the face vs cat discrimination
@@ -115,8 +117,8 @@ print(fmri_masked.shape)
 
 ###########################################################################
 # We apply the same mask to the targets
-target = target[condition_mask]
-print(target.shape)
+conditions = conditions[condition_mask]
+print(conditions.shape)
 
 
 ###########################################################################
@@ -139,7 +141,7 @@ print(svc)
 # labels, and then predict labels on data without.
 #
 # We first fit it on the data
-svc.fit(fmri_masked, target)
+svc.fit(fmri_masked, conditions)
 
 ###########################################################################
 # We can then predict the labels from the data
@@ -148,7 +150,7 @@ print(prediction)
 
 ###########################################################################
 # Let's measure the error rate:
-print((prediction == target).sum() / float(len(target)))
+print((prediction == conditions).sum() / float(len(conditions)))
 
 ###########################################################################
 # This error rate is meaningless. Why?
@@ -165,10 +167,10 @@ print((prediction == target).sum() / float(len(target)))
 #
 # Let's leave out the 30 last data points during training, and test the
 # prediction on these 30 last points:
-svc.fit(fmri_masked[:-30], target[:-30])
+svc.fit(fmri_masked[:-30], conditions[:-30])
 
 prediction = svc.predict(fmri_masked[-30:])
-print((prediction == target[-30:]).sum() / float(len(target[-30:])))
+print((prediction == conditions[-30:]).sum() / float(len(conditions[-30:])))
 
 
 ###########################################################################
@@ -182,9 +184,9 @@ from sklearn.cross_validation import KFold
 cv = KFold(n=len(fmri_masked), n_folds=5)
 
 for train, test in cv:
-    svc.fit(fmri_masked[train], target[train])
+    svc.fit(fmri_masked[train], conditions[train])
     prediction = svc.predict(fmri_masked[test])
-    print((prediction == target[test]).sum() / float(len(target[test])))
+    print((prediction == conditions[test]).sum() / float(len(conditions[test])))
 
 ###########################################################################
 # Cross-validation with scikit-learn
@@ -192,7 +194,7 @@ for train, test in cv:
 #
 # Scikit-learn has tools to perform cross-validation easier:
 from sklearn.cross_validation import cross_val_score
-cv_score = cross_val_score(svc, fmri_masked, target)
+cv_score = cross_val_score(svc, fmri_masked, conditions)
 print(cv_score)
 
 ###########################################################################
@@ -201,7 +203,7 @@ print(cv_score)
 #
 # By default, cross_val_score uses a 3-fold KFold. We can control this by
 # passing the "cv" object, here a 5-fold:
-cv_score = cross_val_score(svc, fmri_masked, target, cv=cv)
+cv_score = cross_val_score(svc, fmri_masked, conditions, cv=cv)
 print(cv_score)
 
 ###########################################################################
@@ -213,11 +215,11 @@ print(cv_score)
 # behavioral data. We have to apply our session mask, to select only cats
 # and faces. To leave a session out, we pass it to a
 # LeaveOneLabelOut object:
-session_label = labels['chunks'][condition_mask]
+session_label = behavioral['chunks'][condition_mask]
 
 from sklearn.cross_validation import LeaveOneLabelOut
 cv = LeaveOneLabelOut(session_label)
-cv_score = cross_val_score(svc, fmri_masked, target, cv=cv)
+cv_score = cross_val_score(svc, fmri_masked, conditions, cv=cv)
 print(cv_score)
 
 
@@ -268,9 +270,12 @@ show()
 # Further reading
 # ----------------
 #
-# * The :ref:`section of the documentation on decoding <decoding_tutorial>`
+# * The :ref:`section of the documentation on decoding <decoding>`
 #
 # * :ref:`sphx_glr_auto_examples_02_decoding_plot_haxby_anova_svm.py`
+#   For decoding without a precomputed mask
 #
 # * :ref:`space_net`
+#
+# ______________
 

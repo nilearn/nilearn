@@ -22,7 +22,7 @@ What is nilearn: MVPA, decoding, predictive models, functional connectivity
     :ref:`brain parcellations <parcellating_brain>`,
     :ref:`connectomes <functional_connectomes>`.
 
-    Nilearn can readily be used on :ref:`task fMRI <decoding_tutorial>`,
+    Nilearn can readily be used on :ref:`task fMRI <decoding_intro>`,
     :ref:`resting-state <functional_connectomes>`, or
     :ref:`VBM <sphx_glr_auto_examples_02_decoding_plot_oasis_vbm.py>` data.
 
