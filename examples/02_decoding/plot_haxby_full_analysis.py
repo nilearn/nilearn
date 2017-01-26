@@ -85,13 +85,13 @@ for mask_name in mask_names:
             classifier,
             masked_timecourses,
             classification_target,
-            cv=cv, scoring="f1")
+            cv=cv, scoring="roc_auc")
 
         mask_chance_scores[mask_name][category] = cross_val_score(
             dummy_classifier,
             masked_timecourses,
             classification_target,
-            cv=cv, scoring="f1")
+            cv=cv, scoring="roc_auc")
 
         print("Scores: %1.2f +- %1.2f" % (
             mask_scores[mask_name][category].mean(),
@@ -119,9 +119,10 @@ for color, mask_name in zip('rgb', mask_names):
 
     tick_position = tick_position + .2
 
-plt.ylabel('Classification accurancy (f1 score)')
+plt.ylabel('Classification accurancy (AUC score)')
 plt.xlabel('Visual stimuli category')
-plt.legend(loc='best')
+plt.ylim(0.3, 1)
+plt.legend(loc='lower right')
 plt.title('Category-specific classification accuracy for different masks')
 plt.tight_layout()
 

@@ -132,11 +132,11 @@ class DictLearning(BaseDecomposition, TransformerMixin):
 
     References
     ----------
-    * Gael Varoquaux et al.
-      Multi-subject dictionary learning to segment an atlas of brain
-      spontaneous activity
-      Information Processing in Medical Imaging, 2011, pp. 562-573,
-      Lecture Notes in Computer Science
+    * Arthur Mensch, Gael Varoquaux, Bertrand Thirion,
+      Compressed online dictionary learning for fast resting-state fMRI
+      decomposition.
+      IEEE 13th International Symposium on Biomedical Imaging (ISBI), 2016.
+      pp. 1282-1285
     """
 
     def __init__(self, n_components=20,
