@@ -53,7 +53,7 @@ def check_embedded_nifti_masker(estimator, multi_subject=True):
         new_masker_params['n_jobs'] = estimator.n_jobs
     new_masker_params['memory'] = estimator.memory
     new_masker_params['memory_level'] = max(0, estimator.memory_level - 1)
-    new_masker_params['verbose'] = max(0, estimator.verbose - 1)
+    new_masker_params['verbose'] = estimator.verbose
 
     # Raising warning if masker override parameters
     conflict_string = ""
