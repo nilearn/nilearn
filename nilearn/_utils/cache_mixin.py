@@ -30,7 +30,23 @@ from .compat import _basestring
 __CACHE_CHECKED = dict()
 
 
-def _check_memory(memory, verbose=False):
+def _check_memory(memory, verbose=0):
+    """Function to make ensure a memory object.
+
+    Parameters
+    ----------
+    memory: instance of joblib.Memory or string
+        Used to cache the masking process.
+        If a string is given, it is the
+        path to the caching directory.
+
+    verbose : int, optional (default 1)
+        Verbosity level.
+
+    Returns
+    -------
+    instance of joblib.Memory.
+    """
     if memory is None:
         memory = Memory(cachedir=None, verbose=verbose)
     if isinstance(memory, _basestring):
