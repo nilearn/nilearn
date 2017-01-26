@@ -35,7 +35,7 @@ from sklearn.metrics import accuracy_score
 from ..input_data.masker_validation import check_embedded_nifti_masker
 from .._utils.param_validation import _adjust_screening_percentile
 from .._utils.fixes import check_X_y
-from .._utils.compat import _basestring, get_header
+from .._utils.compat import _basestring
 from .._utils.cache_mixin import CacheMixin
 from .objective_functions import _unmask
 from .space_net_solvers import (tvl1_solver, _graph_net_logistic,
@@ -715,14 +715,8 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
             tic = time.time()
 
         # nifti masking
-        # self.mask_args = {'mask_strategy' : 'epi', 'memory': self.memory_}
-        # self.mask_strategy = 'epi'
-        # memory = self.memory
-        # self.memory = self.memory_
         self.masker_ = check_embedded_nifti_masker(self, multi_subject=False)
-        import pdb; pdb.set_trace()  # XXX BREAKPOINT
         X = self.masker_.fit_transform(X)
-        import pdb; pdb.set_trace()  # XXX BREAKPOINT
 
         X, y = check_X_y(X, y, ['csr', 'csc', 'coo'], dtype=np.float,
                          multi_output=True, y_numeric=True)
@@ -792,8 +786,7 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
         self.all_coef_ = np.ndarray((n_problems, n_folds, X.shape[1]))
 
         self.screening_percentile_ = _adjust_screening_percentile(
-                self.screening_percentile, self.mask_img_,
-                verbose=self.verbose)
+            self.screening_percentile, self.mask_img_, verbose=self.verbose)
 
         # main loop: loop on classes and folds
         solver_params = dict(tol=self.tol, max_iter=self.max_iter)
