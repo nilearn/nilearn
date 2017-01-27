@@ -58,7 +58,8 @@ resting_state = nki_dataset['func_left'][0]
 
 # Destrieux parcellation left hemisphere in fsaverage5 space
 destrieux_atlas = datasets.fetch_atlas_surf_destrieux()
-parcellation = nb.freesurfer.read_annot(destrieux_atlas['annot_left'])
+parcellation = destrieux_atlas['map_left']
+labels = destrieux_atlas['labels']
 
 # Retrieve fsaverage data
 fsaverage = datasets.fetch_surf_fsaverage5()
@@ -73,11 +74,11 @@ sulcal_depth_map = fsaverage['sulc_left'][0]
 timeseries = plotting.surf_plotting.load_surf_data(resting_state)
 
 # Extract seed region: dorsal posterior cingulate gyrus
-region = 'G_cingul-Post-dorsal'
-labels = np.where(parcellation[0] == parcellation[2].index(region))[0]
+pcc_region = 'G_cingul-Post-dorsal'
+pcc_labels = np.where(parcellation == labels.index(pcc_region))[0]
 
 # Extract time series from seed region
-seed_timeseries = np.mean(timeseries[labels], axis=0)
+seed_timeseries = np.mean(timeseries[pcc_labels], axis=0)
 
 # Calculate Pearson product-moment correlation coefficient between seed
 # time series and timeseries of all cortical nodes of the hemisphere
@@ -90,24 +91,27 @@ stat_map[np.where(np.mean(timeseries, axis=1) == 0)] = 0
 
 ###############################################################################
 # Display ROI on surface
-plotting.plot_surf_roi(fsaverage5_pial, roi_map=labels, hemi='left',
+plotting.plot_surf_roi(fsaverage5_pial, roi_map=pcc_labels, hemi='left',
                        view='medial', bg_map=sulcal_depth_map, bg_on_data=True,
                        title='PCC Seed')
 
-# Display unthresholded stat map in lateral and medial view
-# dimmed background
-plotting.plot_surf_stat_map(fsaverage5_pial, stat_map=stat_map, hemi='left',
-                            bg_map=sulcal_depth_map, bg_on_data=True,
-                            darkness=.5)
+# Display unthresholded stat map  with dimmed background
 plotting.plot_surf_stat_map(fsaverage5_pial, stat_map=stat_map, hemi='left',
                             view='medial', bg_map=sulcal_depth_map,
-                            bg_on_data=True, darkness=.5)
+                            bg_on_data=True, darkness=.5,
+                            title='Correlation map')
+
+# Display unthresholded stat map without background map, transparency is
+# automatically set to .5, but can also be controlled with the alpha parameter
+plotting.plot_surf_stat_map(fsaverage5_pial, stat_map=stat_map, hemi='left',
+                            view='medial', title='Plotting without background')
 
 # Many different options are available for plotting, for example thresholding,
-# using custom colormaps or setting transparency
+# or using custom colormaps
 plotting.plot_surf_stat_map(fsaverage5_pial, stat_map=stat_map, hemi='left',
-                            bg_map=sulcal_depth_map, bg_on_data=True,
-                            cmap='Spectral', threshold=.6, alpha=.5)
+                            view='medial', bg_map=sulcal_depth_map,
+                            bg_on_data=True, cmap='Spectral', threshold=.5,
+                            title='Threshold and colormap')
 
 # The plots can be saved to file, in which case the display is closed after
 # creating the figure
