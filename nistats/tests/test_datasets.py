@@ -1,5 +1,6 @@
 import os
 import json
+import zipfile
 import numpy as np
 from nose.tools import assert_true, assert_false, assert_equal, assert_raises
 
@@ -31,7 +32,15 @@ def teardown_mock():
 def test_fetch_bids_langloc_dataset():
     data_dir = os.path.join(tst.tmpdir, 'bids_langloc_example')
     os.mkdir(data_dir)
-    os.mkdir(os.path.join(data_dir, 'bids_langloc_dataset'))
+    # main_folder = os.path.join(data_dir, 'bids_langloc_dataset')
+    # os.mkdir(main_folder)
+    testfile = os.path.join(data_dir, 'test.txt')
+    open(testfile, 'w').close()
+    zipname = os.path.join(data_dir, '5888d9a76c613b01fc6acc4e')
+    myzip = zipfile.ZipFile(zipname, 'w')
+    myzip.write(testfile, "bids_langloc_dataset\\test.txt")
+    myzip.close()
+    # open(os.path.join(data_dir, '5888d9a76c613b01fc6acc4e'), 'w').close()
     datadir, dl_files = datasets.fetch_bids_langloc_dataset()
     assert_true(isinstance(datadir, _basestring))
     assert_true(isinstance(dl_files, list))
