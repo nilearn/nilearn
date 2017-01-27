@@ -44,7 +44,8 @@ def fetch_bids_langloc_dataset(data_dir=None, verbose=1):
     data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
                                 verbose=verbose)
     # The files_spec needed for _fetch_files
-    files_spec = [(main_folder, url, {'uncompress': False})]
+    files_spec = [(main_folder, url, {'uncompress': True,
+                                      'move': main_folder + '.zip'})]
     downloaded_files = _fetch_files(data_dir, files_spec, resume=True,
                                     verbose=verbose)
     main_path = downloaded_files[0]
