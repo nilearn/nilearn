@@ -330,6 +330,8 @@ def _uncompress_file(file_, delete_archive=True, verbose=1):
             z = zipfile.ZipFile(file_)
             z.extractall(data_dir)
             z.close()
+            if delete_archive:
+                os.remove(file_)
             processed = True
         elif ext == '.gz' or header.startswith(b'\x1f\x8b'):
             import gzip
@@ -349,12 +351,14 @@ def _uncompress_file(file_, delete_archive=True, verbose=1):
         if tarfile.is_tarfile(file_):
             with contextlib.closing(tarfile.open(file_, "r")) as tar:
                 tar.extractall(path=data_dir)
+            if delete_archive:
+                os.remove(file_)
             processed = True
         if not processed:
             raise IOError(
                     "[Uncompress] unknown archive file format: %s" % file_)
-        if delete_archive:
-            os.remove(file_)
+        # if delete_archive:
+        #     os.remove(file_)
         if verbose > 0:
             sys.stderr.write('.. done.\n')
     except Exception as e:
