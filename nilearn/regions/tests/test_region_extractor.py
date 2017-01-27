@@ -240,6 +240,13 @@ def test_connected_label_regions():
 
     assert_true(n_labels_wo_min > n_labels_with_min)
 
+    # Test connect_diag=False
+    ext_reg_without_connect_diag = connected_label_regions(labels_img,
+                                                           connect_diag=False)
+    data_wo_connect_diag = ext_reg_without_connect_diag.get_data()
+    n_labels_wo_connect_diag = len(np.unique(data_wo_connect_diag))
+    assert_true(n_labels_wo_connect_diag > n_labels_wo_reg_ext)
+
     # If min_size is large and if all the regions are removed then empty image
     # will be returned
     extract_reg_min_size_large = connected_label_regions(labels_img,
