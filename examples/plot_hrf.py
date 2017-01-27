@@ -43,4 +43,4 @@ for i, hrf_model in enumerate(hrf_models):
     plt.title(hrf_model)
 
 plt.subplots_adjust(bottom=.12)
-fig.show()
+plt.show()

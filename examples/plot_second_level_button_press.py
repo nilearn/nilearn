@@ -47,7 +47,7 @@ for cidx, tmap in enumerate(data['tmaps']):
                               axes=axes[cidx / 4, cidx % 4],
                               plot_abs=False, display_mode='z')
 fig.suptitle('subjects t_map left-right button press')
-fig.show()
+plt.show()
 
 #########################################################################
 # Estimate second level model
