@@ -85,7 +85,7 @@ for midx, (model, model_kwargs) in enumerate(zip(models, fit_kwargs)):
     plotting.plot_glass_brain(zmap, colorbar=False, threshold=norm.isf(0.001),
                               title=('sub-' + model.subject_label),
                               axes=axes[midx / 5, midx % 5],
-                              plot_abs=False, display_mode='l')
+                              plot_abs=False, display_mode='x')
 fig.suptitle('subjects z_map language netowrk (language - string)')
 plt.show()
 
@@ -110,5 +110,5 @@ zmap = second_level_model.compute_contrast('language-string')
 # lateralized as expected
 plotting.plot_glass_brain(zmap, colorbar=False, threshold=norm.isf(0.001),
                           title='Group language network',
-                          plot_abs=False, display_mode='lr')
+                          plot_abs=False, display_mode='x')
 plotting.show()
