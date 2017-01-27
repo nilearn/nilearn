@@ -21,7 +21,6 @@ from functools import partial
 import numpy as np
 from scipy import stats, ndimage
 from sklearn.base import RegressorMixin
-#, clone
 from sklearn.utils.extmath import safe_sparse_dot
 try:
     from sklearn.utils import atleast2d_or_csr
