@@ -31,16 +31,15 @@ __CACHE_CHECKED = dict()
 
 
 def _check_memory(memory, verbose=0):
-    """Function to make ensure a memory object.
+    """Function to ensure an instance of a joblib.Memory object.
 
     Parameters
     ----------
-    memory: None or instance of joblib.Memory or string
+    memory: None or instance of joblib.Memory or str
         Used to cache the masking process.
-        If a string is given, it is the
-        path to the caching directory.
+        If a str is given, it is the path to the caching directory.
 
-    verbose : int, optional (default 1)
+    verbose : int, optional (default 0)
         Verbosity level.
 
     Returns
