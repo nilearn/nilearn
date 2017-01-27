@@ -51,7 +51,7 @@ fmri_img[1] = resample_img(fmri_img[1], affine, shape[:3])
 # Create mean image for display
 mean_image = mean_img(fmri_img)
 for idx, img in enumerate(fmri_img):
-    fmri_img[idx] = Nifti1Image(img.get_data(), img.affine)
+    fmri_img[idx] = Nifti1Image(img.get_data(), img.get_affine())
 
 #########################################################################
 # Make design matrices
