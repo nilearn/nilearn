@@ -13,6 +13,7 @@ from nilearn.regions.region_extractor import (_threshold_maps_ratio,
 
 from nilearn._utils import testing
 from nilearn._utils.testing import assert_raises_regex, generate_maps
+from nilearn._utils.exceptions import DimensionError
 
 
 def _make_random_data(shape):
@@ -239,6 +240,12 @@ def test_connected_label_regions():
 
     assert_true(n_labels_wo_min > n_labels_with_min)
 
+    # If min_size is large and if all the regions are removed then empty image
+    # will be returned
+    extract_reg_min_size_large = connected_label_regions(labels_img,
+                                                         min_size=500)
+    assert_true(np.unique(extract_reg_min_size_large.get_data()) == 0)
+
     # Test the names of the brain regions given in labels.
     # Test labels for 9 regions in n_regions
     labels = ['region_a', 'region_b', 'region_c', 'region_d', 'region_e',
@@ -274,3 +281,51 @@ def test_connected_label_regions():
 
     np.testing.assert_raises(ValueError, connected_label_regions,
                              labels_img, labels=provided_labels)
+
+    # Test if unknown/negative integers are provided as labels in labels_img, we
+    # raise an error and test the same whether error is raised.
+    labels_data = np.zeros(shape, dtype=np.int)
+    h0 = shape[0] // 2
+    h1 = shape[1] // 2
+    h2 = shape[2] // 2
+    labels_data[:h0, :h1, :h2] = 1
+    labels_data[:h0, :h1, h2:] = 2
+    labels_data[:h0, h1:, :h2] = 3
+    labels_data[:h0, h1:, h2:] = 4
+    labels_data[h0:, :h1, :h2] = 5
+    labels_data[h0:, :h1, h2:] = 6
+    labels_data[h0:, h1:, :h2] = np.nan
+    labels_data[h0:, h1:, h2:] = np.inf
+
+    neg_labels_img = nibabel.Nifti1Image(labels_data, affine)
+    np.testing.assert_raises(ValueError, connected_label_regions,
+                             labels_img=neg_labels_img)
+
+    # If labels_img provided is 4D Nifti image, then test whether error is
+    # raised or not. Since this function accepts only 3D image.
+    labels_4d_data = np.zeros((shape) + (2, ))
+    labels_data[h0:, h1:, :h2] = 0
+    labels_data[h0:, h1:, h2:] = 0
+    labels_4d_data[..., 0] = labels_data
+    labels_4d_data[..., 1] = labels_data
+    labels_img_4d = nibabel.Nifti1Image(labels_4d_data, np.eye(4))
+    np.testing.assert_raises(DimensionError, connected_label_regions,
+                             labels_img=labels_img_4d)
+
+    # Test if labels (or names to regions) given is a string without a list.
+    # Then, we expect it to be split to regions extracted and returned as list.
+    labels_in_str = 'region_a'
+    labels_img_in_str = testing.generate_labeled_regions(shape, affine=affine,
+                                                         n_regions=1)
+    extract_regions, new_labels = connected_label_regions(labels_img_in_str,
+                                                          labels=labels_in_str)
+    assert_true(isinstance(new_labels, list))
+
+    # If user has provided combination of labels, then function passes without
+    # breaking and new labels are returned based upon given labels and should be
+    # equal or more based on regions extracted
+    combined_labels = ['region_a', '1', 'region_b', '2', 'region_c', '3',
+                       'region_d', '4', 'region_e']
+    ext_reg, new_labels = connected_label_regions(labels_img,
+                                                  labels=combined_labels)
+    assert_true(len(new_labels) >= len(combined_labels))

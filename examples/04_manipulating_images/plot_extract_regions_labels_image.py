@@ -105,7 +105,7 @@ plotting.plot_roi(region_labels_not_diag,
 #
 # In the above, we get around 110 regions, but many of these are very
 # small. We can remove them with the min_size parameter, keeping only the
-# regions that are bigger than size of region volume 100 in mm^3.
+# regions larger than 100mm^3.
 region_labels_min_size = connected_label_regions(atlas_yeo, min_size=100,
                                                  connect_diag=False)
 

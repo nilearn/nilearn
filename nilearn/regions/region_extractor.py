@@ -108,8 +108,8 @@ def _remove_small_regions(input_data, mask_data, index,
     """
 
     _, region_sizes = np.unique(input_data, return_counts=True)
-    size_in_mm_3 = min_size * np.abs(np.linalg.det(affine[:3, :3]))
-    labels_kept = region_sizes > size_in_mm_3
+    size_in_vox = min_size / np.abs(np.linalg.det(affine[:3, :3]))
+    labels_kept = region_sizes > size_in_vox
     if not np.all(labels_kept):
         # Put to zero the indices not kept
         rejected_labels_mask = np.in1d(input_data,
@@ -469,17 +469,30 @@ def connected_label_regions(labels_img, min_size=None, connect_diag=True,
     labels_data = _safe_get_data(labels_img, ensure_finite=True)
     affine = labels_img.get_affine()
 
+    check_unique_labels = np.unique(labels_data)
+
     if min_size is not None and not isinstance(min_size, numbers.Number):
         raise ValueError("Expected 'min_size' to be specified as integer. "
                          "You provided {0}".format(min_size))
     if not isinstance(connect_diag, bool):
         raise ValueError("'connect_diag' must be specified as True or False. "
                          "You provided {0}".format(connect_diag))
+    if np.any(check_unique_labels < 0):
+        raise ValueError("The 'labels_img' you provided has unknown/negative "
+                         "integers as labels {0} assigned to regions. "
+                         "All regions in an image should have positive "
+                         "integers assigned as labels."
+                         .format(check_unique_labels))
 
-    unique_labels = set(np.unique(np.asarray(labels_data)))
-    unique_labels.remove(0)
+    unique_labels = set(check_unique_labels)
+    # check for background label indicated as 0
+    if np.any(check_unique_labels == 0):
+        unique_labels.remove(0)
 
     if labels is not None:
+        if (not isinstance(labels, collections.Iterable) or
+                isinstance(labels, _basestring)):
+            labels = [labels, ]
         if len(unique_labels) != len(labels):
             raise ValueError("The number of labels: {0} provided as input "
                              "in labels={1} does not match with the number "
@@ -488,9 +501,6 @@ def connected_label_regions(labels_img, min_size=None, connect_diag=True,
                              "number of labels in labels_img."
                              .format(len(labels), labels, len(unique_labels)))
         new_names = []
-        if (not isinstance(labels, collections.Iterable) and
-                isinstance(labels, _basestring)):
-            labels = [labels, ]
 
     if labels is None:
         this_labels = [None] * len(unique_labels)
