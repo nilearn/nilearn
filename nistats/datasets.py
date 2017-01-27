@@ -39,15 +39,18 @@ def fetch_bids_langloc_dataset(data_dir=None, verbose=1):
         Absolute paths of downloaded files on disk
     """
     url = 'https://files.osf.io/v1/resources/9q7dv/providers/osfstorage/5888d9a76c613b01fc6acc4e'
-    dataset_name = "bids_langloc_example"
+    dataset_name = 'bids_langloc_example'
+    main_folder = 'bids_langloc_dataset'
     data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
                                 verbose=verbose)
     # The files_spec needed for _fetch_files
-    files_spec = [(dataset_name, url, {'uncompress': False})]
+    files_spec = [(main_folder, url, {'uncompress': False})]
     downloaded_files = _fetch_files(data_dir, files_spec, resume=True,
                                     verbose=verbose)
-    downloaded_files = []
-    return data_dir, downloaded_files
+    main_path = downloaded_files[0]
+    file_list = [os.path.join(path, f) for
+                 path, dirs, files in os.walk(main_path) for f in files]
+    return os.path.join(data_dir, main_folder), sorted(file_list)
 
 
 def fetch_bids_openfmri_dataset(dataset_name='ds000001', dataset_revision=None,

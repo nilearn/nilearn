@@ -31,7 +31,7 @@ def teardown_mock():
 def test_fetch_bids_langloc_dataset():
     data_dir = os.path.join(tst.tmpdir, 'bids_langloc_example')
     os.mkdir(data_dir)
-    open(os.path.join(data_dir, 'bids_langloc_dataset.zip'), 'w').close()
+    os.mkdir(os.path.join(data_dir, 'bids_langloc_dataset'))
     datadir, dl_files = datasets.fetch_bids_langloc_dataset()
     assert_true(isinstance(datadir, _basestring))
     assert_true(isinstance(dl_files, list))
