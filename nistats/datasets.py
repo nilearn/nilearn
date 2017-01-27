@@ -43,12 +43,12 @@ def fetch_bids_langloc_dataset(data_dir=None, verbose=1):
     main_folder = 'bids_langloc_dataset'
     data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
                                 verbose=verbose)
-    zipfile = 'bids_langloc_dataset.zip'
     # The files_spec needed for _fetch_files
-    files_spec = [(zipfile, url, {'move': zipfile})]
-    downloaded_files = _fetch_files(data_dir, files_spec, resume=True,
-                                    verbose=verbose)
-    _uncompress_file(downloaded_files[0])
+    files_spec = [(main_folder + '.zip', url, {'move': main_folder + '.zip'})]
+    if not os.path.exists(os.path.join(data_dir, main_folder)):
+        downloaded_files = _fetch_files(data_dir, files_spec, resume=True,
+                                        verbose=verbose)
+        _uncompress_file(downloaded_files[0])
     main_path = os.path.join(data_dir, main_folder)
     file_list = [os.path.join(path, f) for
                  path, dirs, files in os.walk(main_path) for f in files]
