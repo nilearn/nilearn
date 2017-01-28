@@ -1,11 +1,17 @@
 """
-Ward clustering to learn a brain parcellation from rest fMRI
+Clustering methods to learn a brain parcellation from rest fMRI
 ====================================================================
 
-We use spatially-constrained Ward-clustering to create a set of
-parcels. These parcels are particularly interesting for creating a
-'compressed' representation of the data, replacing the data in the fMRI
-images by mean on the parcellation.
+We use KMeans and spatially-constrained Ward-clustering to create a set
+of parcels.
+
+In a high dimensional regime, these methods are particularly interesting
+for creating a 'compressed' representation of the data, replacing the data
+in the fMRI images by mean on the parcellation.
+
+On the other way, these methods will also be interesting for learning
+functional connectomes based on these parcellations and be able to used
+in a classification task between controls and disease states.
 
 This parcellation may be useful in a supervised learning, see for
 instance: `A supervised clustering approach for fMRI-based inference of
@@ -30,101 +36,104 @@ print('First subject functional nifti image (4D) is at: %s' %
       dataset.func[0])  # 4D data
 
 
-##################################################################
-# Transform nifti files to a data matrix with the NiftiMasker
-from nilearn import input_data
-
-# The NiftiMasker will extract the data on a mask. We do not have a
-# mask, hence we need to compute one.
+#########################################################################
+# Nifti images to brain parcellations: Perform KMeans Clustering
+# ---------------------------------------------------------------
 #
-# This is resting-state data: the background has not been removed yet,
-# thus we need to use mask_strategy='epi' to compute the mask from the
-# EPI images
-nifti_masker = input_data.NiftiMasker(memory='nilearn_cache',
-                                      mask_strategy='epi', memory_level=1,
-                                      standardize=False)
+# Transforming images to data matrix takes few steps: reducing the data
+# dimensionality using randomized SVD and build brain parcellations using
+# specified clustering method KMeans or spatially-constrained Ward using
+# a class named as `Parcellations`.
 
-func_filename = dataset.func[0]
-# The fit_transform call computes the mask and extracts the time-series
-# from the files:
-fmri_masked = nifti_masker.fit_transform(func_filename)
+# import parcellations from nilearn
+from nilearn.parcellations import Parcellations
 
-# We can retrieve the numpy array of the mask
-mask = nifti_masker.mask_img_.get_data().astype(bool)
+# We build parameters of our own for this object. Parameters related to
+# masking, caching and defining number of clusters and specific method.
 
-
-##################################################################
-# Perform Ward clustering
-# -----------------------
-#
-# We use spatially-constrained Ward clustering. For this, we need to
-# compute from the mask a matrix giving the voxel-to-voxel connectivity
-
-# Compute connectivity matrix: which voxel is connected to which
-from sklearn.feature_extraction import image
-shape = mask.shape
-connectivity = image.grid_to_graph(n_x=shape[0], n_y=shape[1],
-                                   n_z=shape[2], mask=mask)
-
-
-##################################################################
-# Then we use FeatureAgglomeration from scikit-learn. Indeed, the voxels
-# are the features of the data matrix.
-#
-# In addition, we use caching. As a result, the clustering doesn't have
-# to be recomputed later.
-
-# Computing the ward for the first time, this is long...
-from sklearn.cluster import FeatureAgglomeration
-# If you have scikit-learn older than 0.14, you need to import
-# WardAgglomeration instead of FeatureAgglomeration
+# Computing the kmeans and measure time duration for parcellations
 import time
 start = time.time()
-ward = FeatureAgglomeration(n_clusters=1000, connectivity=connectivity,
-                            linkage='ward', memory='nilearn_cache')
-ward.fit(fmri_masked)
+
+# This object uses MiniBatchKMeans for method='kmeans'
+kmeans = Parcellations(method='kmeans', n_parcels=1000,
+                       standardize=False,
+                       memory='nilearn_cache', memory_level=1,
+                       verbose=1)
+# Call fit on functional dataset: single subject (less samples)
+kmeans.fit(dataset.func)
+print("KMeans 1000 clusters: %.2fs" % (time.time() - start))
+# NOTE: Good parcellations can be build using KMeans with more subjects,
+# for instance more than 5 subjects
+
+#########################################################################
+# Now, Nifti images to brain parcellations: Perform Ward Clustering
+# -----------------------------------------------------------------
+
+# Agglomerative Clustering: ward
+
+# Computing ward for the first time, will be long... This can be seen by
+# measuring using time
+start = time.time()
+
+# This object uses spatially-constrained AgglomerativeClustering for
+# method='ward'. Spatial connectivity matrix (voxel-to-voxel) is built-in
+# with this class which means no need of explicitly compute them.
+ward = Parcellations(method='ward', n_parcels=1000,
+                     standardize=False,
+                     memory='nilearn_cache', memory_level=1,
+                     verbose=1)
+ward.fit(dataset.func)
 print("Ward agglomeration 1000 clusters: %.2fs" % (time.time() - start))
 
-# Compute the ward with more clusters, should be faster as we are using
-# the caching mechanism
+# Compute ward for second time to see the power of joblib caching
+
+# This class also has built-in caching mechanism. Here, we compute ward
+# clustering with more number of clusters=2000 and compare time with first
+# time 1000 clusters.
 start = time.time()
-ward = FeatureAgglomeration(n_clusters=2000, connectivity=connectivity,
-                            linkage='ward', memory='nilearn_cache')
-ward.fit(fmri_masked)
+ward = Parcellations(method='ward', n_parcels=2000,
+                     standardize=False, memory='nilearn_cache',
+                     memory_level=1, verbose=1)
+ward.fit(dataset.func)
 print("Ward agglomeration 2000 clusters: %.2fs" % (time.time() - start))
 
-##################################################################
+###########################################################################
 # Visualize results
 # ------------------
 #
-# First we display the labels of the clustering in the brain.
+# First, we display the labels of the clustering in the brain.
 #
 # To visualize results, we need to transform the clustering's labels back
-# to a neuroimaging volume. For this, we use the NiftiMasker's
-# inverse_transform method.
+# to a neuroimaging volume. For this, we use the masker's inverse_transform
+# directly from the object on attribute labels_.
+
+kmeans_labels_img = kmeans.masker_.inverse_transform(kmeans.labels_)
+ward_labels_img = ward.masker_.inverse_transform(ward.labels_)
+
 from nilearn.plotting import plot_roi, plot_epi, show
-
-# Unmask the labels
-
-# Avoid 0 label
-labels = ward.labels_ + 1
-labels_img = nifti_masker.inverse_transform(labels)
-
 from nilearn.image import mean_img
-mean_func_img = mean_img(func_filename)
+
+# we take mean over time on the functional image to use mean image as
+# background to parcellated image labels_img
+mean_func_img = mean_img(dataset.func[0])
 
 
-first_plot = plot_roi(labels_img, mean_func_img, title="Ward parcellation",
+first_plot = plot_roi(kmeans_labels_img, mean_func_img,
+                      title="KMeans parcellation",
                       display_mode='xz')
+second_plot = plot_roi(ward_labels_img, mean_func_img,
+                       title="Ward parcellation",
+                       display_mode='xz')
 
 # common cut coordinates for all plots
 cut_coords = first_plot.cut_coords
 
 ##################################################################
-# labels_img is a Nifti1Image object, it can be saved to file with the
-# following code:
-labels_img.to_filename('parcellation.nii')
-
+# kmeans_labels_img and ward_labels_img are Nifti1Image object, it can be
+# saved to file with the following code:
+kmeans_labels_img.to_filename('kmeans_parcellation.nii')
+ward_labels_img.to_filename('ward_parcellation.nii')
 
 ##################################################################
 # Second, we illustrate the effect that the clustering has on the
@@ -135,25 +144,17 @@ labels_img.to_filename('parcellation.nii')
 # are only 2000 parcels, instead of the original 60000 voxels
 
 # Display the original data
-plot_epi(nifti_masker.inverse_transform(fmri_masked[0]),
+fmri_masked = ward.masker_.transform(dataset.func)
+plot_epi(ward.masker_.inverse_transform(fmri_masked[0][0]),
          cut_coords=cut_coords,
-         title='Original (%i voxels)' % fmri_masked.shape[1],
-         vmax=fmri_masked.max(), vmin=fmri_masked.min(),
+         title='Original (%i voxels)' % fmri_masked[0].shape[1],
+         vmax=fmri_masked[0].max(), vmin=fmri_masked[0].min(),
          display_mode='xz')
 
-# A reduced data can be create by taking the parcel-level average:
-# Note that, as many objects in the scikit-learn, the ward object exposes
-# a transform method that modifies input features. Here it reduces their
-# dimension
-fmri_reduced = ward.transform(fmri_masked)
-
-# Display the corresponding data compressed using the parcellation
-fmri_compressed = ward.inverse_transform(fmri_reduced)
-compressed_img = nifti_masker.inverse_transform(fmri_compressed[0])
-
-plot_epi(compressed_img, cut_coords=cut_coords,
+# Display the corresponding data compressed using the parcellation using
+# parcels=2000
+plot_epi(ward_labels_img, cut_coords=cut_coords,
          title='Compressed representation (2000 parcels)',
-         vmax=fmri_masked.max(), vmin=fmri_masked.min(),
          display_mode='xz')
 
 show()
