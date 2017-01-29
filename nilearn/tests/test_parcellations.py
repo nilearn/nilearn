@@ -4,6 +4,8 @@ Test the parcellations tools module
 import numpy as np
 import nibabel
 
+import sklearn
+from distutils.version import LooseVersion
 from nose.tools import assert_true, assert_equal
 from nilearn.parcellations import (Parcellations,
                                    _check_parameters_transform)
@@ -29,6 +31,11 @@ def test_errors_raised_in_check_parameters_fit():
                "'{0}'".format(invalid_method))
         assert_raises_regex(ValueError, msg, method_raise2.fit, img)
 
+    if LooseVersion(sklearn.__version__) < LooseVersion('0.15'):
+        for method in ['average', 'complete']:
+            parcellator = Parcellations(method=method)
+            np.testing.assert_raises(NotImplementedError, parcellator.fit, img)
+
 
 def test_parcellations_fit_on_single_nifti_image():
     # Test return attributes for each method
@@ -37,27 +44,32 @@ def test_parcellations_fit_on_single_nifti_image():
     data[4, 9, 3] = 2
     fmri_img = nibabel.Nifti1Image(data, affine=np.eye(4))
 
-    methods = ['kmeans', 'ward', 'complete', 'average']
-    n_parcels = [5, 10, 15]
-    for n_parcel, method in zip(n_parcels, methods):
-        parcellator = Parcellations(method=method, n_parcels=n_parcel)
-        parcellator.fit(fmri_img)
-        # Test that object returns attribute labels_
-        assert_true(parcellator.labels_ is not None)
-        # Test object returns attribute masker_
-        assert_true(parcellator.masker_ is not None)
-        assert_true(parcellator.mask_img_ is not None)
-        if method != 'kmeans':
-            # Test that object returns attribute connectivity_
-            # only for AgglomerativeClustering methods
-            assert_true(parcellator.connectivity_ is not None)
-        masker = parcellator.masker_
-        labels_img = masker.inverse_transform(parcellator.labels_)
-        # After inverse_transform, shape must match with original input
-        # data
-        assert_true(labels_img.shape, (data.shape[0],
-                                       data.shape[1],
-                                       data.shape[2]))
+    if LooseVersion(sklearn.__version__) >= LooseVersion('0.15'):
+        methods = ['kmeans', 'ward', 'complete', 'average']
+        n_parcels = [5, 10, 15]
+        for n_parcel, method in zip(n_parcels, methods):
+            parcellator = Parcellations(method=method, n_parcels=n_parcel)
+            parcellator.fit(fmri_img)
+            # Test that object returns attribute labels_
+            assert_true(parcellator.labels_ is not None)
+            # Test object returns attribute masker_
+            assert_true(parcellator.masker_ is not None)
+            assert_true(parcellator.mask_img_ is not None)
+            if method != 'kmeans':
+                # Test that object returns attribute connectivity_
+                # only for AgglomerativeClustering methods
+                assert_true(parcellator.connectivity_ is not None)
+            masker = parcellator.masker_
+            labels_img = masker.inverse_transform(parcellator.labels_)
+            # After inverse_transform, shape must match with original input
+            # data
+            assert_true(labels_img.shape, (data.shape[0],
+                                           data.shape[1],
+                                           data.shape[2]))
+    else:
+        parcellator2 = Parcellations(method='ward', n_parcels=10)
+        parcellator2.fit(fmri_img)
+        assert_true(parcellator2.labels_ is not None)
 
 
 def test_parcellations_fit_on_multi_nifti_images():
