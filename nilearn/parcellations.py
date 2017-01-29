@@ -2,15 +2,23 @@
 """
 
 import numpy as np
+from distutils.version import LooseVersion
 
+import sklearn
 from sklearn.base import clone
-from sklearn.cluster import MiniBatchKMeans, AgglomerativeClustering
+from sklearn.cluster import MiniBatchKMeans
 from sklearn.feature_extraction import image
 from sklearn.externals.joblib import Memory, delayed, Parallel
 
 from .decomposition.base import BaseDecomposition, mask_and_reduce
 from .input_data import NiftiMasker, MultiNiftiMasker, NiftiLabelsMasker
 from ._utils.compat import _basestring
+
+
+if LooseVersion(sklearn.__version__) >= LooseVersion('0.15'):
+    from sklearn.cluster import AgglomerativeClustering
+else:
+    from sklearn.cluster import Ward as AgglomerativeClustering
 
 
 def _estimator_fit(data, estimator):
