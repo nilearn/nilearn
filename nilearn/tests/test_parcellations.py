@@ -127,7 +127,7 @@ def test_parcellations_transform_single_nifti_image():
     else:
         parcellator2 = Parcellations(method='ward', n_parcels=parcels)
         parcellator2.fit(fmri_img)
-        signals2 = parcellator.transform(fmri_img)
+        signals2 = parcellator2.transform(fmri_img)
         assert_equal(signals[0].shape, (fmri_img.shape[3], parcels))
 
 
