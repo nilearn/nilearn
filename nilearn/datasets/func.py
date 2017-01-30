@@ -1673,24 +1673,31 @@ def fetch_megatrawls_netmats(dimensionality=100, timeseries='eigen_regression',
 
 
 def fetch_cobre(n_subjects=10, data_dir=None, url=None, verbose=1):
-    """Fetch COBRE datasets preprocessed using .... pipeline.
+    """Fetch COBRE datasets preprocessed using NIAK 0.17 under CentOS
+    version 6.3 with Octave version 4.0.2 and the Minc toolkit version 0.3.18.
 
-    Downloads and returns preprocessed resting state fMRI datasets, covariates
-    and phenotypic information such as demographic, clinical variables,
-    measure of frame displacement FD (an average FD for all the time
+    Downloads and returns COBRE preprocessed resting state fMRI datasets,
+    covariates and phenotypic information such as demographic, clinical
+    variables, measure of frame displacement FD (an average FD for all the time
     frames left after censoring).
 
     Each subject `fmri_XXXXXXX.nii.gz` is a 3D+t nifti volume (150 volumes).
+    WARNING: no confounds were actually regressed from the data, so it can be
+    done interactively by the user who will be able to explore different
+    analytical paths easily.
 
-    For each subject, there is `fmri_XXXXXXX.tsv files which contains
-    all the covariates that should to be regressed out of the functional data.
-    The description of each variable found in the covariate file such as motion
-    parameters, mean CSF signal, you can find in `keys_confounds.json`
+    For each subject, there is `fmri_XXXXXXX.tsv files which contains the
+    covariates such as motion parameters, mean CSF signal that should to be
+    regressed out of the functional data.
 
-    `keys_confounds.json`: a json file describing each variable found in the
-    files `fmri_XXXXXXX.tsv.gz`.It also
-    contains a list of time frames that have been removed from the time series
-    by censoring for high motion.
+    `keys_confounds.json`: a json file, that describes each variable mentioned
+    in the files `fmri_XXXXXXX.tsv.gz`.It also contains a list of time frames
+    that have been removed from the time series by censoring for high motion.
+
+    `phenotypic_data.tsv` contains the data of clinical variables that
+    explained in `keys_phenotypic_data.json`
+
+    `README.md`: a markdown (text) description of the release.
 
     NOTE: The number of time samples vary, as some samples have been removed
     if tagged with excessive motion. This means that data is already time
@@ -1723,19 +1730,22 @@ def fetch_cobre(n_subjects=10, data_dir=None, url=None, verbose=1):
 
         - 'func': string list
             Paths to Nifti images.
-        - 'con_files': string list
+        - 'confounds': string list
             Paths to .tsv files of each subject, confounds.
-        - 'phenotypic': ndarray
+        - 'phenotypic': numpy.recarray
             Contains data of clinical variables, sex, age, FD.
         - 'description': data description of the release and references.
-        - 'list_files': list of the files
-        - 'keys_confounds': description of the keys of the confounds data
-        - 'keys_phenotypic_data': description of the keys of the phenotypic data
+        - 'desc_con': str
+            description of the confounds variables
+        - 'desc_phenotypic': str
+            description of the phenotypic variables
+        - 'readme': str
+            description of the release
 
     Notes
     -----
     More information about datasets structure, See:
-    https://figshare.com/articles/COBRE_preprocessed_with_NIAK_0_12_4/1160600
+    https://figshare.com/articles/COBRE_preprocessed_with_NIAK_0_17_-_lightweight_release/4197885
     """
     if url is None:
         # Here we use the file that provides URL for all others
@@ -1790,8 +1800,10 @@ def fetch_cobre(n_subjects=10, data_dir=None, url=None, verbose=1):
     n_ct = np.floor(float(n_subjects) / max_subjects * ct_count)
 
     # First, restrict the csv files to the adequate number of subjects
-    sz_ids = csv_array_phen[csv_array_phen['subject_type'] == 'Patient']['id'][:n_sz]
-    ct_ids = csv_array_phen[csv_array_phen['subject_type'] == 'Control']['id'][:n_ct]
+    sz_ids = csv_array_phen[csv_array_phen['subject_type'] ==
+                            'Patient']['id'][:n_sz]
+    ct_ids = csv_array_phen[csv_array_phen['subject_type'] ==
+                            'Control']['id'][:n_ct]
     ids = np.hstack([sz_ids, ct_ids])
     csv_array_phen = csv_array_phen[np.in1d(csv_array_phen['id'], ids)]
 
@@ -1808,8 +1820,9 @@ def fetch_cobre(n_subjects=10, data_dir=None, url=None, verbose=1):
             data_dir,
             [(f, files[f]['download_url'], {'md5': files[f].get('md5', None),
                                            'move': f}),
-             (c, files[c_gz]['download_url'], {'md5': files[c_gz].get('md5', None),
-                                           'move': c_gz, 'uncompress': True})
+             (c, files[c_gz]['download_url'],
+              {'md5': files[c_gz].get('md5', None),
+               'move': c_gz, 'uncompress': True})
              ],
             verbose=verbose)
         func.append(f)
