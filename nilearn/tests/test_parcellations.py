@@ -114,13 +114,20 @@ def test_parcellations_transform_single_nifti_image():
 
     fmri_img = nibabel.Nifti1Image(data, affine=np.eye(4))
 
-    for method in ['kmeans', 'ward', 'complete', 'average']:
-        parcellator = Parcellations(method=method, n_parcels=parcels)
-        parcellator.fit(fmri_img)
-        # transform to signals
-        signals = parcellator.transform(fmri_img)
-        # Test if the signals extracted are of same shape as inputs
-        # Here, we take index 0 since we return list even for single subject
+    if LooseVersion(sklearn.__version__) >= LooseVersion('0.15'):
+        for method in ['kmeans', 'ward', 'complete', 'average']:
+            parcellator = Parcellations(method=method, n_parcels=parcels)
+            parcellator.fit(fmri_img)
+            # transform to signals
+            signals = parcellator.transform(fmri_img)
+            # Test if the signals extracted are of same shape as inputs
+            # Here, we take index 0 since we return list even for single
+            # subject
+            assert_equal(signals[0].shape, (fmri_img.shape[3], parcels))
+    else:
+        parcellator2 = Parcellations(method='ward', n_parcels=parcels)
+        parcellator2.fit(fmri_img)
+        signals2 = parcellator.transform(fmri_img)
         assert_equal(signals[0].shape, (fmri_img.shape[3], parcels))
 
 
@@ -133,17 +140,18 @@ def test_parcellations_transform_multi_nifti_images():
     fmri_img = nibabel.Nifti1Image(data, affine=np.eye(4))
     fmri_imgs = [fmri_img, fmri_img, fmri_img]
 
-    for method in ['kmeans', 'ward', 'complete', 'average']:
-        parcellator = Parcellations(method=method, n_parcels=parcels)
-        parcellator.fit(fmri_imgs)
-        # transform multi images to signals. In return, we have length
-        # equal to the number of images
-        signals = parcellator.transform(fmri_imgs)
-        assert_equal(signals[0].shape, (fmri_img.shape[3], parcels))
-        assert_equal(signals[1].shape, (fmri_img.shape[3], parcels))
-        assert_equal(signals[2].shape, (fmri_img.shape[3], parcels))
+    if LooseVersion(sklearn.__version__) >= LooseVersion('0.15'):
+        for method in ['kmeans', 'ward', 'complete', 'average']:
+            parcellator = Parcellations(method=method, n_parcels=parcels)
+            parcellator.fit(fmri_imgs)
+            # transform multi images to signals. In return, we have length
+            # equal to the number of images
+            signals = parcellator.transform(fmri_imgs)
+            assert_equal(signals[0].shape, (fmri_img.shape[3], parcels))
+            assert_equal(signals[1].shape, (fmri_img.shape[3], parcels))
+            assert_equal(signals[2].shape, (fmri_img.shape[3], parcels))
 
-        assert_equal(len(signals), len(fmri_imgs))
+            assert_equal(len(signals), len(fmri_imgs))
 
 
 def test_check_parameters_transform():
@@ -190,11 +198,13 @@ def test_parcellations_transform_with_multi_confounds_multi_images():
     confounds = rng.randn(*(10, 3))
     confounds_list = (confounds, confounds, confounds)
 
-    for method in ['kmeans', 'ward', 'complete', 'average']:
-        parcellator = Parcellations(method=method, n_parcels=5)
-        parcellator.fit(fmri_imgs)
+    if LooseVersion(sklearn.__version__) >= LooseVersion('0.15'):
+        for method in ['kmeans', 'ward', 'complete', 'average']:
+            parcellator = Parcellations(method=method, n_parcels=5)
+            parcellator.fit(fmri_imgs)
 
-        signals = parcellator.transform(fmri_imgs, confounds=confounds_list)
+            signals = parcellator.transform(fmri_imgs,
+                                            confounds=confounds_list)
 
 
 def test_fit_transform():
@@ -209,13 +219,14 @@ def test_fit_transform():
     confounds = rng.randn(*(10, 3))
     confounds_list = [confounds, confounds, confounds]
 
-    for method in ['kmeans', 'ward', 'complete', 'average']:
-        parcellator = Parcellations(method=method, n_parcels=5)
-        signals = parcellator.fit_transform(fmri_imgs)
-        assert_true(parcellator.labels_ is not None)
-        if method != 'kmeans':
-            assert_true(parcellator.connectivity_ is not None)
-        assert_true(parcellator.masker_ is not None)
-        # fit_transform with confounds
-        signals = parcellator.fit_transform(fmri_imgs,
-                                            confounds=confounds_list)
+    if LooseVersion(sklearn.__version__) >= LooseVersion('0.15'):
+        for method in ['kmeans', 'ward', 'complete', 'average']:
+            parcellator = Parcellations(method=method, n_parcels=5)
+            signals = parcellator.fit_transform(fmri_imgs)
+            assert_true(parcellator.labels_ is not None)
+            if method != 'kmeans':
+                assert_true(parcellator.connectivity_ is not None)
+            assert_true(parcellator.masker_ is not None)
+            # fit_transform with confounds
+            signals = parcellator.fit_transform(fmri_imgs,
+                                                confounds=confounds_list)
