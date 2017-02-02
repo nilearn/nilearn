@@ -8,9 +8,6 @@ from .base_msdl import BaseMSDLModel
 from parietal.learn.proximal.prox_tv_l1 import prox_tv_l1, tv_l1_from_gradient, gradient_id
 
 
-
-
-
 def _prox_tvl1(v_group, mask, l1_ratio, options):
     # Unmask the image
     img = np.zeros(mask.shape)
@@ -100,7 +97,7 @@ class TVMSDL(BaseMSDLModel):
                       l1_ratio, positive, adaptive_dgap,
                       n_jobs, verbose)
 
-        super(BaseMSDLModel, self).__init__(
+        super(TVMSDL, self).__init__(
             n_components,
             prox,
             mask,
