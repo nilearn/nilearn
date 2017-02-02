@@ -96,8 +96,8 @@ def test_load_surf_data_file_error():
         filename_wrong = tempfile.mktemp(suffix=suff)
         np.savetxt(filename_wrong, data)
         assert_raises_regex(ValueError,
-                            'input type is not recognized. %r was given'
-                            % filename_wrong, load_surf_data, filename_wrong)
+                            'input type is not recognized',
+                            load_surf_data, filename_wrong)
         os.remove(filename_wrong)
 
 
@@ -175,6 +175,6 @@ def test_load_surf_mesh_file_error():
         filename_wrong = tempfile.mktemp(suffix=suff)
         nb.freesurfer.write_geometry(filename_wrong, mesh[0], mesh[1])
         assert_raises_regex(ValueError,
-                            'input type is not recognized. %r was given'
-                            % filename_wrong, load_surf_data, filename_wrong)
+                            'input type is not recognized',
+                            load_surf_data, filename_wrong)
         os.remove(filename_wrong)
