@@ -417,3 +417,11 @@ def test_fetch_atlas_allen_2011():
         assert_equal(bunch[key], os.path.join(tst.tmpdir, 'allen_rsn_2011', fn))
 
     assert_not_equal(bunch.description, '')
+
+
+def test_fetch_atlas_surf_destrieux():
+    bunch = atlas.fetch_atlas_surf_destrieux()
+    assert_equal(len(bunch.labels), 76)
+    assert_equal(bunch.map_left.shape, (10242,))
+    assert_equal(bunch.map_right.shape, (10242,))
+    assert_not_equal(bunch.description, '')
