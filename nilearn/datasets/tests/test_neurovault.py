@@ -117,9 +117,6 @@ _EXAMPLE_COL_META = {
     "smoothing_fwhm": None}
 
 
-neurovault.set_logging_level(neurovault.logging.DEBUG)
-
-
 class _TemporaryDirectory(object):
 
     def __enter__(self):

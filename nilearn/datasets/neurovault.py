@@ -5,8 +5,8 @@ Download statistical maps available on Neurovault (http://neurovault.org).
 # License: simplified BSD
 
 import os
-import logging
 import warnings
+import traceback
 from copy import copy, deepcopy
 import shutil
 import re
@@ -19,7 +19,6 @@ try:
 except ImportError:
     # using python2.6
     OrderedDict = dict
-import traceback
 try:
     # python3
     from urllib.parse import urljoin, urlencode
@@ -49,58 +48,24 @@ _IM_FILTERS_AVAILABLE_ON_SERVER = tuple()
 
 _DEFAULT_BATCH_SIZE = 100
 
+_DEBUG = 3
+_INFO = 2
+_WARNING = 1
+_ERROR = 0
+
 
 class MaxImagesReached(StopIteration):
     """Exception class to signify enough images have been fetched."""
     pass
 
 
-def prepare_logging(level=logging.DEBUG):
-    """Get the root logger.
-
-    Parameters
-    ----------
-    level : int, optional (default=logging.DEBUG)
-        Level of the handler that is added if none exist.
-        this handler streams output to the console.
-
-    Returns
-    -------
-    logging.RootLogger
-        The root logger.
-
-    """
-    logger = logging.getLogger()
-    if logger.handlers:
-        return logger
-    logger.propagate = False
-    logger.setLevel(logging.DEBUG)
-    return logger
-
-
-_logger = prepare_logging(level=logging.INFO)
-
-
-def add_logging_to_console(level=logging.DEBUG):
-    console_logger = logging.StreamHandler()
-    console_logger.setLevel(level)
-    formatter = logging.Formatter('%(message)s')
-    console_logger.setFormatter(formatter)
-    _logger.addHandler(console_logger)
-
-
-def add_log_file(file_name, level=logging.DEBUG):
-    file_logger = logging.FileHandler(file_name)
-    file_logger.setLevel(level)
-    formatter = logging.Formatter('%(asctime)s: %(message)s')
-    file_logger.setFormatter(formatter)
-    _logger.addHandler(file_logger)
-
-
-def set_logging_level(level=logging.INFO):
-    for handler in _logger.handlers:
-        handler.setLevel(level)
-
+def _print_if(message, level, threshold_level,
+            with_traceback=False):
+    if(level < threshold_level):
+        return
+    print(message)
+    if(with_traceback):
+        traceback.print_exc()
 
 
 def _append_filters_to_query(query, filters):
@@ -175,7 +140,7 @@ def _get_encoding(resp):
     return match.group(1)
 
 
-def _get_batch(query, prefix_msg='', timeout=10.):
+def _get_batch(query, prefix_msg='', timeout=10., verbose=3):
     """Given an URL, get the HTTP response and transform it to python dict.
 
     The URL is used to send an HTTP GET request and the response is
@@ -191,6 +156,9 @@ def _get_batch(query, prefix_msg='', timeout=10.):
 
     timeout : float
         Timeout in seconds.
+
+    verbose : int
+        an integer in [0, 1, 2, 3] to control the verbosity level.
 
     Returns
     -------
@@ -215,21 +183,22 @@ def _get_batch(query, prefix_msg='', timeout=10.):
     request = Request(query)
     request.add_header('Connection', 'Keep-Alive')
     opener = build_opener()
-    _logger.debug('{0}getting new batch: {1}'.format(
-        prefix_msg, query))
+    _print_if('{0}getting new batch: {1}'.format(
+        prefix_msg, query), _DEBUG, verbose)
     try:
         resp = opener.open(request, timeout=timeout)
 
     except Exception:
-        _logger.exception(
-            'Could not download batch from {0}'.format(query))
+        _print_if('Could not download batch from {0}'.format(query),
+                 _ERROR, verbose, with_traceback=True)
         raise
     try:
         encoding = _get_encoding(resp)
         content = resp.read()
         batch = json.loads(content.decode(encoding))
     except(URLError, ValueError):
-        _logger.exception('Could not decypher batch from {0}'.format(query))
+        _print_if('Could not decypher batch from {0}'.format(query),
+                 _ERROR, verbose, with_traceback=True)
         raise
     finally:
         resp.close()
@@ -239,7 +208,7 @@ def _get_batch(query, prefix_msg='', timeout=10.):
         if batch.get(key) is None:
             msg = ('Could not find required key "{0}" '
                    'in batch retrieved from {1}'.format(key, query))
-            _logger.error(msg)
+            _print_if(msg, _ERROR, verbose)
             raise ValueError(msg)
 
     return batch
@@ -247,7 +216,7 @@ def _get_batch(query, prefix_msg='', timeout=10.):
 
 def _scroll_server_results(url, local_filter=_empty_filter,
                            query_terms=None, max_results=None,
-                           batch_size=None, prefix_msg=''):
+                           batch_size=None, prefix_msg='', verbose=3):
     """Download list of metadata from Neurovault.
 
     Parameters
@@ -276,6 +245,9 @@ def _scroll_server_results(url, local_filter=_empty_filter,
     prefix_msg: str, optional (default='')
         Prefix for all log messages.
 
+    verbose : int
+        an integer in [0, 1, 2, 3] to control the verbosity level.
+
     Yields
     ------
     result : dict
@@ -299,7 +271,8 @@ def _scroll_server_results(url, local_filter=_empty_filter,
         batch = _get_batch(new_query, prefix_msg)
         batch_size = len(batch['results'])
         downloaded += batch_size
-        _logger.debug('{0}batch size: {1}'.format(prefix_msg, batch_size))
+        _print_if('{0}batch size: {1}'.format(prefix_msg, batch_size),
+                 _DEBUG, verbose)
         if n_available is None:
             n_available = batch['count']
             max_results = (n_available if max_results is None
@@ -1005,7 +978,7 @@ class ResultFilter(object):
         return self.__class__.__name__
 
 
-def _simple_download(url, target_file, temp_dir):
+def _simple_download(url, target_file, temp_dir, verbose=3):
     """Wrapper around ``utils._fetch_file``.
 
     This allows specifying the target file name.
@@ -1020,6 +993,9 @@ def _simple_download(url, target_file, temp_dir):
 
     temp_dir : str
         Location of sandbox directory used by ``_fetch_file``.
+
+    verbose : int
+        an integer in [0, 1, 2, 3] to control the verbosity level.
 
     Returns
     -------
@@ -1045,12 +1021,13 @@ def _simple_download(url, target_file, temp_dir):
 
     """
     print('Downloading file {} to {}'.format(url, target_file))
-    _logger.debug('Downloading file: {0}'.format(url))
+    _print_if('Downloading file: {0}'.format(url), _DEBUG, verbose)
     try:
         downloaded = _fetch_file(url, temp_dir, resume=False,
                                  overwrite=True, verbose=0)
     except Exception as e:
-        _logger.error('Problem downloading file from {0}'.format(url))
+        _print_if('Problem downloading file from {0}'.format(url),
+                 _ERROR, verbose)
 
         # reason is a property of urlib.error.HTTPError objects,
         # but these objects don't have a setter for it, so
@@ -1063,102 +1040,10 @@ def _simple_download(url, target_file, temp_dir):
                     traceback.format_exc()))
         raise
     shutil.move(downloaded, target_file)
-    _logger.debug(
-        'Download succeeded, downloaded to: {0}'.format(target_file))
+    _print_if(
+        'Download succeeded, downloaded to: {0}'.format(target_file),
+        _DEBUG, verbose)
     return target_file
-
-
-# def _checked_get_dataset_dir(dataset_name, suggested_dir=None,
-#                              write_required=False):
-#     """Wrapper for ``_get_dataset_dir``.
-#
-#     Expands . and ~ and checks write access.
-#
-#     Parameters
-#     ----------
-#     dataset_name : str
-#         Passed to ``_get_dataset_dir``. Example: ``neurovault``.
-#
-#     suggested_dir : str
-#         Desired location of root data directory for all datasets,
-#         e.g. ``~/home/nilearn_data``.
-#
-#     write_required : bool, optional (default=False)
-#         If ``True``, check that the user has write access to the
-#         chosen data directory and raise ``IOError`` if not.  If
-#         ``False``, don't check for write permission.
-#
-#     Returns
-#     -------
-#     dataset_dir : str
-#         The location of the dataset directory in the filesystem.
-#
-#     Raises
-#     ------
-#     IOError
-#         If `write_required` is set and the user doesn't have write
-#         access to `dataset_dir`.
-#
-#     See Also
-#     --------
-#     nilearns.datasets._utils._get_dataset_dir
-#
-#     """
-#     if suggested_dir is not None:
-#         suggested_dir = os.path.abspath(os.path.expanduser(suggested_dir))
-#     dataset_dir = _get_dataset_dir(dataset_name, data_dir=suggested_dir)
-#     if not write_required:
-#         return dataset_dir
-#     if not os.access(dataset_dir, os.W_OK):
-#         raise IOError('Permission denied: {0}'.format(dataset_dir))
-#     return dataset_dir
-#
-#
-# def neurovault_directory(suggested_dir=None):
-#     """Return path to neurovault directory on filesystem."""
-#     if getattr(neurovault_directory, 'directory_path_', None) is not None:
-#         return neurovault_directory.directory_path_
-#
-#     _logger.debug('Looking for Neurovault directory.')
-#     if suggested_dir is None:
-#         root_data_dir, dataset_name = None, 'neurovault'
-#     else:
-#         suggested_path = suggested_dir.split(os.path.sep)
-#         dataset_name = suggested_path[-1]
-#         root_data_dir = os.path.sep.join(suggested_path[:-1])
-#     neurovault_directory.directory_path_ = _checked_get_dataset_dir(
-#         dataset_name, root_data_dir)
-#     assert(neurovault_directory.directory_path_ is not None)
-#     _logger.debug('Found Neurovault directory in {0}'.format(
-#         neurovault_directory.directory_path_))
-#     return neurovault_directory.directory_path_
-#
-#
-# def set_neurovault_directory(new_neurovault_dir=None):
-#     """Set the default neurovault directory to a new location.
-#
-#     Parameters
-#     ----------
-#     new_neurovault_dir : str, optional (default=None)
-#         Suggested path for neurovault directory.
-#         The default value ``None`` means reset neurovault directory
-#         path to its default value.
-#
-#     Returns
-#     -------
-#
-#     neurovault_directory.directory_path_ : str
-#         The new neurovault directory used by default by all functions.
-#
-#     See Also
-#     --------
-#     nilearn.datasets.neurovault.neurovault_directory
-#
-#     """
-#     _logger.debug('Set neurovault directory: {0}...'.format(
-#         new_neurovault_dir))
-#     neurovault_directory.directory_path_ = None
-#     return neurovault_directory(new_neurovault_dir)
 
 
 def _get_temp_dir(suggested_dir=None):
@@ -1197,7 +1082,7 @@ def _fetch_neurosynth_words(image_id, target_file, temp_dir):
     _simple_download(query, target_file, temp_dir)
 
 
-def neurosynth_words_vectorized(word_files, **kwargs):
+def neurosynth_words_vectorized(word_files, verbose=3, **kwargs):
     """Load Neurosynth data from disk into an (n files, voc size) matrix
 
     Neurosynth data is saved on disk as ``{word: weight}``
@@ -1210,6 +1095,9 @@ def neurosynth_words_vectorized(word_files, **kwargs):
         The paths to the files from which to read word weights (each
         is supposed to contain the Neurosynth response for a
         particular image).
+
+    verbose : int
+        an integer in [0, 1, 2, 3] to control the verbosity level.
 
     Keyword arguments are passed on to
     ``sklearn.feature_extraction.DictVectorizer``.
@@ -1232,7 +1120,7 @@ def neurosynth_words_vectorized(word_files, **kwargs):
     sklearn.feature_extraction.DictVectorizer
 
     """
-    _logger.info('Computing word features.')
+    _print_if('Computing word features.', _INFO, verbose)
     words = []
     voc_empty = True
     for file_name in word_files:
@@ -1243,19 +1131,20 @@ def neurosynth_words_vectorized(word_files, **kwargs):
                 if info['data']['values'] != {}:
                     voc_empty = False
         except Exception:
-            _logger.warning(
+            _print_if(
                 'Could not load words from file {0}; error: {1}'.format(
-                    file_name, traceback.format_exc()))
+                    file_name, traceback.format_exc()),
+                _ERROR, verbose)
             words.append({})
     if voc_empty:
-        _logger.warning('No word weight could be loaded, '
-                        'vectorizing Neurosynth words failed.')
+        _print_if('No word weight could be loaded, '
+                  'vectorizing Neurosynth words failed.', _WARNING, verbose)
         return None, None
     vectorizer = DictVectorizer(**kwargs)
     frequencies = vectorizer.fit_transform(words).toarray()
     vocabulary = np.asarray(vectorizer.feature_names_)
-    _logger.info('Computing word features done; vocabulary size: {0}'.format(
-        vocabulary.size))
+    _print_if('Computing word features done; vocabulary size: {0}'.format(
+        vocabulary.size), _INFO, verbose)
     return frequencies, vocabulary
 
 
@@ -1491,10 +1380,14 @@ class DownloadManager(BaseDownloadManager):
         retrieved. The default value keeps the image anyway and
         does not raise an error.
 
+    verbose : int
+        an integer in [0, 1, 2, 3] to control the verbosity level.
+
     """
     def __init__(self, neurovault_data_dir=None, temp_dir=None,
                  fetch_neurosynth_words=False, fetch_reduced_rep=True,
-                 max_images=100, neurosynth_error_handler=_tolerate_failure):
+                 max_images=100, neurosynth_error_handler=_tolerate_failure,
+                verbose=3):
 
         super(DownloadManager, self).__init__(
             neurovault_data_dir=neurovault_data_dir, max_images=max_images)
@@ -1503,6 +1396,7 @@ class DownloadManager(BaseDownloadManager):
         self.fetch_ns_ = fetch_neurosynth_words
         self.fetch_reduced_rep_ = fetch_reduced_rep
         self.neurosynth_error_handler_ = neurosynth_error_handler
+        self.verbose = verbose
 
     def _collection_hook(self, collection_info):
         """Create collection subdir and store metadata.
@@ -1572,9 +1466,10 @@ class DownloadManager(BaseDownloadManager):
                     image_info['id'],
                     ns_words_absolute_path, self.temp_dir_)
             except(URLError, ValueError) as e:
-                _logger.exception(
+                _print_if(
                     'Could not fetch words for image {0}'.format(
-                        image_info['id']))
+                        image_info['id']), _ERROR, self.verbose,
+                    with_traceback=True)
                 self.neurosynth_error_handler_(e)
                 return
         image_info[
@@ -1647,9 +1542,10 @@ class DownloadManager(BaseDownloadManager):
         print('Already fetched {0:6<} image{1}'.format(
             self.already_downloaded_ + 1,
             ('s' if self.already_downloaded_ + 1 > 1 else '')))
-        _logger.info('Already fetched {0} image{1}.'.format(
+        _print_if('Already fetched {0} image{1}.'.format(
             self.already_downloaded_ + 1,
-            ('s' if self.already_downloaded_ + 1 > 1 else '')))
+            ('s' if self.already_downloaded_ + 1 > 1 else '')),
+            _INFO, self.verbose)
         return image_info
 
     def update_image(self, image_info):
@@ -1814,6 +1710,9 @@ class _DataScroller(object):
         of the batches to ask for. If ``None``, the default
         ``_DEFAULT_BATCH_SIZE`` will be used.
 
+    verbose : int
+        an integer in [0, 1, 2, 3] to control the verbosity level.
+
     """
     def __init__(self, data_dir, download_mode='download_new',
                  collection_terms=None, collection_filter=_empty_filter,
@@ -1821,7 +1720,8 @@ class _DataScroller(object):
                  wanted_collection_ids=None, wanted_image_ids=None,
                  download_manager=None, max_images=None,
                  max_consecutive_fails=10, max_fails_in_collection=5,
-                 batch_size=None):
+                 batch_size=None, verbose=3):
+        self.verbose = verbose
         download_mode = download_mode.lower()
         if download_mode not in ['overwrite', 'download_new', 'offline']:
             raise ValueError(
@@ -1896,9 +1796,10 @@ class _DataScroller(object):
     def _failed_download(self):
         self.consecutive_fails_ += 1
         if self.consecutive_fails_ == self.max_consecutive_fails_:
-            _logger.error('Too many failed downloads: {}; '
+            _print_if('Too many failed downloads: {}; '
                           'stop scrolling remote data.'.format(
-                              self.consecutive_fails_))
+                              self.consecutive_fails_),
+                     _ERROR, self.verbose)
             raise RuntimeError(
                 '{0} consecutive bad downloads'.format(
                     self.consecutive_fails_))
@@ -1951,20 +1852,23 @@ class _DataScroller(object):
                 break
             except Exception:
                 fails_in_collection += 1
-                _logger.exception(
-                    '_scroll_collection: bad image: {0}'.format(image))
+                _print_if(
+                    '_scroll_collection: bad image: {0}'.format(image),
+                _ERROR, self.verbose, with_traceback=True)
                 self._failed_download()
             if fails_in_collection == self.max_fails_in_collection_:
-                _logger.error('Too many bad images in collection {0}:  '
+                _print_if('Too many bad images in collection {0}:  '
                               '{1} bad images.'.format(
-                                  collection['id'], fails_in_collection))
+                                  collection['id'], fails_in_collection),
+                         _ERROR, self.verbose)
                 return
 
-        _logger.info(
+        _print_if(
             'On neurovault.org: '
             '{0} image{1} matched query in collection {2}'.format(
                 (n_im_in_collection if n_im_in_collection else 'no'),
-                ('s' if n_im_in_collection > 1 else ''), collection['id']))
+                ('s' if n_im_in_collection > 1 else ''), collection['id']),
+        _INFO, self.verbose)
 
     @_managed_method()
     def _scroll_explicit(self):
@@ -1996,7 +1900,8 @@ class _DataScroller(object):
             col_id not in self.visited_collections_]
 
         if(collection_urls):
-            _logger.debug('Reading server neurovault data.')
+            _print_if('Reading server neurovault data.',
+                     _DEBUG, self.verbose)
 
         for collection in _yield_from_url_list(collection_urls):
             collection = self.download_manager_.collection(collection)
@@ -2036,7 +1941,8 @@ class _DataScroller(object):
             failed in a row.
 
         """
-        _logger.debug('Reading server neurovault data.')
+        _print_if('Reading server neurovault data.',
+                 _DEBUG, self.verbose)
 
         collections = _scroll_server_results(
             _NEUROVAULT_COLLECTIONS_URL, query_terms=self.collection_terms_,
@@ -2054,8 +1960,8 @@ class _DataScroller(object):
             except StopIteration:
                 break
             except Exception:
-                _logger.exception('scroll: bad collection: {0}'.format(
-                    collection))
+                _print_if('scroll: bad collection: {0}'.format(
+                    collection), _ERROR, self.verbose, with_traceback=True)
                 self._failed_download()
                 good_collection = False
 
@@ -2071,8 +1977,7 @@ class _DataScroller(object):
 
     @_managed_method()
     def _scroll_local(self):
-        _logger.debug('Reading local neurovault data.')
-        print('Reading local neurovault data.')
+        _print_if('Reading local neurovault data.', _DEBUG, self.verbose)
         collections = glob(
             os.path.join(
                 self.neurovault_dir_, '*', 'collection_metadata.json'))
@@ -2103,10 +2008,9 @@ class _DataScroller(object):
                 self.image_filter_)
 
         found = len(self.visited_images_)
-        print('{0} image{1} found on local disk.'.format(
-            ('No' if not found else found), ('s' if found > 1 else '')))
-        _logger.debug('{0} image{1} found on local disk.'.format(
-            ('No' if not found else found), ('s' if found > 1 else '')))
+        _print_if('{0} image{1} found on local disk.'.format(
+            ('No' if not found else found), ('s' if found > 1 else '')),
+        _DEBUG, self.verbose)
 
     def scroll(self):
         """Iterate over neurovault.org content.
@@ -2153,8 +2057,9 @@ class _DataScroller(object):
             except StopIteration:
                 return
             except Exception:
-                _logger.exception(
-                    'Downloading data from server stopped early.')
+                _print_if(
+                    'Downloading data from server stopped early.',
+                _ERROR, self.verbose, with_traceback=True)
                 warnings.warn(
                     'Downloading data from Neurovault stopped early.')
                 return
@@ -2242,15 +2147,17 @@ def _fetch_neurovault_impl(
         collection_ids=None, image_ids=None,
         mode='download_new', data_dir=None,
         fetch_neurosynth_words=False, fetch_reduced_rep=False,
-        download_manager=None, vectorize_words=True, **kwarg_image_filters):
+        download_manager=None, vectorize_words=True, verbose=3,
+        **kwarg_image_filters):
     """Download data from neurovault.org and neurosynth.org."""
 
     if collection_ids is not None or image_ids is not None:
         max_images = None
     if max_images == 100:
-        _logger.info(
+        _print_if(
             'fetch_neurovault: using default value of 100 for max_images. '
-            'Set max_images to another value or None if you want more images.')
+            'Set max_images to another value or None if you want more images.',
+        _INFO, verbose)
     collection_terms = dict(collection_terms)
     image_terms = dict(image_terms, **kwarg_image_filters)
     image_terms, collection_terms = _move_col_id(image_terms, collection_terms)
