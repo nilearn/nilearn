@@ -227,7 +227,7 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
             raise ValueError('view must be one of lateral, medial, '
                              'dorsal or ventral')
     else:
-        raise ValueError('hemi must be one of rght or left')
+        raise ValueError('hemi must be one of right or left')
 
     # set alpha if in auto mode
     if alpha == 'auto':
@@ -467,13 +467,23 @@ def plot_surf_roi(surf_mesh, roi_map, bg_map=None,
         for arr in roi_list:
             roi_map[arr] = idx
             idx += 1
-    else:
+
+    elif isinstance(roi_map, np.ndarray):
         # if roi_map is an array with values for all surface nodes
         roi_data = load_surf_data(roi_map)
         # or a single array with indices for a single roi
         if roi_data.shape[0] != v.shape[0]:
             roi_map = np.zeros(v.shape[0])
             roi_map[roi_data] = 1
+
+    else:
+        raise ValueError('Invalid input for roi_map. Input can be a file '
+                         '(valid formats are .gii, .mgz, .nii, '
+                         '.nii.gz, or Freesurfer specific files such as '
+                         '.annot or .label), or a Numpy array containing a '
+                         'value for each vertex, or a list of Numpy arrays, '
+                         'one array per ROI which contains indices of all '
+                         'vertices included in that ROI')
 
     display = plot_surf(surf_mesh, surf_map=roi_map, bg_map=bg_map,
                         hemi=hemi, view=view, avg_method='median',
