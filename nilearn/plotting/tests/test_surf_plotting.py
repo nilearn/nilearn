@@ -2,11 +2,14 @@ import numpy as np
 import nibabel as nb
 import tempfile
 import os
+import matplotlib.pyplot as plt
 from nose.tools import assert_true, assert_false
 from numpy.testing import assert_array_equal, assert_array_almost_equal, \
                           assert_equal
 from nilearn._utils.testing import assert_raises_regex
-from nilearn.plotting.surf_plotting import load_surf_data, load_surf_mesh
+from nilearn.plotting.surf_plotting import load_surf_data, load_surf_mesh, \
+                                           plot_surf, plot_surf_stat_map, \
+                                           plot_surf_roi
 
 currdir = os.path.dirname(os.path.abspath(__file__))
 datadir = os.path.join(currdir, 'data')
@@ -178,3 +181,133 @@ def test_load_surf_mesh_file_error():
                             'input type is not recognized',
                             load_surf_data, filename_wrong)
         os.remove(filename_wrong)
+
+
+def test_plot_surf():
+    mesh = _generate_surf()
+    bg = np.random.randn(mesh[0].shape[0],)
+
+    # Plot mesh only
+    plot_surf(mesh)
+
+    # Plot mesh with background
+    plot_surf(mesh, bg_map=bg)
+    plot_surf(mesh, bg_map=bg, darkness=0.5)
+    plot_surf(mesh, bg_map=bg, alpha=0.5)
+
+    # Plot different views
+    plot_surf(mesh, bg_map=bg, hemi='right')
+    plot_surf(mesh, bg_map=bg, view='medial')
+    plot_surf(mesh, bg_map=bg, hemi='right', view='medial')
+
+    # Save execution time and memory
+    plt.close()
+
+
+def test_plot_surf_error():
+    mesh = _generate_surf()
+    bg = np.random.randn(mesh[0].shape[0],)
+
+    # Wrong inputs for view or hemi
+    assert_raises_regex(ValueError, 'view must be one of',
+                        plot_surf, mesh, view='middle')
+    assert_raises_regex(ValueError, 'hemi must be one of',
+                        plot_surf, mesh, hemi='lft')
+
+    # Wrong size of background image
+    assert_raises_regex(ValueError,
+                        'bg_map does not have the same number of vertices',
+                        plot_surf, mesh,
+                        bg_map=np.random.randn(mesh[0].shape[0]-1,))
+
+    # Wrong size of surface data
+    assert_raises_regex(ValueError,
+                        'surf_map does not have the same number of vertices',
+                        plot_surf, mesh,
+                        surf_map=np.random.random(mesh[0].shape[0]+1,))
+
+    assert_raises_regex(ValueError,
+                        'surf_map can only have one dimension', plot_surf,
+                        mesh, surf_map=np.random.random((mesh[0].shape[0], 2)))
+
+
+def test_plot_surf_stat_map():
+    mesh = _generate_surf()
+    bg = np.random.randn(mesh[0].shape[0],)
+    data = 10*np.random.randn(mesh[0].shape[0],)
+
+    # Plot mesh with stat map
+    plot_surf_stat_map(mesh, stat_map=data)
+    plot_surf_stat_map(mesh, stat_map=data, alpha=1)
+
+    # Plot mesh with background and stat map
+    plot_surf_stat_map(mesh, stat_map=data, bg_map=bg)
+    plot_surf_stat_map(mesh, stat_map=data, bg_map=bg,
+                       bg_on_stat=True, darkness=0.5)
+
+    # Apply threshold
+    plot_surf_stat_map(mesh, stat_map=data, bg_map=bg,
+                       bg_on_stat=True, darkness=0.5,
+                       threshold=0.3)
+
+    # Change vmax
+    plot_surf_stat_map(mesh, stat_map=data, vmax=5)
+
+    # Change colormap
+    plot_surf_stat_map(mesh, stat_map=data, cmap='cubehelix')
+
+    # Save execution time and memory
+    plt.close()
+
+
+def test_plot_surf_stat_map_error():
+    mesh = _generate_surf()
+    bg = np.random.randn(mesh[0].shape[0],)
+    data = 10*np.random.randn(mesh[0].shape[0],)
+
+    # Try to input vmin
+    assert_raises_regex(ValueError,
+                        'this function does not accept a "vmin" argument',
+                        plot_surf_stat_map, mesh, stat_map=data, vmin=0)
+
+    # Wrong size of stat map data
+    assert_raises_regex(ValueError,
+                        'surf_map does not have the same number of vertices',
+                        plot_surf_stat_map, mesh,
+                        stat_map=np.hstack((data, data)))
+
+    assert_raises_regex(ValueError,
+                        'surf_map can only have one dimension',
+                        plot_surf_stat_map, mesh,
+                        stat_map=np.vstack((data, data)).T)
+
+
+def test_plot_surf_roi():
+    mesh = _generate_surf()
+    roi1 = np.random.randint(0, mesh[0].shape[0], size=5)
+    roi2 = np.random.randint(0, mesh[0].shape[0], size=10)
+    parcellation = np.random.random(mesh[0].shape[0])
+
+    # plot roi
+    plot_surf_roi(mesh, roi_map=roi1)
+
+    # plot parcellation
+    plot_surf_roi(mesh, roi_map=parcellation)
+
+    # plot roi list
+    plot_surf_roi(mesh, roi_map=[roi1, roi2])
+
+    # Save execution time and memory
+    plt.close()
+
+
+def test_plot_surf_roi_error():
+    mesh = _generate_surf()
+    roi1 = np.random.randint(0, mesh[0].shape[0], size=5)
+    roi2 = np.random.randint(0, mesh[0].shape[0], size=10)
+
+    # Wrong input
+    assert_raises_regex(ValueError,
+                        'Invalid input for roi_map',
+                        plot_surf_roi, mesh,
+                        roi_map={'roi1': roi1, 'roi2': roi2})
