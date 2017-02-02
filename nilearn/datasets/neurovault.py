@@ -1020,7 +1020,6 @@ def _simple_download(url, target_file, temp_dir, verbose=3):
     here we replace it with an ``URLError``.
 
     """
-    print('Downloading file {} to {}'.format(url, target_file))
     _print_if('Downloading file: {0}'.format(url), _DEBUG, verbose)
     try:
         downloaded = _fetch_file(url, temp_dir, resume=False,
@@ -1536,9 +1535,6 @@ class DownloadManager(BaseDownloadManager):
         _write_metadata(image_info, metadata_file_path)
         # self.already_downloaded_ is incremented only after
         # this routine returns successfully.
-        print('Already fetched {0:6<} image{1}'.format(
-            self.already_downloaded_ + 1,
-            ('s' if self.already_downloaded_ + 1 > 1 else '')))
         _print_if('Already fetched {0} image{1}.'.format(
             self.already_downloaded_ + 1,
             ('s' if self.already_downloaded_ + 1 > 1 else '')),
@@ -1760,7 +1756,6 @@ class _DataScroller(object):
                 {'id': IsIn(*self.wanted_image_ids_)}).OR(
                     ResultFilter(
                         collection_id=IsIn(*self.wanted_collection_ids_)))
-
             return
 
         (self.collection_terms_,
