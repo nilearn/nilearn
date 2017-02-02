@@ -46,7 +46,6 @@ URL http://dx.doi.org/10.1016/j.neuroimage.2010.06.010.
 from nilearn import plotting
 from nilearn import datasets
 from scipy import stats
-import nibabel as nb
 import numpy as np
 
 ###############################################################################
