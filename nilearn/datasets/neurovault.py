@@ -17,13 +17,16 @@ from collections import Container
 try:
     from collections import OrderedDict
 except ImportError:
+    # using python2.6
     OrderedDict = dict
 import traceback
 try:
+    # python3
     from urllib.parse import urljoin, urlencode
     from urllib.request import build_opener, Request
     from urllib.error import URLError
 except ImportError:
+    # python2
     from urlparse import urljoin
     from urllib import urlencode
     from urllib2 import build_opener, Request, URLError
@@ -1065,97 +1068,97 @@ def _simple_download(url, target_file, temp_dir):
     return target_file
 
 
-def _checked_get_dataset_dir(dataset_name, suggested_dir=None,
-                             write_required=False):
-    """Wrapper for ``_get_dataset_dir``.
-
-    Expands . and ~ and checks write access.
-
-    Parameters
-    ----------
-    dataset_name : str
-        Passed to ``_get_dataset_dir``. Example: ``neurovault``.
-
-    suggested_dir : str
-        Desired location of root data directory for all datasets,
-        e.g. ``~/home/nilearn_data``.
-
-    write_required : bool, optional (default=False)
-        If ``True``, check that the user has write access to the
-        chosen data directory and raise ``IOError`` if not.  If
-        ``False``, don't check for write permission.
-
-    Returns
-    -------
-    dataset_dir : str
-        The location of the dataset directory in the filesystem.
-
-    Raises
-    ------
-    IOError
-        If `write_required` is set and the user doesn't have write
-        access to `dataset_dir`.
-
-    See Also
-    --------
-    nilearns.datasets._utils._get_dataset_dir
-
-    """
-    if suggested_dir is not None:
-        suggested_dir = os.path.abspath(os.path.expanduser(suggested_dir))
-    dataset_dir = _get_dataset_dir(dataset_name, data_dir=suggested_dir)
-    if not write_required:
-        return dataset_dir
-    if not os.access(dataset_dir, os.W_OK):
-        raise IOError('Permission denied: {0}'.format(dataset_dir))
-    return dataset_dir
-
-
-def neurovault_directory(suggested_dir=None):
-    """Return path to neurovault directory on filesystem."""
-    if getattr(neurovault_directory, 'directory_path_', None) is not None:
-        return neurovault_directory.directory_path_
-
-    _logger.debug('Looking for Neurovault directory.')
-    if suggested_dir is None:
-        root_data_dir, dataset_name = None, 'neurovault'
-    else:
-        suggested_path = suggested_dir.split(os.path.sep)
-        dataset_name = suggested_path[-1]
-        root_data_dir = os.path.sep.join(suggested_path[:-1])
-    neurovault_directory.directory_path_ = _checked_get_dataset_dir(
-        dataset_name, root_data_dir)
-    assert(neurovault_directory.directory_path_ is not None)
-    _logger.debug('Found Neurovault directory in {0}'.format(
-        neurovault_directory.directory_path_))
-    return neurovault_directory.directory_path_
-
-
-def set_neurovault_directory(new_neurovault_dir=None):
-    """Set the default neurovault directory to a new location.
-
-    Parameters
-    ----------
-    new_neurovault_dir : str, optional (default=None)
-        Suggested path for neurovault directory.
-        The default value ``None`` means reset neurovault directory
-        path to its default value.
-
-    Returns
-    -------
-
-    neurovault_directory.directory_path_ : str
-        The new neurovault directory used by default by all functions.
-
-    See Also
-    --------
-    nilearn.datasets.neurovault.neurovault_directory
-
-    """
-    _logger.debug('Set neurovault directory: {0}...'.format(
-        new_neurovault_dir))
-    neurovault_directory.directory_path_ = None
-    return neurovault_directory(new_neurovault_dir)
+# def _checked_get_dataset_dir(dataset_name, suggested_dir=None,
+#                              write_required=False):
+#     """Wrapper for ``_get_dataset_dir``.
+#
+#     Expands . and ~ and checks write access.
+#
+#     Parameters
+#     ----------
+#     dataset_name : str
+#         Passed to ``_get_dataset_dir``. Example: ``neurovault``.
+#
+#     suggested_dir : str
+#         Desired location of root data directory for all datasets,
+#         e.g. ``~/home/nilearn_data``.
+#
+#     write_required : bool, optional (default=False)
+#         If ``True``, check that the user has write access to the
+#         chosen data directory and raise ``IOError`` if not.  If
+#         ``False``, don't check for write permission.
+#
+#     Returns
+#     -------
+#     dataset_dir : str
+#         The location of the dataset directory in the filesystem.
+#
+#     Raises
+#     ------
+#     IOError
+#         If `write_required` is set and the user doesn't have write
+#         access to `dataset_dir`.
+#
+#     See Also
+#     --------
+#     nilearns.datasets._utils._get_dataset_dir
+#
+#     """
+#     if suggested_dir is not None:
+#         suggested_dir = os.path.abspath(os.path.expanduser(suggested_dir))
+#     dataset_dir = _get_dataset_dir(dataset_name, data_dir=suggested_dir)
+#     if not write_required:
+#         return dataset_dir
+#     if not os.access(dataset_dir, os.W_OK):
+#         raise IOError('Permission denied: {0}'.format(dataset_dir))
+#     return dataset_dir
+#
+#
+# def neurovault_directory(suggested_dir=None):
+#     """Return path to neurovault directory on filesystem."""
+#     if getattr(neurovault_directory, 'directory_path_', None) is not None:
+#         return neurovault_directory.directory_path_
+#
+#     _logger.debug('Looking for Neurovault directory.')
+#     if suggested_dir is None:
+#         root_data_dir, dataset_name = None, 'neurovault'
+#     else:
+#         suggested_path = suggested_dir.split(os.path.sep)
+#         dataset_name = suggested_path[-1]
+#         root_data_dir = os.path.sep.join(suggested_path[:-1])
+#     neurovault_directory.directory_path_ = _checked_get_dataset_dir(
+#         dataset_name, root_data_dir)
+#     assert(neurovault_directory.directory_path_ is not None)
+#     _logger.debug('Found Neurovault directory in {0}'.format(
+#         neurovault_directory.directory_path_))
+#     return neurovault_directory.directory_path_
+#
+#
+# def set_neurovault_directory(new_neurovault_dir=None):
+#     """Set the default neurovault directory to a new location.
+#
+#     Parameters
+#     ----------
+#     new_neurovault_dir : str, optional (default=None)
+#         Suggested path for neurovault directory.
+#         The default value ``None`` means reset neurovault directory
+#         path to its default value.
+#
+#     Returns
+#     -------
+#
+#     neurovault_directory.directory_path_ : str
+#         The new neurovault directory used by default by all functions.
+#
+#     See Also
+#     --------
+#     nilearn.datasets.neurovault.neurovault_directory
+#
+#     """
+#     _logger.debug('Set neurovault directory: {0}...'.format(
+#         new_neurovault_dir))
+#     neurovault_directory.directory_path_ = None
+#     return neurovault_directory(new_neurovault_dir)
 
 
 def _get_temp_dir(suggested_dir=None):
@@ -1812,7 +1815,7 @@ class _DataScroller(object):
         ``_DEFAULT_BATCH_SIZE`` will be used.
 
     """
-    def __init__(self, neurovault_dir=None, download_mode='download_new',
+    def __init__(self, data_dir, download_mode='download_new',
                  collection_terms=None, collection_filter=_empty_filter,
                  image_terms=None, image_filter=_empty_filter,
                  wanted_collection_ids=None, wanted_image_ids=None,
@@ -1825,7 +1828,7 @@ class _DataScroller(object):
                 'supported download modes are overwrite,'
                 ' download_new, offline; got {0}'.format(download_mode))
         self.download_mode_ = download_mode
-        self.neurovault_dir_ = neurovault_directory(neurovault_dir)
+        self.neurovault_dir_ = data_dir
         if collection_terms is None:
             collection_terms = {}
         if image_terms is None:
@@ -1855,7 +1858,6 @@ class _DataScroller(object):
         self._prepare()
 
     def _prepare(self):
-
         if (self.wanted_collection_ids_ is not None or
             self.wanted_image_ids_ is not None):
 
@@ -2238,7 +2240,7 @@ def _fetch_neurovault_impl(
         image_terms=basic_image_terms(),
         image_filter=_empty_filter,
         collection_ids=None, image_ids=None,
-        mode='download_new', neurovault_data_dir=None,
+        mode='download_new', data_dir=None,
         fetch_neurosynth_words=False, fetch_reduced_rep=False,
         download_manager=None, vectorize_words=True, **kwarg_image_filters):
     """Download data from neurovault.org and neurosynth.org."""
@@ -2253,7 +2255,7 @@ def _fetch_neurovault_impl(
     image_terms = dict(image_terms, **kwarg_image_filters)
     image_terms, collection_terms = _move_col_id(image_terms, collection_terms)
 
-    neurovault_data_dir = neurovault_directory(neurovault_data_dir)
+    neurovault_data_dir = _get_dataset_dir('neurovault', data_dir)
     if mode != 'offline' and not os.access(neurovault_data_dir, os.W_OK):
         warnings.warn("You don't have write access to neurovault dir: {0}; "
                       "fetch_neurovault is working offline.".format(
@@ -2296,7 +2298,7 @@ def fetch_neurovault(
         collection_filter=_empty_filter,
         image_terms=basic_image_terms(),
         image_filter=_empty_filter,
-        mode='download_new', neurovault_data_dir=None,
+        mode='download_new', data_dir=None,
         fetch_neurosynth_words=False, fetch_reduced_rep=False,
         download_manager=None, vectorize_words=True, **kwarg_image_filters):
     """Download data from neurovault.org and neurosynth.org using filters.
@@ -2468,7 +2470,7 @@ def fetch_neurovault(
         max_images=max_images, collection_terms=collection_terms,
         collection_filter=collection_filter, image_terms=image_terms,
         image_filter=image_filter, mode=mode,
-        neurovault_data_dir=neurovault_data_dir,
+        data_dir=data_dir,
         fetch_neurosynth_words=fetch_neurosynth_words,
         fetch_reduced_rep=fetch_reduced_rep,
         download_manager=download_manager,
@@ -2477,7 +2479,7 @@ def fetch_neurovault(
 
 def fetch_neurovault_ids(
         collection_ids=(), image_ids=(),
-        mode='download_new', neurovault_data_dir=None,
+        mode='download_new', data_dir=None,
         fetch_neurosynth_words=False, fetch_reduced_rep=False,
         download_manager=None, vectorize_words=True):
     """Download images and collections from neurovault.org and neurosynth.org.
@@ -2582,7 +2584,7 @@ def fetch_neurovault_ids(
     return _fetch_neurovault_impl(
         mode=mode,
         collection_ids=collection_ids, image_ids=image_ids,
-        neurovault_data_dir=neurovault_data_dir,
+        data_dir=data_dir,
         fetch_neurosynth_words=fetch_neurosynth_words,
         fetch_reduced_rep=fetch_reduced_rep,
         download_manager=download_manager,

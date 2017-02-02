@@ -121,18 +121,12 @@ neurovault.set_logging_level(neurovault.logging.DEBUG)
 
 
 class _TemporaryDirectory(object):
-    def __init__(self, set_nv_dir=True):
-        self.set_nv_dir_ = set_nv_dir
 
     def __enter__(self):
         self.temp_dir_ = tempfile.mkdtemp()
-        if self.set_nv_dir_:
-            neurovault.set_neurovault_directory(self.temp_dir_)
         return self.temp_dir_
 
     def __exit__(self, *args):
-        if self.set_nv_dir_:
-            neurovault.set_neurovault_directory(None)
         os.chmod(self.temp_dir_, stat.S_IWUSR | stat.S_IXUSR | stat.S_IRUSR)
         for root, dirnames, filenames in os.walk(self.temp_dir_):
             for name in dirnames:
@@ -204,7 +198,7 @@ def test_get_batch():
     assert('results' in batch)
     assert('count' in batch)
     assert_raises(neurovault.URLError, neurovault._get_batch, 'http://')
-    with _TemporaryDirectory(set_nv_dir=False) as temp_dir:
+    with _TemporaryDirectory() as temp_dir:
         with open(os.path.join(temp_dir, 'test_nv.txt'), 'w'):
             pass
         assert_raises(ValueError, neurovault._get_batch, 'file://{0}'.format(
@@ -447,48 +441,13 @@ def test_result_filter_combinations():
 # In the meanwhile, use _TemporaryDirectory
 @ignore_connection_errors
 def test_simple_download():
-    with _TemporaryDirectory(set_nv_dir=False) as temp_dir:
+    with _TemporaryDirectory() as temp_dir:
         downloaded_file = neurovault._simple_download(
             'http://neurovault.org/media/images/35/Fig3B_zstat1.nii.gz',
             os.path.join(temp_dir, 'image_35.nii.gz'), temp_dir)
         assert_true(os.path.isfile(downloaded_file))
         assert_raises(neurovault.URLError, neurovault._simple_download,
                       'http://', 'bad.nii.gz', temp_dir)
-
-
-def test_checked_get_dataset_dir():
-    with _TemporaryDirectory(set_nv_dir=False) as temp_dir:
-        dataset_dir = neurovault._checked_get_dataset_dir(
-            'neurovault', temp_dir)
-        assert_true(samefile(
-            dataset_dir, os.path.join(temp_dir, 'neurovault')))
-        dataset_dir = neurovault._checked_get_dataset_dir(
-            'neurovault', temp_dir, write_required=True)
-        assert_true(samefile(
-            dataset_dir, os.path.join(temp_dir, 'neurovault')))
-        os.chmod(os.path.join(temp_dir, 'neurovault'), stat.S_IREAD)
-        if os.access(os.path.join(temp_dir, 'neurovault'), os.W_OK):
-            return
-        dataset_dir = neurovault._checked_get_dataset_dir(
-            'neurovault', temp_dir)
-        assert_true(samefile(
-            dataset_dir, os.path.join(temp_dir, 'neurovault')))
-        assert_raises(IOError, neurovault._checked_get_dataset_dir,
-                      'neurovault', temp_dir, write_required=True)
-
-
-def test_neurovault_directory():
-    nv_dir = neurovault.neurovault_directory()
-    assert_true(os.path.isdir(nv_dir))
-
-
-def test_set_neurovault_directory():
-    try:
-        with _TemporaryDirectory() as temp_dir:
-            dataset_dir = neurovault.set_neurovault_directory(temp_dir)
-            assert_true(samefile(dataset_dir, temp_dir))
-    finally:
-        neurovault.set_neurovault_directory(None)
 
 
 def test_get_temp_dir():
@@ -579,9 +538,9 @@ def test_add_absolute_paths():
 
 
 def test_download_manager():
-    with _TemporaryDirectory():
+    with _TemporaryDirectory() as data_dir:
         download_manager = neurovault.DownloadManager(
-            neurovault_data_dir=neurovault.neurovault_directory())
+            neurovault_data_dir=data_dir)
         with download_manager:
             temp_dir = download_manager.temp_dir_
             assert_true(os.path.isdir(temp_dir))
@@ -658,31 +617,34 @@ def test_fetch_neurovault():
     with _TemporaryDirectory() as temp_dir:
         data = neurovault.fetch_neurovault(
             max_images=1, fetch_neurosynth_words=True,
-            fetch_reduced_rep=True, mode='overwrite')
+            fetch_reduced_rep=True, mode='overwrite',
+            data_dir=temp_dir)
         if data is not None:
             assert_equal(len(data.images), 1)
             meta = data.images_meta[0]
             assert_false(meta['not_mni'])
+        assert_warns(
+            UserWarning, neurovault.fetch_neurovault,
+            data_dir=temp_dir,
+            download_manager=TestDownloadManager(
+                max_images=2,
+                neurovault_data_dir=os.path.join(temp_dir, 'neurovault')))
 
-            assert_warns(
-                UserWarning, neurovault.fetch_neurovault,
-                download_manager=TestDownloadManager(
-                    max_images=2,
-                    neurovault_data_dir=neurovault.neurovault_directory()))
-
-        os.chmod(temp_dir, stat.S_IREAD)
+        os.chmod(os.path.join(temp_dir, 'neurovault'), stat.S_IREAD)
         if os.access(temp_dir, os.W_OK):
             return
-        assert_warns(UserWarning, neurovault.fetch_neurovault)
+        assert_warns(UserWarning, neurovault.fetch_neurovault,
+                    data_dir=temp_dir)
 
 
 def test_fetch_neurovault_ids():
     # test using explicit id list instead of filters,
     # and downloading an image which has no collection dir
     # or metadata yet.
-    with _TemporaryDirectory():
+    with _TemporaryDirectory() as data_dir:
         assert_raises(ValueError, neurovault.fetch_neurovault_ids, mode='bad')
-        data = neurovault.fetch_neurovault_ids(image_ids=[111])
+        data = neurovault.fetch_neurovault_ids(image_ids=[111],
+                                              data_dir=data_dir)
         if data is not None:
             assert_equal(data['images_meta'][0]['id'], 111)
             assert_equal(os.path.dirname(data['images'][0]),
