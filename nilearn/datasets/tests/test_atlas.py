@@ -419,7 +419,9 @@ def test_fetch_atlas_allen_2011():
     assert_not_equal(bunch.description, '')
 
 
-def test_fetch_atlas_surf_destrieux():
+@with_setup(setup_mock, teardown_mock)
+@with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
+def test_fetch_atlas_surf_destrieux(data_dir=tst.tmpdir, verbose=0):
     bunch = atlas.fetch_atlas_surf_destrieux()
     assert_equal(len(bunch.labels), 76)
     assert_equal(bunch.map_left.shape, (10242,))
