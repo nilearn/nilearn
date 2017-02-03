@@ -61,7 +61,7 @@ class MaxImagesReached(StopIteration):
 
 def _print_if(message, level, threshold_level,
             with_traceback=False):
-    if(level < threshold_level):
+    if(level > threshold_level):
         return
     print(message)
     if(with_traceback):
@@ -268,7 +268,7 @@ def _scroll_server_results(url, local_filter=_empty_filter,
     n_available = None
     while(max_results is None or downloaded < max_results):
         new_query = query.format(downloaded)
-        batch = _get_batch(new_query, prefix_msg)
+        batch = _get_batch(new_query, prefix_msg, verbose=verbose)
         batch_size = len(batch['results'])
         downloaded += batch_size
         _print_if('{0}batch size: {1}'.format(prefix_msg, batch_size),
@@ -282,7 +282,7 @@ def _scroll_server_results(url, local_filter=_empty_filter,
                 yield result
 
 
-def _yield_from_url_list(url_list):
+def _yield_from_url_list(url_list, verbose=3):
     """Get metadata coming from an explicit list of URLs.
 
     This is different from ``_scroll_server_results``, which is used
@@ -292,6 +292,9 @@ def _yield_from_url_list(url_list):
     ----------
     url_list : Container of str
         URLs from which to get data
+
+    verbose : int
+        an integer in [0, 1, 2, 3] to control the verbosity level.
 
     Yields
     ------
@@ -309,7 +312,7 @@ def _yield_from_url_list(url_list):
 
     """
     for url in url_list:
-        content = _get_batch(url)['results'][0]
+        content = _get_batch(url, verbose=verbose)['results'][0]
         yield content
 
 
@@ -1056,7 +1059,8 @@ def _get_temp_dir(suggested_dir=None):
     return suggested_dir
 
 
-def _fetch_neurosynth_words(image_id, target_file, temp_dir):
+def _fetch_neurosynth_words(image_id, target_file, temp_dir,
+                           verbose=3):
     """Query Neurosynth for words associated with a map.
 
     Parameters
@@ -1078,7 +1082,7 @@ def _fetch_neurosynth_words(image_id, target_file, temp_dir):
     """
     query = urljoin(_NEUROSYNTH_FETCH_WORDS_URL,
                     '?neurovault={0}'.format(image_id))
-    _simple_download(query, target_file, temp_dir)
+    _simple_download(query, target_file, temp_dir, verbose=verbose)
 
 
 def neurosynth_words_vectorized(word_files, verbose=3, **kwargs):
@@ -1192,14 +1196,19 @@ class BaseDownloadManager(object):
         Maximum number of images to fetch. ``None`` or a negative
         value means download as many as you can.
 
+    verbose : int
+        an integer in [0, 1, 2, 3] to control the verbosity level.
+
     """
-    def __init__(self, neurovault_data_dir, max_images=100):
+    def __init__(self, neurovault_data_dir, max_images=100,
+                verbose=3):
         self.nv_data_dir_ = neurovault_data_dir
         if max_images is not None and max_images < 0:
             max_images = None
         self.max_images_ = max_images
         self.already_downloaded_ = 0
         self.write_ok_ = os.access(self.nv_data_dir_, os.W_OK)
+        self.verbose=3
 
     def collection(self, collection_info):
         """Receive metadata for a collection and take necessary actions.
@@ -1383,10 +1392,11 @@ class DownloadManager(BaseDownloadManager):
     def __init__(self, neurovault_data_dir=None, temp_dir=None,
                  fetch_neurosynth_words=False, fetch_reduced_rep=True,
                  max_images=100, neurosynth_error_handler=_tolerate_failure,
-                verbose=3):
+                 verbose=3):
 
         super(DownloadManager, self).__init__(
-            neurovault_data_dir=neurovault_data_dir, max_images=max_images)
+            neurovault_data_dir=neurovault_data_dir, max_images=max_images,
+            verbose=verbose)
         self.suggested_temp_dir_ = temp_dir
         self.temp_dir_ = None
         self.fetch_ns_ = fetch_neurosynth_words
@@ -1459,8 +1469,8 @@ class DownloadManager(BaseDownloadManager):
         if not os.path.isfile(ns_words_absolute_path):
             try:
                 _fetch_neurosynth_words(
-                    image_info['id'],
-                    ns_words_absolute_path, self.temp_dir_)
+                    image_info['id'], ns_words_absolute_path,
+                    self.temp_dir_, verbose=self.verbose)
             except(URLError, ValueError) as e:
                 _print_if(
                     'Could not fetch words for image {0}'.format(
@@ -1503,7 +1513,8 @@ class DownloadManager(BaseDownloadManager):
             self.nv_data_dir_, collection_relative_path)
         if not os.path.isdir(collection_absolute_path):
             col_batch = _get_batch(urljoin(
-                _NEUROVAULT_COLLECTIONS_URL, str(collection_id)))
+                _NEUROVAULT_COLLECTIONS_URL, str(collection_id)),
+            verbose=self.verbose)
             self.collection(col_batch['results'][0])
         image_id = image_info['id']
         image_url = image_info['file']
@@ -1512,7 +1523,8 @@ class DownloadManager(BaseDownloadManager):
             collection_relative_path, image_file_name)
         image_absolute_path = os.path.join(
             collection_absolute_path, image_file_name)
-        _simple_download(image_url, image_absolute_path, self.temp_dir_)
+        _simple_download(image_url, image_absolute_path, self.temp_dir_,
+                        verbose=self.verbose)
         image_info['absolute_path'] = image_absolute_path
         image_info['relative_path'] = image_relative_path
         reduced_image_url = image_info.get('reduced_representation')
@@ -1523,7 +1535,8 @@ class DownloadManager(BaseDownloadManager):
             reduced_image_absolute_path = os.path.join(
                 collection_absolute_path, reduced_image_name)
             _simple_download(
-                reduced_image_url, reduced_image_absolute_path, self.temp_dir_)
+                reduced_image_url, reduced_image_absolute_path,
+                self.temp_dir_, verbose=self.verbose)
             image_info['reduced_representation'
                        '_relative_path'] = reduced_image_relative_path
             image_info['reduced_representation'
@@ -1733,7 +1746,7 @@ class _DataScroller(object):
         if download_manager is None:
             download_manager = BaseDownloadManager(
                 neurovault_data_dir=self.neurovault_dir_,
-                max_images=self.max_images_)
+                max_images=self.max_images_, verbose=self.verbose)
         self.download_manager_ = download_manager
         self.download_manager_.neurovault_data_dir_ = self.neurovault_dir_
         self.wanted_image_ids_ = wanted_image_ids
@@ -1818,7 +1831,7 @@ class _DataScroller(object):
             local_filter=self.image_filter_,
             prefix_msg='Scroll images from collection {0}: '.format(
                 collection['id']),
-            batch_size=self.batch_size_)
+            batch_size=self.batch_size_, verbose=self.verbose)
         while True:
             image = None
             try:
@@ -1885,7 +1898,8 @@ class _DataScroller(object):
                 _print_if('Reading server neurovault data.',
                          _DEBUG, self.verbose)
 
-            for collection in _yield_from_url_list(collection_urls):
+            for collection in _yield_from_url_list(collection_urls,
+                                                  verbose=self.verbose):
                 collection = self.download_manager_.collection(collection)
                 for image in self._scroll_collection(collection):
                     self.visited_images_.add(image['id'])
@@ -1894,7 +1908,8 @@ class _DataScroller(object):
             image_urls = [urljoin(_NEUROVAULT_IMAGES_URL, str(im_id)) for
                           im_id in self.wanted_image_ids_ or [] if
                           im_id not in self.visited_images_]
-            for image in _yield_from_url_list(image_urls):
+            for image in _yield_from_url_list(image_urls,
+                                             verbose=self.verbose):
                 self.download_manager_.image(image)
                 collection = _json_add_collection_dir(os.path.join(
                     os.path.dirname(image['absolute_path']),
@@ -1930,7 +1945,8 @@ class _DataScroller(object):
                 _NEUROVAULT_COLLECTIONS_URL,
                 query_terms=self.collection_terms_,
                 local_filter=self.collection_filter_,
-                prefix_msg='Scroll collections: ', batch_size=self.batch_size_)
+                prefix_msg='Scroll collections: ',
+                batch_size=self.batch_size_, verbose=self.verbose)
 
             while True:
                 collection = None
@@ -2157,13 +2173,14 @@ def _fetch_neurovault_impl(
             max_images=max_images,
             neurovault_data_dir=neurovault_data_dir,
             fetch_neurosynth_words=fetch_neurosynth_words,
-            fetch_reduced_rep=fetch_reduced_rep)
+            fetch_reduced_rep=fetch_reduced_rep, verbose=verbose)
 
     scroller = _DataScroller(neurovault_data_dir, mode,
                              collection_terms, collection_filter,
                              image_terms, image_filter,
                              collection_ids, image_ids,
-                             download_manager, max_images).scroll()
+                             download_manager, max_images,
+                             verbose=verbose).scroll()
 
     scroller = list(scroller)
     if not scroller:
@@ -2178,7 +2195,7 @@ def _fetch_neurovault_impl(
         (result['word_frequencies'],
          result['vocabulary']) = neurosynth_words_vectorized(
              [meta.get('neurosynth_words_absolute_path') for
-              meta in images_meta])
+              meta in images_meta], verbose=verbose)
     return result
 
 
@@ -2190,7 +2207,8 @@ def fetch_neurovault(
         image_filter=_empty_filter,
         mode='download_new', data_dir=None,
         fetch_neurosynth_words=False, fetch_reduced_rep=False,
-        download_manager=None, vectorize_words=True, **kwarg_image_filters):
+        download_manager=None, vectorize_words=True,
+        verbose=3, **kwarg_image_filters):
     """Download data from neurovault.org and neurosynth.org using filters.
 
     Any downloaded data is saved on the local disk and subsequent
@@ -2364,14 +2382,15 @@ def fetch_neurovault(
         fetch_neurosynth_words=fetch_neurosynth_words,
         fetch_reduced_rep=fetch_reduced_rep,
         download_manager=download_manager,
-        vectorize_words=vectorize_words, **kwarg_image_filters)
+        vectorize_words=vectorize_words, verbose=verbose,
+        **kwarg_image_filters)
 
 
 def fetch_neurovault_ids(
         collection_ids=(), image_ids=(),
         mode='download_new', data_dir=None,
         fetch_neurosynth_words=False, fetch_reduced_rep=False,
-        download_manager=None, vectorize_words=True):
+        download_manager=None, vectorize_words=True, verbose=3):
     """Download images and collections from neurovault.org and neurosynth.org.
 
     Any downloaded data is saved on the local disk and subsequent
@@ -2478,4 +2497,4 @@ def fetch_neurovault_ids(
         fetch_neurosynth_words=fetch_neurosynth_words,
         fetch_reduced_rep=fetch_reduced_rep,
         download_manager=download_manager,
-        vectorize_words=vectorize_words)
+        vectorize_words=vectorize_words, verbose=verbose)
