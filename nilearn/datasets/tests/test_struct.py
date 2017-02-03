@@ -159,3 +159,23 @@ def test_fetch_icbm152_brain_gm_mask():
     grey_matter_img = struct.fetch_icbm152_brain_gm_mask(data_dir=tst.tmpdir,
                                                          verbose=0)
     assert_true(isinstance(grey_matter_img, nibabel.Nifti1Image))
+
+
+@with_setup(setup_mock, teardown_mock)
+@with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
+def test_fetch_surf_fsaverage():
+
+    dataset = struct.fetch_surf_fsaverage5(data_dir=tst.tmpdir, verbose=0)
+
+    keys = ['pial_left', 'pial_right', 'infl_left', 'infl_right',
+            'sulc_left', 'sulc_right']
+
+    filenames = ['pial.left.gii', 'pial.right.gii', 'pial_inflated.left.gii',
+                 'pial_inflated.right.gii', 'sulc.left.gii', 'sulc.right.gii']
+
+    for key, filename in zip(keys, filenames):
+        assert_equal(dataset[key], os.path.join(tst.tmpdir, 'fsaverage5',
+                                                filename))
+
+    assert_not_equal(dataset.description, '')
+    assert_equal(len(tst.mock_url_request.urls), len(keys))
