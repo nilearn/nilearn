@@ -507,10 +507,10 @@ def fetch_surf_fsaverage5(data_dir=None, url=None, resume=True, verbose=1):
                             resume=resume, verbose=verbose)
         sulcs.append(sulc)
 
-    return Bunch(pial_left=pials[0],
-                 pial_right=pials[1],
-                 infl_left=infls[0],
-                 infl_right=infls[1],
-                 sulc_left=sulcs[0],
-                 sulc_right=sulcs[1],
+    return Bunch(pial_left=pials[0][0],
+                 pial_right=pials[1][0],
+                 infl_left=infls[0][0],
+                 infl_right=infls[1][0],
+                 sulc_left=sulcs[0][0],
+                 sulc_right=sulcs[1][0],
                  description=fdescr)
