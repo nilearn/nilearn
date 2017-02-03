@@ -31,9 +31,9 @@ parcellation = destrieux_atlas['map_left']
 fsaverage = datasets.fetch_surf_fsaverage5()
 
 # Fsaverage5 left hemisphere surface mesh files
-fsaverage5_pial = fsaverage['pial_left'][0]
-fsaverage5_inflated = fsaverage['infl_left'][0]
-sulcal_depth_map = fsaverage['sulc_left'][0]
+fsaverage5_pial = fsaverage['pial_left']
+fsaverage5_inflated = fsaverage['infl_left']
+sulcal_depth_map = fsaverage['sulc_left']
 
 ###############################################################################
 # Display Destrieux parcellation on fsaverage5 surface
