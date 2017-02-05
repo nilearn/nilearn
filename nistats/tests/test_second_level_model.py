@@ -8,11 +8,12 @@ from __future__ import with_statement
 import os
 
 import numpy as np
+from scipy import stats
 
 from nibabel import load, Nifti1Image, save
 
 from nistats.first_level_model import FirstLevelModel, run_glm
-from nistats.second_level_model import SecondLevelModel
+from nistats.second_level_model import SecondLevelModel, _infer_effect_maps
 from nistats.design_matrix import (create_second_level_design,
                                    create_simple_second_level_design)
 
@@ -236,5 +237,3 @@ def test_second_level_model_contrast_computation():
         assert_raises(ValueError, model.compute_contrast, c1, None, '')
         assert_raises(ValueError, model.compute_contrast, c1, None, [])
         assert_raises(ValueError, model.compute_contrast, c1, None, None, '')
-        # Simple t test and second level simple ols should agree
-

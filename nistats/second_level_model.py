@@ -372,8 +372,7 @@ class SecondLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
 
         # We compute contrast object
         if self.memory is not None:
-            mem_contrast = self.memory.cache(compute_contrast,
-                                             ignore=arg_ignore)
+            mem_contrast = self.memory.cache(compute_contrast)
         else:
             mem_contrast = compute_contrast
         contrast = mem_contrast(self.labels_, self.results_, con_val,
