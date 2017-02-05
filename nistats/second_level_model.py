@@ -162,9 +162,10 @@ class SecondLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
                                 'In case confounds are provided, first level '
                                 'objects need to provide the attribute '
                                 'subject_label to match rows appropriately.'
-                                'Model at idx %d do not provide it. To set it,'
-                                ' you can do first_level_model.subject_label ='
-                                ' "01"' % (model_idx))
+                                'Model at idx %d does not provide it. '
+                                'To set it, you can do '
+                                'first_level_model.subject_label = "01"'
+                                '' % (model_idx))
             # Check niimgs case
             elif isinstance(second_level_input[0], (str, Nifti1Image)):
                 if design_matrix is None:
