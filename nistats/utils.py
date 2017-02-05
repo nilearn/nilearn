@@ -341,10 +341,3 @@ def parse_bids_filename(img_path):
         else:
             reference[field] = None
     return reference
-
-
-# I changed the bids api to return properly lists of relevant arguments instead of a dictionary.
-
-# I also simplified get_bids_files to avoid returning dictionaries, it was a bad decision carried forward after refactoring parse_bids_files as an independent function, I see it can simply be called afterwards if desired. I also got rid of allow_other_fields, it seemed like feature creeping at second inspection.
-
-# I addressed or responded to all other comments. I only have doubts about changing the model_init argument of the first_level_models_from_bids function
