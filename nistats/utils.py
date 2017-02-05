@@ -205,23 +205,24 @@ def pos_recipr(X):
     X = np.asarray(X)
     return np.where(X <= 0, 0, 1. / X)
 
+
 _basestring = str if py3 else basestring
 
 
 # UTILITIES FOR THE BIDS STANDARD
 def get_bids_files(main_path, file_tag='*', file_type='*', sub_label='*',
-                   file_folder='*', filters=[], parse=False, sub_folder=True,
-                   allow_other_fields=True):
+                   file_folder='*', filters=[], sub_folder=True):
     """Search for files in a BIDS dataset following given constraints.
 
     This utility function allows to filter files in the BIDS dataset by
     any of the fields contained in the file names. Moreover it allows to search
-    for specific types of files or particular tags. The filter of files can
-    be inclusive or exclusive depending on the allow_other_fields.
+    for specific types of files or particular tags.
 
-    One can get a simple list of file paths found or alternatively the parsed
-    version of the file name as a dictionary for each file found to do more
-    detailed operations on the file list.
+    The provided filters have to correspond to a file name field, so
+    any file not containing the field will be ignored. For example the filter
+    ('sub', '01') would return all files corresponding to the first
+    subject that specifically contain in the file name "sub-01". If more
+    filters are given then we constraint the possible files names accordingly.
 
     Notice that to search in the derivatives folder, it has to be given as
     part of the main_path. This is useful since the current convention gives
@@ -256,14 +257,9 @@ def get_bids_files(main_path, file_tag='*', file_type='*', sub_label='*',
 
     filters: list of tuples (str, str), optional (default: [])
         Filters are of the form (field, label). Only one filter per field
-        allowed. A file for which a filter do not apply will be discarded.
+        allowed. A file that does not match a filter will be discarded.
         Filter examples would be (ses, 01), (variant, smooth) and
         (task, localizer).
-
-    parse: boolean, optional (default: False)
-        Determines if the function should return a dictionary for each file
-        found with parsed information from the files names to be able to do
-        more complex selection operation on the files.
 
     sub_folder: boolean, optional (default: True)
         Determines if the files searched are at the level of
@@ -272,19 +268,10 @@ def get_bids_files(main_path, file_tag='*', file_type='*', sub_label='*',
         all the files below the main directory, ignoring files in subject
         or derivatives folders.
 
-    allow_other_fields: boolean, optional (default: True)
-        In case filters are provided, this option detemines if the filters
-        provided for the search are supposed to be only fields in the file
-        name. If set to False then any file name that contains additional
-        fields will be removed from the results list.
-
     Returns
     -------
-    files: list of str or list of dict
-        If parse is set to False (Default) then a list of file paths found
-        is returned. Otherwise a list of dictionaries for each file found
-        is returned with the same information given by the function 
-        parse_bids_filename(file_path).
+    files: list of str
+        list of file paths found.
 
     """
     if sub_folder:
@@ -303,21 +290,13 @@ def get_bids_files(main_path, file_tag='*', file_type='*', sub_label='*',
     files = glob.glob(files)
     files.sort()
     if filters:
-        if not allow_other_fields:
-            files = [file_ for file_ in files if
-                     len(os.path.basename(file_).split('_')) <=
-                     len(filters) + 1]
         files = [parse_bids_filename(file_) for file_ in files]
         for key, value in filters:
             files = [file_ for file_ in files if (key in file_ and
                                                   file_[key] == value)]
-    else:
-        files = [parse_bids_filename(file_) for file_ in files]
-
-    if parse:
-        return files
-    else:
         return [ref_file['file_path'] for ref_file in files]
+
+    return files
 
 
 def parse_bids_filename(img_path):
@@ -347,9 +326,9 @@ def parse_bids_filename(img_path):
     reference['file_path'] = img_path
     reference['file_basename'] = os.path.basename(img_path)
     parts = reference['file_basename'].split('_')
-    tag, typ = parts[-1].split('.', 1)
+    tag, type_ = parts[-1].split('.', 1)
     reference['file_tag'] = tag
-    reference['file_type'] = typ
+    reference['file_type'] = type_
     reference['file_fields'] = []
     for part in parts[:-1]:
         field = part.split('-')[0]
@@ -362,3 +341,10 @@ def parse_bids_filename(img_path):
         else:
             reference[field] = None
     return reference
+
+
+# I changed the bids api to return properly lists of relevant arguments instead of a dictionary.
+
+# I also simplified get_bids_files to avoid returning dictionaries, it was a bad decision carried forward after refactoring parse_bids_files as an independent function, I see it can simply be called afterwards if desired. I also got rid of allow_other_fields, it seemed like feature creeping at second inspection.
+
+# I addressed or responded to all other comments. I only have doubts about changing the model_init argument of the first_level_models_from_bids function

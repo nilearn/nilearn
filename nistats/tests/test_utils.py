@@ -144,7 +144,7 @@ def create_fake_bids_dataset(base_dir='', n_sub=10, n_ses=2,
             if session == 'ses-01':
                 anat_path = os.path.join(subses_dir, 'anat')
                 os.makedirs(anat_path)
-                anat_file = os.path.join(anat_path, subject + '_T1w.nii')
+                anat_file = os.path.join(anat_path, subject + '_T1w.nii.gz')
                 open(anat_file, 'w')
             func_path = os.path.join(subses_dir, 'func')
             os.makedirs(func_path)
@@ -152,7 +152,7 @@ def create_fake_bids_dataset(base_dir='', n_sub=10, n_ses=2,
                 for run in ['run-%02d' % label for label in range(1, n_run + 1)]:
                     file_id = (subject + '_' + session + '_task-' + task +
                                '_' + run)
-                    bold_path = os.path.join(func_path, file_id + '_bold.nii')
+                    bold_path = os.path.join(func_path, file_id + '_bold.nii.gz')
                     write_fake_bold_img(bold_path, [vox, vox, vox, 100])
                     events_path = os.path.join(func_path, file_id +
                                                '_events.tsv')
@@ -175,13 +175,13 @@ def create_fake_bids_dataset(base_dir='', n_sub=10, n_ses=2,
                     for run in ['run-%02d' % label for label in range(1, n_run + 1)]:
                         file_id = (subject + '_' + session + '_task-' + task +
                                    '_' + run)
-                        preproc = file_id + '_bold_space-MNI_variant-some_preproc.nii'
+                        preproc = file_id + '_bold_space-MNI_variant-some_preproc.nii.gz'
                         preproc_path = os.path.join(func_path, preproc)
                         write_fake_bold_img(preproc_path, [vox, vox, vox, 100])
-                        preproc = file_id + '_bold_space-T1w_variant-some_preproc.nii'
+                        preproc = file_id + '_bold_space-T1w_variant-some_preproc.nii.gz'
                         preproc_path = os.path.join(func_path, preproc)
                         write_fake_bold_img(preproc_path, [vox, vox, vox, 100])
-                        preproc = file_id + '_bold_space-T1w_variant-other_preproc.nii'
+                        preproc = file_id + '_bold_space-T1w_variant-other_preproc.nii.gz'
                         preproc_path = os.path.join(func_path, preproc)
                         write_fake_bold_img(preproc_path, [vox, vox, vox, 100])
                         if with_confounds:
@@ -197,37 +197,45 @@ def test_get_bids_files():
         bids_path = create_fake_bids_dataset(n_sub=10, n_ses=2,
                                              tasks=['localizer', 'main'],
                                              n_runs=[1, 3])
+        # For each possible possible option of file selection we check
+        # that we recover the appropriate amount of files, as included
+        # in the fake bids dataset.
+
+        # 250 files in total related to subject images. Top level files like
+        # README not included
         selection = get_bids_files(bids_path)
         assert_true(len(selection) == 250)
+        # 160 bold files expected. .nii and .json files
         selection = get_bids_files(bids_path, file_tag='bold')
         assert_true(len(selection) == 160)
-        selection = get_bids_files(bids_path, file_type='nii')
+        # Only 90 files are nii.gz. Bold and T1w files.
+        selection = get_bids_files(bids_path, file_type='nii.gz')
         assert_true(len(selection) == 90)
+        # Only 25 files correspond to subject 01
         selection = get_bids_files(bids_path, sub_label='01')
         assert_true(len(selection) == 25)
+        # There are only 10 files in anat folders. One T1w per subject.
         selection = get_bids_files(bids_path, file_folder='anat')
         assert_true(len(selection) == 10)
+        # 20 files corresponding to run 1 of session 2 of main task.
+        # 10 bold.nii.gz and 10 bold.json files. (10 subjects)
         filters = [('task', 'main'), ('run', '01'), ('ses', '02')]
         selection = get_bids_files(bids_path, file_tag='bold', filters=filters)
         assert_true(len(selection) == 20)
+        # Get Top level folder files. Only 1 in this case, the README file.
         selection = get_bids_files(bids_path, sub_folder=False)
         assert_true(len(selection) == 1)
-        selection = get_bids_files(bids_path, file_folder='anat', parse=True)
-        assert_true(len(selection) == 10)
-        assert_true(isinstance(selection[0], dict))
-        selection = get_bids_files(bids_path + '/derivatives')
-        assert_true(len(selection) == 320)
 
 
 def test_parse_bids_filename():
     fields = ['sub', 'ses', 'task', 'lolo']
     labels = ['01', '01', 'langloc', 'lala']
-    file_name = 'sub-01_ses-01_task-langloc_lolo-lala_bold.nii'
+    file_name = 'sub-01_ses-01_task-langloc_lolo-lala_bold.nii.gz'
     file_path = os.path.join('dataset', 'sub-01', 'ses-01', 'func', file_name)
     file_dict = parse_bids_filename(file_path)
     for fidx, field in enumerate(fields):
         assert_true(file_dict[field] == labels[fidx])
-    assert_true(file_dict['file_type'] == 'nii')
+    assert_true(file_dict['file_type'] == 'nii.gz')
     assert_true(file_dict['file_tag'] == 'bold')
     assert_true(file_dict['file_path'] == file_path)
     assert_true(file_dict['file_basename'] == file_name)
