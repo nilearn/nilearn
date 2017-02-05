@@ -333,14 +333,11 @@ def test_first_level_models_from_bids():
         assert_raises(TypeError, first_level_models_from_bids,
                       bids_path, 'main', model_init=[])
         # test output is as expected
-        models, fit_kwargs = first_level_models_from_bids(
+        models, m_imgs, m_events, m_confounds = first_level_models_from_bids(
             bids_path, 'main', preproc_variant='some', preproc_space='MNI')
-        assert_true(len(models) == len(fit_kwargs))
-        assert_true(len(fit_kwargs[0]['events']) ==
-                    len(fit_kwargs[0]['run_imgs']))
-        assert_true(len(fit_kwargs[0]['confounds']) ==
-                    len(fit_kwargs[0]['run_imgs']))
-
+        assert_true(len(models) == len(m_imgs))
+        assert_true(len(models) == len(m_events))
+        assert_true(len(models) == len(m_confounds))
         # test issues with confound files. There should be only one confound
         # file per img. An one per image or None. Case when one is missing
         confound_files = get_bids_files(os.path.join(bids_path, 'derivatives'),

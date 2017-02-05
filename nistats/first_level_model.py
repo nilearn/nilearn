@@ -36,9 +36,6 @@ from .contrasts import _fixed_effect_contrast
 from .utils import (_basestring, _check_run_tables, get_bids_files,
                     parse_bids_filename)
 
-# ATTENTION THIS IS NOT SUPPOSED TO BE HERE
-from nilearn.masking import apply_mask
-
 
 def mean_scaling(Y, axis=0):
     """Scaling of the data to have percent of baseline change along the
@@ -453,9 +450,7 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
                 t_masking = time.time()
                 sys.stderr.write('Starting masker computation \r')
 
-            # ATTENTION THIS IS NOT SUPPOSED TO BE HERE
-            # Y = self.masker_.transform(run_img)
-            Y = apply_mask(run_img, self.masker_.mask_img_)
+            Y = self.masker_.transform(run_img)
 
             if self.verbose > 1:
                 t_masking = time.time() - t_masking
@@ -603,14 +598,14 @@ def first_level_models_from_bids(dataset_path, task_id, model_init=None,
         different sessions are considered together for the same subject to run
         a fixed effects analysis on them.
 
-    models_fit_kwargs: list of dict
-        For each model there is a corresponding fit_kwargs dictionary. The
-        dictionary contain for certain 'run_imgs' and 'events' keys, and
-        optionally a 'confounds' key. For each run_img there is an events file
-        and a confounds file, so all three lists must have the same size.
-        fit_kwargs are provided as a dictionary to be easily passed to the
-        fit function of the models as model.fit(**kwargs), particularly when
-        no additional modifications of events or confounds is necessary.
+    models_run_imgs: list of list of Niimg-like objects,
+        Items for the FirstLevelModel fit function of their respective model.
+
+    models_events: list of list of pandas DataFrames,
+        Items for the FirstLevelModel fit function of their respective model.
+
+    models_confounds: list of list of pandas DataFrames or None,
+        Items for the FirstLevelModel fit function of their respective model.
     """
     # check arguments
     if not isinstance(dataset_path, str):
@@ -681,7 +676,9 @@ def first_level_models_from_bids(dataset_path, task_id, model_init=None,
     # Build fit_kwargs dictionaries to pass to their respective models fit
     # Events and confounds files must match number of imgs (runs)
     models = []
-    models_fit_kwargs = []
+    models_run_imgs = []
+    models_events = []
+    models_confounds = []
     for sub_label in sub_labels:
         # Create model
         model_kwargs = {'t_r': TR, 'slice_time_ref': SliceTimingRef,
@@ -690,9 +687,6 @@ def first_level_models_from_bids(dataset_path, task_id, model_init=None,
             model_kwargs.update(model_init)
         model = FirstLevelModel(**model_kwargs)
         models.append(model)
-
-        # Obtain model fit kwargs
-        model_fit_kwargs = {}
 
         # Get preprocessed imgs
         filters = [('task', task_id)]
@@ -734,7 +728,7 @@ def first_level_models_from_bids(dataset_path, task_id, model_init=None,
                             img_dict['run'])
                     else:
                         run_check_list.append(img_dict['run'])
-        model_fit_kwargs['run_imgs'] = imgs
+        models_run_imgs.append(imgs)
 
         # Get events and extra confounds
         filters = [('task', task_id)]
@@ -757,7 +751,7 @@ def first_level_models_from_bids(dataset_path, task_id, model_init=None,
                     warn('events taken from directory containing raw data. '
                          'Is it the case that there was no need to preprocess '
                          'the events for the model?')
-                model_fit_kwargs['events'] = events
+                models_events.append(events)
                 break
         if not events:
             raise ValueError('No events.tsv files found')
@@ -775,7 +769,6 @@ def first_level_models_from_bids(dataset_path, task_id, model_init=None,
                                  (len(events), len(imgs)))
             confounds = [pd.read_csv(c, sep='\t', index_col=None)
                          for c in confounds]
-            model_fit_kwargs['confounds'] = confounds
-        models_fit_kwargs.append(model_fit_kwargs)
+            models_confounds.append(confounds)
 
-    return models, models_fit_kwargs
+    return models, models_run_imgs, models_events, models_confounds
