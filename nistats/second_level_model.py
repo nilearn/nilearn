@@ -120,7 +120,7 @@ class SecondLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         ----------
         second_level_input: list of `FirstLevelModel` objects or pandas
                             DataFrame or list of Niimg-like objects.
-            If a pandas DataFrame, then they have to contain subject_labe,
+            If a pandas DataFrame, then they have to contain subject_label,
             map_name and effects_map_path. If list of Niimg-like objects then
             this is taken literally as Y for the model fit and design_matrix
             must be provided.
@@ -139,6 +139,7 @@ class SecondLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
             from second_level_input.
             Ensure that the order of maps given by a second_level_input
             list of Niimgs matches the order of the rows in the design matrix.
+            Must contain a column of 1s with column name 'contrast'.
         """
         # Check parameters
         # check first level input
@@ -187,7 +188,7 @@ class SecondLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
                                      ' columns subject_label, map_name and'
                                      ' effects_map_path')
             subject_labels = second_level_input['subject_label']
-            if np.unique(subject_labels) < len(subject_labels):
+            if len(np.unique(subject_labels)) < len(subject_labels):
                 raise ValueError('second_level_input DataFrame must contain'
                                  ' only one map per subject_label. Only '
                                  'passing FirstLevelModels grant the '
@@ -215,6 +216,8 @@ class SecondLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         if design_matrix is not None:
             if not isinstance(design_matrix, pd.DataFrame):
                 raise ValueError('design matrix must be a pandas DataFrame')
+            if 'contrast' not in design_matrix.columns:
+                raise ValueError('design matrix must contain column "contrast"')
 
         self.second_level_input_ = second_level_input
         self.confounds_ = confounds
@@ -231,7 +234,7 @@ class SecondLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
             maps_table = second_level_input
         elif isinstance(second_level_input[0], FirstLevelModel):
             sample_model = second_level_input[0]
-            sample_condition = sample_model.design_matrix_.columns[0]
+            sample_condition = sample_model.design_matrices_[0].columns[0]
             sample_map = sample_model.compute_contrast(
                 sample_condition, output_type='effect_size')
             maps_table = pd.DataFrame(columns=['map_name', 'subject_label'])
@@ -272,14 +275,15 @@ class SecondLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
 
         return self
 
-    def compute_contrast(self, contrast_def, first_level_contrast=None,
+    def compute_contrast(self, contrast_def='contrast',
+                         first_level_contrast=None,
                          stat_type=None, output_type='z_score'):
         """Generate different outputs corresponding to
         the contrasts provided e.g. z_map, t_map, effects and variance.
 
         Parameters
         ----------
-        contrast_def: str or array of shape (n_col)
+        contrast_def: str or array of shape (n_col), optional
             Where ``n_col`` is the number of columns of the design matrix,
             The string can be a formula compatible with the linear constraint
             of the Patsy library. Basically one can use the name of the
@@ -287,9 +291,10 @@ class SecondLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
             the fitted model combined with operators /*+- and numbers.
             Please checks the patsy documentation for formula examples:
             http://patsy.readthedocs.io/en/latest/API-reference.html#patsy.DesignInfo.linear_constraint
+            By default it returns the group contrast of the main effect.
 
-        first_level_contrast: str or array of shape (n_col)
-                              with respect to FirstLevelModel
+        first_level_contrast: str or array of shape (n_col) with respect to
+                              FirstLevelModel, optional
             In case a list of FirstLevelModel was provided as
             second_level_input, we have to provide a contrast to apply to
             the first level models to get the corresponding list of images
@@ -308,6 +313,8 @@ class SecondLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
             The desired output image
 
         """
+        if self.second_level_input_ is None:
+            raise ValueError('The model has not been fit yet')
 
         # first_level_contrast check
         if isinstance(self.second_level_input_[0], FirstLevelModel):
