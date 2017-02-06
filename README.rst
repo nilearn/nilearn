@@ -8,8 +8,8 @@
    :target: https://ci.appveyor.com/project/nilearn-ci/nilearn
    :alt: AppVeyor Build Status
 
-.. image:: https://coveralls.io/repos/nilearn/nilearn/badge.svg?branch=master
-   :target: https://coveralls.io/r/nilearn/nilearn
+.. image:: https://codecov.io/gh/nilearn/nilearn/branch/master/graph/badge.svg
+   :target: https://codecov.io/gh/nilearn/nilearn
 
 nilearn
 =======
