@@ -11,7 +11,7 @@ from sklearn.feature_extraction import image
 from sklearn.externals.joblib import Memory, delayed, Parallel
 
 from .decomposition.base import BaseDecomposition, mask_and_reduce
-from .input_data import NiftiMasker, MultiNiftiMasker, NiftiLabelsMasker
+from .input_data import NiftiLabelsMasker
 from ._utils.compat import _basestring
 
 
@@ -247,7 +247,8 @@ class Parcellations(BaseDecomposition):
                 (self.method == 'complete' or self.method == 'average'):
             raise NotImplementedError("Chosen method={0} is not implemented "
                                       "with sklearn version={1}."
-                                      .format(self.method, sklearn.__version__))
+                                      .format(self.method,
+                                              sklearn.__version__))
 
         BaseDecomposition.fit(self, imgs)
 
@@ -343,12 +344,15 @@ class Parcellations(BaseDecomposition):
         labels = self.labels_ + 1
         labels_img_ = self.masker_.inverse_transform(labels)
 
-        masker = NiftiLabelsMasker(labels_img_, mask_img=self.masker_.mask_img_,
+        masker = NiftiLabelsMasker(labels_img_,
+                                   mask_img=self.masker_.mask_img_,
                                    smoothing_fwhm=self.smoothing_fwhm,
                                    standardize=self.standardize,
-                                   detrend=self.detrend, low_pass=self.low_pass,
+                                   detrend=self.detrend,
+                                   low_pass=self.low_pass,
                                    high_pass=self.high_pass, t_r=self.t_r,
-                                   resampling_target='data', memory=self.memory,
+                                   resampling_target='data',
+                                   memory=self.memory,
                                    memory_level=self.memory_level,
                                    verbose=self.verbose)
 
@@ -385,4 +389,5 @@ class Parcellations(BaseDecomposition):
             Example, for single image shape will be
             (number of scans, number of labels)
         """
-        self.fit(imgs, confounds=confounds).transform(imgs, confounds=confounds)
+        return self.fit(imgs, confounds=confounds).transform(imgs,
+                                                             confounds=confounds)

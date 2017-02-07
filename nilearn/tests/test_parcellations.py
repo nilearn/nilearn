@@ -15,7 +15,7 @@ from nilearn._utils.testing import assert_raises_regex
 def test_errors_raised_in_check_parameters_fit():
     # Test whether an error is raised or not given
     # a false method type
-    valid_methods = ['kmeans', 'ward', 'complete', 'average']
+    # valid_methods = ['kmeans', 'ward', 'complete', 'average']
     data = np.zeros((6, 7, 8, 5))
 
     img = nibabel.Nifti1Image(data, affine=np.eye(4))
@@ -205,6 +205,9 @@ def test_parcellations_transform_with_multi_confounds_multi_images():
 
             signals = parcellator.transform(fmri_imgs,
                                             confounds=confounds_list)
+            assert_true(isinstance(signals, list))
+            # n_parcels=5, length of data=10
+            assert_equal(signals[0].shape, (10, 5))
 
 
 def test_fit_transform():
@@ -230,3 +233,5 @@ def test_fit_transform():
             # fit_transform with confounds
             signals = parcellator.fit_transform(fmri_imgs,
                                                 confounds=confounds_list)
+            assert_true(isinstance(signals, list))
+            assert_equal(signals[0].shape, (10, 5))
