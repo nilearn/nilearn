@@ -327,10 +327,11 @@ def _uncompress_file(file_, delete_archive=True, verbose=1):
         processed = False
         if zipfile.is_zipfile(file_):
             z = zipfile.ZipFile(file_)
-            z.extractall(data_dir)
+            z.extractall(path=data_dir)
             z.close()
             if delete_archive:
                 os.remove(file_)
+            file_ = filename
             processed = True
         elif ext == '.gz' or header.startswith(b'\x1f\x8b'):
             import gzip

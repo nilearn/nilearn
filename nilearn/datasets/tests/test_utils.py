@@ -281,8 +281,11 @@ def test_uncompress():
     # Create a zipfile
     dtemp = mkdtemp()
     ztemp = os.path.join(dtemp, 'test.zip')
+    ftemp = 'test'
+
     with contextlib.closing(zipfile.ZipFile(ztemp, 'w')) as testzip:
-        testzip.write(temp)
+        #testzip.write(temp)
+        testzip.writestr(ftemp, 'test')
     datasets.utils._uncompress_file(ztemp, verbose=0)
     assert(os.path.exists(os.path.join(dtemp, temp)))
     shutil.rmtree(dtemp)
