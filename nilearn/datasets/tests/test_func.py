@@ -519,10 +519,11 @@ def test_fetch_cobre():
     # Its posible to create .csv
     # with tst.mock_fetch_files.add_csv('phenotypic_data.csv', csv)
     # This code could be added to nilearn/_utils/testing.py as an tsv option
-
     name_f = os.path.join(cobre_dir,'phenotypic_data.tsv')
-    header = '{0}'.format('\t'.join(csv.dtype.names))
-    np.savetxt(name_f, csv, delimiter='\t', fmt='%s', header = header.encode())
+    with open(name_f, 'wb') as f:
+        header = '# {0}\n'.format('\t'.join(csv.dtype.names))
+        f.write(header.encode())
+        np.savetxt(f, csv, delimiter='\t', fmt='%s')
 
     f_in = open(name_f)
     name_f_gz = os.path.join(cobre_dir,'phenotypic_data.tsv.gz')
