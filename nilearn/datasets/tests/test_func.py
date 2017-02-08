@@ -526,13 +526,11 @@ def test_fetch_cobre():
         f.write(header.encode())
         np.savetxt(f, csv, delimiter='\t', fmt='%s')
 
+    # create an empty .gz file
     f_in = open(name_f)
     name_f_gz = os.path.join(cobre_dir,'phenotypic_data.tsv.gz')
-    if sys.version_info >= (3,0,0):
-        f_out = gzip.open(name_f_gz, 'w', newline='')
-    else:
-        f_out = gzip.open(name_f_gz, 'wb')
-    f_out.writelines(f_in)
+    f_out = gzip.open(name_f_gz, 'wb')
+    #f_out.writelines(f_in)
     f_out.close()
     f_in.close()
 
