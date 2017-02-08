@@ -9,6 +9,7 @@ import numpy as np
 import json
 import nibabel
 import gzip
+import sys
 from sklearn.utils import check_random_state
 
 from nose import with_setup
@@ -527,7 +528,10 @@ def test_fetch_cobre():
 
     f_in = open(name_f)
     name_f_gz = os.path.join(cobre_dir,'phenotypic_data.tsv.gz')
-    f_out = gzip.open(name_f_gz, 'wb')
+    if sys.version_info >= (3,0,0):
+        f_out = gzip.open(name_f_gz, 'w', newline='')
+    else:
+        f_out = gzip.open(name_f_gz, 'wb')
     f_out.writelines(f_in)
     f_out.close()
     f_in.close()
