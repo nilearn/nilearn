@@ -111,7 +111,7 @@ print("Ward agglomeration 2000 clusters: %.2fs" % (time.time() - start))
 kmeans_labels_img = kmeans.masker_.inverse_transform(kmeans.labels_)
 ward_labels_img = ward.masker_.inverse_transform(ward.labels_)
 
-from nilearn.plotting import plot_roi, plot_epi, show
+from nilearn import plotting
 from nilearn.image import mean_img
 
 # we take mean over time on the functional image to use mean image as
@@ -119,12 +119,12 @@ from nilearn.image import mean_img
 mean_func_img = mean_img(dataset.func[0])
 
 
-first_plot = plot_roi(kmeans_labels_img, mean_func_img,
-                      title="KMeans parcellation",
-                      display_mode='xz')
-second_plot = plot_roi(ward_labels_img, mean_func_img,
-                       title="Ward parcellation",
-                       display_mode='xz')
+first_plot = plotting.plot_roi(kmeans_labels_img, mean_func_img,
+                               title="KMeans parcellation",
+                               display_mode='xz')
+second_plot = plotting.plot_roi(ward_labels_img, mean_func_img,
+                                title="Ward parcellation",
+                                display_mode='xz')
 
 # common cut coordinates for all plots
 cut_coords = first_plot.cut_coords
@@ -145,16 +145,16 @@ ward_labels_img.to_filename('ward_parcellation.nii')
 
 # Display the original data
 fmri_masked = ward.masker_.transform(dataset.func)
-plot_epi(ward.masker_.inverse_transform(fmri_masked[0][0]),
-         cut_coords=cut_coords,
-         title='Original (%i voxels)' % fmri_masked[0].shape[1],
-         vmax=fmri_masked[0].max(), vmin=fmri_masked[0].min(),
-         display_mode='xz')
+plotting.plot_epi(ward.masker_.inverse_transform(fmri_masked[0][0]),
+                  cut_coords=cut_coords,
+                  title='Original (%i voxels)' % fmri_masked[0].shape[1],
+                  vmax=fmri_masked[0].max(), vmin=fmri_masked[0].min(),
+                  display_mode='xz')
 
 # Display the corresponding data compressed using the parcellation using
 # parcels=2000
-plot_epi(ward_labels_img, cut_coords=cut_coords,
-         title='Compressed representation (2000 parcels)',
-         display_mode='xz')
+plotting.plot_epi(ward_labels_img, cut_coords=cut_coords,
+                  title='Compressed representation (2000 parcels)',
+                  display_mode='xz')
 
-show()
+plotting.show()
