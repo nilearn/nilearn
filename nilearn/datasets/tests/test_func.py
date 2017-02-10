@@ -9,13 +9,11 @@ import numpy as np
 import json
 import nibabel
 import gzip
-import sys
 from sklearn.utils import check_random_state
 
 from nose import with_setup
 from nose.tools import assert_true, assert_equal, assert_not_equal
-#from . import test_utils as tst
-from nilearn.datasets.tests import test_utils as tst
+from . import test_utils as tst
 
 from nilearn.datasets import utils, func
 from nilearn._utils.testing import assert_raises_regex
@@ -517,9 +515,6 @@ def test_fetch_cobre():
     os.mkdir(cobre_dir)
 
     # Create the tsv.gz
-    # Its posible to create .csv
-    # with tst.mock_fetch_files.add_csv('phenotypic_data.csv', csv)
-    # This code could be added to nilearn/_utils/testing.py as an tsv option
     name_f = os.path.join(cobre_dir,'phenotypic_data.tsv')
     with open(name_f, 'wb') as f:
         header = '# {0}\n'.format('\t'.join(csv.dtype.names))
@@ -530,7 +525,6 @@ def test_fetch_cobre():
     f_in = open(name_f)
     name_f_gz = os.path.join(cobre_dir,'phenotypic_data.tsv.gz')
     f_out = gzip.open(name_f_gz, 'wb')
-    #f_out.writelines(f_in)
     f_out.close()
     f_in.close()
 
@@ -580,8 +574,6 @@ def test_fetch_cobre():
     assert_true(isinstance(cobre_data.func[0], _basestring))
     # returned phenotypic data will be an array
     assert_true(isinstance(cobre_data.phenotypic, np.recarray))
-    # data description should not be empty
-    #assert_not_equal(cobre_data.description, '')
 
     # Fetch only 30 subjects
     data_30_subjects = func.fetch_cobre(n_subjects=30, url=local_url,
