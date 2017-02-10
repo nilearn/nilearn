@@ -346,7 +346,6 @@ def _uncompress_file(file_, delete_archive=True, verbose=1):
             if delete_archive:
                 os.remove(file_)
             file_ = filename
-            filename, ext = os.path.splitext(file_)
             processed = True
         if tarfile.is_tarfile(file_):
             with contextlib.closing(tarfile.open(file_, "r")) as tar:
@@ -357,8 +356,6 @@ def _uncompress_file(file_, delete_archive=True, verbose=1):
         if not processed:
             raise IOError(
                     "[Uncompress] unknown archive file format: %s" % file_)
-        # if delete_archive:
-        #     os.remove(file_)
         if verbose > 0:
             sys.stderr.write('.. done.\n')
     except Exception as e:
