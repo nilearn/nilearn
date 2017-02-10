@@ -1657,17 +1657,17 @@ def fetch_cobre(n_subjects=10, data_dir=None, url=None, verbose=1):
         warnings.warn('Warning: there are only %d subjects' % max_subjects)
         n_subjects = max_subjects
 
-    sz_count = list(csv_array_phen['subject_type']).count('Patient')
-    ct_count = list(csv_array_phen['subject_type']).count('Control')
+    sz_count = list(csv_array_phen['subject_type']).count(b'Patient')
+    ct_count = list(csv_array_phen['subject_type']).count(b'Control')
 
-    n_sz = np.ceil(float(n_subjects) / max_subjects * sz_count)
-    n_ct = np.floor(float(n_subjects) / max_subjects * ct_count)
+    n_sz = np.round(float(n_subjects) / max_subjects * sz_count).astype(int)
+    n_ct = np.round(float(n_subjects) / max_subjects * ct_count).astype(int)
 
     # First, restrict the csv files to the adequate number of subjects
     sz_ids = csv_array_phen[csv_array_phen['subject_type'] ==
-                            'Patient']['id'][:n_sz]
+                            b'Patient']['id'][:n_sz]
     ct_ids = csv_array_phen[csv_array_phen['subject_type'] ==
-                            'Control']['id'][:n_ct]
+                            b'Control']['id'][:n_ct]
     ids = np.hstack([sz_ids, ct_ids])
     csv_array_phen = csv_array_phen[np.in1d(csv_array_phen['id'], ids)]
 
@@ -1711,7 +1711,7 @@ def fetch_cobre(n_subjects=10, data_dir=None, url=None, verbose=1):
     files_keys_con =  open(csv_keys_con, 'r').read()
     files_keys_phen =  open(csv_keys_phen, 'r').read()
 
-    readme = open(csv_readme, 'r').read() #.split(',\n ')
+    readme = open(csv_readme, 'r').read()
 
     return Bunch(func=func, confounds=con, phenotypic=csv_array_phen,
                  description=fdescr, desc_con = files_keys_con,
