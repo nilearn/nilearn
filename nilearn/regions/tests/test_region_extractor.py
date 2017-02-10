@@ -289,8 +289,8 @@ def test_connected_label_regions():
     np.testing.assert_raises(ValueError, connected_label_regions,
                              labels_img, labels=provided_labels)
 
-    # Test if unknown/negative integers are provided as labels in labels_img, we
-    # raise an error and test the same whether error is raised.
+    # Test if unknown/negative integers are provided as labels in labels_img,
+    # we raise an error and test the same whether error is raised.
     labels_data = np.zeros(shape, dtype=np.int)
     h0 = shape[0] // 2
     h1 = shape[1] // 2
@@ -329,8 +329,8 @@ def test_connected_label_regions():
     assert_true(isinstance(new_labels, list))
 
     # If user has provided combination of labels, then function passes without
-    # breaking and new labels are returned based upon given labels and should be
-    # equal or more based on regions extracted
+    # breaking and new labels are returned based upon given labels and should
+    # be equal or more based on regions extracted
     combined_labels = ['region_a', '1', 'region_b', '2', 'region_c', '3',
                        'region_d', '4', 'region_e']
     ext_reg, new_labels = connected_label_regions(labels_img,
