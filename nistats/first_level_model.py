@@ -573,7 +573,7 @@ def first_level_models_from_bids(
         mask=None, target_affine=None, target_shape=None, smoothing_fwhm=None,
         memory=Memory(None), memory_level=1, standardize=False,
         signal_scaling=0, noise_model='ar1', verbose=0, n_jobs=1,
-        minimize_memory=True, subject_label=None):
+        minimize_memory=True):
     """Create FirstLevelModel objects and fit arguments from a BIDS dataset.
 
     It t_r is not specified this function will attempt to load it from a
@@ -625,9 +625,6 @@ def first_level_models_from_bids(
     if not isinstance(task_id, str):
         raise TypeError('task_id must be a string, instead %s was given' %
                         type(task_id))
-    # gather first level model arguments
-    args, _, _, values = inspect.getargvalues(inspect.currentframe())
-    model_kwargs = dict([(arg, values[arg]) for arg in args[4:]])
 
     # check derivatives folder is present
     derivatives_path = os.path.join(dataset_path, 'derivatives')
@@ -685,10 +682,16 @@ def first_level_models_from_bids(
     models_confounds = []
     for sub_label in sub_labels:
         # Create model
-        model_kwargs['t_r'] = t_r
-        model_kwargs['slice_time_ref'] = slice_time_ref
-        model_kwargs['subject_label'] = sub_label
-        model = FirstLevelModel(**model_kwargs)
+        model = FirstLevelModel(
+            t_r=t_r, slice_time_ref=slice_time_ref, hrf_model=hrf_model,
+            drift_model=drift_model, period_cut=period_cut,
+            drift_order=drift_order, fir_delays=fir_delays,
+            min_onset=min_onset, mask=mask, target_affine=target_affine,
+            target_shape=target_shape, smoothing_fwhm=smoothing_fwhm,
+            memory=memory, memory_level=memory_level, standardize=standardize,
+            signal_scaling=signal_scaling, noise_model=noise_model,
+            verbose=verbose, n_jobs=n_jobs, minimize_memory=minimize_memory,
+            subject_label=sub_label)
         models.append(model)
 
         # Get preprocessed imgs
