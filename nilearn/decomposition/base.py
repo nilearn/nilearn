@@ -114,7 +114,7 @@ def mask_and_reduce(masker, imgs,
                          for subject_data in data_list]
 
     n_samples = np.sum(subject_n_samples)
-    n_voxels = np.sum(_safe_get_data(masker.mask_img_))
+    n_voxels = int(np.sum(_safe_get_data(masker.mask_img_)))
     data = np.empty((n_samples, n_voxels), order='F',
                     dtype='float64')
 
