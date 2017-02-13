@@ -116,7 +116,7 @@ from nilearn.image.resampling import coord_transform
 affine = weight_img.affine
 _, _, k_slice = coord_transform(0, 0, z_slice,
                                 linalg.inv(affine))
-k_slice = np.round(k_slice)
+k_slice = int(np.round(k_slice))
 
 fig = plt.figure(figsize=(5.5, 7.5), facecolor='k')
 weight_slice_data = weight_img.get_data()[..., k_slice, 0]
