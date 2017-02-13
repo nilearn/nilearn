@@ -84,7 +84,7 @@ for midx, (model, imgs, events, confounds) in enumerate(model_and_args):
     zmap = model.compute_contrast('language-string')
     plotting.plot_glass_brain(zmap, colorbar=False, threshold=norm.isf(0.001),
                               title=('sub-' + model.subject_label),
-                              axes=axes[midx / 5, midx % 5],
+                              axes=axes[int(midx / 5), int(midx % 5)],
                               plot_abs=False, display_mode='x')
 fig.suptitle('subjects z_map language network (language - string)')
 plt.show()

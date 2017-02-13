@@ -44,7 +44,7 @@ fig, axes = plt.subplots(nrows=4, ncols=4)
 for cidx, tmap in enumerate(data['tmaps']):
     plotting.plot_glass_brain(tmap, colorbar=False, threshold=2.0,
                               title=subjects[cidx],
-                              axes=axes[cidx / 4, cidx % 4],
+                              axes=axes[int(cidx / 4), int(cidx % 4)],
                               plot_abs=False, display_mode='z')
 fig.suptitle('subjects t_map left-right button press')
 plt.show()
