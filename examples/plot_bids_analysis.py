@@ -16,6 +16,7 @@ More specifically:
 
 Author : Martin Perez-Guevara: 2016
 """
+
 import os
 from nilearn import plotting
 from scipy.stats import norm
@@ -25,7 +26,7 @@ from nistats.datasets import fetch_bids_langloc_dataset
 from nistats.first_level_model import first_level_models_from_bids
 from nistats.second_level_model import SecondLevelModel
 
-#############################################################################
+##############################################################################
 # Fetch example BIDS dataset
 # --------------------------
 # We download a partial example BIDS dataset. It contains only the necessary
@@ -35,7 +36,7 @@ from nistats.second_level_model import SecondLevelModel
 # confounds.tsv files.
 data_dir, _ = fetch_bids_langloc_dataset()
 
-#############################################################################
+##############################################################################
 # Obtain automatically FirstLevelModel objects and fit arguments
 # --------------------------------------------------------------
 # From the dataset directory we obtain automatically FirstLevelModel objects
@@ -59,7 +60,7 @@ models, m_run_imgs, m_events, m_confounds = first_level_models_from_bids(
 # We just expect one run img per subject.
 print([os.path.basename(run) for run in m_run_imgs[0]])
 
-##############################################################################
+###############################################################################
 # The only confounds stored are regressors obtained from motion correction. As
 # we can verify from the column headers of the confounds table corresponding
 # to the only run_img present
