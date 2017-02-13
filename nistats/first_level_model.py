@@ -598,7 +598,8 @@ def first_level_models_from_bids(
         As they are specified in the file names.
 
     All other parameters correspond to a `FirstLevelModel` object, which
-    contains their documentation.
+    contains their documentation. The subject label of the model will be
+    determined directly from the BIDS dataset.
 
     Returns
     -------
