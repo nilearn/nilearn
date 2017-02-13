@@ -17,6 +17,7 @@ import sys
 import os
 import glob
 import json
+import inspect
 
 import numpy as np
 import pandas as pd
@@ -565,9 +566,19 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         return output
 
 
-def first_level_models_from_bids(dataset_path, task_id, model_init=None,
-                                 preproc_variant=None, preproc_space=None):
+def first_level_models_from_bids(
+        dataset_path, task_id, preproc_variant=None, preproc_space=None,
+        t_r=None, slice_time_ref=0., hrf_model='glover', drift_model='cosine',
+        period_cut=128, drift_order=1, fir_delays=[0], min_onset=-24,
+        mask=None, target_affine=None, target_shape=None, smoothing_fwhm=None,
+        memory=Memory(None), memory_level=1, standardize=False,
+        signal_scaling=0, noise_model='ar1', verbose=0, n_jobs=1,
+        minimize_memory=True, subject_label=None):
     """Create FirstLevelModel objects and fit arguments from a BIDS dataset.
+
+    It t_r is not specified this function will attempt to load it from a
+    bold.json file alongside slice_time_ref. Otherwise t_r and slice_time_ref
+    are taken as given.
 
     Parameters
     ----------
@@ -578,11 +589,6 @@ def first_level_models_from_bids(dataset_path, task_id, model_init=None,
     task_id: str
         Task_id as specified in the file names. Of the form _task-*_.
 
-    model_init: dict, optional
-        Is posible to specify the parameters of the FirstLevelModel objects
-        as a dictionary. The same parameter initialization will be applied to
-        all FirstLevelModel objects.
-
     preproc_variant: str, optional
         Can specify a particular variant label of the preproc.nii images.
         As they are specified in the file names.
@@ -590,6 +596,9 @@ def first_level_models_from_bids(dataset_path, task_id, model_init=None,
     preproc_space: str, optional
         Can specify a particular space label of the preproc.nii images.
         As they are specified in the file names.
+
+    All other parameters correspond to a `FirstLevelModel` object, which
+    contains their documentation.
 
     Returns
     -------
@@ -616,9 +625,9 @@ def first_level_models_from_bids(dataset_path, task_id, model_init=None,
     if not isinstance(task_id, str):
         raise TypeError('task_id must be a string, instead %s was given' %
                         type(task_id))
-    if model_init is not None and not isinstance(model_init, dict):
-        raise TypeError('model_init must be a dict, instead %s was given' %
-                        type(model_init))
+    # gather first level model arguments
+    args, _, _, values = inspect.getargvalues(inspect.currentframe())
+    model_kwargs = dict([(arg, values[arg]) for arg in args[4:]])
 
     # check derivatives folder is present
     derivatives_path = os.path.join(dataset_path, 'derivatives')
@@ -626,16 +635,11 @@ def first_level_models_from_bids(dataset_path, task_id, model_init=None,
         raise ValueError('derivatives folder does not exist in given dataset')
 
     # Get acq specs for models. RepetitionTime and SliceTimingReference.
-    # Only if not given in model_init dictionary
     # Throw warning if no bold.json is found
-    TR = None
-    SliceTimingRef = 0.0
-    if model_init is not None and 't_r' in model_init:
-        warn('RepetitionTime given in model_init as %d' % model_init['t_r'])
-        if 'slice_time_ref' not in model_init:
-            warn('slice_time_ref was not given and so it is assumed that the '
-                 'slice timing reference is 0.0 percent of the repetition '
-                 'time')
+    if t_r is not None:
+        warn('RepetitionTime given in model_init as %d' % t_r)
+        warn('slice_time_ref is %d percent of the repetition '
+             'time' % slice_time_ref)
     else:
         filters = [('task', task_id)]
         img_specs = get_bids_files(derivatives_path, file_folder='func',
@@ -653,14 +657,14 @@ def first_level_models_from_bids(dataset_path, task_id, model_init=None,
         else:
             specs = json.load(open(img_specs[0], 'r'))
             if 'RepetitionTime' in specs:
-                TR = float(specs['RepetitionTime'])
+                t_r = float(specs['RepetitionTime'])
             else:
                 warn('RepetitionTime not found in file %s. t_r can not be '
                      'inferred and will need to be set manually in the '
                      'list of models. Otherwise their fit will throw an '
                      ' exception' % img_specs[0])
             if 'SliceTimingRef' in specs:
-                SliceTimingRef = float(specs['SliceTimingRef'])
+                slice_time_ref = float(specs['SliceTimingRef'])
             else:
                 warn('SliceTimingRef not found in file %s. It will be assumed'
                      ' that the slice timing reference is 0.0 percent of the '
@@ -681,10 +685,9 @@ def first_level_models_from_bids(dataset_path, task_id, model_init=None,
     models_confounds = []
     for sub_label in sub_labels:
         # Create model
-        model_kwargs = {'t_r': TR, 'slice_time_ref': SliceTimingRef,
-                        'subject_label': sub_label}
-        if model_init is not None:
-            model_kwargs.update(model_init)
+        model_kwargs['t_r'] = t_r
+        model_kwargs['slice_time_ref'] = slice_time_ref
+        model_kwargs['subject_label'] = sub_label
         model = FirstLevelModel(**model_kwargs)
         models.append(model)
 
