@@ -264,14 +264,22 @@ def test_connected_label_regions():
     extracted_reg, new_labels = connected_label_regions(labels_img,
                                                         min_size=100,
                                                         labels=labels)
-    # new_labels returned must be equal or more than what was in labels.
-    assert_true(new_labels >= len(labels))
+    # The length of new_labels returned can differ depending upon min_size. If
+    # min_size given is more small regions can be removed therefore newly
+    # generated labels can be less than original size of labels. Or if min_size
+    # is less then newly generated labels can be more.
+
+    # We test here whether labels returned are empty or not.
+    assert_not_equal(new_labels, '')
+    assert_true(len(new_labels) <= len(labels))
 
     # labels given in numpy array
     labels = np.asarray(labels)
     extracted_reg2, new_labels2 = connected_label_regions(labels_img,
                                                           labels=labels)
-    assert_true(new_labels2 >= len(labels))
+    assert_not_equal(new_labels, '')
+    # By default min_size is less, so newly generated labels can be more.
+    assert_true(len(new_labels2) >= len(labels))
 
     # If number of labels provided are wrong (which means less than number of
     # unique labels in labels_img), then we raise an error
