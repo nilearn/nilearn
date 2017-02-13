@@ -107,9 +107,10 @@ def _remove_small_regions(input_data, mask_data, index,
         returned.
     """
     # with return_counts argument is introduced from numpy 1.9.0.
-    # To count the region sizes, we use return_inverse from np.unique
-    # and then use np.bincount to count the region sizes.
     # _, region_sizes = np.unique(input_data, return_counts=True)
+
+    # For now, to count the region sizes, we use return_inverse from
+    # np.unique and then use np.bincount to count the region sizes.
 
     _, region_indices = np.unique(input_data, return_inverse=True)
     region_sizes = np.bincount(region_indices)
