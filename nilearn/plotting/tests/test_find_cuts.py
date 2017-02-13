@@ -71,9 +71,9 @@ def test_find_cut_slices():
             # of the data
             for cut in cuts:
                 if direction == 'x':
-                    cut_value = data[cut]
+                    cut_value = data[int(cut)]
                 elif direction == 'z':
-                    cut_value = data[..., cut]
+                    cut_value = data[..., int(cut)]
                 assert_equal(cut_value.max(), 1)
 
     # Now ask more cuts than it is possible to have with a given spacing
