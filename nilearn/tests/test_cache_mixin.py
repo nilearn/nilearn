@@ -17,9 +17,35 @@ from nilearn._utils import cache_mixin, CacheMixin
 from nilearn._utils.testing import assert_raises_regex
 
 
+
 def f(x):
     # A simple test function
     return x
+
+
+def test_check_memory():
+    # Test if _check_memory returns a memory object with the cachedir equal to
+    # input path
+    try:
+        temp_dir = tempfile.mkdtemp()
+
+        mem_none = Memory(cachedir=None)
+        mem_temp = Memory(cachedir=temp_dir)
+
+        for mem in [None, mem_none]:
+            memory = cache_mixin._check_memory(mem, verbose=False)
+            assert_true(memory, Memory)
+            assert_equal(memory.cachedir, mem_none.cachedir)
+
+        for mem in [temp_dir, mem_temp]:
+            memory = cache_mixin._check_memory(mem, verbose=False)
+            assert_equal(memory.cachedir, mem_temp.cachedir)
+            assert_true(memory, Memory)
+
+    finally:
+        if os.path.exists(temp_dir):
+            shutil.rmtree(temp_dir)
+
 
 
 def test__safe_cache_dir_creation():

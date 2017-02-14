@@ -366,7 +366,7 @@ class GlassBrainAxes(BaseAxes):
                 )
         elif vmax is None:
             if vmin < 0:
-                vmin = -vmax
+                vmax = -vmin
             else:
                 raise ValueError(
                     "If vmin is set to a non-negative number "
@@ -643,7 +643,7 @@ class BaseSlicer(object):
         threshold = float(threshold) if threshold is not None else None
 
         if threshold is not None:
-            data = img.get_data()
+            data = _utils.niimg._safe_get_data(img, ensure_finite=True)
             if threshold == 0:
                 data = np.ma.masked_equal(data, 0, copy=False)
             else:
@@ -652,7 +652,7 @@ class BaseSlicer(object):
             img = new_img_like(img, data, _utils.compat.get_affine(img))
 
         affine = _utils.compat.get_affine(img)
-        data = img.get_data()
+        data = _utils.niimg._safe_get_data(img, ensure_finite=True)
         data_bounds = get_bounds(data.shape, affine)
         (xmin, xmax), (ymin, ymax), (zmin, zmax) = data_bounds
 

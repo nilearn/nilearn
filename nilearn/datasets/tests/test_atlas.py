@@ -398,3 +398,22 @@ def test_fetch_coords_dosenbach_2010():
 
     bunch = atlas.fetch_coords_dosenbach_2010(ordered_regions=False)
     assert_true(np.any(bunch.networks != np.sort(bunch.networks)))
+
+
+@with_setup(setup_mock, teardown_mock)
+@with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
+def test_fetch_atlas_allen_2011():
+    bunch = atlas.fetch_atlas_allen_2011(data_dir=tst.tmpdir, verbose=0)
+    keys = ("maps",
+            "rsn28",
+            "comps")
+
+    filenames = ["ALL_HC_unthresholded_tmaps.nii",
+                 "RSN_HC_unthresholded_tmaps.nii",
+                 "rest_hcp_agg__component_ica_.nii"]
+
+    assert_equal(len(tst.mock_url_request.urls), 3)
+    for key, fn in zip(keys, filenames):
+        assert_equal(bunch[key], os.path.join(tst.tmpdir, 'allen_rsn_2011', fn))
+
+    assert_not_equal(bunch.description, '')

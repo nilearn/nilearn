@@ -1,3 +1,21 @@
+0.3.0
+=======
+
+**Dropped support for scikit-learn 0.14** Minimum supported version is
+now 0.15.
+
+**Dropped support for Python 2.6**
+
+
+Changelog
+---------
+
+Enhancements
+............
+
+   - Add fetcher for Allen et al. 2011 RSN atlas in
+     :func:`nilearn.datasets.fetch_atlas_allen_2011`.
+
 0.2.6
 =====
 
@@ -27,21 +45,21 @@ Bug fix
 Enhancements
 ............
 
-   - Sphinx-gallery updated to version 0.1.3
+   - Sphinx-gallery updated to version 0.1.3.
 
-   - Refactoring of examples and documentation
+   - Refactoring of examples and documentation.
 
    - Better ordering of regions in
-     :func:`nilearn.datasets.fetch_coords_dosenbach_2010`
+     :func:`nilearn.datasets.fetch_coords_dosenbach_2010`.
 
-   - Remove outdated power atlas example
+   - Remove outdated power atlas example.
 
-   
+
 API changes summary
 ...................
 
     - The parameter 'n_subjects' is deprecated and will be removed in future
-      release. Use 'subjects' instead in :func:`nilearn.datasets.fetch_haxby`
+      release. Use 'subjects' instead in :func:`nilearn.datasets.fetch_haxby`.
 
     - The function :func:`nilearn.datasets.fetch_haxby` will now fetch the
       data accepting input given in 'subjects' as a list than integer.
@@ -120,7 +138,7 @@ New features
       :func:`nilearn.datasets.fetch_localizer_button_task` to simplify
       some examples.
 
-    - The dataset function 
+    - The dataset function
       :func:`nilearn.datasets.fetch_localizer_contrasts` can now download
       a specific list of subjects rather than a range of subjects.
 
@@ -239,10 +257,10 @@ Bug fixes
      the size of a voxel
    - :class:`nilearn.regions.RegionExtractor` handles data containing Nans.
    - Confound regression does not force systematically the normalization of
-     the confounds. 
+     the confounds.
    - Force time series normalization in
      :class:`nilearn.connectome.ConnectivityMeasure`
-     and check dimensionality of the input. 
+     and check dimensionality of the input.
    - `nilearn._utils.numpy_conversions.csv_to_array` could consider
      valid CSV files as invalid.
 

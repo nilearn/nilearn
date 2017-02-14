@@ -8,8 +8,8 @@
    :target: https://ci.appveyor.com/project/nilearn-ci/nilearn
    :alt: AppVeyor Build Status
 
-.. image:: https://coveralls.io/repos/nilearn/nilearn/badge.svg?branch=master
-   :target: https://coveralls.io/r/nilearn/nilearn
+.. image:: https://codecov.io/gh/nilearn/nilearn/branch/master/graph/badge.svg
+   :target: https://codecov.io/gh/nilearn/nilearn
 
 nilearn
 =======
@@ -25,7 +25,7 @@ This work is made available by a community of people, amongst which
 the INRIA Parietal Project Team and the scikit-learn folks, in particular
 P. Gervais, A. Abraham, V. Michel, A.
 Gramfort, G. Varoquaux, F. Pedregosa, B. Thirion, M. Eickenberg, C. F. Gorgolewski,
-D. Bzdok, L. Estève and B. Cipollini.
+D. Bzdok, L. Esteve and B. Cipollini.
 
 Important links
 ===============
@@ -38,7 +38,7 @@ Dependencies
 
 The required dependencies to use the software are:
 
-* Python >= 2.6,
+* Python >= 2.7,
 * setuptools
 * Numpy >= 1.6.1
 * SciPy >= 0.9

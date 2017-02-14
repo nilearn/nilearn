@@ -881,3 +881,18 @@ def test_outlier_cut_coords():
 
     p = plot_stat_map(img, display_mode='z', cut_coords=cuts[-4:],
                       bg_img=bg_img)
+
+
+def test_plot_stat_map_with_nans():
+    img = _generate_img()
+    data = img.get_data()
+
+    data[6, 5, 1] = np.nan
+    data[1, 5, 2] = np.nan
+    data[1, 3, 2] = np.nan
+    data[6, 5, 2] = np.inf
+
+    img = nibabel.Nifti1Image(data, mni_affine)
+    plot_epi(img)
+    plot_stat_map(img)
+    plot_glass_brain(img)
