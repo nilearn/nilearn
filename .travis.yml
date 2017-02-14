@@ -19,7 +19,7 @@ matrix:
     - env: DISTRIB="conda" PYTHON_VERSION="2.7"
            NUMPY_VERSION="1.8.2" SCIPY_VERSION="0.13.3"
            SCIKIT_LEARN_VERSION="0.15.1" MATPLOTLIB_VERSION="1.3.1"
-           NIBABEL_VERSION="1.1.0"
+           NIBABEL_VERSION="1.1.0" COVERAGE="true"
     # Ubuntu 14.04 versions without matplotlib
     - env: DISTRIB="conda" PYTHON_VERSION="2.7"
            NUMPY_VERSION="1.8.2" SCIPY_VERSION="0.13.3"
@@ -45,4 +45,4 @@ before_script: make clean
 
 script: source continuous_integration/test_script.sh
 
-after_success: source continuous_integration/after_success.sh  
+after_success: source continuous_integration/after_success.sh

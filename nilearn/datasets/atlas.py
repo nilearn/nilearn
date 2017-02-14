@@ -803,11 +803,12 @@ def fetch_atlas_allen_2011(data_dir=None, url=None, resume=True, verbose=1):
     -------
     data: sklearn.datasets.base.Bunch
         dictionary-like object, keys are:
+
         - "maps": T-maps of all 75 unthresholded components.
         - "rsn28": T-maps of 28 RSNs included in E. Allen et al.
         - "networks": string list containing the names for the 28 RSNs.
         - "rsn_indices": dict[rsn_name] -> list of int, indices in the "maps"
-                         file of the 28 RSNs.
+          file of the 28 RSNs.
         - "comps": The aggregate ICA Components.
         - "description": details about the data release.
 
