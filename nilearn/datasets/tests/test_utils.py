@@ -278,13 +278,12 @@ def test_uncompress():
     # Create dummy file
     fd, temp = mkstemp()
     os.close(fd)
+
     # Create a zipfile
     dtemp = mkdtemp()
     ztemp = os.path.join(dtemp, 'test.zip')
     ftemp = 'test'
-
     with contextlib.closing(zipfile.ZipFile(ztemp, 'w')) as testzip:
-        #testzip.write(temp)
         testzip.writestr(ftemp, 'test')
     datasets.utils._uncompress_file(ztemp, verbose=0)
     assert(os.path.exists(os.path.join(dtemp, temp)))
@@ -340,7 +339,6 @@ def test_fetch_file_overwrite():
     assert_true(os.path.exists(fil))
     with open(fil, 'r') as fp:
         assert_equal(fp.read(), '')
-
 
 
 @with_setup(setup_mock, teardown_mock)
