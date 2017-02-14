@@ -1561,13 +1561,7 @@ def fetch_cobre(n_subjects=10, data_dir=None, url=None, verbose=1):
     `phenotypic_data.tsv` contains the data of clinical variables that
     explained in `keys_phenotypic_data.json`
 
-    `README.md`: a markdown (text) description of the release.
-
-    NOTE: The number of time samples vary, as some samples have been removed
-    if tagged with excessive motion. This means that data is already time
-    filtered. See output variable 'description' for more details.
-
-    .. versionadded 0.2.3
+    .. version added 0.3
 
     Parameters
     ----------
@@ -1602,9 +1596,8 @@ def fetch_cobre(n_subjects=10, data_dir=None, url=None, verbose=1):
         - 'desc_con': str
             description of the confounds variables
         - 'desc_phenotypic': str
-            description of the phenotypic variables
-        - 'readme': str
-            description of the release
+            description of the phenotypic variables.
+
 
     Notes
     -----
@@ -1633,7 +1626,7 @@ def fetch_cobre(n_subjects=10, data_dir=None, url=None, verbose=1):
 
     # Fetch the phenotypic file and load it
     csv_name_gz = 'phenotypic_data.tsv.gz'
-    csv_name  = os.path.splitext(csv_name_gz)[0]
+    csv_name = os.path.splitext(csv_name_gz)[0]
     csv_file_phen = _fetch_files(
         data_dir, [(csv_name, files[csv_name_gz]['download_url'],
                     {'md5': files[csv_name_gz].get('md5', None),
@@ -1645,8 +1638,8 @@ def fetch_cobre(n_subjects=10, data_dir=None, url=None, verbose=1):
     names = ['ID', 'Current Age', 'Gender', 'Handedness', 'Subject Type',
              'Diagnosis', 'Frames OK', 'FD', 'FD Scrubbed']
 
-    csv_array_phen = np.recfromcsv(csv_file_phen, names=names, skip_header=True,
-                               delimiter='\t')
+    csv_array_phen = np.recfromcsv(csv_file_phen, names=names,
+                                   skip_header=True, delimiter='\t')
 
     # Check number of subjects
     max_subjects = len(csv_array_phen)
@@ -1683,7 +1676,7 @@ def fetch_cobre(n_subjects=10, data_dir=None, url=None, verbose=1):
         f, c = _fetch_files(
             data_dir,
             [(f, files[f]['download_url'], {'md5': files[f].get('md5', None),
-                                           'move': f}),
+                                            'move': f}),
              (c, files[c_gz]['download_url'],
               {'md5': files[c_gz].get('md5', None),
                'move': c_gz, 'uncompress': True})
@@ -1695,24 +1688,19 @@ def fetch_cobre(n_subjects=10, data_dir=None, url=None, verbose=1):
     # Fetch the the complementary files
     keys_con = "keys_confounds.json"
     keys_phen = "keys_phenotypic_data.json"
-    rm = 'README.md'
 
-    csv_keys_con, csv_keys_phen, csv_readme = _fetch_files(
+    csv_keys_con, csv_keys_phen = _fetch_files(
         data_dir,
         [(keys_con, files[keys_con]['download_url'],
-          {'md5': files[keys_con].get('md5', None),'move': keys_con}),
-        (keys_phen, files[keys_phen]['download_url'],
-         {'md5': files[keys_phen].get('md5', None), 'move': keys_phen}),
-        (rm, files[rm]['download_url'],
-         {'md5': files[rm].get('md5', None), 'move': rm})
+          {'md5': files[keys_con].get('md5', None), 'move': keys_con}),
+         (keys_phen, files[keys_phen]['download_url'],
+         {'md5': files[keys_phen].get('md5', None), 'move': keys_phen})
          ],
         verbose=verbose)
 
-    files_keys_con =  open(csv_keys_con, 'r').read()
-    files_keys_phen =  open(csv_keys_phen, 'r').read()
-
-    readme = open(csv_readme, 'r').read()
+    files_keys_con = open(csv_keys_con, 'r').read()
+    files_keys_phen = open(csv_keys_phen, 'r').read()
 
     return Bunch(func=func, confounds=con, phenotypic=csv_array_phen,
-                 description=fdescr, desc_con = files_keys_con,
-                 desc_phenotypic = files_keys_phen, readme = readme)
+                 description=fdescr, desc_con=files_keys_con,
+                 desc_phenotypic=files_keys_phen)

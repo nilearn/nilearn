@@ -108,14 +108,14 @@ def test_fetch_adhd():
 
     sub1 = [3902469, 7774305, 3699991]
     sub2 = [2014113, 4275075, 1019436,
-            3154996, 3884955,   27034,
-            4134561,   27018, 6115230,
-            27037, 8409791,   27011]
+            3154996, 3884955, 27034,
+            4134561, 27018, 6115230,
+            27037, 8409791, 27011]
     sub3 = [3007585, 8697774, 9750701,
-            10064,   21019,   10042,
+            10064, 21019, 10042,
             10128, 2497695, 4164316,
-            1552181, 4046678,   23012]
-    sub4 = [1679142, 1206380,   23008,
+            1552181, 4046678, 23012]
+    sub4 = [1679142, 1206380, 23008,
             4016887, 1418396, 2950754,
             3994098, 3520880, 1517058,
             9744150, 1562298, 3205761, 3624598]
@@ -375,6 +375,7 @@ def test_fetch_abide_pcp():
                                    quality_checked=False, verbose=0,
                                    derivatives='func_preproc')
 
+
 def test__load_mixed_gambles():
     rng = check_random_state(42)
     n_trials = 48
@@ -472,21 +473,23 @@ def test_fetch_megatrawls_netmats():
 @with_setup(setup_mock, teardown_mock)
 @with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
 def test_fetch_cobre():
-    ids_n = [40000, 40001, 40002, 40003, 40004, 40005, 40006, 40007, 40008, 40009,
-           40010, 40011, 40012, 40013, 40014, 40015, 40016, 40017, 40018, 40019,
-           40020, 40021, 40022, 40023, 40024, 40025, 40026, 40027, 40028, 40029,
-           40030, 40031, 40032, 40033, 40034, 40035, 40036, 40037, 40038, 40039,
-           40040, 40041, 40042, 40043, 40044, 40045, 40046, 40047, 40048, 40049,
-           40050, 40051, 40052, 40053, 40054, 40055, 40056, 40057, 40058, 40059,
-           40060, 40061, 40062, 40063, 40064, 40065, 40066, 40067, 40068, 40069,
-           40071, 40072, 40073, 40074, 40075, 40076, 40077, 40078, 40079, 40080,
-           40081, 40082, 40084, 40085, 40086, 40087, 40088, 40089, 40090, 40091,
-           40092, 40093, 40094, 40095, 40096, 40097, 40098, 40099, 40100, 40101,
-           40102, 40103, 40104, 40105, 40106, 40107, 40108, 40109, 40110, 40111,
-           40112, 40113, 40114, 40115, 40116, 40117, 40118, 40119, 40120, 40121,
-           40122, 40123, 40124, 40125, 40126, 40127, 40128, 40129, 40130, 40131,
-           40132, 40133, 40134, 40135, 40136, 40137, 40138, 40139, 40140, 40141,
-           40142, 40143, 40144, 40145, 40146, 40147]
+    ids_n = [40000, 40001, 40002, 40003, 40004, 40005, 40006, 40007, 40008,
+             40009, 40010, 40011, 40012, 40013, 40014, 40015, 40016, 40017,
+             40018, 40019, 40020, 40021, 40022, 40023, 40024, 40025, 40026,
+             40027, 40028, 40029, 40030, 40031, 40032, 40033, 40034, 40035,
+             40036, 40037, 40038, 40039, 40040, 40041, 40042, 40043, 40044,
+             40045, 40046, 40047, 40048, 40049, 40050, 40051, 40052, 40053,
+             40054, 40055, 40056, 40057, 40058, 40059, 40060, 40061, 40062,
+             40063, 40064, 40065, 40066, 40067, 40068, 40069, 40071, 40072,
+             40073, 40074, 40075, 40076, 40077, 40078, 40079, 40080, 40081,
+             40082, 40084, 40085, 40086, 40087, 40088, 40089, 40090, 40091,
+             40092, 40093, 40094, 40095, 40096, 40097, 40098, 40099, 40100,
+             40101, 40102, 40103, 40104, 40105, 40106, 40107, 40108, 40109,
+             40110, 40111, 40112, 40113, 40114, 40115, 40116, 40117, 40118,
+             40119, 40120, 40121, 40122, 40123, 40124, 40125, 40126, 40127,
+             40128, 40129, 40130, 40131, 40132, 40133, 40134, 40135, 40136,
+             40137, 40138, 40139, 40140, 40141, 40142, 40143, 40144, 40145,
+             40146, 40147]
 
     ids = np.asarray(ids_n, dtype='|U17')
 
@@ -506,7 +509,7 @@ def test_fetch_cobre():
                         diagnosis, frames_ok, fd, fd_scrubbed],
                        dtype=[('ID', '|U17'), ('Current Age', '<f8'),
                               ('Gender', '<f8'), ('Handedness', '<f8'),
-                              ('Subject Type', '|U17'),('Diagnosis', '<f8'),
+                              ('Subject Type', '|U17'), ('Diagnosis', '<f8'),
                               ('Frames OK', '<f8'), ('FD', '<f8'),
                               ('FD Scrubbed', '<f8')])
 
@@ -515,7 +518,7 @@ def test_fetch_cobre():
     os.mkdir(cobre_dir)
 
     # Create the tsv.gz
-    name_f = os.path.join(cobre_dir,'phenotypic_data.tsv')
+    name_f = os.path.join(cobre_dir, 'phenotypic_data.tsv')
     with open(name_f, 'wb') as f:
         header = '# {0}\n'.format('\t'.join(csv.dtype.names))
         f.write(header.encode())
@@ -523,7 +526,7 @@ def test_fetch_cobre():
 
     # create an empty .gz file
     f_in = open(name_f)
-    name_f_gz = os.path.join(cobre_dir,'phenotypic_data.tsv.gz')
+    name_f_gz = os.path.join(cobre_dir, 'phenotypic_data.tsv.gz')
     f_out = gzip.open(name_f_gz, 'wb')
     f_out.close()
     f_in.close()
@@ -547,8 +550,6 @@ def test_fetch_cobre():
         'download_url': 'whatever', 'name': 'keys_confounds.json'})
     dummy_data.append({
         'download_url': 'whatever', 'name': 'keys_phenotypic_data.json'})
-    dummy_data.append({
-        'download_url': 'whatever', 'name': 'README.md'})
 
     dummy_data = {'files': dummy_data}
     json.dump(dummy_data, open(dummy, 'w'))
@@ -558,8 +559,8 @@ def test_fetch_cobre():
     cobre_data = func.fetch_cobre(n_subjects=None, data_dir=tst.tmpdir,
                                   url=local_url)
 
-    phenotypic_names = ['func', 'confounds', 'phenotypic','description',
-                           'desc_con', 'desc_phenotypic', 'readme']
+    phenotypic_names = ['func', 'confounds', 'phenotypic', 'description',
+                        'desc_con', 'desc_phenotypic']
 
     # test length of functional filenames to max 146
     assert_equal(len(cobre_data.func), 146)

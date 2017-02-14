@@ -297,6 +297,7 @@ def _get_dataset_dir(dataset_name, data_dir=None, default_paths=None,
     raise OSError('Nilearn tried to store the dataset in the following '
                   'directories, but:' + ''.join(errors))
 
+
 def _uncompress_file(file_, delete_archive=True, verbose=1):
     """Uncompress files contained in a data_set.
 
