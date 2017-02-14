@@ -20,11 +20,7 @@ from sklearn.utils.multiclass import type_of_target
 from sklearn.externals.six import with_metaclass
 from sklearn.base import _pprint
 from .sklearn_validation import indexable
-
-# try:
 from inspect import signature
-# except ImportError:
-#     from .funcsigs import signature
 
 
 class BaseCrossValidator(with_metaclass(ABCMeta)):
