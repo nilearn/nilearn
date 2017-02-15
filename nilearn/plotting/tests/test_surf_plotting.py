@@ -79,7 +79,7 @@ def test_load_surf_data_file_freesurfer():
     label = load_surf_data(os.path.join(datadir, 'test.label'))
     assert_array_equal(label[:5], label_start)
     assert_array_equal(label[-5:], label_end)
-    assert_equal(label.shape, (326,))
+    assert_equal(label.shape, (10,))
     del label, label_start, label_end
 
     annot_start = np.array([24, 29, 28, 27, 24, 31, 11, 25, 0, 12])
@@ -185,7 +185,8 @@ def test_load_surf_mesh_file_error():
 
 def test_plot_surf():
     mesh = _generate_surf()
-    bg = np.random.randn(mesh[0].shape[0],)
+    rng = np.random.RandomState(0)
+    bg = rng.randn(mesh[0].shape[0],)
 
     # Plot mesh only
     plot_surf(mesh)
@@ -206,7 +207,8 @@ def test_plot_surf():
 
 def test_plot_surf_error():
     mesh = _generate_surf()
-    bg = np.random.randn(mesh[0].shape[0],)
+    rng = np.random.RandomState(0)
+    bg = rng.randn(mesh[0].shape[0],)
 
     # Wrong inputs for view or hemi
     assert_raises_regex(ValueError, 'view must be one of',
@@ -218,23 +220,24 @@ def test_plot_surf_error():
     assert_raises_regex(ValueError,
                         'bg_map does not have the same number of vertices',
                         plot_surf, mesh,
-                        bg_map=np.random.randn(mesh[0].shape[0]-1,))
+                        bg_map=rng.randn(mesh[0].shape[0]-1,))
 
     # Wrong size of surface data
     assert_raises_regex(ValueError,
                         'surf_map does not have the same number of vertices',
                         plot_surf, mesh,
-                        surf_map=np.random.random(mesh[0].shape[0]+1,))
+                        surf_map=rng.randn(mesh[0].shape[0]+1,))
 
     assert_raises_regex(ValueError,
                         'surf_map can only have one dimension', plot_surf,
-                        mesh, surf_map=np.random.random((mesh[0].shape[0], 2)))
+                        mesh, surf_map=rng.randn(mesh[0].shape[0], 2))
 
 
 def test_plot_surf_stat_map():
     mesh = _generate_surf()
-    bg = np.random.randn(mesh[0].shape[0],)
-    data = 10*np.random.randn(mesh[0].shape[0],)
+    rng = np.random.RandomState(0)
+    bg = rng.randn(mesh[0].shape[0],)
+    data = 10*rng.randn(mesh[0].shape[0],)
 
     # Plot mesh with stat map
     plot_surf_stat_map(mesh, stat_map=data)
@@ -262,8 +265,9 @@ def test_plot_surf_stat_map():
 
 def test_plot_surf_stat_map_error():
     mesh = _generate_surf()
-    bg = np.random.randn(mesh[0].shape[0],)
-    data = 10*np.random.randn(mesh[0].shape[0],)
+    rng = np.random.RandomState(0)
+    bg = rng.randn(mesh[0].shape[0],)
+    data = 10*rng.randn(mesh[0].shape[0],)
 
     # Try to input vmin
     assert_raises_regex(ValueError,
@@ -284,9 +288,10 @@ def test_plot_surf_stat_map_error():
 
 def test_plot_surf_roi():
     mesh = _generate_surf()
-    roi1 = np.random.randint(0, mesh[0].shape[0], size=5)
-    roi2 = np.random.randint(0, mesh[0].shape[0], size=10)
-    parcellation = np.random.random(mesh[0].shape[0])
+    rng = np.random.RandomState(0)
+    roi1 = rng.randint(0, mesh[0].shape[0], size=5)
+    roi2 = rng.randint(0, mesh[0].shape[0], size=10)
+    parcellation = rng.rand(mesh[0].shape[0])
 
     # plot roi
     plot_surf_roi(mesh, roi_map=roi1)
@@ -303,8 +308,9 @@ def test_plot_surf_roi():
 
 def test_plot_surf_roi_error():
     mesh = _generate_surf()
-    roi1 = np.random.randint(0, mesh[0].shape[0], size=5)
-    roi2 = np.random.randint(0, mesh[0].shape[0], size=10)
+    rng = np.random.RandomState(0)
+    roi1 = rng.randint(0, mesh[0].shape[0], size=5)
+    roi2 = rng.randint(0, mesh[0].shape[0], size=10)
 
     # Wrong input
     assert_raises_regex(ValueError,
