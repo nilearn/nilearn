@@ -97,15 +97,13 @@ plt.show()
 # We just have to provide the list of fitted FirstLevelModel objects
 # to the SecondLevelModel object for estimation. We can do this since
 # all subjects share the same design matrix.
-first_level_conditions = [['language', 'language'], ['string', 'string']]
 second_level_input = models
 second_level_model = SecondLevelModel(smoothing_fwhm=8.0)
-second_level_model = second_level_model.fit(second_level_input,
-                                            first_level_conditions)
+second_level_model = second_level_model.fit(second_level_input)
 
 #########################################################################
 # Computing contrasts at the second level is similar to the first level
-zmap = second_level_model.compute_contrast('language-string')
+zmap = second_level_model.compute_contrast(first_level_contrast='language-string')
 
 #########################################################################
 # The group level contrast of the language network is mostly left
