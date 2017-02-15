@@ -1,6 +1,7 @@
 """
-Demonstrate basic loading and plotting of a cortical surface atlas
-===================================================================
+Loading and plotting of a cortical surface atlas
+=================================================
+
 The Destrieux parcellation (Destrieux et al, 2010) in fsaverage5 space as
 distributed with Freesurfer is used as the chosen atlas.
 
@@ -20,30 +21,37 @@ URL http://dx.doi.org/10.1016/j.neuroimage.2010.06.010.
 ###############################################################################
 from nilearn import plotting
 from nilearn import datasets
-import nibabel as nb
 
 ###############################################################################
-# Destrieux parcellation left hemisphere in fsaverage5 space
+# Retrieve destrieux parcellation in fsaverage5 space
 destrieux_atlas = datasets.fetch_atlas_surf_destrieux()
+
+# The parcellation is already loaded into memory
 parcellation = destrieux_atlas['map_left']
 
-# Retrieve fsaverage data
+# Retrieve fsaverage surface template
 fsaverage = datasets.fetch_surf_fsaverage5()
 
-# Fsaverage5 left hemisphere surface mesh files
-fsaverage5_pial = fsaverage['pial_left']
-fsaverage5_inflated = fsaverage['infl_left']
-sulcal_depth_map = fsaverage['sulc_left']
+# The fsaverage dataset contains file names pointing to the file locations
+print('Fsaverage5 pial surface of left hemisphere is at: %s' %
+      fsaverage['pial_left'])
+print('Fsaverage5 inflated surface of left hemisphere is at: %s' %
+      fsaverage['infl_left'])
+print('Fsaverage5 sulcal depth map of left hemisphere is at: %s' %
+      fsaverage['sulc_left'])
 
 ###############################################################################
 # Display Destrieux parcellation on fsaverage5 surface
-plotting.plot_surf_roi(fsaverage5_pial, roi_map=parcellation,
-                       hemi='left', view='lateral', bg_map=sulcal_depth_map,
-                       bg_on_data=True, darkness=.5, cmap='gist_ncar')
+plotting.plot_surf_roi(fsaverage['pial_left'], roi_map=parcellation,
+                       hemi='left', view='lateral',
+                       bg_map=fsaverage['sulc_left'], bg_on_data=True,
+                       darkness=.5, cmap='gist_ncar')
 
+###############################################################################
 # Display Destrieux parcellation on inflated fsaverage5 surface
-plotting.plot_surf_roi(fsaverage5_inflated, roi_map=parcellation,
-                       hemi='left', view='lateral', bg_map=sulcal_depth_map,
-                       bg_on_data=True, darkness=.5, cmap='gist_ncar')
+plotting.plot_surf_roi(fsaverage['infl_left'], roi_map=parcellation,
+                       hemi='left', view='lateral',
+                       bg_map=fsaverage['sulc_left'], bg_on_data=True,
+                       darkness=.5, cmap='gist_ncar')
 
 plotting.show()

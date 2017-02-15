@@ -1,6 +1,7 @@
 """
-Demonstrate basic loading and plotting of cortical surface data
-===============================================================
+Seed-based connectivity on the surface
+=======================================
+
 The dataset that is a subset of the enhanced NKI Rockland sample
 (http://fcon_1000.projects.nitrc.org/indi/enhanced/, Nooner et al, 2012)
 
@@ -21,6 +22,8 @@ The :func:`nilearn.plotting.plot_surf_stat_map` function is used
 to plot the resulting statistical map on the (inflated) pial surface.
 
 See :ref:`plotting` for more details.
+See also :doc:`plot_seed_to_voxel_correlation` for a similar example using
+volumetric input data.
 
 References
 ----------
@@ -49,35 +52,52 @@ from scipy import stats
 import numpy as np
 
 ###############################################################################
-# Retrieve the data
+# Retrieving the data
+# -------------------
+
+# NKI resting state data
 nki_dataset = datasets.fetch_surf_nki_enhanced(n_subjects=1)
 
-# NKI resting state data set of one subject left hemisphere in fsaverage5 space
-resting_state = nki_dataset['func_left'][0]
+# The nki dictionary contains file names for the data
+# of all downloaded subjects.
+print(('Resting state data of the first subjects on the '
+       'fsaverag5 surface left hemisphere is at: %s' %
+      nki_dataset['func_left'][0]))
 
-# Destrieux parcellation left hemisphere in fsaverage5 space
+# Destrieux parcellation for left hemisphere in fsaverage5 space
 destrieux_atlas = datasets.fetch_atlas_surf_destrieux()
 parcellation = destrieux_atlas['map_left']
 labels = destrieux_atlas['labels']
 
-# Retrieve fsaverage data
+# Fsaverage5 surface template
 fsaverage = datasets.fetch_surf_fsaverage5()
 
-# Fsaverage5 left hemisphere surface mesh files
-fsaverage5_pial = fsaverage['pial_left']
-fsaverage5_inflated = fsaverage['infl_left']
-sulcal_depth_map = fsaverage['sulc_left']
+# The fsaverage dataset contains file names pointing to
+# the file locations
+print('Fsaverage5 pial surface of left hemisphere is at: %s' %
+      fsaverage['pial_left'])
+print('Fsaverage5 inflated surface of left hemisphere is at: %s' %
+      fsaverage['infl_left'])
+print('Fsaverage5 sulcal depth map of left hemisphere is at: %s' %
+      fsaverage['sulc_left'])
 
 ###############################################################################
-# Load resting state time series and parcellation
-timeseries = plotting.surf_plotting.load_surf_data(resting_state)
+# Extracting the seed time series
+# --------------------------------
 
-# Extract seed region: dorsal posterior cingulate gyrus
+# Load resting state time series
+timeseries = plotting.surf_plotting.load_surf_data(nki_dataset['func_left'][0])
+
+# Extract seed region via label
 pcc_region = 'G_cingul-Post-dorsal'
 pcc_labels = np.where(parcellation == labels.index(pcc_region))[0]
 
 # Extract time series from seed region
 seed_timeseries = np.mean(timeseries[pcc_labels], axis=0)
+
+###############################################################################
+# Calculating seed-based functional connectivity
+# ----------------------------------------------
 
 # Calculate Pearson product-moment correlation coefficient between seed
 # time series and timeseries of all cortical nodes of the hemisphere
@@ -90,32 +110,39 @@ stat_map[np.where(np.mean(timeseries, axis=1) == 0)] = 0
 
 ###############################################################################
 # Display ROI on surface
-plotting.plot_surf_roi(fsaverage5_pial, roi_map=pcc_labels, hemi='left',
-                       view='medial', bg_map=sulcal_depth_map, bg_on_data=True,
+plotting.plot_surf_roi(fsaverage['pial_left'], roi_map=pcc_labels,
+                       hemi='left', view='medial',
+                       bg_map=fsaverage['sulc_left'], bg_on_data=True,
                        title='PCC Seed')
 
+###############################################################################
 # Display unthresholded stat map  with dimmed background
-plotting.plot_surf_stat_map(fsaverage5_pial, stat_map=stat_map, hemi='left',
-                            view='medial', bg_map=sulcal_depth_map,
-                            bg_on_data=True, darkness=.5,
-                            title='Correlation map')
+plotting.plot_surf_stat_map(fsaverage['pial_left'], stat_map=stat_map,
+                            hemi='left', view='medial',
+                            bg_map=fsaverage['sulc_left'], bg_on_data=True,
+                            darkness=.5, title='Correlation map')
 
+###############################################################################
 # Display unthresholded stat map without background map, transparency is
 # automatically set to .5, but can also be controlled with the alpha parameter
-plotting.plot_surf_stat_map(fsaverage5_pial, stat_map=stat_map, hemi='left',
-                            view='medial', title='Plotting without background')
+plotting.plot_surf_stat_map(fsaverage['pial_left'], stat_map=stat_map,
+                            hemi='left', view='medial',
+                            title='Plotting without background')
 
+###############################################################################
 # Many different options are available for plotting, for example thresholding,
 # or using custom colormaps
-plotting.plot_surf_stat_map(fsaverage5_pial, stat_map=stat_map, hemi='left',
-                            view='medial', bg_map=sulcal_depth_map,
-                            bg_on_data=True, cmap='Spectral', threshold=.5,
+plotting.plot_surf_stat_map(fsaverage['pial_left'], stat_map=stat_map,
+                            hemi='left', view='medial',
+                            bg_map=fsaverage['sulc_left'], bg_on_data=True,
+                            cmap='Spectral', threshold=.5,
                             title='Threshold and colormap')
 
+###############################################################################
 # The plots can be saved to file, in which case the display is closed after
 # creating the figure
-plotting.plot_surf_stat_map(fsaverage5_inflated, stat_map=stat_map,
-                            hemi='left', bg_map=sulcal_depth_map,
+plotting.plot_surf_stat_map(fsaverage['infl_left'], stat_map=stat_map,
+                            hemi='left', bg_map=fsaverage['sulc_left'],
                             bg_on_data=True, threshold=.6,
                             output_file='plot_surf_stat_map.png')
 
