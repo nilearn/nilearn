@@ -10,6 +10,10 @@ now 0.15.
 Changelog
 ---------
 
+   - Minimum required version of NiBabel 1.1.0 is now dropped and updated to
+     NiBabel 1.2.0. Due to compatibility reasons with reading or loading annoted
+     data with freesurfer.
+
 Enhancements
 ............
 
