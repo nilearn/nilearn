@@ -46,9 +46,10 @@ data_dir, _ = fetch_bids_langloc_dataset()
 # To get the first level models we only have to specify the dataset directory
 # and the task_id as specified in the file names.
 task_id = 'languagelocalizer'
-models, m_run_imgs, m_events, m_confounds = first_level_models_from_bids(
-    data_dir, task_id, preproc_space='MNI152nonlin2009aAsym',
-    preproc_variant='smoothResamp')
+models, models_run_imgs, models_events, models_confounds = \
+    first_level_models_from_bids(
+        data_dir, task_id, preproc_space='MNI152nonlin2009aAsym',
+        preproc_variant='smoothResamp')
 
 #############################################################################
 # Quick sanity check on fit arguments
@@ -58,19 +59,19 @@ models, m_run_imgs, m_events, m_confounds = first_level_models_from_bids(
 
 ############################################################################
 # We just expect one run img per subject.
-print([os.path.basename(run) for run in m_run_imgs[0]])
+print([os.path.basename(run) for run in models_run_imgs[0]])
 
 ###############################################################################
 # The only confounds stored are regressors obtained from motion correction. As
 # we can verify from the column headers of the confounds table corresponding
 # to the only run_img present
-print(m_confounds[0][0].columns)
+print(models_confounds[0][0].columns)
 
 ############################################################################
 # During this acquisition the subject read blocks of sentences and
 # consonant strings. So these are our only two conditions in events.
 # We verify there are n blocks for each condition.
-print(m_events[0][0]['trial_type'].value_counts())
+print(models_events[0][0]['trial_type'].value_counts())
 
 ############################################################################
 # First level model estimation
@@ -78,7 +79,7 @@ print(m_events[0][0]['trial_type'].value_counts())
 # Now we simply fit each first level model and plot for each subject the
 # contrast that reveals the language network (language - string).
 fig, axes = plt.subplots(nrows=2, ncols=5)
-model_and_args = zip(models, m_run_imgs, m_events, m_confounds)
+model_and_args = zip(models, models_run_imgs, models_events, models_confounds)
 for midx, (model, imgs, events, confounds) in enumerate(model_and_args):
     model.fit(imgs, events, confounds)
     zmap = model.compute_contrast('language-string')
@@ -86,7 +87,7 @@ for midx, (model, imgs, events, confounds) in enumerate(model_and_args):
                               title=('sub-' + model.subject_label),
                               axes=axes[int(midx / 5), int(midx % 5)],
                               plot_abs=False, display_mode='x')
-fig.suptitle('subjects z_map language network (language - string)')
+fig.suptitle('subjects z_map language network (unc p<0.001)')
 plt.show()
 
 #########################################################################
@@ -109,6 +110,6 @@ zmap = second_level_model.compute_contrast('language-string')
 # The group level contrast of the language network is mostly left
 # lateralized as expected
 plotting.plot_glass_brain(zmap, colorbar=True, threshold=norm.isf(0.001),
-                          title='Group language network',
+                          title='Group language network (unc p<0.001)',
                           plot_abs=False, display_mode='x')
 plotting.show()
