@@ -44,12 +44,12 @@ data_dir, _ = fetch_bids_langloc_dataset()
 # for each model a dictionary with run_imgs, events and confounder regressors
 # since in this case a confounds.tsv file is available in the BIDS dataset.
 # To get the first level models we only have to specify the dataset directory
-# and the task_id as specified in the file names.
-task_id = 'languagelocalizer'
+# and the task_label as specified in the file names.
+task_label = 'languagelocalizer'
 models, models_run_imgs, models_events, models_confounds = \
     first_level_models_from_bids(
-        data_dir, task_id, preproc_space='MNI152nonlin2009aAsym',
-        preproc_variant='smoothResamp')
+        data_dir, task_label, space_label='MNI152nonlin2009aAsym',
+        [('variant', 'smoothResamp')])
 
 #############################################################################
 # Quick sanity check on fit arguments

@@ -567,7 +567,7 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
 
 
 def first_level_models_from_bids(
-        dataset_path, task_id, preproc_variant=None, preproc_space=None,
+        dataset_path, task_label, space_label, img_filters=[],
         t_r=None, slice_time_ref=0., hrf_model='glover', drift_model='cosine',
         period_cut=128, drift_order=1, fir_delays=[0], min_onset=-24,
         mask=None, target_affine=None, target_shape=None, smoothing_fwhm=None,
@@ -586,16 +586,19 @@ def first_level_models_from_bids(
         Directory of the highest level folder of the BIDS dataset. Should
         contain subject folders and a derivatives folder.
 
-    task_id: str
-        Task_id as specified in the file names. Of the form _task-*_.
+    task_label: str
+        Task_label as specified in the file names like _task-<task_label>_.
 
-    preproc_variant: str, optional
-        Can specify a particular variant label of the preproc.nii images.
-        As they are specified in the file names.
+    space_label: str, optional
+        Specifies the space label of the preproc.nii images.
+        As they are specified in the file names like _space-<space_label>_.
 
-    preproc_space: str, optional
-        Can specify a particular space label of the preproc.nii images.
-        As they are specified in the file names.
+    img_filters: list of tuples (str, str), optional (default: [])
+        Filters are of the form (field, label). Only one filter per field
+        allowed. A file that does not match a filter will be discarded.
+        Possible filters are 'acq', 'rec', 'run', 'res' and 'variant'.
+        Filter examples would be (variant, smooth), (acq, pa) and
+        (res, 1x1x1).
 
     All other parameters correspond to a `FirstLevelModel` object, which
     contains their documentation. The subject label of the model will be
@@ -620,12 +623,26 @@ def first_level_models_from_bids(
     # check arguments
     if not isinstance(dataset_path, str):
         raise TypeError('dataset_path must be a string, instead %s was given' %
-                        type(task_id))
+                        type(task_label))
     if not os.path.exists(dataset_path):
         raise ValueError('given path do not exist: %s' % dataset_path)
-    if not isinstance(task_id, str):
-        raise TypeError('task_id must be a string, instead %s was given' %
-                        type(task_id))
+    if not isinstance(task_label, str):
+        raise TypeError('task_label must be a string, instead %s was given' %
+                        type(task_label))
+    if not isinstance(space_label, str):
+        raise TypeError('space_label must be a string, instead %s was given' %
+                        type(space_label))
+    if not isinstance(img_filters, list):
+        raise TypeError('img_filters must be a list, instead %s was given' %
+                        type(img_filters))
+    for img_filter in img_filters:
+        if not isinstance(img_filter[0], str) or not isinstance(img_filter[1], str):
+            raise TypeError('filters in img filters must be (str, str), '
+                            'instead %s was given' % type(img_filter))
+        if img_filter[0] not in ['acq', 'rec', 'run', 'res', 'variant']:
+            raise ValueError("field %s is not a possible filter. Only "
+                             "'acq', 'rec', 'run', 'res' and 'variant' "
+                             "are allowed." % type(img_filter[0]))
 
     # check derivatives folder is present
     derivatives_path = os.path.join(dataset_path, 'derivatives')
@@ -639,7 +656,11 @@ def first_level_models_from_bids(
         warn('slice_time_ref is %d percent of the repetition '
              'time' % slice_time_ref)
     else:
-        filters = [('task', task_id)]
+        filters = [('task', task_label)]
+        for img_filter in img_filters:
+            if img_filter[0] in ['acq', 'rec', 'run']:
+                filters.append(img_filter)
+
         img_specs = get_bids_files(derivatives_path, file_folder='func',
                                    file_tag='preproc', file_type='json',
                                    filters=filters)
@@ -696,14 +717,7 @@ def first_level_models_from_bids(
         models.append(model)
 
         # Get preprocessed imgs
-        filters = [('task', task_id)]
-        # If preproc_variant is provided we add it to the search constraints
-        # for preproc imgs. The same for preproc_space.
-        if preproc_variant is not None:
-            filters.append(('variant', preproc_variant))
-        if preproc_space is not None:
-            filters.append(('space', preproc_space))
-
+        filters = [('task', task_label), ('space', space_label)] + img_filters
         imgs = get_bids_files(derivatives_path, file_folder='func',
                               file_tag='preproc', file_type='nii*',
                               sub_label=sub_label, filters=filters)
@@ -720,7 +734,7 @@ def first_level_models_from_bids(
                         raise ValueError(
                             'More than one nifti image found for the same run '
                             '%s and session %s. Please verify that the '
-                            'preproc_variant and preproc_space labels were '
+                            'preproc_variant and space_label labels were '
                             'correctly specified.' %
                             (img_dict['run'], img_dict['ses']))
                     else:
@@ -731,14 +745,17 @@ def first_level_models_from_bids(
                         raise ValueError(
                             'More than one nifti image found for the same run '
                             '%s. Please verify that the preproc_variant and '
-                            'preproc_space labels were correctly specified.' %
+                            'space_label labels were correctly specified.' %
                             img_dict['run'])
                     else:
                         run_check_list.append(img_dict['run'])
         models_run_imgs.append(imgs)
 
         # Get events and extra confounds
-        filters = [('task', task_id)]
+        filters = [('task', task_label)]
+        for img_filter in img_filters:
+            if img_filter[0] in ['acq', 'rec', 'run']:
+                filters.append(img_filter)
         # Get events. If not found in derivatives check for original data.
         # There might be no need to preprocess events to specify model, still
         # throw a warning
