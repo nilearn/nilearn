@@ -131,7 +131,7 @@ def multiple_mahalanobis(effect, covariance):
     -------
     sqd: array of shape (n_samples,)
          the squared distances (one per sample)
-    """ 
+    """
     # check size
     if effect.ndim == 1:
         effect = effect[:, np.newaxis]
@@ -211,7 +211,7 @@ _basestring = str if py3 else basestring
 
 # UTILITIES FOR THE BIDS STANDARD
 def get_bids_files(main_path, file_tag='*', file_type='*', sub_label='*',
-                   file_folder='*', filters=[], sub_folder=True):
+                   modality_folder='*', filters=[], sub_folder=True):
     """Search for files in a BIDS dataset following given constraints.
 
     This utility function allows to filter files in the BIDS dataset by
@@ -247,7 +247,7 @@ def get_bids_files(main_path, file_tag='*', file_type='*', sub_label='*',
         at the level of directories. the label is what follows the 'sub' field
         in the BIDS convention as 'sub-label'.
 
-    file_folder: str accepted by glob, optional (default: '*')
+    modality_folder: str accepted by glob, optional (default: '*')
         Inside the subject and optional session folders a final level of
         folders is expected in the BIDS convention that groups files according
         to different neuroimaging modalities and any other additions of the
@@ -278,11 +278,11 @@ def get_bids_files(main_path, file_tag='*', file_type='*', sub_label='*',
         files = os.path.join(main_path, 'sub-*', 'ses-*')
         if glob.glob(files):
             files = os.path.join(main_path, 'sub-%s' % sub_label, 'ses-*',
-                                 file_folder, 'sub-%s*_%s.%s' %
+                                 modality_folder, 'sub-%s*_%s.%s' %
                                  (sub_label, file_tag, file_type))
         else:
-            files = os.path.join(main_path, 'sub-%s' % sub_label, file_folder,
-                                 'sub-%s*_%s.%s' %
+            files = os.path.join(main_path, 'sub-%s' % sub_label,
+                                 modality_folder, 'sub-%s*_%s.%s' %
                                  (sub_label, file_tag, file_type))
     else:
         files = os.path.join(main_path, '*%s.%s' % (file_tag, file_type))

@@ -636,7 +636,8 @@ def first_level_models_from_bids(
         raise TypeError('img_filters must be a list, instead %s was given' %
                         type(img_filters))
     for img_filter in img_filters:
-        if not isinstance(img_filter[0], str) or not isinstance(img_filter[1], str):
+        if (not isinstance(img_filter[0], str) or
+                not isinstance(img_filter[1], str)):
             raise TypeError('filters in img filters must be (str, str), '
                             'instead %s was given' % type(img_filter))
         if img_filter[0] not in ['acq', 'rec', 'run', 'res', 'variant']:
@@ -661,13 +662,13 @@ def first_level_models_from_bids(
             if img_filter[0] in ['acq', 'rec', 'run']:
                 filters.append(img_filter)
 
-        img_specs = get_bids_files(derivatives_path, file_folder='func',
+        img_specs = get_bids_files(derivatives_path, modality_folder='func',
                                    file_tag='preproc', file_type='json',
                                    filters=filters)
         # If we dont find the parameter information in the derivatives folder
         # we try to search in the raw data folder
         if not img_specs:
-            img_specs = get_bids_files(dataset_path, file_folder='func',
+            img_specs = get_bids_files(dataset_path, modality_folder='func',
                                        file_tag='bold', file_type='json',
                                        filters=filters)
         if not img_specs:
@@ -720,7 +721,7 @@ def first_level_models_from_bids(
 
         # Get preprocessed imgs
         filters = [('task', task_label), ('space', space_label)] + img_filters
-        imgs = get_bids_files(derivatives_path, file_folder='func',
+        imgs = get_bids_files(derivatives_path, modality_folder='func',
                               file_tag='preproc', file_type='nii*',
                               sub_label=sub_label, filters=filters)
         # If there is more than one file for the same (ses, run), likely we
@@ -762,7 +763,7 @@ def first_level_models_from_bids(
         # There might be no need to preprocess events to specify model, still
         # throw a warning
         for possible_path in [derivatives_path, dataset_path]:
-            events = get_bids_files(possible_path, file_folder='func',
+            events = get_bids_files(possible_path, modality_folder='func',
                                     file_tag='events', file_type='tsv',
                                     sub_label=sub_label, filters=filters)
             if events:
@@ -784,7 +785,7 @@ def first_level_models_from_bids(
 
         # Get confounds. If not found it will be assumed there are none.
         # If there are confounds, they are assumed to be present for all runs.
-        confounds = get_bids_files(derivatives_path, file_folder='func',
+        confounds = get_bids_files(derivatives_path, modality_folder='func',
                                    file_tag='confounds', file_type='tsv',
                                    sub_label=sub_label, filters=filters)
         if confounds:
