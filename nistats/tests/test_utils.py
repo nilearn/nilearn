@@ -215,7 +215,7 @@ def test_get_bids_files():
         selection = get_bids_files(bids_path, sub_label='01')
         assert_true(len(selection) == 25)
         # There are only 10 files in anat folders. One T1w per subject.
-        selection = get_bids_files(bids_path, file_folder='anat')
+        selection = get_bids_files(bids_path, modality_folder='anat')
         assert_true(len(selection) == 10)
         # 20 files corresponding to run 1 of session 2 of main task.
         # 10 bold.nii.gz and 10 bold.json files. (10 subjects)

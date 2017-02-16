@@ -327,11 +327,11 @@ def test_first_level_models_from_bids():
                                              tasks=['localizer', 'main'],
                                              n_runs=[1, 3])
         # test arguments are provided correctly
-        assert_raises(TypeError, first_level_models_from_bids, 2, 'main')
-        assert_raises(ValueError, first_level_models_from_bids, 'lolo', 'main')
-        assert_raises(TypeError, first_level_models_from_bids, bids_path, 2)
+        assert_raises(TypeError, first_level_models_from_bids, 2, 'main', 'MNI')
+        assert_raises(ValueError, first_level_models_from_bids, 'lolo', 'main', 'MNI')
+        assert_raises(TypeError, first_level_models_from_bids, bids_path, 2, 'MNI')
         assert_raises(TypeError, first_level_models_from_bids,
-                      bids_path, 'main', model_init=[])
+                      bids_path, 'main', 'MNI', model_init=[])
         # test output is as expected
         models, m_imgs, m_events, m_confounds = first_level_models_from_bids(
             bids_path, 'main', 'MNI', [('variant', 'some')])
@@ -342,21 +342,21 @@ def test_first_level_models_from_bids():
         # file per img. An one per image or None. Case when one is missing
         confound_files = get_bids_files(os.path.join(bids_path, 'derivatives'),
                                         file_tag='confounds')
-        os.remove(confound_files[0])
+        os.remove(confound_files[-1])
         assert_raises(ValueError, first_level_models_from_bids,
-                      bids_path, 'main')
+                      bids_path, 'main', 'MNI')
 
         # test issues with event files
         events_files = get_bids_files(bids_path, file_tag='events')
         os.remove(events_files[0])
         # one file missing
         assert_raises(ValueError, first_level_models_from_bids,
-                      bids_path, 'main')
+                      bids_path, 'main', 'MNI')
         for f in events_files[1:]:
             os.remove(f)
         # all files missing
         assert_raises(ValueError, first_level_models_from_bids,
-                      bids_path, 'main')
+                      bids_path, 'main', 'MNI')
 
         # check runs are not repeated in obtained files
         # In case different variant and spaces exist and are not selected we
@@ -364,4 +364,4 @@ def test_first_level_models_from_bids():
         shutil.rmtree(os.path.join(bids_path, 'derivatives'))
         # issue if no derivatives folder is present
         assert_raises(ValueError, first_level_models_from_bids,
-                      bids_path, 'main')
+                      bids_path, 'main', 'MNI')

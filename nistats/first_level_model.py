@@ -788,6 +788,7 @@ def first_level_models_from_bids(
         confounds = get_bids_files(derivatives_path, modality_folder='func',
                                    file_tag='confounds', file_type='tsv',
                                    sub_label=sub_label, filters=filters)
+        print(len(confounds), len(imgs))
         if confounds:
             if len(confounds) != len(imgs):
                 raise ValueError('%d confounds.tsv files found for %d bold '
