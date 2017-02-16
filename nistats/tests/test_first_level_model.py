@@ -334,7 +334,7 @@ def test_first_level_models_from_bids():
                       bids_path, 'main', model_init=[])
         # test output is as expected
         models, m_imgs, m_events, m_confounds = first_level_models_from_bids(
-            bids_path, 'main', preproc_variant='some', preproc_space='MNI')
+            bids_path, 'main', 'MNI', [('variant', 'some')])
         assert_true(len(models) == len(m_imgs))
         assert_true(len(models) == len(m_events))
         assert_true(len(models) == len(m_confounds))

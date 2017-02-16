@@ -664,6 +664,8 @@ def first_level_models_from_bids(
         img_specs = get_bids_files(derivatives_path, file_folder='func',
                                    file_tag='preproc', file_type='json',
                                    filters=filters)
+        # If we dont find the parameter information in the derivatives folder
+        # we try to search in the raw data folder
         if not img_specs:
             img_specs = get_bids_files(dataset_path, file_folder='func',
                                        file_tag='bold', file_type='json',
@@ -769,8 +771,8 @@ def first_level_models_from_bids(
                                      'files. Same number of event files as '
                                      'the number of runs is expected' %
                                      (len(events), len(imgs)))
-                events = [pd.read_csv(e, sep='\t', index_col=None)
-                          for e in events]
+                events = [pd.read_csv(event, sep='\t', index_col=None)
+                          for event in events]
                 if possible_path == dataset_path:
                     warn('events taken from directory containing raw data. '
                          'Is it the case that there was no need to preprocess '

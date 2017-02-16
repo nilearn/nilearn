@@ -46,10 +46,11 @@ data_dir, _ = fetch_bids_langloc_dataset()
 # To get the first level models we only have to specify the dataset directory
 # and the task_label as specified in the file names.
 task_label = 'languagelocalizer'
+space_label = 'MNI152nonlin2009aAsym'
 models, models_run_imgs, models_events, models_confounds = \
     first_level_models_from_bids(
-        data_dir, task_label, space_label='MNI152nonlin2009aAsym',
-        [('variant', 'smoothResamp')])
+        data_dir, task_label, space_label,
+        img_filters=[('variant', 'smoothResamp')])
 
 #############################################################################
 # Quick sanity check on fit arguments
