@@ -495,12 +495,12 @@ def test_spm_2():
 
 
 def _first_level_dataframe():
-    conditions = ['map_name', 'subject_id', 'map_path']
+    conditions = ['map_name', 'subject_label', 'map_path']
     names = ['con_01', 'con_02', 'con_01', 'con_02']
     subjects = ['01', '01', '02', '02']
     maps = ['', '', '', '']
     dataframe = pd.DataFrame({'map_name': names,
-                              'subject_id': subjects,
+                              'subject_label': subjects,
                               'effects_map_path': maps})
     return dataframe
 
@@ -508,7 +508,7 @@ def _first_level_dataframe():
 def test_create_second_level_design():
     first_level_input = _first_level_dataframe()
     regressors = [['01', 0.1], ['02', 0.75]]
-    regressors = pd.DataFrame(regressors, columns=['subject_id', 'f1'])
+    regressors = pd.DataFrame(regressors, columns=['subject_label', 'f1'])
     design = create_second_level_design(first_level_input, regressors)
     expected_design = np.array([[1, 0, 1, 0, 0.1], [0, 1, 1, 0, 0.1],
                                 [1, 0, 0, 1, 0.75], [0, 1, 0, 1, 0.75]])

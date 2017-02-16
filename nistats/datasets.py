@@ -6,6 +6,7 @@ Author: Gael Varoquaux
 import os
 import re
 import glob
+import json
 import nibabel
 from sklearn.datasets.base import Bunch
 
@@ -15,6 +16,123 @@ from nilearn.datasets.utils import (
 SPM_AUDITORY_DATA_FILES = ["fM00223/fM00223_%03i.img" % index
                            for index in range(4, 100)]
 SPM_AUDITORY_DATA_FILES.append("sM00223/sM00223_002.img")
+
+
+def fetch_bids_langloc_dataset(data_dir=None, verbose=1):
+    """Download language localizer example bids dataset.
+
+    Parameters
+    ----------
+    data_dir: string, optional
+        Path to store the downloaded dataset. if None employ nilearn
+        datasets default download directory.
+
+    verbose: int, optional
+        verbosity level (0 means no message).
+
+    Returns
+    -------
+    data_dir: string
+        Path to downloaded dataset
+
+    downloaded_files: list of string
+        Absolute paths of downloaded files on disk
+    """
+    url = 'https://files.osf.io/v1/resources/9q7dv/providers/osfstorage/5888d9a76c613b01fc6acc4e'
+    dataset_name = 'bids_langloc_example'
+    main_folder = 'bids_langloc_dataset'
+    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
+                                verbose=verbose)
+    # The files_spec needed for _fetch_files
+    files_spec = [(main_folder + '.zip', url, {'move': main_folder + '.zip'})]
+    if not os.path.exists(os.path.join(data_dir, main_folder)):
+        downloaded_files = _fetch_files(data_dir, files_spec, resume=True,
+                                        verbose=verbose)
+        _uncompress_file(downloaded_files[0])
+    main_path = os.path.join(data_dir, main_folder)
+    file_list = [os.path.join(path, f) for
+                 path, dirs, files in os.walk(main_path) for f in files]
+    return os.path.join(data_dir, main_folder), sorted(file_list)
+
+
+def fetch_openfmri_dataset(dataset_name='ds000001', dataset_revision=None,
+                           data_dir=None, verbose=1):
+    """Download latest revision of specified bids dataset.
+
+    Compressed files will not be uncompressed automatically due to the expected
+    great size of downloaded dataset.
+
+    Only datasets that contain preprocessed files following the official
+    conventions of the future BIDS derivatives specification can be used out
+    of the box with Nistats. Otherwise custom preprocessing would need to be
+    performed, optionally following the BIDS derivatives specification for the
+    preprocessing output files.
+
+    Parameters
+    ----------
+    dataset_name: string, optional
+        Accesion number as published in https://openfmri.org/dataset/.
+        Downloads by default dataset ds000001.
+
+    dataset_revision: string, optional
+        Revision as presented in the specific dataset link accesible
+        from https://openfmri.org/dataset/. Looks for the latest by default.
+
+    data_dir: string, optional
+        Path to store the downloaded dataset. if None employ nilearn
+        datasets default download directory.
+
+    verbose: int, optional
+        verbosity level (0 means no message).
+
+    Returns
+    -------
+    data_dir: string
+        Path to downloaded dataset
+
+    downloaded_files: list of string
+        Absolute paths of downloaded files on disk
+    """
+    # We download a json file with all the api data from the openfmri server
+    openfmri_api = 'https://openfmri.org/dataset/api'
+    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
+                                verbose=verbose)
+    files = _fetch_file(openfmri_api, data_dir)
+    json_api = json.load(open(files, 'r'))
+
+    dataset_url_set = []
+    for i in range(len(json_api)):
+        # We look for the desired dataset in the json api file
+        if dataset_name == json_api[i]['accession_number']:
+            # Now we look for the desired revision or the last one
+            if not dataset_revision:
+                revision = json_api[i]['revision_set']
+                if revision:
+                    dataset_revision = revision[-1]['revision_number']
+            # After selecting the revision we download all its files
+            link_set = json_api[i]['link_set']
+            for link in link_set:
+                revision = link['revision']
+                if revision == dataset_revision:
+                    dataset_url_set.append(link['url'])
+            # If revision is specified but no file is found there is an issue
+            if dataset_revision and not dataset_url_set:
+                Exception('No files found for revision %s' % dataset_revision)
+            break
+
+    if not dataset_url_set:
+        raise ValueError('dataset %s not found' % dataset_name)
+    else:
+        # The files_spec needed for _fetch_files
+        files_spec = []
+        for dat_url in dataset_url_set:
+            target_file = os.path.basename(dat_url)
+            url = dat_url
+            files_spec.append((target_file, url, {}))
+        # download the files
+        downloaded_files = _fetch_files(data_dir, files_spec, resume=True,
+                                        verbose=verbose)
+    return data_dir, downloaded_files
 
 
 def fetch_localizer_first_level(data_dir=None, verbose=1):

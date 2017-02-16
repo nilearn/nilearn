@@ -14,8 +14,13 @@ Author: Bertrand Thirion, Martin Perez-Guevara, 2016
 from warnings import warn
 import time
 import sys
+import os
+import glob
+import json
+import inspect
 
 import numpy as np
+import pandas as pd
 from nibabel import Nifti1Image
 
 from sklearn.base import BaseEstimator, TransformerMixin, clone
@@ -29,7 +34,8 @@ from patsy import DesignInfo
 from .regression import OLSModel, ARModel, SimpleRegressionResults
 from .design_matrix import make_design_matrix
 from .contrasts import _fixed_effect_contrast
-from .utils import _basestring, _check_run_tables
+from .utils import (_basestring, _check_run_tables, get_bids_files,
+                    parse_bids_filename)
 
 
 def mean_scaling(Y, axis=0):
@@ -144,7 +150,6 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
 
     Parameters
     ----------
-
     t_r : float
         This parameter indicates repetition times of the experimental runs.
         In seconds. It is necessary to correctly consider times in the design
@@ -241,7 +246,7 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         further inspection of model details. This has an important impact
         on memory consumption. True by default.
 
-    subject_id : string, optional
+    subject_label : string, optional
         This id will be used to identify a `FirstLevelModel` when passed to
         a `SecondLevelModel` object.
 
@@ -261,7 +266,7 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
                  target_shape=None, smoothing_fwhm=None, memory=Memory(None),
                  memory_level=1, standardize=False, signal_scaling=0,
                  noise_model='ar1', verbose=0, n_jobs=1,
-                 minimize_memory=True, subject_id=None):
+                 minimize_memory=True, subject_label=None):
         # design matrix parameters
         self.t_r = t_r
         self.slice_time_ref = slice_time_ref
@@ -298,7 +303,7 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         # attributes
         self.labels_ = None
         self.results_ = None
-        self.subject_id = subject_id
+        self.subject_label = subject_label
 
     def fit(self, run_imgs, events=None, confounds=None,
             design_matrices=None):
@@ -444,8 +449,10 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
             # Mask and prepare data for GLM
             if self.verbose > 1:
                 t_masking = time.time()
-                sys.stderr.write('Starting masker computation')
+                sys.stderr.write('Starting masker computation \r')
+
             Y = self.masker_.transform(run_img)
+
             if self.verbose > 1:
                 t_masking = time.time() - t_masking
                 sys.stderr.write('Masker took %d seconds          \n' % t_masking)
@@ -557,3 +564,239 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
             '%s of contrast %s' % (output_type, contrast_name))
 
         return output
+
+
+def first_level_models_from_bids(
+        dataset_path, task_label, space_label, img_filters=[],
+        t_r=None, slice_time_ref=0., hrf_model='glover', drift_model='cosine',
+        period_cut=128, drift_order=1, fir_delays=[0], min_onset=-24,
+        mask=None, target_affine=None, target_shape=None, smoothing_fwhm=None,
+        memory=Memory(None), memory_level=1, standardize=False,
+        signal_scaling=0, noise_model='ar1', verbose=0, n_jobs=1,
+        minimize_memory=True):
+    """Create FirstLevelModel objects and fit arguments from a BIDS dataset.
+
+    It t_r is not specified this function will attempt to load it from a
+    bold.json file alongside slice_time_ref. Otherwise t_r and slice_time_ref
+    are taken as given.
+
+    Parameters
+    ----------
+    dataset_path: str
+        Directory of the highest level folder of the BIDS dataset. Should
+        contain subject folders and a derivatives folder.
+
+    task_label: str
+        Task_label as specified in the file names like _task-<task_label>_.
+
+    space_label: str, optional
+        Specifies the space label of the preproc.nii images.
+        As they are specified in the file names like _space-<space_label>_.
+
+    img_filters: list of tuples (str, str), optional (default: [])
+        Filters are of the form (field, label). Only one filter per field
+        allowed. A file that does not match a filter will be discarded.
+        Possible filters are 'acq', 'rec', 'run', 'res' and 'variant'.
+        Filter examples would be (variant, smooth), (acq, pa) and
+        (res, 1x1x1).
+
+    All other parameters correspond to a `FirstLevelModel` object, which
+    contains their documentation. The subject label of the model will be
+    determined directly from the BIDS dataset.
+
+    Returns
+    -------
+    models: list of `FirstLevelModel` objects
+        Each FirstLevelModel object corresponds to a subject. All runs from
+        different sessions are considered together for the same subject to run
+        a fixed effects analysis on them.
+
+    models_run_imgs: list of list of Niimg-like objects,
+        Items for the FirstLevelModel fit function of their respective model.
+
+    models_events: list of list of pandas DataFrames,
+        Items for the FirstLevelModel fit function of their respective model.
+
+    models_confounds: list of list of pandas DataFrames or None,
+        Items for the FirstLevelModel fit function of their respective model.
+    """
+    # check arguments
+    if not isinstance(dataset_path, str):
+        raise TypeError('dataset_path must be a string, instead %s was given' %
+                        type(task_label))
+    if not os.path.exists(dataset_path):
+        raise ValueError('given path do not exist: %s' % dataset_path)
+    if not isinstance(task_label, str):
+        raise TypeError('task_label must be a string, instead %s was given' %
+                        type(task_label))
+    if not isinstance(space_label, str):
+        raise TypeError('space_label must be a string, instead %s was given' %
+                        type(space_label))
+    if not isinstance(img_filters, list):
+        raise TypeError('img_filters must be a list, instead %s was given' %
+                        type(img_filters))
+    for img_filter in img_filters:
+        if (not isinstance(img_filter[0], str) or
+                not isinstance(img_filter[1], str)):
+            raise TypeError('filters in img filters must be (str, str), '
+                            'instead %s was given' % type(img_filter))
+        if img_filter[0] not in ['acq', 'rec', 'run', 'res', 'variant']:
+            raise ValueError("field %s is not a possible filter. Only "
+                             "'acq', 'rec', 'run', 'res' and 'variant' "
+                             "are allowed." % type(img_filter[0]))
+
+    # check derivatives folder is present
+    derivatives_path = os.path.join(dataset_path, 'derivatives')
+    if not os.path.exists(derivatives_path):
+        raise ValueError('derivatives folder does not exist in given dataset')
+
+    # Get acq specs for models. RepetitionTime and SliceTimingReference.
+    # Throw warning if no bold.json is found
+    if t_r is not None:
+        warn('RepetitionTime given in model_init as %d' % t_r)
+        warn('slice_time_ref is %d percent of the repetition '
+             'time' % slice_time_ref)
+    else:
+        filters = [('task', task_label)]
+        for img_filter in img_filters:
+            if img_filter[0] in ['acq', 'rec', 'run']:
+                filters.append(img_filter)
+
+        img_specs = get_bids_files(derivatives_path, modality_folder='func',
+                                   file_tag='preproc', file_type='json',
+                                   filters=filters)
+        # If we dont find the parameter information in the derivatives folder
+        # we try to search in the raw data folder
+        if not img_specs:
+            img_specs = get_bids_files(dataset_path, modality_folder='func',
+                                       file_tag='bold', file_type='json',
+                                       filters=filters)
+        if not img_specs:
+            warn('No preproc.json found in derivatives folder and no bold.json'
+                 ' in dataset folder. t_r can not be inferred and will need to'
+                 ' be set manually in the list of models, otherwise their fit '
+                 'will throw an exception')
+        else:
+            specs = json.load(open(img_specs[0], 'r'))
+            if 'RepetitionTime' in specs:
+                t_r = float(specs['RepetitionTime'])
+            else:
+                warn('RepetitionTime not found in file %s. t_r can not be '
+                     'inferred and will need to be set manually in the '
+                     'list of models. Otherwise their fit will throw an '
+                     ' exception' % img_specs[0])
+            if 'SliceTimingRef' in specs:
+                slice_time_ref = float(specs['SliceTimingRef'])
+            else:
+                warn('SliceTimingRef not found in file %s. It will be assumed'
+                     ' that the slice timing reference is 0.0 percent of the '
+                     'repetition time. If it is not the case it will need to '
+                     'be set manually in the generated list of models' %
+                     img_specs[0])
+
+    # Infer subjects in dataset
+    sub_folders = glob.glob(os.path.join(derivatives_path, 'sub-*'))
+    sub_labels = [os.path.basename(s).split('-')[1] for s in sub_folders]
+    sub_labels = sorted(list(set(sub_labels)))
+
+    # Build fit_kwargs dictionaries to pass to their respective models fit
+    # Events and confounds files must match number of imgs (runs)
+    models = []
+    models_run_imgs = []
+    models_events = []
+    models_confounds = []
+    for sub_label in sub_labels:
+        # Create model
+        model = FirstLevelModel(
+            t_r=t_r, slice_time_ref=slice_time_ref, hrf_model=hrf_model,
+            drift_model=drift_model, period_cut=period_cut,
+            drift_order=drift_order, fir_delays=fir_delays,
+            min_onset=min_onset, mask=mask, target_affine=target_affine,
+            target_shape=target_shape, smoothing_fwhm=smoothing_fwhm,
+            memory=memory, memory_level=memory_level, standardize=standardize,
+            signal_scaling=signal_scaling, noise_model=noise_model,
+            verbose=verbose, n_jobs=n_jobs, minimize_memory=minimize_memory,
+            subject_label=sub_label)
+        models.append(model)
+
+        # Get preprocessed imgs
+        filters = [('task', task_label), ('space', space_label)] + img_filters
+        imgs = get_bids_files(derivatives_path, modality_folder='func',
+                              file_tag='preproc', file_type='nii*',
+                              sub_label=sub_label, filters=filters)
+        # If there is more than one file for the same (ses, run), likely we
+        # have an issue of underspecification of filters.
+        run_check_list = []
+        # If more than one run is present the run field is mandatory in BIDS
+        # as well as the ses field if more than one session is present.
+        if len(imgs) > 1:
+            for img in imgs:
+                img_dict = parse_bids_filename(img)
+                if '_ses-' in img_dict['file_basename']:
+                    if (img_dict['ses'], img_dict['run']) in run_check_list:
+                        raise ValueError(
+                            'More than one nifti image found for the same run '
+                            '%s and session %s. Please verify that the '
+                            'preproc_variant and space_label labels were '
+                            'correctly specified.' %
+                            (img_dict['run'], img_dict['ses']))
+                    else:
+                        run_check_list.append((img_dict['ses'],
+                                              img_dict['run']))
+                else:
+                    if img_dict['run'] in run_check_list:
+                        raise ValueError(
+                            'More than one nifti image found for the same run '
+                            '%s. Please verify that the preproc_variant and '
+                            'space_label labels were correctly specified.' %
+                            img_dict['run'])
+                    else:
+                        run_check_list.append(img_dict['run'])
+        models_run_imgs.append(imgs)
+
+        # Get events and extra confounds
+        filters = [('task', task_label)]
+        for img_filter in img_filters:
+            if img_filter[0] in ['acq', 'rec', 'run']:
+                filters.append(img_filter)
+        # Get events. If not found in derivatives check for original data.
+        # There might be no need to preprocess events to specify model, still
+        # throw a warning
+        for possible_path in [derivatives_path, dataset_path]:
+            events = get_bids_files(possible_path, modality_folder='func',
+                                    file_tag='events', file_type='tsv',
+                                    sub_label=sub_label, filters=filters)
+            if events:
+                if len(events) != len(imgs):
+                    raise ValueError('%d events.tsv files found for %d bold '
+                                     'files. Same number of event files as '
+                                     'the number of runs is expected' %
+                                     (len(events), len(imgs)))
+                events = [pd.read_csv(event, sep='\t', index_col=None)
+                          for event in events]
+                if possible_path == dataset_path:
+                    warn('events taken from directory containing raw data. '
+                         'Is it the case that there was no need to preprocess '
+                         'the events for the model?')
+                models_events.append(events)
+                break
+        if not events:
+            raise ValueError('No events.tsv files found')
+
+        # Get confounds. If not found it will be assumed there are none.
+        # If there are confounds, they are assumed to be present for all runs.
+        confounds = get_bids_files(derivatives_path, modality_folder='func',
+                                   file_tag='confounds', file_type='tsv',
+                                   sub_label=sub_label, filters=filters)
+        print(len(confounds), len(imgs))
+        if confounds:
+            if len(confounds) != len(imgs):
+                raise ValueError('%d confounds.tsv files found for %d bold '
+                                 'files. Same number of confound files as '
+                                 'the number of runs is expected' %
+                                 (len(events), len(imgs)))
+            confounds = [pd.read_csv(c, sep='\t', index_col=None)
+                         for c in confounds]
+            models_confounds.append(confounds)
+
+    return models, models_run_imgs, models_events, models_confounds

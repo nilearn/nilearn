@@ -1,4 +1,6 @@
 import os
+import json
+import zipfile
 import numpy as np
 from nose.tools import assert_true, assert_false, assert_equal, assert_raises
 
@@ -23,6 +25,43 @@ def setup_mock():
 
 def teardown_mock():
     return tst.teardown_mock(utils, func)
+
+
+@with_setup(setup_mock, teardown_mock)
+@with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
+def test_fetch_bids_langloc_dataset():
+    data_dir = os.path.join(tst.tmpdir, 'bids_langloc_example')
+    os.mkdir(data_dir)
+    main_folder = os.path.join(data_dir, 'bids_langloc_dataset')
+    os.mkdir(main_folder)
+
+    datadir, dl_files = datasets.fetch_bids_langloc_dataset(tst.tmpdir)
+
+    assert_true(isinstance(datadir, _basestring))
+    assert_true(isinstance(dl_files, list))
+
+
+@with_setup(setup_mock, teardown_mock)
+@with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
+def test_fetch_openfmri_dataset():
+    # test dataset not found
+    data_dir = os.path.join(tst.tmpdir, 'ds000001')
+    os.mkdir(data_dir)
+    api_content = [dict(accession_number='dsother')]
+    json.dump(api_content, open(os.path.join(data_dir, 'api'), 'w'))
+    assert_raises(ValueError, datasets.fetch_openfmri_dataset,
+                  data_dir=tst.tmpdir)
+    # test dataset found with no revision
+    data_dir = os.path.join(tst.tmpdir, 'dsother')
+    os.mkdir(data_dir)
+    api_content = [dict(accession_number='dsother', revision_set=[],
+                        link_set=[dict(revision=None, url='http')])]
+    json.dump(api_content, open(os.path.join(data_dir, 'api'), 'w'))
+    data_dir, dl_files = datasets.fetch_openfmri_dataset(
+        dataset_name='dsother', data_dir=tst.tmpdir)
+    assert_true(isinstance(data_dir, _basestring))
+    assert_true(isinstance(dl_files, list))
+
 
 @with_setup(setup_mock, teardown_mock)
 def test_fetch_localizer():

@@ -27,6 +27,8 @@ uses.
    :toctree: generated/
    :template: function.rst
 
+   fetch_bids_langloc_dataset
+   fetch_bids_openfmri_dataset
    fetch_localizer_first_level
    fetch_spm_auditory
    fetch_spm_multimodal_fmri
@@ -171,6 +173,7 @@ uses.
 
    mean_scaling
    run_glm
+   first_level_models_from_bids
 
 .. _second_level_model_ref:
 
@@ -262,3 +265,5 @@ uses.
    multiple_mahalanobis
    full_rank
    pos_recipr
+   get_bids_files
+   parse_bids_filename

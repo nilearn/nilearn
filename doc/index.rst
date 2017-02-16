@@ -25,6 +25,9 @@
 .. |second_level| image:: auto_examples/images/thumb/sphx_glr_plot_second_level_button_press_thumb.png
      :target: auto_examples/plot_second_level_button_press.html
 
+.. |bids| image:: auto_examples/images/thumb/sphx_glr_plot_bids_analysis_thumb.png
+     :target: auto_examples/plot_bids_analysis.html
+
 
 .. raw:: html
 
@@ -46,6 +49,8 @@
 * |first_level|
 
 * |second_level|
+
+* |bids|
 
 
 .. raw:: html
