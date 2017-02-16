@@ -43,13 +43,13 @@ def test_fetch_bids_langloc_dataset():
 
 @with_setup(setup_mock, teardown_mock)
 @with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
-def test_fetch_bids_openfmri_dataset():
+def test_fetch_openfmri_dataset():
     # test dataset not found
     data_dir = os.path.join(tst.tmpdir, 'ds000001')
     os.mkdir(data_dir)
     api_content = [dict(accession_number='dsother')]
     json.dump(api_content, open(os.path.join(data_dir, 'api'), 'w'))
-    assert_raises(ValueError, datasets.fetch_bids_openfmri_dataset,
+    assert_raises(ValueError, datasets.fetch_openfmri_dataset,
                   data_dir=tst.tmpdir)
     # test dataset found with no revision
     data_dir = os.path.join(tst.tmpdir, 'dsother')
@@ -57,7 +57,7 @@ def test_fetch_bids_openfmri_dataset():
     api_content = [dict(accession_number='dsother', revision_set=[],
                         link_set=[dict(revision=None, url='http')])]
     json.dump(api_content, open(os.path.join(data_dir, 'api'), 'w'))
-    data_dir, dl_files = datasets.fetch_bids_openfmri_dataset(
+    data_dir, dl_files = datasets.fetch_openfmri_dataset(
         dataset_name='dsother', data_dir=tst.tmpdir)
     assert_true(isinstance(data_dir, _basestring))
     assert_true(isinstance(dl_files, list))

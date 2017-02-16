@@ -55,12 +55,18 @@ def fetch_bids_langloc_dataset(data_dir=None, verbose=1):
     return os.path.join(data_dir, main_folder), sorted(file_list)
 
 
-def fetch_bids_openfmri_dataset(dataset_name='ds000001', dataset_revision=None,
-                                data_dir=None, verbose=1):
+def fetch_openfmri_dataset(dataset_name='ds000001', dataset_revision=None,
+                           data_dir=None, verbose=1):
     """Download latest revision of specified bids dataset.
 
     Compressed files will not be uncompressed automatically due to the expected
     great size of downloaded dataset.
+
+    Only datasets that contain preprocessed files following the official
+    conventions of the future BIDS derivatives specification can be used out
+    of the box with Nistats. Otherwise custom preprocessing would need to be
+    performed, optionally following the BIDS derivatives specification for the
+    preprocessing output files.
 
     Parameters
     ----------
