@@ -29,7 +29,8 @@ destrieux_atlas = datasets.fetch_atlas_surf_destrieux()
 # The parcellation is already loaded into memory
 parcellation = destrieux_atlas['map_left']
 
-# Retrieve fsaverage surface template
+# Retrieve fsaverage5 surface dataset, which contains pial and inflated
+# version of the surface template as well as sulcal depth maps
 fsaverage = datasets.fetch_surf_fsaverage5()
 
 # The fsaverage dataset contains file names pointing to the file locations
@@ -41,7 +42,7 @@ print('Fsaverage5 sulcal depth map of left hemisphere is at: %s' %
       fsaverage['sulc_left'])
 
 ###############################################################################
-# Display Destrieux parcellation on fsaverage5 surface
+# Display Destrieux parcellation on fsaverage5 pial surface
 plotting.plot_surf_roi(fsaverage['pial_left'], roi_map=parcellation,
                        hemi='left', view='lateral',
                        bg_map=fsaverage['sulc_left'], bg_on_data=True,
