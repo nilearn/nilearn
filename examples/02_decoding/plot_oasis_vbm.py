@@ -113,7 +113,8 @@ from nilearn.plotting import plot_stat_map, show
 bg_filename = gray_matter_map_filenames[0]
 z_slice = 0
 from nilearn.image.resampling import coord_transform
-affine = weight_img.affine
+from nilearn._utils.compat import get_affine
+affine = get_affine(weight_img)
 _, _, k_slice = coord_transform(0, 0, z_slice,
                                 linalg.inv(affine))
 k_slice = int(np.round(k_slice))
