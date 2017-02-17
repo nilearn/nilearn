@@ -24,10 +24,11 @@ mean_img = image.mean_img(func_filename)
 
 z_slice = -14
 from nilearn.image.resampling import coord_transform
-affine = mean_img.affine
+from nilearn._utils.compat import get_affine
+affine = get_affine(mean_img)
 _, _, k_slice = coord_transform(0, 0, z_slice,
                                 linalg.inv(affine))
-k_slice = np.round(k_slice)
+k_slice = int(np.round(k_slice))
 
 fig = plt.figure(figsize=(4, 5.4), facecolor='k')
 

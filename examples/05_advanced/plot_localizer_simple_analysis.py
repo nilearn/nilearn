@@ -52,16 +52,17 @@ neg_log_pvals_anova_unmasked = nifti_masker.inverse_transform(
 
 ############################################################################
 # Visualization
+from nilearn._utils.compat import get_affine
 from nilearn.plotting import plot_stat_map, show
 
 # Various plotting parameters
 z_slice = 45  # plotted slice
 from nilearn.image.resampling import coord_transform
-affine = neg_log_pvals_anova_unmasked.affine
+affine = get_affine(neg_log_pvals_anova_unmasked)
 _, _, k_slice = coord_transform(0, 0, z_slice,
                                 linalg.inv(affine))
 
-k_slice = np.round(k_slice)
+k_slice = int(np.round(k_slice))
 threshold = - np.log10(0.1)  # 10% corrected
 
 # Plot Anova p-values
