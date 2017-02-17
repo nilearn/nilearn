@@ -1,5 +1,6 @@
 import numpy as np
 import nibabel as nb
+from nibabel import gifti
 import tempfile
 import os
 import matplotlib.pyplot as plt
@@ -33,16 +34,16 @@ def test_load_surf_data_array():
 def test_load_surf_data_file_nii_gii():
     # test loading of fake data from gifti file
     filename_gii = tempfile.mktemp(suffix='.gii')
-    darray = nb.gifti.GiftiDataArray(data=np.zeros((20,)))
-    gii = nb.gifti.GiftiImage(darrays=[darray])
-    nb.gifti.write(gii, filename_gii)
+    darray = gifti.GiftiDataArray(data=np.zeros((20,)))
+    gii = gifti.GiftiImage(darrays=[darray])
+    gifti.write(gii, filename_gii)
     assert_array_equal(load_surf_data(filename_gii), np.zeros((20,)))
     os.remove(filename_gii)
 
     # test loading of data from empty gifti file
     filename_gii_empty = tempfile.mktemp(suffix='.gii')
-    gii_empty = nb.gifti.GiftiImage()
-    nb.gifti.write(gii_empty, filename_gii_empty)
+    gii_empty = gifti.GiftiImage()
+    gifti.write(gii_empty, filename_gii_empty)
     assert_raises_regex(ValueError,
                         'must contain at least one data array',
                         load_surf_data, filename_gii_empty)
@@ -129,29 +130,29 @@ def test_load_surf_mesh_file_gii():
 
     # test if correct gii is loaded into correct list
     filename_gii_mesh = tempfile.mktemp(suffix='.gii')
-    coord_array = nb.gifti.GiftiDataArray(data=mesh[0],
-                                          intent=nb.nifti1.intent_codes[
-                                          'NIFTI_INTENT_POINTSET'])
-    face_array = nb.gifti.GiftiDataArray(data=mesh[1],
-                                         intent=nb.nifti1.intent_codes[
-                                         'NIFTI_INTENT_TRIANGLE'])
-    gii = nb.gifti.GiftiImage(darrays=[coord_array, face_array])
-    nb.gifti.write(gii, filename_gii_mesh)
+    coord_array = gifti.GiftiDataArray(data=mesh[0],
+                                       intent=nb.nifti1.intent_codes[
+                                       'NIFTI_INTENT_POINTSET'])
+    face_array = gifti.GiftiDataArray(data=mesh[1],
+                                      intent=nb.nifti1.intent_codes[
+                                      'NIFTI_INTENT_TRIANGLE'])
+    gii = gifti.GiftiImage(darrays=[coord_array, face_array])
+    gifti.write(gii, filename_gii_mesh)
     assert_array_equal(load_surf_mesh(filename_gii_mesh)[0], mesh[0])
     assert_array_equal(load_surf_mesh(filename_gii_mesh)[1], mesh[1])
     os.remove(filename_gii_mesh)
 
     # test if incorrect gii raises error
     filename_gii_mesh_no_point = tempfile.mktemp(suffix='.gii')
-    nb.gifti.write(nb.gifti.GiftiImage(darrays=[face_array, face_array]),
-                   filename_gii_mesh_no_point)
+    gifti.write(gifti.GiftiImage(darrays=[face_array, face_array]),
+                filename_gii_mesh_no_point)
     assert_raises_regex(ValueError, 'NIFTI_INTENT_POINTSET',
                         load_surf_mesh, filename_gii_mesh_no_point)
     os.remove(filename_gii_mesh_no_point)
 
     filename_gii_mesh_no_face = tempfile.mktemp(suffix='.gii')
-    nb.gifti.write(nb.gifti.GiftiImage(darrays=[coord_array, coord_array]),
-                   filename_gii_mesh_no_face)
+    gifti.write(gifti.GiftiImage(darrays=[coord_array, coord_array]),
+                filename_gii_mesh_no_face)
     assert_raises_regex(ValueError, 'NIFTI_INTENT_TRIANGLE',
                         load_surf_mesh, filename_gii_mesh_no_face)
     os.remove(filename_gii_mesh_no_face)
