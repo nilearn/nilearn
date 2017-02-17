@@ -890,11 +890,16 @@ def fetch_atlas_surf_destrieux(data_dir=None, url=None,
     -------
         data: sklearn.datasets.base.Bunch
         dictionary-like object, contains:
-        - 'labels' : List of region labels
-        - 'map_left': Numpy array, index into 'labels' for each vertex on the
-                      left hemishpere of the fsaverage5 surface
-        - 'map_right': Numpy array, index into 'labels' for each vertex on the
-                       right hemishpere of the fsaverage5 surface
+        - 'labels' : list
+                     Contains region labels
+        - 'map_left': numpy.ndarray
+                      Index into 'labels' for each vertex on the
+                      left hemisphere of the fsaverage5 surface
+        - 'map_right': numpy.ndarray
+                       Index into 'labels' for each vertex on the
+                       right hemisphere of the fsaverage5 surface
+        - 'description': str
+                         Details about the dataset
 
 
     References
