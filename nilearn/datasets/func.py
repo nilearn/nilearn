@@ -1601,7 +1601,7 @@ def fetch_cobre(n_subjects=10, data_dir=None, url=None, verbose=1):
     Notes
     -----
     More information about datasets structure, See:
-    https://figshare.com/articles/COBRE_preprocessed_with_NIAK_0_12_4/1160600
+    'https://figshare.com/articles/COBRE_preprocessed_with_NIAK_0_12_4/1160600'
     """
 
     if url is None:
