@@ -1550,18 +1550,18 @@ def fetch_cobre(n_subjects=10, data_dir=None, url=None, verbose=1):
     done interactively by the user who will be able to explore different
     analytical paths easily.
 
-    For each subject, there is `fmri_XXXXXXX.tsv files which contains the
+    For each subject, there is `fmri_XXXXXXX.tsv` files which contains the
     covariates such as motion parameters, mean CSF signal that should to be
     regressed out of the functional data.
 
     `keys_confounds.json`: a json file, that describes each variable mentioned
-    in the files `fmri_XXXXXXX.tsv.gz`.It also contains a list of time frames
+    in the files `fmri_XXXXXXX.tsv.gz`. It also contains a list of time frames
     that have been removed from the time series by censoring for high motion.
 
     `phenotypic_data.tsv` contains the data of clinical variables that
     explained in `keys_phenotypic_data.json`
 
-    .. version added 0.3
+    .. versionadded 0.3
 
     Parameters
     ----------
@@ -1598,12 +1598,12 @@ def fetch_cobre(n_subjects=10, data_dir=None, url=None, verbose=1):
         - 'desc_phenotypic': str
             description of the phenotypic variables.
 
-
     Notes
     -----
     More information about datasets structure, See:
-    https://figshare.com/articles/COBRE_preprocessed_with_NIAK_0_17_-_lightweight_release/4197885
+    https://figshare.com/articles/COBRE_preprocessed_with_NIAK_0_12_4/1160600
     """
+
     if url is None:
         # Here we use the file that provides URL for all others
         url = 'https://api.figshare.com/v2/articles/4197885'
@@ -1611,6 +1611,7 @@ def fetch_cobre(n_subjects=10, data_dir=None, url=None, verbose=1):
     data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
                                 verbose=verbose)
     fdescr = _get_dataset_descr(dataset_name)
+    #https://figshare.com/articles/COBRE_preprocessed_with_NIAK_0_17_-_lightweight_release/4197885
 
     # First, fetch the file that references all individual URLs
     files = _fetch_files(data_dir, [("4197885", url, {})],

@@ -493,7 +493,7 @@ def test_fetch_cobre():
 
     ids = np.asarray(ids_n, dtype='|U17')
 
-    curret_age = np.ones(len(ids), dtype='<f8')
+    current_age = np.ones(len(ids), dtype='<f8')
     gender = np.ones(len(ids), dtype='<f8')
     handedness = np.ones(len(ids), dtype='<f8')
 
@@ -505,7 +505,7 @@ def test_fetch_cobre():
     fd = np.ones(len(ids), dtype='<f8')
     fd_scrubbed = np.ones(len(ids), dtype='<f8')
 
-    csv = np.rec.array([ids, curret_age, gender, handedness, subject_type,
+    csv = np.rec.array([ids, current_age, gender, handedness, subject_type,
                         diagnosis, frames_ok, fd, fd_scrubbed],
                        dtype=[('ID', '|U17'), ('Current Age', '<f8'),
                               ('Gender', '<f8'), ('Handedness', '<f8'),
@@ -517,14 +517,14 @@ def test_fetch_cobre():
     cobre_dir = os.path.join(tst.tmpdir, 'cobre')
     os.mkdir(cobre_dir)
 
-    # Create the tsv.gz
+    # Create the tsv
     name_f = os.path.join(cobre_dir, 'phenotypic_data.tsv')
     with open(name_f, 'wb') as f:
         header = '# {0}\n'.format('\t'.join(csv.dtype.names))
         f.write(header.encode())
         np.savetxt(f, csv, delimiter='\t', fmt='%s')
 
-    # create an empty .gz file
+    # create an empty gz file
     f_in = open(name_f)
     name_f_gz = os.path.join(cobre_dir, 'phenotypic_data.tsv.gz')
     f_out = gzip.open(name_f_gz, 'wb')
