@@ -1600,8 +1600,8 @@ def fetch_cobre(n_subjects=10, data_dir=None, url=None, verbose=1):
 
     Notes
     -----
-    More information about datasets structure, See:
-    'https://figshare.com/articles/COBRE_preprocessed_with_NIAK_0_12_4/1160600'
+    See `more information about datasets structure
+    <https://figshare.com/articles/COBRE_preprocessed_with_NIAK_0_17_-_lightweight_release/4197885>`_
     """
 
     if url is None:
@@ -1611,7 +1611,6 @@ def fetch_cobre(n_subjects=10, data_dir=None, url=None, verbose=1):
     data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
                                 verbose=verbose)
     fdescr = _get_dataset_descr(dataset_name)
-    #https://figshare.com/articles/COBRE_preprocessed_with_NIAK_0_17_-_lightweight_release/4197885
 
     # First, fetch the file that references all individual URLs
     files = _fetch_files(data_dir, [("4197885", url, {})],
