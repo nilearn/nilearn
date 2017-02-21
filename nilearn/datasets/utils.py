@@ -600,8 +600,8 @@ def _get_dataset_descr(ds_name):
     fname = ds_name
 
     try:
-        with open(os.path.join(module_path, 'description', fname + '.rst'))\
-                as rst_file:
+        with open(os.path.join(module_path, 'description', fname + '.rst'),
+                  'rb') as rst_file:
             descr = rst_file.read()
     except IOError:
         descr = ''
