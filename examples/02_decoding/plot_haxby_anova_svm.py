@@ -61,8 +61,8 @@ svc = SVC(kernel='linear')
 # Define the dimension reduction to be used.
 # Here we use a classical univariate feature selection based on F-test,
 # namely Anova. We set the number of features to be selected to 500
-from sklearn.feature_selection import SelectKBest, f_classif
-feature_selection = SelectKBest(f_classif, k=500)
+from sklearn.feature_selection import SelectPercentile, f_classif
+feature_selection = SelectPercentile(f_classif, k=500)
 
 # We have our classifier (SVC), our feature selection (SelectKBest), and now,
 # we can plug them together in a *pipeline* that performs the two operations
