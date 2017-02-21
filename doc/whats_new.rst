@@ -7,6 +7,20 @@ now 0.15.
 **Dropped support for Python 2.6**
 
 
+0.3
+===
+
+Changelog
+---------
+
+Enhancements
+............
+
+    - A new function :func:`nilearn.regions.connected_label_regions` to
+      extract the connected components represented as same label to regions
+      apart with each region labelled as unique label.
+
+
 Changelog
 ---------
 
