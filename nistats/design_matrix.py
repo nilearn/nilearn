@@ -450,6 +450,54 @@ def plot_design_matrix(design_matrix, rescale=True, ax=None):
     return ax
 
 
+def create_simple_second_level_design(maps_table, confounds=None,
+                                      main_column_name='contrast'):
+    """Sets up a simple second level design from a maps table.
+
+    Basically its a one column design intended for what would be a simple t
+    test if there are no confounders.
+
+    Parameters
+    ----------
+    maps_table: pandas DataFrame
+        Contains at least columns 'map_name' and 'subject_label'
+    confounds: pandas DataFrame, optional
+        If given, contains at least two columns, 'subject_label' and one confound.
+        confounds and maps_table do not need to agree on their shape,
+        information between them is matched based on the 'subject_label' column
+        that both must have.
+
+    Returns
+    -------
+    design_matrix: pandas DataFrame
+        The second level design matrix
+    """
+    confounds_name = []
+    if confounds is not None:
+        confounds_name = confounds.columns.tolist()
+        confounds_name.remove('subject_label')
+    design_columns = ([main_column_name] + confounds_name)
+    design_matrix = pd.DataFrame(columns=design_columns)
+    for ridx, row in maps_table.iterrows():
+        design_matrix.loc[ridx] = [0] * len(design_columns)
+        design_matrix.loc[ridx, main_column_name] = 1
+        if confounds is not None:
+            conrow = confounds['subject_label'] == row['subject_label']
+            for conf_name in confounds_name:
+                design_matrix.loc[ridx, conf_name] = confounds[conrow][conf_name].values
+
+    # check column names are unique
+    if len(np.unique(design_columns)) != len(design_columns):
+        raise ValueError('Design matrix columns do not have unique names')
+
+    # check design matrix is not singular
+    if np.linalg.cond(design_matrix.as_matrix()) < (1. / sys.float_info.epsilon):
+        warn('Attention: Design matrix is singular. Aberrant estimates '
+             'are expected.')
+
+    return design_matrix
+
+
 def create_second_level_design(maps_table, confounds=None):
     """Sets up a second level design from a maps table.
 
