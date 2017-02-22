@@ -26,23 +26,26 @@ from .first_level_model import run_glm
 from .regression import SimpleRegressionResults
 from .contrasts import compute_contrast
 from .utils import _basestring
-from .design_matrix import create_simple_second_level_design
+from .design_matrix import create_second_level_design
 
 
 def _infer_effect_maps(second_level_input, contrast_def):
+    """Deals with the different possibilities of second_level_input"""
     # Build the design matrix X and list of imgs Y for GLM fit
     if isinstance(second_level_input, pd.DataFrame):
-        sli = second_level_input
-        in_cond = sli.apply(lambda x: x['map_name'] == contrast_def, axis=1)
-        effect_maps = sli[in_cond]['effects_map_path'].tolist()
+        # If a Dataframe was given, we expect contrast_def to be in map_name
+        def _is_contrast_def(x):
+            return x['map_name'] == contrast_def
+        is_con = second_level_input.apply(_is_contrast_def, axis=1)
+        effect_maps = second_level_input[is_con]['effects_map_path'].tolist()
 
     elif isinstance(second_level_input[0], FirstLevelModel):
         # Get the first level model maps
         effect_maps = []
         for model in second_level_input:
-            eff_map = model.compute_contrast(contrast_def,
-                                             output_type='effect_size')
-            effect_maps.append(eff_map)
+            effect_map = model.compute_contrast(contrast_def,
+                                                output_type='effect_size')
+            effect_maps.append(effect_map)
 
     else:
         effect_maps = second_level_input
@@ -120,10 +123,23 @@ class SecondLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         ----------
         second_level_input: list of `FirstLevelModel` objects or pandas
                             DataFrame or list of Niimg-like objects.
+            Giving FirstLevelModel objects will allow to easily compute
+            the second level contast of arbitrary first level contrasts thanks
+            to the first_level_contrast argument of the compute_contrast
+            method. Effect size images will be computed for each model to
+            contrast at the second level.
+
             If a pandas DataFrame, then they have to contain subject_label,
-            map_name and effects_map_path. If list of Niimg-like objects then
-            this is taken literally as Y for the model fit and design_matrix
-            must be provided.
+            map_name and effects_map_path. It can contain multiple maps that
+            would be selected during contrast estimation with the argument
+            first_level_contrast of the compute_contrast function. The
+            DataFrame will be sorted based on the subject_label column to avoid
+            order inconsistencies when extracting the maps. So the rows of the
+            automatically computed design matrix, if not provided, will
+            correspond to the sorted subject_label column.
+
+            If list of Niimg-like objects then this is taken literally as Y
+            for the model fit and design_matrix must be provided.
 
         confounds: pandas DataFrame, optional
             Must contain a subject_label column. All other columns are
@@ -139,7 +155,7 @@ class SecondLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
             from second_level_input.
             Ensure that the order of maps given by a second_level_input
             list of Niimgs matches the order of the rows in the design matrix.
-            Must contain a column of 1s with column name 'contrast'.
+            Must contain a column of 1s with column name 'intercept'.
         """
         # Check parameters
         # check first level input
@@ -187,13 +203,6 @@ class SecondLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
                     raise ValueError('second_level_input DataFrame must have'
                                      ' columns subject_label, map_name and'
                                      ' effects_map_path')
-            subject_labels = second_level_input['subject_label']
-            if len(np.unique(subject_labels)) < len(subject_labels):
-                raise ValueError('second_level_input DataFrame must contain'
-                                 ' only one map per subject_label. Only '
-                                 'passing FirstLevelModels grant the '
-                                 'flexibility of fitting a single '
-                                 'SecondLevelModel object for all contrasts')
         else:
             raise ValueError('second_level_input must be a list of'
                              ' `FirstLevelModel` objects, a pandas DataFrame'
@@ -216,8 +225,14 @@ class SecondLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         if design_matrix is not None:
             if not isinstance(design_matrix, pd.DataFrame):
                 raise ValueError('design matrix must be a pandas DataFrame')
-            if 'contrast' not in design_matrix.columns:
-                raise ValueError('design matrix must contain column "contrast"')
+            if 'intercept' not in design_matrix.columns:
+                raise ValueError('design matrix must contain "intercept"')
+
+        # sort a pandas dataframe by subject_label to avoid inconsistencies
+        # with the design matrix row order when automatically extracting maps
+        if isinstance(second_level_input, pd.DataFrame):
+            sorted_input = second_level_input.sort_values('subject_label')
+            second_level_input = sorted_input
 
         self.second_level_input_ = second_level_input
         self.confounds_ = confounds
@@ -228,27 +243,26 @@ class SecondLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
             sys.stderr.write("Fitting second level model. "
                              "Take a deep breath\r")
 
-        # Select sample map for masker fit and get maps_table for design
+        # Select sample map for masker fit and get subjects_label for design
         if isinstance(second_level_input, pd.DataFrame):
             sample_map = second_level_input['effects_map_path'][0]
-            maps_table = second_level_input
+            labels = second_level_input['subject_label']
+            subjects_label = labels.values.tolist()
         elif isinstance(second_level_input[0], FirstLevelModel):
             sample_model = second_level_input[0]
             sample_condition = sample_model.design_matrices_[0].columns[0]
             sample_map = sample_model.compute_contrast(
                 sample_condition, output_type='effect_size')
-            maps_table = pd.DataFrame(columns=['map_name', 'subject_label'])
-            for model in second_level_input:
-                maps_table.loc[len(maps_table)] = ['contrast_def',
-                                                   model.subject_label]
+            labels = [model.subject_label for model in second_level_input]
+            subjects_label = labels
         else:
             # In this case design matrix had to be provided
             sample_map = second_level_input[0]
 
         # Create and set design matrix, if not given
         if design_matrix is None:
-            design_matrix = create_simple_second_level_design(maps_table,
-                                                              confounds)
+            design_matrix = create_second_level_design(subjects_label,
+                                                       confounds)
         self.design_matrix_ = design_matrix
 
         # Learn the mask. Assume the first level imgs have been masked.
@@ -275,33 +289,40 @@ class SecondLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
 
         return self
 
-    def compute_contrast(self, contrast_def='contrast',
-                         first_level_contrast=None,
-                         stat_type=None, output_type='z_score'):
+    def compute_contrast(
+            self, second_level_contrast='intercept', first_level_contrast=None,
+            second_level_stat_type=None, output_type='z_score'):
         """Generate different outputs corresponding to
         the contrasts provided e.g. z_map, t_map, effects and variance.
 
         Parameters
         ----------
-        contrast_def: str or array of shape (n_col), optional
+        second_level_contrast: str or array of shape (n_col), optional
             Where ``n_col`` is the number of columns of the design matrix,
             The string can be a formula compatible with the linear constraint
             of the Patsy library. Basically one can use the name of the
             conditions as they appear in the design matrix of
             the fitted model combined with operators /*+- and numbers.
-            Please checks the patsy documentation for formula examples:
+            Please check the patsy documentation for formula examples:
             http://patsy.readthedocs.io/en/latest/API-reference.html#patsy.DesignInfo.linear_constraint
-            By default it returns the group contrast of the main effect.
+
+            VERY IMPORTANT: The 'intercept' corresponds to the second level
+            effect after taking confounders in consideration. If there are
+            no confounders then this will be equivalent to a simple t test.
+            By default we compute the 'intercept' second level contrast.
 
         first_level_contrast: str or array of shape (n_col) with respect to
                               FirstLevelModel, optional
             In case a list of FirstLevelModel was provided as
             second_level_input, we have to provide a contrast to apply to
             the first level models to get the corresponding list of images
-            desired, that would be tested at the second level.
+            desired, that would be tested at the second level. In case a
+            pandas DataFrame was provided as second_level_input this is the
+            map name to extract from the pandas dataframe map_name column.
+            It has to be a 't' contrast.
 
-        stat_type: {'t', 'F'}, optional
-            Type of the contrast
+        second_level_stat_type: {'t', 'F'}, optional
+            Type of the second level contrast
 
         output_type: str, optional
             Type of the output map. Can be 'z_score', 'stat', 'p_value',
@@ -322,18 +343,18 @@ class SecondLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
                 raise ValueError('If second_level_input was a list of '
                                  'FirstLevelModel, then first_level_contrast '
                                  'is mandatory. It corresponds to the '
-                                 'contrast_def argument of the '
+                                 'second_level_contrast argument of the '
                                  'compute_contrast method of FirstLevelModel')
 
         # check contrast definition
-        if isinstance(contrast_def, np.ndarray):
-            con_val = contrast_def
+        if isinstance(second_level_contrast, np.ndarray):
+            con_val = second_level_contrast
             if np.all(con_val == 0):
                 raise ValueError('Contrast is null')
         else:
             design_info = DesignInfo(self.design_matrix_.columns.tolist())
-            con_val = design_info.linear_constraint(contrast_def).coefs
-
+            constraint = design_info.linear_constraint(second_level_contrast)
+            con_val = constraint.coefs
         # check output type
         if isinstance(output_type, _basestring):
             if output_type not in ['z_score', 'stat', 'p_value', 'effect_size',
@@ -350,9 +371,10 @@ class SecondLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
                                          first_level_contrast)
         # check design matrix X and effect maps Y agree on number of rows
         if len(effect_maps) != self.design_matrix_.shape[0]:
-            raise ValueError('design_matrix does not match the number of maps '
-                             'considered. Rows in design matrix do not agree '
-                             'with number of maps')
+            raise ValueError(
+                'design_matrix does not match the number of maps considered. '
+                '%i rows in design matrix do not match with %i maps' %
+                (self.design_matrix_.shape[0], len(effect_maps)))
 
         # Fit an OLS regression for parametric statistics
         Y = self.masker_.transform(effect_maps)
@@ -376,7 +398,7 @@ class SecondLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         else:
             mem_contrast = compute_contrast
         contrast = mem_contrast(self.labels_, self.results_, con_val,
-                                stat_type)
+                                second_level_stat_type)
 
         # We get desired output from contrast object
         estimate_ = getattr(contrast, output_type)()
