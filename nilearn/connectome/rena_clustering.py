@@ -10,9 +10,13 @@ from sklearn.externals.joblib import Memory
 from sklearn.externals import six
 from sklearn.base import TransformerMixin, ClusterMixin
 from scipy.sparse import csgraph, coo_matrix, dia_matrix
-from sklearn.base import BaseEstimator, clone
-from .._utils.fixes import check_array, check_is_fitted
-from ..input_data import NiftiMasker, MultiNiftiMasker
+from sklearn.base import BaseEstimator
+try:
+    from sklearn.utils import atleast2d_or_csr
+except ImportError: # sklearn 0.15
+    from sklearn.utils import check_array as atleast2d_or_csr
+from ..input_data.masker_validation import check_embedded_nifti_masker
+from .._utils.fixes import check_is_fitted
 
 
 def _compute_weights(masker, masked_data):
@@ -507,13 +511,10 @@ class ReNA(BaseEstimator, ClusterMixin, TransformerMixin):
             raise ValueError("n_iter should be an integer greater than 0."
                              " %s was provided." % str(self.n_iter))
 
-        self.masker_ = _check_masking(self.mask, self.smoothing_fwhm,
-                                      self.target_affine, self.target_shape,
-                                      self.standardize, self.mask_strategy,
-                                      self.memory_, self.memory_level)
-
+        self.masker_ = check_embedded_nifti_masker(self, multi_subject=False)
         X = self.masker_.fit_transform(X)
 
+        X = atleast2d_or_csr(X)
         n_features = X.shape[1]
 
         if self.n_clusters > n_features:
@@ -521,8 +522,6 @@ class ReNA(BaseEstimator, ClusterMixin, TransformerMixin):
             warnings.warn("n_clusters should be at most the number of "
                           "features. Taking n_clusters = %s instead."
                           % str(n_features))
-
-        X = check_array(X, ensure_min_features=2)
 
         n_labels, labels = self.memory_.cache(
             recursive_neighbor_agglomeration)(self.masker_, X, self.n_clusters,
@@ -596,52 +595,3 @@ class ReNA(BaseEstimator, ClusterMixin, TransformerMixin):
         X_inv = Xred[..., inverse]
 
         return self.masker_.inverse_transform(X_inv)
-
-
-# XXX this code is also replicated in the Metaestimator PR
-def _check_masking(mask, smoothing_fwhm, target_affine, target_shape,
-                   standardize, mask_strategy, memory, memory_level):
-    """Setup a nifti masker."""
-    # mask is an image, not a masker
-    if mask is None or isinstance(mask, six.string_types):
-        masker = NiftiMasker(mask_img=mask,
-                             smoothing_fwhm=smoothing_fwhm,
-                             target_affine=target_affine,
-                             target_shape=target_shape,
-                             standardize=standardize,
-                             mask_strategy=mask_strategy,
-                             memory=memory,
-                             memory_level=memory_level)
-    # mask is a masker object
-    elif isinstance(mask, (NiftiMasker, MultiNiftiMasker)):
-        try:
-            masker = clone(mask)
-            if hasattr(mask, 'mask_img_'):
-                mask_img = mask.mask_img_
-                masker.set_params(mask_img=mask_img)
-                masker.fit()
-        except TypeError as e:
-            # Workaround for a joblib bug: in joblib 0.6, a Memory object
-            # with cachedir = None cannot be cloned.
-            masker_memory = mask.memory
-            if masker_memory.cachedir is None:
-                mask.memory = None
-                masker = clone(mask)
-                mask.memory = masker_memory
-                masker.memory = Memory(cachedir=None)
-            else:
-                # The error was raised for another reason
-                raise e
-
-        for param_name in ['target_affine', 'target_shape',
-                           'smoothing_fwhm', 'mask_strategy',
-                           'memory', 'memory_level']:
-            if getattr(mask, param_name) is not None:
-                warnings.warn('Parameter %s of the masker overriden'
-                              % param_name)
-                masker.set_params(**{param_name: getattr(mask, param_name)})
-        if hasattr(mask, 'mask_img_'):
-            warnings.warn('The mask_img_ of the masker will be copied')
-    return masker
-
-
