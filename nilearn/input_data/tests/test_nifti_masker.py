@@ -9,7 +9,6 @@ test_signal.py for this.
 # License: simplified BSD
 import os
 import shutil
-from distutils.version import LooseVersion
 from tempfile import mkdtemp
 
 import nibabel
@@ -221,9 +220,6 @@ def test_sessions():
 
 
 def test_joblib_cache():
-    if not LooseVersion(nibabel.__version__) > LooseVersion('1.1.0'):
-        # Old nibabel do not pickle
-        raise SkipTest
     from sklearn.externals.joblib import hash, Memory
     mask = np.zeros((40, 40, 40))
     mask[20, 20, 20] = 1
