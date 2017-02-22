@@ -2,14 +2,12 @@
 from nose.tools import assert_equal, assert_true, assert_raises
 import warnings
 import os
-import numpy as np
 import nibabel
 from sklearn.base import BaseEstimator
 
-from nilearn.input_data import NiftiMasker
 from nilearn._utils.testing import assert_warns
 from nilearn._utils.param_validation import (MNI152_BRAIN_VOLUME,
-                                             _get_mask_volume, check_masker,
+                                             _get_mask_volume,
                                              check_feature_screening)
 
 mni152_brain_mask = (
