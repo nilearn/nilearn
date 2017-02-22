@@ -5,6 +5,8 @@ graphical models.
 # Authors: Philippe Gervais
 # License: simplified BSD
 
+from distutils.version import LooseVersion
+import sklearn
 import warnings
 import collections
 import operator
@@ -23,7 +25,6 @@ from .._utils import CacheMixin
 from .._utils import logger
 from .._utils.extmath import is_spd
 from .._utils.fixes import check_cv
-from .._utils.compat import izip
 
 
 def compute_alpha_max(emp_covs, n_samples):
@@ -941,10 +942,16 @@ class GroupSparseCovarianceCV(BaseEstimator, CacheMixin):
         # One cv generator per subject must be created, because each subject
         # can have a different number of samples from the others.
         cv = []
-        for k in range(n_subjects):
-            cv.append(check_cv(
-                self.cv, np.ones(subjects[k].shape[0]),
-                classifier=False).split(subjects[k]))
+        if LooseVersion(sklearn.__version__) >= LooseVersion('0.18'):
+            # scikit-learn >= 0.18
+            for k in range(n_subjects):
+                cv.append(check_cv(self.cv, np.ones(subjects[k].shape[0]),
+                                   classifier=False).split(subjects[k]))
+        else:
+            # scikit-learn < 0.18
+            for k in range(n_subjects):
+                cv.append(check_cv(self.cv, subjects[k], None,
+                                   classifier=False))
 
         path = list()  # List of (alpha, scores, covs)
         n_alphas = self.alphas
