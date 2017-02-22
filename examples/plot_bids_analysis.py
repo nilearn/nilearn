@@ -102,7 +102,10 @@ second_level_model = SecondLevelModel(smoothing_fwhm=8.0)
 second_level_model = second_level_model.fit(second_level_input)
 
 #########################################################################
-# Computing contrasts at the second level is similar to the first level
+# Computing contrasts at the second level is as simple as at the first level
+# Since we are not providing confounders we are performing an one-sample test
+# at the second level with the images determined by the specified first level
+# contrast.
 zmap = second_level_model.compute_contrast(first_level_contrast='language-string')
 
 #########################################################################
