@@ -1537,24 +1537,31 @@ def fetch_megatrawls_netmats(dimensionality=100, timeseries='eigen_regression',
 
 
 def fetch_cobre(n_subjects=10, data_dir=None, url=None, verbose=1):
-    """Fetch COBRE datasets preprocessed using NIAK 0.12.4 pipeline.
+    """Fetch COBRE datasets preprocessed using NIAK 0.17 under CentOS
+    version 6.3 with Octave version 4.0.2 and the Minc toolkit version 0.3.18.
 
-    Downloads and returns preprocessed resting state fMRI datasets and
-    phenotypic information such as demographic, clinical variables,
-    measure of frame displacement FD (an average FD for all the time
+    Downloads and returns COBRE preprocessed resting state fMRI datasets,
+    covariates and phenotypic information such as demographic, clinical
+    variables, measure of frame displacement FD (an average FD for all the time
     frames left after censoring).
 
-    For each subject, this function also returns .mat files which contains
-    all the covariates that have been regressed out of the functional data.
-    The covariates such as motion parameters, mean CSF signal, etc. It also
-    contains a list of time frames that have been removed from the time series
-    by censoring for high motion.
+    Each subject `fmri_XXXXXXX.nii.gz` is a 3D+t nifti volume (150 volumes).
+    WARNING: no confounds were actually regressed from the data, so it can be
+    done interactively by the user who will be able to explore different
+    analytical paths easily.
 
-    NOTE: The number of time samples vary, as some samples have been removed
-    if tagged with excessive motion. This means that data is already time
-    filtered. See output variable 'description' for more details.
+    For each subject, there is `fmri_XXXXXXX.tsv` files which contains the
+    covariates such as motion parameters, mean CSF signal that should to be
+    regressed out of the functional data.
 
-    .. versionadded 0.2.3
+    `keys_confounds.json`: a json file, that describes each variable mentioned
+    in the files `fmri_XXXXXXX.tsv.gz`. It also contains a list of time frames
+    that have been removed from the time series by censoring for high motion.
+
+    `phenotypic_data.tsv` contains the data of clinical variables that
+    explained in `keys_phenotypic_data.json`
+
+    .. versionadded 0.3
 
     Parameters
     ----------
@@ -1581,31 +1588,36 @@ def fetch_cobre(n_subjects=10, data_dir=None, url=None, verbose=1):
 
         - 'func': string list
             Paths to Nifti images.
-        - 'mat_files': string list
-            Paths to .mat files of each subject.
-        - 'phenotypic': ndarray
+        - 'confounds': string list
+            Paths to .tsv files of each subject, confounds.
+        - 'phenotypic': numpy.recarray
             Contains data of clinical variables, sex, age, FD.
         - 'description': data description of the release and references.
+        - 'desc_con': str
+            description of the confounds variables
+        - 'desc_phenotypic': str
+            description of the phenotypic variables.
 
     Notes
     -----
-    More information about datasets structure, See:
-    https://figshare.com/articles/COBRE_preprocessed_with_NIAK_0_12_4/1160600
+    See `more information about datasets structure
+    <https://figshare.com/articles/COBRE_preprocessed_with_NIAK_0_17_-_lightweight_release/4197885>`_
     """
+
     if url is None:
         # Here we use the file that provides URL for all others
-        url = "https://figshare.com/api/articles/1160600/15/files"
-
+        url = 'https://api.figshare.com/v2/articles/4197885'
     dataset_name = 'cobre'
     data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
                                 verbose=verbose)
     fdescr = _get_dataset_descr(dataset_name)
 
     # First, fetch the file that references all individual URLs
-    files = _fetch_files(data_dir,
-                         [("files", url + "?offset=0&limit=300", {})],
+    files = _fetch_files(data_dir, [("4197885", url, {})],
                          verbose=verbose)[0]
+
     files = json.load(open(files, 'r'))
+    files = files['files']
     # Index files by name
     files_ = {}
     for f in files:
@@ -1613,27 +1625,24 @@ def fetch_cobre(n_subjects=10, data_dir=None, url=None, verbose=1):
     files = files_
 
     # Fetch the phenotypic file and load it
-    csv_name = 'cobre_model_group.csv'
-    csv_file = _fetch_files(
-        data_dir, [(csv_name, files[csv_name]['downloadUrl'],
-                    {'md5': files[csv_name].get('md5', None),
-                     'move': csv_name})],
+    csv_name_gz = 'phenotypic_data.tsv.gz'
+    csv_name = os.path.splitext(csv_name_gz)[0]
+    csv_file_phen = _fetch_files(
+        data_dir, [(csv_name, files[csv_name_gz]['download_url'],
+                    {'md5': files[csv_name_gz].get('md5', None),
+                     'move': csv_name_gz,
+                     'uncompress': True})],
         verbose=verbose)[0]
 
     # Load file in filename to numpy arrays
-    names = ['id', 'sz', 'age', 'sex', 'fd']
-    csv_array = np.recfromcsv(csv_file, names=names, skip_header=True)
-    # Change dtype of id and condition column
-    csv_array = csv_array.astype(
-        [('id', '|U17'),
-         ('sz', '<i8'),
-         ('age', '<f8'),
-         ('sex', '<i8'),
-         ('fd', '<f8')])
-    csv_array['id'] = np.char.strip(csv_array['id'], '" ')
+    names = ['ID', 'Current Age', 'Gender', 'Handedness', 'Subject Type',
+             'Diagnosis', 'Frames OK', 'FD', 'FD Scrubbed']
+
+    csv_array_phen = np.recfromcsv(csv_file_phen, names=names,
+                                   skip_header=True, delimiter='\t')
 
     # Check number of subjects
-    max_subjects = len(csv_array)
+    max_subjects = len(csv_array_phen)
     if n_subjects is None:
         n_subjects = max_subjects
 
@@ -1641,33 +1650,57 @@ def fetch_cobre(n_subjects=10, data_dir=None, url=None, verbose=1):
         warnings.warn('Warning: there are only %d subjects' % max_subjects)
         n_subjects = max_subjects
 
-    n_sz = int(np.ceil(float(n_subjects) / max_subjects *
-                       csv_array['sz'].sum()))
-    n_ct = int(np.floor(float(n_subjects) / max_subjects *
-                        np.logical_not(csv_array['sz']).sum()))
+    sz_count = list(csv_array_phen['subject_type']).count(b'Patient')
+    ct_count = list(csv_array_phen['subject_type']).count(b'Control')
+
+    n_sz = np.round(float(n_subjects) / max_subjects * sz_count).astype(int)
+    n_ct = np.round(float(n_subjects) / max_subjects * ct_count).astype(int)
 
     # First, restrict the csv files to the adequate number of subjects
-    sz_ids = csv_array[csv_array['sz'] == 1.]['id'][:n_sz]
-    ct_ids = csv_array[csv_array['sz'] == 0.]['id'][:n_ct]
+    sz_ids = csv_array_phen[csv_array_phen['subject_type'] ==
+                            b'Patient']['id'][:n_sz]
+    ct_ids = csv_array_phen[csv_array_phen['subject_type'] ==
+                            b'Control']['id'][:n_ct]
     ids = np.hstack([sz_ids, ct_ids])
-    csv_array = csv_array[np.in1d(csv_array['id'], ids)]
+    csv_array_phen = csv_array_phen[np.in1d(csv_array_phen['id'], ids)]
 
     # Call fetch_files once per subject.
+
     func = []
-    mat = []
+    con = []
     for i in ids:
-        f = 'fmri_' + i + '_session1_run1.nii.gz'
-        m = 'fmri_' + i + '_session1_run1_extra.mat'
-        f, m = _fetch_files(
+        f = 'fmri_00' + str(i) + '.nii.gz'
+        c_gz = 'fmri_00' + str(i) + '.tsv.gz'
+        c = os.path.splitext(c_gz)[0]
+
+        f, c = _fetch_files(
             data_dir,
-            [(f, files[f]['downloadUrl'], {'md5': files[f].get('md5', None),
-                                           'move': f}),
-             (m, files[m]['downloadUrl'], {'md5': files[m].get('md5', None),
-                                           'move': m})
+            [(f, files[f]['download_url'], {'md5': files[f].get('md5', None),
+                                            'move': f}),
+             (c, files[c_gz]['download_url'],
+              {'md5': files[c_gz].get('md5', None),
+               'move': c_gz, 'uncompress': True})
              ],
             verbose=verbose)
         func.append(f)
-        mat.append(m)
+        con.append(c)
 
-    return Bunch(func=func, mat_files=mat, phenotypic=csv_array,
-                 description=fdescr)
+    # Fetch the the complementary files
+    keys_con = "keys_confounds.json"
+    keys_phen = "keys_phenotypic_data.json"
+
+    csv_keys_con, csv_keys_phen = _fetch_files(
+        data_dir,
+        [(keys_con, files[keys_con]['download_url'],
+          {'md5': files[keys_con].get('md5', None), 'move': keys_con}),
+         (keys_phen, files[keys_phen]['download_url'],
+         {'md5': files[keys_phen].get('md5', None), 'move': keys_phen})
+         ],
+        verbose=verbose)
+
+    files_keys_con = open(csv_keys_con, 'r').read()
+    files_keys_phen = open(csv_keys_phen, 'r').read()
+
+    return Bunch(func=func, confounds=con, phenotypic=csv_array_phen,
+                 description=fdescr, desc_con=files_keys_con,
+                 desc_phenotypic=files_keys_phen)
