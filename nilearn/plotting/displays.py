@@ -740,21 +740,8 @@ class BaseSlicer(object):
         if norm.vmin == norm.vmax:  # len(np.unique(data)) == 1 ?
             return
         else:
-            # colormaps ('Accent', 'Dark2', 'Paired', 'Pastel1', 'Pastel2',
-            # 'Set1', 'Set2', 'Set3') were intended for discrete categorical
-            # data, with no implication of value, and therefore have been
-            # converted to ListedColormap instead of LinearSegmentedColormap,
-            # so the colors will no longer be interpolated.
-            # From the recent version of matplotlib 2.0.0 with Issue # 881
-            # in matplotlib.
-
-            # Can be passed on directly to ColorbarBase if instance is
-            # colors.ListedColormap otherwise use from_list. Also, from_list
-            # does not work for ListedColormap. See issue # 1294 in nilearn.
-
-            if isinstance(our_cmap, colors.LinearSegmentedColormap):
-                our_cmap = our_cmap.from_list('Custom cmap', cmaplist,
-                                              our_cmap.N)
+            our_cmap = colors.LinearSegmentedColormap.from_list(
+                'Custom cmap', cmaplist, our_cmap.N)
 
         self._cbar = ColorbarBase(
             self._colorbar_ax, ticks=ticks, norm=norm,
