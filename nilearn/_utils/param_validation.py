@@ -5,6 +5,9 @@ import numpy as np
 import warnings
 import numbers
 
+from sklearn.feature_selection import (SelectPercentile, f_regression,
+                                       f_classif)
+
 from .compat import _basestring, get_header
 
 
@@ -141,4 +144,52 @@ def _adjust_screening_percentile(screening_percentile, mask_img,
             original_screening_percentile))
         print("Volume-corrected screening-percentile: %g" % (
             screening_percentile))
-    return screening_percentile
+    return screening_percentil
+
+
+def check_feature_screening(screening_percentile, mask_img,
+                            is_classification, verbose=0):
+    """Check feature screening method. Turns floats between 1 and 100 into
+    SelectPercentile objects.
+
+    Parameters
+    ----------
+    screening_percentile : float in the interval [0, 100]
+        Percentile value for ANOVA univariate feature selection. A value of
+        100 means 'keep all features'. This percentile is is expressed
+        w.r.t the volume of a standard (MNI152) brain, and so is corrected
+        at runtime by premultiplying it with the ratio of the volume of the
+        mask of the data and volume of a standard brain.  If '100' is given,
+        all the features are used, regardless of the number of voxels.
+
+    mask_img : nibabel image object
+        Input image whose voxel dimensions are to be computed.
+
+    is_classification : bool
+        If is_classification is True, it indicates that a classification task
+        is performed. Otherwise, a regression task is performed.
+
+    verbose : int, optional (default 0)
+        Verbosity level.
+
+    Returns
+    -------
+    selector : SelectPercentile instance
+       Used to perform the ANOVA univariate feature selection.
+    """
+
+    f_test = f_classif if is_classification else f_regression
+
+    if screening_percentile == 100 or screening_percentile is None:
+        return None
+    elif not (0. <= screening_percentile <= 100.):
+        raise ValueError(
+            ("screening_percentile should be in the interval"
+             " [0, 100], got %g" % screening_percentile))
+    else:
+        # correct screening_percentile according to the volume of the data mask
+        screening_percentile_ = _adjust_screening_percentile(
+            screening_percentile, mask_img, verbose=verbose)
+
+        return SelectPercentile(f_test, int(screening_percentile_))
+
