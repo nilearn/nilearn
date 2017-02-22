@@ -16,42 +16,6 @@ mni152_brain_mask = (
     "/usr/share/fsl/data/standard/MNI152_T1_1mm_brain_mask.nii.gz")
 
 
-def test_check_masking():
-    # Create toy mask_img
-    mask = np.ones((5, 5, 5), np.bool)
-    mask_img = nibabel.Nifti1Image(mask.astype(np.int),
-                                   np.eye(4))
-    # Using two different smoothing_fwhm to compare overriding of this param
-    # after masker fitting
-    smoothing_fwhm = 4
-    smoothing_fwhm_test = 8
-
-    kwargs = {'target_affine': np.eye(4),
-              'target_shape': (5, 5, 5),
-              'standardize': True,
-              'mask_strategy': 'epi',
-              'memory': None,
-              'memory_level': 1}
-
-    # the masker shold be fitted
-    masker_test_1 = NiftiMasker(smoothing_fwhm=smoothing_fwhm_test, **kwargs)
-    # assigning a mask_img
-    masker_test_2 = NiftiMasker(mask_img=mask_img,
-                                smoothing_fwhm=smoothing_fwhm_test, **kwargs)
-    # assigning all the params
-    masker_test_3 = NiftiMasker(mask_img=mask_img,
-                                smoothing_fwhm=smoothing_fwhm_test,
-                                **kwargs).fit()
-    # Testing various mask inputs
-    masks = [None, masker_test_1, masker_test_2, masker_test_3]
-    for mask in masks:
-        masker = check_masker(mask, smoothing_fwhm=smoothing_fwhm, **kwargs)
-        if mask is None:
-            assert_true(isinstance(masker, BaseEstimator))
-        else:
-            assert_true(masker.smoothing_fwhm == smoothing_fwhm_test)
-
-
 def test_feature_screening():
     for is_classif in [True, False]:
         for screening_percentile in [100, None, 20, 101, -1, 10]:
