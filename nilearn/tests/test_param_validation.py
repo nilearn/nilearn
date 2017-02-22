@@ -57,35 +57,14 @@ def test_check_threshold():
     threshold_numpy_scalar = np.float64(threshold)
     assert_equal(
         check_threshold(threshold, matrix, percentile_func=fast_abs_percentile),
-        check_threshold(threshold_numpy_scalar, matrix, percentile_func=fast_abs_percentile))
+        check_threshold(threshold_numpy_scalar, matrix,
+                        percentile_func=fast_abs_percentile))
 
     # Test for threshold provided as a percentile of the data (str ending with a
     # %)
     assert_true(1. < check_threshold("50%", matrix,
                                      percentile_func=fast_abs_percentile,
                                      name=name) <= 2.)
-
-
-def test_feature_screening():
-    for is_classif in [True, False]:
-        for screening_percentile in [100, None, 20, 101, -1, 10]:
-
-            if screening_percentile == 100 or screening_percentile is None:
-                assert_equal(check_feature_screening(
-                    screening_percentile, MNI152_BRAIN_VOLUME, is_classif),
-                    None)
-            elif screening_percentile == 101 or screening_percentile == -1:
-                assert_raises(ValueError, check_feature_screening,
-                              screening_percentile, MNI152_BRAIN_VOLUME,
-                              is_classif)
-            elif screening_percentile == 20:
-                assert_true(isinstance(check_feature_screening(
-                    screening_percentile, MNI152_BRAIN_VOLUME, is_classif),
-                    BaseEstimator))
-            else:
-                assert_warns(UserWarning, check_feature_screening,
-                             screening_percentile, MNI152_BRAIN_VOLUME * 2,
-                             is_classif)
 
 
 def test_get_mask_volume():
@@ -95,4 +74,26 @@ def test_get_mask_volume():
             mni152_brain_mask)))
     else:
         warnings.warn("Couldn't find %s (for testing)" % (mni152_brain_mask))
+
+
+def test_feature_screening():
+    # dummy
+    mask_img_data = np.zeros((182, 218, 182))
+    mask_img_data[30:-30, 30:-30, 30:-30] = 1
+    affine = np.eye(4)
+    mask_img = nibabel.Nifti1Image(mask_img_data, affine=affine)
+
+    for is_classif in [True, False]:
+        for screening_percentile in [100, None, 20, 101, -1, 10]:
+
+            if screening_percentile == 100 or screening_percentile is None:
+                assert_equal(check_feature_screening(
+                    screening_percentile, mask_img, is_classif), None)
+            elif screening_percentile == 101 or screening_percentile == -1:
+                assert_raises(ValueError, check_feature_screening,
+                              screening_percentile, mask_img, is_classif)
+            elif screening_percentile == 20:
+                assert_true(isinstance(check_feature_screening(
+                    screening_percentile, mask_img, is_classif),
+                    BaseEstimator))
 
