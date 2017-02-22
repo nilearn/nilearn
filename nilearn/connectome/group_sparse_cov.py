@@ -25,6 +25,7 @@ from .._utils import CacheMixin
 from .._utils import logger
 from .._utils.extmath import is_spd
 from .._utils.fixes import check_cv
+from .._utils.compat import izip
 
 
 def compute_alpha_max(emp_covs, n_samples):
