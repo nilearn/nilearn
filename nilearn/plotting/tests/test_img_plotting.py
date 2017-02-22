@@ -4,7 +4,9 @@
 import os
 import tempfile
 from functools import partial
+from distutils.version import LooseVersion
 
+import matplotlib
 import matplotlib.pyplot as plt
 import nibabel
 import numpy as np
@@ -907,4 +909,8 @@ def test_plotting_functions_with_cmaps():
         plot_roi(img, cmap=cmap, colorbar=True)
         plot_stat_map(img, cmap=cmap, colorbar=True)
         plot_glass_brain(img, cmap=cmap, colorbar=True)
+
+    if LooseVersion(matplotlib.__version__) >= LooseVersion('2.0.0'):
+        plot_stat_map(img, cmap='viridis', colorbar=True)
+
     plt.close()
