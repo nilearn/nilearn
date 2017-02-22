@@ -144,7 +144,7 @@ def _adjust_screening_percentile(screening_percentile, mask_img,
             original_screening_percentile))
         print("Volume-corrected screening-percentile: %g" % (
             screening_percentile))
-    return screening_percentil
+    return screening_percentile
 
 
 def check_feature_screening(screening_percentile, mask_img,
