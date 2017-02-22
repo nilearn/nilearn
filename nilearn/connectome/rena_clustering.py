@@ -185,6 +185,8 @@ def _nn_connectivity(connectivity, threshold=1e-7):
         (1. / connectivity.data, connectivity.nonzero()),
         (n_features, n_features)).tocsr()
 
+    #
+    import pdb; pdb.set_trace()  # XXX BREAKPOINT
     inv_max = dia_matrix((1. / connectivity_.max(axis=0).toarray()[0], 0),
                          shape=(n_features, n_features))
 
