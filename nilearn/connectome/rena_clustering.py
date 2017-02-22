@@ -4,6 +4,9 @@
 # Author: Andres Hoyos idrobo, Gael Varoquaux, Jonas Kahn and  Bertrand Thirion
 # License: simplified BSD
 
+from distutils.version import LooseVersion
+import scipy
+
 import numpy as np
 import warnings
 from sklearn.externals.joblib import Memory
@@ -185,9 +188,8 @@ def _nn_connectivity(connectivity, threshold=1e-7):
         (1. / connectivity.data, connectivity.nonzero()),
         (n_features, n_features)).tocsr()
 
-    #
-    import pdb; pdb.set_trace()  # XXX BREAKPOINT
-    inv_max = dia_matrix((1. / connectivity_.max(axis=0).toarray()[0], 0),
+    max_connectivity = _get_max_connectivity(connectivity_)
+    inv_max = dia_matrix((1. / max_connectivity, 0),
                          shape=(n_features, n_features))
 
     connectivity_ = inv_max * connectivity_
@@ -597,3 +599,20 @@ class ReNA(BaseEstimator, ClusterMixin, TransformerMixin):
         X_inv = Xred[..., inverse]
 
         return self.masker_.inverse_transform(X_inv)
+
+
+def _get_max_connectivity(connectivity):
+    """This function calculate of the maximum on the axis=0.
+    It is applied to the connectivity matrix.
+    This matrix is sparse and symetric.
+    """
+    if LooseVersion(scipy.__version__) >= LooseVersion('0.14'):
+        max_connectivity = connectivity.max(axis=0).toarray()[0]
+    else:
+        N = connectivity.shape[0]
+        max_connectivity = np.zeros((N))
+        for i in range(N):
+            max_connectivity[i] = connectivity[i].max()
+
+    return max_connectivity
+
