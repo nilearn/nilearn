@@ -2,7 +2,6 @@
 Test image pre-processing functions
 """
 from nose.tools import assert_true, assert_false, assert_equal
-from distutils.version import LooseVersion
 from nose import SkipTest
 
 import platform
@@ -393,10 +392,6 @@ def test_new_img_like_mgz():
     This is usually when computing masks using MGZ inputs, e.g.
     when using plot_stap_map
     """
-
-    if not LooseVersion(nibabel.__version__) >= LooseVersion('1.2.0'):
-        # Old nibabel do not support MGZ files
-        raise SkipTest
 
     ref_img = nibabel.load(os.path.join(datadir, 'test.mgz'))
     data = np.ones(ref_img.get_data().shape, dtype=np.bool)

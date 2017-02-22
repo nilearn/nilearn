@@ -40,7 +40,6 @@ ____
 #          Virgile Fritsch, <virgile.fritsch@inria.fr>, Apr 2014
 #          Gael Varoquaux, Apr 2014
 import numpy as np
-from scipy import linalg
 import matplotlib.pyplot as plt
 from nilearn import datasets
 from nilearn.input_data import NiftiMasker
@@ -112,18 +111,13 @@ weight_img = nifti_masker.inverse_transform(coef)
 from nilearn.plotting import plot_stat_map, show
 bg_filename = gray_matter_map_filenames[0]
 z_slice = 0
-from nilearn.image.resampling import coord_transform
-affine = weight_img.affine
-_, _, k_slice = coord_transform(0, 0, z_slice,
-                                linalg.inv(affine))
-k_slice = np.round(k_slice)
+
 
 fig = plt.figure(figsize=(5.5, 7.5), facecolor='k')
-weight_slice_data = weight_img.get_data()[..., k_slice, 0]
-vmax = max(-np.min(weight_slice_data), np.max(weight_slice_data)) * 0.5
+# Hard setting vmax to highlight weights more
 display = plot_stat_map(weight_img, bg_img=bg_filename,
                         display_mode='z', cut_coords=[z_slice],
-                        figure=fig, vmax=vmax)
+                        figure=fig, vmax=1)
 display.title('SVM weights', y=1.2)
 
 # Measure accuracy with cross validation
@@ -163,9 +157,7 @@ title = ('Negative $\log_{10}$ p-values'
          '\n(Non-parametric + max-type correction)')
 display.title(title, y=1.2)
 
-signed_neg_log_pvals_slice_data = \
-    signed_neg_log_pvals_unmasked.get_data()[..., k_slice, 0]
-n_detections = (np.abs(signed_neg_log_pvals_slice_data) > threshold).sum()
+n_detections = (signed_neg_log_pvals_unmasked.get_data() > threshold).sum()
 print('\n%d detections' % n_detections)
 
 show()

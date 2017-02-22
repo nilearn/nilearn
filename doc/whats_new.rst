@@ -7,8 +7,26 @@ now 0.15.
 **Dropped support for Python 2.6**
 
 
+0.3
+===
+
 Changelog
 ---------
+
+Enhancements
+............
+
+    - A new function :func:`nilearn.regions.connected_label_regions` to
+      extract the connected components represented as same label to regions
+      apart with each region labelled as unique label.
+
+
+Changelog
+---------
+
+   - Minimum required version of NiBabel 1.1.0 is now dropped and updated to
+     NiBabel 1.2.0. Due to compatibility reasons with reading or loading annoted
+     data with freesurfer.
 
 Enhancements
 ............
