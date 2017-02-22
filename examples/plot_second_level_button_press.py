@@ -56,7 +56,7 @@ plt.show()
 # and fit it.
 second_level_input = data['cmaps']
 design_matrix = pd.DataFrame([1] * len(second_level_input),
-                             columns=['contrast'])
+                             columns=['intercept'])
 
 second_level_model = SecondLevelModel(smoothing_fwhm=8.0)
 second_level_model = second_level_model.fit(second_level_input,

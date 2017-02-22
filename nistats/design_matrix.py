@@ -482,7 +482,7 @@ def create_second_level_design(subjects_label, confounds=None):
         raise ValueError('Design matrix columns do not have unique names')
 
     design_matrix = pd.DataFrame(columns=design_columns)
-    for ridx, subject_label in subjects_label:
+    for ridx, subject_label in enumerate(subjects_label):
         design_matrix.loc[ridx] = [0] * len(design_columns)
         design_matrix.loc[ridx, 'intercept'] = 1
         if confounds is not None:

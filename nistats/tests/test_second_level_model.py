@@ -8,14 +8,12 @@ from __future__ import with_statement
 import os
 
 import numpy as np
-from scipy import stats
 
 from nibabel import load, Nifti1Image, save
 
 from nistats.first_level_model import FirstLevelModel, run_glm
-from nistats.second_level_model import SecondLevelModel, _infer_effect_maps
-from nistats.design_matrix import (create_second_level_design,
-                                   create_simple_second_level_design)
+from nistats.second_level_model import SecondLevelModel
+from nistats.design_matrix import (create_second_level_design)
 
 from nose.tools import assert_true, assert_equal, assert_raises
 from numpy.testing import (assert_almost_equal, assert_array_equal)
@@ -55,7 +53,7 @@ def test_high_level_glm_with_paths():
         assert_raises(ValueError, model.compute_contrast, [])
         # fit model
         Y = [func_img] * 4
-        X = pd.DataFrame([[1]] * 4, columns=['contrast'])
+        X = pd.DataFrame([[1]] * 4, columns=['intercept'])
         model = model.fit(Y, design_matrix=X)
         c1 = np.eye(len(model.design_matrix_.columns))[0]
         z_image = model.compute_contrast(c1, output_type='z_score')
@@ -82,8 +80,8 @@ def test_fmri_inputs():
         des.to_csv(des_fname)
 
         # prepare correct input first level models
-        flm = FirstLevelModel(subject_label='1').fit(FUNCFILE,
-                                                     design_matrices=des)
+        flm = FirstLevelModel(subject_label='01').fit(FUNCFILE,
+                                                      design_matrices=des)
         flms = [flm, flm, flm]
         # prepare correct input dataframe and lists
         shapes = ((7, 8, 9, 1),)
@@ -91,13 +89,13 @@ def test_fmri_inputs():
         FUNCFILE = FUNCFILE[0]
 
         dfcols = ['subject_label', 'map_name', 'effects_map_path']
-        dfrows = [['1', 'a', FUNCFILE], ['2', 'a', FUNCFILE],
-                  ['3', 'a', FUNCFILE]]
+        dfrows = [['01', 'a', FUNCFILE], ['02', 'a', FUNCFILE],
+                  ['03', 'a', FUNCFILE]]
         niidf = pd.DataFrame(dfrows, columns=dfcols)
         niimgs = [FUNCFILE, FUNCFILE, FUNCFILE]
-        confounds = pd.DataFrame([['1', 1], ['2', 2], ['3', 3]],
+        confounds = pd.DataFrame([['01', 1], ['02', 2], ['03', 3]],
                                  columns=['subject_label', 'conf1'])
-        sdes = pd.DataFrame(X[:3, :3], columns=['contrast', 'b', 'c'])
+        sdes = pd.DataFrame(X[:3, :3], columns=['intercept', 'b', 'c'])
 
         # smoke tests with correct input
         # First level models as input
@@ -142,46 +140,6 @@ def _first_level_dataframe():
     return dataframe
 
 
-def test_create_simple_second_level_design():
-    with InTemporaryDirectory():
-        shapes = ((7, 8, 9, 1),)
-        mask, FUNCFILE, _ = write_fake_fmri_data(shapes)
-        FUNCFILE = FUNCFILE[0]
-        first_level_input = _first_level_dataframe()
-        first_level_input['effects_map_path'] = [FUNCFILE] * 3
-        confounds = [['01', 0.1], ['02', 0.75], ['03', 2.]]
-        confounds = pd.DataFrame(confounds, columns=['subject_label', 'f1'])
-        design = create_simple_second_level_design(first_level_input,
-                                                   confounds)
-        expected_design = np.array([[1, 0.1], [1, 0.75], [1, 2.]])
-        assert_array_equal(design, expected_design)
-        assert_true(len(design.columns) == 2)
-        assert_true(len(design) == 3)
-        model = SecondLevelModel(mask=mask).fit(first_level_input,
-                                                confounds=confounds)
-        design = model.design_matrix_
-        assert_array_equal(design, expected_design)
-        assert_true(len(design.columns) == 2)
-        assert_true(len(design) == 3)
-
-
-def test_create_second_level_design():
-    with InTemporaryDirectory():
-        shapes = ((7, 8, 9, 1),)
-        mask, FUNCFILE, _ = write_fake_fmri_data(shapes)
-        FUNCFILE = FUNCFILE[0]
-        first_level_input = _first_level_dataframe()
-        first_level_input['effects_map_path'] = [FUNCFILE] * 3
-        confounds = [['01', 0.1], ['02', 0.75], ['03', 2.]]
-        confounds = pd.DataFrame(confounds, columns=['subject_label', 'f1'])
-        design = create_second_level_design(first_level_input, confounds)
-        expected_design = np.array([[1, 1, 0, 0, 0.1], [1, 0, 1, 0, 0.75],
-                                    [1, 0, 0, 1, 2.]])
-        assert_array_equal(design, expected_design)
-        assert_true(len(design.columns) == 1 + 3 + 1)
-        assert_true(len(design) == 3)
-
-
 def test_second_level_model_glm_computation():
     with InTemporaryDirectory():
         shapes = ((7, 8, 9, 1),)
@@ -191,7 +149,7 @@ def test_second_level_model_glm_computation():
         # ols case
         model = SecondLevelModel(mask=mask)
         Y = [func_img] * 4
-        X = pd.DataFrame([[1]] * 4, columns=['contrast'])
+        X = pd.DataFrame([[1]] * 4, columns=['intercept'])
 
         model = model.fit(Y, design_matrix=X)
         model.compute_contrast()
@@ -212,10 +170,10 @@ def test_second_level_model_contrast_computation():
         # ols case
         model = SecondLevelModel(mask=mask)
         # asking for contrast before model fit gives error
-        assert_raises(ValueError, model.compute_contrast, 'contrast')
+        assert_raises(ValueError, model.compute_contrast, 'intercept')
         # fit model
         Y = [func_img] * 4
-        X = pd.DataFrame([[1]] * 4, columns=['contrast'])
+        X = pd.DataFrame([[1]] * 4, columns=['intercept'])
         model = model.fit(Y, design_matrix=X)
         ncol = len(model.design_matrix_.columns)
         c1, cnull = np.eye(ncol)[0, :], np.zeros(ncol)
@@ -227,7 +185,7 @@ def test_second_level_model_contrast_computation():
         model.compute_contrast(c1, output_type='effect_size')
         model.compute_contrast(c1, output_type='effect_variance')
         # formula should work (passing variable name directly)
-        model.compute_contrast('contrast')
+        model.compute_contrast('intercept')
         # or simply pass nothing
         model.compute_contrast()
         # passing null contrast should give back a value error

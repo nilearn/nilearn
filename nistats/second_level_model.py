@@ -203,6 +203,13 @@ class SecondLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
                     raise ValueError('second_level_input DataFrame must have'
                                      ' columns subject_label, map_name and'
                                      ' effects_map_path')
+            # Make sure subject_label contain strings
+            second_level_columns = second_level_input.columns.tolist()
+            labels_index = second_level_columns.index('subject_label')
+            labels_dtype = second_level_input.dtypes[labels_index]
+            if not isinstance(labels_dtype, np.object):
+                raise ValueError('subject_label column must be of dtype '
+                                 'object instead of dtype %s' % labels_dtype)
         else:
             raise ValueError('second_level_input must be a list of'
                              ' `FirstLevelModel` objects, a pandas DataFrame'
@@ -220,6 +227,12 @@ class SecondLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
                 raise ValueError('confounds should contain at least 2 columns'
                                  'one called "subject_label" and the other'
                                  'with a given confound')
+            # Make sure subject_label contain strings
+            labels_index = confounds.columns.tolist().index('subject_label')
+            labels_dtype = confounds.dtypes[labels_index]
+            if not isinstance(labels_dtype, np.object):
+                raise ValueError('subject_label column must be of dtype '
+                                 'object instead of dtype %s' % labels_dtype)
 
         # check design matrix
         if design_matrix is not None:
@@ -231,7 +244,7 @@ class SecondLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         # sort a pandas dataframe by subject_label to avoid inconsistencies
         # with the design matrix row order when automatically extracting maps
         if isinstance(second_level_input, pd.DataFrame):
-            sorted_input = second_level_input.sort_values('subject_label')
+            sorted_input = second_level_input.sort('subject_label')
             second_level_input = sorted_input
 
         self.second_level_input_ = second_level_input
