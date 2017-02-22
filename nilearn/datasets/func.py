@@ -1641,9 +1641,10 @@ def fetch_cobre(n_subjects=10, data_dir=None, url=None, verbose=1):
         warnings.warn('Warning: there are only %d subjects' % max_subjects)
         n_subjects = max_subjects
 
-    n_sz = np.ceil(float(n_subjects) / max_subjects * csv_array['sz'].sum())
-    n_ct = np.floor(float(n_subjects) / max_subjects *
-                    np.logical_not(csv_array['sz']).sum())
+    n_sz = int(np.ceil(float(n_subjects) / max_subjects *
+                       csv_array['sz'].sum()))
+    n_ct = int(np.floor(float(n_subjects) / max_subjects *
+                        np.logical_not(csv_array['sz']).sum()))
 
     # First, restrict the csv files to the adequate number of subjects
     sz_ids = csv_array[csv_array['sz'] == 1.]['id'][:n_sz]

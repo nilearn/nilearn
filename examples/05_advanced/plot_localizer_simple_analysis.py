@@ -15,7 +15,6 @@ variates.  The user can refer to the
 """
 # Author: Virgile Fritsch, <virgile.fritsch@inria.fr>, May. 2014
 import numpy as np
-from scipy import linalg
 import matplotlib.pyplot as plt
 from nilearn import datasets
 from nilearn.input_data import NiftiMasker
@@ -56,12 +55,7 @@ from nilearn.plotting import plot_stat_map, show
 
 # Various plotting parameters
 z_slice = 45  # plotted slice
-from nilearn.image.resampling import coord_transform
-affine = neg_log_pvals_anova_unmasked.affine
-_, _, k_slice = coord_transform(0, 0, z_slice,
-                                linalg.inv(affine))
 
-k_slice = np.round(k_slice)
 threshold = - np.log10(0.1)  # 10% corrected
 
 # Plot Anova p-values
@@ -76,7 +70,7 @@ masked_pvals = np.ma.masked_less(neg_log_pvals_anova_unmasked.get_data(),
 
 title = ('Negative $\log_{10}$ p-values'
          '\n(Parametric + Bonferroni correction)'
-         '\n%d detections' % (~masked_pvals.mask[..., k_slice]).sum())
+         '\n%d detections' % (~masked_pvals.mask).sum())
 
 display.title(title, y=1.1, alpha=0.8)
 
