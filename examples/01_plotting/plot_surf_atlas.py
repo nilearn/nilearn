@@ -29,8 +29,9 @@ destrieux_atlas = datasets.fetch_atlas_surf_destrieux()
 # The parcellation is already loaded into memory
 parcellation = destrieux_atlas['map_left']
 
-# Retrieve fsaverage5 surface dataset, which contains pial and inflated
-# version of the surface template as well as sulcal depth maps
+# Retrieve fsaverage5 surface dataset for the plotting background. It contains
+# the surface template as pial and inflated version and a sulcal depth maps
+# which is used for shading
 fsaverage = datasets.fetch_surf_fsaverage5()
 
 # The fsaverage dataset contains file names pointing to the file locations
