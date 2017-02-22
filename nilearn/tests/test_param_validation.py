@@ -96,4 +96,3 @@ def test_feature_screening():
                 assert_true(isinstance(check_feature_screening(
                     screening_percentile, mask_img, is_classif),
                     BaseEstimator))
-
