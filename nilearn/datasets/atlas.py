@@ -869,8 +869,8 @@ def fetch_atlas_surf_destrieux(data_dir=None, url=None,
                                resume=True, verbose=1):
     """Download and load Destrieux et al, 2010 cortical atlas.
 
-    This atlas returns 74 sulco-gyral structures per hemisphere distributed
-    with Freesurfer in fsaverage5 surface space.
+    This atlas returns 76 labels per hemisphere based on sulco-gryal pattnerns
+    as distributed with Freesurfer in fsaverage5 surface space.
 
     Parameters
     ----------
@@ -880,6 +880,7 @@ def fetch_atlas_surf_destrieux(data_dir=None, url=None,
 
     url: str, optional
         Download URL of the dataset. Overwrite the default URL.
+
     resume: bool, optional (default True)
         If True, try resuming download if possible.
 
@@ -888,17 +889,21 @@ def fetch_atlas_surf_destrieux(data_dir=None, url=None,
 
     Returns
     -------
-        data: sklearn.datasets.base.Bunch
+    data: sklearn.datasets.base.Bunch
         dictionary-like object, contains:
-        - 'labels' : list
+
+        - "labels": list
                      Contains region labels
-        - 'map_left': numpy.ndarray
+
+        - "map_left": numpy.ndarray
                       Index into 'labels' for each vertex on the
                       left hemisphere of the fsaverage5 surface
-        - 'map_right': numpy.ndarray
+
+        - "map_right": numpy.ndarray
                        Index into 'labels' for each vertex on the
                        right hemisphere of the fsaverage5 surface
-        - 'description': str
+
+        - "description": str
                          Details about the dataset
 
 
