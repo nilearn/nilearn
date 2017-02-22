@@ -224,8 +224,10 @@ def find_cut_slices(img, direction='z', n_cuts=7, spacing='auto'):
                       'n_cuts=%i, data size=%i' % (n_cuts, this_shape))
         return _transform_cut_coords(np.arange(this_shape), direction, affine)
 
+    # To smooth data that might be np.int or np.uint,
+    # first convert it to float.
     data = orig_data.copy()
-    if data.dtype.kind == 'i':
+    if data.dtype.kind in ('i', 'u'):
         data = data.astype(np.float)
 
     data = _smooth_array(data, affine, fwhm='fast')
