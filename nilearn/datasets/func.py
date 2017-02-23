@@ -1561,7 +1561,7 @@ def fetch_cobre(n_subjects=10, data_dir=None, url=None, verbose=1):
     `phenotypic_data.tsv` contains the data of clinical variables that
     explained in `keys_phenotypic_data.json`
 
-    .. versionadded 0.3
+    .. versionadded:: 0.3
 
     Parameters
     ----------

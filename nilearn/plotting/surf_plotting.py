@@ -148,7 +148,7 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
 
     """ Plotting of surfaces with optional background and data
 
-    ..versionadded:: 0.3
+    .. versionadded:: 0.3
 
     Parameters
     ----------
@@ -372,7 +372,7 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
                        title=None, output_file=None, **kwargs):
     """ Plotting a stats map on a surface mesh with optional background
 
-    ..versionadded:: 0.3
+    .. versionadded:: 0.3
 
     Parameters
     ----------
@@ -481,7 +481,7 @@ def plot_surf_roi(surf_mesh, roi_map, bg_map=None,
                   title=None, output_file=None, **kwargs):
     """ Plotting of surfaces with optional background and stats map
 
-    ..versionadded:: 0.3
+    .. versionadded:: 0.3
 
     Parameters
     ----------

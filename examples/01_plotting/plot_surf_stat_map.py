@@ -25,6 +25,8 @@ See :ref:`plotting` for more details.
 See also :doc:`plot_seed_to_voxel_correlation` for a similar example using
 volumetric input data.
 
+NOTE: This example needs matplotlib version higher than 1.3.1.
+
 References
 ----------
 
