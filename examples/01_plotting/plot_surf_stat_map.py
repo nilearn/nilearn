@@ -89,7 +89,7 @@ print('Fsaverage5 sulcal depth map of left hemisphere is at: %s' %
 timeseries = plotting.surf_plotting.load_surf_data(nki_dataset['func_left'][0])
 
 # Extract seed region via label
-pcc_region = 'G_cingul-Post-dorsal'
+pcc_region = b'G_cingul-Post-dorsal'
 pcc_labels = np.where(parcellation == labels.index(pcc_region))[0]
 
 # Extract time series from seed region
