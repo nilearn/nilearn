@@ -417,3 +417,24 @@ def test_fetch_atlas_allen_2011():
         assert_equal(bunch[key], os.path.join(tst.tmpdir, 'allen_rsn_2011', fn))
 
     assert_not_equal(bunch.description, '')
+
+
+@with_setup(setup_mock, teardown_mock)
+@with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
+def test_fetch_atlas_surf_destrieux(data_dir=tst.tmpdir, verbose=0):
+    data_dir = os.path.join(tst.tmpdir, 'destrieux_surface')
+    os.mkdir(data_dir)
+    # Create mock annots
+    for hemi in ('left', 'right'):
+        nibabel.freesurfer.write_annot(
+                os.path.join(data_dir,
+                             '%s.aparc.a2009s.annot' % hemi),
+                np.arange(4), np.zeros((4, 5)), 5 * ['a'],
+                )
+
+    bunch = atlas.fetch_atlas_surf_destrieux(data_dir=tst.tmpdir, verbose=0)
+    # Our mock annots have 4 labels
+    assert_equal(len(bunch.labels), 4)
+    assert_equal(bunch.map_left.shape, (4, ))
+    assert_equal(bunch.map_right.shape, (4, ))
+    assert_not_equal(bunch.description, '')
