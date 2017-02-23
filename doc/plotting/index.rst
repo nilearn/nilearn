@@ -335,7 +335,7 @@ on a brain surface.
 
 .. versionadded:: 0.3
 
-NOTE: This functions works for only with matplotlib higher than 1.3.1.
+NOTE: These functions works for only with matplotlib higher than 1.3.1.
 
 
 .. |plot_surf_roi| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_surf_atlas_001.png
