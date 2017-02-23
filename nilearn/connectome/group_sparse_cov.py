@@ -970,16 +970,12 @@ class GroupSparseCovarianceCV(BaseEstimator, CacheMixin):
         covs_init = itertools.repeat(None)
 
         # Copying the cv generators to use them n_refinements times.
-        cv_list = []
         cv_ = izip(*cv)
-        for i in range(n_refinements):
-            _, cv_ = itertools.tee(cv_)
-            cv_list.append(cv_)
 
-        for i in range(n_refinements):
+        for i, (this_cv) in enumerate(itertools.tee(cv_, n_refinements)):
             # Compute the cross-validated loss on the current grid
             train_test_subjs = []
-            for train_test in cv_list[i]:
+            for train_test in this_cv:
                 assert(len(train_test) == n_subjects)
                 train_test_subjs.append(list(zip(*[(subject[train, :],
                                                     subject[test, :])
