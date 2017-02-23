@@ -608,11 +608,14 @@ def _get_max_connectivity(connectivity):
     """
     if LooseVersion(scipy.__version__) >= LooseVersion('0.14'):
         max_connectivity = connectivity.max(axis=0).toarray()[0]
-    elif LooseVersion(scipy.__version__) <= LooseVersion('0.13'):
+
+    if LooseVersion(scipy.__version__) < LooseVersion('0.10'):
         N = connectivity.shape[0]
         max_connectivity = np.zeros((N))
         for i in range(N):
-            max_connectivity[i] = np.max(connectivity.getrow(i))
+            row = connectivity.getrow(i)
+            ind = row.nonzero()
+            max_connectivity[i] = np.max(row[ind])
     else:
         N = connectivity.shape[0]
         max_connectivity = np.zeros((N))
