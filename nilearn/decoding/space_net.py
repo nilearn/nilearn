@@ -11,6 +11,8 @@ TV-L1, Graph-Net, etc.)
 #         THIRION Bertrand
 # License: simplified BSD
 
+from distutils.version import LooseVersion
+import sklearn
 import warnings
 import numbers
 import time
@@ -28,10 +30,10 @@ from sklearn.linear_model.base import LinearModel, center_data
 from sklearn.feature_selection import (SelectPercentile, f_regression,
                                        f_classif)
 from sklearn.externals.joblib import Memory, Parallel, delayed
-from sklearn.cross_validation import check_cv
 from sklearn.preprocessing import LabelBinarizer
 from sklearn.metrics import accuracy_score
 from .._utils.fixes import check_X_y
+from .._utils.fixes import check_cv
 from .._utils.compat import _basestring, get_header
 from .._utils.cache_mixin import CacheMixin
 from ..input_data import NiftiMasker
@@ -819,8 +821,14 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
         case1 = (None in [alphas, l1_ratios]) and self.n_alphas > 1
         case2 = (alphas is not None) and min(len(l1_ratios), len(alphas)) > 1
         if case1 or case2:
-            self.cv_ = list(check_cv(self.cv, X=X, y=y,
-                                     classifier=self.is_classif))
+            if LooseVersion(sklearn.__version__) >= LooseVersion('0.18'):
+                # scikit-learn >= 0.18
+                self.cv_ = list(check_cv(
+                    self.cv, y=y, classifier=self.is_classif).split(X, y))
+            else:
+                # scikit-learn < 0.18
+                self.cv_ = list(check_cv(self.cv, X=X, y=y,
+                                         classifier=self.is_classif))
         else:
             # no cross-validation needed, user supplied all params
             self.cv_ = [(np.arange(n_samples), [])]
