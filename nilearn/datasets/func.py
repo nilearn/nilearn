@@ -1561,7 +1561,7 @@ def fetch_cobre(n_subjects=10, data_dir=None, url=None, verbose=1):
     `phenotypic_data.tsv` contains the data of clinical variables that
     explained in `keys_phenotypic_data.json`
 
-    .. versionadded 0.3
+    .. versionadded:: 0.3
 
     Parameters
     ----------
@@ -1704,3 +1704,143 @@ def fetch_cobre(n_subjects=10, data_dir=None, url=None, verbose=1):
     return Bunch(func=func, confounds=con, phenotypic=csv_array_phen,
                  description=fdescr, desc_con=files_keys_con,
                  desc_phenotypic=files_keys_phen)
+
+
+def fetch_surf_nki_enhanced(n_subjects=10, data_dir=None,
+                            url=None, resume=True, verbose=1):
+    """Download and load the NKI enhanced resting-state dataset,
+       preprocessed and projected to the fsaverage5 space surface.
+
+    .. versionadded:: 0.3
+
+    Parameters
+    ----------
+    n_subjects: int, optional
+        The number of subjects to load from maximum of 102 subjects.
+        By default, 10 subjects will be loaded. If None is given,
+        all 102 subjects will be loaded.
+
+    data_dir: str, optional
+        Path of the data directory. Used to force data storage in a specified
+        location. Default: None
+
+    url: str, optional
+        Override download URL. Used for test only (or if you setup a mirror of
+        the data). Default: None
+
+    resume: bool, optional (default True)
+        If True, try resuming download if possible.
+
+    verbose: int, optional (default 1)
+        Defines the level of verbosity of the output.
+
+    Returns
+    -------
+    data: sklearn.datasets.base.Bunch
+        Dictionary-like object, the interest attributes are :
+         - 'func_left': Paths to Gifti files containing resting state
+                        time series left hemisphere
+         - 'func_right': Paths to Gifti files containing resting state
+                         time series right hemisphere
+         - 'phenotypic': array containing tuple with subject ID, age,
+                         dominant hand and sex for each subject.
+         - 'description': data description of the release and references.
+
+    References
+    ----------
+    :Download: http://fcon_1000.projects.nitrc.org/indi/enhanced/
+
+    Nooner et al, (2012). The NKI-Rockland Sample: A model for accelerating the
+    pace of discovery science in psychiatry. Frontiers in neuroscience 6, 152.
+    URL http://dx.doi.org/10.3389/fnins.2012.00152
+
+    """
+
+    if url is None:
+        url = 'https://www.nitrc.org/frs/download.php/'
+
+    # Preliminary checks and declarations
+    dataset_name = 'nki_enhanced_surface'
+    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
+                                verbose=verbose)
+    ids = ['A00028185', 'A00033747', 'A00035072', 'A00035827', 'A00035840',
+           'A00037112', 'A00037511', 'A00038998', 'A00039391', 'A00039431',
+           'A00039488', 'A00040524', 'A00040623', 'A00040944', 'A00043299',
+           'A00043520', 'A00043677', 'A00043722', 'A00045589', 'A00050998',
+           'A00051063', 'A00051064', 'A00051456', 'A00051457', 'A00051477',
+           'A00051513', 'A00051514', 'A00051517', 'A00051528', 'A00051529',
+           'A00051539', 'A00051604', 'A00051638', 'A00051658', 'A00051676',
+           'A00051678', 'A00051679', 'A00051726', 'A00051774', 'A00051796',
+           'A00051835', 'A00051882', 'A00051925', 'A00051927', 'A00052070',
+           'A00052117', 'A00052118', 'A00052126', 'A00052180', 'A00052197',
+           'A00052214', 'A00052234', 'A00052307', 'A00052319', 'A00052499',
+           'A00052502', 'A00052577', 'A00052612', 'A00052639', 'A00053202',
+           'A00053369', 'A00053456', 'A00053474', 'A00053546', 'A00053576',
+           'A00053577', 'A00053578', 'A00053625', 'A00053626', 'A00053627',
+           'A00053874', 'A00053901', 'A00053927', 'A00053949', 'A00054038',
+           'A00054153', 'A00054173', 'A00054358', 'A00054482', 'A00054532',
+           'A00054533', 'A00054534', 'A00054621', 'A00054895', 'A00054897',
+           'A00054913', 'A00054929', 'A00055061', 'A00055215', 'A00055352',
+           'A00055353', 'A00055542', 'A00055738', 'A00055763', 'A00055806',
+           'A00056097', 'A00056098', 'A00056164', 'A00056372', 'A00056452',
+           'A00056489', 'A00056949']
+
+    nitrc_ids = range(8260, 8470)
+    max_subjects = len(ids)
+    if n_subjects is None:
+        n_subjects = max_subjects
+    if n_subjects > max_subjects:
+        warnings.warn('Warning: there are only %d subjects' % max_subjects)
+        n_subjects = max_subjects
+    ids = ids[:n_subjects]
+    nitrc_ids = nitrc_ids[:n_subjects]
+
+    # Dataset description
+    fdescr = _get_dataset_descr(dataset_name)
+
+    # First, get the metadata
+    phenotypic_file = 'NKI_enhanced_surface_phenotypics.csv'
+    phenotypic = (phenotypic_file, url + '8470/pheno_nki_nilearn.csv',
+                  {'move': phenotypic_file})
+
+    phenotypic = _fetch_files(data_dir, [phenotypic], resume=resume,
+                              verbose=verbose)[0]
+
+    # Load the csv file
+    phenotypic = np.genfromtxt(phenotypic, skip_header=True,
+                               names=['Subject', 'Age',
+                                      'Dominant Hand', 'Sex'],
+                               delimiter=',', dtype=['U9', '<f8',
+                                                     'U1', 'U1'])
+
+    # Keep phenotypic information for selected subjects
+    int_ids = np.asarray(ids)
+    phenotypic = phenotypic[[np.where(phenotypic['Subject'] == i)[0][0]
+                             for i in int_ids]]
+
+    # Download subjects' datasets
+    func_right = []
+    func_left = []
+    for i in range(len(ids)):
+
+        archive = url + '%i/%s_%s_preprocessed_fsaverage5_fwhm6.gii'
+        func = os.path.join('%s', '%s_%s_preprocessed_fwhm6.gii')
+        rh = _fetch_files(data_dir,
+                          [(func % (ids[i], ids[i], 'right'),
+                           archive % (nitrc_ids[i], ids[i], 'rh'),
+                           {'move': func % (ids[i], ids[i], 'right')}
+                            )],
+                          resume=resume, verbose=verbose)
+        lh = _fetch_files(data_dir,
+                          [(func % (ids[i], ids[i], 'left'),
+                           archive % (nitrc_ids[i], ids[i], 'lh'),
+                           {'move': func % (ids[i], ids[i], 'left')}
+                            )],
+                          resume=resume, verbose=verbose)
+
+        func_right.append(rh[0])
+        func_left.append(lh[0])
+
+    return Bunch(func_left=func_left, func_right=func_right,
+                 phenotypic=phenotypic,
+                 description=fdescr)
