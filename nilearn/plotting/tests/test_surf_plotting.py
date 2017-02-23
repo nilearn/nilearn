@@ -1,16 +1,24 @@
+# Tests for functions in surf_plotting.py
+
+import os
+import tempfile
+
+from distutils.version import LooseVersion
+from nose import SkipTest
+
+
 import numpy as np
 import nibabel as nb
-from nibabel import gifti
-import tempfile
-import os
 import matplotlib.pyplot as plt
-from distutils.version import LooseVersion
-from numpy.testing import assert_array_equal, assert_array_almost_equal, \
-                          assert_equal
+
+from nibabel import gifti
+from numpy.testing import (assert_array_equal, assert_array_almost_equal,
+                           assert_equal)
+
 from nilearn._utils.testing import assert_raises_regex
-from nilearn.plotting.surf_plotting import load_surf_data, load_surf_mesh, \
-                                           plot_surf, plot_surf_stat_map, \
-                                           plot_surf_roi
+from nilearn.plotting.surf_plotting import (load_surf_data, load_surf_mesh,
+                                            plot_surf, plot_surf_stat_map,
+                                            plot_surf_roi)
 
 currdir = os.path.dirname(os.path.abspath(__file__))
 datadir = os.path.join(currdir, 'data')
@@ -69,16 +77,21 @@ def test_load_surf_data_file_nii_gii():
 
 def test_load_surf_data_file_freesurfer():
     # test loading of fake data from sulc and thickness files
-    data = np.zeros((20, ))
-    filename_sulc = tempfile.mktemp(suffix='.sulc')
-    nb.freesurfer.io.write_morph_data(filename_sulc, data)
-    assert_array_equal(load_surf_data(filename_sulc), np.zeros((20, )))
-    os.remove(filename_sulc)
+    # using load_surf_data.
+    # We test load_surf_data by creating fake data with function
+    # 'write_morph_data' that works only if nibabel
+    # version is recent with nibabel >= 2.1.0
+    if LooseVersion(nb.__version__) >= LooseVersion('2.1.0'):
+        data = np.zeros((20, ))
+        filename_sulc = tempfile.mktemp(suffix='.sulc')
+        nb.freesurfer.io.write_morph_data(filename_sulc, data)
+        assert_array_equal(load_surf_data(filename_sulc), np.zeros((20, )))
+        os.remove(filename_sulc)
 
-    filename_thick = tempfile.mktemp(suffix='.thickness')
-    nb.freesurfer.io.write_morph_data(filename_thick, data)
-    assert_array_equal(load_surf_data(filename_thick), np.zeros((20, )))
-    os.remove(filename_thick)
+        filename_thick = tempfile.mktemp(suffix='.thickness')
+        nb.freesurfer.io.write_morph_data(filename_thick, data)
+        assert_array_equal(load_surf_data(filename_thick), np.zeros((20, )))
+        os.remove(filename_thick)
 
     # test loading of data from real label and annot files
     label_start = np.array([5900, 5899, 5901, 5902, 2638])
@@ -132,16 +145,27 @@ def test_load_surf_mesh_list():
 
 
 def test_load_surf_mesh_file_gii():
+    # Test the loader `load_surf_mesh`
+
+    # If nibabel is of older version we skip tests as nibabel does not
+    # support intent argument and intent codes are not handled properly with
+    # older versions
+
+    if not LooseVersion(nb.__version__) >= LooseVersion('2.1.0'):
+        raise SkipTest
+
     mesh = _generate_surf()
 
     # test if correct gii is loaded into correct list
     filename_gii_mesh = tempfile.mktemp(suffix='.gii')
+
     coord_array = gifti.GiftiDataArray(data=mesh[0],
                                        intent=nb.nifti1.intent_codes[
-                                       'NIFTI_INTENT_POINTSET'])
+                                           'NIFTI_INTENT_POINTSET'])
     face_array = gifti.GiftiDataArray(data=mesh[1],
                                       intent=nb.nifti1.intent_codes[
-                                      'NIFTI_INTENT_TRIANGLE'])
+                                          'NIFTI_INTENT_TRIANGLE'])
+
     gii = gifti.GiftiImage(darrays=[coord_array, face_array])
     gifti.write(gii, filename_gii_mesh)
     assert_array_equal(load_surf_mesh(filename_gii_mesh)[0], mesh[0])
@@ -165,6 +189,10 @@ def test_load_surf_mesh_file_gii():
 
 
 def test_load_surf_mesh_file_freesurfer():
+    # Older nibabel versions does not support 'write_geometry'
+    if LooseVersion(nb.__version__) <= LooseVersion('1.2.0'):
+        raise SkipTest
+
     mesh = _generate_surf()
     for suff in ['.pial', '.inflated', '.white', '.orig', 'sphere']:
         filename_fs_mesh = tempfile.mktemp(suffix=suff)
@@ -178,6 +206,9 @@ def test_load_surf_mesh_file_freesurfer():
 
 
 def test_load_surf_mesh_file_error():
+    if LooseVersion(nb.__version__) <= LooseVersion('1.2.0'):
+        raise SkipTest
+
     # test if files with unexpected suffixes raise errors
     mesh = _generate_surf()
     wrong_suff = ['.vtk', '.obj', '.mnc', '.txt']
@@ -226,13 +257,13 @@ def test_plot_surf_error():
     assert_raises_regex(ValueError,
                         'bg_map does not have the same number of vertices',
                         plot_surf, mesh,
-                        bg_map=rng.randn(mesh[0].shape[0]-1, ))
+                        bg_map=rng.randn(mesh[0].shape[0] - 1, ))
 
     # Wrong size of surface data
     assert_raises_regex(ValueError,
                         'surf_map does not have the same number of vertices',
                         plot_surf, mesh,
-                        surf_map=rng.randn(mesh[0].shape[0]+1, ))
+                        surf_map=rng.randn(mesh[0].shape[0] + 1, ))
 
     assert_raises_regex(ValueError,
                         'surf_map can only have one dimension', plot_surf,
@@ -243,7 +274,7 @@ def test_plot_surf_stat_map():
     mesh = _generate_surf()
     rng = np.random.RandomState(0)
     bg = rng.randn(mesh[0].shape[0], )
-    data = 10*rng.randn(mesh[0].shape[0], )
+    data = 10 * rng.randn(mesh[0].shape[0], )
 
     # Plot mesh with stat map
     plot_surf_stat_map(mesh, stat_map=data)
