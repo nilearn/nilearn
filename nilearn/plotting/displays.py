@@ -740,7 +740,8 @@ class BaseSlicer(object):
         if norm.vmin == norm.vmax:  # len(np.unique(data)) == 1 ?
             return
         else:
-            our_cmap = our_cmap.from_list('Custom cmap', cmaplist, our_cmap.N)
+            our_cmap = colors.LinearSegmentedColormap.from_list(
+                'Custom cmap', cmaplist, our_cmap.N)
 
         self._cbar = ColorbarBase(
             self._colorbar_ax, ticks=ticks, norm=norm,
