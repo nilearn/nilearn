@@ -327,4 +327,32 @@ that can be used to save the plot to an image file::
     # Don't forget to close the display
     >>> display.close()     # doctest: +SKIP
 
+Surface plotting
+================
 
+Plotting functions required to plot surface data or statistical maps
+on a brain surface.
+
+.. |plot_surf_roi| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_surf_atlas_001.png
+     :target: ../auto_examples/01_plotting/plot_surf_atlas.html
+     :scale: 50
+
+.. |plot_surf_stat_map| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_surf_stat_map_001.png
+     :target: ../auto_examples/01_plotting/plot_surf_stat_map.html
+     :scale: 50
+
+
+===================   =========================================================
+===================   =========================================================
+
+|plot_surf_roi|        :func:`plot_surf_roi`
+                       |hack|
+                       Plotting surface atlases on a brain surface
+                       |hack|
+                       **Example:** :ref:`sphx_glr_auto_examples_01_plotting_plot_surf_atlas.py`
+
+|plot_surf_stat_map|   :func:`plot_surf_stat_map`
+                       |hack|
+                       Plotting statistical maps onto a brain surface
+                       |hack|
+                       **Example:** :ref:`sphx_glr_auto_examples_01_plotting_plot_surf_stat_map.py`

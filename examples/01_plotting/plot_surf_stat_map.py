@@ -46,16 +46,12 @@ URL http://dx.doi.org/10.1016/j.neuroimage.2010.06.010.
 """
 
 ###############################################################################
-from nilearn import plotting
-from nilearn import datasets
-from scipy import stats
-import numpy as np
-
-###############################################################################
 # Retrieving the data
 # -------------------
 
-# NKI resting state data
+# NKI resting state data from nilearn
+from nilearn import datasets
+
 nki_dataset = datasets.fetch_surf_nki_enhanced(n_subjects=1)
 
 # The nki dictionary contains file names for the data
@@ -85,11 +81,15 @@ print('Fsaverage5 sulcal depth map of left hemisphere is at: %s' %
 # Extracting the seed time series
 # --------------------------------
 
-# Load resting state time series
+# Load resting state time series from nilearn
+from nilearn import plotting
+
 timeseries = plotting.surf_plotting.load_surf_data(nki_dataset['func_left'][0])
 
 # Extract seed region via label
 pcc_region = b'G_cingul-Post-dorsal'
+
+import numpy as np
 pcc_labels = np.where(parcellation == labels.index(pcc_region))[0]
 
 # Extract time series from seed region
@@ -101,6 +101,8 @@ seed_timeseries = np.mean(timeseries[pcc_labels], axis=0)
 
 # Calculate Pearson product-moment correlation coefficient between seed
 # time series and timeseries of all cortical nodes of the hemisphere
+from scipy import stats
+
 stat_map = np.zeros(timeseries.shape[0])
 for i in range(timeseries.shape[0]):
     stat_map[i] = stats.pearsonr(seed_timeseries, timeseries[i])[0]

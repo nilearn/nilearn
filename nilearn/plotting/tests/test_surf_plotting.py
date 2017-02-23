@@ -42,7 +42,7 @@ def test_load_surf_data_array():
 def test_load_surf_data_file_nii_gii():
     # test loading of fake data from gifti file
     filename_gii = tempfile.mktemp(suffix='.gii')
-    if LooseVersion(nb.__version__) > LooseVersion('1.2.0'):
+    if LooseVersion(nb.__version__) > LooseVersion('2.0.2'):
         darray = gifti.GiftiDataArray(data=np.zeros((20, )))
     else:
         # Avoid a bug in nibabel 1.2.0 where GiftiDataArray were not

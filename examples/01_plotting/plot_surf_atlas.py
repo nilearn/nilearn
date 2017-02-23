@@ -19,11 +19,12 @@ URL http://dx.doi.org/10.1016/j.neuroimage.2010.06.010.
 """
 
 ###############################################################################
-from nilearn import plotting
+# Data fetcher
+# ------------
+
+# Retrieve destrieux parcellation in fsaverage5 space from nilearn
 from nilearn import datasets
 
-###############################################################################
-# Retrieve destrieux parcellation in fsaverage5 space
 destrieux_atlas = datasets.fetch_atlas_surf_destrieux()
 
 # The parcellation is already loaded into memory
@@ -43,7 +44,12 @@ print('Fsaverage5 sulcal depth map of left hemisphere is at: %s' %
       fsaverage['sulc_left'])
 
 ###############################################################################
-# Display Destrieux parcellation on fsaverage5 pial surface
+# Visualization
+# -------------
+
+# Display Destrieux parcellation on fsaverage5 pial surface using nilearn
+from nilearn import plotting
+
 plotting.plot_surf_roi(fsaverage['pial_left'], roi_map=parcellation,
                        hemi='left', view='lateral',
                        bg_map=fsaverage['sulc_left'], bg_on_data=True,
