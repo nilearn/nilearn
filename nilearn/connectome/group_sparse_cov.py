@@ -6,7 +6,6 @@ graphical models.
 # License: simplified BSD
 
 from distutils.version import LooseVersion
-import sklearn
 import warnings
 import collections
 import operator
@@ -15,10 +14,10 @@ import itertools
 import numpy as np
 import scipy.linalg
 
+import sklearn
 from sklearn.utils.extmath import fast_logdet
 from sklearn.covariance import empirical_covariance
 from sklearn.base import BaseEstimator
-
 from sklearn.externals.joblib import Memory, delayed, Parallel
 
 from .._utils import CacheMixin
