@@ -872,6 +872,8 @@ def fetch_atlas_surf_destrieux(data_dir=None, url=None,
     This atlas returns 76 labels per hemisphere based on sulco-gryal pattnerns
     as distributed with Freesurfer in fsaverage5 surface space.
 
+    .. versionadded:: 0.3
+
     Parameters
     ----------
     data_dir: str, optional

@@ -1711,6 +1711,8 @@ def fetch_surf_nki_enhanced(n_subjects=10, data_dir=None,
     """Download and load the NKI enhanced resting-state dataset,
        preprocessed and projected to the fsaverage5 space surface.
 
+    .. versionadded:: 0.3
+
     Parameters
     ----------
     n_subjects: int, optional
@@ -1792,8 +1794,6 @@ def fetch_surf_nki_enhanced(n_subjects=10, data_dir=None,
         n_subjects = max_subjects
     ids = ids[:n_subjects]
     nitrc_ids = nitrc_ids[:n_subjects]
-
-    opts = dict()
 
     # Dataset description
     fdescr = _get_dataset_descr(dataset_name)

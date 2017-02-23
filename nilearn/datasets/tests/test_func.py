@@ -597,8 +597,8 @@ def test_fetch_surf_nki_enhanced(data_dir=tst.tmpdir, verbose=0):
                       'A00033747', 'A00035840', 'A00038998', 'A00035072',
                       'A00037112', 'A00039391'], dtype='U9')
     age = np.ones(len(ids), dtype='<f8')
-    hand = np.asarray(len(ids)*['x'], dtype='U1')
-    sex = np.asarray(len(ids)*['x'], dtype='U1')
+    hand = np.asarray(len(ids) * ['x'], dtype='U1')
+    sex = np.asarray(len(ids) * ['x'], dtype='U1')
     csv = np.rec.array([ids, age, hand, sex],
                        dtype=[('id', '|U19'), ('age', '<f8'),
                               ('hand', 'U1'), ('sex', 'U1')])

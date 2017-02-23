@@ -4,12 +4,12 @@ Only matplotlib is required.
 """
 
 # Import libraries
-import numpy as np
 import nibabel
-from nibabel import gifti
+import numpy as np
 import matplotlib.pyplot as plt
-import matplotlib.tri as tri
+
 from mpl_toolkits.mplot3d import Axes3D
+from nibabel import gifti
 
 from .._utils.compat import _basestring
 from .img_plotting import _get_colorbar_and_data_ranges
@@ -21,13 +21,15 @@ def load_surf_data(surf_data):
 
     Parameters
     ----------
-    surf_data : Either a file containing surface data (valid format are .gii,
-                .mgz, .nii, .nii.gz, or Freesurfer specific files such as
-                .thickness, .curv, .sulc, .annot, .label) or a Numpy array
-                containing surface data.
+    surf_data : str or numpy.ndarray
+        Either a file containing surface data (valid format are .gii,
+        .mgz, .nii, .nii.gz, or Freesurfer specific files such as
+        .thickness, .curv, .sulc, .annot, .label) or
+        a Numpy array containing surface data.
     Returns
-    --------
-    data : Numpy array containing surface data
+    -------
+    data : numpy.ndarray
+        An array containing surface data
     """
     # if the input is a filename, load it
     if isinstance(surf_data, _basestring):
@@ -75,18 +77,19 @@ def load_surf_mesh(surf_mesh):
 
     Parameters
     ----------
-    surf_mesh : Either a file containing surface mesh geometry (valid formats
-                are .gii or Freesurfer specific files such as .orig, .pial,
-                .sphere, .white, .inflated) or a list of two Numpy arrays,
-                the first containing the x-y-z coordinates of the mesh
-                vertices, the second containing the indices (into coords)
-                of the mesh faces
+    surf_mesh : str or numpy.ndarray
+        Either a file containing surface mesh geometry (valid formats
+        are .gii or Freesurfer specific files such as .orig, .pial,
+        .sphere, .white, .inflated) or a list of two Numpy arrays,
+        the first containing the x-y-z coordinates of the mesh
+        vertices, the second containing the indices (into coords)
+        of the mesh faces.
 
     Returns
     --------
-    [coords, faces] : List of two Numpy arrays, the first containing the x-y-z
-                      coordinates of the mesh vertices, the second containing
-                      the indices (into coords) of the mesh faces
+    [coords, faces] : List of two numpy.ndarray
+        The first containing the x-y-z coordinates of the mesh vertices,
+        the second containing the indices (into coords) of the mesh faces.
     """
     # if input is a filename, try to load it
     if isinstance(surf_mesh, _basestring):
@@ -97,13 +100,13 @@ def load_surf_mesh(surf_mesh):
         elif surf_mesh.endswith('gii'):
             try:
                 coords = gifti.read(surf_mesh).getArraysFromIntent(
-                 nibabel.nifti1.intent_codes['NIFTI_INTENT_POINTSET'])[0].data
+                    nibabel.nifti1.intent_codes['NIFTI_INTENT_POINTSET'])[0].data
             except IndexError:
                 raise ValueError('Gifti file needs to contain a data array '
                                  'with intent NIFTI_INTENT_POINTSET')
             try:
                 faces = gifti.read(surf_mesh).getArraysFromIntent(
-                 nibabel.nifti1.intent_codes['NIFTI_INTENT_TRIANGLE'])[0].data
+                    nibabel.nifti1.intent_codes['NIFTI_INTENT_TRIANGLE'])[0].data
             except IndexError:
                 raise ValueError('Gifti file needs to contain a data array '
                                  'with intent NIFTI_INTENT_TRIANGLE')
@@ -145,56 +148,88 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
 
     """ Plotting of surfaces with optional background and data
 
-            Parameters
-            ----------
-            surf_mesh: Surface mesh geometry, can be a file (valid formats are
-                       .gii or Freesurfer specific files such as .orig, .pial,
-                       .sphere, .white, .inflated) or a list of two Numpy
-                       arrays, the first containing the x-y-z coordinates of
-                       the mesh vertices, the second containing the indices
-                       (into coords) of the mesh faces
-            surf_map: Data to be displayed on the surface mesh, optional, can
-                      be a file (valid formats are .gii, .mgz, .nii, .nii.gz,
-                      or Freesurfer specific files such as .thickness, .curv,
-                      .sulc, .annot, .label) or a Numpy array
-            hemi: {'left', 'right'}, hemisphere to display. Default is 'left'
-            bg_map: Surface data object (to be defined), optional,
-                background image to be plotted on the mesh underneath the
-                surf_data in greyscale, most likely a sulcal depth map for
-                realistic shading.
-            view: {'lateral', 'medial', 'dorsal', 'ventral'}, view of the
-                surface that is rendered. Default is 'lateral'
-            cmap: colormap to use for plotting of the stat_map. Either a string
-                which is a name of a matplotlib colormap, or a matplotlib
-                colormap object. If None, matplolib default will be chosen
-            avg_method: {'mean', 'median'} how to average vertex values to
-                derive the face value, mean results in smooth, median in sharp
-                boundaries
-            threshold : a number, None, or 'auto'
-                If None is given, the image is not thresholded.
-                If a number is given, it is used to threshold the image:
-                values below the threshold (in absolute value) are plotted
-                as transparent.
-            alpha: float, alpha level of the mesh (not surf_data). If 'auto'
-                is chosen, alpha will default to .5 when no bg_map ist passed
-                and to 1 if a bg_map is passed.
-            bg_on_stat: boolean, if True, and a bg_map is specified, the
-                surf_data data is multiplied by the background image, so that
-                e.g. sulcal depth is visible beneath the surf_data. Beware
-                that this non-uniformly changes the surf_data values according
-                to e.g the sulcal depth.
-            darkness: float, between 0 and 1, specifying the darkness of the
-                background image. 1 indicates that the original values of the
-                background are used. .5 indicates the background values are
-                reduced by half before being applied.
-            vmin, vmax: lower / upper bound to plot surf_data values
-                If None , the values will be set to min/max of the data
-            title : str, figure title, optional
-            output_file: str, or None, optional
-                The name of an image file to export plot to. Valid extensions
-                are .png, .pdf, .svg. If output_file is not None, the plot
-                is saved to a file, and the display is closed.
-        """
+    ..versionadded:: 0.3
+
+    Parameters
+    ----------
+    surf_mesh: str or list of two numpy.ndarray
+        Surface mesh geometry, can be a file (valid formats are
+        .gii or Freesurfer specific files such as .orig, .pial,
+        .sphere, .white, .inflated) or
+        a list of two Numpy arrays, the first containing the x-y-z coordinates
+        of the mesh vertices, the second containing the indices
+        (into coords) of the mesh faces.
+
+    surf_map: str or numpy.ndarray, optional.
+        Data to be displayed on the surface mesh. Can be a file (valid formats
+        are .gii, .mgz, .nii, .nii.gz, or Freesurfer specific files such as
+        .thickness, .curv, .sulc, .annot, .label) or
+        a Numpy array
+
+    bg_map: Surface data object (to be defined), optional,
+        Background image to be plotted on the mesh underneath the
+        surf_data in greyscale, most likely a sulcal depth map for
+        realistic shading.
+
+    hemi : {'left', 'right'}, default is 'left'
+        Hemisphere to display.
+
+    view: {'lateral', 'medial', 'dorsal', 'ventral'}, default is 'lateral'
+        View of the surface that is rendered.
+
+    cmap: matplotlib colormap, str or colormap object, default is None
+        To use for plotting of the stat_map. Either a string
+        which is a name of a matplotlib colormap, or a matplotlib
+        colormap object. If None, matplolib default will be chosen
+
+    avg_method: {'mean', 'median'}, default is 'mean'
+        How to average vertex values to derive the face value, mean results
+        in smooth, median in sharp boundaries.
+
+    threshold : a number, None, or 'auto', default is None.
+        If None is given, the image is not thresholded.
+        If a number is given, it is used to threshold the image, values
+        below the threshold (in absolute value) are plotted as transparent.
+
+    alpha: float, alpha level of the mesh (not surf_data), default 'auto'
+        If 'auto' is chosen, alpha will default to .5 when no bg_map
+        is passed and to 1 if a bg_map is passed.
+
+    bg_on_stat: bool, default is False
+        If True, and a bg_map is specified, the surf_data data is multiplied
+        by the background image, so that e.g. sulcal depth is visible beneath
+        the surf_data.
+        NOTE: that this non-uniformly changes the surf_data values according
+        to e.g the sulcal depth.
+
+    darkness: float, between 0 and 1, default is 1
+        Specifying the darkness of the background image.
+        1 indicates that the original values of the background are used.
+        .5 indicates the background values are reduced by half before being
+        applied.
+
+    vmin, vmax: lower / upper bound to plot surf_data values
+        If None , the values will be set to min/max of the data
+
+    title : str, optional
+        Figure title.
+
+    output_file: str, or None, optional
+        The name of an image file to export plot to. Valid extensions
+        are .png, .pdf, .svg. If output_file is not None, the plot
+        is saved to a file, and the display is closed.
+
+    See Also
+    --------
+    nilearn.datasets.fetch_surf_fsaverage5 for surface data object to be
+        used as background map for this plotting function.
+        Example: 'sulc_left' or 'sulc_right' from fetcher return.
+
+    nilearn.plotting.plot_surf_roi for plotting statistical maps on surfaces.
+
+    nilearn.plotting.plot_surf_stat_map for plotting statistical maps on
+        surfaces.
+    """
 
     # load mesh and derive axes limits
     mesh = load_surf_mesh(surf_mesh)
@@ -277,7 +312,7 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
             face_colors = plt.cm.gray_r(bg_faces)
 
         # modify alpha values of background
-        face_colors[:, 3] = alpha*face_colors[:, 3]
+        face_colors[:, 3] = alpha * face_colors[:, 3]
         # should it be possible to modify alpha of surf data as well?
 
         if surf_map is not None:
@@ -308,7 +343,7 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
                 kept_indices = np.where(np.abs(surf_map_faces) >= threshold)[0]
 
             surf_map_faces = surf_map_faces - vmin
-            surf_map_faces = surf_map_faces / (vmax-vmin)
+            surf_map_faces = surf_map_faces / (vmax - vmin)
 
             # multiply data with background if indicated
             if bg_on_data:
@@ -337,57 +372,91 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
                        title=None, output_file=None, **kwargs):
     """ Plotting a stats map on a surface mesh with optional background
 
-            Parameters
-            ----------
-            surf_mesh: Surface mesh geometry, can be a file (valid formats are
-                       .gii or Freesurfer specific files such as .orig, .pial,
-                       .sphere, .white, .inflated) or a list of two Numpy
-                       arrays, the first containing the x-y-z coordinates of
-                       the mesh vertices, the second containing the indices
-                       (into coords) of the mesh faces
-            stat_map: Statistical map to be displayed on the surface mesh, can
-                      be a file (valid formats are .gii, .mgz, .nii,
-                      .nii.gz, or Freesurfer specific files such as .thickness,
-                      .curv, .sulc, .annot, .label) or a Numpy array
-            hemi: {'left', 'right'}, hemisphere to display, default is 'left'
-            bg_map: Surface data object (to be defined), optional,
-                background image to be plotted on the mesh underneath the
-                stat_map in greyscale, most likely a sulcal depth map for
-                realistic shading.
-            view: {'lateral', 'medial', 'dorsal', 'ventral'}, view of the
-                surface that is rendered. Default is 'lateral'
-            threshold : a number, None, or 'auto'
-                If None is given, the image is not thresholded.
-                If a number is given, it is used to threshold the image:
-                values below the threshold (in absolute value) are plotted
-                as transparent.
-            cmap: colormap to use for plotting of the stat_map. Either a string
-                which is a name of a matplotlib colormap, or a matplotlib
-                colormap object. Default is 'coolwarm'
-            alpha: float, alpha level of the mesh (not the stat_map). If 'auto'
-                is chosen, alpha will default to .5 when no bg_map ist passed
-                and to 1 if a bg_map is passed.
-            vmax: upper bound for plotting of stat_map values.
-            symmetric_cbar: boolean or 'auto', optional, default 'auto'
-                Specifies whether the colorbar should range from -vmax to vmax
-                or from vmin to vmax. Setting to 'auto' will select the latter
-                if the range of the whole image is either positive or negative.
-                Note: The colormap will always range from -vmax to vmax.
-            bg_on_data: boolean, if True, and a bg_map is specified, the
-                stat_map data is multiplied by the background image, so that
-                e.g. sulcal depth is visible beneath the stat_map. Beware
-                that this non-uniformly changes the stat_map values according
-                to e.g the sulcal depth.
-            darkness: float, between 0 and 1, specifying the darkness of the
-                background image. 1 indicates that the original values of the
-                background are used. .5 indicates the background values are
-                reduced by half before being applied.
-            title : str, figure title, optional
-            output_file: str, or None, optional
-                The name of an image file to export plot to. Valid extensions
-                are .png, .pdf, .svg. If output_file is not None, the plot
-                is saved to a file, and the display is closed.
-        """
+    ..versionadded:: 0.3
+
+    Parameters
+    ----------
+    surf_mesh : str or list of two numpy.ndarray
+        Surface mesh geometry, can be a file (valid formats are
+        .gii or Freesurfer specific files such as .orig, .pial,
+        .sphere, .white, .inflated) or
+        a list of two Numpy arrays, the first containing the x-y-z
+        coordinates of the mesh vertices, the second containing the
+        indices (into coords) of the mesh faces
+
+    stat_map : str or numpy.ndarray
+        Statistical map to be displayed on the surface mesh, can
+        be a file (valid formats are .gii, .mgz, .nii, .nii.gz, or
+        Freesurfer specific files such as .thickness, .curv, .sulc, .annot,
+        .label) or
+        a Numpy array
+
+    bg_map : Surface data object (to be defined), optional,
+        Background image to be plotted on the mesh underneath the
+        stat_map in greyscale, most likely a sulcal depth map for
+        realistic shading.
+
+    hemi : {'left', 'right'}, default is 'left'
+        Hemispere to display.
+
+    view : {'lateral', 'medial', 'dorsal', 'ventral'}, default 'lateral'
+        View of the surface that is rendered.
+
+    threshold : a number, None, or 'auto', default is None
+        If None is given, the image is not thresholded.
+        If a number is given, it is used to threshold the image,
+        values below the threshold (in absolute value) are plotted
+        as transparent.
+
+    cmap : matplotlib colormap in str or colormap object, default 'coolwarm'
+        To use for plotting of the stat_map. Either a string
+        which is a name of a matplotlib colormap, or a matplotlib
+        colormap object.
+
+    alpha : float, alpha level of the mesh (not the stat_map), default 'auto'
+        If 'auto' is chosen, alpha will default to .5 when no bg_map is
+        passed and to 1 if a bg_map is passed.
+
+    vmax : upper bound for plotting of stat_map values.
+
+    symmetric_cbar : bool or 'auto', optional, default 'auto'
+        Specifies whether the colorbar should range from -vmax to vmax
+        or from vmin to vmax. Setting to 'auto' will select the latter
+        if the range of the whole image is either positive or negative.
+        Note: The colormap will always range from -vmax to vmax.
+
+    bg_on_data : bool, default is False
+        If True, and a bg_map is specified, the stat_map data is multiplied
+        by the background image, so that e.g. sulcal depth is visible beneath
+        the stat_map.
+        NOTE: that this non-uniformly changes the stat_map values according
+        to e.g the sulcal depth.
+
+    darkness: float, between 0 and 1, default 1
+        Specifying the darkness of the background image. 1 indicates that the
+        original values of the background are used. .5 indicates the
+        background values are reduced by half before being applied.
+
+    title : str, optional
+        Figure title.
+
+    output_file: str, or None, optional
+        The name of an image file to export plot to. Valid extensions
+        are .png, .pdf, .svg. If output_file is not None, the plot
+        is saved to a file, and the display is closed.
+
+    See Also
+    --------
+    nilearn.plotting.surf_plotting.load_surf_mesh for surface mesh data
+        with list of two numpy arrays.
+
+    nilearn.datasets.fetch_surf_fsaverage5 for surface data object to be
+        used as background map for this plotting function.
+        Example: 'sulc_left' or 'sulc_right' from fetcher return.
+
+    nilearn.plotting.plot_surf or plot_surf_roi for surface visualization
+        of surface data or statistical maps on surface.
+    """
 
     # Call _get_colorbar_and_data_ranges to derive symmetric vmin, vmax
     # And colorbar limits depending on symmetric_cbar settings
@@ -407,55 +476,82 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
 
 def plot_surf_roi(surf_mesh, roi_map, bg_map=None,
                   hemi='left', view='lateral', alpha='auto',
-                  vmin=None, vmax=None, cmap='hsv',
+                  vmin=None, vmax=None, cmap='coolwarm',
                   bg_on_data=False, darkness=1,
                   title=None, output_file=None, **kwargs):
-
     """ Plotting of surfaces with optional background and stats map
 
-            Parameters
-            ----------
-            surf_mesh: Surface mesh geometry, can be a file (valid formats are
-                       .gii or Freesurfer specific files such as .orig, .pial,
-                       .sphere, .white, .inflated) or a list of two Numpy
-                       arrays, the first containing the x-y-z coordinates of
-                       the mesh vertices, the second containing the indices
-                       (into coords) of the mesh faces
-            roi_map: ROI map to be displayed on the surface mesh, can
-                      be a file (valid formats are .gii, .mgz, .nii, .nii.gz,
-                      or Freesurfer specific files such as .annot or .label),
-                      or a Numpy array containing a value for each vertex,
-                      or a list of Numpy arrays, one array per ROI which
-                      contains indices of all vertices included in that ROI
-            hemi: {'left', 'right'}, hemisphere to display.
-                  Default is 'left'
-            bg_map: Surface data object (to be defined), optional,
-                background image to be plotted on the mesh underneath the
-                stat_map in greyscale, most likely a sulcal depth map for
-                realistic shading.
-            view: {'lateral', 'medial', 'dorsal', 'ventral'}, view of the
-                surface that is rendered. Default is 'lateral'
-            cmap: colormap to use for plotting of the rois. Either a string
-                which is a name of a matplotlib colormap, or a matplotlib
-                colormap object. Default is 'coolwarm'
-            alpha: float, alpha level of the mesh (not the stat_map). If 'auto'
-                is chosen, alpha will default to .5 when no bg_map ist passed
-                and to 1 if a bg_map is passed.
-            bg_on_data: boolean, if True, and a bg_map is specified, the
-                stat_map data is multiplied by the background image, so that
-                e.g. sulcal depth is visible beneath the stat_map. Beware
-                that this non-uniformly changes the stat_map values according
-                to e.g the sulcal depth.
-            darkness: float, between 0 and 1, specifying the darkness of the
-                background image. 1 indicates that the original values of the
-                background are used. .5 indicates the background values are
-                reduced by half before being applied.
-            title : str, figure title, optional
-            output_file: str, or None, optional
-                The name of an image file to export plot to. Valid extensions
-                are .png, .pdf, .svg. If output_file is not None, the plot
-                is saved to a file, and the display is closed.
-        """
+    ..versionadded:: 0.3
+
+    Parameters
+    ----------
+    surf_mesh : str or list of two numpy.ndarray
+        Surface mesh geometry, can be a file (valid formats are
+        .gii or Freesurfer specific files such as .orig, .pial,
+        .sphere, .white, .inflated) or
+        a list of two Numpy arrays, the first containing the x-y-z
+        coordinates of the mesh vertices, the second containing the indices
+        (into coords) of the mesh faces
+
+    roi_map : str or numpy.ndarray or list of numpy.ndarray
+        ROI map to be displayed on the surface mesh, can be a file
+        (valid formats are .gii, .mgz, .nii, .nii.gz, or Freesurfer specific
+        files such as .annot or .label), or
+        a Numpy array containing a value for each vertex, or
+        a list of Numpy arrays, one array per ROI which contains indices
+        of all vertices included in that ROI.
+
+    hemi : {'left', 'right'}, default is 'left'
+        Hemisphere to display.
+
+    bg_map : Surface data object (to be defined), optional,
+        Background image to be plotted on the mesh underneath the
+        stat_map in greyscale, most likely a sulcal depth map for
+        realistic shading.
+
+    view : {'lateral', 'medial', 'dorsal', 'ventral'}, default 'lateral'
+        View of the surface that is rendered.
+
+    cmap : matplotlib colormap str or colormap object, default 'coolwarm'
+        To use for plotting of the rois. Either a string which is a name
+        of a matplotlib colormap, or a matplotlib colormap object.
+
+    alpha : float, default is 'auto'
+        Alpha level of the mesh (not the stat_map). If default,
+        alpha will default to .5 when no bg_map is passed
+        and to 1 if a bg_map is passed.
+
+    bg_on_data : bool, default is False
+        If True, and a bg_map is specified, the stat_map data is multiplied
+        by the background image, so that e.g. sulcal depth is visible beneath
+        the stat_map. Beware that this non-uniformly changes the stat_map
+        values according to e.g the sulcal depth.
+
+    darkness : float, between 0 and 1, default is 1
+        Specifying the darkness of the background image. 1 indicates that the
+        original values of the background are used. .5 indicates the background
+        values are reduced by half before being applied.
+
+    title : str, optional
+        Figure title.
+
+    output_file: str, or None, optional
+        The name of an image file to export plot to. Valid extensions
+        are .png, .pdf, .svg. If output_file is not None, the plot
+        is saved to a file, and the display is closed.
+
+    See Also
+    --------
+    nilearn.plotting.surf_plotting.load_surf_mesh for surface mesh data
+        with list of two numpy arrays.
+
+    nilearn.datasets.fetch_surf_fsaverage5 for surface data object to be
+        used as background map for this plotting function.
+        Example: 'sulc_left' or 'sulc_right' from fetcher return.
+
+    nilearn.plotting.plot_surf or plot_surf_stat_map for surface visualization
+        of surface data or statistical maps on surface.
+    """
 
     v, _ = load_surf_mesh(surf_mesh)
 

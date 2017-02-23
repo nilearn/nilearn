@@ -20,6 +20,41 @@ Enhancements
       extract the connected components represented as same label to regions
       apart with each region labelled as unique label.
 
+    - New plotting modules for surface plotting visualization. Matplotlib with
+      version higher 1.3.1 is required for plotting surface data using these
+      functions.
+
+    - Function :func:`nilearn.plotting.plot_surf` can be used for plotting
+      surfaces mesh data with optional background.
+
+    - A function :func:`nilearn.plotting.plot_surf_stat_map` can be used for
+      plotting statistical maps on a brain surface with optional background.
+
+    - A function :func:`nilearn.plotting.plot_surf_roi` can be used for
+      plotting statistical maps rois onto brain surface.
+
+    - A function :func:`nilearn.datasets.fetch_surf_fsaverage5` can be used
+      for surface data object to be as background map for the above plotting
+      functions.
+
+    - A new data fetcher function :func:`nilearn.datasets.fetch_surf_destrieux`
+      can give you Destrieux et. al 2010 cortical atlas in fsaverage5
+      surface space.
+
+    - A new functional data fetcher function
+      :func:`nilearn.datasets.fetch_surf_nki_enhanced` gives you resting state
+      data preprocessed and projected to fsaverage5 surface space.
+
+    - Two good examples in plotting gallery shows how to fetch atlas and NKI
+      data and used for plotting on brain surface.
+
+    - Helper function :func:`nilearn.plotting.surf_plotting.load_surf_mesh`
+      for loading surface mesh data into two arrays, containing (x, y, z)
+      coordinates for mesh vertices and indices of mesh faces.
+
+    - Helper function :func:`nilearn.plotting.surf_plotting.load_surf_data`
+      for loading data of numpy array to represented on a surface mesh.
+
 
 Changelog
 ---------
