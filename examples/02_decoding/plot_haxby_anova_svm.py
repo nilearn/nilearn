@@ -60,7 +60,8 @@ svc = SVC(kernel='linear')
 
 # Define the dimension reduction to be used.
 # Here we use a classical univariate feature selection based on F-test,
-# namely Anova. We set the number of features to be selected to 500
+# namely Anova. When doing full-brain analysis, it is better to use SelectPercentile, 
+# keeping 5% of voxels (because it is independent of the resolution of the data).
 from sklearn.feature_selection import SelectPercentile, f_classif
 feature_selection = SelectPercentile(f_classif, percentile=5)
 
