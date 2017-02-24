@@ -209,8 +209,7 @@ def test_remove_small_regions():
     # data can be act as mask_data to identify regions in label_map because
     # features in label_map are built upon non-zeros in data
     index = np.arange(n_labels + 1)
-    removed_data = _remove_small_regions(label_map, data, index,
-                                         affine, min_size)
+    removed_data = _remove_small_regions(label_map, index, affine, min_size)
     sum_removed_data = np.sum(removed_data)
 
     assert_true(sum_removed_data < sum_label_data)
