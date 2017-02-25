@@ -117,7 +117,7 @@ _EXAMPLE_COL_META = {
     "smoothing_fwhm": None}
 
 
-class _TemporaryDirectory(object):
+class _TestTemporaryDirectory(object):
 
     def __enter__(self):
         self.temp_dir_ = tempfile.mkdtemp()
@@ -195,7 +195,7 @@ def test_get_batch():
     assert('results' in batch)
     assert('count' in batch)
     assert_raises(neurovault.URLError, neurovault._get_batch, 'http://')
-    with _TemporaryDirectory() as temp_dir:
+    with _TestTemporaryDirectory() as temp_dir:
         with open(os.path.join(temp_dir, 'test_nv.txt'), 'w'):
             pass
         assert_raises(ValueError, neurovault._get_batch, 'file://{0}'.format(
@@ -432,13 +432,9 @@ def test_result_filter_combinations():
     assert_false(filt({'a': 0, 'b': 0}))
 
 
-# @with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
-# for some reason, when using this tst.tmpdir is None.
-# TODO: find out why and use tst.setup_tmpdata.
-# In the meanwhile, use _TemporaryDirectory
 @ignore_connection_errors
 def test_simple_download():
-    with _TemporaryDirectory() as temp_dir:
+    with _TestTemporaryDirectory() as temp_dir:
         downloaded_file = neurovault._simple_download(
             'http://neurovault.org/media/images/35/Fig3B_zstat1.nii.gz',
             os.path.join(temp_dir, 'image_35.nii.gz'), temp_dir)
@@ -447,21 +443,9 @@ def test_simple_download():
                       'http://', 'bad.nii.gz', temp_dir)
 
 
-def test_get_temp_dir():
-    with _TemporaryDirectory() as temp_dir:
-        returned_temp_dir = neurovault._get_temp_dir(temp_dir)
-        assert_true(samefile(
-            returned_temp_dir, temp_dir))
-    temp_dir = neurovault._get_temp_dir()
-    try:
-        assert_true(os.path.isdir(temp_dir))
-    finally:
-        shutil.rmtree(temp_dir)
-
-
 @ignore_connection_errors
 def test_fetch_neurosynth_words():
-    with _TemporaryDirectory() as temp_dir:
+    with _TestTemporaryDirectory() as temp_dir:
         words_file_name = os.path.join(
             temp_dir, 'neurosynth_words_for_image_110.json')
         neurovault._fetch_neurosynth_words(
@@ -473,7 +457,7 @@ def test_fetch_neurosynth_words():
 
 def test_neurosynth_words_vectorized():
     n_im = 5
-    with _TemporaryDirectory() as temp_dir:
+    with _TestTemporaryDirectory() as temp_dir:
         words_files = [
             os.path.join(temp_dir, 'words_for_image_{0}.json'.format(i)) for
             i in range(n_im)]
@@ -492,23 +476,10 @@ def test_neurosynth_words_vectorized():
         assert((freq.sum(axis=0) == np.ones(n_im)).all())
 
 
-def test_base_download_manager():
-    download_manager = neurovault.BaseDownloadManager(neurovault_data_dir='',
-                                                      max_images=5)
-
-    def g():
-        download_manager.image(None)
-        for i in range(10):
-            download_manager.image({})
-            yield i
-
-    assert_equal(len(list(g())), 5)
-
-
 def test_write_read_metadata():
     metadata = {'relative_path': 'collection_1',
                 'absolute_path': os.path.join('tmp', 'collection_1')}
-    with _TemporaryDirectory() as temp_dir:
+    with _TestTemporaryDirectory() as temp_dir:
         neurovault._write_metadata(
             metadata, os.path.join(temp_dir, 'metadata.json'))
         with open(os.path.join(temp_dir, 'metadata.json'), 'rb') as meta_file:
@@ -534,18 +505,8 @@ def test_add_absolute_paths():
                  os.path.join('dir_1', 'neurovault', 'collection_1'))
 
 
-def test_download_manager():
-    with _TemporaryDirectory() as data_dir:
-        download_manager = neurovault.DownloadManager(
-            neurovault_data_dir=data_dir)
-        with download_manager:
-            temp_dir = download_manager.temp_dir_
-            assert_true(os.path.isdir(temp_dir))
-        assert_false(os.path.isdir(temp_dir))
-
-
 def test_json_add_collection_dir():
-    with _TemporaryDirectory() as data_temp_dir:
+    with _TestTemporaryDirectory() as data_temp_dir:
         coll_dir = os.path.join(data_temp_dir, 'collection_1')
         os.makedirs(coll_dir)
         coll_file_name = os.path.join(coll_dir, 'collection_1.json')
@@ -557,7 +518,7 @@ def test_json_add_collection_dir():
 
 
 def test_json_add_im_files_paths():
-    with _TemporaryDirectory() as data_temp_dir:
+    with _TestTemporaryDirectory() as data_temp_dir:
         coll_dir = os.path.join(data_temp_dir, 'collection_1')
         os.makedirs(coll_dir)
         im_file_name = os.path.join(coll_dir, 'image_1.json')
@@ -567,13 +528,6 @@ def test_json_add_im_files_paths():
         assert_equal(loaded['relative_path'],
                      os.path.join('collection_1', 'image_1.nii.gz'))
         assert_true(loaded.get('neurosynth_words_relative_path') is None)
-
-
-@ignore_connection_errors
-def test_server_data_scroller():
-    scroller = neurovault._ServerDataScroller(wanted_collection_ids=(35,))
-    for im, col in scroller.scroll():
-        assert_equal(col['id'], 35)
 
 
 def test_split_terms():
@@ -594,60 +548,6 @@ def test_move_unknown_terms_to_local_filter():
     assert_true(new_filter({'b': 1}))
 
 
-class TestDownloadManager(neurovault.BaseDownloadManager):
-    def __init__(self, *args, **kwargs):
-        super(TestDownloadManager, self).__init__(*args, **kwargs)
-        self._n_times_called = 0
-
-    def _collection_hook(self, collection_info):
-        if self._n_times_called:
-            raise RuntimeError('some problem')
-        return collection_info
-
-    def _image_hook(self, image_info):
-        self._n_times_called = 1
-        super(TestDownloadManager, self)._image_hook(image_info)
-        raise neurovault.URLError('bad download')
-
-
-def test_fetch_neurovault():
-    with _TemporaryDirectory() as temp_dir:
-        data = neurovault.fetch_neurovault(
-            max_images=1, fetch_neurosynth_words=True,
-            fetch_reduced_rep=True, mode='overwrite',
-            data_dir=temp_dir)
-        if data is not None:
-            assert_equal(len(data.images), 1)
-            meta = data.images_meta[0]
-            assert_false(meta['not_mni'])
-        assert_warns(
-            UserWarning, neurovault.fetch_neurovault,
-            data_dir=temp_dir,
-            download_manager=TestDownloadManager(
-                max_images=2,
-                neurovault_data_dir=os.path.join(temp_dir, 'neurovault')))
-
-        os.chmod(os.path.join(temp_dir, 'neurovault'), stat.S_IREAD)
-        if os.access(temp_dir, os.W_OK):
-            return
-        assert_warns(UserWarning, neurovault.fetch_neurovault,
-                    data_dir=temp_dir)
-
-
-def test_fetch_neurovault_ids():
-    # test using explicit id list instead of filters,
-    # and downloading an image which has no collection dir
-    # or metadata yet.
-    with _TemporaryDirectory() as data_dir:
-        assert_raises(ValueError, neurovault.fetch_neurovault_ids, mode='bad')
-        data = neurovault.fetch_neurovault_ids(image_ids=[111],
-                                              data_dir=data_dir)
-        if data is not None:
-            assert_equal(data['images_meta'][0]['id'], 111)
-            assert_equal(os.path.dirname(data['images'][0]),
-                         data['collections_meta'][0]['absolute_path'])
-
-
 def test_move_col_id():
     im_terms, col_terms = neurovault._move_col_id(
         {'collection_id': 1, 'not_mni': False}, {})
@@ -656,3 +556,54 @@ def test_move_col_id():
 
     assert_warns(UserWarning, neurovault._move_col_id,
                  {'collection_id': 1, 'not_mni': False}, {'id': 2})
+
+
+def test_fetch_neurovault():
+    with _TestTemporaryDirectory() as temp_dir:
+        # check that nothing is downloaded in offline mode
+        data = neurovault.fetch_neurovault(
+            mode='offline', data_dir=temp_dir)
+        assert_equal(len(data.images), 0)
+        # try to download an image
+        data = neurovault.fetch_neurovault(
+            max_images=1, fetch_neurosynth_words=True,
+            fetch_reduced_rep=True, mode='overwrite',
+            data_dir=temp_dir)
+        # if neurovault was available one image matching
+        # default filters should have been downloaded
+        if data.images:
+            assert_equal(len(data.images), 1)
+            meta = data.images_meta[0]
+            assert_false(meta['not_mni'])
+
+        # using a data directory we can't write into should raise a
+        # warning unless mode is 'offline'
+        os.chmod(os.path.join(temp_dir, 'neurovault'), stat.S_IREAD)
+        if os.access(temp_dir, os.W_OK):
+            return
+        assert_warns(UserWarning, neurovault.fetch_neurovault,
+                     data_dir=temp_dir)
+
+
+def test_fetch_neurovault_ids():
+    # test using explicit id list instead of filters,
+    # and downloading an image which has no collection dir
+    # or metadata yet.
+    with _TestTemporaryDirectory() as data_dir:
+        assert_raises(ValueError, neurovault.fetch_neurovault_ids, mode='bad')
+        data = neurovault.fetch_neurovault_ids(image_ids=[111],
+                                               data_dir=data_dir)
+        if data.images:
+            assert_equal(data['images_meta'][0]['id'], 111)
+            assert_equal(os.path.dirname(data['images'][0]),
+                         data['collections_meta'][0]['absolute_path'])
+            # check image can be loaded again from disk
+            data = neurovault.fetch_neurovault_ids(
+                image_ids=[111], data_dir=data_dir, mode='offline')
+            assert_equal(len(data.images), 1)
+        # try downloading collections that don't exist
+        # (get some HTTPErrors - 404);
+        # download stops early and raises warning
+        assert_warns(
+            UserWarning, neurovault.fetch_neurovault_ids,
+            data_dir=data_dir, collection_ids=range(-12, 0))

@@ -14,6 +14,7 @@ documentation for more details.
 import scipy
 
 from nilearn.datasets.neurovault import fetch_neurovault_ids
+from nilearn import plotting
 from nilearn.image import new_img_like, load_img, math_img
 
 
@@ -47,8 +48,6 @@ collections = nv_data['collections_meta']
 
 print('\nplotting glass brain for collected images\n')
 
-from nilearn import plotting
-
 for im in images_meta:
     plotting.plot_glass_brain(
         im['absolute_path'],
@@ -75,7 +74,7 @@ print("\nComputing maps...")
 # convert t to z for all images
 for this_meta in images_meta:
     if this_meta['collection_id'] != current_collection:
-        print("\n\nCollection {0}:".format(collection['id']))
+        print("\n\nCollection {0}:".format(this_meta['id']))
         current_collection = this_meta['collection_id']
 
     # Load and validate the downloaded image.
@@ -95,8 +94,9 @@ for this_meta in images_meta:
 # Plot the combined z maps
 
 cut_coords = [-15, -8, 6, 30, 46, 62]
-meta_analysis_img = math_img('np.sum(z_imgs, axis=3) / np.sqrt(z_imgs.shape[3])',
-                             z_imgs=z_imgs)
+meta_analysis_img = math_img(
+    'np.sum(z_imgs, axis=3) / np.sqrt(z_imgs.shape[3])',
+    z_imgs=z_imgs)
 
 plotting.plot_stat_map(meta_analysis_img, display_mode='z', threshold=6,
                        cut_coords=cut_coords, vmax=12)

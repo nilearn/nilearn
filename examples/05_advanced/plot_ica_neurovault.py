@@ -21,15 +21,13 @@ from scipy import stats
 from sklearn.decomposition import FastICA
 
 from nilearn.datasets import fetch_neurovault
-from nilearn.image import new_img_like, load_img
+from nilearn.image import smooth_img
 
+from nilearn.datasets import load_mni152_brain_mask
+from nilearn.input_data import NiftiMasker
 
-def math_img(img, dtype=np.float32):
-    """ Remove nan/inf entries."""
-    img = load_img(img)
-    img_data = img.get_data().astype(dtype)
-    img_data[~np.isfinite(img_data)] = 0
-    return new_img_like(img, img_data)
+from nilearn import plotting
+import matplotlib.pyplot as plt
 
 
 ######################################################################
@@ -60,9 +58,6 @@ for term_idx in np.argsort(total_scores)[-10:][::-1]:
 ######################################################################
 # Reshape and mask images
 
-from nilearn.datasets import load_mni152_brain_mask
-from nilearn.input_data import NiftiMasker
-
 print("\nReshaping and masking images.\n")
 
 with warnings.catch_warnings():
@@ -80,7 +75,8 @@ with warnings.catch_warnings():
     is_usable = np.ones((len(images),), dtype=bool)
 
     for index, image_path in enumerate(images):
-        image = math_img(image_path)
+        # load image and remove nan and inf values.
+        image = smooth_img(image_path, fwhm=1.)
         try:
             X.append(masker.transform(image))
         except Exception as e:
@@ -113,9 +109,6 @@ print('Done, plotting results.')
 
 ######################################################################
 # Generate figures
-
-from nilearn import plotting
-import matplotlib.pyplot as plt
 
 with warnings.catch_warnings():
     warnings.simplefilter('ignore', DeprecationWarning)
