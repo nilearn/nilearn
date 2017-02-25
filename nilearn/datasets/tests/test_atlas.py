@@ -10,7 +10,9 @@ import numpy as np
 
 import nibabel
 
-from nose import with_setup
+from distutils.version import LooseVersion
+
+from nose import with_setup, SkipTest
 from nose.tools import (assert_true, assert_equal, assert_raises,
                         assert_not_equal)
 
@@ -416,4 +418,30 @@ def test_fetch_atlas_allen_2011():
     for key, fn in zip(keys, filenames):
         assert_equal(bunch[key], os.path.join(tst.tmpdir, 'allen_rsn_2011', fn))
 
+    assert_not_equal(bunch.description, '')
+
+
+@with_setup(setup_mock, teardown_mock)
+@with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
+def test_fetch_atlas_surf_destrieux(data_dir=tst.tmpdir, verbose=0):
+
+    # Old nibabel versions does not support 'write_annot'
+    if LooseVersion(nibabel.__version__) <= LooseVersion('1.2.0'):
+        raise SkipTest
+
+    data_dir = os.path.join(tst.tmpdir, 'destrieux_surface')
+    os.mkdir(data_dir)
+    # Create mock annots
+    for hemi in ('left', 'right'):
+        nibabel.freesurfer.write_annot(
+                os.path.join(data_dir,
+                             '%s.aparc.a2009s.annot' % hemi),
+                np.arange(4), np.zeros((4, 5)), 5 * ['a'],
+                )
+
+    bunch = atlas.fetch_atlas_surf_destrieux(data_dir=tst.tmpdir, verbose=0)
+    # Our mock annots have 4 labels
+    assert_equal(len(bunch.labels), 4)
+    assert_equal(bunch.map_left.shape, (4, ))
+    assert_equal(bunch.map_right.shape, (4, ))
     assert_not_equal(bunch.description, '')

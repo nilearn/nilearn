@@ -247,6 +247,17 @@ ROI mask:
    the 'to_filename' method of the image object.
    (or **nibabel.save**).
 
+
+.. seealso::
+
+   For extracting connected components:
+
+   * A function :func:`nilearn.regions.connected_regions` can be used readily
+     on probabilistic atlas Nifti-like images whereas
+
+   * A function :func:`nilearn.regions.connected_label_regions` can be used on
+     atlases denoted as labels. For instance, atlases labelled using KMeans.
+
 .. _nibabel: http://nipy.sourceforge.net/nibabel/
 
 .. topic:: **Code**

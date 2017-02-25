@@ -149,7 +149,7 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None,
 
     if img is not False and img is not None:
         img = _utils.check_niimg_3d(img, dtype='auto')
-        data = _safe_get_data(img)
+        data = _safe_get_data(img, ensure_finite=True)
         affine = _get_affine(img)
 
         if np.isnan(np.sum(data)):
@@ -967,7 +967,7 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
     stat_map_img = _utils.check_niimg_3d(stat_map_img, dtype='auto')
 
     cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
-        _safe_get_data(stat_map_img),
+        _safe_get_data(stat_map_img, ensure_finite=True),
         vmax,
         symmetric_cbar,
         kwargs)

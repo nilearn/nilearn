@@ -21,7 +21,7 @@ nilearn version, required package versions, and utilities for checking
 # Dev branch marker is: 'X.Y.dev' or 'X.Y.devN' where N is an integer.
 # 'X.Y.dev0' is the canonical version of 'X.Y.dev'
 #
-__version__ = '0.2.6'
+__version__ = '0.3.0b1'
 
 _NILEARN_INSTALL_MSG = 'See %s for installation information.' % (
     'http://nilearn.github.io/introduction.html#installation')
@@ -42,7 +42,7 @@ REQUIRED_MODULE_METADATA = (
         'required_at_installation': True,
         'install_info': _NILEARN_INSTALL_MSG}),
     ('nibabel', {
-        'min_version': '1.1.0',
+        'min_version': '1.2.0',
         'required_at_installation': False}))
 
 OPTIONAL_MATPLOTLIB_MIN_VERSION = '1.1.1'
