@@ -65,7 +65,8 @@ Enhancements
       for surface data object to be as background map for the above plotting
       functions.
 
-    - A new data fetcher function :func:`nilearn.datasets.fetch_surf_destrieux`
+    - A new data fetcher function
+      :func:`nilearn.datasets.fetch_atlas_surf_destrieux`
       can give you Destrieux et. al 2010 cortical atlas in fsaverage5
       surface space.
 
