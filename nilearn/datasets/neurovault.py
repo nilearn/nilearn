@@ -2284,7 +2284,7 @@ def fetch_neurovault(
         mode='download_new', data_dir=None,
         fetch_neurosynth_words=False, fetch_reduced_rep=False,
         vectorize_words=True, verbose=3, **kwarg_image_filters):
-    """Download data from neurovault.org and neurosynth.org using filters.
+    """Download data from neurovault.org that match certain criteria.
 
     Any downloaded data is saved on the local disk and subsequent
     calls to this function will first look for the data locally before
@@ -2298,35 +2298,30 @@ def fetch_neurovault(
     Parameters
     ----------
     max_images : int, optional (default=100)
-        Maximum number of images to fetch. Ignored if `collection_ids`
-        or `image_ids` is used.
+        Maximum number of images to fetch.
 
     collection_terms : dict, optional (default=basic_collection_terms())
         Key, value pairs used to filter collection
         metadata. Collections for which
         ``collection_metadata['key'] == value`` is not ``True`` for
         every key, value pair will be discarded.
-        Ignored if `collection_ids` or `image_ids` is used.
         See documentation for ``basic_collection_terms`` for a
         description of the default selection criteria.
 
     collection_filter : Callable, optional (default=_empty_filter)
         Collections for which `collection_filter(collection_metadata)`
-        is ``False`` will be discarded. Ignored if `collection_ids` or
-        `image_ids` is used.
+        is ``False`` will be discarded.
 
     image_terms : dict, optional (default=basic_image_terms())
         Key, value pairs used to filter image metadata. Images for
         which ``image_metadata['key'] == value`` is not ``True`` for
-        every key, value pair will be discarded. Ignored if
-        `collection_ids` or `image_ids` is used.
+        every key, value pair will be discarded.
         See documentation for ``basic_image_terms`` for a
         description of the default selection criteria.
 
     image_filter : Callable, optional (default=_empty_filter)
         Images for which `image_filter(image_metadata)` is ``False``
-        will be discarded. Ignored if `collection_ids` or `image_ids`
-        is used.
+        will be discarded.
 
     mode : {'download_new', 'overwrite', 'offline'}
         When to fetch an image from the server rather than the local
@@ -2383,6 +2378,12 @@ def fetch_neurovault(
               `vocabulary[j]` for the image found in `images[i]` is
               `word_frequencies[i, j]`
 
+    See Also
+    --------
+    nilearn.datasets.fetch_neurovault_ids
+        Fetch collections and images from Neurovault by explicitely specifying
+        their ids.
+
     Notes
     -----
     Images and collections from disk are fetched before remote data.
@@ -2416,8 +2417,8 @@ def fetch_neurovault(
     the server - see Examples section).
 
     Tries to yield `max_images` images; stops early if we have fetched
-    all the images matching the filters or if an uncaught exception is
-    raised during download
+    all the images matching the filters or if too many images fail to
+    be downloaded in a row.
 
     References
     ----------
@@ -2451,7 +2452,8 @@ def fetch_neurovault(
     To update all the images (matching the default filters)::
 
         fetch_neurovault(
-            max_images=None, mode='overwrite', modify_date=GreaterThan(newest))
+            max_images=None, mode='overwrite',
+            modify_date=GreaterThan(newest))
 
     """
     if max_images == _DEFAULT_MAX_IMAGES:
@@ -2476,7 +2478,7 @@ def fetch_neurovault_ids(
     collection_ids=(), image_ids=(), mode='download_new', data_dir=None,
     fetch_neurosynth_words=False, fetch_reduced_rep=False,
     vectorize_words=True, verbose=3):
-    """Download images and collections from neurovault.org and neurosynth.org.
+    """Download specific images and collections from neurovault.org.
 
     Any downloaded data is saved on the local disk and subsequent
     calls to this function will first look for the data locally before
@@ -2488,15 +2490,12 @@ def fetch_neurovault_ids(
     Parameters
     ----------
 
-    collection_ids : Container, optional (default=None)
-        If not ``None``, ignore filters and terms and just download
-        all collections from this list (and if specified all the
-        images from `image_ids`)
+    collection_ids : Container, optional (default=())
+        The ids of whole collections to be downloaded.
 
     image_ids : Container, optional (default=None)
-        If not ``None``, ignore filters and terms and just download
-        all images from this list (and if specified all the
-        collections from `collection_ids`)
+        The ids of particular images to be downloaded. The metadata for the
+        corresponding collections is also downloaded.
 
     mode : {'download_new', 'overwrite', 'offline'}
         When to fetch an image from the server rather than the local
@@ -2547,15 +2546,21 @@ def fetch_neurovault_ids(
               `vocabulary[j]` for the image found in `images[i]` is
               `word_frequencies[i, j]`
 
+    See Also
+    --------
+    nilearn.datasets.fetch_neurovault
+        Fetch data from Neurovault, but use filters on metadata to select
+        images and collections rather than giving explicit lists of ids.
+
     Notes
     -----
     Images and collections from disk are fetched before remote data.
 
     In `download_new` mode, if a file exists on disk, it is not
     downloaded again, even if the version on the server is newer. Use
-    `overwrite` mode to force a new download (you can filter on the
-    field ``modify_date`` to re-download the files that are newer on
-    the server - see Examples section).
+    `overwrite` mode to force a new download.
+
+    Stops early if too many images fail to be downloaded in a row.
 
     References
     ----------
