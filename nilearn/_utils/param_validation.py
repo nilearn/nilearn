@@ -129,10 +129,10 @@ def _adjust_screening_percentile(screening_percentile, mask_img,
             "human brain. This object is probably not tuned to"
             "be used on such data.", stacklevel=2)
 
-    if screening_percentile < 100:
+    if screening_percentile < 100.:
         screening_percentile = screening_percentile * (
             MNI152_BRAIN_VOLUME / mask_volume)
-        screening_percentile = min(screening_percentile, 100)
+        screening_percentile = min(screening_percentile, 100.)
     # if screening_percentile is 100, we don't do anything
 
     if verbose > 1:
