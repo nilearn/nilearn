@@ -4,6 +4,7 @@ Downloading NeuroImaging datasets: atlas datasets
 import os
 import xml.etree.ElementTree
 import numpy as np
+import nibabel as nb
 
 from sklearn.datasets.base import Bunch
 
@@ -814,7 +815,6 @@ def fetch_atlas_allen_2011(data_dir=None, url=None, resume=True, verbose=1):
 
     References
     ----------
-
     E. Allen, et al, "A baseline for the multivariate comparison of resting
     state networks," Frontiers in Systems Neuroscience, vol. 5, p. 12, 2011.
 
@@ -863,3 +863,84 @@ def fetch_atlas_allen_2011(data_dir=None, url=None, resume=True, verbose=1):
     params.extend(list(zip(keys, sub_files)))
 
     return Bunch(**dict(params))
+
+
+def fetch_atlas_surf_destrieux(data_dir=None, url=None,
+                               resume=True, verbose=1):
+    """Download and load Destrieux et al, 2010 cortical atlas.
+
+    This atlas returns 76 labels per hemisphere based on sulco-gryal pattnerns
+    as distributed with Freesurfer in fsaverage5 surface space.
+
+    .. versionadded:: 0.3
+
+    Parameters
+    ----------
+    data_dir: str, optional
+        Path of the data directory. Use to force data storage in a non-
+        standard location. Default: None
+
+    url: str, optional
+        Download URL of the dataset. Overwrite the default URL.
+
+    resume: bool, optional (default True)
+        If True, try resuming download if possible.
+
+    verbose: int, optional (default 1)
+        Defines the level of verbosity of the output.
+
+    Returns
+    -------
+    data: sklearn.datasets.base.Bunch
+        dictionary-like object, contains:
+
+        - "labels": list
+                     Contains region labels
+
+        - "map_left": numpy.ndarray
+                      Index into 'labels' for each vertex on the
+                      left hemisphere of the fsaverage5 surface
+
+        - "map_right": numpy.ndarray
+                       Index into 'labels' for each vertex on the
+                       right hemisphere of the fsaverage5 surface
+
+        - "description": str
+                         Details about the dataset
+
+
+    References
+    ----------
+    Destrieux et al. (2010), Automatic parcellation of human cortical gyri and
+    sulci using standard anatomical nomenclature. NeuroImage 53, 1-15.
+    """
+
+    if url is None:
+        url = "https://www.nitrc.org/frs/download.php/"
+
+    dataset_name = 'destrieux_surface'
+    fdescr = _get_dataset_descr(dataset_name)
+    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
+                                verbose=verbose)
+
+    # Download annot files, fsaverage surfaces and sulcal information
+    annot_file = '%s.aparc.a2009s.annot'
+    annot_url = url + '%i/%s.aparc.a2009s.annot'
+    annot_nids = {'lh annot': 9343, 'rh annot': 9342}
+
+    annots = []
+    for hemi in [('lh', 'left'), ('rh', 'right')]:
+
+        annot = _fetch_files(data_dir,
+                             [(annot_file % (hemi[1]),
+                               annot_url % (annot_nids['%s annot' % hemi[0]],
+                                            hemi[0]),
+                              {'move': annot_file % (hemi[1])})],
+                             resume=resume, verbose=verbose)[0]
+        annots.append(annot)
+
+    annot_left = nb.freesurfer.read_annot(annots[0])
+    annot_right = nb.freesurfer.read_annot(annots[1])
+
+    return Bunch(labels=annot_left[2],  map_left=annot_left[0],
+                 map_right=annot_right[0], description=fdescr)

@@ -587,3 +587,31 @@ def test_fetch_cobre():
                                          data_dir=tst.tmpdir)
     assert_equal(len(test_150_subjects.func), 146)
     os.remove(dummy)
+
+
+@with_setup(setup_mock, teardown_mock)
+@with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
+def test_fetch_surf_nki_enhanced(data_dir=tst.tmpdir, verbose=0):
+
+    ids = np.asarray(['A00028185', 'A00035827', 'A00037511', 'A00039431',
+                      'A00033747', 'A00035840', 'A00038998', 'A00035072',
+                      'A00037112', 'A00039391'], dtype='U9')
+    age = np.ones(len(ids), dtype='<f8')
+    hand = np.asarray(len(ids) * ['x'], dtype='U1')
+    sex = np.asarray(len(ids) * ['x'], dtype='U1')
+    csv = np.rec.array([ids, age, hand, sex],
+                       dtype=[('id', '|U19'), ('age', '<f8'),
+                              ('hand', 'U1'), ('sex', 'U1')])
+
+    tst.mock_fetch_files.add_csv('NKI_enhanced_surface_phenotypics.csv', csv)
+
+    local_url = 'file://' + os.path.join(tst.datadir)
+
+    nki_data = func.fetch_surf_nki_enhanced(data_dir=tst.tmpdir, url=local_url)
+
+    assert_not_equal(nki_data.description, '')
+    assert_equal(len(nki_data.func_left), 10)
+    assert_equal(len(nki_data.func_right), 10)
+    assert_true(isinstance(nki_data.phenotypic, np.ndarray))
+    assert_equal(nki_data.phenotypic.shape, (10,))
+    assert_not_equal(nki_data.description, '')
