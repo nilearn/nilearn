@@ -65,8 +65,8 @@ def check_threshold(threshold, data, percentile_func, name='threshold'):
         value_check = abs(data).max()
         if abs(threshold) > value_check:
             warnings.warn("The given float value must not exceed {0}. "
-                          "But, you have given threshold={1} ".format(
-                              value_check, threshold))
+                          "But, you have given threshold={1} ".format(value_check,
+                                                                      threshold))
     else:
         raise TypeError('%s should be either a number '
                         'or a string finishing with a percent sign' % (name, ))
@@ -86,7 +86,7 @@ def _get_mask_volume(mask_img):
     vol : float
         The computed volume.
     """
-    prod_vox_dims = 1. * np.abs(np.linalg.det(mask_img.affine[:3, :3]))
+    prod_vox_dims = 1. * np.abs(np.linalg.det(mask_img.get_affine()[:3, :3]))
     return prod_vox_dims * mask_img.get_data().astype(np.bool).sum()
 
 
