@@ -8,7 +8,7 @@ import numbers
 from sklearn.feature_selection import (SelectPercentile, f_regression,
                                        f_classif)
 
-from .compat import _basestring, get_header
+from .compat import _basestring
 
 
 # Volume of a standard (MNI152) brain mask in mm^3
@@ -65,8 +65,8 @@ def check_threshold(threshold, data, percentile_func, name='threshold'):
         value_check = abs(data).max()
         if abs(threshold) > value_check:
             warnings.warn("The given float value must not exceed {0}. "
-                          "But, you have given threshold={1} ".format(value_check,
-                                                                      threshold))
+                          "But, you have given threshold={1} ".format(
+                              value_check, threshold))
     else:
         raise TypeError('%s should be either a number '
                         'or a string finishing with a percent sign' % (name, ))
@@ -86,23 +86,22 @@ def _get_mask_volume(mask_img):
     vol : float
         The computed volume.
     """
-    vox_dims = get_header(mask_img).get_zooms()[:3]
-    return 1. * np.prod(vox_dims) * mask_img.get_data().astype(np.bool).sum()
+    prod_vox_dims = 1. * np.abs(np.linalg.det(mask_img.affine[:3, :3]))
+    return prod_vox_dims * mask_img.get_data().astype(np.bool).sum()
 
 
 def _adjust_screening_percentile(screening_percentile, mask_img,
                                  verbose=0):
-    """Adjusts the screening percentile according to the MNI mask template.
+    """Adjusts the screening percentile according to the MNI152 template.
 
     Parameters
     ----------
     screening_percentile : float in the interval [0, 100]
         Percentile value for ANOVA univariate feature selection. A value of
-        100 means 'keep all features'. This percentile is is expressed
+        100 means 'keep all features'. This percentile is expressed
         w.r.t the volume of a standard (MNI152) brain, and so is corrected
         at runtime by premultiplying it with the ratio of the volume of the
-        mask of the data and volume of a standard brain.  If '100' is given,
-        all the features are used, regardless of the number of voxels.
+        mask of the data and volume of a standard brain.
 
     mask_img : nibabel image object
         Input image whose voxel dimensions are to be computed.
@@ -113,7 +112,7 @@ def _adjust_screening_percentile(screening_percentile, mask_img,
     Returns
     -------
     screening_percentile: float in the interval [0, 100]
-        Percentile value for ANOVa univariate feature selection.
+        Percentile value for ANOVA univariate feature selection.
     """
     original_screening_percentile = screening_percentile
     # correct screening_percentile according to the volume of the data mask
