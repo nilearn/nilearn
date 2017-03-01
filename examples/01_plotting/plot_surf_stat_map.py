@@ -21,9 +21,10 @@ coefficient.
 The :func:`nilearn.plotting.plot_surf_stat_map` function is used
 to plot the resulting statistical map on the (inflated) pial surface.
 
-See :ref:`plotting` for more details.
-See also :doc:`plot_seed_to_voxel_correlation` for a similar example using
-volumetric input data.
+See also :ref:`for a similar example but using volumetric input data
+<sphx_glr_auto_examples_03_connectivity_plot_seed_to_voxel_correlation.py>`.
+
+See :ref:`plotting` for more details on plotting tools.
 
 NOTE: This example needs matplotlib version higher than 1.3.1.
 

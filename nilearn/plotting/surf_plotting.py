@@ -221,14 +221,14 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
 
     See Also
     --------
-    nilearn.datasets.fetch_surf_fsaverage5 for surface data object to be
+    nilearn.datasets.fetch_surf_fsaverage5 : For surface data object to be
         used as background map for this plotting function.
-        Example: 'sulc_left' or 'sulc_right' from fetcher return.
 
-    nilearn.plotting.plot_surf_roi for plotting statistical maps on surfaces.
+    nilearn.plotting.plot_surf_roi : For plotting statistical maps on brain
+        surfaces.
 
     nilearn.plotting.plot_surf_stat_map for plotting statistical maps on
-        surfaces.
+        brain surfaces.
     """
 
     # load mesh and derive axes limits
@@ -447,15 +447,10 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
 
     See Also
     --------
-    nilearn.plotting.surf_plotting.load_surf_mesh for surface mesh data
-        with list of two numpy arrays.
-
-    nilearn.datasets.fetch_surf_fsaverage5 for surface data object to be
+    nilearn.datasets.fetch_surf_fsaverage5 : For surface data object to be
         used as background map for this plotting function.
-        Example: 'sulc_left' or 'sulc_right' from fetcher return.
 
-    nilearn.plotting.plot_surf or plot_surf_roi for surface visualization
-        of surface data or statistical maps on surface.
+    nilearn.plotting.plot_surf : For brain surface visualization.
     """
 
     # Call _get_colorbar_and_data_ranges to derive symmetric vmin, vmax
@@ -542,15 +537,10 @@ def plot_surf_roi(surf_mesh, roi_map, bg_map=None,
 
     See Also
     --------
-    nilearn.plotting.surf_plotting.load_surf_mesh for surface mesh data
-        with list of two numpy arrays.
-
-    nilearn.datasets.fetch_surf_fsaverage5 for surface data object to be
+    nilearn.datasets.fetch_surf_fsaverage5: For surface data object to be
         used as background map for this plotting function.
-        Example: 'sulc_left' or 'sulc_right' from fetcher return.
 
-    nilearn.plotting.plot_surf or plot_surf_stat_map for surface visualization
-        of surface data or statistical maps on surface.
+    nilearn.plotting.plot_surf: For brain surface visualization.
     """
 
     v, _ = load_surf_mesh(surf_mesh)
