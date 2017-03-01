@@ -36,10 +36,7 @@ from sklearn.metrics import accuracy_score
 from ..input_data.masker_validation import check_embedded_nifti_masker
 from .._utils.param_validation import _adjust_screening_percentile
 from .._utils.fixes import check_X_y
-<<<<<<< HEAD
 from .._utils.fixes import check_cv
-=======
->>>>>>> using check_embedded_nifti_masker
 from .._utils.compat import _basestring
 from .._utils.cache_mixin import CacheMixin
 from .objective_functions import _unmask
