@@ -718,6 +718,7 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
         # nifti masking
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
         self.masker_ = check_embedded_nifti_masker(self, multi_subject=False)
 =======
         self.masker_ = check_masker(mask=self.mask,
@@ -737,8 +738,10 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
         self.masker_ = check_embedded_nifti_masker(self, multi_subject=False)
         import pdb; pdb.set_trace()  # XXX BREAKPOINT
 >>>>>>> minor
+=======
+        self.masker_ = check_embedded_nifti_masker(self, multi_subject=False)
+>>>>>>> solving merging conflicts
         X = self.masker_.fit_transform(X)
-        import pdb; pdb.set_trace()  # XXX BREAKPOINT
 
         X, y = check_X_y(X, y, ['csr', 'csc', 'coo'], dtype=np.float,
                          multi_output=True, y_numeric=True)
@@ -821,9 +824,13 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
         self.screening_percentile_ = adjust_screening_percentile(
 =======
         self.screening_percentile_ = _adjust_screening_percentile(
+<<<<<<< HEAD
 >>>>>>> cleaning decoder tests
                 self.screening_percentile, self.mask_img_,
                 verbose=self.verbose)
+>>>>>>> solving merging conflicts
+=======
+            self.screening_percentile, self.mask_img_, verbose=self.verbose)
 >>>>>>> solving merging conflicts
 
         # main loop: loop on classes and folds
