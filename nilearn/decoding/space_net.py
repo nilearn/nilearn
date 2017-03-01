@@ -32,6 +32,7 @@ from sklearn.feature_selection import (SelectPercentile, f_regression,
 from sklearn.externals.joblib import Memory, Parallel, delayed
 from sklearn.preprocessing import LabelBinarizer
 from sklearn.metrics import accuracy_score
+from .._utils.param_validation import adjust_screening_percentile
 from .._utils.fixes import check_X_y
 from .._utils.fixes import check_cv
 from .._utils.compat import _basestring, get_header
@@ -40,61 +41,6 @@ from ..input_data import NiftiMasker
 from .objective_functions import _unmask
 from .space_net_solvers import (tvl1_solver, _graph_net_logistic,
                                 _graph_net_squared_loss)
-
-
-# Volume of a standard (MNI152) brain mask in mm^3
-MNI152_BRAIN_VOLUME = 1827243.
-
-
-def _get_mask_volume(mask_img):
-    """Computes the volume of a brain mask in mm^3
-
-    Parameters
-    ----------
-    mask_img : nibabel image object
-        Input image whose voxel dimensions are to be computed.
-
-    Returns
-    -------
-    vol : float
-        The computed volume.
-    """
-    vox_dims = get_header(mask_img).get_zooms()[:3]
-    return 1. * np.prod(vox_dims) * mask_img.get_data().astype(np.bool).sum()
-
-
-def _adjust_screening_percentile(screening_percentile, mask_img,
-                                 verbose=0):
-    original_screening_percentile = screening_percentile
-    # correct screening_percentile according to the volume of the data mask
-    mask_volume = _get_mask_volume(mask_img)
-    if mask_volume > MNI152_BRAIN_VOLUME:
-        warnings.warn(
-            "Brain mask is bigger than the volume of a standard "
-            "human brain. SpaceNet is probably not tuned to "
-            "be used on such data.", stacklevel=2)
-    elif mask_volume < .005 * MNI152_BRAIN_VOLUME:
-        warnings.warn(
-            "Brain mask is smaller than .5% of the volume "
-            "human brain. SpaceNet is probably not tuned to"
-            "be used on such data.", stacklevel=2)
-
-    if screening_percentile < 100:
-        screening_percentile = screening_percentile * (
-            MNI152_BRAIN_VOLUME / mask_volume)
-        screening_percentile = min(screening_percentile, 100)
-    # if screening_percentile is 100, we don't do anything
-
-    if verbose > 1:
-        print("Mask volume = %gmm^3 = %gcm^3" % (
-            mask_volume, mask_volume / 1.e3))
-        print("Standard brain volume = %gmm^3 = %gcm^3" % (
-            MNI152_BRAIN_VOLUME, MNI152_BRAIN_VOLUME / 1.e3))
-        print("Original screening-percentile: %g" % (
-            original_screening_percentile))
-        print("Volume-corrected screening-percentile: %g" % (
-            screening_percentile))
-    return screening_percentile
 
 
 def _crop_mask(mask):
@@ -854,7 +800,7 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
         w = np.zeros((n_problems, X.shape[1] + 1))
         self.all_coef_ = np.ndarray((n_problems, n_folds, X.shape[1]))
 
-        self.screening_percentile_ = _adjust_screening_percentile(
+        self.screening_percentile_ = adjust_screening_percentile(
                 self.screening_percentile, self.mask_img_,
                 verbose=self.verbose)
 
