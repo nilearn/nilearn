@@ -1,6 +1,7 @@
 """
 Utilities to check for valid parameters
 """
+
 import numpy as np
 import warnings
 import numbers
@@ -9,6 +10,16 @@ from sklearn.feature_selection import (SelectPercentile, f_regression,
                                        f_classif)
 
 from .compat import _basestring, get_affine
+
+
+from sklearn.base import clone
+from sklearn.externals.joblib import Memory
+from sklearn.feature_selection import (SelectPercentile, f_regression,
+                                       f_classif)
+
+from .compat import _basestring
+from ..input_data import NiftiMasker, MultiNiftiMasker
+from .._utils.compat import _basestring
 
 
 # Volume of a standard (MNI152) brain mask in mm^3
@@ -192,4 +203,3 @@ def check_feature_screening(screening_percentile, mask_img,
             screening_percentile, mask_img, verbose=verbose)
 
         return SelectPercentile(f_test, int(screening_percentile_))
-
