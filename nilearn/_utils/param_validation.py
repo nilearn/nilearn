@@ -156,7 +156,7 @@ def check_feature_screening(screening_percentile, mask_img,
     ----------
     screening_percentile : float in the interval [0, 100]
         Percentile value for ANOVA univariate feature selection. A value of
-        100 means 'keep all features'. This percentile is is expressed
+        100 means 'keep all features'. This percentile is expressed
         w.r.t the volume of a standard (MNI152) brain, and so is corrected
         at runtime by premultiplying it with the ratio of the volume of the
         mask of the data and volume of a standard brain.
