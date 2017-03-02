@@ -4,10 +4,13 @@ reduction of group data
 """
 from __future__ import division
 from math import ceil
-
 import itertools
+from distutils.version import LooseVersion
+
 import numpy as np
+
 from scipy import linalg
+import sklearn
 from sklearn.base import BaseEstimator
 from sklearn.externals.joblib import Memory, Parallel, delayed
 from sklearn.linear_model import LinearRegression
@@ -43,8 +46,12 @@ def fast_svd(X, n_components, random_state=None):
         S = S[:n_components]
         V = V[:n_components]
     else:
+        if LooseVersion(sklearn.__version__) >= LooseVersion('0.17'):
+            n_iter = 'auto'
+        else:
+            n_iter = 3
         U, S, V = randomized_svd(X, n_components=n_components,
-                                 n_iter='auto',
+                                 n_iter=n_iter,
                                  flip_sign=True,
                                  random_state=random_state)
     return U, S, V
