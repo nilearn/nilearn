@@ -4,6 +4,7 @@ Utilities to compute and operate on brain masks
 # Author: Gael Varoquaux, Alexandre Abraham, Philippe Gervais
 # License: simplified BSD
 import warnings
+import numbers
 
 import numpy as np
 from scipy import ndimage
@@ -698,19 +699,23 @@ def unmask(X, mask_img, order="F"):
         - X.ndim == 1:
           Shape: (mask.shape[0], mask.shape[1], mask.shape[2])
     """
-
-    if isinstance(X, list):
+    # Handle lists. This can be a list of other lists / arrays, or a list or
+    # numbers. In the latter case skip.
+    if isinstance(X, list) and not isinstance(X[0], numbers.Number):
         ret = []
         for x in X:
             ret.append(unmask(x, mask_img, order=order))  # 1-level recursion
         return ret
 
+    # The code after this block assumes that X is an ndarray; ensure this
+    X = np.asanyarray(X)
+
     mask_img = _utils.check_niimg_3d(mask_img)
     mask, affine = _load_mask_img(mask_img)
 
-    if X.ndim == 2:
+    if np.ndim(X) == 2:
         unmasked = _unmask_4d(X, mask, order=order)
-    elif X.ndim == 1:
+    elif np.ndim(X) == 1:
         unmasked = _unmask_3d(X, mask, order=order)
     else:
         raise TypeError("Masked data X must be 2D or 1D array; "

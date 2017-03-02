@@ -401,3 +401,14 @@ def test_nifti_masker_empty_mask_warning():
         ValueError,
         "The mask is invalid as it is empty: it masks all data",
         NiftiMasker(mask_strategy="epi").fit_transform, X)
+
+
+def test_unmask_list(random_state=42):
+    rng = np.random.RandomState(random_state)
+    shape = (3, 4, 5)
+    affine = np.eye(4)
+    mask_data = (rng.rand(*shape) < .5)
+    mask_img = Nifti1Image(mask_data.astype(np.uint8), affine)
+    a = unmask(mask_data[mask_data], mask_img)
+    b = unmask(mask_data[mask_data].tolist(), mask_img)  # shouldn't crash
+    assert_array_equal(a.get_data(), b.get_data())
