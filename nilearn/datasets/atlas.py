@@ -2,18 +2,17 @@
 Downloading NeuroImaging datasets: atlas datasets
 """
 import os
+import warnings
 import xml.etree.ElementTree
-import numpy as np
-import nibabel as nb
 
+import nibabel as nb
+import numpy as np
 from sklearn.datasets.base import Bunch
 
-#from . import utils
 from .utils import _get_dataset_dir, _fetch_files, _get_dataset_descr
-
 from .._utils import check_niimg
-from ..image import new_img_like
 from .._utils.compat import _basestring, get_affine
+from ..image import new_img_like
 
 
 def fetch_atlas_craddock_2012(data_dir=None, url=None, resume=True, verbose=1):
@@ -335,7 +334,10 @@ def fetch_atlas_msdl(data_dir=None, url=None, resume=True, verbose=1):
     files = _fetch_files(data_dir, files, resume=resume, verbose=verbose)
     csv_data = np.recfromcsv(files[0])
     labels = [name.strip() for name in csv_data['name'].tolist()]
-    region_coords = csv_data[['x', 'y', 'z']].tolist()
+    with warnings.catch_warnings():
+        warnings.filterwarnings('ignore', module='numpy',
+                                category=FutureWarning)
+        region_coords = csv_data[['x', 'y', 'z']].copy().tolist()
     net_names = [net_name.strip() for net_name in csv_data['net_name'].tolist()]
     fdescr = _get_dataset_descr(dataset_name)
 
