@@ -1629,16 +1629,17 @@ def _scroll_local(download_params):
         os.path.join(
             download_params['nv_data_dir'], '*', 'collection_metadata.json'))
 
-    for collection in filter(
-            download_params['local_collection_filter'],
-            map(_json_add_collection_dir, collections)):
-
+    good_collections = (col for col in
+                        (_json_add_collection_dir(col) for col in collections)
+                        if download_params['local_collection_filter'](col))
+    for collection in good_collections:
         images = glob(os.path.join(
             collection['absolute_path'], 'image_*_metadata.json'))
 
-        for image in filter(download_params['local_image_filter'],
-                            map(_json_add_im_files_paths, images)):
-
+        good_images = (img for img in
+                       (_json_add_im_files_paths(img) for img in images)
+                       if download_params['local_image_filter'](img))
+        for image in good_images:
             image, collection = _update(image, collection, download_params)
             download_params['visited_images'].add(image['id'])
             download_params['visited_collections'].add(collection['id'])
@@ -2190,7 +2191,9 @@ def _result_list_to_bunch(result_list, download_params):
     if not result_list:
         images_meta, collections_meta = [], []
     else:
-        images_meta, collections_meta = map(list, zip(*result_list))
+        images_meta, collections_meta = zip(*result_list)
+        images_meta = list(images_meta)
+        collections_meta = list(collections_meta)
     images = [im_meta.get('absolute_path') for im_meta in images_meta]
     result = Bunch(images=images, images_meta=images_meta,
                    collections_meta=collections_meta,
