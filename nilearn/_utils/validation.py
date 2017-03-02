@@ -8,7 +8,7 @@ from sklearn.externals.joblib import Memory
 from sklearn.feature_selection import (SelectPercentile, f_regression,
                                        f_classif)
 
-from .param_validation import adjust_screening_percentile
+from .param_validation import _adjust_screening_percentile
 from .compat import _basestring
 from ..input_data import NiftiMasker, MultiNiftiMasker
 
@@ -147,7 +147,7 @@ def check_feature_screening(screening_percentile, mask_img,
              " [0, 100], got %g" % screening_percentile))
     else:
         # correct screening_percentile according to the volume of the data mask
-        screening_percentile_ = adjust_screening_percentile(
+        screening_percentile_ = _adjust_screening_percentile(
             screening_percentile, mask_img, verbose=verbose)
 
         return SelectPercentile(f_test, int(screening_percentile_))

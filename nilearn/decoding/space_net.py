@@ -793,10 +793,14 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
         self.all_coef_ = np.ndarray((n_problems, n_folds, X.shape[1]))
 
 <<<<<<< HEAD
+<<<<<<< HEAD
         self.screening_percentile_ = _adjust_screening_percentile(
             self.screening_percentile, self.mask_img_, verbose=self.verbose)
 =======
         self.screening_percentile_ = adjust_screening_percentile(
+=======
+        self.screening_percentile_ = _adjust_screening_percentile(
+>>>>>>> cleaning decoder tests
                 self.screening_percentile, self.mask_img_,
                 verbose=self.verbose)
 >>>>>>> solving merging conflicts
