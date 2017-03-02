@@ -1,7 +1,6 @@
 """
 Utilities to check for valid parameters
 """
-
 import numpy as np
 import warnings
 import numbers
@@ -10,16 +9,6 @@ from sklearn.feature_selection import (SelectPercentile, f_regression,
                                        f_classif)
 
 from .compat import _basestring, get_affine
-
-
-from sklearn.base import clone
-from sklearn.externals.joblib import Memory
-from sklearn.feature_selection import (SelectPercentile, f_regression,
-                                       f_classif)
-
-from .compat import _basestring
-from ..input_data import NiftiMasker, MultiNiftiMasker
-from .._utils.compat import _basestring
 
 
 # Volume of a standard (MNI152) brain mask in mm^3
@@ -170,8 +159,7 @@ def check_feature_screening(screening_percentile, mask_img,
         100 means 'keep all features'. This percentile is is expressed
         w.r.t the volume of a standard (MNI152) brain, and so is corrected
         at runtime by premultiplying it with the ratio of the volume of the
-        mask of the data and volume of a standard brain.  If '100' is given,
-        all the features are used, regardless of the number of voxels.
+        mask of the data and volume of a standard brain.
 
     mask_img : nibabel image object
         Input image whose voxel dimensions are to be computed.
