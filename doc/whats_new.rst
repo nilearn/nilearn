@@ -65,7 +65,8 @@ Enhancements
       for surface data object to be as background map for the above plotting
       functions.
 
-    - A new data fetcher function :func:`nilearn.datasets.fetch_surf_destrieux`
+    - A new data fetcher function
+      :func:`nilearn.datasets.fetch_atlas_surf_destrieux`
       can give you Destrieux et. al 2010 cortical atlas in fsaverage5
       surface space.
 
@@ -76,13 +77,12 @@ Enhancements
     - Two good examples in plotting gallery shows how to fetch atlas and NKI
       data and used for plotting on brain surface.
 
-    - Helper function :func:`nilearn.plotting.surf_plotting.load_surf_mesh`
-      for loading surface mesh data into two arrays, containing (x, y, z)
-      coordinates for mesh vertices and indices of mesh faces.
+    - Helper function `load_surf_mesh` in surf_plotting module for loading
+      surface mesh data into two arrays, containing (x, y, z) coordinates
+      for mesh vertices and indices of mesh faces.
 
-    - Helper function :func:`nilearn.plotting.surf_plotting.load_surf_data`
-      for loading data of numpy array to represented on a surface mesh.
-
+    - Helper function `load_surf_data` in surf_plotting module for loading
+      data of numpy array to represented on a surface mesh.
 
     - Add fetcher for Allen et al. 2011 RSN atlas in
       :func:`nilearn.datasets.fetch_atlas_allen_2011`.
