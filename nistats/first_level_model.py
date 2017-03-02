@@ -169,7 +169,7 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
 
     drift_model : string, optional
         This parameter specifies the desired drift model for the design
-        matrices. It can be 'polynomial', 'cosine' or 'blank'.
+        matrices. It can be 'polynomial', 'cosine' or None.
 
     period_cut : float, optional
         This parameter specifies the cut period of the low-pass filter in
