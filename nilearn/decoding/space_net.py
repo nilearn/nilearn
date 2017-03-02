@@ -34,6 +34,7 @@ from sklearn.preprocessing import LabelBinarizer
 from sklearn.metrics import accuracy_score
 from ..input_data.masker_validation import check_embedded_nifti_masker
 from .._utils.param_validation import _adjust_screening_percentile
+from .._utils.validation import check_masker
 from .._utils.fixes import check_X_y
 from .._utils.fixes import check_cv
 from .._utils.compat import _basestring
@@ -716,7 +717,18 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
             tic = time.time()
 
         # nifti masking
+<<<<<<< HEAD
         self.masker_ = check_embedded_nifti_masker(self, multi_subject=False)
+=======
+        self.masker_ = check_masker(mask=self.mask,
+                                    target_affine=self.target_affine,
+                                    target_shape=self.target_shape,
+                                    standardize=self.standardize,
+                                    low_pass=self.low_pass,
+                                    high_pass=self.high_pass,
+                                    mask_strategy='epi', t_r=self.t_r,
+                                    memory=self.memory_)
+>>>>>>> addressing checking masker comments
         X = self.masker_.fit_transform(X)
 
         X, y = check_X_y(X, y, ['csr', 'csc', 'coo'], dtype=np.float,
