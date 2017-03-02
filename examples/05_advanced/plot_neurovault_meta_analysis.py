@@ -27,9 +27,9 @@ stop_go_image_ids = (151, 3041, 3042, 2676, 2675, 2818, 2834)
 
 # These ids were determined by querying neurovault like this:
 
-# from nilearn.datasets.neurovault import fetch_neurovault_filtered, Contains
+# from nilearn.datasets.neurovault import fetch_neurovault, Contains
 
-# nv_data = fetch_neurovault_filtered(
+# nv_data = fetch_neurovault(
 #     max_images=7,
 #     cognitive_paradigm_cogatlas=Contains('stop signal'),
 #     contrast_definition=Contains('succ', 'stop', 'go'),

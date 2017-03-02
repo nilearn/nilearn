@@ -15,11 +15,6 @@ from glob import glob
 from tempfile import mkdtemp
 from collections import Container
 try:
-    from collections import OrderedDict
-except ImportError:
-    # using python2.6
-    OrderedDict = dict
-try:
     # python3
     from urllib.parse import urljoin, urlencode
     from urllib.request import build_opener, Request
@@ -1100,35 +1095,6 @@ def _simple_download(url, target_file, temp_dir, verbose=3):
     return target_file
 
 
-def _fetch_neurosynth_words(image_id, target_file, temp_dir,
-                            verbose=3):
-    """Query Neurosynth for words associated with a map.
-
-    Parameters
-    ----------
-    image_id : int
-        The Neurovault id of the statistical map.
-
-    target_file : str
-        Path to the file in which the terms will be stored on disk
-        (a json file).
-
-    temp_dir : str
-        Path to directory used by ``_simple_download``.
-
-    verbose : int, optional (default=3)
-        an integer in [0, 1, 2, 3] to control the verbosity level.
-
-    Returns
-    -------
-    None
-
-    """
-    query = urljoin(_NEUROSYNTH_FETCH_WORDS_URL,
-                    '?neurovault={0}'.format(image_id))
-    return _simple_download(query, target_file, temp_dir, verbose=verbose)
-
-
 def neurosynth_words_vectorized(word_files, verbose=3, **kwargs):
     """Load Neurosynth data from disk into an (n files, voc size) matrix
 
@@ -1528,10 +1494,12 @@ def _download_image_terms(image_info, collection, download_params):
     if os.path.isfile(image_info['ns_words_absolute_path']):
         return image_info, collection
 
+    query = urljoin(_NEUROSYNTH_FETCH_WORDS_URL,
+                    '?neurovault={0}'.format(image_info['id']))
     try:
-        _fetch_neurosynth_words(
-            image_info['id'], image_info['ns_words_absolute_path'],
-            download_params['temp_dir'], verbose=download_params['verbose'])
+        _simple_download(query, image_info['ns_words_absolute_path'],
+                         download_params['temp_dir'],
+                         verbose=download_params['verbose'])
     except(URLError, ValueError):
         message = 'Could not fetch words for image {0}'.format(
             image_info['id'])
