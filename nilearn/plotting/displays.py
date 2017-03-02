@@ -7,7 +7,9 @@ the data with different layout of cuts.
 
 import collections
 import numbers
+from distutils.version import LooseVersion
 
+import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib import cm as mpl_cm
@@ -718,7 +720,11 @@ class BaseSlicer(object):
                          x_adjusted_width,
                          height - (self._colorbar_margin['top'] +
                                    self._colorbar_margin['bottom'])]
-        self._colorbar_ax = figure.add_axes(lt_wid_top_ht, facecolor='w')
+        self._colorbar_ax = figure.add_axes(lt_wid_top_ht)
+        if matplotlib.__version__ >= LooseVersion("1.4"):
+            self._colorbar_ax.set_facecolor('w')
+        else:
+            self._colorbar_ax.set_axis_bgcolor('w')
 
         our_cmap = mpl_cm.get_cmap(cmap)
         # edge case where the data has a single value
@@ -925,8 +931,12 @@ class OrthoSlicer(BaseSlicer):
         for index, direction in enumerate(self._cut_displayed):
             fh = self.frame_axes.get_figure()
             ax = fh.add_axes([0.3 * index * (x1 - x0) + x0, y0,
-                              .3 * (x1 - x0), y1 - y0],
-                             facecolor=facecolor, aspect='equal')
+                              .3 * (x1 - x0), y1 - y0], aspect='equal')
+            if matplotlib.__version__ >= LooseVersion("1.4"):
+                ax.set_facecolor(facecolor)
+            else:
+                ax.set_axis_bgcolor(facecolor)
+
             ax.axis('off')
             coord = self.cut_coords[
                 sorted(self._cut_displayed).index(direction)]
