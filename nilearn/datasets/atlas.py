@@ -337,7 +337,7 @@ def fetch_atlas_msdl(data_dir=None, url=None, resume=True, verbose=1):
     with warnings.catch_warnings():
         warnings.filterwarnings('ignore', module='numpy',
                                 category=FutureWarning)
-        region_coords = csv_data[['x', 'y', 'z']].copy().tolist()
+        region_coords = csv_data[['x', 'y', 'z']].tolist()
     net_names = [net_name.strip() for net_name in csv_data['net_name'].tolist()]
     fdescr = _get_dataset_descr(dataset_name)
 
