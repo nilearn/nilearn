@@ -111,12 +111,16 @@ def test_params_correctly_propagated_in_constructors():
 def test_screening_space_net():
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> increasing coverage
+=======
+>>>>>>> ebfcfc0d8b4fc48a016c86aedaed3ed9a3933950
     for verbose in [0, 2]:
         screening_percentile = assert_warns(UserWarning,
                                             _adjust_screening_percentile, 10,
                                             mask, verbose)
+<<<<<<< HEAD
 <<<<<<< HEAD
 =======
     screening_percentile = assert_warns(UserWarning,
@@ -124,6 +128,8 @@ def test_screening_space_net():
 >>>>>>> addressing checking masker comments
 =======
 >>>>>>> increasing coverage
+=======
+>>>>>>> ebfcfc0d8b4fc48a016c86aedaed3ed9a3933950
     # We gave here a very small mask, judging by standards of brain size
     # thus the screening_percentile_ corrected for brain size should
     # be 100%

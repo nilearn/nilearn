@@ -716,31 +716,7 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
             tic = time.time()
 
         # nifti masking
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
         self.masker_ = check_embedded_nifti_masker(self, multi_subject=False)
-=======
-        self.masker_ = check_masker(mask=self.mask,
-                                    target_affine=self.target_affine,
-                                    target_shape=self.target_shape,
-                                    standardize=self.standardize,
-                                    low_pass=self.low_pass,
-                                    high_pass=self.high_pass,
-                                    mask_strategy='epi', t_r=self.t_r,
-                                    memory=self.memory_)
->>>>>>> addressing checking masker comments
-=======
-        # self.mask_args = {'mask_strategy' : 'epi', 'memory': self.memory_}
-        # self.mask_strategy = 'epi'
-        # memory = self.memory
-        # self.memory = self.memory_
-        self.masker_ = check_embedded_nifti_masker(self, multi_subject=False)
-        import pdb; pdb.set_trace()  # XXX BREAKPOINT
->>>>>>> minor
-=======
-        self.masker_ = check_embedded_nifti_masker(self, multi_subject=False)
->>>>>>> solving merging conflicts
         X = self.masker_.fit_transform(X)
 
         X, y = check_X_y(X, y, ['csr', 'csc', 'coo'], dtype=np.float,
@@ -816,22 +792,8 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
         w = np.zeros((n_problems, X.shape[1] + 1))
         self.all_coef_ = np.ndarray((n_problems, n_folds, X.shape[1]))
 
-<<<<<<< HEAD
-<<<<<<< HEAD
         self.screening_percentile_ = _adjust_screening_percentile(
             self.screening_percentile, self.mask_img_, verbose=self.verbose)
-=======
-        self.screening_percentile_ = adjust_screening_percentile(
-=======
-        self.screening_percentile_ = _adjust_screening_percentile(
-<<<<<<< HEAD
->>>>>>> cleaning decoder tests
-                self.screening_percentile, self.mask_img_,
-                verbose=self.verbose)
->>>>>>> solving merging conflicts
-=======
-            self.screening_percentile, self.mask_img_, verbose=self.verbose)
->>>>>>> solving merging conflicts
 
         # main loop: loop on classes and folds
         solver_params = dict(tol=self.tol, max_iter=self.max_iter)
