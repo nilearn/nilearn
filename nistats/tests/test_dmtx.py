@@ -510,7 +510,7 @@ def test_create_second_level_design():
     regressors = [['01', 0.1], ['02', 0.75]]
     regressors = pd.DataFrame(regressors, columns=['subject_label', 'f1'])
     design = create_second_level_design(subjects_label, regressors)
-    expected_design = np.array([[1, 0.75], [1, 0.1]])
+    expected_design = np.array([[0.75, 1], [0.1, 1]])
     assert_array_equal(design, expected_design)
     assert_true(len(design.columns) == 2)
     assert_true(len(design) == 2)
