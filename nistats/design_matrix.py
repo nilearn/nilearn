@@ -458,13 +458,13 @@ def create_second_level_design(subjects_label, confounds=None):
     Parameters
     ----------
     subjects_label: list of str
-        Contain subject labels to extract confounders in the right order
-        ,corresponding with the images, to create the design matrix.
+        Contain subject labels to extract confounders in the right order,
+        corresponding with the images, to create the design matrix.
     confounds: pandas DataFrame, optional
         If given, contains at least two columns, 'subject_label' and one
-        confound. The subjects list determine the rows to extract from
+        confound. The subjects list determines the rows to extract from
         confounds thanks to its 'subject_label' column. All subjects must
-        be contained in confounds. There should be only one row per subject.
+        have confounds specified. There should be only one row per subject.
 
     Returns
     -------
@@ -476,7 +476,7 @@ def create_second_level_design(subjects_label, confounds=None):
         confounds_name = confounds.columns.tolist()
         confounds_name.remove('subject_label')
 
-    design_columns = (['intercept'] + confounds_name)
+    design_columns = (confounds_name + ['intercept'])
     # check column names are unique
     if len(np.unique(design_columns)) != len(design_columns):
         raise ValueError('Design matrix columns do not have unique names')
@@ -491,7 +491,7 @@ def create_second_level_design(subjects_label, confounds=None):
                 raise ValueError('confounds contain more than one row for '
                                  'subject %s' % subject_label)
             elif np.sum(conrow) == 0:
-                raise ValueError('confounds do not contain subject %s' %
+                raise ValueError('confounds not specified for subject %s' %
                                  subject_label)
             for conf_name in confounds_name:
                 confounds_value = confounds[conrow][conf_name].values

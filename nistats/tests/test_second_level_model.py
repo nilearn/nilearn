@@ -13,7 +13,6 @@ from nibabel import load, Nifti1Image, save
 
 from nistats.first_level_model import FirstLevelModel, run_glm
 from nistats.second_level_model import SecondLevelModel
-from nistats.design_matrix import (create_second_level_design)
 
 from nose.tools import assert_true, assert_equal, assert_raises
 from numpy.testing import (assert_almost_equal, assert_array_equal)
