@@ -12,12 +12,43 @@ from sklearn.base import BaseEstimator
 from sklearn.externals.joblib import Memory, Parallel, delayed
 from sklearn.linear_model import LinearRegression
 from sklearn.utils import check_random_state
-from sklearn.utils.extmath import randomized_svd
+from sklearn.utils.extmath import randomized_svd, svd_flip
 from .._utils.cache_mixin import CacheMixin, cache
 from .._utils.niimg import _safe_get_data
 from .._utils.compat import _basestring
 from ..input_data import NiftiMapsMasker
 from ..input_data.masker_validation import check_embedded_nifti_masker
+
+
+def fast_svd(X, n_components, random_state=None):
+    """ Automatically switch between randomized and lapack SVD (heuristic
+        of scikit-learn).
+    """
+    random_state = check_random_state(random_state)
+    # Small problem, just call full PCA
+    if max(X.shape) <= 500:
+        svd_solver = 'full'
+    elif n_components >= 1 and n_components < .8 * min(X.shape):
+        svd_solver = 'randomized'
+    # This is also the case of n_components in (0,1)
+    else:
+        svd_solver = 'full'
+
+    # Call different fits for either full or truncated SVD
+    if svd_solver == 'full':
+        U, S, V = linalg.svd(X, full_matrices=False)
+        # flip eigenvectors' sign to enforce deterministic output
+        U, V = svd_flip(U, V)
+        U = U[:, :n_components]
+        S = S[:n_components]
+        V = V[:n_components]
+    else:
+        U, S, V = randomized_svd(X, n_components=n_components,
+                                 n_iter='auto',
+                                 flip_sign=True,
+                                 random_state=random_state)
+    return U, S, V
+
 
 
 def mask_and_reduce(masker, imgs,
@@ -150,21 +181,12 @@ def _mask_and_reduce_single(masker,
     else:
         n_samples = int(ceil(data_n_samples * reduction_ratio))
 
-    if n_samples <= data_n_samples // 4:
-        U, S, _ = cache(randomized_svd, memory,
+    U, S, V = cache(fast_svd, memory,
                         memory_level=memory_level,
                         func_memory_level=3)(this_data.T,
                                              n_samples,
-                                             transpose=True,
                                              random_state=random_state)
-        U = U.T
-    else:
-        U, S, _ = cache(linalg.svd, memory,
-                        memory_level=memory_level,
-                        func_memory_level=3)(this_data.T,
-                                             full_matrices=False)
-        U = U.T[:n_samples].copy()
-        S = S[:n_samples]
+    U = U.T.copy()
     U = U * S[:, np.newaxis]
     return U
 
