@@ -450,49 +450,56 @@ def plot_design_matrix(design_matrix, rescale=True, ax=None):
     return ax
 
 
-def create_second_level_design(maps_table, confounds=None):
-    """Sets up a second level design from a maps table.
+def create_second_level_design(subjects_label, confounds=None):
+    """Sets up a second level design.
+
+    Construct a design matrix with an intercept and subject specific confounds.
 
     Parameters
     ----------
-    maps_table: pandas DataFrame
-        Contains at least columns 'map_name' and 'subject_label'
+    subjects_label: list of str
+        Contain subject labels to extract confounders in the right order,
+        corresponding with the images, to create the design matrix.
     confounds: pandas DataFrame, optional
-        If given, contains at least two columns, 'subject_label' and one confound.
-        confounds and maps_table do not need to agree on their shape,
-        information between them is matched based on the 'subject_label' column
-        that both must have.
+        If given, contains at least two columns, 'subject_label' and one
+        confound. The subjects list determines the rows to extract from
+        confounds thanks to its 'subject_label' column. All subjects must
+        have confounds specified. There should be only one row per subject.
 
     Returns
     -------
     design_matrix: pandas DataFrame
         The second level design matrix
     """
-    maps_name = maps_table['map_name'].tolist()
-    subjects_id = maps_table['subject_label'].tolist()
     confounds_name = []
     if confounds is not None:
         confounds_name = confounds.columns.tolist()
         confounds_name.remove('subject_label')
-    design_columns = (np.unique(maps_name).tolist() +
-                      np.unique(subjects_id).tolist() +
-                      confounds_name)
-    design_matrix = pd.DataFrame(columns=design_columns)
-    for ridx, row in maps_table.iterrows():
-        design_matrix.loc[ridx] = [0] * len(design_columns)
-        design_matrix.loc[ridx, row['map_name']] = 1
-        design_matrix.loc[ridx, row['subject_label']] = 1
-        if confounds is not None:
-            conrow = confounds['subject_label'] == row['subject_label']
-            for conf_name in confounds_name:
-                design_matrix.loc[ridx, conf_name] = confounds[conrow][conf_name].values
 
+    design_columns = (confounds_name + ['intercept'])
     # check column names are unique
     if len(np.unique(design_columns)) != len(design_columns):
         raise ValueError('Design matrix columns do not have unique names')
 
+    design_matrix = pd.DataFrame(columns=design_columns)
+    for ridx, subject_label in enumerate(subjects_label):
+        design_matrix.loc[ridx] = [0] * len(design_columns)
+        design_matrix.loc[ridx, 'intercept'] = 1
+        if confounds is not None:
+            conrow = confounds['subject_label'] == subject_label
+            if np.sum(conrow) > 1:
+                raise ValueError('confounds contain more than one row for '
+                                 'subject %s' % subject_label)
+            elif np.sum(conrow) == 0:
+                raise ValueError('confounds not specified for subject %s' %
+                                 subject_label)
+            for conf_name in confounds_name:
+                confounds_value = confounds[conrow][conf_name].values
+                design_matrix.loc[ridx, conf_name] = confounds_value
+
     # check design matrix is not singular
-    if np.linalg.cond(design_matrix.as_matrix()) < (1. / sys.float_info.epsilon):
+    epsilon = sys.float_info.epsilon
+    if np.linalg.cond(design_matrix.as_matrix()) < (1. / epsilon):
         warn('Attention: Design matrix is singular. Aberrant estimates '
              'are expected.')
 

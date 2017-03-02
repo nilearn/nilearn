@@ -20,28 +20,23 @@ import pandas as pd
 #########################################################################
 # Create a simple experimental paradigm
 # --------------------------------------
-# Experimental paradigm has two conditions and 20 subjects
-column_names = ['map_name', 'subject_label', 'map_path']
+# We want to get the group result of a contrast for 20 subjects
 n_subjects = 20
-maps_name = ['language'] * n_subjects + ['consonants'] * n_subjects
-subject_list = ['sub-%02d' % i for i in range(1, n_subjects + 1)]
-maps_model = subject_list * 2
-maps_path = [''] * n_subjects * 2
-maps_table = pd.DataFrame({'map_name': maps_name,
-                           'subject_label': maps_model,
-                           'effects_map_path': maps_path})
-#########################################################################
+subjects_label = ['sub-%02d' % i for i in range(1, n_subjects + 1)]
+
+##############################################################################
 # Specify extra information about the subjects to create confounders
-extra_info_subjects = pd.DataFrame({'subject_label': subject_list,
-                                    'age': range(15, 35),
-                                    'sex': [0, 1] * 10})
+# Without confounders the design matrix would correspond to a one sample test
+extra_info_subjects = pd.DataFrame({'subject_label': subjects_label,
+                                    'age': range(15, 15 + n_subjects),
+                                    'sex': [0, 1] * int(n_subjects / 2)})
 
 
 #########################################################################
 # Create a second level design matrix
 # -----------------------------------
 
-design_matrix = create_second_level_design(maps_table, extra_info_subjects)
+design_matrix = create_second_level_design(subjects_label, extra_info_subjects)
 
 # plot the results
 ax = plot_design_matrix(design_matrix)

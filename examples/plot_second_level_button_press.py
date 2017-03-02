@@ -56,7 +56,7 @@ plt.show()
 # and fit it.
 second_level_input = data['cmaps']
 design_matrix = pd.DataFrame([1] * len(second_level_input),
-                             columns=['left-right'])
+                             columns=['intercept'])
 
 second_level_model = SecondLevelModel(smoothing_fwhm=8.0)
 second_level_model = second_level_model.fit(second_level_input,
@@ -65,14 +65,14 @@ second_level_model = second_level_model.fit(second_level_input,
 ##########################################################################
 # To estimate the contrast is very simple. We can just provide the column
 # name of the design matrix.
-z_map = second_level_model.compute_contrast('left-right',
-                                            output_type='z_score')
+z_map = second_level_model.compute_contrast(output_type='z_score')
 
 ###########################################################################
 # We threshold the second level contrast at uncorrected p < 0.001 and plot
 p_val = 0.001
 z_th = norm.isf(p_val)
-display = plotting.plot_glass_brain(z_map, threshold=z_th, colorbar=True,
-                                    plot_abs=False, display_mode='z')
+display = plotting.plot_glass_brain(
+    z_map, threshold=z_th, colorbar=True, plot_abs=False, display_mode='z',
+    title='group left-right button press (unc p<0.001')
 
 plotting.show()
