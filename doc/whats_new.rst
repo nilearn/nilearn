@@ -1,6 +1,5 @@
-0.3.0 beta2
-===========
-
+0.3.1
+=====
 
 Changelog
 ---------
@@ -27,7 +26,6 @@ Enhancements
       recover the covariance matrices for the "tangent" kind.
 
     - Reworking and renaming of connectivity measures example. 
-      test vectorize and inverse_transform
 
 0.3.0
 ======

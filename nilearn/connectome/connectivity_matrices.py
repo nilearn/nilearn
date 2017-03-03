@@ -200,12 +200,16 @@ def sym_to_vec(symmetric, discard_diagonal=False):
     """Return the flattened lower triangular part of an array.
     If diagonal is kept, diagonal elements are divided by sqrt(2) to conserve
     the norm.
+
     Acts on the last two dimensions of the array if not 2-dimensional.
+
     .. versionadded:: 0.2
+
     Parameters
     ----------
     symmetric : numpy.ndarray, shape (..., n_features, n_features)
         Input array.
+
     discard_diagonal : boolean, optional
         If True, the values of the diagonal are not returned.
         Default is False.
@@ -216,14 +220,7 @@ def sym_to_vec(symmetric, discard_diagonal=False):
         (..., n_features * (n_features + 1) / 2) if discard_diagonal is False and
         (..., (n_features - 1) * n_features / 2) otherwise.
     """
-    if discard_diagonal:
-        # No scaling, we directly return the values
-        tril_mask = np.tril(np.ones(symmetric.shape[-2:]), k=-1).astype(np.bool)
-        return symmetric[..., tril_mask]
-    scaling = np.ones(symmetric.shape[-2:])
-    np.fill_diagonal(scaling, sqrt(2.))
-    tril_mask = np.tril(np.ones(symmetric.shape[-2:])).astype(np.bool)
-    return symmetric[..., tril_mask] / scaling[tril_mask]
+    return sym_matrix_to_vec(symmetric=symmetric, discard_diagonal=discard_diagonal)
 
 
 def sym_matrix_to_vec(symmetric, discard_diagonal=False):
@@ -267,6 +264,7 @@ def sym_matrix_to_vec(symmetric, discard_diagonal=False):
 
 def vec_to_sym_matrix(vec, diagonal=None):
     """Return the symmetric matrix given its flattened lower triangular part.
+
     Acts on the last dimension of the array if not 1-dimensional.
     Diagonal can be encompassed in vec or given separately. In both cases, note
     that diagonal elements are multiplied by sqrt(2).
