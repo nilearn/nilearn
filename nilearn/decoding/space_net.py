@@ -472,9 +472,9 @@ def path_scores(solver, X, y, mask, alphas, l1_ratios, train, test,
         best_alpha = alphas_[0]
 
     # re-fit best model to high precision (i.e without early stopping, etc.)
-    best_w, _, init = solver(X_train, y_train, best_alpha, best_l1_ratio,
-                             mask=mask, init=best_init,
-                             verbose=max(verbose - 1, 0), **solver_params)
+    best_w, his, init = solver(X_train, y_train, best_alpha, best_l1_ratio,
+                               mask=mask, init=best_init,
+                               verbose=max(verbose - 1, 0), **solver_params)
     if debias:
         best_w = _EarlyStoppingCallback(
             X_test, y_test, is_classif=is_classif, debias=debias,
@@ -500,7 +500,7 @@ def path_scores(solver, X, y, mask, alphas, l1_ratios, train, test,
 
     all_test_scores = np.array(all_test_scores)
     return (all_test_scores, best_w, best_alpha, best_l1_ratio, alphas_,
-            y_train_mean, key)
+            y_train_mean, key, his)
 
 
 class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
@@ -685,6 +685,7 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
         self.t_r = t_r
         self.target_affine = target_affine
         self.target_shape = target_shape
+        self.his = []
 
         # sanity check on params
         self.check_params()
@@ -863,7 +864,7 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
         self.best_model_params_ = []
         self.alpha_grids_ = []
         for (test_scores, best_w, best_alpha, best_l1_ratio, alphas,
-             y_train_mean, (cls, fold)) in Parallel(
+             y_train_mean, (cls, fold), his) in Parallel(
             n_jobs=self.n_jobs, verbose=2 * self.verbose)(
                 delayed(self._cache(path_scores, func_memory_level=2))(
                 solver, X, y[:, cls] if n_problems > 1 else y, self.mask_,
@@ -873,6 +874,7 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
                 debias=self.debias, verbose=self.verbose,
                 screening_percentile=self.screening_percentile_,
                 ) for cls in range(n_problems) for fold in range(n_folds)):
+            self.his.append(his)
             self.best_model_params_.append((best_alpha, best_l1_ratio))
             self.alpha_grids_.append(alphas)
             self.ymean_[cls] += y_train_mean
