@@ -234,7 +234,7 @@ def sym_matrix_to_vec(symmetric, discard_diagonal=False):
 
     Acts on the last two dimensions of the array if not 2-dimensional.
 
-    .. versionadded:: 0.2
+    .. versionadded:: 0.3
 
     Parameters
     ----------
@@ -271,7 +271,7 @@ def vec_to_sym_matrix(vec, diagonal=None):
     Diagonal can be encompassed in vec or given separately. In both cases, note
     that diagonal elements are multiplied by sqrt(2).
 
-    .. versionadded:: 0.2.6.1
+    .. versionadded:: 0.3
 
     Parameters
     ----------
@@ -280,7 +280,8 @@ def vec_to_sym_matrix(vec, diagonal=None):
         The input array.
 
     diagonal : numpy.ndarray, shape (..., n_columns), optional
-        The diagonal array to be stacked to vec.
+        The diagonal array to be stacked to vec. If None, the diagonal is
+        assumed to be included in vec.
 
     Returns
     -------
@@ -491,8 +492,8 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
         Returns
         -------
         output : numpy.ndarray, shape (n_subjects, n_features, n_features) or \
-                 (n_subjects, n_features * (n_features + 1) / 2) if vectorize \
-                 is set to True.
+            (n_subjects, n_features * (n_features + 1) / 2) if vectorize \
+            is set to True.
             The transformed individual connectivities, as matrices or vectors.
         """
         self._check_fitted()
@@ -539,7 +540,7 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
                              )
 
     def inverse_transform(self, connectivities, diagonal=None):
-        """Returns connectivity matrices from vectorized or not connectivities.
+        """Returns connectivity matrices from connectivities, vectorized or not.
 
         If kind is 'tangent', the covariance matrices are reconstructed.
 

@@ -1,6 +1,6 @@
 """
-Functional connectivity kinds for group analysis of connectomes
-===============================================================
+Functional connectivity matrices for group analysis of connectomes
+==================================================================
 
 This example compares different kinds of functional connectivity between
 regions of interest : correlation, partial correlation, as well as a kind
@@ -30,8 +30,6 @@ def plot_matrices(matrices, matrix_kind):
 ###############################################################################
 # Load ADHD dataset and MSDL atlas
 # --------------------------------
-
-###############################################################################
 # We study only 20 subjects from the ADHD dataset, to save computation time.
 from nilearn import datasets
 
@@ -42,21 +40,19 @@ adhd_data = datasets.fetch_adhd(n_subjects=20)
 msdl_data = datasets.fetch_atlas_msdl()
 msdl_coords = msdl_data.region_coords
 n_regions = len(msdl_coords)
-print('MSDL has {0} ROIs, part of the following networks:\n{1}.'.format(
+print('MSDL has {0} ROIs, part of the following networks :\n{1}.'.format(
     n_regions, msdl_data.networks))
 
 ###############################################################################
 # Region signals extraction
 # -------------------------
-
-###############################################################################
 # To extract regions time series, we instantiate a
 # :class:`nilearn.input_data.NiftiMapsMasker` object and pass the atlas the
 # file name to it, as well as filtering band-width and detrending option.
 from nilearn import input_data
 
 masker = input_data.NiftiMapsMasker(
-    msdl_data.maps, resampling_target="maps", t_r=2.5, detrend=True,
+    msdl_data.maps, resampling_target="data", t_r=2.5, detrend=True,
     low_pass=.1, high_pass=.01, memory='nilearn_cache', memory_level=1)
 
 ###############################################################################
@@ -81,8 +77,6 @@ print('Data has {0} ADHD subjects.'.format(len(adhd_subjects)))
 ###############################################################################
 # ROI-to-ROI correlations of ADHD patients
 # ----------------------------------------
-
-###############################################################################
 # The simpler and most commonly used kind of connectivity is correlation. It
 # models the full (marginal) connectivity between pairwise ROIs. We can
 # estimate it using :class:`nilearn.connectome.ConnectivityMeasure`.
@@ -139,8 +133,6 @@ plotting.plot_connectome(
 ###############################################################################
 # Extract subjects variabilities around a robust group connectivity
 # -----------------------------------------------------------------
-
-###############################################################################
 # We can use **both** correlations and partial correlations to capture
 # reproducible connectivity patterns at the group-level and build a **robust**
 # **group connectivity matrix**. This is done by the **tangent** kind.
@@ -168,10 +160,8 @@ plotting.plot_connectome(
 # yet it is less dense than correlations graph.
 
 ###############################################################################
-# Which connectivity kind is more powerful? A classification answer
-# -----------------------------------------------------------------
-
-###############################################################################
+# What kind of connectivity is most powerful for classification?
+# --------------------------------------------------------------
 # *ConnectivityMeasure* can output the estimated subjects coefficients
 # as a 1D arrays through the parameter *vectorize*.
 connectivity_biomarkers = {}
