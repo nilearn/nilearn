@@ -4,12 +4,12 @@ Neuroimaging file input and output.
 # Author: Gael Varoquaux, Alexandre Abraham, Philippe Gervais
 # License: simplified BSD
 
-import copy
-import gc
 import collections
+import copy
 
-import numpy as np
+import gc
 import nibabel
+import numpy as np
 
 from .compat import _basestring, get_affine
 
@@ -103,7 +103,9 @@ def load_niimg(niimg, dtype=None):
     img: image
         A loaded image object.
     """
-    from ..image import new_img_like  # avoid circular imports
+    from ..image import new_img_like
+    from ..image.image import _cachable_niimg_factory
+    # avoid circular imports
 
     if isinstance(niimg, _basestring):
         # data is a filename, we load it
@@ -118,6 +120,8 @@ def load_niimg(niimg, dtype=None):
     if dtype is not None:
         niimg = new_img_like(niimg, niimg.get_data().astype(dtype),
                              get_affine(niimg))
+    else:
+        niimg = _cachable_niimg_factory(niimg)
     return niimg
 
 

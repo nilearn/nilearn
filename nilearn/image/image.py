@@ -7,21 +7,47 @@ See also nilearn.signal.
 # License: simplified BSD
 
 import collections
+import copy
 
+import nibabel
 import numpy as np
 from scipy import ndimage
 from scipy.stats import scoreatpercentile
-import copy
-import nibabel
 from sklearn.externals.joblib import Parallel, delayed
 
 from .. import signal
 from .._utils import (check_niimg_4d, check_niimg_3d, check_niimg, as_ndarray,
                       _repr_niimgs)
-from .._utils.niimg_conversions import _index_img, _check_same_fov
-from .._utils.niimg import _safe_get_data
 from .._utils.compat import _basestring, get_affine, get_header
+from .._utils.niimg import _safe_get_data
+from .._utils.niimg_conversions import _index_img, _check_same_fov
 from .._utils.param_validation import check_threshold
+
+
+def _spatial_image_getstate(self):
+    state = {'dataobj': self._dataobj,
+             'header': self.header,
+             'filename': self.get_filename(),
+             'affine': self.affine,
+             'extra': self.extra}
+    return state
+
+
+def _spatial_image_setstate(self, state):
+    new_self = self.__class__(dataobj=state['dataobj'],
+                              affine=state['affine'],
+                              header=state['header'],
+                              extra=state['extra'],
+                              )
+    self.__dict__ = new_self.__dict__
+    if state['filename'] is not None:
+        self.set_filename(state['filename'])
+
+
+def _cachable_niimg_factory(niimg):
+    niimg.__class__.__setstate__ = _spatial_image_setstate
+    niimg.__class__.__getstate__ = _spatial_image_getstate
+    return niimg
 
 
 def high_variance_confounds(imgs, n_confounds=5, percentile=2.,
@@ -627,7 +653,9 @@ def new_img_like(ref_niimg, data, affine=None, copy_header=False):
         header['glmax'] = 0.
         header['cal_max'] = np.max(data) if data.size > 0 else 0.
         header['cal_min'] = np.min(data) if data.size > 0 else 0.
-    return ref_niimg.__class__(data, affine, header=header)
+    niimg = ref_niimg.__class__(data, affine, header=header)
+    niimg = _cachable_niimg_factory(niimg)
+    return niimg
 
 
 def threshold_img(img, threshold, mask_img=None):
