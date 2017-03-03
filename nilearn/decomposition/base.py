@@ -26,6 +26,30 @@ from ..input_data.masker_validation import check_embedded_nifti_masker
 def fast_svd(X, n_components, random_state=None):
     """ Automatically switch between randomized and lapack SVD (heuristic
         of scikit-learn).
+
+    Parameters
+    ==========
+    X: array, shape (n_samples, n_features)
+        The data to decompose
+
+    n_components: integer
+        The order of the dimensionality of the truncated SVD
+
+    random_state: int or RandomState
+        Pseudo number generator state used for random sampling.
+
+    Returns
+    ========
+
+    U: array, shape (n_samples, n_components)
+        The first matrix of the truncated svd
+
+    S: array, shape (n_components)
+        The second matric of the truncated svd
+
+    V: array, shape (n_components, n_features)
+        The last matric of the truncated svd
+
     """
     random_state = check_random_state(random_state)
     # Small problem, just call full PCA
@@ -42,9 +66,11 @@ def fast_svd(X, n_components, random_state=None):
         U, S, V = linalg.svd(X, full_matrices=False)
         # flip eigenvectors' sign to enforce deterministic output
         U, V = svd_flip(U, V)
-        U = U[:, :n_components]
+        # The "copy" are there to free the reference on the non reduced
+        # data, and hence clear memory early
+        U = U[:, :n_components].copy()
         S = S[:n_components]
-        V = V[:n_components]
+        V = V[:n_components].copy()
     else:
         if LooseVersion(sklearn.__version__) >= LooseVersion('0.17'):
             n_iter = 'auto'
