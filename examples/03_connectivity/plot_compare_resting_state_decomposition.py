@@ -10,8 +10,8 @@ spatial maps. It extracts maps that are naturally sparse and usually cleaner
 than ICA
 
    * Arthur Mensch et al. `Compressed online dictionary learning for fast resting-state fMRI decomposition
-   <https://hal.archives-ouvertes.fr/hal-01271033/>`_,
-     IPMI 2016, Lecture Notes in Computer Science
+     <https://hal.archives-ouvertes.fr/hal-01271033/>`_,
+     ISBI 2016, Lecture Notes in Computer Science
 """
 ###############################################################################
 # Load ADHD rest dataset
