@@ -179,7 +179,9 @@ print('{0} correlation biomarkers for each subject.'.format(
 # to get the displacements from a **unique** `mean_` of all subjects.
 
 ###############################################################################
-# We split the subjects in 3 folds, while considering between-sites variability
+# We stratify the dataset into homogeneous classes according to phenotypic
+# and scan site. We then split the subjects into 3 folds with the same
+# proportion of each class as in the whole cohort
 from sklearn.cross_validation import StratifiedKFold
 
 classes = ['{0}{1}'.format(site_name, adhd_label)
