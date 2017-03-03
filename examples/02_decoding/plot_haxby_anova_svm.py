@@ -66,7 +66,7 @@ svc = SVC(kernel='linear')
 from sklearn.feature_selection import SelectPercentile, f_classif
 feature_selection = SelectPercentile(f_classif, percentile=5)
 
-# We have our classifier (SVC),our feature selection (SelectPercentile),and now,
+# We have our classifier (SVC), our feature selection (SelectPercentile),and now,
 # we can plug them together in a *pipeline* that performs the two operations
 # successively:
 from sklearn.pipeline import Pipeline
