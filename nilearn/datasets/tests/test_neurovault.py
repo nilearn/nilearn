@@ -567,8 +567,7 @@ def test_fetch_neurovault():
         # try to download an image
         data = neurovault.fetch_neurovault(
             max_images=1, fetch_neurosynth_words=True,
-            fetch_reduced_rep=True, mode='overwrite',
-            data_dir=temp_dir)
+            mode='overwrite', data_dir=temp_dir)
         # if neurovault was available one image matching
         # default filters should have been downloaded
         if data.images:

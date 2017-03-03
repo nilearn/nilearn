@@ -340,10 +340,10 @@ class IsIn(_SpecialValue):
     Examples
     --------
     >>> from nilearn.datasets.neurovault import IsIn
-    >>> countable = IsIn(*range(11))
-    >>> 7 == countable
+    >>> vowels = IsIn('a', 'e', 'i', 'o', 'u', 'y')
+    >>> 'a' == vowels
     True
-    >>> countable == 12
+    >>> vowels == 'b'
     False
 
     """
@@ -384,6 +384,15 @@ class NotIn(_SpecialValue):
     nilearn.datasets.neurovault.Contains,
     nilearn.datasets.neurovault.NotContains,
     nilearn.datasets.neurovault.Pattern.
+
+    Examples
+    --------
+    >>> from nilearn.datasets.neurovault import NotIn
+    >>> consonnants = NotIn('a', 'e', 'i', 'o', 'u', 'y')
+    >>> 'b' == consonnants
+    True
+    >>> consonnants == 'a'
+    False
 
     """
     def __init__(self, *rejected):
@@ -1272,19 +1281,15 @@ def _json_add_collection_dir(file_name, force=True):
 
 
 def _json_add_im_files_paths(file_name, force=True):
-    """Load a json file and add image, reduced rep and words paths."""
+    """Load a json file and add image and words paths."""
     loaded = _json_from_file(file_name)
     set_func = loaded.__setitem__ if force else loaded.setdefault
     dir_path = os.path.dirname(file_name)
     dir_relative_path = os.path.basename(dir_path)
     image_file_name = 'image_{0}.nii.gz'.format(loaded['id'])
-    reduced_file_name = 'image_{0}_reduced_rep.npy'.format(loaded['id'])
     words_file_name = 'neurosynth_words_for_image_{0}.json'.format(
         loaded['id'])
     set_func('relative_path', os.path.join(dir_relative_path, image_file_name))
-    if os.path.isfile(os.path.join(dir_path, reduced_file_name)):
-        set_func('reduced_representation_relative_path',
-                 os.path.join(dir_relative_path, reduced_file_name))
     if os.path.isfile(os.path.join(dir_path, words_file_name)):
         set_func('ns_words_relative_path',
                  os.path.join(dir_relative_path, words_file_name))
@@ -1409,51 +1414,6 @@ def _download_image_nii_file(image_info, collection, download_params):
     return image_info, collection
 
 
-def _download_image_reduced_rep(image_info, collection, download_params):
-    """Download reduced representation (.npy) of an image.
-
-    Parameters
-    ----------
-    image_info : dict
-        Image metadata.
-
-    collection : dict
-        Corresponding collection metadata.
-
-    download_params : dict
-       General information about download session, containing e.g. the
-       data directory (see `_read_download_params` and
-       `_prepare_download_params for details`)
-
-    Returns
-    -------
-    image_info : dict
-        Image metadata with reduced representation path added to it.
-
-    collection : dict
-        Corresponding collection metadata.
-
-    """
-    reduced_image_url = image_info.get('reduced_representation')
-    if not download_params['fetch_reduced_rep'] or reduced_image_url is None:
-        return image_info, collection
-
-    reduced_image_name = 'image_{0}_reduced_rep.npy'.format(image_info['id'])
-    reduced_image_relative_path = os.path.join(
-        collection['relative_path'], reduced_image_name)
-    reduced_image_absolute_path = os.path.join(
-        collection['absolute_path'], reduced_image_name)
-    _simple_download(
-        reduced_image_url, reduced_image_absolute_path,
-        download_params['temp_dir'], verbose=download_params['verbose'])
-    image_info = image_info.copy()
-    image_info['reduced_representation'
-               '_relative_path'] = reduced_image_relative_path
-    image_info['reduced_representation'
-               '_absolute_path'] = reduced_image_absolute_path
-    return image_info, collection
-
-
 def _download_image_terms(image_info, collection, download_params):
     """Download Neurosynth words for an image.
 
@@ -1516,8 +1476,6 @@ def _download_image(image_info, download_params):
 
     If necessary, create the corresponding collection's directory and
     download the collection's metadata.
-    If required and necessary, also download the image's reduced
-    representation and the Neurosynth tags.
 
     Parameters
     ----------
@@ -1543,8 +1501,6 @@ def _download_image(image_info, download_params):
     collection = _fetch_collection_for_image(
         image_info, download_params)
     image_info, collection = _download_image_nii_file(
-        image_info, collection, download_params)
-    image_info, collection = _download_image_reduced_rep(
         image_info, collection, download_params)
     image_info, collection = _download_image_terms(
         image_info, collection, download_params)
@@ -1590,15 +1546,8 @@ def _update_image(image_info, download_params):
     return image_info
 
 
-def _update_collection(collection, download_params):
-    """Update local metadata for a collection."""
-    return collection
-
-
 def _update(image_info, collection, download_params):
     """Update local metadata for an image and its collection."""
-    collection = _update_collection(
-        collection, download_params)
     image_info = _update_image(image_info, download_params)
     return image_info, collection
 
@@ -1908,16 +1857,6 @@ def _scroll_explicit(download_params):
         yield image, collection
 
 
-def _stop_at_failed_download(n_consecutive_fails, download_params):
-    """Decide if download session should stop because too many failures."""
-    if n_consecutive_fails >= download_params['max_consecutive_fails']:
-        warnings.warn('Neurovault download stopped early: '
-                      'too many downloads failed in a row ({0})'.format(
-                          n_consecutive_fails))
-        return True
-    return False
-
-
 def _print_progress(found, download_params, level=_INFO):
     """Print number of images fetched so far."""
     _print_if('Already fetched {0} image{1}'.format(
@@ -1955,8 +1894,7 @@ def _scroll(download_params):
         - Or too many downloads have failed in a row.
 
     """
-    scroll_modes = {'filtered': _scroll_filtered,
-                    'explicit': _scroll_explicit}
+    scroll_modes = {'filtered': _scroll_filtered, 'explicit': _scroll_explicit}
     if download_params['max_images'] == 0:
         return
     found = 0
@@ -1968,7 +1906,6 @@ def _scroll(download_params):
             yield image, collection
             if found == download_params['max_images']:
                 break
-
         _print_if('{0} image{1} found on local disk.'.format(
             ('No' if not found else found), ('s' if found > 1 else '')),
             _INFO, download_params['verbose'])
@@ -1977,19 +1914,22 @@ def _scroll(download_params):
         return
     if found == download_params['max_images']:
         return
-
     server_data = scroll_modes[download_params['scroll_mode']](download_params)
     n_consecutive_fails = 0
     for image, collection in server_data:
         if image is None or collection is None:
             n_consecutive_fails += 1
-            if _stop_at_failed_download(n_consecutive_fails, download_params):
-                return
         else:
             n_consecutive_fails = 0
             found += 1
             _print_progress(found, download_params)
             yield image, collection
+
+        if n_consecutive_fails >= download_params['max_consecutive_fails']:
+            warnings.warn('Neurovault download stopped early: '
+                          'too many downloads failed in a row ({0})'.format(
+                              n_consecutive_fails))
+            return
         if found == download_params['max_images']:
             return
 
@@ -2076,7 +2016,7 @@ def _read_download_params(
     max_consecutive_fails=_MAX_CONSECUTIVE_FAILS,
     max_fails_in_collection=_MAX_FAILS_IN_COLLECTION,
     batch_size=None, verbose=3, fetch_neurosynth_words=False,
-    fetch_reduced_rep=False, vectorize_words=True):
+    vectorize_words=True):
     """Create a dictionary containing download information.
 
     """
@@ -2108,7 +2048,6 @@ def _read_download_params(
     download_params['wanted_image_ids'] = wanted_image_ids
     download_params['wanted_collection_ids'] = wanted_collection_ids
     download_params['fetch_neurosynth_words'] = fetch_neurosynth_words
-    download_params['fetch_reduced_rep'] = fetch_reduced_rep
     download_params['write_ok'] = os.access(
         download_params['nv_data_dir'], os.W_OK)
     download_params['vectorize_words'] = vectorize_words
@@ -2218,8 +2157,7 @@ def _fetch_neurovault_implementation(
     collection_filter=_empty_filter, image_terms=basic_image_terms(),
     image_filter=_empty_filter, collection_ids=None, image_ids=None,
     mode='download_new', data_dir=None, fetch_neurosynth_words=False,
-    fetch_reduced_rep=False, vectorize_words=True, verbose=3,
-    **kwarg_image_filters):
+    vectorize_words=True, verbose=3, **kwarg_image_filters):
     """Download data from neurovault.org and neurosynth.org."""
     image_terms = dict(image_terms, **kwarg_image_filters)
     neurovault_data_dir = _get_dataset_dir('neurovault', data_dir)
@@ -2236,7 +2174,7 @@ def _fetch_neurovault_implementation(
         image_filter=image_filter, wanted_collection_ids=collection_ids,
         wanted_image_ids=image_ids, max_images=max_images, verbose=verbose,
         fetch_neurosynth_words=fetch_neurosynth_words,
-        fetch_reduced_rep=fetch_reduced_rep, vectorize_words=vectorize_words)
+        vectorize_words=vectorize_words)
     download_params = _prepare_download_params(download_params)
 
     with _TemporaryDirectory() as temp_dir:
@@ -2247,14 +2185,14 @@ def _fetch_neurovault_implementation(
 
 
 def fetch_neurovault(
-        max_images=_DEFAULT_MAX_IMAGES,
-        collection_terms=basic_collection_terms(),
-        collection_filter=_empty_filter,
-        image_terms=basic_image_terms(),
-        image_filter=_empty_filter,
-        mode='download_new', data_dir=None,
-        fetch_neurosynth_words=False, fetch_reduced_rep=False,
-        vectorize_words=True, verbose=3, **kwarg_image_filters):
+    max_images=_DEFAULT_MAX_IMAGES,
+    collection_terms=basic_collection_terms(),
+    collection_filter=_empty_filter,
+    image_terms=basic_image_terms(),
+    image_filter=_empty_filter,
+    mode='download_new', data_dir=None,
+    fetch_neurosynth_words=False, vectorize_words=True,
+    verbose=3, **kwarg_image_filters):
     """Download data from neurovault.org that match certain criteria.
 
     Any downloaded data is saved on the local disk and subsequent
@@ -2309,10 +2247,6 @@ def fetch_neurovault(
 
     fetch_neurosynth_words : bool, optional (default=False)
         Wether to collect words from Neurosynth.
-
-    fetch_reduced_rep : bool, optional (default=False)
-        Wether to collect subsampled representations of images
-        available on Neurovault.
 
     vectorize_words : bool, optional (default=True)
         If neurosynth words are downloaded, create a matrix of word
@@ -2440,15 +2374,13 @@ def fetch_neurovault(
         image_filter=image_filter, mode=mode,
         data_dir=data_dir,
         fetch_neurosynth_words=fetch_neurosynth_words,
-        fetch_reduced_rep=fetch_reduced_rep,
         vectorize_words=vectorize_words, verbose=verbose,
         **kwarg_image_filters)
 
 
 def fetch_neurovault_ids(
     collection_ids=(), image_ids=(), mode='download_new', data_dir=None,
-    fetch_neurosynth_words=False, fetch_reduced_rep=False,
-    vectorize_words=True, verbose=3):
+    fetch_neurosynth_words=False, vectorize_words=True, verbose=3):
     """Download specific images and collections from neurovault.org.
 
     Any downloaded data is saved on the local disk and subsequent
@@ -2483,10 +2415,6 @@ def fetch_neurovault_ids(
 
     fetch_neurosynth_words : bool, optional (default=False)
         Wether to collect words from Neurosynth.
-
-    fetch_reduced_rep : bool, optional (default=False)
-        Wether to collect subsampled representations of images
-        available on Neurovault.
 
     vectorize_words : bool, optional (default=True)
         If neurosynth words are downloaded, create a matrix of word
@@ -2554,5 +2482,4 @@ def fetch_neurovault_ids(
         collection_ids=collection_ids, image_ids=image_ids,
         data_dir=data_dir,
         fetch_neurosynth_words=fetch_neurosynth_words,
-        fetch_reduced_rep=fetch_reduced_rep,
         vectorize_words=vectorize_words, verbose=verbose)
