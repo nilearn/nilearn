@@ -18,7 +18,7 @@
 {% set title = 'Nilearn: Machine learning for NeuroImaging in Python' %}
 
 {% block rootrellink %}
-<li><a href="{{pathto('index')}}">Nilearn Home</a> |&nbsp;</li>
+<li><a href="{{pathto('index')}}">&nbsp; Nilearn Home</a> |&nbsp;</li>
 <li><a href="{{pathto('user_guide')}}">User Guide</a> |&nbsp;</li>
 <li><a href="{{pathto('auto_examples/index')}}">Examples</a> |&nbsp;</li>
 <li><a href="{{pathto('modules/reference')}}">Reference</a> |&nbsp;</li>
@@ -132,7 +132,8 @@ $(function () {
 {% endblock %}
 
 {% block header %}
-<div id="logo-banner">
+<div id="logo-banner-outer">
+ <div id="logo-banner">
   <div class="logo">
     <a href="{{pathto('index') }}">
       <img src="{{ pathto('_static/' + logo, 1) }}" alt="Nilearn logo"  border="0" />
@@ -182,6 +183,7 @@ $(function () {
       }, true);
     </script>
   </div>
+ </div>
 </div>
 
 

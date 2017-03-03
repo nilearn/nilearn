@@ -293,10 +293,20 @@ div.document {
     text-align: left;
     background-image: url(contents.png);
     background-repeat: repeat-x;
+    max-width: 84em;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 div.clearer {
     clear: both;
+}
+
+
+div.related {
+    background-image: url(navigation.png);
+    border-top: 1px solid #ddd;
+    border-bottom: 1px solid #ddd;
 }
 
 div.related h3 {
@@ -304,13 +314,11 @@ div.related h3 {
 }
 
 div.related ul {
-    background-image: url(navigation.png);
+    max-width: 84em;
+    margin: 0px auto 0px auto;
     height: 2em;
     list-style: none;
-    border-top: 1px solid #ddd;
-    border-bottom: 1px solid #ddd;
-    margin: 0;
-    padding-left: 10px;
+    padding-left: 0px;
 }
 
 div.related ul li {
@@ -1135,8 +1143,15 @@ span.example-links {
 
 div#logo-banner {
     background-color: white;
-    padding: 10px 10px 15px 15px;
+    padding: 10px 0px 15px 0px;
     overflow: hidden;
+    max-width: 84em;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+div#logo-banner-outer {
+    background-color: white;
 }
 
 
