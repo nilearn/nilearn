@@ -18,7 +18,6 @@ from distutils.version import LooseVersion
 
 from ._utils.compat import _basestring
 from ._utils.numpy_conversions import csv_to_array, as_ndarray
-from ._utils import check_niimg_4d
 
 NP_VERSION = distutils.version.LooseVersion(np.version.short_version).version
 
