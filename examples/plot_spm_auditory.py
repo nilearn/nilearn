@@ -1,37 +1,116 @@
 """
-Example of a relatively simple GLM fit on the SPM auditory dataset
-===================================================================
+Univariate analysis of block design, one condition versus rest, single subject
+==============================================================================
 
-The script defines a General Linear Model and fits it to fMRI data.
+Authors: Bertrand Thirion, dohmatob elvis dopgima, Christophe Pallier, 2015--2017
 
-Author: Bertrand Thirion, dohmatob elvis dopgima, 2015
+
+
+In this tutorial, we compare the fMRI signal during periods of auditory stimulation
+versus periods of rest, using a General Linear Model (GLM). We will
+use a univariate approach in which independent tests are performed at
+each single-voxel.
+
+The dataset comes from experiment conducted at the FIL by Geriant Rees
+under the direction of Karl Friston. It is provided by FIL methods
+group which develops the SPM software.
+
+According to SPM documentation, 96 acquisitions were made (RT=7s), in
+blocks of 6, giving 16 42s blocks. The condition for successive blocks
+alternated between rest and auditory stimulation, starting with rest.
+Auditory stimulation was bi-syllabic words presented binaurally at a
+rate of 60 per minute. The functional data starts at acquisiton 4,
+image fM00223_004.
+
+The whole brain BOLD/EPI images were acquired on a modified 2T Siemens
+MAGNETOM Vision system. Each acquisition consisted of 64 contiguous
+slices (64x64x64 3mm x 3mm x 3mm voxels). Acquisition took 6.05s, with
+the scan to scan repeat time (RT) set arbitrarily to 7s.
+
+
+This analyse described here is performed in the native space, on the
+original EPI scans without any spatial or temporal preprocessing.
+(More sensitive results would likely be obtained on the corrected,
+spatially normalized and smoothed images).
+
+
+
+
+To run this example, you must launch IPython via ``ipython
+--matplotlib`` in a terminal, or use the Jupyter notebook.
+
+.. contents:: **Contents**
+    :local:
+    :depth: 1
+
+
 """
 
-import os
-import numpy as np
-import pandas as pd
 
-import nibabel as nib
-from nibabel import Nifti1Image
-from nilearn.plotting import plot_stat_map, show
+
+
+################################################################################
+# Retrieving the data
+# -------------------
+# 
+# .. note:: In this tutorial, we load the data using a data downloading function.
+#           To input your own data, you will need to pass a list of paths to your own files.
+ 
+
+from nistats.datasets import fetch_spm_auditory
+subject_data = fetch_spm_auditory()
+
+
+################################################################################
+# We can list the filenames of the images and display them:
+
+subject_data.func
+from nilearn.plotting import plot_stat_map, plot_anat, plot_img, show
+
+plot_img(subject_data.func[0])
+plot_anat(subject_data.anat)
+show()
+
+################################################################################
+# .. figure:: ../_images/sphx_glr_plot_spm_auditory_001.png
+#    :width: 80%
+#    :align: left
+
+################################################################################
+# .. figure:: ../_images/sphx_glr_plot_spm_auditory_002.png
+#    :width: 80%
+#    :align: left
+
+
+################################################################################
+# Next, we concatenate all the 3D EPI image into a single 4D image:
+
+import nibabel
 from nilearn.image import mean_img
 
-from nistats.first_level_model import FirstLevelModel
-from nistats.datasets import fetch_spm_auditory
+fmri_img = nibabel.concat_images(subject_data.func)
+fmri_img = nibabel.Nifti1Image(fmri_img.get_data(), fmri_img.affine)
 
-#########################################################################
-# Prepare spm auditory data
-# ----------------------------------
-# Fetch the dataset
-subject_data = fetch_spm_auditory()
-fmri_img = nib.concat_images(subject_data.func)
-fmri_img = Nifti1Image(fmri_img.get_data(), fmri_img.affine)
-#########################################################################
-# compute background image unto which activation will be projected
+################################################################################
+# And we average all the EPI images in order to create a background
+# image that will be used to display the activations:
+  
 mean_img = mean_img(fmri_img)
 
-#########################################################################
-# Construct experimental paradigm
+###################################################################################
+# Specifying the experimental paradigm
+# ------------------------------------
+#
+# We must provide a description of the experiment, that is, define the
+# timing of the auditory stimulation and rest periods. According to
+# the documentation of the dataset, there were 16 42s blocks --- in
+# which 6 scans were acquired --- alternating between rest and
+# auditory stimulation, starting with rest. We use standard python
+# functions to create a pandas.DataFrame object that specifies the
+# timings:
+
+import numpy as np
+
 tr = 7.
 slice_time_ref = 0.
 n_scans = 96
@@ -40,67 +119,189 @@ conditions = ['rest', 'active'] * 8
 n_blocks = len(conditions)
 duration = epoch_duration * np.ones(n_blocks)
 onset = np.linspace(0, (n_blocks - 1) * epoch_duration, n_blocks)
-paradigm = pd.DataFrame(
-    {'onset': onset, 'duration': duration, 'trial_type': conditions})
 
-#########################################################################
-# Construct design matrix
+import pandas as pd
+events = pd.DataFrame({'onset': onset, 'duration': duration, 'trial_type': conditions})
+
+################################################################################
+# You can inspect the ``events`` object:
+   
+events
+
+"""
+::
+  duration  onset trial_type
+  0       42.0    0.0       rest
+  1       42.0   42.0     active
+  2       42.0   84.0       rest
+  3       42.0  126.0     active
+  4       42.0  168.0       rest
+  5       42.0  210.0     active
+  6       42.0  252.0       rest
+  7       42.0  294.0     active
+  8       42.0  336.0       rest
+  9       42.0  378.0     active
+  10      42.0  420.0       rest
+  11      42.0  462.0     active
+  12      42.0  504.0       rest
+  13      42.0  546.0     active
+  14      42.0  588.0       rest
+  15      42.0  630.0     active
+"""
+
+################################################################################
+# Performing the GLM analysis
+# ---------------------------
+#
+# We need to construct a *design matrix* using the timing information
+# provided by the ``events`` object. The design matrix contains
+# regressors of interest as well as regressors of non-interest
+# modeling temporal drifts:
+  
 frame_times = np.linspace(0, (n_scans - 1) * tr, n_scans)
 drift_model = 'Cosine'
 period_cut = 4. * epoch_duration
 hrf_model = 'glover + derivative'
 
-#########################################################################
-# Perform GLM analysis
-# ------------------------------
-# Fit GLM
-print('\r\nFitting a GLM (this takes time) ..')
+################################################################################
+# It is now time to create a ``FirstLevelModel`` object and fit it to the 4D dataset:
+
+from nistats.first_level_model import FirstLevelModel
+    
 fmri_glm = FirstLevelModel(tr, slice_time_ref, noise_model='ar1',
                            standardize=False, hrf_model=hrf_model,
                            drift_model=drift_model, period_cut=period_cut)
-fmri_glm = fmri_glm.fit(fmri_img, paradigm)
+fmri_glm = fmri_glm.fit(fmri_img, events)
 
-#########################################################################
-# We could easily specify basic contrasts (Betas of the GLM model)
+################################################################################
+# One can inspect the design matrix (rows represent time, and
+# columns contain the predictors):
+
+from nistats.design_matrix import plot_design_matrix
 design_matrix = fmri_glm.design_matrices_[0]
+plot_design_matrix(design_matrix)
+show()
+
+################################################################################
+# .. figure:: ../_images/sphx_glr_plot_spm_auditory_003.png
+#    :width: 80%
+#    :align: left
+
+
+################################################################################
+# The first column contains the expected reponse profile of regions which are
+# sensitive to the auditory stimulation.
+
+import matplotlib.pyplot as plt
+plt.plot(design_matrix['active'])
+plt.xlabel('scan')
+plt.title('Expected Auditory Response')
+plt.show()
+
+################################################################################
+# .. figure:: ../_images/sphx_glr_plot_spm_auditory_004.png
+#    :width: 80%
+#    :align: left
+
+
+################################################################################
+# Detecting voxels with significant effects
+# -----------------------------------------
+#
+# To access the estimated coefficients (Betas of the GLM model), we
+# created constrasts with a single '1' in each of the columns:
+  
 contrast_matrix = np.eye(design_matrix.shape[1])
 contrasts = dict([(column, contrast_matrix[i])
                   for i, column in enumerate(design_matrix.columns)])
 
-#########################################################################
-# For this example instead lets specify one interesting contrast
-contrasts = {'active-rest': contrasts['active'] - contrasts['rest']}
+""" 
+contrasts::
 
-print("Computing contrasts ..")
-output_dir = 'results'
-if not os.path.exists(output_dir):
-    os.mkdir(output_dir)
+  {
+   'active':           array([ 1.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.]),
+  'active_derivative': array([ 0.,  1.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.]),
+  'constant':          array([ 0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  1.]),
+  'drift_1':           array([ 0.,  0.,  0.,  0.,  1.,  0.,  0.,  0.,  0.,  0.,  0.,  0.]),
+  'drift_2':           array([ 0.,  0.,  0.,  0.,  0.,  1.,  0.,  0.,  0.,  0.,  0.,  0.]),
+  'drift_3':           array([ 0.,  0.,  0.,  0.,  0.,  0.,  1.,  0.,  0.,  0.,  0.,  0.]),
+  'drift_4':           array([ 0.,  0.,  0.,  0.,  0.,  0.,  0.,  1.,  0.,  0.,  0.,  0.]),
+  'drift_5':           array([ 0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  1.,  0.,  0.,  0.]),
+  'drift_6':           array([ 0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  1.,  0.,  0.]),
+  'drift_7':           array([ 0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  1.,  0.]),
+  'rest':              array([ 0.,  0.,  1.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.]),
+  'rest_derivative':   array([ 0.,  0.,  0.,  1.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.])}
+"""
 
-for contrast_id, contrast_val in contrasts.items():
-    print("\tcontrast id: %s" % contrast_id)
-    z_map = fmri_glm.compute_contrast(contrasts[contrast_id],
-                                      output_type='z_score')
-    t_map = fmri_glm.compute_contrast(contrasts[contrast_id],
-                                      output_type='stat')
-    eff_map = fmri_glm.compute_contrast(contrasts[contrast_id],
-                                        output_type='effect_size')
-    var_map = fmri_glm.compute_contrast(contrasts[contrast_id],
-                                        output_type='effect_variance')
-    #########################################################################
-    # Store maps to disk
-    for dtype, out_map in zip(['z', 't', 'effects', 'variance'],
-                              [z_map, t_map, eff_map, var_map]):
-        map_dir = os.path.join(output_dir, '%s_maps' % dtype)
-        if not os.path.exists(map_dir):
-            os.makedirs(map_dir)
-        map_path = os.path.join(map_dir, '%s.nii.gz' % contrast_id)
-        nib.save(out_map, map_path)
-        print("\t\t%s map: %s" % (dtype, map_path))
+################################################################################
+# We can then compare the two conditions 'active' and 'rest' by
+# generating the relevant contrast:
+		    
 
-    #########################################################################
-    # Plot thresholded z scores map
-    display = plot_stat_map(z_map, bg_img=mean_img, threshold=3.0,
-                            display_mode='z', cut_coords=3, black_bg=True,
-                            title=contrast_id)
+active_minus_rest =  contrasts['active'] - contrasts['rest']
 
-    show()
+eff_map = fmri_glm.compute_contrast(active_minus_rest,
+                                    output_type='effect_size')
+
+z_map = fmri_glm.compute_contrast(active_minus_rest,
+                                  output_type='z_score')
+
+###############################################################################
+# Plot thresholded z scores map
+
+plot_stat_map(z_map, bg_img=mean_img, threshold=3.0,
+              display_mode='z', cut_coords=3, black_bg=True,
+              title='Active minus Rest (Z>3)')
+show()
+
+################################################################################
+# .. figure:: ../_images/sphx_glr_plot_spm_auditory_005.png
+#    :width: 80%
+#    :align: left
+
+################################################################################
+# We can use ``nibabel.save`` to save the effect and zscore maps to the disk
+
+
+import nibabel
+from os.path import join
+outdir = 'results'
+nibabel.save(z_map, join('results', 'active_vs_rest_z_map.nii'))
+nibabel.save(eff_map, join('results', 'active_vs_rest_eff_map.nii'))
+
+################################################################################
+#  Extract the signal from a voxels
+#  --------------------------------
+#
+# We search for the voxel with the larger z-score and plot the signal (warning: double dipping!)
+
+
+# Find the coordinates of the peak
+
+from nibabel.affines import apply_affine
+values = z_map.get_data()
+coord_peaks = np.dstack(np.unravel_index(np.argsort(values.ravel()), values.shape))[0, 0, :]
+coord_mm = apply_affine(z_map.affine, coord_peaks)
+
+##################################################################################################
+# We create a masker for the voxel (allowing us to detrend the signal) and extract the time course
+
+from nilearn.input_data import NiftiSpheresMasker
+mask = NiftiSpheresMasker([coord_mm], radius=3, 
+                          detrend=True, standardize=True, 
+                          high_pass=None, low_pass=None, t_r=7.)
+sig = mask.fit_transform(fmri_img)
+
+##########################################################
+# Let's plot the signal and the theoretical response
+
+plt.plot(frame_times, sig, label='voxel %d %d %d' % tuple(coord_mm))
+plt.plot(design_matrix['active'], color='red', label='model')
+plt.xlabel('scan')
+plt.legend()
+plt.show()
+
+################################################################################
+# .. figure:: ../_images/sphx_glr_plot_spm_auditory_006.png
+#    :width: 80%
+#    :align: left
