@@ -195,7 +195,7 @@ def _geometric_mean(matrices, init=None, max_iter=10, tol=1e-7):
 
 
 @deprecated("Function 'sym_to_vec' has been renamed to "
-            "'sym_matrix_to_vec' and will be removed. ")
+            "'sym_matrix_to_vec' and will be removed in future releases. ")
 def sym_to_vec(symmetric, discard_diagonal=False):
     """Return the flattened lower triangular part of an array.
     If diagonal is kept, diagonal elements are divided by sqrt(2) to conserve
@@ -213,6 +213,7 @@ def sym_to_vec(symmetric, discard_diagonal=False):
     discard_diagonal : boolean, optional
         If True, the values of the diagonal are not returned.
         Default is False.
+
     Returns
     -------
     output : numpy.ndarray
