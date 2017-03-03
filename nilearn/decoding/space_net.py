@@ -500,7 +500,7 @@ def path_scores(solver, X, y, mask, alphas, l1_ratios, train, test,
 
     all_test_scores = np.array(all_test_scores)
     return (all_test_scores, best_w, best_alpha, best_l1_ratio, alphas_,
-            y_train_mean, key, early_stopper)
+            y_train_mean, key, his)
 
 
 class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
