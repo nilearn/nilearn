@@ -656,7 +656,7 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
     def __init__(self, penalty="graph-net", is_classif=False, loss=None,
                  l1_ratios=.5, alphas=None, n_alphas=10, mask=None,
                  target_affine=None, target_shape=None, low_pass=None,
-                 high_pass=None, t_r=None, max_iter=1000, tol=1e-2,
+                 high_pass=None, t_r=None, max_iter=1000, tol=1e-3,
                  memory=Memory(None), memory_level=1,
                  standardize=True, verbose=1, n_jobs=1, eps=1e-3,
                  cv=8, fit_intercept=True, screening_percentile=20.,
@@ -1117,7 +1117,7 @@ class SpaceNetClassifier(BaseSpaceNet):
     def __init__(self, penalty="graph-net", loss="logistic",
                  l1_ratios=.5, alphas=None, n_alphas=10, mask=None,
                  target_affine=None, target_shape=None, low_pass=None,
-                 high_pass=None, t_r=None, max_iter=1000, tol=1e-2,
+                 high_pass=None, t_r=None, max_iter=1000, tol=1e-3,
                  memory=Memory(None), memory_level=1, standardize=True,
                  verbose=1, n_jobs=1, eps=1e-3,
                  cv=8, fit_intercept=True, screening_percentile=20.,
@@ -1299,7 +1299,7 @@ class SpaceNetRegressor(BaseSpaceNet):
     def __init__(self, penalty="graph-net", l1_ratios=.5, alphas=None,
                  n_alphas=10, mask=None, target_affine=None,
                  target_shape=None, low_pass=None, high_pass=None, t_r=None,
-                 max_iter=1000, tol=1e-2, memory=Memory(None), memory_level=1,
+                 max_iter=1000, tol=1e-3, memory=Memory(None), memory_level=1,
                  standardize=True, verbose=1, n_jobs=1, eps=1e-3, cv=8,
                  fit_intercept=True, screening_percentile=20., debias=False):
         super(SpaceNetRegressor, self).__init__(
