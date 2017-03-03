@@ -58,7 +58,8 @@ from nilearn.plotting import plot_stat_map, show
 coef_img = decoder.coef_img_
 plot_stat_map(coef_img, background_img,
               title="graph-net: accuracy %g%%" % accuracy,
-              cut_coords=(-52, -5), display_mode="yz")
+              cut_coords=(-52, -5), display_mode="yz",
+              output_file='haxby_graph-net_weights.png')
 
 # Save the coefficients to a nifti file
 coef_img.to_filename('haxby_graph-net_weights.nii')
@@ -76,7 +77,8 @@ print("TV-l1 classification accuracy : %g%%" % accuracy)
 coef_img = decoder.coef_img_
 plot_stat_map(coef_img, background_img,
               title="tv-l1: accuracy %g%%" % accuracy,
-              cut_coords=(-52, -5), display_mode="yz")
+              cut_coords=(-52, -5), display_mode="yz",
+              output_file='haxby_tv-l1_weights.png')
 
 # Save the coefficients to a nifti file
 coef_img.to_filename('haxby_tv-l1_weights.nii')
@@ -87,4 +89,3 @@ show()
 # We can see that the TV-l1 penalty is 3 times slower to converge and
 # gives the same prediction accuracy. However, it yields much
 # cleaner coefficient maps
-
