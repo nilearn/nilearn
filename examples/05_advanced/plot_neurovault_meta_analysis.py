@@ -5,7 +5,7 @@ NeuroVault meta-analysis of stop-go paradigm studies.
 This example shows how to download statistical maps from
 NeuroVault
 
-See :func:`nilearn.datasets.fetch_neurovault`
+See :func:`nilearn.datasets.fetch_neurovault_ids`
 documentation for more details.
 
 """
@@ -13,13 +13,14 @@ documentation for more details.
 # License: BSD
 import scipy
 
-from nilearn.datasets.neurovault import fetch_neurovault_ids
+from nilearn.datasets import fetch_neurovault_ids
 from nilearn import plotting
 from nilearn.image import new_img_like, load_img, math_img
 
 
 ######################################################################
 # Fetch images for "successful stop minus go"-like protocols.
+# -----------------------------------------------------------
 
 # These are the images we are interested in,
 # in order to save time we specify their ids explicitly.
@@ -27,12 +28,12 @@ stop_go_image_ids = (151, 3041, 3042, 2676, 2675, 2818, 2834)
 
 # These ids were determined by querying neurovault like this:
 
-# from nilearn.datasets.neurovault import fetch_neurovault, Contains
+# from nilearn.datasets import fetch_neurovault, neurovault
 
 # nv_data = fetch_neurovault(
 #     max_images=7,
-#     cognitive_paradigm_cogatlas=Contains('stop signal'),
-#     contrast_definition=Contains('succ', 'stop', 'go'),
+#     cognitive_paradigm_cogatlas=neurovault.Contains('stop signal'),
+#     contrast_definition=neurovault.Contains('succ', 'stop', 'go'),
 #     map_type='T map')
 
 # print([meta['id'] for meta in nv_data['images_meta']])
@@ -45,6 +46,7 @@ collections = nv_data['collections_meta']
 
 ######################################################################
 # Visualize the data
+# ------------------
 
 print('\nplotting glass brain for collected images\n')
 
@@ -55,6 +57,7 @@ for im in images_meta:
 
 ######################################################################
 # Compute statistics
+# ------------------
 
 
 def t_to_z(t_scores, deg_of_freedom):
@@ -92,6 +95,7 @@ for this_meta in images_meta:
 
 ######################################################################
 # Plot the combined z maps
+# ------------------------
 
 cut_coords = [-15, -8, 6, 30, 46, 62]
 meta_analysis_img = math_img(

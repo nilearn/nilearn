@@ -32,6 +32,7 @@ import matplotlib.pyplot as plt
 
 ######################################################################
 # Get image and term data
+# -----------------------
 
 # Download images
 # Here by default we only download 80 images to save time,
@@ -57,6 +58,7 @@ for term_idx in np.argsort(total_scores)[-10:][::-1]:
 
 ######################################################################
 # Reshape and mask images
+# -----------------------
 
 print("\nReshaping and masking images.\n")
 
@@ -94,6 +96,7 @@ term_weights = term_weights[is_usable, :]
 
 ######################################################################
 # Run ICA and map components to terms
+# -----------------------------------
 
 print("Running ICA; may take time...")
 # We use a very small number of components as we have downloaded only 80
@@ -109,6 +112,7 @@ print('Done, plotting results.')
 
 ######################################################################
 # Generate figures
+# ----------------
 
 with warnings.catch_warnings():
     warnings.simplefilter('ignore', DeprecationWarning)

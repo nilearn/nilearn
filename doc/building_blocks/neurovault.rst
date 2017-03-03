@@ -1,0 +1,167 @@
+.. _neurovault:
+
+===========================================================
+Downloading statistical maps from the Neurovault repository
+===========================================================
+
+Neurovault is a public repository of unthresholded statistical maps,
+parcellations, and atlases of the human brain. You can read about it
+and browse the images it contains at http://www.neurovault.org. You
+can download maps from Neurovault with Nilearn.
+
+Neurovault contains collections of images. We can get information
+about each collection - such as who uploaded it, a link to a paper, a
+description - and about each image - the modality, number of subjects,
+some tags, and more. The nilearn downloaders will fetch this metadata
+and the images themselves.
+
+Nilearn provides two functions to downlad statistical maps from
+Neurovault.
+
+Specific images or collections
+------------------------------
+
+In the simplest case, you already know the "id" of the collections or
+images you want. Maybe you liked a paper and went to
+http://www.neurovault.org looking for the data. Once on the relevant
+collection's webpage, you can click 'Details' to see its id
+(and more). You can then download it using
+``nilearn.datasets.fetch_neurovault_ids`` ::
+
+    >>> from nilearn.datasets import fetch_neurovault_ids
+    >>> brainpedia = fetch_neurovault_ids(collection_ids=[1952]) # doctest: +SKIP
+
+Or if you want some images in particular, rather than whole
+collections ::
+
+    >>> brainpedia_subset = fetch_neurovault_ids(image_ids=[32015, 32016]) # doctest: +SKIP
+
+Selection filters
+-----------------
+
+You may not know which collections or images you want. For example,
+you may be conducting a meta-analysis and want to grab all the images
+that are related to "language". Using
+``nilearn.datasets.fetch_neurovault``, you can fetch all the images and
+collections that match your criteria - you don't need to know their
+ids.
+
+The filters are applied to images' and collections' metadata.
+
+You can express filters as functions. The parameter
+``collection_filter`` should be a callable, which will be called once
+for each collection. The sole argument will be a dictionary containing
+the metadata for the collection. ``image_filter`` does the same job for
+images. The default values for these parameters don't filter out
+anything.
+
+Many images on Neurovault have a "modality" field in their metadata.
+BOLD images should have it set to "fMRI-BOLD". We can ask for BOLD
+images only ::
+
+    >>> from nilearn.datasets import fetch_neurovault
+    >>> def is_bold(image_info):
+    ...     return image_info.get('modality') == 'fMRI-BOLD'
+    ...
+    >>> bold = fetch_neurovault(image_filter=is_bold, max_images=None) # doctest: +SKIP
+
+Here we set the max_images parameter to None, meaning "get as many
+images as possible", because the default is 100.
+
+You can also describe filters with dictionaries. Each collection's
+metadata is compared to the parameter ``collection_terms`` Collections
+for which ``collection_metadata['key'] == value`` is not ``True`` for
+every key, value pair in ``collection_terms`` will be discarded. We use
+``image_terms`` in the same way to filter images.
+
+The default values for these parameters filter out empty collections,
+and exclude an image if one of the following is true:
+
+   - it is not in MNI space.
+   - its metadata field "is_valid" is cleared.
+   - it is thresholded.
+   - its map type is one of "ROI/mask", "anatomical", or "parcellation".
+   - its image type is "atlas"
+
+
+Using dictionaries, the previous example becomes ::
+
+    >>> bold = fetch_neurovault(image_terms={'modality': 'fMRI-BOLD'}, # doctest: +SKIP
+    ... max_images=None) # doctest: +SKIP
+
+Extra keyword arguments are treated as image filters, so we could also
+have written ::
+
+    >>> bold = fetch_neurovault(modality='fMRI-BOLD', max_images=None) # doctest: +SKIP
+
+Sometimes the selection criteria are more complex than simple
+comparison to a single value. For example, we may also be interested
+in CBF and CBV images. In ``nilearn``, the ``dataset.neurovault`` module
+provides ``IsIn`` which makes this easy ::
+
+    >>> from nilearn.datasets import neurovault
+    >>> fmri = fetch_neurovault( # doctest: +SKIP
+    ... modality=neurovault.IsIn('fMRI-BOLD', 'fMRI-CBF', 'fMRI-CBV'), # doctest: +SKIP
+    ... max_images=100) # doctest: +SKIP
+
+We could also have used ``Contains`` ::
+
+    >>> fmri = fetch_neurovault( # doctest: +SKIP
+    ... modality=neurovault.Contains('fMRI'), # doctest: +SKIP
+    ... max_images=None) # doctest: +SKIP
+
+If we are not sure about the case (upper or lower) used for this field
+in Neurovault, we can also use ``Pattern`` ::
+
+    >>> fmri = fetch_neurovault( # doctest: +SKIP
+    ... modality=neurovault.Pattern('fmri-.*', neurovault.re.IGNORECASE), # doctest: +SKIP
+    ... max_images=None) # doctest: +SKIP
+
+The complete list of such special values available in
+``nilearn.datasets.neurovault`` is:
+``IsNull``, ``NotNull``, ``NotEqual``, ``GreaterOrEqual``,
+``GreaterThan``, ``LessOrEqual``, ``LessThan``, ``IsIn``, ``NotIn``,
+``Contains``, ``NotContains``, ``Pattern``.
+
+You can also use ``ResultFilter`` to easily express boolean logic
+(AND, OR, XOR, NOT).
+
+Output
+------
+
+Both functions return a dict-like object which exposes its items as
+attributes.
+
+It contains:
+
+  - ``images``, the paths to downloaded files.
+  - ``images_meta``, the metadata for the images in a list of
+    dictionaries.
+  - ``collections_meta``, the metadata for the collections.
+  - ``description``, a short description of the Neurovault dataset.
+
+Note to ``pandas`` users: passing ``images_meta`` or ``collections_meta``
+to the ``DataFrame`` constructor yields the expected result, with
+images (or collections) as rows and metadata fields as columns.
+
+Neurosynth annotations
+----------------------
+
+It is also possible to ask Neurosynth to annotate the maps found on
+Neurovault. Neurosynth is a platform for large-scale, automated
+synthesis of fMRI data. It can be used to perform decoding.  You can
+learn more about Neurosynth at http://www.neurosynth.org.
+
+If you set the parameter ``fetch_neurosynth_words`` when calling
+``fetch_neurovault`` or ``fetch_neurovault_ids``, we will also
+download the annotations for the resulting images. They will be stored
+as json files on your disk. The result will also contain (unless you
+clear the ``vectorize_words`` parameter to save computation time):
+
+   - ``vocabulary``, a list of words
+   - ``word_frequencies``, the weight of the words returned by
+     neurosynth.org for each image, such that the weight of word
+     ``vocabulary[j]`` for the image found in ``images[i]`` is
+     ``word_frequencies[i, j]``
+
+
