@@ -43,12 +43,12 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
     Parameters
     ----------
     maps_img: 4D niimg-like object
-        See http://nilearn.github.io/manipulating_images/input_output.html.
+        See http://nilearn.github.io/manipulating_images/input_output.html
         Set of continuous maps. One representative time course per map is
         extracted using least square regression.
 
     mask_img: 3D niimg-like object, optional
-        See http://nilearn.github.io/manipulating_images/input_output.html.
+        See http://nilearn.github.io/manipulating_images/input_output.html
         Mask to apply to regions before extracting signals.
 
     allow_overlap: boolean, optional
@@ -219,7 +219,7 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
         Parameters
         ----------
         imgs: 3D/4D Niimg-like object
-            See http://nilearn.github.io/manipulating_images/input_output.html.
+            See http://nilearn.github.io/manipulating_images/input_output.html
             Images to process. It must boil down to a 4D image with scans
             number as last dimension.
 

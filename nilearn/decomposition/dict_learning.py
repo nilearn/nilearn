@@ -198,7 +198,7 @@ class DictLearning(BaseDecomposition, TransformerMixin):
         Parameters
         ----------
         imgs: list of Niimg-like objects
-            See http://nilearn.github.io/manipulating_images/input_output.html.
+            See http://nilearn.github.io/manipulating_images/input_output.html
             Data on which PCA must be calculated. If this is a list,
             the affine is considered the same for all.
 
