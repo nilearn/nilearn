@@ -564,7 +564,7 @@ class BaseSlicer(object):
         Parameters
         -----------
         img: Niimg-like object
-            See http://nilearn.github.io/manipulating_images/input_output.html.
+            See http://nilearn.github.io/manipulating_images/input_output.html
             If it is a masked array, only the non-masked part will be
             plotted.
         threshold : a number, None
@@ -602,7 +602,7 @@ class BaseSlicer(object):
         Parameters
         -----------
         img: Niimg-like object
-            See http://nilearn.github.io/manipulating_images/input_output.html.
+            See http://nilearn.github.io/manipulating_images/input_output.html
             Provides image to plot.
         threshold: a number, None
             If None is given, the maps are not thresholded.
@@ -760,7 +760,7 @@ class BaseSlicer(object):
         Parameters
         ----------
         img: Niimg-like object
-            See http://nilearn.github.io/manipulating_images/input_output.html.
+            See http://nilearn.github.io/manipulating_images/input_output.html
             The 3D map to be plotted.
             If it is a masked array, only the non-masked part will be plotted.
         color: matplotlib color: string or (r, g, b) value

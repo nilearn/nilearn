@@ -104,7 +104,7 @@ def mask_and_reduce(masker, imgs,
         Instance used to mask provided data.
 
     imgs: list of 4D Niimg-like objects
-        See http://nilearn.github.io/manipulating_images/input_output.html.
+        See http://nilearn.github.io/manipulating_images/input_output.html
         List of subject data to mask, reduce and stack.
 
     confounds: CSV file path or 2D matrix, optional
@@ -309,7 +309,7 @@ class BaseDecomposition(BaseEstimator, CacheMixin):
     Attributes
     ----------
     `mask_img_` : Niimg-like object
-        See http://nilearn.github.io/manipulating_images/input_output.html.
+        See http://nilearn.github.io/manipulating_images/input_output.html
         The mask of the data. If no mask was given at masker creation, contains
         the automatically computed mask.
 
@@ -350,7 +350,7 @@ class BaseDecomposition(BaseEstimator, CacheMixin):
         Parameters
         ----------
         imgs: list of Niimg-like objects
-            See http://nilearn.github.io/manipulating_images/input_output.html.
+            See http://nilearn.github.io/manipulating_images/input_output.html
             Data on which the mask is calculated. If this is a list,
             the affine is considered the same for all.
 
@@ -395,7 +395,7 @@ class BaseDecomposition(BaseEstimator, CacheMixin):
         Parameters
         ----------
         imgs: iterable of Niimg-like objects
-            See http://nilearn.github.io/manipulating_images/input_output.html.
+            See http://nilearn.github.io/manipulating_images/input_output.html
             Data to be projected
 
         confounds: CSV file path or 2D matrix
@@ -472,7 +472,7 @@ class BaseDecomposition(BaseEstimator, CacheMixin):
         Parameters
         ----------
         imgs: iterable of Niimg-like objects
-            See http://nilearn.github.io/manipulating_images/input_output.html.
+            See http://nilearn.github.io/manipulating_images/input_output.html
             Data to be scored
 
         confounds: CSV file path or 2D matrix

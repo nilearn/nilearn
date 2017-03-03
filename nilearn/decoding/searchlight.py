@@ -196,11 +196,11 @@ class SearchLight(BaseEstimator):
     Parameters
     -----------
     mask_img : Niimg-like object
-        See http://nilearn.github.io/manipulating_images/input_output.html.
+        See http://nilearn.github.io/manipulating_images/input_output.html
         boolean image giving location of voxels containing usable signals.
 
     process_mask_img : Niimg-like object, optional
-        See http://nilearn.github.io/manipulating_images/input_output.html.
+        See http://nilearn.github.io/manipulating_images/input_output.html
         boolean image giving voxels on which searchlight should be
         computed.
 
@@ -266,7 +266,7 @@ class SearchLight(BaseEstimator):
         Parameters
         ----------
         imgs : Niimg-like object
-            See http://nilearn.github.io/manipulating_images/input_output.html.
+            See http://nilearn.github.io/manipulating_images/input_output.html
             4D image.
 
         y : 1D array-like
