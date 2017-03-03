@@ -9,9 +9,9 @@ body {
     letter-spacing: -0.01em;
     line-height: 150%;
     text-align: center;
-    background-color: #4eacc5;
+    background-color: rgb(246, 248, 250);
     padding: 0;
-    border: 1px solid #aaa;
+    border: 0.66667px solid rgb(209, 213, 218);
     margin: 0px auto;
     min-width: 20em;
     max-width: 84em;
