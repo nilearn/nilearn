@@ -25,7 +25,12 @@ from .._utils.param_validation import check_threshold
 
 
 def _spatial_image_getstate(self):
-    state = {'dataobj': self._dataobj,
+    dataobj = self.get_data()
+    if dataobj.flags['C_CONTIGUOUS']:
+        dataobj = np.asarray(dataobj)
+    else:
+        dataobj = np.asarray(dataobj, order='F')
+    state = {'dataobj': dataobj,
              'header': self.header,
              'filename': self.get_filename(),
              'affine': self.affine,
@@ -45,8 +50,8 @@ def _spatial_image_setstate(self, state):
 
 
 def _cachable_niimg_factory(niimg):
-    # niimg.__class__.__setstate__ = _spatial_image_setstate
-    # niimg.__class__.__getstate__ = _spatial_image_getstate
+    niimg.__class__.__setstate__ = _spatial_image_setstate
+    niimg.__class__.__getstate__ = _spatial_image_getstate
     return niimg
 
 

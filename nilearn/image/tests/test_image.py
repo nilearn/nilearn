@@ -9,10 +9,11 @@ import numpy as np
 from nibabel import Nifti1Image
 from nose.tools import assert_true, assert_false, assert_equal
 from numpy.testing import assert_array_equal, assert_allclose
-from sklearn.externals.joblib import Memory
+from sklearn.externals.joblib import dump, load, hashing
 
 from nilearn import signal
-from nilearn._utils import testing, niimg_conversions, compat, check_niimg
+from nilearn._utils import niimg_conversions, compat
+from nilearn._utils import testing, check_niimg
 from nilearn._utils.testing import assert_raises_regex
 from nilearn.image import concat_imgs
 from nilearn.image import image
@@ -519,23 +520,20 @@ def test_clean_img():
 
 
 def test_caching_image():
-
     shape = (4, 4, 4)
     length = 10
-    img, mask_img = testing.generate_fake_fmri(shape=shape, length=length)
-    mem = Memory(cachedir='test')
-    for create_files in [False]:
-        acc = []
+    for create_files in [True, False]:
+        img, mask_img = testing.generate_fake_fmri(shape=shape, length=length)
 
-        def dummy_nifti_func(img):
-            acc.append(1)
-            return
-        cached_func = mem.cache(dummy_nifti_func)
         with testing.write_tmp_imgs(img, create_files=create_files) as img:
+            # Simulate what often happen in code
             img = check_niimg(img)
-            cached_func(img)
-            assert (len(acc) == 1)
-            data = img.get_data()
-            cached_func(img)
-            assert (len(acc) == 1)
-        mem.clear(warn=False)
+            hash1 = hashing.hash(img)
+            dump(img, 'img.pkl')
+            img = load('img.pkl', mmap_mode='r')
+            img = check_niimg(img)
+            hash2 = hashing.hash(img)
+            assert (hash1 == hash2)
+            # XXX We should use some kind of fixture there, not sure what is
+            # the best practice (appart from py.test)
+            os.unlink('img.pkl')
