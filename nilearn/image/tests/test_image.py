@@ -1,26 +1,26 @@
 """
 Test image pre-processing functions
 """
-from nose.tools import assert_true, assert_false, assert_equal
-from nose import SkipTest
-
-import platform
 import os
+import platform
+
 import nibabel
-from nibabel import Nifti1Image
 import numpy as np
+from nibabel import Nifti1Image
+from nose.tools import assert_true, assert_false, assert_equal
 from numpy.testing import assert_array_equal, assert_allclose
-from nilearn._utils.testing import assert_raises_regex
+from sklearn.externals.joblib import Memory
 
 from nilearn import signal
-from nilearn.image import image
-from nilearn.image import resampling
+from nilearn._utils import testing, niimg_conversions, compat, check_niimg
+from nilearn._utils.testing import assert_raises_regex
 from nilearn.image import concat_imgs
-from nilearn._utils import testing, niimg_conversions, compat
-from nilearn.image import new_img_like
-from nilearn.image import threshold_img
+from nilearn.image import image
 from nilearn.image import iter_img
 from nilearn.image import math_img
+from nilearn.image import new_img_like
+from nilearn.image import resampling
+from nilearn.image import threshold_img
 
 X64 = (platform.architecture()[0] == '64bit')
 
@@ -516,3 +516,26 @@ def test_clean_img():
     nan_img = nibabel.Nifti1Image(data, np.eye(4))
     clean_im = image.clean_img(nan_img, ensure_finite=True)
     assert_true(np.any(np.isfinite(clean_im.get_data())), True)
+
+
+def test_caching_image():
+
+    shape = (4, 4, 4)
+    length = 10
+    img, mask_img = testing.generate_fake_fmri(shape=shape, length=length)
+    mem = Memory(cachedir='test')
+    for create_files in [False]:
+        acc = []
+
+        def dummy_nifti_func(img):
+            acc.append(1)
+            return
+        cached_func = mem.cache(dummy_nifti_func)
+        with testing.write_tmp_imgs(img, create_files=create_files) as img:
+            img = check_niimg(img)
+            cached_func(img)
+            assert (len(acc) == 1)
+            data = img.get_data()
+            cached_func(img)
+            assert (len(acc) == 1)
+        mem.clear(warn=False)

@@ -45,8 +45,8 @@ def _spatial_image_setstate(self, state):
 
 
 def _cachable_niimg_factory(niimg):
-    niimg.__class__.__setstate__ = _spatial_image_setstate
-    niimg.__class__.__getstate__ = _spatial_image_getstate
+    # niimg.__class__.__setstate__ = _spatial_image_setstate
+    # niimg.__class__.__getstate__ = _spatial_image_getstate
     return niimg
 
 
