@@ -11,22 +11,22 @@ from nilearn.decomposition.base import fast_svd
 
 def test_fast_svd():
     n_samples = 100
-    # We need to use n_features > 500 to trigger the randomized_svd
-    n_features = 510
     k = 10
 
     rng = np.random.RandomState(42)
-    # generate a matrix X of approximate effective rank `rank` and no noise
-    # component (very structured signal):
-    U = rng.normal(size=(n_samples, k))
-    V = rng.normal(size=(k, n_features))
-    X = np.dot(U, V)
-    assert_equal(X.shape, (n_samples, n_features))
 
-    # compute the singular values of X using the slow exact method
-    U_, s_, V_ = linalg.svd(X, full_matrices=False)
+    # We need to use n_features > 500 to trigger the randomized_svd
+    for n_features in (30, 100, 550):
+        # generate a matrix X of approximate effective rank `rank` and no noise
+        # component (very structured signal):
+        U = rng.normal(size=(n_samples, k))
+        V = rng.normal(size=(k, n_features))
+        X = np.dot(U, V)
+        assert_equal(X.shape, (n_samples, n_features))
 
-    for solver in ('auto', 'full', 'randomized'):
+        # compute the singular values of X using the slow exact method
+        U_, s_, V_ = linalg.svd(X, full_matrices=False)
+
         Ur, Sr, Vr = fast_svd(X, k, random_state=0)
         assert_equal(Vr.shape, (k, n_features))
         assert_equal(Ur.shape, (n_samples, k))
