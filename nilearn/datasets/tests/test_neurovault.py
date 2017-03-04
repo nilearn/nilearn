@@ -15,6 +15,8 @@ import tempfile
 import shutil
 import json
 import re
+from collections import namedtuple
+from functools import wraps
 
 import numpy as np
 from nose import SkipTest
@@ -166,17 +168,25 @@ def test_append_filters_to_query():
 
 
 def ignore_connection_errors(func):
-    def decorate(*args, **kwargs):
+    @wraps(func)
+    def test_wrap(*args, **kwargs):
         try:
             func(*args, **kwargs)
         except neurovault.URLError:
             raise SkipTest('connection problem')
 
-    return decorate
+    return test_wrap
+
+
+_FakeResponse = namedtuple('_FakeResponse', ('headers'))
 
 
 @ignore_connection_errors
 def test_get_encoding():
+    response = _FakeResponse({'Content-Type': 'text/json; charset=utf-8'})
+    assert_equal(neurovault._get_encoding(response), 'utf-8')
+    response.headers.pop('Content-Type')
+    assert_raises(ValueError, neurovault._get_encoding, response)
     request = neurovault.Request('http://www.google.com')
     opener = neurovault.build_opener()
     try:
@@ -200,6 +210,9 @@ def test_get_batch():
             pass
         assert_raises(ValueError, neurovault._get_batch, 'file://{0}'.format(
             os.path.join(temp_dir, 'test_nv.txt')))
+    no_results_url = ('https://eutils.ncbi.nlm.nih.gov/entrez/eutils/'
+                      'esearch.fcgi?db=pmc&retmode=json&term=fmri')
+    assert_raises(ValueError, neurovault._get_batch, no_results_url)
 
 
 @ignore_connection_errors
@@ -211,6 +224,10 @@ def test_scroll_server_results():
         neurovault._NEUROVAULT_COLLECTIONS_URL, max_results=3,
         local_filter=lambda r: False))
     assert_equal(len(result), 0)
+    no_results = neurovault._scroll_server_results(
+        'http://BAD_URL', max_results=3,
+        local_filter=lambda r: True)
+    next(no_results)
 
 
 def test_is_null():
@@ -372,6 +389,7 @@ def test_result_filter():
     filter_0 = neurovault.ResultFilter(query_terms={'a': 0},
                                        callable_filter=lambda d: len(d) < 5,
                                        b=1)
+    assert_equal(np.unicode(filter_0), u'ResultFilter')
     assert_equal(filter_0['a'], 0)
     assert_true(filter_0({'a': 0, 'b': 1, 'c': 2}))
     assert_false(filter_0({'a': 0, 'b': 1, 'c': 2, 'd': 3, 'e': 4}))
@@ -432,6 +450,23 @@ def test_result_filter_combinations():
     assert_false(filt({'a': 0, 'b': 0}))
 
 
+def _fail(*args, **kwargs):
+    raise neurovault.URLError('problem')
+
+
+class _FailingDownloads():
+
+    def __init__(self):
+        self.original_fetch = None
+
+    def __enter__(self):
+        self.original_fetch = neurovault._fetch_file
+        neurovault._fetch_file = _fail
+
+    def __exit__(self, *args):
+        neurovault._fetch_file = self.original_fetch
+
+
 @ignore_connection_errors
 def test_simple_download():
     with _TestTemporaryDirectory() as temp_dir:
@@ -439,20 +474,10 @@ def test_simple_download():
             'http://neurovault.org/media/images/35/Fig3B_zstat1.nii.gz',
             os.path.join(temp_dir, 'image_35.nii.gz'), temp_dir)
         assert_true(os.path.isfile(downloaded_file))
-        assert_raises(neurovault.URLError, neurovault._simple_download,
-                      'http://', 'bad.nii.gz', temp_dir)
-
-
-@ignore_connection_errors
-def test_fetch_neurosynth_words():
-    with _TestTemporaryDirectory() as temp_dir:
-        words_file_name = os.path.join(
-            temp_dir, 'neurosynth_words_for_image_110.json')
-        neurovault._fetch_neurosynth_words(
-            110, words_file_name, temp_dir)
-        with open(words_file_name, 'rb') as words_file:
-            words = json.loads(words_file.read().decode('utf-8'))
-            assert_true(words)
+        with _FailingDownloads():
+            assert_raises(neurovault.URLError,
+                          neurovault._simple_download, 'http://',
+                          os.path.join(temp_dir, 'bad.nii.gz'), temp_dir)
 
 
 def test_neurosynth_words_vectorized():
@@ -474,6 +499,8 @@ def test_neurosynth_words_vectorized():
         freq, voc = neurovault.neurosynth_words_vectorized(words_files)
         assert_equal(freq.shape, (n_im, n_im))
         assert((freq.sum(axis=0) == np.ones(n_im)).all())
+        assert_warns(UserWarning, neurovault.neurosynth_words_vectorized,
+                     (os.path.join(temp_dir, 'no_words_here.json'),))
 
 
 def test_write_read_metadata():
@@ -503,6 +530,10 @@ def test_add_absolute_paths():
                                           meta, force=True)
     assert_equal(meta['col_absolute_path'],
                  os.path.join('dir_1', 'neurovault', 'collection_1'))
+    meta = {'id': 0}
+    meta_transformed = neurovault._add_absolute_paths(
+        os.path.join('dir_1', 'neurovault'), meta, force=True)
+    assert_equal(meta, meta_transformed)
 
 
 def test_json_add_collection_dir():
@@ -558,6 +589,34 @@ def test_move_col_id():
                  {'collection_id': 1, 'not_mni': False}, {'id': 2})
 
 
+def test_download_image_terms():
+    with _TestTemporaryDirectory() as temp_dir:
+        image_info = {'id': 'a'}
+        collection = {'relative_path': 'collection',
+                      'absolute_path': os.path.join(temp_dir, 'collection')}
+        os.makedirs(collection['absolute_path'])
+        download_params = {'temp_dir': temp_dir, 'verbose': 3,
+                           'fetch_neurosynth_words': True}
+        with _FailingDownloads():
+            neurovault._download_image_terms(
+                image_info, collection, download_params)
+            download_params['allow_neurosynth_failure'] = False
+            assert_raises(RuntimeError,
+                          neurovault._download_image_terms,
+                          image_info, collection, download_params)
+            with open(os.path.join(
+                collection['absolute_path'],
+                'neurosynth_words_for_image_a.json'), 'w'):
+                pass
+            neurovault._download_image_terms(
+                image_info, collection, download_params)
+
+
+def test_download_image():
+    image = neurovault._download_image(None, {})
+    assert image is None
+
+
 def test_fetch_neurovault():
     with _TestTemporaryDirectory() as temp_dir:
         # check that nothing is downloaded in offline mode
@@ -577,8 +636,10 @@ def test_fetch_neurovault():
 
         # using a data directory we can't write into should raise a
         # warning unless mode is 'offline'
-        os.chmod(os.path.join(temp_dir, 'neurovault'), stat.S_IREAD)
-        if os.access(temp_dir, os.W_OK):
+        os.chmod(temp_dir, stat.S_IREAD | stat.S_IEXEC)
+        os.chmod(os.path.join(temp_dir, 'neurovault'),
+                 stat.S_IREAD | stat.S_IEXEC)
+        if os.access(os.path.join(temp_dir, 'neurovault'), os.W_OK):
             return
         assert_warns(UserWarning, neurovault.fetch_neurovault,
                      data_dir=temp_dir)

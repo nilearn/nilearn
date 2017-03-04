@@ -1159,8 +1159,8 @@ def neurosynth_words_vectorized(word_files, verbose=3, **kwargs):
                 _ERROR, verbose)
             words.append({})
     if voc_empty:
-        _print_if('No word weight could be loaded, '
-                  'vectorizing Neurosynth words failed.', _WARNING, verbose)
+        warnings.warn('No word weight could be loaded, '
+                      'vectorizing Neurosynth words failed.')
         return None, None
     vectorizer = DictVectorizer(**kwargs)
     frequencies = vectorizer.fit_transform(words).toarray()
@@ -1414,6 +1414,19 @@ def _download_image_nii_file(image_info, collection, download_params):
     return image_info, collection
 
 
+def _check_has_words(file_name):
+    if not os.path.isfile(file_name):
+        return False
+    info = _remove_none_strings(_json_from_file(file_name))
+    try:
+        assert len(info['data']['values'])
+        return True
+    except (AttributeError, TypeError, AssertionError):
+        pass
+    os.remove(file_name)
+    return False
+
+
 def _download_image_terms(image_info, collection, download_params):
     """Download Neurosynth words for an image.
 
@@ -1460,7 +1473,8 @@ def _download_image_terms(image_info, collection, download_params):
         _simple_download(query, image_info['ns_words_absolute_path'],
                          download_params['temp_dir'],
                          verbose=download_params['verbose'])
-    except(URLError, ValueError):
+        assert _check_has_words(image_info['ns_words_absolute_path'])
+    except(URLError, ValueError, AssertionError):
         message = 'Could not fetch words for image {0}'.format(
             image_info['id'])
         if not download_params.get('allow_neurosynth_failure', True):
@@ -1709,14 +1723,7 @@ def _scroll_filtered(download_params):
         verbose=download_params['verbose'])
 
     for collection in collections:
-        try:
-            collection = _download_collection(collection, download_params)
-        except Exception:
-            _print_if('scroll: bad collection: {0}'.format(
-                collection), _ERROR, download_params['verbose'],
-                with_traceback=True)
-            collection = None
-
+        collection = _download_collection(collection, download_params)
         collection_content = _scroll_collection(collection, download_params)
         for image in collection_content:
             yield image, collection
@@ -1760,14 +1767,7 @@ def _scroll_collection_ids(download_params):
     collections = _yield_from_url_list(
         collection_urls, verbose=download_params['verbose'])
     for collection in collections:
-        try:
-            collection = _download_collection(collection, download_params)
-        except Exception:
-            _print_if('scroll: bad collection: {0}'.format(
-                collection), _ERROR, download_params['verbose'],
-                with_traceback=True)
-            collection = None
-
+        collection = _download_collection(collection, download_params)
         for image in _scroll_collection(collection, download_params):
             yield image, collection
 
