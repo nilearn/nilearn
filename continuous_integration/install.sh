@@ -91,7 +91,6 @@ if [[ "$DISTRIB" == "neurodebian" ]]; then
     pip install nose-timer
     bash <(wget -q -O- http://neuro.debian.net/_files/neurodebian-travis.sh)
     sudo apt-get install -qq python-scipy python-nose python-nibabel python-sklearn
-    sudo sed -i -- "s/import/do_something/" /usr/lib/pymodules/python2.7/matplotlib/__init__.py
 
 elif [[ "$DISTRIB" == "conda" ]]; then
     create_new_conda_env
