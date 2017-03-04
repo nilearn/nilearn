@@ -9,6 +9,8 @@ parcellations, and atlases of the human brain. You can read about it
 and browse the images it contains at http://www.neurovault.org. You
 can download maps from Neurovault with Nilearn.
 
+Neurovault was introduced in [1]_.
+
 Neurovault contains collections of images. We can get information
 about each collection - such as who uploaded it, a link to a paper, a
 description - and about each image - the modality, number of subjects,
@@ -26,13 +28,13 @@ images you want. Maybe you liked a paper and went to
 http://www.neurovault.org looking for the data. Once on the relevant
 collection's webpage, you can click 'Details' to see its id
 (and more). You can then download it using
-``nilearn.datasets.fetch_neurovault_ids`` ::
+``nilearn.datasets.fetch_neurovault_ids`` :
 
     >>> from nilearn.datasets import fetch_neurovault_ids
     >>> brainpedia = fetch_neurovault_ids(collection_ids=[1952]) # doctest: +SKIP
 
 Or if you want some images in particular, rather than whole
-collections ::
+collections :
 
     >>> brainpedia_subset = fetch_neurovault_ids(image_ids=[32015, 32016]) # doctest: +SKIP
 
@@ -57,7 +59,7 @@ anything.
 
 Many images on Neurovault have a "modality" field in their metadata.
 BOLD images should have it set to "fMRI-BOLD". We can ask for BOLD
-images only ::
+images only :
 
     >>> from nilearn.datasets import fetch_neurovault
     >>> def is_bold(image_info):
@@ -84,34 +86,34 @@ and exclude an image if one of the following is true:
    - its image type is "atlas"
 
 
-Using dictionaries, the previous example becomes ::
+Using dictionaries, the previous example becomes :
 
     >>> bold = fetch_neurovault(image_terms={'modality': 'fMRI-BOLD'}, # doctest: +SKIP
     ... max_images=None) # doctest: +SKIP
 
 Extra keyword arguments are treated as image filters, so we could also
-have written ::
+have written :
 
     >>> bold = fetch_neurovault(modality='fMRI-BOLD', max_images=None) # doctest: +SKIP
 
 Sometimes the selection criteria are more complex than simple
 comparison to a single value. For example, we may also be interested
 in CBF and CBV images. In ``nilearn``, the ``dataset.neurovault`` module
-provides ``IsIn`` which makes this easy ::
+provides ``IsIn`` which makes this easy :
 
     >>> from nilearn.datasets import neurovault
     >>> fmri = fetch_neurovault( # doctest: +SKIP
     ... modality=neurovault.IsIn('fMRI-BOLD', 'fMRI-CBF', 'fMRI-CBV'), # doctest: +SKIP
     ... max_images=100) # doctest: +SKIP
 
-We could also have used ``Contains`` ::
+We could also have used ``Contains`` :
 
     >>> fmri = fetch_neurovault( # doctest: +SKIP
     ... modality=neurovault.Contains('fMRI'), # doctest: +SKIP
     ... max_images=None) # doctest: +SKIP
 
 If we are not sure about the case (upper or lower) used for this field
-in Neurovault, we can also use ``Pattern`` ::
+in Neurovault, we can also use ``Pattern`` :
 
     >>> fmri = fetch_neurovault( # doctest: +SKIP
     ... modality=neurovault.Pattern('fmri-.*', neurovault.re.IGNORECASE), # doctest: +SKIP
@@ -152,6 +154,8 @@ Neurovault. Neurosynth is a platform for large-scale, automated
 synthesis of fMRI data. It can be used to perform decoding.  You can
 learn more about Neurosynth at http://www.neurosynth.org.
 
+Neurosynth was introduced in [2]_.
+
 If you set the parameter ``fetch_neurosynth_words`` when calling
 ``fetch_neurovault`` or ``fetch_neurovault_ids``, we will also
 download the annotations for the resulting images. They will be stored
@@ -163,5 +167,31 @@ clear the ``vectorize_words`` parameter to save computation time):
      neurosynth.org for each image, such that the weight of word
      ``vocabulary[j]`` for the image found in ``images[i]`` is
      ``word_frequencies[i, j]``
+
+Examples using Neurovault
+-------------------------
+
+    - :ref:`sphx_glr_auto_examples_05_advanced_plot_ica_neurovault.py`
+          Download images from Neurovault and extract some networks
+          using ICA.
+
+    - :ref:`sphx_glr_auto_examples_05_advanced_plot_neurovault_meta_analysis.py`
+        Meta-analysis of "Stop minus go" studies available on
+        Neurovault.
+
+References
+----------
+
+.. [1] Gorgolewski KJ, Varoquaux G, Rivera G, Schwartz Y, Ghosh SS,
+   Maumet C, Sochat VV, Nichols TE, Poldrack RA, Poline J-B,
+   Yarkoni T and Margulies DS (2015) NeuroVault.org: a web-based
+   repository for collecting and sharing unthresholded
+   statistical maps of the human brain. Front. Neuroinform. 9:8.
+   doi: 10.3389/fninf.2015.00008
+
+.. [2] Yarkoni, Tal, Russell A. Poldrack, Thomas E. Nichols, David
+   C. Van Essen, and Tor D. Wager. "Large-scale automated synthesis
+   of human functional neuroimaging data." Nature methods 8, no. 8
+   (2011): 665-670.
 
 
