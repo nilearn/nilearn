@@ -6,7 +6,6 @@ from distutils.version import LooseVersion
 
 import sklearn
 from sklearn.base import clone
-from sklearn.cluster import MiniBatchKMeans
 from sklearn.feature_extraction import image
 from sklearn.externals.joblib import Memory, delayed, Parallel
 
@@ -266,11 +265,24 @@ class Parcellations(BaseDecomposition):
         See the documentation of fit() for full details on returned
         attributes.
         """
+        # we delay importing Ward or AgglomerativeClustering and same
+        # time import plotting module before that.
+
+        # Because sklearn.cluster imports scipy hierarchy and hierarchy imports
+        # matplotlib. So, we force import matplotlib first using our
+        # plotting to avoid backend display error with matplotlib
+        # happening in Travis
+        try:
+            from nilearn import plotting
+        except:
+            continue
+
         mask_img_ = self.masker_.mask_img_
 
         if self.method == 'kmeans':
             if self.verbose:
                 print("[{0} method] Learning".format(self.method))
+            from sklearn.cluster import MiniBatchKMeans
             kmeans = MiniBatchKMeans(n_clusters=self.n_parcels,
                                      init='k-means++',
                                      random_state=self.random_state,
@@ -287,16 +299,7 @@ class Parcellations(BaseDecomposition):
             connectivity = image.grid_to_graph(n_x=shape[0], n_y=shape[1],
                                                n_z=shape[2], mask=mask_)
 
-            # we delay importing Ward or AgglomerativeClustering and same
-            # time import plotting module before that.
-
-            # Because Ward imports scipy hierarchy and hierarchy imports
-            # matplotlib. So, we force import matplotlib first using our
-            # plotting to avoid backend display error with matplotlib
-            # happening in Travis
-
             if LooseVersion(sklearn.__version__) < LooseVersion('0.15'):
-                import plotting
                 from sklearn.cluster import Ward
 
                 agglomerative = Ward(n_clusters=self.n_parcels,
