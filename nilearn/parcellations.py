@@ -306,7 +306,6 @@ class Parcellations(BaseDecomposition):
                                      connectivity=connectivity,
                                      memory=self.memory)
             else:
-                import plotting
                 from sklearn.cluster import AgglomerativeClustering
 
                 agglomerative = AgglomerativeClustering(
