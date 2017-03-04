@@ -235,3 +235,30 @@ def test_fit_transform():
                                                 confounds=confounds_list)
             assert_true(isinstance(signals, list))
             assert_equal(signals[0].shape, (10, 5))
+
+
+def test_inverse_transform():
+    rng = np.random.RandomState(0)
+    data = np.ones((10, 11, 12, 10))
+    data[6, 7, 8] = 2
+    data[9, 10, 11] = 3
+
+    fmri_img = nibabel.Nifti1Image(data, affine=np.eye(4))
+    methods = ['kmeans', 'ward', 'complete', 'average']
+
+    if LooseVersion(sklearn.__version__) >= LooseVersion('0.15'):
+        for method in methods:
+            parcellate = Parcellations(method=method, n_parcels=5)
+            # Fit
+            parcellate.fit(fmri_img)
+            assert_true(parcellate.labels_ is not None)
+            # Transform
+            fmri_reduced = parcellate.transform(fmri_img)
+            assert_true(fmri_reduced, list)
+            # Shape matching with (scans, regions)
+            assert_true(fmri_reduced[0].shape, (10, 5))
+            # Inverse transform
+            fmri_compressed = parcellate.inverse_transform(fmri_reduced)
+            assert_true(isinstance(fmri_compressed, list))
+            # returns shape of fmri_img
+            assert_true(fmri_compressed[0].shape, (10, 11, 12, 10))

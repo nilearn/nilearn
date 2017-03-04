@@ -412,6 +412,10 @@ class Parcellations(BaseDecomposition):
 
         self._check_fitted()
 
+        if not isinstance(signals, (list, tuple)) or\
+                isinstance(signals, np.ndarray):
+            signals = [signals, ]
+
         imgs = Parallel(n_jobs=self.n_jobs)(
             delayed(self._cache(signal_extraction.signals_to_img_labels,
                                 func_memory_level=2))
