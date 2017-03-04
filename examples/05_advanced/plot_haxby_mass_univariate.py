@@ -103,7 +103,7 @@ signed_neg_log_pvals_unmasked = nifti_masker.inverse_transform(
 # scikit-learn F-scores for comparison
 #
 # F-test does not allow to observe the effect sign (pure two-sided test)
-from nilearn._utils.fixes import f_regression
+from sklearn.feature_selection import f_regression
 _, pvals_bonferroni = f_regression(
     grouped_fmri_masked,
     grouped_conditions_encoded)  # f_regression implicitly adds intercept

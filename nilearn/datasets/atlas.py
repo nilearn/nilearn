@@ -4,9 +4,9 @@ Downloading NeuroImaging datasets: atlas datasets
 import os
 import xml.etree.ElementTree
 import numpy as np
+import nibabel as nb
 
 from sklearn.datasets.base import Bunch
-from sklearn.utils import deprecated
 
 #from . import utils
 from .utils import _get_dataset_dir, _fetch_files, _get_dataset_descr
@@ -577,8 +577,7 @@ def fetch_atlas_aal(version='SPM12', data_dir=None, url=None, resume=True,
 
         - "maps": str. path to nifti file containing regions.
 
-        - "labels": dict. labels dictionary with their region id as key and
-                    name as value
+        - "labels": list of the names of the regions
 
     Notes
     -----
@@ -782,3 +781,166 @@ def fetch_coords_dosenbach_2010(ordered_regions=True):
                   networks=out_csv['network'], description=fdescr)
 
     return Bunch(**params)
+
+
+def fetch_atlas_allen_2011(data_dir=None, url=None, resume=True, verbose=1):
+    """Download and return file names for the Allen and MIALAB ICA atlas
+    (dated 2011).
+
+    The provided images are in MNI152 space.
+
+    Parameters
+    ----------
+    data_dir: str, optional
+        directory where data should be downloaded and unpacked.
+    url: str, optional
+        url of file to download.
+    resume: bool
+        whether to resumed download of a partly-downloaded file.
+    verbose: int
+        verbosity level (0 means no message).
+
+    Returns
+    -------
+    data: sklearn.datasets.base.Bunch
+        dictionary-like object, keys are:
+
+        - "maps": T-maps of all 75 unthresholded components.
+        - "rsn28": T-maps of 28 RSNs included in E. Allen et al.
+        - "networks": string list containing the names for the 28 RSNs.
+        - "rsn_indices": dict[rsn_name] -> list of int, indices in the "maps"
+          file of the 28 RSNs.
+        - "comps": The aggregate ICA Components.
+        - "description": details about the data release.
+
+    References
+    ----------
+    E. Allen, et al, "A baseline for the multivariate comparison of resting
+    state networks," Frontiers in Systems Neuroscience, vol. 5, p. 12, 2011.
+
+    Notes
+    -----
+    Licence: unknown
+
+    See http://mialab.mrn.org/data/index.html for more information
+    on this dataset.
+    """
+    if url is None:
+        url = "http://mialab.mrn.org/data/hcp/"
+
+    dataset_name = "allen_rsn_2011"
+    keys = ("maps",
+            "rsn28",
+            "comps")
+
+    opts = {}
+    files = ["ALL_HC_unthresholded_tmaps.nii",
+             "RSN_HC_unthresholded_tmaps.nii",
+             "rest_hcp_agg__component_ica_.nii"]
+
+    labels = [('Basal Ganglia', [21]),
+              ('Auditory', [17]),
+              ('Sensorimotor', [7, 23, 24, 38, 56, 29]),
+              ('Visual', [46, 64, 67, 48, 39, 59]),
+              ('Default-Mode', [50, 53, 25, 68]),
+              ('Attentional', [34, 60, 52, 72, 71, 55]),
+              ('Frontal', [42, 20, 47, 49])]
+
+    networks = [[name] * len(idxs) for name, idxs in labels]
+
+    filenames = [(f, url + f, opts) for f in files]
+
+    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
+                                verbose=verbose)
+    sub_files = _fetch_files(data_dir, filenames, resume=resume,
+                             verbose=verbose)
+
+    fdescr = _get_dataset_descr(dataset_name)
+
+    params = [('description', fdescr),
+              ('rsn_indices', labels),
+              ('networks', networks)]
+    params.extend(list(zip(keys, sub_files)))
+
+    return Bunch(**dict(params))
+
+
+def fetch_atlas_surf_destrieux(data_dir=None, url=None,
+                               resume=True, verbose=1):
+    """Download and load Destrieux et al, 2010 cortical atlas.
+
+    This atlas returns 76 labels per hemisphere based on sulco-gryal pattnerns
+    as distributed with Freesurfer in fsaverage5 surface space.
+
+    .. versionadded:: 0.3
+
+    Parameters
+    ----------
+    data_dir: str, optional
+        Path of the data directory. Use to force data storage in a non-
+        standard location. Default: None
+
+    url: str, optional
+        Download URL of the dataset. Overwrite the default URL.
+
+    resume: bool, optional (default True)
+        If True, try resuming download if possible.
+
+    verbose: int, optional (default 1)
+        Defines the level of verbosity of the output.
+
+    Returns
+    -------
+    data: sklearn.datasets.base.Bunch
+        dictionary-like object, contains:
+
+        - "labels": list
+                     Contains region labels
+
+        - "map_left": numpy.ndarray
+                      Index into 'labels' for each vertex on the
+                      left hemisphere of the fsaverage5 surface
+
+        - "map_right": numpy.ndarray
+                       Index into 'labels' for each vertex on the
+                       right hemisphere of the fsaverage5 surface
+
+        - "description": str
+                         Details about the dataset
+
+
+    References
+    ----------
+    Destrieux et al. (2010), Automatic parcellation of human cortical gyri and
+    sulci using standard anatomical nomenclature. NeuroImage 53, 1-15.
+    """
+
+    if url is None:
+        url = "https://www.nitrc.org/frs/download.php/"
+
+    dataset_name = 'destrieux_surface'
+    fdescr = _get_dataset_descr(dataset_name)
+    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
+                                verbose=verbose)
+
+    # Download annot files, fsaverage surfaces and sulcal information
+    annot_file = '%s.aparc.a2009s.annot'
+    annot_url = url + '%i/%s.aparc.a2009s.annot'
+    annot_nids = {'lh annot': 9343, 'rh annot': 9342}
+
+    annots = []
+    for hemi in [('lh', 'left'), ('rh', 'right')]:
+
+        annot = _fetch_files(data_dir,
+                             [(annot_file % (hemi[1]),
+                               annot_url % (annot_nids['%s annot' % hemi[0]],
+                                            hemi[0]),
+                              {'move': annot_file % (hemi[1])})],
+                             resume=resume, verbose=verbose)[0]
+        annots.append(annot)
+
+    annot_left = nb.freesurfer.read_annot(annots[0])
+    annot_right = nb.freesurfer.read_annot(annots[1])
+
+    return Bunch(labels=annot_left[2],  map_left=annot_left[0],
+                 map_right=annot_right[0], description=fdescr)

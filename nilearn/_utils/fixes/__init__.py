@@ -2,13 +2,6 @@ from distutils.version import LooseVersion
 import sklearn
 
 
-if (LooseVersion(sklearn.__version__) < LooseVersion('0.15') or
-          sklearn.__version__ == '0.15-git'):
-    from .sklearn_f_regression_nosparse import (
-        f_regression_nosparse as f_regression)
-else:
-    from sklearn.feature_selection import f_regression
-
 try:
     if LooseVersion(sklearn.__version__) >= LooseVersion('0.18'):
         from sklearn.model_selection import check_cv
@@ -19,12 +12,6 @@ except ImportError:
     # scikit-learn < 0.16
     from sklearn.cross_validation import _check_cv as check_cv
 
-# atleast2d_or_csr
-try:
-    from sklearn.utils import atleast2d_or_csr
-except ImportError:
-    # Changed in 0.15
-    from sklearn.utils import check_array as atleast2d_or_csr
 
 try:
     from sklearn.utils import check_X_y
@@ -34,18 +21,4 @@ except ImportError:
     from .sklearn_validation import check_X_y
     from .sklearn_validation import check_is_fitted
 
-try:
-    from sklearn.grid_search import ParameterGrid
-except ImportError:
-    # scikit-learn < 0.15
-    from .sklearn_grid_search import ParameterGrid
-
-try:
-    from sklearn.metrics import check_scoring
-except ImportError:
-    # scikit-learn < 0.15
-    from .sklearn_metrics import check_scoring
-
-__all__ = ['f_regression', 'atleast2d_or_csr', 'roc_auc_score',
-           'check_X_y', 'check_is_fitted', 'check_cv', 'check_scoring',
-           'ParameterGrid']
+__all__ = ['check_X_y', 'check_is_fitted', 'check_cv']

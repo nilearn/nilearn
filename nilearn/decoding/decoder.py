@@ -1,4 +1,5 @@
 """High-level decoding object that exposes standard classification
+
 and regression strategies such as SVM, LogisticRegression and Ridge,
 with optional feature selection, and integrated parameter selection.
 """
@@ -7,45 +8,40 @@ with optional feature selection, and integrated parameter selection.
 #
 # License: simplified BSD
 
+from distutils.version import LooseVersion
+import sklearn
 import itertools
 import warnings
-
 import numpy as np
-
 from sklearn.externals.joblib import Parallel, delayed, Memory
 from sklearn.linear_model.ridge import Ridge, RidgeClassifier, _BaseRidge
 from sklearn.linear_model import LogisticRegression
 from sklearn.svm import LinearSVC, SVR
 from sklearn.preprocessing import LabelBinarizer
-from sklearn.feature_selection import SelectPercentile
-from sklearn.feature_selection import f_classif, f_regression
 from sklearn.svm.bounds import l1_min_c
-from sklearn.metrics import (r2_score, f1_score, precision_score, recall_score,
-                             accuracy_score, mean_absolute_error,
-                             mean_squared_error, average_precision_score)
-
-from sklearn.base import BaseEstimator
-from sklearn.base import is_classifier
+from sklearn.base import RegressorMixin
+from sklearn.linear_model.base import LinearModel
 from sklearn.utils.extmath import safe_sparse_dot
-from sklearn.metrics import make_scorer
 from sklearn import clone
 
-from .._utils.compat import _basestring
-from .._utils.fixes import check_cv
-from .._utils.fixes import atleast2d_or_csr
+try:
+    from sklearn.utils import atleast2d_or_csr
+except ImportError: # sklearn 0.15
+    from sklearn.utils import check_array as atleast2d_or_csr
 
+from ..input_data.masker_validation import check_embedded_nifti_masker
+from .._utils.param_validation import _adjust_screening_percentile
 from .._utils.fixes import check_X_y
 from .._utils.fixes import check_is_fitted
+from .._utils.compat import _basestring
+from .._utils.fixes import check_cv
+from .._utils.param_validation import check_feature_screening
+from .._utils import CacheMixin
+from sklearn.metrics.scorer import check_scoring
+from sklearn.model_selection import ParameterGrid
 
-from .._utils.fixes import ParameterGrid
-from .._utils.fixes import check_scoring
 
-from ..input_data import NiftiMasker, MultiNiftiMasker
-
-# Volume of a standard (MNI152) brain mask in mm^3
-MNI152_BRAIN_VOLUME = 1827243.
-
-ESTIMATOR_CATALOG = dict(
+SUPPORTED_ESTIMATORS = dict(
     svc_l1=LinearSVC(penalty='l1', dual=False),
     svc_l2=LinearSVC(penalty='l2'),
     svc=LinearSVC(penalty='l2'),
@@ -54,20 +50,107 @@ ESTIMATOR_CATALOG = dict(
     logistic=LogisticRegression(penalty='l2'),
     ridge_classifier=RidgeClassifier(),
     ridge_regression=Ridge(),
+    ridge=Ridge(),
     svr=SVR(kernel='linear'),
 )
 
-SCORINGS = dict(r2=r2_score,
-                mean_absolute_error=mean_absolute_error,
-                mean_squared_error=mean_squared_error,
-                accuracy=accuracy_score,
-                average_precision_score=average_precision_score,
-                recall_score=recall_score,
-                precision_score=precision_score,
-                f1_score=f1_score)
+
+def _check_param_grid(estimator, X, y, param_grid):
+    """Check param_grid and return sensible default if none is given.
+    """
+    if param_grid is None:
+        param_grid = {}
+        # define loss function
+        if isinstance(estimator, LogisticRegression):
+            loss = 'log'
+        elif isinstance(estimator, (LinearSVC, _BaseRidge, SVR)):
+            loss = 'l2'
+
+        if hasattr(estimator, 'penalty') and (estimator.penalty == 'l1'):
+            min_c = l1_min_c(X, y, loss=loss)
+        else:
+            min_c = 0.5
+        param_grid['C'] = np.array([2, 20, 200]) * min_c
+
+        if isinstance(estimator, _BaseRidge):
+            param_grid['alpha'] = 1. / (param_grid.pop('C') * 2)
+    return param_grid
 
 
-class Decoder(BaseEstimator):
+def _parallel_fit(estimator, X, y, train, test, param_grid, is_classif, scorer,
+                  mask_img, class_index, screening_percentile=None):
+    """Find the best estimator for a fold within a job."""
+
+    # unprocessed test labels indices, they are used to measure the overal
+    # perfromance.
+    y_true_indices = test
+
+    y_train = y[train]
+    y_test = y[test]
+    n_features = X.shape[1]
+
+    selector = check_feature_screening(screening_percentile, mask_img,
+                                       is_classif)
+
+    do_screening = (n_features > 100) and (screening_percentile < 100.)
+
+    if (selector is not None) and do_screening:
+        X_train = selector.fit_transform(X[train], y[train])
+        X_test = selector.transform(X[test])
+    else:
+        X_train = X[train]
+        X_test = X[test]
+
+    param_grid = _check_param_grid(estimator, X_train, y_train, param_grid)
+    test_scores = []
+    best_score = None
+    for param in ParameterGrid(param_grid):
+        estimator = clone(estimator).set_params(**param)
+        estimator.fit(X_train, y_train)
+
+        if is_classif:
+            if hasattr(estimator, 'predict_proba'):
+                y_prob = estimator.predict_proba(X_test)
+                y_prob = y_prob[:, 1]
+                inverse_prob = 1 - y_prob
+            else:
+                decision = estimator.decision_function(X_test)
+                if decision.ndim == 2:
+                    y_prob = decision[:, 1]
+                    inverse_prob = np.abs(decision[:, 0])
+                else:
+                    y_prob = decision
+                    inverse_prob = -decision
+            score = scorer(estimator, X_test, y_test)
+            if np.all(estimator.coef_ == 0):
+                score = 0
+        else:  # regression
+            y_prob = estimator.predict(X_test)
+            score = scorer(estimator, X_test, y_test)
+
+        test_scores.append(score)
+        if (best_score is None) or (score >= best_score):
+            best_score = score
+            best_coef = estimator.coef_
+            best_intercept = estimator.intercept_
+            best_y = {}
+            best_y['y_prob'] = y_prob
+            best_y['y_true_indices'] = y_true_indices
+            best_param = param
+            if is_classif:
+                best_y['inverse'] = inverse_prob
+
+    if selector is not None:
+        best_coef = selector.inverse_transform(best_coef)
+    # scikit-learn > 1.7
+    if isinstance(estimator, SVR):
+        best_coef = -best_coef
+
+    return (class_index, best_coef, best_intercept, best_y, best_param,
+            test_scores)
+
+
+class BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
     """A wrapper for popular classification/regression strategies for
     neuroimgaging.
 
@@ -92,8 +175,8 @@ class Decoder(BaseEstimator):
         parameters.
 
     cv : cross-validation generator, optional
-        A cross-validation generator. If None, a 3-fold cross
-        validation is used for regression or 3-fold stratified
+        A cross-validation generator. If None, a 10-fold cross
+        validation is used for regression or 10-fold stratified
         cross-validation for classification.
 
     param_grid : dict of string to sequence, or sequence of such
@@ -109,36 +192,46 @@ class Decoder(BaseEstimator):
     screening_percentile: int, float, optional, in the closed interval [0, 100]
         Perform an univariate feature selection based on the Anova F-value for
         the input data. A float according to a percentile of the highest
-        scores. Defaults to 20.
+        scores. Default: 20.
 
-    pos_label: str or None
-        The positive class label in case of a binary classification. It is
-        used in the case of binary classification, and only the following
-        scoring metrics require it: f1, precision, and recall.
-
-    scoring : string or callable, optional
+    scoring : string, callable or None, optional. Default: None
         The scoring strategy to use. See the scikit-learn documentation
         If callable, takes as arguments the fitted estimator, the
         test data (X_test) and the test target (y_test) if y is
         not None.
 
-    smoothing_fwhm: float, optional
+        For regression: 'r2', 'mean_absolute_error', or 'mean_squared_error'.
+        For classification: 'accuracy', 'f1', 'precision', or 'recall'.
+
+    smoothing_fwhm: float, optional. Default: None
         If smoothing_fwhm is not None, it gives the size in millimeters of the
         spatial smoothing to apply to the signal.
 
-    standardize : boolean, optional
+    standardize : boolean, optional. Default: None
         If standardize is True, the time-series are centered and normed:
         their variance is put to 1 in the time dimension.
 
-    target_affine: 3x3 or 4x4 matrix, optional
+    target_affine: 3x3 or 4x4 matrix, optional. Default: None
         This parameter is passed to image.resample_img. Please see the
         related documentation for details.
 
-    target_shape: 3-tuple of integers, optional
+    target_shape: 3-tuple of integers, optional. Default: None
         This parameter is passed to image.resample_img. Please see the
         related documentation for details.
 
-    mask_strategy: {'background' or 'epi'}, optional
+    low_pass: None or float, optional
+        This parameter is passed to signal.clean. Please see the related
+        documentation for details
+
+    high_pass: None or float, optional
+        This parameter is passed to signal.clean. Please see the related
+        documentation for details
+
+    t_r : float, optional. Default: None
+        This parameter is passed to signal.clean. Please see the related
+        documentation for details.
+
+    mask_strategy: {'background' or 'epi'}, optional. Default: 'background'
         The strategy used to compute the mask: use 'background' if your
         images present a clear homogeneous background, and 'epi' if they
         are raw EPI images. Depending on this value, the mask will be
@@ -150,173 +243,126 @@ class Decoder(BaseEstimator):
         By default, no caching is done. If a string is given, it is the
         path to the caching directory.
 
-    memory_level: integer, optional
+    memory_level: integer, optional. Default: 0
         Rough estimator of the amount of memory used by caching. Higher value
         means more memory for caching.
 
-    n_jobs : int, optional. Default is -1.
+    n_jobs : int, optional. Default: 1.
         The number of CPUs to use to do the computation. -1 means
         'all CPUs'.
 
-    verbose : int, optional
-        Verbosity level. Default is False
+    verbose : int, optional. Default: False.
+        Verbosity level.
     """
     def __init__(self, estimator='svc', mask=None, cv=None, param_grid=None,
-                 screening_percentile=20, pos_label=None, scoring=None,
-                 smoothing_fwhm=None, standardize=True, target_affine=None,
-                 target_shape=None, mask_strategy='background',
-                 memory=None, memory_level=0,
-                 n_jobs=1, verbose=False):
+                 screening_percentile=20, scoring=None, smoothing_fwhm=None,
+                 standardize=True, target_affine=None, target_shape=None,
+                 low_pass=None, high_pass=None, t_r=None,
+                 mask_strategy='background', is_classif=True, memory=None,
+                 memory_level=0, n_jobs=1, verbose=False):
         self.estimator = estimator
         self.mask = mask
         self.cv = cv
         self.param_grid = param_grid
         self.screening_percentile = screening_percentile
-        self.pos_label = pos_label
         self.scoring = scoring
+        self.is_classif = is_classif
         self.smoothing_fwhm = smoothing_fwhm
         self.standardize = standardize
         self.target_affine = target_affine
         self.target_shape = target_shape
         self.mask_strategy = mask_strategy
+        self.low_pass = low_pass
+        self.high_pass = high_pass
+        self.t_r = t_r
         self.memory = memory
         self.memory_level = memory_level
         self.n_jobs = n_jobs
         self.verbose = verbose
 
-    def _gather_fit_results(self, results, classes_to_predict, score_func):
-        """Posprocessing of the results"""
-        coefs = {}
-        intercepts = {}
-        cv_true = {}
-        self.cv_params_ = {}
-
-        cv_pred = []
-        cv_true = []
-        for c, best_coef, best_intercept, best_y, best_params in results:
-            cv_pred_ = {}
-            cv_true_ = {}
-            cv_pred_[c] = best_y['y_pred']
-            cv_true_[c] = best_y['y_true']
-
-            coefs.setdefault(c, []).append(best_coef)
-            intercepts.setdefault(c, []).append(best_intercept)
-            self.cv_params_.setdefault(c, {})
-            for k in best_params:
-                self.cv_params_[c].setdefault(k, []).append(best_params[k])
-
-            if self.is_binary_:
-                other_class = np.setdiff1d(
-                    self.classes_, classes_to_predict)[0]
-                coefs.setdefault(other_class, []).append(-best_coef)
-                intercepts.setdefault(other_class, []).append(-best_intercept)
-                cv_pred_[other_class] = best_y['inverse']
-
-            cv_pred.append(cv_pred_)
-            cv_true.append(cv_true_)
-
-        if self.is_classification_:
-            classes = self.classes_
-        else:
-            classes = classes_to_predict
-
-        self.cv_y_pred_ = []
-        self.cv_y_true_ = []
-        self.cv_scores_ = []
-
-        # For each cv loop
-        for k in range(len(cv_pred)):
-            # if is classification this corresponds to y_prob
-            y_pred = np.vstack([cv_pred[k][c] for c in classes]).T
-            y_true = cv_true[k][list(cv_true[k].keys())[0]]
-
-            if self.is_classification_:
-                y_pred = self.classes_[np.argmax(y_pred, axis=1)]
-
-            self.cv_y_true_.append(y_true)
-            self.cv_y_pred_.append(y_pred)
-            self.cv_scores_.append(score_func(y_true, y_pred))
-
-        self.coef_ = np.vstack([np.mean(coefs[c], axis=0) for c in classes])
-        self.std_coef_ = np.vstack([np.std(coefs[c], axis=0) for c in classes])
-        self.intercept_ = np.hstack([np.mean(intercepts[c], axis=0)
-                                     for c in classes])
-        coef_img = {}
-        std_coef_img = {}
-        for c, coef, std in zip(classes, self.coef_, self.std_coef_):
-            c = 'beta' if c is None else c
-            coef_img[c] = self.masker_.inverse_transform(coef)
-            std_coef_img[c] = self.masker_.inverse_transform(std)
-
-        self.coef_img_ = coef_img
-        self.std_coef_img_ = std_coef_img
-        return self
-
-    def fit(self, niimgs, y):
-        """Fit the decoder
+    def fit(self, X, y):
+        """Fit the decoder (learner).
 
         Parameters
         ----------
-        niimgs: list of filenames or NiImages
-            Data on which the mask must be calculated. If this is a list,
+        X : list of Niimg-like objects
+            See http://nilearn.github.io/manipulating_images/input_output.html
+            Data on which model is to be fitted. If this is a list,
             the affine is considered the same for all.
 
-        y: 1D array-like
-           Target variable to predict. Must have exactly as many elements as
-           3D images in niimg.
+        y : array or list of length n_samples
+            The dependent variable (age, sex, QI, etc.).
+            Target variable to predict. Must have exactly as many elements as
+            3D images in niimg.
 
         Attributes
         ----------
+        `masker_` : instance of NiftiMasker
+            The nifti masker used to mask the data.
+
         `mask_img_`: NiImage
             Mask computed by the masker object.
+
         `classes_`: numpy.ndarray
             Classes to predict. For classification only.
+
+        `screening_percentile_` : float
+            Screening percentile corrected according to volume of mask,
+            relative to the volume of standard brain.
+
         `coef_`: numpy.ndarray, shape=(n_classes, n_features)
             Contains the mean of the models weight vector across
             fold for each class.
+
+        `intercept_` : narray, shape (nclasses -1,)
+            Intercept (a.k.a. bias) added to the decision function.
+            It is available only when parameter intercept is set to True.
+
+        `cv_` : list of pairs of lists
+            List of the (n_folds,) folds. For the corresponding fold,
+            each pair is composed of two lists of indices,
+            one for the train samples and one for the test samples.
+
         `std_coef_`: numpy.ndarray, shape=(n_classes, n_features)
             Contains the standard deviation of the models weight vector across
             fold for each class.
+
         `coef_img_`: dict of NiImage
             Dictionary containing `coef_` with class names as keys,
             and `coef_` transformed in NiImages as values. In the case
             of a regression, it contains a single NiImage at the key 'beta'.
+
         `std_coef_img_`: dict of NiImage
             Dictionary containing `std_coef_` with class names as keys,
             and `coef_` transformed in NiImages as values. In the case
             of a regression, it contains a single NiImage at the key 'beta'.
-        `cv_y_true_` : numpy.ndarray
-            Ground truth labels for left out samples in inner cross validation.
-        `cv_y_pred_` : numpy.ndarray
-            Predicted labels for left out samples in inner cross validation.
+
+        `cv_y_true_` : numpy.ndarray, shape=(n_samples * n_folds, n_classes)
+            Ground truth labels for left out samples in inner cross-validation.
+
+        `cv_y_pred_` : numpy.ndarray, shape=(n_samples * n_folds, n_classes)
+            Predicted labels for left out samples in inner cross-validation.
+
         `cv_params_`: dict of lists
             Best point in the parameter grid for each tested fold
             in the inner cross validation loop.
+
+        `cv_indices_` : numpy.ndarray, shape=(n_samples * n_folds)
+            Indices of the inner cross-validation folds.
+
+        `cv_scores_` : ndarray, shape (n_parameters, n_folds)
+            Scores (misclassification) for each parameter, and on each fold
         """
         # Setup memory, parallel and masker
-        if isinstance(self.memory, _basestring) or self.memory is None:
-            self.memory = Memory(cachedir=self.memory, verbose=self.verbose)
-
-        parallel = Parallel(n_jobs=self.n_jobs, verbose=self.verbose,
-                            pre_dispatch='n_jobs')
-
-        self.masker_ = _check_masking(self.mask, self.smoothing_fwhm,
-                                      self.target_affine, self.target_shape,
-                                      self.standardize, self.mask_strategy,
-                                      self.memory, self.memory_level)
-
-        # Fit masker
-        if not hasattr(self.masker_, 'mask_img_'):
-            self.masker_.fit(niimgs)
+        if isinstance(self.memory, _basestring) or (self.memory is None):
+            self.memory_ = Memory(cachedir=self.memory, verbose=self.verbose)
         else:
-            if isinstance(self.masker_.mask_img, _basestring):
-                self.masker_.fit()
-        self.mask_img_ = self.masker_.mask_img_
-        mask_volume = _get_mask_volume(self.mask_img_)
+            self.memory_ = self.memory
 
-        # Load data and target
-        X = self.masker_.transform(niimgs)
-        X = atleast2d_or_csr(X)
+        # nifti masking
+        self.masker_ = check_embedded_nifti_masker(self, multi_subject=False)
+        X = self.masker_.fit_transform(X)
+        self.mask_img_ = self.masker_.mask_img_
 
         X, y = check_X_y(X, y, ['csr', 'csc', 'coo'], dtype=np.float,
                          multi_output=True, y_numeric=True)
@@ -325,37 +371,126 @@ class Decoder(BaseEstimator):
         if not isinstance(self.estimator, _basestring):
             warnings.warn('Use a custom estimator at your own risk.')
 
-        estimator = ESTIMATOR_CATALOG.get(self.estimator, self.estimator)
+        elif self.estimator in list(SUPPORTED_ESTIMATORS.keys()):
+            estimator = SUPPORTED_ESTIMATORS.get(self.estimator,
+                                                 self.estimator)
 
-        is_classification_, self.is_binary_, classes_, classes_to_predict = \
-            _check_estimator(estimator, y, self.pos_label)
+        scorer = check_scoring(estimator, self.scoring)
 
-        if classes_ is not None:
-            self.classes_ = classes_
-        self.is_classification_ = is_classification_
-
-        # Raise an error early if something is wrong with the scoring
-        scorer, self.scoring_, score_func = _check_scorer(self, self.scoring,
-                                                          self.pos_label, y)
         # Setup cv
-        cv = check_cv(self.cv, X, y, classifier=is_classification_)
+        if LooseVersion(sklearn.__version__) >= LooseVersion('0.18'):
+            # scikit-learn >= 0.18
+            self.cv_ = list(check_cv(
+                self.cv, y=y, classifier=self.is_classif).split(X, y))
+        else:
+            # scikit-learn < 0.18
+            self.cv_ = list(check_cv(self.cv, X=X, y=y,
+                                     classifier=self.is_classif))
 
-        # Train all labels in all folds
-        results = parallel(delayed(_parallel_estimate)(
-            estimator, X, y, train, test, self.param_grid,
-            pos_label, is_classification_, scorer, mask_volume,
-            self.screening_percentile) for pos_label, (train, test) in
-            itertools.product(classes_to_predict, cv))
+        # number of problems to solve
+        if self.is_classif:
+            y = self._binarize_y(y)
+        else:
+            y = y[:, np.newaxis]
+        if self.is_classif and self.n_classes_ > 2:
+            n_problems = self.n_classes_
+        else:
+            n_problems = 1
 
-        # Process the results for all the folds
-        self._gather_fit_results(results, classes_to_predict, score_func)
-        return self
+        self.screening_percentile_ = _adjust_screening_percentile(
+            self.screening_percentile, self.mask_img_, verbose=self.verbose)
 
-    def decision_function(self, niimgs):
-        """Provide prediction values for new X which can be turned into
-        a label by thresholding
+        coefs = {}
+        intercepts = {}
+        cv_y_prob = {}
+        cv_y_true = {}
+        cv_indices = {}
+        cv_scores = {}
+        self.cv_params_ = {}
+
+        parallel = Parallel(n_jobs=self.n_jobs, verbose=2 * self.verbose)
+
+        for i, (c, coef, intercept, y_info, params, scores) in enumerate(
+            parallel(
+                delayed(self._cache(_parallel_fit))(
+                    estimator, X, y[:, class_index], train, test,
+                    self.param_grid, self.is_classif, scorer, self.mask_img_,
+                    class_index, self.screening_percentile_)
+                for class_index, (train, test) in itertools.product(
+                    range(n_problems), self.cv_))):
+
+            classes = self.classes_
+
+            cv_y_prob.setdefault(classes[c], []).append(y_info['y_prob'])
+            cv_indices.setdefault(c, []).extend([i] * len(y_info['y_prob']))
+            cv_scores.setdefault(classes[c], []).append(scores)
+
+            self.cv_params_.setdefault(classes[c], {})
+            for k in params:
+                self.cv_params_[classes[c]].setdefault(k, []).append(params[k])
+
+            if (n_problems <= 2) and self.is_classif:
+                # Binary classification
+                other_class = np.setdiff1d(classes, classes[c])[0]
+                coefs.setdefault(other_class, []).append(-coef)
+                intercepts.setdefault(other_class, []).append(-intercept)
+                cv_y_prob.setdefault(other_class, []).append(y_info['inverse'])
+
+            if self.is_classif:
+                cv_y_true.setdefault(classes[c], []).extend(
+                    self._enc.inverse_transform(y[y_info['y_true_indices']]))
+            else:
+                cv_y_true.setdefault(classes[c], []).extend(
+                    y[y_info['y_true_indices']])
+
+            # Models to aggregate
+            coefs.setdefault(classes[c], []).append(coef)
+            intercepts.setdefault(classes[c], []).append(intercept)
+
+        # Saving the mean score
+        self.cv_scores_ = np.mean(
+            [np.vstack(cv_scores[c]).T for c in classes], axis=0)
+
+        self.cv_y_true_ = np.array(cv_y_true[cv_y_true.keys()[0]])
+        self.cv_indices_ = np.array(cv_indices[cv_indices.keys()[0]])
+        self.cv_y_prob_ = np.vstack(
+            [np.hstack(cv_y_prob[c]) for c in classes]).T
+
+        if self.is_classif:
+            self.cv_y_pred_ = classes[np.argmax(self.cv_y_prob_, axis=1)]
+        else:
+            self.cv_y_pred_ = self.cv_y_prob_
+
+        # Build the final model (the aggregated one).
+        self.coef_ = np.vstack([np.mean(coefs[c], axis=0) for c in classes])
+        std_coef = np.vstack([np.std(coefs[c], axis=0) for c in classes])
+        self.intercept_ = np.hstack([np.mean(intercepts[c], axis=0)
+                                     for c in classes])
+        coef_img = {}
+        std_coef_img = {}
+        for c, coef, std in zip(classes, self.coef_, std_coef):
+            coef_img[c] = self.masker_.inverse_transform(coef)
+            std_coef_img[c] = self.masker_.inverse_transform(std)
+
+        self.coef_img_ = coef_img
+        self.std_coef_img_ = std_coef_img
+
+    def decision_function(self, X):
+        """Predict class labels for samples in X.
+
+        Parameters
+        ----------
+        X : list of Niimg-like objects
+            See http://nilearn.github.io/manipulating_images/input_output.html
+            Data on prediction is to be made. If this is a list,
+            the affine is considered the same for all.
+
+        Returns
+        -------
+        y_pred : ndarray, shape (n_samples,)
+            Predicted class label per sample.
         """
-        X = self.masker_.transform(niimgs)
+        X = self.masker_.transform(X)
         X = atleast2d_or_csr(X)
 
         n_features = self.coef_.shape[1]
@@ -363,312 +498,110 @@ class Decoder(BaseEstimator):
             raise ValueError("X has %d features per sample; expecting %d"
                              % (X.shape[1], n_features))
 
-        decision_values = safe_sparse_dot(X, self.coef_.T,
-                                          dense_output=True) + self.intercept_
-        return decision_values
+        scores = safe_sparse_dot(X, self.coef_.T,
+                                 dense_output=True) + self.intercept_
 
-    def predict(self, niimgs):
-        """Predict a label for all X vectors indexed by the first axis"""
+        return scores.ravel() if scores.shape[1] == 1 else scores
+
+    def predict(self, X):
+        """Predict a label for all X vectors indexed by the first axis.
+
+        Parameters
+        ----------
+        X : {array-like, sparse matrix}, shape = (n_samples, n_features)
+            Samples.
+
+        Retruns
+        -------
+        array, shape=(n_samples,) if n_classes == 2 else (n_samples, n_classes)
+            Confidence scores per (sample, class) combination. In the binary
+            case, confidence score for self.classes_[1] where >0 means this
+            class would be predicted.
+        """
 
         check_is_fitted(self, "coef_")
         check_is_fitted(self, "masker_")
 
-        decision_values = self.decision_function(niimgs)
+        scores = self.decision_function(X)
 
-        if self.is_classification_:
-            decisions = decision_values.argmax(axis=1)
-            decision_labels = self.classes_[decisions]
-            return decision_labels
-        return decision_values
-
-    def score(self, niimgs, y):
-
-        X = self.masker_.transform(niimgs)
-        X, y = check_X_y(X, y, ['csr', 'csc', 'coo'], dtype=np.float,
-                         multi_output=True, y_numeric=True)
-
-        scorer, _, _ = _check_scorer(self, self.scoring_, self.pos_label, y)
-        return scorer(self, niimgs, y)
-
-
-def _parallel_estimate(estimator, X, y, train, test, param_grid,
-                       pos_label, is_classification, scorer, mask_volume,
-                       screening_percentile=None):
-    """Find the best estimator for a fold within a job."""
-
-    if is_classification and pos_label is None:
-        raise warnings.warn(
-            'It seems like you have a classification task '
-            'but you did not specify which label you are trying to '
-            'predict: y=%s' % y)
-
-    # unprocessed test labels, they are used in the scorer function
-    y_true = y[test]
-    n_features = X.shape[1]
-
-    if pos_label is not None:
-        label_binarizer = LabelBinarizer(pos_label=1, neg_label=-1)
-        y = label_binarizer.fit_transform(y == pos_label).ravel()
-
-    y_train, y_test = y[train], y[test]
-
-    select_features = _check_feature_screening(screening_percentile,
-                                               mask_volume,
-                                               is_classification)
-
-    do_screening = (n_features > 100) and screening_percentile < 100.
-
-    if select_features is not None and do_screening:
-        X_train = select_features.fit_transform(X[train], y[train])
-        X_test = select_features.transform(X[test])
-    else:
-        X_train = X[train]
-        X_test = X[test]
-
-    param_grid = _check_param_grid(estimator, X_train, y_train, param_grid)
-    best_score = None
-    for param in ParameterGrid(param_grid):
-        estimator = clone(estimator).set_params(**param)
-        estimator.fit(X_train, y_train)
-
-        if is_classification:
-            if hasattr(estimator, 'predict_proba'):
-                y_prob = estimator.predict_proba(X_test)
-                y_prob = y_prob[:, 1]
-                inverse_prob = 1 - y_prob
+        if self.is_classif:
+            if len(scores.shape) == 1:
+                indices = (scores > 0).astype(np.int)
             else:
-                decision = estimator.decision_function(X_test)
-                if decision.ndim == 2:
-                    y_prob = decision[:, 1]
-                    inverse_prob = np.abs(decision[:, 0])
-                else:
-                    y_prob = decision
-                    inverse_prob = -decision
-            score = scorer(estimator, X_test, y_test)
-            if np.all(estimator.coef_ == 0):
-                score = 0
-        else:  # regression
-            y_prob = estimator.predict(X_test)
-            score = scorer(estimator, X_test, y_test)
-        if best_score is None or score >= best_score:
-            best_score = score
-            best_coef = estimator.coef_
-            best_intercept = estimator.intercept_
-            best_y = {}
-            best_y['y_pred'] = y_prob
-            best_y['y_true'] = y_true
-            best_params = param
-            if is_classification:
-                best_y['inverse'] = inverse_prob
+                indices = scores.argmax(axis=1)
+            return self.classes_[indices]
 
-    if select_features is not None:
-        best_coef = select_features.inverse_transform(best_coef)
-    # if sklearn.__version__ > 1.7
-    if isinstance(estimator, SVR):
-        best_coef = -best_coef
+        return scores
 
-    return pos_label, best_coef, best_intercept, best_y, best_params
+    def score(self, X, y):
+        """Measure the prediction performance of the decoder, using y as ground
+        truth.
 
+        Parameters
+        ----------
+        X : list of Niimg-like objects
+            See http://nilearn.github.io/manipulating_images/input_output.html
+            Data on prediction is to be made. If this is a list,
+            the affine is considered the same for all.
 
-def _check_masking(mask, smoothing_fwhm, target_affine, target_shape,
-                   standardize, mask_strategy, memory, memory_level):
-    """Setup a nifti masker."""
-    # mask is an image, not a masker
-    if isinstance(mask, _basestring) or (mask is None):
-        masker = NiftiMasker(mask_img=mask,
-                             smoothing_fwhm=smoothing_fwhm,
-                             target_affine=target_affine,
-                             target_shape=target_shape,
-                             standardize=standardize,
-                             mask_strategy=mask_strategy,
-                             memory=memory,
-                             memory_level=memory_level)
-    # mask is a masker object
-    elif isinstance(mask, (NiftiMasker, MultiNiftiMasker)):
-        try:
-            masker = clone(mask)
-            if hasattr(mask, 'mask_img_'):
-                mask_img = mask.mask_img_
-                masker.set_params(mask_img=mask_img)
-                masker.fit()
-        except TypeError as e:
-            # Workaround for a joblib bug: in joblib 0.6, a Memory object
-            # with cachedir = None cannot be cloned.
-            masker_memory = mask.memory
-            if masker_memory.cachedir is None:
-                mask.memory = None
-                masker = clone(mask)
-                mask.memory = masker_memory
-                masker.memory = Memory(cachedir=None)
-            else:
-                # The error was raised for another reason
-                raise e
+        y : array or list of length n_samples
+            The ground truth dependent variable (age, sex, QI, etc.).
+            Target variable to predict. Must have exactly as many elements as
+            3D images in niimg.
 
-        for param_name in ['target_affine', 'target_shape',
-                           'smoothing_fwhm', 'mask_strategy',
-                           'memory', 'memory_level']:
-            if getattr(mask, param_name) is not None:
-                warnings.warn('Parameter %s of the masker overriden'
-                              % param_name)
-                masker.set_params(**{param_name: getattr(mask, param_name)})
-        if hasattr(mask, 'mask_img_'):
-            warnings.warn('The mask_img_ of the masker will be copied')
-    return masker
+        Returns
+        -------
+        score : float
+            Decoding metrics.
+        """
+        # XXX
+        scorer = check_scoring(self, self.scoring)
+        import pdb; pdb.set_trace()  # XXX BREAKPOINT
+        return scorer(self, X, y)
 
 
-def _check_param_grid(estimator, X, y, param_grid):
-    """Check param_grid and return sensible default if none is given.
-    """
-    if param_grid is None:
-        param_grid = {}
-        # define loss function
-        if isinstance(estimator, LogisticRegression):
-            loss = 'log'
-        elif isinstance(estimator, (LinearSVC, _BaseRidge, SVR)):
-            loss = 'l2'
-        min_c = l1_min_c(X, y, loss=loss) \
-            if hasattr(estimator, 'penalty') \
-            and estimator.penalty == 'l1' else .5
-        param_grid['C'] = np.array([2, 20, 200]) * min_c
-        if isinstance(estimator, _BaseRidge):
-            param_grid['alpha'] = 1. / (param_grid.pop('C') * 2)
-    return param_grid
+class Decoder(BaseDecoder):
+
+    def __init__(self, estimator='svc', mask=None, cv=None, param_grid=None,
+                 screening_percentile=20, scoring='roc_auc',
+                 smoothing_fwhm=None, standardize=True, target_affine=None,
+                 target_shape=None, mask_strategy='background',
+                 low_pass=None, high_pass=None, t_r=None, memory=None,
+                 memory_level=0, n_jobs=1, verbose=False):
+        super(Decoder, self).__init__(
+            estimator=estimator, mask=mask, cv=cv, param_grid=param_grid,
+            screening_percentile=screening_percentile, scoring=scoring,
+            smoothing_fwhm=smoothing_fwhm, standardize=standardize,
+            target_affine=target_affine, target_shape=target_shape,
+            mask_strategy=mask_strategy, memory=memory, is_classif=True,
+            memory_level=memory_level, verbose=verbose, n_jobs=n_jobs)
+
+    def _binarize_y(self, y):
+        """Helper function invoked just before fitting a classifier."""
+        y = np.array(y)
+
+        # encode target classes as -1 and 1
+        self._enc = LabelBinarizer(pos_label=1, neg_label=-1)
+        y = self._enc.fit_transform(y)
+        self.classes_ = self._enc.classes_
+        self.n_classes_ = len(self.classes_)
+        return y
 
 
-# XXX same function implemented in space_net
-def _get_mask_volume(mask_img):
-    """Computes the volume of a brain mask in mm^3
+class DecoderRegressor(BaseDecoder):
 
-    Parameters
-    ----------
-    mask_img : nibabel image object
-    Input image whose voxel dimensions are to be computed.
-    Returns
-    -------
-    vol : float
-    The computed volume.
-    """
-    vox_dims = mask_img.get_header().get_zooms()[:3]
-    return 1. * np.prod(vox_dims) * mask_img.get_data().astype(np.bool).sum()
-
-
-def _check_feature_screening(screening_percentile, mask_volume,
-                             is_classification):
-    """Check feature screening method. Turns floats between 1 and 100 into
-    SelectPercentile objects.
-    """
-
-    f_test = f_classif if is_classification else f_regression
-
-    if screening_percentile == 100 or screening_percentile is None:
-        return None
-    elif not (0. <= screening_percentile <= 100.):
-        raise ValueError(
-            ("screening_percentile should be in the interval"
-             " [0, 100], got %g" % screening_percentile))
-    else:
-        # correct screening_percentile according to the volume of the data mask
-        if mask_volume > MNI152_BRAIN_VOLUME:
-            warnings.warn(
-                "Brain mask is bigger than volume of standard brain!")
-        screening_percentile_ = float(screening_percentile) * (
-            mask_volume / MNI152_BRAIN_VOLUME)
-
-        return SelectPercentile(f_test, int(screening_percentile_))
-
-
-def _check_estimator(estimator, y, pos_label):
-    """Check estimation problem in respect to target type."""
-    is_classification_ = is_classifier(estimator)
-
-    target_type = y.dtype.kind == 'i' or y.dtype.kind == 'S' or \
-        y.dtype == 'bool'
-
-    is_binary = False
-
-    if is_classification_ != target_type:
-        warnings.warn(
-            'Target seems to be for a %s problem but '
-            'chosen estimator is for a %s problem.' % (
-                'classification' if target_type else 'regression',
-                'classification' if is_classification_ else 'regression'))
-
-    if is_classification_:
-        classes_ = classes_to_predict = np.unique(y)
-        # If the problem is binary classification we compute only the
-        # model for one class and flip the signs for the other class
-        if len(classes_) == 2:
-            if pos_label is not None and pos_label in classes_:
-                classes_to_predict = np.array([pos_label])
-            else:
-                classes_to_predict = classes_[:1]
-            is_binary = True
-    else:
-        classes_to_predict = [None]
-        classes_ = None
-
-    return is_classification_, is_binary, classes_, classes_to_predict
-
-
-def _check_scorer(estimator, scoring, pos_label, y):
-    """Utility function to set up scoring metric.
-
-    Check that metric is valid for the learning problem.
-    Make use of pos_label when classification is binary
-    and scoring method requires it.
-    """
-    if scoring not in list(SCORINGS.keys()):
-        scoring = None
-        warnings.warn("Scoring was not recogniced, it's going"
-                      "be setted according to the estimation problem")
-
-    # Set scoring to a reasonable default
-    if scoring is None and estimator.is_classification_:
-        scoring = 'accuracy'
-    elif scoring is None and not estimator.is_classification_:
-        scoring = 'r2'
-
-    # Getting the scoring function
-    score_func = SCORINGS[scoring]
-
-    # Check scoring is for right learning problem
-    is_r2 = score_func is r2_score
-    is_mse = score_func is mean_squared_error
-    is_mae = score_func is mean_absolute_error
-    is_regression_score = is_r2 or is_mae or is_mse
-
-    # Scoreres that require pos_label
-    is_recall = score_func is recall_score
-    is_pressision = score_func is precision_score
-    is_f1 = score_func is f1_score
-
-    if not estimator.is_classification_ and not is_regression_score:
-        raise ValueError('Wrong scoring method `%s` for regression.' % scoring)
-    if estimator.is_classification_ and is_regression_score:
-        raise ValueError('Wrong scoring method `%s` '
-                         'for classification.' % scoring)
-
-    # Check that pos_label is correctly set if needed
-    is_binary = estimator.is_binary_
-    y_kind = np.array(y).dtype.kind
-
-    # Check classifires that require pos label
-    if is_binary and y_kind == 'S' and (is_f1 or is_pressision or is_recall):
-
-        if pos_label is None:
-            raise ValueError('Decoder must be given a pos_label in '
-                             'the case of a binary classification '
-                             'with `%s` scoring metric.' % scoring)
-        elif pos_label not in estimator.classes_:
-            raise ValueError(
-                'The given pos_label `%s` is not in the target '
-                'which contains the classes `%s` and `%s`.' % (
-                    pos_label, estimator.classes_[0], estimator.classes_[1]))
-
-    # Check that the passed scoring does not raise an Exception
-    scorer = check_scoring(estimator, scoring)
-
-    if estimator.is_binary_ and (is_f1 or is_pressision or is_recall):
-        scorer = make_scorer(score_func, pos_label=pos_label)
-
-    return scorer, scoring, score_func
+    def __init__(self, estimator='svc', mask=None, cv=None, param_grid=None,
+                 screening_percentile=20, scoring='r2',
+                 smoothing_fwhm=None, standardize=True, target_affine=None,
+                 target_shape=None, mask_strategy='background',
+                 low_pass=None, high_pass=None, t_r=None, memory=None,
+                 memory_level=0, n_jobs=1, verbose=False):
+        super(DecoderRegressor, self).__init__(
+            estimator=estimator, mask=mask, cv=cv, param_grid=param_grid,
+            screening_percentile=screening_percentile, scoring=scoring,
+            smoothing_fwhm=smoothing_fwhm, standardize=standardize,
+            target_affine=target_affine, target_shape=target_shape,
+            low_pass=low_pass, high_pass=high_pass, t_r=t_r,
+            mask_strategy=mask_strategy, memory=memory, is_classif=False,
+            memory_level=memory_level, verbose=verbose, n_jobs=n_jobs)
+        self.classes_ = ['beta']

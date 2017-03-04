@@ -5,6 +5,7 @@ graphical models.
 # Authors: Philippe Gervais
 # License: simplified BSD
 
+from distutils.version import LooseVersion
 import warnings
 import collections
 import operator
@@ -13,17 +14,17 @@ import itertools
 import numpy as np
 import scipy.linalg
 
-import sklearn.cross_validation
-import sklearn.covariance
+import sklearn
 from sklearn.utils.extmath import fast_logdet
 from sklearn.covariance import empirical_covariance
 from sklearn.base import BaseEstimator
-
 from sklearn.externals.joblib import Memory, delayed, Parallel
 
 from .._utils import CacheMixin
 from .._utils import logger
 from .._utils.extmath import is_spd
+from .._utils.fixes import check_cv
+from .._utils.compat import izip
 
 
 def compute_alpha_max(emp_covs, n_samples):
@@ -941,9 +942,16 @@ class GroupSparseCovarianceCV(BaseEstimator, CacheMixin):
         # One cv generator per subject must be created, because each subject
         # can have a different number of samples from the others.
         cv = []
-        for k in range(n_subjects):
-            cv.append(sklearn.cross_validation.check_cv(
-                self.cv, subjects[k], None, classifier=False))
+        if LooseVersion(sklearn.__version__) >= LooseVersion('0.18'):
+            # scikit-learn >= 0.18
+            for k in range(n_subjects):
+                cv.append(check_cv(self.cv, np.ones(subjects[k].shape[0]),
+                                   classifier=False).split(subjects[k]))
+        else:
+            # scikit-learn < 0.18
+            for k in range(n_subjects):
+                cv.append(check_cv(self.cv, subjects[k], None,
+                                   classifier=False))
 
         path = list()  # List of (alpha, scores, covs)
         n_alphas = self.alphas
@@ -957,13 +965,17 @@ class GroupSparseCovarianceCV(BaseEstimator, CacheMixin):
             alpha_1, _ = compute_alpha_max(emp_covs, n_samples)
             alpha_0 = 1e-2 * alpha_1
             alphas = np.logspace(np.log10(alpha_0), np.log10(alpha_1),
-                               n_alphas)[::-1]
+                                 n_alphas)[::-1]
 
         covs_init = itertools.repeat(None)
-        for i in range(n_refinements):
+
+        # Copying the cv generators to use them n_refinements times.
+        cv_ = izip(*cv)
+
+        for i, (this_cv) in enumerate(itertools.tee(cv_, n_refinements)):
             # Compute the cross-validated loss on the current grid
             train_test_subjs = []
-            for train_test in zip(*cv):
+            for train_test in this_cv:
                 assert(len(train_test) == n_subjects)
                 train_test_subjs.append(list(zip(*[(subject[train, :],
                                                     subject[test, :])

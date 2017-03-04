@@ -11,6 +11,8 @@ TV-L1, Graph-Net, etc.)
 #         THIRION Bertrand
 # License: simplified BSD
 
+from distutils.version import LooseVersion
+import sklearn
 import warnings
 import numbers
 import time
@@ -18,78 +20,27 @@ import sys
 from functools import partial
 import numpy as np
 from scipy import stats, ndimage
-from sklearn.base import RegressorMixin, clone
+from sklearn.base import RegressorMixin
 from sklearn.utils.extmath import safe_sparse_dot
+try:
+    from sklearn.utils import atleast2d_or_csr
+except ImportError: # sklearn 0.15
+    from sklearn.utils import check_array as atleast2d_or_csr
 from sklearn.linear_model.base import LinearModel, center_data
 from sklearn.feature_selection import (SelectPercentile, f_regression,
                                        f_classif)
 from sklearn.externals.joblib import Memory, Parallel, delayed
-from sklearn.cross_validation import check_cv
 from sklearn.preprocessing import LabelBinarizer
 from sklearn.metrics import accuracy_score
+from ..input_data.masker_validation import check_embedded_nifti_masker
+from .._utils.param_validation import _adjust_screening_percentile
 from .._utils.fixes import check_X_y
-from .._utils.compat import _basestring, get_header
-from .._utils.fixes import atleast2d_or_csr
+from .._utils.fixes import check_cv
+from .._utils.compat import _basestring
 from .._utils.cache_mixin import CacheMixin
-from ..input_data import NiftiMasker
 from .objective_functions import _unmask
 from .space_net_solvers import (tvl1_solver, _graph_net_logistic,
                                 _graph_net_squared_loss)
-
-
-# Volume of a standard (MNI152) brain mask in mm^3
-MNI152_BRAIN_VOLUME = 1827243.
-
-
-def _get_mask_volume(mask_img):
-    """Computes the volume of a brain mask in mm^3
-
-    Parameters
-    ----------
-    mask_img : nibabel image object
-        Input image whose voxel dimensions are to be computed.
-
-    Returns
-    -------
-    vol : float
-        The computed volume.
-    """
-    vox_dims = get_header(mask_img).get_zooms()[:3]
-    return 1. * np.prod(vox_dims) * mask_img.get_data().astype(np.bool).sum()
-
-
-def _adjust_screening_percentile(screening_percentile, mask_img,
-                                 verbose=0):
-    original_screening_percentile = screening_percentile
-    # correct screening_percentile according to the volume of the data mask
-    mask_volume = _get_mask_volume(mask_img)
-    if mask_volume > MNI152_BRAIN_VOLUME:
-        warnings.warn(
-            "Brain mask is bigger than the volume of a standard "
-            "human brain. SpaceNet is probably not tuned to "
-            "be used on such data.", stacklevel=2)
-    elif mask_volume < .005 * MNI152_BRAIN_VOLUME:
-        warnings.warn(
-            "Brain mask is smaller than .5% of the volume "
-            "human brain. SpaceNet is probably not tuned to"
-            "be used on such data.", stacklevel=2)
-
-    if screening_percentile < 100:
-        screening_percentile = screening_percentile * (
-            MNI152_BRAIN_VOLUME / mask_volume)
-        screening_percentile = min(screening_percentile, 100)
-    # if screening_percentile is 100, we don't do anything
-
-    if verbose > 1:
-        print("Mask volume = %gmm^3 = %gcm^3" % (
-            mask_volume, mask_volume / 1.e3))
-        print("Standard brain volume = %gmm^3 = %gcm^3" % (
-            MNI152_BRAIN_VOLUME, MNI152_BRAIN_VOLUME / 1.e3))
-        print("Original screening-percentile: %g" % (
-            original_screening_percentile))
-        print("Volume-corrected screening-percentile: %g" % (
-            screening_percentile))
-    return screening_percentile
 
 
 def _crop_mask(mask):
@@ -638,7 +589,8 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
          each pair is composed of two lists of indices,
          one for the train samples and one for the test samples.
 
-    `cv_scores_` : ndarray, shape (n_alphas, n_folds) or (n_l1_ratios, n_alphas, n_folds)
+    `cv_scores_` : ndarray, shape (n_alphas, n_folds) or
+                   (n_l1_ratios, n_alphas, n_folds)
         Scores (misclassification) for each alpha, and on each fold
 
     `screening_percentile_` : float
@@ -652,10 +604,10 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
                  l1_ratios=.5, alphas=None, n_alphas=10, mask=None,
                  target_affine=None, target_shape=None, low_pass=None,
                  high_pass=None, t_r=None, max_iter=1000, tol=5e-4,
-                 memory=Memory(None), memory_level=1,
-                 standardize=True, verbose=1, n_jobs=1, eps=1e-3,
-                 cv=8, fit_intercept=True, screening_percentile=20.,
-                 debias=False):
+                 memory=None, memory_level=1, standardize=True, verbose=1,
+                 mask_args=None,
+                 n_jobs=1, eps=1e-3, cv=8, fit_intercept=True,
+                 screening_percentile=20., debias=False):
         self.penalty = penalty
         self.is_classif = is_classif
         self.loss = loss
@@ -680,6 +632,7 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
         self.t_r = t_r
         self.target_affine = target_affine
         self.target_shape = target_shape
+        self.mask_args = mask_args
 
         # sanity check on params
         self.check_params()
@@ -763,17 +716,7 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
             tic = time.time()
 
         # nifti masking
-        if isinstance(self.mask, NiftiMasker):
-            self.masker_ = clone(self.mask)
-        else:
-            self.masker_ = NiftiMasker(mask_img=self.mask,
-                                       target_affine=self.target_affine,
-                                       target_shape=self.target_shape,
-                                       standardize=self.standardize,
-                                       low_pass=self.low_pass,
-                                       high_pass=self.high_pass,
-                                       mask_strategy='epi', t_r=self.t_r,
-                                       memory=self.memory_)
+        self.masker_ = check_embedded_nifti_masker(self, multi_subject=False)
         X = self.masker_.fit_transform(X)
 
         X, y = check_X_y(X, y, ['csr', 'csc', 'coo'], dtype=np.float,
@@ -816,8 +759,14 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
         case1 = (None in [alphas, l1_ratios]) and self.n_alphas > 1
         case2 = (alphas is not None) and min(len(l1_ratios), len(alphas)) > 1
         if case1 or case2:
-            self.cv_ = list(check_cv(self.cv, X=X, y=y,
-                                     classifier=self.is_classif))
+            if LooseVersion(sklearn.__version__) >= LooseVersion('0.18'):
+                # scikit-learn >= 0.18
+                self.cv_ = list(check_cv(
+                    self.cv, y=y, classifier=self.is_classif).split(X, y))
+            else:
+                # scikit-learn < 0.18
+                self.cv_ = list(check_cv(self.cv, X=X, y=y,
+                                         classifier=self.is_classif))
         else:
             # no cross-validation needed, user supplied all params
             self.cv_ = [(np.arange(n_samples), [])]
@@ -844,8 +793,7 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
         self.all_coef_ = np.ndarray((n_problems, n_folds, X.shape[1]))
 
         self.screening_percentile_ = _adjust_screening_percentile(
-                self.screening_percentile, self.mask_img_,
-                verbose=self.verbose)
+            self.screening_percentile, self.mask_img_, verbose=self.verbose)
 
         # main loop: loop on classes and folds
         solver_params = dict(tol=self.tol, max_iter=self.max_iter)

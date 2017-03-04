@@ -40,7 +40,6 @@ ____
 #          Virgile Fritsch, <virgile.fritsch@inria.fr>, Apr 2014
 #          Gael Varoquaux, Apr 2014
 #          Andres Hoyos-Idrobo, Dec 2015
-import numpy as np
 
 n_subjects = 100  # more subjects requires more memory
 
@@ -74,9 +73,10 @@ niimgs = nifti_masker.inverse_transform(gm_maps_masked)
 gm_maps_masked = nifti_masker.fit_transform(niimgs)
 n_samples, n_features = gm_maps_masked.shape
 
-from nilearn.decoding import Decoder
-decoder = Decoder(estimator='svr', mask=nifti_masker,
-                  screening_percentile=2, n_jobs=1)
+from nilearn.decoding import DecoderRegressor
+decoder = DecoderRegressor(estimator='ridge', mask=nifti_masker,
+                           scoring='neg_mean_absolute_error',
+                           screening_percentile=2, n_jobs=1)
 
 # Fit and predict
 decoder.fit(niimgs, age)
@@ -84,32 +84,13 @@ age_pred = decoder.predict(niimgs)
 
 # Visualization
 # Look at the decoder's discriminating weights
-weight_img = decoder.coef_img_['beta']
-prediction_accuracy = np.mean(decoder.cv_scores_)
+coef_img = decoder.coef_img_['beta']
+mean_absolute_error = decoder.score(niimgs, age)
 
-print("=== DECODER ===")
-print("Prediction accuracy: %f" % prediction_accuracy)
-print("")
-
-# Create the figure
 from nilearn.plotting import plot_stat_map, show
-bg_filename = gray_matter_map_filenames[0]
-z_slice = 0
-from nilearn.image.resampling import coord_transform
-affine = weight_img.get_affine()
-
-from scipy import linalg
-_, _, k_slice = coord_transform(0, 0, z_slice, linalg.inv(affine))
-k_slice = np.round(k_slice)
-
-import matplotlib.pyplot as plt
-fig = plt.figure(figsize=(5.5, 7.5), facecolor='k')
-
-weight_slice_data = weight_img.get_data()[..., k_slice]
-vmax = max(-np.min(weight_slice_data), np.max(weight_slice_data)) * 0.5
-display = plot_stat_map(weight_img, bg_img=bg_filename,
-                        display_mode='z', cut_coords=[z_slice],
-                        figure=fig, vmax=vmax)
-display.title('decoder weights', y=1.2)
+background_img = gray_matter_map_filenames[0]
+# weights map
+plot_stat_map(coef_img, background_img, display_mode="z", cut_coords=[-6],
+              title="Decoder: MAE %g" % mean_absolute_error)
 
 show()

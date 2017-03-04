@@ -242,7 +242,6 @@ def butterworth(signals, sampling_rate, low_pass=None, high_pass=None,
         btype = 'low'
         critical_freq.append(_check_wn(btype, low_pass, nyq))
 
-
     if len(critical_freq) == 2:
         btype = 'band'
     else:

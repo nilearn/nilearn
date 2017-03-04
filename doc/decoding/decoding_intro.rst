@@ -8,15 +8,23 @@
     >>> session = np.ones_like(target)
     >>> n_samples = len(target)
 
-.. _decoding_tutorial:
+.. _decoding_intro:
 
-===================
-A decoding tutorial
-===================
+=============================
+An introduction to decoding
+=============================
 
-This page is a decoding tutorial articulated on the analysis of the Haxby
-2001 dataset. It shows how to predict from brain activity images the
-stimuli that the subject is viewing.
+This section gives an introduction to the main concept of decoding:
+predicting from brain images.
+
+The discussion and examples are articulated on the analysis of the Haxby
+2001 dataset, showing how to predict from fMRI images the stimuli that
+the subject is viewing. However the process is the same in other settings
+predicting from other brain imaging modalities, for instance predicting
+phenotype or diagnostic status from VBM (Voxel Based Morphometry) maps
+(as illustrated in :ref:`a more complex example
+<sphx_glr_auto_examples_02_decoding_plot_oasis_vbm.py>`), or from FA maps
+to capture diffusion mapping.
 
 
 .. contents:: **Contents**
@@ -24,13 +32,14 @@ stimuli that the subject is viewing.
     :depth: 1
 
 
-Data loading and preparation
-============================
+Loading and preparing the data
+===============================
 
 The Haxby 2001 experiment
 -------------------------
 
-Subjects are presented visual stimuli from different categories. We are
+In the Haxby experiment, 
+subjects were presented visual stimuli from different categories. We are
 going to predict which category the subject is seeing from the fMRI
 activity recorded in masks of the ventral stream. Significant prediction
 shows that the signal in the region contains information on the
@@ -64,36 +73,61 @@ corresponding category.
 
    Decoding scores per mask
 
+_____
 
-Loading the data into Python
-----------------------------
+.. topic:: **fMRI: using beta maps of a first-level analysis**
+
+   The Haxby experiment is unusual because the experimental paradigm is
+   made of many blocks of continuous stimulation. Most cognitive
+   experiments have a more complex temporal structure with rich sequences
+   of events.
+
+   The standard approach to decoding consists in fitting a first-level
+   GLM to retrieve one response map (a beta map) per trial. This is
+   sometimes known as "beta-series regressions" (see Mumford et al,
+   *Deconvolving bold activation in event-related designs for multivoxel
+   pattern classification analyses*, NeuroImage 2012). These maps can
+   then be input to the decoder as below, predicting the conditions
+   associated to trial.
+
+   For simplicity, we will work on the raw time-series of the data.
+   However, **it is strongly recomended that you fit a first level to
+   include an HRF model and isolate the responses from various
+   confounds**.
+
+
+Loading the data into nilearn
+-----------------------------
 
 .. topic:: **Full code example**
 
-   A full example, with explanation, can be found on
+   The documentation here just gives the big idea. A full code example,
+   with explanation, can be found on
    :ref:`sphx_glr_auto_examples_plot_decoding_tutorial.py`
 
 * **Starting an environment**: Launch IPython via "ipython --matplotlib"
   in a terminal, or use the Jupyter notebook.
 
-* **Fetching the data**: In the tutorial, we load the data using nilearn
-  data downloading function, :func:`nilearn.datasets.fetch_haxby` (if the
-  data is not present on the disk, it can take a while to download about
-  310 Mo of data from the Internet):
-
-  It return an object with several entries that contain paths to the
-  files downloaded on the disk.
+* **Retrieving the data**: In the tutorial, we load the data using nilearn
+  data downloading function, :func:`nilearn.datasets.fetch_haxby`.
+  However, all this function does is to download the data and return 
+  paths to the files downloaded on the disk. To input your own data to
+  nilearn, you can pass in the path to your own files 
+  (:ref:`more on data input <loading_data>`).
 
 * **Loading the behavioral labels**: Behavioral information is often stored
   in a text file such as a CSV, and must be load with
   **numpy.recfromcsv** or `pandas <http://pandas.pydata.org/>`_
 
-* **Preparing the fMRI data**: we use the
-  :class:`nilearn.input_data.NiftiMasker` to apply the `mask_vt` mask to
-  the 4D fMRI data, so that its shape becomes (n_samples, n_features)
+* **Extracting the fMRI data**: we then use the
+  :class:`nilearn.input_data.NiftiMasker`: we extract only the voxels on
+  the mask of the ventral temporal cortex that comes with the data,
+  applying the `mask_vt` mask to
+  the 4D fMRI data. The resulting data is then a matrix with a shape that is
+  (n_timepoints, n_voxels)
   (see :ref:`mask_4d_2_3d` for a discussion on using masks).
 
-* **Sample mask**: Masking some of the data points may be useful to
+* **Sample mask**: Masking some of the time points may be useful to
   restrict to a specific pair of conditions (*eg* cats versus faces).
 
 .. note::
@@ -109,8 +143,8 @@ Loading the data into Python
 
 
 
-Performing the decoding analysis
-================================
+Performing a simple decoding analysis
+=======================================
 
 The prediction engine
 ---------------------
@@ -118,10 +152,11 @@ The prediction engine
 An estimator object
 ...................
 
-To perform decoding we construct an estimator, predicting a condition
-label **y** given a set **X** of images.
+To perform decoding we need to use an estimator from the `scikit-learn
+<http://scikit-learn.org>` machine-learning library. This object can
+predict a condition label **y** given a set **X** of imaging data.
 
-In the tutorial, we use a simple `Support Vector Classification
+A simple and yet performant choice is the `Support Vector Classifier
 <http://scikit-learn.org/stable/modules/svm.html>`_ (or SVC) with a
 linear kernel. The corresponding class, :class:`sklearn.svm.SVC`, needs
 to be imported from the scikit-learn.
@@ -153,7 +188,7 @@ IPython, it can be displayed as follows::
 Applying it to data: fit (train) and predict (test)
 ...................................................
 
-In scikit-learn, the prediction objects have two important methods:
+The prediction objects have two important methods:
 
 - a `fit` function that "learns" the parameters of the model from the data.
   Thus, we need to give some training data to `fit`.
@@ -177,9 +212,11 @@ Measuring prediction performance
 Cross-validation
 ................
 
-However, the last analysis is *wrong*, as we have learned and tested on
-the *same* set of data. We need to use a cross-validation to split the data
-into different sets, called "folds", in a `K-Fold strategy
+We cannot measure a prediction error on the same set of data that we have
+used to fit the estimator: it would be much easier than on new data, and
+the result would be meaningless. We need to use a technique called
+*cross-validation* to split the data into different sets, called "folds",
+in a `K-Fold strategy
 <https://en.wikipedia.org/wiki/Cross-validation_(statistics)#k-fold_cross-validation>`_.
 
 .. for doctests:
@@ -197,8 +234,8 @@ in `sklearn.model_selection.cross_val_score` in the newest version of
 scikit-learn.
 
 You can speed up the computation by using n_jobs=-1, which will spread
-the computation equally across all processors (but will probably not work
-under Windows)::
+the computation equally across all processors (but might not work under
+Windows)::
 
  >>> cv_scores = cross_val_score(svc, fmri_masked, target, cv=5, n_jobs=-1, verbose=10) #doctest: +SKIP
 
@@ -222,7 +259,9 @@ leave-one-out. When choosing a strategy, keep in mind that:
 * The test set needs to have enough samples to enable a good measure of
   the prediction error (a rule of thumb is to use 10 to 20% of the data).
 
-In these regards, leave one out is often one of the worst options.
+In these regards, leave one out is often one of the worst options (see
+Varoquaux et al, *Assessing and tuning brain decoders: cross-validation,
+caveats, and guidelines*, Neuroimage 2017).
 
 Here, in the Haxby example, we are going to leave a session out, in order
 to have a test set independent from the train set. For this, we are going
@@ -247,7 +286,8 @@ to use the session label, present in the behavioral data file, and
     >>> classification_accuracy  # doctest: +SKIP
     0.76851...
 
-We have a total prediction accuracy of *77%* across the different sessions.
+For discriminating human faces from cats, we measure a total prediction
+accuracy of *77%* across the different sessions.
 
 Choice of the prediction accuracy measure
 .........................................
@@ -257,9 +297,10 @@ the number of total errors. It is not always a sensible metric,
 especially in the case of very imbalanced classes, as in such situations
 choosing the dominant class can achieve a low number of errors.
 
-Other metrics, such as the f1-score, can be used::
+Other metrics, such as the AUC (Area Under the Curve, for the ROC: the
+Receiver Operating Characteristic), can be used::
 
-    >>> cv_scores = cross_val_score(svc, fmri_masked, target, cv=cv,  scoring='f1')  # doctest: +SKIP
+    >>> cv_scores = cross_val_score(svc, fmri_masked, target, cv=cv,  scoring='roc_auc')  # doctest: +SKIP
 
 .. seealso::
 
@@ -398,7 +439,6 @@ To visualize the results, we need to:
 
 .. seealso::
 
-   * :ref:`decoding_simulated`
    * :ref:`space_net`
    * :ref:`searchlight`
 

@@ -7,7 +7,6 @@ See also nilearn.signal.
 # License: simplified BSD
 
 import collections
-from distutils.version import LooseVersion
 
 import numpy as np
 from scipy import ndimage
@@ -617,8 +616,7 @@ def new_img_like(ref_niimg, data, affine=None, copy_header=False):
         affine = get_affine(ref_niimg)
     if data.dtype == bool:
         default_dtype = np.int8
-        if (LooseVersion(nibabel.__version__) >= LooseVersion('1.2.0') and
-                isinstance(ref_niimg, nibabel.freesurfer.mghformat.MGHImage)):
+        if isinstance(ref_niimg, nibabel.freesurfer.mghformat.MGHImage):
             default_dtype = np.uint8
         data = as_ndarray(data, dtype=default_dtype)
     header = None
@@ -861,10 +859,10 @@ def clean_img(imgs, sessions=None, detrend=True, standardize=True,
 
     imgs_ = check_niimg_4d(imgs)
     data = signal.clean(
-        imgs_.get_data().reshape(-1, imgs.shape[-1]).T, sessions=sessions,
+        imgs_.get_data().reshape(-1, imgs_.shape[-1]).T, sessions=sessions,
         detrend=detrend, standardize=standardize, confounds=confounds,
         low_pass=low_pass, high_pass=high_pass, t_r=2.5,
-        ensure_finite=ensure_finite).T.reshape(imgs.shape)
+        ensure_finite=ensure_finite).T.reshape(imgs_.shape)
     return new_img_like(imgs, data, copy_header=True)
 
 

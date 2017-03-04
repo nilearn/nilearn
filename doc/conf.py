@@ -15,6 +15,7 @@
 import sys
 import os
 import sphinx
+from distutils.version import LooseVersion
 
 # If extensions (or modules to document with autodoc) are in another
 # directory, add these directories to sys.path here. If the directory
@@ -228,11 +229,6 @@ latex_logo = "logos/nilearn-logo.png"
 #latex_use_parts = False
 
 # Additional stuff for the LaTeX preamble.
-latex_preamble = r"""
-\usepackage{amsmath}\usepackage{amsfonts}\usepackage{bm}\usepackage{morefloats}
-\let\oldfootnote\footnote
-\def\footnote#1{\oldfootnote{\small #1}}
-"""
 
 # Documents to append as an appendix to all manuals.
 #latex_appendices = []
@@ -243,8 +239,24 @@ latex_elements = {
   'printindex': '',
 }
 
+if LooseVersion(sphinx.__version__) < LooseVersion('1.5'):
+    latex_preamble = r"""
+    \usepackage{amsmath}\usepackage{amsfonts}\usepackage{bm}\usepackage{morefloats}
+    \let\oldfootnote\footnote
+    \def\footnote#1{\oldfootnote{\small #1}}
+    """
+else:
+    latex_elements['preamble'] = r"""
+    \usepackage{amsmath}\usepackage{amsfonts}\usepackage{bm}\usepackage{morefloats}
+    \let\oldfootnote\footnote
+    \def\footnote#1{\oldfootnote{\small #1}}
+    """
+
+
 # If false, no module index is generated.
-latex_use_modindex = False
+if LooseVersion(sphinx.__version__) < LooseVersion('1.5'):
+    latex_use_modindex = False
+
 latex_domain_indices = False
 
 # Show the page numbers in the references

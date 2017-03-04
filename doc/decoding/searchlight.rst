@@ -37,7 +37,7 @@ For this example we need:
 - to put X in the form *n_samples* x *n_features*
 - compute a mean image for visualization background
 - limit our analysis to the `face` and `house` conditions
-  (like in the :ref:`decoding tutorial <decoding_tutorial>`)
+  (like in the :ref:`introduction to decoding <decoding_intro>`)
 
 .. literalinclude:: ../../examples/02_decoding/plot_haxby_searchlight.py
     :start-after: # Restrict to faces and houses

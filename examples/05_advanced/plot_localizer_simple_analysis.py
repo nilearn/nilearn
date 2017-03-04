@@ -15,26 +15,31 @@ variates.  The user can refer to the
 """
 # Author: Virgile Fritsch, <virgile.fritsch@inria.fr>, May. 2014
 import numpy as np
-from scipy import linalg
 import matplotlib.pyplot as plt
 from nilearn import datasets
 from nilearn.input_data import NiftiMasker
 
-### Load Localizer contrast ###################################################
+
+############################################################################
+# Load Localizer contrast
 n_samples = 20
 localizer_dataset = datasets.fetch_localizer_calculation_task(
     n_subjects=n_samples)
 tested_var = np.ones((n_samples, 1))
 
-### Mask data #################################################################
+
+############################################################################
+# Mask data
 nifti_masker = NiftiMasker(
     smoothing_fwhm=5,
     memory='nilearn_cache', memory_level=1)  # cache options
 cmap_filenames = localizer_dataset.cmaps
 fmri_masked = nifti_masker.fit_transform(cmap_filenames)
 
-### Anova (parametric F-scores) ###############################################
-from nilearn._utils.fixes import f_regression
+
+############################################################################
+# Anova (parametric F-scores)
+from sklearn.feature_selection import f_regression
 _, pvals_anova = f_regression(fmri_masked, tested_var,
                               center=False)  # do not remove intercept
 pvals_anova *= fmri_masked.shape[1]
@@ -44,17 +49,13 @@ neg_log_pvals_anova = - np.log10(pvals_anova)
 neg_log_pvals_anova_unmasked = nifti_masker.inverse_transform(
     neg_log_pvals_anova)
 
-### Visualization #############################################################
+############################################################################
+# Visualization
 from nilearn.plotting import plot_stat_map, show
 
 # Various plotting parameters
 z_slice = 45  # plotted slice
-from nilearn.image.resampling import coord_transform
-affine = neg_log_pvals_anova_unmasked.affine
-_, _, k_slice = coord_transform(0, 0, z_slice,
-                                linalg.inv(affine))
 
-k_slice = np.round(k_slice)
 threshold = - np.log10(0.1)  # 10% corrected
 
 # Plot Anova p-values
@@ -69,7 +70,7 @@ masked_pvals = np.ma.masked_less(neg_log_pvals_anova_unmasked.get_data(),
 
 title = ('Negative $\log_{10}$ p-values'
          '\n(Parametric + Bonferroni correction)'
-         '\n%d detections' % (~masked_pvals.mask[..., k_slice]).sum())
+         '\n%d detections' % (~masked_pvals.mask).sum())
 
 display.title(title, y=1.1, alpha=0.8)
 

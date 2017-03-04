@@ -116,9 +116,6 @@ def test_3d_images():
 
 
 def test_joblib_cache():
-    if not LooseVersion(nibabel.__version__) > LooseVersion('1.1.0'):
-        # Old nibabel do not pickle
-        raise SkipTest
     from sklearn.externals.joblib import hash
     # Dummy mask
     mask = np.zeros((40, 40, 40))

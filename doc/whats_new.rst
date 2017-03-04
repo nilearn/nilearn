@@ -1,3 +1,105 @@
+0.3.0 beta
+===========
+
+To install the beta version, use::
+
+  pip install --upgrade --pre nilearn
+
+Highlights
+----------
+
+* Simple surface plotting
+
+* A function to break a parcellation into its connected components
+
+* **Dropped support for scikit-learn 0.14** Minimum supported version is
+  now 0.15.
+
+* **Dropped support for Python 2.6**
+
+* Minimum required version of NiBabel is now 1.2.0, to support loading annoted
+  data with freesurfer.
+
+Changelog
+---------
+
+    -  A helper function _safe_get_data as a nilearn utility now safely
+       removes NAN values in the images with argument ensure_finite=True.
+
+    - Connectome functions :func:`nilearn.connectome.cov_to_corr` and
+      :func:`nilearn.connectome.prec_to_partial` can now be used.
+
+Bug fix
+--------
+
+    - Fix colormap issue with colorbar=True when using qualitative colormaps
+      Fixed in according with changes of matplotlib 2.0 fixes.
+
+    - Fix plotting functions to work with NAN values in the images.
+
+    - Fix bug related get dtype of the images with nibabel get_data().
+
+    - Fix bug in nilearn clean_img
+
+Enhancements
+............
+
+    - A new function :func:`nilearn.regions.connected_label_regions` to
+      extract the connected components represented as same label to regions
+      apart with each region labelled as unique label.
+
+    - New plotting modules for surface plotting visualization. Matplotlib with
+      version higher 1.3.1 is required for plotting surface data using these
+      functions.
+
+    - Function :func:`nilearn.plotting.plot_surf` can be used for plotting
+      surfaces mesh data with optional background.
+
+    - A function :func:`nilearn.plotting.plot_surf_stat_map` can be used for
+      plotting statistical maps on a brain surface with optional background.
+
+    - A function :func:`nilearn.plotting.plot_surf_roi` can be used for
+      plotting statistical maps rois onto brain surface.
+
+    - A function :func:`nilearn.datasets.fetch_surf_fsaverage5` can be used
+      for surface data object to be as background map for the above plotting
+      functions.
+
+    - A new data fetcher function
+      :func:`nilearn.datasets.fetch_atlas_surf_destrieux`
+      can give you Destrieux et. al 2010 cortical atlas in fsaverage5
+      surface space.
+
+    - A new functional data fetcher function
+      :func:`nilearn.datasets.fetch_surf_nki_enhanced` gives you resting state
+      data preprocessed and projected to fsaverage5 surface space.
+
+    - Two good examples in plotting gallery shows how to fetch atlas and NKI
+      data and used for plotting on brain surface.
+
+    - Helper function `load_surf_mesh` in surf_plotting module for loading
+      surface mesh data into two arrays, containing (x, y, z) coordinates
+      for mesh vertices and indices of mesh faces.
+
+    - Helper function `load_surf_data` in surf_plotting module for loading
+      data of numpy array to represented on a surface mesh.
+
+    - Add fetcher for Allen et al. 2011 RSN atlas in
+      :func:`nilearn.datasets.fetch_atlas_allen_2011`.
+
+    - A function :func:`nilearn.datasets.fetch_cobre` is now updated to new
+      light release of COBRE data (schizophrenia)
+
+    - A new example to show how to extract regions on labels image in example
+      section manipulating images.
+
+    - coveralls is replaces with codecov
+
+    - Upgraded to Sphinx version 0.1.7
+
+    - Extensive plotting example shows how to use contours and filled contours
+      on glass brain.
+
 0.2.6
 =====
 
@@ -27,21 +129,21 @@ Bug fix
 Enhancements
 ............
 
-   - Sphinx-gallery updated to version 0.1.3
+   - Sphinx-gallery updated to version 0.1.3.
 
-   - Refactoring of examples and documentation
+   - Refactoring of examples and documentation.
 
    - Better ordering of regions in
-     :func:`nilearn.datasets.fetch_coords_dosenbach_2010`
+     :func:`nilearn.datasets.fetch_coords_dosenbach_2010`.
 
-   - Remove outdated power atlas example
+   - Remove outdated power atlas example.
 
-   
+
 API changes summary
 ...................
 
     - The parameter 'n_subjects' is deprecated and will be removed in future
-      release. Use 'subjects' instead in :func:`nilearn.datasets.fetch_haxby`
+      release. Use 'subjects' instead in :func:`nilearn.datasets.fetch_haxby`.
 
     - The function :func:`nilearn.datasets.fetch_haxby` will now fetch the
       data accepting input given in 'subjects' as a list than integer.
@@ -120,7 +222,7 @@ New features
       :func:`nilearn.datasets.fetch_localizer_button_task` to simplify
       some examples.
 
-    - The dataset function 
+    - The dataset function
       :func:`nilearn.datasets.fetch_localizer_contrasts` can now download
       a specific list of subjects rather than a range of subjects.
 
@@ -239,10 +341,10 @@ Bug fixes
      the size of a voxel
    - :class:`nilearn.regions.RegionExtractor` handles data containing Nans.
    - Confound regression does not force systematically the normalization of
-     the confounds. 
+     the confounds.
    - Force time series normalization in
      :class:`nilearn.connectome.ConnectivityMeasure`
-     and check dimensionality of the input. 
+     and check dimensionality of the input.
    - `nilearn._utils.numpy_conversions.csv_to_array` could consider
      valid CSV files as invalid.
 
