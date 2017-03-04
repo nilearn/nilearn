@@ -342,9 +342,9 @@ class Parcellations(BaseDecomposition):
 
         # Avoid 0 label
         labels = self.labels_ + 1
-        labels_img_ = self.masker_.inverse_transform(labels)
+        self.labels_img_ = self.masker_.inverse_transform(labels)
 
-        masker = NiftiLabelsMasker(labels_img_,
+        masker = NiftiLabelsMasker(self.labels_img_,
                                    mask_img=self.masker_.mask_img_,
                                    smoothing_fwhm=self.smoothing_fwhm,
                                    standardize=self.standardize,
@@ -391,3 +391,31 @@ class Parcellations(BaseDecomposition):
         """
         return self.fit(imgs, confounds=confounds).transform(imgs,
                                                              confounds=confounds)
+
+    def inverse_transform(self, signals):
+        """Transform signals extracted from parcellations back to brain
+        images.
+
+        Uses labels_ (parcellations) built at fit() level.
+
+        Parameters
+        ----------
+        signals : List of 2D numpy.ndarray
+            Each 2D array with shape (number of scans, number of regions)
+
+        Returns
+        -------
+        imgs : List of Nifti-like images
+            Brain images
+        """
+        from .regions import signal_extraction
+
+        self._check_fitted()
+
+        imgs = Parallel(n_jobs=self.n_jobs)(
+            delayed(self._cache(signal_extraction.signals_to_img_labels,
+                                func_memory_level=2))
+            (each_signal, self.labels_img_, self.mask_img_)
+            for each_signal in signals)
+
+        return imgs
