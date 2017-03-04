@@ -32,7 +32,6 @@ inplace:
 	$(PYTHON) setup.py build_ext -i
 
 test-code:
-	sudo sed -i -- "s/import/do_something/" /usr/lib/pymodules/python2.7/matplotlib/__init__.py
 	$(NOSETESTS) -s nilearn $(NOSETESTS_OPTIONS)
 test-doc:
 	$(NOSETESTS) -s --with-doctest --doctest-tests --doctest-extension=rst \

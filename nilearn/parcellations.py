@@ -15,12 +15,6 @@ from .input_data import NiftiLabelsMasker
 from ._utils.compat import _basestring
 
 
-if LooseVersion(sklearn.__version__) >= LooseVersion('0.15'):
-    from sklearn.cluster import AgglomerativeClustering
-else:
-    from sklearn.cluster import Ward
-
-
 def _estimator_fit(data, estimator):
     """ Estimator to fit on the reduced data
 
@@ -293,11 +287,25 @@ class Parcellations(BaseDecomposition):
             connectivity = image.grid_to_graph(n_x=shape[0], n_y=shape[1],
                                                n_z=shape[2], mask=mask_)
 
+            # we delay importing Ward or AgglomerativeClustering and same
+            # time import plotting module before that.
+
+            # Because Ward imports scipy hierarchy and hierarchy imports
+            # matplotlib. So, we force import matplotlib first using our
+            # plotting to avoid backend display error with matplotlib
+            # happening in Travis
+
             if LooseVersion(sklearn.__version__) < LooseVersion('0.15'):
+                import plotting
+                from sklearn.cluster import Ward
+
                 agglomerative = Ward(n_clusters=self.n_parcels,
                                      connectivity=connectivity,
                                      memory=self.memory)
             else:
+                import plotting
+                from sklearn.cluster import AgglomerativeClustering
+
                 agglomerative = AgglomerativeClustering(
                     n_clusters=self.n_parcels, connectivity=connectivity,
                     linkage=self.method, memory=self.memory)
