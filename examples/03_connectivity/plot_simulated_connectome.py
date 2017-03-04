@@ -10,12 +10,6 @@ estimation of connectivity structre for a synthetic dataset.
 import matplotlib.pyplot as plt
 
 
-def plot_matrix(m, ylabel=""):
-    abs_max = abs(m).max()
-    plt.imshow(m, cmap=plt.cm.RdBu_r, interpolation="nearest",
-               vmin=-abs_max, vmax=abs_max)
-
-
 # Generate synthetic data
 from nilearn._utils.testing import generate_group_sparse_gaussian_graphs
 
@@ -25,11 +19,20 @@ subjects, precisions, topology = generate_group_sparse_gaussian_graphs(
     n_subjects=n_subjects, n_features=10, min_n_samples=30, max_n_samples=50,
     density=0.1)
 
+from nilearn.plotting.matrix_plotting import plot_matrix
+
+
+def plot_matrix_symmetric_scale(mat, **kwargs):
+    abs_max = abs(mat.max())
+    return plot_matrix(mat, vmin=-abs_max, vmax=abs_max,
+                       cmap=plt.cm.RdBu_r, **kwargs)
+
+
 fig = plt.figure(figsize=(10, 7))
 plt.subplots_adjust(hspace=0.4)
 for n in range(n_displayed):
-    plt.subplot(n_displayed, 4, 4 * n + 1)
-    plot_matrix(precisions[n])
+    ax = plt.subplot(n_displayed, 4, 4 * n + 1)
+    plot_matrix_symmetric_scale(precisions[n], ax=ax, colorbar=False)
     if n == 0:
         plt.title("ground truth")
     plt.ylabel("subject %d" % n)
@@ -41,8 +44,8 @@ gsc = GroupSparseCovarianceCV(max_iter=50, verbose=1)
 gsc.fit(subjects)
 
 for n in range(n_displayed):
-    plt.subplot(n_displayed, 4, 4 * n + 2)
-    plot_matrix(gsc.precisions_[..., n])
+    ax = plt.subplot(n_displayed, 4, 4 * n + 2)
+    plot_matrix_symmetric_scale(gsc.precisions_[..., n], ax=ax, colorbar=False)
     if n == 0:
         plt.title("group-sparse\n$\\alpha=%.2f$" % gsc.alpha_)
 
@@ -54,8 +57,8 @@ gl = GraphLassoCV(verbose=1)
 for n, subject in enumerate(subjects[:n_displayed]):
     gl.fit(subject)
 
-    plt.subplot(n_displayed, 4, 4 * n + 3)
-    plot_matrix(gl.precision_)
+    ax = plt.subplot(n_displayed, 4, 4 * n + 3)
+    plot_matrix_symmetric_scale(gl.precision_, ax=ax, colorbar=False)
     if n == 0:
         plt.title("graph lasso")
     plt.ylabel("$\\alpha=%.2f$" % gl.alpha_)
@@ -65,8 +68,8 @@ for n, subject in enumerate(subjects[:n_displayed]):
 import numpy as np
 gl.fit(np.concatenate(subjects))
 
-plt.subplot(n_displayed, 4, 4)
-plot_matrix(gl.precision_)
+ax = plt.subplot(n_displayed, 4, 4)
+plot_matrix_symmetric_scale(gl.precision_, ax=ax, colorbar=False)
 plt.title("graph lasso, all subjects\n$\\alpha=%.2f$" % gl.alpha_)
 
 plt.show()

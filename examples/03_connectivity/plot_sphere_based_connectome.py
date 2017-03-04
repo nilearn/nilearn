@@ -54,7 +54,7 @@ print('Stacked power coordinates in array of shape {0}.'.format(coords.shape))
 
 ###############################################################################
 # and define spheres masker, with small enough radius to avoid regions overlap.
-from nilearn import  input_data
+from nilearn import input_data
 
 spheres_masker = input_data.NiftiSpheresMasker(
     seeds=coords, smoothing_fwhm=4, radius=5.,
@@ -99,9 +99,10 @@ print('Covariance matrix has shape {0}.'.format(matrix.shape))
 # and display the graph of connections with `nilearn.plotting.plot_connectome`.
 import matplotlib.pyplot as plt
 from nilearn import plotting
+from nilearn.plotting.matrix_plotting import plot_matrix
 
-plt.imshow(matrix, vmin=-1., vmax=1., cmap='RdBu_r', interpolation='nearest')
-plt.colorbar()
+plot_matrix(matrix, vmin=-1., vmax=1., cmap='RdBu_r',
+            colorbar=True, grid=False)
 plt.title('Power correlation matrix')
 
 # Tweak edge_threshold to keep only the strongest connections.
@@ -137,9 +138,8 @@ covariance_estimator = GraphLassoCV()
 covariance_estimator.fit(timeseries)
 matrix = covariance_estimator.covariance_
 
-plt.figure()
-plt.imshow(matrix, vmin=-1., vmax=1., cmap='RdBu_r', interpolation='nearest')
-plt.colorbar()
+plot_matrix(matrix, vmin=-1., vmax=1., cmap='RdBu_r',
+            colorbar=True, grid=False)
 plt.title('Dosenbach correlation matrix')
 
 plotting.plot_connectome(matrix, coords, title='Dosenbach correlation graph',

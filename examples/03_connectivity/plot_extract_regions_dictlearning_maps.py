@@ -114,14 +114,13 @@ mean_correlations = np.mean(correlations, axis=0).reshape(n_regions_extracted,
 # General imports needed for plotting
 import matplotlib.pyplot as plt
 from nilearn import image
+from nilearn.plotting.matrix_plotting import plot_matrix
 
 regions_imgs = image.iter_img(regions_extracted_img)
 coords_connectome = [plotting.find_xyz_cut_coords(img) for img in regions_imgs]
 title = 'Correlation interactions between %d regions' % n_regions_extracted
-plt.figure()
-plt.imshow(mean_correlations, interpolation="nearest",
-           vmax=1, vmin=-1, cmap=plt.cm.bwr)
-plt.colorbar()
+display = plot_matrix(mean_correlations, vmax=1,
+                      vmin=-1, cmap=plt.cm.bwr, colorbar=True)
 plt.title(title)
 plotting.plot_connectome(mean_correlations, coords_connectome,
                          edge_threshold='90%', title=title)
