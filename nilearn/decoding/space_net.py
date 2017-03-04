@@ -1118,12 +1118,8 @@ class SpaceNetClassifier(BaseSpaceNet):
                  l1_ratios=.5, alphas=None, n_alphas=10, mask=None,
                  target_affine=None, target_shape=None, low_pass=None,
                  high_pass=None, t_r=None, max_iter=1000, tol=1e-4,
-<<<<<<< f551ac7648c104438dcb1c79b868ca0410824862
-                 memory=Memory(None), memory_level=1, standardize=True,
-=======
                  memory=Memory(None), memory_level=1,
                  standardize=None, normalize="std",
->>>>>>> remove trailing whitespace
                  verbose=1, n_jobs=1, eps=1e-3,
                  cv=8, fit_intercept=True, screening_percentile=20.,
                  debias=False):
