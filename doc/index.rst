@@ -5,12 +5,12 @@
 
 .. container:: index-paragraph
 
-    Nilearn is a Python module for **fast and easy multivariate
-    analysis of NeuroImaging** data.
+    **Fast and easy multivariate analysis of NeuroImaging data**
 
-    It leverages the powerful `scikit-learn <http://scikit-learn.org>`__
-    toolbox for machine learning: predictive modelling, classification,
-    decoding, or connectivity analysis.
+    Nilearn leverages the powerful `scikit-learn
+    <http://scikit-learn.org>`__ Python toolbox for machine learning:
+    predictive modelling, classification, decoding, or connectivity
+    analysis.
 
 
 .. Here we are building the carrousel
@@ -98,4 +98,3 @@
    whats_new.rst
    contributing.rst
 
-Nilearn is part of the `NiPy ecosystem <http://nipy.org>`_.

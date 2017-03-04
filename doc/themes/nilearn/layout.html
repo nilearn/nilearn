@@ -166,7 +166,7 @@ $(function () {
  </div>
 
   <div class="banner">
-    <h1>Nilearn:</h1>
+    <h1>Nilearn</h1>
     <h2>Machine learning for Neuro-Imaging with Python</h2>
   </div>
   <div class="search_form">
@@ -200,10 +200,6 @@ $(function () {
       <li><p> <strong>September 19th 2016</strong>: Nilearn 0.2.6 released
       </p></li>
       <li><p> <strong>June 13th 2016</strong>: Nilearn 0.2.5 released
-      </p></li>
-      <li><p> <strong>Apr 7th 2016</strong>: Nilearn 0.2.4 released
-      </p></li>
-      <li><p> <strong>Feb 19th 2016</strong>: Nilearn 0.2.3 released
       </p></li>
       <li><p> <strong>March 2014</strong>: <a
           href="http://journal.frontiersin.org/Journal/10.3389/fninf.2014.00014/abstract"
@@ -285,3 +281,9 @@ $(function () {
         {%- endif %}
     </div>
 {%- endblock %}
+
+
+{%- if (pagename == 'index') %}
+    {%- block sidebarrel %}
+    {%- endblock %}
+{%- endif %}
