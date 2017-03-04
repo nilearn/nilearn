@@ -275,7 +275,7 @@ class Parcellations(BaseDecomposition):
         try:
             from nilearn import plotting
         except:
-            continue
+            pass
 
         mask_img_ = self.masker_.mask_img_
 
