@@ -40,60 +40,67 @@ ____
 #          Virgile Fritsch, <virgile.fritsch@inria.fr>, Apr 2014
 #          Gael Varoquaux, Apr 2014
 #          Andres Hoyos-Idrobo, Dec 2015
+
 import numpy as np
-
-n_subjects = 100  # more subjects requires more memory
-
-# Load Oasis dataset
 from nilearn import datasets
-oasis_dataset = datasets.fetch_oasis_vbm(n_subjects=n_subjects)
-gray_matter_map_filenames = oasis_dataset.gray_matter_maps
-age = oasis_dataset.ext_vars['age'].astype(float)
+n_subjects = 100  # increase this number if you have more RAM on your box
+dataset_files = datasets.fetch_oasis_vbm(n_subjects=n_subjects)
+age = dataset_files.ext_vars['age'].astype(float)
+age = np.array(age)
+gm_imgs = np.array(dataset_files.gray_matter_maps)
 
-# print basic information on the dataset
-print('First gray-matter anatomy image (3D) is located at: %s' %
-      oasis_dataset.gray_matter_maps[0])  # 3D data
-print('First white-matter anatomy image (3D) is located at: %s' %
-      oasis_dataset.white_matter_maps[0])  # 3D data
-
-# Preprocess data
+# remove features with too low between-subject variance
 from nilearn.input_data import NiftiMasker
 nifti_masker = NiftiMasker(standardize=False, smoothing_fwhm=2,
                            memory='nilearn_cache')
 
-gm_maps_masked = nifti_masker.fit_transform(gray_matter_map_filenames)
-n_samples, n_features = gm_maps_masked.shape
-print("%d samples, %d features" % (n_subjects, n_features))
-
-# Prediction with Decoder
-# remove features with too low between-subject variance
-gm_maps_masked = nifti_masker.fit_transform(gray_matter_map_filenames)
+gm_maps_masked = nifti_masker.fit_transform(gm_imgs)
 gm_maps_masked[:, gm_maps_masked.var(0) < 0.01] = 0.
 # final masking
 niimgs = nifti_masker.inverse_transform(gm_maps_masked)
-gm_maps_masked = nifti_masker.fit_transform(niimgs)
-n_samples, n_features = gm_maps_masked.shape
+nifti_masker.fit(niimgs)
 
+# Split data into training set and test set
+from sklearn.utils import check_random_state
+from sklearn.cross_validation import train_test_split
+rng = check_random_state(42)
+gm_imgs_train, gm_imgs_test, age_train, age_test = train_test_split(
+    gm_imgs, age, train_size=.6, random_state=rng)
+
+# To save time (because these are anat images with many voxels), we include
+# only the 5-percent voxels most correlated with the age variable to fit.
+# Also, we set memory_level=2 so that more of the intermediate computations
+# are cached. Also, you may pass and n_jobs=<some_high_value> to the
+# DecoderRegressor class, to take advantage of a multi-core system.
 from nilearn.decoding import DecoderRegressor
 decoder = DecoderRegressor(estimator='svr', mask=nifti_masker,
-                           scoring='neg_mean_absolute_error',
                            screening_percentile=5, n_jobs=1)
 # Fit and predict with the decoder
-decoder.fit(niimgs, age)
-age_pred = decoder.predict(niimgs)
+decoder.fit(gm_imgs_train, age_train)
+age_pred = decoder.predict(gm_imgs_test)
 # Visualization
 weight_img = decoder.coef_img_['beta']
 prediction_score = np.mean(decoder.cv_scores_)
 
 print("=== DECODER ===")
-print("Cross-validation score: %f" % prediction_score)
+print("r2 for the cross-validation: %f" % prediction_score)
 print("")
 # Create the figure
 from nilearn.plotting import plot_stat_map, show
-bg_filename = gray_matter_map_filenames[0]
+bg_filename = gm_imgs[0]
 
 display = plot_stat_map(weight_img, bg_img=bg_filename,
                         display_mode='z', cut_coords=[-6],
                         title="Decoder: r2 %g" % prediction_score)
+# One can also use other scores to measure the performance of the decoder
+from sklearn.metrics.scorer import mean_absolute_error
+cv_y_pred = decoder.cv_y_pred_
+cv_y_true = decoder.cv_y_true_
+
+prediction_score = mean_absolute_error(cv_y_true, cv_y_pred)
+
+print("=== DECODER ===")
+print("cross-validation score: %f years" % prediction_score)
+print("")
 
 show()
