@@ -218,10 +218,11 @@ def sym_to_vec(symmetric, discard_diagonal=False):
     -------
     output : numpy.ndarray
         The output flattened lower triangular part of symmetric. Shape is
-        (..., n_features * (n_features + 1) / 2) if discard_diagonal is False and
-        (..., (n_features - 1) * n_features / 2) otherwise.
+        (..., n_features * (n_features + 1) / 2) if discard_diagonal is False
+        and (..., (n_features - 1) * n_features / 2) otherwise.
     """
-    return sym_matrix_to_vec(symmetric=symmetric, discard_diagonal=discard_diagonal)
+    return sym_matrix_to_vec(symmetric=symmetric,
+                             discard_diagonal=discard_diagonal)
 
 
 def sym_matrix_to_vec(symmetric, discard_diagonal=False):
@@ -237,7 +238,7 @@ def sym_matrix_to_vec(symmetric, discard_diagonal=False):
     Parameters
     ----------
     symmetric : numpy.ndarray or list of numpy arrays, shape\
-	(..., n_features, n_features)
+        (..., n_features, n_features)
         Input array.
 
     discard_diagonal : boolean, optional
@@ -276,7 +277,7 @@ def vec_to_sym_matrix(vec, diagonal=None):
     Parameters
     ----------
     vec : numpy.ndarray or list of numpy arrays, shape \
-	(..., n_columns * (n_columns + 1) /2) or
+        (..., n_columns * (n_columns + 1) /2) or
         (..., (n_columns - 1) * n_columns / 2) if diagonal is given seperately.
         The input array.
 
