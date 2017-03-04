@@ -4,20 +4,84 @@ reduction of group data
 """
 from __future__ import division
 from math import ceil
-
 import itertools
+from distutils.version import LooseVersion
+
 import numpy as np
+
 from scipy import linalg
+import sklearn
 from sklearn.base import BaseEstimator
 from sklearn.externals.joblib import Memory, Parallel, delayed
 from sklearn.linear_model import LinearRegression
 from sklearn.utils import check_random_state
-from sklearn.utils.extmath import randomized_svd
+from sklearn.utils.extmath import randomized_svd, svd_flip
 from .._utils.cache_mixin import CacheMixin, cache
 from .._utils.niimg import _safe_get_data
 from .._utils.compat import _basestring
 from ..input_data import NiftiMapsMasker
 from ..input_data.masker_validation import check_embedded_nifti_masker
+
+
+def fast_svd(X, n_components, random_state=None):
+    """ Automatically switch between randomized and lapack SVD (heuristic
+        of scikit-learn).
+
+    Parameters
+    ==========
+    X: array, shape (n_samples, n_features)
+        The data to decompose
+
+    n_components: integer
+        The order of the dimensionality of the truncated SVD
+
+    random_state: int or RandomState
+        Pseudo number generator state used for random sampling.
+
+    Returns
+    ========
+
+    U: array, shape (n_samples, n_components)
+        The first matrix of the truncated svd
+
+    S: array, shape (n_components)
+        The second matric of the truncated svd
+
+    V: array, shape (n_components, n_features)
+        The last matric of the truncated svd
+
+    """
+    random_state = check_random_state(random_state)
+    # Small problem, just call full PCA
+    if max(X.shape) <= 500:
+        svd_solver = 'full'
+    elif n_components >= 1 and n_components < .8 * min(X.shape):
+        svd_solver = 'randomized'
+    # This is also the case of n_components in (0,1)
+    else:
+        svd_solver = 'full'
+
+    # Call different fits for either full or truncated SVD
+    if svd_solver == 'full':
+        U, S, V = linalg.svd(X, full_matrices=False)
+        # flip eigenvectors' sign to enforce deterministic output
+        U, V = svd_flip(U, V)
+        # The "copy" are there to free the reference on the non reduced
+        # data, and hence clear memory early
+        U = U[:, :n_components].copy()
+        S = S[:n_components]
+        V = V[:n_components].copy()
+    else:
+        if LooseVersion(sklearn.__version__) >= LooseVersion('0.17'):
+            n_iter = 'auto'
+        else:
+            n_iter = 3
+        U, S, V = randomized_svd(X, n_components=n_components,
+                                 n_iter=n_iter,
+                                 flip_sign=True,
+                                 random_state=random_state)
+    return U, S, V
+
 
 
 def mask_and_reduce(masker, imgs,
@@ -40,7 +104,7 @@ def mask_and_reduce(masker, imgs,
         Instance used to mask provided data.
 
     imgs: list of 4D Niimg-like objects
-        See http://nilearn.github.io/manipulating_images/input_output.html.
+        See http://nilearn.github.io/manipulating_images/input_output.html
         List of subject data to mask, reduce and stack.
 
     confounds: CSV file path or 2D matrix, optional
@@ -150,21 +214,12 @@ def _mask_and_reduce_single(masker,
     else:
         n_samples = int(ceil(data_n_samples * reduction_ratio))
 
-    if n_samples <= data_n_samples // 4:
-        U, S, _ = cache(randomized_svd, memory,
+    U, S, V = cache(fast_svd, memory,
                         memory_level=memory_level,
                         func_memory_level=3)(this_data.T,
                                              n_samples,
-                                             transpose=True,
                                              random_state=random_state)
-        U = U.T
-    else:
-        U, S, _ = cache(linalg.svd, memory,
-                        memory_level=memory_level,
-                        func_memory_level=3)(this_data.T,
-                                             full_matrices=False)
-        U = U.T[:n_samples].copy()
-        S = S[:n_samples]
+    U = U.T.copy()
     U = U * S[:, np.newaxis]
     return U
 
@@ -254,7 +309,7 @@ class BaseDecomposition(BaseEstimator, CacheMixin):
     Attributes
     ----------
     `mask_img_` : Niimg-like object
-        See http://nilearn.github.io/manipulating_images/input_output.html.
+        See http://nilearn.github.io/manipulating_images/input_output.html
         The mask of the data. If no mask was given at masker creation, contains
         the automatically computed mask.
 
@@ -295,7 +350,7 @@ class BaseDecomposition(BaseEstimator, CacheMixin):
         Parameters
         ----------
         imgs: list of Niimg-like objects
-            See http://nilearn.github.io/manipulating_images/input_output.html.
+            See http://nilearn.github.io/manipulating_images/input_output.html
             Data on which the mask is calculated. If this is a list,
             the affine is considered the same for all.
 
@@ -340,7 +395,7 @@ class BaseDecomposition(BaseEstimator, CacheMixin):
         Parameters
         ----------
         imgs: iterable of Niimg-like objects
-            See http://nilearn.github.io/manipulating_images/input_output.html.
+            See http://nilearn.github.io/manipulating_images/input_output.html
             Data to be projected
 
         confounds: CSV file path or 2D matrix
@@ -417,7 +472,7 @@ class BaseDecomposition(BaseEstimator, CacheMixin):
         Parameters
         ----------
         imgs: iterable of Niimg-like objects
-            See http://nilearn.github.io/manipulating_images/input_output.html.
+            See http://nilearn.github.io/manipulating_images/input_output.html
             Data to be scored
 
         confounds: CSV file path or 2D matrix
