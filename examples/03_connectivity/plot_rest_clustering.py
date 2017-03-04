@@ -107,12 +107,11 @@ print("Ward agglomeration 2000 clusters: %.2fs" % (time.time() - start))
 # To visualize results, we need to transform the clustering's labels back
 # to a neuroimaging volume. For this, we use the masker's inverse_transform
 # directly from the object on attribute labels_.
-
 kmeans_labels_img = kmeans.masker_.inverse_transform(kmeans.labels_)
 ward_labels_img = ward.masker_.inverse_transform(ward.labels_)
 
 from nilearn import plotting
-from nilearn.image import mean_img
+from nilearn.image import mean_img, index_img
 
 # we take mean over time on the functional image to use mean image as
 # background to parcellated image labels_img
@@ -140,7 +139,7 @@ ward_labels_img.to_filename('ward_parcellation.nii')
 # signal. We show the original data, and the approximation provided by
 # the clustering by averaging the signal on each parcel.
 #
-# As you can see below, this approximation is very good, although there
+# As you can see below, this approximation is almost good, although there
 # are only 2000 parcels, instead of the original 60000 voxels
 
 # Display the original data
@@ -151,9 +150,18 @@ plotting.plot_epi(ward.masker_.inverse_transform(fmri_masked[0][0]),
                   vmax=fmri_masked[0].max(), vmin=fmri_masked[0].min(),
                   display_mode='xz')
 
+# A reduced data can be create by taking the parcel-level average:
+# Note that, the Parcellations object with any method has opportunity to
+# use a transform method that modifies input features. Here it reduces their
+# dimension
+fmri_reduced = ward.transform(dataset.func)
+
 # Display the corresponding data compressed using the parcellation using
 # parcels=2000
-plotting.plot_epi(ward_labels_img, cut_coords=cut_coords,
+fmri_compressed = ward.inverse_transform(fmri_reduced)
+
+plotting.plot_epi(index_img(fmri_compressed[0], 0),
+                  cut_coords=cut_coords,
                   title='Compressed representation (2000 parcels)',
                   display_mode='xz')
 
