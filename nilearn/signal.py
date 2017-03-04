@@ -397,15 +397,6 @@ def clean(signals, sessions=None, detrend=True, standardize=True,
 
     standardize: bool
         If True, returned signals are set to unit variance.
-        The ``standardize`` parameter is deprecated and will be removed, use
-        ``normalize="std"`` to standardize.
-
-    normalize: {'psc', 'std', None}, optional
-       Signals normalization method.
-       If 'psc' (percent signal change), input signals temporal means are
-       set to 100 prior to any preprocessing.
-       If 'std', output signals are set to unit variance.
-       If None, no normalization is done.
 
     ensure_finite: bool
         If True, the non-finite values (NANs and infs) found in the data
