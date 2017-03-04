@@ -8,7 +8,9 @@
 
 .. container:: index-paragraph
 
-    |glass_brain_outline|
+  |glass_brain_outline|
+
+  .. container:: inner-paragraph
 
     **Fast and easy multivariate analysis of NeuroImaging data**
 
@@ -17,16 +19,16 @@
     predictive modelling, classification, decoding, or connectivity
     analysis.
 
-______
+
+  .. raw:: html
+
+     <div id="download-container">
+	<a href="{{pathto('introduction')}}#installation" class="btn btn-primary">Installation</a>
+      </div>
 
 .. raw:: html
 
    <div id="index-grid" class="section group">
-    <div class="col span_1_of_3">
-     <div id="download-container">
-	<a href="{{pathto('introduction')}}#installation" class="btn btn-primary">Installation</a>
-      </div>
-    </div>
     <div class="col span_1_of_3">
         <h3><a
         href="introduction.html#python-for-neuroimaging-a-quick-start">First Steps</a></h3>

@@ -936,6 +936,9 @@ div.align-center {
 
 div#download-container {
     text-align: center;
+    display: inline-block;
+    margin-left: 4em;
+    vertical-align: text-bottom;
 }
 
 @media (max-width: 800px) {
@@ -1417,12 +1420,21 @@ div#index-grid p {
 
 div.index-paragraph {
     padding: 0px 5px 0px 10px;
-    max-width: 48em;
+    max-width: 70em;
     margin: 15px auto 0px;
     overflow: overlay;
-    /*border: 1px solid #4eacc5;
-    border-radius: 5px;
-    color: #2C2C28;*/
+}
+
+div.inner-paragraph {
+    max-width: 25em;
+    display: inline-block;
+    padding-left: 3em;
+}
+
+@media only screen and (max-width: 639px) {
+    div.inner-paragraph {
+	padding-left: 0pt;
+    }
 }
 
 div.index-paragraph img {
