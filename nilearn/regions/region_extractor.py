@@ -68,8 +68,7 @@ def _threshold_maps_ratio(maps_img, threshold):
     return threshold_maps_img
 
 
-def _remove_small_regions(input_data, mask_data, index,
-                          affine, min_size):
+def _remove_small_regions(input_data, index, affine, min_size):
     """Remove small regions in volume from input_data of specified min_size.
 
     min_size should be specified in mm^3 (region size in volume).
@@ -80,11 +79,6 @@ def _remove_small_regions(input_data, mask_data, index,
         Values inside the regions defined by labels contained in input_data
         are summed together to get the size and compare with given min_size.
         For example, see scipy.ndimage.label
-
-    mask_data : numpy.ndarray
-        Data should contains labels assigned to the regions contained in given
-        input_data to tag values to work on. The data must be of same shape of
-        input_data.
 
     index : numpy.ndarray
         A sequence of label numbers of the regions to be measured corresponding
@@ -448,7 +442,7 @@ def connected_label_regions(labels_img, min_size=None, connect_diag=True,
 
         NOTE: The order of the names given in labels should be appropriately
         matched with the unique labels (integers) assigned to each region
-        given in labels_img.
+        given in labels_img (also excluding 'Background' label).
 
     Returns
     -------
@@ -527,9 +521,8 @@ def connected_label_regions(labels_img, min_size=None, connect_diag=True,
 
         if min_size is not None:
             index = np.arange(this_n_labels + 1)
-            this_label_mask = this_label_mask.astype(np.int)
-            regions = _remove_small_regions(regions, this_label_mask,
-                                            index, affine, min_size=min_size)
+            regions = _remove_small_regions(regions, index, affine,
+                                            min_size=min_size)
             this_n_labels = regions.max()
 
         cur_regions = regions[regions != 0] + current_max_label
