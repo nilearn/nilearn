@@ -149,7 +149,6 @@ display.title('Glass brain with black background and filled in contours')
 # Now, display_mode is chosen as 'lr' for both hemispheric plots
 display = plotting.plot_glass_brain(None, display_mode='lr')
 display.add_contours(tmap_filename, levels=[3.], colors='r')
-display.title('"tmap_filename" on glass brain only "l" "r" hemispheres')
 
 ##############################################################################
 # Filled contours in both hemispheric plotting, just by adding filled=True

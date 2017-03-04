@@ -1,9 +1,14 @@
 
+.. |glass_brain_outline| image:: auto_examples/01_plotting/images/sphx_glr_plot_demo_glass_brain_extensive_014.png
+
+
 ..
     We are putting the title as a raw HTML so that it doesn't appear in
     the contents
 
 .. container:: index-paragraph
+
+    |glass_brain_outline|
 
     **Fast and easy multivariate analysis of NeuroImaging data**
 

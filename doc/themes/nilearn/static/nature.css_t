@@ -1416,13 +1416,20 @@ div#index-grid p {
 }
 
 div.index-paragraph {
-    border: 1px solid #FBEED5;
+    border: 1px solid #4eacc5;
     border-radius: 5px;
     padding: 0px 5px 0px 10px;
-    background-color: #FFFBE8;
     max-width: 48em;
     margin: 15px auto 0px;
     color: #2C2C28;
+    overflow: overlay;
+}
+
+div.index-paragraph img {
+    float: left;
+    width: 50%;
+    max-width: 20em;
+    margin-right: .5em;
 }
 
 div.index-paragraph p {
@@ -1430,7 +1437,9 @@ div.index-paragraph p {
     margin: .5em 0 .5em 0;
 }
 
-
+div.index-paragraph p.first {
+    margin: 0pt;
+}
 
 /************ The carrousel *******************/
 div.body .jcarousel-wrapper {
