@@ -7,6 +7,10 @@ N-dimensional image manipulation
 import numpy as np
 from scipy import ndimage
 
+from .._utils import  check_niimg_3d
+from .._utils.compat import _basestring, get_affine
+from .._utils.niimg_conversions import _safe_get_data
+from ..image import new_img_like
 
 ###############################################################################
 # Operating on connected components
@@ -25,6 +29,11 @@ def largest_connected_component(volume):
     volume: numpy.array
         3D boolean array with only one connected component.
     """
+    if hasattr(volume, "get_data") \
+       or isinstance(volume, _basestring):
+        raise ValueError('Please enter a valid numpy array. For images use\
+                         largest_connected_component_img')
+
     # We use asarray to be able to work with masked arrays.
     volume = np.asarray(volume)
     labels, label_nb = ndimage.label(volume)
@@ -36,6 +45,40 @@ def largest_connected_component(volume):
     # discard the 0 label
     label_count[0] = 0
     return labels == label_count.argmax()
+
+
+def largest_connected_component_img(imgs):
+    """ Return the largest connected component of an image or list of images.
+
+    Parameters
+    ----------
+    imgs: Niimg-like object or iterable of Niimg-like objects
+        See http://nilearn.github.io/manipulating_images/input_output.html
+        Image(s) to extract the largest connected component from.
+
+    Returns
+    -------
+        img or list of img containing the largest connected component
+    """
+    if hasattr(imgs, "__iter__") \
+       and not isinstance(imgs, _basestring):
+        single_img = False
+    else:
+        single_img = True
+        imgs = [imgs]
+
+    ret = []
+    for img in imgs:
+        img = check_niimg_3d(img)
+        affine = get_affine(img)
+        largest_component = largest_connected_component(_safe_get_data(img))
+        ret.append(new_img_like(img, largest_component, affine,
+                                copy_header=True))
+
+    if single_img:
+        return ret[0]
+    else:
+        return ret
 
 
 def get_border_data(data, border_size):
