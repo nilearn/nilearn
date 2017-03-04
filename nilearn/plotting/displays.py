@@ -7,23 +7,22 @@ the data with different layout of cuts.
 
 import collections
 import numbers
+from distutils.version import LooseVersion
 
-import numpy as np
-from scipy import sparse, stats
-
-from ..image import new_img_like
-from .. import _utils
-
+import matplotlib
 import matplotlib.pyplot as plt
-from matplotlib import transforms, colors
-from matplotlib.colorbar import ColorbarBase
+import numpy as np
 from matplotlib import cm as mpl_cm
 from matplotlib import lines
+from matplotlib import transforms, colors
+from matplotlib.colorbar import ColorbarBase
+from scipy import sparse, stats
 
-# Local imports
 from . import glass_brain, cm
-from .find_cuts import find_xyz_cut_coords, find_cut_slices
 from .edge_detect import _edge_map
+from .find_cuts import find_xyz_cut_coords, find_cut_slices
+from .. import _utils
+from ..image import new_img_like
 from ..image.resampling import (get_bounds, reorder_img, coord_transform,
                                 get_mask_bounds)
 
@@ -721,7 +720,11 @@ class BaseSlicer(object):
                          x_adjusted_width,
                          height - (self._colorbar_margin['top'] +
                                    self._colorbar_margin['bottom'])]
-        self._colorbar_ax = figure.add_axes(lt_wid_top_ht, axis_bgcolor='w')
+        self._colorbar_ax = figure.add_axes(lt_wid_top_ht)
+        if LooseVersion(matplotlib.__version__) >= LooseVersion("1.5"):
+            self._colorbar_ax.set_facecolor('w')
+        else:
+            self._colorbar_ax.set_axis_bgcolor('w')
 
         our_cmap = mpl_cm.get_cmap(cmap)
         # edge case where the data has a single value
@@ -922,14 +925,18 @@ class OrthoSlicer(BaseSlicer):
             raise ValueError('The number cut_coords passed does not'
                              'match the display_mode')
         x0, y0, x1, y1 = self.rect
-        axisbg = 'k' if self._black_bg else 'w'
+        facecolor = 'k' if self._black_bg else 'w'
         # Create our axes:
         self.axes = dict()
         for index, direction in enumerate(self._cut_displayed):
             fh = self.frame_axes.get_figure()
             ax = fh.add_axes([0.3 * index * (x1 - x0) + x0, y0,
-                              .3 * (x1 - x0), y1 - y0],
-                             axisbg=axisbg, aspect='equal')
+                              .3 * (x1 - x0), y1 - y0], aspect='equal')
+            if LooseVersion(matplotlib.__version__) >= LooseVersion("1.5"):
+                ax.set_facecolor(facecolor)
+            else:
+                ax.set_axis_bgcolor(facecolor)
+
             ax.axis('off')
             coord = self.cut_coords[
                 sorted(self._cut_displayed).index(direction)]
