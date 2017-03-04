@@ -27,8 +27,9 @@ labels = np.recfromcsv(labels_filenames, delimiter=" ")
 
 # Restrict to face and house conditions
 target = labels['labels']
-condition_mask = np.logical_or(
-    target == b"cat", np.logical_or(target == b"face", target == b"house"))
+condition_mask = np.logical_or(target == b"face", target == b"house")
+# condition_mask = np.logical_or(
+#     target == b"bottle", np.logical_or(target == b"face", target == b"house"))
 
 # Split data into train and test samples, using the chunks
 condition_mask_train = np.logical_and(condition_mask, labels['chunks'] <= 6)
@@ -46,22 +47,25 @@ X_test = index_img(func_filenames, condition_mask_test)
 y_train = target[condition_mask_train]
 y_test = target[condition_mask_test]
 
-# Prediction with Decoder
+# Fit and predict with the decoder
 from nilearn.decoding import Decoder
 decoder = Decoder(estimator='svc_l2', cv=10, mask_strategy='epi',
-                  smoothing_fwhm=4, n_jobs=1)
+                  smoothing_fwhm=4, scoring='accuracy', n_jobs=1)
 
-# Fit and predict
 decoder.fit(X_train, y_train)
-y_pred = decoder.predict(X_test)
+accuracy = np.mean(decoder.cv_scores_)
+print("Decoder cross-validation accuracy : %g%%" % accuracy)
 
-weight_img = decoder.coef_img_[b"house"]
-# prediction_accuracy = decoder.cv_score_
-prediction_accuracy = 1.
+# Testing on out-of-sample data
+y_pred = decoder.predict(X_test)
+accuracy = (y_pred == y_test).mean() * 100.
+print("Decoder classification accuracy : %g%%" % accuracy)
+
+weight_img = decoder.coef_img_[b"face"]
 
 from nilearn.plotting import plot_stat_map, show
 plot_stat_map(weight_img, background_img, cut_coords=[-52, -5],
               display_mode="yz",
-              title="Decoder: accuracy %g%%" % prediction_accuracy)
+              title="Decoder: accuracy %g%%" % accuracy)
 
 show()

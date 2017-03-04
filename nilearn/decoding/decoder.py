@@ -1,3 +1,10 @@
+# TODO
+# make scorer work
+# change examples
+# change mask according to std (oasis)
+# backports: ParameterGrid, check_scoring
+# cv=None yields only 3 cv folds
+
 """High-level decoding object that exposes standard classification
 
 and regression strategies such as SVM, LogisticRegression and Ridge,
@@ -51,8 +58,7 @@ SUPPORTED_ESTIMATORS = dict(
     ridge_classifier=RidgeClassifier(),
     ridge_regression=Ridge(),
     ridge=Ridge(),
-    svr=SVR(kernel='linear'),
-)
+    svr=SVR(kernel='linear'),)
 
 
 def _check_param_grid(estimator, X, y, param_grid):
@@ -84,9 +90,6 @@ def _parallel_fit(estimator, X, y, train, test, param_grid, is_classif, scorer,
     # unprocessed test labels indices, they are used to measure the overal
     # perfromance.
     y_true_indices = test
-
-    y_train = y[train]
-    y_test = y[test]
     n_features = X.shape[1]
 
     selector = check_feature_screening(screening_percentile, mask_img,
@@ -94,12 +97,14 @@ def _parallel_fit(estimator, X, y, train, test, param_grid, is_classif, scorer,
 
     do_screening = (n_features > 100) and (screening_percentile < 100.)
 
+    X_train = X[train].copy()
+    y_train = y[train].copy()
+    X_test = X[test].copy()
+    y_test = y[test].copy()
+
     if (selector is not None) and do_screening:
         X_train = selector.fit_transform(X[train], y[train])
         X_test = selector.transform(X[test])
-    else:
-        X_train = X[train]
-        X_test = X[test]
 
     param_grid = _check_param_grid(estimator, X_train, y_train, param_grid)
     test_scores = []
@@ -421,20 +426,18 @@ class BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
 
             classes = self.classes_
 
+            # Models to aggregate
+            coefs.setdefault(classes[c], []).append(coef)
+            intercepts.setdefault(classes[c], []).append(intercept)
+
             cv_y_prob.setdefault(classes[c], []).append(y_info['y_prob'])
-            cv_indices.setdefault(c, []).extend([i] * len(y_info['y_prob']))
+            cv_indices.setdefault(classes[c], []).extend(
+                [i] * len(y_info['y_prob']))
             cv_scores.setdefault(classes[c], []).append(scores)
 
             self.cv_params_.setdefault(classes[c], {})
             for k in params:
                 self.cv_params_[classes[c]].setdefault(k, []).append(params[k])
-
-            if (n_problems <= 2) and self.is_classif:
-                # Binary classification
-                other_class = np.setdiff1d(classes, classes[c])[0]
-                coefs.setdefault(other_class, []).append(-coef)
-                intercepts.setdefault(other_class, []).append(-intercept)
-                cv_y_prob.setdefault(other_class, []).append(y_info['inverse'])
 
             if self.is_classif:
                 cv_y_true.setdefault(classes[c], []).extend(
@@ -443,9 +446,16 @@ class BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
                 cv_y_true.setdefault(classes[c], []).extend(
                     y[y_info['y_true_indices']])
 
-            # Models to aggregate
-            coefs.setdefault(classes[c], []).append(coef)
-            intercepts.setdefault(classes[c], []).append(intercept)
+            if (n_problems <= 2) and self.is_classif:
+                # Binary classification
+                other_class = np.setdiff1d(classes, classes[c])[0]
+                coefs.setdefault(other_class, []).append(-coef)
+                intercepts.setdefault(other_class, []).append(-intercept)
+                cv_y_prob.setdefault(other_class, []).append(y_info['inverse'])
+                # misc
+                cv_scores.setdefault(other_class, []).append(scores)
+                cv_y_true.setdefault(other_class, []).extend(
+                    self._enc.inverse_transform(y[y_info['y_true_indices']]))
 
         # Saving the mean score
         self.cv_scores_ = np.mean(
@@ -457,7 +467,12 @@ class BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
             [np.hstack(cv_y_prob[c]) for c in classes]).T
 
         if self.is_classif:
-            self.cv_y_pred_ = classes[np.argmax(self.cv_y_prob_, axis=1)]
+            if self.n_classes_ == 2:
+                self.cv_y_prob_ = self.cv_y_prob_[0, :]
+                indices = (self.cv_y_prob_ > 0).astype(np.int)
+            else:
+                indices = np.argmax(self.cv_y_prob_, axis=1)
+            self.cv_y_pred_ = classes[indices]
         else:
             self.cv_y_pred_ = self.cv_y_prob_
 
@@ -471,6 +486,10 @@ class BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
         for c, coef, std in zip(classes, self.coef_, std_coef):
             coef_img[c] = self.masker_.inverse_transform(coef)
             std_coef_img[c] = self.masker_.inverse_transform(std)
+
+        if self.is_classif and (self.n_classes_ == 2):
+            self.coef_ = self.coef_[0, :][np.newaxis, :]
+            self.intercept_ = self.intercept_[0]
 
         self.coef_img_ = coef_img
         self.std_coef_img_ = std_coef_img
@@ -533,31 +552,29 @@ class BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
 
         return scores
 
-    def score(self, X, y):
-        """Measure the prediction performance of the decoder, using y as ground
-        truth.
+    # def score(self, X, y):
+    #     """Measure the prediction performance of the decoder, using y as ground
+    #     truth.
 
-        Parameters
-        ----------
-        X : list of Niimg-like objects
-            See http://nilearn.github.io/manipulating_images/input_output.html
-            Data on prediction is to be made. If this is a list,
-            the affine is considered the same for all.
+    #     Parameters
+    #     ----------
+    #     X : list of Niimg-like objects
+    #         See http://nilearn.github.io/manipulating_images/input_output.html
+    #         Data on prediction is to be made. If this is a list,
+    #         the affine is considered the same for all.
 
-        y : array or list of length n_samples
-            The ground truth dependent variable (age, sex, QI, etc.).
-            Target variable to predict. Must have exactly as many elements as
-            3D images in niimg.
+    #     y : array or list of length n_samples
+    #         The ground truth dependent variable (age, sex, QI, etc.).
+    #         Target variable to predict. Must have exactly as many elements as
+    #         3D images in niimg.
 
-        Returns
-        -------
-        score : float
-            Decoding metrics.
-        """
-        # XXX
-        scorer = check_scoring(self, self.scoring)
-        import pdb; pdb.set_trace()  # XXX BREAKPOINT
-        return scorer(self, X, y)
+    #     Returns
+    #     -------
+    #     score : float
+    #         Decoding metrics.
+    #     """
+    #     scorer = check_scoring(self, self.scoring)
+    #     return scorer(self, X, y)
 
 
 class Decoder(BaseDecoder):
@@ -596,6 +613,8 @@ class DecoderRegressor(BaseDecoder):
                  target_shape=None, mask_strategy='background',
                  low_pass=None, high_pass=None, t_r=None, memory=None,
                  memory_level=0, n_jobs=1, verbose=False):
+        self.classes_ = ['beta']
+
         super(DecoderRegressor, self).__init__(
             estimator=estimator, mask=mask, cv=cv, param_grid=param_grid,
             screening_percentile=screening_percentile, scoring=scoring,
@@ -604,4 +623,3 @@ class DecoderRegressor(BaseDecoder):
             low_pass=low_pass, high_pass=high_pass, t_r=t_r,
             mask_strategy=mask_strategy, memory=memory, is_classif=False,
             memory_level=memory_level, verbose=verbose, n_jobs=n_jobs)
-        self.classes_ = ['beta']

@@ -40,6 +40,7 @@ ____
 #          Virgile Fritsch, <virgile.fritsch@inria.fr>, Apr 2014
 #          Gael Varoquaux, Apr 2014
 #          Andres Hoyos-Idrobo, Dec 2015
+import numpy as np
 
 n_subjects = 100  # more subjects requires more memory
 
@@ -74,23 +75,25 @@ gm_maps_masked = nifti_masker.fit_transform(niimgs)
 n_samples, n_features = gm_maps_masked.shape
 
 from nilearn.decoding import DecoderRegressor
-decoder = DecoderRegressor(estimator='ridge', mask=nifti_masker,
+decoder = DecoderRegressor(estimator='svr', mask=nifti_masker,
                            scoring='neg_mean_absolute_error',
-                           screening_percentile=2, n_jobs=1)
-
-# Fit and predict
+                           screening_percentile=5, n_jobs=1)
+# Fit and predict with the decoder
 decoder.fit(niimgs, age)
 age_pred = decoder.predict(niimgs)
-
 # Visualization
-# Look at the decoder's discriminating weights
-coef_img = decoder.coef_img_['beta']
-mean_absolute_error = decoder.score(niimgs, age)
+weight_img = decoder.coef_img_['beta']
+prediction_score = np.mean(decoder.cv_scores_)
 
+print("=== DECODER ===")
+print("Cross-validation score: %f" % prediction_score)
+print("")
+# Create the figure
 from nilearn.plotting import plot_stat_map, show
-background_img = gray_matter_map_filenames[0]
-# weights map
-plot_stat_map(coef_img, background_img, display_mode="z", cut_coords=[-6],
-              title="Decoder: MAE %g" % mean_absolute_error)
+bg_filename = gray_matter_map_filenames[0]
+
+display = plot_stat_map(weight_img, bg_img=bg_filename,
+                        display_mode='z', cut_coords=[-6],
+                        title="Decoder: r2 %g" % prediction_score)
 
 show()
