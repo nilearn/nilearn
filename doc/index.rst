@@ -17,6 +17,30 @@
     predictive modelling, classification, decoding, or connectivity
     analysis.
 
+______
+
+.. raw:: html
+
+   <div id="index-grid" class="section group">
+    <div class="col span_1_of_3">
+     <div id="download-container">
+	<a href="{{pathto('introduction')}}#installation" class="btn btn-primary">Installation</a>
+      </div>
+    </div>
+    <div class="col span_1_of_3">
+        <h3><a
+        href="introduction.html#python-for-neuroimaging-a-quick-start">First Steps</a></h3>
+        <p>Get started with nilearn</p>
+
+        <h3><a href="auto_examples/index.html"> Examples</a></h3>
+        <p>Visit our example gallery</p>
+        <h3><a href="user_guide.html"> User Guide</a></h3>
+        <p>Browse the full documentation</p>
+    </div>
+
+    </div>
+
+______
 
 .. Here we are building the carrousel
 
@@ -46,20 +70,8 @@
 
 .. raw:: html
 
-   <div id="index-grid" class="section group">
-    <div class="col span_1_of_3">
-        <h3><a
-        href="introduction.html#python-for-neuroimaging-a-quick-start">First Steps</a></h3>
-        <p>Get started with nilearn</p>
-
-        <h3><a href="auto_examples/index.html"> Examples</a></h3>
-        <p>Visit our example gallery</p>
-        <h3><a href="user_guide.html"> User Guide</a></h3>
-        <p>Browse the full documentation</p>
-    </div>
-    <div class="col span_2_of_3">
     <div class="jcarousel-wrapper">
-    <div class="jcarousel">
+        <div class="jcarousel">
 
 * |glass_brain|
 
@@ -79,20 +91,51 @@
 
 .. raw:: html
 
-            </div>
+   <a href="#" class="jcarousel-control-prev">&lsaquo;</a>
+   <a href="#" class="jcarousel-control-next">&rsaquo;</a>
 
-        <a href="#" class="jcarousel-control-prev">&lsaquo;</a>
-        <a href="#" class="jcarousel-control-next">&rsaquo;</a>
+   <p class="jcarousel-pagination">
 
-        <p class="jcarousel-pagination">
+   </p>
 
-        </p>
-
-        </div>
-        </div>
+   </div>
 
    </div>
    <div style="clear: left"></div>
+
+.. container:: index-boxes
+
+  **News**
+
+  * **September 19th 2016**: Nilearn 0.2.6 released
+
+  * **June 13th 2016**: Nilearn 0.2.5 released
+
+  * **March 2014**: a `paper
+    <http://journal.frontiersin.org/Journal/10.3389/fninf.2014.00014/abstract>`__
+    describing the concepts at the root of
+    nilearn published in *Frontiers in Neuroinformatics*.
+
+  * **Ongoing development**:
+    :ref:`whats_new`.
+
+.. container:: index-boxes
+
+  **Development**
+
+  * `Nilearn on Github <https://github.com/nilearn/nilearn>`_
+
+  * All material Free Software: **BSD license** (3 clause).
+
+  * :ref:`Authors <authors>`
+
+  * :ref:`Contributing <contributing>`
+
+.. container:: index-boxes
+
+  **Giving credit**
+
+  Please consider :ref:`citing nilearn <citing>`
 
 .. toctree::
    :hidden:

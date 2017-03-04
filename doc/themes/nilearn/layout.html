@@ -70,16 +70,32 @@
             .jcarouselPagination();
     });
 })(jQuery);
-<style>
-body {
-    max-width: 100%;
-}
-
-div.document {
-    max-width: 100%;
-}
-</style>
 </script>
+<style>
+    /* Styling specific to the index page */
+    body {
+	max-width: 100%;
+    }
+
+    div.document {
+	max-width: 100%;
+    }
+
+    div.sphinxsidebar {
+	display: none;
+    }
+
+    div.bodywrapper {
+	border-right: none;
+	margin: 0;
+	max-width: 100%;
+    }
+
+    div.body {
+	max-width: 100%;
+    }
+
+</style>
 {% else %}
 <script type="text/javascript">
 $(function () {
@@ -201,51 +217,12 @@ $(function () {
 {# This block gets put at the top of the sidebar #}
 {% block sidebarlogo %}
 
-
-{%- if (pagename == 'index') %}
-
-<h4> News </h4>
-  <ul>
-      <li><p> <strong>September 19th 2016</strong>: Nilearn 0.2.6 released
-      </p></li>
-      <li><p> <strong>June 13th 2016</strong>: Nilearn 0.2.5 released
-      </p></li>
-      <li><p> <strong>March 2014</strong>: <a
-          href="http://journal.frontiersin.org/Journal/10.3389/fninf.2014.00014/abstract"
-          />Paper</a> describing the concepts at the root of
-      nilearn published in <em> Frontiers in Neuroinformatics</em>.
-      </p></li>
-  </ul>
-  <ul>
-      <li><p> <strong>Ongoing development</strong>:
-          <a href="whats_new.html"</a>What's new</em>.
-      </p></li>
-  </ul>
-
-<h4> Software </h4>
-  <ul class="simple">
-    <li>
-      <div id="download-container">
-	<a href="{{pathto('introduction')}}#installation" class="btn btn-primary">Installation</a>
-      </div>
-    </li>
-  </ul>
-<h4> Development </h4>
-  <ul class="simple">
-    <li><p><a class="reference external"
-	href="https://github.com/nilearn/nilearn">Nilearn on GitHub</a></p></li>
-    <li><p>All material Free Software: <strong>BSD license</strong> (3 clause).</p></li>
-    <li><p><a href="{{pathto('authors')}}">Authors</a></p></li>
-    <li><p><a href="{{pathto('contributing')}}">Contributing</a></p></li>
-  </ul>
-{% endif %}
-
-
 <h4> Giving credit </h4>
   <ul class="simple">
     <li><p>Please consider <a href="{{pathto('authors')}}#citing">citing the
                     papers</a>.</p></li>
   </ul>
+
 {% endblock %}
 
 {# I had to copy the whole search block just to change the rendered text,

@@ -1416,13 +1416,13 @@ div#index-grid p {
 }
 
 div.index-paragraph {
-    border: 1px solid #4eacc5;
-    border-radius: 5px;
     padding: 0px 5px 0px 10px;
     max-width: 48em;
     margin: 15px auto 0px;
-    color: #2C2C28;
     overflow: overlay;
+    /*border: 1px solid #4eacc5;
+    border-radius: 5px;
+    color: #2C2C28;*/
 }
 
 div.index-paragraph img {
@@ -1437,7 +1437,7 @@ div.index-paragraph p {
     margin: .5em 0 .5em 0;
 }
 
-div.index-paragraph p.first {
+div.index-paragraph p:first-of-type {
     margin: 0pt;
 }
 
