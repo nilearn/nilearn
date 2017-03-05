@@ -552,30 +552,6 @@ class BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
 
         return scores
 
-    # def score(self, X, y):
-    #     """Measure the prediction performance of the decoder, using y as ground
-    #     truth.
-
-    #     Parameters
-    #     ----------
-    #     X : list of Niimg-like objects
-    #         See http://nilearn.github.io/manipulating_images/input_output.html
-    #         Data on prediction is to be made. If this is a list,
-    #         the affine is considered the same for all.
-
-    #     y : array or list of length n_samples
-    #         The ground truth dependent variable (age, sex, QI, etc.).
-    #         Target variable to predict. Must have exactly as many elements as
-    #         3D images in niimg.
-
-    #     Returns
-    #     -------
-    #     score : float
-    #         Decoding metrics.
-    #     """
-    #     scorer = check_scoring(self, self.scoring)
-    #     return scorer(self, X, y)
-
 
 class Decoder(BaseDecoder):
 

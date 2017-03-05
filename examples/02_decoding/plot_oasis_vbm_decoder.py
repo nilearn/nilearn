@@ -43,22 +43,11 @@ ____
 
 import numpy as np
 from nilearn import datasets
-n_subjects = 100  # increase this number if you have more RAM on your box
+n_subjects = 200  # increase this number if you have more RAM on your box
 dataset_files = datasets.fetch_oasis_vbm(n_subjects=n_subjects)
 age = dataset_files.ext_vars['age'].astype(float)
 age = np.array(age)
 gm_imgs = np.array(dataset_files.gray_matter_maps)
-
-# remove features with too low between-subject variance
-from nilearn.input_data import NiftiMasker
-nifti_masker = NiftiMasker(standardize=False, smoothing_fwhm=2,
-                           memory='nilearn_cache')
-
-gm_maps_masked = nifti_masker.fit_transform(gm_imgs)
-gm_maps_masked[:, gm_maps_masked.var(0) < 0.01] = 0.
-# final masking
-niimgs = nifti_masker.inverse_transform(gm_maps_masked)
-nifti_masker.fit(niimgs)
 
 # Split data into training set and test set
 from sklearn.utils import check_random_state
@@ -67,14 +56,26 @@ rng = check_random_state(42)
 gm_imgs_train, gm_imgs_test, age_train, age_test = train_test_split(
     gm_imgs, age, train_size=.6, random_state=rng)
 
+# Preprocess the mask: remove features with too low between-subject variance
+from sklearn.feature_selection import VarianceThreshold
+from nilearn.input_data import NiftiMasker
+variance_threshold = VarianceThreshold(threshold=.01)
+nifti_masker = NiftiMasker(standardize=False, smoothing_fwhm=2,
+                           memory='nilearn_cache')
+gm_maps_masked = nifti_masker.fit_transform(gm_imgs_train)
+gm_maps_thresholded = variance_threshold.fit_transform(gm_maps_masked)
+gm_maps_masked = variance_threshold.inverse_transform(gm_maps_thresholded)
+gm_imgs_thresholded = nifti_masker.inverse_transform(gm_maps_masked)
+nifti_masker.fit(gm_imgs_thresholded)
+
 # To save time (because these are anat images with many voxels), we include
-# only the 5-percent voxels most correlated with the age variable to fit.
+# only the 2-percent voxels most correlated with the age variable to fit.
 # Also, we set memory_level=2 so that more of the intermediate computations
 # are cached. Also, you may pass and n_jobs=<some_high_value> to the
 # DecoderRegressor class, to take advantage of a multi-core system.
 from nilearn.decoding import DecoderRegressor
-decoder = DecoderRegressor(estimator='svr', mask=nifti_masker,
-                           screening_percentile=5, n_jobs=1)
+decoder = DecoderRegressor(estimator='svr', mask=nifti_masker, cv=5,
+                           screening_percentile=2, n_jobs=1)
 # Fit and predict with the decoder
 decoder.fit(gm_imgs_train, age_train)
 age_pred = decoder.predict(gm_imgs_test)
@@ -91,7 +92,7 @@ bg_filename = gm_imgs[0]
 
 display = plot_stat_map(weight_img, bg_img=bg_filename,
                         display_mode='z', cut_coords=[-6],
-                        title="Decoder: r2 %g" % prediction_score)
+                        title="Decoder r2: %g" % prediction_score)
 # One can also use other scores to measure the performance of the decoder
 from sklearn.metrics.scorer import mean_absolute_error
 cv_y_pred = decoder.cv_y_pred_
