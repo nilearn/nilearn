@@ -1,10 +1,3 @@
-# TODO
-# make scorer work
-# change examples
-# change mask according to std (oasis)
-# backports: ParameterGrid, check_scoring
-# cv=None yields only 3 cv folds
-
 """High-level decoding object that exposes standard classification
 
 and regression strategies such as SVM, LogisticRegression and Ridge,
