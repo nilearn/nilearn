@@ -178,7 +178,8 @@ def find_cut_slices(img, direction='z', n_cuts=7, spacing='auto'):
 
     Parameters
     ----------
-    img: 3D Nifti1Image
+    img: Niimg-like object
+        See http://nilearn.github.io/manipulating_images/input_output.html
         the brain map
     direction: string, optional (default "z")
         sectional direction; possible values are "x", "y", or "z"
@@ -207,6 +208,7 @@ def find_cut_slices(img, direction='z', n_cuts=7, spacing='auto'):
             "'direction' must be one of 'x', 'y', or 'z'. Got '%s'" % (
                 direction))
     axis = 'xyz'.index(direction)
+    img = check_niimg_3d(img)
     affine = get_affine(img)
     orig_data = np.abs(_safe_get_data(img))
     this_shape = orig_data.shape[axis]
