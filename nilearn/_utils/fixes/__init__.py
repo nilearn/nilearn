@@ -12,7 +12,6 @@ except ImportError:
     # scikit-learn < 0.16
     from sklearn.cross_validation import _check_cv as check_cv
 
-
 try:
     from sklearn.utils import check_X_y
     from sklearn.utils import check_is_fitted
@@ -25,7 +24,7 @@ try:
     from sklearn.metrics.scorer import check_scoring
 except ImportError:
     # scikit-learn < 0.15
-    from .sklearn_validation import check_scoring
+    from .sklearn_metrics import check_scoring
 
 
 __all__ = ['check_X_y', 'check_is_fitted', 'check_cv', 'check_scoring']
