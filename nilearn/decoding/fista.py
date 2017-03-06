@@ -165,7 +165,7 @@ def mfista(f1_grad, f2_prox, total_energy, lipschitz_constant, w_size,
 
     # FISTA loop
     for i in range(max_iter):
-        history.append(old_energy)
+        history.append(np.abs(energy_delta) / old_energy ))
         w_old[:] = w
 
         # invoke callback
