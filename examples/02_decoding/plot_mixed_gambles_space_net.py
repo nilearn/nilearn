@@ -34,7 +34,8 @@ decoder.fit(zmap_filenames, behavioral_target)
 # Visualize TV-L1 weights
 from nilearn.plotting import plot_stat_map, show
 plot_stat_map(decoder.coef_img_, title="tv-l1", display_mode="yz",
-              cut_coords=[20, -2])
+              cut_coords=[20, -2],
+              output_file='mixed-gambles_tv-l1.png')
 
 
 ##########################################################################
@@ -46,6 +47,7 @@ decoder.fit(zmap_filenames, behavioral_target)
 
 # Visualize Graph-Net weights
 plot_stat_map(decoder.coef_img_, title="graph-net", display_mode="yz",
-              cut_coords=[20, -2])
+              cut_coords=[20, -2],
+              output_file='mixed-gambles_graph-net.png')
 
 show()
