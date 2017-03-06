@@ -174,7 +174,7 @@ def mfista(f1_grad, f2_prox, total_energy, lipschitz_constant, w_size,
                   i + 1, max_iter, old_energy, energy_delta))
         if callback and callback(locals()):
             break
-        if (np.abs(energy_delta) / energy_delta ) < tol:
+        if (np.abs(energy_delta) / old_energy ) < tol:
             if verbose:
                 print("\tConverged (|dE| / E < %g)" % tol)
             break
