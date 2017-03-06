@@ -178,7 +178,7 @@ def find_cut_slices(img, direction='z', n_cuts=7, spacing='auto'):
 
     Parameters
     ----------
-    img: Niimg-like object
+    img: 3D Niimg-like object
         See http://nilearn.github.io/manipulating_images/input_output.html
         the brain map
     direction: string, optional (default "z")
