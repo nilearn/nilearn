@@ -21,4 +21,11 @@ except ImportError:
     from .sklearn_validation import check_X_y
     from .sklearn_validation import check_is_fitted
 
-__all__ = ['check_X_y', 'check_is_fitted', 'check_cv']
+try:
+    from sklearn.metrics.scorer import check_scoring
+except ImportError:
+    # scikit-learn < 0.15
+    from .sklearn_validation import check_scoring
+
+
+__all__ = ['check_X_y', 'check_is_fitted', 'check_cv', 'check_scoring']

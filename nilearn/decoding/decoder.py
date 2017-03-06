@@ -29,16 +29,20 @@ try:
 except ImportError: # sklearn 0.15
     from sklearn.utils import check_array as atleast2d_or_csr
 
+try:
+    from sklearn.grid_search import ParameterGrid
+except ImportError: # sklearn 0.18
+    from sklearn.model_selection import ParameterGrid
+
 from ..input_data.masker_validation import check_embedded_nifti_masker
 from .._utils.param_validation import _adjust_screening_percentile
+from .._utils.fixes import check_scoring
 from .._utils.fixes import check_X_y
 from .._utils.fixes import check_is_fitted
 from .._utils.compat import _basestring
 from .._utils.fixes import check_cv
 from .._utils.param_validation import check_feature_screening
 from .._utils import CacheMixin
-from sklearn.metrics.scorer import check_scoring
-from sklearn.model_selection import ParameterGrid
 
 
 SUPPORTED_ESTIMATORS = dict(

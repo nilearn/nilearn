@@ -1,3 +1,5 @@
+# scikit-learn 0.15
+# file: sklearn.metrics.scorer
 from sklearn.metrics import make_scorer, SCORERS
 from sklearn.externals import six
 from warnings import warn
