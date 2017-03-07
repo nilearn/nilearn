@@ -504,6 +504,7 @@ def fetch_adhd(n_subjects=30, data_dir=None, url=None, resume=True,
     int_ids = np.asarray(ids, dtype=int)
     phenotypic = phenotypic[[np.where(phenotypic['Subject'] == i)[0][0]
                              for i in int_ids]]
+    phenotypic = np.char.decode(phenotypic)
 
     # Download dataset files
 
