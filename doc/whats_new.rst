@@ -100,6 +100,10 @@ Enhancements
     - Extensive plotting example shows how to use contours and filled contours
       on glass brain.
 
+    - Function :func:`nilearn._utils.ndimage.largest_connected_component_img`
+      so that niftis can now be passed to 
+      :func:`nilearn._utils.ndimage.lagest_connected_component`.
+
 0.2.6
 =====
 
