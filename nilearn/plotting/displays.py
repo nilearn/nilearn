@@ -721,7 +721,7 @@ class BaseSlicer(object):
                          height - (self._colorbar_margin['top'] +
                                    self._colorbar_margin['bottom'])]
         self._colorbar_ax = figure.add_axes(lt_wid_top_ht)
-        if LooseVersion(matplotlib.__version__) >= LooseVersion("1.5"):
+        if LooseVersion(matplotlib.__version__) >= LooseVersion("1.6"):
             self._colorbar_ax.set_facecolor('w')
         else:
             self._colorbar_ax.set_axis_bgcolor('w')
