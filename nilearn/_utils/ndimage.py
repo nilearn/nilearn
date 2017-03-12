@@ -51,6 +51,7 @@ def largest_connected_component_img(imgs):
     """ Return the largest connected component of an image or list of images.
 
     ..versionadded:: 0.3
+
     Parameters
     ----------
     imgs: Niimg-like object or iterable of Niimg-like objects
