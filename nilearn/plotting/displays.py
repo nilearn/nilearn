@@ -932,7 +932,7 @@ class OrthoSlicer(BaseSlicer):
             fh = self.frame_axes.get_figure()
             ax = fh.add_axes([0.3 * index * (x1 - x0) + x0, y0,
                               .3 * (x1 - x0), y1 - y0], aspect='equal')
-            if LooseVersion(matplotlib.__version__) >= LooseVersion("1.5"):
+            if LooseVersion(matplotlib.__version__) >= LooseVersion("1.6"):
                 ax.set_facecolor(facecolor)
             else:
                 ax.set_axis_bgcolor(facecolor)
