@@ -3,16 +3,13 @@
 This test file is in nilearn/tests because nosetests ignores modules whose
 name starts with an underscore
 """
-from nose.tools import assert_raises, assert_true
-
+from nose.tools import assert_raises
 import numpy as np
 
-from nibabel import Nifti1Image
 from nilearn._utils.ndimage import (largest_connected_component,
-                                    _peak_local_max,
-                                    largest_connected_component_img)
-from nilearn._utils.exceptions import DimensionError
+                                    _peak_local_max)
 from nilearn._utils import testing
+
 
 def test_largest_cc():
     """ Check the extraction of the largest connected component.
@@ -26,47 +23,12 @@ def test_largest_cc():
     np.testing.assert_equal(a, largest_connected_component(b))
 
     # Tests for correct errors, when an image or string are passed.
-    img = testing.generate_labeled_regions(shape = (10,11,12),
-                                           n_regions = 2 )
+    img = testing.generate_labeled_regions(shape=(10, 11, 12),
+                                           n_regions=2)
 
     assert_raises(ValueError, largest_connected_component, img)
     assert_raises(ValueError, largest_connected_component, "Test String")
 
-
-def test_largest_cc_img():
-    """ Check the extraction of the largest connected component, for niftis
-
-    Similiar to smooth_img tests for largest connected_component_img, here also
-    only the added features for largest_connected_component are tested.
-    """
-
-    #Test whether dimension of 3Dimg and list of 3Dimgs are kept.
-    shapes = ((10, 11, 12), (13, 14, 15))
-    regions = [1,3]
-
-    img1 = testing.generate_labeled_regions(shape = shapes[0],
-                                            n_regions =regions[0] )
-    img2 = testing.generate_labeled_regions(shape = shapes[1],
-                                            n_regions =regions[1] )
-
-    for create_files in (False, True):
-        with testing.write_tmp_imgs(img1, img2,
-                                    create_files=create_files) as imgs:
-            # List of images as input
-            out = largest_connected_component_img(imgs)
-            assert_true(isinstance(out, list))
-            assert_true(len(out) == 2)
-            for o, s in zip(out, shapes):
-                assert_true(o.shape == (s))
-
-            # Single image as input
-            out = largest_connected_component_img(imgs[0])
-            assert_true(isinstance(out, Nifti1Image))
-            assert_true(out.shape == (shapes[0] ))
-
-        # Test whether 4D Nifti throws the right error.
-        img_4D = testing.generate_fake_fmri(shapes[0], length =17)
-        assert_raises(DimensionError, largest_connected_component_img, img_4D)
 
 def test_empty_peak_local_max():
     image = np.zeros((10, 20))

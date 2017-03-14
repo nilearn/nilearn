@@ -6,15 +6,11 @@ N-dimensional image manipulation
 
 import numpy as np
 from scipy import ndimage
-
-from .._utils import  check_niimg_3d
-from .._utils.compat import _basestring, get_affine
-from .._utils.niimg_conversions import _safe_get_data
-from ..image import new_img_like
-
+from .._utils.compat import _basestring
 ###############################################################################
 # Operating on connected components
 ###############################################################################
+
 
 def largest_connected_component(volume):
     """Return the largest connected component of a 3D array.
@@ -47,42 +43,6 @@ def largest_connected_component(volume):
     return labels == label_count.argmax()
 
 
-def largest_connected_component_img(imgs):
-    """ Return the largest connected component of an image or list of images.
-
-    ..versionadded:: 0.3
-
-    Parameters
-    ----------
-    imgs: Niimg-like object or iterable of Niimg-like objects
-        See http://nilearn.github.io/manipulating_images/input_output.html
-        Image(s) to extract the largest connected component from.
-
-    Returns
-    -------
-        img or list of img containing the largest connected component
-    """
-    if hasattr(imgs, "__iter__") \
-       and not isinstance(imgs, _basestring):
-        single_img = False
-    else:
-        single_img = True
-        imgs = [imgs]
-
-    ret = []
-    for img in imgs:
-        img = check_niimg_3d(img)
-        affine = get_affine(img)
-        largest_component = largest_connected_component(_safe_get_data(img))
-        ret.append(new_img_like(img, largest_component, affine,
-                                copy_header=True))
-
-    if single_img:
-        return ret[0]
-    else:
-        return ret
-
-
 def get_border_data(data, border_size):
     return np.concatenate([
         data[:border_size, :, :].ravel(),
@@ -111,7 +71,8 @@ def _peak_local_max(image, min_distance=10, threshold_abs=0, threshold_rel=0.1,
     min_distance : int
         Minimum number of pixels separating peaks in a region of `2 *
         min_distance + 1` (i.e. peaks are separated by at least
-        `min_distance`). To find the maximum number of peaks, use `min_distance=1`.
+        `min_distance`). To find the maximum number of peaks, use
+        `min_distance=1`.
     threshold_abs : float
         Minimum intensity of peaks.
     threshold_rel : float
@@ -123,7 +84,8 @@ def _peak_local_max(image, min_distance=10, threshold_abs=0, threshold_rel=0.1,
     Returns
     -------
     output : ndarray or ndarray of bools
-        Boolean array shaped like `image`, with peaks represented by True values.
+        Boolean array shaped like `image`, with peaks represented by True
+        values.
 
     Notes
     -----
@@ -134,7 +96,8 @@ def _peak_local_max(image, min_distance=10, threshold_abs=0, threshold_rel=0.1,
     coordinates of peaks where dilated image = original.
 
     This code is mostly adapted from scikit image 0.11.3 release.
-    Location of file in scikit image: peak_local_max function in skimage.feature.peak
+    Location of file in scikit image: peak_local_max function in
+    skimage.feature.peak
     """
     out = np.zeros_like(image, dtype=np.bool)
 
@@ -156,7 +119,8 @@ def _peak_local_max(image, min_distance=10, threshold_abs=0, threshold_rel=0.1,
     coordinates = np.argwhere(image > peak_threshold)
 
     if coordinates.shape[0] > num_peaks:
-        intensities = image.flat[np.ravel_multi_index(coordinates.transpose(), image.shape)]
+        intensities = image.flat[np.ravel_multi_index(coordinates.transpose(),
+                                                      image.shape)]
         idx_maxsort = np.argsort(intensities)[::-1]
         coordinates = coordinates[idx_maxsort][:num_peaks]
 

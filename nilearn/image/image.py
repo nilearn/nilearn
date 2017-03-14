@@ -901,3 +901,41 @@ def load_img(img, wildcards=True, dtype=None):
         that the returned object has get_data() and affine attributes.
     """
     return check_niimg(img, wildcards=wildcards, dtype=dtype)
+
+
+def largest_connected_component_img(imgs):
+    """ Return the largest connected component of an image or list of images.
+
+    .. versionadded:: 0.3
+
+    Parameters
+    ----------
+    imgs: Niimg-like object or iterable of Niimg-like objects
+        See http://nilearn.github.io/manipulating_images/input_output.html
+        Image(s) to extract the largest connected component from.
+
+    Returns
+    -------
+        img or list of img containing the largest connected component
+    """
+    from .._utils.ndimage import largest_connected_component
+
+    if hasattr(imgs, "__iter__") \
+       and not isinstance(imgs, _basestring):
+        single_img = False
+    else:
+        single_img = True
+        imgs = [imgs]
+
+    ret = []
+    for img in imgs:
+        img = check_niimg_3d(img)
+        affine = get_affine(img)
+        largest_component = largest_connected_component(_safe_get_data(img))
+        ret.append(new_img_like(img, largest_component, affine,
+                                copy_header=True))
+
+    if single_img:
+        return ret[0]
+    else:
+        return ret

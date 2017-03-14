@@ -23,8 +23,8 @@ Highlights
 Changelog
 ---------
 
-    -  A helper function _safe_get_data as a nilearn utility now safely
-       removes NAN values in the images with argument ensure_finite=True.
+    - A helper function _safe_get_data as a nilearn utility now safely
+      removes NAN values in the images with argument ensure_finite=True.
 
     - Connectome functions :func:`nilearn.connectome.cov_to_corr` and
       :func:`nilearn.connectome.prec_to_partial` can now be used.
@@ -100,9 +100,8 @@ Enhancements
     - Extensive plotting example shows how to use contours and filled contours
       on glass brain.
 
-    - Function :func:`nilearn._utils.ndimage.largest_connected_component_img`
-      so that niftis can now be passed to 
-      :func:`nilearn._utils.ndimage.largest_connected_component`.
+    - Function :func:`nilearn.image.largest_connected_component_img` to
+      directly extract the largest connected component from Nifti images.
 
 0.2.6
 =====
