@@ -106,7 +106,7 @@ print("Ward agglomeration 2000 clusters: %.2fs" % (time.time() - start))
 #
 # To visualize results, we need to transform the clustering's labels back
 # to a neuroimaging volume. For this, we use the masker's inverse_transform
-# directly from the object on attribute labels_.
+# directly from the object on attribute `labels_`.
 kmeans_labels_img = kmeans.masker_.inverse_transform(kmeans.labels_)
 ward_labels_img = ward.masker_.inverse_transform(ward.labels_)
 
