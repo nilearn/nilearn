@@ -160,6 +160,7 @@ uses.
    high_variance_confounds
    index_img
    iter_img
+   largest_connected_component_img
    load_img
    math_img
    mean_img
