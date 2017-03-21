@@ -460,8 +460,8 @@ class BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
         self.cv_scores_ = np.mean(
             [np.vstack(cv_scores[c]).T for c in classes], axis=0)
 
-        self.cv_y_true_ = np.array(cv_y_true[cv_y_true.keys()[0]])
-        self.cv_indices_ = np.array(cv_indices[cv_indices.keys()[0]])
+        self.cv_y_true_ = np.array(cv_y_true[list(cv_y_true.keys())[0]])
+        self.cv_indices_ = np.array(cv_indices[list(cv_indices.keys())[0]])
         self.cv_y_prob_ = np.vstack(
             [np.hstack(cv_y_prob[c]) for c in classes]).T
 
