@@ -146,11 +146,14 @@ def fetch_atlas_destrieux_2009(lateralized=True, data_dir=None, url=None,
 def fetch_atlas_harvard_oxford(atlas_name, data_dir=None,
                                symmetric_split=False,
                                resume=True, verbose=1):
-    """Load Harvard-Oxford parcellation from FSL if installed or download it.
+    """Download and load Harvard-Oxford parcellations from FSL.
 
-    This function looks up for Harvard Oxford atlas in the system and load it
-    if present. If not, it downloads it and stores it in NILEARN_DATA
-    directory.
+    This function downloads Harvard Oxford atlas packaged from FSL 5.0
+    and stores it in NILEARN_DATA folder in home directory.
+
+    This function can also load Harvard Oxford atlas from your local directory
+    specified by your FSL installed path given in `data_dir` argument.
+    See documentation for details.
 
     Parameters
     ----------
@@ -166,13 +169,20 @@ def fetch_atlas_harvard_oxford(atlas_name, data_dir=None,
         sub-prob-1mm, sub-prob-2mm
 
     data_dir: string, optional
-        Path of data directory. It can be FSL installation directory
-        (which is dependent on your installation).
+        Path of data directory where data will be stored. Optionally,
+        it can also be a FSL installation directory (which is dependent
+        on your installation).
+        Example, if FSL is installed in /usr/share/fsl/ then
+        specifying as '/usr/share/' can get you Harvard Oxford atlas
+        from your installed directory. Since we mimic same root directory
+        as FSL to load it easily from your installation.
 
-    symmetric_split: bool, optional
-        If True, split every symmetric region in left and right parts.
-        Effectively doubles the number of regions. Default: False.
-        Not implemented for probabilistic atlas (*-prob-* atlases)
+    symmetric_split: bool, optional, (default False).
+        If True, lateralized atlases of cort or sub with maxprob will be
+        returned. For subcortical types (sub-maxprob), we split every
+        symmetric region in left and right parts. Effectively doubles the
+        number of regions.
+        NOTE Not implemented for full probabilistic atlas (*-prob-* atlases).
 
     Returns
     -------
@@ -198,27 +208,31 @@ def fetch_atlas_harvard_oxford(atlas_name, data_dir=None,
                          "among:\n{1}".format(
                              atlas_name, '\n'.join(atlas_items)))
 
-    url = 'http://www.nitrc.org/frs/download.php/7700/HarvardOxford.tgz'
+    url = 'http://www.nitrc.org/frs/download.php/9902/HarvardOxford.tgz'
 
     # For practical reasons, we mimic the FSL data directory here.
     dataset_name = 'fsl'
-    # Environment variables
-    default_paths = []
-    for env_var in ['FSL_DIR', 'FSLDIR']:
-        path = os.getenv(env_var)
-        if path is not None:
-            default_paths.extend(path.split(':'))
     data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
-                                default_paths=default_paths, verbose=verbose)
+                                verbose=verbose)
     opts = {'uncompress': True}
     root = os.path.join('data', 'atlases')
-    atlas_file = os.path.join(root, 'HarvardOxford',
-                              'HarvardOxford-' + atlas_name + '.nii.gz')
+
     if atlas_name[0] == 'c':
-        label_file = 'HarvardOxford-Cortical.xml'
+        if 'cort-maxprob' in atlas_name and symmetric_split:
+            split_name = atlas_name.split('cort')
+            atlas_name = 'cortl' + split_name[1]
+            label_file = 'HarvardOxford-Cortical-Lateralized.xml'
+            lateralized = True
+        else:
+            label_file = 'HarvardOxford-Cortical.xml'
+            lateralized = False
     else:
         label_file = 'HarvardOxford-Subcortical.xml'
+        lateralized = False
     label_file = os.path.join(root, label_file)
+
+    atlas_file = os.path.join(root, 'HarvardOxford',
+                              'HarvardOxford-' + atlas_name + '.nii.gz')
 
     atlas_img, label_file = _fetch_files(
         data_dir,
@@ -241,6 +255,9 @@ def fetch_atlas_harvard_oxford(atlas_name, data_dir=None,
                          "atlases")
 
     atlas_img = check_niimg(atlas_img)
+    if lateralized:
+        return Bunch(maps=atlas_img, labels=names)
+
     atlas = atlas_img.get_data()
 
     labels = np.unique(atlas)
