@@ -1274,7 +1274,7 @@ def fetch_abide_pcp(data_dir=None, n_subjects=None, pipeline='cpac',
     if n_subjects is not None:
         file_ids = file_ids[:n_subjects]
         pheno = pheno[:n_subjects]
-    
+
     pheno = pheno_decode(pheno)
     results['description'] = _get_dataset_descr(dataset_name)
     results['phenotypic'] = pheno
