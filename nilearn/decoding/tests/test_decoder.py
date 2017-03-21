@@ -48,7 +48,6 @@ ridge_classifier = RidgeClassifier()
 
 
 def test_check_param_grid():
-
     # testing several estimators, each one with its specific regularization
     # parameter
     regressors = {'ridge': (ridge, 'alpha'),
@@ -66,3 +65,31 @@ def test_check_param_grid():
     for _, (classifier, param) in classifiers.items():
         param_grid = _check_param_grid(classifier, X, y_classif, None)
         assert_equal(list(param_grid.keys())[0], param)
+
+
+def test_checking_inputs_length():
+    iris = load_iris()
+    X, y = iris.data, iris.target
+    y = 2 * (y > 0) - 1
+    X_, mask = to_niimgs(X, (2, 2, 2))
+
+    # Remove ten samples from y
+    y = y[:-10]
+
+    for model in [DecoderRegressor, Decoder]:
+        assert_raises(ValueError, model(mask=mask,
+                                        screening_percentile=100.).fit, X_, y)
+
+
+def test_decoder_prediction():
+    iris = load_iris()
+    X, y = iris.data, iris.target
+    X, mask = to_niimgs(X, [2, 2, 2])
+
+    for screening_percentile in [100, 20]:
+        model = Decoder(mask=mask)
+        model.fit(X, y)
+        # checking its overfit
+        y_pred = model.predict(X)
+        assert_true(accuracy_score(y, y_pred) > 0.95)
+
