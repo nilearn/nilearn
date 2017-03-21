@@ -7,7 +7,7 @@ import numpy as np
 from scipy import ndimage
 from sklearn.datasets.base import Bunch
 
-from .utils import _get_dataset_dir, _fetch_files, _get_dataset_descr
+from .utils import pheno_decode, _get_dataset_dir, _fetch_files, _get_dataset_descr
 
 from .._utils import check_niimg, niimg
 from ..image import new_img_like
@@ -412,6 +412,7 @@ def fetch_oasis_vbm(n_subjects=None, dartel_version=True, data_dir=None,
     subject_mask = np.asarray([subject_id in actual_subjects_ids
                                for subject_id in csv_data['id']])
     csv_data = csv_data[subject_mask]
+    csv_data = pheno_decode(csv_data)
 
     fdescr = _get_dataset_descr(dataset_name)
 
@@ -490,6 +491,7 @@ def fetch_surf_fsaverage5(data_dir=None, url=None, resume=True, verbose=1):
                               {})],
                             resume=resume, verbose=verbose)
         pials.append(pial)
+        pials = pheno_decode(pials)
 
         infl = _fetch_files(data_dir,
                             [(surf_file % ('pial_inflated', hemi[1]),
@@ -498,6 +500,7 @@ def fetch_surf_fsaverage5(data_dir=None, url=None, resume=True, verbose=1):
                               {})],
                             resume=resume, verbose=verbose)
         infls.append(infl)
+        infls = pheno_decode(pials)
 
         sulc = _fetch_files(data_dir,
                             [(surf_file % ('sulc', hemi[1]),
@@ -506,6 +509,7 @@ def fetch_surf_fsaverage5(data_dir=None, url=None, resume=True, verbose=1):
                               {})],
                             resume=resume, verbose=verbose)
         sulcs.append(sulc)
+        sulcs = pheno_decode(sulc)
 
     return Bunch(pial_left=pials[0][0],
                  pial_right=pials[1][0],

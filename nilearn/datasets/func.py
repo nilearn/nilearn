@@ -12,7 +12,7 @@ import nibabel
 from sklearn.datasets.base import Bunch
 from sklearn.utils import deprecated
 
-from .utils import (_get_dataset_dir, _fetch_files, _get_dataset_descr,
+from .utils import (pheno_decode, _get_dataset_dir, _fetch_files, _get_dataset_descr,
                     _read_md5_sum_file, _tree, _filter_columns)
 from .._utils import check_niimg
 from .._utils.compat import BytesIO, _basestring, _urllib, get_affine
@@ -504,8 +504,7 @@ def fetch_adhd(n_subjects=30, data_dir=None, url=None, resume=True,
     int_ids = np.asarray(ids, dtype=int)
     phenotypic = phenotypic[[np.where(phenotypic['Subject'] == i)[0][0]
                              for i in int_ids]]
-    if phenotypic.dtype.char == 'S':
-        phenotypic = np.char.decode(phenotypic)
+    phenotypic = pheno_decode(phenotypic)
 
     # Download dataset files
 
@@ -992,17 +991,14 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
     from numpy.lib.recfunctions import join_by
     ext_vars_file2 = files[-1]
     csv_data2 = np.recfromcsv(ext_vars_file2, delimiter=';')
-    if csv_data2.dtype.char == 'S':
-        csv_data2 = np.char.decode(csv_data2)
     files = files[:-1]
     ext_vars_file = files[-1]
     csv_data = np.recfromcsv(ext_vars_file, delimiter=';')
-    if csv_data.dtype.char == 'S':
-        csv_data = np.char.decode(csv_data)
     files = files[:-1]
     # join_by sorts the output along the key
     csv_data = join_by('subject_id', csv_data, csv_data2,
                        usemask=False, asrecarray=True)[subject_mask - 1]
+    csv_data = pheno_decode(csv_data)
     if get_anats:
         anats = files[-n_subjects:]
         files = files[:-n_subjects]
@@ -1261,8 +1257,6 @@ def fetch_abide_pcp(data_dir=None, n_subjects=None, pipeline='cpac',
     pheno = '\n'.join(pheno).encode()
     pheno = BytesIO(pheno)
     pheno = np.recfromcsv(pheno, comments='$', case_sensitive=True)
-    if pheno.dtype.char == 'S':
-        pheno = np.char.decode(pheno)
 
     # First, filter subjects with no filename
     pheno = pheno[pheno['FILE_ID'] != b'no_filename']
@@ -1280,7 +1274,8 @@ def fetch_abide_pcp(data_dir=None, n_subjects=None, pipeline='cpac',
     if n_subjects is not None:
         file_ids = file_ids[:n_subjects]
         pheno = pheno[:n_subjects]
-
+    
+    pheno = pheno_decode(pheno)
     results['description'] = _get_dataset_descr(dataset_name)
     results['phenotypic'] = pheno
     for derivative in derivatives:
@@ -1648,9 +1643,6 @@ def fetch_cobre(n_subjects=10, data_dir=None, url=None, verbose=1):
 
     csv_array_phen = np.recfromcsv(csv_file_phen, names=names,
                                    skip_header=True, delimiter='\t')
-    if csv_array_phen.dtype.char == 'S':
-        csv_array_phen = np.char.decode(csv_array_phen)
-
     # Check number of subjects
     max_subjects = len(csv_array_phen)
     if n_subjects is None:
@@ -1673,6 +1665,7 @@ def fetch_cobre(n_subjects=10, data_dir=None, url=None, verbose=1):
                             b'Control']['id'][:n_ct]
     ids = np.hstack([sz_ids, ct_ids])
     csv_array_phen = csv_array_phen[np.in1d(csv_array_phen['id'], ids)]
+    csv_array_phen = pheno_decode(csv_array_phen)
 
     # Call fetch_files once per subject.
 

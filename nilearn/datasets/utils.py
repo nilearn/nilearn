@@ -62,6 +62,17 @@ def readlinkabs(link):
         return path
     return os.path.join(os.path.dirname(link), path)
 
+def pheno_decode(a):
+    """
+    Utility function for decoding byte strings in the data
+    """
+    a = a.tolist()
+    for i in xrange(len(a)):
+        for j in xrange(len(a[0])):
+            if isinstance(a[i][j], str):
+                    a[i] = list(a[i])
+                    a[i][j] = a[i][j].decode()
+    return np.array(a).view(np.recarray)
 
 def _chunk_report_(bytes_so_far, total_size, initial_size, t0):
     """Show downloading percentage.

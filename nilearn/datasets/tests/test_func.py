@@ -131,9 +131,6 @@ def test_fetch_adhd():
     assert_equal(len(adhd.confounds), 12)
     assert_equal(len(tst.mock_url_request.urls), 13)  # Subjects + phenotypic
     assert_not_equal(adhd.description, '')
-    if adhd.phenotypic.dtype.char == 'S':
-        for i in range(len(adhd.phenotypic)):
-            assert_true(isinstance(adhd.phenotypic[i], _basestring))
 
 
 @with_setup(setup_mock, teardown_mock)
