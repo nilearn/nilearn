@@ -66,7 +66,7 @@ def pheno_decode(a):
     """
     Utility function for decoding byte strings in the data
     """
-    a = a.tolist()
+    a = np.array(a).tolist()
     for i in xrange(len(a)):
         for j in xrange(len(a[0])):
             if isinstance(a[i][j], str):
