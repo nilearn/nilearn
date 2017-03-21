@@ -21,8 +21,8 @@ usage.
 
 Note that for an actual predictive modeling study of aging, the study
 should be ran on the full set of subjects. Also, parameters such as the
-smoothing should be applied to the data and the number of features selected by
-the Anova step should be set by nested cross-validation, as they impact
+smoothing should be applied to the data and the number of features selected
+by the Anova step should be set by nested cross-validation, as they impact
 significantly the prediction score.
 
 Brain mapping with mass univariate
@@ -39,7 +39,6 @@ ____
 # Authors: Elvis Dhomatob, <elvis.dohmatob@inria.fr>, Apr. 2014
 #          Virgile Fritsch, <virgile.fritsch@inria.fr>, Apr 2014
 #          Gael Varoquaux, Apr 2014
-#          Andres Hoyos-Idrobo, Dec 2015
 
 import numpy as np
 from nilearn import datasets
@@ -103,5 +102,37 @@ prediction_score = mean_absolute_error(cv_y_true, cv_y_pred)
 print("=== DECODER ===")
 print("cross-validation score: %f years" % prediction_score)
 print("")
+
+
+# ### Inference with massively univariate model #################################
+# print("Massively univariate model")
+
+# # Statistical inference
+# from nilearn.mass_univariate import permuted_ols
+# import matplotlib.pyplot as plt
+# data = variance_threshold.fit_transform(gm_maps_masked)
+# neg_log_pvals, t_scores_original_data, _ = permuted_ols(
+#     age, data,  # + intercept as a covariate by default
+#     n_perm=2000,  # 1,000 in the interest of time; 10000 would be better
+#     n_jobs=1)  # can be changed to use more CPUs
+# signed_neg_log_pvals = neg_log_pvals * np.sign(t_scores_original_data)
+# signed_neg_log_pvals_unmasked = nifti_masker.inverse_transform(
+#     variance_threshold.inverse_transform(signed_neg_log_pvals))
+
+# # Show results
+# threshold = -np.log10(0.1)  # 10% corrected
+
+# fig = plt.figure(figsize=(5.5, 7.5), facecolor='k')
+
+# display = plot_stat_map(signed_neg_log_pvals_unmasked, bg_img=bg_filename,
+#                         threshold=threshold, cmap=plt.cm.RdBu_r,
+#                         display_mode='z', cut_coords=[z_slice],
+#                         figure=fig)
+# title = ('Negative $\log_{10}$ p-values'
+#          '\n(Non-parametric + max-type correction)')
+# display.title(title, y=1.2)
+
+# n_detections = (signed_neg_log_pvals_unmasked.get_data() > threshold).sum()
+# print('\n%d detections' % n_detections)
 
 show()
