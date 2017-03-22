@@ -7,7 +7,7 @@ import numpy as np
 from scipy import ndimage
 from sklearn.datasets.base import Bunch
 
-from .utils import pheno_decode, _get_dataset_dir, _fetch_files, _get_dataset_descr
+from .utils import char_array_decode, _get_dataset_dir, _fetch_files, _get_dataset_descr
 
 from .._utils import check_niimg, niimg
 from ..image import new_img_like
@@ -412,7 +412,7 @@ def fetch_oasis_vbm(n_subjects=None, dartel_version=True, data_dir=None,
     subject_mask = np.asarray([subject_id in actual_subjects_ids
                                for subject_id in csv_data['id']])
     csv_data = csv_data[subject_mask]
-    csv_data = pheno_decode(csv_data)
+    csv_data = char_array_decode(csv_data)
 
     fdescr = _get_dataset_descr(dataset_name)
 

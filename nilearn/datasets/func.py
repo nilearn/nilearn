@@ -12,7 +12,7 @@ import nibabel
 from sklearn.datasets.base import Bunch
 from sklearn.utils import deprecated
 
-from .utils import (pheno_decode, _get_dataset_dir, _fetch_files, _get_dataset_descr,
+from .utils import (char_array_decode, _get_dataset_dir, _fetch_files, _get_dataset_descr,
                     _read_md5_sum_file, _tree, _filter_columns)
 from .._utils import check_niimg
 from .._utils.compat import BytesIO, _basestring, _urllib, get_affine
@@ -23,13 +23,11 @@ from .._utils.numpy_conversions import csv_to_array
             "Use 'fetch_haxby' instead.")
 def fetch_haxby_simple(data_dir=None, url=None, resume=True, verbose=1):
     """Download and load a simple example haxby dataset.
-
     Parameters
     ----------
     data_dir: string, optional
         Path of the data directory. Used to force data storage in a specified
         location. Default: None
-
     Returns
     -------
     data: sklearn.datasets.base.Bunch
@@ -40,21 +38,17 @@ def fetch_haxby_simple(data_dir=None, url=None, resume=True, verbose=1):
         'mask': string. Path to nifti mask file.
         'session': list of string. Path to text file containing labels
         (can be used for LeaveOneLabelOut cross validation for example).
-
     References
     ----------
     `Haxby, J., Gobbini, M., Furey, M., Ishai, A., Schouten, J.,
     and Pietrini, P. (2001). Distributed and overlapping representations of
     faces and objects in ventral temporal cortex. Science 293, 2425-2430.`
-
     Notes
     -----
     PyMVPA provides a tutorial using this dataset :
     http://www.pymvpa.org/tutorial.html
-
     More informations about its structure :
     http://dev.pymvpa.org/datadb/haxby2001.html
-
     See `additional information
     <http://www.sciencemag.org/content/293/5539/2425>`_
     """
@@ -88,28 +82,22 @@ def fetch_haxby_simple(data_dir=None, url=None, resume=True, verbose=1):
 def fetch_haxby(data_dir=None, n_subjects=None, subjects=(2,),
                 fetch_stimuli=False, url=None, resume=True, verbose=1):
     """Download and loads complete haxby dataset
-
     Parameters
     ----------
     data_dir: string, optional
         Path of the data directory. Used to force data storage in a specified
         location. Default: None
-
     n_subjects: int, optional
         Number of subjects, from 1 to 6.
-
         NOTE: n_subjects is deprecated from 0.2.6 and will be removed in 0.3
         Use `subjects` instead.
-
     subjects : list or int, optional
         Either a list of subjects or the number of subjects to load, from 1 to
         6. By default, 2nd subject will be loaded. Empty list returns no subject
         data.
-
     fetch_stimuli: boolean, optional
         Indicate if stimuli images must be downloaded. They will be presented
         as a dictionnary of categories.
-
     Returns
     -------
     data: sklearn.datasets.base.Bunch
@@ -126,24 +114,19 @@ def fetch_haxby(data_dir=None, n_subjects=None, subjects=(2,),
         mask file.
         'mask_house_little': string list. Paths to nifti ventral temporal
         mask file.
-
     References
     ----------
     `Haxby, J., Gobbini, M., Furey, M., Ishai, A., Schouten, J.,
     and Pietrini, P. (2001). Distributed and overlapping representations of
     faces and objects in ventral temporal cortex. Science 293, 2425-2430.`
-
     Notes
     -----
     PyMVPA provides a tutorial making use of this dataset:
     http://www.pymvpa.org/tutorial.html
-
     More information about its structure:
     http://dev.pymvpa.org/datadb/haxby2001.html
-
     See `additional information
     <http://www.sciencemag.org/content/293/5539/2425>`
-
     Run 8 in subject 5 does not contain any task labels.
     The anatomical image for subject 6 is unavailable.
     """
@@ -241,20 +224,16 @@ def fetch_haxby(data_dir=None, n_subjects=None, subjects=(2,),
 def fetch_nyu_rest(n_subjects=None, sessions=[1], data_dir=None, resume=True,
                    verbose=1):
     """Download and loads the NYU resting-state test-retest dataset.
-
     Parameters
     ----------
     n_subjects: int, optional
         The number of subjects to load. If None is given, all the
         subjects are used.
-
     sessions: iterable of int, optional
         The sessions to load. Load only the first session by default.
-
     data_dir: string, optional
         Path of the data directory. Used to force data storage in a specified
         location. Default: None
-
     Returns
     -------
     data: sklearn.datasets.base.Bunch
@@ -263,59 +242,45 @@ def fetch_nyu_rest(n_subjects=None, sessions=[1], data_dir=None, resume=True,
         'anat_anon': string list. Paths to anatomic images.
         'anat_skull': string. Paths to skull-stripped images.
         'session': numpy array. List of ids corresponding to images sessions.
-
     Notes
     ------
     This dataset is composed of 3 sessions of 26 participants (11 males).
     For each session, three sets of data are available:
-
     - anatomical:
-
       * anonymized data (defaced thanks to BIRN defacer)
       * skullstripped data (using 3DSkullStrip from AFNI)
-
     - functional
-
     For each participant, 3 resting-state scans of 197 continuous EPI
     functional volumes were collected :
-
     - 39 slices
     - matrix = 64 x 64
     - acquisition voxel size = 3 x 3 x 3 mm
-
     Sessions 2 and 3 were conducted in a single scan session, 45 min
     apart, and were 5-16 months after Scan 1.
-
     All details about this dataset can be found here :
     http://cercor.oxfordjournals.org/content/19/10/2209.full
-
     References
     ----------
     :Documentation:
         http://www.nitrc.org/docman/?group_id=274
-
     :Download:
         http://www.nitrc.org/frs/?group_id=274
-
     :Paper to cite:
         `The Resting Brain: Unconstrained yet Reliable
         <http://cercor.oxfordjournals.org/content/19/10/2209>`_
         Z. Shehzad, A.M.C. Kelly, P.T. Reiss, D.G. Gee, K. Gotimer,
         L.Q. Uddin, S.H. Lee, D.S. Margulies, A.K. Roy, B.B. Biswal,
         E. Petkova, F.X. Castellanos and M.P. Milham.
-
     :Other references:
         * `The oscillating brain: Complex and Reliable
           <http://dx.doi.org/10.1016/j.neuroimage.2009.09.037>`_
           X-N. Zuo, A. Di Martino, C. Kelly, Z. Shehzad, D.G. Gee,
           D.F. Klein, F.X. Castellanos, B.B. Biswal, M.P. Milham
-
         * `Reliable intrinsic connectivity networks: Test-retest
           evaluation using ICA and dual regression approach
           <http://dx.doi.org/10.1016/j.neuroimage.2009.10.080>`_,
           X-N. Zuo, C. Kelly, J.S. Adelstein, D.F. Klein,
           F.X. Castellanos, M.P. Milham
-
     """
     fa1 = 'http://www.nitrc.org/frs/download.php/1071/NYU_TRT_session1a.tar.gz'
     fb1 = 'http://www.nitrc.org/frs/download.php/1072/NYU_TRT_session1b.tar.gz'
@@ -429,22 +394,18 @@ def fetch_nyu_rest(n_subjects=None, sessions=[1], data_dir=None, resume=True,
 def fetch_adhd(n_subjects=30, data_dir=None, url=None, resume=True,
                verbose=1):
     """Download and load the ADHD resting-state dataset.
-
     Parameters
     ----------
     n_subjects: int, optional
         The number of subjects to load from maximum of 40 subjects.
         By default, 30 subjects will be loaded. If None is given,
         all 40 subjects will be loaded.
-
     data_dir: string, optional
         Path of the data directory. Used to force data storage in a specified
         location. Default: None
-
     url: string, optional
         Override download URL. Used for test only (or if you setup a mirror of
         the data). Default: None
-
     Returns
     -------
     data: sklearn.datasets.base.Bunch
@@ -452,12 +413,10 @@ def fetch_adhd(n_subjects=30, data_dir=None, url=None, resume=True,
          - 'func': Paths to functional resting-state images
          - 'phenotypic': Explanations of preprocessing steps
          - 'confounds': CSV files containing the nuisance variables
-
     References
     ----------
     :Download:
         ftp://www.nitrc.org/fcon_1000/htdocs/indi/adhd200/sites/ADHD200_40sub_preprocessed.tgz
-
     """
 
     if url is None:
@@ -504,7 +463,7 @@ def fetch_adhd(n_subjects=30, data_dir=None, url=None, resume=True,
     int_ids = np.asarray(ids, dtype=int)
     phenotypic = phenotypic[[np.where(phenotypic['Subject'] == i)[0][0]
                              for i in int_ids]]
-    phenotypic = pheno_decode(phenotypic)
+    phenotypic = char_array_decode(phenotypic)
 
     # Download dataset files
 
@@ -528,12 +487,10 @@ def fetch_adhd(n_subjects=30, data_dir=None, url=None, resume=True,
 
 def fetch_miyawaki2008(data_dir=None, url=None, resume=True, verbose=1):
     """Download and loads Miyawaki et al. 2008 dataset (153MB)
-
     Returns
     -------
     data: Bunch
         Dictionary-like object, the interest attributes are :
-
         - 'func': string list
             Paths to nifti file with bold data
         - 'label': string list
@@ -544,7 +501,6 @@ def fetch_miyawaki2008(data_dir=None, url=None, resume=True, verbose=1):
         - 'background': string
             Path to nifti file containing a background image usable as a
             background image for miyawaki images.
-
     References
     ----------
     `Visual image reconstruction from human brain activity
@@ -553,12 +509,10 @@ def fetch_miyawaki2008(data_dir=None, url=None, resume=True, verbose=1):
     Miyawaki, Y., Uchida, H., Yamashita, O., Sato, M. A.,
     Morito, Y., Tanabe, H. C., ... & Kamitani, Y. (2008).
     Neuron, 60(5), 915-929.
-
     Notes
     -----
     This dataset is available on the `brainliner website
     <http://brainliner.jp/data/brainliner-admin/Reconstruct>`_
-
     See `additional information
     <http://www.cns.atr.jp/dni/en/downloads/
     fmri-data-set-for-visual-image-reconstruction/>`_
@@ -666,7 +620,6 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
                               get_masks=False, get_anats=False,
                               data_dir=None, url=None, resume=True, verbose=1):
     """Download and load Brainomics Localizer dataset (94 subjects).
-
     "The Functional Localizer is a simple and fast acquisition
     procedure based on a 5-minute functional magnetic resonance
     imaging (fMRI) sequence that can be run as easily and as
@@ -677,16 +630,13 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
     quite precise. The procedure is decribed in more detail on the
     Functional Localizer page."
     (see http://brainomics.cea.fr/localizer/)
-
     "Scientific results obtained using this dataset are described in
     Pinel et al., 2007" [1]
-
     Parameters
     ----------
     contrasts: list of str
         The contrasts to be fetched (for all 94 subjects available).
         Allowed values are::
-
             {"checkerboard",
             "horizontal checkerboard",
             "vertical checkerboard",
@@ -720,9 +670,7 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
             "button press (auditory cue) vs sentence listening",
             "button press (visual cue) vs sentence reading",
             "button press vs calculation and sentence listening/reading"}
-
         or equivalently on can use the original names::
-
             {"checkerboard",
             "horizontal checkerboard",
             "vertical checkerboard",
@@ -755,39 +703,29 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
             "auditory click vs auditory sentences",
             "visual click vs visual sentences",
             "auditory&visual motor vs cognitive processing"}
-
     n_subjects: int or list, optional
         The number or list of subjects to load. If None is given,
         all 94 subjects are used.
-
     get_tmaps: boolean
         Whether t maps should be fetched or not.
-
     get_masks: boolean
         Whether individual masks should be fetched or not.
-
     get_anats: boolean
         Whether individual structural images should be fetched or not.
-
     data_dir: string, optional
         Path of the data directory. Used to force data storage in a specified
         location.
-
     url: string, optional
         Override download URL. Used for test only (or if you setup a mirror of
         the data).
-
     resume: bool
         Whether to resume download of a partly-downloaded file.
-
     verbose: int
         Verbosity level (0 means no message).
-
     Returns
     -------
     data: Bunch
         Dictionary-like object, the interest attributes are :
-
         - 'cmaps': string list
             Paths to nifti contrast maps
         - 'tmaps' string list (if 'get_tmaps' set to True)
@@ -796,19 +734,16 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
             Paths to nifti files corresponding to the subjects individual masks
         - 'anats': string
             Path to nifti files corresponding to the subjects structural images
-
     References
     ----------
     Pinel, Philippe, et al.
     "Fast reproducible identification and large-scale databasing of
     individual functional cognitive networks."
     BMC neuroscience 8.1 (2007): 91.
-
     See Also
     ---------
     nilearn.datasets.fetch_localizer_calculation_task
     nilearn.datasets.fetch_localizer_button_task
-
     """
     if isinstance(contrasts, _basestring):
         raise ValueError('Contrasts should be a list of strings, but '
@@ -998,7 +933,7 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
     # join_by sorts the output along the key
     csv_data = join_by('subject_id', csv_data, csv_data2,
                        usemask=False, asrecarray=True)[subject_mask - 1]
-    csv_data = pheno_decode(csv_data)
+    csv_data = char_array_decode(csv_data)
     if get_anats:
         anats = files[-n_subjects:]
         files = files[:-n_subjects]
@@ -1015,42 +950,33 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
 def fetch_localizer_calculation_task(n_subjects=1, data_dir=None, url=None,
                                      verbose=1):
     """Fetch calculation task contrast maps from the localizer.
-
     Parameters
     ----------
     n_subjects: int, optional
         The number of subjects to load. If None is given,
         all 94 subjects are used.
-
     data_dir: string, optional
         Path of the data directory. Used to force data storage in a specified
         location.
-
     url: string, optional
         Override download URL. Used for test only (or if you setup a mirror of
         the data).
-
     verbose: int, optional
         verbosity level (0 means no message).
-
     Returns
     -------
     data: Bunch
         Dictionary-like object, the interest attributes are :
         'cmaps': string list, giving paths to nifti contrast maps
-
     Notes
     ------
-
     This function is only a caller for the fetch_localizer_contrasts in order
     to simplify examples reading and understanding.
     The 'calculation (auditory and visual cue)' contrast is used.
-
     See Also
     ---------
     nilearn.datasets.fetch_localizer_button_task
     nilearn.datasets.fetch_localizer_contrasts
-
     """
     data = fetch_localizer_contrasts(["calculation (auditory and visual cue)"],
                                      n_subjects=n_subjects,
@@ -1066,45 +992,35 @@ def fetch_localizer_calculation_task(n_subjects=1, data_dir=None, url=None,
 def fetch_localizer_button_task(n_subjects=[2, ], data_dir=None, url=None,
                                 get_anats=False, verbose=1):
     """Fetch left vs right button press contrast maps from the localizer.
-
     Parameters
     ----------
     n_subjects: int or list, optional
         The number or list of subjects to load. If None is given,
         all 94 subjects are used.
-
     data_dir: string, optional
         Path of the data directory. Used to force data storage in a specified
         location.
-
     url: string, optional
         Override download URL. Used for test only (or if you setup a mirror of
         the data).
-
     get_anats: boolean
         Whether individual structural images should be fetched or not.
-
     verbose: int, optional
         verbosity level (0 means no message).
-
     Returns
     -------
     data: Bunch
         Dictionary-like object, the interest attributes are :
         'cmaps': string list, giving paths to nifti contrast maps
-
     Notes
     ------
-
     This function is only a caller for the fetch_localizer_contrasts in order
     to simplify examples reading and understanding.
     The 'left vs right button press' contrast is used.
-
     See Also
     ---------
     nilearn.datasets.fetch_localizer_calculation_task
     nilearn.datasets.fetch_localizer_contrasts
-
     """
     data = fetch_localizer_contrasts(["left vs right button press"],
                                      n_subjects=n_subjects,
@@ -1119,34 +1035,26 @@ def fetch_abide_pcp(data_dir=None, n_subjects=None, pipeline='cpac',
                     derivatives=['func_preproc'],
                     quality_checked=True, url=None, verbose=1, **kwargs):
     """ Fetch ABIDE dataset
-
     Fetch the Autism Brain Imaging Data Exchange (ABIDE) dataset wrt criteria
     that can be passed as parameter. Note that this is the preprocessed
     version of ABIDE provided by the preprocess connectome projects (PCP).
-
     Parameters
     ----------
-
     data_dir: string, optional
         Path of the data directory. Used to force data storage in a specified
         location. Default: None
-
     n_subjects: int, optional
         The number of subjects to load. If None is given,
         all available subjects are used (this number depends on the
         preprocessing pipeline used).
-
     pipeline: string, optional
         Possible pipelines are "ccs", "cpac", "dparsf" and "niak"
-
     band_pass_filtering: boolean, optional
         Due to controversies in the literature, band pass filtering is
         optional. If true, signal is band filtered between 0.01Hz and 0.1Hz.
-
     global_signal_regression: boolean optional
         Indicates if global signal regression should be applied on the
         signals.
-
     derivatives: string list, optional
         Types of downloaded files. Possible values are: alff, degree_binarize,
         degree_weighted, dual_regression, eigenvector_binarize,
@@ -1154,43 +1062,32 @@ def fetch_abide_pcp(data_dir=None, n_subjects=None, pipeline='cpac',
         reho, rois_aal, rois_cc200, rois_cc400, rois_dosenbach160, rois_ez,
         rois_ho, rois_tt, and vmhc. Please refer to the PCP site for more
         details.
-
     quality_checked: boolean, optional
         if true (default), restrict the list of the subjects to the one that
         passed quality assessment for all raters.
-
     kwargs: parameter list, optional
         Any extra keyword argument will be used to filter downloaded subjects
         according to the CSV phenotypic file. Some examples of filters are
         indicated below.
-
     SUB_ID: list of integers in [50001, 50607], optional
         Ids of the subjects to be loaded.
-
     DX_GROUP: integer in {1, 2}, optional
         1 is autism, 2 is control
-
     DSM_IV_TR: integer in [0, 4], optional
         O is control, 1 is autism, 2 is Asperger, 3 is PPD-NOS,
         4 is Asperger or PPD-NOS
-
     AGE_AT_SCAN: float in [6.47, 64], optional
         Age of the subject
-
     SEX: integer in {1, 2}, optional
         1 is male, 2 is female
-
     HANDEDNESS_CATEGORY: string in {'R', 'L', 'Mixed', 'Ambi'}, optional
         R = Right, L = Left, Ambi = Ambidextrous
-
     HANDEDNESS_SCORE: integer in [-100, 100], optional
         Positive = Right, Negative = Left, 0 = Ambidextrous
-
     Notes
     -----
     Code and description of preprocessing pipelines are provided on the
     `PCP website <http://preprocessed-connectomes-project.github.io/>`.
-
     References
     ----------
     Nielsen, Jared A., et al. "Multisite functional connectivity MRI
@@ -1275,7 +1172,7 @@ def fetch_abide_pcp(data_dir=None, n_subjects=None, pipeline='cpac',
         file_ids = file_ids[:n_subjects]
         pheno = pheno[:n_subjects]
 
-    pheno = pheno_decode(pheno)
+    pheno = char_array_decode(pheno)
     results['description'] = _get_dataset_descr(dataset_name)
     results['phenotypic'] = pheno
     for derivative in derivatives:
@@ -1342,36 +1239,28 @@ def _load_mixed_gambles(zmap_imgs):
 def fetch_mixed_gambles(n_subjects=1, data_dir=None, url=None, resume=True,
                         return_raw_data=False, verbose=0):
     """Fetch Jimura "mixed gambles" dataset.
-
     Parameters
     ----------
     n_subjects: int, optional (default 1)
         The number of subjects to load. If None is given, all the
         subjects are used.
-
     data_dir: string, optional (default None)
         Path of the data directory. Used to force data storage in a specified
         location. Default: None.
-
     url: string, optional (default None)
         Override download URL. Used for test only (or if you setup a mirror of
         the data).
-
     resume: bool, optional (default True)
         If true, try resuming download if possible.
-
     verbose: int, optional (default 0)
         Defines the level of verbosity of the output.
-
     return_raw_data: bool, optional (default True)
         If false, then the data will transformed into and (X, y) pair, suitable
         for machine learning routines. X is a list of n_subjects * 48
         Nifti1Image objects (where 48 is the number of trials),
         and y is an array of shape (n_subjects * 48,).
-
     smooth: float, or list of 3 floats, optional (default 0.)
         Size of smoothing kernel to apply to the loaded zmaps.
-
     Returns
     -------
     data: Bunch
@@ -1384,7 +1273,6 @@ def fetch_mixed_gambles(n_subjects=1, data_dir=None, url=None, resume=True,
         'y': array of shape (n_subjects * 48,) or None
             If make_Xy is true, then this is an array of shape
             (n_subjects * 48,), else it is None.
-
     References
     ----------
     [1] K. Jimura and R. Poldrack, "Analyses of regional-average activation
@@ -1417,21 +1305,17 @@ def fetch_megatrawls_netmats(dimensionality=100, timeseries='eigen_regression',
                              matrices='partial_correlation', data_dir=None,
                              resume=True, verbose=1):
     """Downloads and returns Network Matrices data from MegaTrawls release in HCP.
-
     This data can be used to predict relationships between imaging data and
     non-imaging behavioural measures such as age, sex, education, etc.
     The network matrices are estimated from functional connectivity
     datasets of 461 subjects. Full technical details in [1] [2].
-
     .. versionadded:: 0.2.2
-
     Parameters
     ----------
     dimensionality: int, optional
         Valid inputs are 25, 50, 100, 200, 300. By default, network matrices
         estimated using Group ICA brain parcellations of 100 components/dimensions
         will be returned.
-
     timeseries: str, optional
         Valid inputs are 'multiple_spatial_regression' or 'eigen_regression'. By
         default 'eigen_regression', matrices estimated using first principal
@@ -1439,63 +1323,47 @@ def fetch_megatrawls_netmats(dimensionality=100, timeseries='eigen_regression',
         parcellations will be returned. Otherwise, 'multiple_spatial_regression'
         matrices estimated using spatial regressor based timeseries signals
         extracted from each subject data parcellations will be returned.
-
     matrices: str, optional
         Valid inputs are 'full_correlation' or 'partial_correlation'. By default,
         partial correlation matrices will be returned otherwise if selected
         full correlation matrices will be returned.
-
     data_dir: str, default is None, optional
         Path of the data directory. Used to force data storage in a specified
         location.
-
     resume: bool, default is True
         This parameter is required if a partially downloaded file is needed
         to be resumed to download again.
-
     verbose: int, default is 1
         This parameter is used to set the verbosity level to print the message
         to give information about the processing.
         0 indicates no information will be given.
-
     Returns
     -------
     data: Bunch
         dictionary-like object, the attributes are :
-
         - 'dimensions': int, consists of given input in dimensions.
-
         - 'timeseries': str, consists of given input in timeseries method.
-
         - 'matrices': str, consists of given type of specific matrices.
-
         - 'correlation_matrices': ndarray, consists of correlation matrices
           based on given type of matrices. Array size will depend on given
           dimensions (n, n).
         - 'description': data description
-
     References
     ----------
     [1] Stephen Smith et al, HCP beta-release of the Functional Connectivity
         MegaTrawl.
         April 2015 "HCP500-MegaTrawl" release.
         https://db.humanconnectome.org/megatrawl/
-
     [2] Smith, S.M. et al. Nat. Neurosci. 18, 1565-1567 (2015).
-
     [3] N.Filippini, et al. Distinct patterns of brain activity in young
         carriers of the APOE-e4 allele.
         Proc Natl Acad Sci USA (PNAS), 106::7209-7214, 2009.
-
     [4] S.Smith, et al. Methods for network modelling from high quality rfMRI data.
         Meeting of the Organization for Human Brain Mapping. 2014
-
     [5] J.X. O'Reilly et al. Distinct and overlapping functional zones in the
         cerebellum defined by resting state functional connectivity.
         Cerebral Cortex, 2009.
-
     Note: See description for terms & conditions on data usage.
-
     """
     url = "http://www.nitrc.org/frs/download.php/8037/Megatrawls.tgz"
     opts = {'uncompress': True}
@@ -1542,53 +1410,41 @@ def fetch_megatrawls_netmats(dimensionality=100, timeseries='eigen_regression',
 def fetch_cobre(n_subjects=10, data_dir=None, url=None, verbose=1):
     """Fetch COBRE datasets preprocessed using NIAK 0.17 under CentOS
     version 6.3 with Octave version 4.0.2 and the Minc toolkit version 0.3.18.
-
     Downloads and returns COBRE preprocessed resting state fMRI datasets,
     covariates and phenotypic information such as demographic, clinical
     variables, measure of frame displacement FD (an average FD for all the time
     frames left after censoring).
-
     Each subject `fmri_XXXXXXX.nii.gz` is a 3D+t nifti volume (150 volumes).
     WARNING: no confounds were actually regressed from the data, so it can be
     done interactively by the user who will be able to explore different
     analytical paths easily.
-
     For each subject, there is `fmri_XXXXXXX.tsv` files which contains the
     covariates such as motion parameters, mean CSF signal that should to be
     regressed out of the functional data.
-
     `keys_confounds.json`: a json file, that describes each variable mentioned
     in the files `fmri_XXXXXXX.tsv.gz`. It also contains a list of time frames
     that have been removed from the time series by censoring for high motion.
-
     `phenotypic_data.tsv` contains the data of clinical variables that
     explained in `keys_phenotypic_data.json`
-
     .. versionadded:: 0.3
-
     Parameters
     ----------
     n_subjects: int, optional
         The number of subjects to load from maximum of 146 subjects.
         By default, 10 subjects will be loaded. If n_subjects=None,
         all subjects will be loaded.
-
     data_dir: str, optional
         Path to the data directory. Used to force data storage in a
         specified location. Default: None
-
     url: str, optional
         Override download url. Used for test only (or if you setup a
         mirror of the data). Default: None
-
     verbose: int, optional
        Verbosity level (0 means no message).
-
     Returns
     -------
     data: Bunch
         Dictionary-like object, the attributes are:
-
         - 'func': string list
             Paths to Nifti images.
         - 'confounds': string list
@@ -1600,7 +1456,6 @@ def fetch_cobre(n_subjects=10, data_dir=None, url=None, verbose=1):
             description of the confounds variables
         - 'desc_phenotypic': str
             description of the phenotypic variables.
-
     Notes
     -----
     See `more information about datasets structure
@@ -1665,7 +1520,7 @@ def fetch_cobre(n_subjects=10, data_dir=None, url=None, verbose=1):
                             b'Control']['id'][:n_ct]
     ids = np.hstack([sz_ids, ct_ids])
     csv_array_phen = csv_array_phen[np.in1d(csv_array_phen['id'], ids)]
-    csv_array_phen = pheno_decode(csv_array_phen)
+    csv_array_phen = char_array_decode(csv_array_phen)
 
     # Call fetch_files once per subject.
 
@@ -1713,30 +1568,23 @@ def fetch_surf_nki_enhanced(n_subjects=10, data_dir=None,
                             url=None, resume=True, verbose=1):
     """Download and load the NKI enhanced resting-state dataset,
        preprocessed and projected to the fsaverage5 space surface.
-
     .. versionadded:: 0.3
-
     Parameters
     ----------
     n_subjects: int, optional
         The number of subjects to load from maximum of 102 subjects.
         By default, 10 subjects will be loaded. If None is given,
         all 102 subjects will be loaded.
-
     data_dir: str, optional
         Path of the data directory. Used to force data storage in a specified
         location. Default: None
-
     url: str, optional
         Override download URL. Used for test only (or if you setup a mirror of
         the data). Default: None
-
     resume: bool, optional (default True)
         If True, try resuming download if possible.
-
     verbose: int, optional (default 1)
         Defines the level of verbosity of the output.
-
     Returns
     -------
     data: sklearn.datasets.base.Bunch
@@ -1748,15 +1596,12 @@ def fetch_surf_nki_enhanced(n_subjects=10, data_dir=None,
          - 'phenotypic': array containing tuple with subject ID, age,
                          dominant hand and sex for each subject.
          - 'description': data description of the release and references.
-
     References
     ----------
     :Download: http://fcon_1000.projects.nitrc.org/indi/enhanced/
-
     Nooner et al, (2012). The NKI-Rockland Sample: A model for accelerating the
     pace of discovery science in psychiatry. Frontiers in neuroscience 6, 152.
     URL http://dx.doi.org/10.3389/fnins.2012.00152
-
     """
 
     if url is None:

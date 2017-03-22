@@ -62,13 +62,13 @@ def readlinkabs(link):
         return path
     return os.path.join(os.path.dirname(link), path)
 
-def pheno_decode(a):
+def char_array_decode(a):
     """
     Utility function for decoding byte strings in the data
     """
     a = np.array(a).tolist()
-    for i in xrange(len(a)):
-        for j in xrange(len(a[0])):
+    for i in range(len(a)):
+        for j in range(len(a[0])):
             if isinstance(a[i][j], str):
                     a[i] = list(a[i])
                     a[i][j] = a[i][j].decode()

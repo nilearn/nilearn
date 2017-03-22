@@ -9,7 +9,7 @@ import nibabel as nb
 import numpy as np
 from sklearn.datasets.base import Bunch
 
-from .utils import pheno_decode, _get_dataset_dir, _fetch_files, _get_dataset_descr
+from .utils import char_array_decode, _get_dataset_dir, _fetch_files, _get_dataset_descr
 from .._utils import check_niimg
 from .._utils.compat import _basestring, get_affine
 from ..image import new_img_like
@@ -135,7 +135,7 @@ def fetch_atlas_destrieux_2009(lateralized=True, data_dir=None, url=None,
     files_ = _fetch_files(data_dir, files, resume=resume,
                           verbose=verbose)
 
-    params = dict(maps=files_[1], labels=pheno_decode(np.recfromcsv(files_[0])))
+    params = dict(maps=files_[1], labels=char_array_decode(np.recfromcsv(files_[0])))
 
     with open(files_[2], 'r') as rst_file:
         params['description'] = rst_file.read()
@@ -338,7 +338,7 @@ def fetch_atlas_msdl(data_dir=None, url=None, resume=True, verbose=1):
         warnings.filterwarnings('ignore', module='numpy',
                                 category=FutureWarning)
         region_coords = csv_data[['x', 'y', 'z']]
-        region_coords = pheno_decode(region_coords).tolist()
+        region_coords = char_array_decode(region_coords).tolist()
     net_names = [net_name.strip() for net_name in csv_data['net_name'].tolist()]
     fdescr = _get_dataset_descr(dataset_name)
 
