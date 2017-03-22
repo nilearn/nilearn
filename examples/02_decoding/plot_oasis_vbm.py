@@ -78,7 +78,6 @@ nifti_masker.fit(gm_imgs_thresholded)
 from nilearn.decoding import DecoderRegressor
 decoder = DecoderRegressor(estimator='svr', mask=nifti_masker,
                            screening_percentile=5,
-                           cv=5,
                            memory_level=2,
                            memory='nilearn_cache') # cache options
 # Fit and predict with the decoder

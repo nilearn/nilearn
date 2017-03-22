@@ -178,9 +178,9 @@ class BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
         it will be computed automatically by a masker with default
         parameters.
 
-    cv : cross-validation generator, optional
-        A cross-validation generator. If None, a 10-fold cross
-        validation is used for regression or 10-fold stratified
+    cv : cross-validation generator, optional (default 10)
+        A cross-validation generator. If None, a 3-fold cross
+        validation is used for regression or 3-fold stratified
         cross-validation for classification.
 
     param_grid : dict of string to sequence, or sequence of such
@@ -258,7 +258,7 @@ class BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
     verbose : int, optional. Default: False.
         Verbosity level.
     """
-    def __init__(self, estimator='svc', mask=None, cv=None, param_grid=None,
+    def __init__(self, estimator='svc', mask=None, cv=10, param_grid=None,
                  screening_percentile=20, scoring=None, smoothing_fwhm=None,
                  standardize=True, target_affine=None, target_shape=None,
                  low_pass=None, high_pass=None, t_r=None,
@@ -575,10 +575,9 @@ class Decoder(BaseDecoder):
         it will be computed automatically by a masker with default
         parameters.
 
-    cv : cross-validation generator, optional
-        A cross-validation generator. If None, a 10-fold cross
-        validation is used for regression or 10-fold stratified
-        cross-validation for classification.
+    cv : cross-validation generator, optional (default 10)
+        A cross-validation generator. If None, a 3-fold cross
+        validation is used for classification.
 
     param_grid : dict of string to sequence, or sequence of such
         The parameter grid to explore, as a dictionary mapping estimator
@@ -655,7 +654,7 @@ class Decoder(BaseDecoder):
     verbose : int, optional. Default: False.
         Verbosity level.
     """
-    def __init__(self, estimator='svc', mask=None, cv=None, param_grid=None,
+    def __init__(self, estimator='svc', mask=None, cv=10, param_grid=None,
                  screening_percentile=20, scoring='roc_auc',
                  smoothing_fwhm=None, standardize=True, target_affine=None,
                  target_shape=None, mask_strategy='background',
@@ -704,10 +703,9 @@ class DecoderRegressor(BaseDecoder):
         it will be computed automatically by a masker with default
         parameters.
 
-    cv : cross-validation generator, optional
-        A cross-validation generator. If None, a 10-fold cross
-        validation is used for regression or 10-fold stratified
-        cross-validation for classification.
+    cv : cross-validation generator, optional (default 10)
+        A cross-validation generator. If None, a 3-fold cross
+        validation is used for regression.
 
     param_grid : dict of string to sequence, or sequence of such
         The parameter grid to explore, as a dictionary mapping estimator
@@ -784,7 +782,7 @@ class DecoderRegressor(BaseDecoder):
     verbose : int, optional. Default: False.
         Verbosity level.
     """
-    def __init__(self, estimator='svc', mask=None, cv=None, param_grid=None,
+    def __init__(self, estimator='svc', mask=None, cv=10, param_grid=None,
                  screening_percentile=20, scoring='r2',
                  smoothing_fwhm=None, standardize=True, target_affine=None,
                  target_shape=None, mask_strategy='background',
