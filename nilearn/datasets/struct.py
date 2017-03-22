@@ -491,7 +491,6 @@ def fetch_surf_fsaverage5(data_dir=None, url=None, resume=True, verbose=1):
                               {})],
                             resume=resume, verbose=verbose)
         pials.append(pial)
-        pials = pheno_decode(pials)
 
         infl = _fetch_files(data_dir,
                             [(surf_file % ('pial_inflated', hemi[1]),
@@ -500,7 +499,6 @@ def fetch_surf_fsaverage5(data_dir=None, url=None, resume=True, verbose=1):
                               {})],
                             resume=resume, verbose=verbose)
         infls.append(infl)
-        infls = pheno_decode(pials)
 
         sulc = _fetch_files(data_dir,
                             [(surf_file % ('sulc', hemi[1]),
@@ -509,7 +507,6 @@ def fetch_surf_fsaverage5(data_dir=None, url=None, resume=True, verbose=1):
                               {})],
                             resume=resume, verbose=verbose)
         sulcs.append(sulc)
-        sulcs = pheno_decode(sulc)
 
     return Bunch(pial_left=pials[0][0],
                  pial_right=pials[1][0],
