@@ -144,7 +144,7 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
               hemi='left', view='lateral', cmap=None,
               avg_method='mean', threshold=None, alpha='auto',
               bg_on_data=False, darkness=1, vmin=None, vmax=None,
-              title=None, output_file=None, **kwargs):
+              title=None, output_file=None,figsize=None, **kwargs):
 
     """ Plotting of surfaces with optional background and data
 
@@ -280,7 +280,7 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
             cmap = plt.cm.get_cmap(cmap)
 
     # initiate figure and 3d axes
-    fig = plt.figure()
+    fig = plt.figure(figsize=figsize)
     ax = fig.add_subplot(111, projection='3d', xlim=limits, ylim=limits)
     ax.view_init(elev=elev, azim=azim)
     ax.set_axis_off()
@@ -369,7 +369,7 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
                        hemi='left', view='lateral', threshold=None,
                        alpha='auto', vmax=None, cmap='coolwarm',
                        symmetric_cbar="auto", bg_on_data=False, darkness=1,
-                       title=None, output_file=None, **kwargs):
+                       title=None, output_file=None, figsize=None,**kwargs):
     """ Plotting a stats map on a surface mesh with optional background
 
     .. versionadded:: 0.3
@@ -464,7 +464,7 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
                         threshold=threshold, cmap=cmap,
                         alpha=alpha, bg_on_data=bg_on_data, darkness=1,
                         vmax=vmax, title=title, output_file=output_file,
-                        **kwargs)
+                        figsize=figsize,**kwargs)
 
     return display
 
@@ -473,7 +473,7 @@ def plot_surf_roi(surf_mesh, roi_map, bg_map=None,
                   hemi='left', view='lateral', alpha='auto',
                   vmin=None, vmax=None, cmap='coolwarm',
                   bg_on_data=False, darkness=1,
-                  title=None, output_file=None, **kwargs):
+                  title=None, output_file=None, figsize=None,**kwargs):
     """ Plotting of surfaces with optional background and stats map
 
     .. versionadded:: 0.3
@@ -576,6 +576,6 @@ def plot_surf_roi(surf_mesh, roi_map, bg_map=None,
                         cmap=cmap, alpha=alpha, bg_on_data=bg_on_data,
                         darkness=darkness, vmin=vmin, vmax=vmax,
                         title=title, output_file=output_file,
-                        **kwargs)
+                        figsize=figsize,**kwargs)
 
     return display
