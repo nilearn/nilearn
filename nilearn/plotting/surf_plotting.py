@@ -174,7 +174,8 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
     hemi : {'left', 'right'}, default is 'left'
         Hemisphere to display.
 
-    view: {'lateral', 'medial', 'dorsal', 'ventral'}, default is 'lateral'
+    view: {'lateral', 'medial', 'dorsal', 'ventral', 
+           'anterior', 'posterior'}, default is 'lateral'
         View of the surface that is rendered.
 
     cmap: matplotlib colormap, str or colormap object, default is None
@@ -246,9 +247,13 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
             elev, azim = 90, 0
         elif view == 'ventral':
             elev, azim = 270, 0
+        elif view == 'anterior':
+            elev, azim = 0, 90
+        elif view == 'posterior':
+            elev, azim = 0, 270
         else:
             raise ValueError('view must be one of lateral, medial, '
-                             'dorsal or ventral')
+                             'dorsal, ventral, anterior, or posterior')
     elif hemi == 'left':
         if view == 'medial':
             elev, azim = 0, 0
@@ -258,9 +263,13 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
             elev, azim = 90, 0
         elif view == 'ventral':
             elev, azim = 270, 0
+        elif view == 'anterior':
+            elev, azim = 0, 90
+        elif view == 'posterior':
+            elev, azim = 0, 270
         else:
             raise ValueError('view must be one of lateral, medial, '
-                             'dorsal or ventral')
+                             'dorsal, ventral, anterior, or posterior')
     else:
         raise ValueError('hemi must be one of right or left')
 
