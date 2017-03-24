@@ -365,6 +365,81 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
         return fig
 
 
+def plot_surf_bihemi(lh_surf_mesh,rh_surf_mesh,
+                     lh_surf_map=None,rh_surf_map=None,
+                     lh_bg_map=None,rh_bg_map=None,
+                     x_shifts = [0,0], 
+                     view='dorsal', plot_surf_kwargs={}):
+
+    """ Bihemispheric surface plotts
+
+    Parameters
+    ----------
+
+    lh/rh_surf_mesh  -  surface mesh data / files (c.f. plot_surf options)
+    lh/rh_surf_map   -  surface map data / files (c.f. plot_surf options)
+    lh/rh_bg_map     -  background map data / files (c.f. plot_surf options)
+
+    x_shifts         -  1x2 list/array, [lh_shift, rh_shift]
+                        For use with surfaces such as fsaverage inflated 
+                        where left and right hemispheres are overlapping. 
+                        lh_shift and rh_shift are added to LH and RH
+                        surface coords, respectively.
+                        Recommended value for fsaverage5 infl is 
+                        [-40.,40.]
+
+    view:            -  {'dorsal', 'ventral', 'anterior', 'posterior'}, 
+                        default is 'dorsal' 
+
+    plot_surf_kwargs - dict of kwargs for plot_surf
+
+
+    """
+
+    # Load lh and rh surfaces
+    lh_coords,lh_faces = load_surf_mesh(lh_surf_mesh)
+    rh_coords,rh_faces = load_surf_mesh(rh_surf_mesh)
+
+    # Shift x coordinates (for inflated surfaces)
+    lh_coords[:,0] += x_shifts[0]
+    rh_coords[:,0] += x_shifts[1]
+
+    # Combine hemispheres
+    lhrh_coords = np.concatenate([lh_coords,rh_coords])
+    lhrh_faces  = np.concatenate([lh_faces,rh_faces+lh_coords.shape[0]])
+
+    # Load and combine surf maps, if supplied
+    if lh_surf_map and rh_surf_map:
+      lh_surf_map_data = load_surf_data(lh_surf_map)
+      rh_surf_map_data = load_surf_data(rh_surf_map)
+      lhrh_surf_map = np.concatenate([lh_surf_data,rh_surf_data])
+    else:
+      lhrh_surf_map = None
+  
+    # Load and combine bg maps, if supplied
+    if lh_bg_map and rh_bg_map:
+      lh_bg_data = load_surf_data(lh_bg_map)
+      rh_bg_data = load_surf_data(rh_bg_map)
+      lhrh_bg_map = np.concatenate([lh_bg_data,rh_bg_data])
+    else:
+      lhrh_bg_map = None
+
+    # Check a sensible view option has been given
+    if view not in ['dorsal', 'ventral', 'anterior', 'posterior']:
+      raise ValueError('dorsal, ventral, anterior, or posterior')
+
+    # Do it
+    display = plot_surf([lhrh_coords,lhrh_faces],
+                     surf_map=lhrh_surf_map,
+                     bg_map=lhrh_bg_map,
+                     hemi='left',
+                     view=view,
+                     **plot_surf_kwargs)
+    return display
+
+
+
+
 def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
                        hemi='left', view='lateral', threshold=None,
                        alpha='auto', vmax=None, cmap='coolwarm',
