@@ -290,7 +290,9 @@ def find_cut_slices(img, direction='z', n_cuts=7, spacing='auto'):
             # We need positive slice to avoid having negative
             # indices, which would work, but not the way we think of them
             candidates.append(slice_below)
+
         best_weight = -10
+        best_candidate = [0, 0, 0]
         for candidate in candidates:
             if candidate >= this_shape:
                 this_weight = 0
