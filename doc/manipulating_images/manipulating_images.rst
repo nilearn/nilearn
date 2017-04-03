@@ -231,7 +231,7 @@ ROI mask:
  * **Mask intersection and dilation**: Post-processing the results with
    simple morphological operations, mask intersection and dilation. 
 
-   * we can use another mask, such as a grey-matter matter, to select
+   * we can use another mask, such as a grey-matter mask, to select
      only the voxels which are common in both masks.
 
    * we can do `morphological dilation
