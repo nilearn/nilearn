@@ -38,12 +38,18 @@ Loading and masking and with NiftiMasker
 
 Before clustering, the brain volumes need to be turned to a data matrix,
 for instance of time-series. The :class:`nilearn.input_data.NiftiMasker`
-extract these on a mask. If no mask is given with the data, the masker
+or :class:`nilearn.input_data.MultiNiftiMasker` maskers
+extract signals on a mask. If no mask is given with the data, the masker
 can compute one.
 
 The masker can perform important :ref:`preprocessing operations
 <masker_preprocessing_steps>`, such as detrending signals, standardizing
 them, removing confounds, or smoothing the images.
+
+But, here we are in not required to explicitly call masker on our data. The
+object which build parcellations can do it for you.
+Note: that parcellations object used MultiNiftiMasker which can be scaled to
+large number of subjects.
 
 .. topic:: **Example code**
 
@@ -70,10 +76,11 @@ Applying clustering
       clustering after spatially-smoothing the data.
 
     Both clustering algorithms (as well as many others) are provided by
-    `scikit-learn
-    <http://scikit-learn.org/stable/modules/clustering.html>`_. Ward
-    clustering is the easiest to use, as it can be done with the Feature
-    agglomeration object. It is also very fast. We detail it bellow.
+    this object :class:`nilearn.parcellations.Parcellations` and full
+    code example in
+    :ref:`here<sphx_glr_auto_examples_03_connectivity_plot_rest_clustering.py>`.
+    Ward clustering is the easiest to use, as it can be done with the Feature
+    agglomeration object. It is also very fast. We detail it below.
 
 |
 
@@ -108,6 +115,13 @@ used for caching.
     The Ward clustering computing 1000 parcels runs typically in about 10
     seconds. Admitedly, this is very fast.
 
+.. note::
+
+    The above steps detailed above such as computing connectivity matrix for
+    Ward, caching and clustering are all implemented within the object
+    :class:`nilearn.parcellations.Parcellations`,
+    and computes by itself while applying methods on the data.
+
 .. seealso::
 
    * A function :func:`nilearn.regions.connected_label_regions` which can be useful to
@@ -130,7 +144,8 @@ brain image, we need to unmask them with the :class:`NiftiMasker`
 *inverse_transform* method.
 
 Note that by default, clusters are labeled from 0 to
-(n_clusters - 1), and the label 0 may be confused with a background.
+(n_clusters - 1), and the label 0 may be confused with a background. To avoid
+this we add with 1.
 
 To visualize the clusters, we assign random colors to each cluster
 for the labels visualization.
