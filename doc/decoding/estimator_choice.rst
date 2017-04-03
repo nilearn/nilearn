@@ -68,7 +68,7 @@ There are two noteworthy strategies:
 
 The "One vs One" strategy is more computationally costly than the "One
 vs All". The former scales as the square of the number of classes,
-whereas the former is linear with the number of classes.
+whereas the latter is linear with the number of classes.
 
 .. seealso::
 
