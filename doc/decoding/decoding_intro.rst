@@ -198,9 +198,7 @@ The prediction objects have two important methods:
 
 .. warning::
 
-    **Do not predict on data used by the fit:** the prediction that we obtain
-    here is to good to be true (see next paragraph).
-    Here we were just doing a sanity check.
+    **Do not predict on data used by the fit:** (See next paragraph)
 
 .. for doctests (smoke testing):
     >>> from sklearn.svm import SVC
