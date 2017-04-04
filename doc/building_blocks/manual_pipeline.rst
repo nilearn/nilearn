@@ -77,7 +77,7 @@ This can be done as follows:
 
 .. literalinclude:: ../../examples/plot_decoding_tutorial.py
     :start-after: # mask of the samples belonging to the condition.
-    :end-before: ###########################################################################
+    :end-before: # We apply this mask in the sampe direction to restrict the
 
 
 .. note::
@@ -133,6 +133,8 @@ provided with the Haxby dataset.
 The :class:`NiftiMasker` can be seen as a *tube* that transforms data
 from 4D images to 2D arrays, but first it needs to 'fit' this data in
 order to learn simple parameters from it, such as its shape:
+
+>>> mask_filename = haxby_dataset.mask_vt[0] # docstep: +SKIP
 
 .. literalinclude:: ../../examples/plot_decoding_tutorial.py
     :start-after: # Now we use the NiftiMasker.
