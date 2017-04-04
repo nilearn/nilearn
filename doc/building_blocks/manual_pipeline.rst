@@ -165,6 +165,10 @@ Here, we use scikit-learn Support Vector Classification to learn how to
 predict the category of picture seen by the subject:
 
 .. literalinclude:: ../../examples/plot_decoding_tutorial.py
+    :start-after: # We first create it:
+    :end-before: ###########################################################################
+
+.. literalinclude:: ../../examples/plot_decoding_tutorial.py
     :start-after: # We first fit it on the data
     :end-before: # Let's measure the error rate:
 
@@ -181,6 +185,10 @@ unmask several kinds of data (not only the data that you previously
 masked but also the results of an algorithm), the masker is clever and
 can take data of dimension 1D (resp. 2D) to convert it back to 3D
 (resp. 4D).
+
+.. literalinclude:: ../../examples/plot_decoding_tutorial.py
+    :start-after: # We retrieve the SVC discriminating weights
+    :end-before: ###########################################################################
 
 .. literalinclude:: ../../examples/plot_decoding_tutorial.py
     :start-after: # For this, we can call inverse_transform on the NiftiMasker:
