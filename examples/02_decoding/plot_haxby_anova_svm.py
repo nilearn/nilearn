@@ -25,14 +25,14 @@ print('Functional nifti image (4D) is located at: %s' %
 import numpy as np
 # Load target information as string and give a numerical identifier to each
 behavioral = np.recfromcsv(haxby_dataset.session_target[0], delimiter=" ")
-conditions = behavioral['labels']
+target = behavioral['labels']
 
 # Restrict the analysis to faces and places
-condition_mask = np.logical_or(conditions == b'face', conditions == b'house')
-conditions = conditions[condition_mask]
+condition_mask = np.logical_or(target == b'face', target == b'house')
+target = target[condition_mask]
 
-# We now have 2 conditions
-print(np.unique(conditions))
+# We now have 2 target
+print(np.unique(target))
 session = behavioral[condition_mask]
 
 #############################################################################
@@ -46,9 +46,9 @@ mask_filename = haxby_dataset.mask
 masker = NiftiMasker(mask_img=mask_filename, smoothing_fwhm=4,
                      standardize=True, memory="nilearn_cache", memory_level=1)
 func_filename = haxby_dataset.func[0]
-X = masker.fit_transform(func_filename)
+fmri_masked = masker.fit_transform(func_filename)
 # Apply our condition_mask
-X = X[condition_mask]
+fmri_masked = fmri_masked[condition_mask]
 
 #############################################################################
 # Build the decoder
@@ -75,8 +75,8 @@ anova_svc = Pipeline([('anova', feature_selection), ('svc', svc)])
 #############################################################################
 # Fit the decoder and predict
 
-anova_svc.fit(X, conditions)
-y_pred = anova_svc.predict(X)
+anova_svc.fit(fmri_masked, target)
+y_pred = anova_svc.predict(fmri_masked)
 
 #############################################################################
 # Obtain prediction scores via cross validation
@@ -89,14 +89,14 @@ from sklearn.cross_validation import LeaveOneLabelOut, cross_val_score
 cv = LeaveOneLabelOut(session)
 
 # Compute the prediction accuracy for the different folds (i.e. session)
-cv_scores = cross_val_score(anova_svc, X, conditions)
+cv_scores = cross_val_score(anova_svc, fmri_masked, target)
 
 # Return the corresponding mean prediction accuracy
 classification_accuracy = cv_scores.mean()
 
 # Print the results
 print("Classification accuracy: %.4f / Chance level: %f" %
-      (classification_accuracy, 1. / len(np.unique(conditions))))
+      (classification_accuracy, 1. / len(np.unique(target))))
 # Classification accuracy: 0.9861 / Chance level: 0.5000
 
 
