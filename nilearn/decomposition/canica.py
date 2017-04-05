@@ -48,7 +48,8 @@ class CanICA(MultiPCA):
         more intense voxels across all the maps, n_voxels being the number
         of voxels in a brain volume. A float value indicates the
         ratio of voxels to keep (2. means that the maps will together
-        have 2 x n_voxels non-zero voxels ).
+        have 2 x n_voxels non-zero voxels ). The float value
+        must be bounded by [0. and n_components].
 
     n_init: int, optional
         The number of times the fastICA algorithm is restarted
@@ -128,9 +129,9 @@ class CanICA(MultiPCA):
             memory=memory, memory_level=memory_level,
             n_jobs=n_jobs, verbose=verbose)
 
-        if(threshold > n_components):
-            raise ValueError("Threshold must not be higher than number"
-                             "of maps."
+        if isinstance(threshold, float) & threshold > n_components:
+            raise ValueError("Threshold must not be higher than number "
+                             "of maps. "
                              "Number of maps is %s and you provided %s" %
                              (str(n_components), str(threshold)))
         self.threshold = threshold
