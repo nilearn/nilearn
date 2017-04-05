@@ -129,7 +129,7 @@ class CanICA(MultiPCA):
             memory=memory, memory_level=memory_level,
             n_jobs=n_jobs, verbose=verbose)
 
-        if isinstance(threshold, float) & threshold > n_components:
+        if isinstance(threshold, float) and threshold > n_components:
             raise ValueError("Threshold must not be higher than number "
                              "of maps. "
                              "Number of maps is %s and you provided %s" %
