@@ -45,7 +45,7 @@ example, we can download the data from the
   ['.../haxby2001/subj2/bold.nii.gz']
   >>> fmri_filename = haxby_dataset.func[0]
 
-Access supplementary information on the dataset:
+Access supplementary information on the dataset::
 
   >>> print(haxby_dataset['description']) # doctest: +SKIP
 
@@ -98,7 +98,7 @@ order to learn simple parameters from it, such as its shape::
     >>> from nilearn.input_data import NiftiMasker
     >>> masker = NiftiMasker(mask_img=haxby_dataset.mask_vt[0],
                             standardize=True)
-    >>> fmri_masked = masker.fit_transform(haxby_dataset.func[0])
+    >>> fmri_masked = masker.fit_transform(fmri_filename)
 
 Note that you can call `nifti_masker.transform(dataset.func[1])` on new
 data to mask it in a similar way as the data that was used during the
@@ -129,12 +129,13 @@ These conditions are presented as string into a CSV file. The numpy function
 
     >>> behavioral = np.recfromcsv(haxby_dataset.session_target[0], delimiter=" ")
     >>> conditions = behavioral['labels']
+
 .. seealso::
 
    * `pandas <http://pandas.pydata.org/>`_ is a very useful Python
      library to load CSV files and process their data
 
-For example, we will now just consider the conditions *face* and *cat*
+For example, we will now just consider the conditions *face* and *cat*. 
 This can be done as follows::
 
     >>> condition_mask = np.logical_or(conditions == b'face', conditions == b'cat')
