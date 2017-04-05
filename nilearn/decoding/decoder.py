@@ -67,7 +67,11 @@ def _check_param_grid(estimator, X, y, param_grid):
         if isinstance(estimator, LogisticRegression):
             loss = 'log'
         elif isinstance(estimator, (LinearSVC, _BaseRidge, SVR)):
-            loss = 'l2'
+            loss = 'squared_hinge'
+
+        if LooseVersion(sklearn.__version__) <= LooseVersion('0.17'):
+            if loss == 'squared_hinge':
+                loss = 'l2'
 
         if hasattr(estimator, 'penalty') and (estimator.penalty == 'l1'):
             min_c = l1_min_c(X, y, loss=loss)
@@ -146,7 +150,7 @@ def _parallel_fit(estimator, X, y, train, test, param_grid, is_classif, scorer,
         best_coef = selector.inverse_transform(best_coef)
 
     if LooseVersion(sklearn.__version__) <= LooseVersion('0.17'):
-        # scikit-learn > 1.7
+        # scikit-learn > 0.17
         if isinstance(estimator, SVR):
             best_coef = -best_coef
 
