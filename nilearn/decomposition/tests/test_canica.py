@@ -138,9 +138,6 @@ def test_component_sign():
 
 
 def test_threshold_bound():
-    data, mask_img, components, rng = _make_canica_test_data()
-
     # Smoke test to make sure an error is raised when threshold
     # is higher than number of components
-    assert_raises(ValueError, canICA, n_components=4, random_state=rng,
-                  mask=mask_img, threshold=5.)
+    assert_raises(ValueError, canICA, n_components=4, threshold=5.)
