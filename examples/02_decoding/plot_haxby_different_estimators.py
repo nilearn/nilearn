@@ -47,14 +47,7 @@ func_filename = haxby_dataset.func[0]
 
 #############################################################################
 # Then we define the various classifiers that we use
-param_grid = np.array([.1, .5, 1., 5., 10., 50., 100.])
-classifiers = {
-    'svc_l2': {'C': param_grid},
-    'svc_l1': {'C': param_grid},
-    'logistic_l1': {'C': param_grid},
-    'logistic_l2': {'C': param_grid},
-    'ridge_classifier': {'alpha': 1. / param_grid},
-}
+classifiers = ['svc_l2', 'svc_l1', 'logistic_l1', 'logistic_l2']
 
 #############################################################################
 # Here we compute prediction scores and run time for all these
@@ -65,31 +58,30 @@ from nilearn.image import index_img
 # Because the data is in one single large 4D image, we need to use
 # index_img to do the split easily.
 fmri_niimgs = index_img(func_filename, task_mask)
+classification_target = stimuli[task_mask]
 
 import time
+from sklearn.cross_validation import LeaveOneLabelOut
+cv = LeaveOneLabelOut(session_labels)
 
 classifiers_scores = {}
-
-for classifier_name, param_grid in sorted(classifiers.items()):
+for classifier_name in sorted(classifiers):
     classifiers_scores[classifier_name] = {}
     print(70 * '_')
 
     decoder = Decoder(estimator=classifier_name, mask=mask_filename,
-                      param_grid=param_grid,
-                      standardize=True)
+                      standardize=True, scoring='f1', cv=cv)
+    t0 = time.time()
+    decoder.fit(fmri_niimgs, classification_target)
+
+    classifiers_scores[classifier_name] = decoder.cv_scores_
 
     for category in categories:
-        classification_target = (stimuli[task_mask] == category)
-        t0 = time.time()
-        decoder.fit(fmri_niimgs, classification_target)
-        classifiers_scores[classifier_name][category] = decoder.cv_scores_
-
         print("%10s: %14s -- scores: %1.2f +- %1.2f, time %.2fs" % (
             classifier_name, category,
-            classifiers_scores[classifier_name][category].mean(),
-            classifiers_scores[classifier_name][category].std(),
+            np.mean(classifiers_scores[classifier_name][category]),
+            np.std(classifiers_scores[classifier_name][category]),
             time.time() - t0))
-
 
 ###############################################################################
 # Then we make a rudimentary diagram
@@ -97,57 +89,50 @@ import matplotlib.pyplot as plt
 plt.figure()
 
 tick_position = np.arange(len(categories))
-plt.xticks(tick_position, categories, rotation=45)
+plt.yticks(tick_position + 0.5, categories)
 
-for color, classifier_name in zip(
-        ['b', 'c', 'm', 'g', 'y', 'k', '.5', 'r', '#ffaaaa'],
-        sorted(classifiers)):
-    score_means = [classifiers_scores[classifier_name][category].mean()
+for i, (color, classifier_name) in enumerate(zip(['b', 'm', 'k', 'r'],
+                                                 sorted(classifiers))):
+    score_means = [np.mean(classifiers_scores[classifier_name][category])
                    for category in categories]
-    plt.bar(tick_position, score_means, label=classifier_name,
-            width=.11, color=color)
-    tick_position = tick_position + .09
+    plt.barh(tick_position, score_means,
+             label=classifier_name.replace('_', ' '),
+             height=.2, color=color)
+    tick_position = tick_position + .2
 
-plt.ylabel('Classification accurancy (f1 score)')
-plt.xlabel('Visual stimuli category')
-plt.ylim(ymin=0)
-plt.legend(loc='lower center', ncol=3)
+plt.xlabel('Classification accurancy (f1 score)')
+plt.ylabel('Visual stimuli category')
+plt.xlim(xmin=0)
+plt.legend(loc='lower right', ncol=1)
 plt.title('Category-specific classification accuracy for different classifiers')
 plt.tight_layout()
 
 
-# ###############################################################################
-# # Finally, w plot the face vs house map for the different classifiers
+###############################################################################
+# Finally, w plot the face vs house map for the different classifiers
 
-# # Use the average EPI as a background
-# from nilearn import image
-# mean_epi_img = image.mean_img(func_filename)
+# Use the average EPI as a background
+from nilearn.image import mean_img
+mean_epi_img = mean_img(func_filename)
 
-# # Restrict the decoding to face vs house
-# condition_mask = np.logical_or(stimuli == b'face', stimuli == b'house')
-# masked_timecourses = masked_timecourses[
-#     condition_mask[np.logical_not(resting_state)]]
-# stimuli = stimuli[condition_mask]
-# # Transform the stimuli to binary values
-# stimuli = (stimuli == b'face').astype(np.int)
+# Restrict the decoding to face vs house
+condition_mask = np.logical_or(stimuli == b'face', stimuli == b'house')
+stimuli = stimuli[condition_mask]
+fmri_niimgs_condition = index_img(func_filename, condition_mask)
 
-# from nilearn.plotting import plot_stat_map, show
+from nilearn.plotting import plot_stat_map, show
 
-# for classifier_name, classifier in sorted(classifiers.items()):
-#     classifier.fit(masked_timecourses, stimuli)
+for classifier_name in sorted(classifiers):
 
-#     if hasattr(classifier, 'coef_'):
-#         weights = classifier.coef_[0]
-#     elif hasattr(classifier, 'best_estimator_'):
-#         weights = classifier.best_estimator_.coef_[0]
-#     else:
-#         continue
-#     weight_img = masker.inverse_transform(weights)
-#     weight_map = weight_img.get_data()
-#     threshold = np.max(np.abs(weight_map)) * 1e-3
-#     plot_stat_map(weight_img, bg_img=mean_epi_img,
-#                   display_mode='z', cut_coords=[-15],
-#                   threshold=threshold,
-#                   title='%s: face vs house' % classifier_name)
+    decoder = Decoder(estimator=classifier_name, mask=mask_filename,
+                      standardize=True, scoring='f1')
 
-# show()
+    decoder.fit(fmri_niimgs_condition, stimuli)
+
+    threshold = np.max(np.abs(decoder.coef_)) * 1e-3
+    plot_stat_map(decoder.coef_img_['house'], bg_img=mean_epi_img,
+                  display_mode='z', cut_coords=[-15],
+                  threshold=threshold,
+                  title='%s: face vs house' % classifier_name)
+
+show()

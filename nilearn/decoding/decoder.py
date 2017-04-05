@@ -8,11 +8,11 @@ with optional feature selection, and integrated parameter selection.
 #
 # License: simplified BSD
 
-from distutils.version import LooseVersion
 import sklearn
 import itertools
 import warnings
 import numpy as np
+from distutils.version import LooseVersion
 from sklearn.externals.joblib import Parallel, delayed, Memory
 from sklearn.linear_model.ridge import Ridge, RidgeClassifier, _BaseRidge
 from sklearn.linear_model import LogisticRegression
@@ -108,7 +108,6 @@ def _parallel_fit(estimator, X, y, train, test, param_grid, is_classif, scorer,
         X_test = selector.transform(X[test])
 
     param_grid = _check_param_grid(estimator, X_train, y_train, param_grid)
-    test_scores = []
     best_score = None
     for param in ParameterGrid(param_grid):
         estimator = clone(estimator).set_params(**param)
@@ -134,7 +133,6 @@ def _parallel_fit(estimator, X, y, train, test, param_grid, is_classif, scorer,
             y_prob = estimator.predict(X_test)
             score = scorer(estimator, X_test, y_test)
 
-        test_scores.append(score)
         if (best_score is None) or (score >= best_score):
             best_score = score
             best_coef = estimator.coef_
@@ -155,7 +153,7 @@ def _parallel_fit(estimator, X, y, train, test, param_grid, is_classif, scorer,
             best_coef = -best_coef
 
     return (class_index, best_coef, best_intercept, best_y, best_param,
-            test_scores)
+            best_score)
 
 
 class BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
@@ -358,7 +356,7 @@ class BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
         `cv_indices_` : numpy.ndarray, shape=(n_samples * n_folds)
             Indices of the inner cross-validation folds.
 
-        `cv_scores_` : ndarray, shape (n_parameters, n_folds)
+        `cv_scores_` : dict, (classes, n_folds)
             Scores (misclassification) for each parameter, and on each fold
         """
         # Setup memory, parallel and masker
@@ -460,10 +458,7 @@ class BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
                 cv_y_true.setdefault(other_class, []).extend(
                     self._enc.inverse_transform(y[y_info['y_true_indices']]))
 
-        # Saving the mean score
-        self.cv_scores_ = np.mean(
-            [np.vstack(cv_scores[c]).T for c in classes], axis=0)
-
+        self.cv_scores_ = cv_scores
         self.cv_y_true_ = np.array(cv_y_true[list(cv_y_true.keys())[0]])
         self.cv_indices_ = np.array(cv_indices[list(cv_indices.keys())[0]])
         self.cv_y_prob_ = np.vstack(
