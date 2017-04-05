@@ -32,7 +32,7 @@ def find_xyz_cut_coords(img, mask=None, activation_threshold=None):
         -----------
         img : 3D Nifti1Image
             The brain map.
-        mask : 3D ndarray, boolean, optional
+        mask : 3D ndarray, boolean or 3D Niimg-like object, optional
             An optional brain mask.
         activation_threshold : float, optional
             The lower threshold to the positive activation. If None, the
@@ -63,13 +63,19 @@ def find_xyz_cut_coords(img, mask=None, activation_threshold=None):
         if mask is None:
             mask = not_mask
         else:
-            mask *= not_mask
+            if isinstance(mask, np.ndarray):
+                mask *= not_mask
+            else:
+                mask = check_niimg_3d(mask)
+                mask *= not_mask
         data = np.asarray(data)
 
     # Get rid of potential memmapping
     data = as_ndarray(data)
     my_map = data.copy()
     if mask is not None:
+        if not isinstance(mask, np.ndarray):
+            mask = check_niimg_3d(mask)
         # check against empty mask
         if mask.sum() == 0.:
             warnings.warn(
