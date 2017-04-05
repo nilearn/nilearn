@@ -115,9 +115,17 @@ Loading the data into nilearn
   nilearn, you can pass in the path to your own files 
   (:ref:`more on data input <loading_data>`).
 
+  >>> from nilearn import datasets # doctest: +SKIP
+  >>> haxby_dataset = datasets.fetch_haxby() # doctest: +SKIP
+  >>> fmri_filename = haxby_dataset.func[0] # doctest: +SKIP
+
 * **Loading the behavioral labels**: Behavioral information is often stored
   in a text file such as a CSV, and must be load with
   **numpy.recfromcsv** or `pandas <http://pandas.pydata.org/>`_
+
+  >>> import numpy as np # doctest: +SKIP
+  >>> labels = np.recfromcsv(haxby_dataset.session_target[0], delimiter=" ") #doctest: +SKIP
+  >>> target = labels['labels'] #doctest: +SKIP
 
 * **Extracting the fMRI data**: we then use the
   :class:`nilearn.input_data.NiftiMasker`: we extract only the voxels on
@@ -127,8 +135,16 @@ Loading the data into nilearn
   (n_timepoints, n_voxels)
   (see :ref:`mask_4d_2_3d` for a discussion on using masks).
 
+  >>> from nilearn.input_data import NiftiMasker # doctest: +SKIP
+  >>> masker = NiftiMasker(mask_img=mask_filename, standardize=True) # doctest: +SKIP
+  >>> fmri_masked = masker.fit_transform(fmri_filename) # doctest: +SKIP
+
 * **Sample mask**: Masking some of the time points may be useful to
   restrict to a specific pair of conditions (*eg* cats versus faces).
+
+  >>> condition_mask = np.logical_or(target == b'face', target == b'cat') # doctest: +SKIP
+  >>> fmri_masked = fmri_masked[condition_mask] # doctest: +SKIP
+  >>> target = target[condition_mask] # doctest: +SKIP
 
 .. note::
 

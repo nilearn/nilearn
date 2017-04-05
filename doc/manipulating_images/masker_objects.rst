@@ -140,8 +140,12 @@ we can compare the data-derived mask against.
 Generate a mask with default parameters and visualize it (it is in the
 `mask_img_` attribute of the masker):
 
+>>> from nilearn.input_data import NiftiMasker
+>>> import nilearn.image as image
+>>> from nilearn.plotting import plot_roi, show
+
 .. literalinclude:: ../../examples/04_manipulating_images/plot_mask_computation.py
-    :start-after: # Simple mask extraction from EPI images
+    :start-after: # To display the background
     :end-before: # Generate mask with strong opening
 
 
