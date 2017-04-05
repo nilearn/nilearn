@@ -132,7 +132,8 @@ class CanICA(MultiPCA):
         if isinstance(threshold, float) and threshold > n_components:
             raise ValueError("Threshold must not be higher than number "
                              "of maps. "
-                             "Number of maps is %s and you provided %s" %
+                             "Number of maps is %s and you provided "
+                             "threshold=%s" %
                              (str(n_components), str(threshold)))
         self.threshold = threshold
         self.n_init = n_init
