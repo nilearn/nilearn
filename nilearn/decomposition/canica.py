@@ -127,13 +127,18 @@ class CanICA(MultiPCA):
             mask_strategy=mask_strategy, mask_args=mask_args,
             memory=memory, memory_level=memory_level,
             n_jobs=n_jobs, verbose=verbose)
+
+        if(threshold > n_components):
+            raise ValueError("Threshold must not be higher than number"
+                             "of maps."
+                             "Number of maps is %s and you provided %s" %
+                             (str(n_components), str(threshold)))
         self.threshold = threshold
         self.n_init = n_init
 
     def _unmix_components(self):
         """Core function of CanICA than rotate components_ to maximize
         independance"""
-
         random_state = check_random_state(self.random_state)
 
         seeds = random_state.randint(np.iinfo(np.int32).max, size=self.n_init)
