@@ -54,16 +54,16 @@ def find_xyz_cut_coords(img, mask_img=None, activation_threshold=None):
     img = check_niimg_3d(img)
     data = _safe_get_data(img)
 
-    # To speed up computations, we work with partial views of the array,
-    # and keep track of the offset
-    offset = np.zeros(3)
-
     # Retrieve optional mask
     if mask_img is not None:
         mask_img = check_niimg_3d(mask_img)
         mask = _safe_get_data(mask_img)
     else:
         mask = None
+
+    # To speed up computations, we work with partial views of the array,
+    # and keep track of the offset
+    offset = np.zeros(3)
 
     # Deal with masked arrays:
     if hasattr(data, 'mask'):
