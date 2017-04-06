@@ -155,6 +155,14 @@ print(decoder.cv_scores_)
 # The decoder also gives the best performing parameters per fold.
 print(decoder.cv_params_)
 
+
+# from sklearn.cross_validation import KFold
+
+# cv = KFold(n=len(fmri_masked), n_folds=5)
+
+# from sklearn.cross_validation import LeaveOneLabelOut
+# cv = LeaveOneLabelOut(session_label)
+
 ###########################################################################
 # Inspecting the model weights
 # -----------------------------
