@@ -25,15 +25,15 @@ from ..image.image import _smooth_array
 ################################################################################
 
 
-def find_xyz_cut_coords(img, mask=None, activation_threshold=None):
+def find_xyz_cut_coords(img, mask_img=None, activation_threshold=None):
     """ Find the center of the largest activation connected component.
 
         Parameters
         -----------
         img : 3D Nifti1Image
             The brain map.
-        mask : 3D ndarray, boolean or 3D Niimg-like object, optional
-            An optional brain mask.
+        mask_img : 3D Nifti1Image, optional
+            An optional brain mask, provided mask_img should not be empty.
         activation_threshold : float, optional
             The lower threshold to the positive activation. If None, the
             activation threshold is computed using the 80% percentile of
@@ -57,25 +57,26 @@ def find_xyz_cut_coords(img, mask=None, activation_threshold=None):
     # and keep track of the offset
     offset = np.zeros(3)
 
+    # Retrieve optional mask
+    if mask_img is not None:
+        mask_img = check_niimg_3d(mask_img)
+        mask = _safe_get_data(mask_img)
+    else:
+        mask = None
+
     # Deal with masked arrays:
     if hasattr(data, 'mask'):
         not_mask = np.logical_not(data.mask)
         if mask is None:
             mask = not_mask
         else:
-            if isinstance(mask, np.ndarray):
-                mask *= not_mask
-            else:
-                mask = check_niimg_3d(mask)
-                mask *= not_mask
+            mask *= not_mask
         data = np.asarray(data)
 
     # Get rid of potential memmapping
     data = as_ndarray(data)
     my_map = data.copy()
     if mask is not None:
-        if not isinstance(mask, np.ndarray):
-            mask = check_niimg_3d(mask)
         # check against empty mask
         if mask.sum() == 0.:
             warnings.warn(
