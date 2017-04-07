@@ -1,3 +1,1 @@
-import test_find_cuts
 
-test_find_cuts.test_find_cut_coords()
