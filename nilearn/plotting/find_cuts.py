@@ -33,8 +33,8 @@ def find_xyz_cut_coords(img, mask=None, activation_threshold=None):
         -----------
         img : 3D Nifti1Image
             The brain map.
-        mask : 3D ndarray, boolean, optional
-            An optional brain mask.
+        mask : 3D Nifti1Image, boolean, optional
+            An optional boolean 3D Nifti1Image brain mask.
         activation_threshold : float, optional
             The lower threshold to the positive activation. If None, the
             activation threshold is computed using the 80% percentile of
@@ -54,6 +54,7 @@ def find_xyz_cut_coords(img, mask=None, activation_threshold=None):
     img = check_niimg_3d(img)
     data = _safe_get_data(img)
 
+
     # To speed up computations, we work with partial views of the array,
     # and keep track of the offset
     offset = np.zeros(3)
@@ -71,6 +72,13 @@ def find_xyz_cut_coords(img, mask=None, activation_threshold=None):
     data = as_ndarray(data)
     my_map = data.copy()
     if mask is not None:
+        import nibabel
+        if isinstance(mask, nibabel.spatialimages.SpatialImage):
+            from .. import masking
+
+            mask = check_niimg_3d(mask, np.bool)
+            mask, _ = masking._load_mask_img(mask, allow_empty=True)
+
         # check against empty mask
         if mask.sum() == 0.:
             warnings.warn(
