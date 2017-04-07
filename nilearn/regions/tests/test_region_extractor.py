@@ -155,6 +155,14 @@ def test_region_extractor_fit_and_transform():
     assert_not_equal(extract_ratio.regions_img_, '')
     assert_true(extract_ratio.regions_img_.shape[-1] >= 9)
 
+    # No region for too high FWHM
+    extract_ratio = RegionExtractor(maps, threshold=0.2,
+                                    thresholding_strategy='ratio_n_voxels',
+                                    smoothing_fwhm=12)
+    assert_raises_regex(ValueError,
+                        "zero-size array to reduction operation maximum",
+                        extract_ratio.fit)
+
     # smoke test with threshold=string and strategy=percentile
     extractor = RegionExtractor(maps, threshold=30,
                                 thresholding_strategy='percentile',
