@@ -159,10 +159,7 @@ def test_region_extractor_fit_and_transform():
     extract_ratio = RegionExtractor(maps, threshold=0.2,
                                     thresholding_strategy='ratio_n_voxels',
                                     smoothing_fwhm=12)
-    assert_raises_regex(ValueError,
-                        "zero-size array to reduction operation maximum "
-                        "which has no identity",
-                        extract_ratio.fit)
+    assert_raises_regex(ValueError, "zero-size array", extract_ratio.fit)
 
     # smoke test with threshold=string and strategy=percentile
     extractor = RegionExtractor(maps, threshold=30,
