@@ -296,7 +296,8 @@ class RegionExtractor(NiftiMapsMasker):
 
     smoothing_fwhm: scalar, default 6mm, optional
         To smooth an image to extract most sparser regions. This parameter
-        is passed `connected_regions` and exists only for extractor 'local_regions'.
+        is passed to `connected_regions` and exists only for extractor
+        'local_regions'.
 
     standardize: bool, True or False, default False, optional
         If True, the time series signals are centered and normalized by
