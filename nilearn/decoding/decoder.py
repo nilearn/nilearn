@@ -196,20 +196,22 @@ class BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
         the input data. A float according to a percentile of the highest
         scores. Default: 20.
 
-    scoring : str, callable or None, optional. Default: None
+    scoring : str, callable or None, optional.
         The scoring strategy to use. See the scikit-learn documentation
         If callable, takes as arguments the fitted estimator, the
         test data (X_test) and the test target (y_test) if y is
         not None.
 
         For regression: 'r2', 'mean_absolute_error', or 'mean_squared_error'.
+            Default 'r2'.
         For classification: 'accuracy', 'f1', 'precision', or 'recall'.
+            Default 'roc_auc'.
 
     smoothing_fwhm : float, optional. Default: None
         If smoothing_fwhm is not None, it gives the size in millimeters of the
         spatial smoothing to apply to the signal.
 
-    standardize : boolean, optional. Default: None
+    standardize : bool, optional. Default: None
         If standardize is True, the time-series are centered and normed:
         their variance is put to 1 in the time dimension.
 
@@ -217,7 +219,7 @@ class BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
         This parameter is passed to image.resample_img. Please see the
         related documentation for details.
 
-    target_shape : 3-tuple of integers, optional. Default: None
+    target_shape : 3-tuple of int, optional. Default: None
         This parameter is passed to image.resample_img. Please see the
         related documentation for details.
 
@@ -238,14 +240,14 @@ class BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
         images present a clear homogeneous background, and 'epi' if they
         are raw EPI images. Depending on this value, the mask will be
         computed from masking.compute_background_mask or
-        masking.compute_epi_mask. Default is 'background'.
+        masking.compute_epi_mask.
 
     memory : instance of joblib.Memory or str
         Used to cache the masking process.
         By default, no caching is done. If a str is given, it is the
         path to the caching directory.
 
-    memory_level : integer, optional. Default: 0
+    memory_level : int, optional. Default: 0
         Rough estimator of the amount of memory used by caching. Higher value
         means more memory for caching.
 
@@ -293,16 +295,16 @@ class BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
             the affine is considered the same for all.
 
         y : array or list of length n_samples
-            The dependent variable (age, sex, QI, etc.).
+            The dependent variable (age, sex, IQ, etc.).
             Target variable to predict. Must have exactly as many elements as
             3D images in niimg.
 
         Attributes
         ----------
         `masker_` : instance of NiftiMasker
-            The nifti masker used to mask the data.
+            The NiftiMasker used to mask the data.
 
-        `mask_img_`: NiImage
+        `mask_img_`: Nifti1Image
             Mask computed by the masker object.
 
         `classes_`: numpy.ndarray
@@ -325,19 +327,19 @@ class BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
             each pair is composed of two lists of indices,
             one for the train samples and one for the test samples.
 
-        `std_coef_`: numpy.ndarray, shape=(n_classes, n_features)
+        `std_coef_` : numpy.ndarray, shape=(n_classes, n_features)
             Contains the standard deviation of the models weight vector across
             fold for each class.
 
-        `coef_img_`: dict of NiImage
+        `coef_img_` : dict of Nifti1Image
             Dictionary containing `coef_` with class names as keys,
-            and `coef_` transformed in NiImages as values. In the case
-            of a regression, it contains a single NiImage at the key 'beta'.
+            and `coef_` transformed in Nifti1Images as values. In the case
+            of a regression, it contains a single Nifti1Image at the key 'beta'.
 
-        `std_coef_img_`: dict of NiImage
+        `std_coef_img_` : dict of Nifti1Image
             Dictionary containing `std_coef_` with class names as keys,
-            and `coef_` transformed in NiImages as values. In the case
-            of a regression, it contains a single NiImage at the key 'beta'.
+            and `coef_` transformed in Nifti1Image as values. In the case
+            of a regression, it contains a single Nifti1Image at the key 'beta'.
 
         `cv_y_true_` : numpy.ndarray, shape=(n_samples * n_folds, n_classes)
             Ground truth labels for left out samples in inner cross-validation.
@@ -345,7 +347,7 @@ class BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
         `cv_y_pred_` : numpy.ndarray, shape=(n_samples * n_folds, n_classes)
             Predicted labels for left out samples in inner cross-validation.
 
-        `cv_params_`: dict of lists
+        `cv_params_` : dict of lists
             Best point in the parameter grid for each tested fold
             in the inner cross validation loop.
 
@@ -560,14 +562,14 @@ class Decoder(BaseDecoder):
     -----------
     estimator : str, optional
         The estimator to choose among: 'svc', 'svc_l1', 'logistic',
-        'logistic_l1', 'ridge_classifier', 'ridge_regression',
-        and 'svr'. Defaults to 'svc'.
+        'logistic_l1', and 'ridge_classifier'. Default 'svc'.
 
-    mask: filename, NiImage, NiftiMasker, or MultiNiftiMasker, optional
+    mask : filename, Nifti1Image, NiftiMasker, or MultiNiftiMasker, optional
         Mask to be used on data. If an instance of masker is passed,
-        then its mask will be used. If no mask is given,
-        it will be computed automatically by a masker with default
-        parameters.
+        then its mask and parameters will be used. If no mask is given, mask
+        will be computed automatically from provided images by an inbuilt
+        masker with default parameters. Refer to NiftiMasker or
+        MultiNiftiMasker to check for default parameters.
 
     cv : cross-validation generator, optional (default 10)
         A cross-validation generator. If None, a 3-fold cross
@@ -583,7 +585,7 @@ class Decoder(BaseDecoder):
         useful to avoid exploring parameter combinations that make no sense
         or have no effect. See scikit-learn documentation for more information.
 
-    screening_percentile: int, float, optional, in the closed interval [0, 100]
+    screening_percentile : int, float, optional, in the closed interval [0, 100]
         Perform an univariate feature selection based on the Anova F-value for
         the input data. A float according to a percentile of the highest
         scores. Default: 20.
@@ -594,30 +596,30 @@ class Decoder(BaseDecoder):
         test data (X_test) and the test target (y_test) if y is
         not None.
 
-        For regression: 'r2', 'mean_absolute_error', or 'mean_squared_error'.
         For classification: 'accuracy', 'f1', 'precision', or 'recall'.
+            Default 'roc_auc'.
 
-    smoothing_fwhm: float, optional. Default: None
+    smoothing_fwhm : float, optional. Default: None
         If smoothing_fwhm is not None, it gives the size in millimeters of the
         spatial smoothing to apply to the signal.
 
-    standardize : boolean, optional. Default: None
+    standardize : bool, optional. Default: None
         If standardize is True, the time-series are centered and normed:
         their variance is put to 1 in the time dimension.
 
-    target_affine: 3x3 or 4x4 matrix, optional. Default: None
+    target_affine : 3x3 or 4x4 matrix, optional. Default: None
         This parameter is passed to image.resample_img. Please see the
         related documentation for details.
 
-    target_shape: 3-tuple of integers, optional. Default: None
+    target_shape : 3-tuple of int, optional. Default: None
         This parameter is passed to image.resample_img. Please see the
         related documentation for details.
 
-    low_pass: None or float, optional
+    low_pass : None or float, optional
         This parameter is passed to signal.clean. Please see the related
         documentation for details
 
-    high_pass: None or float, optional
+    high_pass : None or float, optional
         This parameter is passed to signal.clean. Please see the related
         documentation for details
 
@@ -625,19 +627,19 @@ class Decoder(BaseDecoder):
         This parameter is passed to signal.clean. Please see the related
         documentation for details.
 
-    mask_strategy: {'background' or 'epi'}, optional. Default: 'background'
+    mask_strategy : {'background' or 'epi'}, optional. Default: 'background'
         The strategy used to compute the mask: use 'background' if your
         images present a clear homogeneous background, and 'epi' if they
         are raw EPI images. Depending on this value, the mask will be
         computed from masking.compute_background_mask or
-        masking.compute_epi_mask. Default is 'background'.
+        masking.compute_epi_mask.
 
-    memory: instance of joblib.Memory or str
+    memory : instance of joblib.Memory or str
         Used to cache the masking process.
         By default, no caching is done. If a str is given, it is the
         path to the caching directory.
 
-    memory_level: integer, optional. Default: 0
+    memory_level : int, optional. Default: 0
         Rough estimator of the amount of memory used by caching. Higher value
         means more memory for caching.
 
@@ -687,17 +689,17 @@ class DecoderRegressor(BaseDecoder):
     Parameters
     -----------
     estimator : str, optional
-        The estimator to choose among: 'svc', 'svc_l1', 'logistic',
-        'logistic_l1', 'ridge_classifier', 'ridge_regression',
-        and 'svr'. Defaults to 'svc'.
+        The estimator to choose among: 'ridge_regression', and 'svr'.
+        Default 'svr'.
 
-    mask: filename, NiImage, NiftiMasker, or MultiNiftiMasker, optional
+    mask : filename, Nifti1Image, NiftiMasker, or MultiNiftiMasker, optional
         Mask to be used on data. If an instance of masker is passed,
-        then its mask will be used. If no mask is given,
-        it will be computed automatically by a masker with default
-        parameters.
+        then its mask and parameters will be used. If no mask is given, mask
+        will be computed automatically from provided images by an inbuilt
+        masker with default parameters. Refer to NiftiMasker or
+        MultiNiftiMasker to check for default parameters.
 
-    cv : cross-validation generator, optional (default 10)
+    cv : cross-validation generator or int, optional (default 10)
         A cross-validation generator. If None, a 3-fold cross
         validation is used for regression.
 
@@ -711,7 +713,7 @@ class DecoderRegressor(BaseDecoder):
         useful to avoid exploring parameter combinations that make no sense
         or have no effect. See scikit-learn documentation for more information.
 
-    screening_percentile: int, float, optional, in the closed interval [0, 100]
+    screening_percentile : int, float, optional, in the closed interval [0, 100]
         Perform an univariate feature selection based on the Anova F-value for
         the input data. A float according to a percentile of the highest
         scores. Default: 20.
@@ -723,29 +725,29 @@ class DecoderRegressor(BaseDecoder):
         not None.
 
         For regression: 'r2', 'mean_absolute_error', or 'mean_squared_error'.
-        For classification: 'accuracy', 'f1', 'precision', or 'recall'.
+            Default 'r2'.
 
-    smoothing_fwhm: float, optional. Default: None
+    smoothing_fwhm : float, optional. Default: None
         If smoothing_fwhm is not None, it gives the size in millimeters of the
         spatial smoothing to apply to the signal.
 
-    standardize : boolean, optional. Default: None
+    standardize : bool, optional. Default: None
         If standardize is True, the time-series are centered and normed:
         their variance is put to 1 in the time dimension.
 
-    target_affine: 3x3 or 4x4 matrix, optional. Default: None
+    target_affine : 3x3 or 4x4 matrix, optional. Default: None
         This parameter is passed to image.resample_img. Please see the
         related documentation for details.
 
-    target_shape: 3-tuple of integers, optional. Default: None
+    target_shape : 3-tuple of int, optional. Default: None
         This parameter is passed to image.resample_img. Please see the
         related documentation for details.
 
-    low_pass: None or float, optional
+    low_pass : None or float, optional
         This parameter is passed to signal.clean. Please see the related
         documentation for details
 
-    high_pass: None or float, optional
+    high_pass : None or float, optional
         This parameter is passed to signal.clean. Please see the related
         documentation for details
 
@@ -753,19 +755,19 @@ class DecoderRegressor(BaseDecoder):
         This parameter is passed to signal.clean. Please see the related
         documentation for details.
 
-    mask_strategy: {'background' or 'epi'}, optional. Default: 'background'
+    mask_strategy : {'background' or 'epi'}, optional. Default: 'background'
         The strategy used to compute the mask: use 'background' if your
         images present a clear homogeneous background, and 'epi' if they
         are raw EPI images. Depending on this value, the mask will be
         computed from masking.compute_background_mask or
-        masking.compute_epi_mask. Default is 'background'.
+        masking.compute_epi_mask.
 
-    memory: instance of joblib.Memory or str
+    memory : instance of joblib.Memory or str
         Used to cache the masking process.
         By default, no caching is done. If a str is given, it is the
         path to the caching directory.
 
-    memory_level: integer, optional. Default: 0
+    memory_level : int, optional. Default: 0
         Rough estimator of the amount of memory used by caching. Higher value
         means more memory for caching.
 
@@ -776,7 +778,7 @@ class DecoderRegressor(BaseDecoder):
     verbose : int, optional. Default: False.
         Verbosity level.
     """
-    def __init__(self, estimator='svc', mask=None, cv=10, param_grid=None,
+    def __init__(self, estimator='svr', mask=None, cv=10, param_grid=None,
                  screening_percentile=20, scoring='r2',
                  smoothing_fwhm=None, standardize=True, target_affine=None,
                  target_shape=None, mask_strategy='background',
