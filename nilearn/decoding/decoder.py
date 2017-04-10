@@ -25,11 +25,6 @@ from sklearn.utils.extmath import safe_sparse_dot
 from sklearn import clone
 
 try:
-    from sklearn.utils import atleast2d_or_csr
-except ImportError: # sklearn 0.15
-    from sklearn.utils import check_array as atleast2d_or_csr
-
-try:
     from sklearn.grid_search import ParameterGrid
 except ImportError: # sklearn 0.18
     from sklearn.model_selection import ParameterGrid
@@ -40,6 +35,7 @@ from .._utils.fixes import check_scoring
 from .._utils.fixes import check_X_y
 from .._utils.fixes import check_is_fitted
 from .._utils.compat import _basestring
+from .._utils.cache_mixin import _check_memory
 from .._utils.fixes import check_cv
 from .._utils.param_validation import check_feature_screening
 from .._utils import CacheMixin
@@ -68,6 +64,9 @@ def _check_param_grid(estimator, X, y, param_grid):
             loss = 'log'
         elif isinstance(estimator, (LinearSVC, _BaseRidge, SVR)):
             loss = 'squared_hinge'
+        # else:
+        #     raise ValueError
+        #     unknown estimator
 
         if LooseVersion(sklearn.__version__) <= LooseVersion('0.17'):
             if loss == 'squared_hinge':
@@ -88,11 +87,7 @@ def _parallel_fit(estimator, X, y, train, test, param_grid, is_classif, scorer,
                   mask_img, class_index, screening_percentile=None):
     """Find the best estimator for a fold within a job."""
 
-    # unprocessed test labels indices, they are used to measure the overal
-    # perfromance.
-    y_true_indices = test
     n_features = X.shape[1]
-
     selector = check_feature_screening(screening_percentile, mask_img,
                                        is_classif)
 
@@ -117,15 +112,15 @@ def _parallel_fit(estimator, X, y, train, test, param_grid, is_classif, scorer,
             if hasattr(estimator, 'predict_proba'):
                 y_prob = estimator.predict_proba(X_test)
                 y_prob = y_prob[:, 1]
-                inverse_prob = 1 - y_prob
+                neg_prob = 1 - y_prob
             else:
                 decision = estimator.decision_function(X_test)
                 if decision.ndim == 2:
                     y_prob = decision[:, 1]
-                    inverse_prob = np.abs(decision[:, 0])
+                    neg_prob = np.abs(decision[:, 0])
                 else:
                     y_prob = decision
-                    inverse_prob = -decision
+                    neg_prob = -decision
             score = scorer(estimator, X_test, y_test)
             if np.all(estimator.coef_ == 0):
                 score = 0
@@ -139,12 +134,12 @@ def _parallel_fit(estimator, X, y, train, test, param_grid, is_classif, scorer,
             best_intercept = estimator.intercept_
             best_y = {}
             best_y['y_prob'] = y_prob
-            best_y['y_true_indices'] = y_true_indices
+            best_y['y_true_indices'] = test
             best_param = param
             if is_classif:
-                best_y['inverse'] = inverse_prob
+                best_y['inverse'] = neg_prob
 
-    if selector is not None:
+    if (selector is not None) and do_screening:
         best_coef = selector.inverse_transform(best_coef)
 
     if LooseVersion(sklearn.__version__) <= LooseVersion('0.17'):
@@ -174,18 +169,19 @@ class BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
         'logistic_l1', 'ridge_classifier', 'ridge_regression',
         and 'svr'. Defaults to 'svc'.
 
-    mask: filename, NiImage, NiftiMasker, or MultiNiftiMasker, optional
+    mask : filename, Nifti1Image, NiftiMasker, or MultiNiftiMasker, optional
         Mask to be used on data. If an instance of masker is passed,
-        then its mask will be used. If no mask is given,
-        it will be computed automatically by a masker with default
-        parameters.
+        then its mask and parameters will be used. If no mask is given, mask
+        will be computed automatically from provided images by an inbuilt
+        masker with default parameters. Refer to NiftiMasker or
+        MultiNiftiMasker to check for default parameters.
 
-    cv : cross-validation generator, optional (default 10)
+    cv : cross-validation generator or int, optional (default 10)
         A cross-validation generator. If None, a 3-fold cross
         validation is used for regression or 3-fold stratified
         cross-validation for classification.
 
-    param_grid : dict of string to sequence, or sequence of such
+    param_grid : dict of str to sequence, or sequence of such
         The parameter grid to explore, as a dictionary mapping estimator
         parameters to sequences of allowed values.
 
@@ -195,12 +191,12 @@ class BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
         useful to avoid exploring parameter combinations that make no sense
         or have no effect. See scikit-learn documentation for more information.
 
-    screening_percentile: int, float, optional, in the closed interval [0, 100]
+    screening_percentile : int, float, optional, in the closed interval [0, 100]
         Perform an univariate feature selection based on the Anova F-value for
         the input data. A float according to a percentile of the highest
         scores. Default: 20.
 
-    scoring : string, callable or None, optional. Default: None
+    scoring : str, callable or None, optional. Default: None
         The scoring strategy to use. See the scikit-learn documentation
         If callable, takes as arguments the fitted estimator, the
         test data (X_test) and the test target (y_test) if y is
@@ -209,7 +205,7 @@ class BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
         For regression: 'r2', 'mean_absolute_error', or 'mean_squared_error'.
         For classification: 'accuracy', 'f1', 'precision', or 'recall'.
 
-    smoothing_fwhm: float, optional. Default: None
+    smoothing_fwhm : float, optional. Default: None
         If smoothing_fwhm is not None, it gives the size in millimeters of the
         spatial smoothing to apply to the signal.
 
@@ -217,19 +213,19 @@ class BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
         If standardize is True, the time-series are centered and normed:
         their variance is put to 1 in the time dimension.
 
-    target_affine: 3x3 or 4x4 matrix, optional. Default: None
+    target_affine : 3x3 or 4x4 matrix, optional. Default: None
         This parameter is passed to image.resample_img. Please see the
         related documentation for details.
 
-    target_shape: 3-tuple of integers, optional. Default: None
+    target_shape : 3-tuple of integers, optional. Default: None
         This parameter is passed to image.resample_img. Please see the
         related documentation for details.
 
-    low_pass: None or float, optional
+    low_pass : None or float, optional
         This parameter is passed to signal.clean. Please see the related
         documentation for details
 
-    high_pass: None or float, optional
+    high_pass : None or float, optional
         This parameter is passed to signal.clean. Please see the related
         documentation for details
 
@@ -237,19 +233,19 @@ class BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
         This parameter is passed to signal.clean. Please see the related
         documentation for details.
 
-    mask_strategy: {'background' or 'epi'}, optional. Default: 'background'
+    mask_strategy : {'background' or 'epi'}, optional. Default: 'background'
         The strategy used to compute the mask: use 'background' if your
         images present a clear homogeneous background, and 'epi' if they
         are raw EPI images. Depending on this value, the mask will be
         computed from masking.compute_background_mask or
         masking.compute_epi_mask. Default is 'background'.
 
-    memory: instance of joblib.Memory or string
+    memory : instance of joblib.Memory or str
         Used to cache the masking process.
-        By default, no caching is done. If a string is given, it is the
+        By default, no caching is done. If a str is given, it is the
         path to the caching directory.
 
-    memory_level: integer, optional. Default: 0
+    memory_level : integer, optional. Default: 0
         Rough estimator of the amount of memory used by caching. Higher value
         means more memory for caching.
 
@@ -359,20 +355,15 @@ class BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
         `cv_scores_` : dict, (classes, n_folds)
             Scores (misclassification) for each parameter, and on each fold
         """
-        # Setup memory, parallel and masker
-        if isinstance(self.memory, _basestring) or (self.memory is None):
-            self.memory_ = Memory(cachedir=self.memory, verbose=self.verbose)
-        else:
-            self.memory_ = self.memory
-
+        # Setup memory
+        self.memory_ = _check_memory(self.memory, self.verbose)
         # nifti masking
         self.masker_ = check_embedded_nifti_masker(self, multi_subject=False)
         X = self.masker_.fit_transform(X)
         self.mask_img_ = self.masker_.mask_img_
 
-        X, y = check_X_y(X, y, ['csr', 'csc', 'coo'], dtype=np.float,
-                         multi_output=True, y_numeric=True)
-
+        X, y = check_X_y(X, y, dtype=np.float, multi_output=True,
+                         y_numeric=True)
         # Setup model
         if not isinstance(self.estimator, _basestring):
             warnings.warn('Use a custom estimator at your own risk.')
@@ -380,6 +371,12 @@ class BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
         elif self.estimator in list(SUPPORTED_ESTIMATORS.keys()):
             estimator = SUPPORTED_ESTIMATORS.get(self.estimator,
                                                  self.estimator)
+        # else:
+        # XXX
+        #     raise ValueError
+        #     print the list of known estimator is
+        #     list(SUPPORTED_ESTIMATORS.keys())
+
 
         scorer = check_scoring(estimator, self.scoring)
 
@@ -413,6 +410,7 @@ class BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
         cv_indices = {}
         cv_scores = {}
         self.cv_params_ = {}
+        classes = self.classes_
 
         parallel = Parallel(n_jobs=self.n_jobs, verbose=2 * self.verbose)
 
@@ -424,8 +422,6 @@ class BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
                     class_index, self.screening_percentile_)
                 for class_index, (train, test) in itertools.product(
                     range(n_problems), self.cv_))):
-
-            classes = self.classes_
 
             # Models to aggregate
             coefs.setdefault(classes[c], []).append(coef)
@@ -508,7 +504,6 @@ class BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
             Predicted class label per sample.
         """
         X = self.masker_.transform(X)
-        X = atleast2d_or_csr(X)
 
         n_features = self.coef_.shape[1]
         if X.shape[1] != n_features:
@@ -578,7 +573,7 @@ class Decoder(BaseDecoder):
         A cross-validation generator. If None, a 3-fold cross
         validation is used for classification.
 
-    param_grid : dict of string to sequence, or sequence of such
+    param_grid : dict of str to sequence, or sequence of such
         The parameter grid to explore, as a dictionary mapping estimator
         parameters to sequences of allowed values.
 
@@ -593,7 +588,7 @@ class Decoder(BaseDecoder):
         the input data. A float according to a percentile of the highest
         scores. Default: 20.
 
-    scoring : string, callable or None, optional. Default: None
+    scoring : str, callable or None, optional. Default: None
         The scoring strategy to use. See the scikit-learn documentation
         If callable, takes as arguments the fitted estimator, the
         test data (X_test) and the test target (y_test) if y is
@@ -637,9 +632,9 @@ class Decoder(BaseDecoder):
         computed from masking.compute_background_mask or
         masking.compute_epi_mask. Default is 'background'.
 
-    memory: instance of joblib.Memory or string
+    memory: instance of joblib.Memory or str
         Used to cache the masking process.
-        By default, no caching is done. If a string is given, it is the
+        By default, no caching is done. If a str is given, it is the
         path to the caching directory.
 
     memory_level: integer, optional. Default: 0
@@ -706,7 +701,7 @@ class DecoderRegressor(BaseDecoder):
         A cross-validation generator. If None, a 3-fold cross
         validation is used for regression.
 
-    param_grid : dict of string to sequence, or sequence of such
+    param_grid : dict of str to sequence, or sequence of such
         The parameter grid to explore, as a dictionary mapping estimator
         parameters to sequences of allowed values.
 
@@ -721,7 +716,7 @@ class DecoderRegressor(BaseDecoder):
         the input data. A float according to a percentile of the highest
         scores. Default: 20.
 
-    scoring : string, callable or None, optional. Default: None
+    scoring : str, callable or None, optional. Default: None
         The scoring strategy to use. See the scikit-learn documentation
         If callable, takes as arguments the fitted estimator, the
         test data (X_test) and the test target (y_test) if y is
@@ -765,9 +760,9 @@ class DecoderRegressor(BaseDecoder):
         computed from masking.compute_background_mask or
         masking.compute_epi_mask. Default is 'background'.
 
-    memory: instance of joblib.Memory or string
+    memory: instance of joblib.Memory or str
         Used to cache the masking process.
-        By default, no caching is done. If a string is given, it is the
+        By default, no caching is done. If a str is given, it is the
         path to the caching directory.
 
     memory_level: integer, optional. Default: 0

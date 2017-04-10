@@ -26,7 +26,7 @@ from nilearn.decoding.decoder import (Decoder, DecoderRegressor,
                                       _check_param_grid)
 
 
-# Crate a test dataset
+# Crete a test dataset
 rand = np.random.RandomState(0)
 X = rand.rand(100, 10)
 # Create different targets

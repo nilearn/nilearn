@@ -20,7 +20,13 @@ data. We use only 100 subjects from the OASIS dataset to limit the memory
 usage.
 
 Note that for an actual predictive modeling study of aging, the study
-should be ran on the full set of subjects. Also, parameters such as the
+should be ran on the full set of subjects. Also, all parameters should be set
+by cross-validation. This includes the smoothing applied to the data and the
+number of features selected by the Anova step. Indeed, even these
+data-preparation parameter impact significantly the prediction score.
+
+
+Also, parameters such as the
 smoothing should be applied to the data and the number of features selected
 by the Anova step should be set by nested cross-validation, as they impact
 significantly the prediction score.
@@ -46,15 +52,12 @@ from nilearn import datasets
 n_subjects = 200  # increase this number if you have more RAM on your box
 dataset_files = datasets.fetch_oasis_vbm(n_subjects=n_subjects)
 age = dataset_files.ext_vars['age'].astype(float)
-age = np.array(age)
-gm_imgs = np.array(dataset_files.gray_matter_maps)
+gm_imgs = dataset_files.gray_matter_maps
 
 # Split data into training set and test set
-from sklearn.utils import check_random_state
 from sklearn.cross_validation import train_test_split
-rng = check_random_state(42)
 gm_imgs_train, gm_imgs_test, age_train, age_test = train_test_split(
-    gm_imgs, age, train_size=.6, random_state=rng)
+    gm_imgs, age, train_size=.6, random_state=0)
 
 # Preprocess the mask: remove features with too low between-subject variance
 from sklearn.feature_selection import VarianceThreshold
@@ -64,11 +67,12 @@ nifti_masker = NiftiMasker(standardize=False, smoothing_fwhm=2,
                            memory='nilearn_cache')
 
 gm_maps_masked = nifti_masker.fit_transform(gm_imgs_train)
+# Fit the masker again to remove features with too low between-subject variance
 gm_maps_thresholded = variance_threshold.fit_transform(gm_maps_masked)
 gm_maps_masked = variance_threshold.inverse_transform(gm_maps_thresholded)
-# Fit the masker again to remove features with too low between-subject variance
-gm_imgs_thresholded = nifti_masker.inverse_transform(gm_maps_masked)
-nifti_masker.fit(gm_imgs_thresholded)
+
+mask = nifti_masker.inverse_transform(variance_threshold.get_support())
+###############################################################################
 
 # To save time (because these are anat images with many voxels), we include
 # only the 5-percent voxels most correlated with the age variable to fit.
@@ -76,7 +80,7 @@ nifti_masker.fit(gm_imgs_thresholded)
 # are cached. Also, you may pass and n_jobs=<some_high_value> to the
 # DecoderRegressor class, to take advantage of a multi-core system.
 from nilearn.decoding import DecoderRegressor
-decoder = DecoderRegressor(estimator='svr', mask=nifti_masker,
+decoder = DecoderRegressor(estimator='svr', mask=mask,
                            screening_percentile=5,
                            memory_level=2,
                            memory='nilearn_cache') # cache options
@@ -86,11 +90,12 @@ decoder.fit(gm_imgs_train, age_train)
 # Sort test data for better visualization (trend, etc.)
 perm = np.argsort(age_test)[::-1]
 age_test = age_test[perm]
-gm_imgs_test = gm_imgs_test[perm]
+gm_imgs_test = np.array(gm_imgs_test)[perm]
 age_pred = decoder.predict(gm_imgs_test)
+
 # Visualization
 weight_img = decoder.coef_img_['beta']
-prediction_score = np.mean(decoder.cv_scores_)
+prediction_score = np.mean(decoder.cv_scores_['beta'])
 
 print("=== DECODER ===")
 print("r2 for the cross-validation: %f" % prediction_score)
@@ -103,6 +108,7 @@ display = plot_stat_map(weight_img, bg_img=bg_filename,
                         display_mode='z', cut_coords=[-6],
                         title="Decoder r2: %g" % prediction_score)
 # One can also use other scores to measure the performance of the decoder
+# XXX solve this
 from sklearn.metrics.scorer import mean_absolute_error
 cv_y_pred = decoder.cv_y_pred_
 cv_y_true = decoder.cv_y_true_
@@ -116,7 +122,7 @@ print("")
 # Visualize the quality of predictions
 import matplotlib.pyplot as plt
 plt.figure()
-plt.suptitle("Decodert: Mean Absolute Error %.2f years" % prediction_score)
+plt.suptitle("Decoder: Mean Absolute Error %.2f years" % prediction_score)
 linewidth = 3
 ax1 = plt.subplot('211')
 ax1.plot(age_test, label="True age", linewidth=linewidth)
@@ -129,12 +135,15 @@ ax2.plot(age_test - age_pred, label="True age - predicted age",
 ax2.set_xlabel("subject")
 plt.legend(loc="best")
 
-### Inference with massively univariate model #################################
+
+###############################################################################
+# Inference with massively univariate model
 print("Massively univariate model")
 
 # Statistical inference
 from nilearn.mass_univariate import permuted_ols
-gm_imgs_train_masked = nifti_masker.transform(gm_imgs_train)
+nifti_masker = NiftiMasker(mask_img=mask)
+gm_imgs_train_masked = nifti_masker.fit_transform(gm_imgs_train)
 neg_log_pvals, t_scores_original_data, _ = permuted_ols(
     age_train, gm_imgs_train_masked,  # + intercept as a covariate by default
     n_perm=2000,  # 1,000 in the interest of time; 10000 would be better

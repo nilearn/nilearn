@@ -18,9 +18,6 @@ data_files = fetch_haxby()
 func_filenames = data_files.func[0]
 labels_filenames = data_files.session_target[0]
 
-from nilearn.image import mean_img
-background_img = mean_img(func_filenames)
-
 # Load Target labels
 import numpy as np
 labels = np.recfromcsv(labels_filenames, delimiter=" ")
@@ -28,8 +25,6 @@ labels = np.recfromcsv(labels_filenames, delimiter=" ")
 # Restrict to face and house conditions
 target = labels['labels']
 condition_mask = np.logical_or(target == b"face", target == b"house")
-# condition_mask = np.logical_or(
-#     target == b"bottle", np.logical_or(target == b"face", target == b"house"))
 
 # Split data into train and test samples, using the chunks
 condition_mask_train = np.logical_and(condition_mask, labels['chunks'] <= 6)
@@ -48,12 +43,14 @@ y_train = target[condition_mask_train]
 y_test = target[condition_mask_test]
 
 # Fit and predict with the decoder
+# XXX say why accuracy
 from nilearn.decoding import Decoder
-decoder = Decoder(estimator='svc_l2', cv=10, mask_strategy='epi',
+decoder = Decoder(estimator='svc', mask_strategy='epi',
                   smoothing_fwhm=4, scoring='accuracy', n_jobs=1)
 
 decoder.fit(X_train, y_train)
-accuracy = np.mean(decoder.cv_scores_)
+# XXX verify this, the cv_scores already changed
+accuracy = np.mean(decoder.cv_scores_['house'])
 print("Decoder cross-validation accuracy : %g%%" % accuracy)
 
 # Testing on out-of-sample data
@@ -62,6 +59,9 @@ accuracy = (y_pred == y_test).mean() * 100.
 print("Decoder classification accuracy : %g%%" % accuracy)
 
 weight_img = decoder.coef_img_[b"face"]
+
+from nilearn.image import mean_img
+background_img = mean_img(func_filenames)
 
 from nilearn.plotting import plot_stat_map, show
 plot_stat_map(weight_img, background_img, cut_coords=[-52, -5],

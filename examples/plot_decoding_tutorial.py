@@ -39,6 +39,7 @@ fmri_filename = haxby_dataset.func[0]
 print('First subject functional nifti images (4D) are at: %s' %
       fmri_filename)  # 4D data
 
+# XXX put the mask
 
 ###########################################################################
 # Load the behavioral labels
@@ -154,6 +155,8 @@ print(decoder.cv_scores_)
 
 # The decoder also gives the best performing parameters per fold.
 print(decoder.cv_params_)
+
+# XXX put the same things as in master
 
 
 # from sklearn.cross_validation import KFold
