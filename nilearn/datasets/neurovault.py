@@ -2470,15 +2470,20 @@ def fetch_neurovault(
             'Set max_images to another value or None '
             'if you want more images.'.format(_DEFAULT_MAX_IMAGES),
             _INFO, verbose)
+    # Users may get confused if they write their image_filter function
+    # and the default filters contained in image_terms still apply, so we
+    # issue a warning.
     if image_filter != _empty_filter and image_terms == basic_image_terms():
-        warnings.warn('You specified a filter for images but left '
-                      'the default image terms. If you want to disable '
-                      'this default filtering, use image_terms={}')
+        warnings.warn(
+            "You specified a value for `image_filter` but the "
+            "default filters in `image_terms` still apply. "
+            "If you want to disable them, pass `image_terms={}`")
     if (collection_filter != _empty_filter
-            and image_terms == basic_collection_terms()):
-        warnings.warn('You specified a filter for images but left '
-                      'the default image terms. If you want to disable '
-                      'this default filtering, use image_terms={}')
+            and collection_terms == basic_collection_terms()):
+        warnings.warn(
+            "You specified a value for `collection_filter` but the "
+            "default filters in `collection_terms` still apply. "
+            "If you want to disable them, pass `collection_terms={}`")
 
     return _fetch_neurovault_implementation(
         max_images=max_images, collection_terms=collection_terms,

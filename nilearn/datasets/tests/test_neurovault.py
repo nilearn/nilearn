@@ -36,89 +36,6 @@ if samefile is None:
     samefile = _same_stat
 
 
-_EXAMPLE_IM_META = {
-    "analysis_level": None,
-    "file": "http://neurovault.org/media/images/35/Fig3B_zstat1.nii.gz",
-    "cognitive_contrast_cogatlas_id": None, "statistic_parameters": None,
-    "is_valid": True,
-    "thumbnail": "http://neurovault.org/media/images/35/glass_brain_110_1.jpg",
-    "file_size": 742636, "map_type": "Z map",
-    "collection": "http://neurovault.org/collections/35/",
-    "brain_coverage": 82.5116091788011, "collection_id": 35,
-    "contrast_definition": "high value go minus no go at probe",
-    "is_thresholded": False, "cognitive_contrast_cogatlas": None,
-    "name": "Fig3B_zstat1.nii.gz",
-    "cognitive_paradigm_cogatlas_id": "trm_553e77e53497d",
-    "description": "The difference in the parametric effect of...",
-    "figure": "3B", "cognitive_paradigm_cogatlas": "cue approach task",
-    "add_date": "2016-01-21T17:23:16.733390Z",
-    "modify_date": "2016-01-27T21:47:42.236081Z",
-    "modality": "fMRI-BOLD", "contrast_definition_cogatlas": "",
-    "number_of_subjects": 21, "id": 110, "image_type": "statistic_map",
-    "perc_bad_voxels": 78.4232503054965,
-    "url": "http://neurovault.org/images/110/",
-    "perc_voxels_outside": 3.20038201254891, "not_mni": False,
-    "smoothness_fwhm": None,
-    "reduced_representation":
-    "http://neurovault.org/media/images/35/transform_4mm_110.npy"}
-
-_EXAMPLE_COL_META = {
-    "owner": 52, "number_of_experimental_units": None,
-    "full_dataset_url": None,
-    "add_date": "2014-03-25T20:52:35.182187Z", "nonlinear_transform_type": "",
-    "used_slice_timing_correction": None, "software_package": "",
-    "group_model_type": "", "coordinate_space": None,
-    "intersubject_registration_software": "", "matrix_size": None,
-    "functional_coregistration_method": "",
-    "journal_name": "Nature Neuroscience",
-    "used_motion_susceptibiity_correction": None,
-    "motion_correction_interpolation": "", "subject_age_mean": None,
-    "used_reaction_time_regressor": None, "object_image_type": "",
-    "software_version": "", "used_intersubject_registration": None,
-    "subject_age_min": None, "optimization": None, "number_of_images": 4,
-    "scanner_model": "Skyra", "length_of_runs": None, "subject_age_max": None,
-    "echo_time": None,
-    "slice_thickness": None, "motion_correction_software": "",
-    "DOI": "10.1038/nn.3673", "number_of_imaging_runs": None,
-    "used_temporal_derivatives": None, "used_smoothing": None,
-    "group_repeated_measures_method": "", "resampled_voxel_size": None,
-    "length_of_trials": None, "authors": "Tom Schonberg, Akram Bakkour,...",
-    "id": 35,
-    "order_of_preprocessing_operations": "", "skip_distance": None,
-    "smoothing_type": "", "modify_date": "2016-01-27T21:47:42.229891Z",
-    "group_model_multilevel": "",
-    "functional_coregistered_to_structural": None, "flip_angle": None,
-    "interpolation_method": "", "group_estimation_type": "",
-    "group_inference_type": None, "length_of_blocks": None,
-    "used_b0_unwarping": None, "intersubject_transformation_type": None,
-    "description": "", "scanner_make": "Siemens",
-    "intrasubject_estimation_type": "", "order_of_acquisition": None,
-    "proportion_male_subjects": None, "group_repeated_measures": None,
-    "url": "http://neurovault.org/collections/35/", "handedness": "right",
-    "used_motion_regressors": None, "used_motion_correction": None,
-    "motion_correction_reference": "", "orthogonalization_description": "",
-    "hemodynamic_response_function": "", "autocorrelation_model": "",
-    "used_orthogonalization": None, "acquisition_orientation": "",
-    "intrasubject_model_type": "", "target_resolution": None,
-    "intrasubject_modeling_software": "", "used_dispersion_derivatives": None,
-    "field_strength": 3.0, "transform_similarity_metric": "",
-    "field_of_view": None, "group_comparison": None,
-    "number_of_rejected_subjects": None,
-    "name": "Changing value through cued approach: ...",
-    "quality_control": "", "type_of_design": "eventrelated",
-    "used_high_pass_filter": None, "pulse_sequence": "Multiband",
-    "owner_name": "tomtom", "motion_correction_metric": "",
-    "parallel_imaging": "", "optimization_method": "",
-    "target_template_image": "", "repetition_time": None,
-    "high_pass_filter_method": "", "contributors": "",
-    "inclusion_exclusion_criteria": "", "b0_unwarping_software": "",
-    "paper_url": "http://www.nature.com/doifinder/10.1038/nn.3673",
-    "group_modeling_software": "",
-    "doi_add_date": "2014-03-25T20:52:35.182187Z",
-    "slice_timing_correction_software": "", "group_description": "",
-    "smoothing_fwhm": None}
-
-
 class _TestTemporaryDirectory(object):
 
     def __enter__(self):
@@ -644,6 +561,12 @@ def test_fetch_neurovault():
             assert_equal(len(data.images), 1)
             meta = data.images_meta[0]
             assert_false(meta['not_mni'])
+            assert_true(meta['is_valid'])
+            assert_false(meta['not_mni'])
+            assert_false(meta['is_thresholded'])
+            assert_false(meta['map_type'] in [
+                'ROI/mask', 'anatomical', 'parcellation'])
+            assert_false(meta['image_type'] == 'atlas')
 
         # using a data directory we can't write into should raise a
         # warning unless mode is 'offline'
@@ -657,21 +580,44 @@ def test_fetch_neurovault():
 
 
 def test_fetch_neurovault_ids():
-    # test using explicit id list instead of filters,
-    # and downloading an image which has no collection dir
-    # or metadata yet.
+    # test using explicit id list instead of filters, and downloading
+    # an image which has no collection dir or metadata yet.
     with _TestTemporaryDirectory() as data_dir:
         assert_raises(ValueError, neurovault.fetch_neurovault_ids, mode='bad')
-        data = neurovault.fetch_neurovault_ids(image_ids=[111],
-                                               data_dir=data_dir)
-        if data.images:
-            assert_equal(data['images_meta'][0]['id'], 111)
+        data = neurovault.fetch_neurovault_ids(
+            image_ids=[111], collection_ids=[307], data_dir=data_dir)
+        if len(data.images) == 2:
+            assert_equal([img['id'] for img in data['images_meta']],
+                         [1750, 111])
             assert_equal(os.path.dirname(data['images'][0]),
                          data['collections_meta'][0]['absolute_path'])
             # check image can be loaded again from disk
             data = neurovault.fetch_neurovault_ids(
                 image_ids=[111], data_dir=data_dir, mode='offline')
             assert_equal(len(data.images), 1)
+            # check that download_new mode forces overwrite
+            modified_meta = data['images_meta'][0]
+            assert_equal(modified_meta['figure'], '3A')
+            modified_meta['figure'] = '3B'
+            # mess it up on disk
+            meta_path = os.path.join(
+                os.path.dirname(modified_meta['absolute_path']),
+                'image_111_metadata.json')
+            with open(meta_path, 'wb') as meta_f:
+                meta_f.write(json.dumps(modified_meta).encode('UTF-8'))
+            # fresh download
+            data = neurovault.fetch_neurovault_ids(
+                image_ids=[111], data_dir=data_dir, mode='download_new')
+            data = neurovault.fetch_neurovault_ids(
+                image_ids=[111], data_dir=data_dir, mode='offline')
+            # should not have changed
+            assert_equal(data['images_meta'][0]['figure'], '3B')
+            data = neurovault.fetch_neurovault_ids(
+                image_ids=[111], data_dir=data_dir, mode='overwrite')
+            data = neurovault.fetch_neurovault_ids(
+                image_ids=[111], data_dir=data_dir, mode='offline')
+            # should be back to the original version
+            assert_equal(data['images_meta'][0]['figure'], '3A')
         # try downloading collections that don't exist
         # (get some HTTPErrors - 404);
         # download stops early and raises warning
