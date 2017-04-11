@@ -184,14 +184,14 @@ class BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
         then its mask and parameters will be used. If no mask is given, mask
         will be computed automatically from provided images by an inbuilt
         masker with default parameters. Refer to NiftiMasker or
-        MultiNiftiMasker to check for default parameters.
+        MultiNiftiMasker to check for default parameters. Default None
 
-    cv : cross-validation generator or int, optional (default 10)
+    cv : cross-validation generator or int, optional. Default 10
         A cross-validation generator. If None, a 3-fold cross
         validation is used for regression or 3-fold stratified
         cross-validation for classification.
 
-    param_grid : dict of str to sequence, or sequence of such
+    param_grid : dict of str to sequence, or sequence of such. Default None
         The parameter grid to explore, as a dictionary mapping estimator
         parameters to sequences of allowed values.
 
@@ -586,13 +586,13 @@ class Decoder(BaseDecoder):
         then its mask and parameters will be used. If no mask is given, mask
         will be computed automatically from provided images by an inbuilt
         masker with default parameters. Refer to NiftiMasker or
-        MultiNiftiMasker to check for default parameters.
+        MultiNiftiMasker to check for default parameters. Default None
 
     cv : cross-validation generator, optional (default 10)
         A cross-validation generator. If None, a 3-fold cross
         validation is used for classification.
 
-    param_grid : dict of str to sequence, or sequence of such
+    param_grid : dict of str to sequence, or sequence of such. Default None
         The parameter grid to explore, as a dictionary mapping estimator
         parameters to sequences of allowed values.
 
@@ -720,13 +720,13 @@ class DecoderRegressor(BaseDecoder):
         then its mask and parameters will be used. If no mask is given, mask
         will be computed automatically from provided images by an inbuilt
         masker with default parameters. Refer to NiftiMasker or
-        MultiNiftiMasker to check for default parameters.
+        MultiNiftiMasker to check for default parameters. Default None
 
     cv : cross-validation generator or int, optional (default 10)
         A cross-validation generator. If None, a 3-fold cross
         validation is used for regression.
 
-    param_grid : dict of str to sequence, or sequence of such
+    param_grid : dict of str to sequence, or sequence of such. Default None
         The parameter grid to explore, as a dictionary mapping estimator
         parameters to sequences of allowed values.
 
