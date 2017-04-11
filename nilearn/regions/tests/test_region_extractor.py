@@ -155,12 +155,6 @@ def test_region_extractor_fit_and_transform():
     assert_not_equal(extract_ratio.regions_img_, '')
     assert_true(extract_ratio.regions_img_.shape[-1] >= 9)
 
-    # No region for too high FWHM
-    extract_ratio = RegionExtractor(maps, threshold=0.2,
-                                    thresholding_strategy='ratio_n_voxels',
-                                    smoothing_fwhm=12)
-    assert_raises_regex(ValueError, "zero-size array", extract_ratio.fit)
-
     # smoke test with threshold=string and strategy=percentile
     extractor = RegionExtractor(maps, threshold=30,
                                 thresholding_strategy='percentile',
@@ -178,6 +172,18 @@ def test_region_extractor_fit_and_transform():
         # smoke test NiftiMapsMasker transform inherited in Region Extractor
         signal = extractor.transform(img)
         assert_equal(expected_signal_shape, signal.shape)
+
+    # smoke test with high resolution image
+    maps, mask_img = generate_maps((40, 40, 40), n_regions=n_regions,
+                                   affine=.2 * np.eye(4))
+
+    extract_ratio = RegionExtractor(maps,
+                                    thresholding_strategy='ratio_n_voxels',
+                                    smoothing_fwhm=.6,
+                                    min_region_size=.4)
+    extract_ratio.fit()
+    assert_not_equal(extract_ratio.regions_img_, '')
+    assert_true(extract_ratio.regions_img_.shape[-1] >= 9)
 
 
 def test_error_messages_connected_label_regions():
