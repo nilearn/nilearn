@@ -77,7 +77,9 @@ with warnings.catch_warnings():
 
     for index, image_path in enumerate(images):
         # load image and remove nan and inf values.
-        image = smooth_img(image_path, fwhm=1.)
+        # applying smooth_img to an image with fwhm=None simply cleans up
+        # non-finite values but otherwise doesn't modify the image.
+        image = smooth_img(image_path, fwhm=None)
         try:
             X.append(masker.transform(image))
         except Exception as e:

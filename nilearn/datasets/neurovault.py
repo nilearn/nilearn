@@ -2326,6 +2326,7 @@ def fetch_neurovault(
     image_terms : dict, optional (default=basic_image_terms())
         Key, value pairs used to filter image metadata. Images for
         which ``image_metadata['key'] == value`` is not ``True`` for
+    if image_filter != _empty_filter and image_terms =
         every key, value pair will be discarded.
         See documentation for ``basic_image_terms`` for a
         description of the default selection criteria.
@@ -2469,6 +2470,15 @@ def fetch_neurovault(
             'Set max_images to another value or None '
             'if you want more images.'.format(_DEFAULT_MAX_IMAGES),
             _INFO, verbose)
+    if image_filter != _empty_filter and image_terms == basic_image_terms():
+        warnings.warn('You specified a filter for images but left '
+                      'the default image terms. If you want to disable '
+                      'this default filtering, use image_terms={}')
+    if (collection_filter != _empty_filter
+            and image_terms == basic_collection_terms()):
+        warnings.warn('You specified a filter for images but left '
+                      'the default image terms. If you want to disable '
+                      'this default filtering, use image_terms={}')
 
     return _fetch_neurovault_implementation(
         max_images=max_images, collection_terms=collection_terms,

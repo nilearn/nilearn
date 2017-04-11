@@ -168,6 +168,12 @@ def test_append_filters_to_query():
 
 
 def ignore_connection_errors(func):
+    """Catch URL errors.
+
+    Used to prevent tests from failing because of a network problem or because
+    Neurovault server is down.
+
+    """
     @wraps(func)
     def test_wrap(*args, **kwargs):
         try:
@@ -627,6 +633,11 @@ def test_fetch_neurovault():
         data = neurovault.fetch_neurovault(
             max_images=1, fetch_neurosynth_words=True,
             mode='overwrite', data_dir=temp_dir)
+        # specifying a filter while leaving the default term
+        # filters in place should raise a warning.
+        assert_warns(UserWarning, neurovault.fetch_neurovault,
+                     image_filter=lambda x: True, max_images=1,
+                     mode='offline')
         # if neurovault was available one image matching
         # default filters should have been downloaded
         if data.images:
