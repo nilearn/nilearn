@@ -31,7 +31,7 @@ meant to be copied to analyze new data: many of the steps are unecessary.
 # It can take a while to download about 310 Mo of data from the Internet.
 from nilearn import datasets
 # By default 2nd subject will be fetched
-haxby_dataset = datasets.fetch_haxy()
+haxby_dataset = datasets.fetch_haxby()
 # 'func' is a list of filenames: one for each subject
 fmri_filename = haxby_dataset.func[0]
 

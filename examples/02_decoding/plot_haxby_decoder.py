@@ -56,7 +56,7 @@ decoder = Decoder(estimator='svc', mask_strategy='epi', smoothing_fwhm=4,
                   scoring='accuracy')
 
 decoder.fit(X_train, y_train)
-accuracy = np.mean(decoder.cv_scores_['house'])
+accuracy = np.mean(decoder.cv_scores_['house']) * 100
 print("Decoder cross-validation accuracy : %g%%" % accuracy)
 
 # Testing on out-of-sample data
