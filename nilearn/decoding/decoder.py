@@ -94,11 +94,11 @@ def _parallel_fit(estimator, X, y, train, test, param_grid, is_classif, scorer,
     performing ones per cross-validation fold. These models are used afterwards
     to build the averaged model.
     """
-
     n_features = X.shape[1]
+    # Checking if the size of the mask image allow us to perform feature
+    # screening
     selector = check_feature_screening(screening_percentile, mask_img,
                                        is_classif)
-
     do_screening = (n_features > 100) and (screening_percentile < 100.)
 
     X_train = X[train].copy()
@@ -110,6 +110,7 @@ def _parallel_fit(estimator, X, y, train, test, param_grid, is_classif, scorer,
         X_train = selector.fit_transform(X[train], y[train])
         X_test = selector.transform(X[test])
 
+    # If there is none parameter grid, then we use a suitable grid (by default)
     param_grid = _check_param_grid(estimator, X_train, y_train, param_grid)
     best_score = None
     for param in ParameterGrid(param_grid):
