@@ -1,7 +1,6 @@
-"""High-level decoding object that exposes standard classification
-
-and regression strategies such as SVM, LogisticRegression and Ridge,
-with optional feature selection, and integrated parameter selection.
+"""High-level decoding object that exposes standard classification and
+regression strategies such as SVM, LogisticRegression and Ridge, with optional
+feature selection, and integrated parameter selection.
 """
 # Authors : Yannick Schwartz
 #           Andres Hoyos-Idrobo
@@ -13,7 +12,7 @@ import itertools
 import warnings
 import numpy as np
 from distutils.version import LooseVersion
-from sklearn.externals.joblib import Parallel, delayed, Memory
+from sklearn.externals.joblib import Parallel, delayed
 from sklearn.linear_model.ridge import Ridge, RidgeClassifier, _BaseRidge
 from sklearn.linear_model import LogisticRegression
 from sklearn.svm import LinearSVC, SVR
@@ -56,6 +55,8 @@ SUPPORTED_ESTIMATORS = dict(
 
 def _check_param_grid(estimator, X, y, param_grid):
     """Check param_grid and return sensible default if none is given.
+    For more information, see the documentation:
+    <http://http://scikit-learn.org/stable/modules/generated/sklearn.svm.l1_min_c>
     """
     if param_grid is None:
         param_grid = {}
@@ -64,10 +65,11 @@ def _check_param_grid(estimator, X, y, param_grid):
             loss = 'log'
         elif isinstance(estimator, (LinearSVC, _BaseRidge, SVR)):
             loss = 'squared_hinge'
-        # else:
-        #     raise ValueError
-        #     unknown estimator
+        else:
+            raise ValueError("%s is an unknown estimator."
+                             "The supported estimators are: " % estimator)
 
+        # loss = l2 war deprecated after version 0.17
         if LooseVersion(sklearn.__version__) <= LooseVersion('0.17'):
             if loss == 'squared_hinge':
                 loss = 'l2'
@@ -76,10 +78,12 @@ def _check_param_grid(estimator, X, y, param_grid):
             min_c = l1_min_c(X, y, loss=loss)
         else:
             min_c = 0.5
-        param_grid['C'] = np.array([2, 20, 200]) * min_c
 
-        if isinstance(estimator, _BaseRidge):
-            param_grid['alpha'] = 1. / (param_grid.pop('C') * 2)
+        if not isinstance(estimator, _BaseRidge):
+            param_grid['C'] = np.array([2, 20, 200]) * min_c
+        else:
+            param_grid['alpha'] = 1. / np.array([1, 10, 100])
+
     return param_grid
 
 
@@ -153,21 +157,22 @@ def _parallel_fit(estimator, X, y, train, test, param_grid, is_classif, scorer,
 
 class BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
     """A wrapper for popular classification/regression strategies for
-    neuroimgaging.
+    neuroimaging.
 
     The `BaseDecoder` object supports classification and regression methods.
     It implements a model selection scheme that averages the best models
     within a cross validation loop. The resulting average model is the
     one used as a classifier or a regressor. The `Decoder` object also
     leverages the `NiftiMaskers` to provide a direct interface with the
-    nifti files on disk.
+    Nifti files on disk.
 
     Parameters
     -----------
     estimator : str, optional
-        The estimator to choose among: 'svc', 'svc_l1', 'logistic',
+        The estimator to choose among: 'svc', 'svc_l2', 'svc_l1', 'logistic',
         'logistic_l1', 'ridge_classifier', 'ridge_regression',
-        and 'svr'. Defaults to 'svc'.
+        and 'svr'. Note that the 'svc' and 'svc_l2' correspond to the same
+        estimator. Default 'svc'.
 
     mask : filename, Nifti1Image, NiftiMasker, or MultiNiftiMasker, optional
         Mask to be used on data. If an instance of masker is passed,
@@ -255,15 +260,20 @@ class BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
         The number of CPUs to use to do the computation. -1 means
         'all CPUs'.
 
-    verbose : int, optional. Default: False.
+    verbose : int, optional. Default: 0.
         Verbosity level.
+
+    See Also
+    ------------
+    nilearn.decoding.DecoderRegressor -  regression strategies for Neuroimaging.
+
     """
     def __init__(self, estimator='svc', mask=None, cv=10, param_grid=None,
                  screening_percentile=20, scoring=None, smoothing_fwhm=None,
                  standardize=True, target_affine=None, target_shape=None,
                  low_pass=None, high_pass=None, t_r=None,
                  mask_strategy='background', is_classif=True, memory=None,
-                 memory_level=0, n_jobs=1, verbose=False):
+                 memory_level=0, n_jobs=1, verbose=0):
         self.estimator = estimator
         self.mask = mask
         self.cv = cv
@@ -359,7 +369,7 @@ class BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
         """
         # Setup memory
         self.memory_ = _check_memory(self.memory, self.verbose)
-        # nifti masking
+        # Nifti masking
         self.masker_ = check_embedded_nifti_masker(self, multi_subject=False)
         X = self.masker_.fit_transform(X)
         self.mask_img_ = self.masker_.mask_img_
@@ -373,12 +383,9 @@ class BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
         elif self.estimator in list(SUPPORTED_ESTIMATORS.keys()):
             estimator = SUPPORTED_ESTIMATORS.get(self.estimator,
                                                  self.estimator)
-        # else:
-        # XXX
-        #     raise ValueError
-        #     print the list of known estimator is
-        #     list(SUPPORTED_ESTIMATORS.keys())
-
+        else:
+            raise ValueError("The list of known estimator is: %s" %
+                             list(SUPPORTED_ESTIMATORS.keys()))
 
         scorer = check_scoring(estimator, self.scoring)
 
@@ -455,6 +462,7 @@ class BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
                 cv_scores.setdefault(other_class, []).append(scores)
                 cv_y_true.setdefault(other_class, []).extend(
                     self._enc.inverse_transform(y[y_info['y_true_indices']]))
+                self.cv_params_[other_class] = self.cv_params_[classes[c]]
 
         self.cv_scores_ = cv_scores
         self.cv_y_true_ = np.array(cv_y_true[list(cv_y_true.keys())[0]])
@@ -549,20 +557,20 @@ class BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
 
 
 class Decoder(BaseDecoder):
-    """A wrapper for popular classification strategies for neuroimgaging.
+    """A wrapper for popular classification strategies for neuroimaging.
 
     The `Decoder` object supports classification methods.
     It implements a model selection scheme that averages the best models
     within a cross validation loop. The resulting average model is the
-    one used as a classifier or a regressor. The `Decoder` object also
-    leverages the `NiftiMaskers` to provide a direct interface with the
-    nifti files on disk.
+    one used as a classifier. The `Decoder` object also leverages the
+    `NiftiMaskers` to provide a direct interface with the Nifti files on disk.
 
     Parameters
     -----------
     estimator : str, optional
-        The estimator to choose among: 'svc', 'svc_l1', 'logistic',
-        'logistic_l1', and 'ridge_classifier'. Default 'svc'.
+        The estimator to choose among: 'svc', 'svc_l2', 'svc_l1', 'logistic',
+        'logistic_l1', and 'ridge_classifier'. Note  that the 'svc' and 'svc_l2'
+        correspond to the same estimator. Default 'svc'.
 
     mask : filename, Nifti1Image, NiftiMasker, or MultiNiftiMasker, optional
         Mask to be used on data. If an instance of masker is passed,
@@ -647,7 +655,7 @@ class Decoder(BaseDecoder):
         The number of CPUs to use to do the computation. -1 means
         'all CPUs'.
 
-    verbose : int, optional. Default: False.
+    verbose : int, optional. Default: 0.
         Verbosity level.
     """
     def __init__(self, estimator='svc', mask=None, cv=10, param_grid=None,
@@ -655,7 +663,7 @@ class Decoder(BaseDecoder):
                  smoothing_fwhm=None, standardize=True, target_affine=None,
                  target_shape=None, mask_strategy='background',
                  low_pass=None, high_pass=None, t_r=None, memory=None,
-                 memory_level=0, n_jobs=1, verbose=False):
+                 memory_level=0, n_jobs=1, verbose=0):
         super(Decoder, self).__init__(
             estimator=estimator, mask=mask, cv=cv, param_grid=param_grid,
             screening_percentile=screening_percentile, scoring=scoring,
@@ -677,20 +685,20 @@ class Decoder(BaseDecoder):
 
 
 class DecoderRegressor(BaseDecoder):
-    """A wrapper for popular regression strategies for neuroimgaging.
+    """A wrapper for popular regression strategies for neuroimaging.
 
     The `DecoderRegressor` object supports regression methods.
     It implements a model selection scheme that averages the best models
     within a cross validation loop. The resulting average model is the
-    one used as a classifier or a regressor. The `Decoder` object also
-    leverages the `NiftiMaskers` to provide a direct interface with the
-    nifti files on disk.
+    one used as a regressor. The `Decoder` object also leverages the
+    `NiftiMaskers` to provide a direct interface with the Nifti files on disk.
 
     Parameters
     -----------
     estimator : str, optional
-        The estimator to choose among: 'ridge_regression', and 'svr'.
-        Default 'svr'.
+        The estimator to choose among: 'ridge', 'ridge_regression', and 'svr'.
+        Note that the 'ridge' and 'ridge_regression' correspond to the same
+        estimator. Default 'svr'.
 
     mask : filename, Nifti1Image, NiftiMasker, or MultiNiftiMasker, optional
         Mask to be used on data. If an instance of masker is passed,
@@ -775,7 +783,7 @@ class DecoderRegressor(BaseDecoder):
         The number of CPUs to use to do the computation. -1 means
         'all CPUs'.
 
-    verbose : int, optional. Default: False.
+    verbose : int, optional. Default: 0.
         Verbosity level.
     """
     def __init__(self, estimator='svr', mask=None, cv=10, param_grid=None,
@@ -783,7 +791,7 @@ class DecoderRegressor(BaseDecoder):
                  smoothing_fwhm=None, standardize=True, target_affine=None,
                  target_shape=None, mask_strategy='background',
                  low_pass=None, high_pass=None, t_r=None, memory=None,
-                 memory_level=0, n_jobs=1, verbose=False):
+                 memory_level=0, n_jobs=1, verbose=0):
         self.classes_ = ['beta']
 
         super(DecoderRegressor, self).__init__(
@@ -793,4 +801,4 @@ class DecoderRegressor(BaseDecoder):
             target_affine=target_affine, target_shape=target_shape,
             low_pass=low_pass, high_pass=high_pass, t_r=t_r,
             mask_strategy=mask_strategy, memory=memory, is_classif=False,
-            memory_level=memory_level, verbose=verbose, n_jobs=n_jobs)
+            memory_level=memory_level, verbose=erbose, n_jobs=n_jobs)

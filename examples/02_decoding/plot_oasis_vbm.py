@@ -108,7 +108,6 @@ display = plot_stat_map(weight_img, bg_img=bg_filename,
                         display_mode='z', cut_coords=[-6],
                         title="Decoder r2: %g" % prediction_score)
 # One can also use other scores to measure the performance of the decoder
-# XXX solve this
 from sklearn.metrics.scorer import mean_absolute_error
 cv_y_pred = decoder.cv_y_pred_
 cv_y_true = decoder.cv_y_true_
@@ -140,10 +139,13 @@ plt.legend(loc="best")
 # Inference with massively univariate model
 print("Massively univariate model")
 
-# Statistical inference
-from nilearn.mass_univariate import permuted_ols
+# First, we have to use the mask that we obtained after the variance
+# thresholding.
 nifti_masker = NiftiMasker(mask_img=mask)
 gm_imgs_train_masked = nifti_masker.fit_transform(gm_imgs_train)
+
+# Statistical inference
+from nilearn.mass_univariate import permuted_ols
 neg_log_pvals, t_scores_original_data, _ = permuted_ols(
     age_train, gm_imgs_train_masked,  # + intercept as a covariate by default
     n_perm=2000,  # 1,000 in the interest of time; 10000 would be better

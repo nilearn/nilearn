@@ -39,7 +39,23 @@ fmri_filename = haxby_dataset.func[0]
 print('First subject functional nifti images (4D) are at: %s' %
       fmri_filename)  # 4D data
 
-# XXX put the mask
+###########################################################################
+# Convert the fMRI volume's to a data matrix
+# ..........................................
+#
+# We will use the :class:`nilearn.input_data.NiftiMasker` to extract the
+# fMRI data on a mask and convert it to data series.
+#
+# The mask is a mask of the Ventral Temporal streaming coming from the
+# Haxby study:
+
+mask_filename = haxby_dataset.mask_vt[0]
+
+# Let's visualize it, using the subject's anatomical image as a
+# # background
+from nilearn import plotting
+plotting.plot_roi(mask_filename, bg_img=haxby_dataset.anat[0],
+                  cmap='Paired')
 
 ###########################################################################
 # Load the behavioral labels
@@ -141,30 +157,54 @@ decoder.fit(fmri_niimgs_train, conditions_train)
 prediction = decoder.predict(fmri_niimgs_test)
 print((prediction == conditions_test).sum() / float(len(conditions_test)))
 
+###########################################################################
+# Implementing a KFold loop
+# .........................
+#
+# We can split the data in train and test set repetitively in a `KFold`
+# strategy:
+
+from sklearn.cross_validation import KFold
+cv = KFold(n=n_samples, n_folds=5)
+
+for train, test in cv:
+    decoder.fit(index_img(fmri_niimgs, train), conditions[train])
+    prediction = decoder.predict(index_img(fmri_niimgs, test))
+    print((prediction == conditions[test]).sum() / float(len(conditions[test])))
 
 ###########################################################################
 # Cross-validation with the decoder
 # ...................................
 #
-# The best way to do cross-validation is to respect the structure of
-# the experiment, for instance by leaving out full sessions of
- # acquisition.
 # The decoder implements a cross-validation loop by default, it also returns
 # an array of shape (cross-validation parameters, n_folds)..
+decoder = Decoder(estimator='svc', mask=mask_filename, standardize=True, cv=cv)
+decoder.fit(fmri_niimgs, conditions)
+
 print(decoder.cv_scores_)
 
 # The decoder also gives the best performing parameters per fold.
 print(decoder.cv_params_)
 
-# XXX put the same things as in master
 
+###########################################################################
+# The best way to do cross-validation is to respect the structure of
+# the experiment, for instance by leaving out full sessions of
+# acquisition.
+#
+# The number of the session is stored in the CSV file giving the
+# behavioral data. We have to apply our session mask, to select only cats
+# and faces. To leave a session out, we pass it to a
+# LeaveOneLabelOut object:
+session_label = behavioral['chunks'][condition_mask]
 
-# from sklearn.cross_validation import KFold
+from sklearn.cross_validation import LeaveOneLabelOut
+cv = LeaveOneLabelOut(session_label)
 
-# cv = KFold(n=len(fmri_masked), n_folds=5)
+decoder = Decoder(estimator='svc', mask=mask_filename, standardize=True, cv=cv)
+decoder.fit(fmri_niimgs, conditions)
 
-# from sklearn.cross_validation import LeaveOneLabelOut
-# cv = LeaveOneLabelOut(session_label)
+print(decoder.cv_scores_)
 
 ###########################################################################
 # Inspecting the model weights
@@ -175,15 +215,9 @@ print(decoder.cv_params_)
 # Turning the weights into a nifti image
 # .......................................
 #
-# We retrieve the SVC discriminating weights
-coef_ = decoder.coef_
-print(coef_)
-
-###########################################################################
-# It's a numpy array
-print(coef_.shape)
-# To get the nifti image of these coeficients, we only need retrieve the
-# coef_img_ in the decoder and select the class
+# We retrieve the SVC discriminating weights. To get the Nifti image of these
+# coeficients, we only need retrieve the coef_img_ in the decoder and select
+# the class
 print(decoder.coef_img_)
 # We can save the coefficients as a nii.gz file:
 decoder.coef_img_['face'].to_filename('haxby_svc_weights.nii.gz')
