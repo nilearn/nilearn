@@ -49,7 +49,6 @@ decoder = Decoder(estimator='svc', mask_strategy='epi',
                   smoothing_fwhm=4, scoring='accuracy', n_jobs=1)
 
 decoder.fit(X_train, y_train)
-# XXX verify this, the cv_scores already changed
 accuracy = np.mean(decoder.cv_scores_['house'])
 print("Decoder cross-validation accuracy : %g%%" % accuracy)
 

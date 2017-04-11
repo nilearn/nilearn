@@ -801,4 +801,4 @@ class DecoderRegressor(BaseDecoder):
             target_affine=target_affine, target_shape=target_shape,
             low_pass=low_pass, high_pass=high_pass, t_r=t_r,
             mask_strategy=mask_strategy, memory=memory, is_classif=False,
-            memory_level=memory_level, verbose=erbose, n_jobs=n_jobs)
+            memory_level=memory_level, verbose=verbose, n_jobs=n_jobs)
