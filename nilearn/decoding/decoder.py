@@ -69,7 +69,7 @@ def _check_param_grid(estimator, X, y, param_grid):
             raise ValueError("%s is an unknown estimator."
                              "The supported estimators are: " % estimator)
 
-        # loss = l2 war deprecated after version 0.17
+        # loss = l2 was deprecated after version 0.17
         if LooseVersion(sklearn.__version__) <= LooseVersion('0.17'):
             if loss == 'squared_hinge':
                 loss = 'l2'
@@ -89,7 +89,11 @@ def _check_param_grid(estimator, X, y, param_grid):
 
 def _parallel_fit(estimator, X, y, train, test, param_grid, is_classif, scorer,
                   mask_img, class_index, screening_percentile=None):
-    """Find the best estimator for a fold within a job."""
+    """Find the best estimator for a fold within a job.
+    This function performs the fitting of several estimators, saving the best
+    performing ones per cross-validation fold. These models are used afterwards
+    to build the averaged model.
+    """
 
     n_features = X.shape[1]
     selector = check_feature_screening(screening_percentile, mask_img,
@@ -116,7 +120,7 @@ def _parallel_fit(estimator, X, y, train, test, param_grid, is_classif, scorer,
             if hasattr(estimator, 'predict_proba'):
                 y_prob = estimator.predict_proba(X_test)
                 y_prob = y_prob[:, 1]
-                neg_prob = 1 - y_prob
+                neg_prob = 1 - y_prob # the complement of the probability
             else:
                 decision = estimator.decision_function(X_test)
                 if decision.ndim == 2:
@@ -124,7 +128,7 @@ def _parallel_fit(estimator, X, y, train, test, param_grid, is_classif, scorer,
                     neg_prob = np.abs(decision[:, 0])
                 else:
                     y_prob = decision
-                    neg_prob = -decision
+                    neg_prob = -decision # negative decision function
             score = scorer(estimator, X_test, y_test)
             if np.all(estimator.coef_ == 0):
                 score = 0
@@ -201,11 +205,12 @@ class BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
         the input data. A float according to a percentile of the highest
         scores. Default: 20.
 
-    scoring : str, callable or None, optional.
+    scoring : str, callable or None, optional. Default None
         The scoring strategy to use. See the scikit-learn documentation
         If callable, takes as arguments the fitted estimator, the
         test data (X_test) and the test target (y_test) if y is
         not None.
+        e.g. scorer(estimator, X_test, y_test)
 
         For regression: 'r2', 'mean_absolute_error', or 'mean_squared_error'.
             Default 'r2'.
@@ -265,7 +270,8 @@ class BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
 
     See Also
     ------------
-    nilearn.decoding.DecoderRegressor -  regression strategies for Neuroimaging.
+    nilearn.decoding.DecoderRegressor - regression strategies for Neuroimaging.
+    nilearn.decoding.Decoder - classification strategies for Neuroimaging.
 
     """
     def __init__(self, estimator='svc', mask=None, cv=10, param_grid=None,
@@ -314,17 +320,17 @@ class BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
         `masker_` : instance of NiftiMasker
             The NiftiMasker used to mask the data.
 
-        `mask_img_`: Nifti1Image
+        `mask_img_` : Nifti1Image
             Mask computed by the masker object.
 
-        `classes_`: numpy.ndarray
+        `classes_` : numpy.ndarray
             Classes to predict. For classification only.
 
         `screening_percentile_` : float
             Screening percentile corrected according to volume of mask,
             relative to the volume of standard brain.
 
-        `coef_`: numpy.ndarray, shape=(n_classes, n_features)
+        `coef_` : numpy.ndarray, shape=(n_classes, n_features)
             Contains the mean of the models weight vector across
             fold for each class.
 
@@ -399,7 +405,8 @@ class BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
             self.cv_ = list(check_cv(self.cv, X=X, y=y,
                                      classifier=self.is_classif))
 
-        # number of problems to solve
+        # Define the number problems to solve. In case of classification this
+        # number corresponds to the number of binary problems to solve
         if self.is_classif:
             y = self._binarize_y(y)
         else:
@@ -409,6 +416,7 @@ class BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
         else:
             n_problems = 1
 
+        # Return a suitable screening percentile according to the mask image
         self.screening_percentile_ = _adjust_screening_percentile(
             self.screening_percentile, self.mask_img_, verbose=self.verbose)
 
@@ -432,7 +440,7 @@ class BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
                 for class_index, (train, test) in itertools.product(
                     range(n_problems), self.cv_))):
 
-            # Models to aggregate
+            # Fetch the models to aggregate
             coefs.setdefault(classes[c], []).append(coef)
             intercepts.setdefault(classes[c], []).append(intercept)
 
@@ -480,7 +488,7 @@ class BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
         else:
             self.cv_y_pred_ = self.cv_y_prob_
 
-        # Build the final model (the aggregated one).
+        # Build the final model (the aggregated one)
         self.coef_ = np.vstack([np.mean(coefs[c], axis=0) for c in classes])
         std_coef = np.vstack([np.std(coefs[c], axis=0) for c in classes])
         self.intercept_ = np.hstack([np.mean(intercepts[c], axis=0)
@@ -598,11 +606,12 @@ class Decoder(BaseDecoder):
         the input data. A float according to a percentile of the highest
         scores. Default: 20.
 
-    scoring : str, callable or None, optional. Default: None
+    scoring : str, callable or None, optional. Default: 'roc_auc'
         The scoring strategy to use. See the scikit-learn documentation
         If callable, takes as arguments the fitted estimator, the
         test data (X_test) and the test target (y_test) if y is
         not None.
+        e.g. scorer(estimator, X_test, y_test)
 
         For classification: 'accuracy', 'f1', 'precision', or 'recall'.
             Default 'roc_auc'.
@@ -657,6 +666,11 @@ class Decoder(BaseDecoder):
 
     verbose : int, optional. Default: 0.
         Verbosity level.
+
+    See Also
+    ------------
+    nilearn.decoding.Decoder - classification strategies for Neuroimaging.
+
     """
     def __init__(self, estimator='svc', mask=None, cv=10, param_grid=None,
                  screening_percentile=20, scoring='roc_auc',
@@ -726,11 +740,12 @@ class DecoderRegressor(BaseDecoder):
         the input data. A float according to a percentile of the highest
         scores. Default: 20.
 
-    scoring : str, callable or None, optional. Default: None
+    scoring : str, callable or None, optional. Default: 'r2'
         The scoring strategy to use. See the scikit-learn documentation
         If callable, takes as arguments the fitted estimator, the
         test data (X_test) and the test target (y_test) if y is
         not None.
+        e.g. scorer(estimator, X_test, y_test)
 
         For regression: 'r2', 'mean_absolute_error', or 'mean_squared_error'.
             Default 'r2'.
@@ -785,6 +800,11 @@ class DecoderRegressor(BaseDecoder):
 
     verbose : int, optional. Default: 0.
         Verbosity level.
+
+    See Also
+    ------------
+    nilearn.decoding.Decoder - classification strategies for Neuroimaging.
+
     """
     def __init__(self, estimator='svr', mask=None, cv=10, param_grid=None,
                  screening_percentile=20, scoring='r2',

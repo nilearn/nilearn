@@ -10,8 +10,10 @@ reproducing a face vs house discrimination task on the study Haxby 2001.
       p 2425.-2430.
 
 """
+######################################################################
+# Loading the data
 
-# Load Haxby dataset
+# First, we load the Haxby dataset
 from nilearn.datasets import fetch_haxby
 data_files = fetch_haxby()
 
@@ -22,7 +24,7 @@ labels_filenames = data_files.session_target[0]
 import numpy as np
 labels = np.recfromcsv(labels_filenames, delimiter=" ")
 
-# Restrict to face and house conditions
+# In this example, we restrict to face and house conditions
 target = labels['labels']
 condition_mask = np.logical_or(target == b"face", target == b"house")
 
@@ -42,11 +44,16 @@ X_test = index_img(func_filenames, condition_mask_test)
 y_train = target[condition_mask_train]
 y_test = target[condition_mask_test]
 
+######################################################################
 # Fit and predict with the decoder
-# XXX say why accuracy
+
+# Note that for this classification task both classes contain the same number
+# of samples (is balanced). Then, we can use the accuracy to measure the
+# performance of the decoder. This is done by defining accuracy as the
+# `scoring`.
 from nilearn.decoding import Decoder
-decoder = Decoder(estimator='svc', mask_strategy='epi',
-                  smoothing_fwhm=4, scoring='accuracy', n_jobs=1)
+decoder = Decoder(estimator='svc', mask_strategy='epi', smoothing_fwhm=4,
+                  scoring='accuracy')
 
 decoder.fit(X_train, y_train)
 accuracy = np.mean(decoder.cv_scores_['house'])
@@ -57,6 +64,8 @@ y_pred = decoder.predict(X_test)
 accuracy = (y_pred == y_test).mean() * 100.
 print("Decoder classification accuracy : %g%%" % accuracy)
 
+######################################################################
+# Visualization
 weight_img = decoder.coef_img_[b"face"]
 
 from nilearn.image import mean_img

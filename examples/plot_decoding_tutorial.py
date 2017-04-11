@@ -31,7 +31,7 @@ meant to be copied to analyze new data: many of the steps are unecessary.
 # It can take a while to download about 310 Mo of data from the Internet.
 from nilearn import datasets
 # By default 2nd subject will be fetched
-haxby_dataset = datasets.fetch_haxby()
+haxby_dataset = datasets.fetch_haxy()
 # 'func' is a list of filenames: one for each subject
 fmri_filename = haxby_dataset.func[0]
 
@@ -216,7 +216,7 @@ print(decoder.cv_scores_)
 # .......................................
 #
 # We retrieve the SVC discriminating weights. To get the Nifti image of these
-# coeficients, we only need retrieve the coef_img_ in the decoder and select
+# coeficients, we only need retrieve the `coef_img_` in the decoder and select
 # the class
 print(decoder.coef_img_)
 # We can save the coefficients as a nii.gz file:

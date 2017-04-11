@@ -7,7 +7,7 @@ decoding task.
 """
 
 #############################################################################
-# We start by loading the data and applying simple transformations to it
+# We start by loading the data
 
 # Fetch data using nilearn dataset fetcher
 from nilearn import datasets
@@ -49,10 +49,11 @@ fmri_niimgs = index_img(func_filename, task_mask)
 classification_target = stimuli[task_mask]
 
 #############################################################################
+# Training the decoder
+
 # Then we define the various classifiers that we use
 classifiers = ['svc_l2', 'svc_l1', 'logistic_l1', 'logistic_l2']
 
-#############################################################################
 # Here we compute prediction scores and run time for all these
 # classifiers
 import time
@@ -66,7 +67,7 @@ for classifier_name in sorted(classifiers):
     classifiers_data[classifier_name] = {}
     print(70 * '_')
 
-    # XXX default score is roc
+    # The decoder has as default score the `roc_auc`
     decoder = Decoder(estimator=classifier_name, mask=mask_filename,
                       standardize=True, cv=cv)
     t0 = time.time()
@@ -84,6 +85,8 @@ for classifier_name in sorted(classifiers):
             np.std(classifiers_data[classifier_name]['score'][category])))
 
 ###############################################################################
+# Visualization
+
 # Then we make a rudimentary diagram
 import matplotlib.pyplot as plt
 plt.figure()
@@ -108,12 +111,15 @@ plt.title('Category-specific classification accuracy for different classifiers')
 plt.tight_layout()
 
 
-# XXX comment this result: the results are similar btw svc and logistic, the
-# main difference relies on the \ell_1 and \ell_2. The sparse penaly works
-# better because we are in an intra-subject setting.
+# We can see that for a fixed penalty the results are similar between the svc
+# and the logistic regression. The main difference relies on the penalty
+# ($\ell_1$ and $\ell_2$). The sparse penaly works better because we are in an
+# intra-subject setting.
 
 ###############################################################################
-# Finally, w plot the face vs house map for the different classifiers
+# Visualizing the face vs house map
+
+# Finally, we plot the face vs house map for the different classifiers
 
 # Use the average EPI as a background
 from nilearn.image import mean_img

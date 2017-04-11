@@ -47,6 +47,10 @@ ____
 #          Gael Varoquaux, Apr 2014
 #          Andres Hoyos-Idrobo, Apr 2017
 
+######################################################################
+# Loading the data
+
+# First, we load the data
 import numpy as np
 from nilearn import datasets
 n_subjects = 200  # increase this number if you have more RAM on your box
@@ -67,12 +71,14 @@ nifti_masker = NiftiMasker(standardize=False, smoothing_fwhm=2,
                            memory='nilearn_cache')
 
 gm_maps_masked = nifti_masker.fit_transform(gm_imgs_train)
+
 # Fit the masker again to remove features with too low between-subject variance
 gm_maps_thresholded = variance_threshold.fit_transform(gm_maps_masked)
 gm_maps_masked = variance_threshold.inverse_transform(gm_maps_thresholded)
 
 mask = nifti_masker.inverse_transform(variance_threshold.get_support())
 ###############################################################################
+# Training the decoder
 
 # To save time (because these are anat images with many voxels), we include
 # only the 5-percent voxels most correlated with the age variable to fit.
@@ -93,20 +99,12 @@ age_test = age_test[perm]
 gm_imgs_test = np.array(gm_imgs_test)[perm]
 age_pred = decoder.predict(gm_imgs_test)
 
-# Visualization
-weight_img = decoder.coef_img_['beta']
 prediction_score = np.mean(decoder.cv_scores_['beta'])
 
 print("=== DECODER ===")
 print("r2 for the cross-validation: %f" % prediction_score)
 print("")
-# Create the figure
-from nilearn.plotting import plot_stat_map, show
-bg_filename = gm_imgs[0]
 
-display = plot_stat_map(weight_img, bg_img=bg_filename,
-                        display_mode='z', cut_coords=[-6],
-                        title="Decoder r2: %g" % prediction_score)
 # One can also use other scores to measure the performance of the decoder
 from sklearn.metrics.scorer import mean_absolute_error
 cv_y_pred = decoder.cv_y_pred_
@@ -117,6 +115,18 @@ prediction_score = mean_absolute_error(cv_y_true, cv_y_pred)
 print("=== DECODER ===")
 print("cross-validation score: %f years" % prediction_score)
 print("")
+
+######################################################################
+# Visualization
+weight_img = decoder.coef_img_['beta']
+
+# Create the figure
+from nilearn.plotting import plot_stat_map, show
+bg_filename = gm_imgs[0]
+
+display = plot_stat_map(weight_img, bg_img=bg_filename,
+                        display_mode='z', cut_coords=[-6],
+                        title="Decoder r2: %g" % prediction_score)
 
 # Visualize the quality of predictions
 import matplotlib.pyplot as plt
