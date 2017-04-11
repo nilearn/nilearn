@@ -17,7 +17,7 @@ description - and about each image - the modality, number of subjects,
 some tags, and more. The nilearn downloaders will fetch this metadata
 and the images themselves.
 
-Nilearn provides two functions to downlad statistical maps from
+Nilearn provides two functions to download statistical maps from
 Neurovault.
 
 Specific images or collections
@@ -28,7 +28,7 @@ images you want. Maybe you liked a paper and went to
 http://www.neurovault.org looking for the data. Once on the relevant
 collection's webpage, you can click 'Details' to see its id
 (and more). You can then download it using
-``nilearn.datasets.fetch_neurovault_ids`` :
+:func:`nilearn.datasets.fetch_neurovault_ids` :
 
     >>> from nilearn.datasets import fetch_neurovault_ids
     >>> brainpedia = fetch_neurovault_ids(collection_ids=[1952]) # doctest: +SKIP
@@ -44,7 +44,7 @@ Selection filters
 You may not know which collections or images you want. For example,
 you may be conducting a meta-analysis and want to grab all the images
 that are related to "language". Using
-``nilearn.datasets.fetch_neurovault``, you can fetch all the images and
+:func:`nilearn.datasets.fetch_neurovault`, you can fetch all the images and
 collections that match your criteria - you don't need to know their
 ids.
 
@@ -65,10 +65,12 @@ images only :
     >>> def is_bold(image_info):
     ...     return image_info.get('modality') == 'fMRI-BOLD'
     ...
-    >>> bold = fetch_neurovault(image_filter=is_bold, max_images=None) # doctest: +SKIP
+    >>> bold = fetch_neurovault(image_filter=is_bold, max_images=7) # doctest: +SKIP
 
-Here we set the max_images parameter to None, meaning "get as many
-images as possible", because the default is 100.
+Here we set the max_images parameter to 7, so that you can try this snippet
+without waiting for a long time. To get all the images which match your
+filters, you should set max_images to ``None``, which means "get as many
+images as possible". The default for max_images is 100.
 
 You can also describe filters with dictionaries. Each collection's
 metadata is compared to the parameter ``collection_terms`` Collections
@@ -85,16 +87,33 @@ and exclude an image if one of the following is true:
    - its map type is one of "ROI/mask", "anatomical", or "parcellation".
    - its image type is "atlas"
 
-
 Using dictionaries, the previous example becomes :
 
     >>> bold = fetch_neurovault(image_terms={'modality': 'fMRI-BOLD'}, # doctest: +SKIP
-    ... max_images=None) # doctest: +SKIP
+    ... max_images=7) # doctest: +SKIP
 
 Extra keyword arguments are treated as image filters, so we could also
 have written :
 
-    >>> bold = fetch_neurovault(modality='fMRI-BOLD', max_images=None) # doctest: +SKIP
+    >>> bold = fetch_neurovault(modality='fMRI-BOLD', max_images=7) # doctest: +SKIP
+
+Note that even if you specify a filter as a function, the default filters for
+``image_terms`` and ``collection_terms`` still apply; pass an empty dictionary
+if you want to disable them. For example, if you yant to download
+all the parcellations using a filter, you need to remove the default image
+terms :
+
+  >>> fetch_neurovault(
+  ... image_filter=lambda i: i.get('map_type') == 'parcellation',
+  ... max_images=7, image_terms={}) # doctest: +SKIP
+
+Without ``image_terms={}`` in the call above, parcellation would be filtered
+out (default behaviour), so no result would be found.
+
+We can also achieve the same goal without a function :
+
+  >>> fetch_neurovault(image_terms={'map_type': 'parcellation'},
+  ... max_images=7) # doctest: +SKIP
 
 Sometimes the selection criteria are more complex than simple
 comparison to a single value. For example, we may also be interested
@@ -110,14 +129,13 @@ We could also have used ``Contains`` :
 
     >>> fmri = fetch_neurovault( # doctest: +SKIP
     ... modality=neurovault.Contains('fMRI'), # doctest: +SKIP
-    ... max_images=None) # doctest: +SKIP
+    ... max_images=7) # doctest: +SKIP
 
-If we are not sure about the case (upper or lower) used for this field
-in Neurovault, we can also use ``Pattern`` :
+If we need regular expressions, we can also use ``Pattern`` :
 
     >>> fmri = fetch_neurovault( # doctest: +SKIP
     ... modality=neurovault.Pattern('fmri-.*', neurovault.re.IGNORECASE), # doctest: +SKIP
-    ... max_images=None) # doctest: +SKIP
+    ... max_images=7) # doctest: +SKIP
 
 The complete list of such special values available in
 ``nilearn.datasets.neurovault`` is:

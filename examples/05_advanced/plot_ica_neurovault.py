@@ -27,7 +27,6 @@ from nilearn.datasets import load_mni152_brain_mask
 from nilearn.input_data import NiftiMasker
 
 from nilearn import plotting
-import matplotlib.pyplot as plt
 
 
 ######################################################################
@@ -140,4 +139,4 @@ with warnings.catch_warnings():
 # filtering, and better cognitive labels would give better maps
 
 # Done.
-plt.show()
+plotting.show()

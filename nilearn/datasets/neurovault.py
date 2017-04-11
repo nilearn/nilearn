@@ -43,7 +43,15 @@ _IM_FILTERS_AVAILABLE_ON_SERVER = tuple()
 
 _DEFAULT_BATCH_SIZE = 100
 _DEFAULT_MAX_IMAGES = 100
+
+# if _MAX_CONSECUTIVE_FAILS downloads fail in a row, we consider there is a
+# problem(e.g. no internet connection, or the Neurovault server is down), and
+# we abort the fetching.
 _MAX_CONSECUTIVE_FAILS = 10
+
+# if _MAX_FAILS_IN_COLLECTION images fail to be downloaded from the same
+# collection, we consider this collection is garbage and we move on to the
+# next collection.
 _MAX_FAILS_IN_COLLECTION = 10
 
 _DEBUG = 3
@@ -101,6 +109,19 @@ class IsNull(_SpecialValue):
     nilearn.datasets.neurovault.NotContains,
     nilearn.datasets.neurovault.Pattern.
 
+    Examples
+    --------
+    >>> from nilearn.datasets.neurovault import IsNull
+    >>> null = IsNull()
+    >>> null == 0
+    True
+    >>> null == ''
+    True
+    >>> null == None
+    True
+    >>> null == 'a'
+    False
+
     """
     def __eq__(self, other):
         return not bool(other)
@@ -127,6 +148,19 @@ class NotNull(_SpecialValue):
     nilearn.datasets.neurovault.NotContains,
     nilearn.datasets.neurovault.Pattern.
 
+    Examples
+    --------
+    >>> from nilearn.datasets.neurovault import NotNull
+    >>> not_null = NotNull()
+    >>> not_null == 0
+    False
+    >>> not_null == ''
+    False
+    >>> not_null == None
+    False
+    >>> not_null == 'a'
+    True
+
     """
     def __eq__(self, other):
         return bool(other)
@@ -136,7 +170,7 @@ class NotEqual(_SpecialValue):
     """Special value used to filter terms.
 
     An instance of this class is constructed with `NotEqual(obj)`. It
-    will allways be equal to, and only to, any value for which
+    will always be equal to, and only to, any value for which
     ``obj == value`` is ``False``.
 
     Parameters
@@ -158,6 +192,15 @@ class NotEqual(_SpecialValue):
     nilearn.datasets.neurovault.Contains,
     nilearn.datasets.neurovault.NotContains,
     nilearn.datasets.neurovault.Pattern.
+
+    Examples
+    --------
+    >>> from nilearn.datasets.neurovault import NotEqual
+    >>> not_0 = NotEqual(0)
+    >>> not_0 == 0
+    False
+    >>> not_0 == '0'
+    True
 
     """
     def __init__(self, negated):
@@ -186,7 +229,7 @@ class GreaterOrEqual(_OrderComp):
     """Special value used to filter terms.
 
     An instance of this class is constructed with `GreaterOrEqual(obj)`. It
-    will allways be equal to, and only to, any value for which
+    will always be equal to, and only to, any value for which
     ``obj <= value`` is ``True``.
 
     Parameters
@@ -209,6 +252,17 @@ class GreaterOrEqual(_OrderComp):
     nilearn.datasets.neurovault.NotContains,
     nilearn.datasets.neurovault.Pattern.
 
+    Examples
+    --------
+    >>> from nilearn.datasets.neurovault import GreaterOrEqual
+    >>> nonnegative = GreaterOrEqual(0.)
+    >>> nonnegative == -.1
+    False
+    >>> nonnegative == 0
+    True
+    >>> nonnegative == .1
+    True
+
     """
     def _eq_impl(self, other):
         return self.bound_ <= other
@@ -218,7 +272,7 @@ class GreaterThan(_OrderComp):
     """Special value used to filter terms.
 
     An instance of this class is constructed with `GreaterThan(obj)`. It
-    will allways be equal to, and only to, any value for which
+    will always be equal to, and only to, any value for which
     ``obj < value`` is ``True``.
 
     Parameters
@@ -241,6 +295,17 @@ class GreaterThan(_OrderComp):
     nilearn.datasets.neurovault.NotContains,
     nilearn.datasets.neurovault.Pattern.
 
+    Examples
+    --------
+    >>> from nilearn.datasets.neurovault import GreaterThan
+    >>> positive = GreaterThan(0.)
+    >>> positive == 0.
+    False
+    >>> positive == 1.
+    True
+    >>> positive == -1.
+    False
+
     """
     def _eq_impl(self, other):
         return self.bound_ < other
@@ -250,7 +315,7 @@ class LessOrEqual(_OrderComp):
     """Special value used to filter terms.
 
     An instance of this class is constructed with `LessOrEqual(obj)`. It
-    will allways be equal to, and only to, any value for which
+    will always be equal to, and only to, any value for which
     ``value <= obj`` is ``True``.
 
     Parameters
@@ -273,6 +338,17 @@ class LessOrEqual(_OrderComp):
     nilearn.datasets.neurovault.NotContains,
     nilearn.datasets.neurovault.Pattern.
 
+    Examples
+    --------
+    >>> from nilearn.datasets.neurovault import LessOrEqual
+    >>> nonpositive = LessOrEqual(0.)
+    >>> nonpositive == -1.
+    True
+    >>> nonpositive == 0.
+    True
+    >>> nonpositive == 1.
+    False
+
     """
     def _eq_impl(self, other):
         return other <= self.bound_
@@ -282,7 +358,7 @@ class LessThan(_OrderComp):
     """Special value used to filter terms.
 
     An instance of this class is constructed with `LessThan(obj)`. It
-    will allways be equal to, and only to, any value for which
+    will always be equal to, and only to, any value for which
     ``value < obj`` is ``True``.
 
     Parameters
@@ -305,6 +381,17 @@ class LessThan(_OrderComp):
     nilearn.datasets.neurovault.NotContains,
     nilearn.datasets.neurovault.Pattern.
 
+    Examples
+    --------
+    >>> from nilearn.datasets.neurovault import LessThan
+    >>> negative = LessThan(0.)
+    >>> negative == -1.
+    True
+    >>> negative == 0.
+    False
+    >>> negative == 1.
+    False
+
     """
     def _eq_impl(self, other):
         return other < self.bound_
@@ -314,7 +401,7 @@ class IsIn(_SpecialValue):
     """Special value used to filter terms.
 
     An instance of this class is constructed with
-    `IsIn(*accepted)`. It will allways be equal to, and only to, any
+    `IsIn(*accepted)`. It will always be equal to, and only to, any
     value for which ``value in accepted`` is ``True``.
 
     Parameters
@@ -362,7 +449,7 @@ class NotIn(_SpecialValue):
     """Special value used to filter terms.
 
     An instance of this class is constructed with
-    `NotIn(*rejected)`. It will allways be equal to, and only to, any
+    `NotIn(*rejected)`. It will always be equal to, and only to, any
     value for which ``value in rejected`` is ``False``.
 
     Parameters
@@ -388,10 +475,10 @@ class NotIn(_SpecialValue):
     Examples
     --------
     >>> from nilearn.datasets.neurovault import NotIn
-    >>> consonnants = NotIn('a', 'e', 'i', 'o', 'u', 'y')
-    >>> 'b' == consonnants
+    >>> consonants = NotIn('a', 'e', 'i', 'o', 'u', 'y')
+    >>> 'b' == consonants
     True
-    >>> consonnants == 'a'
+    >>> consonants == 'a'
     False
 
     """
@@ -410,7 +497,7 @@ class Contains(_SpecialValue):
     """Special value used to filter terms.
 
     An instance of this class is constructed with
-    `Contains(*must_be_contained)`. It will allways be equal to, and
+    `Contains(*must_be_contained)`. It will always be equal to, and
     only to, any value for which ``item in value`` is ``True`` for
     every item in ``must_be_contained``.
 
@@ -464,7 +551,7 @@ class NotContains(_SpecialValue):
     """Special value used to filter terms.
 
     An instance of this class is constructed with
-    `NotContains(*must_not_be_contained)`. It will allways be equal
+    `NotContains(*must_not_be_contained)`. It will always be equal
     to, and only to, any value for which ``item in value`` is
     ``False`` for every item in ``must_not_be_contained``.
 
@@ -488,6 +575,15 @@ class NotContains(_SpecialValue):
     nilearn.datasets.neurovault.Contains,
     nilearn.datasets.neurovault.Pattern.
 
+    Examples
+    --------
+    >>> from nilearn.datasets.neurovault import NotContains
+    >>> no_garbage = NotContains('bad', 'test')
+    >>> no_garbage == 'test image'
+    False
+    >>> no_garbage == 'good image'
+    True
+
     """
     def __init__(self, *must_not_be_contained):
         self.must_not_be_contained_ = must_not_be_contained
@@ -510,7 +606,7 @@ class Pattern(_SpecialValue):
 
     An instance of this class is constructed with
 
-    `Pattern(pattern[, flags])`. It will allways be equal to, and only
+    `Pattern(pattern[, flags])`. It will always be equal to, and only
     to, any value for which ``re.match(pattern, value, flags)`` is
     ``True``.
 
@@ -543,10 +639,10 @@ class Pattern(_SpecialValue):
     Examples
     --------
     >>> from nilearn.datasets.neurovault import Pattern
-    >>> pattern = Pattern(r'[0-9akqj]{5}$')
-    >>> 'ak05q' == pattern
+    >>> poker = Pattern(r'[0-9akqj]{5}$')
+    >>> 'ak05q' == poker
     True
-    >>> 'ak05e' == pattern
+    >>> 'ak05e' == poker
     False
 
     """
@@ -568,7 +664,12 @@ class Pattern(_SpecialValue):
 
 
 def _empty_filter(arg):
-    """Place holder for a filter which always returns True."""
+    """Place holder for a filter which always returns True.
+
+    This is the default ``image_filter`` and ``collection_filter``
+    argument for ``fetch_neurovault``.
+
+    """
     return True
 
 
@@ -714,7 +815,7 @@ class ResultFilter(object):
         self.query_terms_[item] = value
 
     def __delitem__(self, item):
-        """Remove item from query_terms"""
+        """Remove item from query_terms_"""
         if item in self.query_terms_:
             del self.query_terms_[item]
 
@@ -784,10 +885,10 @@ def _print_if(message, level, threshold_level,
         if `message` is printed, also print the last traceback.
 
     """
-    if(level > threshold_level):
+    if level > threshold_level:
         return
     print(message)
-    if(with_traceback):
+    if with_traceback:
         traceback.print_exc()
 
 
@@ -944,7 +1045,7 @@ def _scroll_server_results(url, local_filter=_empty_filter,
 
     local_filter : callable, optional (default=_empty_filter)
         Used to filter the results based on their metadata:
-        must return True is the result is to be kept and False otherwise.
+        must return True if the result is to be kept and False otherwise.
         Is called with the dict containing the metadata as sole argument.
 
     query_terms : dict, sequence of pairs or None, optional (default=None)
@@ -1092,7 +1193,7 @@ def _simple_download(url, target_file, temp_dir, verbose=3):
         # an HTTPError raised in _fetch_file might be transformed
         # into an AttributeError when we try to set its reason attribute
         if (isinstance(e, AttributeError) and
-            e.args[0] == "can't set attribute"):
+                e.args[0] == "can't set attribute"):
             raise URLError(
                 'HTTPError raised in nilearn.datasets._fetch_file: {0}'.format(
                     traceback.format_exc()))
@@ -1105,15 +1206,15 @@ def _simple_download(url, target_file, temp_dir, verbose=3):
 
 
 def neurosynth_words_vectorized(word_files, verbose=3, **kwargs):
-    """Load Neurosynth data from disk into an (n files, voc size) matrix
+    """Load Neurosynth data from disk into an (n images, voc size) matrix
 
     Neurosynth data is saved on disk as ``{word: weight}``
-    dictionaries for each image, this function reads it and returs a
+    dictionaries for each image, this function reads it and returns a
     vocabulary list and a term weight matrix.
 
     Parameters:
     -----------
-    word_files : container
+    word_files : Container
         The paths to the files from which to read word weights (each
         is supposed to contain the Neurosynth response for a
         particular image).
@@ -1132,7 +1233,7 @@ def neurosynth_words_vectorized(word_files, verbose=3, **kwargs):
     frequencies : numpy.ndarray
         An (n images, vocabulary size) array. Each row corresponds to
         an image, and each column corresponds to a word. The words are
-        in the same order as in returned vaule `vocabulary`, so that
+        in the same order as in returned value `vocabulary`, so that
         `frequencies[i, j]` corresponds to the weight of
         `vocabulary[j]` for image ``i``.  This matrix is computed by
         an ``sklearn.feature_extraction.DictVectorizer`` instance.
@@ -1194,7 +1295,7 @@ def _remove_none_strings(metadata):
     metadata = metadata.copy()
     for key, value in metadata.items():
         if (isinstance(value, _basestring) and
-            re.match(r'($|n/?a$|none|null)', value, re.IGNORECASE)):
+                re.match(r'($|n/?a$|none|null)', value, re.IGNORECASE)):
             metadata[key] = None
     return metadata
 
@@ -2016,7 +2117,8 @@ def _read_download_params(
     max_consecutive_fails=_MAX_CONSECUTIVE_FAILS,
     max_fails_in_collection=_MAX_FAILS_IN_COLLECTION,
     batch_size=None, verbose=3, fetch_neurosynth_words=False,
-    vectorize_words=True):
+        vectorize_words=True):
+
     """Create a dictionary containing download information.
 
     """
@@ -2108,14 +2210,14 @@ def _prepare_download_params(download_params):
     """Adjust the download parameters.
 
     Information for the downloaders is added. The result depends on
-    wether we are downloading a set of collections and images
-    explicitely specified by the user (by id), or we are downloading
+    whether we are downloading a set of collections and images
+    explicitly specified by the user (by id), or we are downloading
     all the collections and images that match certain filters.
 
 
     """
     if (download_params['wanted_collection_ids'] is not None or
-        download_params['wanted_image_ids'] is not None):
+            download_params['wanted_image_ids'] is not None):
         return _prepare_explicit_ids_download_params(download_params)
     return _prepare_filtered_download_params(download_params)
 
@@ -2138,7 +2240,7 @@ def _result_list_to_bunch(result_list, download_params):
                    collections_meta=collections_meta,
                    description=_get_dataset_descr('neurovault'))
     if download_params[
-        'fetch_neurosynth_words'] and download_params['vectorize_words']:
+            'fetch_neurosynth_words'] and download_params['vectorize_words']:
         (result['word_frequencies'],
          result['vocabulary']) = neurosynth_words_vectorized(
              [meta.get('ns_words_absolute_path') for
@@ -2157,7 +2259,7 @@ def _fetch_neurovault_implementation(
     collection_filter=_empty_filter, image_terms=basic_image_terms(),
     image_filter=_empty_filter, collection_ids=None, image_ids=None,
     mode='download_new', data_dir=None, fetch_neurosynth_words=False,
-    vectorize_words=True, verbose=3, **kwarg_image_filters):
+        vectorize_words=True, verbose=3, **kwarg_image_filters):
     """Download data from neurovault.org and neurosynth.org."""
     image_terms = dict(image_terms, **kwarg_image_filters)
     neurovault_data_dir = _get_dataset_dir('neurovault', data_dir)
@@ -2192,7 +2294,7 @@ def fetch_neurovault(
     image_filter=_empty_filter,
     mode='download_new', data_dir=None,
     fetch_neurosynth_words=False, vectorize_words=True,
-    verbose=3, **kwarg_image_filters):
+        verbose=3, **kwarg_image_filters):
     """Download data from neurovault.org that match certain criteria.
 
     Any downloaded data is saved on the local disk and subsequent
@@ -2246,7 +2348,7 @@ def fetch_neurovault(
         named "neurovault" will contain neurovault data.
 
     fetch_neurosynth_words : bool, optional (default=False)
-        Wether to collect words from Neurosynth.
+        whether to collect words from Neurosynth.
 
     vectorize_words : bool, optional (default=True)
         If neurosynth words are downloaded, create a matrix of word
@@ -2286,7 +2388,7 @@ def fetch_neurovault(
     See Also
     --------
     nilearn.datasets.fetch_neurovault_ids
-        Fetch collections and images from Neurovault by explicitely specifying
+        Fetch collections and images from Neurovault by explicitly specifying
         their ids.
 
     Notes
@@ -2294,7 +2396,7 @@ def fetch_neurovault(
     Images and collections from disk are fetched before remote data.
 
     Some helpers are provided in the ``neurovault`` module to express
-    filtering criteria in a less verbose manner:
+    filtering criteria more concisely:
 
         ``ResultFilter``, ``IsNull``, ``NotNull``, ``NotEqual``,
         ``GreaterOrEqual``, ``GreaterThan``, ``LessOrEqual``,
@@ -2302,7 +2404,7 @@ def fetch_neurovault(
         ``NotContains``, ``Pattern``.
 
     If you pass a single value to match against the collection id
-    (wether as the 'id' field of the collection metadata or as the
+    (whether as the 'id' field of the collection metadata or as the
     'collection_id' field of the image metadata), the server is
     directly queried for that collection, so
     ``fetch_neurovault(collection_id=40)`` is as efficient as
@@ -2310,7 +2412,7 @@ def fetch_neurovault(
     version the other filters will still be applied). This is not true
     for the image ids. If you pass a single value to match against any
     of the fields listed in ``_COL_FILTERS_AVAILABLE_ON_SERVER``,
-    i.e., 'DOI', 'name', and 'owner_name', these filters can be
+    i.e., 'DOI', 'name', and 'owner', these filters can be
     applied by the server, limiting the amount of metadata we have to
     download: filtering on those fields makes the fetching faster
     because the filtering takes place on the server side.
@@ -2380,7 +2482,7 @@ def fetch_neurovault(
 
 def fetch_neurovault_ids(
     collection_ids=(), image_ids=(), mode='download_new', data_dir=None,
-    fetch_neurosynth_words=False, vectorize_words=True, verbose=3):
+        fetch_neurosynth_words=False, vectorize_words=True, verbose=3):
     """Download specific images and collections from neurovault.org.
 
     Any downloaded data is saved on the local disk and subsequent
@@ -2414,7 +2516,7 @@ def fetch_neurovault_ids(
         named "neurovault" will contain neurovault data.
 
     fetch_neurosynth_words : bool, optional (default=False)
-        Wether to collect words from Neurosynth.
+        whether to collect words from Neurosynth.
 
     vectorize_words : bool, optional (default=True)
         If neurosynth words are downloaded, create a matrix of word
