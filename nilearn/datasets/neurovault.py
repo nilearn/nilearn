@@ -1227,9 +1227,6 @@ def neurosynth_words_vectorized(word_files, verbose=3, **kwargs):
 
     Returns:
     --------
-    vocabulary : list of str
-        A list of all the words encountered in the word files.
-
     frequencies : numpy.ndarray
         An (n images, vocabulary size) array. Each row corresponds to
         an image, and each column corresponds to a word. The words are
@@ -1237,6 +1234,9 @@ def neurosynth_words_vectorized(word_files, verbose=3, **kwargs):
         `frequencies[i, j]` corresponds to the weight of
         `vocabulary[j]` for image ``i``.  This matrix is computed by
         an ``sklearn.feature_extraction.DictVectorizer`` instance.
+
+    vocabulary : list of str
+        A list of all the words encountered in the word files.
 
     See Also
     --------
