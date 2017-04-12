@@ -127,9 +127,9 @@ job for images. The default values for these parameters don't filter out
 anything.
 Using a filter rather than a dictionary, the first example becomes:
 
-    >>> bold = fetch_neurovault(
-    ...     image_filter=lambda meta: meta.get('modality') == 'fMRI-BOLD',
-    ...     image_terms={}, max_images=7)
+    >>> bold = fetch_neurovault( # doctest: +SKIP
+    ...     image_filter=lambda meta: meta.get('modality') == 'fMRI-BOLD', # doctest: +SKIP
+    ...     image_terms={}, max_images=7) # doctest: +SKIP
 
 .. note::
 
