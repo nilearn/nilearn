@@ -50,36 +50,32 @@ ids.
 
 The filters are applied to images' and collections' metadata.
 
-You can express filters as functions. The parameter
-``collection_filter`` should be a callable, which will be called once
-for each collection. The sole argument will be a dictionary containing
-the metadata for the collection. ``image_filter`` does the same job for
-images. The default values for these parameters don't filter out
-anything.
+You can describe filters with dictionaries. Each collection's
+metadata is compared to the parameter ``collection_terms``. Collections
+for which ``collection_metadata['key'] == value`` is not ``True`` for
+every key, value pair in ``collection_terms`` will be discarded. We use
+``image_terms`` in the same way to filter images.
 
-Many images on Neurovault have a "modality" field in their metadata.
-BOLD images should have it set to "fMRI-BOLD". We can ask for BOLD
+For example, many images on Neurovault have a "modality" field in their
+metadata.  BOLD images should have it set to "fMRI-BOLD". We can ask for BOLD
 images only :
 
-    >>> from nilearn.datasets import fetch_neurovault
-    >>> def is_bold(image_info):
-    ...     return image_info.get('modality') == 'fMRI-BOLD'
-    ...
-    >>> bold = fetch_neurovault(image_filter=is_bold, max_images=7) # doctest: +SKIP
+    >>> bold = fetch_neurovault(image_terms={'modality': 'fMRI-BOLD'}, # doctest: +SKIP
+    ... max_images=7) # doctest: +SKIP
 
 Here we set the max_images parameter to 7, so that you can try this snippet
 without waiting for a long time. To get all the images which match your
 filters, you should set max_images to ``None``, which means "get as many
 images as possible". The default for max_images is 100.
 
-You can also describe filters with dictionaries. Each collection's
-metadata is compared to the parameter ``collection_terms`` Collections
-for which ``collection_metadata['key'] == value`` is not ``True`` for
-every key, value pair in ``collection_terms`` will be discarded. We use
-``image_terms`` in the same way to filter images.
+Extra keyword arguments are treated as image filters, so we could also
+have written :
 
-The default values for these parameters filter out empty collections,
-and exclude an image if one of the following is true:
+    >>> bold = fetch_neurovault(modality='fMRI-BOLD', max_images=7) # doctest: +SKIP
+
+The default values for the ``collection_terms`` and ``image_terms`` parameters
+filter out empty collections, and exclude an image if one of the following is
+true:
 
    - it is not in MNI space.
    - its metadata field "is_valid" is cleared.
@@ -87,35 +83,7 @@ and exclude an image if one of the following is true:
    - its map type is one of "ROI/mask", "anatomical", or "parcellation".
    - its image type is "atlas"
 
-Using dictionaries, the previous example becomes :
-
-    >>> bold = fetch_neurovault(image_terms={'modality': 'fMRI-BOLD'}, # doctest: +SKIP
-    ... max_images=7) # doctest: +SKIP
-
-Extra keyword arguments are treated as image filters, so we could also
-have written :
-
-    >>> bold = fetch_neurovault(modality='fMRI-BOLD', max_images=7) # doctest: +SKIP
-
-Note that even if you specify a filter as a function, the default filters for
-``image_terms`` and ``collection_terms`` still apply; pass an empty dictionary
-if you want to disable them. For example, if you yant to download
-all the parcellations using a filter, you need to remove the default image
-terms :
-
-  >>> fetch_neurovault(
-  ... image_filter=lambda i: i.get('map_type') == 'parcellation',
-  ... max_images=7, image_terms={}) # doctest: +SKIP
-
-Without ``image_terms={}`` in the call above, parcellation would be filtered
-out (default behaviour), so no result would be found.
-
-We can also achieve the same goal without a function :
-
-  >>> fetch_neurovault(image_terms={'map_type': 'parcellation'},
-  ... max_images=7) # doctest: +SKIP
-
-Sometimes the selection criteria are more complex than simple
+Sometimes the selection criteria are more complex than a simple
 comparison to a single value. For example, we may also be interested
 in CBF and CBV images. In ``nilearn``, the ``dataset.neurovault`` module
 provides ``IsIn`` which makes this easy :
@@ -134,7 +102,7 @@ We could also have used ``Contains`` :
 If we need regular expressions, we can also use ``Pattern`` :
 
     >>> fmri = fetch_neurovault( # doctest: +SKIP
-    ... modality=neurovault.Pattern('fmri-.*', neurovault.re.IGNORECASE), # doctest: +SKIP
+    ... modality=neurovault.Pattern('fmri(-.*)?', neurovault.re.IGNORECASE), # doctest: +SKIP
     ... max_images=7) # doctest: +SKIP
 
 The complete list of such special values available in
@@ -145,6 +113,32 @@ The complete list of such special values available in
 
 You can also use ``ResultFilter`` to easily express boolean logic
 (AND, OR, XOR, NOT).
+
+
+If you need more complex filters, and using dictionaries as shown above is not
+convenient, you can express filters as functions. The parameter
+``collection_filter`` should be a callable, which will be called once for each
+collection. The sole argument will be a dictionary containing the metadata for
+the collection. The filter should return ``True`` if the collection is to be
+kept, and ``False`` if it is to be discarded. ``image_filter`` does the same
+job for images. The default values for these parameters don't filter out
+anything.
+
+For example, suppose that for some weird reason you only want images that
+don't have too many metadata fields. An image should only be kept if
+its metadata has less than 50 fields.
+This will not be possible simply by comparing each key in a metadata
+dictionary to a required value, so we need to write our own filter:
+
+  >>> small_meta_images = fetch_neurovault(image_filter=lambda meta: len(meta) < 50, # doctest: +SKIP
+  ...                                      image_terms={}, max_images=7) # doctest: +SKIP
+
+Note that even if you specify a filter as a function, the default filters for
+``image_terms`` and ``collection_terms`` still apply; pass an empty dictionary
+if you want to disable them. Without ``image_terms={}`` in the call above,
+parcellations, images not in MNI space, etc. would be still be filtered out
+(default behaviour).
+
 
 Output
 ------
