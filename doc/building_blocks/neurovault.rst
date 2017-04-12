@@ -68,11 +68,6 @@ without waiting for a long time. To get all the images which match your
 filters, you should set max_images to ``None``, which means "get as many
 images as possible". The default for max_images is 100.
 
-Extra keyword arguments are treated as image filters, so we could also
-have written :
-
-    >>> bold = fetch_neurovault(modality='fMRI-BOLD', max_images=7) # doctest: +SKIP
-
 The default values for the ``collection_terms`` and ``image_terms`` parameters
 filter out empty collections, and exclude an image if one of the following is
 true:
@@ -82,6 +77,13 @@ true:
    - it is thresholded.
    - its map type is one of "ROI/mask", "anatomical", or "parcellation".
    - its image type is "atlas"
+
+Extra keyword arguments are treated as additional image filters, so if we want
+to keep the default filters, and add the requirement that the modality should
+be "fMRI-BOLD", we can write:
+
+    >>> bold = fetch_neurovault(modality='fMRI-BOLD', max_images=7) # doctest: +SKIP
+
 
 Sometimes the selection criteria are more complex than a simple
 comparison to a single value. For example, we may also be interested
@@ -115,29 +117,38 @@ You can also use ``ResultFilter`` to easily express boolean logic
 (AND, OR, XOR, NOT).
 
 
-If you need more complex filters, and using dictionaries as shown above is not
-convenient, you can express filters as functions. The parameter
+**If you need more complex filters**, and using dictionaries as shown above is
+not convenient, you can express filters as functions. The parameter
 ``collection_filter`` should be a callable, which will be called once for each
 collection. The sole argument will be a dictionary containing the metadata for
 the collection. The filter should return ``True`` if the collection is to be
 kept, and ``False`` if it is to be discarded. ``image_filter`` does the same
 job for images. The default values for these parameters don't filter out
 anything.
+Using a filter rather than a dictionary, the first example becomes:
 
-For example, suppose that for some weird reason you only want images that
-don't have too many metadata fields. An image should only be kept if
-its metadata has less than 50 fields.
-This will not be possible simply by comparing each key in a metadata
-dictionary to a required value, so we need to write our own filter:
+    >>> bold = fetch_neurovault(
+    ...     image_filter=lambda meta: meta.get('modality') == 'fMRI-BOLD',
+    ...     image_terms={}, max_images=7)
+
+.. note::
+
+  Even if you specify a filter as a function, the default filters for
+  ``image_terms`` and ``collection_terms`` still apply; pass an empty
+  dictionary if you want to disable them. Without ``image_terms={}`` in the
+  call above, parcellations, images not in MNI space, etc. would be still be
+  filtered out.
+
+
+The example above can be rewritten using dictionaries, but in some cases you
+will need to use ``image_filter`` or ``collection_filter``. For example,
+suppose that for some weird reason you only want images that don't have too
+many metadata fields - say, an image should only be kept if its metadata has
+less than 50 fields.  This cannot be done by simply comparing each key in a
+metadata dictionary to a required value, so we need to write our own filter:
 
   >>> small_meta_images = fetch_neurovault(image_filter=lambda meta: len(meta) < 50, # doctest: +SKIP
-  ...                                      image_terms={}, max_images=7) # doctest: +SKIP
-
-Note that even if you specify a filter as a function, the default filters for
-``image_terms`` and ``collection_terms`` still apply; pass an empty dictionary
-if you want to disable them. Without ``image_terms={}`` in the call above,
-parcellations, images not in MNI space, etc. would be still be filtered out
-(default behaviour).
+  ...                                      max_images=7) # doctest: +SKIP
 
 
 Output

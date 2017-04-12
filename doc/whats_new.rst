@@ -74,10 +74,9 @@ Enhancements
       :func:`nilearn.datasets.fetch_surf_nki_enhanced` gives you resting state
       data preprocessed and projected to fsaverage5 surface space.
 
-    - New data fetcher functions
-      :func:`nilearn.datasets.fetch_neurovault` and
-      :func:`nilearn.datasets.fetch_neurovault` helps you download statistical
-      maps from the Neurovault (http://neurovault.org) platform.
+    - New data fetcher functions :func:`nilearn.datasets.fetch_neurovault` and
+      :func:`nilearn.datasets.fetch_neurovault_ids` help you download
+      statistical maps from the Neurovault (http://neurovault.org) platform.
 
     - Two good examples in plotting gallery shows how to fetch atlas and NKI
       data and used for plotting on brain surface.
