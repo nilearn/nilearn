@@ -1,9 +1,42 @@
 0.3.0
 ======
 
-Details of this release are listed below. Please checkout in **0.3.0
-beta** release section for minimum version support of dependencies, latest
-updates, highlights, changelog and enhancements.
+In addition, more details of this release are listed below. Please checkout
+in **0.3.0 beta** release section for minimum version support of dependencies,
+latest updates, highlights, changelog and enhancements.
+
+Changelog
+---------
+
+    - Function `find_cut_slices` now supports to accept Nifti1Image as an
+      input for argument `img`.
+
+    - Helper functions `_get_mask_volume` and `_adjust_screening_percentile`
+      are now moved to param_validation file in utilties module to be used in
+      common with Decoder object.
+
+Bug fix
+--------
+
+    - Fix bug uncompressing tar files with datasets fetcher.
+
+    - Fixed bunch of CircleCI documentation build failures.
+
+    - Fixed deprecations `set_axis_bgcolor` related to matplotlib in
+      plotting functions.
+
+    - Fixed bug related to not accepting a list of arrays as an input to
+      unmask, in masking module.
+
+Enhancements
+-------------
+
+    - ANOVA SVM example on Haxby datasets `plot_haxby_anova_svm` in Decoding section
+      now uses `SelectPercentile` to select voxels rather than `SelectKBest`.
+
+    - New function `fast_svd` implementation in base decomposition module to
+      Automatically switch between randomized and lapack SVD (heuristic
+      of scikit-learn).
 
 0.3.0 beta
 ===========
