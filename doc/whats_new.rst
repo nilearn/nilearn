@@ -1,3 +1,10 @@
+0.3.0
+======
+
+Details of this release are listed below. Please checkout in **0.3.0
+beta** release section for minimum version support of dependencies, latest
+updates, highlights, changelog and enhancements.
+
 0.3.0 beta
 ===========
 
@@ -12,8 +19,8 @@ Highlights
 
 * A function to break a parcellation into its connected components
 
-* **Dropped support for scikit-learn 0.14** Minimum supported version is
-  now 0.15.
+* **Dropped support for scikit-learn older than 0.14.1** Minimum supported version
+  is now 0.14.1.
 
 * **Dropped support for Python 2.6**
 
