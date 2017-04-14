@@ -7,6 +7,9 @@ decoding task.
 """
 
 #############################################################################
+# Loading the data
+#############################################################################
+
 # We start by loading the data
 
 # Fetch data using nilearn dataset fetcher
@@ -50,6 +53,7 @@ classification_target = stimuli[task_mask]
 
 #############################################################################
 # Training the decoder
+#############################################################################
 
 # Then we define the various classifiers that we use
 classifiers = ['svc_l2', 'svc_l1', 'logistic_l1', 'logistic_l2']
@@ -84,20 +88,28 @@ for classifier_name in sorted(classifiers):
             np.mean(classifiers_data[classifier_name]['score'][category]),
             np.std(classifiers_data[classifier_name]['score'][category])))
 
+    # Adding the average performance per estimator
+    scores = classifiers_data[classifier_name]['score']
+    scores['AVERAGE'] = np.mean(scores.values(), axis=0)
+    classifiers_data[classifier_name]['score'] = scores
+
 ###############################################################################
 # Visualization
+#############################################################################
 
 # Then we make a rudimentary diagram
 import matplotlib.pyplot as plt
-plt.figure()
+plt.figure(figsize=(6, 6))
 
-tick_position = np.arange(len(categories))
-plt.yticks(tick_position + 0.5, categories)
+all_categories = np.sort(np.hstack([categories, 'AVERAGE']))
+tick_position = np.arange(len(all_categories))
+plt.yticks(tick_position + 0.5, all_categories)
 
 for i, (color, classifier_name) in enumerate(zip(['b', 'm', 'k', 'r'],
                                                  sorted(classifiers))):
     score_means = [np.mean(classifiers_data[classifier_name]['score'][category])
-                   for category in categories]
+                   for category in all_categories]
+
     plt.barh(tick_position, score_means,
              label=classifier_name.replace('_', ' '),
              height=.2, color=color)
@@ -105,7 +117,7 @@ for i, (color, classifier_name) in enumerate(zip(['b', 'm', 'k', 'r'],
 
 plt.xlabel('Classification accurancy (AUC score)')
 plt.ylabel('Visual stimuli category')
-plt.xlim(xmin=0)
+plt.xlim(xmin=0.5)
 plt.legend(loc='lower left', ncol=1)
 plt.title('Category-specific classification accuracy for different classifiers')
 plt.tight_layout()

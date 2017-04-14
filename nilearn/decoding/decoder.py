@@ -39,7 +39,7 @@ from .._utils.fixes import check_cv
 from .._utils.param_validation import check_feature_screening
 from .._utils import CacheMixin
 
-
+# XXX check the prni 2016
 SUPPORTED_ESTIMATORS = dict(
     svc_l1=LinearSVC(penalty='l1', dual=False),
     svc_l2=LinearSVC(penalty='l2'),
@@ -222,7 +222,7 @@ class BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
         If smoothing_fwhm is not None, it gives the size in millimeters of the
         spatial smoothing to apply to the signal.
 
-    standardize : bool, optional. Default: None
+    standardize : bool, optional. Default: True
         If standardize is True, the time-series are centered and normed:
         their variance is put to 1 in the time dimension.
 
@@ -621,7 +621,7 @@ class Decoder(BaseDecoder):
         If smoothing_fwhm is not None, it gives the size in millimeters of the
         spatial smoothing to apply to the signal.
 
-    standardize : bool, optional. Default: None
+    standardize : bool, optional. Default: True
         If standardize is True, the time-series are centered and normed:
         their variance is put to 1 in the time dimension.
 
@@ -755,7 +755,7 @@ class DecoderRegressor(BaseDecoder):
         If smoothing_fwhm is not None, it gives the size in millimeters of the
         spatial smoothing to apply to the signal.
 
-    standardize : bool, optional. Default: None
+    standardize : bool, optional. Default: True
         If standardize is True, the time-series are centered and normed:
         their variance is put to 1 in the time dimension.
 

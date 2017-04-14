@@ -49,7 +49,7 @@ ____
 
 ######################################################################
 # Loading the data
-
+######################################################################
 # First, we load the data
 import numpy as np
 from nilearn import datasets
@@ -79,6 +79,7 @@ gm_maps_masked = variance_threshold.inverse_transform(gm_maps_thresholded)
 mask = nifti_masker.inverse_transform(variance_threshold.get_support())
 ###############################################################################
 # Training the decoder
+######################################################################
 
 # To save time (because these are anat images with many voxels), we include
 # only the 5-percent voxels most correlated with the age variable to fit.
@@ -105,6 +106,7 @@ print("=== DECODER ===")
 print("r2 for the cross-validation: %f" % prediction_score)
 print("")
 
+######################################################################
 # One can also use other scores to measure the performance of the decoder
 from sklearn.metrics.scorer import mean_absolute_error
 cv_y_pred = decoder.cv_y_pred_
@@ -118,6 +120,7 @@ print("")
 
 ######################################################################
 # Visualization
+######################################################################
 weight_img = decoder.coef_img_['beta']
 
 # Create the figure
@@ -128,6 +131,7 @@ display = plot_stat_map(weight_img, bg_img=bg_filename,
                         display_mode='z', cut_coords=[-6],
                         title="Decoder r2: %g" % prediction_score)
 
+######################################################################
 # Visualize the quality of predictions
 import matplotlib.pyplot as plt
 plt.figure()
@@ -138,6 +142,8 @@ ax1.plot(age_test, label="True age", linewidth=linewidth)
 ax1.plot(age_pred, '--', c="g", label="Predicted age", linewidth=linewidth)
 ax1.set_ylabel("age")
 plt.legend(loc="best")
+######################################################################
+
 ax2 = plt.subplot("212")
 ax2.plot(age_test - age_pred, label="True age - predicted age",
          linewidth=linewidth)
@@ -146,7 +152,8 @@ plt.legend(loc="best")
 
 
 ###############################################################################
-# Inference with massively univariate model
+# Comparing to massi-univariate analysis
+###############################################################################
 print("Massively univariate model")
 
 # First, we have to use the mask that we obtained after the variance
@@ -166,13 +173,12 @@ signed_neg_log_pvals_unmasked = nifti_masker.inverse_transform(
 
 # Show results
 threshold = -np.log10(0.1)  # 10% corrected
-
+fig = plt.figure(figsize=(5, 7), facecolor='k')
 display = plot_stat_map(signed_neg_log_pvals_unmasked, bg_img=bg_filename,
                         threshold=threshold, cmap=plt.cm.RdBu_r,
-                        display_mode='z', cut_coords=[-6],
-                        title='Negative $\log_{10}$ p-values'
-                        '\n(Non-parametric + max-type correction)')
-
+                        display_mode='z', cut_coords=[-6], figure=fig)
+title = 'Negative $\log_{10}$ p-values\n(Non-parametric + max-type correction)'
+display.title(title, y=1.2)
 n_detections = (signed_neg_log_pvals_unmasked.get_data() > threshold).sum()
 print('\n%d detections' % n_detections)
 

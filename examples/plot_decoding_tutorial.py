@@ -181,10 +181,12 @@ for train, test in cv:
 decoder = Decoder(estimator='svc', mask=mask_filename, standardize=True, cv=cv)
 decoder.fit(fmri_niimgs, conditions)
 
-print(decoder.cv_scores_)
+print(decoder.cv_scores_['face'])
+print(decoder.cv_scores_['cat'])
+
 
 # The decoder also gives the best performing parameters per fold.
-print(decoder.cv_params_)
+print(decoder.cv_params_['face'])
 
 
 ###########################################################################
