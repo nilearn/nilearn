@@ -12,6 +12,7 @@ reproducing a face vs house discrimination task on the study Haxby 2001.
 """
 ######################################################################
 # Loading the data
+######################################################################
 
 # First, we load the Haxby dataset
 from nilearn.datasets import fetch_haxby
@@ -46,6 +47,7 @@ y_test = target[condition_mask_test]
 
 ######################################################################
 # Fit and predict with the decoder
+######################################################################
 
 # Note that for this classification task both classes contain the same number
 # of samples (is balanced). Then, we can use the accuracy to measure the
@@ -66,6 +68,8 @@ print("Decoder classification accuracy : %g%%" % accuracy)
 
 ######################################################################
 # Visualization
+######################################################################
+
 weight_img = decoder.coef_img_[b"face"]
 
 from nilearn.image import mean_img

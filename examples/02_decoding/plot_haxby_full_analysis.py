@@ -15,6 +15,7 @@ that have been defined via a standard GLM-based analysis.
 
 ##########################################################################
 # First we load and prepare the data
+##########################################################################
 
 # Fetch data using nilearn dataset fetcher
 from nilearn import datasets
@@ -48,6 +49,7 @@ session_labels = labels["chunks"][np.logical_not(resting_state)]
 
 ##########################################################################
 # Then we use scikit-learn for decoding on the different masks
+##########################################################################
 
 # The classifier: a support vector classifier
 from sklearn.svm import SVC
@@ -99,6 +101,9 @@ for mask_name in mask_names:
 
 
 ##########################################################################
+# Visualization
+##########################################################################
+
 # We make a simple bar plot to summarize the results
 import matplotlib.pyplot as plt
 plt.figure()
