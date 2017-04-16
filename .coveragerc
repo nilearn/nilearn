@@ -1,0 +1,7 @@
+# From http://levibostian.com/python-code-coverage-and-coveralls-io/
+[report]
+omit =  
+    */continuous_integration/*
+    */examples/*
+    *__init__*
+    */plotting/glass_brain_files/*
