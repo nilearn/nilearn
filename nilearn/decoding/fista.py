@@ -163,6 +163,9 @@ def mfista(f1_grad, f2_prox, total_energy, lipschitz_constant, w_size,
     history = []
     w_old = w.copy()
 
+    # axpy blas routine: fast y <- a*x + y
+    inplace_add_mult, = linalg.get_blas_funcs(('axpy',), (w, ))
+
     # FISTA loop
     for i in range(max_iter):
         history.append(old_energy)
@@ -184,7 +187,9 @@ def mfista(f1_grad, f2_prox, total_energy, lipschitz_constant, w_size,
 
         # backward (prox) step
         for _ in range(10):
-            w, prox_info = f2_prox(z - stepsize * gradient_buffer, stepsize,
+            # z <- -stepsize * gradient_buffer + z
+            z = inplace_add_mult(gradient_buffer, z, a=-stepsize)
+            w, prox_info = f2_prox(z, stepsize,
                                    dgap_factor * dgap_tol, init=w)
             energy = total_energy(w)
             if ista_step and prox_info['converged'] and old_energy <= energy:
@@ -231,7 +236,7 @@ def mfista(f1_grad, f2_prox, total_energy, lipschitz_constant, w_size,
             #
             # For this reason, we rely more on the linesearch-like
             # strategy to set the dgap_tol
-            dgap_tol = abs(energy_delta) / (i + 1.)
+            dgap_tol = abs(energy_delta)
 
         # dgap_tol house-keeping
         if energy < best_energy:
@@ -243,4 +248,5 @@ def mfista(f1_grad, f2_prox, total_energy, lipschitz_constant, w_size,
 
     init = dict(w=best_w.copy(), z=best_z, t=best_t, dgap_tol=best_dgap_tol,
                 stepsize=stepsize)
+
     return best_w, history, init
