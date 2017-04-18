@@ -8,8 +8,8 @@ latest updates, highlights, changelog and enhancements.
 Changelog
 ---------
 
-    - Function `find_cut_slices` now supports to accept Nifti1Image as an
-      input for argument `img`.
+    - Function :func:`nilearn.plotting.find_cut_slices` now supports to accept
+      Nifti1Image as an input for argument `img`.
 
     - Helper functions `_get_mask_volume` and `_adjust_screening_percentile`
       are now moved to param_validation file in utilties module to be used in
