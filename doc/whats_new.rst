@@ -1,3 +1,14 @@
+0.3.1
+=====
+
+Enhancements
+-------------
+    - New data fetcher functions :func:`nilearn.datasets.fetch_neurovault` and
+      :func:`nilearn.datasets.fetch_neurovault_ids` help you download
+      statistical maps from the Neurovault (http://neurovault.org) platform.
+
+
+
 0.3.0
 ======
 
