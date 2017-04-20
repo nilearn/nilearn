@@ -111,8 +111,8 @@ def _cosine_drift(period_cut, frame_times):
     return cosine_drift
 
 
-def _blank_drift(frame_times):
-    """ Create the blank drift matrix
+def _none_drift(frame_times):
+    """ Create an intercept vector
 
     Returns
     -------
@@ -126,7 +126,7 @@ def _make_drift(drift_model, frame_times, order=1, period_cut=128.):
 
     Parameters
     ----------
-    drift_model : {'polynomial', 'cosine', 'blank'},
+    drift_model : {'polynomial', 'cosine', None},
         string that specifies the desired drift model
 
     frame_times : array of shape(n_scans),
@@ -146,13 +146,15 @@ def _make_drift(drift_model, frame_times, order=1, period_cut=128.):
     names : list of length(n_drifts),
         the associated names
     """
-    drift_model = drift_model.lower()   # for robust comparisons
+    from .utils import _basestring
+    if isinstance(drift_model, _basestring):
+        drift_model = drift_model.lower()  # for robust comparisons
     if drift_model == 'polynomial':
         drift = _poly_drift(order, frame_times)
     elif drift_model == 'cosine':
         drift = _cosine_drift(period_cut, frame_times)
-    elif drift_model == 'blank':
-        drift = _blank_drift(frame_times)
+    elif drift_model is None:
+        drift = _none_drift(frame_times)
     else:
         raise NotImplementedError("Unknown drift model %r" % (drift_model))
     names = []
@@ -291,7 +293,7 @@ def make_design_matrix(
 
     drift_model : string, optional
         Specifies the desired drift model,
-        It can be 'polynomial', 'cosine' or 'blank'.
+        It can be 'polynomial', 'cosine' or None.
 
     period_cut : float, optional
         Cut period of the low-pass filter in seconds.
@@ -360,7 +362,7 @@ def make_design_matrix(
         names += add_reg_names
 
     # step 3: drifts
-    drift, dnames = _make_drift(drift_model.lower(), frame_times, drift_order,
+    drift, dnames = _make_drift(drift_model, frame_times, drift_order,
                                 period_cut)
 
     if matrix is not None:
