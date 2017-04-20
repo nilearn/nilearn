@@ -35,61 +35,22 @@ example, we can download the data from the
 `Haxby 2001 paper <http://dx.doi.org/10.1126/science.1063736>`_ ::
 
     >>> from nilearn import datasets
-    >>> dataset = datasets.fetch_haxby() # doctest: +SKIP
+    >>> haxby_dataset = datasets.fetch_haxby() # doctest: +SKIP
 
 `dataset.func` contains filenames referring to dataset files on the disk::
 
-  >>> list(sorted(dataset.keys())) # doctest: +SKIP
+  >>> list(sorted(haxby_dataset.keys())) # doctest: +SKIP
   ['anat', 'description', 'func', 'mask', 'mask_face', 'mask_face_little', 'mask_house', 'mask_house_little', 'mask_vt', 'session_target']
-  >>> dataset.func # doctest: +ELLIPSIS +SKIP
+  >>> haxby_dataset.func # doctest: +ELLIPSIS +SKIP
   ['.../haxby2001/subj2/bold.nii.gz']
+  >>> fmri_filename = haxby_dataset.func[0]
 
-Access supplementary information on the dataset:
+Access supplementary information on the dataset::
 
   >>> print(haxby_dataset['description']) # doctest: +SKIP
 
 The complete list of the data-downloading functions can be found in the
 :ref:`reference documentation for the datasets <datasets_ref>`.
-
-Loading non image data: experiment description
------------------------------------------------
-
-An experiment may need additional information about subjects, sessions or
-experiments. In the Haxby experiment, fMRI data are acquired while
-presenting different category of pictures to the subject (face, cat, ...)
-and the goal of this experiment is to predict which category is presented
-to the subjects from the brain activation.
-
-These conditions are presented as string into a CSV file. The numpy function
-`recfromcsv` is very useful to load this kind of data.
-
-.. literalinclude:: ../../examples/plot_decoding_tutorial.py
-    :start-after: # We use numpy to load them in an array.
-    :end-before: ###########################################################################
-
-.. seealso::
-
-   * `pandas <http://pandas.pydata.org/>`_ is a very useful Python
-     library to load CSV files and process their data
-
-For example, we will now remove the *rest* condition from our dataset.
-This can be done as follows:
-
-.. literalinclude:: ../../examples/plot_decoding_tutorial.py
-    :start-after: # mask of the samples belonging to the condition.
-    :end-before: ###########################################################################
-
-
-.. note::
-
-    If you are not comfortable with this kind of data processing, do not
-    worry: there are plenty of examples in nilearn that allows you to easily
-    load data from provided datasets. Do not hesitate to copy/paste the
-    code and adapt it to your own data format if needed. More information
-    can be found in the :ref:`data manipulation <data_manipulation>`
-    section.
-
-.. _masking:
 
 Masking the data: from 4D image to 2D array
 ---------------------------------------------
@@ -132,12 +93,12 @@ provided with the Haxby dataset.
 
 The :class:`NiftiMasker` can be seen as a *tube* that transforms data
 from 4D images to 2D arrays, but first it needs to 'fit' this data in
-order to learn simple parameters from it, such as its shape:
+order to learn simple parameters from it, such as its shape::
 
-.. literalinclude:: ../../examples/plot_decoding_tutorial.py
-    :start-after: # Now we use the NiftiMasker.
-    :end-before: ###########################################################################
-
+    >>> from nilearn.input_data import NiftiMasker
+    >>> masker = NiftiMasker(mask_img=haxby_dataset.mask_vt[0],
+                            standardize=True)
+    >>> fmri_masked = masker.fit_transform(fmri_filename)
 
 Note that you can call `nifti_masker.transform(dataset.func[1])` on new
 data to mask it in a similar way as the data that was used during the
@@ -153,6 +114,45 @@ one for you in the `fit` step. The generated mask can be accessed via the
 Detailed information on automatic mask computation can be found in:
 :ref:`extracting_data`.
 
+
+Loading non image data: experiment description
+-----------------------------------------------
+
+An experiment may need additional information about subjects, sessions or
+experiments. In the Haxby experiment, fMRI data are acquired while
+presenting different category of pictures to the subject (face, cat, ...)
+and the goal of this experiment is to predict which category is presented
+to the subjects from the brain activation.
+
+These conditions are presented as string into a CSV file. The numpy function
+`recfromcsv` is very useful to load this kind of data::
+
+    >>> behavioral = np.recfromcsv(haxby_dataset.session_target[0], delimiter=" ")
+    >>> conditions = behavioral['labels']
+
+.. seealso::
+
+   * `pandas <http://pandas.pydata.org/>`_ is a very useful Python
+     library to load CSV files and process their data
+
+For example, we will now just consider the conditions *face* and *cat*. 
+This can be done as follows::
+
+    >>> condition_mask = np.logical_or(conditions == b'face', conditions == b'cat')
+    >>> fmri_masked = fmri_masked[condition_mask]
+    >>> conditions = conditions[condition_mask]
+
+.. note::
+
+    If you are not comfortable with this kind of data processing, do not
+    worry: there are plenty of examples in nilearn that allows you to easily
+    load data from provided datasets. Do not hesitate to copy/paste the
+    code and adapt it to your own data format if needed. More information
+    can be found in the :ref:`data manipulation <data_manipulation>`
+    section.
+
+.. _masking:
+
 Applying a scikit-learn machine learning method
 ================================================
 
@@ -160,12 +160,11 @@ Now that we have a 2D array, we can apply any estimator from the
 scikit-learn, using its `fit`, `predict` or `transform` methods.
 
 Here, we use scikit-learn Support Vector Classification to learn how to
-predict the category of picture seen by the subject:
+predict the category of picture seen by the subject::
 
-.. literalinclude:: ../../examples/plot_decoding_tutorial.py
-    :start-after: # We first fit it on the data
-    :end-before: # Let's measure the error rate:
-
+    >>> from sklearn.svm import SVC
+    >>> svc = SVC(kernel='linear')
+    >>> svc.fit(fmri_masked, conditions)
 
 We will not detail it here since there is a very good documentation about it in the
 `scikit-learn documentation <http://scikit-learn.org/stable/modules/svm.html#classification>`__
@@ -178,11 +177,10 @@ method `inverse_transform` on your processed data. As you may want to
 unmask several kinds of data (not only the data that you previously
 masked but also the results of an algorithm), the masker is clever and
 can take data of dimension 1D (resp. 2D) to convert it back to 3D
-(resp. 4D).
+(resp. 4D)::
 
-.. literalinclude:: ../../examples/plot_decoding_tutorial.py
-    :start-after: # For this, we can call inverse_transform on the NiftiMasker:
-    :end-before: ###########################################################################
+    >>> coef_ = svc.coef_
+    >>> coef_img = masker.inverse_transform(coef_)
 
 Here we want to see the discriminating weights of some voxels.
 
