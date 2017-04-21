@@ -1,13 +1,32 @@
 0.3.1
 =====
 
+Changelog
+---------
+
+    - The function `nilearn.connectome.sym_to_vec` is is deprecated and will be removed in future
+      release. Use :func:`nilearn.connectome.sym_matrix_to_vec` instead.
+
 Enhancements
 -------------
     - New data fetcher functions :func:`nilearn.datasets.fetch_neurovault` and
       :func:`nilearn.datasets.fetch_neurovault_ids` help you download
       statistical maps from the Neurovault (http://neurovault.org) platform.
 
+    - New function :func:`nilearn.connectome.vec_to_sym_matrix` reshapes
+      vectors to symmetric matrices. It acts as the reverse of function
+      :func:`nilearn.connectome.sym_matrix_to_vec`.
 
+    - Add an option allowing to vectorize connectivity matrices returned by the
+      "transform" method of :class:`nilearn.connectome.ConnectivityMeasure`.
+
+    - :class:`nilearn.connectome.ConnectivityMeasure` now exposes an
+      "inverse_transform" method, useful for going back from vectorized
+      connectivity coefficients to connectivity matrices. Also, it allows to
+      recover the covariance matrices for the "tangent" kind.
+
+    - Reworking and renaming of connectivity measures example. 
+      test vectorize and inverse_transform
 
 0.3.0
 ======
@@ -224,7 +243,7 @@ API changes summary
 New features
 ............
 
-    - Add an option to select only off-diagonal elements in sym_to_vec. Also,
+    - Add an option to select only off-diagonal elements in sym_matrix_to_vec. Also,
       the scaling of matrices is modified: we divide the diagonal by sqrt(2)
       instead of multiplying the off-diagonal elements.
 
@@ -444,7 +463,7 @@ New features
    - The new module :mod:`nilearn.connectome` now has class
      :class:`nilearn.connectome.ConnectivityMeasure` can be useful for
      computing functional connectivity matrices.
-   - The function :func:`nilearn.connectome.sym_to_vec` in same module
+   - The function :func:`nilearn.connectome.sym_matrix_to_vec` in same module
      :mod:`nilearn.connectome` is also implemented as a helper function to
      :class:`nilearn.connectome.ConnectivityMeasure`.
    - The class :class:`nilearn.decomposition.DictLearning` in

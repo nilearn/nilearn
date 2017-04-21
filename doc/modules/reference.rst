@@ -40,7 +40,8 @@ uses.
    :toctree: generated/
    :template: function.rst
 
-   sym_to_vec
+   sym_matrix_to_vec
+   vec_to_sym_matrix
    group_sparse_covariance
    cov_to_corr
    prec_to_partial
