@@ -342,7 +342,7 @@ def fetch_spm_auditory(data_dir=None, data_name='spm_auditory',
             vol = nibabel.load(x)
             if len(vol.shape) == 4:
                 vol = nibabel.Nifti1Image(vol.get_data()[:, :, :, 0],
-                                          vol.get_affine())
+                                          vol.affine)
                 nibabel.save(vol, x)
 
         _subject_data["anat"] = [subject_data[x] for x in subject_data.keys()
@@ -353,7 +353,7 @@ def fetch_spm_auditory(data_dir=None, data_name='spm_auditory',
         vol = nibabel.load(_subject_data["anat"])
         if len(vol.shape) == 4:
             vol = nibabel.Nifti1Image(vol.get_data()[:, :, :, 0],
-                                      vol.get_affine())
+                                      vol.affine)
             nibabel.save(vol, _subject_data["anat"])
 
         return Bunch(**_subject_data)

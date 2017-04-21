@@ -43,7 +43,7 @@ period_cut = 128.
 # Resample the images
 fmri_img = [concat_imgs(subject_data.func1, auto_resample=True),
             concat_imgs(subject_data.func2, auto_resample=True)]
-affine, shape = fmri_img[0].get_affine(), fmri_img[0].shape
+affine, shape = fmri_img[0].affine, fmri_img[0].shape
 print('Resampling the second image (this takes time)...')
 fmri_img[1] = resample_img(fmri_img[1], affine, shape[:3])
 
@@ -51,7 +51,7 @@ fmri_img[1] = resample_img(fmri_img[1], affine, shape[:3])
 # Create mean image for display
 mean_image = mean_img(fmri_img)
 for idx, img in enumerate(fmri_img):
-    fmri_img[idx] = Nifti1Image(img.get_data(), img.get_affine())
+    fmri_img[idx] = Nifti1Image(img.get_data(), img.affine)
 
 #########################################################################
 # Make design matrices

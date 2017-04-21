@@ -112,7 +112,7 @@ def test_high_level_glm_with_paths():
         multi_session_model = FirstLevelModel(mask=None).fit(
             fmri_files, design_matrices=design_files)
         z_image = multi_session_model.compute_contrast(np.eye(rk)[1])
-        assert_array_equal(z_image.get_affine(), load(mask_file).get_affine())
+        assert_array_equal(z_image.affine, load(mask_file).affine)
         assert_true(z_image.get_data().std() < 3.)
         # Delete objects attached to files to avoid WindowsError when deleting
         # temporary directory

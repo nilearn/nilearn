@@ -371,7 +371,7 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
             # We create a dummy mask to preserve functionality of api
             ref_img = check_niimg(run_imgs[0])
             self.mask = Nifti1Image(np.ones(ref_img.shape[:3]),
-                                    ref_img.get_affine())
+                                    ref_img.affine)
         if not isinstance(self.mask, NiftiMasker):
             self.masker_ = NiftiMasker(
                 mask_img=self.mask, smoothing_fwhm=self.smoothing_fwhm,

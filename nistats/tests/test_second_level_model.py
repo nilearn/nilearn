@@ -57,7 +57,7 @@ def test_high_level_glm_with_paths():
         c1 = np.eye(len(model.design_matrix_.columns))[0]
         z_image = model.compute_contrast(c1, output_type='z_score')
         assert_true(isinstance(z_image, Nifti1Image))
-        assert_array_equal(z_image.get_affine(), load(mask).get_affine())
+        assert_array_equal(z_image.affine, load(mask).affine)
         # Delete objects attached to files to avoid WindowsError when deleting
         # temporary directory
         del z_image, FUNCFILE, func_img, model
