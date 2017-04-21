@@ -4,7 +4,7 @@
 Changelog
 ---------
 
-    - The function `nilearn.connectome.sym_to_vec` is is deprecated and will be removed in future
+    - The function sym_to_vec is is deprecated and will be removed in future
       release. Use :func:`nilearn.connectome.sym_matrix_to_vec` instead.
 
 Enhancements
