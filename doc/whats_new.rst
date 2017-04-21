@@ -242,7 +242,7 @@ API changes summary
 New features
 ............
 
-    - Add an option to select only off-diagonal elements in sym_matrix_to_vec. Also,
+    - Add an option to select only off-diagonal elements in sym_to_vec. Also,
       the scaling of matrices is modified: we divide the diagonal by sqrt(2)
       instead of multiplying the off-diagonal elements.
 
@@ -462,7 +462,7 @@ New features
    - The new module :mod:`nilearn.connectome` now has class
      :class:`nilearn.connectome.ConnectivityMeasure` can be useful for
      computing functional connectivity matrices.
-   - The function :func:`nilearn.connectome.sym_matrix_to_vec` in same module
+   - The function :func:`nilearn.connectome.sym_to_vec` in same module
      :mod:`nilearn.connectome` is also implemented as a helper function to
      :class:`nilearn.connectome.ConnectivityMeasure`.
    - The class :class:`nilearn.decomposition.DictLearning` in
