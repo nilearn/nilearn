@@ -6,7 +6,7 @@ This module implements fMRI Design Matrix creation.
 Design matrices are represented by Pandas DataFrames
 Computations of the different parts of the design matrix are confined
 to the make_design_matrix function, that create a DataFrame
-All the others are ancillary functions.
+All the others are ancillaryg functions.
 
 Design matrices contain three different types of regressors:
 
@@ -503,8 +503,7 @@ def create_second_level_design(subjects_label, confounds=None):
 
     # check design matrix is not singular
     epsilon = sys.float_info.epsilon
-    if np.linalg.cond(design_matrix.as_matrix()) < (1. / epsilon):
+    if np.linalg.cond(design_matrix.as_matrix()) > design_matrix.size:
         warn('Attention: Design matrix is singular. Aberrant estimates '
              'are expected.')
-
     return design_matrix

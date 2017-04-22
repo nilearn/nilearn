@@ -137,7 +137,7 @@ class SecondLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
             order inconsistencies when extracting the maps. So the rows of the
             automatically computed design matrix, if not provided, will
             correspond to the sorted subject_label column.
-
+ 
             If list of Niimg-like objects then this is taken literally as Y
             for the model fit and design_matrix must be provided.
 

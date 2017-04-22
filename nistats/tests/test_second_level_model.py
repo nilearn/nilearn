@@ -100,6 +100,7 @@ def test_fmri_inputs():
         # First level models as input
         SecondLevelModel(mask=mask).fit(flms)
         SecondLevelModel().fit(flms)
+        # Note : the following one creates a singular design matrix
         SecondLevelModel().fit(flms, confounds)
         SecondLevelModel().fit(flms, None, sdes)
         # dataframes as input
