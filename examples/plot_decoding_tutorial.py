@@ -47,7 +47,7 @@ print('First subject functional nifti images (4D) are at: %s' %
 # fMRI data on a mask and convert it to data series.
 #
 # The mask is a mask of the Ventral Temporal streaming coming from the
-# Haxby study:
+# Haxby study
 
 mask_filename = haxby_dataset.mask_vt[0]
 

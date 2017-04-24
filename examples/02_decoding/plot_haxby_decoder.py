@@ -29,7 +29,8 @@ labels = np.recfromcsv(labels_filenames, delimiter=" ")
 target = labels['labels']
 condition_mask = np.logical_or(target == b"face", target == b"house")
 
-# Split data into train and test samples, using the chunks
+# Split data into train and test samples, using the chunks.
+# Here, we take 6 sessions to train and 6 to test
 condition_mask_train = np.logical_and(condition_mask, labels['chunks'] <= 6)
 condition_mask_test = np.logical_and(condition_mask, labels['chunks'] > 6)
 
@@ -59,12 +60,12 @@ decoder = Decoder(estimator='svc', mask_strategy='epi', smoothing_fwhm=4,
 
 decoder.fit(X_train, y_train)
 accuracy = np.mean(decoder.cv_scores_['house']) * 100
-print("Decoder cross-validation accuracy : %g%%" % accuracy)
+print("Decoder cross-validation accuracy : %f%%" % accuracy)
 
 # Testing on out-of-sample data
 y_pred = decoder.predict(X_test)
 accuracy = (y_pred == y_test).mean() * 100.
-print("Decoder classification accuracy : %g%%" % accuracy)
+print("Decoder classification accuracy : %f%%" % accuracy)
 
 ######################################################################
 # Visualization
@@ -78,6 +79,6 @@ background_img = mean_img(func_filenames)
 from nilearn.plotting import plot_stat_map, show
 plot_stat_map(weight_img, background_img, cut_coords=[-52, -5],
               display_mode="yz",
-              title="Decoder: accuracy %g%%" % accuracy)
+              title="Decoder: accuracy %f%%" % accuracy)
 
 show()

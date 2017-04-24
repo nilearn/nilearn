@@ -1,6 +1,6 @@
 """High-level decoding object that exposes standard classification and
 regression strategies such as SVM, LogisticRegression and Ridge, with optional
-feature selection, and integrated parameter selection.
+feature selection, and integrated hyper-parameter selection.
 """
 # Authors : Yannick Schwartz
 #           Andres Hoyos-Idrobo
@@ -67,7 +67,8 @@ def _check_param_grid(estimator, X, y, param_grid):
             loss = 'squared_hinge'
         else:
             raise ValueError("%s is an unknown estimator."
-                             "The supported estimators are: " % estimator)
+                             "The supported estimators are: %s" %
+                             (estimator, list(SUPPORTED_ESTIMATORS.keys())))
 
         # loss = l2 was deprecated after version 0.17
         if LooseVersion(sklearn.__version__) <= LooseVersion('0.17'):
@@ -161,7 +162,7 @@ def _parallel_fit(estimator, X, y, train, test, param_grid, is_classif, scorer,
 
 
 class BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
-    """A wrapper for popular classification/regression strategies for
+    """A wrapper for popular classification/regression strategies in
     neuroimaging.
 
     The `BaseDecoder` object supports classification and regression methods.
@@ -312,7 +313,7 @@ class BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
             the affine is considered the same for all.
 
         y : array or list of length n_samples
-            The dependent variable (age, sex, IQ, etc.).
+            The dependent variable (age, sex, IQ, yes/no, etc.).
             Target variable to predict. Must have exactly as many elements as
             3D images in niimg.
 
@@ -566,7 +567,7 @@ class BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
 
 
 class Decoder(BaseDecoder):
-    """A wrapper for popular classification strategies for neuroimaging.
+    """A wrapper for popular classification strategies in neuroimaging.
 
     The `Decoder` object supports classification methods.
     It implements a model selection scheme that averages the best models
@@ -700,7 +701,7 @@ class Decoder(BaseDecoder):
 
 
 class DecoderRegressor(BaseDecoder):
-    """A wrapper for popular regression strategies for neuroimaging.
+    """A wrapper for popular regression strategies in neuroimaging.
 
     The `DecoderRegressor` object supports regression methods.
     It implements a model selection scheme that averages the best models

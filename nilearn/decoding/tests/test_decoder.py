@@ -18,7 +18,7 @@ from nilearn.decoding.decoder import Decoder, DecoderRegressor, BaseDecoder
 from nilearn.decoding.decoder import _check_param_grid
 
 
-# Crete a test dataset
+# Create a test dataset
 rand = np.random.RandomState(0)
 X = rand.rand(100, 10)
 # Create different targets
