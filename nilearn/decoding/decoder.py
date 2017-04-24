@@ -39,7 +39,7 @@ from .._utils.fixes import check_cv
 from .._utils.param_validation import check_feature_screening
 from .._utils import CacheMixin
 
-# XXX check the prni 2016
+
 SUPPORTED_ESTIMATORS = dict(
     svc_l1=LinearSVC(penalty='l1', dual=False),
     svc_l2=LinearSVC(penalty='l2'),
