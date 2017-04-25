@@ -21,6 +21,10 @@ data_files = fetch_haxby()
 func_filenames = data_files.func[0]
 labels_filenames = data_files.session_target[0]
 
+# print basic information on the dataset
+print('First subject functional nifti images (4D) are at: %s' %
+      func_filenames)  # 4D data
+
 # Load Target labels
 import numpy as np
 labels = np.recfromcsv(labels_filenames, delimiter=" ")
