@@ -33,7 +33,7 @@ covariance (or correlation) matrix for signals from different brain
 regions. The same information can be represented as a weighted graph,
 vertices being brain regions, weights on edges being covariances
 (gaussian graphical model). However, coefficients in a covariance matrix
-reflects direct as well as indirect connections. Covariance matrices form
+reflect direct as well as indirect connections. Covariance matrices form
 very dense brain connectomes, and it is rather difficult to extract from
 them only the direct connections between two regions.
 
@@ -144,7 +144,7 @@ One specific case where this may be interesting is for group analysis
 across multiple subjects. Indeed, one challenge when doing statistics on
 the coefficients of a connectivity matrix is that the number of
 coefficients to compare grows quickly with the number of regions, and as
-a result correcting for multiple comparisions takes a heavy toll on
+a result correcting for multiple comparisons takes a heavy toll on
 statistical power.
 
 In such a situation, you can use the :class:`GroupSparseCovariance` and

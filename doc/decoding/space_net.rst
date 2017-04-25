@@ -29,7 +29,7 @@ SpaceNet implements spatial penalties which improve brain decoding power as well
   <https://www.ncbi.nlm.nih.gov/pubmed/23298747>`_)
 
 These regularize classification and regression
-problems in brain imaging. The result are brain maps which are both
+problems in brain imaging. The results are brain maps which are both
 sparse (i.e regression coefficients are zero everywhere, except at
 predictive voxels) and structured (blobby). The superiority of TV-L1
 over methods without structured priors like the Lasso, SVM, ANOVA,
@@ -50,7 +50,7 @@ things a bit faster. These include:
 - Continuation is used along the regularization path, where the
   solution of the optimization problem for a given value of the
   regularization parameter `alpha` is used as initialization
-  of for next the regularization (smaller) value on the regularization
+  for the next regularization (smaller) value on the regularization
   grid.
 
 **Implementation:** See `[Dohmatob et al. 2015 (PRNI)]

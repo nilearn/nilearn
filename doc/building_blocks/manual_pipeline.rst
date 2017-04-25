@@ -72,7 +72,7 @@ These conditions are presented as string into a CSV file. The numpy function
    * `pandas <http://pandas.pydata.org/>`_ is a very useful Python
      library to load CSV files and process their data
 
-For example, we will now remove the *rest* condition from our dataset.
+For example, we will now consider only the conditions *cat* and *face* from our dataset.
 This can be done as follows:
 
 .. literalinclude:: ../../examples/plot_decoding_tutorial.py
