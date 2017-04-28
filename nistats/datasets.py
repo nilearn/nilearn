@@ -8,7 +8,7 @@ import fnmatch
 import re
 import glob
 import json
-import nibabel
+import nibabel as nib
 from sklearn.datasets.base import Bunch
 
 from nilearn.datasets.utils import (
@@ -339,22 +339,22 @@ def fetch_spm_auditory(data_dir=None, data_name='spm_auditory',
 
         # volumes for this dataset of shape (64, 64, 64, 1); let's fix this
         for x in _subject_data["func"]:
-            vol = nibabel.load(x)
+            vol = nib.load(x)
             if len(vol.shape) == 4:
-                vol = nibabel.Nifti1Image(vol.get_data()[:, :, :, 0],
-                                          vol.affine)
-                nibabel.save(vol, x)
+                vol = nib.Nifti1Image(vol.get_data()[:, :, :, 0],
+                                      vol.affine)
+                vol.to_filename(x)
 
         _subject_data["anat"] = [subject_data[x] for x in subject_data.keys()
                                  if re.match("^sM00223_002\.img$",
                                              os.path.basename(x))][0]
 
         # ... same thing for anat
-        vol = nibabel.load(_subject_data["anat"])
+        vol = nib.load(_subject_data["anat"])
         if len(vol.shape) == 4:
-            vol = nibabel.Nifti1Image(vol.get_data()[:, :, :, 0],
-                                      vol.affine)
-            nibabel.save(vol, _subject_data["anat"])
+            vol = nib.Nifti1Image(vol.get_data()[:, :, :, 0],
+                                  vol.affine)
+            vol.to_filename(_subject_data["anat"])
 
         return Bunch(**_subject_data)
 

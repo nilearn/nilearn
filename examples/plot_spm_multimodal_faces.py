@@ -19,7 +19,6 @@ print(__doc__)
 import numpy as np
 from scipy.io import loadmat
 import pandas as pd
-from nibabel import Nifti1Image
 
 # Imports for GLM
 from nilearn.image import concat_imgs, resample_img, mean_img

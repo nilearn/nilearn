@@ -20,6 +20,7 @@ import json
 
 import numpy as np
 import pandas as pd
+<<<<<<< 8c233239cfc7d0bf57ca96a0c8a15c87e48549f1
 from nibabel import Nifti1Image, AnalyzeImage
 
 from sklearn.base import BaseEstimator, TransformerMixin, clone
@@ -364,7 +365,7 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         if self.mask is False:
             # We create a dummy mask to preserve functionality of api
             ref_img = check_niimg(run_imgs[0])
-            self.mask = Nifti1Image(np.ones(ref_img.shape[:3]),
+            self.mask = nib.Nifti1Image(np.ones(ref_img.shape[:3]),
                                     ref_img.affine)
         if not isinstance(self.mask, NiftiMasker):
             self.masker_ = NiftiMasker(
