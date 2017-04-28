@@ -178,7 +178,7 @@ def _convolve_regressors(paradigm, hrf_model, frame_times, fir_delays=[0],
 
     hrf_model : {'spm', 'spm + derivative', 'spm + derivative + dispersion',
         'glover', 'glover + derivative', 'glover + derivative + dispersion',
-        'fir'}
+        'fir', None}
         String that specifies the hemodynamic response function
 
     frame_times : array of shape (n_scans,)
@@ -288,7 +288,7 @@ def make_design_matrix(
 
     hrf_model : {'spm', 'spm + derivative', 'spm + derivative + dispersion',
         'glover', 'glover + derivative', 'glover + derivative + dispersion',
-        'fir'}, optional,
+        'fir', None}, optional,
         Specifies the hemodynamic response function
 
     drift_model : string, optional
@@ -349,8 +349,10 @@ def make_design_matrix(
     # step 1: paradigm-related regressors
     if paradigm is not None:
         # create the condition-related regressors
+        if isinstance(hrf_model, basestring):
+            hrf_model = hrf_model.lower()
         matrix, names = _convolve_regressors(
-            paradigm, hrf_model.lower(), frame_times, fir_delays, min_onset)
+            paradigm, hrf_model, frame_times, fir_delays, min_onset)
 
     # step 2: additional regressors
     if add_regs is not None:
