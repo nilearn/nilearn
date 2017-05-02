@@ -618,9 +618,3 @@ def test_fetch_neurovault_ids():
                 image_ids=[111], data_dir=data_dir, mode='offline')
             # should be back to the original version
             assert_equal(data['images_meta'][0]['figure'], '3A')
-        # try downloading collections that don't exist
-        # (get some HTTPErrors - 404);
-        # download stops early and raises warning
-        assert_warns(
-            UserWarning, neurovault.fetch_neurovault_ids,
-            data_dir=data_dir, collection_ids=range(-12, 0))
