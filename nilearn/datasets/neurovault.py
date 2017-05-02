@@ -47,12 +47,12 @@ _DEFAULT_MAX_IMAGES = 100
 # if _MAX_CONSECUTIVE_FAILS downloads fail in a row, we consider there is a
 # problem(e.g. no internet connection, or the Neurovault server is down), and
 # we abort the fetching.
-_MAX_CONSECUTIVE_FAILS = 10
+_MAX_CONSECUTIVE_FAILS = 500
 
 # if _MAX_FAILS_IN_COLLECTION images fail to be downloaded from the same
 # collection, we consider this collection is garbage and we move on to the
 # next collection.
-_MAX_FAILS_IN_COLLECTION = 10
+_MAX_FAILS_IN_COLLECTION = 100
 
 _DEBUG = 3
 _INFO = 2
