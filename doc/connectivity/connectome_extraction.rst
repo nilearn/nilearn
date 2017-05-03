@@ -250,7 +250,7 @@ Deviations from this mean in the tangent space are provided in the connectivitie
 .. topic:: **Full example**
 
     See the following example for a full file running the analysis:
-    :ref:`sphx_glr_auto_examples_03_connectivity_plot_connectivity_measures.py`
+    :ref:`sphx_glr_auto_examples_03_connectivity_plot_group_level_connectivity.py`
 
 .. topic:: **Exercise: computing connectivity in tangent space**
    :class: green

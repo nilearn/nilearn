@@ -1,13 +1,31 @@
 0.3.1
 =====
 
+Changelog
+---------
+
+    - The function sym_to_vec is deprecated and will be removed in
+      release 0.4. Use :func:`nilearn.connectome.sym_matrix_to_vec` instead.
+
 Enhancements
 -------------
     - New data fetcher functions :func:`nilearn.datasets.fetch_neurovault` and
       :func:`nilearn.datasets.fetch_neurovault_ids` help you download
       statistical maps from the Neurovault (http://neurovault.org) platform.
 
+    - New function :func:`nilearn.connectome.vec_to_sym_matrix` reshapes
+      vectors to symmetric matrices. It acts as the reverse of function
+      :func:`nilearn.connectome.sym_matrix_to_vec`.
 
+    - Add an option allowing to vectorize connectivity matrices returned by the
+      "transform" method of :class:`nilearn.connectome.ConnectivityMeasure`.
+
+    - :class:`nilearn.connectome.ConnectivityMeasure` now exposes an
+      "inverse_transform" method, useful for going back from vectorized
+      connectivity coefficients to connectivity matrices. Also, it allows to
+      recover the covariance matrices for the "tangent" kind.
+
+    - Reworking and renaming of connectivity measures example. 
 
 0.3.0
 ======
