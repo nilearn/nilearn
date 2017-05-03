@@ -42,7 +42,7 @@ import pandas as pd
 
 from .hemodynamic_models import compute_regressor, _orthogonalize
 from .experimental_paradigm import check_paradigm
-from .utils import full_rank
+from .utils import full_rank, _basestring
 
 ######################################################################
 # Ancillary functions
@@ -146,7 +146,6 @@ def _make_drift(drift_model, frame_times, order=1, period_cut=128.):
     names : list of length(n_drifts),
         the associated names
     """
-    from .utils import _basestring
     if isinstance(drift_model, _basestring):
         drift_model = drift_model.lower()  # for robust comparisons
     if drift_model == 'polynomial':
@@ -349,7 +348,7 @@ def make_design_matrix(
     # step 1: paradigm-related regressors
     if paradigm is not None:
         # create the condition-related regressors
-        if isinstance(hrf_model, basestring):
+        if isinstance(hrf_model, _basestring):
             hrf_model = hrf_model.lower()
         matrix, names = _convolve_regressors(
             paradigm, hrf_model, frame_times, fir_delays, min_onset)
