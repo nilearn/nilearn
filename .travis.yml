@@ -26,7 +26,7 @@ matrix:
       env: DISTRIB="neurodebian" PYTHON_VERSION="2.7"
     # Trying to get as close to the minimum required versions while
     # still having the package version available through conda
-    - env: DISTRIB="conda" PYTHON_VERSION="2.6"
+    - env: DISTRIB="conda" PYTHON_VERSION="2.7"
            NUMPY_VERSION="1.7.1" SCIPY_VERSION="0.11.0"
            SCIKIT_LEARN_VERSION="0.14.1" MATPLOTLIB_VERSION="1.1.1"
            NIBABEL_VERSION="1.1.0" PANDAS_VERSION="0.13.0"
