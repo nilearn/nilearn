@@ -9,13 +9,9 @@ Dictionary learning is a sparsity based decomposition method for extracting
 spatial maps. It extracts maps that are naturally sparse and usually cleaner
 than ICA
 
-    * Gael Varoquaux et al.
-      Multi-subject dictionary learning to segment an atlas of brain spontaneous
-      activity
-      Information Processing in Medical Imaging, 2011, pp. 562-573, Lecture Notes
-      in Computer Science
-
-Available on https://hal.inria.fr/inria-00588898/en/
+   * Arthur Mensch et al. `Compressed online dictionary learning for fast resting-state fMRI decomposition
+     <https://hal.archives-ouvertes.fr/hal-01271033/>`_,
+     ISBI 2016, Lecture Notes in Computer Science
 """
 ###############################################################################
 # Load ADHD rest dataset

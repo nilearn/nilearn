@@ -15,4 +15,5 @@ terms of data processing.
 .. toctree::
 
    manual_pipeline.rst
+   neurovault.rst
 

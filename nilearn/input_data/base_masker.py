@@ -133,7 +133,7 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
         Parameters
         ----------
         imgs: 3D/4D Niimg-like object
-            See http://nilearn.github.io/manipulating_images/input_output.html.
+            See http://nilearn.github.io/manipulating_images/input_output.html
             Images to process. It must boil down to a 4D image with scans
             number as last dimension.
 
@@ -156,7 +156,7 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
         Parameters
         ----------
         imgs: 3D/4D Niimg-like object
-            See http://nilearn.github.io/manipulating_images/input_output.html.
+            See http://nilearn.github.io/manipulating_images/input_output.html
             Images to process. It must boil down to a 4D image with scans
             number as last dimension.
 
@@ -181,7 +181,7 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
         Parameters
         ----------
         X : Niimg-like object
-            See http://nilearn.github.io/manipulating_images/input_output.html.
+            See http://nilearn.github.io/manipulating_images/input_output.html
 
         y : numpy array of shape [n_samples]
             Target values.

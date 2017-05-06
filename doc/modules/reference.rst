@@ -41,6 +41,8 @@ uses.
    :template: function.rst
 
    sym_to_vec
+   sym_matrix_to_vec
+   vec_to_sym_matrix
    group_sparse_covariance
    cov_to_corr
    prec_to_partial
@@ -91,6 +93,8 @@ uses.
    fetch_oasis_vbm
    fetch_megatrawls_netmats
    fetch_cobre
+   fetch_neurovault
+   fetch_neurovault_ids
    get_data_dirs
    load_mni152_template
    load_mni152_brain_mask
