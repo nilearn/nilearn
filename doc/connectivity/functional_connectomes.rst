@@ -44,6 +44,8 @@ at 2mm, and with a threshold of a probability of 0.25::
   dataset = datasets.fetch_atlas_harvard_oxford('cort-maxprob-thr25-2mm')
   atlas_filename = dataset.maps
   labels = dataset.labels
+  data = datasets.fetch_adhd(n_subjects=1)
+  fmri_files = data.func[0]
 
 Plotting can then be done as::
 
@@ -78,7 +80,7 @@ The Nifti data can then be turned to time-series by calling the
 filenames or `NiftiImage objects
 <http://nipy.org/nibabel/nibabel_images.html>`_::
 
-    time_series = masker.fit_transform(frmi_files, confounds=csv_file)
+    time_series = masker.fit_transform(fmri_files, confounds=data.confounds)
 
 |
 
@@ -154,14 +156,17 @@ As with extraction of signals on a parcellation, extracting signals from
 a probabilistic atlas can be done with a "masker" object:  the
 :class:`nilearn.input_data.NiftiMapsMasker`. It is created by
 specifying the important parameters, in particular the atlas::
+    atlas = datasets.fetch_atlas_msdl()
+    atlas_filename = atlas['maps']
+    data = datasets.fetch_adhd(n_subjects=1)
 
     from nilearn.input_data import NiftiMapsMasker
-    masker = NiftiMapsMasker(maps_img=atlas_filename, standardize=True)
+    masker = NiftiMapsMasker(maps_img=atlas_filename, standardize=True, memory='nilearn_cache')
 
 The `fit_transform` method turns filenames or `NiftiImage objects
 <http://nipy.org/nibabel/nibabel_images.html>`_ to time series::
 
-    time_series = masker.fit_transform(frmi_files, confounds=csv_file)
+    time_series = masker.fit_transform(data.func[0], confounds=data.confounds)
 
 The procedure is the same as with `brain parcellations
 <parcellation_time_series>`_ but using the :class:`NiftiMapsMasker`, and

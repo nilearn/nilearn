@@ -113,7 +113,7 @@ Kriegskorte et al. use a 5.6mm radius because it yielded the best detection
 performance in their simulation.
 
 .. literalinclude:: ../../examples/02_decoding/plot_haxby_searchlight.py
-    :start-after: import nilearn.decoding
+    :start-after: cv = KFold(y.size, n_folds=4)
     :end-before: # F-scores computation
 	
 Visualization
@@ -150,7 +150,7 @@ Here we compute the *p-values* of the voxels [1]_.
 To display the results, we use the negative log of the p-value.
 
 .. literalinclude:: ../../examples/02_decoding/plot_haxby_searchlight.py
-    :start-after: # F_score results
+    :start-after: # F_score computation
 
 .. figure:: ../auto_examples/02_decoding/images/sphx_glr_plot_haxby_searchlight_002.png
    :target: ../auto_examples/02_decoding/plot_haxby_searchlight.html

@@ -117,7 +117,7 @@ Sparsity of output map is controlled by a parameter alpha: using a
 larger alpha yields sparser maps.
 
 .. literalinclude:: ../../examples/03_connectivity/plot_compare_resting_state_decomposition.py
-    :start-after: # Dictionary learning
+    :start-after: # Create two decomposition estimators
     :end-before: ###############################################################################
 
 We can fit both estimators to compare them

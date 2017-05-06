@@ -73,7 +73,7 @@ import nilearn.decoding
 searchlight = nilearn.decoding.SearchLight(
     mask_img,
     process_mask_img=process_mask_img,
-    radius=5.6, n_jobs=n_jobs,
+    radius=5.6, n_jobs=1,
     verbose=1, cv=cv)
 searchlight.fit(fmri_img, y)
 
