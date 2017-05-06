@@ -254,13 +254,6 @@ def _resample_one_img(data, A, b, target_shape,
                              output=out,
                              order=interpolation_order)
 
-    # Bug in ndimage.affine_transform when out does not have native endianness
-    # see https://github.com/nilearn/nilearn/issues/275
-    # Bug was fixed in scipy 0.15
-    if (LooseVersion(scipy.__version__) < LooseVersion('0.15') and
-        not out.dtype.isnative):
-        out.byteswap(True)
-
     if has_not_finite:
         # We need to resample the mask of not_finite values
         not_finite = ndimage.affine_transform(not_finite, A,
@@ -473,6 +466,18 @@ def resample_img(img, target_affine=None, target_shape=None,
         resampled_data_dtype = np.dtype(aux)
     else:
         resampled_data_dtype = data.dtype
+
+    # ndimage.affine_transform which is in helper function _resample_one_img
+    # does not handle well when data data does not have native endianness.
+    # Hence, we swap new byte order to change dtype to native endianness.
+    # see https://github.com/nilearn/nilearn/issues/275 &
+    # https://github.com/nilearn/nilearn/issues/1445
+    # This bug is supposed to fix in Scipy 0.15 but it is not. Hence we
+    # are not checking any Scipy versions here.
+
+    # Byte swap here, if it is big-endian
+    if not resampled_data_dtype.isnative:
+        resampled_data_dtype = resampled_data_dtype.newbyteorder()
 
     # Code is generic enough to work for both 3D and 4D images
     other_shape = data_shape[3:]

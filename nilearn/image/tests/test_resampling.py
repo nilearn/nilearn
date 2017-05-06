@@ -103,6 +103,19 @@ def test_downsample():
     x, y, z = downsampled.shape[:3]
     np.testing.assert_almost_equal(downsampled,
                                    rot_img.get_data()[:x, :y, :z, ...])
+    # Non native endian data as input should process as expected without failing
+    # with ndimage.affine_transform
+    rot_img = resample_img(Nifti1Image(data.astype('>f8'), affine),
+                           target_affine=2 * affine, interpolation='nearest')
+    np.testing.assert_almost_equal(downsampled,
+                                   rot_img.get_data()[:x, :y, :z, ...])
+
+    # Same test, big-endian as input but copy is False
+    rot_img = resample_img(Nifti1Image(data.astype('>f8'), affine),
+                           target_affine=2 * affine, interpolation='nearest',
+                           copy=False)
+    np.testing.assert_almost_equal(downsampled,
+                                   rot_img.get_data()[:x, :y, :z, ...])
 
 
 def test_resampling_with_affine():
