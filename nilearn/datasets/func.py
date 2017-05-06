@@ -522,7 +522,7 @@ def fetch_adhd(n_subjects=30, data_dir=None, url=None, resume=True,
         resume=resume, verbose=verbose)
 
     return Bunch(func=functionals, confounds=confounds,
-                 phenotypic=phenotypic, description=fdescr)
+                 phenotypic=phenotypic.decode(), description=fdescr)
 
 
 def fetch_miyawaki2008(data_dir=None, url=None, resume=True, verbose=1):
