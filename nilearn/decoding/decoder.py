@@ -319,7 +319,7 @@ class BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
 
         Attributes
         ----------
-        `masker_` : instance of NiftiMasker
+        `masker_` : instance of NiftiMasker or MultiNiftiMasker
             The NiftiMasker used to mask the data.
 
         `mask_img_` : Nifti1Image

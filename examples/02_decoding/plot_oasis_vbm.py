@@ -134,23 +134,20 @@ display = plot_stat_map(weight_img, bg_img=bg_filename,
 ######################################################################
 # Visualize the quality of predictions
 import matplotlib.pyplot as plt
-plt.figure()
+plt.figure(figsize=(6, 4.5))
 plt.suptitle("Decoder: Mean Absolute Error %.2f years" % prediction_score)
 linewidth = 3
-ax1 = plt.subplot('211')
-ax1.plot(age_test, label="True age", linewidth=linewidth)
-ax1.plot(age_pred, '--', c="g", label="Predicted age", linewidth=linewidth)
-ax1.set_ylabel("age")
+plt.plot(age_test, label="True age", linewidth=linewidth)
+plt.plot(age_pred, '--', c="g", label="Predicted age", linewidth=linewidth)
+plt.ylabel("age")
+plt.xlabel("subject")
 plt.legend(loc="best")
 ######################################################################
-
-ax2 = plt.subplot("212")
-ax2.plot(age_test - age_pred, label="True age - predicted age",
+plt.figure(figsize=(6, 4.5))
+plt.plot(age_test - age_pred, label="True age - predicted age",
          linewidth=linewidth)
-ax2.set_xlabel("subject")
+plt.xlabel("subject")
 plt.legend(loc="best")
-
-
 ###############################################################################
 # Comparing to massi-univariate analysis
 ###############################################################################
@@ -173,7 +170,7 @@ signed_neg_log_pvals_unmasked = nifti_masker.inverse_transform(
 
 # Show results
 threshold = -np.log10(0.1)  # 10% corrected
-fig = plt.figure(figsize=(5, 7), facecolor='k')
+fig = plt.figure(figsize=(5, 6), facecolor='k')
 display = plot_stat_map(signed_neg_log_pvals_unmasked, bg_img=bg_filename,
                         threshold=threshold, cmap=plt.cm.RdBu_r,
                         display_mode='z', cut_coords=[-6], figure=fig)

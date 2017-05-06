@@ -52,7 +52,7 @@ print('First subject functional nifti images (4D) are at: %s' %
 mask_filename = haxby_dataset.mask_vt[0]
 
 # Let's visualize it, using the subject's anatomical image as a
-# # background
+# background
 from nilearn import plotting
 plotting.plot_roi(mask_filename, bg_img=haxby_dataset.anat[0],
                   cmap='Paired')
@@ -107,12 +107,9 @@ print(conditions.shape)
 #
 # As a decoder, we use a Support Vector Classification, with a linear
 # kernel.
-# We will use The mask is a mask of the Ventral Temporal streaming coming from
-# the Haxby study.
 #
 # We first create it:
 from nilearn.decoding import Decoder
-mask_filename = haxby_dataset.mask_vt[0]
 decoder = Decoder(estimator='svc', mask=mask_filename, standardize=True)
 
 ###########################################################################
