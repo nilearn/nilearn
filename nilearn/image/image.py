@@ -511,7 +511,7 @@ def swap_img_hemispheres(img):
     return out_img
 
 
-def index_img(imgs, index):
+def index_img(imgs, index, accept_3d=False):
     """Indexes into a 4D Niimg-like object in the fourth dimension.
 
     Common use cases include extracting a 3D image out of `img` or
@@ -524,6 +524,10 @@ def index_img(imgs, index):
 
     index: Any type compatible with numpy array indexing
         Used for indexing the 4D data array in the fourth dimension.
+
+    accept_3d: bool, optional
+        If True, 3D images will also be accepted when index is 0, this returns
+        the whole content of `imgs`. If False, `imgs` must be a 4D image.
 
     Returns
     -------
@@ -551,7 +555,14 @@ def index_img(imgs, index):
      >>> print(single_mni_image.shape)
      (91, 109, 91)
     """
-    imgs = check_niimg_4d(imgs)
+    if isinstance(index, int) and accept_3d:
+        if index == 0:
+            imgs = check_niimg(imgs, ensure_ndim=4, atleast_4d=True)
+        else:
+            imgs = check_niimg_4d(imgs)
+    else:
+        imgs = check_niimg_4d(imgs)
+
     return _index_img(imgs, index)
 
 
