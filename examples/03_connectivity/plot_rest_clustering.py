@@ -58,7 +58,7 @@ print('First subject functional nifti image (4D) is at: %s' %
 # Transforming list of images to data matrix and build brain parcellations,
 # all can be done at once using class `Parcellations`.
 
-from nilearn.parcellations import Parcellations
+from nilearn.regions import Parcellations
 
 # Computing ward for the first time, will be long... This can be seen by
 # measuring using time
