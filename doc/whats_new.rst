@@ -1,6 +1,12 @@
 0.3.1
 =====
 
+Highlights
+----------
+
+* **Dropped support for scikit-learn older than 0.14.1** Minimum supported version
+  is now 0.15.
+
 Changelog
 ---------
 
