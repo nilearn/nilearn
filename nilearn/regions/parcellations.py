@@ -170,8 +170,7 @@ class Parcellations(BaseDecomposition):
         Labels image to each parcellation learned on fmri images.
 
     masker_ : instance of NiftiMasker or MultiNiftiMasker
-        Useful in recontructing back `labels_` to Nifti image.
-        Example using `masker_.inverse_transform` on `labels_`.
+        The masker used to mask the data
 
     connectivity_ : numpy.ndarray
         voxel-to-voxel connectivity matrix computed from a mask.
@@ -416,7 +415,7 @@ class Parcellations(BaseDecomposition):
         """Transform signals extracted from parcellations back to brain
         images.
 
-        Uses labels_ (parcellations) built at fit() level.
+        Uses `labels_img_` (parcellations) built at fit() level.
 
         Parameters
         ----------
