@@ -19,8 +19,8 @@ into homogeneous regions from functional imaging data.
     <http://journal.frontiersin.org/article/10.3389/fnins.2014.00167/full>`_
     Frontiers in neuroscience 8.167 (2014): 13.
 
-Data loading and massaging
-===========================
+Data loading
+============
 
 Resting-state data
 -------------------
@@ -33,39 +33,15 @@ intrinsic brain architecture in the case of resting-state data.
 In the examples, we use rest data downloaded with the function 
 :func:`fetch_adhd` (see :ref:`loading_data`).
 
-Loading and masking and with NiftiMasker
------------------------------------------
-
-Before clustering, the brain volumes need to be turned to a data matrix,
-for instance of time-series. The :class:`nilearn.input_data.NiftiMasker`
-or :class:`nilearn.input_data.MultiNiftiMasker` maskers
-extract signals on a mask. If no mask is given with the data, the masker
-can compute one.
-
-The masker can perform important :ref:`preprocessing operations
-<masker_preprocessing_steps>`, such as detrending signals, standardizing
-them, removing confounds, or smoothing the images.
-
-But, here we are in not required to explicitly call masker on our data. The
-object which build parcellations can do it for you.
-Note: that parcellations object used MultiNiftiMasker which can be scaled to
-large number of subjects.
-
-.. topic:: **Example code**
-
-   All the steps discussed in this section can be seen implemented in
-   :ref:`a full code example
-   <sphx_glr_auto_examples_03_connectivity_plot_rest_clustering.py>`.
-
 Applying clustering
-==========================
+====================
 
 .. topic:: **Which clustering to use**
 
     The question of which clustering method to use is in itself subject
     to debate. There are many clustering methods; their computational
     cost will vary, as well as their results. A `well-cited empirical
-    comparison
+    comparison paper, Thirion et al. 2014
     <http://journal.frontiersin.org/article/10.3389/fnins.2014.00167/full>`_
     suggests that:
 
@@ -83,6 +59,13 @@ Applying clustering
     agglomeration object. It is also very fast. We detail it below.
 
 |
+
+Both clustering algorithms (as well as many others) are provided by
+this object :class:`nilearn.parcellations.Parcellations` and full
+code example in
+:ref:`here<sphx_glr_auto_examples_03_connectivity_plot_rest_clustering.py>`.
+Ward clustering is the easiest to use, as it can be done with the Feature
+agglomeration object. It is also very fast. We detail it below.
 
 **Compute a connectivity matrix**
 Before applying Ward's method, we compute a spatial neighborhood matrix,
@@ -138,14 +121,8 @@ Using and visualizing the resulting parcellation
 Visualizing the parcellation
 -----------------------------
 
-For every scikit-learn clustering object, the labels of the parcellation
-are found its `labels_` after fitting it to the data. To turn them into a
-brain image, we need to unmask them with the :class:`NiftiMasker`
-*inverse_transform* method.
-
-Note that by default, clusters are labeled from 0 to
-(n_clusters - 1), and the label 0 may be confused with a background. To avoid
-this we add with 1.
+The labels of the parcellation are found its `labels_img_` after fitting it to the data
+using *ward.fit*. We directly use the result for visualization.
 
 To visualize the clusters, we assign random colors to each cluster
 for the labels visualization.

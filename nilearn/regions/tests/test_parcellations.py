@@ -7,8 +7,8 @@ import nibabel
 import sklearn
 from distutils.version import LooseVersion
 from nose.tools import assert_true, assert_equal
-from nilearn.parcellations import (Parcellations,
-                                   _check_parameters_transform)
+from nilearn.regions.parcellations import (Parcellations,
+                                           _check_parameters_transform)
 from nilearn._utils.testing import assert_raises_regex
 
 
@@ -50,8 +50,8 @@ def test_parcellations_fit_on_single_nifti_image():
         for n_parcel, method in zip(n_parcels, methods):
             parcellator = Parcellations(method=method, n_parcels=n_parcel)
             parcellator.fit(fmri_img)
-            # Test that object returns attribute labels_
-            assert_true(parcellator.labels_ is not None)
+            # Test that object returns attribute labels_img_
+            assert_true(parcellator.labels_img_ is not None)
             # Test object returns attribute masker_
             assert_true(parcellator.masker_ is not None)
             assert_true(parcellator.mask_img_ is not None)
@@ -60,7 +60,7 @@ def test_parcellations_fit_on_single_nifti_image():
                 # only for AgglomerativeClustering methods
                 assert_true(parcellator.connectivity_ is not None)
             masker = parcellator.masker_
-            labels_img = masker.inverse_transform(parcellator.labels_)
+            labels_img = parcellator.labels_img_
             # After inverse_transform, shape must match with original input
             # data
             assert_true(labels_img.shape, (data.shape[0],
@@ -69,7 +69,7 @@ def test_parcellations_fit_on_single_nifti_image():
     else:
         parcellator2 = Parcellations(method='ward', n_parcels=10)
         parcellator2.fit(fmri_img)
-        assert_true(parcellator2.labels_ is not None)
+        assert_true(parcellator2.labels_img_ is not None)
 
 
 def test_parcellations_fit_on_multi_nifti_images():
@@ -82,11 +82,11 @@ def test_parcellations_fit_on_multi_nifti_images():
 
     parcellator = Parcellations(method='kmeans', n_parcels=5)
     parcellator.fit(fmri_imgs)
-    assert_true(parcellator.labels_ is not None)
+    assert_true(parcellator.labels_img_ is not None)
 
     parcellator = Parcellations(method='ward', n_parcels=5)
     parcellator.fit(fmri_imgs)
-    assert_true(parcellator.labels_ is not None)
+    assert_true(parcellator.labels_img_ is not None)
 
     # Smoke test with explicit mask image
     mask_img = np.ones((10, 11, 12))
@@ -226,7 +226,7 @@ def test_fit_transform():
         for method in ['kmeans', 'ward', 'complete', 'average']:
             parcellator = Parcellations(method=method, n_parcels=5)
             signals = parcellator.fit_transform(fmri_imgs)
-            assert_true(parcellator.labels_ is not None)
+            assert_true(parcellator.labels_img_ is not None)
             if method != 'kmeans':
                 assert_true(parcellator.connectivity_ is not None)
             assert_true(parcellator.masker_ is not None)
@@ -251,7 +251,7 @@ def test_inverse_transform():
             parcellate = Parcellations(method=method, n_parcels=5)
             # Fit
             parcellate.fit(fmri_img)
-            assert_true(parcellate.labels_ is not None)
+            assert_true(parcellate.labels_img_ is not None)
             # Transform
             fmri_reduced = parcellate.transform(fmri_img)
             assert_true(fmri_reduced, list)

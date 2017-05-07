@@ -9,9 +9,10 @@ from sklearn.base import clone
 from sklearn.feature_extraction import image
 from sklearn.externals.joblib import Memory, delayed, Parallel
 
-from .decomposition.base import BaseDecomposition, mask_and_reduce
-from .input_data import NiftiLabelsMasker
-from ._utils.compat import _basestring
+from ..decomposition.base import BaseDecomposition, mask_and_reduce
+from ..input_data import NiftiLabelsMasker
+from .._utils.compat import _basestring
+from .._utils.niimg import _safe_get_data
 
 
 def _estimator_fit(data, estimator):
@@ -87,9 +88,11 @@ class Parcellations(BaseDecomposition):
     """Learn parcellations on fMRI images.
 
     Four different types of clustering methods can be used such as kmeans,
-    ward, complete, average. First type kmeans will be used in MiniBatchKMeans
-    and next three types are used in Agglomerative Clustering leveraged from
-    scikit-learn.
+    ward, complete, average. Kmeans will call MiniBatchKMeans whereas
+    ward, complete, average are used within in Agglomerative Clustering.
+    All methods are leveraged from scikit-learn.
+
+    .. versionadded:: 0.3.1
 
     Parameters
     ----------
@@ -163,8 +166,8 @@ class Parcellations(BaseDecomposition):
 
     Returns
     -------
-    labels_ : numpy.ndarray
-        Labels to each parcellation learned on fmri images.
+    labels_img_ : Nifti1Image
+        Labels image to each parcellation learned on fmri images.
 
     masker_ : instance of NiftiMasker or MultiNiftiMasker
         Useful in recontructing back `labels_` to Nifti image.
@@ -174,6 +177,17 @@ class Parcellations(BaseDecomposition):
         voxel-to-voxel connectivity matrix computed from a mask.
         Note that this attribute is only seen if selected methods are
         Agglomerative Clustering type, 'ward', 'complete', 'average'.
+
+    Notes
+    -----
+        * Transforming list of Nifti images to data matrix takes few steps.
+          Reducing the data dimensionality using randomized SVD, build brain
+          parcellations using KMeans or various Agglomerative methods.
+
+        * This object uses spatially-constrained AgglomerativeClustering for
+          method='ward' meaning that Spatial connectivity matrix
+          (voxel-to-voxel) is built-in object which means no need of explicitly
+          giving the matrix.
 
     """
     VALID_METHODS = ['kmeans', 'ward', 'complete', 'average']
@@ -289,12 +303,10 @@ class Parcellations(BaseDecomposition):
                                      verbose=self.verbose)
             labels = self._cache(_estimator_fit,
                                  func_memory_level=1)(data, kmeans)
-            self.labels_ = labels
-
         else:
             if self.verbose:
                 print("[{0} method] Learning".format(self.method))
-            mask_ = mask_img_.get_data().astype(np.bool)
+            mask_ = _safe_get_data(mask_img_).astype(np.bool)
             shape = mask_.shape
             connectivity = image.grid_to_graph(n_x=shape[0], n_y=shape[1],
                                                n_z=shape[2], mask=mask_)
@@ -316,13 +328,15 @@ class Parcellations(BaseDecomposition):
                                  func_memory_level=1)(data, agglomerative)
 
             self.connectivity_ = connectivity
-            self.labels_ = labels
+        # Avoid 0 label
+        labels = labels + 1
+        self.labels_img_ = self.masker_.inverse_transform(labels)
 
     def _check_fitted(self):
         """Helper function to check whether fit is called or not.
         """
-        if not hasattr(self, 'labels_'):
-            raise ValueError("Object has no labels_ attribute. "
+        if not hasattr(self, 'labels_img_'):
+            raise ValueError("Object has no labels_img_ attribute. "
                              "Ensure that fit() is called before transform.")
 
     def transform(self, imgs, confounds=None):
@@ -349,10 +363,6 @@ class Parcellations(BaseDecomposition):
         """
         self._check_fitted()
         imgs, confounds = _check_parameters_transform(imgs, confounds)
-
-        # Avoid 0 label
-        labels = self.labels_ + 1
-        self.labels_img_ = self.masker_.inverse_transform(labels)
 
         masker = NiftiLabelsMasker(self.labels_img_,
                                    mask_img=self.masker_.mask_img_,
@@ -418,7 +428,7 @@ class Parcellations(BaseDecomposition):
         imgs : List of Nifti-like images
             Brain images
         """
-        from .regions import signal_extraction
+        from .signal_extraction import signals_to_img_labels
 
         self._check_fitted()
 
@@ -427,8 +437,7 @@ class Parcellations(BaseDecomposition):
             signals = [signals, ]
 
         imgs = Parallel(n_jobs=self.n_jobs)(
-            delayed(self._cache(signal_extraction.signals_to_img_labels,
-                                func_memory_level=2))
+            delayed(self._cache(signals_to_img_labels, func_memory_level=2))
             (each_signal, self.labels_img_, self.mask_img_)
             for each_signal in signals)
 

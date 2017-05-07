@@ -13,10 +13,25 @@ On the other way, these methods will also be interesting for learning
 functional connectomes based on these parcellations and be able to used
 in a classification task between controls and disease states.
 
+References
+----------
+
 This parcellation may be useful in a supervised learning, see for
-instance: `A supervised clustering approach for fMRI-based inference of
-brain states <https://hal.inria.fr/inria-00589201>`_, Michel et al,
-Pattern Recognition 2011.
+instance
+
+    * Vincent Michel, Alexandre Gramfort, Gael Varoquaux, Evelyn Eger,
+      Christine Keribin, Bertrand Thirion. `A supervised clustering approach
+      for fMRI-based inference of brain states.
+      <http://dx.doi.org/10.1016/j.patcog.2011.04.006>`_.
+      Pattern Recognition, Elsevier, 2011.
+
+Which clustering method to use, an empirical comparison can be found in this
+paper
+
+    * Bertrand Thirion, Gael Varoquaux, Elvis Dohmatob, Jean-Baptiste Poline.
+      `Which fMRI clustering gives good brain parcellations ?
+      <https://doi.org/10.3389/fnins.2014.00167>`_ Frontiers in Neuroscience,
+      2014.
 
 The big picture discussion corresponding to this example can be found
 in the documentation section :ref:`parcellating_brain`.
@@ -37,20 +52,13 @@ print('First subject functional nifti image (4D) is at: %s' %
 
 
 #########################################################################
-# Nifti images to brain parcellations: Perform Ward Clustering
-# -----------------------------------------------------------------
+# Brain parcellations with Ward Clustering
+# ----------------------------------------
+#
+# Transforming list of images to data matrix and build brain parcellations,
+# all can be done at once using class `Parcellations`.
 
-# Transforming list of images to data matrix takes few steps: reducing the
-# data dimensionality using randomized SVD and build brain parcellations
-# using specified clustering method KMeans or spatially-constrained Ward
-# using a class named as `Parcellations`.
-
-# import class Parcellations from nilearn.parcellations module
 from nilearn.parcellations import Parcellations
-
-# We build parameters of our own for this object. Parameters related to
-# masking, caching and defining number of clusters and specific parcellations
-# method.
 
 # Computing ward for the first time, will be long... This can be seen by
 # measuring using time
@@ -59,43 +67,36 @@ start = time.time()
 
 # Agglomerative Clustering: ward
 
-# This object uses spatially-constrained AgglomerativeClustering for
-# method='ward'. Spatial connectivity matrix (voxel-to-voxel) is built-in
-# with this class which means no need of explicitly computing them.
+# We build parameters of our own for this object. Parameters related to
+# masking, caching and defining number of clusters and specific parcellations
+# method.
 ward = Parcellations(method='ward', n_parcels=1000,
-                     standardize=False,
+                     standardize=False, smoothing_fwhm=2.,
                      memory='nilearn_cache', memory_level=1,
                      verbose=1)
 # Call fit on functional dataset: single subject (less samples).
 ward.fit(dataset.func)
 print("Ward agglomeration 1000 clusters: %.2fs" % (time.time() - start))
 
-# Compute ward for second time to see the power of joblib caching with more
-# parcels than first time
-
-# This class also has built-in caching mechanism. Here, we compute ward
-# clustering with more number of clusters=2000 and compare time with first
-# time 1000 clusters.
+# We compute now ward clustering with more number of clusters=2000 and compare
+# time with 1000 clusters. To see the power of joblib caching for second time.
 
 # We initialize class again with n_parcels=2000 this time.
 start = time.time()
 ward = Parcellations(method='ward', n_parcels=2000,
-                     standardize=False,
+                     standardize=False, smoothing_fwhm=2.,
                      memory='nilearn_cache', memory_level=1,
                      verbose=1)
 ward.fit(dataset.func)
 print("Ward agglomeration 2000 clusters: %.2fs" % (time.time() - start))
 
 ###########################################################################
-# Visualize: Brain parcellations (Ward) and the effect of clustering
-# -------------------------------------------------------------------
+# Visualize: Brain parcellations (Ward)
+# -------------------------------------
 #
-# First, we display the labels of the clustering in the brain.
-#
-# To visualize results, we need to transform the clustering's labels back
-# to a neuroimaging volume space. For this, we use the masker's
-# inverse_transform inherited from the class on output attribute `labels_`.
-ward_labels_img = ward.masker_.inverse_transform(ward.labels_)
+# First, we display the parcellations of the brain image stored in attribute
+# `labels_img_`
+ward_labels_img = ward.labels_img_
 
 # Now, ward_labels_img are Nifti1Image object, it can be saved to file
 # with the following code:
@@ -112,26 +113,28 @@ first_plot = plotting.plot_roi(ward_labels_img, mean_func_img,
                                title="Ward parcellation",
                                display_mode='xz')
 
-# common cut coordinates for all plots
-cut_coords = first_plot.cut_coords
-
+###########################################################################
+# Compressed representation of Ward clustering
+# --------------------------------------------
+#
 # Second, we illustrate the effect that the clustering has on the signal.
 # We show the original data, and the approximation provided by the
 # clustering by averaging the signal on each parcel.
 
-# Display the original data. We can use MultiNiftiMasker inherited from
-# Parcellations object to transform Nifti file/files in a list to
-# list of data matrix/matrices.
-fmri_masked = ward.masker_.transform(dataset.func)
-# grab number of voxels from fmri data matrix
-original_voxels = fmri_masked[0].shape[1]
+# grab number of voxels from attribute mask image. We use sum operator along
+# with math_img from nilearn
+from nilearn.image import math_img
+
+original_voxels = math_img("np.sum(img)", img=ward.mask_img_).get_data()
 
 # common vmin and vmax
-vmin = fmri_masked[0].min()
-vmax = fmri_masked[0].max()
+vmin = math_img("np.min(img)", img=mean_func_img).get_data()
+vmax = math_img("np.max(img)", img=mean_func_img).get_data()
 
-plotting.plot_epi(ward.masker_.inverse_transform(fmri_masked[0][0]),
-                  cut_coords=cut_coords,
+# common cut coordinates for all plots
+cut_coords = first_plot.cut_coords
+
+plotting.plot_epi(mean_func_img, cut_coords=cut_coords,
                   title='Original (%i voxels)' % original_voxels,
                   vmax=vmax, vmin=vmin, display_mode='xz')
 
@@ -154,40 +157,32 @@ plotting.plot_epi(index_img(fmri_compressed[0], 0),
 # are only 2000 parcels, instead of the original 60000 voxels
 
 #########################################################################
-# Now, Nifti images to brain parcellations: Perform KMeans Clustering
-# -------------------------------------------------------------------
+# Brain parcellations with KMeans Clustering
+# ------------------------------------------
 #
 # We use the same approach as demonstrated with building parcellations using
 # Ward clustering.
 
 # class/functions can be used here as they are already imported above.
 
-# We took parameters same as above for Parcellations object.
-
-# Computing the kmeans and measure time duration for parcellations
-import time
-start = time.time()
-
-# This object uses MiniBatchKMeans for method='kmeans'
-kmeans = Parcellations(method='kmeans', n_parcels=2000,
-                       standardize=False,
+# This object uses method='kmeans' for KMeans clustering with 6mm smoothing
+kmeans = Parcellations(method='kmeans', n_parcels=100,
+                       standardize=False, smoothing_fwhm=6.,
                        memory='nilearn_cache', memory_level=1,
                        verbose=1)
 # Call fit on functional dataset: single subject (less samples)
 kmeans.fit(dataset.func)
 print("KMeans 2000 clusters: %.2fs" % (time.time() - start))
-# NOTE: Good parcellations can be build using KMeans with more subjects,
-# for instance more than 5 subjects
 
+# NOTE: Good parcellations can be build using KMeans with more subjects,
+# for instance more than 5 subjects. Follow pointed references for good
+# arguments on using n_parcels and the amount of smoothing, etc.
 ###########################################################################
-# Visualize results Brain parcellations (KMeans) and effect of clustering
-# -----------------------------------------------------------------------
+# Visualize: Brain parcellations (KMeans)
+# ---------------------------------------
 #
-# First, we display the labels of the clustering in the brain.
-#
-# To visualize results, same steps can be applied here following from Ward
-# visualization.
-kmeans_labels_img = kmeans.masker_.inverse_transform(kmeans.labels_)
+# Grab parcellations of brain image stored in attribute `labels_img_`
+kmeans_labels_img = kmeans.labels_img_
 
 plotting.plot_roi(kmeans_labels_img, mean_func_img,
                   title="KMeans parcellation",
@@ -198,20 +193,6 @@ plotting.plot_roi(kmeans_labels_img, mean_func_img,
 kmeans_labels_img.to_filename('kmeans_parcellation.nii')
 
 ##################################################################
-# Second, we see the effect that the clustering has on the signal
-#
-# A reduced data can be create by taking the parcel-level average:
-# We transform method that modifies input features. Here it reduces their
-# dimension
-fmri_reduced_kmeans = kmeans.transform(dataset.func)
-
-# Display the corresponding data compressed using the kmeans parcellation
-# with parcels=2000
-fmri_compressed_kmeans = kmeans.inverse_transform(fmri_reduced_kmeans)
-
-plotting.plot_epi(index_img(fmri_compressed_kmeans[0], 0),
-                  cut_coords=cut_coords,
-                  title='KMeans compressed representation (2000 parcels)',
-                  vmin=vmin, vmax=vmax, display_mode='xz')
+# Finally show them
 
 plotting.show()

@@ -27,9 +27,8 @@ masking                 --- Utilities to compute and operate on brain masks
 mass_univariate         --- Defines a Massively Univariate Linear Model
                             estimated with OLS and permutation test
 plotting                --- Plotting code for nilearn
-parcellations           --- Clustering methods for resting-state fMRI
 region                  --- Set of functions for extracting region-defined
-                            signals
+                            signals, clustering methods, connected regions extraction
 signal                  --- Set of preprocessing functions for time series
 """
 
