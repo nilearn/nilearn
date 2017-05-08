@@ -468,11 +468,11 @@ def resample_img(img, target_affine=None, target_shape=None,
         resampled_data_dtype = data.dtype
 
     # ndimage.affine_transform which is in helper function _resample_one_img
-    # does not handle well when data data does not have native endianness.
+    # does not handle well data not in native endianness.
     # Hence, we swap new byte order to change dtype to native endianness.
     # see https://github.com/nilearn/nilearn/issues/275 &
     # https://github.com/nilearn/nilearn/issues/1445
-    # This bug is supposed to fix in Scipy 0.15 but it is not. Hence we
+    # This bug is supposed to be fixed in Scipy 0.15 but it is not. Hence we
     # are not checking any Scipy versions here.
 
     # Byte swap here, if it is big-endian
