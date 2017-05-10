@@ -110,13 +110,6 @@ def test_downsample():
                            target_affine=2 * affine, interpolation='nearest')
     np.testing.assert_almost_equal(downsampled,
                                    rot_img.get_data()[:x, :y, :z, ...])
-    # resampled image should not be in nonnative dtype since we address this
-    # problem internally
-    assert_true(rot_img.get_data().dtype.byteorder != '>')
-    # test to check if dtype is converted to native dtype
-    assert_true(rot_img.get_data().dtype.byteorder == '<')
-    # Its native should be true
-    assert_true(rot_img.get_data().dtype.isnative)
 
     # Same test, big-endian as input but copy is False
     rot_img = resample_img(Nifti1Image(data.astype('>f8'), affine),
@@ -124,8 +117,6 @@ def test_downsample():
                            copy=False)
     np.testing.assert_almost_equal(downsampled,
                                    rot_img.get_data()[:x, :y, :z, ...])
-    assert_true(rot_img.get_data().dtype.byteorder != '>')
-    assert_true(rot_img.get_data().dtype.byteorder == '<')
 
 
 def test_resampling_with_affine():
