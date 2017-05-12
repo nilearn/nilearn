@@ -277,7 +277,99 @@ def fetch_atlas_harvard_oxford(atlas_name, data_dir=None,
     atlas_img = new_img_like(atlas_img, new_atlas, get_affine(atlas_img))
     return Bunch(maps=atlas_img, labels=new_names)
 
+def fetch_jhu_labels(atlas_name, data_dir=None,
+                               symmetric_split=False,
+                               resume=True, verbose=1):
+    
+    
+    atlas_items = ("labels-1mm", "labels-2mm",         
+                   "tracts-prob-1mm","tracts-prob-2mm",
+                   "tracts-maxprob-thr0-1mm", "tracts-maxprob-thr0-2mm",
+                   "tracts-maxprob-thr25-1mm", "tracts-maxprob-thr25-2mm",
+               "tracts-maxprob-thr50-1mm", "tracts-maxprob-thr50-2mm")
+    if atlas_name not in atlas_items:
+        raise ValueError("Invalid atlas name: {0}. Please chose an atlas "
+                         "among:\n{1}".format(
+                             atlas_name, '\n'.join(atlas_items)))
+   
+    #this needs correcting- should be JHU
+    url = 'http://www.nitrc.org/frs/download.php/7700/HarvardOxford.tgz'
 
+    # For practical reasons, we mimic the FSL data directory here.
+    dataset_name = 'fsl'
+    # Environment variables
+    default_paths = []
+    for env_var in ['FSL_DIR', 'FSLDIR']:
+        path = os.getenv(env_var)
+        if path is not None:
+            default_paths.extend(path.split(':'))
+    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
+                                default_paths=default_paths, verbose=verbose)
+    opts = {'uncompress': True}
+    root = os.path.join('data', 'atlases')
+    atlas_file = os.path.join(root, 'JHU',
+                              'JHU-ICBM-' + atlas_name + '.nii.gz')
+    if atlas_name[0] == 'l':
+        label_file = 'JHU-labels.xml'
+    else:#this needs editing to account for FA/DWI
+        label_file = 'JHU-tracts.xml'
+    label_file = os.path.join(root, label_file)
+
+    atlas_img, label_file = _fetch_files(
+        data_dir,
+        [(atlas_file, url, opts), (label_file, url, opts)],
+        resume=resume, verbose=verbose)
+
+    names = {}
+    from xml.etree import ElementTree
+    names[0] = 'Background'
+    for label in ElementTree.parse(label_file).findall('.//label'):
+        names[int(label.get('index')) + 1] = label.text
+    names = list(names.values())
+
+    if not symmetric_split:
+        return Bunch(maps=atlas_img, labels=names)
+
+    if atlas_name in ("tracts-prob-1mm", "tracts-prob-2mm"):
+        raise ValueError("Region splitting not supported for probabilistic "
+                         "atlases")
+
+    atlas_img = check_niimg(atlas_img)
+    atlas = atlas_img.get_data()
+
+    labels = np.unique(atlas)
+    # Build a mask of both halves of the brain
+    middle_ind = (atlas.shape[0] - 1) // 2
+    # Put zeros on the median plane
+    atlas[middle_ind, ...] = 0
+    # Split every zone crossing the median plane into two parts.
+    left_atlas = atlas.copy()
+    left_atlas[middle_ind:, ...] = 0
+    right_atlas = atlas.copy()
+    right_atlas[:middle_ind, ...] = 0
+
+    new_label = 0
+    new_atlas = atlas.copy()
+    # Assumes that the background label is zero.
+    new_names = [names[0]]
+    for label, name in zip(labels[1:], names[1:]):
+        new_label += 1
+        left_elements = (left_atlas == label).sum()
+        right_elements = (right_atlas == label).sum()
+        n_elements = float(left_elements + right_elements)
+        if (left_elements / n_elements < 0.05 or
+                right_elements / n_elements < 0.05):
+            new_atlas[atlas == label] = new_label
+            new_names.append(name)
+            continue
+        new_atlas[right_atlas == label] = new_label
+        new_names.append(name + ', left part')
+        new_label += 1
+        new_atlas[left_atlas == label] = new_label
+        new_names.append(name + ', right part')
+
+    atlas_img = new_img_like(atlas_img, new_atlas, atlas_img.get_affine())
+    return Bunch(maps=atlas_img, labels=new_names)
 def fetch_atlas_msdl(data_dir=None, url=None, resume=True, verbose=1):
     """Download and load the MSDL brain atlas.
 
