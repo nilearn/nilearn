@@ -146,10 +146,10 @@ def fetch_atlas_destrieux_2009(lateralized=True, data_dir=None, url=None,
 def fetch_atlas_harvard_oxford(atlas_name, data_dir=None,
                                symmetric_split=False,
                                resume=True, verbose=1):
-    """Download and load Harvard-Oxford parcellations from FSL.
+    """Load Harvard-Oxford parcellations from FSL.
 
     This function downloads Harvard Oxford atlas packaged from FSL 5.0
-    and stores it in NILEARN_DATA folder in home directory.
+    and stores atlases in NILEARN_DATA folder in home directory.
 
     This function can also load Harvard Oxford atlas from your local directory
     specified by your FSL installed path given in `data_dir` argument.
