@@ -392,6 +392,7 @@ def resample_img(img, target_affine=None, target_shape=None,
 
     shape = img.shape
     affine = get_affine(img)
+
     if (np.all(np.array(target_shape) == shape[:3]) and
             np.allclose(target_affine, affine)):
         if copy and not input_img_is_string:
@@ -441,6 +442,7 @@ def resample_img(img, target_affine=None, target_shape=None,
         raise BoundingBoxError("The field of view given "
                                "by the target affine does "
                                "not contain any of the data")
+
     if np.all(target_affine == affine):
         # Small trick to be more numerically stable
         transform_affine = np.eye(4)
@@ -464,8 +466,8 @@ def resample_img(img, target_affine=None, target_shape=None,
             # matrix. Which may have some issues with resampling nifti images
             # when data of dtype is non-native endian. See issue
             # https://github.com/nilearn/nilearn/issues/1445. For 1D, scipy uses
-            # _nd_image.zoom_shift which I believe is not smart enough to handle
-            # big endian data
+            # _nd_image.zoom_shift which might create problems with big endian
+            # data
             A = np.diag(A)
 
     data_shape = list(data.shape)
