@@ -153,7 +153,7 @@ plot_slices(coefs, title="Ground truth")
 # that stands for `cross-validation`: in the list of possible `alpha`
 # values that they are given, they choose the best by cross-validation.
 
-classifiers = [
+estimators = [
     ('bayesian_ridge', linear_model.BayesianRidge(normalize=True)),
     ('enet_cv', linear_model.ElasticNetCV(alphas=[5, 1, 0.5, 0.1],
                                           l1_ratio=0.05)),
@@ -174,28 +174,28 @@ classifiers = [
 # method to retrieve the prediction score, and because they are all linear
 # models, a `coef_` attribute that stores the coefficients **w** estimated
 
-for name, classifier in classifiers:
+for name, estimator in estimators:
     t1 = time()
     if name != "searchlight":
-        classifier.fit(X_train, y_train)
+        estimator.fit(X_train, y_train)
     else:
         X = nilearn.masking.unmask(X_train, mask_img)
-        classifier.fit(X, y_train)
+        estimator.fit(X, y_train)
         del X
     elapsed_time = time() - t1
 
     if name != 'searchlight':
-        coefs = classifier.coef_
+        coefs = estimator.coef_
         coefs = np.reshape(coefs, [size, size, size])
-        score = classifier.score(X_test, y_test)
+        score = estimator.score(X_test, y_test)
         title = '%s: prediction score %.3f, training time: %.2fs' % (
-                classifier.__class__.__name__, score,
+                estimator.__class__.__name__, score,
                 elapsed_time)
 
     else:  # Searchlight
-        coefs = classifier.scores_
+        coefs = estimator.scores_
         title = '%s: training time: %.2fs' % (
-                classifier.__class__.__name__,
+                estimator.__class__.__name__,
                 elapsed_time)
 
     # We use the plot_slices function provided in the example to
