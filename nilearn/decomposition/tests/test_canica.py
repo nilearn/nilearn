@@ -135,3 +135,9 @@ def test_component_sign():
                 canica.components_)):
             mp = mp.get_data()
             assert_less_equal(-mp.min(), mp.max())
+
+
+def test_threshold_bound():
+    # Smoke test to make sure an error is raised when threshold
+    # is higher than number of components
+    assert_raises(ValueError, CanICA, n_components=4, threshold=5.)
