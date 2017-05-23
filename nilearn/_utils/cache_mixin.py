@@ -230,9 +230,6 @@ def cache(func, memory, func_memory_level=None, memory_level=None,
         memory = Memory(cachedir=None, verbose=verbose)
     cached_func = _safe_cache(memory, func, **kwargs)
     if shelve:
-        if LooseVersion(sklearn.__version__) < LooseVersion('0.15'):
-            raise ValueError('Shelving is only available if'
-                             ' scikit-learn >= 0.15 is installed.')
         cached_func = _ShelvedFunc(cached_func)
     return cached_func
 
