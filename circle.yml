@@ -33,7 +33,6 @@ dependencies:
     # Generating html documentation (with warnings as errors)
     # we need to do this here so the datasets will be cached
     - source continuous_integration/circle_ci_test_doc.sh:
-        parallel: True
         timeout: 2500 # seconds
 
 test:
