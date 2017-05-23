@@ -15,8 +15,8 @@ def create_object(size):
 
 @with_memory_profiler
 def test_memory_usage():
-    # Valid measures
-    for mem in (500, 200, 100):
+    # Valid measures (larger objects)
+    for mem in (500, 200):
         assert_memory_less_than(mem, 0.1, create_object, mem * 1024 ** 2)
 
     # Ensure an exception is raised with too small objects as
