@@ -37,7 +37,7 @@ REQUIRED_MODULE_METADATA = (
         'min_version': '0.9.0',
         'required_at_installation': True,
         'install_info': _NILEARN_INSTALL_MSG}),
-    ('sklearn', {
+    ('scikit-learn', {
         'min_version': '0.14.1',
         'required_at_installation': True,
         'install_info': _NILEARN_INSTALL_MSG}),
