@@ -15,8 +15,8 @@ def create_object(size):
 
 @with_memory_profiler
 def test_memory_usage():
-    # Valid measures
-    for mem in (500, 200, 100):
+    # Valid measures (larger objects)
+    for mem in (500, 200):
         assert_memory_less_than(mem, 0.1, create_object, mem * 1024 ** 2)
 
     # Ensure an exception is raised with too small objects as
@@ -30,8 +30,8 @@ def test_memory_usage():
     # limit.
     assert_raises_regex(ValueError,
                         "Memory consumption measured",
-                        assert_memory_less_than, 50, 0.1,
-                        create_object, 100 * 1024 ** 2)
+                        assert_memory_less_than, 100, 0.1,
+                        create_object, 200 * 1024 ** 2)
 
 
 def test_generate_fake_fmri():
