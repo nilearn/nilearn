@@ -259,7 +259,6 @@ def _resample_one_img(data, A, b, target_shape,
     # Bug was fixed in scipy 0.15
     if (LooseVersion(scipy.__version__) < LooseVersion('0.15') and
         not out.dtype.isnative):
-        # Not a guarantee that out is completely changed its dtype to isnative
         out.byteswap(True)
 
     if has_not_finite:
@@ -347,6 +346,15 @@ def resample_img(img, target_affine=None, target_shape=None,
     **NaNs and infinite values**
     This function handles gracefully NaNs and infinite values in the input
     data, however they make the execution of the function much slower.
+
+    **Handling non-native endian in given Nifti images**
+    This function automatically changes the byte-ordering information
+    in the image dtype to new byte order. From non-native to native, which
+    implies that if the given image has non-native endianess then the output
+    data in nifti image will have native dtype. This is only valid when
+    if the given target_affine (transformation matrix) is diagonal and
+    homogenous.
+
     """
     from .image import new_img_like  # avoid circular imports
 
@@ -452,23 +460,11 @@ def resample_img(img, target_affine=None, target_shape=None,
     # If A is diagonal, ndimage.affine_transform is clever enough to use a
     # better algorithm.
     if np.all(np.diag(np.diag(A)) == A):
-        # From Scipy version 0.18, we pass A as it is to
-        # ndimage.affine_transform to choose algorithm defined in
-        # _geometric_transform which can also handle nifti images which
-        # have data dtype of non-native endian.
         if LooseVersion(scipy.__version__) < LooseVersion('0.18'):
             # Before scipy 0.18, ndimage.affine_transform was applying a
             # different logic to the offset for diagonal affine
             b = np.dot(linalg.inv(A), b)
-            # we return 1D array to scipy.affine_transform only when scipy
-            # versions are < 0.18. Since the release of 0.18 they have different
-            # logic applied to affine transformation when we pass 1D affine as a
-            # matrix. Which may have some issues with resampling nifti images
-            # when data of dtype is non-native endian. See issue
-            # https://github.com/nilearn/nilearn/issues/1445. For 1D, scipy uses
-            # _nd_image.zoom_shift which might create problems with big endian
-            # data
-            A = np.diag(A)
+        A = np.diag(A)
 
     data_shape = list(data.shape)
     # Make sure that we have a list here
@@ -486,6 +482,20 @@ def resample_img(img, target_affine=None, target_shape=None,
         resampled_data_dtype = np.dtype(aux)
     else:
         resampled_data_dtype = data.dtype
+
+    if LooseVersion(scipy.__version__) >= LooseVersion('0.18'):
+        # Since the release of 0.18, resampling nifti images have some issues
+        # when affine is passed as 1D array and if data is of non-native
+        # endianess.
+        # See issue https://github.com/nilearn/nilearn/issues/1445.
+        # If affine is passed as 1D, scipy uses _nd_image.zoom_shift rather
+        # than _geometric_transform (2D) where _geometric_transform is able
+        # to swap byte order in scipy later than 0.15 for nonnative endianess.
+
+        # We convert to 'native' order to not have any issues either with
+        # 'little' or 'big' endian data dtypes (non-native endians).
+        if len(A.shape) == 1 and not resampled_data_dtype.isnative:
+            resampled_data_dtype = resampled_data_dtype.newbyteorder('N')
 
     # Code is generic enough to work for both 3D and 4D images
     other_shape = data_shape[3:]
