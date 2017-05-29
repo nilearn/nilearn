@@ -52,7 +52,7 @@ Applying clustering
       clustering after spatially-smoothing the data.
 
     Both clustering algorithms (as well as many others) are provided by
-    this object :class:`nilearn.parcellations.Parcellations` and full
+    this object :class:`nilearn.regions.Parcellations` and full
     code example in
     :ref:`here<sphx_glr_auto_examples_03_connectivity_plot_rest_clustering.py>`.
     Ward clustering is the easiest to use, as it can be done with the Feature
@@ -61,7 +61,7 @@ Applying clustering
 |
 
 Both clustering algorithms (as well as many others) are provided by
-this object :class:`nilearn.parcellations.Parcellations` and full
+this object :class:`nilearn.regions.Parcellations` and full
 code example in
 :ref:`here<sphx_glr_auto_examples_03_connectivity_plot_rest_clustering.py>`.
 Ward clustering is the easiest to use, as it can be done with the Feature
@@ -102,7 +102,7 @@ used for caching.
 
     The above steps detailed above such as computing connectivity matrix for
     Ward, caching and clustering are all implemented within the object
-    :class:`nilearn.parcellations.Parcellations`,
+    :class:`nilearn.regions.Parcellations`,
     and computes by itself while applying methods on the data.
 
 .. seealso::
