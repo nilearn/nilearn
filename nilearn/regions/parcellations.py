@@ -2,7 +2,6 @@
 """
 
 import numpy as np
-from distutils.version import LooseVersion
 
 import sklearn
 from sklearn.base import clone
@@ -249,12 +248,6 @@ class Parcellations(BaseDecomposition):
             raise ValueError("The method you have selected is not implemented "
                              "'{0}'. Valid methods are in {1}"
                              .format(self.method, valid_methods))
-        if LooseVersion(sklearn.__version__) < LooseVersion('0.15') and \
-                (self.method == 'complete' or self.method == 'average'):
-            raise NotImplementedError("Chosen method={0} is not implemented "
-                                      "with sklearn version={1}."
-                                      .format(self.method,
-                                              sklearn.__version__))
 
         BaseDecomposition.fit(self, imgs)
 
@@ -310,18 +303,11 @@ class Parcellations(BaseDecomposition):
             connectivity = image.grid_to_graph(n_x=shape[0], n_y=shape[1],
                                                n_z=shape[2], mask=mask_)
 
-            if LooseVersion(sklearn.__version__) < LooseVersion('0.15'):
-                from sklearn.cluster import Ward
+            from sklearn.cluster import AgglomerativeClustering
 
-                agglomerative = Ward(n_clusters=self.n_parcels,
-                                     connectivity=connectivity,
-                                     memory=self.memory)
-            else:
-                from sklearn.cluster import AgglomerativeClustering
-
-                agglomerative = AgglomerativeClustering(
-                    n_clusters=self.n_parcels, connectivity=connectivity,
-                    linkage=self.method, memory=self.memory)
+            agglomerative = AgglomerativeClustering(
+                n_clusters=self.n_parcels, connectivity=connectivity,
+                linkage=self.method, memory=self.memory)
 
             labels = self._cache(_estimator_fit,
                                  func_memory_level=1)(data, agglomerative)

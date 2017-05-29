@@ -5,7 +5,6 @@ import numpy as np
 import nibabel
 
 import sklearn
-from distutils.version import LooseVersion
 from nose.tools import assert_true, assert_equal
 from nilearn.regions.parcellations import (Parcellations,
                                            _check_parameters_transform)
@@ -31,11 +30,6 @@ def test_errors_raised_in_check_parameters_fit():
                "'{0}'".format(invalid_method))
         assert_raises_regex(ValueError, msg, method_raise2.fit, img)
 
-    if LooseVersion(sklearn.__version__) < LooseVersion('0.15'):
-        for method in ['average', 'complete']:
-            parcellator = Parcellations(method=method)
-            np.testing.assert_raises(NotImplementedError, parcellator.fit, img)
-
 
 def test_parcellations_fit_on_single_nifti_image():
     # Test return attributes for each method
@@ -44,32 +38,28 @@ def test_parcellations_fit_on_single_nifti_image():
     data[4, 9, 3] = 2
     fmri_img = nibabel.Nifti1Image(data, affine=np.eye(4))
 
-    if LooseVersion(sklearn.__version__) >= LooseVersion('0.15'):
-        methods = ['kmeans', 'ward', 'complete', 'average']
-        n_parcels = [5, 10, 15]
-        for n_parcel, method in zip(n_parcels, methods):
-            parcellator = Parcellations(method=method, n_parcels=n_parcel)
-            parcellator.fit(fmri_img)
-            # Test that object returns attribute labels_img_
-            assert_true(parcellator.labels_img_ is not None)
-            # Test object returns attribute masker_
-            assert_true(parcellator.masker_ is not None)
-            assert_true(parcellator.mask_img_ is not None)
-            if method != 'kmeans':
-                # Test that object returns attribute connectivity_
-                # only for AgglomerativeClustering methods
-                assert_true(parcellator.connectivity_ is not None)
+    methods = ['kmeans', 'ward', 'complete', 'average']
+    n_parcels = [5, 10, 15]
+    for n_parcel, method in zip(n_parcels, methods):
+        parcellator = Parcellations(method=method, n_parcels=n_parcel)
+        parcellator.fit(fmri_img)
+        # Test that object returns attribute labels_img_
+        assert_true(parcellator.labels_img_ is not None)
+        # Test object returns attribute masker_
+        assert_true(parcellator.masker_ is not None)
+        assert_true(parcellator.mask_img_ is not None)
+        if method != 'kmeans':
+            # Test that object returns attribute connectivity_
+            # only for AgglomerativeClustering methods
+            assert_true(parcellator.connectivity_ is not None)
             masker = parcellator.masker_
             labels_img = parcellator.labels_img_
+            assert_true(parcellator.labels_img_ is not None)
             # After inverse_transform, shape must match with original input
             # data
             assert_true(labels_img.shape, (data.shape[0],
                                            data.shape[1],
                                            data.shape[2]))
-    else:
-        parcellator2 = Parcellations(method='ward', n_parcels=10)
-        parcellator2.fit(fmri_img)
-        assert_true(parcellator2.labels_img_ is not None)
 
 
 def test_parcellations_fit_on_multi_nifti_images():
@@ -114,21 +104,15 @@ def test_parcellations_transform_single_nifti_image():
 
     fmri_img = nibabel.Nifti1Image(data, affine=np.eye(4))
 
-    if LooseVersion(sklearn.__version__) >= LooseVersion('0.15'):
-        for method in ['kmeans', 'ward', 'complete', 'average']:
-            parcellator = Parcellations(method=method, n_parcels=parcels)
-            parcellator.fit(fmri_img)
-            # transform to signals
-            signals = parcellator.transform(fmri_img)
-            # Test if the signals extracted are of same shape as inputs
-            # Here, we take index 0 since we return list even for single
-            # subject
-            assert_equal(signals[0].shape, (fmri_img.shape[3], parcels))
-    else:
-        parcellator2 = Parcellations(method='ward', n_parcels=parcels)
-        parcellator2.fit(fmri_img)
-        signals2 = parcellator2.transform(fmri_img)
-        assert_equal(signals2[0].shape, (fmri_img.shape[3], parcels))
+    for method in ['kmeans', 'ward', 'complete', 'average']:
+        parcellator = Parcellations(method=method, n_parcels=parcels)
+        parcellator.fit(fmri_img)
+        # transform to signals
+        signals = parcellator.transform(fmri_img)
+        # Test if the signals extracted are of same shape as inputs
+        # Here, we take index 0 since we return list even for single
+        # subject
+        assert_equal(signals[0].shape, (fmri_img.shape[3], parcels))
 
 
 def test_parcellations_transform_multi_nifti_images():
@@ -140,18 +124,17 @@ def test_parcellations_transform_multi_nifti_images():
     fmri_img = nibabel.Nifti1Image(data, affine=np.eye(4))
     fmri_imgs = [fmri_img, fmri_img, fmri_img]
 
-    if LooseVersion(sklearn.__version__) >= LooseVersion('0.15'):
-        for method in ['kmeans', 'ward', 'complete', 'average']:
-            parcellator = Parcellations(method=method, n_parcels=parcels)
-            parcellator.fit(fmri_imgs)
-            # transform multi images to signals. In return, we have length
-            # equal to the number of images
-            signals = parcellator.transform(fmri_imgs)
-            assert_equal(signals[0].shape, (fmri_img.shape[3], parcels))
-            assert_equal(signals[1].shape, (fmri_img.shape[3], parcels))
-            assert_equal(signals[2].shape, (fmri_img.shape[3], parcels))
+    for method in ['kmeans', 'ward', 'complete', 'average']:
+        parcellator = Parcellations(method=method, n_parcels=parcels)
+        parcellator.fit(fmri_imgs)
+        # transform multi images to signals. In return, we have length
+        # equal to the number of images
+        signals = parcellator.transform(fmri_imgs)
+        assert_equal(signals[0].shape, (fmri_img.shape[3], parcels))
+        assert_equal(signals[1].shape, (fmri_img.shape[3], parcels))
+        assert_equal(signals[2].shape, (fmri_img.shape[3], parcels))
 
-            assert_equal(len(signals), len(fmri_imgs))
+        assert_equal(len(signals), len(fmri_imgs))
 
 
 def test_check_parameters_transform():
@@ -198,16 +181,15 @@ def test_parcellations_transform_with_multi_confounds_multi_images():
     confounds = rng.randn(*(10, 3))
     confounds_list = (confounds, confounds, confounds)
 
-    if LooseVersion(sklearn.__version__) >= LooseVersion('0.15'):
-        for method in ['kmeans', 'ward', 'complete', 'average']:
-            parcellator = Parcellations(method=method, n_parcels=5)
-            parcellator.fit(fmri_imgs)
+    for method in ['kmeans', 'ward', 'complete', 'average']:
+        parcellator = Parcellations(method=method, n_parcels=5)
+        parcellator.fit(fmri_imgs)
 
-            signals = parcellator.transform(fmri_imgs,
-                                            confounds=confounds_list)
-            assert_true(isinstance(signals, list))
-            # n_parcels=5, length of data=10
-            assert_equal(signals[0].shape, (10, 5))
+        signals = parcellator.transform(fmri_imgs,
+                                        confounds=confounds_list)
+        assert_true(isinstance(signals, list))
+        # n_parcels=5, length of data=10
+        assert_equal(signals[0].shape, (10, 5))
 
 
 def test_fit_transform():
@@ -222,19 +204,18 @@ def test_fit_transform():
     confounds = rng.randn(*(10, 3))
     confounds_list = [confounds, confounds, confounds]
 
-    if LooseVersion(sklearn.__version__) >= LooseVersion('0.15'):
-        for method in ['kmeans', 'ward', 'complete', 'average']:
-            parcellator = Parcellations(method=method, n_parcels=5)
-            signals = parcellator.fit_transform(fmri_imgs)
-            assert_true(parcellator.labels_img_ is not None)
-            if method != 'kmeans':
-                assert_true(parcellator.connectivity_ is not None)
-            assert_true(parcellator.masker_ is not None)
-            # fit_transform with confounds
-            signals = parcellator.fit_transform(fmri_imgs,
-                                                confounds=confounds_list)
-            assert_true(isinstance(signals, list))
-            assert_equal(signals[0].shape, (10, 5))
+    for method in ['kmeans', 'ward', 'complete', 'average']:
+        parcellator = Parcellations(method=method, n_parcels=5)
+        signals = parcellator.fit_transform(fmri_imgs)
+        assert_true(parcellator.labels_img_ is not None)
+        if method != 'kmeans':
+            assert_true(parcellator.connectivity_ is not None)
+        assert_true(parcellator.masker_ is not None)
+        # fit_transform with confounds
+        signals = parcellator.fit_transform(fmri_imgs,
+                                            confounds=confounds_list)
+        assert_true(isinstance(signals, list))
+        assert_equal(signals[0].shape, (10, 5))
 
 
 def test_inverse_transform():
@@ -246,19 +227,18 @@ def test_inverse_transform():
     fmri_img = nibabel.Nifti1Image(data, affine=np.eye(4))
     methods = ['kmeans', 'ward', 'complete', 'average']
 
-    if LooseVersion(sklearn.__version__) >= LooseVersion('0.15'):
-        for method in methods:
-            parcellate = Parcellations(method=method, n_parcels=5)
-            # Fit
-            parcellate.fit(fmri_img)
-            assert_true(parcellate.labels_img_ is not None)
-            # Transform
-            fmri_reduced = parcellate.transform(fmri_img)
-            assert_true(fmri_reduced, list)
-            # Shape matching with (scans, regions)
-            assert_true(fmri_reduced[0].shape, (10, 5))
-            # Inverse transform
-            fmri_compressed = parcellate.inverse_transform(fmri_reduced)
-            assert_true(isinstance(fmri_compressed, list))
-            # returns shape of fmri_img
-            assert_true(fmri_compressed[0].shape, (10, 11, 12, 10))
+    for method in methods:
+        parcellate = Parcellations(method=method, n_parcels=5)
+        # Fit
+        parcellate.fit(fmri_img)
+        assert_true(parcellate.labels_img_ is not None)
+        # Transform
+        fmri_reduced = parcellate.transform(fmri_img)
+        assert_true(fmri_reduced, list)
+        # Shape matching with (scans, regions)
+        assert_true(fmri_reduced[0].shape, (10, 5))
+        # Inverse transform
+        fmri_compressed = parcellate.inverse_transform(fmri_reduced)
+        assert_true(isinstance(fmri_compressed, list))
+        # returns shape of fmri_img
+        assert_true(fmri_compressed[0].shape, (10, 11, 12, 10))
