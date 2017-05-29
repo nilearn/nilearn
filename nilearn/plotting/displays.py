@@ -641,13 +641,6 @@ class BaseSlicer(object):
         img = reorder_img(img, resample=resampling_interpolation)
         threshold = float(threshold) if threshold is not None else None
 
-        if type in ('contour', 'contourf') and threshold is None:
-            # Define a pseudo threshold to have a tight bounding box
-            if 'levels' in kwargs:
-                threshold = 0.8 * np.min(np.abs(kwargs['levels']))
-            else:
-                threshold = 1e-6
-
         if threshold is not None:
             data = _utils.niimg._safe_get_data(img, ensure_finite=True)
             if threshold == 0:
@@ -665,10 +658,21 @@ class BaseSlicer(object):
         xmin_, xmax_, ymin_, ymax_, zmin_, zmax_ = \
             xmin, xmax, ymin, ymax, zmin, zmax
 
-        if hasattr(data, 'mask') and isinstance(data.mask, np.ndarray):
+        # Compute tight bounds
+        if type in ('contour', 'contourf'):
+            # Define a pseudo threshold to have a tight bounding box
+            if 'levels' in kwargs:
+                thr = 0.9 * np.min(np.abs(kwargs['levels']))
+            else:
+                thr = 1e-6
+            not_mask = np.logical_or(data > thr, data < -thr)
+            xmin_, xmax_, ymin_, ymax_, zmin_, zmax_ = \
+                get_mask_bounds(new_img_like(img, not_mask, affine))
+        elif hasattr(data, 'mask') and isinstance(data.mask, np.ndarray):
             not_mask = np.logical_not(data.mask)
             xmin_, xmax_, ymin_, ymax_, zmin_, zmax_ = \
                 get_mask_bounds(new_img_like(img, not_mask, affine))
+
 
         data_2d_list = []
         for display_ax in self.axes.values():
