@@ -673,7 +673,6 @@ class BaseSlicer(object):
             xmin_, xmax_, ymin_, ymax_, zmin_, zmax_ = \
                 get_mask_bounds(new_img_like(img, not_mask, affine))
 
-
         data_2d_list = []
         for display_ax in self.axes.values():
             try:

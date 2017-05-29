@@ -33,7 +33,7 @@ Enhancements
 
     - Reworking and renaming of connectivity measures example. 
 
-    - Tighter bounding boxes when using add_contour for plotting.
+    - Tighter bounding boxes when using add_contours for plotting.
 
 0.3.0
 ======
