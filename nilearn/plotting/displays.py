@@ -641,7 +641,8 @@ class BaseSlicer(object):
         img = reorder_img(img, resample=resampling_interpolation)
         threshold = float(threshold) if threshold is not None else None
 
-        if type == 'contours' and 'levels' in kwargs and threshold is None:
+        if (type in ('contour', 'contourf') and 'levels' in kwargs
+            and threshold is None):
             # Define a pseudo threshold to have a tight bounding box
             threshold = 0.8 * np.min(np.abs(kwargs['levels']))
 
