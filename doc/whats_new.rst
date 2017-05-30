@@ -187,6 +187,9 @@ Enhancements
     - Reworking and renaming of connectivity measures example. Renamed from
       plot_connectivity_measures to plot_group_level_connectivity.
 
+    - New object :class:`nilearn.regions.Parcellations` for learning brain
+      parcellations on fmri data.
+
     - Tighter bounding boxes when using add_contours for plotting.
 
     - Function :func:`nilearn.image.largest_connected_component_img` to
