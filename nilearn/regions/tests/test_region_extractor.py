@@ -174,7 +174,7 @@ def test_region_extractor_fit_and_transform():
         assert_equal(expected_signal_shape, signal.shape)
 
     # smoke test with high resolution image
-    maps, mask_img = generate_maps((40, 40, 40), n_regions=n_regions,
+    maps, mask_img = generate_maps((20, 20, 20), n_regions=n_regions,
                                    affine=.2 * np.eye(4))
 
     extract_ratio = RegionExtractor(maps,
