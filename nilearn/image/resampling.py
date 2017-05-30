@@ -346,6 +346,15 @@ def resample_img(img, target_affine=None, target_shape=None,
     **NaNs and infinite values**
     This function handles gracefully NaNs and infinite values in the input
     data, however they make the execution of the function much slower.
+
+    **Handling non-native endian in given Nifti images**
+    This function automatically changes the byte-ordering information
+    in the image dtype to new byte order. From non-native to native, which
+    implies that if the given image has non-native endianess then the output
+    data in Nifti image will have native dtype. This is only the case when
+    if the given target_affine (transformation matrix) is diagonal and
+    homogenous.
+
     """
     from .image import new_img_like  # avoid circular imports
 
@@ -473,6 +482,20 @@ def resample_img(img, target_affine=None, target_shape=None,
         resampled_data_dtype = np.dtype(aux)
     else:
         resampled_data_dtype = data.dtype
+
+    if LooseVersion(scipy.__version__) >= LooseVersion('0.18'):
+        # Since the release of 0.18, resampling nifti images have some issues
+        # when affine is passed as 1D array and if data is of non-native
+        # endianess.
+        # See issue https://github.com/nilearn/nilearn/issues/1445.
+        # If affine is passed as 1D, scipy uses _nd_image.zoom_shift rather
+        # than _geometric_transform (2D) where _geometric_transform is able
+        # to swap byte order in scipy later than 0.15 for nonnative endianess.
+
+        # We convert to 'native' order to not have any issues either with
+        # 'little' or 'big' endian data dtypes (non-native endians).
+        if len(A.shape) == 1 and not resampled_data_dtype.isnative:
+            resampled_data_dtype = resampled_data_dtype.newbyteorder('N')
 
     # Code is generic enough to work for both 3D and 4D images
     other_shape = data_shape[3:]
