@@ -79,6 +79,7 @@ def _labels_masker_extraction(img, masker, confound):
     signals : numpy array
         Signals extracted on given img
     """
+    masker = clone(masker)
     signals = masker.fit_transform(img, confounds=confound)
     return signals
 
@@ -183,7 +184,7 @@ class Parcellations(BaseDecomposition):
           parcellations using KMeans or various Agglomerative methods.
 
         * This object uses spatially-constrained AgglomerativeClustering for
-          method='ward' meaning that Spatial connectivity matrix
+          method='ward' or 'complete' or 'average'. Spatial connectivity matrix
           (voxel-to-voxel) is built-in object which means no need of explicitly
           giving the matrix.
 

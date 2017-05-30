@@ -5,13 +5,14 @@ Clustering methods to learn a brain parcellation from rest fMRI
 We use spatially-constrained Ward-clustering and KMeans to create a set
 of parcels.
 
-In a high dimensional regime, these methods are particularly interesting
-for creating a 'compressed' representation of the data, replacing the data
-in the fMRI images by mean on the parcellation.
+In a high dimensional regime, these methods can be interesting
+to create a 'compressed' representation of the data, replacing the data
+in the fMRI images by mean signals on the parcellation, which can
+subsequently be used for statistical analysis or machine learning.
 
-On the other way, these methods will also be interesting for learning
-functional connectomes based on these parcellations and be able to used
-in a classification task between controls and disease states.
+Also, these methods can be interesting to learn functional connectomes
+based on these parcellations and be able to used in a classification
+task between controls and disease states.
 
 References
 ----------
@@ -79,7 +80,7 @@ ward.fit(dataset.func)
 print("Ward agglomeration 1000 clusters: %.2fs" % (time.time() - start))
 
 # We compute now ward clustering with more number of clusters=2000 and compare
-# time with 1000 clusters. To see the power of joblib caching for second time.
+# time with 1000 clusters. To see the benefits of caching for second time.
 
 # We initialize class again with n_parcels=2000 this time.
 start = time.time()
@@ -100,19 +101,16 @@ ward_labels_img = ward.labels_img_
 
 # Now, ward_labels_img are Nifti1Image object, it can be saved to file
 # with the following code:
-ward_labels_img.to_filename('ward_parcellation.nii')
+ward_labels_img.to_filename('ward_parcellation.nii.gz')
 
 from nilearn import plotting
 from nilearn.image import mean_img, index_img
 
-# we take mean over time on the functional image to use mean image as
-# background to parcellated image assigned to ward_labels_img
-mean_func_img = mean_img(dataset.func[0])
-
-first_plot = plotting.plot_roi(ward_labels_img, mean_func_img,
-                               title="Ward parcellation",
+first_plot = plotting.plot_roi(ward_labels_img, title="Ward parcellation",
                                display_mode='xz')
 
+# Grab cut coordinates from this plot to use as a common for all plots
+cut_coords = first_plot.cut_coords
 ###########################################################################
 # Compressed representation of Ward clustering
 # --------------------------------------------
@@ -121,18 +119,17 @@ first_plot = plotting.plot_roi(ward_labels_img, mean_func_img,
 # We show the original data, and the approximation provided by the
 # clustering by averaging the signal on each parcel.
 
-# grab number of voxels from attribute mask image. We use sum operator along
-# with math_img from nilearn
-from nilearn.image import math_img
+# Grab number of voxels from attribute mask image (mask_img_).
+import numpy as np
+original_voxels = np.sum(ward.mask_img_.get_data())
 
-original_voxels = math_img("np.sum(img)", img=ward.mask_img_).get_data()
+# Compute mean over time on the functional image to use the mean
+# image for compressed representation comparisons
+mean_func_img = mean_img(dataset.func[0])
 
-# common vmin and vmax
-vmin = math_img("np.min(img)", img=mean_func_img).get_data()
-vmax = math_img("np.max(img)", img=mean_func_img).get_data()
-
-# common cut coordinates for all plots
-cut_coords = first_plot.cut_coords
+# Compute common vmin and vmax
+vmin = np.min(mean_func_img.get_data())
+vmax = np.max(mean_func_img.get_data())
 
 plotting.plot_epi(mean_func_img, cut_coords=cut_coords,
                   title='Original (%i voxels)' % original_voxels,
@@ -190,7 +187,7 @@ plotting.plot_roi(kmeans_labels_img, mean_func_img,
 
 # kmeans_labels_img is a Nifti1Image object, it can be saved to file with
 # the following code:
-kmeans_labels_img.to_filename('kmeans_parcellation.nii')
+kmeans_labels_img.to_filename('kmeans_parcellation.nii.gz')
 
 ##################################################################
 # Finally show them

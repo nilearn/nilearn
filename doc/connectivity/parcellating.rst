@@ -60,13 +60,6 @@ Applying clustering
 
 |
 
-Both clustering algorithms (as well as many others) are provided by
-this object :class:`nilearn.regions.Parcellations` and full
-code example in
-:ref:`here<sphx_glr_auto_examples_03_connectivity_plot_rest_clustering.py>`.
-Ward clustering is the easiest to use, as it can be done with the Feature
-agglomeration object. It is also very fast. We detail it below.
-
 **Compute a connectivity matrix**
 Before applying Ward's method, we compute a spatial neighborhood matrix,
 aka connectivity matrix. This is useful to constrain clusters to form
@@ -121,7 +114,8 @@ Using and visualizing the resulting parcellation
 Visualizing the parcellation
 -----------------------------
 
-The labels of the parcellation are found its `labels_img_` after fitting it to the data
+The labels of the parcellation are found in the `labels_img_` attribute of
+the :class:`nilearn.regions.Parcellations` object after fitting it to the data
 using *ward.fit*. We directly use the result for visualization.
 
 To visualize the clusters, we assign random colors to each cluster
