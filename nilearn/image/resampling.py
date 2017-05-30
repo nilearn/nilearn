@@ -351,7 +351,7 @@ def resample_img(img, target_affine=None, target_shape=None,
     This function automatically changes the byte-ordering information
     in the image dtype to new byte order. From non-native to native, which
     implies that if the given image has non-native endianess then the output
-    data in nifti image will have native dtype. This is only valid when
+    data in Nifti image will have native dtype. This is only the case when
     if the given target_affine (transformation matrix) is diagonal and
     homogenous.
 
