@@ -77,7 +77,7 @@ This can be done as follows:
 
 .. literalinclude:: ../../examples/plot_decoding_tutorial.py
     :start-after: # mask of the samples belonging to the condition.
-    :end-before: ###########################################################################
+    :end-before: # We apply this mask in the sampe direction to restrict the
 
 
 .. note::
@@ -134,6 +134,8 @@ The :class:`NiftiMasker` can be seen as a *tube* that transforms data
 from 4D images to 2D arrays, but first it needs to 'fit' this data in
 order to learn simple parameters from it, such as its shape:
 
+>>> mask_filename = haxby_dataset.mask_vt[0] # docstep: +SKIP
+
 .. literalinclude:: ../../examples/plot_decoding_tutorial.py
     :start-after: # Now we use the NiftiMasker.
     :end-before: ###########################################################################
@@ -163,6 +165,10 @@ Here, we use scikit-learn Support Vector Classification to learn how to
 predict the category of picture seen by the subject:
 
 .. literalinclude:: ../../examples/plot_decoding_tutorial.py
+    :start-after: # We first create it:
+    :end-before: ###########################################################################
+
+.. literalinclude:: ../../examples/plot_decoding_tutorial.py
     :start-after: # We first fit it on the data
     :end-before: # Let's measure the error rate:
 
@@ -179,6 +185,10 @@ unmask several kinds of data (not only the data that you previously
 masked but also the results of an algorithm), the masker is clever and
 can take data of dimension 1D (resp. 2D) to convert it back to 3D
 (resp. 4D).
+
+.. literalinclude:: ../../examples/plot_decoding_tutorial.py
+    :start-after: # We retrieve the SVC discriminating weights
+    :end-before: ###########################################################################
 
 .. literalinclude:: ../../examples/plot_decoding_tutorial.py
     :start-after: # For this, we can call inverse_transform on the NiftiMasker:

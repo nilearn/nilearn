@@ -245,8 +245,6 @@ can be loaded with `numpy.genfromtxt` but you may have to specify some options
 For the Haxby datasets, we can load the categories of the images
 presented to the subject::
 
-    >>> from nilearn import datasets
-    >>> haxby_dataset = datasets.fetch_haxby()  # doctest: +SKIP
     >>> import numpy as np
     >>> labels = np.recfromcsv(haxby_dataset.session_target[0], delimiter=" ")  # doctest: +SKIP
     >>> stimuli = labels['labels']  # doctest: +SKIP

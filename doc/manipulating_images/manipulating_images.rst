@@ -172,10 +172,6 @@ can be computed from the data:
     :align: right
     :scale: 50%
 
-.. literalinclude:: ../../examples/01_plotting/plot_visualization.py
-     :start-after: # Extracting a brain mask
-     :end-before: # Applying the mask to extract the corresponding time series
-
 
 .. _mask_4d_2_3d:
 
