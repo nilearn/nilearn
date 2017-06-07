@@ -250,6 +250,10 @@ def img_to_signals_maps(imgs, maps_img, mask_img=None):
 
     maps_data = _safe_get_data(maps_img, ensure_finite=True)
 
+    # Check probability between 0. and 1.
+    if maps_data.max() > 1:
+        maps_data = maps_data / 100.
+
     if mask_img is not None:
         mask_img = _utils.check_niimg_3d(mask_img)
         if mask_img.shape != shape:
