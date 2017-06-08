@@ -144,7 +144,7 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
               hemi='left', view='lateral', cmap=None,
               avg_method='mean', threshold=None, alpha='auto',
               bg_on_data=False, darkness=1, vmin=None, vmax=None,
-              title=None, output_file=None, ax=None, **kwargs):
+              title=None, output_file=None, ax=None, fig=fig, **kwargs):
 
     """ Plotting of surfaces with optional background and data
 
@@ -224,6 +224,8 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
         `plt.subplots(subplot_kw={'projection': '3d'})`).
         If None, a new axes is created.
 
+    fig: Figure instance | None
+        The figure to plot to. If None, a new figure is created.
 
     See Also
     --------
@@ -287,10 +289,12 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
 
     # initiate figure and 3d axes
     if ax is None:
-        fig = plt.figure()
+        if fig is None:
+            fig = plt.figure()
         ax = fig.add_subplot(111, projection='3d', xlim=limits, ylim=limits)
     else:
-        fig = ax.get_figure()
+        if fig is None:
+            fig = ax.get_figure()
         ax.set_xlim(*limits)
         ax.set_ylim(*limits)
     ax.view_init(elev=elev, azim=azim)
@@ -380,7 +384,8 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
                        hemi='left', view='lateral', threshold=None,
                        alpha='auto', vmax=None, cmap='coolwarm',
                        symmetric_cbar="auto", bg_on_data=False, darkness=1,
-                       title=None, output_file=None, ax=None, **kwargs):
+                       title=None, output_file=None, ax=None, fig=None,
+                       **kwargs):
     """ Plotting a stats map on a surface mesh with optional background
 
     .. versionadded:: 0.3
@@ -461,6 +466,9 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
         `plt.subplots(subplot_kw={'projection': '3d'})`).
         If None, a new axes is created.
 
+    fig: Figure instance | None
+        The figure to plot to. If None, a new figure is created.
+
     See Also
     --------
     nilearn.datasets.fetch_surf_fsaverage5 : For surface data object to be
@@ -480,7 +488,7 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
                         threshold=threshold, cmap=cmap,
                         alpha=alpha, bg_on_data=bg_on_data, darkness=1,
                         vmax=vmax, title=title, output_file=output_file,
-                        ax=ax, **kwargs)
+                        ax=ax, fig=fig, **kwargs)
 
     return display
 
@@ -488,8 +496,8 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
 def plot_surf_roi(surf_mesh, roi_map, bg_map=None,
                   hemi='left', view='lateral', alpha='auto',
                   vmin=None, vmax=None, cmap='coolwarm',
-                  bg_on_data=False, darkness=1,
-                  title=None, output_file=None, ax=None, **kwargs):
+                  bg_on_data=False, darkness=1, title=None,
+                  output_file=None, ax=None, fig=None, **kwargs):
     """ Plotting of surfaces with optional background and stats map
 
     .. versionadded:: 0.3
@@ -556,6 +564,9 @@ def plot_surf_roi(surf_mesh, roi_map, bg_map=None,
         `plt.subplots(subplot_kw={'projection': '3d'})`).
         If None, a new axes is created.
 
+    fig: Figure instance | None
+        The figure to plot to. If None, a new figure is created.
+
     See Also
     --------
     nilearn.datasets.fetch_surf_fsaverage5: For surface data object to be
@@ -597,6 +608,6 @@ def plot_surf_roi(surf_mesh, roi_map, bg_map=None,
                         cmap=cmap, alpha=alpha, bg_on_data=bg_on_data,
                         darkness=darkness, vmin=vmin, vmax=vmax,
                         title=title, output_file=output_file,
-                        ax=ax, **kwargs)
+                        ax=ax, fig=fig, **kwargs)
 
     return display
