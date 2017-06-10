@@ -144,7 +144,7 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
               hemi='left', view='lateral', cmap=None,
               avg_method='mean', threshold=None, alpha='auto',
               bg_on_data=False, darkness=1, vmin=None, vmax=None,
-              title=None, output_file=None, ax=None, fig=fig, **kwargs):
+              title=None, output_file=None, ax=None, fig=None, **kwargs):
 
     """ Plotting of surfaces with optional background and data
 
