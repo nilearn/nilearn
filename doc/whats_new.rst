@@ -1,6 +1,12 @@
 0.3.1
 =====
 
+Highlights
+----------
+
+* **Dropped support for scikit-learn older than 0.14.1** Minimum supported version
+  is now 0.15.
+
 Changelog
 ---------
 
@@ -26,6 +32,8 @@ Enhancements
       recover the covariance matrices for the "tangent" kind.
 
     - Reworking and renaming of connectivity measures example. 
+
+    - Tighter bounding boxes when using add_contours for plotting.
 
 0.3.0
 ======
