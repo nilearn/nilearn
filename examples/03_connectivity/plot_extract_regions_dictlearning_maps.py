@@ -111,6 +111,7 @@ mean_correlations = np.mean(correlations, axis=0).reshape(n_regions_extracted,
 ###############################################################################
 # Plot resulting connectomes
 # ----------------------------
+# General imports needed for plotting
 import matplotlib.pyplot as plt
 from nilearn import image
 
