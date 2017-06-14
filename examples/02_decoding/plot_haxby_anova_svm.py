@@ -97,7 +97,7 @@ classification_accuracy = cv_scores.mean()
 # Print the results
 print("Classification accuracy: %.4f / Chance level: %f" %
       (classification_accuracy, 1. / len(np.unique(conditions))))
-# Classification accuracy: 0.9861 / Chance level: 0.5000
+# Classification accuracy: 0.8009 / Chance level: 0.5000
 
 
 #############################################################################
