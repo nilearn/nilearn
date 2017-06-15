@@ -57,6 +57,8 @@ def test_demo_plot_roi():
     demo_plot_roi()
     # Test the black background code path
     demo_plot_roi(black_bg=True)
+    # Test whether the function accepts a threshold argument
+    demo_plot_roi(threshold=0.2)
 
     # Save execution time and memory
     plt.close()

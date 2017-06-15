@@ -563,11 +563,11 @@ def plot_epi(epi_img=None, cut_coords=None, output_file=None,
     return display
 
 
-def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None,
+def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None, 
              output_file=None, display_mode='ortho', figure=None, axes=None,
              title=None, annotate=True, draw_cross=True, black_bg='auto',
-             alpha=0.7, cmap=plt.cm.gist_ncar, dim='auto', vmin=None, vmax=None,
-             **kwargs):
+             threshold=0.5, alpha=0.7, cmap=plt.cm.gist_ncar, dim='auto',
+             vmin=None, vmax=None, **kwargs):
     """ Plot cuts of an ROI/mask image (by default 3 cuts: Frontal, Axial, and
         Lateral)
 
@@ -617,7 +617,7 @@ def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None,
             you wish to save figures with a black background, you
             will need to pass "facecolor='k', edgecolor='k'"
             to matplotlib.pyplot.savefig.
-        threshold : a number, None, or 'auto'
+        threshold : None, 'auto', or a number (0.5 by default), optional
             If None is given, the image is not thresholded.
             If a number is given, it is used to threshold the image:
             values below the threshold (in absolute value) are plotted
@@ -634,13 +634,15 @@ def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None,
         vmax : float
             Upper bound for plotting, passed to matplotlib.pyplot.imshow
 
+        Notes
+        -----
+        A small threshold is applied by default to eliminate numerical
+        background noise.
+
         See Also
         --------
-
         nilearn.plotting.plot_prob_atlas : To simply plot probabilistic atlases
             (4D images)
-
-
     """
     bg_img, black_bg, bg_vmin, bg_vmax = _load_anat(bg_img, dim=dim,
                                                     black_bg=black_bg)
@@ -652,7 +654,8 @@ def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None,
                                 figure=figure, axes=axes, title=title,
                                 annotate=annotate,
                                 draw_cross=draw_cross,
-                                black_bg=black_bg, threshold=0.5,
+                                black_bg=black_bg,
+                                threshold=threshold,
                                 bg_vmin=bg_vmin, bg_vmax=bg_vmax,
                                 resampling_interpolation='nearest',
                                 alpha=alpha, cmap=cmap,
