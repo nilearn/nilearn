@@ -906,7 +906,7 @@ def load_img(img, wildcards=True, dtype=None):
 def largest_connected_component_img(imgs):
     """ Return the largest connected component of an image or list of images.
 
-    .. versionadded:: 0.3
+    .. versionadded:: 0.3.1
 
     Parameters
     ----------
@@ -920,8 +920,7 @@ def largest_connected_component_img(imgs):
     """
     from .._utils.ndimage import largest_connected_component
 
-    if hasattr(imgs, "__iter__") \
-       and not isinstance(imgs, _basestring):
+    if hasattr(imgs, "__iter__") and not isinstance(imgs, _basestring):
         single_img = False
     else:
         single_img = True
