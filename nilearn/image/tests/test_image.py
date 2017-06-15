@@ -333,7 +333,7 @@ def test_index_img():
               np.repeat(True, fourth_dim_size + 1)]:
         testing.assert_raises_regex(
             IndexError,
-            'out of bounds|invalid index|out of range',
+            'out of bounds|invalid index|out of range|boolean index',
             image.index_img, img_4d, i)
 
 

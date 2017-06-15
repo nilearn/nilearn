@@ -415,14 +415,13 @@ To visualize the results, we need to:
 - then, as before, inverse the masking process to retrieve the weights
   and plot them.
 
-.. figure:: ../auto_examples/02_decoding/images/sphx_glr_plot_haxby_anova_svm_001.png
-   :target: ../auto_examples/02_decoding/plot_haxby_anova_svm.html
-   :align: right
-   :scale: 65
-
 .. literalinclude:: ../../examples/02_decoding/plot_haxby_anova_svm.py
     :start-after: # Visualize the results
-    :end-before: # Obtain prediction scores via cross validation
+    :end-before: # Saving the results as a Nifti file may also be important
+
+.. figure:: ../auto_examples/02_decoding/images/sphx_glr_plot_haxby_anova_svm_001.png
+   :target: ../auto_examples/02_decoding/plot_haxby_anova_svm.html
+   :scale: 65
 
 .. seealso::
 

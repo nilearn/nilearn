@@ -199,7 +199,6 @@ do it manually below:
 
 .. literalinclude:: ../../examples/01_plotting/plot_visualization.py
      :start-after: # Applying the mask to extract the corresponding time series
-     :end-before: # Find voxels of interest
 
 .. figure:: ../auto_examples/01_plotting/images/sphx_glr_plot_visualization_003.png
     :target: ../auto_examples/01_plotting/plot_visualization.html

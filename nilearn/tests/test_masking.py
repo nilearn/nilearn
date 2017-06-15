@@ -179,10 +179,10 @@ def test_unmask():
 
     masked4D = data4D[mask, :].T
     unmasked4D = data4D.copy()
-    unmasked4D[-mask, :] = 0
+    unmasked4D[np.logical_not(mask), :] = 0
     masked3D = data3D[mask]
     unmasked3D = data3D.copy()
-    unmasked3D[-mask] = 0
+    unmasked3D[np.logical_not(mask)] = 0
 
     # 4D Test, test value ordering at the same time.
     t = unmask(masked4D, mask_img, order="C").get_data()
