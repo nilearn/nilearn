@@ -260,7 +260,7 @@ class RegionExtractor(NiftiMapsMasker):
         Mask to be applied to input data, passed to NiftiMapsMasker.
         If None, no masking is applied.
 
-    min_region_size: int, default 1350 mm^3, optional
+    min_region_size: float, default 1350 mm^3, optional
         Minimum volume in mm3 for a region to be kept. For example, if
         the voxel size is 3x3x3 mm then the volume of the voxel is
         27mm^3. By default, it is 1350mm^3 which means we take minimum
@@ -293,6 +293,12 @@ class RegionExtractor(NiftiMapsMasker):
         their maximum peak value to define a seed marker and then using
         random walker segementation algorithm on these markers for region
         separation.
+
+    smoothing_fwhm: scalar, default 6mm, optional
+        To smooth an image to extract most sparser regions. This parameter
+        is passed to `connected_regions` and exists only for extractor
+        'local_regions'. Please set this parameter according to maps
+        resolution, otherwise extraction will fail.
 
     standardize: bool, True or False, default False, optional
         If True, the time series signals are centered and normalized by
@@ -358,11 +364,13 @@ class RegionExtractor(NiftiMapsMasker):
     """
     def __init__(self, maps_img, mask_img=None, min_region_size=1350,
                  threshold=1., thresholding_strategy='ratio_n_voxels',
-                 extractor='local_regions', standardize=False, detrend=False,
+                 extractor='local_regions', smoothing_fwhm=6,
+                 standardize=False, detrend=False,
                  low_pass=None, high_pass=None, t_r=None,
                  memory=Memory(cachedir=None), memory_level=0, verbose=0):
         super(RegionExtractor, self).__init__(
             maps_img=maps_img, mask_img=mask_img,
+            smoothing_fwhm=smoothing_fwhm,
             standardize=standardize, detrend=detrend, low_pass=low_pass,
             high_pass=high_pass, t_r=t_r, memory=memory,
             memory_level=memory_level, verbose=verbose)
@@ -371,6 +379,7 @@ class RegionExtractor(NiftiMapsMasker):
         self.thresholding_strategy = thresholding_strategy
         self.threshold = threshold
         self.extractor = extractor
+        self.smoothing_fwhm = smoothing_fwhm
 
     def fit(self, X=None, y=None):
         """ Prepare the data and setup for the region extraction
@@ -400,7 +409,8 @@ class RegionExtractor(NiftiMapsMasker):
         # connected component extraction
         self.regions_img_, self.index_ = connected_regions(threshold_maps,
                                                            self.min_region_size,
-                                                           self.extractor)
+                                                           self.extractor,
+                                                           self.smoothing_fwhm)
 
         self.maps_img = self.regions_img_
         super(RegionExtractor, self).fit()
