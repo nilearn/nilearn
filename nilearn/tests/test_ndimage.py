@@ -4,10 +4,11 @@ This test file is in nilearn/tests because nosetests ignores modules whose
 name starts with an underscore
 """
 from nose.tools import assert_raises
-
 import numpy as np
 
-from nilearn._utils.ndimage import largest_connected_component, _peak_local_max
+from nilearn._utils.ndimage import (largest_connected_component,
+                                    _peak_local_max)
+from nilearn._utils import testing
 
 
 def test_largest_cc():
@@ -20,6 +21,13 @@ def test_largest_cc():
     b = a.copy()
     b[5, 5, 5] = 1
     np.testing.assert_equal(a, largest_connected_component(b))
+
+    # Tests for correct errors, when an image or string are passed.
+    img = testing.generate_labeled_regions(shape=(10, 11, 12),
+                                           n_regions=2)
+
+    assert_raises(ValueError, largest_connected_component, img)
+    assert_raises(ValueError, largest_connected_component, "Test String")
 
 
 def test_empty_peak_local_max():
