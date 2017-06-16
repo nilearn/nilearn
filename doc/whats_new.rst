@@ -35,6 +35,9 @@ Enhancements
 
     - Tighter bounding boxes when using add_contours for plotting.
 
+    - Function :func:`nilearn.image.largest_connected_component_img` to
+      directly extract the largest connected component from Nifti images.
+
 0.3.0
 ======
 
@@ -176,9 +179,6 @@ Enhancements
 
     - Extensive plotting example shows how to use contours and filled contours
       on glass brain.
-
-    - Function :func:`nilearn.image.largest_connected_component_img` to
-      directly extract the largest connected component from Nifti images.
 
 0.2.6
 =====
