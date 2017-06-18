@@ -910,13 +910,22 @@ def largest_connected_component_img(imgs):
 
     Parameters
     ----------
-    imgs: Niimg-like object or iterable of Niimg-like objects
+    imgs: Niimg-like object or iterable of Niimg-like objects (3D)
         See http://nilearn.github.io/manipulating_images/input_output.html
         Image(s) to extract the largest connected component from.
 
     Returns
     -------
         img or list of img containing the largest connected component
+
+    Notes
+    -----
+
+    **Handling big-endian in given Nifti image**
+    This function changes the existing byte-ordering information to new byte
+    order, if the dtype in given Nifti image has non-native data type.
+    This operation is done internally to avoid big-endian issues with
+    scipy ndimage module.
     """
     from .._utils.ndimage import largest_connected_component
 

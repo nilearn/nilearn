@@ -553,3 +553,30 @@ def test_largest_cc_img():
         # Test whether 4D Nifti throws the right error.
         img_4D = testing.generate_fake_fmri(shapes[0], length=17)
         assert_raises(DimensionError, largest_connected_component_img, img_4D)
+
+    # tests adapted to non-native endian data dtype
+    img1_change_dtype = nibabel.Nifti1Image(img1.get_data().astype('>f8'),
+                                            affine=img1.get_affine())
+    img2_change_dtype = nibabel.Nifti1Image(img2.get_data().astype('>f8'),
+                                            affine=img2.get_affine())
+
+    for create_files in (False, True):
+        with testing.write_tmp_imgs(img1_change_dtype, img2_change_dtype,
+                                    create_files=create_files) as imgs:
+            # List of images as input
+            out = largest_connected_component_img(imgs)
+            assert_true(isinstance(out, list))
+            assert_true(len(out) == 2)
+            for o, s in zip(out, shapes):
+                assert_true(o.shape == (s))
+
+            # Single image as input
+            out = largest_connected_component_img(imgs[0])
+            assert_true(isinstance(out, Nifti1Image))
+            assert_true(out.shape == (shapes[0]))
+
+    # Test the output with native and without native
+    out_native = largest_connected_component_img(img1)
+
+    out_non_native = largest_connected_component_img(img1_change_dtype)
+    np.testing.assert_equal(out_native.get_data(), out_non_native.get_data())

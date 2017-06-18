@@ -13,6 +13,12 @@ Changelog
     - The function sym_to_vec is deprecated and will be removed in
       release 0.4. Use :func:`nilearn.connectome.sym_matrix_to_vec` instead.
 
+Bug fix
+-------
+
+    - The helper function `largest_connected_component` should now work with
+      inputs of non-native data dtypes.
+
 Enhancements
 -------------
     - New data fetcher functions :func:`nilearn.datasets.fetch_neurovault` and

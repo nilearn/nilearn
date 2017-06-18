@@ -17,18 +17,36 @@ def largest_connected_component(volume):
 
     Parameters
     -----------
-    volume: numpy.array
+    volume: numpy.ndarray
         3D boolean array indicating a volume.
 
     Returns
     --------
-    volume: numpy.array
+    volume: numpy.ndarray
         3D boolean array with only one connected component.
+
+    See Also
+    --------
+    nilearn.image.largest_connected_component_img : To simply operate the
+        same manipulation directly on Nifti images.
+
+    Notes
+    -----
+
+    **Handling big-endian in given numpy.ndarray**
+    This function changes the existing byte-ordering information to new byte
+    order, if the given volume has non-native data type. This operation
+    is done inplace to avoid big-endian issues with scipy ndimage module.
+
     """
     if hasattr(volume, "get_data") \
        or isinstance(volume, _basestring):
         raise ValueError('Please enter a valid numpy array. For images use\
                          largest_connected_component_img')
+    # Get the new byteorder to handle issues like "Big-endian buffer not
+    # supported on little-endian compiler" with scipy ndimage label.
+    if not volume.dtype.isnative:
+        volume.dtype = volume.dtype.newbyteorder('N')
 
     # We use asarray to be able to work with masked arrays.
     volume = np.asarray(volume)
