@@ -475,7 +475,7 @@ def plot_anat(anat_img=MNI152TEMPLATE, cut_coords=None,
         ordered.
 
         For visualization, non-finite values found in passed 'anat_img'
-        are kept to zero.
+        are set to zero.
     """
     anat_img, black_bg, anat_vmin, anat_vmax = _load_anat(
         anat_img,
@@ -646,7 +646,7 @@ def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None,
         background noise.
 
         For visualization, non-finite values found in passed 'roi_img' or
-        'bg_img' are kept to zero.
+        'bg_img' are set to zero.
 
         See Also
         --------
@@ -965,7 +965,7 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
         ordered.
 
         For visualization, non-finite values found in passed 'stat_map_img' or
-        'bg_img' are kept to zero.
+        'bg_img' are set to zero.
 
         See Also
         --------
