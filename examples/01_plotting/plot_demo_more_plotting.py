@@ -27,6 +27,7 @@ See :ref:`plotting` for more details.
 
 ###############################################################################
 # First, we retrieve data from nilearn provided (general-purpose) datasets
+# -------------------------------------------------------------------------
 
 from nilearn import datasets
 
@@ -48,10 +49,8 @@ localizer_tmap_filename = localizer_dataset.tmaps[0]
 from nilearn import plotting
 
 ########################################
-# Visualizing contrast map in three different orthogonal views - 'sagittal',
-# 'coronal' and 'axial' with coordinate positions in each view are given
-# of interest manually also with colorbar on the right side of the plots.
-
+# Visualizing in - 'sagittal', 'coronal' and 'axial' with given coordinates
+# -------------------------------------------------------------------------
 # The first argument is a path to the filename of a constrast map,
 # optional argument `display_mode` is given as string 'ortho' to visualize
 # the map in three specific directions xyz and the optional `cut_coords`
@@ -63,21 +62,18 @@ plotting.plot_stat_map(localizer_tmap_filename, display_mode='ortho',
                        title="display_mode='ortho', cut_coords=[36, -27, 60]")
 
 ########################################
-# Visualizing contrast map in single view 'axial' with maximum number of
-# slices in this view are limited to 5. The coordinates to cut the slices
-# are selected automatically.
-
+# Visualizing in - single view 'axial' with number of cuts=5
+# -----------------------------------------------------------
 # In this type of visualization, the `display_mode` argument is given as
 # string 'z' for axial direction and `cut_coords` as integer 5 without a
 # list implies that number of cuts in the slices should be maximum of 5.
+# The coordinates to cut the slices are selected automatically
 plotting.plot_stat_map(localizer_tmap_filename, display_mode='z', cut_coords=5,
                        title="display_mode='z', cut_coords=5")
 
 ########################################
-# Visualizing contrast map in another single view 'sagittal' and also showing
-# how to select two slices of particular interest manually by giving the
-# coordinates to cut each slice.
-
+# Visualizing in - single view 'sagittal' with only two slices
+# -------------------------------------------------------------
 # In this type, `display_mode` should be given as string 'x' for sagittal
 # view and coordinates should be given as integers in a list
 plotting.plot_stat_map(localizer_tmap_filename, display_mode='x',
@@ -85,17 +81,17 @@ plotting.plot_stat_map(localizer_tmap_filename, display_mode='x',
                        title="display_mode='x', cut_coords=[-36, 36]")
 
 ########################################
-# Now constrast map is visualized in 'coronal' view with single cut where
-# coordinates are located automatically
-
+# Visualizing in - 'coronal' view with single cut
+# ------------------------------------------------
 # For coronal view, `display_mode` is given as string 'y' and `cut_coords`
-# as integer 1 not as a list for single cut
+# as integer 1 not as a list for single cut. The coordinates are selected
+# automatically
 plotting.plot_stat_map(localizer_tmap_filename, display_mode='y', cut_coords=1,
                        title="display_mode='y', cut_coords=1")
 
 ########################################
-# Now contrast map is shown without a colorbar on the right side.
-
+# Visualizing without a colorbar on the right side
+# -------------------------------------------------
 # The argument `colorbar` should be given as False to show plots without
 # a colorbar on the right side.
 plotting.plot_stat_map(localizer_tmap_filename, display_mode='z',
@@ -103,9 +99,8 @@ plotting.plot_stat_map(localizer_tmap_filename, display_mode='z',
                        title="display_mode='z', cut_coords=1, colorbar=False")
 
 ########################################
-# Now we visualize the contrast map with two views - 'sagittal' and 'axial'
-# and coordinates are given manually to select particular cuts in two views.
-
+# Visualize in - two views 'sagittal' and 'axial' with given coordinates
+# -------------------------------------------------------------------------
 # argument display_mode='xz' where 'x' for sagittal and 'z' for axial view.
 # argument `cut_coords` should match with input number of views therefore two
 # integers should be given in a list to select the slices to be displayed
@@ -114,9 +109,8 @@ plotting.plot_stat_map(localizer_tmap_filename, display_mode='xz',
                        title="display_mode='xz', cut_coords=[36, 60]")
 
 ########################################
-# Visualizing the contrast map with 'coronal', 'sagittal' views and coordinates
-# are given manually in two cuts with two views.
-
+# Changing the views to 'coronal', 'sagittal' views with coordinates
+# -------------------------------------------------------------------
 # display_mode='yx' for coronal and saggital view and coordinates will be
 # assigned in the order of direction as [x, y, z]
 plotting.plot_stat_map(localizer_tmap_filename, display_mode='yx',
@@ -124,14 +118,16 @@ plotting.plot_stat_map(localizer_tmap_filename, display_mode='yx',
                        title="display_mode='yx', cut_coords=[-27, 36]")
 
 ########################################
-# Visualizing contrast map with 'coronal' and 'axial' views with manual
-# positioning of coordinates with each directional view
+# Now, views are changed to 'coronal' and 'axial' views with coordinates
+# -----------------------------------------------------------------------
 
 plotting.plot_stat_map(localizer_tmap_filename, display_mode='yz',
                        cut_coords=[-27, 60],
                        title="display_mode='yz', cut_coords=[-27, 60]")
 
 ###############################################################################
+# Demonstrating various display features
+# ---------------------------------------
 # In second part, we switch to demonstrating various features add_* from
 # nilearn where each specific feature will be helpful in projecting brain
 # imaging results for further interpretation.
@@ -144,12 +140,15 @@ from nilearn import image
 mean_haxby_img = image.mean_img(haxby_func_filename)
 
 ########################################
+# Showing how to use `add_edges`
+# ------------------------------
 # Now let us see how to use `add_edges`, method useful for checking
 # coregistration by overlaying anatomical image as edges (red) on top of
 # mean functional image (background), both being of same subject.
 
 # First, we call the `plot_anat` plotting function, with a background image
 # as first argument, in this case the mean fMRI image.
+
 display = plotting.plot_anat(mean_haxby_img, title="add_edges")
 
 # We are now able to use add_edges method inherited in plotting object named as
@@ -158,6 +157,8 @@ display = plotting.plot_anat(mean_haxby_img, title="add_edges")
 display.add_edges(haxby_anat_filename)
 
 ########################################
+# How to use `add_contours`
+# -------------------------
 # Plotting outline of the mask (red) on top of the mean EPI image with
 # `add_contours`. This method is useful for region specific interpretation
 # of brain images
@@ -192,6 +193,8 @@ display.add_contours(haxby_mask_filename, filled=True, alpha=0.7,
                      levels=[0.5], colors='b')
 
 #########################################
+# Plotting seeds using `add_markers`
+# ----------------------------------
 # Plotting seed regions of interest as spheres using new feature `add_markers`
 # with MNI coordinates of interest.
 

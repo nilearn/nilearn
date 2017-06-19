@@ -12,7 +12,8 @@ documentation.
 """
 
 ###############################################################################
-# Fetching multiscale group brain parcellations
+# Retrieving multiscale group brain parcellations
+# -----------------------------------------------
 
 # import datasets module and use `fetch_atlas_basc_multiscale_2015` function
 from nilearn import datasets
@@ -26,6 +27,7 @@ networks_444 = parcellations['scale444']
 
 ###############################################################################
 # Visualizing brain parcellations
+# -------------------------------
 
 # import plotting module and use `plot_roi` function, since the maps are in 3D
 from nilearn import plotting
