@@ -23,6 +23,7 @@ Pre-prints for both papers are available on hal
 
 ####################################################################
 # First we load the ADHD200 data
+# -------------------------------
 from nilearn import datasets
 
 adhd_dataset = datasets.fetch_adhd(n_subjects=30)
@@ -35,6 +36,7 @@ print('First functional nifti image (4D) is at: %s' %
 
 ####################################################################
 # Here we apply CanICA on the data
+# ---------------------------------
 from nilearn.decomposition import CanICA
 
 canica = CanICA(n_components=20, smoothing_fwhm=6.,
@@ -51,6 +53,7 @@ components_img.to_filename('canica_resting_state.nii.gz')
 
 ####################################################################
 # To visualize we plot the outline of all components on one figure
+# -----------------------------------------------------------------
 from nilearn.plotting import plot_prob_atlas
 
 # Plot all ICA components together
@@ -59,6 +62,7 @@ plot_prob_atlas(components_img, title='All ICA components')
 
 ####################################################################
 # Finally, we plot the map for each ICA component separately
+# -----------------------------------------------------------
 from nilearn.image import iter_img
 from nilearn.plotting import plot_stat_map, show
 

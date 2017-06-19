@@ -23,6 +23,7 @@ with the highest values.
 
 ##############################################################################
 # Retrieve the atlas and the data
+# --------------------------------
 from nilearn import datasets
 atlas = datasets.fetch_atlas_msdl()
 # Loading atlas image stored in 'maps'
@@ -39,6 +40,7 @@ print('First subject functional nifti images (4D) are at: %s' %
 
 ##############################################################################
 # Extract time series
+# --------------------
 from nilearn.input_data import NiftiMapsMasker
 masker = NiftiMapsMasker(maps_img=atlas_filename, standardize=True,
                          memory='nilearn_cache', verbose=5)
@@ -48,6 +50,7 @@ time_series = masker.fit_transform(data.func[0],
 
 ##############################################################################
 # Compute the sparse inverse covariance
+# --------------------------------------
 from sklearn.covariance import GraphLassoCV
 estimator = GraphLassoCV()
 
@@ -55,6 +58,7 @@ estimator.fit(time_series)
 
 ##############################################################################
 # Display the connectome matrix
+# ------------------------------
 from matplotlib import pyplot as plt
 
 # Display the covariance
@@ -70,6 +74,7 @@ plt.title('Covariance')
 
 ##############################################################################
 # And now display the corresponding graph
+# ----------------------------------------
 from nilearn import plotting
 coords = atlas.region_coords
 
@@ -78,8 +83,9 @@ plotting.plot_connectome(estimator.covariance_, coords,
 
 
 ##############################################################################
-# Display the sparse inverse covariance (we negate it to get partial
-# correlations)
+# Display the sparse inverse covariance
+# --------------------------------------
+# we negate it to get partial correlations
 plt.figure(figsize=(10, 10))
 plt.imshow(-estimator.precision_, interpolation="nearest",
            vmax=1, vmin=-1, cmap=plt.cm.RdBu_r)
@@ -90,6 +96,7 @@ plt.title('Sparse inverse covariance')
 
 ##############################################################################
 # And now display the corresponding graph
+# ----------------------------------------
 plotting.plot_connectome(-estimator.precision_, coords,
                          title='Sparse inverse covariance')
 

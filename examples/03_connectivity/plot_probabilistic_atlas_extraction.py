@@ -21,6 +21,7 @@ with the highest values.
 """
 ############################################################################
 # Retrieve the atlas and the data
+# --------------------------------
 from nilearn import datasets
 atlas = datasets.fetch_atlas_msdl()
 # Loading atlas image stored in 'maps'
@@ -36,6 +37,7 @@ print('First subject resting-state nifti image (4D) is located at: %s' %
 
 ############################################################################
 # Extract the time series
+# ------------------------
 from nilearn.input_data import NiftiMapsMasker
 masker = NiftiMapsMasker(maps_img=atlas_filename, standardize=True,
                          memory='nilearn_cache', verbose=5)
@@ -50,6 +52,7 @@ print(time_series.shape)
 
 ############################################################################
 # Build and display a correlation matrix
+# ---------------------------------------
 from nilearn.connectome import ConnectivityMeasure
 correlation_measure = ConnectivityMeasure(kind='correlation')
 correlation_matrix = correlation_measure.fit_transform([time_series])[0]
@@ -69,6 +72,7 @@ y_ticks = plt.yticks(range(len(labels)), labels)
 
 ############################################################################
 # And now display the corresponding graph
+# ----------------------------------------
 from nilearn import plotting
 coords = atlas.region_coords
 
