@@ -14,6 +14,7 @@ See also the SpaceNet documentation: :ref:`space_net`.
 
 ###########################################################################
 # Load the Oasis VBM dataset
+# ---------------------------
 import numpy as np
 from nilearn import datasets
 n_subjects = 200  # increase this number if you have more RAM on your box
@@ -38,6 +39,7 @@ gm_imgs_test = gm_imgs_test[perm]
 
 ###########################################################################
 # Fit the SpaceNet and predict with it
+# -------------------------------------
 from nilearn.decoding import SpaceNetRegressor
 
 # To save time (because these are anat images with many voxels), we include
@@ -68,6 +70,7 @@ plot_stat_map(coef_img, background_img, title="graph-net weights",
 
 ###########################################################################
 # Visualize the quality of predictions
+# -------------------------------------
 import matplotlib.pyplot as plt
 plt.figure()
 plt.suptitle("graph-net: Mean Absolute Error %.2f years" % mse)

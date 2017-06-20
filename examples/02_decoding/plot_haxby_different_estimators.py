@@ -8,6 +8,7 @@ decoding task.
 
 #############################################################################
 # We start by loading the data and applying simple transformations to it
+# -----------------------------------------------------------------------
 
 # Fetch data using nilearn dataset fetcher
 from nilearn import datasets
@@ -46,7 +47,7 @@ masked_timecourses = masker.fit_transform(
 
 #############################################################################
 # Then we define the various classifiers that we use
-
+# ---------------------------------------------------
 # A support vector classifier
 from sklearn.svm import SVC
 svm = SVC(C=1., kernel="linear")
@@ -93,8 +94,9 @@ classifiers = {'SVC': svm,
 
 
 #############################################################################
-# Here we compute prediction scores and run time for all these
-# classifiers
+# Here we compute prediction scores
+# ----------------------------------
+# Run time for all these classifiers
 
 # Make a data splitting object for cross validation
 from sklearn.cross_validation import LeaveOneLabelOut, cross_val_score
