@@ -58,6 +58,7 @@ process_mask_img = new_img_like(mask_img, process_mask)
 #########################################################################
 # Searchlight computation
 # -------------------------
+
 # Make processing parallel
 # /!\ As each thread will print its progress, n_jobs > 1 could mess up the
 #     information output.
