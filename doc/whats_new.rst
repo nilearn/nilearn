@@ -1,6 +1,8 @@
 0.3.1
 =====
 
+This is a minor release for BrainHack.
+
 Highlights
 ----------
 
