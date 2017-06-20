@@ -23,6 +23,7 @@ documentation <parcellation_time_series>` for more.
 
 ##############################################################################
 # Retrieve the atlas and the data
+# --------------------------------
 from nilearn import datasets
 
 dataset = datasets.fetch_atlas_harvard_oxford('cort-maxprob-thr25-2mm')
@@ -37,8 +38,9 @@ data = datasets.fetch_adhd(n_subjects=1)
 fmri_filenames = data.func[0]
 
 ##############################################################################
-# Extract signals on a parcellation defined by labels using the
-# NiftiLabelsMasker
+# Extract signals on a parcellation defined by labels
+# -----------------------------------------------------
+# Using the NiftiLabelsMasker
 from nilearn.input_data import NiftiLabelsMasker
 masker = NiftiLabelsMasker(labels_img=atlas_filename, standardize=True,
                            memory='nilearn_cache', verbose=5)
@@ -51,6 +53,7 @@ time_series = masker.fit_transform(fmri_filenames, confounds=data.confounds)
 
 ##############################################################################
 # Compute and display a correlation matrix
+# -----------------------------------------
 from nilearn.connectome import ConnectivityMeasure
 correlation_measure = ConnectivityMeasure(kind='correlation')
 correlation_matrix = correlation_measure.fit_transform([time_series])[0]
@@ -74,6 +77,7 @@ plt.subplots_adjust(left=.01, bottom=.3, top=.99, right=.62)
 
 ###############################################################################
 # Same thing without confounds, to stress the importance of confounds
+# --------------------------------------------------------------------
 
 time_series = masker.fit_transform(fmri_filenames)
 # Note how we did not specify confounds above. This is bad!

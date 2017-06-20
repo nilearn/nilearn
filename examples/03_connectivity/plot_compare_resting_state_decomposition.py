@@ -15,6 +15,7 @@ than ICA
 """
 ###############################################################################
 # Load ADHD rest dataset
+# -----------------------
 from nilearn import datasets
 
 adhd_dataset = datasets.fetch_adhd(n_subjects=30)
@@ -26,12 +27,14 @@ print('First functional nifti image (4D) is at: %s' %
 
 ###############################################################################
 # Create two decomposition estimators
+# ------------------------------------
 from nilearn.decomposition import DictLearning, CanICA
 
 n_components = 40
 
 ###############################################################################
 # Dictionary learning
+# --------------------
 dict_learning = DictLearning(n_components=n_components,
                              memory="nilearn_cache", memory_level=2,
                              verbose=1,
@@ -39,6 +42,7 @@ dict_learning = DictLearning(n_components=n_components,
                              n_epochs=1)
 ###############################################################################
 # CanICA
+# ------
 canica = CanICA(n_components=n_components,
                 memory="nilearn_cache", memory_level=2,
                 threshold=3.,
@@ -47,6 +51,7 @@ canica = CanICA(n_components=n_components,
 
 ###############################################################################
 # Fit both estimators
+# --------------------
 estimators = [dict_learning, canica]
 names = {dict_learning: 'DictionaryLearning', canica: 'CanICA'}
 components_imgs = []
@@ -65,6 +70,7 @@ for estimator in estimators:
 
 ###############################################################################
 # Visualize the results
+# ----------------------
 from nilearn.plotting import (plot_prob_atlas, find_xyz_cut_coords, show,
                               plot_stat_map)
 from nilearn.image import index_img
