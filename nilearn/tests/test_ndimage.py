@@ -18,9 +18,16 @@ def test_largest_cc():
     assert_raises(ValueError, largest_connected_component, a)
     a[1:3, 1:3, 1:3] = 1
     np.testing.assert_equal(a, largest_connected_component(a))
+    # A simple test with non-native dtype
+    a_change_type = a.astype('>f8')
+    np.testing.assert_equal(a, largest_connected_component(a_change_type))
+
     b = a.copy()
     b[5, 5, 5] = 1
     np.testing.assert_equal(a, largest_connected_component(b))
+    # A simple test with non-native dtype
+    b_change_type = b.astype('>f8')
+    np.testing.assert_equal(a, largest_connected_component(b_change_type))
 
     # Tests for correct errors, when an image or string are passed.
     img = testing.generate_labeled_regions(shape=(10, 11, 12),

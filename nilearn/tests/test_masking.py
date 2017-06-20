@@ -325,6 +325,17 @@ def test_intersect_masks():
     mask_ab[2, 2] = 1
     mask_ab_ = intersect_masks([mask_a_img, mask_b_img], threshold=1.)
     assert_array_equal(mask_ab, mask_ab_.get_data())
+    # Test intersect mask images with '>f8'. This function uses
+    # largest_connected_component to check if intersect_masks passes with
+    # connected=True (which is by default)
+    mask_a_img_change_dtype = Nifti1Image(mask_a_img.get_data().astype('>f8'),
+                                          affine=mask_a_img.get_affine())
+    mask_b_img_change_dtype = Nifti1Image(mask_b_img.get_data().astype('>f8'),
+                                          affine=mask_b_img.get_affine())
+    mask_ab_change_type = intersect_masks([mask_a_img_change_dtype,
+                                           mask_b_img_change_dtype],
+                                          threshold=1.)
+    assert_array_equal(mask_ab, mask_ab_change_type.get_data())
 
     mask_abc = mask_a + mask_b + mask_c
     mask_abc_ = intersect_masks([mask_a_img, mask_b_img, mask_c_img],
