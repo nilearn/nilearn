@@ -9,6 +9,7 @@ cross-validated accuracy and the confusion matrix.
 
 ##############################################################################
 # Load the Haxby data dataset
+# ----------------------------
 from nilearn import datasets
 import numpy as np
 # By default 2nd subject from haxby datasets will be fetched.
@@ -37,6 +38,7 @@ unique_conditions = unique_conditions[np.argsort(order)]
 
 ##############################################################################
 # Prepare the fMRI data
+# ----------------------
 from nilearn.input_data import NiftiMasker
 # For decoding, standardizing is often very important
 nifti_masker = NiftiMasker(mask_img=mask_filename, standardize=True,
@@ -50,7 +52,7 @@ session = session[non_rest]
 
 ##############################################################################
 # Build the decoders, using scikit-learn
-#
+# ----------------------------------------
 # Here we use a Support Vector Classification, with a linear kernel,
 # and a simple feature selection step
 
@@ -71,6 +73,7 @@ svc_ova = OneVsRestClassifier(Pipeline([
 
 ##############################################################################
 # Now we compute cross-validation scores
+# ----------------------------------------
 from sklearn.cross_validation import cross_val_score
 
 cv_scores_ovo = cross_val_score(svc_ovo, X, y, cv=5, verbose=1)
@@ -82,7 +85,7 @@ print('OvA:', cv_scores_ova.mean())
 
 ##############################################################################
 # Plot barplots of the prediction scores
-
+# ----------------------------------------
 from matplotlib import pyplot as plt
 plt.figure(figsize=(4, 3))
 plt.boxplot([cv_scores_ova, cv_scores_ovo])
@@ -91,7 +94,7 @@ plt.title('Prediction: accuracy score')
 
 ##############################################################################
 # Plot a confusion matrix
-#
+# ------------------------
 # We fit on the the first 10 sessions and plot a confusion matrix on the
 # last 2 sessions
 from sklearn.metrics import confusion_matrix

@@ -27,6 +27,7 @@ import sys
 
 ############################################################################
 # First we load the Miyawaki dataset
+# -----------------------------------
 from nilearn import datasets
 sys.stderr.write("Fetching dataset...")
 t0 = time.time()
@@ -47,6 +48,7 @@ sys.stderr.write(" Done (%.2fs).\n" % (time.time() - t0))
 
 ############################################################################
 # Then we prepare and mask the data
+# ----------------------------------
 import numpy as np
 from nilearn.input_data import MultiNiftiMasker
 
@@ -133,7 +135,7 @@ sys.stderr.write(" Done (%.2fs).\n" % (time.time() - t0))
 
 ############################################################################
 # We define our prediction function
-
+# -----------------------------------
 sys.stderr.write("Training classifiers... \r")
 t0 = time.time()
 
@@ -158,6 +160,7 @@ sys.stderr.write("Training classifiers %03d/%d... Done (%.2fs).\n" % (
 
 ############################################################################
 # Here we run the prediction: the decoding itself
+# ------------------------------------------------
 sys.stderr.write("Calculating scores and outputs...")
 t0 = time.time()
 
@@ -228,6 +231,7 @@ sys.stderr.write(" Done (%.2fs).\n" % (time.time() - t0))
 
 ############################################################################
 # Let us quantify our prediction error
+# -------------------------------------
 from sklearn.metrics import (accuracy_score, precision_score, recall_score,
                              f1_score)
 

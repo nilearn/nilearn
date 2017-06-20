@@ -35,6 +35,7 @@ a separator.
 
 ###########################################################################
 # Load the Haxby dataset
+# -----------------------
 from nilearn import datasets
 import numpy as np
 # by default 2nd subject data will be fetched on which we run our analysis
@@ -70,7 +71,7 @@ session = session[condition_mask]
 
 ###########################################################################
 # Build the decoder that we will use
-
+# -----------------------------------
 # Define the prediction function to be used.
 # Here we use a Support Vector Classification, with a linear kernel
 from sklearn.svm import SVC
@@ -91,7 +92,7 @@ anova_svc = Pipeline([('anova', feature_selection), ('svc', svc)])
 
 ###########################################################################
 # Compute prediction scores using cross-validation
-
+# -------------------------------------------------
 anova_svc.fit(X, y)
 y_pred = anova_svc.predict(X)
 
@@ -115,6 +116,7 @@ for k in k_range:
 
 ###########################################################################
 # Nested cross-validation
+# -------------------------
 from sklearn.grid_search import GridSearchCV
 # We are going to tune the parameter 'k' of the step called 'anova' in
 # the pipeline. Thus we need to address it as 'anova__k'.
@@ -128,7 +130,7 @@ print("Nested CV score: %.4f" % np.mean(nested_cv_scores))
 
 ###########################################################################
 # Plot the prediction scores using matplotlib
-
+# ---------------------------------------------
 from matplotlib import pyplot as plt
 plt.figure(figsize=(6, 4))
 plt.plot(cv_scores, label='Cross validation scores')

@@ -11,6 +11,7 @@ See also the SpaceNet documentation: :ref:`space_net`.
 
 ##############################################################################
 # Load the Haxby dataset
+# ------------------------
 from nilearn.datasets import fetch_haxby
 data_files = fetch_haxby()
 
@@ -44,6 +45,7 @@ background_img = mean_img(func_filenames)
 
 ##############################################################################
 # Fit SpaceNet with a Graph-Net penalty
+# --------------------------------------
 from nilearn.decoding import SpaceNetClassifier
 
 # Fit model on train data and predict on test data
@@ -53,7 +55,9 @@ y_pred = decoder.predict(X_test)
 accuracy = (y_pred == y_test).mean() * 100.
 print("Graph-net classification accuracy : %g%%" % accuracy)
 
-# Visualization
+#############################################################################
+# Visualization of Graph-net weights
+# ------------------------------------
 from nilearn.plotting import plot_stat_map, show
 coef_img = decoder.coef_img_
 plot_stat_map(coef_img, background_img,
@@ -66,13 +70,16 @@ coef_img.to_filename('haxby_graph-net_weights.nii')
 
 ##############################################################################
 # Now Fit SpaceNet with a TV-l1 penalty
+# --------------------------------------
 decoder = SpaceNetClassifier(memory="nilearn_cache", penalty='tv-l1')
 decoder.fit(X_train, y_train)
 y_pred = decoder.predict(X_test)
 accuracy = (y_pred == y_test).mean() * 100.
 print("TV-l1 classification accuracy : %g%%" % accuracy)
 
-# Visualization
+#############################################################################
+# Visualization of TV-L1 weights
+# -------------------------------
 coef_img = decoder.coef_img_
 plot_stat_map(coef_img, background_img,
               title="tv-l1: accuracy %g%%" % accuracy,
