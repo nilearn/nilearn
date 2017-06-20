@@ -366,11 +366,14 @@ def _load_anat(anat_img=MNI152TEMPLATE, dim='auto', black_bg='auto'):
             black_bg = False
     else:
         anat_img = _utils.check_niimg_3d(anat_img)
+        # Clean anat_img for non-finite values to avoid computing unnecessary
+        # border data values.
+        data = _safe_get_data(anat_img, ensure_finite=True)
+        anat_img = new_img_like(anat_img, data, affine=_get_affine(anat_img))
         if dim or black_bg == 'auto':
             # We need to inspect the values of the image
-            data = anat_img.get_data()
-            vmin = data.min()
-            vmax = data.max()
+            vmin = np.nanmin(data)
+            vmax = np.nanmax(data)
         if black_bg == 'auto':
             # Guess if the background is rather black or light based on
             # the values of voxels near the border
@@ -470,6 +473,9 @@ def plot_anat(anat_img=MNI152TEMPLATE, cut_coords=None,
         -----
         Arrays should be passed in numpy convention: (x, y, z)
         ordered.
+
+        For visualization, non-finite values found in passed 'anat_img'
+        are set to zero.
     """
     anat_img, black_bg, anat_vmin, anat_vmax = _load_anat(
         anat_img,
@@ -563,7 +569,7 @@ def plot_epi(epi_img=None, cut_coords=None, output_file=None,
     return display
 
 
-def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None, 
+def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None,
              output_file=None, display_mode='ortho', figure=None, axes=None,
              title=None, annotate=True, draw_cross=True, black_bg='auto',
              threshold=0.5, alpha=0.7, cmap=plt.cm.gist_ncar, dim='auto',
@@ -638,6 +644,9 @@ def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None,
         -----
         A small threshold is applied by default to eliminate numerical
         background noise.
+
+        For visualization, non-finite values found in passed 'roi_img' or
+        'bg_img' are set to zero.
 
         See Also
         --------
@@ -954,6 +963,9 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
         -----
         Arrays should be passed in numpy convention: (x, y, z)
         ordered.
+
+        For visualization, non-finite values found in passed 'stat_map_img' or
+        'bg_img' are set to zero.
 
         See Also
         --------
