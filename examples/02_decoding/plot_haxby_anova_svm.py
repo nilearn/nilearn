@@ -91,7 +91,7 @@ from sklearn.cross_validation import LeaveOneLabelOut, cross_val_score
 cv = LeaveOneLabelOut(session)
 
 # Compute the prediction accuracy for the different folds (i.e. session)
-cv_scores = cross_val_score(anova_svc, X, conditions)
+cv_scores = cross_val_score(anova_svc, X, conditions, cv=cv)
 
 # Return the corresponding mean prediction accuracy
 classification_accuracy = cv_scores.mean()
@@ -99,7 +99,7 @@ classification_accuracy = cv_scores.mean()
 # Print the results
 print("Classification accuracy: %.4f / Chance level: %f" %
       (classification_accuracy, 1. / len(np.unique(conditions))))
-# Classification accuracy: 0.8009 / Chance level: 0.5000
+# Classification accuracy:  0.70370 / Chance level: 0.5000
 
 
 #############################################################################
