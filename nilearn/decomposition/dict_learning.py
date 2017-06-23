@@ -21,6 +21,7 @@ from sklearn.linear_model import Ridge
 
 from .base import BaseDecomposition, mask_and_reduce
 from .canica import CanICA
+from ..due import due, Doi
 
 
 if LooseVersion(sklearn.__version__) >= LooseVersion('0.17'):
@@ -39,6 +40,10 @@ def _compute_loadings(components, data):
     return loadings
 
 
+@due.dcite(
+    Doi('10.1109/ISBI.2016.7493501'),
+    description='Map learning algorithm based on spatial component sparsity',
+    tags=['implementation'])
 class DictLearning(BaseDecomposition, TransformerMixin):
     """Perform a map learning algorithm based on spatial component sparsity,
     over a CanICA initialization.  This yields more stable maps than CanICA.

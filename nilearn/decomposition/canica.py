@@ -14,8 +14,17 @@ from sklearn.externals.joblib import Memory, delayed, Parallel
 from sklearn.utils import check_random_state
 
 from .multi_pca import MultiPCA
+from ..due import due, Doi
 
 
+@due.dcite(
+    Doi('10.1016/j.neuroimage.2010.02.010'),
+    description='Canonical ICA for fMRI datasets',
+    tags=['implementation'])
+@due.dcite(
+    Doi('10.1109/ISBI.2010.5490204'),
+    description='ICA-based sparse features recovery from fMRI datasets',
+    tags=['implementation'])
 class CanICA(MultiPCA):
     """Perform Canonical Independent Component Analysis.
 
