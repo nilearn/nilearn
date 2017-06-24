@@ -35,6 +35,7 @@ signal                  --- Set of preprocessing functions for time series
 import gzip
 
 from .version import _check_module_dependencies, __version__
+from .due import due, Doi, BibTeX
 
 _check_module_dependencies()
 
@@ -59,3 +60,13 @@ CHECK_CACHE_VERSION = True
 __all__ = ['datasets', 'decoding', 'decomposition', 'connectome',
            'image', 'input_data', 'masking', 'mass_univariate', 'plotting',
            'region', 'signal', '__version__']
+
+# DueCredit
+due.cite(
+    Doi("10.3389/fninf.2014.00014"), 
+    description="Nilearn underlying patterns article",
+    tags=["reference-implementation"],
+    # would make it sufficient to import to get cited, which might not be the
+    # case that it was actually used, so disabled
+    #cite_module=True,
+    path="nilearn")

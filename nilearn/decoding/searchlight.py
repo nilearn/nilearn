@@ -27,10 +27,18 @@ from .. import masking
 from ..image.resampling import coord_transform
 from ..input_data.nifti_spheres_masker import _apply_mask_and_get_affinity
 from .._utils.compat import _basestring
+from ..due import due, Doi
 
 ESTIMATOR_CATALOG = dict(svc=svm.LinearSVC, svr=svm.SVR)
 
-
+@due.dcite(
+	Doi('10.1073/pnas.0600244103'),
+	description="Searchlight analysis approach",
+	tags=["implementation"])
+@due.dcite(
+	Doi('10.1038/nrn1931'),
+	description="Application of the searchlight approach to decoding using classifiers",
+	tags=["use"])
 def search_light(X, y, estimator, A, scoring=None, cv=None, n_jobs=-1,
                  verbose=0):
     """Function for computing a search_light
