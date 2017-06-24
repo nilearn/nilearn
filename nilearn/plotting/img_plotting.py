@@ -383,6 +383,17 @@ def _load_anat(anat_img=MNI152TEMPLATE, dim='auto', black_bg='auto'):
             else:
                 black_bg = True
     if dim:
+        if dim != 'auto' and not isinstance(dim, numbers.Number):
+            raise ValueError(
+                "The input given for 'dim' needs to be "
+                "a float. "
+                "You provided dim=%s in %s" % (str(dim), type(dim)))
+        elif dim != 'auto' and dim not in range(-1, 1):
+            warnings.warn("The given input for 'dim' needs to be "
+                          "in the range -1 and 1. "
+                          "Overriding dim to default 'auto'.",
+                          stacklevel=2)
+            dim = 'auto'
         vmean = .5 * (vmin + vmax)
         ptp = .5 * (vmax - vmin)
         if black_bg:
