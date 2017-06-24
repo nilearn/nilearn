@@ -14,7 +14,13 @@ from .._utils import check_niimg
 from .._utils.compat import _basestring, get_affine
 from ..image import new_img_like
 
+from ..due import due, Doi
 
+
+@due.dcite(
+    Doi('10.1002/hbm.21333'),
+    description='Dataset: Craddock 2012 parcellation',
+    tags=['dataset'])
 def fetch_atlas_craddock_2012(data_dir=None, url=None, resume=True, verbose=1):
     """Download and return file names for the Craddock 2012 parcellation
 
@@ -85,6 +91,14 @@ def fetch_atlas_craddock_2012(data_dir=None, url=None, resume=True, verbose=1):
     return Bunch(**params)
 
 
+@due.dcite(
+    Doi('10.1016/S1053-8119(09)71561-7'),
+    description='Destrieux cortical atlas (dated 2009)',
+    tags=['dataset'])
+@due.dcite(
+    Doi('10.1093/cercor/bhg087'),
+    description='Automatic parcellation of cerebral cortex',
+    tags=['implementation'])  # not sure about the tag
 def fetch_atlas_destrieux_2009(lateralized=True, data_dir=None, url=None,
                                resume=True, verbose=1):
     """Download and load the Destrieux cortical atlas (dated 2009)
@@ -278,6 +292,10 @@ def fetch_atlas_harvard_oxford(atlas_name, data_dir=None,
     return Bunch(maps=atlas_img, labels=new_names)
 
 
+@due.dcite(
+    Doi('10.1007/978-3-642-22092-0_46'),
+    description='MSDL brain atlas',
+    tags=['dataset'])
 def fetch_atlas_msdl(data_dir=None, url=None, resume=True, verbose=1):
     """Download and load the MSDL brain atlas.
 
@@ -345,6 +363,10 @@ def fetch_atlas_msdl(data_dir=None, url=None, resume=True, verbose=1):
                  networks=net_names, description=fdescr)
 
 
+@due.dcite(
+    Doi('10.1016/j.neuron.2011.09.006'),
+    description='Power et al. brain atlas',
+    tags=['dataset'])
 def fetch_coords_power_2011():
     """Download and load the Power et al. brain atlas composed of 264 ROIs.
 
@@ -369,6 +391,14 @@ def fetch_coords_power_2011():
     return Bunch(**params)
 
 
+@due.dcite(
+    Doi('10.1073/pnas.0905267106'),
+    description='Smith ICA and BrainMap atlas',
+    tags=['dataset'])
+@due.dcite(
+    Doi('10.1162/jocn_a_00077'),
+    description='Smith ICA and BrainMap atlas',
+    tags=['dataset'])
 def fetch_atlas_smith_2009(data_dir=None, mirror='origin', url=None,
                            resume=True, verbose=1):
     """Download and load the Smith ICA and BrainMap atlas (dated 2009)
@@ -467,6 +497,10 @@ def fetch_atlas_smith_2009(data_dir=None, mirror='origin', url=None,
     return Bunch(**params)
 
 
+@due.dcite(
+    Doi('10.1152/jn.00338.2011'),
+    description='Yeo 2011 parcellation',
+    tags=['dataset'])
 def fetch_atlas_yeo_2011(data_dir=None, url=None, resume=True, verbose=1):
     """Download and return file names for the Yeo 2011 parcellation.
 
@@ -545,6 +579,14 @@ def fetch_atlas_yeo_2011(data_dir=None, url=None, resume=True, verbose=1):
     return Bunch(**params)
 
 
+@due.dcite(
+    Doi('10.1109/42.712135'),
+    description='AAL atlas',
+    tags=['dataset'])
+@due.dcite(
+    Doi('10.1006/nimg.2001.0978'),
+    description='AAL atlas for SPM',
+    tags=['dataset'])
 def fetch_atlas_aal(version='SPM12', data_dir=None, url=None, resume=True,
                     verbose=1):
     """Downloads and returns the AAL template for SPM 12.
@@ -634,6 +676,14 @@ def fetch_atlas_aal(version='SPM12', data_dir=None, url=None, resume=True,
     return Bunch(**params)
 
 
+@due.dcite(
+    Doi('10.1016/j.neuroimage.2010.02.082'),
+    description='Multiscale functional brain parcellations',
+    tags=['dataset'])
+@due.dcite(
+    Doi('10.1109/PRNI.2013.23'),
+    description='Multiscale functional brain parcellations',
+    tags=['dataset'])
 def fetch_atlas_basc_multiscale_2015(version='sym', data_dir=None,
                                      resume=True, verbose=1):
     """Downloads and loads multiscale functional brain parcellations
@@ -740,6 +790,10 @@ def fetch_atlas_basc_multiscale_2015(version='sym', data_dir=None,
     return Bunch(**params)
 
 
+@due.dcite(
+    Doi('10.1126/science.1194144'),
+    description='Dosenbach et al. ROIs',
+    tags=['dataset'])
 def fetch_coords_dosenbach_2010(ordered_regions=True):
     """Load the Dosenbach et al. 160 ROIs. These ROIs cover
     much of the cerebral cortex and cerebellum and are assigned to 6
@@ -785,6 +839,10 @@ def fetch_coords_dosenbach_2010(ordered_regions=True):
     return Bunch(**params)
 
 
+@due.dcite(
+    Doi('10.3389/fnsys.2011.00002'),
+    description='Allen and MIALAB ICA atlas (2011)',
+    tags=['dataset'])
 def fetch_atlas_allen_2011(data_dir=None, url=None, resume=True, verbose=1):
     """Download and return file names for the Allen and MIALAB ICA atlas
     (dated 2011).
@@ -867,6 +925,10 @@ def fetch_atlas_allen_2011(data_dir=None, url=None, resume=True, verbose=1):
     return Bunch(**dict(params))
 
 
+@due.dcite(
+    Doi('10.1016/j.neuroimage.2010.06.010'),
+    description='Destrieux et al, 2010 cortical atlas',
+    tags=['dataset'])
 def fetch_atlas_surf_destrieux(data_dir=None, url=None,
                                resume=True, verbose=1):
     """Download and load Destrieux et al, 2010 cortical atlas.
