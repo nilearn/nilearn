@@ -396,8 +396,11 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
         towards zero compared to a maximum-likelihood estimate
 
     kind : {"correlation", "partial correlation", "tangent",\
-            "covariance", "precision"}, optional
-        The matrix kind.
+            "tangent_mean", "covariance", "precision"}, optional
+        The matrix kind. "tangent" refers to transforming the data to
+        tangent reprensentation of the differences to the mean of
+        matrices. "tangent_mean" uses in addition a geometric mean to
+        compute the reference point.
 
     vectorize : bool, optional
         If True, connectivity matrices are reshaped into 1D arrays and only
@@ -413,7 +416,7 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
         A new covariance estimator with the same parameters as cov_estimator.
 
     `mean_` : numpy.ndarray
-        The mean connectivity matrix across subjects. For 'tangent' kind,
+        The mean connectivity matrix across subjects. For 'tangent_mean' kind,
         individual connectivity patterns from both correlation and partial
         correlation matrices are used to estimate a robust group covariance
         matrix, called the geometric mean.
@@ -423,7 +426,7 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
 
     References
     ----------
-    For the use of "tangent", see the paper:
+    For the use of "tangent" and "tangent_mean", see the paper:
     G. Varoquaux et al. "Detection of brain functional-connectivity difference
     in post-stroke patients using group-level covariance modeling, MICCAI 2010.
     """
@@ -434,6 +437,28 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
         self.kind = kind
         self.vectorize = vectorize
         self.discard_diagonal = discard_diagonal
+
+    def _check_input(self, X):
+        if not hasattr(X, "__iter__"):
+            raise ValueError("'subjects' input argument must be an iterable. "
+                             "You provided {0}".format(X.__class__))
+
+        subjects_types = [type(s) for s in X]
+        if set(subjects_types) != set([np.ndarray]):
+            raise ValueError("Each subject must be 2D numpy.ndarray.\n You "
+                             "provided {0}".format(str(subjects_types)))
+
+        subjects_dims = [s.ndim for s in X]
+        if set(subjects_dims) != set([2]):
+            raise ValueError("Each subject must be 2D numpy.ndarray.\n You"
+                             "provided arrays of dimensions "
+                             "{0}".format(str(subjects_dims)))
+
+        features_dims = [s.shape[1] for s in X]
+        if len(set(features_dims)) > 1:
+            raise ValueError("All subjects must have the same number of "
+                             "features.\nYou provided: "
+                             "{0}".format(str(features_dims)))
 
     def fit(self, X, y=None):
         """Fit the covariance estimator to the given time series for each
@@ -450,35 +475,33 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
         self : ConnectivityMatrix instance
             The object itself. Useful for chaining operations.
         """
+        self._check_input(X)
         self.cov_estimator_ = clone(self.cov_estimator)
-        if not hasattr(X, "__iter__"):
-            raise ValueError("'subjects' input argument must be an iterable. "
-                             "You provided {0}".format(X.__class__))
 
-        subjects_types = [type(s) for s in X]
-        if set(subjects_types) != set([np.ndarray]):
-            raise ValueError("Each subject must be 2D numpy.ndarray.\n You "
-                             "provided {0}".format(str(subjects_types)))
-
-        subjects_dims = [s.ndim for s in X]
-        if set(subjects_dims) != set([2]):
-            raise ValueError("Each subject must be 2D numpy.ndarray.\n You"
-                             "provided arrays of dimensions "
-                             "{0}".format(str(subjects_dims)))
-
-        n_subjects = [s.shape[1] for s in X]
-        if len(set(n_subjects)) > 1:
-            raise ValueError("All subjects must have the same number of "
-                             "features.\nYou provided: "
-                             "{0}".format(str(n_subjects)))
-
-        if self.kind == 'tangent':
+        if self.kind in ('tangent', 'tangent_mean'):
             covariances = [self.cov_estimator_.fit(x).covariance_ for x in X]
-            self.mean_ = _geometric_mean(covariances, max_iter=30, tol=1e-7)
+            if self.kind == 'tangent_mean':
+                self.mean_ = _geometric_mean(covariances, max_iter=30, tol=1e-7)
+            else:
+                self.mean_ = np.mean(covariances, axis=0)
             self.whitening_ = _map_eigenvalues(lambda x: 1. / np.sqrt(x),
                                                self.mean_)
 
         return self
+
+    def fit_transform(self, X, y=None):
+        if self.kind in ('tangent', 'tangent_mean'):
+            # Check that people are applying fit_transform to a group of
+            # subject
+            # We can only impose this in fit_transform, as it is legit to
+            # fit only on a single given reference point
+            if not len(X) > 1:
+                raise ValueError("Tangent space parametrization can only "
+                    "be applied to a group of subjects, as it returns "
+                    "deviations to the mean. You provided %r" % X
+                    )
+        self.fit(X, y)
+        return self.transform(X)
 
     def transform(self, X):
         """Apply transform to covariances matrices to get the connectivity
