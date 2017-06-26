@@ -396,10 +396,10 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
         towards zero compared to a maximum-likelihood estimate
 
     kind : {"correlation", "partial correlation", "tangent",\
-            "tangent_mean", "covariance", "precision"}, optional
+            "tangent_geometric", "covariance", "precision"}, optional
         The matrix kind. "tangent" refers to transforming the data to
         tangent reprensentation of the differences to the mean of
-        matrices. "tangent_mean" uses in addition a geometric mean to
+        matrices. "tangent_geometric" uses in addition a geometric mean to
         compute the reference point.
 
     vectorize : bool, optional
@@ -416,17 +416,18 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
         A new covariance estimator with the same parameters as cov_estimator.
 
     `mean_` : numpy.ndarray
-        The mean connectivity matrix across subjects. For 'tangent_mean' kind,
-        individual connectivity patterns from both correlation and partial
-        correlation matrices are used to estimate a robust group covariance
-        matrix, called the geometric mean.
+        The mean connectivity matrix across subjects. For
+        'tangent_geometric' kind, individual connectivity patterns from
+        both correlation and partial correlation matrices are used to
+        estimate a robust group covariance matrix, called the geometric
+        mean.
 
     `whitening_` : numpy.ndarray
         The inverted square-rooted geometric mean of the covariance matrices.
 
     References
     ----------
-    For the use of "tangent" and "tangent_mean", see the paper:
+    For the use of "tangent" and "tangent_geometric", see the paper:
     G. Varoquaux et al. "Detection of brain functional-connectivity difference
     in post-stroke patients using group-level covariance modeling, MICCAI 2010.
     """
@@ -478,9 +479,9 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
         self._check_input(X)
         self.cov_estimator_ = clone(self.cov_estimator)
 
-        if self.kind in ('tangent', 'tangent_mean'):
+        if self.kind in ('tangent', 'tangent_geometric'):
             covariances = [self.cov_estimator_.fit(x).covariance_ for x in X]
-            if self.kind == 'tangent_mean':
+            if self.kind == 'tangent_geometric':
                 self.mean_ = _geometric_mean(covariances, max_iter=30, tol=1e-7)
             else:
                 self.mean_ = np.mean(covariances, axis=0)
@@ -490,7 +491,7 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
         return self
 
     def fit_transform(self, X, y=None):
-        if self.kind in ('tangent', 'tangent_mean'):
+        if self.kind in ('tangent', 'tangent_geometric'):
             # Check that people are applying fit_transform to a group of
             # subject
             # We can only impose this in fit_transform, as it is legit to
