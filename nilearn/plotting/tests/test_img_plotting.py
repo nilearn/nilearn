@@ -937,3 +937,9 @@ def test_plotting_functions_with_nans_in_bg_img():
     plot_stat_map(stat_map_img=stat_map_img, bg_img=bg_img)
 
     plt.close()
+
+
+def test_plotting_functions_with_dim_invalid_input():
+    # Test whether error raises with bad error to input
+    img = _generate_img()
+    assert_raises(ValueError, plot_stat_map, img, dim='-10')

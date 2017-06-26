@@ -383,6 +383,10 @@ def _load_anat(anat_img=MNI152TEMPLATE, dim='auto', black_bg='auto'):
             else:
                 black_bg = True
     if dim:
+        if dim != 'auto' and not isinstance(dim, numbers.Number):
+            raise ValueError(
+                "The input given for 'dim' needs to be a float. "
+                "You provided dim=%s in %s" % (str(dim), type(dim)))
         vmean = .5 * (vmin + vmax)
         ptp = .5 * (vmax - vmin)
         if black_bg:
@@ -459,9 +463,10 @@ def plot_anat(anat_img=MNI152TEMPLATE, cut_coords=None,
         dim : float, 'auto' (by default), optional
             Dimming factor applied to background image. By default, automatic
             heuristics are applied based upon the image intensity.
-            Accepted float values, where a typical span is -1 to 1
-            (-1 = increase contrast; 1 = decrease contrast), but larger
-            values can be used for a more pronounced effect. 0 means no dimming.
+            Accepted float values, where a typical span is between -2 and 2
+            (-2 = increase contrast; 2 = decrease contrast), but larger
+            values can be used for a more pronounced effect. 0 means no
+            dimming.
         cmap : matplotlib colormap, optional
             The colormap for the anat
         vmin : float
@@ -632,8 +637,8 @@ def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None,
         dim : float, 'auto' (by default), optional
             Dimming factor applied to background image. By default, automatic
             heuristics are applied based upon the background image intensity.
-            Accepted float values, where a typical span is -1 to 1
-            (-1 = increase contrast; 1 = decrease contrast), but larger values
+            Accepted float values, where a typical span is between -2 and 2
+            (-2 = increase contrast; 2 = decrease contrast), but larger values
             can be used for a more pronounced effect. 0 means no dimming.
         vmin : float
             Lower bound for plotting, passed to matplotlib.pyplot.imshow
@@ -762,8 +767,8 @@ def plot_prob_atlas(maps_img, anat_img=MNI152TEMPLATE, view_type='auto',
         dim : float, 'auto' (by default), optional
             Dimming factor applied to background image. By default, automatic
             heuristics are applied based upon the background image intensity.
-            Accepted float values, where a typical span is -1 to 1
-            (-1 = increase contrast; 1 = decrease contrast), but larger values
+            Accepted float values, where a typical span is between -2 and 2
+            (-2 = increase contrast; 2 = decrease contrast), but larger values
             can be used for a more pronounced effect. 0 means no dimming.
         cmap : matplotlib colormap, optional
             The colormap for the atlas maps
@@ -953,8 +958,8 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
         dim : float, 'auto' (by default), optional
             Dimming factor applied to background image. By default, automatic
             heuristics are applied based upon the background image intensity.
-            Accepted float values, where a typical scan is -1 to 1
-            (-1 = increase constrast; 1 = decrease contrast), but larger values
+            Accepted float values, where a typical scan is between -2 and 2
+            (-2 = increase constrast; 2 = decrease contrast), but larger values
             can be used for a more pronounced effect. 0 means no dimming.
         vmax : float
             Upper bound for plotting, passed to matplotlib.pyplot.imshow
