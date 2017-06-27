@@ -4,8 +4,10 @@ Functional connectivity matrices for group analysis of connectomes
 
 This example compares different kinds of functional connectivity between
 regions of interest : correlation, partial correlation, as well as a kind
-called **tangent**. The resulting connectivity coefficients are used to
-discriminate ADHD patients from healthy controls and the **tangent kind**
+called **tangent**, or **tangent_geometric", where "tangent" is an
+approximation of "tangent_geometric" that is less computationally
+costly. The resulting connectivity coefficients are used to
+discriminate ADHD patients from healthy controls and the **tangent kinds**
 **outperforms** the standard connectivity kinds.
 """
 # A useful matrix plotting function
@@ -165,7 +167,8 @@ plotting.plot_connectome(
 # *ConnectivityMeasure* can output the estimated subjects coefficients
 # as a 1D arrays through the parameter *vectorize*.
 connectivity_biomarkers = {}
-kinds = ['correlation', 'partial correlation', 'tangent']
+kinds = ['correlation', 'partial correlation', 'tangent',
+         'tangent_geometric']
 for kind in kinds:
     conn_measure = ConnectivityMeasure(kind=kind, vectorize=True)
     connectivity_biomarkers[kind] = conn_measure.fit_transform(pooled_subjects)
