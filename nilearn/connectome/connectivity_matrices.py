@@ -398,7 +398,7 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
     kind : {"correlation", "partial correlation", "tangent",\
             "tangent_geometric", "covariance", "precision"}, optional
         The matrix kind. "tangent" refers to transforming the data to
-        tangent reprensentation of the differences to the mean of
+        tangent representation of the differences to the mean of
         matrices. "tangent_geometric" uses in addition a geometric mean to
         compute the reference point.
 
@@ -479,12 +479,16 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
         self._check_input(X)
         self.cov_estimator_ = clone(self.cov_estimator)
 
+        covariances = [self.cov_estimator_.fit(x).covariance_ for x in X]
+        if self.kind == 'tangent_geometric':
+            self.mean_ = _geometric_mean(covariances, max_iter=30, tol=1e-7)
+        else:
+            self.mean_ = np.mean(covariances, axis=0)
+            # Fight numerical instabilities: make symmetric
+            self.mean_ = self.mean_ + self.mean_.T
+            self.mean_ *= .5
+
         if self.kind in ('tangent', 'tangent_geometric'):
-            covariances = [self.cov_estimator_.fit(x).covariance_ for x in X]
-            if self.kind == 'tangent_geometric':
-                self.mean_ = _geometric_mean(covariances, max_iter=30, tol=1e-7)
-            else:
-                self.mean_ = np.mean(covariances, axis=0)
             self.whitening_ = _map_eigenvalues(lambda x: 1. / np.sqrt(x),
                                                self.mean_)
 
@@ -533,6 +537,11 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
             if self.kind == 'covariance':
                 connectivities = covariances
             elif self.kind == 'tangent':
+                idty = np.eye(self.mean_.shape[0])
+                connectivities = [
+                    self.whitening_.dot(cov).dot(self.whitening_) - idty
+                    for cov in covariances]
+            elif self.kind == 'tangent_geometric':
                 connectivities = [_map_eigenvalues(np.log, self.whitening_.dot(
                                                    cov).dot(self.whitening_))
                                   for cov in covariances]
@@ -545,12 +554,11 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
                 raise ValueError('Allowed connectivity kinds are '
                                  '"correlation", '
                                  '"partial correlation", "tangent", '
-                                 '"covariance" and "precision", got kind '
+                                 '"tangent_geometric", '
+                                 '"covariance", and "precision", got kind '
                                  '"{}"'.format(self.kind))
 
         connectivities = np.array(connectivities)
-        if self.kind != 'tangent':
-            self.mean_ = connectivities.mean(axis=0)
 
         if self.vectorize:
             connectivities = sym_matrix_to_vec(
@@ -607,6 +615,13 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
                                                diagonal=diagonal)
 
         if self.kind == 'tangent':
+            mean_sqrt = _map_eigenvalues(lambda x: np.sqrt(x), self.mean_)
+            idty = np.eye(self.mean_.shape[0])
+            connectivities = [mean_sqrt.dot(
+                displacement + idty).dot(mean_sqrt)
+                for displacement in connectivities]
+            connectivities = np.array(connectivities)
+        elif self.kind == 'tangent_geometric':
             mean_sqrt = _map_eigenvalues(lambda x: np.sqrt(x), self.mean_)
             connectivities = [mean_sqrt.dot(
                 _map_eigenvalues(np.exp, displacement)).dot(mean_sqrt)

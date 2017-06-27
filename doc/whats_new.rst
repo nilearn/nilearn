@@ -1,3 +1,17 @@
+0.3.2
+=====
+
+Highlights
+----------
+
+* :class:`nilearn.connectome.ConnectivityMeasure` now uses a Euclidean
+  mean when kind='tangent', as this is more numerically stable. To use a
+  geometric mean, use kind='tangent_geometric'.
+
+Changelog
+---------
+
+
 0.3.1
 =====
 

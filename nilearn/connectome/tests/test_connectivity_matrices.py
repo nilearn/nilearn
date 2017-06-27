@@ -15,7 +15,7 @@ from nilearn.tests.test_signal import generate_signals
 from nilearn.connectome.connectivity_matrices import (
     _check_square, _check_spd, _map_eigenvalues, _form_symmetric,
     _geometric_mean, sym_matrix_to_vec, vec_to_sym_matrix, prec_to_partial,
-    cov_to_corr, ConnectivityMeasure)
+    ConnectivityMeasure)
 
 
 def grad_geometric_mean(mats, init=None, max_iter=10, tol=1e-7):
@@ -434,8 +434,8 @@ def test_connectivity_measure_outputs():
         emp_covs.append((signal.T).dot(signal) / n_samples)
         ledoit_covs.append(ledoit_estimator.fit(signal).covariance_)
 
-    kinds = ["covariance", "correlation", "tangent", "precision",
-             "partial correlation"]
+    kinds = ["covariance", "correlation", "tangent", "tangent_geometric",
+             "precision", "partial correlation"]
 
     # Check outputs properties
     for cov_estimator, covs in zip([EmpiricalCovariance(), LedoitWolf()],
@@ -455,17 +455,21 @@ def test_connectivity_measure_outputs():
                 assert(is_spd(covs[k], decimal=7))
 
                 # Positive definiteness if expected and output value checks
-                if kind == "tangent":
+                if kind in ("tangent", "tangent_geometric"):
                     assert_array_almost_equal(cov_new, cov_new.T)
-                    gmean_sqrt = _map_eigenvalues(np.sqrt,
-                                                  conn_measure.mean_)
-                    assert(is_spd(gmean_sqrt, decimal=7))
                     assert(is_spd(conn_measure.whitening_, decimal=7))
-                    assert_array_almost_equal(conn_measure.whitening_.dot(
-                        gmean_sqrt), np.eye(n_features))
-                    assert_array_almost_equal(gmean_sqrt.dot(
-                        _map_eigenvalues(np.exp, cov_new)).dot(gmean_sqrt),
-                        covs[k])
+                    if not (kind == "tangent"
+                            and isinstance(cov_estimator,
+                            EmpiricalCovariance)):
+                        gmean_sqrt = _map_eigenvalues(np.sqrt,
+                                                      conn_measure.mean_)
+                        assert(is_spd(gmean_sqrt, decimal=7))
+                        assert_array_almost_equal(conn_measure.whitening_.dot(
+                            gmean_sqrt), np.eye(n_features))
+                    if kind == 'tangent_geometric':
+                        assert_array_almost_equal(gmean_sqrt.dot(
+                            _map_eigenvalues(np.exp, cov_new)).dot(gmean_sqrt),
+                            covs[k])
                 elif kind == "precision":
                     assert(is_spd(cov_new, decimal=7))
                     assert_array_almost_equal(cov_new.dot(covs[k]),
@@ -507,6 +511,7 @@ def test_connectivity_measure_outputs():
 
     # Check inverse transformation
     kinds.remove('tangent')
+    kinds.remove('tangent_geometric')
     for kind in kinds:
         # without vectorization: input matrices are returned with no change
         conn_measure = ConnectivityMeasure(kind=kind)
@@ -556,16 +561,27 @@ def test_connectivity_measure_outputs():
     assert_array_almost_equal(
         tangent_measure.inverse_transform(displacements), covariances)
 
+    # for 'tangent_geometric' kind, covariance matrices are reconstructed
+    # without vectorization
+    tangent_measure = ConnectivityMeasure(kind='tangent_geometric')
+    displacements = tangent_measure.fit_transform(signals)
+    covariances = ConnectivityMeasure(kind='covariance').fit_transform(
+        signals)
+    assert_array_almost_equal(
+        tangent_measure.inverse_transform(displacements), covariances)
+
     # with vectorization
     # when diagonal has not been discarded
-    tangent_measure = ConnectivityMeasure(kind='tangent', vectorize=True)
+    tangent_measure = ConnectivityMeasure(kind='tangent_geometric',
+                                          vectorize=True)
     vectorized_displacements = tangent_measure.fit_transform(signals)
     assert_array_almost_equal(
         tangent_measure.inverse_transform(vectorized_displacements),
         covariances)
 
     # when diagonal has been discarded
-    tangent_measure = ConnectivityMeasure(kind='tangent', vectorize=True,
+    tangent_measure = ConnectivityMeasure(kind='tangent_geometric',
+                                          vectorize=True,
                                           discard_diagonal=True)
     vectorized_displacements = tangent_measure.fit_transform(signals)
     diagonal = np.array([np.diagonal(matrix) / sqrt(2) for matrix in
