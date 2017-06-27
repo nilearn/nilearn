@@ -593,3 +593,13 @@ def test_connectivity_measure_outputs():
                         'can not reconstruct connectivity matrices',
                         tangent_measure.inverse_transform,
                         vectorized_displacements)
+
+    # Finally, test that trying to fit_transform with only one covariance
+    # raises an error for tangent and tangent_geometric
+    for kind in ('tangent', 'tangent_geometric'):
+        tangent_measure = ConnectivityMeasure(kind=kind)
+        assert_raises_regex(ValueError,
+                            "Tangent space parametrization can only",
+                            tangent_measure.fit_transform,
+                            covariances[:1]
+                            )
