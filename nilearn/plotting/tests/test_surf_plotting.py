@@ -369,8 +369,9 @@ def test_plot_surf_roi():
     plot_surf_roi(mesh, roi_map=roi1, ax=None, figure=plt.gcf())
 
     # plot to axes
-    plot_surf_roi(mesh, roi_map=roi1, ax=plt.gca(), figure=None,
-                  output_file="/tmp/tmp_fig.png")
+    with tempfile.NamedTemporaryFile() as tmp_file:
+        plot_surf_roi(mesh, roi_map=roi1, ax=plt.gca(), figure=None,
+                      output_file=tmp_file.name)
 
     # Save execution time and memory
     plt.close()
