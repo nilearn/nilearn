@@ -310,6 +310,11 @@ def test_plot_surf_stat_map():
     # Change colormap
     plot_surf_stat_map(mesh, stat_map=data, cmap='cubehelix')
 
+    # Plot to axes
+    axes = plt.subplots(ncols=2, subplot_kw={'projection': '3d'})[1]
+    for ax in axes.flatten():
+        plot_surf_stat_map(mesh, stat_map=data, ax=ax)
+
     # Save execution time and memory
     plt.close()
 
@@ -359,6 +364,14 @@ def test_plot_surf_roi():
 
     # plot roi list
     plot_surf_roi(mesh, roi_map=[roi1, roi2])
+
+    # plot to axes
+    plot_surf_roi(mesh, roi_map=roi1, ax=None, figure=plt.gcf())
+
+    # plot to axes
+    with tempfile.NamedTemporaryFile() as tmp_file:
+        plot_surf_roi(mesh, roi_map=roi1, ax=plt.gca(), figure=None,
+                      output_file=tmp_file.name)
 
     # Save execution time and memory
     plt.close()

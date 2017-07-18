@@ -144,7 +144,7 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
               hemi='left', view='lateral', cmap=None,
               avg_method='mean', threshold=None, alpha='auto',
               bg_on_data=False, darkness=1, vmin=None, vmax=None,
-              title=None, output_file=None, **kwargs):
+              title=None, output_file=None, axes=None, figure=None, **kwargs):
 
     """ Plotting of surfaces with optional background and data
 
@@ -219,6 +219,15 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
         are .png, .pdf, .svg. If output_file is not None, the plot
         is saved to a file, and the display is closed.
 
+    axes: instance of matplotlib axes, None, optional
+        The axes instance to plot to. The projection must be '3d' (e.g.,
+        `figure, axes = plt.subplots(subplot_kw={'projection': '3d'})`,
+        where axes should be passed.).
+        If None, a new axes is created.
+
+    figure: instance of matplotlib figure, None, optional
+        The figure instance to plot to. If None, a new figure is created.
+
     See Also
     --------
     nilearn.datasets.fetch_surf_fsaverage5 : For surface data object to be
@@ -280,16 +289,24 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
             cmap = plt.cm.get_cmap(cmap)
 
     # initiate figure and 3d axes
-    fig = plt.figure()
-    ax = fig.add_subplot(111, projection='3d', xlim=limits, ylim=limits)
-    ax.view_init(elev=elev, azim=azim)
-    ax.set_axis_off()
+    if axes is None:
+        if figure is None:
+            figure = plt.figure()
+        axes = figure.add_subplot(111, projection='3d',
+                                  xlim=limits, ylim=limits)
+    else:
+        if figure is None:
+            figure = axes.get_figure()
+        axes.set_xlim(*limits)
+        axes.set_ylim(*limits)
+    axes.view_init(elev=elev, azim=azim)
+    axes.set_axis_off()
 
     # plot mesh without data
-    p3dcollec = ax.plot_trisurf(coords[:, 0], coords[:, 1], coords[:, 2],
-                                triangles=faces, linewidth=0.,
-                                antialiased=False,
-                                color='white')
+    p3dcollec = axes.plot_trisurf(coords[:, 0], coords[:, 1], coords[:, 2],
+                                  triangles=faces, linewidth=0.,
+                                  antialiased=False,
+                                  color='white')
 
     # If depth_map and/or surf_map are provided, map these onto the surface
     # set_facecolors function of Poly3DCollection is used as passing the
@@ -355,21 +372,22 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
         p3dcollec.set_facecolors(face_colors)
 
     if title is not None:
-        plt.title(title)
+        axes.set_title(title, position=(.5, .9))
 
     # save figure if output file is given
     if output_file is not None:
-        fig.savefig(output_file)
-        plt.close(fig)
+        figure.savefig(output_file)
+        plt.close(figure)
     else:
-        return fig
+        return figure
 
 
 def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
                        hemi='left', view='lateral', threshold=None,
                        alpha='auto', vmax=None, cmap='coolwarm',
                        symmetric_cbar="auto", bg_on_data=False, darkness=1,
-                       title=None, output_file=None, **kwargs):
+                       title=None, output_file=None, axes=None, figure=None,
+                       **kwargs):
     """ Plotting a stats map on a surface mesh with optional background
 
     .. versionadded:: 0.3
@@ -445,6 +463,15 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
         are .png, .pdf, .svg. If output_file is not None, the plot
         is saved to a file, and the display is closed.
 
+    axes: instance of matplotlib axes, None, optional
+        The axes instance to plot to. The projection must be '3d' (e.g.,
+        `figure, axes = plt.subplots(subplot_kw={'projection': '3d'})`,
+        where axes should be passed.).
+        If None, a new axes is created.
+
+    figure: instance of matplotlib figure, None, optional
+        The figure instance to plot to. If None, a new figure is created.
+
     See Also
     --------
     nilearn.datasets.fetch_surf_fsaverage5 : For surface data object to be
@@ -464,7 +491,7 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
                         threshold=threshold, cmap=cmap,
                         alpha=alpha, bg_on_data=bg_on_data, darkness=1,
                         vmax=vmax, title=title, output_file=output_file,
-                        **kwargs)
+                        axes=axes, figure=figure, **kwargs)
 
     return display
 
@@ -472,8 +499,8 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
 def plot_surf_roi(surf_mesh, roi_map, bg_map=None,
                   hemi='left', view='lateral', alpha='auto',
                   vmin=None, vmax=None, cmap='coolwarm',
-                  bg_on_data=False, darkness=1,
-                  title=None, output_file=None, **kwargs):
+                  bg_on_data=False, darkness=1, title=None,
+                  output_file=None, axes=None, figure=None, **kwargs):
     """ Plotting of surfaces with optional background and stats map
 
     .. versionadded:: 0.3
@@ -535,6 +562,14 @@ def plot_surf_roi(surf_mesh, roi_map, bg_map=None,
         are .png, .pdf, .svg. If output_file is not None, the plot
         is saved to a file, and the display is closed.
 
+    axes: Axes instance | None
+        The axes instance to plot to. The projection must be '3d' (e.g.,
+        `plt.subplots(subplot_kw={'projection': '3d'})`).
+        If None, a new axes is created.
+
+    figure: Figure instance | None
+        The figure to plot to. If None, a new figure is created.
+
     See Also
     --------
     nilearn.datasets.fetch_surf_fsaverage5: For surface data object to be
@@ -576,6 +611,6 @@ def plot_surf_roi(surf_mesh, roi_map, bg_map=None,
                         cmap=cmap, alpha=alpha, bg_on_data=bg_on_data,
                         darkness=darkness, vmin=vmin, vmax=vmax,
                         title=title, output_file=output_file,
-                        **kwargs)
+                        axes=axes, figure=figure, **kwargs)
 
     return display
