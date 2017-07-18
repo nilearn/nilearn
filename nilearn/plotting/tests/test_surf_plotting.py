@@ -370,7 +370,7 @@ def test_plot_surf_roi():
 
     # plot to axes
     plot_surf_roi(mesh, roi_map=roi1, ax=plt.gca(), figure=None,
-                  output_file="tmp_fig.png")
+                  output_file="/tmp/tmp_fig.png")
 
     # Save execution time and memory
     plt.close()
