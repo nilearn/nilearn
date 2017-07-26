@@ -166,11 +166,13 @@ def _group_iter_search_light(list_rows, estimator, X, y, groups,
         kwargs = dict()
         if not LooseVersion(sklearn.__version__) < LooseVersion('0.15'):
             kwargs['scoring'] = scoring
+            if LooseVersion(sklearn.__version__) > LooseVersion('0.15'):
+                kwargs['groups'] = groups
         elif scoring is not None:
             warnings.warn('Scikit-learn version is too old. '
                           'scoring argument ignored', stacklevel=2)
         par_scores[i] = np.mean(cross_val_score(estimator, X[:, row],
-                                                y, groups, cv=cv, n_jobs=1,
+                                                y, cv=cv, n_jobs=1,
                                                 **kwargs))
         if verbose > 0:
             # One can't print less than each 10 iterations

@@ -72,3 +72,22 @@ def test_searchlight():
     sl.fit(data_img, cond)
     assert_equal(np.where(sl.scores_ == 1)[0].size, 33)
     assert_equal(sl.scores_[2, 2, 2], 1.)
+
+    # group cross validation
+    from sklearn.model_selection import LeaveOneGroupOut
+    gcv = LeaveOneGroupOut()
+    groups = np.random.permutation(np.arange(frames, dtype=int) > (frames // 2))
+    sl = searchlight.SearchLight(mask_img, process_mask_img=mask_img, radius=1,
+                                 n_jobs=n_jobs, scoring='accuracy', cv=gcv)
+    sl.fit(data_img, cond, groups)
+    assert_equal(np.where(sl.scores_ == 1)[0].size, 7)
+    assert_equal(sl.scores_[2, 2, 2], 1.)
+    #
+    # adding superfluous group variable
+    sl = searchlight.SearchLight(mask_img, process_mask_img=mask_img, radius=1,
+                                 n_jobs=n_jobs, scoring='accuracy', cv=cv)
+    sl.fit(data_img, cond, groups)
+    assert_equal(np.where(sl.scores_ == 1)[0].size, 7)
+    assert_equal(sl.scores_[2, 2, 2], 1.)
+
+
