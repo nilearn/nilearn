@@ -7,7 +7,7 @@ maps that compose it.
 
 Here we represent the nodes constituting the default mode network in the
 `MSDL atlas
-<https://team.inria.fr/parietal/research/spatial_patterns/spatial-patterns-in-resting-state/>`_.
+<https://team.inria.fr/parietal/18-2/spatial_patterns/spatial-patterns-in-resting-state/>`_.
 
 The tools that we need to leverage are:
 
