@@ -20,13 +20,13 @@ import numpy as np
 import sklearn
 from sklearn.externals.joblib import Parallel, delayed, cpu_count
 from sklearn import svm
-from sklearn.model_selection import cross_val_score
 from sklearn.base import BaseEstimator
 
 from .. import masking
 from ..image.resampling import coord_transform
 from ..input_data.nifti_spheres_masker import _apply_mask_and_get_affinity
 from .._utils.compat import _basestring
+from .._utils.fixes import cross_val_score
 
 ESTIMATOR_CATALOG = dict(svc=svm.LinearSVC, svr=svm.SVR)
 
