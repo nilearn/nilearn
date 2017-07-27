@@ -78,10 +78,12 @@ def test_searchlight():
         from sklearn.model_selection import LeaveOneGroupOut
         gcv = LeaveOneGroupOut()
     except ImportError:
-        # won't import model selection if it's not there. the groups variable should have no effect.
+        # won't import model selection if it's not there.
+        # the groups variable should have no effect.
         gcv = cv
 
-    groups = np.random.permutation(np.arange(frames, dtype=int) > (frames // 2))
+    groups = np.random.permutation(np.arange(frames, dtype=int) >
+                                   (frames // 2))
     sl = searchlight.SearchLight(mask_img, process_mask_img=mask_img, radius=1,
                                  n_jobs=n_jobs, scoring='accuracy', cv=gcv)
     sl.fit(data_img, cond, groups)

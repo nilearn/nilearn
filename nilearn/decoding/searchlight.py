@@ -31,8 +31,8 @@ from .._utils.fixes import cross_val_score
 ESTIMATOR_CATALOG = dict(svc=svm.LinearSVC, svr=svm.SVR)
 
 
-def search_light(X, y, estimator, A, groups=None, scoring=None, cv=None, n_jobs=-1,
-                 verbose=0):
+def search_light(X, y, estimator, A, groups=None, scoring=None,
+                 cv=None, n_jobs=-1, verbose=0):
     """Function for computing a search_light
 
     Parameters
@@ -50,8 +50,8 @@ def search_light(X, y, estimator, A, groups=None, scoring=None, cv=None, n_jobs=
         adjacency matrix. Defines for each feature the neigbhoring features
         following a given structure of the data.
 
-    groups : array-like
-        group membership for each sample for cross validation(optional, defaults to None)
+    groups : array-like, optional
+        group membership for each sample for cross validation. default None
 
     scoring : string or callable, optional
         The scoring strategy to use. See the scikit-learn documentation
@@ -133,8 +133,8 @@ def _group_iter_search_light(list_rows, estimator, X, y, groups,
     y : array-like
         target variable to predict.
 
-    groups : array-like
-        group membership for each sample for cross validation(optional, defaults to None)
+    groups : array-like, optional
+        group membership for each sample for cross validation.
 
     scoring : string or callable, optional
         Scoring strategy to use. See the scikit-learn documentation.
@@ -281,9 +281,9 @@ class SearchLight(BaseEstimator):
             Target variable to predict. Must have exactly as many elements as
             3D images in img.
 
-        groups : array-like
-            group membership for each sample for cross validation. Must have exactly as many elements as
-            3D images in img. (optional, defaults to None)
+        groups : array-like, optional
+            group membership for each sample for cross validation. Must have
+            exactly as many elements as 3D images in img. default None
 
         """
 
