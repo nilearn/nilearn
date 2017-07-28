@@ -89,14 +89,14 @@ def _get_json_and_transform(direction):
     been tweaked by hand to fit the MNI template
     """
     direction_to_view_name = {'x': 'side',
-                              'y': 'front',
+                              'y': 'back',
                               'z': 'top',
                               'l': 'side',
                               'r': 'side'}
 
     direction_to_transform_params = {
         'x': [0.38, 0, 0, 0.38, -108, -70],
-        'y': [0.39, 0, 0, 0.39, -72, -73],
+        'y': [0.39, 0, 0, 0.39, -73, -73],
         'z': [0.36, 0, 0, 0.37, -71, -107],
         'l': [0.38, 0, 0, 0.38, -108, -70],
         'r': [0.38, 0, 0, 0.38, -108, -70]}
