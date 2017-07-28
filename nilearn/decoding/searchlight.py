@@ -51,7 +51,7 @@ def search_light(X, y, estimator, A, groups=None, scoring=None,
         following a given structure of the data.
 
     groups : array-like, optional
-        group membership for each sample for cross validation. default None
+        group label for each sample for cross validation. default None
 
     scoring : string or callable, optional
         The scoring strategy to use. See the scikit-learn documentation
@@ -134,7 +134,7 @@ def _group_iter_search_light(list_rows, estimator, X, y, groups,
         target variable to predict.
 
     groups : array-like, optional
-        group membership for each sample for cross validation.
+        group label for each sample for cross validation.
 
     scoring : string or callable, optional
         Scoring strategy to use. See the scikit-learn documentation.
@@ -282,8 +282,9 @@ class SearchLight(BaseEstimator):
             3D images in img.
 
         groups : array-like, optional
-            group membership for each sample for cross validation. Must have
+            group label for each sample for cross validation. Must have
             exactly as many elements as 3D images in img. default None
+            NOTE: will have no effect for scikit learn < 0.18
 
         """
 
