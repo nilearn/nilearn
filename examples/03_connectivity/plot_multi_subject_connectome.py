@@ -9,13 +9,13 @@ using the group sparse inverse covariance estimate.
 import numpy as np
 
 from nilearn import plotting
-from nilearn.plotting.matrix_plotting import plot_matrix
 
 n_subjects = 4  # subjects to consider for group-sparse covariance (max: 40)
 
 
 def plot_matrices(cov, prec, title):
     """Plot covariance and precision matrices, for a given processing. """
+    import matplotlib.pyplot as plt
 
     prec = prec.copy()  # avoid side effects
 
@@ -25,14 +25,14 @@ def plot_matrices(cov, prec, title):
     span = max(abs(prec.min()), abs(prec.max()))
 
     # Display covariance matrix
-    display = plot_matrix(cov, cmap=plotting.cm.bwr,
-                          vmin=-1, vmax=1, colorbar=True)
-    display.axes.set_title("%s / covariance" % title)
+    display = plotting.plot_matrix(cov, cmap=plotting.cm.bwr,
+                                   vmin=-1, vmax=1, colorbar=True)
+    plt.title("%s / covariance" % title)
 
     # Display precision matrix
-    display = plot_matrix(cov, cmap=plotting.cm.bwr,
-                          vmin=-span, vmax=span, colorbar=True)
-    display.axes.set_title("%s / precision" % title)
+    display = plotting.plot_matrix(cov, cmap=plotting.cm.bwr,
+                                   vmin=-span, vmax=span, colorbar=True)
+    plt.title("%s / precision" % title)
 
 
 ##############################################################################

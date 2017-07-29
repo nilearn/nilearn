@@ -27,7 +27,7 @@ def fit_axes(ax):
 
 
 def plot_matrix(mat, ax=None, tri='full', title=None, labels=None,
-                auto_fit=True, grid=False, colorbar=True,
+                auto_fit=True, grid=False, colorbar=True, cmap=plt.cm.RdBu_r,
                 **kwargs):
     """ Plot the given matrix.
 
@@ -35,25 +35,27 @@ def plot_matrix(mat, ax=None, tri='full', title=None, labels=None,
         ----------
         mat : 2-D numpy array
             Matrix to be plotted.
-        ax  : None or Axes.
+        ax  : None or Axes, optional
             Axes instance to be plotted on. Creates a new one if None.
-        tri : {'lower', 'diag', 'full'}
+        tri : {'lower', 'diag', 'full'}, optional
             Which triangular part of the matrix to plot:
             'lower' is the lower part, 'diag' is the lower including
             diagonal, and 'full' is the full matrix.
-        text : string or None
+        title : string or None, optional
             A text to add in the upper left corner.
-        labels : list of strings
+        labels : list of strings, optional
             The label of each row and column
         auto_fit : boolean, optional
             If auto_fit is True, the axes are dimensioned to give room
             for the labels. This assumes that the labels are resting
             against the bottom and left edges of the figure.
-        grid : color or False
+        grid : color or False, optional
             If not False, a grid is plotted to separate rows and columns
             using the given color.
-        colorbar : boolean
+        colorbar : boolean, optional
             If True, an integrated colorbar is added.
+        cmap : matplotlib colormap, optional
+            The colormap for the matrix. Default is RdBu_r.
         kwargs : extra keyword arguments
             Extra keyword arguments are sent to pylab.imshow
 
@@ -69,8 +71,8 @@ def plot_matrix(mat, ax=None, tri='full', title=None, labels=None,
         fig, ax = plt.subplots(1, 1)
     else:
         fig = ax.figure
-    display = ax.imshow(mat, aspect='equal',
-                        interpolation='nearest', **kwargs)
+    display = ax.imshow(mat, aspect='equal', interpolation='nearest',
+                        cmap=cmap, **kwargs)
     ax.set_autoscale_on(False)
     ymin, ymax = ax.get_ylim()
     if labels is False:

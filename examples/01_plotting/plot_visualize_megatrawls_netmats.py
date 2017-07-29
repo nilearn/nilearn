@@ -28,9 +28,9 @@ partial_correlation = netmats.correlation_matrices
 # plotting correlation matrices
 import matplotlib.pyplot as plt
 from nilearn import plotting
-from nilearn.plotting.matrix_plotting import plot_matrix
 
 title = "Partial correlation matrices of d=300"
-display = plot_matrix(partial_correlation, cmap=plotting.cm.bwr, colorbar=True)
+display = plotting.plot_matrix(partial_correlation, colorbar=True,
+                               cmap=plotting.cm.bwr)
 plt.title(title)
 plt.show()

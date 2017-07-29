@@ -19,20 +19,15 @@ subjects, precisions, topology = generate_group_sparse_gaussian_graphs(
     n_subjects=n_subjects, n_features=10, min_n_samples=30, max_n_samples=50,
     density=0.1)
 
-from nilearn.plotting.matrix_plotting import plot_matrix
-
-
-def plot_matrix_symmetric_scale(mat, **kwargs):
-    abs_max = abs(mat.max())
-    return plot_matrix(mat, vmin=-abs_max, vmax=abs_max,
-                       cmap=plt.cm.RdBu_r, **kwargs)
-
-
+from nilearn import plotting
 fig = plt.figure(figsize=(10, 7))
 plt.subplots_adjust(hspace=0.4)
 for n in range(n_displayed):
     ax = plt.subplot(n_displayed, 4, 4 * n + 1)
-    plot_matrix_symmetric_scale(precisions[n], ax=ax, colorbar=False)
+    max_precision = precisions[n].max()
+    plotting.plot_matrix(precisions[n], vmin=-max_precision,
+                         vmax=max_precision, ax=ax, colorbar=False)
+
     if n == 0:
         plt.title("ground truth")
     plt.ylabel("subject %d" % n)
@@ -45,7 +40,9 @@ gsc.fit(subjects)
 
 for n in range(n_displayed):
     ax = plt.subplot(n_displayed, 4, 4 * n + 2)
-    plot_matrix_symmetric_scale(gsc.precisions_[..., n], ax=ax, colorbar=False)
+    max_precision = gsc.precisions_[..., n].max()
+    plotting.plot_matrix(gsc.precisions_[..., n], ax=ax, vmin=-max_precision,
+                         vmax=max_precision, colorbar=False)
     if n == 0:
         plt.title("group-sparse\n$\\alpha=%.2f$" % gsc.alpha_)
 
@@ -58,7 +55,9 @@ for n, subject in enumerate(subjects[:n_displayed]):
     gl.fit(subject)
 
     ax = plt.subplot(n_displayed, 4, 4 * n + 3)
-    plot_matrix_symmetric_scale(gl.precision_, ax=ax, colorbar=False)
+    max_precision = gl.precision_.max()
+    plotting.plot_matrix(gl.precision_, ax=ax, vmin=-max_precision,
+                         vmax=max_precision, colorbar=False)
     if n == 0:
         plt.title("graph lasso")
     plt.ylabel("$\\alpha=%.2f$" % gl.alpha_)
@@ -69,7 +68,9 @@ import numpy as np
 gl.fit(np.concatenate(subjects))
 
 ax = plt.subplot(n_displayed, 4, 4)
-plot_matrix_symmetric_scale(gl.precision_, ax=ax, colorbar=False)
+max_precision = gl.precision_.max()
+plotting.plot_matrix(gl.precision_, ax=ax, vmin=-max_precision,
+                     vmax=max_precision, colorbar=False)
 plt.title("graph lasso, all subjects\n$\\alpha=%.2f$" % gl.alpha_)
 
 plt.show()

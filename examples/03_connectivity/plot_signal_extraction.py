@@ -61,13 +61,12 @@ correlation_matrix = correlation_measure.fit_transform([time_series])[0]
 # Plot the correlation matrix
 import numpy as np
 from matplotlib import pyplot as plt
-from nilearn.plotting.matrix_plotting import plot_matrix
-
+from nilearn import plotting
 fig, ax = plt.subplots(1, 1, figsize=(10, 10))
 # Mask the main diagonal for visualization:
 np.fill_diagonal(correlation_matrix, 0)
-plot_matrix(correlation_matrix, ax=ax, labels=labels, cmap="RdBu_r",
-            vmax=0.8, vmin=-0.8)
+plotting.plot_matrix(correlation_matrix, ax=ax, labels=labels,
+                     vmax=0.8, vmin=-0.8)
 
 ###############################################################################
 # Same thing without confounds, to stress the importance of confounds
@@ -82,8 +81,8 @@ correlation_matrix = correlation_measure.fit_transform([time_series])[0]
 np.fill_diagonal(correlation_matrix, 0)
 
 fig, ax = plt.subplots(1, 1, figsize=(10, 10))
-plot_matrix(correlation_matrix, ax=ax, labels=labels, cmap="RdBu_r",
-            vmax=0.8, vmin=-0.8)
+plotting.plot_matrix(correlation_matrix, ax=ax, labels=labels,
+                     vmax=0.8, vmin=-0.8)
 plt.title('No confounds', size=27)
 
 plt.show()
