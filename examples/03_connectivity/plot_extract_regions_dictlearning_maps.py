@@ -118,10 +118,8 @@ from nilearn import image
 regions_imgs = image.iter_img(regions_extracted_img)
 coords_connectome = [plotting.find_xyz_cut_coords(img) for img in regions_imgs]
 title = 'Correlation interactions between %d regions' % n_regions_extracted
-plt.figure()
-plt.imshow(mean_correlations, interpolation="nearest",
-           vmax=1, vmin=-1, cmap=plt.cm.bwr)
-plt.colorbar()
+display = plotting.plot_matrix(mean_correlations, vmax=1,
+                      vmin=-1, cmap=plt.cm.bwr, colorbar=True)
 plt.title(title)
 plotting.plot_connectome(mean_correlations, coords_connectome,
                          edge_threshold='90%', title=title)

@@ -61,19 +61,12 @@ correlation_matrix = correlation_measure.fit_transform([time_series])[0]
 # Plot the correlation matrix
 import numpy as np
 from matplotlib import pyplot as plt
-plt.figure(figsize=(10, 10))
+from nilearn import plotting
+fig, ax = plt.subplots(1, 1, figsize=(10, 10))
 # Mask the main diagonal for visualization:
 np.fill_diagonal(correlation_matrix, 0)
-
-plt.imshow(correlation_matrix, interpolation="nearest", cmap="RdBu_r",
-           vmax=0.8, vmin=-0.8)
-
-# Add labels and adjust margins
-x_ticks = plt.xticks(range(len(labels) - 1), labels[1:], rotation=90)
-y_ticks = plt.yticks(range(len(labels) - 1), labels[1:])
-plt.gca().yaxis.tick_right()
-plt.subplots_adjust(left=.01, bottom=.3, top=.99, right=.62)
-
+plotting.plot_matrix(correlation_matrix, ax=ax, labels=labels,
+                     vmax=0.8, vmin=-0.8)
 
 ###############################################################################
 # Same thing without confounds, to stress the importance of confounds
@@ -87,14 +80,9 @@ correlation_matrix = correlation_measure.fit_transform([time_series])[0]
 # Mask the main diagonal for visualization:
 np.fill_diagonal(correlation_matrix, 0)
 
-plt.figure(figsize=(10, 10))
-plt.imshow(correlation_matrix, interpolation="nearest", cmap="RdBu_r",
-           vmax=0.8, vmin=-0.8)
-
-x_ticks = plt.xticks(range(len(labels) - 1), labels[1:], rotation=90)
-y_ticks = plt.yticks(range(len(labels) - 1), labels[1:])
-plt.gca().yaxis.tick_right()
-plt.subplots_adjust(left=.01, bottom=.3, top=.99, right=.62)
-plt.suptitle('No confounds', size=27)
+fig, ax = plt.subplots(1, 1, figsize=(10, 10))
+plotting.plot_matrix(correlation_matrix, ax=ax, labels=labels,
+                     vmax=0.8, vmin=-0.8)
+plt.title('No confounds', size=27)
 
 plt.show()
