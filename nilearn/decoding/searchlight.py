@@ -20,18 +20,18 @@ import numpy as np
 import sklearn
 from sklearn.externals.joblib import Parallel, delayed, cpu_count
 from sklearn import svm
+from sklearn.cross_validation import cross_val_score
 from sklearn.base import BaseEstimator
 
 from .. import masking
 from ..image.resampling import coord_transform
 from ..input_data.nifti_spheres_masker import _apply_mask_and_get_affinity
 from .._utils.compat import _basestring
-from .._utils.fixes import cross_val_score
 
 ESTIMATOR_CATALOG = dict(svc=svm.LinearSVC, svr=svm.SVR)
 
 
-def search_light(X, y, estimator, A, groups=None, scoring=None, cv=None, n_jobs=-1,
+def search_light(X, y, estimator, A, scoring=None, cv=None, n_jobs=-1,
                  verbose=0):
     """Function for computing a search_light
 
@@ -49,9 +49,6 @@ def search_light(X, y, estimator, A, groups=None, scoring=None, cv=None, n_jobs=
     A : scipy sparse matrix.
         adjacency matrix. Defines for each feature the neigbhoring features
         following a given structure of the data.
-
-    groups : array-like
-        group membership for each sample for cross validation(optional, defaults to None)
 
     scoring : string or callable, optional
         The scoring strategy to use. See the scikit-learn documentation
@@ -81,7 +78,7 @@ def search_light(X, y, estimator, A, groups=None, scoring=None, cv=None, n_jobs=
     scores = Parallel(n_jobs=n_jobs, verbose=verbose)(
         delayed(_group_iter_search_light)(
             A.rows[list_i],
-            estimator, X, y, groups, scoring, cv,
+            estimator, X, y, scoring, cv,
             thread_id + 1, A.shape[0], verbose)
         for thread_id, list_i in enumerate(group_iter))
     return np.concatenate(scores)
@@ -114,7 +111,7 @@ class GroupIterator(object):
             yield list_i
 
 
-def _group_iter_search_light(list_rows, estimator, X, y, groups,
+def _group_iter_search_light(list_rows, estimator, X, y,
                              scoring, cv, thread_id, total, verbose=0):
     """Function for grouped iterations of search_light
 
@@ -132,9 +129,6 @@ def _group_iter_search_light(list_rows, estimator, X, y, groups,
 
     y : array-like
         target variable to predict.
-
-    groups : array-like
-        group membership for each sample for cross validation(optional, defaults to None)
 
     scoring : string or callable, optional
         Scoring strategy to use. See the scikit-learn documentation.
@@ -166,8 +160,6 @@ def _group_iter_search_light(list_rows, estimator, X, y, groups,
         kwargs = dict()
         if not LooseVersion(sklearn.__version__) < LooseVersion('0.15'):
             kwargs['scoring'] = scoring
-            if LooseVersion(sklearn.__version__) >= LooseVersion('0.18'):
-                kwargs['groups'] = groups
         elif scoring is not None:
             warnings.warn('Scikit-learn version is too old. '
                           'scoring argument ignored', stacklevel=2)
@@ -268,7 +260,7 @@ class SearchLight(BaseEstimator):
         self.cv = cv
         self.verbose = verbose
 
-    def fit(self, imgs, y, groups=None):
+    def fit(self, imgs, y):
         """Fit the searchlight
 
         Parameters
@@ -280,10 +272,6 @@ class SearchLight(BaseEstimator):
         y : 1D array-like
             Target variable to predict. Must have exactly as many elements as
             3D images in img.
-
-        groups : array-like
-            group membership for each sample for cross validation. Must have exactly as many elements as
-            3D images in img. (optional, defaults to None)
 
         """
 
@@ -309,7 +297,7 @@ class SearchLight(BaseEstimator):
         if isinstance(estimator, _basestring):
             estimator = ESTIMATOR_CATALOG[estimator]()
 
-        scores = search_light(X, y, estimator, A, groups,
+        scores = search_light(X, y, estimator, A,
                               self.scoring, self.cv, self.n_jobs,
                               self.verbose)
         scores_3D = np.zeros(process_mask.shape)
