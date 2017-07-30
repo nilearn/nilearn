@@ -59,15 +59,13 @@ estimator.fit(time_series)
 ##############################################################################
 # Display the connectome matrix
 # ------------------------------
-from matplotlib import pyplot as plt
 from nilearn import plotting
 # Display the covariance
-plt.figure(figsize=(8, 8))
 
 # The covariance can be found at estimator.covariance_
 plotting.plot_matrix(estimator.covariance_, labels=labels,
-                     ax=plt.gca(), vmax=1, vmin=-1)
-plt.title('Covariance')
+                     figure=(9, 7), vmax=1, vmin=-1,
+                    title='Covariance')
 
 ##############################################################################
 # And now display the corresponding graph
@@ -82,10 +80,9 @@ plotting.plot_connectome(estimator.covariance_, coords,
 # Display the sparse inverse covariance
 # --------------------------------------
 # we negate it to get partial correlations
-plt.figure(figsize=(10, 10))
 plotting.plot_matrix(-estimator.precision_, labels=labels,
-                     ax=plt.gca(), vmax=1, vmin=-1)
-plt.title('Sparse inverse covariance')
+                     figure=(9, 7), vmax=1, vmin=-1,
+                     title='Sparse inverse covariance')
 
 ##############################################################################
 # And now display the corresponding graph

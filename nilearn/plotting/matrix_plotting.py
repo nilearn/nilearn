@@ -26,25 +26,35 @@ def fit_axes(ax):
         ax.set_position(new_position)
 
 
-def plot_matrix(mat, ax=None, tri='full', title=None, labels=None,
-                auto_fit=True, grid=False, colorbar=True, cmap=plt.cm.RdBu_r,
-                **kwargs):
+def plot_matrix(mat, title=None, labels=None, figure=None, axes=None,
+                colorbar=True, cmap=plt.cm.RdBu_r, tri='full',
+                auto_fit=True, grid=False, **kwargs):
     """ Plot the given matrix.
 
         Parameters
         ----------
         mat : 2-D numpy array
             Matrix to be plotted.
-        ax  : None or Axes, optional
-            Axes instance to be plotted on. Creates a new one if None.
-        tri : {'lower', 'diag', 'full'}, optional
-            Which triangular part of the matrix to plot:
-            'lower' is the lower part, 'diag' is the lower including
-            diagonal, and 'full' is the full matrix.
         title : string or None, optional
             A text to add in the upper left corner.
         labels : list of strings, optional
             The label of each row and column
+        figure : figure instance, figsize tuple, or None
+            Sets the figure used. This argument can be either an existing
+            figure, or a pair (width, height) that gives the size of a
+            newly-created figure.
+            Specifying both axes and figure is not allowed.
+        axes : None or Axes, optional
+            Axes instance to be plotted on. Creates a new one if None.
+            Specifying both axes and figure is not allowed.
+        colorbar : boolean, optional
+            If True, an integrated colorbar is added.
+        cmap : matplotlib colormap, optional
+            The colormap for the matrix. Default is RdBu_r.
+        tri : {'lower', 'diag', 'full'}, optional
+            Which triangular part of the matrix to plot:
+            'lower' is the lower part, 'diag' is the lower including
+            diagonal, and 'full' is the full matrix.
         auto_fit : boolean, optional
             If auto_fit is True, the axes are dimensioned to give room
             for the labels. This assumes that the labels are resting
@@ -52,10 +62,6 @@ def plot_matrix(mat, ax=None, tri='full', title=None, labels=None,
         grid : color or False, optional
             If not False, a grid is plotted to separate rows and columns
             using the given color.
-        colorbar : boolean, optional
-            If True, an integrated colorbar is added.
-        cmap : matplotlib colormap, optional
-            The colormap for the matrix. Default is RdBu_r.
         kwargs : extra keyword arguments
             Extra keyword arguments are sent to pylab.imshow
 
@@ -67,34 +73,43 @@ def plot_matrix(mat, ax=None, tri='full', title=None, labels=None,
     elif tri == 'diag':
         mask = np.tri(mat.shape[0], dtype=np.bool) ^ True
         mat = np.ma.masked_array(mat, mask)
-    if ax is None:
-        fig, ax = plt.subplots(1, 1)
+    if axes is not None and figure is not None:
+        raise ValueError("Parameters figure and axes cannot be specified "
+            "together. You gave 'figure=%s, axes=%s'"
+            % (figure, axes))
+    if figure is not None:
+        if isinstance(figure, plt.Figure):
+            fig = figure
+        else:
+            fig = plt.figure(figsize=figure)
+        axes = plt.gca()
+        own_fig = True
     else:
-        fig = ax.figure
-    display = ax.imshow(mat, aspect='equal', interpolation='nearest',
+        if axes is None:
+            fig, axes = plt.subplots(1, 1, figsize=(7, 5))
+            own_fig = True
+        else:
+            fig = axes.figure
+            own_fig = False
+    display = axes.imshow(mat, aspect='equal', interpolation='nearest',
                         cmap=cmap, **kwargs)
-    ax.set_autoscale_on(False)
-    ymin, ymax = ax.get_ylim()
+    axes.set_autoscale_on(False)
+    ymin, ymax = axes.get_ylim()
     if labels is False:
-        ax.xaxis.set_major_formatter(plt.NullFormatter())
-        ax.yaxis.set_major_formatter(plt.NullFormatter())
+        axes.xaxis.set_major_formatter(plt.NullFormatter())
+        axes.yaxis.set_major_formatter(plt.NullFormatter())
     elif labels is not None:
-        ax.set_xticks(np.arange(len(labels)))
-        ax.set_xticklabels(labels, size='x-small')
-        for label in ax.get_xticklabels():
+        axes.set_xticks(np.arange(len(labels)))
+        axes.set_xticklabels(labels, size='x-small')
+        for label in axes.get_xticklabels():
             label.set_ha('right')
             label.set_rotation(50)
-        ax.set_yticks(np.arange(len(labels)))
-        ax.set_yticklabels(labels, size='x-small')
-        for label in ax.get_yticklabels():
+        axes.set_yticks(np.arange(len(labels)))
+        axes.set_yticklabels(labels, size='x-small')
+        for label in axes.get_yticklabels():
             label.set_ha('right')
+            label.set_va('top')
             label.set_rotation(10)
-
-    if title is not None:
-        ax.text(0.9 - .15 * colorbar, 0.9 + .05 * colorbar, title,
-                horizontalalignment='right',
-                verticalalignment='top',
-                transform=ax.transAxes)
 
     if grid is not False:
         size = len(mat)
@@ -103,35 +118,51 @@ def plot_matrix(mat, ax=None, tri='full', title=None, labels=None,
             for i in range(size):
                 # Correct for weird mis-sizing
                 i = 1.001 * i
-                ax.plot([i + 0.5, i + 0.5], [size - 0.5, i + 0.5],
-                        color='grey')
-                ax.plot([i + 0.5, -0.5], [i + 0.5, i + 0.5],
-                        color='grey')
+                axes.plot([i + 0.5, i + 0.5], [size - 0.5, i + 0.5],
+                          color='grey')
+                axes.plot([i + 0.5, -0.5], [i + 0.5, i + 0.5],
+                          color='grey')
         elif tri == 'diag':
             for i in range(size):
                 # Correct for weird mis-sizing
                 i = 1.001 * i
-                ax.plot([i + 0.5, i + 0.5], [size - 0.5, i - 0.5],
-                        color='grey')
-                ax.plot([i + 0.5, -0.5], [i - 0.5, i - 0.5], color='grey')
+                axes.plot([i + 0.5, i + 0.5], [size - 0.5, i - 0.5],
+                          color='grey')
+                axes.plot([i + 0.5, -0.5], [i - 0.5, i - 0.5], color='grey')
         else:
             for i in range(size):
                 # Correct for weird mis-sizing
                 i = 1.001 * i
-                ax.plot([i + 0.5, i + 0.5], [size - 0.5, -0.5], color='grey')
-                ax.plot([size - 0.5, -0.5], [i + 0.5, i + 0.5], color='grey')
+                axes.plot([i + 0.5, i + 0.5], [size - 0.5, -0.5], color='grey')
+                axes.plot([size - 0.5, -0.5], [i + 0.5, i + 0.5], color='grey')
 
-    ax.set_ylim(ymin, ymax)
+    axes.set_ylim(ymin, ymax)
 
-    if auto_fit and labels is not None and labels is not False:
-            fit_axes(ax)
+    if auto_fit:
+        if labels is not None and labels is not False:
+            fit_axes(axes)
+        elif own_fig:
+            plt.tight_layout(pad=.1,
+                             rect=((0, 0, .95, 1) if colorbar
+                                   else (0, 0, 1, 1)))
 
     if colorbar:
-        cax, kw = make_axes(ax, location='right', fraction=0.05, shrink=0.8)
+        cax, kw = make_axes(axes, location='right', fraction=0.05, shrink=0.8,
+                            pad=.0)
         fig.colorbar(mappable=display, cax=cax)
         # make some room
         fig.subplots_adjust(right=0.8)
         # change current axis back to matrix
-        plt.sca(ax)
+        plt.sca(axes)
+
+    if title is not None:
+        # Adjust the size
+        text_len = np.max([len(t) for t in title.split('\n')])
+        size = axes.bbox.size[0] / text_len
+        axes.text(0.95, 0.95, title,
+                  horizontalalignment='right',
+                  verticalalignment='top',
+                  transform=axes.transAxes,
+                  size=size)
 
     return display

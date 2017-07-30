@@ -26,7 +26,7 @@ for n in range(n_displayed):
     ax = plt.subplot(n_displayed, 4, 4 * n + 1)
     max_precision = precisions[n].max()
     plotting.plot_matrix(precisions[n], vmin=-max_precision,
-                         vmax=max_precision, ax=ax, colorbar=False)
+                         vmax=max_precision, axes=ax, colorbar=False)
 
     if n == 0:
         plt.title("ground truth")
@@ -41,7 +41,7 @@ gsc.fit(subjects)
 for n in range(n_displayed):
     ax = plt.subplot(n_displayed, 4, 4 * n + 2)
     max_precision = gsc.precisions_[..., n].max()
-    plotting.plot_matrix(gsc.precisions_[..., n], ax=ax, vmin=-max_precision,
+    plotting.plot_matrix(gsc.precisions_[..., n], axes=ax, vmin=-max_precision,
                          vmax=max_precision, colorbar=False)
     if n == 0:
         plt.title("group-sparse\n$\\alpha=%.2f$" % gsc.alpha_)
@@ -56,7 +56,7 @@ for n, subject in enumerate(subjects[:n_displayed]):
 
     ax = plt.subplot(n_displayed, 4, 4 * n + 3)
     max_precision = gl.precision_.max()
-    plotting.plot_matrix(gl.precision_, ax=ax, vmin=-max_precision,
+    plotting.plot_matrix(gl.precision_, axes=ax, vmin=-max_precision,
                          vmax=max_precision, colorbar=False)
     if n == 0:
         plt.title("graph lasso")
@@ -69,7 +69,7 @@ gl.fit(np.concatenate(subjects))
 
 ax = plt.subplot(n_displayed, 4, 4)
 max_precision = gl.precision_.max()
-plotting.plot_matrix(gl.precision_, ax=ax, vmin=-max_precision,
+plotting.plot_matrix(gl.precision_, axes=ax, vmin=-max_precision,
                      vmax=max_precision, colorbar=False)
 plt.title("graph lasso, all subjects\n$\\alpha=%.2f$" % gl.alpha_)
 

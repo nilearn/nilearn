@@ -25,13 +25,13 @@ def plot_matrices(cov, prec, title):
     span = max(abs(prec.min()), abs(prec.max()))
 
     # Display covariance matrix
-    display = plotting.plot_matrix(cov, cmap=plotting.cm.bwr,
-                                   vmin=-1, vmax=1, colorbar=True)
+    plotting.plot_matrix(cov, cmap=plotting.cm.bwr,
+                         vmin=-1, vmax=1, colorbar=True)
     plt.title("%s / covariance" % title)
 
     # Display precision matrix
-    display = plotting.plot_matrix(cov, cmap=plotting.cm.bwr,
-                                   vmin=-span, vmax=span, colorbar=True)
+    plotting.plot_matrix(cov, cmap=plotting.cm.bwr,
+                         vmin=-span, vmax=span, colorbar=True)
     plt.title("%s / precision" % title)
 
 

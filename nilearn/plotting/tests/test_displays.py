@@ -6,7 +6,6 @@ import matplotlib.pyplot as plt
 
 from nilearn.plotting.displays import OrthoSlicer, XSlicer, OrthoProjector
 from nilearn.datasets import load_mni152_template
-from nilearn.plotting.matrix_plotting import plot_matrix
 
 ##############################################################################
 # Some smoke testing for graphics-related code
@@ -39,19 +38,6 @@ def test_demo_ortho_projector():
     with tempfile.TemporaryFile() as fp:
         oprojector.savefig(fp)
     oprojector.close()
-
-
-def test_matrix_plotting():
-    from numpy import zeros
-    mat = zeros((10, 10))
-    labels = str(range(10))
-    ax = plot_matrix(mat, labels=labels)
-    plt.close()
-    # test if plotting lower triangle works
-    ax = plot_matrix(mat, labels=labels, tri='lower')
-    # test if it returns an AxesImage
-    ax.axes.set_title('Title')
-    plt.close()
 
 
 def test_contour_fillings_levels_in_add_contours():

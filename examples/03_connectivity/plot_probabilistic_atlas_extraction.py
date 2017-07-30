@@ -59,13 +59,11 @@ correlation_matrix = correlation_measure.fit_transform([time_series])[0]
 
 # Display the correlation matrix
 import numpy as np
-from matplotlib import pyplot as plt
 from nilearn import plotting
 # Mask out the major diagonal
 np.fill_diagonal(correlation_matrix, 0)
 plotting.plot_matrix(correlation_matrix, labels=labels, colorbar=True,
                      vmax=0.8, vmin=-0.8)
-plt.show()
 ############################################################################
 # And now display the corresponding graph
 # ----------------------------------------
