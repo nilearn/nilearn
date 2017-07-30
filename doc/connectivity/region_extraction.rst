@@ -149,7 +149,7 @@ Left image is the correlations in a matrix form and right image is the
 connectivity relations to brain regions plotted using :func:`plot_connectome`
 
 .. literalinclude:: ../../examples/03_connectivity/plot_extract_regions_dictlearning_maps.py
-    :start-after: # General imports needed for plotting
+    :start-after: # Plot resulting connectomes
     :end-before: ################################################################################
 
 .. |matrix| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_extract_regions_dictlearning_maps_003.png
