@@ -7,9 +7,9 @@ import matplotlib.pyplot as plt
 from nilearn.plotting.displays import OrthoSlicer, XSlicer, OrthoProjector
 from nilearn.datasets import load_mni152_template
 
-
 ##############################################################################
 # Some smoke testing for graphics-related code
+
 
 def test_demo_ortho_slicer():
     # This is only a smoke test

@@ -18,7 +18,7 @@ Content
 References
 ----------
 For more information about this dataset's structure:
-https://team.inria.fr/parietal/research/spatial_patterns/spatial-patterns-in-resting-state/
+https://team.inria.fr/parietal/18-2/spatial_patterns/spatial-patterns-in-resting-state/
 
 Multi-subject dictionary learning to segment an atlas of brain spontaneous activity Gael Varoquaux, Alexandre Gramfort, Fabian Pedregosa, Vincent Michel, Bertrand Thirion Information Processing in Medical Imaging, 2011, pp. 562-573, Lecture Notes in Computer Science
 

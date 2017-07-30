@@ -1,3 +1,12 @@
+0.3.2
+=====
+
+Enhancements
+-------------
+
+    - New matrix plotting function, eg to display connectome matrices:
+      :func:`nilearn.plotting.plot_matrix`
+
 0.3.1
 =====
 

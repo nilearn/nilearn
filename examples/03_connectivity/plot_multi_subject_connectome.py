@@ -6,17 +6,16 @@ This example shows how to estimate a connectome on a group of subjects
 using the group sparse inverse covariance estimate.
 
 """
-import matplotlib.pyplot as plt
 import numpy as np
 
 from nilearn import plotting
-
 
 n_subjects = 4  # subjects to consider for group-sparse covariance (max: 40)
 
 
 def plot_matrices(cov, prec, title):
     """Plot covariance and precision matrices, for a given processing. """
+    import matplotlib.pyplot as plt
 
     prec = prec.copy()  # avoid side effects
 
@@ -26,18 +25,13 @@ def plot_matrices(cov, prec, title):
     span = max(abs(prec.min()), abs(prec.max()))
 
     # Display covariance matrix
-    plt.figure()
-    plt.imshow(cov, interpolation="nearest",
-               vmin=-1, vmax=1, cmap=plotting.cm.bwr)
-    plt.colorbar()
+    plotting.plot_matrix(cov, cmap=plotting.cm.bwr,
+                         vmin=-1, vmax=1, colorbar=True)
     plt.title("%s / covariance" % title)
 
     # Display precision matrix
-    plt.figure()
-    plt.imshow(prec, interpolation="nearest",
-               vmin=-span, vmax=span,
-               cmap=plotting.cm.bwr)
-    plt.colorbar()
+    plotting.plot_matrix(cov, cmap=plotting.cm.bwr,
+                         vmin=-span, vmax=span, colorbar=True)
     plt.title("%s / precision" % title)
 
 

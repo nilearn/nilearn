@@ -304,6 +304,7 @@ uses.
    plot_anat
    plot_img
    plot_epi
+   plot_matrix
    plot_roi
    plot_stat_map
    plot_glass_brain
