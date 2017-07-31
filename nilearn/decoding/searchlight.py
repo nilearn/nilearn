@@ -52,6 +52,7 @@ def search_light(X, y, estimator, A, groups=None, scoring=None,
 
     groups : array-like, optional
         group label for each sample for cross validation. default None
+        NOTE: will have no effect for scikit learn < 0.18
 
     scoring : string or callable, optional
         The scoring strategy to use. See the scikit-learn documentation
@@ -135,6 +136,7 @@ def _group_iter_search_light(list_rows, estimator, X, y, groups,
 
     groups : array-like, optional
         group label for each sample for cross validation.
+        NOTE: will have no effect for scikit learn < 0.18
 
     scoring : string or callable, optional
         Scoring strategy to use. See the scikit-learn documentation.
