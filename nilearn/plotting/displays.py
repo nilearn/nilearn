@@ -658,7 +658,17 @@ class BaseSlicer(object):
         xmin_, xmax_, ymin_, ymax_, zmin_, zmax_ = \
             xmin, xmax, ymin, ymax, zmin, zmax
 
-        if hasattr(data, 'mask') and isinstance(data.mask, np.ndarray):
+        # Compute tight bounds
+        if type in ('contour', 'contourf'):
+            # Define a pseudo threshold to have a tight bounding box
+            if 'levels' in kwargs:
+                thr = 0.9 * np.min(np.abs(kwargs['levels']))
+            else:
+                thr = 1e-6
+            not_mask = np.logical_or(data > thr, data < -thr)
+            xmin_, xmax_, ymin_, ymax_, zmin_, zmax_ = \
+                get_mask_bounds(new_img_like(img, not_mask, affine))
+        elif hasattr(data, 'mask') and isinstance(data.mask, np.ndarray):
             not_mask = np.logical_not(data.mask)
             xmin_, xmax_, ymin_, ymax_, zmin_, zmax_ = \
                 get_mask_bounds(new_img_like(img, not_mask, affine))
@@ -923,7 +933,7 @@ class OrthoSlicer(BaseSlicer):
         cut_coords = self.cut_coords
         if len(cut_coords) != len(self._cut_displayed):
             raise ValueError('The number cut_coords passed does not'
-                             'match the display_mode')
+                             ' match the display_mode')
         x0, y0, x1, y1 = self.rect
         facecolor = 'k' if self._black_bg else 'w'
         # Create our axes:

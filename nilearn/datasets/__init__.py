@@ -24,6 +24,7 @@ from .atlas import (fetch_atlas_craddock_2012, fetch_atlas_destrieux_2009,
                     fetch_atlas_surf_destrieux)
 
 from .utils import get_data_dirs
+from .neurovault import fetch_neurovault, fetch_neurovault_ids
 
 __all__ = ['MNI152_FILE_PATH', 'fetch_icbm152_2009', 'load_mni152_template',
            'fetch_oasis_vbm',
@@ -40,6 +41,7 @@ __all__ = ['MNI152_FILE_PATH', 'fetch_icbm152_2009', 'load_mni152_template',
            'fetch_megatrawls_netmats', 'fetch_cobre',
            'fetch_surf_nki_enhanced', 'fetch_surf_fsaverage5',
            'fetch_atlas_basc_multiscale_2015', 'fetch_coords_dosenbach_2010',
+           'fetch_neurovault', 'fetch_neurovault_ids',
            'load_mni152_brain_mask', 'fetch_icbm152_brain_gm_mask',
            'fetch_atlas_surf_destrieux',
            'get_data_dirs']

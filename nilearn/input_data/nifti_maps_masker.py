@@ -79,12 +79,12 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
         This parameter is passed to signal.clean. Please see the related
         documentation for details
 
-    resampling_target: {"mask", "maps", None} optional.
+    resampling_target: {"mask", "maps", "data", None} optional.
         Gives which image gives the final shape/size. For example, if
         `resampling_target` is "mask" then maps_img and images provided to
         fit() are resampled to the shape and affine of mask_img. "None" means
         no resampling: if shapes and affines do not match, a ValueError is
-        raised. Default value: "maps".
+        raised. Default value: "data".
 
     memory: joblib.Memory or str, optional
         Used to cache the region extraction process.
@@ -100,9 +100,9 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
 
     Notes
     -----
-    With the default value for resampling_target, every 3D image processed by
+    If resampling_target is set to "maps", every 3D image processed by
     transform() will be resampled to the shape of maps_img. It may lead to a
-    very large memory consumption if the voxel number in labels_img is large.
+    very large memory consumption if the voxel number in maps_img is large.
 
     See also
     --------

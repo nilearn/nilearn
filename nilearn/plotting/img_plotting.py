@@ -366,11 +366,14 @@ def _load_anat(anat_img=MNI152TEMPLATE, dim='auto', black_bg='auto'):
             black_bg = False
     else:
         anat_img = _utils.check_niimg_3d(anat_img)
+        # Clean anat_img for non-finite values to avoid computing unnecessary
+        # border data values.
+        data = _safe_get_data(anat_img, ensure_finite=True)
+        anat_img = new_img_like(anat_img, data, affine=_get_affine(anat_img))
         if dim or black_bg == 'auto':
             # We need to inspect the values of the image
-            data = anat_img.get_data()
-            vmin = data.min()
-            vmax = data.max()
+            vmin = np.nanmin(data)
+            vmax = np.nanmax(data)
         if black_bg == 'auto':
             # Guess if the background is rather black or light based on
             # the values of voxels near the border
@@ -380,6 +383,10 @@ def _load_anat(anat_img=MNI152TEMPLATE, dim='auto', black_bg='auto'):
             else:
                 black_bg = True
     if dim:
+        if dim != 'auto' and not isinstance(dim, numbers.Number):
+            raise ValueError(
+                "The input given for 'dim' needs to be a float. "
+                "You provided dim=%s in %s" % (str(dim), type(dim)))
         vmean = .5 * (vmin + vmax)
         ptp = .5 * (vmax - vmin)
         if black_bg:
@@ -456,9 +463,10 @@ def plot_anat(anat_img=MNI152TEMPLATE, cut_coords=None,
         dim : float, 'auto' (by default), optional
             Dimming factor applied to background image. By default, automatic
             heuristics are applied based upon the image intensity.
-            Accepted float values, where a typical span is -1 to 1
-            (-1 = increase contrast; 1 = decrease contrast), but larger
-            values can be used for a more pronounced effect. 0 means no dimming.
+            Accepted float values, where a typical span is between -2 and 2
+            (-2 = increase contrast; 2 = decrease contrast), but larger
+            values can be used for a more pronounced effect. 0 means no
+            dimming.
         cmap : matplotlib colormap, optional
             The colormap for the anat
         vmin : float
@@ -470,6 +478,9 @@ def plot_anat(anat_img=MNI152TEMPLATE, cut_coords=None,
         -----
         Arrays should be passed in numpy convention: (x, y, z)
         ordered.
+
+        For visualization, non-finite values found in passed 'anat_img'
+        are set to zero.
     """
     anat_img, black_bg, anat_vmin, anat_vmax = _load_anat(
         anat_img,
@@ -566,8 +577,8 @@ def plot_epi(epi_img=None, cut_coords=None, output_file=None,
 def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None,
              output_file=None, display_mode='ortho', figure=None, axes=None,
              title=None, annotate=True, draw_cross=True, black_bg='auto',
-             alpha=0.7, cmap=plt.cm.gist_ncar, dim='auto', vmin=None, vmax=None,
-             **kwargs):
+             threshold=0.5, alpha=0.7, cmap=plt.cm.gist_ncar, dim='auto',
+             vmin=None, vmax=None, **kwargs):
     """ Plot cuts of an ROI/mask image (by default 3 cuts: Frontal, Axial, and
         Lateral)
 
@@ -617,7 +628,7 @@ def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None,
             you wish to save figures with a black background, you
             will need to pass "facecolor='k', edgecolor='k'"
             to matplotlib.pyplot.savefig.
-        threshold : a number, None, or 'auto'
+        threshold : None, 'auto', or a number (0.5 by default), optional
             If None is given, the image is not thresholded.
             If a number is given, it is used to threshold the image:
             values below the threshold (in absolute value) are plotted
@@ -626,21 +637,26 @@ def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None,
         dim : float, 'auto' (by default), optional
             Dimming factor applied to background image. By default, automatic
             heuristics are applied based upon the background image intensity.
-            Accepted float values, where a typical span is -1 to 1
-            (-1 = increase contrast; 1 = decrease contrast), but larger values
+            Accepted float values, where a typical span is between -2 and 2
+            (-2 = increase contrast; 2 = decrease contrast), but larger values
             can be used for a more pronounced effect. 0 means no dimming.
         vmin : float
             Lower bound for plotting, passed to matplotlib.pyplot.imshow
         vmax : float
             Upper bound for plotting, passed to matplotlib.pyplot.imshow
 
+        Notes
+        -----
+        A small threshold is applied by default to eliminate numerical
+        background noise.
+
+        For visualization, non-finite values found in passed 'roi_img' or
+        'bg_img' are set to zero.
+
         See Also
         --------
-
         nilearn.plotting.plot_prob_atlas : To simply plot probabilistic atlases
             (4D images)
-
-
     """
     bg_img, black_bg, bg_vmin, bg_vmax = _load_anat(bg_img, dim=dim,
                                                     black_bg=black_bg)
@@ -652,7 +668,8 @@ def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None,
                                 figure=figure, axes=axes, title=title,
                                 annotate=annotate,
                                 draw_cross=draw_cross,
-                                black_bg=black_bg, threshold=0.5,
+                                black_bg=black_bg,
+                                threshold=threshold,
                                 bg_vmin=bg_vmin, bg_vmax=bg_vmax,
                                 resampling_interpolation='nearest',
                                 alpha=alpha, cmap=cmap,
@@ -750,8 +767,8 @@ def plot_prob_atlas(maps_img, anat_img=MNI152TEMPLATE, view_type='auto',
         dim : float, 'auto' (by default), optional
             Dimming factor applied to background image. By default, automatic
             heuristics are applied based upon the background image intensity.
-            Accepted float values, where a typical span is -1 to 1
-            (-1 = increase contrast; 1 = decrease contrast), but larger values
+            Accepted float values, where a typical span is between -2 and 2
+            (-2 = increase contrast; 2 = decrease contrast), but larger values
             can be used for a more pronounced effect. 0 means no dimming.
         cmap : matplotlib colormap, optional
             The colormap for the atlas maps
@@ -941,8 +958,8 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
         dim : float, 'auto' (by default), optional
             Dimming factor applied to background image. By default, automatic
             heuristics are applied based upon the background image intensity.
-            Accepted float values, where a typical scan is -1 to 1
-            (-1 = increase constrast; 1 = decrease contrast), but larger values
+            Accepted float values, where a typical scan is between -2 and 2
+            (-2 = increase constrast; 2 = decrease contrast), but larger values
             can be used for a more pronounced effect. 0 means no dimming.
         vmax : float
             Upper bound for plotting, passed to matplotlib.pyplot.imshow
@@ -951,6 +968,9 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
         -----
         Arrays should be passed in numpy convention: (x, y, z)
         ordered.
+
+        For visualization, non-finite values found in passed 'stat_map_img' or
+        'bg_img' are set to zero.
 
         See Also
         --------

@@ -1,3 +1,113 @@
+0.3.2
+=====
+
+Enhancements
+-------------
+
+    - New matrix plotting function, eg to display connectome matrices:
+      :func:`nilearn.plotting.plot_matrix`
+
+0.3.1
+=====
+
+This is a minor release for BrainHack.
+
+Highlights
+----------
+
+* **Dropped support for scikit-learn older than 0.14.1** Minimum supported version
+  is now 0.15.
+
+Changelog
+---------
+
+    - The function sym_to_vec is deprecated and will be removed in
+      release 0.4. Use :func:`nilearn.connectome.sym_matrix_to_vec` instead.
+
+    - Added argument `smoothing_fwhm` to
+      :class:`nilearn.regions.RegionExtractor` to control smoothing according
+      to the resolution of atlas images.
+
+Bug fix
+-------
+
+    - The helper function `largest_connected_component` should now work with
+      inputs of non-native data dtypes.
+
+    - Fix plotting issues when non-finite values are present in background
+      anatomical image.
+
+    - A workaround to handle non-native endianess in the Nifti images passed
+      to resampling the image.
+
+Enhancements
+-------------
+    - New data fetcher functions :func:`nilearn.datasets.fetch_neurovault` and
+      :func:`nilearn.datasets.fetch_neurovault_ids` help you download
+      statistical maps from the Neurovault (http://neurovault.org) platform.
+
+    - New function :func:`nilearn.connectome.vec_to_sym_matrix` reshapes
+      vectors to symmetric matrices. It acts as the reverse of function
+      :func:`nilearn.connectome.sym_matrix_to_vec`.
+
+    - Add an option allowing to vectorize connectivity matrices returned by the
+      "transform" method of :class:`nilearn.connectome.ConnectivityMeasure`.
+
+    - :class:`nilearn.connectome.ConnectivityMeasure` now exposes an
+      "inverse_transform" method, useful for going back from vectorized
+      connectivity coefficients to connectivity matrices. Also, it allows to
+      recover the covariance matrices for the "tangent" kind.
+
+    - Reworking and renaming of connectivity measures example. Renamed from
+      plot_connectivity_measures to plot_group_level_connectivity.
+
+    - Tighter bounding boxes when using add_contours for plotting.
+
+    - Function :func:`nilearn.image.largest_connected_component_img` to
+      directly extract the largest connected component from Nifti images.
+
+    - Improvements in plotting, decoding and functional connectivity examples.
+
+0.3.0
+======
+
+In addition, more details of this release are listed below. Please checkout
+in **0.3.0 beta** release section for minimum version support of dependencies,
+latest updates, highlights, changelog and enhancements.
+
+Changelog
+---------
+
+    - Function :func:`nilearn.plotting.find_cut_slices` now supports to accept
+      Nifti1Image as an input for argument `img`.
+
+    - Helper functions `_get_mask_volume` and `_adjust_screening_percentile`
+      are now moved to param_validation file in utilties module to be used in
+      common with Decoder object.
+
+Bug fix
+--------
+
+    - Fix bug uncompressing tar files with datasets fetcher.
+
+    - Fixed bunch of CircleCI documentation build failures.
+
+    - Fixed deprecations `set_axis_bgcolor` related to matplotlib in
+      plotting functions.
+
+    - Fixed bug related to not accepting a list of arrays as an input to
+      unmask, in masking module.
+
+Enhancements
+-------------
+
+    - ANOVA SVM example on Haxby datasets `plot_haxby_anova_svm` in Decoding section
+      now uses `SelectPercentile` to select voxels rather than `SelectKBest`.
+
+    - New function `fast_svd` implementation in base decomposition module to
+      Automatically switch between randomized and lapack SVD (heuristic
+      of scikit-learn).
+
 0.3.0 beta
 ===========
 
@@ -12,8 +122,8 @@ Highlights
 
 * A function to break a parcellation into its connected components
 
-* **Dropped support for scikit-learn 0.14** Minimum supported version is
-  now 0.15.
+* **Dropped support for scikit-learn older than 0.14.1** Minimum supported version
+  is now 0.14.1.
 
 * **Dropped support for Python 2.6**
 
@@ -23,8 +133,8 @@ Highlights
 Changelog
 ---------
 
-    -  A helper function _safe_get_data as a nilearn utility now safely
-       removes NAN values in the images with argument ensure_finite=True.
+    - A helper function _safe_get_data as a nilearn utility now safely
+      removes NAN values in the images with argument ensure_finite=True.
 
     - Connectome functions :func:`nilearn.connectome.cov_to_corr` and
       :func:`nilearn.connectome.prec_to_partial` can now be used.

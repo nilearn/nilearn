@@ -199,7 +199,6 @@ do it manually below:
 
 .. literalinclude:: ../../examples/01_plotting/plot_visualization.py
      :start-after: # Applying the mask to extract the corresponding time series
-     :end-before: # Find voxels of interest
 
 .. figure:: ../auto_examples/01_plotting/images/sphx_glr_plot_visualization_003.png
     :target: ../auto_examples/01_plotting/plot_visualization.html
@@ -231,7 +230,7 @@ ROI mask:
  * **Mask intersection and dilation**: Post-processing the results with
    simple morphological operations, mask intersection and dilation. 
 
-   * we can use another mask, such as a grey-matter matter, to select
+   * we can use another mask, such as a grey-matter mask, to select
      only the voxels which are common in both masks.
 
    * we can do `morphological dilation

@@ -1,7 +1,7 @@
 """
 Test image pre-processing functions
 """
-from nose.tools import assert_true, assert_false, assert_equal
+from nose.tools import assert_true, assert_false, assert_equal, assert_raises
 from nose import SkipTest
 
 import platform
@@ -11,6 +11,7 @@ from nibabel import Nifti1Image
 import numpy as np
 from numpy.testing import assert_array_equal, assert_allclose
 from nilearn._utils.testing import assert_raises_regex
+from nilearn._utils.exceptions import DimensionError
 
 from nilearn import signal
 from nilearn.image import image
@@ -21,6 +22,7 @@ from nilearn.image import new_img_like
 from nilearn.image import threshold_img
 from nilearn.image import iter_img
 from nilearn.image import math_img
+from nilearn.image import largest_connected_component_img
 
 X64 = (platform.architecture()[0] == '64bit')
 
@@ -260,7 +262,6 @@ def test_mean_img():
                                 atol=0)
 
 
-
 def test_mean_img_resample():
     # Test resampling in mean_img with a permutation of the axes
     rng = np.random.RandomState(42)
@@ -333,7 +334,7 @@ def test_index_img():
               np.repeat(True, fourth_dim_size + 1)]:
         testing.assert_raises_regex(
             IndexError,
-            'out of bounds|invalid index|out of range',
+            'out of bounds|invalid index|out of range|boolean index',
             image.index_img, img_4d, i)
 
 
@@ -516,3 +517,66 @@ def test_clean_img():
     nan_img = nibabel.Nifti1Image(data, np.eye(4))
     clean_im = image.clean_img(nan_img, ensure_finite=True)
     assert_true(np.any(np.isfinite(clean_im.get_data())), True)
+
+
+def test_largest_cc_img():
+    """ Check the extraction of the largest connected component, for niftis
+
+    Similiar to smooth_img tests for largest connected_component_img, here also
+    only the added features for largest_connected_component are tested.
+    """
+
+    # Test whether dimension of 3Dimg and list of 3Dimgs are kept.
+    shapes = ((10, 11, 12), (13, 14, 15))
+    regions = [1, 3]
+
+    img1 = testing.generate_labeled_regions(shape=shapes[0],
+                                            n_regions=regions[0])
+    img2 = testing.generate_labeled_regions(shape=shapes[1],
+                                            n_regions=regions[1])
+
+    for create_files in (False, True):
+        with testing.write_tmp_imgs(img1, img2,
+                                    create_files=create_files) as imgs:
+            # List of images as input
+            out = largest_connected_component_img(imgs)
+            assert_true(isinstance(out, list))
+            assert_true(len(out) == 2)
+            for o, s in zip(out, shapes):
+                assert_true(o.shape == (s))
+
+            # Single image as input
+            out = largest_connected_component_img(imgs[0])
+            assert_true(isinstance(out, Nifti1Image))
+            assert_true(out.shape == (shapes[0]))
+
+        # Test whether 4D Nifti throws the right error.
+        img_4D = testing.generate_fake_fmri(shapes[0], length=17)
+        assert_raises(DimensionError, largest_connected_component_img, img_4D)
+
+    # tests adapted to non-native endian data dtype
+    img1_change_dtype = nibabel.Nifti1Image(img1.get_data().astype('>f8'),
+                                            affine=img1.get_affine())
+    img2_change_dtype = nibabel.Nifti1Image(img2.get_data().astype('>f8'),
+                                            affine=img2.get_affine())
+
+    for create_files in (False, True):
+        with testing.write_tmp_imgs(img1_change_dtype, img2_change_dtype,
+                                    create_files=create_files) as imgs:
+            # List of images as input
+            out = largest_connected_component_img(imgs)
+            assert_true(isinstance(out, list))
+            assert_true(len(out) == 2)
+            for o, s in zip(out, shapes):
+                assert_true(o.shape == (s))
+
+            # Single image as input
+            out = largest_connected_component_img(imgs[0])
+            assert_true(isinstance(out, Nifti1Image))
+            assert_true(out.shape == (shapes[0]))
+
+    # Test the output with native and without native
+    out_native = largest_connected_component_img(img1)
+
+    out_non_native = largest_connected_component_img(img1_change_dtype)
+    np.testing.assert_equal(out_native.get_data(), out_non_native.get_data())

@@ -7,7 +7,7 @@ import math
 
 from nose import SkipTest
 from nose.tools import assert_equal, assert_raises, \
-    assert_false, assert_true, assert_almost_equal
+    assert_false, assert_true, assert_almost_equal, assert_not_equal
 from numpy.testing import assert_array_equal, assert_array_almost_equal
 
 import numpy as np
@@ -89,6 +89,22 @@ def test_identity_resample():
                            interpolation='nearest')
     np.testing.assert_almost_equal(data, rot_img.get_data())
 
+    # Test with non native endian data
+
+    # Test with big endian data ('>f8')
+    for interpolation in ['nearest', 'continuous']:
+        rot_img = resample_img(Nifti1Image(data.astype('>f8'), affine),
+                               target_affine=affine.tolist(),
+                               interpolation=interpolation)
+        np.testing.assert_almost_equal(data, rot_img.get_data())
+
+    # Test with little endian data ('<f8')
+    for interpolation in ['nearest', 'continuous']:
+        rot_img = resample_img(Nifti1Image(data.astype('<f8'), affine),
+                               target_affine=affine.tolist(),
+                               interpolation=interpolation)
+        np.testing.assert_almost_equal(data, rot_img.get_data())
+
 
 def test_downsample():
     """ Test resampling with a 1/2 down-sampling affine.
@@ -103,6 +119,29 @@ def test_downsample():
     x, y, z = downsampled.shape[:3]
     np.testing.assert_almost_equal(downsampled,
                                    rot_img.get_data()[:x, :y, :z, ...])
+
+    # Test with non native endian data
+
+    # Test to check that if giving non native endian data as input should
+    # work as normal and expected to return the same output as above tests.
+
+    # Big endian data ('>f8')
+    for copy in [True, False]:
+        rot_img = resample_img(Nifti1Image(data.astype('>f8'), affine),
+                               target_affine=2 * affine,
+                               interpolation='nearest',
+                               copy=copy)
+        np.testing.assert_almost_equal(downsampled,
+                                       rot_img.get_data()[:x, :y, :z, ...])
+
+    # Little endian data
+    for copy in [True, False]:
+        rot_img = resample_img(Nifti1Image(data.astype('<f8'), affine),
+                               target_affine=2 * affine,
+                               interpolation='nearest',
+                               copy=copy)
+        np.testing.assert_almost_equal(downsampled,
+                                       rot_img.get_data()[:x, :y, :z, ...])
 
 
 def test_resampling_with_affine():
@@ -122,6 +161,17 @@ def test_resampling_with_affine():
             assert_equal(np.max(data),
                          np.max(rot_img.get_data()))
             assert_equal(rot_img.get_data().dtype, data.dtype)
+
+    # We take the same rotation logic as above and test with nonnative endian
+    # data as input
+    for data in [data_3d, data_4d]:
+        img = Nifti1Image(data.astype('>f8'), np.eye(4))
+        for angle in (0, np.pi, np.pi / 2., np.pi / 4., np.pi / 3.):
+            rot = rotation(0, angle)
+            rot_img = resample_img(img, target_affine=rot,
+                                   interpolation='nearest')
+            assert_equal(np.max(data),
+                         np.max(rot_img.get_data()))
 
 
 def test_resampling_continuous_with_affine():
@@ -637,6 +687,6 @@ def test_resampling_with_int_types_no_crash():
 
     for dtype in [np.int, np.int8, np.int16, np.int32, np.int64,
                   np.uint, np.uint8, np.uint16, np.uint32, np.uint64,
-                  np.float32, np.float64, np.float]:
+                  np.float32, np.float64, np.float, '>i8', '<i8']:
         img = Nifti1Image(data.astype(dtype), affine)
         resample_img(img, target_affine=2. * affine)

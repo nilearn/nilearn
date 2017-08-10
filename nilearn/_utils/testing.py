@@ -14,6 +14,7 @@ import gc
 import numpy as np
 import scipy.signal
 from sklearn.utils import check_random_state
+from sklearn.utils.testing import assert_warns
 import scipy.linalg
 import nibabel
 
@@ -28,16 +29,6 @@ try:
 except ImportError:
     # For Py 2.7
     from nose.tools import assert_raises_regexp as assert_raises_regex
-
-try:
-    from sklearn.utils.testing import assert_warns
-except ImportError:
-    # sklearn.utils.testing.assert_warns new in scikit-learn 0.14
-    def assert_warns(warning_class, func, *args, **kw):
-        with warnings.catch_warnings(record=True):
-            warnings.simplefilter("ignore", warning_class)
-            output = func(*args, **kw)
-        return output
 
 
 # we use memory_profiler library for memory consumption checks

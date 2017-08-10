@@ -5,9 +5,11 @@ import sklearn
 try:
     if LooseVersion(sklearn.__version__) >= LooseVersion('0.18'):
         from sklearn.model_selection import check_cv
+        from sklearn.model_selection import cross_val_score
     # 0.18 > scikit-learn >= 0.16
     else:
         from sklearn.cross_validation import check_cv
+        from sklearn.cross_validation import cross_val_score
 except ImportError:
     # scikit-learn < 0.16
     from sklearn.cross_validation import _check_cv as check_cv
@@ -21,4 +23,4 @@ except ImportError:
     from .sklearn_validation import check_X_y
     from .sklearn_validation import check_is_fitted
 
-__all__ = ['check_X_y', 'check_is_fitted', 'check_cv']
+__all__ = ['check_X_y', 'check_is_fitted', 'check_cv', 'cross_val_score']

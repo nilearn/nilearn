@@ -5,6 +5,9 @@ Brain schematics plotting for glass brain functionality
 import json
 import os
 
+from distutils.version import LooseVersion
+
+import matplotlib
 from matplotlib.path import Path
 from matplotlib import patches
 from matplotlib import colors
@@ -86,14 +89,14 @@ def _get_json_and_transform(direction):
     been tweaked by hand to fit the MNI template
     """
     direction_to_view_name = {'x': 'side',
-                              'y': 'front',
+                              'y': 'back',
                               'z': 'top',
                               'l': 'side',
                               'r': 'side'}
 
     direction_to_transform_params = {
         'x': [0.38, 0, 0, 0.38, -108, -70],
-        'y': [0.39, 0, 0, 0.39, -72, -73],
+        'y': [0.39, 0, 0, 0.39, -73, -73],
         'z': [0.36, 0, 0, 0.37, -71, -107],
         'l': [0.38, 0, 0, 0.38, -108, -70],
         'r': [0.38, 0, 0, 0.38, -108, -70]}
@@ -161,7 +164,12 @@ def plot_brain_schematics(ax, direction, **kwargs):
            Useful for the caller to be able to set axes limits
 
     """
-    black_bg = colors.colorConverter.to_rgba(ax.get_axis_bgcolor()) \
+    if LooseVersion(matplotlib.__version__) >= LooseVersion("2.0"):
+        get_axis_bg_color = ax.get_facecolor()
+    else:
+        get_axis_bg_color = ax.get_axis_bgcolor()
+
+    black_bg = colors.colorConverter.to_rgba(get_axis_bg_color) \
                     == colors.colorConverter.to_rgba('k')
 
     json_filename, transform = _get_json_and_transform(direction)

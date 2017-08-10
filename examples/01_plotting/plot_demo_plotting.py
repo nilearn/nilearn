@@ -11,7 +11,8 @@ See :ref:`plotting` for more details.
 """
 
 ###############################################################################
-# First, we retrieve from nilearn provided (general-purpose) datasets
+# Retrieve data from nilearn provided (general-purpose) datasets
+# ---------------------------------------------------------------
 
 from nilearn import datasets
 

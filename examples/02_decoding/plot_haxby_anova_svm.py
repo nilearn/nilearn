@@ -9,6 +9,7 @@ using a feature selection, followed by an SVM.
 
 #############################################################################
 # Retrieve the files of the Haxby dataset
+# ----------------------------------------
 from nilearn import datasets
 
 # By default 2nd subject will be fetched
@@ -21,7 +22,7 @@ print('Functional nifti image (4D) is located at: %s' %
 
 #############################################################################
 # Load the behavioral data
-
+# -------------------------
 import numpy as np
 # Load target information as string and give a numerical identifier to each
 behavioral = np.recfromcsv(haxby_dataset.session_target[0], delimiter=" ")
@@ -37,6 +38,7 @@ session = behavioral[condition_mask]
 
 #############################################################################
 # Prepare the fMRI data: smooth and apply the mask
+# -------------------------------------------------
 from nilearn.input_data import NiftiMasker
 
 mask_filename = haxby_dataset.mask
@@ -52,7 +54,7 @@ X = X[condition_mask]
 
 #############################################################################
 # Build the decoder
-
+# ------------------
 # Define the prediction function to be used.
 # Here we use a Support Vector Classification, with a linear kernel
 from sklearn.svm import SVC
@@ -74,13 +76,13 @@ anova_svc = Pipeline([('anova', feature_selection), ('svc', svc)])
 
 #############################################################################
 # Fit the decoder and predict
-
+# ----------------------------
 anova_svc.fit(X, conditions)
 y_pred = anova_svc.predict(X)
 
 #############################################################################
 # Obtain prediction scores via cross validation
-
+# -----------------------------------------------
 from sklearn.cross_validation import LeaveOneLabelOut, cross_val_score
 
 # Define the cross-validation scheme used for validation.
@@ -89,7 +91,7 @@ from sklearn.cross_validation import LeaveOneLabelOut, cross_val_score
 cv = LeaveOneLabelOut(session)
 
 # Compute the prediction accuracy for the different folds (i.e. session)
-cv_scores = cross_val_score(anova_svc, X, conditions)
+cv_scores = cross_val_score(anova_svc, X, conditions, cv=cv)
 
 # Return the corresponding mean prediction accuracy
 classification_accuracy = cv_scores.mean()
@@ -97,12 +99,12 @@ classification_accuracy = cv_scores.mean()
 # Print the results
 print("Classification accuracy: %.4f / Chance level: %f" %
       (classification_accuracy, 1. / len(np.unique(conditions))))
-# Classification accuracy: 0.9861 / Chance level: 0.5000
+# Classification accuracy:  0.70370 / Chance level: 0.5000
 
 
 #############################################################################
 # Visualize the results
-
+# ----------------------
 # Look at the SVC's discriminating weights
 coef = svc.coef_
 # reverse feature selection

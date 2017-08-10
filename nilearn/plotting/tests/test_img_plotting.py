@@ -57,6 +57,8 @@ def test_demo_plot_roi():
     demo_plot_roi()
     # Test the black background code path
     demo_plot_roi(black_bg=True)
+    # Test whether the function accepts a threshold argument
+    demo_plot_roi(threshold=0.2)
 
     # Save execution time and memory
     plt.close()
@@ -914,3 +916,30 @@ def test_plotting_functions_with_cmaps():
         plot_stat_map(img, cmap='viridis', colorbar=True)
 
     plt.close()
+
+
+def test_plotting_functions_with_nans_in_bg_img():
+    bg_img = _generate_img()
+    bg_data = bg_img.get_data()
+
+    bg_data[6, 5, 1] = np.nan
+    bg_data[1, 5, 2] = np.nan
+    bg_data[1, 3, 2] = np.nan
+    bg_data[6, 5, 2] = np.inf
+
+    bg_img = nibabel.Nifti1Image(bg_data, mni_affine)
+    plot_anat(bg_img)
+    # test with plot_roi passing background image which contains nans values
+    # in it
+    roi_img = _generate_img()
+    plot_roi(roi_img=roi_img, bg_img=bg_img)
+    stat_map_img = _generate_img()
+    plot_stat_map(stat_map_img=stat_map_img, bg_img=bg_img)
+
+    plt.close()
+
+
+def test_plotting_functions_with_dim_invalid_input():
+    # Test whether error raises with bad error to input
+    img = _generate_img()
+    assert_raises(ValueError, plot_stat_map, img, dim='-10')

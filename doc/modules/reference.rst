@@ -41,6 +41,8 @@ uses.
    :template: function.rst
 
    sym_to_vec
+   sym_matrix_to_vec
+   vec_to_sym_matrix
    group_sparse_covariance
    cov_to_corr
    prec_to_partial
@@ -91,6 +93,8 @@ uses.
    fetch_oasis_vbm
    fetch_megatrawls_netmats
    fetch_cobre
+   fetch_neurovault
+   fetch_neurovault_ids
    get_data_dirs
    load_mni152_template
    load_mni152_brain_mask
@@ -160,6 +164,7 @@ uses.
    high_variance_confounds
    index_img
    iter_img
+   largest_connected_component_img
    load_img
    math_img
    mean_img
@@ -299,6 +304,7 @@ uses.
    plot_anat
    plot_img
    plot_epi
+   plot_matrix
    plot_roi
    plot_stat_map
    plot_glass_brain

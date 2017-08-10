@@ -198,9 +198,7 @@ The prediction objects have two important methods:
 
 .. warning::
 
-    **Do not predict on data used by the fit:** the prediction that we obtain
-    here is to good to be true (see next paragraph).
-    Here we were just doing a sanity check.
+    **Do not predict on data used by the fit: this would yield misleadingly optimistic scores.**
 
 .. for doctests (smoke testing):
     >>> from sklearn.svm import SVC
@@ -417,14 +415,13 @@ To visualize the results, we need to:
 - then, as before, inverse the masking process to retrieve the weights
   and plot them.
 
-.. figure:: ../auto_examples/02_decoding/images/sphx_glr_plot_haxby_anova_svm_001.png
-   :target: ../auto_examples/02_decoding/plot_haxby_anova_svm.html
-   :align: right
-   :scale: 65
-
 .. literalinclude:: ../../examples/02_decoding/plot_haxby_anova_svm.py
     :start-after: # Visualize the results
-    :end-before: # Obtain prediction scores via cross validation
+    :end-before: # Saving the results as a Nifti file may also be important
+
+.. figure:: ../auto_examples/02_decoding/images/sphx_glr_plot_haxby_anova_svm_001.png
+   :target: ../auto_examples/02_decoding/plot_haxby_anova_svm.html
+   :scale: 65
 
 .. seealso::
 

@@ -179,10 +179,10 @@ def test_unmask():
 
     masked4D = data4D[mask, :].T
     unmasked4D = data4D.copy()
-    unmasked4D[-mask, :] = 0
+    unmasked4D[np.logical_not(mask), :] = 0
     masked3D = data3D[mask]
     unmasked3D = data3D.copy()
-    unmasked3D[-mask] = 0
+    unmasked3D[np.logical_not(mask)] = 0
 
     # 4D Test, test value ordering at the same time.
     t = unmask(masked4D, mask_img, order="C").get_data()
@@ -325,6 +325,17 @@ def test_intersect_masks():
     mask_ab[2, 2] = 1
     mask_ab_ = intersect_masks([mask_a_img, mask_b_img], threshold=1.)
     assert_array_equal(mask_ab, mask_ab_.get_data())
+    # Test intersect mask images with '>f8'. This function uses
+    # largest_connected_component to check if intersect_masks passes with
+    # connected=True (which is by default)
+    mask_a_img_change_dtype = Nifti1Image(mask_a_img.get_data().astype('>f8'),
+                                          affine=mask_a_img.get_affine())
+    mask_b_img_change_dtype = Nifti1Image(mask_b_img.get_data().astype('>f8'),
+                                          affine=mask_b_img.get_affine())
+    mask_ab_change_type = intersect_masks([mask_a_img_change_dtype,
+                                           mask_b_img_change_dtype],
+                                          threshold=1.)
+    assert_array_equal(mask_ab, mask_ab_change_type.get_data())
 
     mask_abc = mask_a + mask_b + mask_c
     mask_abc_ = intersect_masks([mask_a_img, mask_b_img, mask_c_img],

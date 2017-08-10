@@ -138,7 +138,7 @@ We will here use the Haxby dataset because it provides the original mask that
 we can compare the data-derived mask against.
 
 Generate a mask with default parameters and visualize it (it is in the
-`mask_img_` attribute of the masker:
+`mask_img_` attribute of the masker):
 
 .. literalinclude:: ../../examples/04_manipulating_images/plot_mask_computation.py
     :start-after: # Simple mask extraction from EPI images

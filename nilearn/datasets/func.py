@@ -98,8 +98,8 @@ def fetch_haxby(data_dir=None, n_subjects=None, subjects=(2,),
     n_subjects: int, optional
         Number of subjects, from 1 to 6.
 
-        NOTE: n_subjects is deprecated from 0.2.6 and will be removed in 0.3
-        Use `subjects` instead.
+        NOTE: n_subjects is deprecated from 0.2.6 and will be removed in next
+        release. Use `subjects` instead.
 
     subjects : list or int, optional
         Either a list of subjects or the number of subjects to load, from 1 to
@@ -149,7 +149,7 @@ def fetch_haxby(data_dir=None, n_subjects=None, subjects=(2,),
     """
     if n_subjects is not None:
         warnings.warn("The parameter 'n_subjects' is deprecated from 0.2.6 "
-                      "and will be removed in nilearn 0.3 release. Use "
+                      "and will be removed in nilearn next release. Use "
                       "parameter 'subjects' instead.")
         subjects = n_subjects
 
