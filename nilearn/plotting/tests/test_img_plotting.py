@@ -125,10 +125,11 @@ def test_plot_glass_brain():
     img = _generate_img()
 
     # test plot_glass_brain with colorbar
-    plot_glass_brain(img, colorbar=True)
+    plot_glass_brain(img, colorbar=True, resampling_interpolation='nearest')
 
     # test plot_glass_brain with negative values
-    plot_glass_brain(img, colorbar=True, plot_abs=False)
+    plot_glass_brain(img, colorbar=True, plot_abs=False,
+                     resampling_interpolation='nearest')
 
     # Save execution time and memory
     plt.close()

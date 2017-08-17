@@ -1018,6 +1018,7 @@ def plot_glass_brain(stat_map_img,
                      vmin=None, vmax=None,
                      plot_abs=True,
                      symmetric_cbar="auto",
+                     resampling_interpolation='continuous',
                      **kwargs):
     """Plot 2d projections of an ROI/mask image (by default 3 projections:
         Frontal, Axial, and Lateral). The brain glass schematics
@@ -1086,6 +1087,10 @@ def plot_glass_brain(stat_map_img,
             or from vmin to vmax. Setting to 'auto' will select the latter if
             the range of the whole image is either positive or negative.
             Note: The colormap will always be set to range from -vmax to vmax.
+        resampling_interpolation : str
+            Interpolation to use when resampling the image to the destination
+            space. Can be "continuous" (default) to use 3rd-order spline
+            interpolation, or "nearest" to use nearest-neighbor mapping.
 
         Notes
         -----
@@ -1118,18 +1123,13 @@ def plot_glass_brain(stat_map_img,
         return functools.partial(get_projector(display_mode),
                                  alpha=alpha, plot_abs=plot_abs)
 
-    display = _plot_img_with_bg(img=stat_map_img,
-                                output_file=output_file,
-                                display_mode=display_mode,
-                                figure=figure, axes=axes, title=title,
-                                annotate=annotate,
-                                black_bg=black_bg, threshold=threshold,
-                                cmap=cmap, colorbar=colorbar,
-                                display_factory=display_factory,
-                                resampling_interpolation='continuous',
-                                vmin=vmin, vmax=vmax,
-                                cbar_vmin=cbar_vmin, cbar_vmax=cbar_vmax,
-                                **kwargs)
+    display = _plot_img_with_bg(
+        img=stat_map_img, output_file=output_file, display_mode=display_mode,
+        figure=figure, axes=axes, title=title, annotate=annotate,
+        black_bg=black_bg, threshold=threshold, cmap=cmap, colorbar=colorbar,
+        display_factory=display_factory, vmin=vmin, vmax=vmax,
+        cbar_vmin=cbar_vmin, cbar_vmax=cbar_vmax,
+        resampling_interpolation=resampling_interpolation, **kwargs)
 
     return display
 
