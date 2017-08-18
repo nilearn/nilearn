@@ -463,13 +463,13 @@ We can try Fisher's `Linear Discriminant Analysis (LDA)
 
 Import the module::
 
-    >>> from sklearn.lda import LDA
+    >>> from sklearn.lda import LDA  # doctest: +SKIP
 
 Construct the new estimator object and use it in a pipeline::
 
     >>> from sklearn.pipeline import Pipeline
-    >>> lda = LDA()
-    >>> anova_lda = Pipeline([('anova', feature_selection), ('LDA', lda)])
+    >>> lda = LDA()  # doctest: +SKIP
+    >>> anova_lda = Pipeline([('anova', feature_selection), ('LDA', lda)])  # doctest: +SKIP
 
 and recompute the cross-validation score::
 
