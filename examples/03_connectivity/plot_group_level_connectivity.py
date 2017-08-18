@@ -8,23 +8,23 @@ called **tangent**. The resulting connectivity coefficients are used to
 discriminate ADHD patients from healthy controls and the **tangent kind**
 **outperforms** the standard connectivity kinds.
 """
-# A useful matrix plotting function
+# Matrix plotting from Nilearn: nilearn.plotting.plot_matrix
 import numpy as np
 import matplotlib.pylab as plt
 
 
 def plot_matrices(matrices, matrix_kind):
     n_matrices = len(matrices)
-    plt.figure(figsize=(n_matrices * 4, 4))
+    fig = plt.figure(figsize=(n_matrices * 4, 4))
     for n_subject, matrix in enumerate(matrices):
         plt.subplot(1, n_matrices, n_subject + 1)
         matrix = matrix.copy()  # avoid side effects
         # Set diagonal to zero, for better visualization
         np.fill_diagonal(matrix, 0)
         vmax = np.max(np.abs(matrix))
-        plt.imshow(matrix, vmin=-vmax, vmax=vmax, cmap='RdBu_r',
-                   interpolation='nearest')
-        plt.title('{0}, subject {1}'.format(matrix_kind, n_subject))
+        title = '{0}, subject {1}'.format(matrix_kind, n_subject)
+        plotting.plot_matrix(matrix, vmin=-vmax, vmax=vmax, cmap='RdBu_r',
+                             title=title, figure=fig, colorbar=False)
 
 
 ###############################################################################
