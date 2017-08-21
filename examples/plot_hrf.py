@@ -24,7 +24,7 @@ onset, amplitude, duration = 0., 1., 1.
 stim = np.zeros_like(frame_times)
 stim[(frame_times > onset) * (frame_times <= onset + duration)] = amplitude
 exp_condition = np.array((onset, duration, amplitude)).reshape(3, 1)
-hrf_models = ['glover + derivative', 'glover + derivative + dispersion']
+hrf_models = [None, 'glover + derivative', 'glover + derivative + dispersion']
 
 #########################################################################
 # sample the hrf
@@ -34,7 +34,7 @@ for i, hrf_model in enumerate(hrf_models):
         exp_condition, hrf_model, frame_times, con_id='main',
         oversampling=16)
 
-    plt.subplot(1, 2, i + 1)
+    plt.subplot(1, 3, i + 1)
     plt.fill(frame_times, stim, 'k', alpha=.5, label='stimulus')
     for j in range(signal.shape[1]):
         plt.plot(frame_times, signal.T[j], label=name[j])

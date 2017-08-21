@@ -27,8 +27,7 @@ _NISTATS_INSTALL_MSG = 'See %s for installation information.' % (
     'http://nistats.github.io/introduction.html#installation')
 
 # This is a tuple to preserve order, so that dependencies are checked
-#   in some meaningful order (more => less 'core').  We avoid using
-#   collections.OrderedDict to preserve Python 2.6 compatibility.
+#   in some meaningful order (more => less 'core'). 
 REQUIRED_MODULE_METADATA = (
     ('numpy', {
         'min_version': '1.7.1',

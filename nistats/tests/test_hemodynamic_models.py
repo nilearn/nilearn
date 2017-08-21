@@ -11,6 +11,7 @@ from nistats.hemodynamic_models import (
     glover_time_derivative, compute_regressor)
 
 
+
 def test_spm_hrf():
     """ test that the spm_hrf is correctly normalized and has correct length
     """
@@ -195,6 +196,10 @@ def test_hkernel():
     assert_equal(len(h), 4)
     for dh in h:
         assert_equal(dh.sum(), 16.)
+    # 
+    h = _hrf_kernel(None, tr)
+    assert_equal(len(h), 1)
+    assert_almost_equal(h[0], np.hstack((1, np.zeros(15))))
 
 
 def test_make_regressor_1():
@@ -206,6 +211,7 @@ def test_make_regressor_1():
     reg, reg_names = compute_regressor(condition, hrf_model, frame_times)
     assert_almost_equal(reg.sum(), 6, 1)
     assert_equal(reg_names[0], 'cond')
+
 
 
 def test_make_regressor_2():

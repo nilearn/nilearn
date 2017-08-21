@@ -352,7 +352,7 @@ def _regressor_names(con_name, hrf_model, fir_delays=None):
     con_name: string
         identifier of the condition
 
-    hrf_model: string
+    hrf_model: string or None,
        hrf model chosen
 
     fir_delays: 1D array_like, optional,
@@ -363,7 +363,7 @@ def _regressor_names(con_name, hrf_model, fir_delays=None):
     names: list of strings,
         regressor names
     """
-    if hrf_model in ['glover', 'spm']:
+    if hrf_model in ['glover', 'spm', None]:
         return [con_name]
     elif hrf_model in ["glover + derivative", 'spm + derivative']:
         return [con_name, con_name + "_derivative"]
@@ -380,7 +380,7 @@ def _hrf_kernel(hrf_model, tr, oversampling=16, fir_delays=None):
 
     Parameters
     ----------
-    hrf_model : string
+    hrf_model : string or None,
         identifier of the hrf model
 
     tr : float
@@ -399,7 +399,8 @@ def _hrf_kernel(hrf_model, tr, oversampling=16, fir_delays=None):
     """
     acceptable_hrfs = [
         'spm', 'spm + derivative', 'spm + derivative + dispersion', 'fir',
-        'glover', 'glover + derivative', 'glover + derivative + dispersion']
+        'glover', 'glover + derivative', 'glover + derivative + dispersion',
+        None]
     if hrf_model == 'spm':
         hkernel = [spm_hrf(tr, oversampling)]
     elif hrf_model == 'spm + derivative':
@@ -422,6 +423,8 @@ def _hrf_kernel(hrf_model, tr, oversampling=16, fir_delays=None):
         hkernel = [np.hstack((np.zeros(f * oversampling),
                               np.ones(oversampling)))
                    for f in fir_delays]
+    elif hrf_model is None:
+        hkernel = [np.hstack((1, np.zeros(oversampling - 1)))]
     else:
         raise ValueError('"{0}" is not a known hrf model. Use one of {1}'.
                          format(hrf_model, acceptable_hrfs))
@@ -439,7 +442,7 @@ def compute_regressor(exp_condition, hrf_model, frame_times, con_id='cond',
         (onsets, durations, amplitudes) triplet
 
     hrf_model : {'spm', 'spm + derivative', 'spm + derivative + dispersion',
-        'glover', 'glover + derivative', 'fir'}
+        'glover', 'glover + derivative', 'fir', None}
         Name of the hrf model to be used
 
     frame_times : array of shape (n_scans)
