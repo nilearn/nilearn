@@ -471,6 +471,11 @@ Construct the new estimator object and use it in a pipeline::
     >>> lda = LDA()  # doctest: +SKIP
     >>> anova_lda = Pipeline([('anova', feature_selection), ('LDA', lda)])  # doctest: +SKIP
 
+.. note::
+  Import Linear Discriminant Analysis method in
+  "sklearn.discriminant_analysis.LinearDiscriminantAnalysis" in the newest
+  version of scikit-learn from 0.19.
+
 and recompute the cross-validation score::
 
     >>> cv_scores = cross_val_score(anova_lda, fmri_masked, target, cv=cv, verbose=1)  # doctest: +SKIP
