@@ -30,11 +30,11 @@ _NISTATS_INSTALL_MSG = 'See %s for installation information.' % (
 #   in some meaningful order (more => less 'core').
 REQUIRED_MODULE_METADATA = (
     ('numpy', {
-        'min_version': '1.9.0',
+        'min_version': '1.8.2',
         'required_at_installation': True,
         'install_info': _NISTATS_INSTALL_MSG}),
     ('scipy', {
-        'min_version': '0.14.0',
+        'min_version': '0.13.3',
         'required_at_installation': True,
         'install_info': _NISTATS_INSTALL_MSG}),
     ('nilearn', {
@@ -45,7 +45,7 @@ REQUIRED_MODULE_METADATA = (
         'min_version': '1.2.0',
         'required_at_installation': False}),
     ('pandas', {
-        'min_version': '0.17.1',
+        'min_version': '0.13.0',
         'required_at_installation': True,
         'install_info': _NISTATS_INSTALL_MSG}),
     ('patsy', {
@@ -53,12 +53,12 @@ REQUIRED_MODULE_METADATA = (
         'required_at_installation': True,
         'install_info': _NISTATS_INSTALL_MSG}),
     ('sklearn', {
-        'min_version': '0.15.2',
+        'min_version': '0.15.0',
         'required_at_installation': True,
         'install_info': _NISTATS_INSTALL_MSG}),
     )
 
-OPTIONAL_MATPLOTLIB_MIN_VERSION = '1.4.0'
+OPTIONAL_MATPLOTLIB_MIN_VERSION = '1.3.1'
 
 
 def _import_module_with_version_check(
