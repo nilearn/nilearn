@@ -249,7 +249,6 @@ class SecondLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
             sorted_matrix = sorted(
                 second_level_input.as_matrix(), key=lambda x: x[column_index])
             sorted_input = pd.DataFrame(sorted_matrix, columns=columns)
-            print(sorted_input)
             second_level_input = sorted_input
 
         self.second_level_input_ = second_level_input
