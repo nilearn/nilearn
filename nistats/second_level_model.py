@@ -244,7 +244,7 @@ class SecondLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         # sort a pandas dataframe by subject_label to avoid inconsistencies
         # with the design matrix row order when automatically extracting maps
         if isinstance(second_level_input, pd.DataFrame):
-            sorted_input = second_level_input.sort('subject_label')
+            sorted_input = second_level_input.sort_values('subject_label')
             second_level_input = sorted_input
 
         self.second_level_input_ = second_level_input

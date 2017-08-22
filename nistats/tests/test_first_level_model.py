@@ -267,10 +267,11 @@ def test_first_level_model_glm_computation():
         model = model.fit(func_img, paradigm)
         labels1 = model.labels_[0]
         results1 = model.results_[0]
-        labels2, results2 = run_glm(model.masker_.transform(func_img),
-                                    model.design_matrices_[0], 'ar1')
+        labels2, results2 = run_glm(
+            model.masker_.transform(func_img),
+            model.design_matrices_[0].as_matrix(), 'ar1')
         # ar not giving consistent results in python 3.4
-        # assert_almost_equal(labels1, labels2, decimal=1) ####FIX
+        # assert_almost_equal(labels1, labels2, decimal=2) ####FIX
         # assert_equal(len(results1), len(results2)) ####FIX
 
 
@@ -338,6 +339,14 @@ def test_first_level_models_from_bids():
         assert_true(len(models) == len(m_imgs))
         assert_true(len(models) == len(m_events))
         assert_true(len(models) == len(m_confounds))
+        # test repeated run tag error when run tag is in filenames
+        # can arise when variant or space is present and not specified
+        assert_raises(ValueError, first_level_models_from_bids,
+                      bids_path, 'main', 'T1w')  # variant not specified
+        # test more than one ses file error when run tag is not in filenames
+        # can arise when variant or space is present and not specified
+        assert_raises(ValueError, first_level_models_from_bids,
+                      bids_path, 'localizer', 'T1w')  # variant not specified
         # test issues with confound files. There should be only one confound
         # file per img. An one per image or None. Case when one is missing
         confound_files = get_bids_files(os.path.join(bids_path, 'derivatives'),
@@ -345,7 +354,6 @@ def test_first_level_models_from_bids():
         os.remove(confound_files[-1])
         assert_raises(ValueError, first_level_models_from_bids,
                       bids_path, 'main', 'MNI')
-
         # test issues with event files
         events_files = get_bids_files(bids_path, file_tag='events')
         os.remove(events_files[0])

@@ -484,7 +484,8 @@ def create_second_level_design(subjects_label, confounds=None):
     if len(np.unique(design_columns)) != len(design_columns):
         raise ValueError('Design matrix columns do not have unique names')
 
-    design_matrix = pd.DataFrame(columns=design_columns)
+    # float dtype necessary for linalg
+    design_matrix = pd.DataFrame(columns=design_columns, dtype=float)
     for ridx, subject_label in enumerate(subjects_label):
         design_matrix.loc[ridx] = [0] * len(design_columns)
         design_matrix.loc[ridx, 'intercept'] = 1
@@ -497,7 +498,7 @@ def create_second_level_design(subjects_label, confounds=None):
                 raise ValueError('confounds not specified for subject %s' %
                                  subject_label)
             for conf_name in confounds_name:
-                confounds_value = confounds[conrow][conf_name].values
+                confounds_value = confounds[conrow][conf_name].values[0]
                 design_matrix.loc[ridx, conf_name] = confounds_value
 
     # check design matrix is not singular

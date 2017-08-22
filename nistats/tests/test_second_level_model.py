@@ -155,7 +155,8 @@ def test_second_level_model_glm_computation():
         labels1 = model.labels_
         results1 = model.results_
 
-        labels2, results2 = run_glm(model.masker_.transform(Y), X, 'ols')
+        labels2, results2 = run_glm(
+            model.masker_.transform(Y), X.as_matrix(), 'ols')
         assert_almost_equal(labels1, labels2, decimal=1)
         assert_equal(len(results1), len(results2))
 

@@ -35,7 +35,7 @@ print_conda_requirements() {
     #   - for scikit-learn, SCIKIT_LEARN_VERSION is used
     TO_INSTALL_ALWAYS="pip nose"
     REQUIREMENTS="$TO_INSTALL_ALWAYS"
-    TO_INSTALL_MAYBE="python numpy scipy matplotlib scikit-learn pandas"
+    TO_INSTALL_MAYBE="python nomkl numpy scipy matplotlib scikit-learn pandas"
     for PACKAGE in $TO_INSTALL_MAYBE; do
         # Capitalize package name and add _VERSION
         PACKAGE_VERSION_VARNAME="${PACKAGE^^}_VERSION"
@@ -107,7 +107,7 @@ elif [[ "$DISTRIB" == "conda" ]]; then
     # Install the latest available version of nilearn and patsy
     pip install nilearn
     pip install patsy
-  
+
 
 else
     echo "Unrecognized distribution ($DISTRIB); cannot setup travis environment."
