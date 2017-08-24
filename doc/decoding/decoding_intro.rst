@@ -463,18 +463,17 @@ We can try Fisher's `Linear Discriminant Analysis (LDA)
 
 Import the module::
 
-    >>> from sklearn.lda import LDA  # doctest: +SKIP
+    >>> from sklearn.discriminant_analysis import LinearDiscriminantAnalysis  # doctest: +SKIP
 
 Construct the new estimator object and use it in a pipeline::
 
     >>> from sklearn.pipeline import Pipeline
-    >>> lda = LDA()  # doctest: +SKIP
+    >>> lda = LinearDiscriminantAnalysis()  # doctest: +SKIP
     >>> anova_lda = Pipeline([('anova', feature_selection), ('LDA', lda)])  # doctest: +SKIP
 
 .. note::
-  Import Linear Discriminant Analysis method in
-  "sklearn.discriminant_analysis.LinearDiscriminantAnalysis" in the newest
-  version of scikit-learn from 0.19.
+  Import Linear Discriminant Analysis method in "sklearn.lda.LDA" if you are using
+  scikit-learn older than version 0.17.
 
 and recompute the cross-validation score::
 
