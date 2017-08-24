@@ -3,7 +3,6 @@
 
 import numpy as np
 
-import sklearn
 from sklearn.base import clone
 from sklearn.feature_extraction import image
 from sklearn.externals.joblib import Memory, delayed, Parallel

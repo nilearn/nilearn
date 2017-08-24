@@ -4,7 +4,6 @@ Test the parcellations tools module
 import numpy as np
 import nibabel
 
-import sklearn
 from nose.tools import assert_true, assert_equal
 from nilearn.regions.parcellations import (Parcellations,
                                            _check_parameters_transform)
@@ -52,7 +51,6 @@ def test_parcellations_fit_on_single_nifti_image():
             # Test that object returns attribute connectivity_
             # only for AgglomerativeClustering methods
             assert_true(parcellator.connectivity_ is not None)
-            masker = parcellator.masker_
             labels_img = parcellator.labels_img_
             assert_true(parcellator.labels_img_ is not None)
             # After inverse_transform, shape must match with original input
@@ -219,7 +217,6 @@ def test_fit_transform():
 
 
 def test_inverse_transform():
-    rng = np.random.RandomState(0)
     data = np.ones((10, 11, 12, 10))
     data[6, 7, 8] = 2
     data[9, 10, 11] = 3
