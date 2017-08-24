@@ -217,7 +217,7 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None,
 def plot_img(img, cut_coords=None, output_file=None, display_mode='ortho',
              figure=None, axes=None, title=None, threshold=None,
              annotate=True, draw_cross=True, black_bg=False, colorbar=False,
-             **kwargs):
+             resampling_interpolation='continuous', **kwargs):
     """ Plot cuts of a given image (by default Frontal, Axial, and Lateral)
 
         Parameters
@@ -268,15 +268,21 @@ def plot_img(img, cut_coords=None, output_file=None, display_mode='ortho',
             to matplotlib.pyplot.savefig.
         colorbar: boolean, optional
             If True, display a colorbar on the right of the plots.
+        resampling_interpolation : str
+            Interpolation to use when resampling the image to the destination
+            space. Can be "continuous" (default) to use 3rd-order spline
+            interpolation, or "nearest" to use nearest-neighbor mapping.
+            "nearest" is faster but can be noisier in some cases.
         kwargs: extra keyword arguments, optional
             Extra keyword arguments passed to matplotlib.pyplot.imshow
-    """
+    """  # noqa: E501
     display = _plot_img_with_bg(
         img, cut_coords=cut_coords,
         output_file=output_file, display_mode=display_mode,
         figure=figure, axes=axes, title=title,
         threshold=threshold, annotate=annotate,
-        draw_cross=draw_cross, resampling_interpolation='continuous',
+        draw_cross=draw_cross,
+        resampling_interpolation=resampling_interpolation,
         black_bg=black_bg, colorbar=colorbar, **kwargs)
 
     return display
@@ -578,7 +584,8 @@ def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None,
              output_file=None, display_mode='ortho', figure=None, axes=None,
              title=None, annotate=True, draw_cross=True, black_bg='auto',
              threshold=0.5, alpha=0.7, cmap=plt.cm.gist_ncar, dim='auto',
-             vmin=None, vmax=None, **kwargs):
+             vmin=None, vmax=None, resampling_interpolation='nearest',
+             **kwargs):
     """ Plot cuts of an ROI/mask image (by default 3 cuts: Frontal, Axial, and
         Lateral)
 
@@ -644,6 +651,11 @@ def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None,
             Lower bound for plotting, passed to matplotlib.pyplot.imshow
         vmax : float
             Upper bound for plotting, passed to matplotlib.pyplot.imshow
+        resampling_interpolation : str
+            Interpolation to use when resampling the image to the destination
+            space. Can be "continuous" to use 3rd-order spline interpolation,
+            or "nearest" (default) to use nearest-neighbor mapping.
+            "nearest" is faster but can be noisier in some cases.
 
         Notes
         -----
@@ -657,23 +669,18 @@ def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None,
         --------
         nilearn.plotting.plot_prob_atlas : To simply plot probabilistic atlases
             (4D images)
-    """
+    """  # noqa: E501
     bg_img, black_bg, bg_vmin, bg_vmax = _load_anat(bg_img, dim=dim,
                                                     black_bg=black_bg)
 
-    display = _plot_img_with_bg(img=roi_img, bg_img=bg_img,
-                                cut_coords=cut_coords,
-                                output_file=output_file,
-                                display_mode=display_mode,
-                                figure=figure, axes=axes, title=title,
-                                annotate=annotate,
-                                draw_cross=draw_cross,
-                                black_bg=black_bg,
-                                threshold=threshold,
-                                bg_vmin=bg_vmin, bg_vmax=bg_vmax,
-                                resampling_interpolation='nearest',
-                                alpha=alpha, cmap=cmap,
-                                vmin=vmin, vmax=vmax, **kwargs)
+    display = _plot_img_with_bg(
+        img=roi_img, bg_img=bg_img, cut_coords=cut_coords,
+        output_file=output_file, display_mode=display_mode,
+        figure=figure, axes=axes, title=title, annotate=annotate,
+        draw_cross=draw_cross, black_bg=black_bg,
+        threshold=threshold, bg_vmin=bg_vmin, bg_vmax=bg_vmax,
+        resampling_interpolation=resampling_interpolation,
+        alpha=alpha, cmap=cmap, vmin=vmin, vmax=vmax, **kwargs)
     return display
 
 
@@ -889,7 +896,8 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
                   figure=None, axes=None, title=None, threshold=1e-6,
                   annotate=True, draw_cross=True, black_bg='auto',
                   cmap=cm.cold_hot, symmetric_cbar="auto",
-                  dim='auto', vmax=None, **kwargs):
+                  dim='auto', vmax=None, resampling_interpolation='continuous',
+                  **kwargs):
     """ Plot cuts of an ROI/mask image (by default 3 cuts: Frontal, Axial, and
         Lateral)
 
@@ -963,6 +971,11 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
             can be used for a more pronounced effect. 0 means no dimming.
         vmax : float
             Upper bound for plotting, passed to matplotlib.pyplot.imshow
+        resampling_interpolation : str
+            Interpolation to use when resampling the image to the destination
+            space. Can be "continuous" (default) to use 3rd-order spline
+            interpolation, or "nearest" to use nearest-neighbor mapping.
+            "nearest" is faster but can be noisier in some cases.
 
         Notes
         -----
@@ -979,7 +992,7 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
         nilearn.plotting.plot_epi : To simply plot raw EPI images
         nilearn.plotting.plot_glass_brain : To plot maps in a glass brain
 
-    """
+    """  # noqa: E501
     # dim the background
     bg_img, black_bg, bg_vmin, bg_vmax = _load_anat(bg_img, dim=dim,
                                                     black_bg=black_bg)
@@ -992,18 +1005,14 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
         symmetric_cbar,
         kwargs)
 
-    display = _plot_img_with_bg(img=stat_map_img, bg_img=bg_img,
-                                cut_coords=cut_coords,
-                                output_file=output_file,
-                                display_mode=display_mode,
-                                figure=figure, axes=axes, title=title,
-                                annotate=annotate, draw_cross=draw_cross,
-                                black_bg=black_bg, threshold=threshold,
-                                bg_vmin=bg_vmin, bg_vmax=bg_vmax, cmap=cmap,
-                                vmin=vmin, vmax=vmax, colorbar=colorbar,
-                                cbar_vmin=cbar_vmin, cbar_vmax=cbar_vmax,
-                                resampling_interpolation='continuous',
-                                **kwargs)
+    display = _plot_img_with_bg(
+        img=stat_map_img, bg_img=bg_img, cut_coords=cut_coords,
+        output_file=output_file, display_mode=display_mode,
+        figure=figure, axes=axes, title=title, annotate=annotate,
+        draw_cross=draw_cross, black_bg=black_bg, threshold=threshold,
+        bg_vmin=bg_vmin, bg_vmax=bg_vmax, cmap=cmap, vmin=vmin, vmax=vmax,
+        colorbar=colorbar, cbar_vmin=cbar_vmin, cbar_vmax=cbar_vmax,
+        resampling_interpolation=resampling_interpolation, **kwargs)
 
     return display
 
@@ -1018,6 +1027,7 @@ def plot_glass_brain(stat_map_img,
                      vmin=None, vmax=None,
                      plot_abs=True,
                      symmetric_cbar="auto",
+                     resampling_interpolation='continuous',
                      **kwargs):
     """Plot 2d projections of an ROI/mask image (by default 3 projections:
         Frontal, Axial, and Lateral). The brain glass schematics
@@ -1086,6 +1096,11 @@ def plot_glass_brain(stat_map_img,
             or from vmin to vmax. Setting to 'auto' will select the latter if
             the range of the whole image is either positive or negative.
             Note: The colormap will always be set to range from -vmax to vmax.
+        resampling_interpolation : str
+            Interpolation to use when resampling the image to the destination
+            space. Can be "continuous" (default) to use 3rd-order spline
+            interpolation, or "nearest" to use nearest-neighbor mapping.
+            "nearest" is faster but can be noisier in some cases.
 
         Notes
         -----
@@ -1118,18 +1133,13 @@ def plot_glass_brain(stat_map_img,
         return functools.partial(get_projector(display_mode),
                                  alpha=alpha, plot_abs=plot_abs)
 
-    display = _plot_img_with_bg(img=stat_map_img,
-                                output_file=output_file,
-                                display_mode=display_mode,
-                                figure=figure, axes=axes, title=title,
-                                annotate=annotate,
-                                black_bg=black_bg, threshold=threshold,
-                                cmap=cmap, colorbar=colorbar,
-                                display_factory=display_factory,
-                                resampling_interpolation='continuous',
-                                vmin=vmin, vmax=vmax,
-                                cbar_vmin=cbar_vmin, cbar_vmax=cbar_vmax,
-                                **kwargs)
+    display = _plot_img_with_bg(
+        img=stat_map_img, output_file=output_file, display_mode=display_mode,
+        figure=figure, axes=axes, title=title, annotate=annotate,
+        black_bg=black_bg, threshold=threshold, cmap=cmap, colorbar=colorbar,
+        display_factory=display_factory, vmin=vmin, vmax=vmax,
+        cbar_vmin=cbar_vmin, cbar_vmax=cbar_vmax,
+        resampling_interpolation=resampling_interpolation, **kwargs)
 
     return display
 
