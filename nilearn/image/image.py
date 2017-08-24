@@ -616,7 +616,8 @@ def new_img_like(ref_niimg, data, affine=None, copy_header=False):
         affine = get_affine(ref_niimg)
     if data.dtype == bool:
         default_dtype = np.int8
-        if isinstance(ref_niimg, nibabel.freesurfer.mghformat.MGHImage):
+        if isinstance(ref_niimg, nibabel.freesurfer.mghformat.MGHImage) or \
+                isinstance(ref_niimg, nibabel.spm2analyze.Spm2AnalyzeImage):
             default_dtype = np.uint8
         data = as_ndarray(data, dtype=default_dtype)
     header = None
