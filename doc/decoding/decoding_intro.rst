@@ -8,6 +8,9 @@
     >>> session = np.ones_like(target)
     >>> n_samples = len(target)
 
+.. Remove doctest: +SKIP at LDA while dropping support for sklearn older than
+    versions 0.17
+
 .. _decoding_intro:
 
 =============================
