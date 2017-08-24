@@ -8,6 +8,9 @@
     >>> session = np.ones_like(target)
     >>> n_samples = len(target)
 
+.. Remove doctest: +SKIP at LDA while dropping support for sklearn older than
+    versions 0.17
+
 .. _decoding_intro:
 
 =============================
@@ -463,13 +466,17 @@ We can try Fisher's `Linear Discriminant Analysis (LDA)
 
 Import the module::
 
-    >>> from sklearn.lda import LDA
+    >>> from sklearn.discriminant_analysis import LinearDiscriminantAnalysis  # doctest: +SKIP
 
 Construct the new estimator object and use it in a pipeline::
 
     >>> from sklearn.pipeline import Pipeline
-    >>> lda = LDA()
-    >>> anova_lda = Pipeline([('anova', feature_selection), ('LDA', lda)])
+    >>> lda = LinearDiscriminantAnalysis()  # doctest: +SKIP
+    >>> anova_lda = Pipeline([('anova', feature_selection), ('LDA', lda)])  # doctest: +SKIP
+
+.. note::
+  Import Linear Discriminant Analysis method in "sklearn.lda.LDA" if you are using
+  scikit-learn older than version 0.17.
 
 and recompute the cross-validation score::
 
