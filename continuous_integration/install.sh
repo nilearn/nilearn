@@ -33,7 +33,7 @@ print_conda_requirements() {
     # if yes which version to install. For example:
     #   - for numpy, NUMPY_VERSION is used
     #   - for scikit-learn, SCIKIT_LEARN_VERSION is used
-    TO_INSTALL_ALWAYS="pip nose"
+    TO_INSTALL_ALWAYS="pip nose libgfortran=1.0=0 nomkl"
     REQUIREMENTS="$TO_INSTALL_ALWAYS"
     TO_INSTALL_MAYBE="python numpy scipy matplotlib scikit-learn pandas"
     for PACKAGE in $TO_INSTALL_MAYBE; do
@@ -107,7 +107,7 @@ elif [[ "$DISTRIB" == "conda" ]]; then
     # Install the latest available version of nilearn and patsy
     pip install nilearn
     pip install patsy
-  
+
 
 else
     echo "Unrecognized distribution ($DISTRIB); cannot setup travis environment."
