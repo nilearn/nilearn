@@ -55,6 +55,11 @@ def fetch_bids_langloc_dataset(data_dir=None, verbose=1):
     return os.path.join(data_dir, main_folder), sorted(file_list)
 
 
+def fetch_openneuro_dataset(data_dir=None, dataset='ds000030', subjects=[''],
+                            verbose=1):
+    pass
+
+
 def fetch_openfmri_dataset(dataset_name='ds000001', dataset_revision=None,
                            data_dir=None, verbose=1):
     """Download latest revision of specified bids dataset.
