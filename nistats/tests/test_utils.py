@@ -133,6 +133,12 @@ def create_fake_bids_dataset(base_dir='', n_sub=10, n_ses=2,
                              tasks=['localizer', 'main'],
                              n_runs=[1, 3], with_derivatives=True,
                              with_confounds=True):
+    """Returns a fake bids dataset directory with dummy files
+
+    In the case derivatives are included, they come with two spaces and
+    variants. Spaces are 'MNI' and 'T1w'. Variants are 'some' and 'other'.
+    Only space 'T1w' include both variants.
+    """
     bids_path = os.path.join(base_dir, 'bids_dataset')
     os.makedirs(bids_path)
     # Create surface bids dataset
@@ -150,8 +156,9 @@ def create_fake_bids_dataset(base_dir='', n_sub=10, n_ses=2,
             os.makedirs(func_path)
             for task, n_run in zip(tasks, n_runs):
                 for run in ['run-%02d' % label for label in range(1, n_run + 1)]:
-                    file_id = (subject + '_' + session + '_task-' + task +
-                               '_' + run)
+                    file_id = subject + '_' + session + '_task-' + task
+                    if n_run > 1:
+                        file_id += '_' + run
                     bold_path = os.path.join(func_path, file_id + '_bold.nii.gz')
                     write_fake_bold_img(bold_path, [vox, vox, vox, 100])
                     events_path = os.path.join(func_path, file_id +
@@ -167,14 +174,15 @@ def create_fake_bids_dataset(base_dir='', n_sub=10, n_ses=2,
         bids_path = os.path.join(base_dir, 'bids_dataset', 'derivatives')
         os.makedirs(bids_path)
         for subject in ['sub-%02d' % label for label in range(1, 11)]:
-            for session in ['ses-%02d' % label for label in range(1, 3)]:
+            for session in ['ses-%02d' % label for label in range(1, n_ses + 1)]:
                 subses_dir = os.path.join(bids_path, subject, session)
                 func_path = os.path.join(subses_dir, 'func')
                 os.makedirs(func_path)
                 for task, n_run in zip(tasks, n_runs):
                     for run in ['run-%02d' % label for label in range(1, n_run + 1)]:
-                        file_id = (subject + '_' + session + '_task-' + task +
-                                   '_' + run)
+                        file_id = subject + '_' + session + '_task-' + task
+                        if n_run > 1:
+                            file_id += '_' + run
                         preproc = file_id + '_bold_space-MNI_variant-some_preproc.nii.gz'
                         preproc_path = os.path.join(func_path, preproc)
                         write_fake_bold_img(preproc_path, [vox, vox, vox, 100])

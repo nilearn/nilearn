@@ -566,6 +566,7 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         return output
 
 
+
 def first_level_models_from_bids(
         dataset_path, task_label, space_label, img_filters=[],
         t_r=None, slice_time_ref=0., hrf_model='glover', drift_model='cosine',
@@ -732,7 +733,8 @@ def first_level_models_from_bids(
         if len(imgs) > 1:
             for img in imgs:
                 img_dict = parse_bids_filename(img)
-                if '_ses-' in img_dict['file_basename']:
+                if ('_ses-' in img_dict['file_basename'] and
+                        '_run-' in img_dict['file_basename']):
                     if (img_dict['ses'], img_dict['run']) in run_check_list:
                         raise ValueError(
                             'More than one nifti image found for the same run '
@@ -743,7 +745,19 @@ def first_level_models_from_bids(
                     else:
                         run_check_list.append((img_dict['ses'],
                                               img_dict['run']))
-                else:
+
+                elif '_ses-' in img_dict['file_basename']:
+                    if img_dict['ses'] in run_check_list:
+                        raise ValueError(
+                            'More than one nifti image found for the same ses '
+                            '%s, while no additional run specification present'
+                            '. Please verify that the preproc_variant and '
+                            'space_label labels were correctly specified.' %
+                            img_dict['ses'])
+                    else:
+                        run_check_list.append(img_dict['ses'])
+
+                elif '_run-' in img_dict['file_basename']:
                     if img_dict['run'] in run_check_list:
                         raise ValueError(
                             'More than one nifti image found for the same run '
@@ -788,7 +802,7 @@ def first_level_models_from_bids(
         confounds = get_bids_files(derivatives_path, modality_folder='func',
                                    file_tag='confounds', file_type='tsv',
                                    sub_label=sub_label, filters=filters)
-        print(len(confounds), len(imgs))
+
         if confounds:
             if len(confounds) != len(imgs):
                 raise ValueError('%d confounds.tsv files found for %d bold '
