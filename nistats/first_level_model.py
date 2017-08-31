@@ -699,8 +699,8 @@ def first_level_models_from_bids(
                      img_specs[0])
 
     # Infer subjects in dataset
-    sub_folders = glob.glob(os.path.join(derivatives_path, 'sub-*'))
-    sub_labels = [os.path.basename(s).split('-')[1] for s in sub_folders]
+    sub_folders = glob.glob(os.path.join(derivatives_path, 'sub-*/'))
+    sub_labels = [os.path.basename(s[:-1]).split('-')[1] for s in sub_folders]
     sub_labels = sorted(list(set(sub_labels)))
 
     # Build fit_kwargs dictionaries to pass to their respective models fit
@@ -776,28 +776,22 @@ def first_level_models_from_bids(
         for img_filter in img_filters:
             if img_filter[0] in ['acq', 'rec', 'run']:
                 filters.append(img_filter)
-        # Get events. If not found in derivatives check for original data.
-        # There might be no need to preprocess events to specify model, still
-        # throw a warning
-        for possible_path in [derivatives_path, dataset_path]:
-            events = get_bids_files(possible_path, modality_folder='func',
-                                    file_tag='events', file_type='tsv',
-                                    sub_label=sub_label, filters=filters)
-            if events:
-                if len(events) != len(imgs):
-                    raise ValueError('%d events.tsv files found for %d bold '
-                                     'files. Same number of event files as '
-                                     'the number of runs is expected' %
-                                     (len(events), len(imgs)))
-                events = [pd.read_csv(event, sep='\t', index_col=None)
-                          for event in events]
-                if possible_path == dataset_path:
-                    warn('events taken from directory containing raw data. '
-                         'Is it the case that there was no need to preprocess '
-                         'the events for the model?')
-                models_events.append(events)
-                break
-        if not events:
+
+        # Get events files
+        events = get_bids_files(dataset_path, modality_folder='func',
+                                file_tag='events', file_type='tsv',
+                                sub_label=sub_label, filters=filters)
+        if events:
+            if len(events) != len(imgs):
+                raise ValueError('%d events.tsv files found for %d bold '
+                                 'files. Same number of event files as '
+                                 'the number of runs is expected' %
+                                 (len(events), len(imgs)))
+            events = [pd.read_csv(event, sep='\t', index_col=None)
+                      for event in events]
+            models_events.append(events)
+        else:
+            import pdb; pdb.set_trace()  # breakpoint b528d9db //
             raise ValueError('No events.tsv files found')
 
         # Get confounds. If not found it will be assumed there are none.
