@@ -105,13 +105,13 @@ y_pred_ovo = svc_ovo.predict(X[session >= 10])
 
 plot_matrix(confusion_matrix(y_pred_ovo, y[session >= 10]),
             labels=unique_conditions,
-            title='Confusion matrix: One vs One', cmap='coolwarm')
+            title='Confusion matrix: One vs One', cmap='hot_r')
 
 svc_ova.fit(X[session < 10], y[session < 10])
 y_pred_ova = svc_ova.predict(X[session >= 10])
 
 plot_matrix(confusion_matrix(y_pred_ova, y[session >= 10]),
             labels=unique_conditions,
-            title='Confusion matrix: One vs All', cmap='coolwarm')
+            title='Confusion matrix: One vs All', cmap='hot_r')
 
 plt.show()
