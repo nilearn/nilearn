@@ -15,7 +15,6 @@ n_subjects = 4  # subjects to consider for group-sparse covariance (max: 40)
 
 def plot_matrices(cov, prec, title):
     """Plot covariance and precision matrices, for a given processing. """
-    import matplotlib.pyplot as plt
 
     prec = prec.copy()  # avoid side effects
 
@@ -26,13 +25,10 @@ def plot_matrices(cov, prec, title):
 
     # Display covariance matrix
     plotting.plot_matrix(cov, cmap=plotting.cm.bwr,
-                         vmin=-1, vmax=1, colorbar=True)
-    plt.title("%s / covariance" % title)
-
+                         vmin=-1, vmax=1, title="%s / covariance" % title)
     # Display precision matrix
     plotting.plot_matrix(cov, cmap=plotting.cm.bwr,
-                         vmin=-span, vmax=span, colorbar=True)
-    plt.title("%s / precision" % title)
+                         vmin=-span, vmax=span, title="%s / precision" % title)
 
 
 ##############################################################################

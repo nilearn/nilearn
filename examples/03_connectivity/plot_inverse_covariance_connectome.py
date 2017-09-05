@@ -65,7 +65,7 @@ from nilearn import plotting
 # The covariance can be found at estimator.covariance_
 plotting.plot_matrix(estimator.covariance_, labels=labels,
                      figure=(9, 7), vmax=1, vmin=-1,
-                    title='Covariance')
+                     title='Covariance')
 
 ##############################################################################
 # And now display the corresponding graph
