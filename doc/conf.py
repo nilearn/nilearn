@@ -290,6 +290,7 @@ extlinks = {
 
 sphinx_gallery_conf = {
     'doc_module'        : 'nilearn',
+    'backreferences_dir': os.path.join('modules', 'generated'),
     'reference_url'     : {
         'nilearn': None,
         'matplotlib': 'http://matplotlib.org',
