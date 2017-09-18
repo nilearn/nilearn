@@ -292,7 +292,7 @@ def resample_img(img, target_affine=None, target_shape=None,
         must also be given. (See notes)
 
     interpolation: str, optional
-        Can be 'continuous' (default) or 'nearest'. Indicates the resample
+        Can be 'continuous' (default), 'linear', or 'nearest'. Indicates the resample
         method.
 
     copy: bool, optional
@@ -375,10 +375,14 @@ def resample_img(img, target_affine=None, target_shape=None,
 
     if interpolation == 'continuous':
         interpolation_order = 3
+        
+    elif interpolation == 'linear':
+        interpolation_order = 1
+        
     elif interpolation == 'nearest':
         interpolation_order = 0
     else:
-        message = ("interpolation must be either 'continuous' "
+        message = ("interpolation must be either 'continuous', 'linear' "
                    "or 'nearest' but it was set to '{0}'").format(interpolation)
         raise ValueError(message)
 
