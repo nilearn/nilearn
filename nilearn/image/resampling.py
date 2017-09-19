@@ -374,7 +374,7 @@ def resample_img(img, target_affine=None, target_shape=None,
                          "Affine shape should be (4, 4) and not (3, 3)")
 
     if interpolation == 'continuous':
-        interpolation_order = 3     
+        interpolation_order = 3
     elif interpolation == 'linear':
         interpolation_order = 1
     elif interpolation == 'nearest':

@@ -7,6 +7,9 @@ Enhancements
     - New matrix plotting function, eg to display connectome matrices:
       :func:`nilearn.plotting.plot_matrix`
 
+    - :func:`nilearn.image.resample_img` now takes a linear resampling
+      option (implemented by Joe Necus)
+
 0.3.1
 =====
 
