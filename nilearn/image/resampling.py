@@ -292,7 +292,7 @@ def resample_img(img, target_affine=None, target_shape=None,
         must also be given. (See notes)
 
     interpolation: str, optional
-        Can be 'continuous' (default) or 'nearest'. Indicates the resample
+        Can be 'continuous' (default), 'linear', or 'nearest'. Indicates the resample
         method.
 
     copy: bool, optional
@@ -374,11 +374,13 @@ def resample_img(img, target_affine=None, target_shape=None,
                          "Affine shape should be (4, 4) and not (3, 3)")
 
     if interpolation == 'continuous':
-        interpolation_order = 3
+        interpolation_order = 3     
+    elif interpolation == 'linear':
+        interpolation_order = 1
     elif interpolation == 'nearest':
         interpolation_order = 0
     else:
-        message = ("interpolation must be either 'continuous' "
+        message = ("interpolation must be either 'continuous', 'linear' "
                    "or 'nearest' but it was set to '{0}'").format(interpolation)
         raise ValueError(message)
 
@@ -534,7 +536,7 @@ def resample_to_img(source_img, target_img,
         Reference image taken for resampling.
 
     interpolation: str, optional
-        Can be 'continuous' (default) or 'nearest'. Indicates the resample
+        Can be 'continuous' (default), 'linear', or 'nearest'. Indicates the resample
         method.
 
     copy: bool, optional
@@ -583,7 +585,7 @@ def reorder_img(img, resample=None):
             See http://nilearn.github.io/manipulating_images/input_output.html
             Image to reorder.
 
-        resample: None or string in {'continuous', 'nearest'}, optional
+        resample: None or string in {'continuous', 'linear', 'nearest'}, optional
             If resample is None (default), no resampling is performed, the
             axes are only permuted.
             Otherwise resampling is performed and 'resample' will

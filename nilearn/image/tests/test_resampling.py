@@ -92,14 +92,14 @@ def test_identity_resample():
     # Test with non native endian data
 
     # Test with big endian data ('>f8')
-    for interpolation in ['nearest', 'continuous']:
+    for interpolation in ['nearest', 'linear', 'continuous']:
         rot_img = resample_img(Nifti1Image(data.astype('>f8'), affine),
                                target_affine=affine.tolist(),
                                interpolation=interpolation)
         np.testing.assert_almost_equal(data, rot_img.get_data())
 
     # Test with little endian data ('<f8')
-    for interpolation in ['nearest', 'continuous']:
+    for interpolation in ['nearest', 'linear', 'continuous']:
         rot_img = resample_img(Nifti1Image(data.astype('<f8'), affine),
                                target_affine=affine.tolist(),
                                interpolation=interpolation)
