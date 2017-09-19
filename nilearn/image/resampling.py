@@ -538,7 +538,7 @@ def resample_to_img(source_img, target_img,
         Reference image taken for resampling.
 
     interpolation: str, optional
-        Can be 'continuous' (default) or 'nearest'. Indicates the resample
+        Can be 'continuous' (default), 'linear', or 'nearest'. Indicates the resample
         method.
 
     copy: bool, optional
@@ -587,7 +587,7 @@ def reorder_img(img, resample=None):
             See http://nilearn.github.io/manipulating_images/input_output.html
             Image to reorder.
 
-        resample: None or string in {'continuous', 'nearest'}, optional
+        resample: None or string in {'continuous', 'linear', 'nearest'}, optional
             If resample is None (default), no resampling is performed, the
             axes are only permuted.
             Otherwise resampling is performed and 'resample' will
