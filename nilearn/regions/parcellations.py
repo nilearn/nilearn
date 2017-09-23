@@ -260,17 +260,7 @@ class Parcellations(BaseDecomposition):
 
         if self.verbose:
             print("[Parcellations] Learning the data")
-        self._fit_method(data)
 
-        return self
-
-    def _fit_method(self, data):
-        """Helper function which applies clustering methods on the
-        masked data.
-
-        See the documentation of fit() for full details on returned
-        attributes.
-        """
         # we delay importing Ward or AgglomerativeClustering and same
         # time import plotting module before that.
 
@@ -316,6 +306,8 @@ class Parcellations(BaseDecomposition):
         # Avoid 0 label
         labels = labels + 1
         self.labels_img_ = self.masker_.inverse_transform(labels)
+
+        return self
 
     def _check_fitted(self):
         """Helper function to check whether fit is called or not.

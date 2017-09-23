@@ -19,11 +19,8 @@ into homogeneous regions from functional imaging data.
     <http://journal.frontiersin.org/article/10.3389/fnins.2014.00167/full>`_
     Frontiers in neuroscience 8.167 (2014): 13.
 
-Data loading
-============
-
-Resting-state data
--------------------
+Data loading: Resting-state data
+=================================
 
 .. currentmodule:: nilearn.datasets
 

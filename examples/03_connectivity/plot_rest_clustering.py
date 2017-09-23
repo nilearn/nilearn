@@ -17,6 +17,14 @@ task between controls and disease states.
 References
 ----------
 
+Which clustering method to use, an empirical comparison can be found in this
+paper
+
+    * Bertrand Thirion, Gael Varoquaux, Elvis Dohmatob, Jean-Baptiste Poline.
+      `Which fMRI clustering gives good brain parcellations ?
+      <https://doi.org/10.3389/fnins.2014.00167>`_ Frontiers in Neuroscience,
+      2014.
+
 This parcellation may be useful in a supervised learning, see for
 instance
 
@@ -25,14 +33,6 @@ instance
       for fMRI-based inference of brain states.
       <http://dx.doi.org/10.1016/j.patcog.2011.04.006>`_.
       Pattern Recognition, Elsevier, 2011.
-
-Which clustering method to use, an empirical comparison can be found in this
-paper
-
-    * Bertrand Thirion, Gael Varoquaux, Elvis Dohmatob, Jean-Baptiste Poline.
-      `Which fMRI clustering gives good brain parcellations ?
-      <https://doi.org/10.3389/fnins.2014.00167>`_ Frontiers in Neuroscience,
-      2014.
 
 The big picture discussion corresponding to this example can be found
 in the documentation section :ref:`parcellating_brain`.
@@ -163,13 +163,13 @@ plotting.plot_epi(index_img(fmri_compressed[0], 0),
 # class/functions can be used here as they are already imported above.
 
 # This object uses method='kmeans' for KMeans clustering with 6mm smoothing
-kmeans = Parcellations(method='kmeans', n_parcels=100,
-                       standardize=False, smoothing_fwhm=6.,
+kmeans = Parcellations(method='kmeans', n_parcels=50,
+                       standardize=False, smoothing_fwhm=12.,
                        memory='nilearn_cache', memory_level=1,
                        verbose=1)
 # Call fit on functional dataset: single subject (less samples)
 kmeans.fit(dataset.func)
-print("KMeans 2000 clusters: %.2fs" % (time.time() - start))
+print("KMeans 50 clusters: %.2fs" % (time.time() - start))
 
 # NOTE: Good parcellations can be build using KMeans with more subjects,
 # for instance more than 5 subjects. Follow pointed references for good
