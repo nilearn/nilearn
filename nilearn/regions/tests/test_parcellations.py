@@ -108,9 +108,12 @@ def test_parcellations_transform_single_nifti_image():
         # transform to signals
         signals = parcellator.transform(fmri_img)
         # Test if the signals extracted are of same shape as inputs
-        # Here, we take index 0 since we return list even for single
-        # subject
-        assert_equal(signals[0].shape, (fmri_img.shape[3], parcels))
+        # Here, we simply return numpy array for single subject input
+        assert_equal(signals.shape, (fmri_img.shape[3], parcels))
+
+        # Test for single subject but in a list.
+        signals = parcellator.transform([fmri_img])
+        assert_equal(signals.shape, (fmri_img.shape[3], parcels))
 
 
 def test_parcellations_transform_multi_nifti_images():
@@ -148,14 +151,16 @@ def test_check_parameters_transform():
     # Tests to check whether imgs, confounds returned are
     # list or not. Pre-check in parameters to work for list
     # of multi images and multi confounds
-    imgs, confounds = _check_parameters_transform(fmri_img, confounds)
+    imgs, confounds, single_subject = _check_parameters_transform(fmri_img,
+                                                                  confounds)
     assert_true(isinstance(imgs, (list, tuple)))
     assert_true(isinstance(confounds, (list, tuple)))
+    assert_true(single_subject, True)
 
     # multi images
     fmri_imgs = [fmri_img, fmri_img, fmri_img]
     confounds_list = [confounds, confounds, confounds]
-    imgs, confounds = _check_parameters_transform(fmri_imgs, confounds_list)
+    imgs, confounds, _ = _check_parameters_transform(fmri_imgs, confounds_list)
     assert_equal(imgs, fmri_imgs)
     assert_equal(confounds_list, confounds)
 
@@ -216,7 +221,7 @@ def test_fit_transform():
         assert_equal(signals[0].shape, (10, 5))
 
 
-def test_inverse_transform():
+def test_inverse_transform_single_nifti_image():
     data = np.ones((10, 11, 12, 10))
     data[6, 7, 8] = 2
     data[9, 10, 11] = 3
@@ -231,11 +236,19 @@ def test_inverse_transform():
         assert_true(parcellate.labels_img_ is not None)
         # Transform
         fmri_reduced = parcellate.transform(fmri_img)
-        assert_true(fmri_reduced, list)
+        assert_true(isinstance(fmri_reduced, np.ndarray))
         # Shape matching with (scans, regions)
-        assert_true(fmri_reduced[0].shape, (10, 5))
+        assert_true(fmri_reduced.shape, (10, 5))
         # Inverse transform
         fmri_compressed = parcellate.inverse_transform(fmri_reduced)
-        assert_true(isinstance(fmri_compressed, list))
+        # A single Nifti image for single subject input
+        assert_true(isinstance(fmri_compressed, nibabel.Nifti1Image))
         # returns shape of fmri_img
-        assert_true(fmri_compressed[0].shape, (10, 11, 12, 10))
+        assert_true(fmri_compressed.shape, (10, 11, 12, 10))
+
+        # fmri_reduced in a list
+        fmri_compressed = parcellate.inverse_transform([fmri_reduced])
+        # A single Nifti image for single subject input
+        assert_true(isinstance(fmri_compressed, nibabel.Nifti1Image))
+        # returns shape of fmri_img
+        assert_true(fmri_compressed.shape, (10, 11, 12, 10))

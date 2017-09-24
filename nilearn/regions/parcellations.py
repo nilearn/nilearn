@@ -42,6 +42,11 @@ def _check_parameters_transform(imgs, confounds):
     if not isinstance(imgs, (list, tuple)) or \
             isinstance(imgs, _basestring):
         imgs = [imgs, ]
+        single_subject = True
+    elif isinstance(imgs, (list, tuple)) and len(imgs) == 1:
+        single_subject = True
+    else:
+        single_subject = False
 
     if confounds is None and isinstance(imgs, (list, tuple)):
         confounds = [None] * len(imgs)
@@ -54,7 +59,7 @@ def _check_parameters_transform(imgs, confounds):
     if len(confounds) != len(imgs):
         raise ValueError("Number of confounds given does not match with "
                          "the given number of images.")
-    return imgs, confounds
+    return imgs, confounds, single_subject
 
 
 def _labels_masker_extraction(img, masker, confound):
@@ -333,13 +338,14 @@ class Parcellations(BaseDecomposition):
 
         Returns
         -------
-        region_signals: List of 2D numpy.ndarray
+        region_signals: List of or 2D numpy.ndarray
             Signals extracted for each label for each image.
             Example, for single image shape will be
             (number of scans, number of labels)
         """
         self._check_fitted()
-        imgs, confounds = _check_parameters_transform(imgs, confounds)
+        imgs, confounds, single_subject = _check_parameters_transform(
+            imgs, confounds)
 
         masker = NiftiLabelsMasker(self.labels_img_,
                                    mask_img=self.masker_.mask_img_,
@@ -359,7 +365,10 @@ class Parcellations(BaseDecomposition):
             (img, masker, confound)
             for img, confound in zip(imgs, confounds))
 
-        return region_signals
+        if single_subject:
+            return region_signals[0]
+        else:
+            return region_signals
 
     def fit_transform(self, imgs, confounds=None):
         """Fit the images to parcellations and then transform them.
@@ -381,7 +390,7 @@ class Parcellations(BaseDecomposition):
 
         Returns
         -------
-        region_signals: List of 2D numpy.ndarray
+        region_signals: List of or 2D numpy.ndarray
             Signals extracted for each label for each image.
             Example, for single image shape will be
             (number of scans, number of labels)
@@ -402,7 +411,7 @@ class Parcellations(BaseDecomposition):
 
         Returns
         -------
-        imgs : List of Nifti-like images
+        imgs : List of or Nifti-like image
             Brain images
         """
         from .signal_extraction import signals_to_img_labels
@@ -412,10 +421,18 @@ class Parcellations(BaseDecomposition):
         if not isinstance(signals, (list, tuple)) or\
                 isinstance(signals, np.ndarray):
             signals = [signals, ]
+            single_subject = True
+        elif isinstance(signals, (list, tuple)) and len(signals) == 1:
+            single_subject = True
+        else:
+            single_subject = False
 
         imgs = Parallel(n_jobs=self.n_jobs)(
             delayed(self._cache(signals_to_img_labels, func_memory_level=2))
             (each_signal, self.labels_img_, self.mask_img_)
             for each_signal in signals)
 
-        return imgs
+        if single_subject:
+            return imgs[0]
+        else:
+            return imgs

@@ -146,7 +146,7 @@ fmri_reduced = ward.transform(dataset.func)
 # parcels=2000.
 fmri_compressed = ward.inverse_transform(fmri_reduced)
 
-plotting.plot_epi(index_img(fmri_compressed[0], 0),
+plotting.plot_epi(index_img(fmri_compressed, 0),
                   cut_coords=cut_coords,
                   title='Ward compressed representation (2000 parcels)',
                   vmin=vmin, vmax=vmax, display_mode='xz')
