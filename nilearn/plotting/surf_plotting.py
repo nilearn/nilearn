@@ -6,13 +6,83 @@ Only matplotlib is required.
 # Import libraries
 import nibabel
 import numpy as np
+
+# These will be removed (see comment on _points_in_unit_ball)
+import joblib
+from ..datasets.utils import _get_dataset_dir
+import sklearn.cluster
+# / These will be removed (see comment on _points_in_unit_ball)
+
 import matplotlib.pyplot as plt
 
 from mpl_toolkits.mplot3d import Axes3D
 from nibabel import gifti
 
 from .._utils.compat import _basestring
+from .. import _utils
 from .img_plotting import _get_colorbar_and_data_ranges
+
+
+# Eventually, when this PR is ready, the sample locations inside the unit ball
+# will be hardcoded. For now we just compute them in a simple way (we will find
+# something better than the k-means hack) and cache the result.
+memory = joblib.Memory(_get_dataset_dir('joblib'), verbose=False)
+
+
+@memory.cache
+def _points_in_unit_ball(n_points=20, dim=3):
+    mc_cube = np.random.uniform(-1, 1, size=(5000, dim))
+    mc_ball = mc_cube[(mc_cube**2).sum(axis=1) <= 1.]
+    centroids, *_ = sklearn.cluster.k_means(mc_ball, n_clusters=n_points)
+    return centroids
+
+
+# Eventually will be replaced by nilearn.image.resampling.coord_transform, but
+# it only works for 3d images and 2d is useful for visu and debugging.
+def _transform_coord(coords, affine):
+    return affine.dot(np.vstack([coords.T, np.ones(coords.shape[0])]))[:-1].T
+
+
+def _vol_to_surf_ball_sampling(image,
+                               nodes,
+                               affine=None,
+                               ball_radius=3,
+                               n_points=20):
+    if affine is None:
+        affine = np.eye(nodes.shape[1] + 1)
+    offsets_world_space = _points_in_unit_ball(
+        dim=nodes.shape[1], n_points=n_points) * ball_radius
+    # later:
+    # offset_voxels = nilearn.image.resampling.coord_transform(
+    #     *offset_voxels.T, np.linalg.inv(affine))
+    mesh_voxel_space = _transform_coord(nodes, np.linalg.inv(affine))
+    linear_map = np.eye(affine.shape[0])
+    linear_map[:-1, :-1] = affine[:-1, :-1]
+    offsets_voxel_space = _transform_coord(offsets_world_space,
+                                           np.linalg.inv(linear_map))
+    sample_locations_voxel_space = (mesh_voxel_space[:, np.newaxis, :] +
+                                    offsets_voxel_space[np.newaxis, :])
+    sample_indices = np.asarray(
+        np.floor(sample_locations_voxel_space), dtype=int)
+    sample_slices = np.s_[[
+        ax for ax in np.rollaxis(sample_indices, -1)
+    ]]
+    samples = np.pad(
+        image, ball_radius, mode='constant',
+        constant_values=np.nan)[[s + ball_radius for s in sample_slices]]
+    texture = np.nanmean(samples, axis=1)
+    # sample_locations_voxel_space returned for debugging, will be dropped
+    return texture, sample_locations_voxel_space
+
+
+def volume_to_surface(image, mesh_nodes, ball_radius=3):
+    # TODO: 4d for texture time series
+    image = _utils.check_niimg_3d(image)
+    # TODO: check nodes inside image
+    texture, _ = _vol_to_surf_ball_sampling(image.get_data(), mesh_nodes,
+                                            _utils.compat.get_affine(image),
+                                            ball_radius=ball_radius)
+    return texture
 
 
 # function to figure out datatype and load data
