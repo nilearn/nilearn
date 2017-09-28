@@ -18,6 +18,7 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from nibabel import gifti
 
+import nilearn.image
 from .._utils.compat import _basestring
 from .. import _utils
 from .img_plotting import _get_colorbar_and_data_ranges
@@ -66,6 +67,7 @@ def _ball_sample_locations(nodes, affine, ball_radius=3, n_points=20):
 def _ball_sampling(images, nodes, affine=None, ball_radius=3, n_points=20):
     """In each image, average samples drawn from a ball around each node."""
     images = np.asarray(images)
+    nodes = np.asarray(nodes)
     sample_locations_voxel_space, offsets_voxel_space = _ball_sample_locations(
         nodes, affine, ball_radius=ball_radius, n_points=n_points)
     sample_indices = np.asarray(
@@ -75,10 +77,15 @@ def _ball_sampling(images, nodes, affine=None, ball_radius=3, n_points=20):
     sample_slices = [slice(None, None, None)] + np.s_[[
         ax + pad_size for ax in np.rollaxis(sample_indices, -1)
     ]]
-    samples = np.pad(
-        images, pad, mode='constant',
-        constant_values=np.nan)[sample_slices]
-    texture = np.nanmean(samples, axis=2)
+    try:
+        samples = np.pad(
+            images, pad, mode='constant',
+            constant_values=np.nan)[sample_slices]
+        texture = np.nanmean(samples, axis=2)
+        if not(np.isfinite(texture).all()):
+            raise IndexError()
+    except IndexError:
+        raise ValueError('Some nodes of the mesh are outside the image')
     return texture, sample_indices, sample_locations_voxel_space
 
 
@@ -87,12 +94,15 @@ def niimg_to_surf_data(image, mesh_nodes, ball_radius=3.):
 
     Parameters
     ----------
-    image: Nifti image, 3d or 4d.
-    mesh_nodes: array-like,shape n_nodes * 3
+
+    image : Nifti image, 3d or 4d.
+
+    mesh_nodes : array-like,shape n_nodes * 3
         The coordinates of the nodes of the mesh.
-    ball_radius: float, optional (default=3.).
-        The radius of the ball over which image intensities are averaged around
-        each node.
+
+    ball_radius : float, optional (default=3.).
+        The radius (in mm) of the ball over which image intensities are
+        averaged around each node.
 
     Returns
     -------
@@ -101,12 +111,12 @@ def niimg_to_surf_data(image, mesh_nodes, ball_radius=3.):
         containing one value for each mesh node.
         If image was a 4d image, a 2d array is returned, where each row
         corresponds to a mesh node.
+
     """
-    image = _utils.load_niimg(image)
+    image = nilearn.image.load_img(image)
     original_dimension = len(image.shape)
     image = _utils.check_niimg(image, atleast_4d=True)
     frames = np.rollaxis(image.get_data(), -1)
-    # TODO: check nodes inside image
     texture, indices, locations = _ball_sampling(
         frames,
         mesh_nodes,

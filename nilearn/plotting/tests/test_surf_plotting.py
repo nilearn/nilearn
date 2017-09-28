@@ -10,11 +10,17 @@ import matplotlib
 import numpy as np
 import nibabel as nb
 import matplotlib.pyplot as plt
+import sklearn.preprocessing
 
 from nibabel import gifti
 from numpy.testing import (assert_array_equal, assert_array_almost_equal,
                            assert_equal)
+from nose.tools import assert_true, assert_raises
 
+from nilearn import datasets
+import nilearn.image
+from nilearn.plotting import surf_plotting
+from nilearn.image.tests.test_resampling import rotation
 from nilearn._utils.testing import assert_raises_regex
 from nilearn.plotting.surf_plotting import (load_surf_data, load_surf_mesh,
                                             plot_surf, plot_surf_stat_map,
@@ -388,3 +394,32 @@ def test_plot_surf_roi_error():
                         'Invalid input for roi_map',
                         plot_surf_roi, mesh,
                         roi_map={'roi1': roi1, 'roi2': roi2})
+
+
+def test_ball_sampling():
+    img = np.eye(3)
+    img[-1, -1] = 7.5
+    nodes = [[5, 5], [15, 5], [25, 25]]
+    affine = 10 * np.eye(3)
+    affine[-1, -1] = 1
+    texture = surf_plotting._ball_sampling(
+        [img], nodes, affine=affine, ball_radius=1)
+    assert_array_equal(texture[0][0], [1., 0., 7.5])
+    assert_raises(ValueError, surf_plotting._ball_sampling, [img], nodes)
+
+
+def test_niimg_to_surf_data():
+    mni = datasets.load_mni152_template()
+    fsaverage = datasets.fetch_surf_fsaverage5()
+    nodes = surf_plotting.load_surf_mesh(fsaverage.pial_left)[0]
+    proj_1 = surf_plotting.niimg_to_surf_data(mni, nodes)
+    assert_true(proj_1.ndim == 1)
+    mni_rot = nilearn.image.resample_img(
+        mni, target_affine=rotation(np.pi / 3., np.pi / 4.))
+    proj_2 = surf_plotting.niimg_to_surf_data(mni_rot, nodes)
+    assert_true((sklearn.preprocessing.normalize([proj_1])[0] *
+                 sklearn.preprocessing.normalize([proj_2])[0]).sum() > .998)
+    mni_4d = nilearn.image.concat_imgs([mni, mni])
+    proj_4d = surf_plotting.niimg_to_surf_data(mni_4d, nodes)
+    assert_array_equal(proj_4d.shape, [10242, 2])
+    assert_array_almost_equal(proj_4d[:, 0], proj_1, 3)

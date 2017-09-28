@@ -5,7 +5,7 @@ import nilearn.datasets
 from nilearn.plotting import surf_plotting
 
 brainpedia = nilearn.datasets.fetch_neurovault_ids(image_ids=(32015,))
-image = nilearn.image.load_img(brainpedia.images[0])
+image = brainpedia.images[0]
 
 fsaverage = nilearn.datasets.fetch_surf_fsaverage5()
 pial_left = surf_plotting.load_surf_mesh(fsaverage.pial_left)[0]
