@@ -506,7 +506,7 @@ def resample_img(img, target_affine=None, target_shape=None,
 
     all_img = (slice(None), ) * 3
 
-    # Iter overr a set of 3D volumes, as the interpolation problem is
+    # Iterate over a set of 3D volumes, as the interpolation problem is
     # separable in the extra dimensions. This reduces the
     # computational cost
     for ind in np.ndindex(*other_shape):
