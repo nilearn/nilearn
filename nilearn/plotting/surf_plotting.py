@@ -33,7 +33,8 @@ memory = joblib.Memory(_get_dataset_dir('joblib'), verbose=False)
 def _points_in_unit_ball(n_points=20, dim=3):
     mc_cube = np.random.uniform(-1, 1, size=(5000, dim))
     mc_ball = mc_cube[(mc_cube**2).sum(axis=1) <= 1.]
-    centroids, *_ = sklearn.cluster.k_means(mc_ball, n_clusters=n_points)
+    centroids, assignments, _ = sklearn.cluster.k_means(
+        mc_ball, n_clusters=n_points)
     return centroids
 
 
@@ -106,9 +107,11 @@ def niimg_to_surf_data(image, mesh_nodes, ball_radius=3.):
     image = _utils.check_niimg(image, atleast_4d=True)
     frames = np.rollaxis(image.get_data(), -1)
     # TODO: check nodes inside image
-    texture, *_ = _ball_sampling(frames, mesh_nodes,
-                                 _utils.compat.get_affine(image),
-                                 ball_radius=ball_radius)
+    texture, indices, locations = _ball_sampling(
+        frames,
+        mesh_nodes,
+        _utils.compat.get_affine(image),
+        ball_radius=ball_radius)
     if original_dimension == 3:
         texture = texture[0]
     return texture.T
