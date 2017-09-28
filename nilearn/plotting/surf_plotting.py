@@ -8,7 +8,7 @@ import nibabel
 import numpy as np
 
 # These will be removed (see comment on _points_in_unit_ball)
-import joblib
+from sklearn.externals import joblib
 from ..datasets.utils import _get_dataset_dir
 import sklearn.cluster
 # / These will be removed (see comment on _points_in_unit_ball)
