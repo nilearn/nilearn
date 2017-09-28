@@ -43,11 +43,8 @@ def _transform_coord(coords, affine):
     return affine.dot(np.vstack([coords.T, np.ones(coords.shape[0])]))[:-1].T
 
 
-def _vol_to_surf_ball_sampling(image,
-                               nodes,
-                               affine=None,
-                               ball_radius=3,
-                               n_points=20):
+def _ball_sample_locations(nodes, affine, ball_radius=3, n_points=20):
+    """Get n_points regularly spaced inside a ball."""
     if affine is None:
         affine = np.eye(nodes.shape[1] + 1)
     offsets_world_space = _points_in_unit_ball(
@@ -62,27 +59,59 @@ def _vol_to_surf_ball_sampling(image,
                                            np.linalg.inv(linear_map))
     sample_locations_voxel_space = (mesh_voxel_space[:, np.newaxis, :] +
                                     offsets_voxel_space[np.newaxis, :])
+    return sample_locations_voxel_space, offsets_voxel_space
+
+
+def _ball_sampling(images, nodes, affine=None, ball_radius=3, n_points=20):
+    """In each image, average samples drawn from a ball around each node."""
+    images = np.asarray(images)
+    sample_locations_voxel_space, offsets_voxel_space = _ball_sample_locations(
+        nodes, affine, ball_radius=ball_radius, n_points=n_points)
     sample_indices = np.asarray(
         np.floor(sample_locations_voxel_space), dtype=int)
-    sample_slices = np.s_[[
-        ax for ax in np.rollaxis(sample_indices, -1)
+    pad_size = int(np.ceil(np.abs(offsets_voxel_space).max()))
+    pad = [(0, 0)] + [(pad_size, pad_size)] * nodes.shape[1]
+    sample_slices = [slice(None, None, None)] + np.s_[[
+        ax + pad_size for ax in np.rollaxis(sample_indices, -1)
     ]]
     samples = np.pad(
-        image, ball_radius, mode='constant',
-        constant_values=np.nan)[[s + ball_radius for s in sample_slices]]
-    texture = np.nanmean(samples, axis=1)
-    # sample_locations_voxel_space returned for debugging, will be dropped
-    return texture, sample_locations_voxel_space
+        images, pad, mode='constant',
+        constant_values=np.nan)[sample_slices]
+    texture = np.nanmean(samples, axis=2)
+    return texture, sample_indices, sample_locations_voxel_space
 
 
-def volume_to_surface(image, mesh_nodes, ball_radius=3):
-    # TODO: 4d for texture time series
-    image = _utils.check_niimg_3d(image)
+def niimg_to_surf_data(image, mesh_nodes, ball_radius=3.):
+    """Extract surface data from a Nifti image.
+
+    Parameters
+    ----------
+    image: Nifti image, 3d or 4d.
+    mesh_nodes: array-like,shape n_nodes * 3
+        The coordinates of the nodes of the mesh.
+    ball_radius: float, optional (default=3.).
+        The radius of the ball over which image intensities are averaged around
+        each node.
+
+    Returns
+    -------
+    texture: array-like, 1d or 2d.
+        If image was a 3d image (e.g a stat map), a 1d vector is returned,
+        containing one value for each mesh node.
+        If image was a 4d image, a 2d array is returned, where each row
+        corresponds to a mesh node.
+    """
+    image = _utils.load_niimg(image)
+    original_dimension = len(image.shape)
+    image = _utils.check_niimg(image, atleast_4d=True)
+    frames = np.rollaxis(image.get_data(), -1)
     # TODO: check nodes inside image
-    texture, _ = _vol_to_surf_ball_sampling(image.get_data(), mesh_nodes,
-                                            _utils.compat.get_affine(image),
-                                            ball_radius=ball_radius)
-    return texture
+    texture, *_ = _ball_sampling(frames, mesh_nodes,
+                                 _utils.compat.get_affine(image),
+                                 ball_radius=ball_radius)
+    if original_dimension == 3:
+        texture = texture[0]
+    return texture.T
 
 
 # function to figure out datatype and load data
