@@ -1,3 +1,9 @@
+"""
+Illustration of the volume to surface sampling scheme
+=====================================================
+
+"""
+
 import numpy as np
 import matplotlib.patches
 from matplotlib import pyplot as plt
