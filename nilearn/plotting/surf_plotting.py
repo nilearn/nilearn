@@ -95,7 +95,7 @@ def niimg_to_surf_data(image, mesh_nodes, ball_radius=3.):
     Parameters
     ----------
 
-    image : Nifti image, 3d or 4d.
+    image : niimg-like object, 3d or 4d.
 
     mesh_nodes : array-like,shape n_nodes * 3
         The coordinates of the nodes of the mesh.
