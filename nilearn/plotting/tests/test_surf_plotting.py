@@ -5,23 +5,24 @@ import tempfile
 
 from distutils.version import LooseVersion
 from nose import SkipTest
-
-import matplotlib
-import numpy as np
-import nibabel as nb
-import matplotlib.pyplot as plt
-import sklearn.preprocessing
-
-from nibabel import gifti
 from numpy.testing import (assert_array_equal, assert_array_almost_equal,
                            assert_equal)
 from nose.tools import assert_true, assert_raises
+from nilearn._utils.testing import assert_raises_regex
+
+import numpy as np
+import matplotlib
+import matplotlib.pyplot as plt
+import sklearn.preprocessing
+
+import nibabel as nb
+from nibabel import gifti
 
 from nilearn import datasets
 import nilearn.image
-from nilearn.plotting import surf_plotting
 from nilearn.image.tests.test_resampling import rotation
-from nilearn._utils.testing import assert_raises_regex
+
+from nilearn.plotting import surf_plotting
 from nilearn.plotting.surf_plotting import (load_surf_data, load_surf_mesh,
                                             plot_surf, plot_surf_stat_map,
                                             plot_surf_roi)
