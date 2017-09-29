@@ -108,7 +108,7 @@ else
     exit 1
 fi
 
-pip install psutil memory_profiler
+pip install psutil==5.0 memory_profiler
 
 if [[ "$COVERAGE" == "true" ]]; then
     pip install codecov
