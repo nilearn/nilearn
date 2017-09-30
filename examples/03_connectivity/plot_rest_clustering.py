@@ -157,23 +157,22 @@ plotting.plot_epi(index_img(fmri_compressed, 0),
 # Brain parcellations with KMeans Clustering
 # ------------------------------------------
 #
-# We use the same approach as demonstrated with building parcellations using
-# Ward clustering.
+# We use the same approach as with building parcellations using Ward
+# clustering. But, in the range of a small number of clusters,
+# it is most likely that we want to use standardization. Indeed with
+# standardization and smoothing, the clusters will form as regions.
 
 # class/functions can be used here as they are already imported above.
 
-# This object uses method='kmeans' for KMeans clustering with 6mm smoothing
+# This object uses method='kmeans' for KMeans clustering with 10mm smoothing
+# and standardization ON
 kmeans = Parcellations(method='kmeans', n_parcels=50,
-                       standardize=False, smoothing_fwhm=12.,
+                       standardize=True, smoothing_fwhm=10.,
                        memory='nilearn_cache', memory_level=1,
                        verbose=1)
 # Call fit on functional dataset: single subject (less samples)
 kmeans.fit(dataset.func)
 print("KMeans 50 clusters: %.2fs" % (time.time() - start))
-
-# NOTE: Good parcellations can be build using KMeans with more subjects,
-# for instance more than 5 subjects. Follow pointed references for good
-# arguments on using n_parcels and the amount of smoothing, etc.
 ###########################################################################
 # Visualize: Brain parcellations (KMeans)
 # ---------------------------------------
