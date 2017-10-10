@@ -949,6 +949,41 @@ def fetch_atlas_surf_destrieux(data_dir=None, url=None,
 
 
 def fetch_atlas_talairach(data_dir=None):
+    """Download the Talairach atlas.
+
+    Parameters
+    ----------
+    data_dir: string, optional (default=None)
+        Path of the data directory. Used to force data storage in a specified
+        location.
+
+    Returns
+    -------
+    sklearn.datasets.base.Bunch
+        Dictionary-like object, contains:
+        - maps: 3D Nifti image, values are integers corresponding to indices in
+          the list of labels.
+        - labels: list of tuples of strings. Each tuple contains five strings:
+          the hemisphere, the lobe, the gyrus, the tissue type and the Brodmann
+          area. The string '*' means 'undefined'. For example, the first index
+          in this list corresponds to the background and contains the tuple
+          ('*', '*', '*', '*', '*').
+        - description: a short description of the atlas and some references.
+
+    References
+    ----------
+    http://talairach.org/about.html#Labels
+
+    Lancaster JL, Woldorff MG, Parsons LM, Liotti M, Freitas CS, Rainey L,
+    Kochunov PV, Nickerson D, Mikiten SA, Fox PT, "Automated Talairach Atlas
+    labels for functional brain mapping". Human Brain Mapping 10:120-131, 2000.
+
+    Lancaster JL, Rainey LH, Summerlin JL, Freitas CS, Fox PT, Evans AC, Toga
+    AW, Mazziotta JC. Automated labeling of the human brain: A preliminary
+    report on the development and evaluation of a forward-transform method. Hum
+    Brain Mapp 5, 238-242, 1997.
+
+    """
     atlas_url = 'http://www.talairach.org/talairach.nii'
     data_dir = _get_dataset_dir(
         'talairach_atlas', data_dir=data_dir)
@@ -958,4 +993,5 @@ def fetch_atlas_talairach(data_dir=None):
     labels = atlas.header.extensions[0].get_content()
     labels = labels.strip().decode('utf-8').split('\n')
     labels = [tuple(l.split('.')) for l in labels]
-    return Bunch(maps=atlas, labels=labels)
+    description = _get_dataset_descr('talairach_atlas').decode('utf-8')
+    return Bunch(maps=atlas, labels=labels, description=description)

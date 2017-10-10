@@ -10,6 +10,9 @@ Enhancements
     - :func:`nilearn.image.resample_img` now takes a linear resampling
       option (implemented by Joe Necus)
 
+    - :func:`nilearn.datasets.fetch_atlas_talairach` to fetch the Talairach
+      atlas (http://talairach.org)
+
 0.3.1
 =====
 
