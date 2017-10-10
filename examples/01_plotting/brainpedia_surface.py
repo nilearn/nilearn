@@ -24,13 +24,12 @@ image = brainpedia.images[0]
 # -------------------
 
 fsaverage = nilearn.datasets.fetch_surf_fsaverage5()
-pial_left = surf_plotting.load_surf_mesh(fsaverage.pial_left)[0]
 
 ##############################################################################
 # Sample the 3D data around each node of the mesh
 # -----------------------------------------------
 
-texture = surf_plotting.niimg_to_surf_data(image, pial_left)
+texture = surf_plotting.niimg_to_surf_data(image, fsaverage.pial_left)
 
 
 ##############################################################################

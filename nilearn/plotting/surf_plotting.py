@@ -6,11 +6,13 @@ Only matplotlib is required.
 # Import libraries
 import nibabel
 import numpy as np
+from scipy import sparse
 
 # These will be removed (see comment on _points_in_unit_ball)
 from sklearn.externals import joblib
 from ..datasets.utils import _get_dataset_dir
 import sklearn.cluster
+import sklearn.preprocessing
 # / These will be removed (see comment on _points_in_unit_ball)
 
 import matplotlib.pyplot as plt
@@ -31,12 +33,34 @@ memory = joblib.Memory(_get_dataset_dir('joblib'), verbose=False)
 
 
 @memory.cache
-def _points_in_unit_ball(n_points=20, dim=3):
-    mc_cube = np.random.uniform(-1, 1, size=(5000, dim))
+def _uniform_ball_cloud(n_points=100, dim=3, n_monte_carlo=5000):
+    mc_cube = np.random.uniform(-1, 1, size=(n_monte_carlo, dim))
     mc_ball = mc_cube[(mc_cube**2).sum(axis=1) <= 1.]
     centroids, assignments, _ = sklearn.cluster.k_means(
         mc_ball, n_clusters=n_points)
     return centroids
+
+
+@memory.cache
+def _gaussian_cloud(n_points=100, dim=3, n_monte_carlo=5000,
+                    covariance=None, mean=None):
+    if covariance is None:
+        covariance = np.eye(dim)
+    if covariance.ndim == 1:
+        covariance = np.diag(covariance)
+    if mean is None:
+        mean = np.zeros(dim)
+    mc_gaussian = np.random.multivariate_normal(
+        mean, covariance, size=n_monte_carlo)
+    centroids, assignments, _ = sklearn.cluster.k_means(
+        mc_gaussian, n_clusters=n_points)
+    return centroids
+
+
+def _uniform_line(n_points=100, dim=3, top=1, bottom=-1):
+    points = np.zeros((n_points, dim))
+    points[:, 0] = np.linspace(top, bottom, n_points)
+    return points
 
 
 # Eventually will be replaced by nilearn.image.resampling.coord_transform, but
@@ -45,16 +69,42 @@ def _transform_coord(coords, affine):
     return affine.dot(np.vstack([coords.T, np.ones(coords.shape[0])]))[:-1].T
 
 
-def _ball_sample_locations(nodes, affine, ball_radius=3, n_points=20):
+def _face_normals(mesh):
+    vertices, faces = load_surf_mesh(mesh)
+    face_vertices = vertices[faces]
+    normals = np.cross(face_vertices[:, 1, :] - face_vertices[:, 0, :],
+                       face_vertices[:, 2, :] - face_vertices[:, 0, :])
+    normals = sklearn.preprocessing.normalize(normals)
+    return normals
+
+
+def _surrounding_faces(mesh):
+    vertices, faces = load_surf_mesh(mesh)
+    n_faces = faces.shape[0]
+    return sparse.coo_matrix((np.ones(3 * n_faces),
+                             (faces.ravel(),
+                             np.tile(np.arange(n_faces), (3, 1)).T.ravel())),
+                             (vertices.shape[0], n_faces)).tocsr()
+
+
+def _vertex_normals(mesh):
+    vertices, faces = load_surf_mesh(mesh)
+    vertex_faces = _surrounding_faces(mesh)
+    face_normals = _face_normals(mesh)
+    normals = vertex_faces.dot(face_normals)
+    return sklearn.preprocessing.normalize(normals)
+
+
+def _ball_sample_locations(vertices, affine, ball_radius=3, n_points=100):
     """Get n_points regularly spaced inside a ball."""
     if affine is None:
-        affine = np.eye(nodes.shape[1] + 1)
-    offsets_world_space = _points_in_unit_ball(
-        dim=nodes.shape[1], n_points=n_points) * ball_radius
+        affine = np.eye(vertices.shape[1] + 1)
+    offsets_world_space = _uniform_ball_cloud(
+        dim=vertices.shape[1], n_points=n_points) * ball_radius
     # later:
     # offset_voxels = nilearn.image.resampling.coord_transform(
     #     *offset_voxels.T, np.linalg.inv(affine))
-    mesh_voxel_space = _transform_coord(nodes, np.linalg.inv(affine))
+    mesh_voxel_space = _transform_coord(vertices, np.linalg.inv(affine))
     linear_map = np.eye(affine.shape[0])
     linear_map[:-1, :-1] = affine[:-1, :-1]
     offsets_voxel_space = _transform_coord(offsets_world_space,
@@ -64,16 +114,16 @@ def _ball_sample_locations(nodes, affine, ball_radius=3, n_points=20):
     return sample_locations_voxel_space, offsets_voxel_space
 
 
-def _ball_sampling(images, nodes, affine=None, ball_radius=3, n_points=20):
+def _ball_sampling(images, mesh, affine=None, ball_radius=3, n_points=100):
     """In each image, average samples drawn from a ball around each node."""
     images = np.asarray(images)
-    nodes = np.asarray(nodes)
+    vertices = np.asarray(mesh[0])
     sample_locations_voxel_space, offsets_voxel_space = _ball_sample_locations(
-        nodes, affine, ball_radius=ball_radius, n_points=n_points)
+        vertices, affine, ball_radius=ball_radius, n_points=n_points)
     sample_indices = np.asarray(
         np.floor(sample_locations_voxel_space), dtype=int)
     pad_size = int(np.ceil(np.abs(offsets_voxel_space).max()))
-    pad = [(0, 0)] + [(pad_size, pad_size)] * nodes.shape[1]
+    pad = [(0, 0)] + [(pad_size, pad_size)] * vertices.shape[1]
     sample_slices = [slice(None, None, None)] + np.s_[[
         ax + pad_size for ax in np.rollaxis(sample_indices, -1)
     ]]
@@ -85,11 +135,11 @@ def _ball_sampling(images, nodes, affine=None, ball_radius=3, n_points=20):
         if not(np.isfinite(texture).all()):
             raise IndexError()
     except IndexError:
-        raise ValueError('Some nodes of the mesh are outside the image')
+        raise ValueError('Some vertices of the mesh are outside the image')
     return texture, sample_indices, sample_locations_voxel_space
 
 
-def niimg_to_surf_data(image, mesh_nodes, ball_radius=3.):
+def niimg_to_surf_data(image, surf_mesh, ball_radius=3.):
     """Extract surface data from a Nifti image.
 
     Parameters
@@ -97,8 +147,13 @@ def niimg_to_surf_data(image, mesh_nodes, ball_radius=3.):
 
     image : niimg-like object, 3d or 4d.
 
-    mesh_nodes : array-like,shape n_nodes * 3
-        The coordinates of the nodes of the mesh.
+    surf_mesh : str or numpy.ndarray
+        Either a file containing surface mesh geometry (valid formats
+        are .gii or Freesurfer specific files such as .orig, .pial,
+        .sphere, .white, .inflated) or a list of two Numpy arrays,
+        the first containing the x-y-z coordinates of the mesh
+        vertices, the second containing the indices (into coords)
+        of the mesh faces.
 
     ball_radius : float, optional (default=3.).
         The radius (in mm) of the ball over which image intensities are
@@ -117,9 +172,10 @@ def niimg_to_surf_data(image, mesh_nodes, ball_radius=3.):
     original_dimension = len(image.shape)
     image = _utils.check_niimg(image, atleast_4d=True)
     frames = np.rollaxis(image.get_data(), -1)
+    mesh = load_surf_mesh(surf_mesh)
     texture, indices, locations = _ball_sampling(
         frames,
-        mesh_nodes,
+        mesh,
         _utils.compat.get_affine(image),
         ball_radius=ball_radius)
     if original_dimension == 3:

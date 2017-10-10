@@ -25,13 +25,14 @@ def _piecewise_const_image():
 def _random_mesh(image_shape, n_nodes=5):
     x = np.random.uniform(0, image_shape[0], size=(n_nodes, ))
     y = np.random.uniform(0, image_shape[1], size=(n_nodes, ))
-    return np.asarray([x, y]).T
+    return np.asarray([x, y]).T, None
 
 
 def show_sampling(ball_radius=10, n_nodes=5, n_points=7, link_points=True):
     image = _piecewise_const_image()
     images = [image, image > .5, image < .5, image < .8]
     mesh = _random_mesh(image.shape, n_nodes=n_nodes)
+    vertices = mesh[0]
     all_values, sample_points, _ = surf_plotting._ball_sampling(
         images, mesh, np.eye(3), n_points=n_points, ball_radius=ball_radius)
     fig, axes = plt.subplots(2, 2)
@@ -46,8 +47,8 @@ def show_sampling(ball_radius=10, n_nodes=5, n_points=7, link_points=True):
                 fill=False,
                 linestyle='dashed'))
         ax.scatter(
-            mesh[:, 1],
-            mesh[:, 0],
+            vertices[:, 1],
+            vertices[:, 0],
             c=values,
             s=300,
             cmap='gray',
@@ -55,7 +56,7 @@ def show_sampling(ball_radius=10, n_nodes=5, n_points=7, link_points=True):
             vmin=0,
             vmax=1,
             zorder=2)
-        for sp, mp in zip(sample_points, mesh):
+        for sp, mp in zip(sample_points, vertices):
             ax.scatter(sp[:, 1], sp[:, 0], marker='x', color='blue', zorder=3)
             if link_points:
                 for s in sp:
