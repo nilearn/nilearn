@@ -946,3 +946,16 @@ def fetch_atlas_surf_destrieux(data_dir=None, url=None,
 
     return Bunch(labels=annot_left[2],  map_left=annot_left[0],
                  map_right=annot_right[0], description=fdescr)
+
+
+def fetch_atlas_talairach(data_dir=None):
+    atlas_url = 'http://www.talairach.org/talairach.nii'
+    data_dir = _get_dataset_dir(
+        'talairach_atlas', data_dir=data_dir)
+    atlas = _fetch_files(
+        data_dir, [('talairach.nii', atlas_url, {})])[0]
+    atlas = check_niimg(atlas)
+    labels = atlas.header.extensions[0].get_content()
+    labels = labels.strip().decode('utf-8').split('\n')
+    labels = [tuple(l.split('.')) for l in labels]
+    return Bunch(maps=atlas, labels=labels)

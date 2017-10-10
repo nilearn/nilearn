@@ -445,3 +445,23 @@ def test_fetch_atlas_surf_destrieux(data_dir=tst.tmpdir, verbose=0):
     assert_equal(bunch.map_left.shape, (4, ))
     assert_equal(bunch.map_right.shape, (4, ))
     assert_not_equal(bunch.description, '')
+
+
+@with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
+def test_fetch_atlas_talairach(data_dir=tst.tmpdir):
+    extensions = nibabel.nifti1.Nifti1Extensions([
+        nibabel.nifti1.Nifti1Extension(
+            'afni', '*.background\nbrain.diagonal'.encode('utf-8'))
+    ])
+    fake = nibabel.Nifti1Image(
+        np.asarray([0, 1]).reshape(1, 2, 1),
+        np.eye(4),
+        nibabel.Nifti1Header(extensions=extensions))
+    os.makedirs(os.path.join(tst.tmpdir, 'talairach_atlas'))
+    fake.to_filename(
+        os.path.join(tst.tmpdir, 'talairach_atlas', 'talairach.nii'))
+    talairach = atlas.fetch_atlas_talairach(data_dir=tst.tmpdir)
+    assert_equal(talairach.labels,
+                 [('*', 'background'), ('brain', 'diagonal')])
+    assert_equal(type(talairach.labels[0][0]), type(u'background'))
+    assert_equal(talairach.maps.shape, (1, 2, 1))
