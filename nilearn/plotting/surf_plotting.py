@@ -3,7 +3,6 @@ Functions for surface visualization.
 Only matplotlib is required.
 """
 
-# Import libraries
 import nibabel
 import numpy as np
 from scipy import sparse
@@ -41,29 +40,7 @@ def _uniform_ball_cloud(n_points=100, dim=3, n_monte_carlo=5000):
     return centroids
 
 
-@memory.cache
-def _gaussian_cloud(n_points=100, dim=3, n_monte_carlo=5000,
-                    covariance=None, mean=None):
-    if covariance is None:
-        covariance = np.eye(dim)
-    if covariance.ndim == 1:
-        covariance = np.diag(covariance)
-    if mean is None:
-        mean = np.zeros(dim)
-    mc_gaussian = np.random.multivariate_normal(
-        mean, covariance, size=n_monte_carlo)
-    centroids, assignments, _ = sklearn.cluster.k_means(
-        mc_gaussian, n_clusters=n_points)
-    return centroids
-
-
-def _uniform_line(n_points=100, dim=3, top=1, bottom=-1):
-    points = np.zeros((n_points, dim))
-    points[:, 0] = np.linspace(top, bottom, n_points)
-    return points
-
-
-# Eventually will be replaced by nilearn.image.resampling.coord_transform, but
+# could be replaced by nilearn.image.resampling.coord_transform, but
 # it only works for 3d images and 2d is useful for visu and debugging.
 def _transform_coord(coords, affine):
     return affine.dot(np.vstack([coords.T, np.ones(coords.shape[0])]))[:-1].T
@@ -95,15 +72,13 @@ def _vertex_normals(mesh):
     return sklearn.preprocessing.normalize(normals)
 
 
-def _ball_sample_locations(vertices, affine, ball_radius=3, n_points=100):
+def _ball_sample_locations(mesh, affine, ball_radius=3, n_points=100):
     """Get n_points regularly spaced inside a ball."""
+    vertices, faces = mesh
     if affine is None:
         affine = np.eye(vertices.shape[1] + 1)
     offsets_world_space = _uniform_ball_cloud(
         dim=vertices.shape[1], n_points=n_points) * ball_radius
-    # later:
-    # offset_voxels = nilearn.image.resampling.coord_transform(
-    #     *offset_voxels.T, np.linalg.inv(affine))
     mesh_voxel_space = _transform_coord(vertices, np.linalg.inv(affine))
     linear_map = np.eye(affine.shape[0])
     linear_map[:-1, :-1] = affine[:-1, :-1]
@@ -111,21 +86,46 @@ def _ball_sample_locations(vertices, affine, ball_radius=3, n_points=100):
                                            np.linalg.inv(linear_map))
     sample_locations_voxel_space = (mesh_voxel_space[:, np.newaxis, :] +
                                     offsets_voxel_space[np.newaxis, :])
-    return sample_locations_voxel_space, offsets_voxel_space
+    sample_locations_voxel_space = np.rollaxis(
+        sample_locations_voxel_space, -1)
+    pad_size = int(np.ceil(np.abs(offsets_voxel_space).max()))
+    return sample_locations_voxel_space, pad_size
 
 
-def _ball_sampling(images, mesh, affine=None, ball_radius=3, n_points=100):
+def _line_sample_locations(
+        mesh, affine, segment_half_width=3., n_points=100, normals=None):
+    vertices, faces = mesh
+    if affine is None:
+        affine = np.eye(vertices.shape[1] + 1)
+    if normals is None:
+        normals = _vertex_normals(mesh)
+    offsets = np.linspace(-segment_half_width, segment_half_width, n_points)
+    sample_locations = vertices[
+        np.newaxis, :, :] + normals * offsets[:, np.newaxis, np.newaxis]
+    sample_locations_voxel_space = _transform_coord(
+        np.vstack(sample_locations),
+        np.linalg.inv(affine)).reshape(sample_locations.shape).T
+    pad_size = np.max(
+        1 / np.abs(np.linalg.eigvals(affine[:-1, :-1]))) * segment_half_width
+    pad_size = int(np.ceil(pad_size))
+    return sample_locations_voxel_space, pad_size
+
+
+def _sampling(images, mesh, affine=None, kind='line', radius=3, n_points=100):
     """In each image, average samples drawn from a ball around each node."""
+    vertices, faces = load_surf_mesh(mesh)
     images = np.asarray(images)
-    vertices = np.asarray(mesh[0])
-    sample_locations_voxel_space, offsets_voxel_space = _ball_sample_locations(
-        vertices, affine, ball_radius=ball_radius, n_points=n_points)
+    projector = {
+        'line': _line_sample_locations,
+        'ball': _ball_sample_locations
+    }[kind]
+    sample_locations_voxel_space, pad_size = projector(
+        mesh, affine, radius, n_points=n_points)
     sample_indices = np.asarray(
         np.floor(sample_locations_voxel_space), dtype=int)
-    pad_size = int(np.ceil(np.abs(offsets_voxel_space).max()))
     pad = [(0, 0)] + [(pad_size, pad_size)] * vertices.shape[1]
     sample_slices = [slice(None, None, None)] + np.s_[[
-        ax + pad_size for ax in np.rollaxis(sample_indices, -1)
+        ax + pad_size for ax in sample_indices
     ]]
     try:
         samples = np.pad(
@@ -173,11 +173,11 @@ def niimg_to_surf_data(image, surf_mesh, ball_radius=3.):
     image = _utils.check_niimg(image, atleast_4d=True)
     frames = np.rollaxis(image.get_data(), -1)
     mesh = load_surf_mesh(surf_mesh)
-    texture, indices, locations = _ball_sampling(
+    texture, indices, locations = _sampling(
         frames,
         mesh,
         _utils.compat.get_affine(image),
-        ball_radius=ball_radius)
+        radius=ball_radius)
     if original_dimension == 3:
         texture = texture[0]
     return texture.T
