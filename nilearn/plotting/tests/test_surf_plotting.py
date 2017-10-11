@@ -397,30 +397,34 @@ def test_plot_surf_roi_error():
                         roi_map={'roi1': roi1, 'roi2': roi2})
 
 
-def test_ball_sampling():
+def _ball_sampling():
     img = np.eye(3)
     img[-1, -1] = 7.5
     nodes = [[5, 5], [15, 5], [25, 25]]
+    mesh = nodes, None
     affine = 10 * np.eye(3)
     affine[-1, -1] = 1
-    texture = surf_plotting._ball_sampling(
-        [img], nodes, affine=affine, ball_radius=1)
+    texture = surf_plotting._sampling(
+        [img], mesh, affine=affine, radius=1)
     assert_array_equal(texture[0][0], [1., 0., 7.5])
-    assert_raises(ValueError, surf_plotting._ball_sampling, [img], nodes)
+    assert_raises(ValueError, surf_plotting._ball_sampling, [img], mesh)
 
 
 def test_niimg_to_surf_data():
     mni = datasets.load_mni152_template()
-    fsaverage = datasets.fetch_surf_fsaverage5()
-    nodes = surf_plotting.load_surf_mesh(fsaverage.pial_left)[0]
-    proj_1 = surf_plotting.niimg_to_surf_data(mni, nodes)
-    assert_true(proj_1.ndim == 1)
-    mni_rot = nilearn.image.resample_img(
-        mni, target_affine=rotation(np.pi / 3., np.pi / 4.))
-    proj_2 = surf_plotting.niimg_to_surf_data(mni_rot, nodes)
-    assert_true((sklearn.preprocessing.normalize([proj_1])[0] *
-                 sklearn.preprocessing.normalize([proj_2])[0]).sum() > .998)
-    mni_4d = nilearn.image.concat_imgs([mni, mni])
-    proj_4d = surf_plotting.niimg_to_surf_data(mni_4d, nodes)
-    assert_array_equal(proj_4d.shape, [10242, 2])
-    assert_array_almost_equal(proj_4d[:, 0], proj_1, 3)
+    fsaverage = datasets.fetch_surf_fsaverage5().pial_left
+    for kind in ['ball', 'line']:
+        proj_1 = surf_plotting.niimg_to_surf_data(
+            mni, fsaverage, kind=kind, interpolation='linear')
+        assert_true(proj_1.ndim == 1)
+        mni_rot = nilearn.image.resample_img(
+            mni, target_affine=rotation(np.pi / 3., np.pi / 4.))
+        proj_2 = surf_plotting.niimg_to_surf_data(
+            mni_rot, fsaverage, kind=kind, interpolation='linear')
+        assert_true((sklearn.preprocessing.normalize([proj_1])[0] *
+                    sklearn.preprocessing.normalize([proj_2])[0]).sum() > .998)
+        mni_4d = nilearn.image.concat_imgs([mni, mni])
+        proj_4d = surf_plotting.niimg_to_surf_data(mni_4d, fsaverage, kind=kind,
+                                                   interpolation='linear')
+        assert_array_equal(proj_4d.shape, [10242, 2])
+        assert_array_almost_equal(proj_4d[:, 0], proj_1, 3)

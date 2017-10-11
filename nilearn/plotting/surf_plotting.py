@@ -5,7 +5,7 @@ Only matplotlib is required.
 
 import nibabel
 import numpy as np
-from scipy import sparse
+from scipy import sparse, interpolate
 
 # These will be removed (see comment on _points_in_unit_ball)
 from sklearn.externals import joblib
@@ -86,10 +86,7 @@ def _ball_sample_locations(mesh, affine, ball_radius=3, n_points=100):
                                            np.linalg.inv(linear_map))
     sample_locations_voxel_space = (mesh_voxel_space[:, np.newaxis, :] +
                                     offsets_voxel_space[np.newaxis, :])
-    sample_locations_voxel_space = np.rollaxis(
-        sample_locations_voxel_space, -1)
-    pad_size = int(np.ceil(np.abs(offsets_voxel_space).max()))
-    return sample_locations_voxel_space, pad_size
+    return sample_locations_voxel_space
 
 
 def _line_sample_locations(
@@ -102,44 +99,49 @@ def _line_sample_locations(
     offsets = np.linspace(-segment_half_width, segment_half_width, n_points)
     sample_locations = vertices[
         np.newaxis, :, :] + normals * offsets[:, np.newaxis, np.newaxis]
+    sample_locations = np.rollaxis(sample_locations, 1)
     sample_locations_voxel_space = _transform_coord(
         np.vstack(sample_locations),
-        np.linalg.inv(affine)).reshape(sample_locations.shape).T
-    pad_size = np.max(
-        1 / np.abs(np.linalg.eigvals(affine[:-1, :-1]))) * segment_half_width
-    pad_size = int(np.ceil(pad_size))
-    return sample_locations_voxel_space, pad_size
+        np.linalg.inv(affine)).reshape(sample_locations.shape)
+    return sample_locations_voxel_space
 
 
-def _sampling(images, mesh, affine=None, kind='line', radius=3, n_points=100):
+def _sampling(images, mesh,
+              affine=None, kind='ball', interpolation='nearest',
+              radius=3, n_points=50):
     """In each image, average samples drawn from a ball around each node."""
-    vertices, faces = load_surf_mesh(mesh)
+    vertices, faces = mesh
     images = np.asarray(images)
+    n_images = images.shape[0]
     projector = {
         'line': _line_sample_locations,
         'ball': _ball_sample_locations
     }[kind]
-    sample_locations_voxel_space, pad_size = projector(
+    sample_locations = projector(
         mesh, affine, radius, n_points=n_points)
-    sample_indices = np.asarray(
-        np.floor(sample_locations_voxel_space), dtype=int)
-    pad = [(0, 0)] + [(pad_size, pad_size)] * vertices.shape[1]
-    sample_slices = [slice(None, None, None)] + np.s_[[
-        ax + pad_size for ax in sample_indices
-    ]]
-    try:
-        samples = np.pad(
-            images, pad, mode='constant',
-            constant_values=np.nan)[sample_slices]
-        texture = np.nanmean(samples, axis=2)
-        if not(np.isfinite(texture).all()):
-            raise IndexError()
-    except IndexError:
-        raise ValueError('Some vertices of the mesh are outside the image')
-    return texture, sample_indices, sample_locations_voxel_space
+    n_vertices, n_points, img_dim  = sample_locations.shape
+    if n_images == 1:
+        images = images[0]
+    grid = [np.arange(size) for size in images.shape]
+    interpolator = interpolate.RegularGridInterpolator(
+        grid, images, bounds_error=False, method=interpolation)
+    interp_locations = np.vstack(sample_locations)
+    if n_images > 1:
+        interp_locations = np.tile(interp_locations, (n_images, 1))
+        image_indices = (np.ones((n_vertices * n_points, n_images)) *
+                         np.arange(n_images)).T.ravel()
+        interp_locations = np.hstack(
+            [image_indices[:, np.newaxis], interp_locations])
+    samples = interpolator(interp_locations)
+    samples = samples.reshape((n_images, n_vertices, n_points))
+    texture = np.nanmean(samples, axis=2)
+    if not np.isfinite(texture).all():
+        raise ValueError('Some mesh vertices are outside the image')
+    return texture, sample_locations
 
 
-def niimg_to_surf_data(image, surf_mesh, ball_radius=3.):
+def niimg_to_surf_data(image, surf_mesh,
+                       radius=3., kind='ball', interpolation='nearest'):
     """Extract surface data from a Nifti image.
 
     Parameters
@@ -173,11 +175,8 @@ def niimg_to_surf_data(image, surf_mesh, ball_radius=3.):
     image = _utils.check_niimg(image, atleast_4d=True)
     frames = np.rollaxis(image.get_data(), -1)
     mesh = load_surf_mesh(surf_mesh)
-    texture, indices, locations = _sampling(
-        frames,
-        mesh,
-        _utils.compat.get_affine(image),
-        radius=ball_radius)
+    texture, locations = _sampling(
+        frames, mesh, _utils.compat.get_affine(image), radius=radius)
     if original_dimension == 3:
         texture = texture[0]
     return texture.T

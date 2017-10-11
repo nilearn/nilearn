@@ -33,8 +33,9 @@ def show_sampling(ball_radius=10, n_nodes=5, n_points=7, link_points=True):
     images = [image, image > .5, image < .5, image < .8]
     mesh = _random_mesh(image.shape, n_nodes=n_nodes)
     vertices = mesh[0]
-    all_values, sample_points, _ = surf_plotting._ball_sampling(
-        images, mesh, np.eye(3), n_points=n_points, ball_radius=ball_radius)
+    all_values, sample_points = surf_plotting._sampling(
+        images, mesh, np.eye(3), n_points=n_points,
+        radius=ball_radius, kind='ball')
     fig, axes = plt.subplots(2, 2)
     axes = axes.ravel()
     for image, values, ax in zip(images, all_values, axes):
