@@ -36,7 +36,7 @@ matrix:
     # Most recent versions
     - env: DISTRIB="conda" PYTHON_VERSION="3.5"
            NUMPY_VERSION="*" SCIPY_VERSION="*"
-           SCIKIT_LEARN_VERSION="*" MATPLOTLIB_VERSION="*" COVERAGE="true"
+           SCIKIT_LEARN_VERSION="*" MATPLOTLIB_VERSION="2.0.2" COVERAGE="true"
     # FLAKE8 linting on diff wrt common ancestor with upstream/master
     # Note: the python value is only there to trigger allow_failures
     - python: 2.7

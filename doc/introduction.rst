@@ -460,4 +460,4 @@ Finding help
 
     * For machine-learning and scikit-learn questions, expertise can be
       found on the scikit-learn mailing list:
-      https://lists.sourceforge.net/lists/listinfo/scikit-learn-general
+      https://mail.python.org/mailman/listinfo/scikit-learn
