@@ -948,7 +948,7 @@ def fetch_atlas_surf_destrieux(data_dir=None, url=None,
                  map_right=annot_right[0], description=fdescr)
 
 
-def fetch_atlas_talairach(data_dir=None):
+def fetch_atlas_talairach(data_dir=None, resume=True, verbose=1):
     """Download the Talairach atlas.
 
     .. versionadded:: 0.3.2
@@ -958,6 +958,12 @@ def fetch_atlas_talairach(data_dir=None):
     data_dir: str, optional (default=None)
         Path of the data directory. Used to force data storage in a specified
         location.
+
+    resume: bool
+        whether to resumed download of a partly-downloaded file.
+
+    verbose: int
+        verbosity level (0 means no message).
 
     Returns
     -------
@@ -990,7 +996,8 @@ def fetch_atlas_talairach(data_dir=None):
     data_dir = _get_dataset_dir(
         'talairach_atlas', data_dir=data_dir)
     atlas = _fetch_files(
-        data_dir, [('talairach.nii', atlas_url, {})])[0]
+        data_dir, [('talairach.nii', atlas_url, {})],
+        resume=resume, verbose=verbose)[0]
     atlas = check_niimg(atlas)
     header = get_header(atlas)
     labels = header.extensions[0].get_content()
