@@ -990,7 +990,6 @@ def fetch_atlas_talairach(data_dir=None, resume=True, verbose=1):
     AW, Mazziotta JC. Automated labeling of the human brain: A preliminary
     report on the development and evaluation of a forward-transform method. Hum
     Brain Mapp 5, 238-242, 1997.`
-
     """
     atlas_url = 'http://www.talairach.org/talairach.nii'
     data_dir = _get_dataset_dir(
