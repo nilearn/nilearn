@@ -951,6 +951,8 @@ def fetch_atlas_surf_destrieux(data_dir=None, url=None,
 def fetch_atlas_talairach(data_dir=None):
     """Download the Talairach atlas.
 
+    .. versionadded:: 0.3.2
+
     Parameters
     ----------
     data_dir: str, optional (default=None)
