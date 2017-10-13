@@ -11,7 +11,7 @@ from sklearn.datasets.base import Bunch
 
 from .utils import _get_dataset_dir, _fetch_files, _get_dataset_descr
 from .._utils import check_niimg
-from .._utils.compat import _basestring, get_affine
+from .._utils.compat import _basestring, get_affine, get_header
 from ..image import new_img_like
 
 
@@ -953,7 +953,7 @@ def fetch_atlas_talairach(data_dir=None):
 
     Parameters
     ----------
-    data_dir: string, optional (default=None)
+    data_dir: str, optional (default=None)
         Path of the data directory. Used to force data storage in a specified
         location.
 
@@ -990,7 +990,8 @@ def fetch_atlas_talairach(data_dir=None):
     atlas = _fetch_files(
         data_dir, [('talairach.nii', atlas_url, {})])[0]
     atlas = check_niimg(atlas)
-    labels = atlas.header.extensions[0].get_content()
+    header = get_header(atlas)
+    labels = header.extensions[0].get_content()
     labels = labels.strip().decode('utf-8').split('\n')
     labels = [tuple(l.split('.')) for l in labels]
     description = _get_dataset_descr('talairach_atlas').decode('utf-8')
