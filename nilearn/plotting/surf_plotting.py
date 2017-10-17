@@ -176,7 +176,8 @@ def niimg_to_surf_data(image, surf_mesh,
     frames = np.rollaxis(image.get_data(), -1)
     mesh = load_surf_mesh(surf_mesh)
     texture, locations = _sampling(
-        frames, mesh, _utils.compat.get_affine(image), radius=radius)
+        frames, mesh, _utils.compat.get_affine(image),
+        radius=radius, kind=kind, interpolation=interpolation)
     if original_dimension == 3:
         texture = texture[0]
     return texture.T
