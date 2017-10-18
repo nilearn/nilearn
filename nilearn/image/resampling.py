@@ -92,9 +92,9 @@ def coord_transform(x, y, z, affine):
 
         Parameters
         ----------
-        x : number or ndarray
+        x : number or ndarray (any shape)
             The x coordinates in the input space
-        y : number or ndarray
+        y : number or ndarray (same shape as x)
             The y coordinates in the input space
         z : number or ndarray
             The z coordinates in the input space
@@ -103,17 +103,31 @@ def coord_transform(x, y, z, affine):
 
         Returns
         -------
-        x : number or ndarray
+        x : number or ndarray (same shape as input)
             The x coordinates in the output space
-        y : number or ndarray
+        y : number or ndarra (same shape as input)y
             The y coordinates in the output space
-        z : number or ndarray
+        z : number or ndarra (same shape as input)y
             The z coordinates in the output space
 
         Warning: The x, y and z have their Talairach ordering, not 3D
         numy image ordering.
+
+    Examples
+    --------
+    Transform data from coordinates to brain space. The "affine" matrix
+    can be found as the ".affine" attribute of a nifti image::
+
+        >>> from nilearn import datasets, image
+        >>> nimg = datasets.load_mni152_template()
+        >>> # Find the MNI coordinates of the voxel (10, 10, 10)
+        >>> image.coord_transform(50, 50, 50, nimg.affine)
+        (array(-10.0), array(-26.0), array(28.0))
+
     """
     squeeze = (not hasattr(x, '__iter__'))
+    x = np.asanyarray(x)
+    shape = x.shape
     coords = np.c_[np.atleast_1d(x).flat,
                    np.atleast_1d(y).flat,
                    np.atleast_1d(z).flat,
@@ -121,7 +135,7 @@ def coord_transform(x, y, z, affine):
     x, y, z, _ = np.dot(affine, coords)
     if squeeze:
         return x.squeeze(), y.squeeze(), z.squeeze()
-    return x, y, z
+    return np.reshape(x, shape), np.reshape(y, shape), np.reshape(z, shape)
 
 
 def get_bounds(shape, affine):
