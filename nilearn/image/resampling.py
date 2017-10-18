@@ -7,6 +7,7 @@ See http://nilearn.github.io/manipulating_images/input_output.html
 
 import warnings
 from distutils.version import LooseVersion
+import numbers
 
 import numpy as np
 import scipy
@@ -105,9 +106,9 @@ def coord_transform(x, y, z, affine):
         -------
         x : number or ndarray (same shape as input)
             The x coordinates in the output space
-        y : number or ndarra (same shape as input)y
+        y : number or ndarray (same shape as input)
             The y coordinates in the output space
-        z : number or ndarra (same shape as input)y
+        z : number or ndarray (same shape as input)
             The z coordinates in the output space
 
         Warning: The x, y and z have their Talairach ordering, not 3D
@@ -123,12 +124,13 @@ def coord_transform(x, y, z, affine):
         >>> nimg = datasets.load_mni152_template()
         >>> # Find the MNI coordinates of the voxel (10, 10, 10)
         >>> image.coord_transform(50, 50, 50, nimg.get_affine())
-        (array(-10.0), array(-26.0), array(28.0))
+        (-10.0, -26.0, 28.0)
 
     """
     # XXX: when we drop nibabel 2.1, change ".get_affine()" to ".affine"
     # above
     squeeze = (not hasattr(x, '__iter__'))
+    return_number = isinstance(x, numbers.Number)
     x = np.asanyarray(x)
     shape = x.shape
     coords = np.c_[np.atleast_1d(x).flat,
@@ -136,6 +138,8 @@ def coord_transform(x, y, z, affine):
                    np.atleast_1d(z).flat,
                    np.ones_like(np.atleast_1d(z).flat)].T
     x, y, z, _ = np.dot(affine, coords)
+    if return_number:
+        return x.item(), y.item(), z.item()
     if squeeze:
         return x.squeeze(), y.squeeze(), z.squeeze()
     return np.reshape(x, shape), np.reshape(y, shape), np.reshape(z, shape)
