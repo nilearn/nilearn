@@ -116,15 +116,18 @@ def coord_transform(x, y, z, affine):
     Examples
     --------
     Transform data from coordinates to brain space. The "affine" matrix
-    can be found as the ".affine" attribute of a nifti image::
+    can be found as the ".affine" attribute of a nifti image, or using
+    the "get_affine()" method for old installations::
 
         >>> from nilearn import datasets, image
         >>> nimg = datasets.load_mni152_template()
         >>> # Find the MNI coordinates of the voxel (10, 10, 10)
-        >>> image.coord_transform(50, 50, 50, nimg.affine)
+        >>> image.coord_transform(50, 50, 50, nimg.get_affine())
         (array(-10.0), array(-26.0), array(28.0))
 
     """
+    # XXX: when we drop nibabel 2.1, change ".get_affine()" to ".affine"
+    # above
     squeeze = (not hasattr(x, '__iter__'))
     x = np.asanyarray(x)
     shape = x.shape
