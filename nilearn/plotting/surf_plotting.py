@@ -76,8 +76,6 @@ def _vertex_outer_normals(mesh):
 def _ball_sample_locations(mesh, affine, ball_radius=3, n_points=100):
     """Get n_points regularly spaced inside a ball."""
     vertices, faces = mesh
-    if affine is None:
-        affine = np.eye(vertices.shape[1] + 1)
     offsets_world_space = _uniform_ball_cloud(
         dim=vertices.shape[1], n_points=n_points) * ball_radius
     mesh_voxel_space = _transform_coord(vertices, np.linalg.inv(affine))
@@ -93,8 +91,6 @@ def _ball_sample_locations(mesh, affine, ball_radius=3, n_points=100):
 def _line_sample_locations(
         mesh, affine, segment_half_width=3., n_points=100, normals=None):
     vertices, faces = mesh
-    if affine is None:
-        affine = np.eye(vertices.shape[1] + 1)
     if normals is None:
         normals = _vertex_outer_normals(mesh)
     offsets = np.linspace(-segment_half_width, segment_half_width, n_points)
@@ -108,7 +104,7 @@ def _line_sample_locations(
 
 
 def _sampling(images, mesh,
-              affine=None, kind='ball', interpolation='nearest',
+              affine, kind='ball', interpolation='nearest',
               radius=3, n_points=50):
     """In each image, average samples drawn from a ball around each node."""
     vertices, faces = mesh
