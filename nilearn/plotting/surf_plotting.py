@@ -89,10 +89,9 @@ def _ball_sample_locations(mesh, affine, ball_radius=3, n_points=100):
 
 
 def _line_sample_locations(
-        mesh, affine, segment_half_width=3., n_points=10, normals=None):
+        mesh, affine, segment_half_width=3., n_points=10):
     vertices, faces = mesh
-    if normals is None:
-        normals = _vertex_outer_normals(mesh)
+    normals = _vertex_outer_normals(mesh)
     offsets = np.linspace(-segment_half_width, segment_half_width, n_points)
     sample_locations = vertices[
         np.newaxis, :, :] + normals * offsets[:, np.newaxis, np.newaxis]
