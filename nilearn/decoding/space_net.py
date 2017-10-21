@@ -26,7 +26,7 @@ try:
     from sklearn.utils import atleast2d_or_csr
 except ImportError: # sklearn 0.15
     from sklearn.utils import check_array as atleast2d_or_csr
-from sklearn.linear_model.base import LinearModel, center_data
+from sklearn.linear_model.base import LinearModel
 from sklearn.feature_selection import (SelectPercentile, f_regression,
                                        f_classif)
 from sklearn.externals.joblib import Memory, Parallel, delayed
@@ -35,7 +35,7 @@ from sklearn.metrics import accuracy_score
 from ..input_data.masker_validation import check_embedded_nifti_masker
 from .._utils.param_validation import _adjust_screening_percentile
 from .._utils.fixes import check_X_y
-from .._utils.fixes import check_cv
+from .._utils.fixes import check_cv, center_data
 from .._utils.compat import _basestring
 from .._utils.cache_mixin import CacheMixin
 from .objective_functions import _unmask
