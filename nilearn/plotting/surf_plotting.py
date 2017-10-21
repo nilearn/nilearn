@@ -124,7 +124,8 @@ def _sampling(images, mesh,
         images = images[0]
     grid = [np.arange(size) for size in images.shape]
     interpolator = interpolate.RegularGridInterpolator(
-        grid, images, bounds_error=False, method=interpolation)
+        grid, images,
+        bounds_error=False, method=interpolation, fill_value=None)
     interp_locations = np.vstack(sample_locations)
     if n_images > 1:
         interp_locations = np.tile(interp_locations, (n_images, 1))
@@ -134,9 +135,7 @@ def _sampling(images, mesh,
             [image_indices[:, np.newaxis], interp_locations])
     samples = interpolator(interp_locations)
     samples = samples.reshape((n_images, n_vertices, n_points))
-    texture = np.nanmean(samples, axis=2)
-    if not np.isfinite(texture).all():
-        raise ValueError('Some mesh vertices are outside the image')
+    texture = np.mean(samples, axis=2)
     return texture, sample_locations
 
 

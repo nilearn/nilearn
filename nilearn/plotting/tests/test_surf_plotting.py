@@ -7,13 +7,12 @@ from distutils.version import LooseVersion
 from nose import SkipTest
 from numpy.testing import (assert_array_equal, assert_array_almost_equal,
                            assert_equal)
-from nose.tools import assert_true, assert_raises
+from nose.tools import assert_true
 from nilearn._utils.testing import assert_raises_regex
 
 import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
-import sklearn.preprocessing
 
 import nibabel as nb
 from nibabel import gifti
@@ -397,17 +396,16 @@ def test_plot_surf_roi_error():
                         roi_map={'roi1': roi1, 'roi2': roi2})
 
 
-def _ball_sampling():
-    img = np.eye(3)
-    img[-1, -1] = 7.5
-    nodes = [[5, 5], [15, 5], [25, 25]]
-    mesh = nodes, None
+def test_sampling():
+    img = np.ones((3, 3))
+    img[1:] = 7.5
+    nodes = [[2, 2], [2, 15], [25, 25]]
+    mesh = np.asarray(nodes), None
     affine = 10 * np.eye(3)
     affine[-1, -1] = 1
     texture = surf_plotting._sampling(
         [img], mesh, affine=affine, radius=1)
-    assert_array_equal(texture[0][0], [1., 0., 7.5])
-    assert_raises(ValueError, surf_plotting._ball_sampling, [img], mesh)
+    assert_array_equal(texture[0][0], [1., 1., 7.5])
 
 
 def test_niimg_to_surf_data():
@@ -421,10 +419,11 @@ def test_niimg_to_surf_data():
             mni, target_affine=rotation(np.pi / 3., np.pi / 4.))
         proj_2 = surf_plotting.niimg_to_surf_data(
             mni_rot, fsaverage, kind=kind, interpolation='linear')
-        assert_true((sklearn.preprocessing.normalize([proj_1])[0] *
-                    sklearn.preprocessing.normalize([proj_2])[0]).sum() > .998)
+        # The projection values for the rotated image should be very close
+        # to the projection for the original image
+        assert_true((np.abs(proj_1 - proj_2) / np.abs(proj_1)).mean() < .01)
         mni_4d = nilearn.image.concat_imgs([mni, mni])
-        proj_4d = surf_plotting.niimg_to_surf_data(mni_4d, fsaverage, kind=kind,
-                                                   interpolation='linear')
+        proj_4d = surf_plotting.niimg_to_surf_data(
+            mni_4d, fsaverage, kind=kind, interpolation='linear')
         assert_array_equal(proj_4d.shape, [10242, 2])
         assert_array_almost_equal(proj_4d[:, 0], proj_1, 3)
