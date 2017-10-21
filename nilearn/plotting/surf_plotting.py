@@ -46,9 +46,10 @@ def _transform_coord(coords, affine):
     return affine.dot(np.vstack([coords.T, np.ones(coords.shape[0])]))[:-1].T
 
 
-def _face_normals(mesh):
+def _face_outer_normals(mesh):
     vertices, faces = load_surf_mesh(mesh)
     face_vertices = vertices[faces]
+    # The right-hand rule gives the direction of the outer normal
     normals = np.cross(face_vertices[:, 1, :] - face_vertices[:, 0, :],
                        face_vertices[:, 2, :] - face_vertices[:, 0, :])
     normals = sklearn.preprocessing.normalize(normals)
@@ -64,10 +65,10 @@ def _surrounding_faces(mesh):
                              (vertices.shape[0], n_faces)).tocsr()
 
 
-def _vertex_normals(mesh):
+def _vertex_outer_normals(mesh):
     vertices, faces = load_surf_mesh(mesh)
     vertex_faces = _surrounding_faces(mesh)
-    face_normals = _face_normals(mesh)
+    face_normals = _face_outer_normals(mesh)
     normals = vertex_faces.dot(face_normals)
     return sklearn.preprocessing.normalize(normals)
 
@@ -95,7 +96,7 @@ def _line_sample_locations(
     if affine is None:
         affine = np.eye(vertices.shape[1] + 1)
     if normals is None:
-        normals = _vertex_normals(mesh)
+        normals = _vertex_outer_normals(mesh)
     offsets = np.linspace(-segment_half_width, segment_half_width, n_points)
     sample_locations = vertices[
         np.newaxis, :, :] + normals * offsets[:, np.newaxis, np.newaxis]
