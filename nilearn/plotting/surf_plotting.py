@@ -89,7 +89,7 @@ def _ball_sample_locations(mesh, affine, ball_radius=3, n_points=100):
 
 
 def _line_sample_locations(
-        mesh, affine, segment_half_width=3., n_points=100, normals=None):
+        mesh, affine, segment_half_width=3., n_points=10, normals=None):
     vertices, faces = mesh
     if normals is None:
         normals = _vertex_outer_normals(mesh)
@@ -105,7 +105,7 @@ def _line_sample_locations(
 
 def _sampling(images, mesh,
               affine, kind='ball', interpolation='nearest',
-              radius=3, n_points=50):
+              radius=3, n_points=None):
     """In each image, average samples drawn from a ball around each node."""
     vertices, faces = mesh
     images = np.asarray(images)
@@ -114,8 +114,11 @@ def _sampling(images, mesh,
         'line': _line_sample_locations,
         'ball': _ball_sample_locations
     }[kind]
+    # let the projector choose the default for n_points
+    # (for example a ball probably needs more than a line)
+    loc_kwargs = ({} if n_points is None else {'n_points': n_points})
     sample_locations = projector(
-        mesh, affine, radius, n_points=n_points)
+        mesh, affine, radius, **loc_kwargs)
     n_vertices, n_points, img_dim  = sample_locations.shape
     if n_images == 1:
         images = images[0]
