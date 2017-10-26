@@ -42,6 +42,8 @@ examples, matplotlib >= 1.3.1 is required.
 
 If you want to run the tests, you need nose >= 1.2.1 and coverage >= 3.6.
 
+If you want to download openneuro datasets Boto3 >= 1.0.0 is required
+
 
 Install
 =======

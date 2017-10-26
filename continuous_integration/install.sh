@@ -104,9 +104,12 @@ elif [[ "$DISTRIB" == "conda" ]]; then
     if [ -n "$NIBABEL_VERSION" ]; then
         pip install nibabel=="$NIBABEL_VERSION"
     fi
-    # Install the latest available version of nilearn and patsy
+    # Install the latest available version of nilearn
     pip install nilearn
+    # Install the latest available version of patsy
     pip install patsy
+    # Install the latest available version of boto3
+    pip install boto3
 
 
 else
