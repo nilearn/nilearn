@@ -61,7 +61,7 @@ def fetch_bids_langloc_dataset(data_dir=None, verbose=1):
 def fetch_openneuro_dataset(data_dir=None, dataset_version='ds000030_R1.0.4',
                             n_subjects=1, inclusion_filters=[],
                             exclusion_filters=[], verbose=1):
-    """Download language localizer example bids dataset.
+    """Download openneuro bids dataset.
 
     Parameters
     ----------
@@ -81,6 +81,8 @@ def fetch_openneuro_dataset(data_dir=None, dataset_version='ds000030_R1.0.4',
         Multiple filters work on top of each other.
         Like an "and" logical operator, creating a more restrictive query.
         Inclusion and exclusion filters apply together.
+        For example the regex string '.*task-rest.*' would keep only urls
+        that contain the 'task-rest' string.
 
     exclusion_filters: list of str, optional
         List of regex strings that will be used to filter the url list.
@@ -88,6 +90,8 @@ def fetch_openneuro_dataset(data_dir=None, dataset_version='ds000030_R1.0.4',
         Multiple filters work on top of each other.
         Like an "and" logical operator, creating a more restrictive query.
         Inclusion and exclusion filters apply together.
+        For example the regex string '.*task-rest.*' would discard all urls
+        that contain the 'task-rest' string.
 
     verbose: int, optional
         verbosity level (0 means no message).
@@ -105,6 +109,7 @@ def fetch_openneuro_dataset(data_dir=None, dataset_version='ds000030_R1.0.4',
     data_dir = _get_dataset_dir(data_prefix, data_dir=data_dir,
                                 verbose=verbose)
 
+    # First we download the url list from the uncompressed dataset version
     url_file = os.path.join(data_dir, 'urls.json')
     urls = []
     if not os.path.exists(url_file):
@@ -118,6 +123,7 @@ def fetch_openneuro_dataset(data_dir=None, dataset_version='ds000030_R1.0.4',
         bucket = resource.Bucket('openneuro')
 
         for obj in bucket.objects.filter(Prefix=data_prefix):
+            # get url of files (keys of directories end with '/')
             if obj.key[-1] != '/':
                 urls.append(
                     get_url(bucket.meta.client.meta.endpoint_url,
@@ -129,13 +135,14 @@ def fetch_openneuro_dataset(data_dir=None, dataset_version='ds000030_R1.0.4',
         with open(url_file, 'r') as json_file:
             urls = json.load(json_file)
 
-    # filter urls
+    # We apply filters to the urls
     for exclusion in exclusion_filters:
         urls = [url for url in urls if not re.match(exclusion, url)]
     for inclusion in inclusion_filters:
         urls = [url for url in urls if re.match(inclusion, url)]
 
     # subject selection filter
+    # from the url list we infer all available subjects like 'sub-xxx/'
     subject_regex = 'sub-[a-z|A-Z|0-9]*[_./]'
 
     def infer_subjects(urls):
@@ -145,7 +152,9 @@ def fetch_openneuro_dataset(data_dir=None, dataset_version='ds000030_R1.0.4',
                 subjects.add(re.search(subject_regex, url).group(0)[:-1])
         return sorted(subjects)
 
+    # We get a list of subjects (for the moment the first n subjects)
     selected_subjects = set(infer_subjects(urls)[:n_subjects])
+    # We exclude urls of subjects not selected
     urls = [url for url in urls if 'sub-' not in url or
             re.search(subject_regex, url).group(0)[:-1] in selected_subjects]
 

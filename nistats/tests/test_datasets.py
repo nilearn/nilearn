@@ -51,13 +51,52 @@ def test_fetch_openneuro_dataset():
     data_dir = _get_dataset_dir(data_prefix, data_dir=tst.tmpdir,
                                 verbose=1)
     url_file = os.path.join(data_dir, 'urls.json')
-    json.dump([data_prefix + '/sub-xxx.html'], open(url_file, 'w'))
+    # Prepare url files for subject and filter tests
+    file_list = [data_prefix + '/stuff.html',
+                 data_prefix + '/sub-xxx.html',
+                 data_prefix + '/sub-yyy.html',
+                 data_prefix + '/sub-xxx/ses-01_task-rest.txt',
+                 data_prefix + '/sub-xxx/ses-01_task-other.txt',
+                 data_prefix + '/sub-xxx/ses-02_task-rest.txt',
+                 data_prefix + '/sub-xxx/ses-02_task-other.txt',
+                 data_prefix + '/sub-yyy/ses-01.txt',
+                 data_prefix + '/sub-yyy/ses-02.txt']
+    json.dump(file_list, open(url_file, 'w'))
 
+    # Only 1 subject and not subject specific files get downloaded
     datadir, dl_files = datasets.fetch_openneuro_dataset(
         tst.tmpdir, dataset_version)
-
     assert_true(isinstance(datadir, _basestring))
     assert_true(isinstance(dl_files, list))
+    assert_true(len(dl_files) == 6)
+    assert_true(datadir + '/sub-yyy.html' not in dl_files)
+
+    # 2 subjects and not subject specific files get downloaded
+    datadir, dl_files = datasets.fetch_openneuro_dataset(
+        tst.tmpdir, dataset_version, n_subjects=2)
+    assert_true(len(dl_files) == 9)
+    assert_true(datadir + '/sub-yyy.html' in dl_files)
+
+    # test inclusive filters. Only files with task-rest
+    datadir, dl_files = datasets.fetch_openneuro_dataset(
+        tst.tmpdir, dataset_version, n_subjects=2,
+        inclusion_filters=['.*task-rest.*'])
+    assert_true(len(dl_files) == 2)
+    assert_true(datadir + '/stuff.html' not in dl_files)
+
+    # test exclusive filters. only files without ses-01
+    datadir, dl_files = datasets.fetch_openneuro_dataset(
+        tst.tmpdir, dataset_version, n_subjects=2,
+        exclusion_filters=['.*ses-01.*'])
+    assert_true(len(dl_files) == 6)
+    assert_true(datadir + '/stuff.html' in dl_files)
+
+    # test filter combination. only files with task-rest and without ses-01
+    datadir, dl_files = datasets.fetch_openneuro_dataset(
+        tst.tmpdir, dataset_version, n_subjects=2,
+        inclusion_filters=['.*task-rest.*'], exclusion_filters=['.*ses-01.*'])
+    assert_true(len(dl_files) == 1)
+    assert_true(datadir + '/sub-xxx/ses-02_task-rest.txt' in dl_files)
 
 
 @with_setup(setup_mock, teardown_mock)
