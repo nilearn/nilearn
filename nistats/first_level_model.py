@@ -742,8 +742,9 @@ def first_level_models_from_bids(
                         raise ValueError(
                             'More than one nifti image found for the same run '
                             '%s and session %s. Please verify that the '
-                            'preproc_variant and space_label labels were '
-                            'correctly specified.' %
+                            'preproc_variant and space_label labels '
+                            'corresponding to the BIDS spec '
+                            'were correctly specified.' %
                             (img_dict['run'], img_dict['ses']))
                     else:
                         run_check_list.append((img_dict['ses'],
@@ -755,7 +756,9 @@ def first_level_models_from_bids(
                             'More than one nifti image found for the same ses '
                             '%s, while no additional run specification present'
                             '. Please verify that the preproc_variant and '
-                            'space_label labels were correctly specified.' %
+                            'space_label labels '
+                            'corresponding to the BIDS spec '
+                            'were correctly specified.' %
                             img_dict['ses'])
                     else:
                         run_check_list.append(img_dict['ses'])
@@ -765,7 +768,9 @@ def first_level_models_from_bids(
                         raise ValueError(
                             'More than one nifti image found for the same run '
                             '%s. Please verify that the preproc_variant and '
-                            'space_label labels were correctly specified.' %
+                            'space_label labels '
+                            'corresponding to the BIDS spec '
+                            'were correctly specified.' %
                             img_dict['run'])
                     else:
                         run_check_list.append(img_dict['run'])
@@ -791,7 +796,6 @@ def first_level_models_from_bids(
                       for event in events]
             models_events.append(events)
         else:
-            import pdb; pdb.set_trace()  # breakpoint b528d9db //
             raise ValueError('No events.tsv files found')
 
         # Get confounds. If not found it will be assumed there are none.
