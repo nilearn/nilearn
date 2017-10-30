@@ -185,9 +185,9 @@ def test_region_extractor_fit_and_transform():
     assert_not_equal(extract_ratio.regions_img_, '')
     assert_true(extract_ratio.regions_img_.shape[-1] >= 9)
 
-    # smoke test with permuted axes
+    # smoke test with zeros on the diagonal of the affine
     affine = np.eye(4)
-    affine[[0, 1]] = affine[[1, 0]]
+    affine[[0, 1]] = affine[[1, 0]]  # permutes first and second lines
     maps, mask_img = generate_maps((40, 40, 40), n_regions=n_regions,
                                    affine=affine)
 
