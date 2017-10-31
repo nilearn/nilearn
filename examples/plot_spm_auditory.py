@@ -78,7 +78,6 @@ plot_anat(subject_data.anat)
 # Next, we concatenate all the 3D EPI image into a single 4D image:
 
 from nilearn.image import concat_imgs
-
 fmri_img = concat_imgs(subject_data.func)
 
 ################################################################################
