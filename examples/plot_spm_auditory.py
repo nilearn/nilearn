@@ -52,52 +52,43 @@ To run this example, you must launch IPython via ``ipython
 ################################################################################
 # Retrieving the data
 # -------------------
-# 
+#
 # .. note:: In this tutorial, we load the data using a data downloading function.
 #           To input your own data, you will need to pass a list of paths to your own files.
- 
 
 from nistats.datasets import fetch_spm_auditory
 subject_data = fetch_spm_auditory()
 
 
 ################################################################################
-# We can list the filenames of the images and display them:
+# We can list the filenames of the functional images
+print(subject_data.func)
 
-subject_data.func
-from nilearn.plotting import plot_stat_map, plot_anat, plot_img, show
-
+################################################################################
+# Display the first functional image:
+from nilearn.plotting import plot_stat_map, plot_anat, plot_img
 plot_img(subject_data.func[0])
+
+################################################################################
+# Display the subject's anatomical image:
 plot_anat(subject_data.anat)
-show()
-
-################################################################################
-# .. figure:: ../_images/sphx_glr_plot_spm_auditory_001.png
-#    :width: 80%
-#    :align: left
-
-################################################################################
-# .. figure:: ../_images/sphx_glr_plot_spm_auditory_002.png
-#    :width: 80%
-#    :align: left
 
 
 ################################################################################
 # Next, we concatenate all the 3D EPI image into a single 4D image:
 
-import nibabel
-from nilearn.image import mean_img
+from nilearn.image import concat_img
 
-fmri_img = nibabel.concat_images(subject_data.func)
-fmri_img = nibabel.Nifti1Image(fmri_img.get_data(), fmri_img.affine)
+fmri_img = concat_img(subject_data.func)
 
 ################################################################################
 # And we average all the EPI images in order to create a background
 # image that will be used to display the activations:
-  
-mean_img = mean_img(fmri_img)
 
-###################################################################################
+from nilearn import image
+mean_img = image.mean_img(fmri_img)
+
+################################################################################
 # Specifying the experimental paradigm
 # ------------------------------------
 #
@@ -124,30 +115,9 @@ import pandas as pd
 events = pd.DataFrame({'onset': onset, 'duration': duration, 'trial_type': conditions})
 
 ################################################################################
-# You can inspect the ``events`` object:
-   
-events
+# The ``events`` object contains the information for the design:
+print(events)
 
-"""
-::
-  duration  onset trial_type
-  0       42.0    0.0       rest
-  1       42.0   42.0     active
-  2       42.0   84.0       rest
-  3       42.0  126.0     active
-  4       42.0  168.0       rest
-  5       42.0  210.0     active
-  6       42.0  252.0       rest
-  7       42.0  294.0     active
-  8       42.0  336.0       rest
-  9       42.0  378.0     active
-  10      42.0  420.0       rest
-  11      42.0  462.0     active
-  12      42.0  504.0       rest
-  13      42.0  546.0     active
-  14      42.0  588.0       rest
-  15      42.0  630.0     active
-"""
 
 ################################################################################
 # Performing the GLM analysis
@@ -157,7 +127,7 @@ events
 # provided by the ``events`` object. The design matrix contains
 # regressors of interest as well as regressors of non-interest
 # modeling temporal drifts:
-  
+
 frame_times = np.linspace(0, (n_scans - 1) * tr, n_scans)
 drift_model = 'Cosine'
 period_cut = 4. * epoch_duration
@@ -167,7 +137,7 @@ hrf_model = 'glover + derivative'
 # It is now time to create a ``FirstLevelModel`` object and fit it to the 4D dataset:
 
 from nistats.first_level_model import FirstLevelModel
-    
+
 fmri_glm = FirstLevelModel(tr, slice_time_ref, noise_model='ar1',
                            standardize=False, hrf_model=hrf_model,
                            drift_model=drift_model, period_cut=period_cut)
@@ -180,12 +150,6 @@ fmri_glm = fmri_glm.fit(fmri_img, events)
 from nistats.design_matrix import plot_design_matrix
 design_matrix = fmri_glm.design_matrices_[0]
 plot_design_matrix(design_matrix)
-show()
-
-################################################################################
-# .. figure:: ../_images/sphx_glr_plot_spm_auditory_003.png
-#    :width: 80%
-#    :align: left
 
 
 ################################################################################
@@ -198,11 +162,6 @@ plt.xlabel('scan')
 plt.title('Expected Auditory Response')
 plt.show()
 
-################################################################################
-# .. figure:: ../_images/sphx_glr_plot_spm_auditory_004.png
-#    :width: 80%
-#    :align: left
-
 
 ################################################################################
 # Detecting voxels with significant effects
@@ -210,12 +169,12 @@ plt.show()
 #
 # To access the estimated coefficients (Betas of the GLM model), we
 # created constrasts with a single '1' in each of the columns:
-  
+
 contrast_matrix = np.eye(design_matrix.shape[1])
 contrasts = dict([(column, contrast_matrix[i])
                   for i, column in enumerate(design_matrix.columns)])
 
-""" 
+"""
 contrasts::
 
   {
@@ -236,7 +195,6 @@ contrasts::
 ################################################################################
 # We can then compare the two conditions 'active' and 'rest' by
 # generating the relevant contrast:
-		    
 
 active_minus_rest =  contrasts['active'] - contrasts['rest']
 
@@ -252,12 +210,7 @@ z_map = fmri_glm.compute_contrast(active_minus_rest,
 plot_stat_map(z_map, bg_img=mean_img, threshold=3.0,
               display_mode='z', cut_coords=3, black_bg=True,
               title='Active minus Rest (Z>3)')
-show()
 
-################################################################################
-# .. figure:: ../_images/sphx_glr_plot_spm_auditory_005.png
-#    :width: 80%
-#    :align: left
 
 ################################################################################
 # We can use ``nibabel.save`` to save the effect and zscore maps to the disk
@@ -283,12 +236,12 @@ values = z_map.get_data()
 coord_peaks = np.dstack(np.unravel_index(np.argsort(values.ravel()), values.shape))[0, 0, :]
 coord_mm = apply_affine(z_map.affine, coord_peaks)
 
-##################################################################################################
+################################################################################
 # We create a masker for the voxel (allowing us to detrend the signal) and extract the time course
 
 from nilearn.input_data import NiftiSpheresMasker
-mask = NiftiSpheresMasker([coord_mm], radius=3, 
-                          detrend=True, standardize=True, 
+mask = NiftiSpheresMasker([coord_mm], radius=3,
+                          detrend=True, standardize=True,
                           high_pass=None, low_pass=None, t_r=7.)
 sig = mask.fit_transform(fmri_img)
 
@@ -301,7 +254,3 @@ plt.xlabel('scan')
 plt.legend()
 plt.show()
 
-################################################################################
-# .. figure:: ../_images/sphx_glr_plot_spm_auditory_006.png
-#    :width: 80%
-#    :align: left
