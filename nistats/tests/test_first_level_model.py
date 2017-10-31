@@ -366,10 +366,19 @@ def test_first_level_models_from_bids():
         assert_raises(ValueError, first_level_models_from_bids,
                       bids_path, 'main', 'MNI')
 
-        # check runs are not repeated in obtained files
         # In case different variant and spaces exist and are not selected we
         # fail and ask for more specific information
         shutil.rmtree(os.path.join(bids_path, 'derivatives'))
         # issue if no derivatives folder is present
         assert_raises(ValueError, first_level_models_from_bids,
                       bids_path, 'main', 'MNI')
+
+        # check runs are not repeated when ses field is not used
+        shutil.rmtree(bids_path)
+        bids_path = create_fake_bids_dataset(n_sub=10, n_ses=1,
+                                             tasks=['localizer', 'main'],
+                                             n_runs=[1, 3], no_session=True)
+        # test repeated run tag error when run tag is in filenames and not ses
+        # can arise when variant or space is present and not specified
+        assert_raises(ValueError, first_level_models_from_bids,
+                      bids_path, 'main', 'T1w')  # variant not specified

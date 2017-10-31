@@ -573,7 +573,7 @@ def first_level_models_from_bids(
         mask=None, target_affine=None, target_shape=None, smoothing_fwhm=None,
         memory=Memory(None), memory_level=1, standardize=False,
         signal_scaling=0, noise_model='ar1', verbose=0, n_jobs=1,
-        minimize_memory=True):
+        minimize_memory=True, derivatives_folder='derivatives'):
     """Create FirstLevelModel objects and fit arguments from a BIDS dataset.
 
     It t_r is not specified this function will attempt to load it from a
@@ -599,6 +599,10 @@ def first_level_models_from_bids(
         Possible filters are 'acq', 'rec', 'run', 'res' and 'variant'.
         Filter examples would be (variant, smooth), (acq, pa) and
         (res, 1x1x1).
+
+    derivatives_folder: str, optional
+        derivatives and app folder path containing preprocessed files.
+        Like "derivatives/FMRIPREP". default is simply "derivatives".
 
     All other parameters correspond to a `FirstLevelModel` object, which
     contains their documentation. The subject label of the model will be
@@ -646,7 +650,7 @@ def first_level_models_from_bids(
                              "are allowed." % type(img_filter[0]))
 
     # check derivatives folder is present
-    derivatives_path = os.path.join(dataset_path, 'derivatives')
+    derivatives_path = os.path.join(dataset_path, derivatives_folder)
     if not os.path.exists(derivatives_path):
         raise ValueError('derivatives folder does not exist in given dataset')
 
@@ -695,8 +699,8 @@ def first_level_models_from_bids(
                      img_specs[0])
 
     # Infer subjects in dataset
-    sub_folders = glob.glob(os.path.join(derivatives_path, 'sub-*'))
-    sub_labels = [os.path.basename(s).split('-')[1] for s in sub_folders]
+    sub_folders = glob.glob(os.path.join(derivatives_path, 'sub-*/'))
+    sub_labels = [os.path.basename(s[:-1]).split('-')[1] for s in sub_folders]
     sub_labels = sorted(list(set(sub_labels)))
 
     # Build fit_kwargs dictionaries to pass to their respective models fit
@@ -732,23 +736,41 @@ def first_level_models_from_bids(
         if len(imgs) > 1:
             for img in imgs:
                 img_dict = parse_bids_filename(img)
-                if '_ses-' in img_dict['file_basename']:
+                if ('_ses-' in img_dict['file_basename'] and
+                        '_run-' in img_dict['file_basename']):
                     if (img_dict['ses'], img_dict['run']) in run_check_list:
                         raise ValueError(
                             'More than one nifti image found for the same run '
                             '%s and session %s. Please verify that the '
-                            'preproc_variant and space_label labels were '
-                            'correctly specified.' %
+                            'preproc_variant and space_label labels '
+                            'corresponding to the BIDS spec '
+                            'were correctly specified.' %
                             (img_dict['run'], img_dict['ses']))
                     else:
                         run_check_list.append((img_dict['ses'],
                                               img_dict['run']))
-                else:
+
+                elif '_ses-' in img_dict['file_basename']:
+                    if img_dict['ses'] in run_check_list:
+                        raise ValueError(
+                            'More than one nifti image found for the same ses '
+                            '%s, while no additional run specification present'
+                            '. Please verify that the preproc_variant and '
+                            'space_label labels '
+                            'corresponding to the BIDS spec '
+                            'were correctly specified.' %
+                            img_dict['ses'])
+                    else:
+                        run_check_list.append(img_dict['ses'])
+
+                elif '_run-' in img_dict['file_basename']:
                     if img_dict['run'] in run_check_list:
                         raise ValueError(
                             'More than one nifti image found for the same run '
                             '%s. Please verify that the preproc_variant and '
-                            'space_label labels were correctly specified.' %
+                            'space_label labels '
+                            'corresponding to the BIDS spec '
+                            'were correctly specified.' %
                             img_dict['run'])
                     else:
                         run_check_list.append(img_dict['run'])
@@ -759,28 +781,21 @@ def first_level_models_from_bids(
         for img_filter in img_filters:
             if img_filter[0] in ['acq', 'rec', 'run']:
                 filters.append(img_filter)
-        # Get events. If not found in derivatives check for original data.
-        # There might be no need to preprocess events to specify model, still
-        # throw a warning
-        for possible_path in [derivatives_path, dataset_path]:
-            events = get_bids_files(possible_path, modality_folder='func',
-                                    file_tag='events', file_type='tsv',
-                                    sub_label=sub_label, filters=filters)
-            if events:
-                if len(events) != len(imgs):
-                    raise ValueError('%d events.tsv files found for %d bold '
-                                     'files. Same number of event files as '
-                                     'the number of runs is expected' %
-                                     (len(events), len(imgs)))
-                events = [pd.read_csv(event, sep='\t', index_col=None)
-                          for event in events]
-                if possible_path == dataset_path:
-                    warn('events taken from directory containing raw data. '
-                         'Is it the case that there was no need to preprocess '
-                         'the events for the model?')
-                models_events.append(events)
-                break
-        if not events:
+
+        # Get events files
+        events = get_bids_files(dataset_path, modality_folder='func',
+                                file_tag='events', file_type='tsv',
+                                sub_label=sub_label, filters=filters)
+        if events:
+            if len(events) != len(imgs):
+                raise ValueError('%d events.tsv files found for %d bold '
+                                 'files. Same number of event files as '
+                                 'the number of runs is expected' %
+                                 (len(events), len(imgs)))
+            events = [pd.read_csv(event, sep='\t', index_col=None)
+                      for event in events]
+            models_events.append(events)
+        else:
             raise ValueError('No events.tsv files found')
 
         # Get confounds. If not found it will be assumed there are none.
@@ -788,7 +803,7 @@ def first_level_models_from_bids(
         confounds = get_bids_files(derivatives_path, modality_folder='func',
                                    file_tag='confounds', file_type='tsv',
                                    sub_label=sub_label, filters=filters)
-        print(len(confounds), len(imgs))
+
         if confounds:
             if len(confounds) != len(imgs):
                 raise ValueError('%d confounds.tsv files found for %d bold '
