@@ -17,7 +17,6 @@ import sys
 import os
 import glob
 import json
-import inspect
 
 import numpy as np
 import pandas as pd
