@@ -59,6 +59,7 @@ REQUIRED_MODULE_METADATA = (
     )
 
 OPTIONAL_MATPLOTLIB_MIN_VERSION = '1.3.1'
+OPTIONAL_BOTO3_MIN_VERSION = '1.0.0'
 
 
 def _import_module_with_version_check(

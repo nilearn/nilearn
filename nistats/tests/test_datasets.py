@@ -9,6 +9,7 @@ from nilearn._utils.testing import (mock_request, wrap_chunk_read_,
                                     FetchFilesMock, assert_raises_regex)
 from nilearn.datasets.tests import test_utils as tst
 from nilearn.datasets import utils, func
+from nilearn.datasets.utils import _get_dataset_dir
 from nilearn._utils.compat import _basestring
 from nose import with_setup
 
@@ -43,24 +44,108 @@ def test_fetch_bids_langloc_dataset():
 
 @with_setup(setup_mock, teardown_mock)
 @with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
-def test_fetch_openfmri_dataset():
-    # test dataset not found
-    data_dir = os.path.join(tst.tmpdir, 'ds000001')
-    os.mkdir(data_dir)
-    api_content = [dict(accession_number='dsother')]
-    json.dump(api_content, open(os.path.join(data_dir, 'api'), 'w'))
-    assert_raises(ValueError, datasets.fetch_openfmri_dataset,
-                  data_dir=tst.tmpdir)
-    # test dataset found with no revision
-    data_dir = os.path.join(tst.tmpdir, 'dsother')
-    os.mkdir(data_dir)
-    api_content = [dict(accession_number='dsother', revision_set=[],
-                        link_set=[dict(revision=None, url='http')])]
-    json.dump(api_content, open(os.path.join(data_dir, 'api'), 'w'))
-    data_dir, dl_files = datasets.fetch_openfmri_dataset(
-        dataset_name='dsother', data_dir=tst.tmpdir)
-    assert_true(isinstance(data_dir, _basestring))
+def test_fetch_openneuro_dataset_index():
+    dataset_version = 'ds000030_R1.0.4'
+    data_prefix = '{}/{}/uncompressed'.format(
+        dataset_version.split('_')[0], dataset_version)
+    data_dir = _get_dataset_dir(data_prefix, data_dir=tst.tmpdir,
+                                verbose=1)
+    url_file = os.path.join(data_dir, 'urls.json')
+    # Prepare url files for subject and filter tests
+    file_list = [data_prefix + '/stuff.html',
+                 data_prefix + '/sub-xxx.html',
+                 data_prefix + '/sub-yyy.html',
+                 data_prefix + '/sub-xxx/ses-01_task-rest.txt',
+                 data_prefix + '/sub-xxx/ses-01_task-other.txt',
+                 data_prefix + '/sub-xxx/ses-02_task-rest.txt',
+                 data_prefix + '/sub-xxx/ses-02_task-other.txt',
+                 data_prefix + '/sub-yyy/ses-01.txt',
+                 data_prefix + '/sub-yyy/ses-02.txt']
+    json.dump(file_list, open(url_file, 'w'))
+
+    # Only 1 subject and not subject specific files get downloaded
+    datadir, dl_files = datasets.fetch_openneuro_dataset_index(
+        tst.tmpdir, dataset_version)
+    assert_true(isinstance(datadir, _basestring))
     assert_true(isinstance(dl_files, list))
+    assert_true(len(dl_files) == 9)
+
+
+def test_select_from_index():
+    dataset_version = 'ds000030_R1.0.4'
+    data_prefix = '{}/{}/uncompressed'.format(
+        dataset_version.split('_')[0], dataset_version)
+    # Prepare url files for subject and filter tests
+    urls = [data_prefix + '/stuff.html',
+            data_prefix + '/sub-xxx.html',
+            data_prefix + '/sub-yyy.html',
+            data_prefix + '/sub-xxx/ses-01_task-rest.txt',
+            data_prefix + '/sub-xxx/ses-01_task-other.txt',
+            data_prefix + '/sub-xxx/ses-02_task-rest.txt',
+            data_prefix + '/sub-xxx/ses-02_task-other.txt',
+            data_prefix + '/sub-yyy/ses-01.txt',
+            data_prefix + '/sub-yyy/ses-02.txt']
+
+    # Only 1 subject and not subject specific files get downloaded
+    new_urls = datasets.select_from_index(urls, n_subjects=1)
+    assert_true(len(new_urls) == 6)
+    assert_true(data_prefix + '/sub-yyy.html' not in new_urls)
+
+    # 2 subjects and not subject specific files get downloaded
+    new_urls = datasets.select_from_index(urls, n_subjects=2)
+    assert_true(len(new_urls) == 9)
+    assert_true(data_prefix + '/sub-yyy.html' in new_urls)
+    # ALL subjects and not subject specific files get downloaded
+    new_urls = datasets.select_from_index(urls, n_subjects=None)
+    assert_true(len(new_urls) == 9)
+
+    # test inclusive filters. Only files with task-rest
+    new_urls = datasets.select_from_index(
+        urls, inclusion_filters=['*task-rest*'])
+    assert_true(len(new_urls) == 2)
+    assert_true(data_prefix + '/stuff.html' not in new_urls)
+
+    # test exclusive filters. only files without ses-01
+    new_urls = datasets.select_from_index(
+        urls, exclusion_filters=['*ses-01*'])
+    assert_true(len(new_urls) == 6)
+    assert_true(data_prefix + '/stuff.html' in new_urls)
+
+    # test filter combination. only files with task-rest and without ses-01
+    new_urls = datasets.select_from_index(
+        urls, inclusion_filters=['*task-rest*'],
+        exclusion_filters=['*ses-01*'])
+    assert_true(len(new_urls) == 1)
+    assert_true(data_prefix + '/sub-xxx/ses-02_task-rest.txt' in new_urls)
+
+
+@with_setup(setup_mock, teardown_mock)
+@with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
+def test_fetch_openneuro_dataset():
+    dataset_version = 'ds000030_R1.0.4'
+    data_prefix = '{}/{}/uncompressed'.format(
+        dataset_version.split('_')[0], dataset_version)
+    data_dir = _get_dataset_dir(data_prefix, data_dir=tst.tmpdir,
+                                verbose=1)
+    url_file = os.path.join(data_dir, 'urls.json')
+    # Prepare url files for subject and filter tests
+    urls = [data_prefix + '/stuff.html',
+            data_prefix + '/sub-xxx.html',
+            data_prefix + '/sub-yyy.html',
+            data_prefix + '/sub-xxx/ses-01_task-rest.txt',
+            data_prefix + '/sub-xxx/ses-01_task-other.txt',
+            data_prefix + '/sub-xxx/ses-02_task-rest.txt',
+            data_prefix + '/sub-xxx/ses-02_task-other.txt',
+            data_prefix + '/sub-yyy/ses-01.txt',
+            data_prefix + '/sub-yyy/ses-02.txt']
+    json.dump(urls, open(url_file, 'w'))
+
+    # Only 1 subject and not subject specific files get downloaded
+    datadir, dl_files = datasets.fetch_openneuro_dataset(
+        urls, tst.tmpdir, dataset_version)
+    assert_true(isinstance(datadir, _basestring))
+    assert_true(isinstance(dl_files, list))
+    assert_true(len(dl_files) == 9)
 
 
 @with_setup(setup_mock, teardown_mock)

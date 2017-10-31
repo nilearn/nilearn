@@ -4,6 +4,7 @@ Author: Gael Varoquaux
 """
 
 import os
+import fnmatch
 import re
 import glob
 import json
@@ -12,6 +13,9 @@ from sklearn.datasets.base import Bunch
 
 from nilearn.datasets.utils import (
     _get_dataset_dir, _fetch_files, _fetch_file, _uncompress_file)
+
+import boto3
+from botocore.handlers import disable_signing
 
 SPM_AUDITORY_DATA_FILES = ["fM00223/fM00223_%03i.img" % index
                            for index in range(4, 100)]
@@ -55,32 +59,148 @@ def fetch_bids_langloc_dataset(data_dir=None, verbose=1):
     return os.path.join(data_dir, main_folder), sorted(file_list)
 
 
-def fetch_openfmri_dataset(dataset_name='ds000001', dataset_revision=None,
-                           data_dir=None, verbose=1):
-    """Download latest revision of specified bids dataset.
+def fetch_openneuro_dataset_index(
+        data_dir=None, dataset_version='ds000030_R1.0.4', verbose=1):
+    """Download openneuro bids dataset index
 
-    Compressed files will not be uncompressed automatically due to the expected
-    great size of downloaded dataset.
-
-    Only datasets that contain preprocessed files following the official
-    conventions of the future BIDS derivatives specification can be used out
-    of the box with Nistats. Otherwise custom preprocessing would need to be
-    performed, optionally following the BIDS derivatives specification for the
-    preprocessing output files.
+    Downloading the index allows to explore the dataset directories
+    to select specific files to download. The index is a sorted list of urls.
 
     Parameters
     ----------
-    dataset_name: string, optional
-        Accesion number as published in https://openfmri.org/dataset/.
-        Downloads by default dataset ds000001.
+    data_dir: string, optional
+        Path to store the downloaded dataset. if None employ nilearn
+        datasets default download directory.
 
-    dataset_revision: string, optional
-        Revision as presented in the specific dataset link accesible
-        from https://openfmri.org/dataset/. Looks for the latest by default.
+    dataset_version: string, optional
+        dataset version name. Assumes it is of the form [name]_[version].
+
+    verbose: int, optional
+        verbosity level (0 means no message).
+
+    Returns
+    -------
+    urls_path: string
+        Path to downloaded dataset index
+
+    urls: list of string
+        Sorted list of dataset directories
+    """
+    data_prefix = '{}/{}/uncompressed'.format(
+        dataset_version.split('_')[0], dataset_version)
+    data_dir = _get_dataset_dir(data_prefix, data_dir=data_dir,
+                                verbose=verbose)
+
+    # First we download the url list from the uncompressed dataset version
+    urls_path = os.path.join(data_dir, 'urls.json')
+    urls = []
+    if not os.path.exists(urls_path):
+
+        def get_url(endpoint_url, bucket_name, file_key):
+            return '{}/{}/{}'.format(endpoint_url, bucket_name, file_key)
+
+        resource = boto3.resource('s3')
+        resource.meta.client.meta.events.register('choose-signer.s3.*',
+                                                  disable_signing)
+        bucket = resource.Bucket('openneuro')
+
+        for obj in bucket.objects.filter(Prefix=data_prefix):
+            # get url of files (keys of directories end with '/')
+            if obj.key[-1] != '/':
+                urls.append(
+                    get_url(bucket.meta.client.meta.endpoint_url,
+                            bucket.name, obj.key))
+        urls = sorted(urls)
+
+        with open(urls_path, 'w') as json_file:
+            json.dump(urls, json_file)
+    else:
+        with open(urls_path, 'r') as json_file:
+            urls = json.load(json_file)
+
+    return urls_path, urls
+
+
+def select_from_index(urls, inclusion_filters=[], exclusion_filters=[],
+                      n_subjects=None):
+    """Select subset of urls with given filters.
+
+    Parameters
+    ----------
+    urls: list of str
+        List of dataset urls obtained from index download
+
+    inclusion_filters: list of str, optional
+        List of unix shell-style wildcard strings
+        that will be used to filter the url list.
+        If a filter matches the url it is retained for download.
+        Multiple filters work on top of each other.
+        Like an "and" logical operator, creating a more restrictive query.
+        Inclusion and exclusion filters apply together.
+        For example the filter '*task-rest*'' would keep only urls
+        that contain the 'task-rest' string.
+
+    exclusion_filters: list of str, optional
+        List of unix shell-style wildcard strings
+        that will be used to filter the url list.
+        If a filter matches the url it is discarded for download.
+        Multiple filters work on top of each other.
+        Like an "and" logical operator, creating a more restrictive query.
+        Inclusion and exclusion filters apply together.
+        For example the filter '*task-rest*' would discard all urls
+        that contain the 'task-rest' string.
+
+    n_subjects: int, optional
+        number of subjects to download from the dataset. All by default.
+
+    Returns
+    -------
+    urls: list of string
+        Sorted list of filtered dataset directories
+    """
+    # We apply filters to the urls
+    for exclusion in exclusion_filters:
+        urls = [url for url in urls if not fnmatch.fnmatch(url, exclusion)]
+    for inclusion in inclusion_filters:
+        urls = [url for url in urls if fnmatch.fnmatch(url, inclusion)]
+
+    # subject selection filter
+    # from the url list we infer all available subjects like 'sub-xxx/'
+    subject_regex = 'sub-[a-z|A-Z|0-9]*[_./]'
+
+    def infer_subjects(urls):
+        subjects = set()
+        for url in urls:
+            if 'sub-' in url:
+                subjects.add(re.search(subject_regex, url).group(0)[:-1])
+        return sorted(subjects)
+
+    # We get a list of subjects (for the moment the first n subjects)
+    selected_subjects = set(infer_subjects(urls)[:n_subjects])
+    # We exclude urls of subjects not selected
+    urls = [url for url in urls if 'sub-' not in url or
+            re.search(subject_regex, url).group(0)[:-1] in selected_subjects]
+
+    return urls
+
+
+def fetch_openneuro_dataset(
+        urls=None, data_dir=None, dataset_version='ds000030_R1.0.4',
+        verbose=1):
+    """Download openneuro bids dataset.
+
+    Parameters
+    ----------
+    urls: list of string, optional
+        Openneuro url list of dataset files to download. If not specified
+        all files of the specified dataset will be downloaded.
 
     data_dir: string, optional
         Path to store the downloaded dataset. if None employ nilearn
         datasets default download directory.
+
+    dataset_version: string, optional
+        dataset version name. Assumes it is of the form [name]_[version].
 
     verbose: int, optional
         verbosity level (0 means no message).
@@ -93,46 +213,44 @@ def fetch_openfmri_dataset(dataset_name='ds000001', dataset_revision=None,
     downloaded_files: list of string
         Absolute paths of downloaded files on disk
     """
-    # We download a json file with all the api data from the openfmri server
-    openfmri_api = 'https://openfmri.org/dataset/api'
-    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
+    data_prefix = '{}/{}/uncompressed'.format(
+        dataset_version.split('_')[0], dataset_version)
+    data_dir = _get_dataset_dir(data_prefix, data_dir=data_dir,
                                 verbose=verbose)
-    files = _fetch_file(openfmri_api, data_dir)
-    json_api = json.load(open(files, 'r'))
 
-    dataset_url_set = []
-    for i in range(len(json_api)):
-        # We look for the desired dataset in the json api file
-        if dataset_name == json_api[i]['accession_number']:
-            # Now we look for the desired revision or the last one
-            if not dataset_revision:
-                revision = json_api[i]['revision_set']
-                if revision:
-                    dataset_revision = revision[-1]['revision_number']
-            # After selecting the revision we download all its files
-            link_set = json_api[i]['link_set']
-            for link in link_set:
-                revision = link['revision']
-                if revision == dataset_revision:
-                    dataset_url_set.append(link['url'])
-            # If revision is specified but no file is found there is an issue
-            if dataset_revision and not dataset_url_set:
-                Exception('No files found for revision %s' % dataset_revision)
-            break
+    # if urls are not specified we download the complete dataset index
+    if urls is None:
+        _, urls = fetch_openneuro_dataset_index(
+            data_dir=data_dir, dataset_version=dataset_version, verbose=verbose)
 
-    if not dataset_url_set:
-        raise ValueError('dataset %s not found' % dataset_name)
-    else:
-        # The files_spec needed for _fetch_files
-        files_spec = []
-        for dat_url in dataset_url_set:
-            target_file = os.path.basename(dat_url)
-            url = dat_url
-            files_spec.append((target_file, url, {}))
-        # download the files
-        downloaded_files = _fetch_files(data_dir, files_spec, resume=True,
-                                        verbose=verbose)
-    return data_dir, downloaded_files
+    # The files_spec needed for _fetch_files
+    files_spec = []
+    files_dir = []
+    for url in urls:
+        url_path = url.split(data_prefix + '/')[1]
+        file_dir = os.path.join(data_dir, url_path)
+        files_spec.append((os.path.basename(file_dir), url, {}))
+        files_dir.append(os.path.dirname(file_dir))
+
+    # download the files
+    downloaded = []
+    for file_spec, file_dir in zip(files_spec, files_dir):
+        # Timeout errors are common in the s3 connection so we try to avoid
+        # failure of the dataset download for a transient instability
+        success = False
+        download_attempts = 4
+        while download_attempts > 0 and not success:
+            try:
+                downloaded_files = _fetch_files(
+                    file_dir, [file_spec], resume=True, verbose=verbose)
+                downloaded += downloaded_files
+                success = True
+            except Exception:
+                download_attempts -= 1
+        if not success:
+            raise Exception('multiple failures downloading %s' % file_spec[1])
+
+    return data_dir, sorted(downloaded)
 
 
 def fetch_localizer_first_level(data_dir=None, verbose=1):
