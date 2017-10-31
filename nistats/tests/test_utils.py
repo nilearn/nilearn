@@ -13,7 +13,8 @@ from nibabel.tmpdirs import InTemporaryDirectory
 from nistats.utils import (multiple_mahalanobis, z_score, multiple_fast_inv,
                            pos_recipr, full_rank, _check_run_tables,
                            _check_and_load_tables, _check_list_length_match,
-                           get_bids_files, parse_bids_filename)
+                           get_bids_files, parse_bids_filename,
+                           get_design_from_fslmat)
 from nilearn.datasets.tests import test_utils as tst
 
 
@@ -260,3 +261,7 @@ def test_parse_bids_filename():
     assert_true(file_dict['file_path'] == file_path)
     assert_true(file_dict['file_basename'] == file_name)
     assert_true(file_dict['file_fields'] == fields)
+
+
+def test_get_design_from_fslmat():
+    pass

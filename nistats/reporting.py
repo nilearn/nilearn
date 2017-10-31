@@ -104,9 +104,19 @@ def plot_contrast_matrix(contrast_def, design_matrix, colorbar=False, ax=None):
 
     Parameters
     ----------
-    contrast_def: 
+    contrast_def : str or array of shape (n_col) or list of (string or
+                   array of shape (n_col))
+        where ``n_col`` is the number of columns of the design matrix,
+        (one array per run). If only one array is provided when there
+        are several runs, it will be assumed that the same contrast is
+        desired for all runs. The string can be a formula compatible with
+        the linear constraint of the Patsy library. Basically one can use
+        the name of the conditions as they appear in the design matrix of
+        the fitted model combined with operators /*+- and numbers.
+        Please checks the patsy documentation for formula examples:
+        http://patsy.readthedocs.io/en/latest/API-reference.html#patsy.DesignInfo.linear_constraint
 
-    design_matrix: 
+    design_matrix: pandas DataFrame
 
     colorbar: boolean, optional (default False)
         Include a colorbar in the contrast matrix plot.
@@ -149,66 +159,3 @@ def plot_contrast_matrix(contrast_def, design_matrix, colorbar=False, ax=None):
     plt.tight_layout()
 
     return ax
-
-
-def get_clusters_table(stat_img, stat_threshold, cluster_threshold):
-    """Creates pandas dataframe with img cluster statistics.
-
-    Parameters
-    ----------
-    stat_img: 
-
-    stat_threshold: 
-
-    cluster_threshold: 
-
-    Returns
-    -------
-    Pandas dataframe with img clusters
-    """
-
-    stat_map = stat_img.get_data()
-
-    # Extract connected components above threshold
-    label_map, n_labels = label(stat_map > stat_threshold)
-
-    # labels = label_map[search_mask.get_data() > 0]
-    for label_ in range(1, n_labels + 1):
-        if np.sum(label_map == label_) < cluster_threshold:
-            stat_map[label_map == label_] = 0
-
-    label_map, n_labels = label(stat_map > stat_threshold)
-    label_map = np.ravel(label_map)
-    stat_map = np.ravel(stat_map)
-
-    peaks = []
-    max_stat = []
-    clusters_size = []
-    coords = []
-    for label_ in range(1, n_labels + 1):
-        cluster = stat_map.copy()
-        cluster[label_map != label_] = 0
-
-        peak = np.unravel_index(np.argmax(cluster),
-                                stat_img.get_data().shape)
-        peaks.append(peak)
-
-        max_stat.append(np.max(cluster))
-
-        clusters_size.append(np.sum(label_map == label_))
-
-        x_map, y_map, z_map = peak
-        mni_coords = np.asarray(
-            coord_transform(x_map, y_map, z_map, stat_img.affine)).tolist()
-        mni_coords = [round(x) for x in mni_coords]
-        coords.append(mni_coords)
-
-    vx, vy, vz = zip(*peaks)
-    x, y, z = zip(*coords)
-
-    columns = ['Vx', 'Vy', 'Vz', 'X', 'Y', 'Z', 'Peak stat', 'Cluster size']
-    clusters_table = pd.DataFrame(
-        list(zip(vx, vy, vz, x, y, z, max_stat, clusters_size)),
-        columns=columns)
-
-    return clusters_table

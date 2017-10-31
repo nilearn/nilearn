@@ -70,3 +70,7 @@ def test_map_threshold():
         cluster_threshold=0)
     vals = th_map.get_data()
     assert_equal(np.sum(vals > 0), 8)
+
+
+def test_get_clusters_table():
+    pass
