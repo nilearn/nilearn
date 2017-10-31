@@ -5,6 +5,7 @@ Author: Gael Varoquaux
 
 import os
 import fnmatch
+import re
 import glob
 import json
 import nibabel
