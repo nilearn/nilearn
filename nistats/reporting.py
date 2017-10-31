@@ -14,8 +14,11 @@ matplotlib.rc('xtick', labelsize=20)
 
 def compare_niimgs(ref_imgs, src_imgs, masker, plot_hist=True, log=True,
                    ref_label="image set 1", src_label="image set 2",
-                   output_dir=None):
-    """Compares two lists of images.
+                   output_dir=None, axes=None):
+    """Creates plots to compare two lists of images and measure correlation.
+
+    The first plot tests linear correlation between voxel values
+    The second plot superimpose histograms to compare values distribution
 
     Parameters
     ----------
@@ -32,8 +35,18 @@ def compare_niimgs(ref_imgs, src_imgs, masker, plot_hist=True, log=True,
         If True then then histograms of each img in ref_imgs will be plotted
         along-side the histogram of the corresponding image in src_imgs
 
+    ref_label: str
+        name of reference images
+
+    src_label: str
+        name of source images
+
     output_dir: string, optional (default None)
         Directory where plotted figures will be stored.
+
+    axes: list of two matplotlib Axes objects, optional (default None)
+        Can receive a list of the form [ax1, ax2] to render the plots.
+        By default new axes will be created
 
     Returns
     -------
@@ -46,7 +59,10 @@ def compare_niimgs(ref_imgs, src_imgs, masker, plot_hist=True, log=True,
     """
     corrs = []
     for i, (ref_img, src_img) in enumerate(zip(ref_imgs, src_imgs)):
-        _, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 5))
+        if axes is None:
+            _, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 5))
+        else:
+            (ax1, ax2) = axes
         ref_data = masker.transform(ref_img).ravel()
         src_data = masker.transform(src_img).ravel()
         if ref_data.shape != src_data.shape:
@@ -84,6 +100,25 @@ def compare_niimgs(ref_imgs, src_imgs, masker, plot_hist=True, log=True,
 
 
 def plot_contrast_matrix(contrast_def, design_matrix, colorbar=False, ax=None):
+    """Creates plot for contrast definition.
+
+    Parameters
+    ----------
+    contrast_def: 
+
+    design_matrix: 
+
+    colorbar: boolean, optional (default False)
+        Include a colorbar in the contrast matrix plot.
+
+    ax: matplotlib Axes object, optional (default None)
+        Directory where plotted figures will be stored.
+
+    Returns
+    -------
+    Plot Axes object
+    """
+
     design_column_names = design_matrix.columns.tolist()
     if isinstance(contrast_def, str):
         di = DesignInfo(design_column_names)
@@ -117,6 +152,21 @@ def plot_contrast_matrix(contrast_def, design_matrix, colorbar=False, ax=None):
 
 
 def get_clusters_table(stat_img, stat_threshold, cluster_threshold):
+    """Creates pandas dataframe with img cluster statistics.
+
+    Parameters
+    ----------
+    stat_img: 
+
+    stat_threshold: 
+
+    cluster_threshold: 
+
+    Returns
+    -------
+    Pandas dataframe with img clusters
+    """
+
     stat_map = stat_img.get_data()
 
     # Extract connected components above threshold
@@ -134,7 +184,6 @@ def get_clusters_table(stat_img, stat_threshold, cluster_threshold):
     peaks = []
     max_stat = []
     clusters_size = []
-    # centers = []
     coords = []
     for label_ in range(1, n_labels + 1):
         cluster = stat_map.copy()
@@ -147,9 +196,6 @@ def get_clusters_table(stat_img, stat_threshold, cluster_threshold):
         max_stat.append(np.max(cluster))
 
         clusters_size.append(np.sum(label_map == label_))
-
-        # center = center_of_mass(cluster)
-        # centers.append([round(x) for x in center[:3]])
 
         x_map, y_map, z_map = peak
         mni_coords = np.asarray(
@@ -164,11 +210,5 @@ def get_clusters_table(stat_img, stat_threshold, cluster_threshold):
     clusters_table = pd.DataFrame(
         list(zip(vx, vy, vz, x, y, z, max_stat, clusters_size)),
         columns=columns)
-    # clusters_table.index.name = 'Cluster'
-
-    # d = dict(selector="th",
-    #     props=[('text-align', 'center')])
-
-    # clusters_table.style.set_properties(**{'width':'10em', 'text-align':'left'}).set_table_styles([d])
 
     return clusters_table
