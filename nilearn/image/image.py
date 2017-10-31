@@ -627,7 +627,12 @@ def new_img_like(ref_niimg, data, affine=None, copy_header=False):
         header['glmax'] = 0.
         header['cal_max'] = np.max(data) if data.size > 0 else 0.
         header['cal_min'] = np.min(data) if data.size > 0 else 0.
-    return ref_niimg.__class__(data, affine, header=header)
+    klass = ref_niimg.__class__
+    if klass is nibabel.Nifti1Pair:
+        # Nifti1Pair is an internal class, without a to_filename,
+        # we shouldn't return it
+        klass = nibabel.Nifti1Image
+    return klass(data, affine, header=header)
 
 
 def threshold_img(img, threshold, mask_img=None):
