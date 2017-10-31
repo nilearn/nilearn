@@ -7,7 +7,7 @@ import math
 
 from nose import SkipTest
 from nose.tools import assert_equal, assert_raises, \
-    assert_false, assert_true, assert_almost_equal, assert_not_equal
+    assert_false, assert_true, assert_almost_equal
 from numpy.testing import assert_array_equal, assert_array_almost_equal
 
 import numpy as np
@@ -654,6 +654,13 @@ def test_coord_transform_trivial():
     np.testing.assert_array_equal(x + 1, x_)
     np.testing.assert_array_equal(y + 1, y_)
     np.testing.assert_array_equal(z + 1, z_)
+
+    # Test the outputs have the same shape as the inputs
+    x = np.ones((3, 2, 4))
+    y = np.ones((3, 2, 4))
+    z = np.ones((3, 2, 4))
+    x_, y_, z_ = coord_transform(x, y, z, sform)
+    assert_equal(x.shape, x_.shape)
 
 
 def test_resample_img_segmentation_fault():

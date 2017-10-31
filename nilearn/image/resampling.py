@@ -7,6 +7,7 @@ See http://nilearn.github.io/manipulating_images/input_output.html
 
 import warnings
 from distutils.version import LooseVersion
+import numbers
 
 import numpy as np
 import scipy
@@ -92,9 +93,9 @@ def coord_transform(x, y, z, affine):
 
         Parameters
         ----------
-        x : number or ndarray
+        x : number or ndarray (any shape)
             The x coordinates in the input space
-        y : number or ndarray
+        y : number or ndarray (same shape as x)
             The y coordinates in the input space
         z : number or ndarray
             The z coordinates in the input space
@@ -103,25 +104,45 @@ def coord_transform(x, y, z, affine):
 
         Returns
         -------
-        x : number or ndarray
+        x : number or ndarray (same shape as input)
             The x coordinates in the output space
-        y : number or ndarray
+        y : number or ndarray (same shape as input)
             The y coordinates in the output space
-        z : number or ndarray
+        z : number or ndarray (same shape as input)
             The z coordinates in the output space
 
         Warning: The x, y and z have their Talairach ordering, not 3D
         numy image ordering.
+
+    Examples
+    --------
+    Transform data from coordinates to brain space. The "affine" matrix
+    can be found as the ".affine" attribute of a nifti image, or using
+    the "get_affine()" method for old installations::
+
+        >>> from nilearn import datasets, image
+        >>> nimg = datasets.load_mni152_template()
+        >>> # Find the MNI coordinates of the voxel (10, 10, 10)
+        >>> image.coord_transform(50, 50, 50, nimg.get_affine())
+        (-10.0, -26.0, 28.0)
+
     """
+    # XXX: when we drop nibabel 2.1, change ".get_affine()" to ".affine"
+    # above
     squeeze = (not hasattr(x, '__iter__'))
+    return_number = isinstance(x, numbers.Number)
+    x = np.asanyarray(x)
+    shape = x.shape
     coords = np.c_[np.atleast_1d(x).flat,
                    np.atleast_1d(y).flat,
                    np.atleast_1d(z).flat,
                    np.ones_like(np.atleast_1d(z).flat)].T
     x, y, z, _ = np.dot(affine, coords)
+    if return_number:
+        return x.item(), y.item(), z.item()
     if squeeze:
         return x.squeeze(), y.squeeze(), z.squeeze()
-    return x, y, z
+    return np.reshape(x, shape), np.reshape(y, shape), np.reshape(z, shape)
 
 
 def get_bounds(shape, affine):
