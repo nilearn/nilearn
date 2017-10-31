@@ -44,7 +44,7 @@ def test_fetch_bids_langloc_dataset():
 
 @with_setup(setup_mock, teardown_mock)
 @with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
-def test_fetch_openneuro_dataset():
+def test_fetch_openneuro_dataset_index():
     dataset_version = 'ds000030_R1.0.4'
     data_prefix = '{}/{}/uncompressed'.format(
         dataset_version.split('_')[0], dataset_version)
@@ -64,39 +64,88 @@ def test_fetch_openneuro_dataset():
     json.dump(file_list, open(url_file, 'w'))
 
     # Only 1 subject and not subject specific files get downloaded
-    datadir, dl_files = datasets.fetch_openneuro_dataset(
+    datadir, dl_files = datasets.fetch_openneuro_dataset_index(
         tst.tmpdir, dataset_version)
     assert_true(isinstance(datadir, _basestring))
     assert_true(isinstance(dl_files, list))
-    assert_true(len(dl_files) == 6)
-    assert_true(datadir + '/sub-yyy.html' not in dl_files)
+    assert_true(len(dl_files) == 9)
+
+
+def test_select_from_index():
+    dataset_version = 'ds000030_R1.0.4'
+    data_prefix = '{}/{}/uncompressed'.format(
+        dataset_version.split('_')[0], dataset_version)
+    # Prepare url files for subject and filter tests
+    urls = [data_prefix + '/stuff.html',
+            data_prefix + '/sub-xxx.html',
+            data_prefix + '/sub-yyy.html',
+            data_prefix + '/sub-xxx/ses-01_task-rest.txt',
+            data_prefix + '/sub-xxx/ses-01_task-other.txt',
+            data_prefix + '/sub-xxx/ses-02_task-rest.txt',
+            data_prefix + '/sub-xxx/ses-02_task-other.txt',
+            data_prefix + '/sub-yyy/ses-01.txt',
+            data_prefix + '/sub-yyy/ses-02.txt']
+
+    # Only 1 subject and not subject specific files get downloaded
+    new_urls = datasets.select_from_index(urls, n_subjects=1)
+    assert_true(len(new_urls) == 6)
+    assert_true(data_prefix + '/sub-yyy.html' not in new_urls)
 
     # 2 subjects and not subject specific files get downloaded
-    datadir, dl_files = datasets.fetch_openneuro_dataset(
-        tst.tmpdir, dataset_version, n_subjects=2)
-    assert_true(len(dl_files) == 9)
-    assert_true(datadir + '/sub-yyy.html' in dl_files)
+    new_urls = datasets.select_from_index(urls, n_subjects=2)
+    assert_true(len(new_urls) == 9)
+    assert_true(data_prefix + '/sub-yyy.html' in new_urls)
+    # ALL subjects and not subject specific files get downloaded
+    new_urls = datasets.select_from_index(urls, n_subjects=None)
+    assert_true(len(new_urls) == 9)
 
     # test inclusive filters. Only files with task-rest
-    datadir, dl_files = datasets.fetch_openneuro_dataset(
-        tst.tmpdir, dataset_version, n_subjects=2,
-        inclusion_filters=['.*task-rest.*'])
-    assert_true(len(dl_files) == 2)
-    assert_true(datadir + '/stuff.html' not in dl_files)
+    new_urls = datasets.select_from_index(
+        urls, inclusion_filters=['*task-rest*'])
+    assert_true(len(new_urls) == 2)
+    assert_true(data_prefix + '/stuff.html' not in new_urls)
 
     # test exclusive filters. only files without ses-01
-    datadir, dl_files = datasets.fetch_openneuro_dataset(
-        tst.tmpdir, dataset_version, n_subjects=2,
-        exclusion_filters=['.*ses-01.*'])
-    assert_true(len(dl_files) == 6)
-    assert_true(datadir + '/stuff.html' in dl_files)
+    new_urls = datasets.select_from_index(
+        urls, exclusion_filters=['*ses-01*'])
+    assert_true(len(new_urls) == 6)
+    assert_true(data_prefix + '/stuff.html' in new_urls)
 
     # test filter combination. only files with task-rest and without ses-01
+    new_urls = datasets.select_from_index(
+        urls, inclusion_filters=['*task-rest*'],
+        exclusion_filters=['*ses-01*'])
+    assert_true(len(new_urls) == 1)
+    assert_true(data_prefix + '/sub-xxx/ses-02_task-rest.txt' in new_urls)
+
+
+@with_setup(setup_mock, teardown_mock)
+@with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
+def test_fetch_openneuro_dataset():
+    dataset_version = 'ds000030_R1.0.4'
+    data_prefix = '{}/{}/uncompressed'.format(
+        dataset_version.split('_')[0], dataset_version)
+    data_dir = _get_dataset_dir(data_prefix, data_dir=tst.tmpdir,
+                                verbose=1)
+    url_file = os.path.join(data_dir, 'urls.json')
+    # Prepare url files for subject and filter tests
+    urls = [data_prefix + '/stuff.html',
+            data_prefix + '/sub-xxx.html',
+            data_prefix + '/sub-yyy.html',
+            data_prefix + '/sub-xxx/ses-01_task-rest.txt',
+            data_prefix + '/sub-xxx/ses-01_task-other.txt',
+            data_prefix + '/sub-xxx/ses-02_task-rest.txt',
+            data_prefix + '/sub-xxx/ses-02_task-other.txt',
+            data_prefix + '/sub-yyy/ses-01.txt',
+            data_prefix + '/sub-yyy/ses-02.txt']
+    json.dump(urls, open(url_file, 'w'))
+
+    # Only 1 subject and not subject specific files get downloaded
     datadir, dl_files = datasets.fetch_openneuro_dataset(
-        tst.tmpdir, dataset_version, n_subjects=2,
-        inclusion_filters=['.*task-rest.*'], exclusion_filters=['.*ses-01.*'])
-    assert_true(len(dl_files) == 1)
-    assert_true(datadir + '/sub-xxx/ses-02_task-rest.txt' in dl_files)
+        urls, tst.tmpdir, dataset_version)
+    assert_true(isinstance(datadir, _basestring))
+    assert_true(isinstance(dl_files, list))
+    assert_true(len(dl_files) == 9)
 
 
 @with_setup(setup_mock, teardown_mock)
