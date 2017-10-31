@@ -4,7 +4,7 @@ Author: Gael Varoquaux
 """
 
 import os
-import re
+import fnmatch
 import glob
 import json
 import nibabel
@@ -58,10 +58,12 @@ def fetch_bids_langloc_dataset(data_dir=None, verbose=1):
     return os.path.join(data_dir, main_folder), sorted(file_list)
 
 
-def fetch_openneuro_dataset(data_dir=None, dataset_version='ds000030_R1.0.4',
-                            n_subjects=1, inclusion_filters=[],
-                            exclusion_filters=[], verbose=1):
-    """Download openneuro bids dataset.
+def fetch_openneuro_dataset_index(
+        data_dir=None, dataset_version='ds000030_R1.0.4', verbose=1):
+    """Download openneuro bids dataset index
+
+    Downloading the index allows to explore the dataset directories
+    to select specific files to download. The index is a sorted list of urls.
 
     Parameters
     ----------
@@ -72,37 +74,16 @@ def fetch_openneuro_dataset(data_dir=None, dataset_version='ds000030_R1.0.4',
     dataset_version: string, optional
         dataset version name. Assumes it is of the form [name]_[version].
 
-    n_subjects: int, optional
-        number of subjects to download from the dataset.
-
-    inclusion_filters: list of str, optional
-        List of regex strings that will be used to filter the url list.
-        If the regex matches the url it is retained for download.
-        Multiple filters work on top of each other.
-        Like an "and" logical operator, creating a more restrictive query.
-        Inclusion and exclusion filters apply together.
-        For example the regex string '.*task-rest.*' would keep only urls
-        that contain the 'task-rest' string.
-
-    exclusion_filters: list of str, optional
-        List of regex strings that will be used to filter the url list.
-        If the regex matches the url it is discarded for download.
-        Multiple filters work on top of each other.
-        Like an "and" logical operator, creating a more restrictive query.
-        Inclusion and exclusion filters apply together.
-        For example the regex string '.*task-rest.*' would discard all urls
-        that contain the 'task-rest' string.
-
     verbose: int, optional
         verbosity level (0 means no message).
 
     Returns
     -------
-    data_dir: string
-        Path to downloaded dataset
+    urls_path: string
+        Path to downloaded dataset index
 
-    downloaded_files: list of string
-        Absolute paths of downloaded files on disk
+    urls: list of string
+        Sorted list of dataset directories
     """
     data_prefix = '{}/{}/uncompressed'.format(
         dataset_version.split('_')[0], dataset_version)
@@ -110,9 +91,9 @@ def fetch_openneuro_dataset(data_dir=None, dataset_version='ds000030_R1.0.4',
                                 verbose=verbose)
 
     # First we download the url list from the uncompressed dataset version
-    url_file = os.path.join(data_dir, 'urls.json')
+    urls_path = os.path.join(data_dir, 'urls.json')
     urls = []
-    if not os.path.exists(url_file):
+    if not os.path.exists(urls_path):
 
         def get_url(endpoint_url, bucket_name, file_key):
             return '{}/{}/{}'.format(endpoint_url, bucket_name, file_key)
@@ -128,18 +109,59 @@ def fetch_openneuro_dataset(data_dir=None, dataset_version='ds000030_R1.0.4',
                 urls.append(
                     get_url(bucket.meta.client.meta.endpoint_url,
                             bucket.name, obj.key))
+        urls = sorted(urls)
 
-        with open(url_file, 'w') as json_file:
+        with open(urls_path, 'w') as json_file:
             json.dump(urls, json_file)
     else:
-        with open(url_file, 'r') as json_file:
+        with open(urls_path, 'r') as json_file:
             urls = json.load(json_file)
 
+    return urls_path, urls
+
+
+def select_from_index(urls, inclusion_filters=[], exclusion_filters=[],
+                      n_subjects=None):
+    """Select subset of urls with given filters.
+
+    Parameters
+    ----------
+    urls: list of str
+        List of dataset urls obtained from index download
+
+    inclusion_filters: list of str, optional
+        List of unix shell-style wildcard strings
+        that will be used to filter the url list.
+        If a filter matches the url it is retained for download.
+        Multiple filters work on top of each other.
+        Like an "and" logical operator, creating a more restrictive query.
+        Inclusion and exclusion filters apply together.
+        For example the filter '*task-rest*'' would keep only urls
+        that contain the 'task-rest' string.
+
+    exclusion_filters: list of str, optional
+        List of unix shell-style wildcard strings
+        that will be used to filter the url list.
+        If a filter matches the url it is discarded for download.
+        Multiple filters work on top of each other.
+        Like an "and" logical operator, creating a more restrictive query.
+        Inclusion and exclusion filters apply together.
+        For example the filter '*task-rest*' would discard all urls
+        that contain the 'task-rest' string.
+
+    n_subjects: int, optional
+        number of subjects to download from the dataset. All by default.
+
+    Returns
+    -------
+    urls: list of string
+        Sorted list of filtered dataset directories
+    """
     # We apply filters to the urls
     for exclusion in exclusion_filters:
-        urls = [url for url in urls if not re.match(exclusion, url)]
+        urls = [url for url in urls if not fnmatch.fnmatch(url, exclusion)]
     for inclusion in inclusion_filters:
-        urls = [url for url in urls if re.match(inclusion, url)]
+        urls = [url for url in urls if fnmatch.fnmatch(url, inclusion)]
 
     # subject selection filter
     # from the url list we infer all available subjects like 'sub-xxx/'
@@ -157,6 +179,48 @@ def fetch_openneuro_dataset(data_dir=None, dataset_version='ds000030_R1.0.4',
     # We exclude urls of subjects not selected
     urls = [url for url in urls if 'sub-' not in url or
             re.search(subject_regex, url).group(0)[:-1] in selected_subjects]
+
+    return urls
+
+
+def fetch_openneuro_dataset(
+        urls=None, data_dir=None, dataset_version='ds000030_R1.0.4',
+        verbose=1):
+    """Download openneuro bids dataset.
+
+    Parameters
+    ----------
+    urls: list of string, optional
+        Openneuro url list of dataset files to download. If not specified
+        all files of the specified dataset will be downloaded.
+
+    data_dir: string, optional
+        Path to store the downloaded dataset. if None employ nilearn
+        datasets default download directory.
+
+    dataset_version: string, optional
+        dataset version name. Assumes it is of the form [name]_[version].
+
+    verbose: int, optional
+        verbosity level (0 means no message).
+
+    Returns
+    -------
+    data_dir: string
+        Path to downloaded dataset
+
+    downloaded_files: list of string
+        Absolute paths of downloaded files on disk
+    """
+    data_prefix = '{}/{}/uncompressed'.format(
+        dataset_version.split('_')[0], dataset_version)
+    data_dir = _get_dataset_dir(data_prefix, data_dir=data_dir,
+                                verbose=verbose)
+
+    # if urls are not specified we download the complete dataset index
+    if urls is None:
+        _, urls = fetch_openneuro_dataset_index(
+            data_dir=data_dir, dataset_version=dataset_version, verbose=verbose)
 
     # The files_spec needed for _fetch_files
     files_spec = []
