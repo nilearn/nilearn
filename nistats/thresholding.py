@@ -108,13 +108,22 @@ def get_clusters_table(stat_img, stat_threshold, cluster_threshold):
 
     stat_map = stat_img.get_data()
 
+    # If the stat threshold is too high simply return an empty dataframe
+    if np.sum(stat_map > stat_threshold) == 0:
+        return pd.DataFrame()
+
     # Extract connected components above threshold
     label_map, n_labels = label(stat_map > stat_threshold)
 
-    # labels = label_map[search_mask.get_data() > 0]
     for label_ in range(1, n_labels + 1):
         if np.sum(label_map == label_) < cluster_threshold:
             stat_map[label_map == label_] = 0
+
+    # If the cluster threshold is too high simply return an empty dataframe
+    # this checks for stats higher than threshold after small clusters
+    # were removed from stat_map
+    if np.sum(stat_map > stat_threshold) == 0:
+        return pd.DataFrame()
 
     label_map, n_labels = label(stat_map > stat_threshold)
     label_map = np.ravel(label_map)
