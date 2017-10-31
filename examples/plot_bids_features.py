@@ -22,7 +22,6 @@ Author : Martin Perez-Guevara: 2017
 
 import os
 from nilearn import plotting
-from nilearn.input_data import NiftiMasker
 from scipy.stats import norm
 import matplotlib.pyplot as plt
 import numpy as np
@@ -33,6 +32,7 @@ import nibabel as nib
 from nistats.first_level_model import first_level_models_from_bids
 from nistats.reporting import (
     compare_niimgs, plot_contrast_matrix, get_clusters_table)
+from nistats.datasets import fetch_openneuro_dataset
 
 ##############################################################################
 # Fetch openneuro BIDS dataset
@@ -42,13 +42,12 @@ from nistats.reporting import (
 # It contains the necessary information to run a statistical analysis using
 # Nistats. Also statistical results from an FSL analysis for an example QA.
 
-# exclusion_patterns = ['.*group.*', '.*phenotype.*', '.*mriqc.*',
-#                       '.*parameter_plots.*', '.*physio_plots.*',
-#                       '.*space-fsaverage.*', '.*space-T1w.*',
-#                       '.*dwi.*', '.*beh.*', '.*task-bart.*',
-#                       '.*task-rest.*', '.*task-scap.*', '.*task-task.*']
-# data_dir, _ = fetch_openneuro_dataset(exclusion_filters=exclusion_patterns)
-data_dir = '/home/mfpgt/nilearn_data/ds000030/ds000030_R1.0.4/uncompressed'
+exclusion_patterns = ['.*group.*', '.*phenotype.*', '.*mriqc.*',
+                      '.*parameter_plots.*', '.*physio_plots.*',
+                      '.*space-fsaverage.*', '.*space-T1w.*',
+                      '.*dwi.*', '.*beh.*', '.*task-bart.*',
+                      '.*task-rest.*', '.*task-scap.*', '.*task-task.*']
+data_dir, _ = fetch_openneuro_dataset(exclusion_filters=exclusion_patterns)
 
 ##############################################################################
 # Obtain automatically FirstLevelModel objects and fit arguments
