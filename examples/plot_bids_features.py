@@ -32,7 +32,9 @@ import nibabel as nib
 from nistats.first_level_model import first_level_models_from_bids
 from nistats.reporting import (
     compare_niimgs, plot_contrast_matrix, get_clusters_table)
-from nistats.datasets import fetch_openneuro_dataset
+from nistats.datasets import (fetch_openneuro_dataset_index,
+                              fetch_openneuro_dataset, select_from_index)
+from nistats.utils import get_design_from_fslmat
 
 ##############################################################################
 # Fetch openneuro BIDS dataset
@@ -42,12 +44,17 @@ from nistats.datasets import fetch_openneuro_dataset
 # It contains the necessary information to run a statistical analysis using
 # Nistats. Also statistical results from an FSL analysis for an example QA.
 
-exclusion_patterns = ['.*group.*', '.*phenotype.*', '.*mriqc.*',
-                      '.*parameter_plots.*', '.*physio_plots.*',
-                      '.*space-fsaverage.*', '.*space-T1w.*',
-                      '.*dwi.*', '.*beh.*', '.*task-bart.*',
-                      '.*task-rest.*', '.*task-scap.*', '.*task-task.*']
-data_dir, _ = fetch_openneuro_dataset(exclusion_filters=exclusion_patterns)
+_, urls = fetch_openneuro_dataset_index()
+
+exclusion_patterns = ['*group*', '*phenotype*', '*mriqc*',
+                      '*parameter_plots*', '*physio_plots*',
+                      '*space-fsaverage*', '*space-T1w*',
+                      '*dwi*', '*beh*', '*task-bart*',
+                      '*task-rest*', '*task-scap*', '*task-task*']
+urls = select_from_index(
+    urls, exclusion_filters=exclusion_patterns, n_subjects=1)
+
+data_dir, _ = fetch_openneuro_dataset(urls=urls)
 
 ##############################################################################
 # Obtain automatically FirstLevelModel objects and fit arguments
@@ -74,19 +81,15 @@ model, imgs, events, confounds = (
     models[0], models_run_imgs[0], models_events[0], models_confounds[0])
 
 subject = 'sub-' + model.subject_label
-
 fsl_design_matrix_path = os.path.join(
     data_dir, 'derivatives', 'task', subject, 'stopsignal.feat', 'design.mat')
-design_matrix_file = open(fsl_design_matrix_path, 'r')
-for line in design_matrix_file:
-    if '/Matrix' in line:
-        break
-design_matrix = np.array([list(map(float, line.replace('\t\n', '').split('\t'))) for
-                          line in design_matrix_file])
-design_columns = ['cond_%02d' % i for i in range(design_matrix.shape[1])]
+design_matrix = get_design_from_fslmat(
+    fsl_design_matrix_path, column_names=None)
+
+design_columns = ['cond_%02d' % i for i in range(len(design_matrix.columns))]
 design_columns[0] = 'Go'
 design_columns[4] = 'StopSuccess'
-design_matrix = pd.DataFrame(design_matrix, columns=design_columns)
+design_matrix.columns = design_columns
 
 #############################################################################
 # Construct StopSucess - Go contrast of the Stop Signal task
