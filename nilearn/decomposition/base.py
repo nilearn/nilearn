@@ -11,7 +11,7 @@ import numpy as np
 
 from scipy import linalg
 import sklearn
-from sklearn.base import BaseEstimator
+from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.externals.joblib import Memory, Parallel, delayed
 from sklearn.linear_model import LinearRegression
 from sklearn.utils import check_random_state
@@ -224,7 +224,7 @@ def _mask_and_reduce_single(masker,
     return U
 
 
-class BaseDecomposition(BaseEstimator, CacheMixin):
+class BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
     """Base class for matrix factorization based decomposition estimators.
 
     Handles mask logic, provides transform and inverse_transform methods
@@ -345,7 +345,7 @@ class BaseDecomposition(BaseEstimator, CacheMixin):
         self.verbose = verbose
 
     def fit(self, imgs, y=None, confounds=None):
-        """Base fit for decomposition estimators : compute the embedded masker
+        """Compute the mask and the components across subjects
 
         Parameters
         ----------
@@ -354,7 +354,20 @@ class BaseDecomposition(BaseEstimator, CacheMixin):
             Data on which the mask is calculated. If this is a list,
             the affine is considered the same for all.
 
+        confounds : list of CSV file paths or 2D matrices
+            This parameter is passed to nilearn.signal.clean. Please see the
+            related documentation for details. Should match with the list
+            of imgs given.
+
+         Returns
+         -------
+         self : object
+            Returns the instance itself. Contains attributes listed
+            at the object level.
+
         """
+        # Base fit for decomposition estimators : compute the embedded masker
+
         if isinstance(imgs, _basestring) or not hasattr(imgs, '__iter__'):
             # these classes are meant for list of 4D images
             # (multi-subject), we want it to work also on a single
@@ -374,6 +387,20 @@ class BaseDecomposition(BaseEstimator, CacheMixin):
         else:
             self.masker_.fit()
         self.mask_img_ = self.masker_.mask_img_
+
+        # mask_and_reduce step is used only for decomposition estimators i.e.
+        # MultiPCA, CanICA and Dictionary Learning
+        if self.__class__.__name__ != 'BaseDecomposition':
+            if self.verbose:
+                print("[{0}] Loading data".format(self.__class__.__name__))
+            data = mask_and_reduce(
+                self.masker_, imgs, confounds=confounds,
+                n_components=self.n_components,
+                random_state=self.random_state,
+                memory=self.memory,
+                memory_level=max(0, self.memory_level + 1),
+                n_jobs=self.n_jobs)
+            self._raw_fit(data)
 
         return self
 

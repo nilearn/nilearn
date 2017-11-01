@@ -14,12 +14,11 @@ from distutils.version import LooseVersion
 
 import numpy as np
 import sklearn
-from sklearn.base import TransformerMixin
 from sklearn.decomposition import dict_learning_online
 from sklearn.externals.joblib import Memory
 from sklearn.linear_model import Ridge
 
-from .base import BaseDecomposition, mask_and_reduce
+from .base import BaseDecomposition
 from .canica import CanICA
 
 
@@ -39,7 +38,7 @@ def _compute_loadings(components, data):
     return loadings
 
 
-class DictLearning(BaseDecomposition, TransformerMixin):
+class DictLearning(BaseDecomposition):
     """Perform a map learning algorithm based on spatial component sparsity,
     over a CanICA initialization.  This yields more stable maps than CanICA.
 
@@ -130,6 +129,22 @@ class DictLearning(BaseDecomposition, TransformerMixin):
     verbose: integer, optional
         Indicate the level of verbosity. By default, nothing is printed.
 
+    Attributes
+    ----------
+    `components_` : 2D numpy array (n_components x n-voxels)
+        Dictionary components extracted from the images.
+
+    `masker_` : instance of MultiNiftiMasker
+        Masker used to filter and mask data as first step. If an instance of
+        MultiNiftiMasker is given in `mask` parameter,
+        this is a copy of it. Otherwise, a masker is created using the value
+        of `mask` and other NiftiMasker related parameters as initialization.
+
+    `mask_img_` : Niimg-like object
+        See http://nilearn.github.io/manipulating_images/input_output.html
+        The mask of the data. If no mask was given at masker creation, contains
+        the automatically computed mask.
+
     References
     ----------
     * Arthur Mensch, Gael Varoquaux, Bertrand Thirion,
@@ -192,37 +207,6 @@ class DictLearning(BaseDecomposition, TransformerMixin):
         self.loadings_init_ = self._cache(_compute_loadings)(
             self.components_init_, data)
 
-    def fit(self, imgs, y=None, confounds=None):
-        """Compute the mask and component maps across subjects
-
-        Parameters
-        ----------
-        imgs: list of Niimg-like objects
-            See http://nilearn.github.io/manipulating_images/input_output.html
-            Data on which PCA must be calculated. If this is a list,
-            the affine is considered the same for all.
-
-        confounds: CSV file path or 2D matrix
-            This parameter is passed to nilearn.signal.clean. Please see the
-            related documentation for details
-        """
-        # Base logic for decomposition estimators
-        BaseDecomposition.fit(self, imgs)
-
-        if self.verbose:
-            print('[DictLearning] Loading data')
-        data = mask_and_reduce(self.masker_, imgs, confounds,
-                               reduction_ratio=self.reduction_ratio,
-                               n_components=self.n_components,
-                               random_state=self.random_state,
-                               memory_level=max(0, self.memory_level - 1),
-                               n_jobs=self.n_jobs, memory=self.memory)
-        if self.verbose:
-            print('[DictLearning] Learning initial components')
-        self._init_dict(data)
-        self._raw_fit(data)
-        return self
-
     def _raw_fit(self, data):
         """Helper function that direcly process unmasked data
 
@@ -231,6 +215,10 @@ class DictLearning(BaseDecomposition, TransformerMixin):
         data: ndarray,
             Shape (n_samples, n_features)
         """
+        if self.verbose:
+            print('[DictLearning] Learning initial components')
+        self._init_dict(data)
+
         _, n_features = data.shape
 
         if self.verbose:

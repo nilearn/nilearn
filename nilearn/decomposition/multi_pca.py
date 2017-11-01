@@ -5,12 +5,11 @@ This is a good initialization method for ICA.
 import numpy as np
 from sklearn.externals.joblib import Memory
 from sklearn.utils.extmath import randomized_svd
-from sklearn.base import TransformerMixin
 
-from .base import BaseDecomposition, mask_and_reduce
+from .base import BaseDecomposition
 
 
-class MultiPCA(BaseDecomposition, TransformerMixin):
+class MultiPCA(BaseDecomposition):
     """Perform Multi Subject Principal Component Analysis.
 
     Perform a PCA on each subject, stack the results, and reduce them
@@ -130,33 +129,6 @@ class MultiPCA(BaseDecomposition, TransformerMixin):
                                    memory_level=memory_level,
                                    n_jobs=n_jobs,
                                    verbose=verbose)
-
-    def fit(self, imgs, y=None, confounds=None):
-        """Compute the mask and the components
-
-        Parameters
-        ----------
-        imgs: list of Niimg-like objects
-            See http://nilearn.github.io/manipulating_images/input_output.html
-            Data on which the PCA must be calculated. If this is a list,
-            the affine is considered the same for all.
-
-        confounds: CSV file path or 2D matrix
-            This parameter is passed to nilearn.signal.clean. Please see the
-            related documentation for details
-
-        """
-        BaseDecomposition.fit(self, imgs)
-
-        data = mask_and_reduce(self.masker_, imgs,
-                               confounds=confounds,
-                               n_components=self.n_components,
-                               random_state=self.random_state,
-                               memory=self.memory,
-                               memory_level=max(0, self.memory_level - 1),
-                               n_jobs=self.n_jobs)
-        self._raw_fit(data)
-        return self
 
     def _raw_fit(self, data):
         """Helper function that directly process unmasked data"""
