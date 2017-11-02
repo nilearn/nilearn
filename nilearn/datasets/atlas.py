@@ -11,7 +11,7 @@ from sklearn.datasets.base import Bunch
 
 from .utils import _get_dataset_dir, _fetch_files, _get_dataset_descr
 from .._utils import check_niimg
-from .._utils.compat import _basestring, get_affine
+from .._utils.compat import _basestring
 from ..image import new_img_like
 
 
@@ -274,7 +274,7 @@ def fetch_atlas_harvard_oxford(atlas_name, data_dir=None,
         new_atlas[left_atlas == label] = new_label
         new_names.append(name + ', right part')
 
-    atlas_img = new_img_like(atlas_img, new_atlas, get_affine(atlas_img))
+    atlas_img = new_img_like(atlas_img, new_atlas, atlas_img.affine)
     return Bunch(maps=atlas_img, labels=new_names)
 
 

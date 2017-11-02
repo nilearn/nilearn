@@ -17,7 +17,6 @@ from .._utils.extmath import fast_abs_percentile
 from .._utils.numpy_conversions import as_ndarray
 from .._utils import check_niimg_3d
 from .._utils.niimg import _safe_get_data
-from .._utils.compat import get_affine
 from ..image.resampling import get_mask_bounds, coord_transform
 from ..image.image import _smooth_array
 
@@ -78,7 +77,7 @@ def find_xyz_cut_coords(img, mask=None, activation_threshold=None):
             cut_coords = ndimage.center_of_mass(np.abs(my_map)) + offset
             x_map, y_map, z_map = cut_coords
             return np.asarray(coord_transform(x_map, y_map, z_map,
-                                              get_affine(img))).tolist()
+                                              img.affine)).tolist()
         slice_x, slice_y, slice_z = ndimage.find_objects(mask)[0]
         my_map = my_map[slice_x, slice_y, slice_z]
         mask = mask[slice_x, slice_y, slice_z]
@@ -113,14 +112,14 @@ def find_xyz_cut_coords(img, mask=None, activation_threshold=None):
 
     # Return as a list of scalars
     return np.asarray(coord_transform(x_map, y_map, z_map,
-                                      get_affine(img))).tolist()
+                                      img.affine)).tolist()
 
 
 def _get_auto_mask_bounds(img):
     """ Compute the bounds of the data with an automaticaly computed mask
     """
     data = _safe_get_data(img)
-    affine = get_affine(img)
+    affine = img.affine
     if hasattr(data, 'mask'):
         # Masked array
         mask = np.logical_not(data.mask)
@@ -209,7 +208,7 @@ def find_cut_slices(img, direction='z', n_cuts=7, spacing='auto'):
                 direction))
     axis = 'xyz'.index(direction)
     img = check_niimg_3d(img)
-    affine = get_affine(img)
+    affine = img.affine
     orig_data = np.abs(_safe_get_data(img))
     this_shape = orig_data.shape[axis]
 

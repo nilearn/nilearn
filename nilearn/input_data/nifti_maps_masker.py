@@ -9,7 +9,6 @@ from .. import _utils
 from .._utils import logger, CacheMixin
 from .._utils.class_inspect import get_params
 from .._utils.niimg_conversions import _check_same_fov
-from .._utils.compat import get_affine
 from .. import image
 from .base_masker import filter_and_extract, BaseMasker
 
@@ -185,7 +184,7 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
                 print("Resampling maps")
             self.maps_img_ = image.resample_img(
                 self.maps_img_,
-                target_affine=get_affine(self.mask_img_),
+                target_affine=self.mask_img_.affine,
                 target_shape=self.mask_img_.shape,
                 interpolation="continuous",
                 copy=True)
@@ -195,7 +194,7 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
                 print("Resampling mask")
             self.mask_img_ = image.resample_img(
                 self.mask_img_,
-                target_affine=get_affine(self.maps_img_),
+                target_affine=self.maps_img_.affine,
                 target_shape=self.maps_img_.shape[:3],
                 interpolation="nearest",
                 copy=True)
@@ -266,7 +265,7 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
                 self._resampled_maps_img_ = self._cache(image.resample_img)(
                         self.maps_img_, interpolation="continuous",
                         target_shape=ref_img.shape[:3],
-                        target_affine=get_affine(ref_img))
+                        target_affine=ref_img.affine)
 
             if (self.mask_img_ is not None and
                     not _check_same_fov(ref_img, self.mask_img_)):
@@ -275,7 +274,7 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
                 self._resampled_mask_img_ = self._cache(image.resample_img)(
                         self.mask_img_, interpolation="nearest",
                         target_shape=ref_img.shape[:3],
-                        target_affine=get_affine(ref_img))
+                        target_affine=ref_img.affine)
 
         if not self.allow_overlap:
             # Check if there is an overlap.
@@ -298,7 +297,7 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
         target_affine = None
         if self.resampling_target != 'data':
             target_shape = self._resampled_maps_img_.shape[:3]
-            target_affine = get_affine(self._resampled_maps_img_)
+            target_affine = self._resampled_maps_img_.affine
 
         params = get_params(NiftiMapsMasker, self,
                             ignore=['resampling_target'])
