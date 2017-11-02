@@ -24,9 +24,7 @@ install:
   - "python -c \"import struct; print(struct.calcsize('P') * 8)\""
 
   # Installed prebuilt dependencies from conda
-  # matplotlib hard-coded should be removed after new matplotlib release
-  # For reference see https://github.com/nilearn/nilearn/pull/1525
-  - "conda install pip numpy scipy scikit-learn nose wheel matplotlib=2.0.2 -y -q"
+  - "conda install pip numpy scipy scikit-learn nose wheel matplotlib -y -q"
 
   # Install other nilearn dependencies
   - "pip install nibabel coverage nose-timer"
