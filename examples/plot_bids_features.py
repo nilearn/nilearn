@@ -3,10 +3,9 @@ The power of BIDS standards with an openneuro dataset
 =======================================================
 
 Full step-by-step example of fitting a GLM to perform a first level analysis
-in an openneuro BIDS dataset. We demonstrate how BIDS derivatives, BIDS models
-and NIDM json export can be exploited to perform a simple analysis with minimal
-code and end with automatic publication that facilitates sharing and repproduction.
-Details about the BIDS standard can be consulted at http://bids.neuroimaging.io/
+in an openneuro BIDS dataset. We demonstrate how BIDS derivatives can be
+exploited to perform a simple analysis with minimal code.
+Details about the BIDS standard are available at http://bids.neuroimaging.io/
 We also demonstrate how to download individual groups of files from the
 Openneuro s3 bucket.
 
