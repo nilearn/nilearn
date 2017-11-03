@@ -112,7 +112,7 @@ def coord_transform(x, y, z, affine):
             The z coordinates in the output space
 
         Warning: The x, y and z have their Talairach ordering, not 3D
-        numy image ordering.
+        numpy image ordering.
 
     Examples
     --------
