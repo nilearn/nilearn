@@ -158,7 +158,7 @@ thresholded_score_map_img = threshold_img(score_map_img, threshold=1e-6)
 # Plotting the statistical map on a background brain, we mark four voxels
 # which we will inspect more closely later on.
 from nilearn.plotting import plot_stat_map
-from nilearn.image.resampling import coord_transform
+from nilearn.image import coord_transform
 
 def index_to_xy_coord(x, y, z=10):
     '''Transforms data index to coordinates of the background + offset'''

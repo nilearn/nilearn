@@ -9,7 +9,7 @@ Changelog
 Enhancements
 -------------
 
-    - Expose :func:`nilear.image.coord_transform` for end users.
+    - Expose :func:`nilearn.image.coord_transform` for end users.
 
     - New matrix plotting function, eg to display connectome matrices:
       :func:`nilearn.plotting.plot_matrix`
