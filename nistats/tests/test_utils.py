@@ -9,11 +9,13 @@ from numpy.testing import assert_almost_equal, assert_array_almost_equal
 from nose.tools import assert_true, assert_equal, assert_raises
 from nibabel import load, Nifti1Image, save
 from nibabel.tmpdirs import InTemporaryDirectory
+from nose import with_setup
 
 from nistats.utils import (multiple_mahalanobis, z_score, multiple_fast_inv,
                            pos_recipr, full_rank, _check_run_tables,
                            _check_and_load_tables, _check_list_length_match,
-                           get_bids_files, parse_bids_filename)
+                           get_bids_files, parse_bids_filename,
+                           get_design_from_fslmat)
 from nilearn.datasets.tests import test_utils as tst
 
 
@@ -260,3 +262,17 @@ def test_parse_bids_filename():
     assert_true(file_dict['file_path'] == file_path)
     assert_true(file_dict['file_basename'] == file_name)
     assert_true(file_dict['file_fields'] == fields)
+
+
+@with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
+def test_get_design_from_fslmat():
+    fsl_mat_path = os.path.join(tst.tmpdir, 'fsl_mat.txt')
+    matrix = np.ones((5, 5))
+    with open(fsl_mat_path, 'w') as fsl_mat:
+        fsl_mat.write('/Matrix\n')
+        for row in matrix:
+            for val in row:
+                fsl_mat.write(str(val) + '\t')
+            fsl_mat.write('\n')
+    design_matrix = get_design_from_fslmat(fsl_mat_path)
+    assert_true(design_matrix.shape == matrix.shape)
