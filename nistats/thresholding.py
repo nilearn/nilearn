@@ -152,7 +152,8 @@ def get_clusters_table(stat_img, stat_threshold, cluster_threshold):
 
         x_map, y_map, z_map = peak
         mni_coords = np.asarray(
-            coord_transform(x_map, y_map, z_map, stat_img.affine)).tolist()
+            coord_transform(
+                x_map, y_map, z_map, stat_img.get_affine())).tolist()
         mni_coords = [round(x) for x in mni_coords]
         coords.append(mni_coords)
 
