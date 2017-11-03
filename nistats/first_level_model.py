@@ -17,11 +17,10 @@ import sys
 import os
 import glob
 import json
-import inspect
 
 import numpy as np
 import pandas as pd
-from nibabel import Nifti1Image
+from nibabel import Nifti1Image, AnalyzeImage
 
 from sklearn.base import BaseEstimator, TransformerMixin, clone
 from sklearn.externals.joblib import Memory
@@ -345,7 +344,8 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         if not isinstance(run_imgs, (list, tuple)):
             run_imgs = [run_imgs]
         for rimg in run_imgs:
-            if not isinstance(rimg, (_basestring, Nifti1Image)):
+            if not isinstance(rimg, (_basestring, AnalyzeImage)):
+                # Nifti1Image is a subclass of AnalyzeImage
                 raise ValueError('run_imgs must be Niimg-like object or list'
                                  ' of Niimg-like objects')
         # check all information necessary to build design matrices is available
