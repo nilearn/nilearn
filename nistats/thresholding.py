@@ -9,6 +9,7 @@ from scipy.stats import norm
 from nilearn.input_data import NiftiMasker
 from nilearn.image.resampling import coord_transform
 import pandas as pd
+from warnings import warn
 
 
 def fdr_threshold(z_vals, alpha):
@@ -98,7 +99,7 @@ def get_clusters_table(stat_img, stat_threshold, cluster_threshold):
     stat_threshold: float, optional
         cluster forming threshold (either a p-value or z-scale value)
 
-    cluster_threshold : float, optional
+    cluster_threshold : int, optional
         cluster size threshold
 
     Returns
@@ -110,6 +111,8 @@ def get_clusters_table(stat_img, stat_threshold, cluster_threshold):
 
     # If the stat threshold is too high simply return an empty dataframe
     if np.sum(stat_map > stat_threshold) == 0:
+        warn('Attention: No clusters with stat higher than %f' %
+             stat_threshold)
         return pd.DataFrame()
 
     # Extract connected components above threshold
@@ -123,6 +126,8 @@ def get_clusters_table(stat_img, stat_threshold, cluster_threshold):
     # this checks for stats higher than threshold after small clusters
     # were removed from stat_map
     if np.sum(stat_map > stat_threshold) == 0:
+        warn('Attention: No clusters with more than %d voxels' %
+             cluster_threshold)
         return pd.DataFrame()
 
     label_map, n_labels = label(stat_map > stat_threshold)

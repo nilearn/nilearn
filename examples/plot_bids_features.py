@@ -14,7 +14,8 @@ More specifically:
 
 1. Download an fMRI BIDS dataset with derivatives from openneuro
 2. Extract automatically from the BIDS dataset first level model objects
-3. Demonstrate Quality assurance of Nistat estimation against available FSL estimation in the openneuro dataset
+3. Demonstrate Quality assurance of Nistat estimation against available FSL
+   estimation in the openneuro dataset
 4. Display contrast plot and uncorrected first level statistics table report
 
 Author : Martin Perez-Guevara: 2017
@@ -25,13 +26,12 @@ from nilearn import plotting
 from scipy.stats import norm
 import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
 import nibabel as nib
 
-# from nistats.datasets import fetch_openneuro_dataset
 from nistats.first_level_model import first_level_models_from_bids
 from nistats.reporting import (
-    compare_niimgs, plot_contrast_matrix, get_clusters_table)
+    compare_niimgs, plot_contrast_matrix)
+from nistats.thresholding import get_clusters_table
 from nistats.datasets import (fetch_openneuro_dataset_index,
                               fetch_openneuro_dataset, select_from_index)
 from nistats.utils import get_design_from_fslmat
@@ -133,4 +133,5 @@ plotting.plot_glass_brain(z_map, colorbar=True, threshold=norm.isf(0.001),
                           figure=plt.figure(figsize=(4, 4)))
 plt.show()
 
+# We can get a latex table from a Pandas Dataframe for display and publication
 print(get_clusters_table(z_map, norm.isf(0.001), 10).to_latex())

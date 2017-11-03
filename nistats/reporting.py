@@ -2,14 +2,11 @@ import os
 import warnings
 import numpy as np
 from scipy import stats
+import nilearn.plotting  # overrides the backend on headless servers
+import matplotlib
 import matplotlib.pyplot as plt
-from nilearn.image.image import check_niimg_3d
 from patsy import DesignInfo
-from scipy.ndimage import label, binary_dilation, center_of_mass
-from nilearn.image.resampling import coord_transform
-import pandas as pd
-import matplotlib 
-matplotlib.rc('xtick', labelsize=20) 
+matplotlib.rc('xtick', labelsize=20)
 
 
 def compare_niimgs(ref_imgs, src_imgs, masker, plot_hist=True, log=True,
@@ -17,8 +14,8 @@ def compare_niimgs(ref_imgs, src_imgs, masker, plot_hist=True, log=True,
                    output_dir=None, axes=None):
     """Creates plots to compare two lists of images and measure correlation.
 
-    The first plot tests linear correlation between voxel values
-    The second plot superimpose histograms to compare values distribution
+    The first plot displays linear correlation between voxel values
+    The second plot superimposes histograms to compare values distribution
 
     Parameters
     ----------
@@ -28,11 +25,11 @@ def compare_niimgs(ref_imgs, src_imgs, masker, plot_hist=True, log=True,
     src_imgs: nifti_like
         Source images.
 
-    log: boolearn, optional (default True)
+    log: Boolean, optional (default True)
         Passed to plt.hist
 
-    plot_hist: boolean, optional (default True)
-        If True then then histograms of each img in ref_imgs will be plotted
+    plot_hist: Boolean, optional (default True)
+        If True then histograms of each img in ref_imgs will be plotted
         along-side the histogram of the corresponding image in src_imgs
 
     ref_label: str
@@ -118,7 +115,7 @@ def plot_contrast_matrix(contrast_def, design_matrix, colorbar=False, ax=None):
 
     design_matrix: pandas DataFrame
 
-    colorbar: boolean, optional (default False)
+    colorbar: Boolean, optional (default False)
         Include a colorbar in the contrast matrix plot.
 
     ax: matplotlib Axes object, optional (default None)
