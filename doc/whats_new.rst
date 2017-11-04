@@ -1,6 +1,11 @@
 0.3.2
 =====
 
+Changelog
+---------
+
+    - Dropped support for Nibabel older than 2.0.2.
+
 Enhancements
 -------------
 

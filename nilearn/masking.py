@@ -15,7 +15,6 @@ from .image import new_img_like
 from ._utils.cache_mixin import cache
 from ._utils.ndimage import largest_connected_component, get_border_data
 from ._utils.niimg import _safe_get_data
-from ._utils.compat import get_affine
 
 
 class MaskWarning(UserWarning):
@@ -63,7 +62,7 @@ def _load_mask_img(mask_img, allow_empty=False):
                          % values)
 
     mask = _utils.as_ndarray(mask, dtype=bool)
-    return mask, get_affine(mask_img)
+    return mask, mask_img.affine
 
 
 def _extrapolate_out_mask(data, mask, iterations=1):
@@ -575,7 +574,7 @@ def _apply_mask_fmri(imgs, mask_img, dtype='f',
     """
 
     mask_img = _utils.check_niimg_3d(mask_img)
-    mask_affine = get_affine(mask_img)
+    mask_affine = mask_img.affine
     mask_data = _utils.as_ndarray(mask_img.get_data(),
                                   dtype=np.bool)
 
@@ -583,12 +582,12 @@ def _apply_mask_fmri(imgs, mask_img, dtype='f',
         ensure_finite = True
 
     imgs_img = _utils.check_niimg(imgs)
-    affine = get_affine(imgs_img)[:3, :3]
+    affine = imgs_img.affine[:3, :3]
 
-    if not np.allclose(mask_affine, get_affine(imgs_img)):
+    if not np.allclose(mask_affine, imgs_img.affine):
         raise ValueError('Mask affine: \n%s\n is different from img affine:'
                          '\n%s' % (str(mask_affine),
-                                   str(get_affine(imgs_img))))
+                                   str(imgs_img.affine)))
 
     if not mask_data.shape == imgs_img.shape[:3]:
         raise ValueError('Mask shape: %s is different from img shape:%s'
