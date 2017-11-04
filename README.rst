@@ -31,7 +31,7 @@ The required dependencies to use the software are:
 * setuptools
 * Numpy >= 1.8.2
 * SciPy >= 0.13.3
-* Nibabel >= 1.2.0
+* Nibabel >= 2.0.2
 * Nilearn >= 0.2.0
 * Pandas >= 0.13.0
 * Sklearn >= 0.15.0
