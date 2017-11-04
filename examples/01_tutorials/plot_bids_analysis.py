@@ -2,6 +2,10 @@
 BIDS dataset first and second level analysis
 ============================================
 
+Author : Martin Perez-Guevara: 2016
+
+
+
 Full step-by-step example of fitting a GLM to perform a first and second level
 analysis in a BIDS dataset and visualizing the results. Details about the BIDS
 standard can be consulted at http://bids.neuroimaging.io/
@@ -14,17 +18,15 @@ More specifically:
    in this case the preprocessed bold images were already normalized to the
    same MNI space.
 
-Author : Martin Perez-Guevara: 2016
+
+
+To run this example, you must launch IPython via ``ipython
+--matplotlib`` in a terminal, or use the Jupyter notebook.
+
+.. contents:: **Contents**
+    :local:
+    :depth: 1
 """
-
-import os
-from nilearn import plotting
-from scipy.stats import norm
-import matplotlib.pyplot as plt
-
-from nistats.datasets import fetch_bids_langloc_dataset
-from nistats.first_level_model import first_level_models_from_bids
-from nistats.second_level_model import SecondLevelModel
 
 ##############################################################################
 # Fetch example BIDS dataset
@@ -34,6 +36,7 @@ from nistats.second_level_model import SecondLevelModel
 # subject folders only contain bold.json and events.tsv files, while the
 # derivatives folder with preprocessed files contain preproc.nii and
 # confounds.tsv files.
+from nistats.datasets import fetch_bids_langloc_dataset
 data_dir, _ = fetch_bids_langloc_dataset()
 
 ##############################################################################
@@ -45,6 +48,7 @@ data_dir, _ = fetch_bids_langloc_dataset()
 # since in this case a confounds.tsv file is available in the BIDS dataset.
 # To get the first level models we only have to specify the dataset directory
 # and the task_label as specified in the file names.
+from nistats.first_level_model import first_level_models_from_bids
 task_label = 'languagelocalizer'
 space_label = 'MNI152nonlin2009aAsym'
 models, models_run_imgs, models_events, models_confounds = \
@@ -60,6 +64,7 @@ models, models_run_imgs, models_events, models_confounds = \
 
 ############################################################################
 # We just expect one run img per subject.
+import os
 print([os.path.basename(run) for run in models_run_imgs[0]])
 
 ###############################################################################
@@ -79,6 +84,10 @@ print(models_events[0][0]['trial_type'].value_counts())
 # ----------------------------
 # Now we simply fit each first level model and plot for each subject the
 # contrast that reveals the language network (language - string).
+from nilearn import plotting
+import matplotlib.pyplot as plt
+from scipy.stats import norm
+
 fig, axes = plt.subplots(nrows=2, ncols=5)
 model_and_args = zip(models, models_run_imgs, models_events, models_confounds)
 for midx, (model, imgs, events, confounds) in enumerate(model_and_args):
@@ -97,6 +106,7 @@ plt.show()
 # We just have to provide the list of fitted FirstLevelModel objects
 # to the SecondLevelModel object for estimation. We can do this since
 # all subjects share the same design matrix.
+from nistats.second_level_model import SecondLevelModel
 second_level_input = models
 second_level_model = SecondLevelModel(smoothing_fwhm=8.0)
 second_level_model = second_level_model.fit(second_level_input)
