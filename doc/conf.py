@@ -71,7 +71,7 @@ copyright = u'The nistats developers 2010-2016'
 # built documents.
 #
 # The short X.Y version.
-version = ''
+version = '0.0'
 # The full version, including alpha/beta/rc tags.
 import nistats
 release = nistats.__version__
