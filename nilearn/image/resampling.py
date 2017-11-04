@@ -111,8 +111,8 @@ def coord_transform(x, y, z, affine):
     z : number or ndarray (same shape as input)
         The z coordinates in the output space
 
-    Warning: The x, y and z have their Talairach ordering, not 3D
-    numpy image ordering.
+    Warning: The x, y and z have their output space (e.g. MNI) coordinate
+    ordering, not 3D numpy image ordering.
 
     Examples
     --------
