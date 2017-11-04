@@ -91,28 +91,28 @@ def coord_transform(x, y, z, affine):
     """ Convert the x, y, z coordinates from one image space to another
         space.
 
-        Parameters
-        ----------
-        x : number or ndarray (any shape)
-            The x coordinates in the input space
-        y : number or ndarray (same shape as x)
-            The y coordinates in the input space
-        z : number or ndarray
-            The z coordinates in the input space
-        affine : 2D 4x4 ndarray
-            affine that maps from input to output space.
+    Parameters
+    ----------
+    x : number or ndarray (any shape)
+        The x coordinates in the input space
+    y : number or ndarray (same shape as x)
+        The y coordinates in the input space
+    z : number or ndarray
+        The z coordinates in the input space
+    affine : 2D 4x4 ndarray
+        affine that maps from input to output space.
 
-        Returns
-        -------
-        x : number or ndarray (same shape as input)
-            The x coordinates in the output space
-        y : number or ndarray (same shape as input)
-            The y coordinates in the output space
-        z : number or ndarray (same shape as input)
-            The z coordinates in the output space
+    Returns
+    -------
+    x : number or ndarray (same shape as input)
+        The x coordinates in the output space
+    y : number or ndarray (same shape as input)
+        The y coordinates in the output space
+    z : number or ndarray (same shape as input)
+        The z coordinates in the output space
 
-        Warning: The x, y and z have their Talairach ordering, not 3D
-        numpy image ordering.
+    Warning: The x, y and z have their Talairach ordering, not 3D
+    numpy image ordering.
 
     Examples
     --------
