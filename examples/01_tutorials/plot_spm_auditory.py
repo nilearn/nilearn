@@ -142,7 +142,7 @@ fmri_glm = fmri_glm.fit(fmri_img, events)
 # One can inspect the design matrix (rows represent time, and
 # columns contain the predictors):
 
-from nistats.design_matrix import plot_design_matrix
+from nistats.reporting import plot_design_matrix
 design_matrix = fmri_glm.design_matrices_[0]
 plot_design_matrix(design_matrix)
 
@@ -210,9 +210,13 @@ plot_stat_map(z_map, bg_img=mean_img, threshold=3.0,
 ###############################################################################
 # We can use ``nibabel.save`` to save the effect and zscore maps to the disk
 
+import os
+outdir = 'results'
+if not os.path.exists(outdir):
+    os.mkdir(outdir)
+
 import nibabel
 from os.path import join
-outdir = 'results'
 nibabel.save(z_map, join('results', 'active_vs_rest_z_map.nii'))
 nibabel.save(eff_map, join('results', 'active_vs_rest_eff_map.nii'))
 
