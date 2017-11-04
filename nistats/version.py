@@ -42,7 +42,7 @@ REQUIRED_MODULE_METADATA = (
         'required_at_installation': True,
         'install_info': _NISTATS_INSTALL_MSG}),
     ('nibabel', {
-        'min_version': '1.2.0',
+        'min_version': '2.0.2',
         'required_at_installation': False}),
     ('pandas', {
         'min_version': '0.13.0',
