@@ -1,6 +1,6 @@
 .. -*- mode: rst -*-
 
-nistats
+Nistats
 =======
 
 Nistats is a Python module for fast and easy modeling and statistical analysis
@@ -11,7 +11,7 @@ neuroimaging data manipulation (data downloading, visualization, masking).
 
 This work is made available by a community of people, amongst which
 the INRIA Parietal Project Team and D'esposito lab at Berkeley, in particular
-G. Varoquaux, B. Thirion, J.B. Poline and M. Brett.
+G. Varoquaux, B. Thirion, M. Perez-Guevara, J.B. Poline, M. Brett.
 
 It is based on developments initiated in the nipy
 `nipy <http://nipy.org/nipy/stable>`_ project.
@@ -69,5 +69,3 @@ You can check the latest sources with the command::
 or if you have write privileges::
 
     git clone git@github.com:nistats/nistats
-
-
