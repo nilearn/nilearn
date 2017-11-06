@@ -90,7 +90,13 @@ def find_xyz_cut_coords(img, mask=None, activation_threshold=None):
     if activation_threshold is None:
         activation_threshold = fast_abs_percentile(my_map[my_map != 0].ravel(),
                                                    80)
-    mask = np.abs(my_map) > activation_threshold - 1.e-15
+    try:
+        eps = 2 * np.finfo(activation_threshold).eps
+    except ValueError:
+        # The above will fail for exact types, eg integers
+        eps = 1e-15
+
+    mask = np.abs(my_map) > (activation_threshold - eps)
     # mask may be zero everywhere in rare cases
     if mask.max() == 0:
         return .5 * np.array(data.shape)
