@@ -4,9 +4,11 @@ Test the searchlight module
 # Author: Alexandre Abraham
 # License: simplified BSD
 
-from nose.tools import assert_equal
 import numpy as np
 import nibabel
+import sklearn
+from distutils.version import LooseVersion
+from nose.tools import assert_equal
 from nilearn.decoding import searchlight
 
 
@@ -28,9 +30,13 @@ def test_searchlight():
     data_img = nibabel.Nifti1Image(data, np.eye(4))
 
     # Define cross validation
-    from sklearn.cross_validation import KFold
-    # avoid using KFold for compatibility with sklearn 0.10-0.13
-    cv = KFold(len(cond), 4)
+    if LooseVersion(sklearn.__version__) >= LooseVersion('0.18'):
+        from sklearn.model_selection import KFold
+        cv = KFold(n_splits=4)
+    else:
+        from sklearn.cross_validation import KFold
+        # avoid using KFold for compatibility with sklearn < 0.18
+        cv = KFold(len(cond), 4)
     n_jobs = 1
 
     # Run Searchlight with different radii
