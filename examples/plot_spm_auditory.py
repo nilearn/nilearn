@@ -34,8 +34,6 @@ original EPI scans without any spatial or temporal preprocessing.
 spatially normalized and smoothed images).
 
 
-
-
 To run this example, you must launch IPython via ``ipython
 --matplotlib`` in a terminal, or use the Jupyter notebook.
 
@@ -43,10 +41,7 @@ To run this example, you must launch IPython via ``ipython
     :local:
     :depth: 1
 
-
 """
-
-
 
 
 ################################################################################
@@ -100,7 +95,6 @@ mean_img = image.mean_img(fmri_img)
 # timings:
 
 import numpy as np
-
 tr = 7.
 slice_time_ref = 0.
 n_scans = 96

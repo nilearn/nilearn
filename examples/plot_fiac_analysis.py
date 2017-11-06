@@ -29,7 +29,6 @@ import pandas as pd
 
 from nilearn import plotting
 from nilearn.image import mean_img
-import nibabel as nib
 
 from nistats.first_level_model import FirstLevelModel
 from nistats import datasets
@@ -84,7 +83,7 @@ for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
     z_image_path = path.join(write_dir, '%s_z_map.nii' % contrast_id)
     z_map = fmri_glm.compute_contrast(
         contrast_val, output_type='z_score')
-    nib.save(z_map, z_image_path)
+    z_map.to_filename(z_image_path)
 
     # make a snapshot of the contrast activation
     if contrast_id == 'Effects_of_interest':
