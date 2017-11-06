@@ -9,7 +9,7 @@ import os
 import shutil
 import numpy as np
 
-from nibabel import load, Nifti1Image, save
+from nibabel import load, Nifti1Image
 
 from nistats.first_level_model import (mean_scaling, run_glm, FirstLevelModel,
                                        first_level_models_from_bids)
@@ -35,12 +35,12 @@ def write_fake_fmri_data(shapes, rk=3, affine=np.eye(4)):
         fmri_files.append('fmri_run%d.nii' % i)
         data = np.random.randn(*shape)
         data[1:-1, 1:-1, 1:-1] += 100
-        save(Nifti1Image(data, affine), fmri_files[-1])
+        Nifti1Image(data, affine).to_filename(fmri_files[-1])
         design_files.append('dmtx_%d.csv' % i)
         pd.DataFrame(np.random.randn(shape[3], rk),
                      columns=['', '', '']).to_csv(design_files[-1])
-    save(Nifti1Image((np.random.rand(*shape[:3]) > .5).astype(np.int8),
-                     affine), mask_file)
+    Nifti1Image((np.random.rand(*shape[:3]) > .5).astype(np.int8),
+                affine).to_filename(mask_file)
     return mask_file, fmri_files, design_files
 
 
