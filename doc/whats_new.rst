@@ -9,6 +9,10 @@ Changelog
 Enhancements
 -------------
 
+    - Expose :func:`nilearn.image.coord_transform` for end users. Useful
+      to transform coordinates (x, y, z) from one image space to
+      another space.
+
     - New matrix plotting function, eg to display connectome matrices:
       :func:`nilearn.plotting.plot_matrix`
 
