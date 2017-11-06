@@ -20,7 +20,6 @@ import json
 
 import numpy as np
 import pandas as pd
-<<<<<<< 8c233239cfc7d0bf57ca96a0c8a15c87e48549f1
 from nibabel import Nifti1Image, AnalyzeImage
 
 from sklearn.base import BaseEstimator, TransformerMixin, clone
