@@ -44,45 +44,46 @@ To run this example, you must launch IPython via ``ipython
 """
 
 
-################################################################################
+###############################################################################
 # Retrieving the data
 # -------------------
 #
-# .. note:: In this tutorial, we load the data using a data downloading function.
-#           To input your own data, you will need to pass a list of paths to your own files.
+# .. note:: In this tutorial, we load the data using a data downloading
+#           function.To input your own data, you will need to pass
+#           a list of paths to your own files.
 
 from nistats.datasets import fetch_spm_auditory
 subject_data = fetch_spm_auditory()
 
 
-################################################################################
+###############################################################################
 # We can list the filenames of the functional images
 print(subject_data.func)
 
-################################################################################
+###############################################################################
 # Display the first functional image:
 from nilearn.plotting import plot_stat_map, plot_anat, plot_img
 plot_img(subject_data.func[0])
 
-################################################################################
+###############################################################################
 # Display the subject's anatomical image:
 plot_anat(subject_data.anat)
 
 
-################################################################################
+###############################################################################
 # Next, we concatenate all the 3D EPI image into a single 4D image:
 
 from nilearn.image import concat_imgs
 fmri_img = concat_imgs(subject_data.func)
 
-################################################################################
+###############################################################################
 # And we average all the EPI images in order to create a background
 # image that will be used to display the activations:
 
 from nilearn import image
 mean_img = image.mean_img(fmri_img)
 
-################################################################################
+###############################################################################
 # Specifying the experimental paradigm
 # ------------------------------------
 #
@@ -107,12 +108,12 @@ onset = np.linspace(0, (n_blocks - 1) * epoch_duration, n_blocks)
 import pandas as pd
 events = pd.DataFrame({'onset': onset, 'duration': duration, 'trial_type': conditions})
 
-################################################################################
+###############################################################################
 # The ``events`` object contains the information for the design:
 print(events)
 
 
-################################################################################
+###############################################################################
 # Performing the GLM analysis
 # ---------------------------
 #
@@ -126,8 +127,9 @@ drift_model = 'Cosine'
 period_cut = 4. * epoch_duration
 hrf_model = 'glover + derivative'
 
-################################################################################
-# It is now time to create a ``FirstLevelModel`` object and fit it to the 4D dataset:
+###############################################################################
+# It is now time to create a ``FirstLevelModel`` object
+# and fit it to the 4D dataset:
 
 from nistats.first_level_model import FirstLevelModel
 
@@ -136,7 +138,7 @@ fmri_glm = FirstLevelModel(tr, slice_time_ref, noise_model='ar1',
                            drift_model=drift_model, period_cut=period_cut)
 fmri_glm = fmri_glm.fit(fmri_img, events)
 
-################################################################################
+###############################################################################
 # One can inspect the design matrix (rows represent time, and
 # columns contain the predictors):
 
@@ -145,7 +147,7 @@ design_matrix = fmri_glm.design_matrices_[0]
 plot_design_matrix(design_matrix)
 
 
-################################################################################
+###############################################################################
 # The first column contains the expected reponse profile of regions which are
 # sensitive to the auditory stimulation.
 
@@ -156,7 +158,7 @@ plt.title('Expected Auditory Response')
 plt.show()
 
 
-################################################################################
+###############################################################################
 # Detecting voxels with significant effects
 # -----------------------------------------
 #
@@ -171,7 +173,7 @@ contrasts = dict([(column, contrast_matrix[i])
 contrasts::
 
   {
-   'active':           array([ 1.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.]),
+  'active':            array([ 1.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.]),
   'active_derivative': array([ 0.,  1.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.]),
   'constant':          array([ 0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  1.]),
   'drift_1':           array([ 0.,  0.,  0.,  0.,  1.,  0.,  0.,  0.,  0.,  0.,  0.,  0.]),
@@ -185,7 +187,7 @@ contrasts::
   'rest_derivative':   array([ 0.,  0.,  0.,  1.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.])}
 """
 
-################################################################################
+###############################################################################
 # We can then compare the two conditions 'active' and 'rest' by
 # generating the relevant contrast:
 
@@ -205,7 +207,7 @@ plot_stat_map(z_map, bg_img=mean_img, threshold=3.0,
               title='Active minus Rest (Z>3)')
 
 
-################################################################################
+###############################################################################
 # We can use ``.to_filename()`` to save the effect and zscore maps to the disk
 
 
@@ -214,22 +216,25 @@ outdir = 'results'
 z_map.to_filename(join('results', 'active_vs_rest_z_map.nii'))
 eff_map.to_filename(join('results', 'active_vs_rest_eff_map.nii'))
 
-################################################################################
+###############################################################################
 #  Extract the signal from a voxels
 #  --------------------------------
 #
-# We search for the voxel with the larger z-score and plot the signal (warning: double dipping!)
+# We search for the voxel with the larger z-score and plot the signal
+# (warning: double dipping!)
 
 
 # Find the coordinates of the peak
 
 from nibabel.affines import apply_affine
 values = z_map.get_data()
-coord_peaks = np.dstack(np.unravel_index(np.argsort(values.ravel()), values.shape))[0, 0, :]
+coord_peaks = np.dstack(np.unravel_index(np.argsort(values.ravel()),
+                                         values.shape))[0, 0, :]
 coord_mm = apply_affine(z_map.affine, coord_peaks)
 
-################################################################################
-# We create a masker for the voxel (allowing us to detrend the signal) and extract the time course
+###############################################################################
+# We create a masker for the voxel (allowing us to detrend the signal)
+# and extract the time course
 
 from nilearn.input_data import NiftiSpheresMasker
 mask = NiftiSpheresMasker([coord_mm], radius=3,
