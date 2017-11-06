@@ -208,13 +208,13 @@ plot_stat_map(z_map, bg_img=mean_img, threshold=3.0,
 
 
 ###############################################################################
-# We can use ``.to_filename()`` to save the effect and zscore maps to the disk
+# We can use ``nibabel.save`` to save the effect and zscore maps to the disk
 
-
+import nibabel
 from os.path import join
 outdir = 'results'
-z_map.to_filename(join('results', 'active_vs_rest_z_map.nii'))
-eff_map.to_filename(join('results', 'active_vs_rest_eff_map.nii'))
+nibabel.save(z_map, join('results', 'active_vs_rest_z_map.nii'))
+nibabel.save(eff_map, join('results', 'active_vs_rest_eff_map.nii'))
 
 ###############################################################################
 #  Extract the signal from a voxels
