@@ -554,7 +554,7 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         # Prepare the returned images
         output = self.masker_.inverse_transform(estimate_)
         contrast_name = str(con_vals)
-        output.get_header()['descrip'] = (
+        output.header['descrip'] = (
             '%s of contrast %s' % (output_type, contrast_name))
 
         return output
