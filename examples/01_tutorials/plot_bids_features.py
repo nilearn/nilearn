@@ -64,7 +64,7 @@ data_dir, _ = fetch_openneuro_dataset(urls=urls)
 # To get the first level models we have to specify the dataset directory,
 # the task_label and the space_label as specified in the file names.
 # We also have to provide the folder with the desired derivatives, that in this
-# were produced by the fmriprep BIDS app.
+# case were produced by the fmriprep BIDS app.
 from nistats.first_level_model import first_level_models_from_bids
 task_label = 'stopsignal'
 space_label = 'MNI152NLin2009cAsym'
