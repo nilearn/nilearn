@@ -31,7 +31,8 @@ To run this example, you must launch IPython via ``ipython
 ##############################################################################
 # Fetch example BIDS dataset
 # --------------------------
-# We download a partial example BIDS dataset. It contains only the necessary
+# We download an simplified BIDS dataset made available for illustrative
+# purposes. It contains only the necessary
 # information to run a statistical analysis using Nistats. The raw data
 # subject folders only contain bold.json and events.tsv files, while the
 # derivatives folder with preprocessed files contain preproc.nii and
@@ -76,14 +77,16 @@ print(models_confounds[0][0].columns)
 ############################################################################
 # During this acquisition the subject read blocks of sentences and
 # consonant strings. So these are our only two conditions in events.
-# We verify there are n blocks for each condition.
+# We verify there are 12 blocks for each condition.
 print(models_events[0][0]['trial_type'].value_counts())
 
 ############################################################################
 # First level model estimation
 # ----------------------------
 # Now we simply fit each first level model and plot for each subject the
-# contrast that reveals the language network (language - string).
+# contrast that reveals the language network (language - string). Notice that
+# we can define a contrast using the names of the conditions especified in the
+# events dataframe. Sum, substraction and scalar multiplication are allowed.
 from nilearn import plotting
 import matplotlib.pyplot as plt
 from scipy.stats import norm
@@ -104,8 +107,9 @@ plt.show()
 # Second level model estimation
 # -----------------------------
 # We just have to provide the list of fitted FirstLevelModel objects
-# to the SecondLevelModel object for estimation. We can do this since
-# all subjects share the same design matrix.
+# to the SecondLevelModel object for estimation. We can do this because
+# all subjects share a similar design matrix (same variables reflected in
+# column names)
 from nistats.second_level_model import SecondLevelModel
 second_level_input = models
 second_level_model = SecondLevelModel(smoothing_fwhm=8.0)
@@ -119,8 +123,8 @@ second_level_model = second_level_model.fit(second_level_input)
 zmap = second_level_model.compute_contrast(first_level_contrast='language-string')
 
 #########################################################################
-# The group level contrast of the language network is mostly left
-# lateralized as expected
+# The group level contrast reveals a left lateralized fronto-temporal
+# language network
 plotting.plot_glass_brain(zmap, colorbar=True, threshold=norm.isf(0.001),
                           title='Group language network (unc p<0.001)',
                           plot_abs=False, display_mode='x')
