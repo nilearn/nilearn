@@ -4,14 +4,10 @@ People
 ------
 
 This work is based on developments initiated in the nipy
-`nipy <http://nipy.org/nipy/stable>`_ project. It is made available by a community of people, amongst which the INRIA Parietal Project Team and D'esposito lab at Berkeley. In particular:
-
-* `Gael Varoquaux <http://gael-varoquaux.info/>`_
-* Bertrand Thirion
-* Martin Perez-Guevara
-* J.B. Poline
-* M. Brett.
-* Loïc Estève
+`nipy <http://nipy.org/nipy/stable>`_ project. It is made available by a 
+`community <https://github.com/nistats/nistats/graphs/contributors>`_ of 
+people, amongst which the INRIA Parietal Project Team and 
+D'esposito lab at Berkeley.
 
 
 Citing nistats

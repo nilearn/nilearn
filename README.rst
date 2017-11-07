@@ -9,9 +9,10 @@ of functional Magnetic Resonance Imaging data.
 It leverages the `nilearn <http://nilearn.github.io>`_ Python toolbox for
 neuroimaging data manipulation (data downloading, visualization, masking).
 
-This work is made available by a community of people, amongst which
-the INRIA Parietal Project Team and D'esposito lab at Berkeley, in particular
-G. Varoquaux, B. Thirion, M. Perez-Guevara, J.B. Poline, M. Brett.
+This work is made available by a
+`community <https://github.com/nistats/nistats/graphs/contributors>`_ of 
+people, amongst which the INRIA Parietal Project Team and D'esposito lab at 
+Berkeley.
 
 It is based on developments initiated in the nipy
 `nipy <http://nipy.org/nipy/stable>`_ project.
