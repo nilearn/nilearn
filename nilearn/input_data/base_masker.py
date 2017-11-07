@@ -86,6 +86,8 @@ def filter_and_extract(imgs, extraction_function,
     if smoothing_fwhm is not None:
         if verbose > 0:
             print("[%s] Smoothing images" % class_name)
+        if smoothing_fwhm == 0:
+            raise ValueError('Please choose smoothing_fwhm to be >0.')
         imgs = cache(
             image.smooth_img, memory, func_memory_level=2,
             memory_level=memory_level)(
