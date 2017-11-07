@@ -343,12 +343,6 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         # Check imgs type
         if not isinstance(run_imgs, (list, tuple)):
             run_imgs = [run_imgs]
-        for rimg in run_imgs:
-            if not isinstance(rimg, (_basestring, AnalyzeImage)):
-                # Nifti1Image is a subclass of AnalyzeImage
-                raise ValueError('run_imgs must be Niimg-like object or list'
-                                 ' of Niimg-like objects')
-        # check all information necessary to build design matrices is available
         if design_matrices is None:
             if events is None:
                 raise ValueError('events or design matrices must be provided')
@@ -370,8 +364,8 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         if self.mask is False:
             # We create a dummy mask to preserve functionality of api
             ref_img = check_niimg(run_imgs[0])
-            self.mask = Nifti1Image(np.ones(ref_img.shape[:3]),
-                                    ref_img.get_affine())
+            self.mask = nib.Nifti1Image(np.ones(ref_img.shape[:3]),
+                                    ref_img.affine)
         if not isinstance(self.mask, NiftiMasker):
             self.masker_ = NiftiMasker(
                 mask_img=self.mask, smoothing_fwhm=self.smoothing_fwhm,
@@ -560,7 +554,7 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         # Prepare the returned images
         output = self.masker_.inverse_transform(estimate_)
         contrast_name = str(con_vals)
-        output.get_header()['descrip'] = (
+        output.header['descrip'] = (
             '%s of contrast %s' % (output_type, contrast_name))
 
         return output

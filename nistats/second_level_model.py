@@ -137,7 +137,7 @@ class SecondLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
             order inconsistencies when extracting the maps. So the rows of the
             automatically computed design matrix, if not provided, will
             correspond to the sorted subject_label column.
-
+ 
             If list of Niimg-like objects then this is taken literally as Y
             for the model fit and design_matrix must be provided.
 
@@ -425,6 +425,6 @@ class SecondLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         # Prepare the returned images
         output = self.masker_.inverse_transform(estimate_)
         contrast_name = str(con_val)
-        output.get_header()['descrip'] = (
+        output.header['descrip'] = (
             '%s of contrast %s' % (output_type, contrast_name))
         return output

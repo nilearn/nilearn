@@ -9,7 +9,7 @@ import os
 
 import numpy as np
 
-from nibabel import load, Nifti1Image, save
+from nibabel import load, Nifti1Image
 
 from nistats.first_level_model import FirstLevelModel, run_glm
 from nistats.second_level_model import SecondLevelModel
@@ -31,12 +31,12 @@ def write_fake_fmri_data(shapes, rk=3, affine=np.eye(4)):
         fmri_files.append('fmri_run%d.nii' % i)
         data = np.random.randn(*shape)
         data[1:-1, 1:-1, 1:-1] += 100
-        save(Nifti1Image(data, affine), fmri_files[-1])
+        Nifti1Image(data, affine).to_filename(fmri_files[-1])
         design_files.append('dmtx_%d.csv' % i)
         pd.DataFrame(np.random.randn(shape[3], rk),
                      columns=['', '', '']).to_csv(design_files[-1])
-    save(Nifti1Image((np.random.rand(*shape[:3]) > .5).astype(np.int8),
-                     affine), mask_file)
+    Nifti1Image((np.random.rand(*shape[:3]) > .5).astype(np.int8),
+                affine).to_filename(mask_file)
     return mask_file, fmri_files, design_files
 
 
@@ -57,7 +57,7 @@ def test_high_level_glm_with_paths():
         c1 = np.eye(len(model.design_matrix_.columns))[0]
         z_image = model.compute_contrast(c1, output_type='z_score')
         assert_true(isinstance(z_image, Nifti1Image))
-        assert_array_equal(z_image.get_affine(), load(mask).get_affine())
+        assert_array_equal(z_image.affine, load(mask).affine)
         # Delete objects attached to files to avoid WindowsError when deleting
         # temporary directory
         del z_image, FUNCFILE, func_img, model
@@ -100,6 +100,7 @@ def test_fmri_inputs():
         # First level models as input
         SecondLevelModel(mask=mask).fit(flms)
         SecondLevelModel().fit(flms)
+        # Note : the following one creates a singular design matrix
         SecondLevelModel().fit(flms, confounds)
         SecondLevelModel().fit(flms, None, sdes)
         # dataframes as input

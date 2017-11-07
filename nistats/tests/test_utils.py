@@ -7,7 +7,7 @@ from scipy.stats import norm
 import scipy.linalg as spl
 from numpy.testing import assert_almost_equal, assert_array_almost_equal
 from nose.tools import assert_true, assert_equal, assert_raises
-from nibabel import load, Nifti1Image, save
+from nibabel import load, Nifti1Image
 from nibabel.tmpdirs import InTemporaryDirectory
 from nose import with_setup
 
@@ -112,7 +112,7 @@ def test_img_table_checks():
 def write_fake_bold_img(file_path, shape, rk=3, affine=np.eye(4)):
     data = np.random.randn(*shape)
     data[1:-1, 1:-1, 1:-1] += 100
-    save(Nifti1Image(data, affine), file_path)
+    Nifti1Image(data, affine).to_filename(file_path)
     return file_path
 
 
