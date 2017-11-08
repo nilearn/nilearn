@@ -185,6 +185,18 @@ def test_region_extractor_fit_and_transform():
     assert_not_equal(extract_ratio.regions_img_, '')
     assert_true(extract_ratio.regions_img_.shape[-1] >= 9)
 
+    # smoke test with permuted axes
+    affine = np.eye(4)
+    affine[[0, 1]] = affine[[1, 0]]
+    maps, mask_img = generate_maps((40, 40, 40), n_regions=n_regions,
+                                   affine=affine)
+
+    extract_ratio = RegionExtractor(maps, threshold=0.2,
+                                    thresholding_strategy='ratio_n_voxels')
+    extract_ratio.fit()
+    assert_not_equal(extract_ratio.regions_img_, '')
+    assert_true(extract_ratio.regions_img_.shape[-1] >= 9)
+
 
 def test_error_messages_connected_label_regions():
     shape = (13, 11, 12)
