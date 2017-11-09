@@ -19,6 +19,9 @@ Enhancements
     - :func:`nilearn.image.resample_img` now takes a linear resampling
       option (implemented by Joe Necus)
 
+    - :func:`nilearn.plotting.niimg_to_surf_data` projects a 3d brain map on the
+      cortical surface.
+
 0.3.1
 =====
 

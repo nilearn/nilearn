@@ -41,7 +41,6 @@ from . import cm
 from .img_plotting import plot_img, plot_anat, plot_epi, \
     plot_roi, plot_stat_map, plot_glass_brain, plot_connectome, \
     plot_prob_atlas, show
-from .surf_plotting import plot_surf, plot_surf_stat_map, plot_surf_roi
 from .find_cuts import find_xyz_cut_coords, find_cut_slices
 from .matrix_plotting import plot_matrix
 __all__ = ['cm', 'plot_img', 'plot_anat', 'plot_epi',
@@ -56,4 +55,6 @@ __all__ = ['cm', 'plot_img', 'plot_anat', 'plot_epi',
 
 if LooseVersion(matplotlib.__version__) > LooseVersion('1.3.1'):
     from .surf_plotting import plot_surf, plot_surf_stat_map, plot_surf_roi
-    __all__.extend(['plot_surf', 'plot_surf_stat_map', 'plot_surf_roi'])
+    from .surf_plotting import niimg_to_surf_data
+    __all__.extend(['plot_surf', 'plot_surf_stat_map', 'plot_surf_roi',
+                    'niimg_to_surf_data'])

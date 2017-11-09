@@ -314,6 +314,7 @@ uses.
    plot_surf
    plot_surf_roi
    plot_surf_stat_map
+   niimg_to_surf_data
    show
 
 **Classes**:

@@ -2,13 +2,26 @@
 Illustration of the volume to cortical surface sampling schemes
 ===============================================================
 
+In nilearn, plotting.surf_plotting.niimg_to_surf_data allows us to measure
+values of a 3d image at the nodes of a cortical mesh, transforming it into
+surface data. This data can then be plotted with
+plotting.surf_plotting.plot_surf_stat_map for example.
+
+This script shows, on a toy example, where samples are drawn around each mesh
+vertex. Image values are interpolated at each sample location, then these
+samples are averaged to produce a value for the vertex.
+
+Two strategies are available to choose sample locations: they can be spread
+along the normal to the mesh, or inside a ball around the vertex. Don't worry
+too much about choosing one or the other: they take a similar amount of time
+and give almost identical results for most images.
+
 """
 
 import numpy as np
 
 import matplotlib
 from matplotlib import pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
 
 from nilearn.plotting import surf_plotting
 
@@ -28,10 +41,9 @@ z = v.flatten() * 2 / N_Z
 mesh = [np.asarray([x, y, z]).T, triangulation.triangles]
 
 
-######################################################################
-# Get the locations from which surf_plotting.niimg_to_surf_data
-# would draw its samples
-######################################################################
+#########################################################################
+# Get the locations from which niimg_to_surf_data would draw its samples
+#########################################################################
 
 line_sample_points = surf_plotting._line_sample_locations(
     mesh, np.eye(4), segment_half_width=.2, n_points=6)
