@@ -396,7 +396,22 @@ def test_plot_surf_roi_error():
                         roi_map={'roi1': roi1, 'roi2': roi2})
 
 
+def test_vertex_outer_normals():
+    # compute normals for a flat horizontal mesh, they should all be (0, 0, 1)
+    x, y = np.mgrid[:5, :7]
+    x, y = x.ravel(), y.ravel()
+    z = np.zeros(len(x))
+    triangulation = matplotlib.tri.Triangulation(x, y)
+    vertices = np.asarray([x, y, z]).T
+    mesh = [vertices, triangulation.triangles]
+    computed_normals = surf_plotting._vertex_outer_normals(mesh)
+    true_normals = np.zeros((len(x), 3))
+    true_normals[:, 2] = 1
+    assert_array_almost_equal(computed_normals, true_normals)
+
+
 def test_sampling():
+    # check sampled (projected) values on a toy image
     img = np.ones((4, 4, 4))
     img[1, :, :] = 2
     nodes = [[1, 1, 2], [10, 10, 20], [30, 30, 30]]
@@ -405,10 +420,12 @@ def test_sampling():
     affine[-1, -1] = 1
     texture = surf_plotting._sampling(
         [img], mesh, affine=affine, radius=1)
-    assert_array_equal(texture[0][0], [1., 2., 1.])
+    assert_array_equal(texture[0], [1., 2., 1.])
 
 
 def test_niimg_to_surf_data():
+    # test 3d niimg to cortical surface projection and invariance to a change
+    # of affine
     mni = datasets.load_mni152_template()
     fsaverage = datasets.fetch_surf_fsaverage5().pial_left
     for kind in ['ball', 'line']:

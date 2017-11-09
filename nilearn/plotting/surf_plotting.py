@@ -34,6 +34,7 @@ memory = joblib.Memory(_get_dataset_dir('joblib'), verbose=False)
 
 @memory.cache
 def _uniform_ball_cloud(n_points=100, dim=3, n_monte_carlo=5000):
+    """Get points uniformly spaced in the unit ball."""
     mc_cube = np.random.uniform(-1, 1, size=(n_monte_carlo, dim))
     mc_ball = mc_cube[(mc_cube**2).sum(axis=1) <= 1.]
     centroids, assignments, _ = sklearn.cluster.k_means(
@@ -42,6 +43,7 @@ def _uniform_ball_cloud(n_points=100, dim=3, n_monte_carlo=5000):
 
 
 def _face_outer_normals(mesh):
+    """Get the normal to each triangle in a mesh."""
     vertices, faces = load_surf_mesh(mesh)
     face_vertices = vertices[faces]
     # The right-hand rule gives the direction of the outer normal
@@ -52,6 +54,10 @@ def _face_outer_normals(mesh):
 
 
 def _surrounding_faces(mesh):
+    """Get matrix indicating which faces nodes belong to.
+
+    i, j is set if node i is a vertex of triangle j.
+    """
     vertices, faces = load_surf_mesh(mesh)
     n_faces = faces.shape[0]
     return sparse.coo_matrix((np.ones(3 * n_faces),
@@ -61,6 +67,12 @@ def _surrounding_faces(mesh):
 
 
 def _vertex_outer_normals(mesh):
+    """Get the normal at each vertex in a triangular mesh.
+
+    They are the outer normals if the mesh respects the convention that the
+    direction given by the direct order of a triangle's vertices (right-hand
+    rule) points outwards.
+    """
     vertices, faces = load_surf_mesh(mesh)
     vertex_faces = _surrounding_faces(mesh)
     face_normals = _face_outer_normals(mesh)
@@ -68,7 +80,39 @@ def _vertex_outer_normals(mesh):
     return sklearn.preprocessing.normalize(normals)
 
 
-def _ball_sample_locations(mesh, affine, ball_radius=3, n_points=20):
+def _ball_sample_locations(mesh, affine, ball_radius=3., n_points=20):
+    """Locations to draw samples from to project volume data onto a mesh.
+
+    For each mesh vertex, the locations of `n_points` points evenly spread in a
+    ball around the vertex are returned.
+
+    Parameters
+    ==========
+    mesh : pair of np arrays.
+        mesh[0] contains the 3d coordinates of the vertices
+        (shape n_vertices, 3)
+        mesh[1] contains, for each triangle, the indices into mesh[0] of its
+        vertices (shape n_triangles, 3)
+
+    affine : array of shape (4, 4)
+        affine transformation from image voxels to the vertices' coordinates.
+
+    ball_radius : float, optional (default=3.)
+        size in mm of the neighbourhood around each vertex in which to draw
+        samples
+
+    n_points : int, optional (default=20)
+        number of samples to draw for each vertex.
+
+    Returns
+    =======
+    numpy array, shape (n_vertices, n_points, 3)
+        The locations, in voxel space, from which to draw samples.
+        First dimension iterates over mesh vertices, second dimension iterates
+        over the sample points associated to a vertex, third dimension is x, y,
+        z in voxel space.
+
+    """
     vertices, faces = mesh
     offsets_world_space = _uniform_ball_cloud(
         dim=vertices.shape[1], n_points=n_points) * ball_radius
@@ -87,6 +131,39 @@ def _ball_sample_locations(mesh, affine, ball_radius=3, n_points=20):
 
 def _line_sample_locations(
         mesh, affine, segment_half_width=3., n_points=10):
+    """Locations to draw samples from to project volume data onto a mesh.
+
+    For each mesh vertex, the locations of `n_points` points evenly spread in a
+    segment of the normal to the vertex are returned. The line segment has
+    length 2 * `segment_half_width` and is centered at the vertex.
+
+    Parameters
+    ==========
+    mesh : pair of np arrays.
+        mesh[0] contains the 3d coordinates of the vertices
+        (shape n_vertices, 3)
+        mesh[1] contains, for each triangle, the indices into mesh[0] of its
+        vertices (shape n_triangles, 3)
+
+    affine : array of shape (4, 4)
+        affine transformation from image voxels to the vertices' coordinates.
+
+    segment_half_width : float, optional (default=3.)
+        size in mm of the neighbourhood around each vertex in which to draw
+        samples
+
+    n_points : int, optional (default=10)
+        number of samples to draw for each vertex.
+
+    Returns
+    =======
+    numpy array, shape (n_vertices, n_points, 3)
+        The locations, in voxel space, from which to draw samples.
+        First dimension iterates over mesh vertices, second dimension iterates
+        over the sample points associated to a vertex, third dimension is x, y,
+        z in voxel space.
+
+    """
     vertices, faces = mesh
     normals = _vertex_outer_normals(mesh)
     offsets = np.linspace(-segment_half_width, segment_half_width, n_points)
@@ -103,7 +180,52 @@ def _line_sample_locations(
 def _sampling(images, mesh,
               affine, kind='ball', interpolation='nearest',
               radius=3, n_points=None):
-    """In each image, average samples drawn around each node."""
+    """In each image, measure the intensity at each node of the mesh.
+
+    Parameters
+    ==========
+    images : 4d numpy array
+        The first dimension iterates over images, the last 3 are the image
+        dimensions x, y, z.
+
+    mesh : pair of np arrays.
+        mesh[0] contains the 3d coordinates of the vertices
+        (shape n_vertices, 3)
+        mesh[1] contains, for each triangle, the indices into mesh[0] of its
+        vertices (shape n_triangles, 3)
+
+    affine : numpy array, shape (4, 4)
+        The affine of the image. The mesh vertex coordinates should be given in
+        the image coordinate space.
+
+    kind : {'line', 'ball'}
+        The strategy used to sample image intensities around each vertex.
+        - 'line' (the default):
+            samples are regularly spaced along the normal to the mesh, over the
+            interval [-radius, +radius].
+        - 'ball':
+            samples are regularly spaced inside a ball centered at the mesh
+            vertex.
+
+    interpolation: {'linear', 'nearest'}
+        How the image intensity is measured at a sample point.
+        - 'nearest' (the default):
+            Use the intensity of the nearest voxel.
+        - 'linear':
+            Use a trilinear interpolation of neighbouring voxels.
+
+    n_samples: int or None, optional (default=None)
+        How many samples are drawn around each vertex and averaged. If None,
+        use a reasonable default for the chosen sampling strategy ('ball' or
+        'line').
+
+    Returns
+    =======
+    texture: 2d array
+        The projected image values. Each row corresponds to an image and each
+        column to a mesh vertex.
+
+    """
     vertices, faces = mesh
     images = np.asarray(images)
     n_images = images.shape[0]
@@ -116,7 +238,7 @@ def _sampling(images, mesh,
     loc_kwargs = ({} if n_points is None else {'n_points': n_points})
     sample_locations = projector(
         mesh, affine, radius, **loc_kwargs)
-    n_vertices, n_points, img_dim  = sample_locations.shape
+    n_vertices, n_points, img_dim = sample_locations.shape
     if n_images == 1:
         images = images[0]
     grid = [np.arange(size) for size in images.shape]
@@ -133,7 +255,7 @@ def _sampling(images, mesh,
     samples = interpolator(interp_locations)
     samples = samples.reshape((n_images, n_vertices, n_points))
     texture = np.mean(samples, axis=2)
-    return texture, sample_locations
+    return texture
 
 
 def niimg_to_surf_data(image, surf_mesh,
@@ -181,7 +303,7 @@ def niimg_to_surf_data(image, surf_mesh,
 
     Returns
     -------
-    texture: array-like, 1d or 2d.
+    texture: array, 1d or 2d.
         If image was a 3d image (e.g a stat map), a 1d vector is returned,
         containing one value for each mesh node.
         If image was a 4d image, a 2d array is returned, where each row
@@ -193,7 +315,7 @@ def niimg_to_surf_data(image, surf_mesh,
     image = _utils.check_niimg(image, atleast_4d=True)
     frames = np.rollaxis(image.get_data(), -1)
     mesh = load_surf_mesh(surf_mesh)
-    texture, locations = _sampling(
+    texture = _sampling(
         frames, mesh, image.affine,
         radius=radius, kind=kind, interpolation=interpolation)
     if original_dimension == 3:
