@@ -29,7 +29,7 @@ fsaverage = nilearn.datasets.fetch_surf_fsaverage5()
 # Sample the 3D data around each node of the mesh
 # -----------------------------------------------
 
-texture = surf_plotting.niimg_to_surf_data(image, fsaverage.pial_left)
+texture = surf_plotting.niimg_to_surf_data(image, fsaverage.pial_left, kind='line')
 
 
 ##############################################################################

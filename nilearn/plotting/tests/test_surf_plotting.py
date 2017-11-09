@@ -397,15 +397,15 @@ def test_plot_surf_roi_error():
 
 
 def test_sampling():
-    img = np.ones((3, 3))
-    img[1:] = 7.5
-    nodes = [[2, 2], [2, 15], [25, 25]]
+    img = np.ones((4, 4, 4))
+    img[1, :, :] = 2
+    nodes = [[1, 1, 2], [10, 10, 20], [30, 30, 30]]
     mesh = np.asarray(nodes), None
-    affine = 10 * np.eye(3)
+    affine = 10 * np.eye(4)
     affine[-1, -1] = 1
     texture = surf_plotting._sampling(
         [img], mesh, affine=affine, radius=1)
-    assert_array_equal(texture[0][0], [1., 1., 7.5])
+    assert_array_equal(texture[0][0], [1., 2., 1.])
 
 
 def test_niimg_to_surf_data():

@@ -20,6 +20,7 @@ from mpl_toolkits.mplot3d import Axes3D
 from nibabel import gifti
 
 import nilearn.image
+from ..image import resampling
 from .._utils.compat import _basestring
 from .. import _utils
 from .img_plotting import _get_colorbar_and_data_ranges
@@ -38,12 +39,6 @@ def _uniform_ball_cloud(n_points=100, dim=3, n_monte_carlo=5000):
     centroids, assignments, _ = sklearn.cluster.k_means(
         mc_ball, n_clusters=n_points)
     return centroids
-
-
-# could be replaced by nilearn.image.resampling.coord_transform, but
-# it only works for 3d images and 2d is useful for visu and debugging.
-def _transform_coord(coords, affine):
-    return affine.dot(np.vstack([coords.T, np.ones(coords.shape[0])]))[:-1].T
 
 
 def _face_outer_normals(mesh):
@@ -73,16 +68,18 @@ def _vertex_outer_normals(mesh):
     return sklearn.preprocessing.normalize(normals)
 
 
-def _ball_sample_locations(mesh, affine, ball_radius=3, n_points=100):
-    """Get n_points regularly spaced inside a ball."""
+def _ball_sample_locations(mesh, affine, ball_radius=3, n_points=20):
     vertices, faces = mesh
     offsets_world_space = _uniform_ball_cloud(
         dim=vertices.shape[1], n_points=n_points) * ball_radius
-    mesh_voxel_space = _transform_coord(vertices, np.linalg.inv(affine))
+    mesh_voxel_space = np.asarray(
+        resampling.coord_transform(*vertices.T,
+                                   affine=np.linalg.inv(affine))).T
     linear_map = np.eye(affine.shape[0])
     linear_map[:-1, :-1] = affine[:-1, :-1]
-    offsets_voxel_space = _transform_coord(offsets_world_space,
-                                           np.linalg.inv(linear_map))
+    offsets_voxel_space = np.asarray(
+        resampling.coord_transform(*offsets_world_space.T,
+                                   affine=np.linalg.inv(linear_map))).T
     sample_locations_voxel_space = (mesh_voxel_space[:, np.newaxis, :] +
                                     offsets_voxel_space[np.newaxis, :])
     return sample_locations_voxel_space
@@ -96,16 +93,17 @@ def _line_sample_locations(
     sample_locations = vertices[
         np.newaxis, :, :] + normals * offsets[:, np.newaxis, np.newaxis]
     sample_locations = np.rollaxis(sample_locations, 1)
-    sample_locations_voxel_space = _transform_coord(
-        np.vstack(sample_locations),
-        np.linalg.inv(affine)).reshape(sample_locations.shape)
+    sample_locations_voxel_space = np.asarray(
+        resampling.coord_transform(
+            *np.vstack(sample_locations).T,
+            affine=np.linalg.inv(affine))).T.reshape(sample_locations.shape)
     return sample_locations_voxel_space
 
 
 def _sampling(images, mesh,
               affine, kind='ball', interpolation='nearest',
               radius=3, n_points=None):
-    """In each image, average samples drawn from a ball around each node."""
+    """In each image, average samples drawn around each node."""
     vertices, faces = mesh
     images = np.asarray(images)
     n_images = images.shape[0]
@@ -139,7 +137,8 @@ def _sampling(images, mesh,
 
 
 def niimg_to_surf_data(image, surf_mesh,
-                       radius=3., kind='ball', interpolation='nearest'):
+                       radius=3., kind='line', interpolation='nearest',
+                       n_samples=None):
     """Extract surface data from a Nifti image.
 
     Parameters
@@ -155,9 +154,30 @@ def niimg_to_surf_data(image, surf_mesh,
         vertices, the second containing the indices (into coords)
         of the mesh faces.
 
-    ball_radius : float, optional (default=3.).
-        The radius (in mm) of the ball over which image intensities are
-        averaged around each node.
+    radius : float, optional (default=3.).
+        The size (in mm) of the neighbourhood from which samples along each
+        node.
+
+    kind : {'line', 'ball'}
+        The strategy used to sample image intensities around each vertex.
+        - 'line' (the default):
+            samples are regularly spaced along the normal to the mesh, over the
+            interval [-radius, +radius].
+        - 'ball':
+            samples are regularly spaced inside a ball centered at the mesh
+            vertex.
+
+    interpolation: {'linear', 'nearest'}
+        How the image intensity is measured at a sample point.
+        - 'nearest' (the default):
+            Use the intensity of the nearest voxel.
+        - 'linear':
+            Use a trilinear interpolation of neighbouring voxels.
+
+    n_samples: int or None, optional (default=None)
+        How many samples are drawn around each vertex and averaged. If None,
+        use a reasonable default for the chosen sampling strategy ('ball' or
+        'line').
 
     Returns
     -------
