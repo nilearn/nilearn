@@ -7,13 +7,14 @@ See http://nilearn.github.io/manipulating_images/input_output.html
 
 import warnings
 from distutils.version import LooseVersion
+import numbers
 
 import numpy as np
 import scipy
 from scipy import ndimage, linalg
 
 from .. import _utils
-from .._utils.compat import _basestring, get_affine
+from .._utils.compat import _basestring
 
 ###############################################################################
 # Affine utils
@@ -90,38 +91,56 @@ def coord_transform(x, y, z, affine):
     """ Convert the x, y, z coordinates from one image space to another
         space.
 
-        Parameters
-        ----------
-        x : number or ndarray
-            The x coordinates in the input space
-        y : number or ndarray
-            The y coordinates in the input space
-        z : number or ndarray
-            The z coordinates in the input space
-        affine : 2D 4x4 ndarray
-            affine that maps from input to output space.
+    Parameters
+    ----------
+    x : number or ndarray (any shape)
+        The x coordinates in the input space
+    y : number or ndarray (same shape as x)
+        The y coordinates in the input space
+    z : number or ndarray
+        The z coordinates in the input space
+    affine : 2D 4x4 ndarray
+        affine that maps from input to output space.
 
-        Returns
-        -------
-        x : number or ndarray
-            The x coordinates in the output space
-        y : number or ndarray
-            The y coordinates in the output space
-        z : number or ndarray
-            The z coordinates in the output space
+    Returns
+    -------
+    x : number or ndarray (same shape as input)
+        The x coordinates in the output space
+    y : number or ndarray (same shape as input)
+        The y coordinates in the output space
+    z : number or ndarray (same shape as input)
+        The z coordinates in the output space
 
-        Warning: The x, y and z have their Talairach ordering, not 3D
-        numy image ordering.
+    Warning: The x, y and z have their output space (e.g. MNI) coordinate
+    ordering, not 3D numpy image ordering.
+
+    Examples
+    --------
+    Transform data from coordinates to brain space. The "affine" matrix
+    can be found as the ".affine" attribute of a nifti image, or using
+    the "get_affine()" method for older nibabel installations::
+
+        >>> from nilearn import datasets, image
+        >>> niimg = datasets.load_mni152_template()
+        >>> # Find the MNI coordinates of the voxel (10, 10, 10)
+        >>> image.coord_transform(50, 50, 50, niimg.affine)
+        (-10.0, -26.0, 28.0)
+
     """
     squeeze = (not hasattr(x, '__iter__'))
+    return_number = isinstance(x, numbers.Number)
+    x = np.asanyarray(x)
+    shape = x.shape
     coords = np.c_[np.atleast_1d(x).flat,
                    np.atleast_1d(y).flat,
                    np.atleast_1d(z).flat,
                    np.ones_like(np.atleast_1d(z).flat)].T
     x, y, z, _ = np.dot(affine, coords)
+    if return_number:
+        return x.item(), y.item(), z.item()
     if squeeze:
         return x.squeeze(), y.squeeze(), z.squeeze()
-    return x, y, z
+    return np.reshape(x, shape), np.reshape(y, shape), np.reshape(z, shape)
 
 
 def get_bounds(shape, affine):
@@ -188,7 +207,7 @@ def get_mask_bounds(img):
     """
     img = _utils.check_niimg_3d(img)
     mask = _utils.numpy_conversions._asarray(img.get_data(), dtype=np.bool)
-    affine = get_affine(img)
+    affine = img.affine
     (xmin, xmax), (ymin, ymax), (zmin, zmax) = get_bounds(mask.shape, affine)
     slices = ndimage.find_objects(mask)
     if len(slices) == 0:
@@ -401,7 +420,7 @@ def resample_img(img, target_affine=None, target_shape=None,
         target_affine = np.asarray(target_affine)
 
     shape = img.shape
-    affine = get_affine(img)
+    affine = img.affine
 
     if (np.all(np.array(target_shape) == shape[:3]) and
             np.allclose(target_affine, affine)):
@@ -506,7 +525,7 @@ def resample_img(img, target_affine=None, target_shape=None,
 
     all_img = (slice(None), ) * 3
 
-    # Iter overr a set of 3D volumes, as the interpolation problem is
+    # Iterate over a set of 3D volumes, as the interpolation problem is
     # separable in the extra dimensions. This reduces the
     # computational cost
     for ind in np.ndindex(*other_shape):
@@ -568,7 +587,7 @@ def resample_to_img(source_img, target_img,
         target_shape = target.shape[:3]
 
     return resample_img(source_img,
-                        target_affine=get_affine(target),
+                        target_affine=target.affine,
                         target_shape=target_shape,
                         interpolation=interpolation, copy=copy, order=order)
 
@@ -598,7 +617,7 @@ def reorder_img(img, resample=None):
     img = _utils.check_niimg(img)
     # The copy is needed in order not to modify the input img affine
     # see https://github.com/nilearn/nilearn/issues/325 for a concrete bug
-    affine = get_affine(img).copy()
+    affine = img.affine.copy()
     A, b = to_matrix_vector(affine)
 
     if not np.all((np.abs(A) > 0.001).sum(axis=0) == 1):

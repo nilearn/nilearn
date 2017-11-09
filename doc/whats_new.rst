@@ -1,8 +1,17 @@
 0.3.2
 =====
 
+Changelog
+---------
+
+    - Dropped support for Nibabel older than 2.0.2.
+
 Enhancements
 -------------
+
+    - Expose :func:`nilearn.image.coord_transform` for end users. Useful
+      to transform coordinates (x, y, z) from one image space to
+      another space.
 
     - New matrix plotting function, eg to display connectome matrices:
       :func:`nilearn.plotting.plot_matrix`

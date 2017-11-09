@@ -27,7 +27,7 @@ dependencies:
             NUMPY_VERSION: "*"
             SCIPY_VERSION: "*"
             SCIKIT_LEARN_VERSION: "*"
-            MATPLOTLIB_VERSION: "*"
+            MATPLOTLIB_VERSION: "2.0.2"
     - conda install sphinx coverage pillow -y -n testenv
 
     # Generating html documentation (with warnings as errors)

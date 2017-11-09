@@ -8,7 +8,7 @@ import numbers
 from sklearn.feature_selection import (SelectPercentile, f_regression,
                                        f_classif)
 
-from .compat import _basestring, get_affine
+from .compat import _basestring
 
 
 # Volume of a standard (MNI152) brain mask in mm^3
@@ -86,7 +86,7 @@ def _get_mask_volume(mask_img):
     vol : float
         The computed volume.
     """
-    affine = get_affine(mask_img)
+    affine = mask_img.affine
     prod_vox_dims = 1. * np.abs(np.linalg.det(affine[:3, :3]))
     return prod_vox_dims * mask_img.get_data().astype(np.bool).sum()
 

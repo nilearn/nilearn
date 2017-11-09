@@ -15,7 +15,6 @@ from .. import masking
 from .._utils import CacheMixin
 from .._utils.class_inspect import get_params
 from .._utils.niimg_conversions import _check_same_fov
-from .._utils.compat import get_affine
 
 
 class _ExtractionFunctor(object):
@@ -25,7 +24,7 @@ class _ExtractionFunctor(object):
         self.mask_img_ = mask_img_
 
     def __call__(self, imgs):
-        return masking.apply_mask(imgs, self.mask_img_), get_affine(imgs)
+        return masking.apply_mask(imgs, self.mask_img_), imgs.affine
 
 
 def filter_and_mask(imgs, mask_img_, parameters,
@@ -43,7 +42,7 @@ def filter_and_mask(imgs, mask_img_, parameters,
         # now we can crop
         mask_img_ = image.crop_img(mask_img_, copy=False)
         parameters['target_shape'] = mask_img_.shape
-        parameters['target_affine'] = get_affine(mask_img_)
+        parameters['target_affine'] = mask_img_.affine
 
     data, affine = filter_and_extract(imgs, _ExtractionFunctor(mask_img_),
                                       parameters,
@@ -246,7 +245,7 @@ class NiftiMasker(BaseMasker, CacheMixin):
         if self.target_affine is not None:
             self.affine_ = self.target_affine
         else:
-            self.affine_ = get_affine(self.mask_img_)
+            self.affine_ = self.mask_img_.affine
         # Load data in memory
         self.mask_img_.get_data()
         if self.verbose > 10:

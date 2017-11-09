@@ -22,7 +22,6 @@ from nibabel.spatialimages import SpatialImage
 
 from .._utils.numpy_conversions import as_ndarray
 from .._utils.compat import _basestring
-from .._utils.compat import get_affine as _get_affine
 from .._utils.niimg import _safe_get_data
 
 import matplotlib
@@ -150,7 +149,7 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None,
     if img is not False and img is not None:
         img = _utils.check_niimg_3d(img, dtype='auto')
         data = _safe_get_data(img, ensure_finite=True)
-        affine = _get_affine(img)
+        affine = img.affine
 
         if np.isnan(np.sum(data)):
             data = np.nan_to_num(data)
@@ -313,7 +312,7 @@ class _MNI152Template(SpatialImage):
             data = data.astype(np.float)
             anat_mask = ndimage.morphology.binary_fill_holes(data > 0)
             data = np.ma.masked_array(data, np.logical_not(anat_mask))
-            self._affine = _get_affine(anat_img)
+            self._affine = anat_img.affine
             self.data = data
             self.vmax = data.max()
             self._shape = anat_img.shape
@@ -375,7 +374,7 @@ def _load_anat(anat_img=MNI152TEMPLATE, dim='auto', black_bg='auto'):
         # Clean anat_img for non-finite values to avoid computing unnecessary
         # border data values.
         data = _safe_get_data(anat_img, ensure_finite=True)
-        anat_img = new_img_like(anat_img, data, affine=_get_affine(anat_img))
+        anat_img = new_img_like(anat_img, data, affine=anat_img.affine)
         if dim or black_bg == 'auto':
             # We need to inspect the values of the image
             vmin = np.nanmin(data)
