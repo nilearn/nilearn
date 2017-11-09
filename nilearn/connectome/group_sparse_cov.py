@@ -495,6 +495,10 @@ class GroupSparseCovariance(BaseEstimator, CacheMixin):
     Functional Connectivity Models Using Population Prior
     <http://arxiv.org/abs/1008.5071>`_'.
 
+    Jeremy Lefort‐Besnard,..., Danilo Bzdok, 2018. Different shades of default
+    mode disturbance in schizophrenia: Subnodal covariance estimation in
+    structure and function. Hum Brain Mapp.
+
     The algorithm used is based on what is described in:
 
     Jean Honorio and Dimitris Samaras.
