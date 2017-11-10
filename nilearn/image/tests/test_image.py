@@ -3,14 +3,16 @@ Test image pre-processing functions
 """
 from nose.tools import assert_true, assert_false, assert_equal, assert_raises
 from nose import SkipTest
+from distutils.version import LooseVersion
 
 import platform
 import os
 import nibabel
 from nibabel import Nifti1Image
 import numpy as np
+import scipy
 from numpy.testing import assert_array_equal, assert_allclose
-from nilearn._utils.testing import assert_raises_regex
+from nilearn._utils.testing import assert_raises_regex, assert_warns
 from nilearn._utils.exceptions import DimensionError
 
 from nilearn import signal
@@ -127,6 +129,16 @@ def test__smooth_array():
         np.testing.assert_equal(image._smooth_array(data, affine, fwhm='fast'),
                                 image._fast_smooth_array(data))
 
+    # Check corner case when fwhm=0. from SciPy 1.0.0
+    if LooseVersion(scipy.__version__) >= LooseVersion('1.0.0'):
+        # Test whether function _smooth_array raises a warning when fwhm=0.
+        assert_warns(UserWarning, image._smooth_array, data, affine, fwhm=0.)
+
+        # Test output equal when fwhm=None and fwhm=0
+        out_fwhm_none = image._smooth_array(data, affine, fwhm=None)
+        out_fwhm_zero = image._smooth_array(data, affine, fwhm=0.)
+        assert_array_equal(out_fwhm_none, out_fwhm_zero)
+
 
 def test_smooth_img():
     # This function only checks added functionalities compared
@@ -154,6 +166,16 @@ def test_smooth_img():
             out = image.smooth_img(imgs[0], fwhm)
             assert_true(isinstance(out, nibabel.Nifti1Image))
             assert_true(out.shape == (shapes[0] + (lengths[0],)))
+
+    # Check corner case situations when fwhm=0. from SciPy 1.0.0.
+    if LooseVersion(scipy.__version__) >= LooseVersion('1.0.0'):
+        # Test whether function smooth_img raises a warning when fwhm=0.
+        assert_warns(UserWarning, image.smooth_img, img1, fwhm=0.)
+
+        # Test output equal when fwhm=None and fwhm=0
+        out_fwhm_none = image.smooth_img(img1, fwhm=None)
+        out_fwhm_zero = image.smooth_img(img1, fwhm=0.)
+        assert_array_equal(out_fwhm_none.get_data(), out_fwhm_zero.get_data())
 
 
 def test__crop_img_to():
