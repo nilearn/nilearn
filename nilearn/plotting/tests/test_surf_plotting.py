@@ -421,6 +421,9 @@ def test_sampling():
     texture = surf_plotting._nearest_voxel_sampling(
         [img], mesh, affine=affine, radius=1, kind='ball')
     assert_array_equal(texture[0], [1., 2., 1.])
+    texture = surf_plotting._interpolation_sampling(
+        [img], mesh, affine=affine, radius=0, kind='ball')
+    assert_array_almost_equal(texture[0], [1.1, 2., 1.])
 
 
 def test_niimg_to_surf_data():
