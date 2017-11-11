@@ -415,11 +415,11 @@ def test_sampling():
     img = np.ones((4, 4, 4))
     img[1, :, :] = 2
     nodes = [[1, 1, 2], [10, 10, 20], [30, 30, 30]]
-    mesh = np.asarray(nodes), None
+    mesh = [np.asarray(nodes), None]
     affine = 10 * np.eye(4)
     affine[-1, -1] = 1
-    texture = surf_plotting._sampling(
-        [img], mesh, affine=affine, radius=1)
+    texture = surf_plotting._nearest_voxel_sampling(
+        [img], mesh, affine=affine, radius=1, kind='ball')
     assert_array_equal(texture[0], [1., 2., 1.])
 
 

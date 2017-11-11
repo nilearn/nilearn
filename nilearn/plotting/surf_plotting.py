@@ -177,26 +177,70 @@ def _line_sample_locations(
     return sample_locations_voxel_space
 
 
-def _sampling(images, mesh,
-              affine, kind='ball', interpolation='nearest',
-              radius=3, n_points=None):
-    """In each image, measure the intensity at each node of the mesh.
+def _sample_locations(mesh, affine, radius, kind='line', n_points=None):
+    projector = {
+        'line': _line_sample_locations,
+        'ball': _ball_sample_locations
+    }[kind]
+    # let the projector choose the default for n_points
+    # (for example a ball probably needs more than a line)
+    loc_kwargs = ({} if n_points is None else {'n_points': n_points})
+    sample_locations = projector(
+        mesh, affine, radius, **loc_kwargs)
+    return sample_locations
+
+
+def _masked_indices(interp_locations, img_shape, mask=None):
+    """Get the indices of interpolation points which should be ignored.
+
+    Parameters:
+    ===========
+    interp_locations : array, shape(n_interp_locations, 3)
+        The coordinates of candidate interpolation points
+
+    img_shape : tuple
+        The dimensions of the image to be sampled
+
+    mask : array of shape img_shape or None
+        Part of the image to be masked. If None, don't apply any mask.
+
+    Returns
+    =======
+    array of shape (n_interp_locations,)
+        True if this particular location should be ignored (outside of image or
+        masked).
+
+    """
+    masked = (interp_locations < 0).any(axis=1)
+    for dim, size in enumerate(img_shape):
+        masked = np.logical_or(masked, interp_locations[:, dim] > size)
+    if mask is not None:
+        indices = np.asarray(np.round(interp_locations), dtype=int)
+        masked = np.logical_or(
+            masked,
+            mask[indices[:, 0], indices[:, 1], indices[:, 2]] == 0)
+    return masked
+
+
+def projection_matrix(mesh, affine, img_shape,
+                      kind='line', radius=3., n_points=None, mask=None):
+    """Get a sparse matrix that projects volume data onto a mesh.
 
     Parameters
     ==========
-    images : 4d numpy array
-        The first dimension iterates over images, the last 3 are the image
-        dimensions x, y, z.
+    mesh : str or numpy.ndarray
+        Either a file containing surface mesh geometry (valid formats
+        are .gii or Freesurfer specific files such as .orig, .pial,
+        .sphere, .white, .inflated) or a list of two Numpy arrays,
+        the first containing the x-y-z coordinates of the mesh
+        vertices, the second containing the indices (into coords)
+        of the mesh faces.
 
-    mesh : pair of np arrays.
-        mesh[0] contains the 3d coordinates of the vertices
-        (shape n_vertices, 3)
-        mesh[1] contains, for each triangle, the indices into mesh[0] of its
-        vertices (shape n_triangles, 3)
+    affine : array of shape (4, 4)
+        affine transformation from image voxels to the vertices' coordinates.
 
-    affine : numpy array, shape (4, 4)
-        The affine of the image. The mesh vertex coordinates should be given in
-        the image coordinate space.
+    img_shape : 3-tuple of integers
+        The shape of the image to be projected.
 
     kind : {'line', 'ball'}
         The strategy used to sample image intensities around each vertex.
@@ -207,60 +251,95 @@ def _sampling(images, mesh,
             samples are regularly spaced inside a ball centered at the mesh
             vertex.
 
-    interpolation: {'linear', 'nearest'}
-        How the image intensity is measured at a sample point.
-        - 'nearest' (the default):
-            Use the intensity of the nearest voxel.
-        - 'linear':
-            Use a trilinear interpolation of neighbouring voxels.
+    radius : float, optional (default=3.).
+        The size (in mm) of the neighbourhood from which samples are drawn
+        around each node.
 
-    n_samples: int or None, optional (default=None)
+    n_points : int or None, optional (default=None)
         How many samples are drawn around each vertex and averaged. If None,
         use a reasonable default for the chosen sampling strategy ('ball' or
         'line').
 
-    Returns
-    =======
-    texture: 2d array
-        The projected image values. Each row corresponds to an image and each
-        column to a mesh vertex.
+    mask : niimg-like object or None, optional (default=None)
+        Samples falling out of this mask or out of the image are ignored.
 
     """
-    vertices, faces = mesh
-    images = np.asarray(images)
-    n_images = images.shape[0]
-    projector = {
-        'line': _line_sample_locations,
-        'ball': _ball_sample_locations
-    }[kind]
-    # let the projector choose the default for n_points
-    # (for example a ball probably needs more than a line)
-    loc_kwargs = ({} if n_points is None else {'n_points': n_points})
-    sample_locations = projector(
-        mesh, affine, radius, **loc_kwargs)
+    mesh = load_surf_mesh(mesh)
+    sample_locations = _sample_locations(
+        mesh, affine, kind=kind, radius=radius, n_points=n_points)
+    sample_locations = np.asarray(np.round(sample_locations), dtype=int)
     n_vertices, n_points, img_dim = sample_locations.shape
-    if n_images == 1:
-        images = images[0]
-    grid = [np.arange(size) for size in images.shape]
-    interpolator = interpolate.RegularGridInterpolator(
-        grid, images,
-        bounds_error=False, method=interpolation, fill_value=None)
+    masked = _masked_indices(np.vstack(sample_locations), img_shape, mask=mask)
+    sample_locations = np.rollaxis(sample_locations, -1)
+    sample_indices = np.ravel_multi_index(
+        sample_locations, img_shape, mode='clip').ravel()
+    row_indices, _ = np.mgrid[:n_vertices, :n_points]
+    row_indices = row_indices.ravel()
+    weights = np.ones(len(row_indices))
+    weights = weights[~masked]
+    row_indices = row_indices[~masked]
+    sample_indices = sample_indices[~masked]
+    proj = sparse.csr_matrix(
+        (weights, (row_indices, sample_indices.ravel())),
+        shape=(n_vertices, np.prod(img_shape)))
+    proj = sklearn.preprocessing.normalize(proj, axis=1, norm='l1')
+    return proj
+
+
+def _nearest_voxel_sampling(images, mesh, affine, kind='ball', radius=3.,
+                            n_points=None, mask=None):
+    """In each image, measure the intensity at each node of the mesh.
+
+    Image intensity at each sample point is that of the nearest voxel.
+    A 2-d array is returned, where each row corresponds to an image and each
+    column to a mesh vertex.
+    See documentation of niimg_to_surf_data for details.
+
+    """
+    proj = projection_matrix(
+        mesh, affine, images[0].shape, kind=kind, radius=radius,
+        n_points=n_points, mask=mask)
+    data = np.asarray(images).reshape(len(images), -1).T
+    texture = proj.dot(data)
+    texture[np.asarray(proj.sum(axis=1) == 0).ravel()] = np.nan
+    return texture.T
+
+
+def _interpolation_sampling(images, mesh, affine, kind='ball', radius=3,
+                            n_points=None, mask=None):
+    """In each image, measure the intensity at each node of the mesh.
+
+    Image intensity at each sample point is computed with trilinear
+    interpolation.
+    A 2-d array is returned, where each row corresponds to an image and each
+    column to a mesh vertex.
+    See documentation of niimg_to_surf_data for details.
+
+    """
+    sample_locations = _sample_locations(
+        mesh, affine, kind=kind, radius=radius, n_points=n_points)
+    n_vertices, n_points, img_dim = sample_locations.shape
+    grid = [np.arange(size) for size in images[0].shape]
     interp_locations = np.vstack(sample_locations)
-    if n_images > 1:
-        interp_locations = np.tile(interp_locations, (n_images, 1))
-        image_indices = (np.ones((n_vertices * n_points, n_images)) *
-                         np.arange(n_images)).T.ravel()
-        interp_locations = np.hstack(
-            [image_indices[:, np.newaxis], interp_locations])
-    samples = interpolator(interp_locations)
-    samples = samples.reshape((n_images, n_vertices, n_points))
-    texture = np.mean(samples, axis=2)
+    masked = _masked_indices(interp_locations, images[0].shape, mask=mask)
+    # loop over images rather than building a big array to use less memory
+    all_samples = []
+    for image in images:
+        interpolator = interpolate.RegularGridInterpolator(
+            grid, image,
+            bounds_error=False, method='linear', fill_value=None)
+        samples = interpolator(interp_locations)
+        samples[masked] = np.nan
+        all_samples.append(samples)
+    all_samples = np.asarray(all_samples)
+    all_samples = all_samples.reshape((len(images), n_vertices, n_points))
+    texture = np.nanmean(all_samples, axis=2)
     return texture
 
 
 def niimg_to_surf_data(image, surf_mesh,
                        radius=3., kind='line', interpolation='nearest',
-                       n_samples=None):
+                       n_samples=None, mask=None):
     """Extract surface data from a Nifti image.
 
     Parameters
@@ -277,8 +356,8 @@ def niimg_to_surf_data(image, surf_mesh,
         of the mesh faces.
 
     radius : float, optional (default=3.).
-        The size (in mm) of the neighbourhood from which samples along each
-        node.
+        The size (in mm) of the neighbourhood from which samples are drawn
+        around each node.
 
     kind : {'line', 'ball'}
         The strategy used to sample image intensities around each vertex.
@@ -289,17 +368,20 @@ def niimg_to_surf_data(image, surf_mesh,
             samples are regularly spaced inside a ball centered at the mesh
             vertex.
 
-    interpolation: {'linear', 'nearest'}
+    interpolation : {'linear', 'nearest'}
         How the image intensity is measured at a sample point.
         - 'nearest' (the default):
             Use the intensity of the nearest voxel.
         - 'linear':
             Use a trilinear interpolation of neighbouring voxels.
 
-    n_samples: int or None, optional (default=None)
+    n_samples : int or None, optional (default=None)
         How many samples are drawn around each vertex and averaged. If None,
         use a reasonable default for the chosen sampling strategy ('ball' or
         'line').
+
+    mask : niimg-like object
+        Samples falling out of this mask or out of the image are ignored.
 
     Returns
     -------
@@ -311,13 +393,16 @@ def niimg_to_surf_data(image, surf_mesh,
 
     """
     image = nilearn.image.load_img(image)
+    if mask is not None:
+        mask = nilearn.image.load_img(mask).get_data()
     original_dimension = len(image.shape)
     image = _utils.check_niimg(image, atleast_4d=True)
     frames = np.rollaxis(image.get_data(), -1)
     mesh = load_surf_mesh(surf_mesh)
-    texture = _sampling(
-        frames, mesh, image.affine,
-        radius=radius, kind=kind, interpolation=interpolation)
+    sampling = {'linear': _interpolation_sampling,
+                'nearest': _nearest_voxel_sampling}[interpolation]
+    texture = sampling(
+        frames, mesh, image.affine, radius=radius, kind=kind, mask=mask)
     if original_dimension == 3:
         texture = texture[0]
     return texture.T
