@@ -178,6 +178,7 @@ def _line_sample_locations(
 
 
 def _sample_locations(mesh, affine, radius, kind='line', n_points=None):
+    """Get either ball or line sample locations."""
     projector = {
         'line': _line_sample_locations,
         'ball': _ball_sample_locations
@@ -190,12 +191,12 @@ def _sample_locations(mesh, affine, radius, kind='line', n_points=None):
     return sample_locations
 
 
-def _masked_indices(interp_locations, img_shape, mask=None):
-    """Get the indices of interpolation points which should be ignored.
+def _masked_indices(sample_locations, img_shape, mask=None):
+    """Get the indices of sample points which should be ignored.
 
     Parameters:
     ===========
-    interp_locations : array, shape(n_interp_locations, 3)
+    sample_locations : array, shape(n_sample_locations, 3)
         The coordinates of candidate interpolation points
 
     img_shape : tuple
@@ -206,16 +207,16 @@ def _masked_indices(interp_locations, img_shape, mask=None):
 
     Returns
     =======
-    array of shape (n_interp_locations,)
+    array of shape (n_sample_locations,)
         True if this particular location should be ignored (outside of image or
         masked).
 
     """
-    masked = (interp_locations < 0).any(axis=1)
+    masked = (sample_locations < 0).any(axis=1)
     for dim, size in enumerate(img_shape):
-        masked = np.logical_or(masked, interp_locations[:, dim] > size)
+        masked = np.logical_or(masked, sample_locations[:, dim] > size)
     if mask is not None:
-        indices = np.asarray(np.round(interp_locations), dtype=int)
+        indices = np.asarray(np.round(sample_locations), dtype=int)
         masked = np.logical_or(
             masked,
             mask[indices[:, 0], indices[:, 1], indices[:, 2]] == 0)
@@ -262,6 +263,13 @@ def projection_matrix(mesh, affine, img_shape,
 
     mask : niimg-like object or None, optional (default=None)
         Samples falling out of this mask or out of the image are ignored.
+
+    Returns
+    =======
+    scipy.sparse.csr_matrix
+       Shape (n_voxels, n_mesh_vertices). The dot product of this matrix with
+       an image (represented as a column vector) gives the projection onto mesh
+       vertices.
 
     """
     mesh = load_surf_mesh(mesh)
