@@ -7,7 +7,7 @@ from distutils.version import LooseVersion
 from nose import SkipTest
 from numpy.testing import (assert_array_equal, assert_array_almost_equal,
                            assert_equal)
-from nose.tools import assert_true
+from nose.tools import assert_true, assert_raises
 from nilearn._utils.testing import assert_raises_regex
 
 import numpy as np
@@ -19,6 +19,7 @@ from nibabel import gifti
 
 from nilearn import datasets
 import nilearn.image
+from nilearn.image import resampling
 from nilearn.image.tests.test_resampling import rotation
 
 from nilearn.plotting import surf_plotting
@@ -396,18 +397,64 @@ def test_plot_surf_roi_error():
                         roi_map={'roi1': roi1, 'roi2': roi2})
 
 
-def test_vertex_outer_normals():
-    # compute normals for a flat horizontal mesh, they should all be (0, 0, 1)
-    x, y = np.mgrid[:5, :7]
+def _flat_mesh(x_s, y_s):
+    x, y = np.mgrid[:x_s, :y_s]
     x, y = x.ravel(), y.ravel()
     z = np.zeros(len(x))
     triangulation = matplotlib.tri.Triangulation(x, y)
     vertices = np.asarray([x, y, z]).T
     mesh = [vertices, triangulation.triangles]
+    return mesh
+
+
+def test_vertex_outer_normals():
+    # compute normals for a flat horizontal mesh, they should all be (0, 0, 1)
+    mesh = _flat_mesh(5, 7)
     computed_normals = surf_plotting._vertex_outer_normals(mesh)
-    true_normals = np.zeros((len(x), 3))
+    true_normals = np.zeros((len(mesh[0]), 3))
     true_normals[:, 2] = 1
     assert_array_almost_equal(computed_normals, true_normals)
+
+
+def test_sample_locations():
+    # check positions of samples on toy example, with an affine != identity
+    # flat horizontal mesh
+    mesh = _flat_mesh(5, 7)
+    affine = np.diagflat([10, 20, 30, 1])
+    inv_affine = np.linalg.inv(affine)
+    # transform vertices to world space
+    vertices = np.asarray(
+        resampling.coord_transform(*mesh[0].T, affine=affine)).T
+    # compute by hand the true offsets in voxel space
+    # (transformed by affine^-1)
+    ball_offsets = surf_plotting._uniform_ball_cloud(10)
+    ball_offsets = np.asarray(
+        resampling.coord_transform(*ball_offsets.T, affine=inv_affine)).T
+    line_offsets = np.zeros((10, 3))
+    line_offsets[:, 2] = np.linspace(-1, 1, 10)
+    line_offsets = np.asarray(
+        resampling.coord_transform(*line_offsets.T, affine=inv_affine)).T
+    # check we get the same locations
+    for kind, offsets in [('line', line_offsets), ('ball', ball_offsets)]:
+        locations = surf_plotting._sample_locations(
+            [vertices, mesh[1]], affine, 1., kind=kind, n_points=10)
+        true_locations = [vertex + offsets for vertex in mesh[0]]
+        assert_array_almost_equal(true_locations, locations)
+    assert_raises(ValueError, surf_plotting._sample_locations,
+                  mesh, affine, 1., kind='bad_kind')
+
+
+def test_masked_indices():
+    mask = np.ones((4, 3, 8))
+    mask[:, :, ::2] = 0
+    locations = np.mgrid[:5, :3, :8].ravel().reshape((3, -1))
+    masked = surf_plotting._masked_indices(locations.T, mask.shape, mask)
+    # These elements are masked by the mask
+    assert_true((masked[::2] == 1).all())
+    # The last element of locations is one row beyond first image dimension
+    assert_true((masked[-24:] == 1).all())
+    # 4 * 3 * 8 / 2 elements should remain unmasked
+    assert_true((1 - masked).sum() == 48)
 
 
 def test_sampling():
