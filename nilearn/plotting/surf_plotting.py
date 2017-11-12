@@ -6,12 +6,12 @@ Only matplotlib is required.
 import nibabel
 import numpy as np
 from scipy import sparse, interpolate
+import sklearn.preprocessing
 
 # These will be removed (see comment on _points_in_unit_ball)
 from sklearn.externals import joblib
 from ..datasets.utils import _get_dataset_dir
 import sklearn.cluster
-import sklearn.preprocessing
 # / These will be removed (see comment on _points_in_unit_ball)
 
 import matplotlib.pyplot as plt
@@ -43,7 +43,12 @@ def _uniform_ball_cloud(n_points=100, dim=3, n_monte_carlo=5000):
 
 
 def _face_outer_normals(mesh):
-    """Get the normal to each triangle in a mesh."""
+    """Get the normal to each triangle in a mesh.
+
+    They are the outer normals if the mesh respects the convention that the
+    direction given by the direct order of a triangle's vertices (right-hand
+    rule) points outwards.
+    """
     vertices, faces = load_surf_mesh(mesh)
     face_vertices = vertices[faces]
     # The right-hand rule gives the direction of the outer normal
@@ -54,16 +59,14 @@ def _face_outer_normals(mesh):
 
 
 def _surrounding_faces(mesh):
-    """Get matrix indicating which faces nodes belong to.
+    """Get matrix indicating which faces the nodes belong to.
 
     i, j is set if node i is a vertex of triangle j.
     """
     vertices, faces = load_surf_mesh(mesh)
     n_faces = faces.shape[0]
-    return sparse.coo_matrix((np.ones(3 * n_faces),
-                             (faces.ravel(),
-                             np.tile(np.arange(n_faces), (3, 1)).T.ravel())),
-                             (vertices.shape[0], n_faces)).tocsr()
+    return sparse.csr_matrix((np.ones(3 * n_faces), (faces.ravel(), np.tile(
+        np.arange(n_faces), (3, 1)).T.ravel())), (vertices.shape[0], n_faces))
 
 
 def _vertex_outer_normals(mesh):
@@ -95,7 +98,8 @@ def _ball_sample_locations(mesh, affine, ball_radius=3., n_points=20):
         vertices (shape n_triangles, 3)
 
     affine : array of shape (4, 4)
-        affine transformation from image voxels to the vertices' coordinates.
+        affine transformation from image voxels to the vertices' coordinate
+        space.
 
     ball_radius : float, optional (default=3.)
         size in mm of the neighbourhood around each vertex in which to draw
@@ -146,7 +150,8 @@ def _line_sample_locations(
         vertices (shape n_triangles, 3)
 
     affine : array of shape (4, 4)
-        affine transformation from image voxels to the vertices' coordinates.
+        affine transformation from image voxels to the vertices' coordinate
+        space.
 
     segment_half_width : float, optional (default=3.)
         size in mm of the neighbourhood around each vertex in which to draw
@@ -179,10 +184,14 @@ def _line_sample_locations(
 
 def _sample_locations(mesh, affine, radius, kind='line', n_points=None):
     """Get either ball or line sample locations."""
-    projector = {
+    projectors = {
         'line': _line_sample_locations,
         'ball': _ball_sample_locations
-    }[kind]
+    }
+    if kind not in projectors:
+        raise ValueError(
+            '"kind" must be one of {}'.format(tuple(projectors.keys())))
+    projector = projectors[kind]
     # let the projector choose the default for n_points
     # (for example a ball probably needs more than a line)
     loc_kwargs = ({} if n_points is None else {'n_points': n_points})
@@ -214,7 +223,7 @@ def _masked_indices(sample_locations, img_shape, mask=None):
     """
     masked = (sample_locations < 0).any(axis=1)
     for dim, size in enumerate(img_shape):
-        masked = np.logical_or(masked, sample_locations[:, dim] > size)
+        masked = np.logical_or(masked, sample_locations[:, dim] >= size)
     if mask is not None:
         indices = np.asarray(np.round(sample_locations), dtype=int)
         masked = np.logical_or(
@@ -238,7 +247,8 @@ def projection_matrix(mesh, affine, img_shape,
         of the mesh faces.
 
     affine : array of shape (4, 4)
-        affine transformation from image voxels to the vertices' coordinates.
+        affine transformation from image voxels to the vertices' coordinate
+        space.
 
     img_shape : 3-tuple of integers
         The shape of the image to be projected.
@@ -283,10 +293,9 @@ def projection_matrix(mesh, affine, img_shape,
         sample_locations, img_shape, mode='clip').ravel()
     row_indices, _ = np.mgrid[:n_vertices, :n_points]
     row_indices = row_indices.ravel()
-    weights = np.ones(len(row_indices))
-    weights = weights[~masked]
     row_indices = row_indices[~masked]
     sample_indices = sample_indices[~masked]
+    weights = np.ones(len(row_indices))
     proj = sparse.csr_matrix(
         (weights, (row_indices, sample_indices.ravel())),
         shape=(n_vertices, np.prod(img_shape)))
@@ -372,6 +381,7 @@ def niimg_to_surf_data(image, surf_mesh,
         - 'line' (the default):
             samples are regularly spaced along the normal to the mesh, over the
             interval [-radius, +radius].
+            (sometimes called thickness sampling)
         - 'ball':
             samples are regularly spaced inside a ball centered at the mesh
             vertex.
@@ -388,8 +398,10 @@ def niimg_to_surf_data(image, surf_mesh,
         use a reasonable default for the chosen sampling strategy ('ball' or
         'line').
 
-    mask : niimg-like object
+    mask : niimg-like object or None, optional (default=None)
         Samples falling out of this mask or out of the image are ignored.
+        mask and image should have the same affine and shape.
+        If None, don't apply any mask.
 
     Returns
     -------
@@ -407,10 +419,15 @@ def niimg_to_surf_data(image, surf_mesh,
     image = _utils.check_niimg(image, atleast_4d=True)
     frames = np.rollaxis(image.get_data(), -1)
     mesh = load_surf_mesh(surf_mesh)
-    sampling = {'linear': _interpolation_sampling,
-                'nearest': _nearest_voxel_sampling}[interpolation]
+    sampling_schemes = {'linear': _interpolation_sampling,
+                        'nearest': _nearest_voxel_sampling}
+    if interpolation not in sampling_schemes:
+        raise ValueError('"interpolation" should be one of {}'.format(
+            tuple(sampling_schemes.keys())))
+    sampling = sampling_schemes[interpolation]
     texture = sampling(
-        frames, mesh, image.affine, radius=radius, kind=kind, mask=mask)
+        frames, mesh, image.affine, radius=radius, kind=kind,
+        n_points=n_samples, mask=mask)
     if original_dimension == 3:
         texture = texture[0]
     return texture.T
