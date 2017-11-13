@@ -254,6 +254,7 @@ def projection_matrix(mesh, affine, img_shape,
 
     kind : {'line', 'ball'}
         The strategy used to sample image intensities around each vertex.
+
         - 'line' (the default):
             samples are regularly spaced along the normal to the mesh, over the
             interval [-radius, +radius].
@@ -377,6 +378,7 @@ def niimg_to_surf_data(image, surf_mesh,
 
     kind : {'line', 'ball'}
         The strategy used to sample image intensities around each vertex.
+
         - 'line' (the default):
             samples are regularly spaced along the normal to the mesh, over the
             interval [-radius, +radius].
@@ -387,6 +389,7 @@ def niimg_to_surf_data(image, surf_mesh,
 
     interpolation : {'linear', 'nearest'}
         How the image intensity is measured at a sample point.
+
         - 'nearest' (the default):
             Use the intensity of the nearest voxel.
         - 'linear':
