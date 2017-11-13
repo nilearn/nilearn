@@ -397,14 +397,19 @@ def test_plot_surf_roi_error():
                         roi_map={'roi1': roi1, 'roi2': roi2})
 
 
-def _flat_mesh(x_s, y_s):
+def _flat_mesh(x_s, y_s, z=0):
     x, y = np.mgrid[:x_s, :y_s]
     x, y = x.ravel(), y.ravel()
-    z = np.zeros(len(x))
+    z = np.ones(len(x)) * z
     triangulation = matplotlib.tri.Triangulation(x, y)
     vertices = np.asarray([x, y, z]).T
     mesh = [vertices, triangulation.triangles]
     return mesh
+
+
+def _z_const_img(x_s, y_s, z_s):
+    hslice = np.arange(x_s * y_s).reshape((x_s, y_s))
+    return np.ones((x_s, y_s, z_s)) * hslice[:, :, np.newaxis]
 
 
 def test_vertex_outer_normals():
@@ -455,6 +460,33 @@ def test_masked_indices():
     assert_true((masked[-24:] == 1).all())
     # 4 * 3 * 8 / 2 elements should remain unmasked
     assert_true((1 - masked).sum() == 48)
+
+
+def test_projection_matrix():
+    mesh = _flat_mesh(5, 7, 4)
+    img = _z_const_img(5, 7, 13)
+    proj = surf_plotting.projection_matrix(
+        mesh, np.eye(4), img.shape, radius=2., n_points=10)
+    # proj matrix has shape (n_vertices, img_size)
+    assert_equal(proj.shape, (5 * 7, 5 * 7 * 13))
+    # proj.dot(img) should give the values of img at the vertices' locations
+    values = proj.dot(img.ravel()).reshape((5, 7))
+    assert_array_almost_equal(values, img[:, :, 0])
+    mesh = _flat_mesh(5, 7)
+    proj = surf_plotting.projection_matrix(
+        mesh, np.eye(4), (5, 7, 1), radius=.1, n_points=10)
+    assert_array_almost_equal(proj.toarray(), np.eye(proj.shape[0]))
+    mask = np.ones(img.shape, dtype=int)
+    mask[0] = 0
+    proj = surf_plotting.projection_matrix(
+        mesh, np.eye(4), img.shape, radius=2., n_points=10, mask=mask)
+    proj = proj.toarray()
+    # first row of the mesh is masked
+    assert_array_almost_equal(proj.sum(axis=1)[:7], np.zeros(7))
+    assert_array_almost_equal(proj.sum(axis=1)[7:], np.ones(proj.shape[0] - 7))
+    # mask and img should have the same shape
+    assert_raises(ValueError, surf_plotting.projection_matrix,
+                  mesh, np.eye(4), img.shape, mask=np.ones((3, 3, 2)))
 
 
 def test_sampling():
