@@ -489,7 +489,7 @@ def test_projection_matrix():
                   mesh, np.eye(4), img.shape, mask=np.ones((3, 3, 2)))
 
 
-def test_sampling():
+def test_sampling_affine():
     # check sampled (projected) values on a toy image
     img = np.ones((4, 4, 4))
     img[1, :, :] = 2
@@ -503,6 +503,24 @@ def test_sampling():
     texture = surf_plotting._interpolation_sampling(
         [img], mesh, affine=affine, radius=0, kind='ball')
     assert_array_almost_equal(texture[0], [1.1, 2., 1.])
+
+
+def test_sampling():
+    mesh = _flat_mesh(5, 7, 4)
+    img = _z_const_img(5, 7, 13)
+    mask = np.ones(img.shape, dtype=int)
+    mask[0] = 0
+    for kind in ('line', 'ball'):
+        for projector in (surf_plotting._nearest_voxel_sampling,
+                          surf_plotting._interpolation_sampling):
+            projection = projector([img], mesh, np.eye(4),
+                                   kind=kind, radius=0.)
+            assert_array_almost_equal(projection.ravel(), img[:, :, 0].ravel())
+            projection = projector([img], mesh, np.eye(4),
+                                   kind=kind, radius=0., mask=mask)
+            assert_array_almost_equal(projection.ravel()[7:],
+                                      img[1:, :, 0].ravel())
+            assert_true(np.isnan(projection.ravel()[:7]).all())
 
 
 def test_niimg_to_surf_data():
