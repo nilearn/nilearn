@@ -271,8 +271,8 @@ def projection_matrix(mesh, affine, img_shape,
         use a reasonable default for the chosen sampling strategy ('ball' or
         'line').
 
-    mask : niimg-like object or None, optional (default=None)
-        Samples falling out of this mask or out of the image are ignored.
+    mask : array of shape img_shape or None
+        Part of the image to be masked. If None, don't apply any mask.
 
     Returns
     =======
@@ -282,6 +282,8 @@ def projection_matrix(mesh, affine, img_shape,
        vertices.
 
     """
+    if mask is not None and tuple(mask.shape) != img_shape:
+        raise ValueError('mask should have shape img_shape')
     mesh = load_surf_mesh(mesh)
     sample_locations = _sample_locations(
         mesh, affine, kind=kind, radius=radius, n_points=n_points)
@@ -402,7 +404,6 @@ def niimg_to_surf_data(image, surf_mesh,
 
     mask : niimg-like object or None, optional (default=None)
         Samples falling out of this mask or out of the image are ignored.
-        mask and image should have the same affine and shape.
         If None, don't apply any mask.
 
     Returns
@@ -416,7 +417,8 @@ def niimg_to_surf_data(image, surf_mesh,
     """
     image = nilearn.image.load_img(image)
     if mask is not None:
-        mask = nilearn.image.load_img(mask).get_data()
+        mask = resampling.resample_to_img(
+            mask, image, interpolation='nearest').get_data()
     original_dimension = len(image.shape)
     image = _utils.check_niimg(image, atleast_4d=True)
     frames = np.rollaxis(image.get_data(), -1)
