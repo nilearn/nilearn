@@ -56,7 +56,6 @@ Enhancements
       plotting functions to have user control for faster visualizations.
 
     - Upgraded to Sphinx-Gallery 0.1.11
->>>>>>> master
 
 0.3.1
 =====
