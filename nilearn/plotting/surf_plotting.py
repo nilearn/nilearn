@@ -395,7 +395,7 @@ def niimg_to_surf_data(img, surf_mesh,
         - 'nearest' (the default):
             Use the intensity of the nearest voxel.
         - 'linear':
-            Use a trilinear interpolation of neighbouring voxels.
+            Use a trilinear interpolation of neighboring voxels.
 
     n_samples : int or None, optional (default=None)
         How many samples are drawn around each vertex and averaged. If None,
