@@ -6,6 +6,10 @@ Changelog
 
     - Dropped support for Nibabel older than 2.0.2.
 
+    - :func:`nilearn.image.smooth_img` no longer accepts smoothing
+      parameter fwhm as 0. Behavior is changed in according to the
+      issues with recent SciPy version 1.0.0.
+
 Enhancements
 -------------
 

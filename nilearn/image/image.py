@@ -189,12 +189,11 @@ def _smooth_array(arr, affine, fwhm=None, ensure_finite=True, copy=True):
     """
     # Here, we have to investigate use cases of fwhm. Particularly, if fwhm=0.
     # See issue #1537
-    if LooseVersion(scipy.__version__) >= LooseVersion('1.0.0'):
-        if fwhm is not None and fwhm == 0.:
-            warnings.warn("The parameter 'fwhm' for smoothing is specified "
-                          "as {0}. Converting to None (no smoothing option)"
-                          .format(fwhm))
-            fwhm = None
+    if fwhm == 0.:
+        warnings.warn("The parameter 'fwhm' for smoothing is specified "
+                      "as {0}. Converting to None (no smoothing option)"
+                      .format(fwhm))
+        fwhm = None
 
     if arr.dtype.kind == 'i':
         if arr.dtype == np.int64:
