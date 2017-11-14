@@ -90,7 +90,7 @@ def _ball_sample_locations(mesh, affine, ball_radius=3., n_points=20):
     ball around the vertex are returned.
 
     Parameters
-    ==========
+    ----------
     mesh : pair of np arrays.
         mesh[0] contains the 3d coordinates of the vertices
         (shape n_vertices, 3)
@@ -109,7 +109,7 @@ def _ball_sample_locations(mesh, affine, ball_radius=3., n_points=20):
         number of samples to draw for each vertex.
 
     Returns
-    =======
+    -------
     numpy array, shape (n_vertices, n_points, 3)
         The locations, in voxel space, from which to draw samples.
         First dimension iterates over mesh vertices, second dimension iterates
@@ -142,7 +142,7 @@ def _line_sample_locations(
     length 2 * `segment_half_width` and is centered at the vertex.
 
     Parameters
-    ==========
+    ----------
     mesh : pair of np arrays.
         mesh[0] contains the 3d coordinates of the vertices
         (shape n_vertices, 3)
@@ -161,7 +161,7 @@ def _line_sample_locations(
         number of samples to draw for each vertex.
 
     Returns
-    =======
+    -------
     numpy array, shape (n_vertices, n_points, 3)
         The locations, in voxel space, from which to draw samples.
         First dimension iterates over mesh vertices, second dimension iterates
@@ -204,7 +204,7 @@ def _masked_indices(sample_locations, img_shape, mask=None):
     """Get the indices of sample points which should be ignored.
 
     Parameters:
-    ===========
+    -----------
     sample_locations : array, shape(n_sample_locations, 3)
         The coordinates of candidate interpolation points
 
@@ -215,7 +215,7 @@ def _masked_indices(sample_locations, img_shape, mask=None):
         Part of the image to be masked. If None, don't apply any mask.
 
     Returns
-    =======
+    -------
     array of shape (n_sample_locations,)
         True if this particular location should be ignored (outside of image or
         masked).
@@ -236,7 +236,7 @@ def projection_matrix(mesh, affine, img_shape,
     """Get a sparse matrix that projects volume data onto a mesh.
 
     Parameters
-    ==========
+    ----------
     mesh : str or numpy.ndarray
         Either a file containing surface mesh geometry (valid formats
         are .gii or Freesurfer specific files such as .orig, .pial,
@@ -275,7 +275,7 @@ def projection_matrix(mesh, affine, img_shape,
         Part of the image to be masked. If None, don't apply any mask.
 
     Returns
-    =======
+    -------
     scipy.sparse.csr_matrix
        Shape (n_voxels, n_mesh_vertices). The dot product of this matrix with
        an image (represented as a column vector) gives the projection onto mesh
