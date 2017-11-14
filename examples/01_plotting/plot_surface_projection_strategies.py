@@ -2,7 +2,7 @@
 Illustration of the volume to cortical surface sampling schemes
 ===============================================================
 
-In nilearn, plotting.vol_to_surf allows us to measure values of a 3d volume at
+In nilearn, surface.vol_to_surf allows us to measure values of a 3d volume at
 the nodes of a cortical mesh, transforming it into surface data. This data can
 then be plotted with plotting.plot_surf_stat_map for example.
 
@@ -22,7 +22,7 @@ import numpy as np
 import matplotlib
 from matplotlib import pyplot as plt
 
-from nilearn.plotting import surf_plotting
+from nilearn import surface
 
 
 ######################################################################
@@ -44,10 +44,10 @@ mesh = [np.asarray([x, y, z]).T, triangulation.triangles]
 # Get the locations from which vol_to_surf would draw its samples
 #########################################################################
 
-line_sample_points = surf_plotting._line_sample_locations(
+line_sample_points = surface._line_sample_locations(
     mesh, np.eye(4), segment_half_width=.2, n_points=6)
 
-ball_sample_points = surf_plotting._ball_sample_locations(
+ball_sample_points = surface._ball_sample_locations(
     mesh, np.eye(4), ball_radius=.15, n_points=20)
 
 

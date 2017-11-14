@@ -6,8 +6,7 @@ project a 3D statistical map onto a cortical mesh and display a surface plot.
 
 """
 
-from nilearn import datasets
-from nilearn import plotting
+from nilearn import datasets, surface, plotting
 
 ##############################################################################
 # Get a statistical map
@@ -26,7 +25,7 @@ fsaverage = datasets.fetch_surf_fsaverage5()
 # Sample the 3D data around each node of the mesh
 # -----------------------------------------------
 
-texture = plotting.vol_to_surf(localizer_tmap, fsaverage.pial_right)
+texture = surface.vol_to_surf(localizer_tmap, fsaverage.pial_right)
 
 ##############################################################################
 # Plot the result
