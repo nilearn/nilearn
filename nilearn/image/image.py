@@ -9,10 +9,7 @@ See also nilearn.signal.
 import collections
 import warnings
 
-from distutils.version import LooseVersion
-
 import numpy as np
-import scipy
 from scipy import ndimage
 from scipy.stats import scoreatpercentile
 import copy

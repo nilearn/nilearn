@@ -3,14 +3,12 @@ Test image pre-processing functions
 """
 from nose.tools import assert_true, assert_false, assert_equal, assert_raises
 from nose import SkipTest
-from distutils.version import LooseVersion
 
 import platform
 import os
 import nibabel
 from nibabel import Nifti1Image
 import numpy as np
-import scipy
 from numpy.testing import assert_array_equal, assert_allclose
 from nilearn._utils.testing import assert_raises_regex, assert_warns
 from nilearn._utils.exceptions import DimensionError
