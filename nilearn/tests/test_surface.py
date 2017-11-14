@@ -12,6 +12,7 @@ from nilearn._utils.testing import assert_raises_regex
 
 import numpy as np
 import matplotlib
+import scipy
 from mpl_toolkits.mplot3d import Axes3D
 
 import nibabel as nb
@@ -328,6 +329,8 @@ def test_sampling_affine():
     texture = surface._nearest_voxel_sampling(
         [img], mesh, affine=affine, radius=1, kind='ball')
     assert_array_equal(texture[0], [1., 2., 1.])
+    if LooseVersion(scipy.__version__) < LooseVersion('0.14'):
+        return
     texture = surface._interpolation_sampling(
         [img], mesh, affine=affine, radius=0, kind='ball')
     assert_array_almost_equal(texture[0], [1.1, 2., 1.])
@@ -338,9 +341,11 @@ def test_sampling():
     img = _z_const_img(5, 7, 13)
     mask = np.ones(img.shape, dtype=int)
     mask[0] = 0
+    projectors = [surface._nearest_voxel_sampling]
+    if LooseVersion(scipy.__version__) >= LooseVersion('0.14'):
+        projectors.append(surface._interpolation_sampling)
     for kind in ('line', 'ball'):
-        for projector in (surface._nearest_voxel_sampling,
-                          surface._interpolation_sampling):
+        for projector in projectors:
             projection = projector([img], mesh, np.eye(4),
                                    kind=kind, radius=0.)
             assert_array_almost_equal(projection.ravel(), img[:, :, 0].ravel())
