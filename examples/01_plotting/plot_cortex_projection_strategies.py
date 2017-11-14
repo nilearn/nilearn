@@ -2,10 +2,10 @@
 Illustration of the volume to cortical surface sampling schemes
 ===============================================================
 
-In nilearn, plotting.surf_plotting.niimg_to_surf_data allows us to measure
-values of a 3d image at the nodes of a cortical mesh, transforming it into
+In nilearn, plotting.niimg_to_surf_data allows us to measure
+values of a 3d volume at the nodes of a cortical mesh, transforming it into
 surface data. This data can then be plotted with
-plotting.surf_plotting.plot_surf_stat_map for example.
+plotting.plot_surf_stat_map for example.
 
 This script shows, on a toy example, where samples are drawn around each mesh
 vertex. Image values are interpolated at each sample location, then these
