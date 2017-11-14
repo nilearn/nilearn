@@ -358,7 +358,7 @@ def _interpolation_sampling(images, mesh, affine, kind='ball', radius=3,
 
 def niimg_to_surf_data(img, surf_mesh,
                        radius=3., kind='line', interpolation='nearest',
-                       n_samples=None, mask=None):
+                       n_samples=None, mask_img=None):
     """Extract surface data from a Nifti image.
 
     Parameters
@@ -402,7 +402,7 @@ def niimg_to_surf_data(img, surf_mesh,
         use a reasonable default for the chosen sampling strategy ('ball' or
         'line').
 
-    mask : niimg-like object or None, optional (default=None)
+    mask_img : niimg-like object or None, optional (default=None)
         Samples falling out of this mask or out of the image are ignored.
         If None, don't apply any mask.
 
@@ -416,9 +416,11 @@ def niimg_to_surf_data(img, surf_mesh,
 
     """
     img = load_img(img)
-    if mask is not None:
+    if mask_img is not None:
         mask = resampling.resample_to_img(
-            mask, img, interpolation='nearest').get_data()
+            mask_img, img, interpolation='nearest').get_data()
+    else:
+        mask = None
     original_dimension = len(img.shape)
     img = _utils.check_niimg(img, atleast_4d=True)
     frames = np.rollaxis(img.get_data(), -1)
