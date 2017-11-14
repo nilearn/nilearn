@@ -10,7 +10,7 @@ import nibabel
 from nibabel import Nifti1Image
 import numpy as np
 from numpy.testing import assert_array_equal, assert_allclose
-from nilearn._utils.testing import assert_raises_regex
+from nilearn._utils.testing import assert_raises_regex, assert_warns
 from nilearn._utils.exceptions import DimensionError
 
 from nilearn import signal
@@ -127,6 +127,15 @@ def test__smooth_array():
         np.testing.assert_equal(image._smooth_array(data, affine, fwhm='fast'),
                                 image._fast_smooth_array(data))
 
+    # Check corner case when fwhm=0. See #1537
+    # Test whether function _smooth_array raises a warning when fwhm=0.
+    assert_warns(UserWarning, image._smooth_array, data, affine, fwhm=0.)
+
+    # Test output equal when fwhm=None and fwhm=0
+    out_fwhm_none = image._smooth_array(data, affine, fwhm=None)
+    out_fwhm_zero = image._smooth_array(data, affine, fwhm=0.)
+    assert_array_equal(out_fwhm_none, out_fwhm_zero)
+
 
 def test_smooth_img():
     # This function only checks added functionalities compared
@@ -154,6 +163,15 @@ def test_smooth_img():
             out = image.smooth_img(imgs[0], fwhm)
             assert_true(isinstance(out, nibabel.Nifti1Image))
             assert_true(out.shape == (shapes[0] + (lengths[0],)))
+
+    # Check corner case situations when fwhm=0, See issue #1537
+    # Test whether function smooth_img raises a warning when fwhm=0.
+    assert_warns(UserWarning, image.smooth_img, img1, fwhm=0.)
+
+    # Test output equal when fwhm=None and fwhm=0
+    out_fwhm_none = image.smooth_img(img1, fwhm=None)
+    out_fwhm_zero = image.smooth_img(img1, fwhm=0.)
+    assert_array_equal(out_fwhm_none.get_data(), out_fwhm_zero.get_data())
 
 
 def test__crop_img_to():

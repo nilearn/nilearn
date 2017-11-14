@@ -7,6 +7,7 @@ See also nilearn.signal.
 # License: simplified BSD
 
 import collections
+import warnings
 
 import numpy as np
 from scipy import ndimage
@@ -183,6 +184,13 @@ def _smooth_array(arr, affine, fwhm=None, ensure_finite=True, copy=True):
     -----
     This function is most efficient with arr in C order.
     """
+    # Here, we have to investigate use cases of fwhm. Particularly, if fwhm=0.
+    # See issue #1537
+    if fwhm == 0.:
+        warnings.warn("The parameter 'fwhm' for smoothing is specified "
+                      "as {0}. Converting to None (no smoothing option)"
+                      .format(fwhm))
+        fwhm = None
 
     if arr.dtype.kind == 'i':
         if arr.dtype == np.int64:
@@ -233,7 +241,10 @@ def smooth_img(imgs, fwhm):
         a filter [0.2, 1, 0.2] in each direction and a normalisation
         to preserve the scale.
         If fwhm is None, no filtering is performed (useful when just removal
-        of non-finite values is needed)
+        of non-finite values is needed).
+
+        In corner case situations, fwhm is simply kept to None when fwhm is
+        specified as fwhm=0.
 
     Returns
     -------
