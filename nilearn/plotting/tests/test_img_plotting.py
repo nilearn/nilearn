@@ -179,13 +179,13 @@ def test_plot_stat_map_threshold_for_affine_with_rotation():
                        [0., 0., 3., 3.],
                        [0., 0., 0., 1.]])
     img = nibabel.Nifti1Image(data, affine)
-    display = plot_stat_map(img, bg_img=None, threshold=1e6,
+    display = plot_stat_map(img, bg_img=None, threshold=1.,
                             display_mode='z', cut_coords=1)
     # Next two lines retrieve the numpy array from the plot
     ax = list(display.axes.values())[0].ax
     plotted_array = ax.images[0].get_array()
-    # Given the high threshold the array should be entirely masked
-    assert_true(plotted_array.mask.all())
+    # Given the high threshold the array should be partly masked
+    assert_true(plotted_array.mask.any())
 
     # Save execution time and memory
     plt.close()
