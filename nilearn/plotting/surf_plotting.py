@@ -19,7 +19,7 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from nibabel import gifti
 
-import nilearn.image
+from ..image import load_img
 from ..image import resampling
 from .._utils.compat import _basestring
 from .. import _utils
@@ -415,7 +415,7 @@ def niimg_to_surf_data(image, surf_mesh,
         corresponds to a mesh node.
 
     """
-    image = nilearn.image.load_img(image)
+    image = load_img(image)
     if mask is not None:
         mask = resampling.resample_to_img(
             mask, image, interpolation='nearest').get_data()
