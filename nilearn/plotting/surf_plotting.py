@@ -364,7 +364,7 @@ def niimg_to_surf_data(img, surf_mesh,
     Parameters
     ----------
 
-    img : niimg-like object, 3d or 4d.
+    img : Niimg-like object, 3d or 4d.
 
     surf_mesh : str or numpy.ndarray
         Either a file containing surface mesh geometry (valid formats
@@ -402,7 +402,7 @@ def niimg_to_surf_data(img, surf_mesh,
         use a reasonable default for the chosen sampling strategy ('ball' or
         'line').
 
-    mask_img : niimg-like object or None, optional (default=None)
+    mask_img : Niimg-like object or None, optional (default=None)
         Samples falling out of this mask or out of the image are ignored.
         If None, don't apply any mask.
 
