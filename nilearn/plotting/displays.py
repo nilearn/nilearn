@@ -695,9 +695,11 @@ class BaseSlicer(object):
         to_iterate_over = zip(self.axes.values(), data_2d_list)
         for display_ax, data_2d in to_iterate_over:
             if data_2d is not None:
-                if LooseVersion(matplotlib.__version__) == LooseVersion("2.1.0"):
-                    if data_2d.min() is np.ma.masked:
-                        continue
+                # If data_2d is completely masked, then there is nothing to
+                # plot. Hence, continued to loop over. This problem came up
+                # with matplotlib 2.1.0. See issue #9280 in matplotlib.
+                if data_2d.min() is np.ma.masked:
+                    continue
                 im = display_ax.draw_2d(data_2d, data_bounds, bounding_box,
                                         type=type, **kwargs)
                 ims.append(im)

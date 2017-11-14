@@ -170,29 +170,25 @@ def test_plot_stat_map():
 
 
 def test_plot_stat_map_threshold_for_affine_with_rotation():
-    # Test this function only if matplotlib version is not 2.1.0. When the
-    # data is completely masked we have issues with plotting with this version
-    # of matplotlib. See #9280 in matplotlib.
-    if LooseVersion(matplotlib.__version__) != LooseVersion("2.1.0"):
-        # threshold was not being applied when affine has a rotation
-        # see https://github.com/nilearn/nilearn/issues/599 for more details
-        data = np.random.randn(10, 10, 10)
-        # matrix with rotation
-        affine = np.array([[-3., 1., 0., 1.],
-                           [-1., -3., 0., -2.],
-                           [0., 0., 3., 3.],
-                           [0., 0., 0., 1.]])
-        img = nibabel.Nifti1Image(data, affine)
-        display = plot_stat_map(img, bg_img=None, threshold=1e6,
-                                display_mode='z', cut_coords=1)
-        # Next two lines retrieve the numpy array from the plot
-        ax = list(display.axes.values())[0].ax
-        plotted_array = ax.images[0].get_array()
-        # Given the high threshold the array should be entirely masked
-        assert_true(plotted_array.mask.all())
+    # threshold was not being applied when affine has a rotation
+    # see https://github.com/nilearn/nilearn/issues/599 for more details
+    data = np.random.randn(10, 10, 10)
+    # matrix with rotation
+    affine = np.array([[-3., 1., 0., 1.],
+                       [-1., -3., 0., -2.],
+                       [0., 0., 3., 3.],
+                       [0., 0., 0., 1.]])
+    img = nibabel.Nifti1Image(data, affine)
+    display = plot_stat_map(img, bg_img=None, threshold=1.,
+                            display_mode='z', cut_coords=1)
+    # Next two lines retrieve the numpy array from the plot
+    ax = list(display.axes.values())[0].ax
+    plotted_array = ax.images[0].get_array()
+    # Given the high threshold the array should be partly masked
+    assert_true(plotted_array.mask.any())
 
-        # Save execution time and memory
-        plt.close()
+    # Save execution time and memory
+    plt.close()
 
 
 def test_plot_stat_map_threshold_for_uint8():
