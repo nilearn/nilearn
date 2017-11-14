@@ -26,7 +26,7 @@ fsaverage = datasets.fetch_surf_fsaverage5()
 # Sample the 3D data around each node of the mesh
 # -----------------------------------------------
 
-texture = plotting.niimg_to_surf_data(localizer_tmap, fsaverage.pial_right)
+texture = plotting.vol_to_surf(localizer_tmap, fsaverage.pial_right)
 
 ##############################################################################
 # Plot the result

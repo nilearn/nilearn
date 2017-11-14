@@ -44,7 +44,7 @@ Enhancements
       :func:`nilearn.plotting.plot_surf_stat_map` and
       :func:`nilearn.plotting.plot_surf_roi`
 
-    - :func:`nilearn.plotting.niimg_to_surf_data` projects a 3d or 4d brain
+    - :func:`nilearn.plotting.vol_to_surf` projects a 3d or 4d brain
       volume on the cortical surface.
 
     - :class:`nilearn.decoding.SearchLight` has new parameter "groups" to

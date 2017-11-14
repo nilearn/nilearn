@@ -346,7 +346,7 @@ NOTE: These functions works for only with matplotlib higher than 1.3.1.
      :target: ../auto_examples/01_plotting/plot_surf_stat_map.html
      :scale: 50
 
-.. |niimg_to_surf_data| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_3d_map_projection_001.png
+.. |vol_to_surf| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_3d_map_projection_001.png
      :target: ../auto_examples/01_plotting/plot_3d_map_projection.html
      :scale: 50
 
@@ -367,7 +367,7 @@ NOTE: These functions works for only with matplotlib higher than 1.3.1.
                          **Example:**
                          :ref:`sphx_glr_auto_examples_01_plotting_plot_surf_stat_map.py`
 
-|niimg_to_surf_data|     :func:`niimg_to_surf_data`
+|vol_to_surf|     :func:`vol_to_surf`
                          |hack|
                          Projecting a 3D or 4D brain image onto the cortical surface.
                          |hack|

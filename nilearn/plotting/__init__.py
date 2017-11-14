@@ -55,6 +55,6 @@ __all__ = ['cm', 'plot_img', 'plot_anat', 'plot_epi',
 
 if LooseVersion(matplotlib.__version__) > LooseVersion('1.3.1'):
     from .surf_plotting import plot_surf, plot_surf_stat_map, plot_surf_roi
-    from .surf_plotting import niimg_to_surf_data
+    from .surf_plotting import vol_to_surf
     __all__.extend(['plot_surf', 'plot_surf_stat_map', 'plot_surf_roi',
-                    'niimg_to_surf_data'])
+                    'vol_to_surf'])

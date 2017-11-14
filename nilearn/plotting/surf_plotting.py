@@ -312,7 +312,7 @@ def _nearest_voxel_sampling(images, mesh, affine, kind='ball', radius=3.,
     Image intensity at each sample point is that of the nearest voxel.
     A 2-d array is returned, where each row corresponds to an image and each
     column to a mesh vertex.
-    See documentation of niimg_to_surf_data for details.
+    See documentation of vol_to_surf for details.
 
     """
     proj = projection_matrix(
@@ -332,7 +332,7 @@ def _interpolation_sampling(images, mesh, affine, kind='ball', radius=3,
     interpolation.
     A 2-d array is returned, where each row corresponds to an image and each
     column to a mesh vertex.
-    See documentation of niimg_to_surf_data for details.
+    See documentation of vol_to_surf for details.
 
     """
     sample_locations = _sample_locations(
@@ -356,9 +356,9 @@ def _interpolation_sampling(images, mesh, affine, kind='ball', radius=3,
     return texture
 
 
-def niimg_to_surf_data(img, surf_mesh,
-                       radius=3., kind='line', interpolation='nearest',
-                       n_samples=None, mask_img=None):
+def vol_to_surf(img, surf_mesh,
+                radius=3., kind='line', interpolation='nearest',
+                n_samples=None, mask_img=None):
     """Extract surface data from a Nifti image.
 
     Parameters

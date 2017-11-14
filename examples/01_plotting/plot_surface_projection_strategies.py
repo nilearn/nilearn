@@ -2,10 +2,9 @@
 Illustration of the volume to cortical surface sampling schemes
 ===============================================================
 
-In nilearn, plotting.niimg_to_surf_data allows us to measure
-values of a 3d volume at the nodes of a cortical mesh, transforming it into
-surface data. This data can then be plotted with
-plotting.plot_surf_stat_map for example.
+In nilearn, plotting.vol_to_surf allows us to measure values of a 3d volume at
+the nodes of a cortical mesh, transforming it into surface data. This data can
+then be plotted with plotting.plot_surf_stat_map for example.
 
 This script shows, on a toy example, where samples are drawn around each mesh
 vertex. Image values are interpolated at each sample location, then these
@@ -42,7 +41,7 @@ mesh = [np.asarray([x, y, z]).T, triangulation.triangles]
 
 
 #########################################################################
-# Get the locations from which niimg_to_surf_data would draw its samples
+# Get the locations from which vol_to_surf would draw its samples
 #########################################################################
 
 line_sample_points = surf_plotting._line_sample_locations(

@@ -523,24 +523,24 @@ def test_sampling():
             assert_true(np.isnan(projection.ravel()[:7]).all())
 
 
-def test_niimg_to_surf_data():
+def test_vol_to_surf():
     # test 3d niimg to cortical surface projection and invariance to a change
     # of affine
     mni = datasets.load_mni152_template()
     fsaverage = datasets.fetch_surf_fsaverage5().pial_left
     for kind in ['ball', 'line']:
-        proj_1 = surf_plotting.niimg_to_surf_data(
+        proj_1 = surf_plotting.vol_to_surf(
             mni, fsaverage, kind=kind, interpolation='linear')
         assert_true(proj_1.ndim == 1)
         mni_rot = nilearn.image.resample_img(
             mni, target_affine=rotation(np.pi / 3., np.pi / 4.))
-        proj_2 = surf_plotting.niimg_to_surf_data(
+        proj_2 = surf_plotting.vol_to_surf(
             mni_rot, fsaverage, kind=kind, interpolation='linear')
         # The projection values for the rotated image should be very close
         # to the projection for the original image
         assert_true((np.abs(proj_1 - proj_2) / np.abs(proj_1)).mean() < .01)
         mni_4d = nilearn.image.concat_imgs([mni, mni])
-        proj_4d = surf_plotting.niimg_to_surf_data(
+        proj_4d = surf_plotting.vol_to_surf(
             mni_4d, fsaverage, kind=kind, interpolation='linear')
         assert_array_equal(proj_4d.shape, [10242, 2])
         assert_array_almost_equal(proj_4d[:, 0], proj_1, 3)
