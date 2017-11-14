@@ -3,6 +3,8 @@
 import tempfile
 
 import matplotlib.pyplot as plt
+import nibabel
+import numpy as np
 
 from nilearn.plotting.displays import OrthoSlicer, XSlicer, OrthoProjector
 from nilearn.datasets import load_mni152_template
@@ -71,4 +73,21 @@ def test_user_given_cmap_with_colorbar():
 
     # Test with cmap given as a string
     oslicer.add_overlay(img, cmap='Paired', colorbar=True)
+    oslicer.close()
+
+
+def test_data_complete_mask():
+    """This special case test is due to matplotlib 2.1.0.
+
+    When the data is completely masked, then we have plotting issues
+    See similar issue #9280 reported in matplotlib. This function
+    tests the patch added for this particular issue.
+    """
+    # data is completely masked
+    data = np.zeros((10, 20, 30))
+    affine = np.eye(4)
+
+    img = nibabel.Nifti1Image(data, affine)
+    oslicer = OrthoSlicer(cut_coords=(0, 0, 0))
+    oslicer.add_overlay(img)
     oslicer.close()
