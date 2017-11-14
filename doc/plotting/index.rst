@@ -369,7 +369,7 @@ NOTE: These functions works for only with matplotlib higher than 1.3.1.
 
 |niimg_to_surf_data|     :func:`niimg_to_surf_data`
                          |hack|
-                         Projecting a 3D brain image onto the cortical surface.
+                         Projecting a 3D or 4D brain image onto the cortical surface.
                          |hack|
                          **Example:**
                          :ref:`sphx_glr_auto_examples_01_plotting_plot_3d_map_projection.py`
