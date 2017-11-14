@@ -418,7 +418,7 @@ def niimg_to_surf_data(img, surf_mesh,
     img = load_img(img)
     if mask_img is not None:
         mask = resampling.resample_to_img(
-            mask_img, img, interpolation='nearest').get_data()
+            mask_img, img, interpolation='nearest', copy=False).get_data()
     else:
         mask = None
     original_dimension = len(img.shape)
