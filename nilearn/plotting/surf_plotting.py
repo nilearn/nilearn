@@ -2,9 +2,12 @@
 Functions for surface visualization.
 Only matplotlib is required.
 """
+import warnings
 
-import nibabel
+from distutils.version import LooseVersion
+
 import numpy as np
+import scipy
 from scipy import sparse, interpolate
 import sklearn.preprocessing
 
@@ -17,6 +20,8 @@ import sklearn.cluster
 import matplotlib.pyplot as plt
 
 from mpl_toolkits.mplot3d import Axes3D
+
+import nibabel
 from nibabel import gifti
 
 from ..image import load_img
@@ -415,6 +420,17 @@ def vol_to_surf(img, surf_mesh,
         corresponds to a mesh node.
 
     """
+    sampling_schemes = {'linear': _interpolation_sampling,
+                        'nearest': _nearest_voxel_sampling}
+    if interpolation not in sampling_schemes:
+        raise ValueError('"interpolation" should be one of {}'.format(
+            tuple(sampling_schemes.keys())))
+    if (LooseVersion(scipy.__version__) < LooseVersion('0.14') and
+            interpolation == 'linear'):
+        warnings.warn(
+            'Linear interpolation is only available if scipy version is 0.14 '
+            'or newer. Falling back to nearest neighbour interpolation')
+        interpolation = 'nearest'
     img = load_img(img)
     if mask_img is not None:
         mask = resampling.resample_to_img(
@@ -425,11 +441,6 @@ def vol_to_surf(img, surf_mesh,
     img = _utils.check_niimg(img, atleast_4d=True)
     frames = np.rollaxis(img.get_data(), -1)
     mesh = load_surf_mesh(surf_mesh)
-    sampling_schemes = {'linear': _interpolation_sampling,
-                        'nearest': _nearest_voxel_sampling}
-    if interpolation not in sampling_schemes:
-        raise ValueError('"interpolation" should be one of {}'.format(
-            tuple(sampling_schemes.keys())))
     sampling = sampling_schemes[interpolation]
     texture = sampling(
         frames, mesh, img.affine, radius=radius, kind=kind,
