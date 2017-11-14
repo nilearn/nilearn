@@ -408,7 +408,7 @@ def niimg_to_surf_data(img, surf_mesh,
 
     Returns
     -------
-    texture: array, 1d or 2d.
+    texture : numpy.ndarray, 1d or 2d.
         If image was a 3d image (e.g a stat map), a 1d vector is returned,
         containing one value for each mesh node.
         If image was a 4d image, a 2d array is returned, where each row
