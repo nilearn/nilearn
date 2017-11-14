@@ -343,9 +343,9 @@ def _interpolation_sampling(images, mesh, affine, kind='ball', radius=3,
     masked = _masked_indices(interp_locations, images[0].shape, mask=mask)
     # loop over images rather than building a big array to use less memory
     all_samples = []
-    for image in images:
+    for img in images:
         interpolator = interpolate.RegularGridInterpolator(
-            grid, image,
+            grid, img,
             bounds_error=False, method='linear', fill_value=None)
         samples = interpolator(interp_locations)
         samples[masked] = np.nan
@@ -356,7 +356,7 @@ def _interpolation_sampling(images, mesh, affine, kind='ball', radius=3,
     return texture
 
 
-def niimg_to_surf_data(image, surf_mesh,
+def niimg_to_surf_data(img, surf_mesh,
                        radius=3., kind='line', interpolation='nearest',
                        n_samples=None, mask=None):
     """Extract surface data from a Nifti image.
@@ -364,7 +364,7 @@ def niimg_to_surf_data(image, surf_mesh,
     Parameters
     ----------
 
-    image : niimg-like object, 3d or 4d.
+    img : niimg-like object, 3d or 4d.
 
     surf_mesh : str or numpy.ndarray
         Either a file containing surface mesh geometry (valid formats
@@ -415,13 +415,13 @@ def niimg_to_surf_data(image, surf_mesh,
         corresponds to a mesh node.
 
     """
-    image = load_img(image)
+    img = load_img(img)
     if mask is not None:
         mask = resampling.resample_to_img(
-            mask, image, interpolation='nearest').get_data()
-    original_dimension = len(image.shape)
-    image = _utils.check_niimg(image, atleast_4d=True)
-    frames = np.rollaxis(image.get_data(), -1)
+            mask, img, interpolation='nearest').get_data()
+    original_dimension = len(img.shape)
+    img = _utils.check_niimg(img, atleast_4d=True)
+    frames = np.rollaxis(img.get_data(), -1)
     mesh = load_surf_mesh(surf_mesh)
     sampling_schemes = {'linear': _interpolation_sampling,
                         'nearest': _nearest_voxel_sampling}
@@ -430,7 +430,7 @@ def niimg_to_surf_data(image, surf_mesh,
             tuple(sampling_schemes.keys())))
     sampling = sampling_schemes[interpolation]
     texture = sampling(
-        frames, mesh, image.affine, radius=radius, kind=kind,
+        frames, mesh, img.affine, radius=radius, kind=kind,
         n_points=n_samples, mask=mask)
     if original_dimension == 3:
         texture = texture[0]
