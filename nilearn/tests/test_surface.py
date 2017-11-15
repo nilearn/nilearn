@@ -360,20 +360,30 @@ def test_vol_to_surf():
     # test 3d niimg to cortical surface projection and invariance to a change
     # of affine
     mni = datasets.load_mni152_template()
-    fsaverage = datasets.fetch_surf_fsaverage5().pial_left
+    mesh = _generate_surf()
+    _check_vol_to_surf_results(mni, mesh)
+    if LooseVersion(nb.__version__) > LooseVersion('1.2.0'):
+        fsaverage = datasets.fetch_surf_fsaverage5().pial_left
+        _check_vol_to_surf_results(mni, fsaverage)
+
+
+def _check_vol_to_surf_results(img, mesh):
     for kind in ['ball', 'line']:
-        proj_1 = surface.vol_to_surf(
-            mni, fsaverage, kind=kind, interpolation='linear')
-        assert_true(proj_1.ndim == 1)
-        mni_rot = image.resample_img(
-            mni, target_affine=rotation(np.pi / 3., np.pi / 4.))
-        proj_2 = surface.vol_to_surf(
-            mni_rot, fsaverage, kind=kind, interpolation='linear')
-        # The projection values for the rotated image should be very close
-        # to the projection for the original image
-        assert_true((np.abs(proj_1 - proj_2) / np.abs(proj_1)).mean() < .01)
-        mni_4d = image.concat_imgs([mni, mni])
-        proj_4d = surface.vol_to_surf(
-            mni_4d, fsaverage, kind=kind, interpolation='linear')
-        assert_array_equal(proj_4d.shape, [10242, 2])
-        assert_array_almost_equal(proj_4d[:, 0], proj_1, 3)
+        for interpolation in ['linear', 'nearest']:
+            proj_1 = surface.vol_to_surf(
+                img, mesh, kind=kind, interpolation=interpolation)
+            assert_true(proj_1.ndim == 1)
+            img_rot = image.resample_img(
+                img, target_affine=rotation(np.pi / 3., np.pi / 4.))
+            proj_2 = surface.vol_to_surf(
+                img_rot, mesh, kind=kind, interpolation=interpolation)
+            # The projection values for the rotated image should be very close
+            # to the projection for the original image
+            diff = np.abs(proj_1 - proj_2) / np.abs(proj_1)
+            assert_true(np.mean(diff[diff < np.inf]) < .03)
+            img_4d = image.concat_imgs([img, img])
+            proj_4d = surface.vol_to_surf(
+                img_4d, mesh, kind=kind, interpolation=interpolation)
+            nodes, _ = surface.load_surf_mesh(mesh)
+            assert_array_equal(proj_4d.shape, [nodes.shape[0], 2])
+            assert_array_almost_equal(proj_4d[:, 0], proj_1, 3)
