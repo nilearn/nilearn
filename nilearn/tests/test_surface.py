@@ -11,9 +11,8 @@ from nose.tools import assert_true, assert_raises
 from nilearn._utils.testing import assert_raises_regex
 
 import numpy as np
-import matplotlib
 import scipy
-from mpl_toolkits.mplot3d import Axes3D
+from scipy.spatial import Delaunay
 
 import nibabel as nb
 from nibabel import gifti
@@ -230,9 +229,9 @@ def _flat_mesh(x_s, y_s, z=0):
     x, y = np.mgrid[:x_s, :y_s]
     x, y = x.ravel(), y.ravel()
     z = np.ones(len(x)) * z
-    triangulation = matplotlib.tri.Triangulation(x, y)
     vertices = np.asarray([x, y, z]).T
-    mesh = [vertices, triangulation.triangles]
+    triangulation = Delaunay(vertices[:, :2]).simplices
+    mesh = [vertices, triangulation]
     return mesh
 
 
