@@ -368,9 +368,6 @@ def test_vol_to_surf():
     _check_vol_to_surf_results(mni, mesh)
     if LooseVersion(nb.__version__) > LooseVersion('1.2.0'):
         fsaverage = datasets.fetch_surf_fsaverage5().pial_left
-        with open(fsaverage) as mesh_file:
-            file_len = len(mesh_file.readlines())
-            print('fsaverage: {}, len: {}'.format(fsaverage, file_len))
         _check_vol_to_surf_results(mni, fsaverage)
 
 
