@@ -32,9 +32,18 @@ texture = surface.vol_to_surf(localizer_tmap, fsaverage.pial_right)
 # ---------------
 
 plotting.plot_surf_stat_map(fsaverage.infl_right, texture, hemi='right',
-                            title='Surface right hemisphere')
+                            title='Surface right hemisphere',
+                            threshold=1., bg_map=fsaverage.sulc_right,
+                            cmap='cold_hot')
+
+##############################################################################
+# Plot 3D image for comparison
+# ----------------------------
 
 plotting.plot_glass_brain(localizer_tmap, display_mode='r', plot_abs=False,
-                          title='Glass brain')
+                          title='Glass brain', threshold=2.)
+
+plotting.plot_stat_map(localizer_tmap, display_mode='x', threshold=1.,
+                       cut_coords=range(0, 51, 10), title='Slices')
 
 plotting.show()
