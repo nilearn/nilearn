@@ -226,6 +226,11 @@ def test_load_surf_mesh_file_error():
 
 
 def _flat_mesh(x_s, y_s, z=0):
+    # before 0.14 the vertices of the triangles in the delaunay triangulation
+    # are not ordered correctly, hence there is no way to know the direction of
+    # the outer normal.
+    if LooseVersion(scipy.__version__) < LooseVersion('0.14'):
+        raise SkipTest()
     x, y = np.mgrid[:x_s, :y_s]
     x, y = x.ravel(), y.ravel()
     z = np.ones(len(x)) * z
