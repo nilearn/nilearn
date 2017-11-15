@@ -34,10 +34,11 @@ memory = joblib.Memory(_get_dataset_dir('joblib'), verbose=False)
 @memory.cache
 def _uniform_ball_cloud(n_points=100, dim=3, n_monte_carlo=5000):
     """Get points uniformly spaced in the unit ball."""
-    mc_cube = np.random.uniform(-1, 1, size=(n_monte_carlo, dim))
+    rng = np.random.RandomState(0)
+    mc_cube = rng.uniform(-1, 1, size=(n_monte_carlo, dim))
     mc_ball = mc_cube[(mc_cube**2).sum(axis=1) <= 1.]
     centroids, assignments, _ = sklearn.cluster.k_means(
-        mc_ball, n_clusters=n_points)
+        mc_ball, n_clusters=n_points, random_state=0)
     return centroids
 
 
