@@ -87,7 +87,7 @@ print(fmri_masked.shape)
 # We use pandas to load them in an array.
 import pandas as pd
 # Load behavioral information
-behavioral = pd.read_csv(haxby_dataset.session_target[0], delimiter=" ")
+behavioral = pd.read_csv(haxby_dataset.session_target[0], sep=" ")
 print(behavioral)
 
 ###########################################################################

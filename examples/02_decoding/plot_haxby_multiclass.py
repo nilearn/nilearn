@@ -24,7 +24,7 @@ func_filename = haxby_dataset.func[0]
 mask_filename = haxby_dataset.mask
 
 # Load the behavioral data that we will predict
-labels = pd.read_csv(haxby_dataset.session_target[0], delimiter=" ")
+labels = pd.read_csv(haxby_dataset.session_target[0], sep=" ")
 y = labels['labels']
 session = labels['chunks']
 

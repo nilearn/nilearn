@@ -47,7 +47,7 @@ print('Mask nifti image (3D) is located at: %s' % haxby_dataset.mask)
 print('Functional nifti image (4D) are located at: %s' % haxby_dataset.func[0])
 
 # Load the behavioral data
-labels = pd.read_csv(haxby_dataset.session_target[0], delimiter=" ")
+labels = pd.read_csv(haxby_dataset.session_target[0], sep=" ")
 y = labels['labels']
 session = labels['chunks']
 
