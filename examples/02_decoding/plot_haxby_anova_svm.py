@@ -90,7 +90,7 @@ from sklearn.cross_validation import LeaveOneLabelOut, cross_val_score
 # Define the cross-validation scheme used for validation.
 # Here we use a LeaveOneLabelOut cross-validation on the session label
 # which corresponds to a leave-one-session-out
-cv = LeaveOneLabelOut(session)
+cv = LeaveOneLabelOut(session['chunks'])
 
 # Compute the prediction accuracy for the different folds (i.e. session)
 cv_scores = cross_val_score(anova_svc, X, conditions, cv=cv)
@@ -100,7 +100,7 @@ classification_accuracy = cv_scores.mean()
 
 # Print the results
 print("Classification accuracy: %.4f / Chance level: %f" %
-      (classification_accuracy, 1. / len(np.unique(conditions))))
+      (classification_accuracy, 1. / len(conditions.unique())))
 # Classification accuracy:  0.70370 / Chance level: 0.5000
 
 

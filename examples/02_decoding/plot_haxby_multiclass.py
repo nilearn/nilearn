@@ -29,7 +29,7 @@ y = labels['labels']
 session = labels['chunks']
 
 # Remove the rest condition, it is not very interesting
-non_rest = y != 'rest'
+non_rest = (y != 'rest')
 y = y[non_rest]
 
 # Get the labels of the numerical conditions represented by the vector y

@@ -184,9 +184,10 @@ from sklearn.cross_validation import KFold
 cv = KFold(n=len(fmri_masked), n_folds=5)
 
 for train, test in cv:
-    svc.fit(fmri_masked[train], conditions[train])
+    conditions_masked = conditions.values[train]
+    svc.fit(fmri_masked[train], conditions_masked)
     prediction = svc.predict(fmri_masked[test])
-    print((prediction == conditions[test]).sum() / float(len(conditions[test])))
+    print((prediction == conditions[test]).sum() / float(len(conditions.values[test])))
 
 ###########################################################################
 # Cross-validation with scikit-learn
