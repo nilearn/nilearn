@@ -195,18 +195,64 @@ def test_fail_fetch_atlas_harvard_oxford():
                 "</data>")
     dummy.close()
 
+    # when symmetric_split=False (by default), then atlas fetcher should
+    # have maps as string and n_labels=4 with background. Since, we relay on xml
+    # file to retrieve labels.
+    ho_wo_symm = atlas.fetch_atlas_harvard_oxford(target_atlas,
+                                                  data_dir=tst.tmpdir)
+    assert_true(isinstance(ho_wo_symm.maps, _basestring))
+    assert_true(isinstance(ho_wo_symm.labels, list))
+    assert_equal(ho_wo_symm.labels[0], "Background")
+    assert_equal(ho_wo_symm.labels[1], "R1")
+    assert_equal(ho_wo_symm.labels[2], "R2")
+    assert_equal(ho_wo_symm.labels[3], "R3")
+
+    # This section tests with lateralized version. In other words,
+    # symmetric_split=True
+
+    # Dummy xml file for lateralized control of cortical atlas images
+    # shipped with FSL 5.0. Atlases are already lateralized in this version
+    # for cortical type atlases denoted with maxprob but not full prob and but
+    # not also with subcortical.
+
+    # So, we test the fetcher with symmetric_split=True by creating a new
+    # dummy local file and fetch them and test the output variables
+    # accordingly.
+    dummy2 = open(os.path.join(ho_dir, 'HarvardOxford-Cortical-Lateralized.xml'), 'w')
+    dummy2.write("<?xml version='1.0' encoding='us-ascii'?>\n"
+                 "<data>\n"
+                 '<label index="0" x="63" y="86" z="49">Left R1</label>\n'
+                 '<label index="1" x="21" y="86" z="33">Right R1</label>\n'
+                 '<label index="2" x="64" y="69" z="32">Left R2</label>\n'
+                 '<label index="3" x="26" y="70" z="32">Right R2</label>\n'
+                 '<label index="4" x="47" y="75" z="66">Left R3</label>\n'
+                 '<label index="5" x="43" y="80" z="61">Right R3</label>\n'
+                 "</data>")
+    dummy2.close()
+
+    # Here, with symmetric_split=True, atlas maps are returned as nibabel Nifti
+    # image but not string. Now, with symmetric split number of labels should be
+    # more than without split and contain Left and Right tags in the labels.
+
+    # Create dummy image files too with cortl specified for symmetric split.
+    split_atlas_fname = 'HarvardOxford-' + 'cortl-maxprob-thr0-1mm' + '.nii.gz'
+    nifti_target_split = os.path.join(nifti_dir, split_atlas_fname)
+    nibabel.Nifti1Image(atlas_data, np.eye(4) * 3).to_filename(
+        nifti_target_split)
     ho = atlas.fetch_atlas_harvard_oxford(target_atlas,
                                           data_dir=tst.tmpdir,
                                           symmetric_split=True)
 
     assert_true(isinstance(ho.maps, nibabel.Nifti1Image))
     assert_true(isinstance(ho.labels, list))
-    assert_equal(len(ho.labels), 5)
+    assert_equal(len(ho.labels), 7)
     assert_equal(ho.labels[0], "Background")
-    assert_equal(ho.labels[1], "R1, left part")
-    assert_equal(ho.labels[2], "R1, right part")
-    assert_equal(ho.labels[3], "R2")
-    assert_equal(ho.labels[4], "R3")
+    assert_equal(ho.labels[1], "Left R1")
+    assert_equal(ho.labels[2], "Right R1")
+    assert_equal(ho.labels[3], "Left R2")
+    assert_equal(ho.labels[4], "Right R2")
+    assert_equal(ho.labels[5], "Left R3")
+    assert_equal(ho.labels[6], "Right R3")
 
 
 @with_setup(setup_mock, teardown_mock)
