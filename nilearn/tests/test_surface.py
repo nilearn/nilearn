@@ -3,6 +3,7 @@
 import os
 import tempfile
 import warnings
+import itertools
 
 from distutils.version import LooseVersion
 from nose import SkipTest
@@ -292,7 +293,7 @@ def test_sample_locations():
     for kind, offsets in [('line', line_offsets), ('ball', ball_offsets)]:
         locations = surface._sample_locations(
             [vertices, mesh[1]], affine, 1., kind=kind, n_points=10)
-        true_locations = [vertex + offsets for vertex in mesh[0]]
+        true_locations = np.asarray([vertex + offsets for vertex in mesh[0]])
         assert_array_equal(locations.shape, true_locations.shape)
         assert_array_almost_equal(true_locations, locations)
     assert_raises(ValueError, surface._sample_locations,
@@ -394,22 +395,26 @@ def test_vol_to_surf():
 
 
 def _check_vol_to_surf_results(img, mesh):
-    for kind in ['ball', 'line']:
-        for interpolation in ['linear', 'nearest']:
-            proj_1 = surface.vol_to_surf(
-                img, mesh, kind=kind, interpolation=interpolation)
-            assert_true(proj_1.ndim == 1)
-            img_rot = image.resample_img(
-                img, target_affine=rotation(np.pi / 3., np.pi / 4.))
-            proj_2 = surface.vol_to_surf(
-                img_rot, mesh, kind=kind, interpolation=interpolation)
-            # The projection values for the rotated image should be very close
-            # to the projection for the original image
-            diff = np.abs(proj_1 - proj_2) / np.abs(proj_1)
-            assert_true(np.mean(diff[diff < np.inf]) < .03)
-            img_4d = image.concat_imgs([img, img])
-            proj_4d = surface.vol_to_surf(
-                img_4d, mesh, kind=kind, interpolation=interpolation)
-            nodes, _ = surface.load_surf_mesh(mesh)
-            assert_array_equal(proj_4d.shape, [nodes.shape[0], 2])
-            assert_array_almost_equal(proj_4d[:, 0], proj_1, 3)
+    mni_mask = datasets.load_mni152_brain_mask()
+    for kind, interpolation, mask_img in itertools.product(
+            ['ball', 'line'], ['linear', 'nearest'], [mni_mask, None]):
+        proj_1 = surface.vol_to_surf(
+            img, mesh, kind=kind, interpolation=interpolation,
+            mask_img=mask_img)
+        assert_true(proj_1.ndim == 1)
+        img_rot = image.resample_img(
+            img, target_affine=rotation(np.pi / 3., np.pi / 4.))
+        proj_2 = surface.vol_to_surf(
+            img_rot, mesh, kind=kind, interpolation=interpolation,
+            mask_img=mask_img)
+        # The projection values for the rotated image should be close
+        # to the projection for the original image
+        diff = np.abs(proj_1 - proj_2) / np.abs(proj_1)
+        assert_true(np.mean(diff[diff < np.inf]) < .03)
+        img_4d = image.concat_imgs([img, img])
+        proj_4d = surface.vol_to_surf(
+            img_4d, mesh, kind=kind, interpolation=interpolation,
+            mask_img=mask_img)
+        nodes, _ = surface.load_surf_mesh(mesh)
+        assert_array_equal(proj_4d.shape, [nodes.shape[0], 2])
+        assert_array_almost_equal(proj_4d[:, 0], proj_1, 3)
