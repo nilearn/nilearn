@@ -231,7 +231,7 @@ def _masked_indices(sample_locations, img_shape, mask=None):
     return masked
 
 
-def projection_matrix(mesh, affine, img_shape,
+def _projection_matrix(mesh, affine, img_shape,
                       kind='line', radius=3., n_points=None, mask=None):
     """Get a sparse matrix that projects volume data onto a mesh.
 
@@ -320,7 +320,7 @@ def _nearest_voxel_sampling(images, mesh, affine, kind='ball', radius=3.,
     See documentation of vol_to_surf for details.
 
     """
-    proj = projection_matrix(
+    proj = _projection_matrix(
         mesh, affine, images[0].shape, kind=kind, radius=radius,
         n_points=n_points, mask=mask)
     data = np.asarray(images).reshape(len(images), -1).T

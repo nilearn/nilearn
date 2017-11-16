@@ -298,7 +298,7 @@ def test_masked_indices():
 def test_projection_matrix():
     mesh = _flat_mesh(5, 7, 4)
     img = _z_const_img(5, 7, 13)
-    proj = surface.projection_matrix(
+    proj = surface._projection_matrix(
         mesh, np.eye(4), img.shape, radius=2., n_points=10)
     # proj matrix has shape (n_vertices, img_size)
     assert_equal(proj.shape, (5 * 7, 5 * 7 * 13))
@@ -306,19 +306,19 @@ def test_projection_matrix():
     values = proj.dot(img.ravel()).reshape((5, 7))
     assert_array_almost_equal(values, img[:, :, 0])
     mesh = _flat_mesh(5, 7)
-    proj = surface.projection_matrix(
+    proj = surface._projection_matrix(
         mesh, np.eye(4), (5, 7, 1), radius=.1, n_points=10)
     assert_array_almost_equal(proj.toarray(), np.eye(proj.shape[0]))
     mask = np.ones(img.shape, dtype=int)
     mask[0] = 0
-    proj = surface.projection_matrix(
+    proj = surface._projection_matrix(
         mesh, np.eye(4), img.shape, radius=2., n_points=10, mask=mask)
     proj = proj.toarray()
     # first row of the mesh is masked
     assert_array_almost_equal(proj.sum(axis=1)[:7], np.zeros(7))
     assert_array_almost_equal(proj.sum(axis=1)[7:], np.ones(proj.shape[0] - 7))
     # mask and img should have the same shape
-    assert_raises(ValueError, surface.projection_matrix,
+    assert_raises(ValueError, surface._projection_matrix,
                   mesh, np.eye(4), img.shape, mask=np.ones((3, 3, 2)))
 
 
