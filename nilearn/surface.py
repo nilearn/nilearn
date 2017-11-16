@@ -365,6 +365,7 @@ def vol_to_surf(img, surf_mesh,
     ----------
 
     img : Niimg-like object, 3d or 4d.
+        See http://nilearn.github.io/manipulating_images/input_output.html
 
     surf_mesh : str or numpy.ndarray
         Either a file containing surface mesh geometry (valid formats
