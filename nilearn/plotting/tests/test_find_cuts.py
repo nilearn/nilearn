@@ -14,7 +14,8 @@ def test_find_cut_coords():
     # identity affine
     affine = np.eye(4)
     img = nibabel.Nifti1Image(data, affine)
-    x, y, z = find_xyz_cut_coords(img, mask=np.ones(data.shape, np.bool))
+    mask = nibabel.Nifti1Image(np.ones(data.shape), affine)
+    x, y, z = find_xyz_cut_coords(img, mask=mask)
     np.testing.assert_allclose((x, y, z),
                                (x_map, y_map, z_map),
                                # Need such a high tolerance for the test to
@@ -24,7 +25,8 @@ def test_find_cut_coords():
     # non-trivial affine
     affine = np.diag([1. / 2, 1 / 3., 1 / 4., 1.])
     img = nibabel.Nifti1Image(data, affine)
-    x, y, z = find_xyz_cut_coords(img, mask=np.ones(data.shape, np.bool))
+    mask = nibabel.Nifti1Image(np.ones(data.shape), affine)
+    x, y, z = find_xyz_cut_coords(img, mask=mask)
     np.testing.assert_allclose((x, y, z),
                                (x_map / 2., y_map / 3., z_map / 4.),
                                # Need such a high tolerance for the test to
@@ -140,7 +142,8 @@ def test_tranform_cut_coords():
 
 def test_find_cuts_empty_mask_no_crash():
     img = nibabel.Nifti1Image(np.ones((2, 2, 2)), np.eye(4))
-    mask = np.zeros((2, 2, 2)).astype(np.bool)
+    mask = np.zeros((2, 2, 2))
+    mask = nibabel.Nifti1Image(mask, np.eye(4))
     cut_coords = assert_warns(UserWarning, find_xyz_cut_coords, img,
                               mask=mask)
     np.testing.assert_array_equal(cut_coords, [.5, .5, .5])
