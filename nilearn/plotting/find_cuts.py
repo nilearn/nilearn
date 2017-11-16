@@ -25,15 +25,15 @@ from ..image.image import _smooth_array
 ################################################################################
 
 
-def find_xyz_cut_coords(img, mask=None, activation_threshold=None):
+def find_xyz_cut_coords(img, mask_img=None, activation_threshold=None):
     """ Find the center of the largest activation connected component.
 
         Parameters
         -----------
         img : 3D Nifti1Image
             The brain map.
-        mask : 3D ndarray, boolean, optional
-            An optional brain mask.
+        mask_img : 3D Nifti1Image, optional
+            An optional brain mask, provided mask_img should not be empty.
         activation_threshold : float, optional
             The lower threshold to the positive activation. If None, the
             activation threshold is computed using the 80% percentile of
@@ -52,6 +52,17 @@ def find_xyz_cut_coords(img, mask=None, activation_threshold=None):
     # we reduce to a single 3D image to find the coordinates
     img = check_niimg_3d(img)
     data = _safe_get_data(img)
+
+    # Retrieve optional mask
+    if mask_img is not None:
+        mask_img = check_niimg_3d(mask_img)
+        mask = _safe_get_data(mask_img)
+        if not np.allclose(get_affine(mask_img), get_affine(img)):
+            raise ValueError('Mask affine: \n%s\n is different from img affine:'
+                             '\n%s' % (str(get_affine(mask_img)),
+                                       str(get_affine(imgs_img))))
+    else:
+        mask = None
 
     # To speed up computations, we work with partial views of the array,
     # and keep track of the offset

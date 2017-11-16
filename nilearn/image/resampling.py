@@ -266,12 +266,16 @@ def _resample_one_img(data, A, b, target_shape,
     if (LooseVersion(scipy.__version__) < LooseVersion('0.14.1')):
         data = data.copy()
 
-    # The resampling itself
-    ndimage.affine_transform(data, A,
-                             offset=b,
-                             output_shape=target_shape,
-                             output=out,
-                             order=interpolation_order)
+    # Suppresses warnings in https://github.com/nilearn/nilearn/issues/1363
+    with warnings.catch_warnings():
+        if LooseVersion(scipy.__version__) >= LooseVersion('0.18'):
+            warnings.simplefilter("ignore", UserWarning)
+        # The resampling itself
+        ndimage.affine_transform(data, A,
+                                 offset=b,
+                                 output_shape=target_shape,
+                                 output=out,
+                                 order=interpolation_order)
 
     # Bug in ndimage.affine_transform when out does not have native endianness
     # see https://github.com/nilearn/nilearn/issues/275
@@ -281,11 +285,15 @@ def _resample_one_img(data, A, b, target_shape,
         out.byteswap(True)
 
     if has_not_finite:
-        # We need to resample the mask of not_finite values
-        not_finite = ndimage.affine_transform(not_finite, A,
-                                            offset=b,
-                                            output_shape=target_shape,
-                                            order=0)
+        # Suppresses warnings in https://github.com/nilearn/nilearn/issues/1363
+        with warnings.catch_warnings():
+            if LooseVersion(scipy.__version__) >= LooseVersion('0.18'):
+                warnings.simplefilter("ignore", UserWarning)
+            # We need to resample the mask of not_finite values
+            not_finite = ndimage.affine_transform(not_finite, A,
+                                                offset=b,
+                                                output_shape=target_shape,
+                                                order=0)
         out[not_finite] = np.nan
     return out
 
