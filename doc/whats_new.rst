@@ -4,7 +4,7 @@
 Changelog
 ---------
 
-    - **Backward incompatible change**: :func:`nilearn.plotting.find_xyz_cut`
+    - **Backward incompatible change**: :func:`nilearn.plotting.find_xyz_cut_coords`
       now takes a `mask_img` argument which is a niimg, rather than a `mask`
       argument, which used to be a numpy array.
 
