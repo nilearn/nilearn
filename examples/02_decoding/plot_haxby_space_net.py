@@ -16,17 +16,16 @@ from nilearn.datasets import fetch_haxby
 data_files = fetch_haxby()
 
 # Load behavioral data
-import numpy as np
 import pandas as pd
-behavioral = pd.read_csv(data_files.session_target[0], delimiter=" ")
+behavioral = pd.read_csv(data_files.session_target[0], sep=" ")
 
 # Restrict to face and house conditions
 conditions = behavioral['labels']
 condition_mask = conditions.isin(['face', 'house'])
 
 # Split data into train and test samples, using the chunks
-condition_mask_train = np.logical_and(condition_mask, behavioral['chunks'] <= 6)
-condition_mask_test = np.logical_and(condition_mask, behavioral['chunks'] > 6)
+condition_mask_train = (condition_mask & behavioral['chunks'] <= 6)
+condition_mask_test = (condition_mask & behavioral['chunks'] > 6)
 
 # Apply this sample mask to X (fMRI data) and y (behavioral labels)
 # Because the data is in one single large 4D image, we need to use
