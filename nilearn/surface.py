@@ -333,6 +333,9 @@ def _nearest_voxel_sampling(images, mesh, affine, kind='ball', radius=3.,
         n_points=n_points, mask=mask)
     data = np.asarray(images).reshape(len(images), -1).T
     texture = proj.dot(data)
+    # if all samples around a mesh vertex are outside the image,
+    # there is no reasonable value to assign to this vertex.
+    # in this case we return NaN for this vertex.
     texture[np.asarray(proj.sum(axis=1) == 0).ravel()] = np.nan
     return texture.T
 
@@ -361,6 +364,9 @@ def _interpolation_sampling(images, mesh, affine, kind='ball', radius=3,
             grid, img,
             bounds_error=False, method='linear', fill_value=None)
         samples = interpolator(interp_locations)
+        # if all samples around a mesh vertex are outside the image,
+        # there is no reasonable value to assign to this vertex.
+        # in this case we return NaN for this vertex.
         samples[masked] = np.nan
         all_samples.append(samples)
     all_samples = np.asarray(all_samples)
