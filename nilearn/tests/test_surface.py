@@ -293,6 +293,7 @@ def test_sample_locations():
         locations = surface._sample_locations(
             [vertices, mesh[1]], affine, 1., kind=kind, n_points=10)
         true_locations = [vertex + offsets for vertex in mesh[0]]
+        assert_array_equal(locations.shape, true_locations.shape)
         assert_array_almost_equal(true_locations, locations)
     assert_raises(ValueError, surface._sample_locations,
                   mesh, affine, 1., kind='bad_kind')
