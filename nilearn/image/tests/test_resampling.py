@@ -521,6 +521,30 @@ def test_resample_to_img():
     np.testing.assert_almost_equal(downsampled,
                                    result_img.get_data()[:x, :y, :z, ...])
 
+def test_resample_clip():
+    # Resample and image and get larger and smaller
+    # value than in the original. Use clip to get rid of these images
+
+    shape = (6, 3, 6)
+    data = np.zeros(shape=shape)
+    data[1:-2, 1:-1, 1:-2] = 1
+
+    source_affine = np.diag((2, 2, 2, 1))
+    source_img = Nifti1Image(data, source_affine)
+
+    target_affine = np.eye(4)
+    no_clip_data = resample_img(source_img, target_affine).get_data()
+    clip_data = resample_img(source_img,
+                             target_affine, clip=True).get_data()
+
+    not_clip = np.where((no_clip_data > data.min()) & (no_clip_data < data.max()))
+
+    assert_true(np.any(no_clip_data > data.max()))
+    assert_true(np.any(no_clip_data < data.min()))
+    assert_true(np.all(clip_data <= data.max()))
+    assert_true(np.all(clip_data >= data.min()))
+    assert_array_equal(no_clip_data[not_clip], clip_data[not_clip])
+
 
 def test_reorder_img():
     # We need to test on a square array, as rotation does not change
