@@ -281,6 +281,11 @@ def projection_matrix(mesh, affine, img_shape,
        an image (represented as a column vector) gives the projection onto mesh
        vertices.
 
+    See Also
+    --------
+    nilearn.surface.vol_to_surf
+        Compute the projection for one or several images.
+
     """
     if mask is not None and tuple(mask.shape) != img_shape:
         raise ValueError('mask should have shape img_shape')
@@ -414,6 +419,42 @@ def vol_to_surf(img, surf_mesh,
         for each mesh node.
         If 4D image is provided, a 2d array is returned, where each row
         corresponds to a mesh node.
+
+    Notes
+    -----
+    This function computes a value for each vertex of the mesh. In order to do
+    so, it selects a few points in the volume surrounding that vertex,
+    interpolates the image intensities at these sampling positions, and
+    averages the results.
+
+    Two strategies are available to select these positions.
+        - 'ball' uses points regularly spaced in a ball centered at the mesh
+            vertex. The radius of the ball is controlled by the parameter
+            `radius`.
+        - 'line' starts by drawing the normal to the mesh passing through this
+            vertex. It then selects a segment of this normal, centered at the
+            vertex, of length 2*`radius`. Image intensities are measured at
+            points regularly spaced on this normal segment.
+
+    You can control how many samples are drawn by setting `n_samples`.
+
+    Once the sampling positions are chosen, those that fall outside of the 3d
+    image (or ouside of the mask if you provided one) are discarded. If all
+    sample positions are discarded (which can happen, for example, if the
+    vertex itself is outside of the support of the image), the projection at
+    this vertex will be numpy.nan.
+    The 3d image then needs to be interpolated at each of the remaining points.
+    Two options are available: 'nearest' selects the value of the nearest
+    voxel, and 'linear' performs trilinear interpolation of neighbouring
+    voxels. 'nearest' is slightly faster, but 'linear' may give better results
+    - for example, the projected values are more stable when resampling the 3d
+    image or applying affine transformations to it. Note that linear
+    interpolation is only available if your scipy version is 0.14 or more
+    recent.
+
+    Once the 3d image has been interpolated at each sample point, the
+    interpolated values are averaged to produce the value associated to this
+    particular mesh vertex.
 
     """
     sampling_schemes = {'linear': _interpolation_sampling,
