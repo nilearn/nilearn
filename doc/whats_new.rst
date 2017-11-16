@@ -4,6 +4,10 @@
 Changelog
 ---------
 
+    - **Backward incompatible change**: :func:`nilearn.plotting.find_xyz_cut`
+      now takes a `mask_img` argument which is a niimg, rather than a `mask`
+      argument, which used to be a numpy array.
+
     - Dropped support for Nibabel older than 2.0.2.
 
     - :func:`nilearn.image.smooth_img` no longer accepts smoothing
