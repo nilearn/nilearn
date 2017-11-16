@@ -15,7 +15,6 @@ from nilearn._utils.testing import assert_raises_regex
 import numpy as np
 import scipy
 from scipy.spatial import Delaunay
-from sklearn.exceptions import EfficiencyWarning
 
 import nibabel as nb
 from nibabel import gifti
@@ -267,7 +266,7 @@ def test_load_uniform_ball_cloud():
         computed = surface._uniform_ball_cloud(n_points)
         loaded = surface._load_uniform_ball_cloud(n_points)
         assert_array_almost_equal(computed, loaded)
-    assert_warns(EfficiencyWarning,
+    assert_warns(surface.EfficiencyWarning,
                  surface._load_uniform_ball_cloud, n_points=3)
 
 
