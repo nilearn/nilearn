@@ -9,8 +9,8 @@ from distutils.version import LooseVersion
 from nose import SkipTest
 from numpy.testing import (assert_array_equal, assert_array_almost_equal,
                            assert_equal)
-from nose.tools import assert_true, assert_raises, assert_warns
-from nilearn._utils.testing import assert_raises_regex
+from nose.tools import assert_true, assert_raises
+from nilearn._utils.testing import assert_raises_regex, assert_warns
 
 import numpy as np
 import scipy
