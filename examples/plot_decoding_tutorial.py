@@ -187,7 +187,7 @@ for train, test in cv:
     conditions_masked = conditions.values[train]
     svc.fit(fmri_masked[train], conditions_masked)
     prediction = svc.predict(fmri_masked[test])
-    print((prediction == conditions[test]).sum() / float(len(conditions.values[test])))
+    print((prediction == conditions[test]).sum() / float(len(conditions[test])))
 
 ###########################################################################
 # Cross-validation with scikit-learn

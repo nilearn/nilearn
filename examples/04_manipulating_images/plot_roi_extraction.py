@@ -307,7 +307,7 @@ masker = NiftiLabelsMasker(labels_img, resampling_target=None,
 masker.fit()
 # Preparing for data extraction: setting number of conditions, size, etc from
 # haxby dataset
-condition_names = list(set(haxby_labels))
+condition_names = haxby_labels.unique()
 n_cond_img = fmri_data[..., haxby_labels == 'house'].shape[-1]
 n_conds = len(condition_names)
 
@@ -320,7 +320,7 @@ for i, cond in enumerate(condition_names):
         fmri_img, fmri_data[..., haxby_labels == cond][..., :n_cond_img])
     mask_data = masker.transform(cond_maps)
     X1[:, i], X2[:, i] = mask_data[:, 0], mask_data[:, 1]
-condition_names[condition_names.index(b'scrambledpix')] = b'scrambled'
+condition_names[np.where(condition_names == 'scrambledpix')] = 'scrambled'
 
 ##############################################################################
 # save the ROI 'atlas' to a Nifti file

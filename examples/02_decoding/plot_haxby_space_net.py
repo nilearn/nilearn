@@ -24,8 +24,8 @@ conditions = behavioral['labels']
 condition_mask = conditions.isin(['face', 'house'])
 
 # Split data into train and test samples, using the chunks
-condition_mask_train = (condition_mask & behavioral['chunks'] <= 6)
-condition_mask_test = (condition_mask & behavioral['chunks'] > 6)
+condition_mask_train = (condition_mask) & (behavioral['chunks'] <= 6)
+condition_mask_test = (condition_mask) & (behavioral['chunks'] > 6)
 
 # Apply this sample mask to X (fMRI data) and y (behavioral labels)
 # Because the data is in one single large 4D image, we need to use
