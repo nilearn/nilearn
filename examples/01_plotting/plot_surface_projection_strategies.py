@@ -1,6 +1,6 @@
 """
-Illustration of the volume to cortical surface sampling schemes
-===============================================================
+Technical point: Illustration of the volume to surface sampling schemes
+=======================================================================
 
 In nilearn, surface.vol_to_surf allows us to measure values of a 3d volume at
 the nodes of a cortical mesh, transforming it into surface data. This data can
