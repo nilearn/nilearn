@@ -15,7 +15,7 @@ try:
     from sklearn.exceptions import EfficiencyWarning
 except ImportError:
     class EfficiencyWarning(UserWarning):
-    """Warning used to notify the user of inefficient computation."""
+        """Warning used to notify the user of inefficient computation."""
 
 import nibabel
 from nibabel import gifti
