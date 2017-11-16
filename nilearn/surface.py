@@ -1,6 +1,7 @@
 """
 Functions for surface manipulation.
 """
+import os
 import warnings
 
 from distutils.version import LooseVersion
@@ -9,12 +10,8 @@ import numpy as np
 import scipy
 from scipy import sparse, interpolate
 import sklearn.preprocessing
-
-# These will be removed (see comment on _points_in_unit_ball)
-from sklearn.externals import joblib
-from .datasets.utils import _get_dataset_dir
 import sklearn.cluster
-# / These will be removed (see comment on _points_in_unit_ball)
+from sklearn.exceptions import EfficiencyWarning
 
 import nibabel
 from nibabel import gifti
@@ -25,14 +22,7 @@ from ._utils.compat import _basestring
 from . import _utils
 
 
-# Eventually, when this PR is ready, the sample locations inside the unit ball
-# will be hardcoded. For now we just compute them in a simple way (we will find
-# something better than the k-means hack) and cache the result.
-memory = joblib.Memory(_get_dataset_dir('joblib'), verbose=False)
-
-
-@memory.cache
-def _uniform_ball_cloud(n_points=100, dim=3, n_monte_carlo=5000):
+def _uniform_ball_cloud(n_points=20, dim=3, n_monte_carlo=50000):
     """Get points uniformly spaced in the unit ball."""
     rng = np.random.RandomState(0)
     mc_cube = rng.uniform(-1, 1, size=(n_monte_carlo, dim))
@@ -40,6 +30,21 @@ def _uniform_ball_cloud(n_points=100, dim=3, n_monte_carlo=5000):
     centroids, assignments, _ = sklearn.cluster.k_means(
         mc_ball, n_clusters=n_points, random_state=0)
     return centroids
+
+def _load_uniform_ball_cloud(n_points=20):
+    stored_points = os.path.abspath(
+        os.path.join(__file__, '..', 'data', 'surface', '_uniform_ball_cloud',
+                     'ball_cloud_{}_samples.csv'.format(n_points)))
+    if os.path.isfile(stored_points):
+        points = np.loadtxt(stored_points)
+        return points
+    warnings.warn(
+        'Cached sample positions are provided for '
+        'n_samples = 10, 20, 40, 80, 160. Since the number of samples does '
+        'have a big impact on the result, we strongly recommend using one '
+        'of these values when using kind="ball" for much better performance.',
+        EfficiencyWarning)
+    return _uniform_ball_cloud(n_points=n_points)
 
 
 def _face_outer_normals(mesh):
@@ -118,8 +123,8 @@ def _ball_sample_locations(mesh, affine, ball_radius=3., n_points=20):
 
     """
     vertices, faces = mesh
-    offsets_world_space = _uniform_ball_cloud(
-        dim=vertices.shape[1], n_points=n_points) * ball_radius
+    offsets_world_space = _load_uniform_ball_cloud(
+        n_points=n_points) * ball_radius
     mesh_voxel_space = np.asarray(
         resampling.coord_transform(*vertices.T,
                                    affine=np.linalg.inv(affine))).T
@@ -270,6 +275,9 @@ def _projection_matrix(mesh, affine, img_shape,
         How many samples are drawn around each vertex and averaged. If None,
         use a reasonable default for the chosen sampling strategy ('ball' or
         'line').
+        For performance reasons, if using kind="ball", choose `n_points` in
+        [10, 20, 40, 80, 160] (default is 20), because cached positions are
+        available.
 
     mask : array of shape img_shape or None
         Part of the image to be masked. If None, don't apply any mask.
@@ -407,6 +415,9 @@ def vol_to_surf(img, surf_mesh,
         How many samples are drawn around each vertex and averaged. If None,
         use a reasonable default for the chosen sampling strategy ('ball' or
         'line').
+    For performance reasons, if using kind="ball", choose `n_samples` in
+    [10, 20, 40, 80, 160] (default is 20), because cached positions are
+    available.
 
     mask_img : Niimg-like object or None, optional (default=None)
         Samples falling out of this mask or out of the image are ignored.

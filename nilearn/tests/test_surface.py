@@ -2,17 +2,19 @@
 
 import os
 import tempfile
+import warnings
 
 from distutils.version import LooseVersion
 from nose import SkipTest
 from numpy.testing import (assert_array_equal, assert_array_almost_equal,
                            assert_equal)
-from nose.tools import assert_true, assert_raises
+from nose.tools import assert_true, assert_raises, assert_warns
 from nilearn._utils.testing import assert_raises_regex
 
 import numpy as np
 import scipy
 from scipy.spatial import Delaunay
+from sklearn.exceptions import EfficiencyWarning
 
 import nibabel as nb
 from nibabel import gifti
@@ -252,6 +254,20 @@ def test_vertex_outer_normals():
     true_normals = np.zeros((len(mesh[0]), 3))
     true_normals[:, 2] = 1
     assert_array_almost_equal(computed_normals, true_normals)
+
+
+def test_load_uniform_ball_cloud():
+    for n_points in [10, 20, 40, 80, 160]:
+        with warnings.catch_warnings(record=True) as w:
+            points = surface._load_uniform_ball_cloud(n_points=n_points)
+            assert_array_equal(points.shape, (n_points, 3))
+            assert_equal(len(w), 0)
+    for n_points in [3, 10, 20]:
+        computed = surface._uniform_ball_cloud(n_points)
+        loaded = surface._load_uniform_ball_cloud(n_points)
+        assert_array_almost_equal(computed, loaded)
+    assert_warns(EfficiencyWarning,
+                 surface._load_uniform_ball_cloud, n_points=3)
 
 
 def test_sample_locations():
