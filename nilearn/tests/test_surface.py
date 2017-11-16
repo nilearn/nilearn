@@ -389,9 +389,8 @@ def test_vol_to_surf():
     mni = datasets.load_mni152_template()
     mesh = _generate_surf()
     _check_vol_to_surf_results(mni, mesh)
-    if LooseVersion(nb.__version__) > LooseVersion('1.2.0'):
-        fsaverage = datasets.fetch_surf_fsaverage5().pial_left
-        _check_vol_to_surf_results(mni, fsaverage)
+    fsaverage = datasets.fetch_surf_fsaverage5().pial_left
+    _check_vol_to_surf_results(mni, fsaverage)
 
 
 def _check_vol_to_surf_results(img, mesh):
