@@ -23,13 +23,14 @@ print('First subject functional nifti image (4D) is located at: %s' %
 
 # load labels
 import numpy as np
-labels = np.recfromcsv(haxby_dataset.session_target[0], delimiter=" ")
+import pandas as pd
+labels = pd.read_csv(haxby_dataset.session_target[0], sep=" ")
 stimuli = labels['labels']
 # identify resting state labels in order to be able to remove them
-resting_state = stimuli == b'rest'
+resting_state = labels['labels'] == 'rest'
 
 # find names of remaining active labels
-categories = np.unique(stimuli[np.logical_not(resting_state)])
+categories = stimuli[np.logical_not(resting_state)].unique()
 
 # extract tags indicating to which acquisition run a tag belongs
 session_labels = labels["chunks"][np.logical_not(resting_state)]

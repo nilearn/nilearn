@@ -12,6 +12,7 @@ cross-validated accuracy and the confusion matrix.
 # ----------------------------
 from nilearn import datasets
 import numpy as np
+import pandas as pd
 # By default 2nd subject from haxby datasets will be fetched.
 haxby_dataset = datasets.fetch_haxby()
 
@@ -23,12 +24,12 @@ func_filename = haxby_dataset.func[0]
 mask_filename = haxby_dataset.mask
 
 # Load the behavioral data that we will predict
-labels = np.recfromcsv(haxby_dataset.session_target[0], delimiter=" ")
+labels = pd.read_csv(haxby_dataset.session_target[0], delimiter=" ")
 y = labels['labels']
 session = labels['chunks']
 
 # Remove the rest condition, it is not very interesting
-non_rest = y != b'rest'
+non_rest = y != 'rest'
 y = y[non_rest]
 
 # Get the labels of the numerical conditions represented by the vector y

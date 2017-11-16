@@ -24,16 +24,18 @@ print('Functional nifti image (4D) is located at: %s' %
 # Load the behavioral data
 # -------------------------
 import numpy as np
+import pandas as pd
+
 # Load target information as string and give a numerical identifier to each
-behavioral = np.recfromcsv(haxby_dataset.session_target[0], delimiter=" ")
+behavioral = pd.read_csv(haxby_dataset.session_target[0], sep=" ")
 conditions = behavioral['labels']
 
 # Restrict the analysis to faces and places
-condition_mask = np.logical_or(conditions == b'face', conditions == b'house')
+condition_mask = behavioral['labels'].isin(['face', 'cat'])
 conditions = conditions[condition_mask]
 
 # We now have 2 conditions
-print(np.unique(conditions))
+print(conditions.unique())
 session = behavioral[condition_mask]
 
 #############################################################################

@@ -17,13 +17,12 @@ data_files = fetch_haxby()
 
 # Load behavioral data
 import numpy as np
-behavioral = np.recfromcsv(data_files.session_target[0], delimiter=" ")
-
+import pandas as pd
+behavioral = pd.read_csv(data_files.session_target[0], delimiter=" ")
 
 # Restrict to face and house conditions
 conditions = behavioral['labels']
-condition_mask = np.logical_or(conditions == b"face",
-                               conditions == b"house")
+condition_mask = conditions.isin(['face', 'house'])
 
 # Split data into train and test samples, using the chunks
 condition_mask_train = np.logical_and(condition_mask, behavioral['chunks'] <= 6)
@@ -94,4 +93,3 @@ show()
 # We can see that the TV-l1 penalty is 3 times slower to converge and
 # gives the same prediction accuracy. However, it yields much
 # cleaner coefficient maps
-

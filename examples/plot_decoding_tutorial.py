@@ -84,10 +84,10 @@ print(fmri_masked.shape)
 #
 # The behavioral labels are stored in a CSV file, separated by spaces.
 #
-# We use numpy to load them in an array.
-import numpy as np
+# We use pandas to load them in an array.
+import pandas as pd
 # Load behavioral information
-behavioral = np.recfromcsv(haxby_dataset.session_target[0], delimiter=" ")
+behavioral = pd.read_csv(haxby_dataset.session_target[0], delimiter=" ")
 print(behavioral)
 
 ###########################################################################
@@ -105,7 +105,7 @@ print(conditions)
 #
 # To keep only data corresponding to faces or cats, we create a
 # mask of the samples belonging to the condition.
-condition_mask = np.logical_or(conditions == b'face', conditions == b'cat')
+condition_mask = conditions.isin(['face', 'cat'])
 
 # We apply this mask in the sampe direction to restrict the
 # classification to the face vs cat discrimination
@@ -278,4 +278,3 @@ show()
 # * :ref:`space_net`
 #
 # ______________
-
