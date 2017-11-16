@@ -143,13 +143,13 @@ def _line_sample_locations(
 
     Parameters
     ----------
-    mesh : pair of np arrays.
+    mesh : pair of numpy.ndarray.
         mesh[0] contains the 3d coordinates of the vertices
         (shape n_vertices, 3)
         mesh[1] contains, for each triangle, the indices into mesh[0] of its
         vertices (shape n_triangles, 3)
 
-    affine : array of shape (4, 4)
+    affine : numpy.ndarray of shape (4, 4)
         affine transformation from image voxels to the vertices' coordinate
         space.
 
