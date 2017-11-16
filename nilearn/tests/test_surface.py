@@ -350,6 +350,9 @@ def test_sampling_affine():
     texture = surface._nearest_voxel_sampling(
         [img], mesh, affine=affine, radius=1, kind='ball')
     assert_array_equal(texture[0], [1., 2., 1.])
+    # No interpolation on a regular grid in scipy before 0.14
+    # since computing triangulation is very slow, if scipy.__version__ < 0.14
+    # we fall back to nearest neighbour interpolation.
     if LooseVersion(scipy.__version__) < LooseVersion('0.14'):
         return
     texture = surface._interpolation_sampling(
@@ -363,6 +366,9 @@ def test_sampling():
     mask = np.ones(img.shape, dtype=int)
     mask[0] = 0
     projectors = [surface._nearest_voxel_sampling]
+    # No interpolation on a regular grid in scipy before 0.14
+    # since computing triangulation is very slow, if scipy.__version__ < 0.14
+    # we fall back to nearest neighbour interpolation.
     if LooseVersion(scipy.__version__) >= LooseVersion('0.14'):
         projectors.append(surface._interpolation_sampling)
     for kind in ('line', 'ball'):
