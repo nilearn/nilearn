@@ -989,7 +989,7 @@ def _separate_talairach_levels(atlas_img, labels, verbose=1):
             level_img[atlas_img.get_data() == region_nb] = level_labels[
                 region]
         level_img <<= 8 * pos
-        new_img = np.bitwise_or(new_img, level_img)
+        new_img |= level_img
         level_labels = list(list(
             zip(*sorted(level_labels.items(), key=lambda t: t[0])))[0])
         level_labels[0] = 'Background'
@@ -1072,7 +1072,7 @@ def fetch_atlas_talairach(level_name, data_dir=None, verbose=1):
     atlas_img = check_niimg(atlas_file)
     with open(labels_file) as fp:
         labels = json.load(fp)[position][1]
-    level_data = np.bitwise_and(255, atlas_img.get_data() >> 8 * position)
+    level_data = (atlas_img.get_data() >> 8 * position) & 255
     atlas_img = new_img_like(atlas_img, data=level_data)
     description = _get_dataset_descr(
         'talairach_atlas').decode('utf-8').format(level_name)
