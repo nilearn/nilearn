@@ -278,8 +278,8 @@ def _projection_matrix(mesh, affine, img_shape,
 
     n_points : int or None, optional (default=None)
         How many samples are drawn around each vertex and averaged. If None,
-        use a reasonable default for the chosen sampling strategy ('ball' or
-        'line').
+        use a reasonable default for the chosen sampling strategy (20 for
+        'ball' or 10 for 'line').
         For performance reasons, if using kind="ball", choose `n_points` in
         [10, 20, 40, 80, 160] (default is 20), because cached positions are
         available.
@@ -426,7 +426,7 @@ def vol_to_surf(img, surf_mesh,
     n_samples : int or None, optional (default=None)
         How many samples are drawn around each vertex and averaged. If
         ``None``, use a reasonable default for the chosen sampling strategy
-        ('ball' or 'line').
+        (20 for 'ball' or 10 for 'line').
         For performance reasons, if using `kind` ="ball", choose `n_samples` in
         [10, 20, 40, 80, 160] (default is 20), because cached positions are
         available.
