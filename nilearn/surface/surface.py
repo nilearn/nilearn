@@ -409,7 +409,7 @@ def vol_to_surf(img, surf_mesh,
 
         - 'line' (the default):
             samples are regularly spaced along the normal to the mesh, over the
-            interval [-radius, +radius].
+            interval [- `radius`, + `radius`].
             (sometimes called thickness sampling)
         - 'ball':
             samples are regularly spaced inside a ball centered at the mesh
@@ -424,16 +424,16 @@ def vol_to_surf(img, surf_mesh,
             Use a trilinear interpolation of neighboring voxels.
 
     n_samples : int or None, optional (default=None)
-        How many samples are drawn around each vertex and averaged. If None,
-        use a reasonable default for the chosen sampling strategy ('ball' or
-        'line').
-    For performance reasons, if using kind="ball", choose `n_samples` in
-    [10, 20, 40, 80, 160] (default is 20), because cached positions are
-    available.
+        How many samples are drawn around each vertex and averaged. If
+        ``None``, use a reasonable default for the chosen sampling strategy
+        ('ball' or 'line').
+        For performance reasons, if using `kind` ="ball", choose `n_samples` in
+        [10, 20, 40, 80, 160] (default is 20), because cached positions are
+        available.
 
     mask_img : Niimg-like object or None, optional (default=None)
         Samples falling out of this mask or out of the image are ignored.
-        If None, don't apply any mask.
+        If ``None``, don't apply any mask.
 
     Returns
     -------
@@ -456,7 +456,7 @@ def vol_to_surf(img, surf_mesh,
             `radius`.
         - 'line' starts by drawing the normal to the mesh passing through this
             vertex. It then selects a segment of this normal, centered at the
-            vertex, of length 2*`radius`. Image intensities are measured at
+            vertex, of length 2 * `radius`. Image intensities are measured at
             points regularly spaced on this normal segment.
 
     You can control how many samples are drawn by setting `n_samples`.
@@ -465,7 +465,7 @@ def vol_to_surf(img, surf_mesh,
     image (or ouside of the mask if you provided one) are discarded. If all
     sample positions are discarded (which can happen, for example, if the
     vertex itself is outside of the support of the image), the projection at
-    this vertex will be numpy.nan.
+    this vertex will be ``numpy.nan``.
     The 3d image then needs to be interpolated at each of the remaining points.
     Two options are available: 'nearest' selects the value of the nearest
     voxel, and 'linear' performs trilinear interpolation of neighbouring
