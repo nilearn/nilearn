@@ -386,6 +386,8 @@ def vol_to_surf(img, surf_mesh,
                 n_samples=None, mask_img=None):
     """Extract surface data from a Nifti image.
 
+    .. versionadded:: 0.3.2
+
     Parameters
     ----------
 
