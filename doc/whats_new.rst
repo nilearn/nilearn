@@ -20,6 +20,8 @@ Changelog
 
     - New 'anterior' and 'posterior' view added to the plot_surf family views
 
+    - The examples now use pandas for the behavioral information.
+
 Bug fix
 -------
 
