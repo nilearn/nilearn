@@ -973,6 +973,27 @@ def _talairach_levels():
 
 
 def _separate_talairach_levels(atlas_img, labels, verbose=1):
+    """Separate the multiple annotation levels in talairach raw atlas.
+
+    The Talairach atlas has five levels of annotation: hemisphere, lobe, gyrus,
+    tissue, brodmann area. They are mixed up in the original atlas: each label
+    in the atlas corresponds to a 5-tuple containing, for each of these levels,
+    a value or the string '*' (meaning undefined, background).
+
+    This function disentangles the levels, and stores each on an octet in an
+    int64 image (the level with most labels, ba, has 72 labels).
+    This way, any subset of these levels can be accessed by applying a bitwise
+    mask.
+
+    In the created image, the least significant octet contains the hemisphere,
+    the next one the lobe, then gyrus, tissue, and ba. Background is 0.
+    The labels contain
+    [('level name', ['labels', 'for', 'this', 'level' ...]), ...],
+    where the levels are in the order mentionned above.
+
+    The label '*' is replaced by 'Background' for clarity.
+
+    """
     labels = np.asarray(labels)
     talairach_levels = _talairach_levels()
     if verbose:
@@ -998,7 +1019,20 @@ def _separate_talairach_levels(atlas_img, labels, verbose=1):
     return new_img, levels
 
 
-def _download_talairach_atlas(data_dir=None, verbose=1):
+def _get_talairach_all_levels(data_dir=None, verbose=1):
+    """Get the path to Talairach atlas and labels
+
+    The atlas is downloaded and the files are created if necessary.
+
+    The image contains all five levels of the atlas, each encoded on 8 bits
+    (least significant octet contains the hemisphere, the next one the lobe,
+    then gyrus, tissue, and ba).
+
+    The labels json file contains
+    [['level name', ['labels', 'for', 'this', 'level' ...]], ...],
+    where the levels are in the order mentionned above.
+
+    """
     data_dir = _get_dataset_dir('talairach_atlas', data_dir=data_dir)
     img_file = os.path.join(data_dir, 'talairach.nii')
     labels_file = os.path.join(data_dir, 'talairach_labels.json')
@@ -1012,8 +1046,7 @@ def _download_talairach_atlas(data_dir=None, verbose=1):
         atlas_img = check_niimg(temp_file)
     finally:
         shutil.rmtree(temp_dir)
-    header = atlas_img.header
-    labels = header.extensions[0].get_content()
+    labels = atlas_img.header.extensions[0].get_content()
     labels = labels.strip().decode('utf-8').split('\n')
     labels = [l.split('.') for l in labels]
     new_img, level_labels = _separate_talairach_levels(
@@ -1068,7 +1101,7 @@ def fetch_atlas_talairach(level_name, data_dir=None, verbose=1):
     if level_name not in levels:
         raise ValueError('"level_name" should be one of {}'.format(levels))
     position = levels.index(level_name)
-    atlas_file, labels_file = _download_talairach_atlas(data_dir, verbose)
+    atlas_file, labels_file = _get_talairach_all_levels(data_dir, verbose)
     atlas_img = check_niimg(atlas_file)
     with open(labels_file) as fp:
         labels = json.load(fp)[position][1]
