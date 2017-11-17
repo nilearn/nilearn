@@ -173,8 +173,7 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
     hemi : {'left', 'right'}, default is 'left'
         Hemisphere to display.
 
-    view: {'lateral', 'medial', 'dorsal', 'ventral',
-        'anterior', 'posterior'}, default is 'lateral'
+    view: {'lateral', 'medial', 'dorsal', 'ventral', 'anterior', 'posterior'}, default is 'lateral'
         View of the surface that is rendered.
 
     cmap: matplotlib colormap, str or colormap object, default is None
@@ -425,8 +424,7 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
     hemi : {'left', 'right'}, default is 'left'
         Hemispere to display.
 
-    view: {'lateral', 'medial', 'dorsal', 'ventral',
-        'anterior', 'posterior'}, default is 'lateral'
+    view: {'lateral', 'medial', 'dorsal', 'ventral', 'anterior', 'posterior'}, default is 'lateral'
         View of the surface that is rendered.
 
     threshold : a number, None, or 'auto', default is None
@@ -540,8 +538,7 @@ def plot_surf_roi(surf_mesh, roi_map, bg_map=None,
         stat_map in greyscale, most likely a sulcal depth map for
         realistic shading.
 
-    view: {'lateral', 'medial', 'dorsal', 'ventral',
-        'anterior', 'posterior'}, default is 'lateral'
+    view: {'lateral', 'medial', 'dorsal', 'ventral', 'anterior', 'posterior'}, default is 'lateral'
         View of the surface that is rendered.
 
     cmap : matplotlib colormap str or colormap object, default 'coolwarm'
