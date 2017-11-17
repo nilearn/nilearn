@@ -18,6 +18,8 @@ Changelog
       Range exceeding -1 meaning more increase in constrast should be
       cautiously set.
 
+    - New 'anterior' and 'posterior' view added to the plot_surf family views
+
 Bug fix
 -------
 

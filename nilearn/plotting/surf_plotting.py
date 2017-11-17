@@ -145,7 +145,6 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
               avg_method='mean', threshold=None, alpha='auto',
               bg_on_data=False, darkness=1, vmin=None, vmax=None,
               title=None, output_file=None, axes=None, figure=None, **kwargs):
-
     """ Plotting of surfaces with optional background and data
 
     .. versionadded:: 0.3
@@ -174,7 +173,7 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
     hemi : {'left', 'right'}, default is 'left'
         Hemisphere to display.
 
-    view: {'lateral', 'medial', 'dorsal', 'ventral'}, default is 'lateral'
+    view: {'lateral', 'medial', 'dorsal', 'ventral', 'anterior', 'posterior'}, default is 'lateral'
         View of the surface that is rendered.
 
     cmap: matplotlib colormap, str or colormap object, default is None
@@ -255,9 +254,13 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
             elev, azim = 90, 0
         elif view == 'ventral':
             elev, azim = 270, 0
+        elif view == 'anterior':
+            elev, azim = 0, 90
+        elif view == 'posterior':
+            elev, azim = 0, 270
         else:
             raise ValueError('view must be one of lateral, medial, '
-                             'dorsal or ventral')
+                             'dorsal, ventral, anterior, or posterior')
     elif hemi == 'left':
         if view == 'medial':
             elev, azim = 0, 0
@@ -267,9 +270,13 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
             elev, azim = 90, 0
         elif view == 'ventral':
             elev, azim = 270, 0
+        elif view == 'anterior':
+            elev, azim = 0, 90
+        elif view == 'posterior':
+            elev, azim = 0, 270
         else:
             raise ValueError('view must be one of lateral, medial, '
-                             'dorsal or ventral')
+                             'dorsal, ventral, anterior, or posterior')
     else:
         raise ValueError('hemi must be one of right or left')
 
@@ -417,7 +424,7 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
     hemi : {'left', 'right'}, default is 'left'
         Hemispere to display.
 
-    view : {'lateral', 'medial', 'dorsal', 'ventral'}, default 'lateral'
+    view: {'lateral', 'medial', 'dorsal', 'ventral', 'anterior', 'posterior'}, default is 'lateral'
         View of the surface that is rendered.
 
     threshold : a number, None, or 'auto', default is None
@@ -531,7 +538,7 @@ def plot_surf_roi(surf_mesh, roi_map, bg_map=None,
         stat_map in greyscale, most likely a sulcal depth map for
         realistic shading.
 
-    view : {'lateral', 'medial', 'dorsal', 'ventral'}, default 'lateral'
+    view: {'lateral', 'medial', 'dorsal', 'ventral', 'anterior', 'posterior'}, default is 'lateral'
         View of the surface that is rendered.
 
     cmap : matplotlib colormap str or colormap object, default 'coolwarm'
