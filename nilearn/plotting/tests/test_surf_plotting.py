@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 
 from nilearn.plotting.surf_plotting import (plot_surf, plot_surf_stat_map,
                                             plot_surf_roi)
-from nilearn.tests.test_surface import _generate_surf
+from nilearn.surface.tests.test_surface import _generate_surf
 
 
 def test_plot_surf():

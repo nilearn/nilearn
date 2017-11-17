@@ -20,10 +20,10 @@ except ImportError:
 import nibabel
 from nibabel import gifti
 
-from .image import load_img
-from .image import resampling
-from ._utils.compat import _basestring
-from . import _utils
+from ..image import load_img
+from ..image import resampling
+from .._utils.compat import _basestring
+from .. import _utils
 
 
 def _uniform_ball_cloud(n_points=20, dim=3, n_monte_carlo=50000):
@@ -35,9 +35,10 @@ def _uniform_ball_cloud(n_points=20, dim=3, n_monte_carlo=50000):
         mc_ball, n_clusters=n_points, random_state=0)
     return centroids
 
+
 def _load_uniform_ball_cloud(n_points=20):
     stored_points = os.path.abspath(
-        os.path.join(__file__, '..', 'data', 'surface', '_uniform_ball_cloud',
+        os.path.join(__file__, '..', 'data',
                      'ball_cloud_{}_samples.csv'.format(n_points)))
     if os.path.isfile(stored_points):
         points = np.loadtxt(stored_points)
@@ -241,7 +242,7 @@ def _masked_indices(sample_locations, img_shape, mask=None):
 
 
 def _projection_matrix(mesh, affine, img_shape,
-                      kind='line', radius=3., n_points=None, mask=None):
+                       kind='line', radius=3., n_points=None, mask=None):
     """Get a sparse matrix that projects volume data onto a mesh.
 
     Parameters

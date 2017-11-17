@@ -23,8 +23,8 @@ from nilearn import datasets
 from nilearn import image
 from nilearn.image import resampling
 from nilearn.image.tests.test_resampling import rotation
-from nilearn import surface
-from nilearn.surface import load_surf_data, load_surf_mesh
+from nilearn.surface import surface
+from nilearn.surface import load_surf_data, load_surf_mesh, vol_to_surf
 
 currdir = os.path.dirname(os.path.abspath(__file__))
 datadir = os.path.join(currdir, 'data')
@@ -397,13 +397,13 @@ def _check_vol_to_surf_results(img, mesh):
     mni_mask = datasets.load_mni152_brain_mask()
     for kind, interpolation, mask_img in itertools.product(
             ['ball', 'line'], ['linear', 'nearest'], [mni_mask, None]):
-        proj_1 = surface.vol_to_surf(
+        proj_1 = vol_to_surf(
             img, mesh, kind=kind, interpolation=interpolation,
             mask_img=mask_img)
         assert_true(proj_1.ndim == 1)
         img_rot = image.resample_img(
             img, target_affine=rotation(np.pi / 3., np.pi / 4.))
-        proj_2 = surface.vol_to_surf(
+        proj_2 = vol_to_surf(
             img_rot, mesh, kind=kind, interpolation=interpolation,
             mask_img=mask_img)
         # The projection values for the rotated image should be close
@@ -411,7 +411,7 @@ def _check_vol_to_surf_results(img, mesh):
         diff = np.abs(proj_1 - proj_2) / np.abs(proj_1)
         assert_true(np.mean(diff[diff < np.inf]) < .03)
         img_4d = image.concat_imgs([img, img])
-        proj_4d = surface.vol_to_surf(
+        proj_4d = vol_to_surf(
             img_4d, mesh, kind=kind, interpolation=interpolation,
             mask_img=mask_img)
         nodes, _ = surface.load_surf_mesh(mesh)
