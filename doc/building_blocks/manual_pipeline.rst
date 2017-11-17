@@ -64,7 +64,7 @@ These conditions are presented as string into a CSV file. The numpy function
 `recfromcsv` is very useful to load this kind of data.
 
 .. literalinclude:: ../../examples/plot_decoding_tutorial.py
-    :start-after: # We use numpy to load them in an array.
+    :start-after: # We use pandas to load them in an array.
     :end-before: ###########################################################################
 
 .. seealso::
