@@ -15,6 +15,7 @@ from nilearn._utils.testing import assert_raises_regex, assert_warns
 import numpy as np
 import scipy
 from scipy.spatial import Delaunay
+import sklearn
 
 import nibabel as nb
 from nibabel import gifti
@@ -262,12 +263,15 @@ def test_load_uniform_ball_cloud():
             points = surface._load_uniform_ball_cloud(n_points=n_points)
             assert_array_equal(points.shape, (n_points, 3))
             assert_equal(len(w), 0)
-    for n_points in [3, 10, 20]:
-        computed = surface._uniform_ball_cloud(n_points)
-        loaded = surface._load_uniform_ball_cloud(n_points)
-        assert_array_almost_equal(computed, loaded)
     assert_warns(surface.EfficiencyWarning,
                  surface._load_uniform_ball_cloud, n_points=3)
+    # before 0.18 k-means was computed differently, so the result
+    # would differ from the stored values, computed with version 0.2
+    if LooseVersion(sklearn.__version__) >= LooseVersion('0.18'):
+        for n_points in [3, 10, 20]:
+            computed = surface._uniform_ball_cloud(n_points)
+            loaded = surface._load_uniform_ball_cloud(n_points)
+            assert_array_almost_equal(computed, loaded)
 
 
 def test_sample_locations():
@@ -281,7 +285,7 @@ def test_sample_locations():
         resampling.coord_transform(*mesh[0].T, affine=affine)).T
     # compute by hand the true offsets in voxel space
     # (transformed by affine^-1)
-    ball_offsets = surface._uniform_ball_cloud(10)
+    ball_offsets = surface._load_uniform_ball_cloud(10)
     ball_offsets = np.asarray(
         resampling.coord_transform(*ball_offsets.T, affine=inv_affine)).T
     line_offsets = np.zeros((10, 3))
