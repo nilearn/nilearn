@@ -1015,7 +1015,7 @@ def fetch_atlas_talairach(data_dir=None, resume=True, verbose=1):
         data_dir, [('talairach.nii', atlas_url, {})],
         resume=resume, verbose=verbose)[0]
     atlas = check_niimg(atlas)
-    header = get_header(atlas)
+    header = atlas.header
     labels = header.extensions[0].get_content()
     labels = labels.strip().decode('utf-8').split('\n')
     labels = [tuple(l.split('.')) for l in labels]
