@@ -18,6 +18,8 @@ Changelog
       Range exceeding -1 meaning more increase in constrast should be
       cautiously set.
 
+    - New 'anterior' and 'posterior' view added to the plot_surf family views
+
 Bug fix
 -------
 
@@ -260,8 +262,6 @@ Enhancements
 
     - Extensive plotting example shows how to use contours and filled contours
       on glass brain.
-
-    - New 'anterior' and 'posterior' view added to the plot_surf family views
 
 0.2.6
 =====
