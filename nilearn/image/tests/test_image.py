@@ -10,14 +10,14 @@ import nibabel
 from nibabel import Nifti1Image
 import numpy as np
 from numpy.testing import assert_array_equal, assert_allclose
-from nilearn._utils.testing import assert_raises_regex
+from nilearn._utils.testing import assert_raises_regex, assert_warns
 from nilearn._utils.exceptions import DimensionError
 
 from nilearn import signal
 from nilearn.image import image
 from nilearn.image import resampling
 from nilearn.image import concat_imgs
-from nilearn._utils import testing, niimg_conversions, compat
+from nilearn._utils import testing, niimg_conversions
 from nilearn.image import new_img_like
 from nilearn.image import threshold_img
 from nilearn.image import iter_img
@@ -127,6 +127,15 @@ def test__smooth_array():
         np.testing.assert_equal(image._smooth_array(data, affine, fwhm='fast'),
                                 image._fast_smooth_array(data))
 
+    # Check corner case when fwhm=0. See #1537
+    # Test whether function _smooth_array raises a warning when fwhm=0.
+    assert_warns(UserWarning, image._smooth_array, data, affine, fwhm=0.)
+
+    # Test output equal when fwhm=None and fwhm=0
+    out_fwhm_none = image._smooth_array(data, affine, fwhm=None)
+    out_fwhm_zero = image._smooth_array(data, affine, fwhm=0.)
+    assert_array_equal(out_fwhm_none, out_fwhm_zero)
+
 
 def test_smooth_img():
     # This function only checks added functionalities compared
@@ -155,6 +164,15 @@ def test_smooth_img():
             assert_true(isinstance(out, nibabel.Nifti1Image))
             assert_true(out.shape == (shapes[0] + (lengths[0],)))
 
+    # Check corner case situations when fwhm=0, See issue #1537
+    # Test whether function smooth_img raises a warning when fwhm=0.
+    assert_warns(UserWarning, image.smooth_img, img1, fwhm=0.)
+
+    # Test output equal when fwhm=None and fwhm=0
+    out_fwhm_none = image.smooth_img(img1, fwhm=None)
+    out_fwhm_zero = image.smooth_img(img1, fwhm=0.)
+    assert_array_equal(out_fwhm_none.get_data(), out_fwhm_zero.get_data())
+
 
 def test__crop_img_to():
     data = np.zeros((5, 6, 7))
@@ -172,7 +190,7 @@ def test__crop_img_to():
     assert_true(cropped_img.shape == (2, 4, 3))
 
     # check that affine was adjusted correctly
-    assert_true((compat.get_affine(cropped_img)[:3, 3] == new_origin).all())
+    assert_true((cropped_img.affine[:3, 3] == new_origin).all())
 
     # check that data was really not copied
     data[2:4, 1:5, 3:6] = 2
@@ -243,13 +261,13 @@ def test_mean_img():
         truth = np.mean(arrays, axis=0)
 
         mean_img = image.mean_img(imgs)
-        assert_array_equal(compat.get_affine(mean_img), affine)
+        assert_array_equal(mean_img.affine, affine)
         assert_array_equal(mean_img.get_data(), truth)
 
         # Test with files
         with testing.write_tmp_imgs(*imgs) as imgs:
             mean_img = image.mean_img(imgs)
-            assert_array_equal(compat.get_affine(mean_img), affine)
+            assert_array_equal(mean_img.affine, affine)
             if X64:
                 assert_array_equal(mean_img.get_data(), truth)
             else:
@@ -277,9 +295,9 @@ def test_mean_img_resample():
                                               target_affine=target_affine)
     assert_array_equal(resampled_mean_image.get_data(),
                        mean_img_with_resampling.get_data())
-    assert_array_equal(compat.get_affine(resampled_mean_image),
-                       compat.get_affine(mean_img_with_resampling))
-    assert_array_equal(compat.get_affine(mean_img_with_resampling), target_affine)
+    assert_array_equal(resampled_mean_image.affine,
+                       mean_img_with_resampling.affine)
+    assert_array_equal(mean_img_with_resampling.affine, target_affine)
 
 
 def test_swap_img_hemispheres():
@@ -326,8 +344,7 @@ def test_index_img():
         expected_data_3d = img_4d.get_data()[..., i]
         assert_array_equal(this_img.get_data(),
                            expected_data_3d)
-        assert_array_equal(compat.get_affine(this_img),
-                           compat.get_affine(img_4d))
+        assert_array_equal(this_img.affine, img_4d.affine)
 
     for i in [fourth_dim_size, - fourth_dim_size - 1,
               [0, fourth_dim_size],
@@ -356,16 +373,14 @@ def test_iter_img():
         expected_data_3d = img_4d.get_data()[..., i]
         assert_array_equal(img.get_data(),
                            expected_data_3d)
-        assert_array_equal(compat.get_affine(img),
-                           compat.get_affine(img_4d))
+        assert_array_equal(img.affine, img_4d.affine)
 
     with testing.write_tmp_imgs(img_4d) as img_4d_filename:
         for i, img in enumerate(image.iter_img(img_4d_filename)):
             expected_data_3d = img_4d.get_data()[..., i]
             assert_array_equal(img.get_data(),
                                expected_data_3d)
-            assert_array_equal(compat.get_affine(img),
-                               compat.get_affine(img_4d))
+            assert_array_equal(img.affine, img_4d.affine)
         # enables to delete "img_4d_filename" on windows
         del img
 
@@ -374,16 +389,14 @@ def test_iter_img():
         expected_data_3d = img_4d.get_data()[..., i]
         assert_array_equal(img.get_data(),
                            expected_data_3d)
-        assert_array_equal(compat.get_affine(img),
-                           compat.get_affine(img_4d))
+        assert_array_equal(img.affine, img_4d.affine)
 
     with testing.write_tmp_imgs(*img_3d_list) as img_3d_filenames:
         for i, img in enumerate(image.iter_img(img_3d_filenames)):
             expected_data_3d = img_4d.get_data()[..., i]
             assert_array_equal(img.get_data(),
                                expected_data_3d)
-            assert_array_equal(compat.get_affine(img),
-                               compat.get_affine(img_4d))
+            assert_array_equal(img.affine, img_4d.affine)
         # enables to delete "img_3d_filename" on windows
         del img
 
@@ -396,7 +409,7 @@ def test_new_img_like_mgz():
 
     ref_img = nibabel.load(os.path.join(datadir, 'test.mgz'))
     data = np.ones(ref_img.get_data().shape, dtype=np.bool)
-    affine = compat.get_affine(ref_img)
+    affine = ref_img.affine
     new_img_like(ref_img, data, affine, copy_header=False)
 
 
@@ -490,8 +503,7 @@ def test_math_img():
             result = math_img(formula, img1=imgs[0], img2=imgs[1])
             assert_array_equal(result.get_data(),
                                expected_result.get_data())
-            assert_array_equal(compat.get_affine(result),
-                               compat.get_affine(expected_result))
+            assert_array_equal(result.affine, expected_result.affine)
             assert_equal(result.shape, expected_result.shape)
 
 
@@ -556,9 +568,9 @@ def test_largest_cc_img():
 
     # tests adapted to non-native endian data dtype
     img1_change_dtype = nibabel.Nifti1Image(img1.get_data().astype('>f8'),
-                                            affine=img1.get_affine())
+                                            affine=img1.affine)
     img2_change_dtype = nibabel.Nifti1Image(img2.get_data().astype('>f8'),
-                                            affine=img2.get_affine())
+                                            affine=img2.affine)
 
     for create_files in (False, True):
         with testing.write_tmp_imgs(img1_change_dtype, img2_change_dtype,

@@ -160,6 +160,7 @@ uses.
 
    clean_img
    concat_imgs
+   coord_transform
    copy_img
    crop_img
    high_variance_confounds

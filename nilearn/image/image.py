@@ -7,6 +7,7 @@ See also nilearn.signal.
 # License: simplified BSD
 
 import collections
+import warnings
 
 import numpy as np
 from scipy import ndimage
@@ -20,7 +21,7 @@ from .._utils import (check_niimg_4d, check_niimg_3d, check_niimg, as_ndarray,
                       _repr_niimgs)
 from .._utils.niimg_conversions import _index_img, _check_same_fov
 from .._utils.niimg import _safe_get_data
-from .._utils.compat import _basestring, get_affine, get_header
+from .._utils.compat import _basestring
 from .._utils.param_validation import check_threshold
 
 
@@ -183,6 +184,13 @@ def _smooth_array(arr, affine, fwhm=None, ensure_finite=True, copy=True):
     -----
     This function is most efficient with arr in C order.
     """
+    # Here, we have to investigate use cases of fwhm. Particularly, if fwhm=0.
+    # See issue #1537
+    if fwhm == 0.:
+        warnings.warn("The parameter 'fwhm' for smoothing is specified "
+                      "as {0}. Converting to None (no smoothing option)"
+                      .format(fwhm))
+        fwhm = None
 
     if arr.dtype.kind == 'i':
         if arr.dtype == np.int64:
@@ -233,7 +241,10 @@ def smooth_img(imgs, fwhm):
         a filter [0.2, 1, 0.2] in each direction and a normalisation
         to preserve the scale.
         If fwhm is None, no filtering is performed (useful when just removal
-        of non-finite values is needed)
+        of non-finite values is needed).
+
+        In corner case situations, fwhm is simply kept to None when fwhm is
+        specified as fwhm=0.
 
     Returns
     -------
@@ -254,7 +265,7 @@ def smooth_img(imgs, fwhm):
     ret = []
     for img in imgs:
         img = check_niimg(img)
-        affine = get_affine(img)
+        affine = img.affine
         filtered = _smooth_array(img.get_data(), affine, fwhm=fwhm,
                                  ensure_finite=True, copy=True)
         ret.append(new_img_like(img, filtered, affine, copy_header=True))
@@ -298,7 +309,7 @@ def _crop_img_to(img, slices, copy=True):
     img = check_niimg(img)
 
     data = img.get_data()
-    affine = get_affine(img)
+    affine = img.affine
 
     cropped_data = data[slices]
     if copy:
@@ -372,7 +383,7 @@ def _compute_mean(imgs, target_affine=None,
 
     imgs = check_niimg(imgs)
     mean_data = _safe_get_data(imgs)
-    affine = get_affine(imgs)
+    affine = imgs.affine
     # Free memory ASAP
     imgs = None
     if not mean_data.ndim in (3, 4):
@@ -387,7 +398,7 @@ def _compute_mean(imgs, target_affine=None,
         nibabel.Nifti1Image(mean_data, affine),
         target_affine=target_affine, target_shape=target_shape,
         copy=False)
-    affine = get_affine(mean_data)
+    affine = mean_data.affine
     mean_data = mean_data.get_data()
 
     if smooth:
@@ -505,7 +516,7 @@ def swap_img_hemispheres(img):
     img = reorder_img(img)
 
     # create swapped nifti object
-    out_img = new_img_like(img, img.get_data()[::-1], get_affine(img),
+    out_img = new_img_like(img, img.get_data()[::-1], img.affine,
                            copy_header=True)
 
     return out_img
@@ -605,7 +616,7 @@ def new_img_like(ref_niimg, data, affine=None, copy_header=False):
             and hasattr(ref_niimg, '__iter__')):
         ref_niimg = ref_niimg[0]
     if not (hasattr(ref_niimg, 'get_data')
-              and hasattr(ref_niimg, 'get_affine')):
+              and hasattr(ref_niimg, 'affine')):
         if isinstance(ref_niimg, _basestring):
             ref_niimg = nibabel.load(ref_niimg)
         else:
@@ -613,7 +624,7 @@ def new_img_like(ref_niimg, data, affine=None, copy_header=False):
                             'was passed') % orig_ref_niimg)
 
     if affine is None:
-        affine = get_affine(ref_niimg)
+        affine = ref_niimg.affine
     if data.dtype == bool:
         default_dtype = np.int8
         if isinstance(ref_niimg, nibabel.freesurfer.mghformat.MGHImage):
@@ -621,13 +632,18 @@ def new_img_like(ref_niimg, data, affine=None, copy_header=False):
         data = as_ndarray(data, dtype=default_dtype)
     header = None
     if copy_header:
-        header = copy.deepcopy(get_header(ref_niimg))
+        header = copy.deepcopy(ref_niimg.header)
         header['scl_slope'] = 0.
         header['scl_inter'] = 0.
         header['glmax'] = 0.
         header['cal_max'] = np.max(data) if data.size > 0 else 0.
         header['cal_min'] = np.min(data) if data.size > 0 else 0.
-    return ref_niimg.__class__(data, affine, header=header)
+    klass = ref_niimg.__class__
+    if klass is nibabel.Nifti1Pair:
+        # Nifti1Pair is an internal class, without a to_filename,
+        # we shouldn't return it
+        klass = nibabel.Nifti1Image
+    return klass(data, affine, header=header)
 
 
 def threshold_img(img, threshold, mask_img=None):
@@ -667,7 +683,7 @@ def threshold_img(img, threshold, mask_img=None):
 
     img = check_niimg(img)
     img_data = _safe_get_data(img, ensure_finite=True)
-    affine = get_affine(img)
+    affine = img.affine
 
     if mask_img is not None:
         mask_img = check_niimg_3d(mask_img)
@@ -774,7 +790,7 @@ def math_img(formula, **imgs):
                      .format(formula),) + exc.args)
         raise
 
-    return new_img_like(niimg, result, get_affine(niimg))
+    return new_img_like(niimg, result, niimg.affine)
 
 
 def clean_img(imgs, sessions=None, detrend=True, standardize=True,
@@ -938,7 +954,7 @@ def largest_connected_component_img(imgs):
     ret = []
     for img in imgs:
         img = check_niimg_3d(img)
-        affine = get_affine(img)
+        affine = img.affine
         largest_component = largest_connected_component(_safe_get_data(img))
         ret.append(new_img_like(img, largest_component, affine,
                                 copy_header=True))

@@ -648,9 +648,9 @@ class BaseSlicer(object):
             else:
                 data = np.ma.masked_inside(data, -threshold, threshold,
                                            copy=False)
-            img = new_img_like(img, data, _utils.compat.get_affine(img))
+            img = new_img_like(img, data, img.affine)
 
-        affine = _utils.compat.get_affine(img)
+        affine = img.affine
         data = _utils.niimg._safe_get_data(img, ensure_finite=True)
         data_bounds = get_bounds(data.shape, affine)
         (xmin, xmax), (ymin, ymax), (zmin, zmax) = data_bounds
@@ -695,6 +695,11 @@ class BaseSlicer(object):
         to_iterate_over = zip(self.axes.values(), data_2d_list)
         for display_ax, data_2d in to_iterate_over:
             if data_2d is not None:
+                # If data_2d is completely masked, then there is nothing to
+                # plot. Hence, continued to loop over. This problem came up
+                # with matplotlib 2.1.0. See issue #9280 in matplotlib.
+                if data_2d.min() is np.ma.masked:
+                    continue
                 im = display_ax.draw_2d(data_2d, data_bounds, bounding_box,
                                         type=type, **kwargs)
                 ims.append(im)
@@ -781,9 +786,9 @@ class BaseSlicer(object):
         """
         img = reorder_img(img, resample='continuous')
         data = img.get_data()
-        affine = _utils.compat.get_affine(img)
+        affine = img.affine
         single_color_cmap = colors.ListedColormap([color])
-        data_bounds = get_bounds(data.shape, _utils.compat.get_affine(img))
+        data_bounds = get_bounds(data.shape, img.affine)
 
         # For each ax, cut the data and plot it
         for display_ax in self.axes.values():

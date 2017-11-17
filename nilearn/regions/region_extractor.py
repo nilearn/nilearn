@@ -18,7 +18,7 @@ from ..image import new_img_like, resample_img
 from ..image.image import _smooth_array, threshold_img
 from .._utils.niimg_conversions import concat_niimgs, _check_same_fov
 from .._utils.niimg import _safe_get_data
-from .._utils.compat import _basestring, get_affine
+from .._utils.compat import _basestring
 from .._utils.ndimage import _peak_local_max
 from .._utils.segmentation import _random_walker
 
@@ -184,8 +184,8 @@ def connected_regions(maps_img, min_region_size=1350,
     index_of_each_map = []
     maps_img = check_niimg(maps_img, atleast_4d=True)
     maps = _safe_get_data(maps_img).copy()
-    affine = get_affine(maps_img)
-    min_region_size = min_region_size / np.prod(np.diag(abs(affine[:3])))
+    affine = maps_img.affine
+    min_region_size = min_region_size / np.abs(np.linalg.det(affine[:3, :3]))
 
     allowed_extract_types = ['connected_components', 'local_regions']
     if extract_type not in allowed_extract_types:
@@ -196,7 +196,7 @@ def connected_regions(maps_img, min_region_size=1350,
     if mask_img is not None:
         if not _check_same_fov(maps_img, mask_img):
             mask_img = resample_img(mask_img,
-                                    target_affine=get_affine(maps_img),
+                                    target_affine=maps_img.affine,
                                     target_shape=maps_img.shape[:3],
                                     interpolation="nearest")
             mask_data, _ = masking._load_mask_img(mask_img)
@@ -477,7 +477,7 @@ def connected_label_regions(labels_img, min_size=None, connect_diag=True,
     """
     labels_img = check_niimg_3d(labels_img)
     labels_data = _safe_get_data(labels_img, ensure_finite=True)
-    affine = labels_img.get_affine()
+    affine = labels_img.affine
 
     check_unique_labels = np.unique(labels_data)
 

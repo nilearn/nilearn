@@ -1,8 +1,40 @@
 0.3.2
 =====
 
+Changelog
+---------
+
+    - **Backward incompatible change**: :func:`nilearn.plotting.find_xyz_cut_coords`
+      now takes a `mask_img` argument which is a niimg, rather than a `mask`
+      argument, which used to be a numpy array.
+
+    - Dropped support for Nibabel older than 2.0.2.
+
+    - :func:`nilearn.image.smooth_img` no longer accepts smoothing
+      parameter fwhm as 0. Behavior is changed in according to the
+      issues with recent SciPy version 1.0.0.
+
+    - "dim" factor range is slightly increased to -2 to 2 from -1 to 1.
+      Range exceeding -1 meaning more increase in constrast should be
+      cautiously set.
+
+Bug fix
+-------
+
+    - Dimming factor applied to background image in plotting
+      functions with "dim" parameter will no longer accepts as
+      string ('-1'). An error will be raised.
+
+    - Fixed issues with matplotlib 2.1.0.
+
+    - Fixed issues with SciPy 1.0.0.
+
 Enhancements
 -------------
+
+    - Expose :func:`nilearn.image.coord_transform` for end users. Useful
+      to transform coordinates (x, y, z) from one image space to
+      another space.
 
     - New matrix plotting function, eg to display connectome matrices:
       :func:`nilearn.plotting.plot_matrix`
@@ -12,6 +44,22 @@ Enhancements
 
     - :func:`nilearn.datasets.fetch_atlas_talairach` to fetch the Talairach
       atlas (http://talairach.org)
+
+    - Enhancing new surface plotting functions, added new parameters
+      "axes" and "figure" to accept user-specified instances in
+      :func:`nilearn.plotting.plot_surf` and
+      :func:`nilearn.plotting.plot_surf_stat_map` and
+      :func:`nilearn.plotting.plot_surf_roi`
+
+    - :class:`nilearn.decoding.SearchLight` has new parameter "groups" to
+      do LeaveOneGroupOut type cv with new scikit-learn module model selection.
+
+    - Enhancing the glass brain plotting in back view 'y' direction.
+
+    - New parameter "resampling_interpolation" is added in most used
+      plotting functions to have user control for faster visualizations.
+
+    - Upgraded to Sphinx-Gallery 0.1.11
 
 0.3.1
 =====

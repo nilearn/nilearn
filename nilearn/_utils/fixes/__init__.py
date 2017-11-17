@@ -23,4 +23,10 @@ except ImportError:
     from .sklearn_validation import check_X_y
     from .sklearn_validation import check_is_fitted
 
-__all__ = ['check_X_y', 'check_is_fitted', 'check_cv', 'cross_val_score']
+if LooseVersion(sklearn.__version__) >= LooseVersion('0.18'):
+    from sklearn.linear_model.base import _preprocess_data as center_data
+else:
+    from sklearn.linear_model.base import center_data
+
+__all__ = ['check_X_y', 'check_is_fitted', 'check_cv', 'cross_val_score',
+           'center_data']

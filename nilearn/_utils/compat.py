@@ -63,16 +63,3 @@ else:
         m.update(string)
         return m.hexdigest()
 
-
-if LooseVersion(nibabel.__version__) >= LooseVersion('2.0.0'):
-    def get_affine(img):
-        return img.affine
-
-    def get_header(img):
-        return img.header
-else:
-    def get_affine(img):
-        return img.get_affine()
-
-    def get_header(img):
-        return img.get_header()

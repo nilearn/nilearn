@@ -11,7 +11,7 @@ import collections
 import numpy as np
 import nibabel
 
-from .compat import _basestring, get_affine
+from .compat import _basestring
 
 
 def _safe_get_data(img, ensure_finite=False):
@@ -117,7 +117,7 @@ def load_niimg(niimg, dtype=None):
 
     if dtype is not None:
         niimg = new_img_like(niimg, niimg.get_data().astype(dtype),
-                             get_affine(niimg))
+                             niimg.affine)
     return niimg
 
 
@@ -138,7 +138,7 @@ def copy_img(img):
 
     if not isinstance(img, nibabel.spatialimages.SpatialImage):
         raise ValueError("Input value is not an image")
-    return new_img_like(img, _safe_get_data(img).copy(), get_affine(img).copy(),
+    return new_img_like(img, _safe_get_data(img).copy(), img.affine.copy(),
                         copy_header=True)
 
 
@@ -159,7 +159,7 @@ def _repr_niimgs(niimgs):
             return "%s(\nshape=%s,\naffine=%s\n)" % \
                    (niimgs.__class__.__name__,
                     repr(niimgs.shape),
-                    repr(get_affine(niimgs)))
+                    repr(niimgs.affine))
     except:
         pass
     return repr(niimgs)

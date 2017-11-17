@@ -17,7 +17,6 @@ from .._utils.extmath import fast_abs_percentile
 from .._utils.numpy_conversions import as_ndarray
 from .._utils import check_niimg_3d
 from .._utils.niimg import _safe_get_data
-from .._utils.compat import get_affine
 from ..image.resampling import get_mask_bounds, coord_transform
 from ..image.image import _smooth_array
 
@@ -26,15 +25,15 @@ from ..image.image import _smooth_array
 ################################################################################
 
 
-def find_xyz_cut_coords(img, mask=None, activation_threshold=None):
+def find_xyz_cut_coords(img, mask_img=None, activation_threshold=None):
     """ Find the center of the largest activation connected component.
 
         Parameters
         -----------
         img : 3D Nifti1Image
             The brain map.
-        mask : 3D ndarray, boolean, optional
-            An optional brain mask.
+        mask_img : 3D Nifti1Image, optional
+            An optional brain mask, provided mask_img should not be empty.
         activation_threshold : float, optional
             The lower threshold to the positive activation. If None, the
             activation threshold is computed using the 80% percentile of
@@ -53,6 +52,17 @@ def find_xyz_cut_coords(img, mask=None, activation_threshold=None):
     # we reduce to a single 3D image to find the coordinates
     img = check_niimg_3d(img)
     data = _safe_get_data(img)
+
+    # Retrieve optional mask
+    if mask_img is not None:
+        mask_img = check_niimg_3d(mask_img)
+        mask = _safe_get_data(mask_img)
+        if not np.allclose(mask_img.affine, img.affine):
+            raise ValueError('Mask affine: \n%s\n is different from img affine:'
+                             '\n%s' % (str(mask_img.affine),
+                                       str(img.affine)))
+    else:
+        mask = None
 
     # To speed up computations, we work with partial views of the array,
     # and keep track of the offset
@@ -78,7 +88,7 @@ def find_xyz_cut_coords(img, mask=None, activation_threshold=None):
             cut_coords = ndimage.center_of_mass(np.abs(my_map)) + offset
             x_map, y_map, z_map = cut_coords
             return np.asarray(coord_transform(x_map, y_map, z_map,
-                                              get_affine(img))).tolist()
+                                              img.affine)).tolist()
         slice_x, slice_y, slice_z = ndimage.find_objects(mask)[0]
         my_map = my_map[slice_x, slice_y, slice_z]
         mask = mask[slice_x, slice_y, slice_z]
@@ -91,7 +101,13 @@ def find_xyz_cut_coords(img, mask=None, activation_threshold=None):
     if activation_threshold is None:
         activation_threshold = fast_abs_percentile(my_map[my_map != 0].ravel(),
                                                    80)
-    mask = np.abs(my_map) > activation_threshold - 1.e-15
+    try:
+        eps = 2 * np.finfo(activation_threshold).eps
+    except ValueError:
+        # The above will fail for exact types, eg integers
+        eps = 1e-15
+
+    mask = np.abs(my_map) > (activation_threshold - eps)
     # mask may be zero everywhere in rare cases
     if mask.max() == 0:
         return .5 * np.array(data.shape)
@@ -113,14 +129,14 @@ def find_xyz_cut_coords(img, mask=None, activation_threshold=None):
 
     # Return as a list of scalars
     return np.asarray(coord_transform(x_map, y_map, z_map,
-                                      get_affine(img))).tolist()
+                                      img.affine)).tolist()
 
 
 def _get_auto_mask_bounds(img):
     """ Compute the bounds of the data with an automaticaly computed mask
     """
     data = _safe_get_data(img)
-    affine = get_affine(img)
+    affine = img.affine
     if hasattr(data, 'mask'):
         # Masked array
         mask = np.logical_not(data.mask)
@@ -209,7 +225,7 @@ def find_cut_slices(img, direction='z', n_cuts=7, spacing='auto'):
                 direction))
     axis = 'xyz'.index(direction)
     img = check_niimg_3d(img)
-    affine = get_affine(img)
+    affine = img.affine
     orig_data = np.abs(_safe_get_data(img))
     this_shape = orig_data.shape[axis]
 
