@@ -300,6 +300,7 @@ def _projection_matrix(mesh, affine, img_shape,
         Compute the projection for one or several images.
 
     """
+    # A user might want to call this function directly so check mask size.
     if mask is not None and tuple(mask.shape) != img_shape:
         raise ValueError('mask should have shape img_shape')
     mesh = load_surf_mesh(mesh)
