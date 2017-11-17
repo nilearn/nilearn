@@ -28,7 +28,7 @@ dependencies:
             SCIPY_VERSION: "*"
             SCIKIT_LEARN_VERSION: "*"
             MATPLOTLIB_VERSION: "*"
-    - conda install sphinx coverage pillow -y -n testenv
+    - conda install sphinx coverage pillow pandas -y -n testenv
 
     # Generating html documentation (with warnings as errors)
     # we need to do this here so the datasets will be cached

@@ -277,10 +277,10 @@ intersphinx_mapping = {
     'http://matplotlib.org/': None,
     'http://scikit-learn.org/0.17': None,
     'http://nipy.org/nibabel': None,
+    'http://pandas.pydata.org': None,
     #'http://scikit-image.org/docs/0.8.0/': None,
     #'http://docs.enthought.com/mayavi/mayavi/': None,
     #'http://statsmodels.sourceforge.net/': None,
-    #'http://pandas.pydata.org': None,
 }
 
 extlinks = {
@@ -297,7 +297,8 @@ sphinx_gallery_conf = {
         'numpy': 'http://docs.scipy.org/doc/numpy-1.6.0',
         'scipy': 'http://docs.scipy.org/doc/scipy-0.11.0/reference',
         'nibabel': 'http://nipy.org/nibabel',
-        'sklearn': 'http://scikit-learn.org/0.17/'}
+        'sklearn': 'http://scikit-learn.org/0.17/',
+        'pandas': 'http://pandas.pydata.org'}
     }
 
 # Get rid of spurious warnings due to some interaction between
