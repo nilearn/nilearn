@@ -720,7 +720,7 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
         X = self.masker_.fit_transform(X)
 
         X, y = check_X_y(X, y, ['csr', 'csc', 'coo'], dtype=np.float,
-                         multi_output=True, y_numeric=True)
+                         multi_output=True, y_numeric=not self.is_classif)
 
         # misc
         self.Xmean_ = X.mean(axis=0)
