@@ -12,7 +12,6 @@ the fMRI (see the generated figures).
 #########################################################################
 # Load Haxby dataset
 # -------------------
-import numpy as np
 import pandas as pd
 from nilearn import datasets
 from nilearn.image import new_img_like, load_img
@@ -45,6 +44,7 @@ y, session = y[condition_mask], session[condition_mask]
 # - process_mask_img is a subset of mask_img, it contains the voxels that
 #   should be processed (we only keep the slice z = 26 and the back of the
 #   brain to speed up computation)
+import numpy as np
 
 mask_img = load_img(haxby_dataset.mask)
 

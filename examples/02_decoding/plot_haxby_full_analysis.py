@@ -32,7 +32,6 @@ print('First subject functional nifti image (4D) is located at: %s' %
 from nilearn.input_data import NiftiMasker
 
 # load labels
-import numpy as np
 import pandas as pd
 labels = pd.read_csv(haxby_dataset.session_target[0], sep=" ")
 stimuli = labels['labels']
@@ -100,6 +99,7 @@ for mask_name in mask_names:
 ##########################################################################
 # We make a simple bar plot to summarize the results
 # ---------------------------------------------------
+import numpy as np
 import matplotlib.pyplot as plt
 plt.figure()
 

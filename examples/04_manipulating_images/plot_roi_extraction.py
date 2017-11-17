@@ -59,8 +59,7 @@ print('First subject functional nifti image (4D) is located at: %s' %
 print('Labels of haxby dataset (text file) is located at: %s' %
       haxby_dataset.session_target[0])
 
-# Second, load the labels stored in a text file into array using numpy
-import numpy as np
+# Second, load the labels stored in a text file into array using pandas
 import pandas as pd
 
 session_target = pd.read_csv(haxby_dataset.session_target[0], sep=" ")
@@ -130,6 +129,7 @@ print(fmri_data.shape)
 # distribution is similar in the two conditions, then the voxel is not very
 # interesting to discriminate the condition.
 
+import numpy as np
 from scipy import stats
 
 # This test returns p-values that represent probabilities that the two
