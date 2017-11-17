@@ -4,6 +4,9 @@ Downloading NeuroImaging datasets: atlas datasets
 import os
 import warnings
 import xml.etree.ElementTree
+from tempfile import mkdtemp
+import json
+import shutil
 
 import nibabel as nb
 import numpy as np
@@ -12,7 +15,7 @@ from sklearn.datasets.base import Bunch
 from .utils import _get_dataset_dir, _fetch_files, _get_dataset_descr
 from .._utils import check_niimg
 from .._utils.compat import _basestring
-from ..image import new_img_like
+from ..image import new_img_like, load_img
 
 
 def fetch_atlas_craddock_2012(data_dir=None, url=None, resume=True, verbose=1):
@@ -965,19 +968,76 @@ def fetch_atlas_surf_destrieux(data_dir=None, url=None,
                  map_right=annot_right[0], description=fdescr)
 
 
-def fetch_atlas_talairach(data_dir=None, resume=True, verbose=1):
+def _talairach_levels():
+    return ['hemisphere', 'lobe', 'gyrus', 'tissue', 'ba']
+
+
+def _separate_talairach_levels(atlas_img, labels, verbose=1):
+    labels = np.asarray(labels)
+    talairach_levels = _talairach_levels()
+    if verbose:
+        print('Separating talairach atlas levels: {}'.format(talairach_levels))
+    levels = []
+    new_img = np.zeros(atlas_img.shape, dtype=np.int64)
+    for pos, level in enumerate(talairach_levels):
+        if verbose:
+            print(level)
+        level_img = np.zeros(atlas_img.shape, dtype=np.int64)
+        level_labels = {'*': 0}
+        for region_nb, region in enumerate(labels[:, pos]):
+            level_labels.setdefault(region, len(level_labels))
+            level_img[atlas_img.get_data() == region_nb] = level_labels[
+                region]
+        level_img <<= 8 * pos
+        new_img = np.bitwise_or(new_img, level_img)
+        level_labels = list(list(
+            zip(*sorted(level_labels.items(), key=lambda t: t[0])))[0])
+        level_labels[0] = 'Background'
+        levels.append((level, level_labels))
+    new_img = new_img_like(atlas_img, data=new_img)
+    return new_img, levels
+
+
+def _download_talairach_atlas(data_dir=None, verbose=1):
+    data_dir = _get_dataset_dir('talairach_atlas', data_dir=data_dir)
+    img_file = os.path.join(data_dir, 'talairach.nii')
+    labels_file = os.path.join(data_dir, 'talairach_labels.json')
+    if os.path.isfile(img_file) and os.path.isfile(labels_file):
+        return img_file, labels_file
+    atlas_url = 'http://www.talairach.org/talairach.nii'
+    temp_dir = mkdtemp()
+    try:
+        temp_file = _fetch_files(
+            temp_dir, [('talairach.nii', atlas_url, {})], verbose=verbose)[0]
+        atlas_img = check_niimg(temp_file)
+    finally:
+        shutil.rmtree(temp_dir)
+    header = atlas_img.header
+    labels = header.extensions[0].get_content()
+    labels = labels.strip().decode('utf-8').split('\n')
+    labels = [l.split('.') for l in labels]
+    new_img, level_labels = _separate_talairach_levels(
+        atlas_img, labels, verbose=verbose)
+    new_img.to_filename(img_file)
+    with open(labels_file, 'w') as fp:
+        json.dump(level_labels, fp)
+    return img_file, labels_file
+
+
+def fetch_atlas_talairach(level_name, data_dir=None, verbose=1):
     """Download the Talairach atlas.
 
     .. versionadded:: 0.3.2
 
     Parameters
     ----------
+    level_name: {'hemisphere', 'lobe', 'gyrus', 'tissue', 'ba'}
+        Which level of the atlas to use: the hemisphere, the lobe, the gyrus,
+          the tissue type or the Brodmann area.
+
     data_dir: str, optional (default=None)
         Path of the data directory. Used to force data storage in a specified
         location.
-
-    resume: bool
-        whether to resumed download of a partly-downloaded file.
 
     verbose: int
         verbosity level (0 means no message).
@@ -988,11 +1048,7 @@ def fetch_atlas_talairach(data_dir=None, resume=True, verbose=1):
         Dictionary-like object, contains:
         - maps: 3D Nifti image, values are integers corresponding to indices in
           the list of labels.
-        - labels: list of tuples of strings. Each tuple contains five strings:
-          the hemisphere, the lobe, the gyrus, the tissue type and the Brodmann
-          area. The string '*' means 'undefined'. For example, the first index
-          in this list corresponds to the background and contains the tuple
-          ('*', '*', '*', '*', '*').
+        - labels: list of strings. Starts with 'Background'.
         - description: a short description of the atlas and some references.
 
     References
@@ -1008,16 +1064,16 @@ def fetch_atlas_talairach(data_dir=None, resume=True, verbose=1):
     report on the development and evaluation of a forward-transform method. Hum
     Brain Mapp 5, 238-242, 1997.`
     """
-    atlas_url = 'http://www.talairach.org/talairach.nii'
-    data_dir = _get_dataset_dir(
-        'talairach_atlas', data_dir=data_dir)
-    atlas = _fetch_files(
-        data_dir, [('talairach.nii', atlas_url, {})],
-        resume=resume, verbose=verbose)[0]
-    atlas = check_niimg(atlas)
-    header = atlas.header
-    labels = header.extensions[0].get_content()
-    labels = labels.strip().decode('utf-8').split('\n')
-    labels = [tuple(l.split('.')) for l in labels]
-    description = _get_dataset_descr('talairach_atlas').decode('utf-8')
-    return Bunch(maps=atlas, labels=labels, description=description)
+    levels = _talairach_levels()
+    if level_name not in levels:
+        raise ValueError('"level_name" should be one of {}'.format(levels))
+    position = levels.index(level_name)
+    atlas_file, labels_file = _download_talairach_atlas(data_dir, verbose)
+    atlas_img = check_niimg(atlas_file)
+    with open(labels_file) as fp:
+        labels = json.load(fp)[position][1]
+    level_data = np.bitwise_and(255, atlas_img.get_data() >> 8 * position)
+    atlas_img = new_img_like(atlas_img, data=level_data)
+    description = _get_dataset_descr(
+        'talairach_atlas').decode('utf-8').format(level_name)
+    return Bunch(maps=atlas_img, labels=labels, description=description)

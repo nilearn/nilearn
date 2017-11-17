@@ -5,11 +5,7 @@ Content
     :'maps': 3D Nifti image, values are integers corresponding to indices in the
              list of labels.
 
-    :'labels': list of tuples of strings. Each tuple contains five strings: the
-               hemisphere, the lobe, the gyrus, the tissue type and the Brodmann
-               area. The string '*' means 'undefined'. For example, the first
-               index in this list corresponds to the background and contains the
-               tuple ('*', '*', '*', '*', '*').
+    :'labels': Annotations ({})
 
 References
 ----------
