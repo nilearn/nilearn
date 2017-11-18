@@ -1090,7 +1090,8 @@ def fetch_atlas_talairach(level_name, data_dir=None, verbose=1):
 
     `Lancaster JL, Woldorff MG, Parsons LM, Liotti M, Freitas CS, Rainey L,
     Kochunov PV, Nickerson D, Mikiten SA, Fox PT, "Automated Talairach Atlas
-    labels for functional brain mapping". Human Brain Mapping 10:120-131, 2000.`
+    labels for functional brain mapping". Human Brain Mapping 10:120-131,
+    2000.`
 
     `Lancaster JL, Rainey LH, Summerlin JL, Freitas CS, Fox PT, Evans AC, Toga
     AW, Mazziotta JC. Automated labeling of the human brain: A preliminary
