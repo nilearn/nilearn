@@ -4,7 +4,7 @@
 Changelog
 ---------
 
-    - The minimum required version for scipy is now 0.14.1
+    - The minimum required version for scipy is now 0.14
 
     - **Backward incompatible change**: :func:`nilearn.plotting.find_xyz_cut_coords`
       now takes a `mask_img` argument which is a niimg, rather than a `mask`
