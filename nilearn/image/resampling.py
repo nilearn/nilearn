@@ -280,7 +280,7 @@ def _resample_one_img(data, A, b, target_shape,
     # Bug in ndimage.affine_transform when out does not have native endianness
     # see https://github.com/nilearn/nilearn/issues/275
     # Bug was fixed in scipy 0.15
-    if (LooseVersion(scipy.__version__) <= LooseVersion('0.17.1') and
+    if (LooseVersion(scipy.__version__) < LooseVersion('0.15') and
         not out.dtype.isnative):
         out.byteswap(True)
 
@@ -520,8 +520,8 @@ def resample_img(img, target_affine=None, target_shape=None,
     else:
         resampled_data_dtype = data.dtype
 
-    if LooseVersion(scipy.__version__) >= LooseVersion('0.18'):
-        # Since the release of 0.18, resampling nifti images have some issues
+    if LooseVersion(scipy.__version__) >= LooseVersion('0.17'):
+        # Since the release of 0.17, resampling nifti images have some issues
         # when affine is passed as 1D array and if data is of non-native
         # endianess.
         # See issue https://github.com/nilearn/nilearn/issues/1445.
