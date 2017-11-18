@@ -85,9 +85,9 @@ print('Fsaverage5 sulcal depth map of left hemisphere is at: %s' %
 # --------------------------------
 
 # Load resting state time series from nilearn
-from nilearn import plotting
+from nilearn import surface
 
-timeseries = plotting.surf_plotting.load_surf_data(nki_dataset['func_left'][0])
+timeseries = surface.load_surf_data(nki_dataset['func_left'][0])
 
 # Extract seed region via label
 pcc_region = b'G_cingul-Post-dorsal'
@@ -115,6 +115,9 @@ stat_map[np.where(np.mean(timeseries, axis=1) == 0)] = 0
 
 ###############################################################################
 # Display ROI on surface
+
+from nilearn import plotting
+
 plotting.plot_surf_roi(fsaverage['pial_left'], roi_map=pcc_labels,
                        hemi='left', view='medial',
                        bg_map=fsaverage['sulc_left'], bg_on_data=True,
