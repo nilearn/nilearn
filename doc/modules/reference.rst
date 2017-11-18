@@ -368,4 +368,6 @@ uses.
    :toctree: generated/
    :template: function.rst
 
+   load_surf_data
+   load_surf_mesh
    vol_to_surf
