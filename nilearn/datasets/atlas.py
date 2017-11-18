@@ -1043,7 +1043,8 @@ def _get_talairach_all_levels(data_dir=None, verbose=1):
     try:
         temp_file = _fetch_files(
             temp_dir, [('talairach.nii', atlas_url, {})], verbose=verbose)[0]
-        atlas_img = check_niimg(temp_file)
+        atlas_img = nb.load(temp_file, mmap=False)
+        atlas_img = check_niimg(atlas_img)
     finally:
         shutil.rmtree(temp_dir)
     labels = atlas_img.header.extensions[0].get_content()
