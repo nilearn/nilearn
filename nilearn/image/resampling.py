@@ -299,7 +299,7 @@ def _resample_one_img(data, A, b, target_shape,
 
 
 def resample_img(img, target_affine=None, target_shape=None,
-                 interpolation='continuous', copy=True, order="F"):
+                 interpolation='continuous', copy=True, order="F", clip=False):
     """Resample a Niimg-like object
 
     Parameters
@@ -330,6 +330,11 @@ def resample_img(img, target_affine=None, target_shape=None,
     order: "F" or "C"
         Data ordering in output array. This function is slightly faster with
         Fortran ordering.
+
+    clip: bool, optional
+        If False (default) no clip is preformed.
+        If True all resampled image values above max(img) and under min(img) are
+        clipped to min(img) and max(img)
 
     Returns
     -------
@@ -542,11 +547,16 @@ def resample_img(img, target_affine=None, target_shape=None,
                           out=resampled_data[all_img + ind],
                           copy=not input_img_is_string)
 
+    if clip:
+        # force resampled data to have a range contained in the original data
+        # preventing ringing artefact
+        resampled_data.clip(data.min(), data.max(), out=resampled_data)
+
     return new_img_like(img, resampled_data, target_affine)
 
 
 def resample_to_img(source_img, target_img,
-                    interpolation='continuous', copy=True, order='F'):
+                    interpolation='continuous', copy=True, order='F', clip=False):
     """Resample a Niimg-like source image on a target Niimg-like image
     (no registration is performed: the image should already be aligned).
 
@@ -575,6 +585,11 @@ def resample_to_img(source_img, target_img,
         Data ordering in output array. This function is slightly faster with
         Fortran ordering.
 
+    clip: bool, optional
+        If False (default) no clip is preformed.
+        If True all resampled image values above max(img) and under min(img) are
+        clipped to min(img) and max(img)
+
     Returns
     -------
     resampled: nibabel.Nifti1Image
@@ -597,7 +612,7 @@ def resample_to_img(source_img, target_img,
     return resample_img(source_img,
                         target_affine=target.affine,
                         target_shape=target_shape,
-                        interpolation=interpolation, copy=copy, order=order)
+                        interpolation=interpolation, copy=copy, order=order, clip=clip)
 
 
 def reorder_img(img, resample=None):
