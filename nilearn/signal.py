@@ -262,15 +262,9 @@ def butterworth(signals, sampling_rate, low_pass=None, high_pass=None,
             signals[...] = output
     else:
         if copy:
-            if (LooseVersion(scipy.__version__) < LooseVersion('0.10.0')):
-                # filtfilt is 1D only in scipy 0.9.0
-                signals = signals.copy()
-                for timeseries in signals.T:
-                    timeseries[:] = signal.filtfilt(b, a, timeseries)
-            else:
-                # No way to save memory when a copy has been requested,
-                # because filtfilt does out-of-place processing
-                signals = signal.filtfilt(b, a, signals, axis=0)
+            # No way to save memory when a copy has been requested,
+            # because filtfilt does out-of-place processing
+            signals = signal.filtfilt(b, a, signals, axis=0)
         else:
             # Lesser memory consumption, slower.
             for timeseries in signals.T:
@@ -518,21 +512,10 @@ def clean(signals, sessions=None, detrend=True, standardize=True,
             confound_max[confound_max == 0] = 1
             confounds /= confound_max
 
-        if (LooseVersion(scipy.__version__) > LooseVersion('0.9.0')):
-            # Pivoting in qr decomposition was added in scipy 0.10
-            Q, R, _ = linalg.qr(confounds, mode='economic', pivoting=True)
-            Q = Q[:, np.abs(np.diag(R)) > np.finfo(np.float).eps * 100.]
-            signals -= Q.dot(Q.T).dot(signals)
-        else:
-            Q, R = linalg.qr(confounds, mode='economic')
-            non_null_diag = np.abs(np.diag(R)) > np.finfo(np.float).eps * 100.
-            if np.all(non_null_diag):
-                signals -= Q.dot(Q.T).dot(signals)
-            elif np.any(non_null_diag):
-                R = R[:, non_null_diag]
-                confounds = confounds[:, non_null_diag]
-                inv = scipy.linalg.inv(np.dot(R.T, R))
-                signals -= confounds.dot(inv).dot(confounds.T).dot(signals)
+        # Pivoting in qr decomposition was added in scipy 0.10
+        Q, R, _ = linalg.qr(confounds, mode='economic', pivoting=True)
+        Q = Q[:, np.abs(np.diag(R)) > np.finfo(np.float).eps * 100.]
+        signals -= Q.dot(Q.T).dot(signals)
 
     if low_pass is not None or high_pass is not None:
         if t_r is None:
