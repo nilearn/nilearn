@@ -18,20 +18,20 @@ matrix:
     # allow_failures seems to be keyed on the python version
     - python: 2.7
   include:
-    # Ubuntu 14.04 versions (with neurodebian)
+    # Oldest supported versions (with neurodebian)
     - env: DISTRIB="conda" PYTHON_VERSION="2.7"
-           NUMPY_VERSION="1.8.2" SCIPY_VERSION="0.14.2"
+           NUMPY_VERSION="1.8.2" SCIPY_VERSION="0.14"
            SCIKIT_LEARN_VERSION="0.15.1" MATPLOTLIB_VERSION="1.3.1"
            NIBABEL_VERSION="2.0.2" COVERAGE="true"
-    # Ubuntu 14.04 versions without matplotlib
+    # Oldest supported versions without matplotlib
     - env: DISTRIB="conda" PYTHON_VERSION="2.7"
-           NUMPY_VERSION="1.8.2" SCIPY_VERSION="0.14.2"
+           NUMPY_VERSION="1.8.2" SCIPY_VERSION="0.14"
            SCIKIT_LEARN_VERSION="0.15"
     # Neurodebian
     - env: DISTRIB="neurodebian" PYTHON_VERSION="2.7"
     # Python 3.4 with intermediary versions
     - env: DISTRIB="conda" PYTHON_VERSION="3.4"
-           NUMPY_VERSION="1.8" SCIPY_VERSION="0.14.2"
+           NUMPY_VERSION="1.8" SCIPY_VERSION="0.14"
            SCIKIT_LEARN_VERSION="0.15" MATPLOTLIB_VERSION="1.4"
     # Most recent versions
     - env: DISTRIB="conda" PYTHON_VERSION="3.5"
