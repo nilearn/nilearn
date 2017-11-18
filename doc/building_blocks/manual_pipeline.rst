@@ -62,7 +62,7 @@ to the subjects from the brain activation.
 
 These conditions are presented as string into a CSV file. The `pandas 
 <http://pandas.pydata.org/>`__ function
-:func:`pandas.read_csv` is very useful to load this kind of data.
+`read_csv` is very useful to load this kind of data.
 
 .. literalinclude:: ../../examples/plot_decoding_tutorial.py
     :start-after: # We use pandas to load them in an array.
