@@ -533,7 +533,8 @@ def test_resample_clip():
     source_img = Nifti1Image(data, source_affine)
 
     target_affine = np.eye(4)
-    no_clip_data = resample_img(source_img, target_affine).get_data()
+    no_clip_data = resample_img(source_img, target_affine,
+                                clip=False).get_data()
     clip_data = resample_img(source_img,
                              target_affine, clip=True).get_data()
 
