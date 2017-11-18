@@ -497,7 +497,7 @@ def test_fetch_atlas_surf_destrieux(data_dir=tst.tmpdir, verbose=0):
 
 
 def _get_small_fake_talairach():
-    labels = ['*', 'a', 'b']
+    labels = ['*', 'b', 'a']
     all_labels = itertools.product(*(labels,) * 5)
     labels_txt = '\n'.join(map('.'.join, all_labels))
     extensions = nibabel.nifti1.Nifti1Extensions([
@@ -525,6 +525,7 @@ def test_fetch_atlas_talairach(data_dir=tst.tmpdir):
     talairach = atlas.fetch_atlas_talairach('hemisphere', data_dir=tst.tmpdir)
     assert_array_equal(talairach.maps.get_data().ravel(),
                        level_values.T.ravel())
+    assert_array_equal(talairach.labels, ['Background', 'b', 'a'])
     talairach = atlas.fetch_atlas_talairach('ba', data_dir=tst.tmpdir)
     assert_array_equal(talairach.maps.get_data().ravel(),
                        level_values.ravel())

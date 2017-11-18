@@ -1012,7 +1012,7 @@ def _separate_talairach_levels(atlas_img, labels, verbose=1):
         level_img <<= 8 * pos
         new_img |= level_img
         level_labels = list(list(
-            zip(*sorted(level_labels.items(), key=lambda t: t[0])))[0])
+            zip(*sorted(level_labels.items(), key=lambda t: t[1])))[0])
         level_labels[0] = 'Background'
         levels.append((level, level_labels))
     new_img = new_img_like(atlas_img, data=new_img)
