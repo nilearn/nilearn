@@ -18,6 +18,14 @@ Changelog
       Range exceeding -1 meaning more increase in constrast should be
       cautiously set.
 
+    - New 'anterior' and 'posterior' view added to the plot_surf family views
+
+    - Using argument `anat_img` for placing background image in
+      :func:`nilearn.plotting.plot_prob_atlas` is deprecated. Use argument
+      `bg_img` instead.
+
+- The examples now use pandas for the behavioral information.
+
 Bug fix
 -------
 

@@ -23,16 +23,17 @@ print('First subject functional nifti image (4D) is located at: %s' %
 
 # load labels
 import numpy as np
-labels = np.recfromcsv(haxby_dataset.session_target[0], delimiter=" ")
+import pandas as pd
+labels = pd.read_csv(haxby_dataset.session_target[0], sep=" ")
 stimuli = labels['labels']
 # identify resting state labels in order to be able to remove them
-resting_state = stimuli == b'rest'
+task_mask = (stimuli != 'rest')
 
 # find names of remaining active labels
-categories = np.unique(stimuli[np.logical_not(resting_state)])
+categories = stimuli[task_mask].unique()
 
 # extract tags indicating to which acquisition run a tag belongs
-session_labels = labels["chunks"][np.logical_not(resting_state)]
+session_labels = labels['chunks'][task_mask]
 
 # Load the fMRI data
 from nilearn.input_data import NiftiMasker
@@ -42,7 +43,7 @@ mask_filename = haxby_dataset.mask_vt[0]
 masker = NiftiMasker(mask_img=mask_filename, standardize=True)
 func_filename = haxby_dataset.func[0]
 masked_timecourses = masker.fit_transform(
-    func_filename)[np.logical_not(resting_state)]
+    func_filename)[task_mask]
 
 
 #############################################################################
@@ -111,8 +112,7 @@ for classifier_name, classifier in sorted(classifiers.items()):
     print(70 * '_')
 
     for category in categories:
-        task_mask = np.logical_not(resting_state)
-        classification_target = (stimuli[task_mask] == category)
+        classification_target = stimuli[task_mask].isin([category])
         t0 = time.time()
         classifiers_scores[classifier_name][category] = cross_val_score(
             classifier,
@@ -160,12 +160,12 @@ from nilearn import image
 mean_epi_img = image.mean_img(func_filename)
 
 # Restrict the decoding to face vs house
-condition_mask = np.logical_or(stimuli == b'face', stimuli == b'house')
+condition_mask = stimuli.isin(['face', 'house'])
 masked_timecourses = masked_timecourses[
-    condition_mask[np.logical_not(resting_state)]]
-stimuli = stimuli[condition_mask]
+    condition_mask[task_mask]]
+stimuli = (stimuli[condition_mask] == 'face')
 # Transform the stimuli to binary values
-stimuli = (stimuli == b'face').astype(np.int)
+stimuli.astype(np.int)
 
 from nilearn.plotting import plot_stat_map, show
 
