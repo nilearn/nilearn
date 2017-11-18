@@ -1065,23 +1065,23 @@ def fetch_atlas_talairach(level_name, data_dir=None, verbose=1):
 
     Parameters
     ----------
-    level_name: {'hemisphere', 'lobe', 'gyrus', 'tissue', 'ba'}
+    level_name : {'hemisphere', 'lobe', 'gyrus', 'tissue', 'ba'}
         Which level of the atlas to use: the hemisphere, the lobe, the gyrus,
           the tissue type or the Brodmann area.
 
-    data_dir: str, optional (default=None)
+    data_dir : str, optional (default=None)
         Path of the data directory. Used to force data storage in a specified
         location.
 
-    verbose: int
+    verbose : int
         verbosity level (0 means no message).
 
     Returns
     -------
     sklearn.datasets.base.Bunch
         Dictionary-like object, contains:
-        - maps: 3D Nifti image, values are integers corresponding to indices in
-          the list of labels.
+
+        - maps: 3D Nifti image, values are indices in the list of labels.
         - labels: list of strings. Starts with 'Background'.
         - description: a short description of the atlas and some references.
 
