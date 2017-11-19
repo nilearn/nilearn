@@ -1007,12 +1007,14 @@ def _separate_talairach_levels(atlas_img, labels, verbose=1):
             level_labels.setdefault(region, len(level_labels))
             level_img[atlas_img.get_data() == region_nb] = level_labels[
                 region]
-        # shift this level to its own octet ('hemisphere' to the least
-        # significant, 'lobe' to the next and so on)
+        # shift this level to its own octet and add it to the new image
         level_img <<= 8 * pos
         new_img |= level_img
+        # order the labels so that image values are indices in the list of
+        # labels for each level
         level_labels = list(list(
             zip(*sorted(level_labels.items(), key=lambda t: t[1])))[0])
+        # rename '*' -> 'Background'
         level_labels[0] = 'Background'
         levels.append((level, level_labels))
     new_img = new_img_like(atlas_img, data=new_img)
