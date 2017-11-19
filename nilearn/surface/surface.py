@@ -7,7 +7,6 @@ import warnings
 from distutils.version import LooseVersion
 
 import numpy as np
-import scipy
 from scipy import sparse, interpolate
 import sklearn.preprocessing
 import sklearn.cluster
@@ -492,15 +491,6 @@ def vol_to_surf(img, surf_mesh,
     if interpolation not in sampling_schemes:
         raise ValueError('"interpolation" should be one of {}'.format(
             tuple(sampling_schemes.keys())))
-    # No interpolation on a regular grid in scipy before 0.14
-    # since computing triangulation is very slow, if scipy.__version__ < 0.14
-    # we fall back to nearest neighbour interpolation.
-    if (LooseVersion(scipy.__version__) < LooseVersion('0.14') and
-            interpolation == 'linear'):
-        warnings.warn(
-            'Linear interpolation is only available if scipy version is 0.14 '
-            'or newer. Falling back to nearest neighbour interpolation')
-        interpolation = 'nearest'
     img = load_img(img)
     if mask_img is not None:
         mask_img = _utils.check_niimg(mask_img)

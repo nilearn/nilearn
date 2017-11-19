@@ -13,7 +13,6 @@ from nose.tools import assert_true, assert_raises
 from nilearn._utils.testing import assert_raises_regex, assert_warns
 
 import numpy as np
-import scipy
 from scipy.spatial import Delaunay
 import sklearn
 
@@ -229,11 +228,6 @@ def test_load_surf_mesh_file_error():
 
 
 def _flat_mesh(x_s, y_s, z=0):
-    # before 0.14 the vertices of the triangles in the delaunay triangulation
-    # are not ordered correctly, hence there is no way to know the direction of
-    # the outer normal.
-    if LooseVersion(scipy.__version__) < LooseVersion('0.14'):
-        raise SkipTest()
     x, y = np.mgrid[:x_s, :y_s]
     x, y = x.ravel(), y.ravel()
     z = np.ones(len(x)) * z
@@ -354,11 +348,6 @@ def test_sampling_affine():
     texture = surface._nearest_voxel_sampling(
         [img], mesh, affine=affine, radius=1, kind='ball')
     assert_array_equal(texture[0], [1., 2., 1.])
-    # No interpolation on a regular grid in scipy before 0.14
-    # since computing triangulation is very slow, if scipy.__version__ < 0.14
-    # we fall back to nearest neighbour interpolation.
-    if LooseVersion(scipy.__version__) < LooseVersion('0.14'):
-        return
     texture = surface._interpolation_sampling(
         [img], mesh, affine=affine, radius=0, kind='ball')
     assert_array_almost_equal(texture[0], [1.1, 2., 1.])
@@ -369,12 +358,8 @@ def test_sampling():
     img = _z_const_img(5, 7, 13)
     mask = np.ones(img.shape, dtype=int)
     mask[0] = 0
-    projectors = [surface._nearest_voxel_sampling]
-    # No interpolation on a regular grid in scipy before 0.14
-    # since computing triangulation is very slow, if scipy.__version__ < 0.14
-    # we fall back to nearest neighbour interpolation.
-    if LooseVersion(scipy.__version__) >= LooseVersion('0.14'):
-        projectors.append(surface._interpolation_sampling)
+    projectors = [surface._nearest_voxel_sampling,
+                  surface._interpolation_sampling]
     for kind in ('line', 'ball'):
         for projector in projectors:
             projection = projector([img], mesh, np.eye(4),
