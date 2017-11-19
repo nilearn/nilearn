@@ -17,6 +17,8 @@ from .._utils import check_niimg
 from .._utils.compat import _basestring
 from ..image import new_img_like, load_img
 
+_TALAIRACH_LEVELS = ['hemisphere', 'lobe', 'gyrus', 'tissue', 'ba']
+
 
 def fetch_atlas_craddock_2012(data_dir=None, url=None, resume=True, verbose=1):
     """Download and return file names for the Craddock 2012 parcellation
@@ -968,10 +970,6 @@ def fetch_atlas_surf_destrieux(data_dir=None, url=None,
                  map_right=annot_right[0], description=fdescr)
 
 
-def _talairach_levels():
-    return ['hemisphere', 'lobe', 'gyrus', 'tissue', 'ba']
-
-
 def _separate_talairach_levels(atlas_img, labels, verbose=1):
     """Separate the multiple annotation levels in talairach raw atlas.
 
@@ -995,7 +993,7 @@ def _separate_talairach_levels(atlas_img, labels, verbose=1):
 
     """
     labels = np.asarray(labels)
-    talairach_levels = _talairach_levels()
+    talairach_levels = _TALAIRACH_LEVELS
     if verbose:
         print('Separating talairach atlas levels: {}'.format(talairach_levels))
     levels = []
@@ -1099,7 +1097,7 @@ def fetch_atlas_talairach(level_name, data_dir=None, verbose=1):
     report on the development and evaluation of a forward-transform method. Hum
     Brain Mapp 5, 238-242, 1997.`
     """
-    levels = _talairach_levels()
+    levels = _TALAIRACH_LEVELS
     if level_name not in levels:
         raise ValueError('"level_name" should be one of {}'.format(levels))
     position = levels.index(level_name)
