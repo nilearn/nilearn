@@ -414,6 +414,10 @@ def vol_to_surf(img, surf_mesh,
         - 'nearest':
             Use the intensity of the nearest voxel.
 
+        For one image, the speed difference is small, 'linear' takes about x1.5
+        more time. For many images, 'nearest' scales much better, up to x20
+        faster.
+
     kind : {'line', 'ball'}
         The strategy used to sample image intensities around each vertex.
 
@@ -468,15 +472,15 @@ def vol_to_surf(img, surf_mesh,
     sample positions are discarded (which can happen, for example, if the
     vertex itself is outside of the support of the image), the projection at
     this vertex will be ``numpy.nan``.
+
     The 3d image then needs to be interpolated at each of the remaining points.
     Two options are available: 'nearest' selects the value of the nearest
     voxel, and 'linear' performs trilinear interpolation of neighbouring
     voxels. 'linear' may give better results - for example, the projected
     values are more stable when resampling the 3d image or applying affine
-    transformations to it. 'nearest' is slightly faster for one image, and much
-    faster for many images (can be an order of magnitude faster for 100 images,
-    i.e. a 4d niimg with last dimension=100). Note that linear interpolation is
-    only available if your scipy version is 0.14 or more recent.
+    transformations to it. For one image, the speed difference is small,
+    'linear' takes about x1.5 more time. For many images, 'nearest' scales much
+    better, up to x20 faster.
 
     Once the 3d image has been interpolated at each sample point, the
     interpolated values are averaged to produce the value associated to this
