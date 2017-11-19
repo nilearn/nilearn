@@ -704,14 +704,14 @@ def plot_prob_atlas(maps_img, bg_img=MNI152TEMPLATE, view_type='auto',
             If nothing is specified, the MNI152 template will be used.
             To turn off background image, just pass "bg_img=False".
 
-            .. versionadded:: 0.3.2
+            .. versionadded:: 0.4.0
 
         anat_img : Niimg-like object
             See `bg_img` for complete description.
             Note : anat_img is deprecated and will be removed in 0.5.
             Use `bg_img` instead.
 
-            .. deprecated:: 0.3.2
+            .. deprecated:: 0.4.0
 
         view_type : {'auto', 'contours', 'filled_contours', 'continuous'}, optional
             By default view_type == 'auto', means maps will be displayed

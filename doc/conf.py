@@ -267,7 +267,7 @@ latex_show_urls = 'footnote'
 
 trim_doctests_flags = True
 
-_python_doc_base = 'http://docs.python.org/2.7'
+_python_doc_base = 'http://docs.python.org/3.6'
 
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {
@@ -275,7 +275,7 @@ intersphinx_mapping = {
     'http://docs.scipy.org/doc/numpy': None,
     'http://docs.scipy.org/doc/scipy/reference': None,
     'http://matplotlib.org/': None,
-    'http://scikit-learn.org/0.17': None,
+    'http://scikit-learn.org/0.18': None,
     'http://nipy.org/nibabel': None,
     'http://pandas.pydata.org': None,
     #'http://scikit-image.org/docs/0.8.0/': None,

@@ -1064,7 +1064,7 @@ def _get_talairach_all_levels(data_dir=None, verbose=1):
 def fetch_atlas_talairach(level_name, data_dir=None, verbose=1):
     """Download the Talairach atlas.
 
-    .. versionadded:: 0.3.2
+    .. versionadded:: 0.4.0
 
     Parameters
     ----------
