@@ -485,6 +485,9 @@ def vol_to_surf(img, surf_mesh,
     interpolated values are averaged to produce the value associated to this
     particular mesh vertex.
 
+    WARNING: This function is experimental and details such as the
+    interpolation method are subject to change.
+
     """
     sampling_schemes = {'linear': _interpolation_sampling,
                         'nearest': _nearest_voxel_sampling}
