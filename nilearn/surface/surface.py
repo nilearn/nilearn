@@ -382,7 +382,7 @@ def _interpolation_sampling(images, mesh, affine, kind='ball', radius=3,
 
 
 def vol_to_surf(img, surf_mesh,
-                radius=3., kind='line', interpolation='nearest',
+                radius=3., kind='line', interpolation='linear',
                 n_samples=None, mask_img=None):
     """Extract surface data from a Nifti image.
 
@@ -471,11 +471,12 @@ def vol_to_surf(img, surf_mesh,
     The 3d image then needs to be interpolated at each of the remaining points.
     Two options are available: 'nearest' selects the value of the nearest
     voxel, and 'linear' performs trilinear interpolation of neighbouring
-    voxels. 'nearest' is slightly faster, but 'linear' may give better results
-    - for example, the projected values are more stable when resampling the 3d
-    image or applying affine transformations to it. Note that linear
-    interpolation is only available if your scipy version is 0.14 or more
-    recent.
+    voxels. 'linear' may give better results - for example, the projected
+    values are more stable when resampling the 3d image or applying affine
+    transformations to it. 'nearest' is slightly faster for one image, and much
+    faster for many images (an order of magnitude faster for 100 images, i.e. a
+    4d niimg with last dimension=100). Note that linear interpolation is only
+    available if your scipy version is 0.14 or more recent.
 
     Once the 3d image has been interpolated at each sample point, the
     interpolated values are averaged to produce the value associated to this
