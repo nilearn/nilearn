@@ -6,6 +6,8 @@ Test the datasets module
 
 import os
 import shutil
+import itertools
+
 import numpy as np
 
 import nibabel
@@ -15,6 +17,7 @@ from distutils.version import LooseVersion
 from nose import with_setup, SkipTest
 from nose.tools import (assert_true, assert_equal, assert_raises,
                         assert_not_equal)
+from numpy.testing import assert_array_equal
 
 from nilearn._utils.testing import assert_raises_regex
 from . import test_utils as tst
@@ -491,3 +494,39 @@ def test_fetch_atlas_surf_destrieux(data_dir=tst.tmpdir, verbose=0):
     assert_equal(bunch.map_left.shape, (4, ))
     assert_equal(bunch.map_right.shape, (4, ))
     assert_not_equal(bunch.description, '')
+
+
+def _get_small_fake_talairach():
+    labels = ['*', 'b', 'a']
+    all_labels = itertools.product(*(labels,) * 5)
+    labels_txt = '\n'.join(map('.'.join, all_labels))
+    extensions = nibabel.nifti1.Nifti1Extensions([
+        nibabel.nifti1.Nifti1Extension(
+            'afni', labels_txt.encode('utf-8'))
+    ])
+    img = nibabel.Nifti1Image(
+        np.arange(243).reshape((3, 9, 9)),
+        np.eye(4), nibabel.Nifti1Header(extensions=extensions))
+    return img, all_labels
+
+
+def _mock_talairach_fetch_files(data_dir, *args, **kwargs):
+    img, all_labels = _get_small_fake_talairach()
+    file_name = os.path.join(data_dir, 'talairach.nii')
+    img.to_filename(file_name)
+    return [file_name]
+
+
+@with_setup(setup_mock, teardown_mock)
+@with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
+def test_fetch_atlas_talairach(data_dir=tst.tmpdir):
+    atlas._fetch_files = _mock_talairach_fetch_files
+    level_values = np.ones((81, 3)) * [0, 1, 2]
+    talairach = atlas.fetch_atlas_talairach('hemisphere', data_dir=tst.tmpdir)
+    assert_array_equal(talairach.maps.get_data().ravel(),
+                       level_values.T.ravel())
+    assert_array_equal(talairach.labels, ['Background', 'b', 'a'])
+    talairach = atlas.fetch_atlas_talairach('ba', data_dir=tst.tmpdir)
+    assert_array_equal(talairach.maps.get_data().ravel(),
+                       level_values.ravel())
+    assert_raises(ValueError, atlas.fetch_atlas_talairach, 'bad_level')

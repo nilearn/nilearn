@@ -52,6 +52,9 @@ Enhancements
     - :func:`nilearn.image.resample_img` now takes a linear resampling
       option (implemented by Joe Necus)
 
+    - :func:`nilearn.datasets.fetch_atlas_talairach` to fetch the Talairach
+      atlas (http://talairach.org)
+
     - Enhancing new surface plotting functions, added new parameters
       "axes" and "figure" to accept user-specified instances in
       :func:`nilearn.plotting.plot_surf` and

@@ -4,6 +4,9 @@ Downloading NeuroImaging datasets: atlas datasets
 import os
 import warnings
 import xml.etree.ElementTree
+from tempfile import mkdtemp
+import json
+import shutil
 
 import nibabel as nb
 import numpy as np
@@ -13,6 +16,8 @@ from .utils import _get_dataset_dir, _fetch_files, _get_dataset_descr
 from .._utils import check_niimg
 from .._utils.compat import _basestring
 from ..image import new_img_like
+
+_TALAIRACH_LEVELS = ['hemisphere', 'lobe', 'gyrus', 'tissue', 'ba']
 
 
 def fetch_atlas_craddock_2012(data_dir=None, url=None, resume=True, verbose=1):
@@ -963,3 +968,150 @@ def fetch_atlas_surf_destrieux(data_dir=None, url=None,
 
     return Bunch(labels=annot_left[2],  map_left=annot_left[0],
                  map_right=annot_right[0], description=fdescr)
+
+
+def _separate_talairach_levels(atlas_img, labels, verbose=1):
+    """Separate the multiple annotation levels in talairach raw atlas.
+
+    The Talairach atlas has five levels of annotation: hemisphere, lobe, gyrus,
+    tissue, brodmann area. They are mixed up in the original atlas: each label
+    in the atlas corresponds to a 5-tuple containing, for each of these levels,
+    a value or the string '*' (meaning undefined, background).
+
+    This function disentangles the levels, and stores each on an octet in an
+    int64 image (the level with most labels, ba, has 72 labels).
+    This way, any subset of these levels can be accessed by applying a bitwise
+    mask.
+
+    In the created image, the least significant octet contains the hemisphere,
+    the next one the lobe, then gyrus, tissue, and ba. Background is 0.
+    The labels contain
+    [('level name', ['labels', 'for', 'this', 'level' ...]), ...],
+    where the levels are in the order mentionned above.
+
+    The label '*' is replaced by 'Background' for clarity.
+
+    """
+    labels = np.asarray(labels)
+    if verbose:
+        print(
+            'Separating talairach atlas levels: {}'.format(_TALAIRACH_LEVELS))
+    levels = []
+    new_img = np.zeros(atlas_img.shape, dtype=np.int64)
+    for pos, level in enumerate(_TALAIRACH_LEVELS):
+        if verbose:
+            print(level)
+        level_img = np.zeros(atlas_img.shape, dtype=np.int64)
+        level_labels = {'*': 0}
+        for region_nb, region in enumerate(labels[:, pos]):
+            level_labels.setdefault(region, len(level_labels))
+            level_img[atlas_img.get_data() == region_nb] = level_labels[
+                region]
+        # shift this level to its own octet and add it to the new image
+        level_img <<= 8 * pos
+        new_img |= level_img
+        # order the labels so that image values are indices in the list of
+        # labels for each level
+        level_labels = list(list(
+            zip(*sorted(level_labels.items(), key=lambda t: t[1])))[0])
+        # rename '*' -> 'Background'
+        level_labels[0] = 'Background'
+        levels.append((level, level_labels))
+    new_img = new_img_like(atlas_img, data=new_img)
+    return new_img, levels
+
+
+def _get_talairach_all_levels(data_dir=None, verbose=1):
+    """Get the path to Talairach atlas and labels
+
+    The atlas is downloaded and the files are created if necessary.
+
+    The image contains all five levels of the atlas, each encoded on 8 bits
+    (least significant octet contains the hemisphere, the next one the lobe,
+    then gyrus, tissue, and ba).
+
+    The labels json file contains
+    [['level name', ['labels', 'for', 'this', 'level' ...]], ...],
+    where the levels are in the order mentionned above.
+
+    """
+    data_dir = _get_dataset_dir(
+        'talairach_atlas', data_dir=data_dir, verbose=verbose)
+    img_file = os.path.join(data_dir, 'talairach.nii')
+    labels_file = os.path.join(data_dir, 'talairach_labels.json')
+    if os.path.isfile(img_file) and os.path.isfile(labels_file):
+        return img_file, labels_file
+    atlas_url = 'http://www.talairach.org/talairach.nii'
+    temp_dir = mkdtemp()
+    try:
+        temp_file = _fetch_files(
+            temp_dir, [('talairach.nii', atlas_url, {})], verbose=verbose)[0]
+        atlas_img = nb.load(temp_file, mmap=False)
+        atlas_img = check_niimg(atlas_img)
+    finally:
+        shutil.rmtree(temp_dir)
+    labels = atlas_img.header.extensions[0].get_content()
+    labels = labels.strip().decode('utf-8').split('\n')
+    labels = [l.split('.') for l in labels]
+    new_img, level_labels = _separate_talairach_levels(
+        atlas_img, labels, verbose=verbose)
+    new_img.to_filename(img_file)
+    with open(labels_file, 'w') as fp:
+        json.dump(level_labels, fp)
+    return img_file, labels_file
+
+
+def fetch_atlas_talairach(level_name, data_dir=None, verbose=1):
+    """Download the Talairach atlas.
+
+    .. versionadded:: 0.3.2
+
+    Parameters
+    ----------
+    level_name : {'hemisphere', 'lobe', 'gyrus', 'tissue', 'ba'}
+        Which level of the atlas to use: the hemisphere, the lobe, the gyrus,
+          the tissue type or the Brodmann area.
+
+    data_dir : str, optional (default=None)
+        Path of the data directory. Used to force data storage in a specified
+        location.
+
+    verbose : int
+        verbosity level (0 means no message).
+
+    Returns
+    -------
+    sklearn.datasets.base.Bunch
+        Dictionary-like object, contains:
+
+        - maps: 3D Nifti image, values are indices in the list of labels.
+        - labels: list of strings. Starts with 'Background'.
+        - description: a short description of the atlas and some references.
+
+    References
+    ----------
+    http://talairach.org/about.html#Labels
+
+    `Lancaster JL, Woldorff MG, Parsons LM, Liotti M, Freitas CS, Rainey L,
+    Kochunov PV, Nickerson D, Mikiten SA, Fox PT, "Automated Talairach Atlas
+    labels for functional brain mapping". Human Brain Mapping 10:120-131,
+    2000.`
+
+    `Lancaster JL, Rainey LH, Summerlin JL, Freitas CS, Fox PT, Evans AC, Toga
+    AW, Mazziotta JC. Automated labeling of the human brain: A preliminary
+    report on the development and evaluation of a forward-transform method. Hum
+    Brain Mapp 5, 238-242, 1997.`
+    """
+    if level_name not in _TALAIRACH_LEVELS:
+        raise ValueError('"level_name" should be one of {}'.format(
+            _TALAIRACH_LEVELS))
+    position = _TALAIRACH_LEVELS.index(level_name)
+    atlas_file, labels_file = _get_talairach_all_levels(data_dir, verbose)
+    atlas_img = check_niimg(atlas_file)
+    with open(labels_file) as fp:
+        labels = json.load(fp)[position][1]
+    level_data = (atlas_img.get_data() >> 8 * position) & 255
+    atlas_img = new_img_like(atlas_img, data=level_data)
+    description = _get_dataset_descr(
+        'talairach_atlas').decode('utf-8').format(level_name)
+    return Bunch(maps=atlas_img, labels=labels, description=description)
