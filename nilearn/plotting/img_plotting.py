@@ -683,14 +683,14 @@ def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None,
     return display
 
 
-def plot_prob_atlas(maps_img, anat_img=MNI152TEMPLATE, view_type='auto',
+def plot_prob_atlas(maps_img, bg_img=MNI152TEMPLATE, view_type='auto',
                     threshold='auto', linewidths=2.5, cut_coords=None,
                     output_file=None, display_mode='ortho',
                     figure=None, axes=None, title=None, annotate=True,
                     draw_cross=True, black_bg='auto', dim='auto',
                     colorbar=False,
                     cmap=plt.cm.gist_rainbow, vmin=None, vmax=None,
-                    alpha=0.5, **kwargs):
+                    alpha=0.5, anat_img=None, **kwargs):
     """ Plot the probabilistic atlases onto the anatomical image
         by default MNI template
 
@@ -698,11 +698,21 @@ def plot_prob_atlas(maps_img, anat_img=MNI152TEMPLATE, view_type='auto',
         ----------
         maps_img : Niimg-like object or the filename
             4D image of the probabilistic atlas maps
-        anat_img : Niimg-like object
+        bg_img : Niimg-like object
             See http://nilearn.github.io/manipulating_images/input_output.html
             The anatomical image to be used as a background.
             If nothing is specified, the MNI152 template will be used.
-            To turn off background image, just pass "anat_img=False".
+            To turn off background image, just pass "bg_img=False".
+
+            .. versionadded:: 0.3.2
+
+        anat_img : Niimg-like object
+            See `bg_img` for complete description.
+            Note : anat_img is deprecated and will be removed in 0.5.
+            Use `bg_img` instead.
+
+            .. deprecated:: 0.3.2
+
         view_type : {'auto', 'contours', 'filled_contours', 'continuous'}, optional
             By default view_type == 'auto', means maps will be displayed
             automatically using any one of the three view types. The automatic
@@ -793,7 +803,13 @@ def plot_prob_atlas(maps_img, anat_img=MNI152TEMPLATE, view_type='auto',
         nilearn.plotting.plot_roi : To simply plot max-prob atlases (3D images)
 
     """
-    display = plot_anat(anat_img, cut_coords=cut_coords,
+    if anat_img is not None:
+        bg_img = anat_img
+        warn_str = ("anat_img is deprecated and will be removed in 0.5. "
+                    "Use `bg_img` instead.")
+        warnings.warn(warn_str, np.VisibleDeprecationWarning, stacklevel=2)
+
+    display = plot_anat(bg_img, cut_coords=cut_coords,
                         display_mode=display_mode,
                         figure=figure, axes=axes, title=title,
                         annotate=annotate, draw_cross=draw_cross,

@@ -64,4 +64,17 @@ plotting.plot_surf_roi(fsaverage['infl_left'], roi_map=parcellation,
                        bg_map=fsaverage['sulc_left'], bg_on_data=True,
                        darkness=.5, cmap='gist_ncar')
 
+###############################################################################
+# Display Destrieux parcellation with different views: posterior
+plotting.plot_surf_roi(fsaverage['infl_left'], roi_map=parcellation,
+                       hemi='left', view='posterior',
+                       bg_map=fsaverage['sulc_left'], bg_on_data=True,
+                       darkness=.5, cmap='gist_ncar')
+
+###############################################################################
+# Display Destrieux parcellation with different views: ventral
+plotting.plot_surf_roi(fsaverage['infl_left'], roi_map=parcellation,
+                       hemi='left', view='ventral',
+                       bg_map=fsaverage['sulc_left'], bg_on_data=True,
+                       darkness=.5, cmap='gist_ncar')
 plotting.show()

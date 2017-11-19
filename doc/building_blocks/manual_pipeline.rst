@@ -60,11 +60,12 @@ presenting different category of pictures to the subject (face, cat, ...)
 and the goal of this experiment is to predict which category is presented
 to the subjects from the brain activation.
 
-These conditions are presented as string into a CSV file. The numpy function
-`recfromcsv` is very useful to load this kind of data.
+These conditions are presented as string into a CSV file. The `pandas 
+<http://pandas.pydata.org/>`__ function
+`read_csv` is very useful to load this kind of data.
 
 .. literalinclude:: ../../examples/plot_decoding_tutorial.py
-    :start-after: # We use numpy to load them in an array.
+    :start-after: # We use pandas to load them in an array.
     :end-before: ###########################################################################
 
 .. seealso::

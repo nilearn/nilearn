@@ -63,12 +63,12 @@ regions_value_img, index = connected_regions(threshold_value_img,
 # Visualizing region extraction results
 title = ("ROIs using percentile thresholding. "
          "\n Each ROI in same color is an extracted region")
-plotting.plot_prob_atlas(regions_percentile_img, anat_img=tmap_filename,
+plotting.plot_prob_atlas(regions_percentile_img, bg_img=tmap_filename,
                          view_type='contours', display_mode='z',
                          cut_coords=5, title=title)
 title = ("ROIs using image intensity thresholding. "
          "\n Each ROI in same color is an extracted region")
-plotting.plot_prob_atlas(regions_value_img, anat_img=tmap_filename,
+plotting.plot_prob_atlas(regions_value_img, bg_img=tmap_filename,
                          view_type='contours', display_mode='z',
                          cut_coords=5, title=title)
 plotting.show()

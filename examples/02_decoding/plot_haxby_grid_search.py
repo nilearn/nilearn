@@ -38,6 +38,7 @@ a separator.
 # -----------------------
 from nilearn import datasets
 import numpy as np
+import pandas as pd
 # by default 2nd subject data will be fetched on which we run our analysis
 haxby_dataset = datasets.fetch_haxby()
 
@@ -46,12 +47,12 @@ print('Mask nifti image (3D) is located at: %s' % haxby_dataset.mask)
 print('Functional nifti image (4D) are located at: %s' % haxby_dataset.func[0])
 
 # Load the behavioral data
-labels = np.recfromcsv(haxby_dataset.session_target[0], delimiter=" ")
+labels = pd.read_csv(haxby_dataset.session_target[0], sep=" ")
 y = labels['labels']
 session = labels['chunks']
 
 # Keep only data corresponding to shoes or bottles
-condition_mask = np.logical_or(y == b'shoe', y == b'bottle')
+condition_mask = y.isin(['shoe', 'bottle'])
 y = y[condition_mask]
 
 ###########################################################################

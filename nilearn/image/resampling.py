@@ -299,7 +299,8 @@ def _resample_one_img(data, A, b, target_shape,
 
 
 def resample_img(img, target_affine=None, target_shape=None,
-                 interpolation='continuous', copy=True, order="F"):
+                 interpolation='continuous', copy=True, order="F",
+                 clip=True):
     """Resample a Niimg-like object
 
     Parameters
@@ -330,6 +331,13 @@ def resample_img(img, target_affine=None, target_shape=None,
     order: "F" or "C"
         Data ordering in output array. This function is slightly faster with
         Fortran ordering.
+
+    clip: bool, optional
+        If True (default) all resampled image values above max(img) and
+        under min(img) are clipped to min(img) and max(img). Note that
+        0 is added as an image value for clipping, and it is the padding
+        value when extrapolating out of field of view.
+        If False no clip is preformed.
 
     Returns
     -------
@@ -542,11 +550,20 @@ def resample_img(img, target_affine=None, target_shape=None,
                           out=resampled_data[all_img + ind],
                           copy=not input_img_is_string)
 
+    if clip:
+        # force resampled data to have a range contained in the original data
+        # preventing ringing artefact
+        # We need to add zero as a value considered for clipping, as it
+        # appears in padding images.
+        vmin = min(data.min(), 0)
+        vmax = max(data.max(), 0)
+        resampled_data.clip(vmin, vmax, out=resampled_data)
+
     return new_img_like(img, resampled_data, target_affine)
 
 
 def resample_to_img(source_img, target_img,
-                    interpolation='continuous', copy=True, order='F'):
+                    interpolation='continuous', copy=True, order='F', clip=False):
     """Resample a Niimg-like source image on a target Niimg-like image
     (no registration is performed: the image should already be aligned).
 
@@ -575,6 +592,11 @@ def resample_to_img(source_img, target_img,
         Data ordering in output array. This function is slightly faster with
         Fortran ordering.
 
+    clip: bool, optional
+        If False (default) no clip is preformed.
+        If True all resampled image values above max(img) and under min(img) are
+        clipped to min(img) and max(img)
+
     Returns
     -------
     resampled: nibabel.Nifti1Image
@@ -597,7 +619,7 @@ def resample_to_img(source_img, target_img,
     return resample_img(source_img,
                         target_affine=target.affine,
                         target_shape=target_shape,
-                        interpolation=interpolation, copy=copy, order=order)
+                        interpolation=interpolation, copy=copy, order=order, clip=clip)
 
 
 def reorder_img(img, resample=None):
