@@ -382,7 +382,7 @@ def _interpolation_sampling(images, mesh, affine, kind='ball', radius=3,
 
 
 def vol_to_surf(img, surf_mesh,
-                radius=3., kind='line', interpolation='linear',
+                radius=3., interpolation='linear', kind='line',
                 n_samples=None, mask_img=None):
     """Extract surface data from a Nifti image.
 
@@ -406,6 +406,14 @@ def vol_to_surf(img, surf_mesh,
         The size (in mm) of the neighbourhood from which samples are drawn
         around each node.
 
+    interpolation : {'linear', 'nearest'}
+        How the image intensity is measured at a sample point.
+
+        - 'linear' (the default):
+            Use a trilinear interpolation of neighboring voxels.
+        - 'nearest':
+            Use the intensity of the nearest voxel.
+
     kind : {'line', 'ball'}
         The strategy used to sample image intensities around each vertex.
 
@@ -416,14 +424,6 @@ def vol_to_surf(img, surf_mesh,
         - 'ball':
             samples are regularly spaced inside a ball centered at the mesh
             vertex.
-
-    interpolation : {'linear', 'nearest'}
-        How the image intensity is measured at a sample point.
-
-        - 'linear' (the default):
-            Use a trilinear interpolation of neighboring voxels.
-        - 'nearest':
-            Use the intensity of the nearest voxel.
 
     n_samples : int or None, optional (default=None)
         How many samples are drawn around each vertex and averaged. If
