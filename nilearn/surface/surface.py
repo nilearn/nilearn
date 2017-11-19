@@ -207,8 +207,8 @@ def _sample_locations(mesh, affine, radius, kind='line', n_points=None):
     return sample_locations
 
 
-def _kept_indices(sample_locations, img_shape, mask=None):
-    """Get the indices of sample points which should be kept.
+def _masked_indices(sample_locations, img_shape, mask=None):
+    """Get the indices of sample points which should be ignored.
 
     Parameters:
     -----------
@@ -224,8 +224,8 @@ def _kept_indices(sample_locations, img_shape, mask=None):
     Returns
     -------
     array of shape (n_sample_locations,)
-        True if this particular location should be kept (inside of image and
-        not masked).
+        True if this particular location should be ignored (outside of image or
+        masked).
 
     """
     kept = (sample_locations >= 0).all(axis=1)
@@ -235,7 +235,7 @@ def _kept_indices(sample_locations, img_shape, mask=None):
         indices = np.asarray(np.round(sample_locations[kept]), dtype=int)
         kept[kept] = mask[
             indices[:, 0], indices[:, 1], indices[:, 2]] != 0
-    return kept
+    return ~kept
 
 
 def _projection_matrix(mesh, affine, img_shape,
@@ -305,14 +305,14 @@ def _projection_matrix(mesh, affine, img_shape,
         mesh, affine, kind=kind, radius=radius, n_points=n_points)
     sample_locations = np.asarray(np.round(sample_locations), dtype=int)
     n_vertices, n_points, img_dim = sample_locations.shape
-    kept = _kept_indices(np.vstack(sample_locations), img_shape, mask=mask)
+    masked = _masked_indices(np.vstack(sample_locations), img_shape, mask=mask)
     sample_locations = np.rollaxis(sample_locations, -1)
     sample_indices = np.ravel_multi_index(
         sample_locations, img_shape, mode='clip').ravel()
     row_indices, _ = np.mgrid[:n_vertices, :n_points]
     row_indices = row_indices.ravel()
-    row_indices = row_indices[kept]
-    sample_indices = sample_indices[kept]
+    row_indices = row_indices[~masked]
+    sample_indices = sample_indices[~masked]
     weights = np.ones(len(row_indices))
     proj = sparse.csr_matrix(
         (weights, (row_indices, sample_indices.ravel())),
@@ -359,7 +359,7 @@ def _interpolation_sampling(images, mesh, affine, kind='ball', radius=3,
     n_vertices, n_points, img_dim = sample_locations.shape
     grid = [np.arange(size) for size in images[0].shape]
     interp_locations = np.vstack(sample_locations)
-    kept = _kept_indices(interp_locations, images[0].shape, mask=mask)
+    masked = _masked_indices(interp_locations, images[0].shape, mask=mask)
     # loop over images rather than building a big array to use less memory
     all_samples = []
     for img in images:
@@ -370,7 +370,7 @@ def _interpolation_sampling(images, mesh, affine, kind='ball', radius=3,
         # if all samples around a mesh vertex are outside the image,
         # there is no reasonable value to assign to this vertex.
         # in this case we return NaN for this vertex.
-        samples[~kept] = np.nan
+        samples[masked] = np.nan
         all_samples.append(samples)
     all_samples = np.asarray(all_samples)
     all_samples = all_samples.reshape((len(images), n_vertices, n_points))

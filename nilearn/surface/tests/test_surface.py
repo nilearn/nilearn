@@ -297,12 +297,11 @@ def test_sample_locations():
                   mesh, affine, 1., kind='bad_kind')
 
 
-def test_kept_indices():
+def test_masked_indices():
     mask = np.ones((4, 3, 8))
     mask[:, :, ::2] = 0
     locations = np.mgrid[:5, :3, :8].ravel().reshape((3, -1))
-    kept = surface._kept_indices(locations.T, mask.shape, mask)
-    masked = ~kept
+    masked = surface._masked_indices(locations.T, mask.shape, mask)
     # These elements are masked by the mask
     assert_true((masked[::2] == 1).all())
     # The last element of locations is one row beyond first image dimension
