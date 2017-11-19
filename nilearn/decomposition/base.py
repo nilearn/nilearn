@@ -72,7 +72,7 @@ def fast_svd(X, n_components, random_state=None):
         S = S[:n_components]
         V = V[:n_components].copy()
     else:
-        if LooseVersion(sklearn.__version__) >= LooseVersion('0.17'):
+        if LooseVersion(sklearn.__version__) >= LooseVersion('0.18'):
             n_iter = 'auto'
         else:
             n_iter = 3
