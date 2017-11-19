@@ -346,7 +346,6 @@ NOTE: These functions works for only with matplotlib higher than 1.3.1.
      :target: ../auto_examples/01_plotting/plot_surf_stat_map.html
      :scale: 50
 
-
 =====================   ===================================================================
 =====================   ===================================================================
 |plot_surf_roi|          :func:`plot_surf_roi`
@@ -362,5 +361,5 @@ NOTE: These functions works for only with matplotlib higher than 1.3.1.
                          |hack|
                          **Example:**
                          :ref:`sphx_glr_auto_examples_01_plotting_plot_surf_stat_map.py`
-=====================   ===================================================================
 
+=====================   ===================================================================

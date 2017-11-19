@@ -284,6 +284,7 @@ uses.
 
 .. _plotting_ref:
 
+
 :mod:`nilearn.plotting`: Plotting brain data
 ================================================
 
@@ -349,3 +350,25 @@ uses.
 
    clean
    high_variance_confounds
+
+
+:mod:`nilearn.surface`: Manipulating surface data
+===================================================
+
+.. automodule:: nilearn.surface
+   :no-members:
+   :no-inherited-members:
+
+.. No relevant user manual section yet.
+
+**Functions**:
+
+.. currentmodule:: nilearn.surface
+
+.. autosummary::
+   :toctree: generated/
+   :template: function.rst
+
+   load_surf_data
+   load_surf_mesh
+   vol_to_surf

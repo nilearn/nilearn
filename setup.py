@@ -86,10 +86,11 @@ if __name__ == "__main__":
           ],
           packages=find_packages(),
           package_data={'nilearn.datasets.data': ['*.nii.gz', '*.csv'],
+                        'nilearn.surface.data': ['*.csv'],
                         'nilearn.plotting.glass_brain_files': ['*.json'],
                         'nilearn.tests.data': ['*'],
                         'nilearn.image.tests.data': ['*.mgz'],
-                        'nilearn.plotting.tests.data': ['*.annot', '*.label'],
+                        'nilearn.surface.tests.data': ['*.annot', '*.label'],
                         'nilearn.datasets.tests.data': ['*.*'],
                         'nilearn.datasets.description': ['*.rst']},
           install_requires=install_requires,)

@@ -2,142 +2,15 @@
 Functions for surface visualization.
 Only matplotlib is required.
 """
-
-# Import libraries
-import nibabel
 import numpy as np
+
 import matplotlib.pyplot as plt
 
 from mpl_toolkits.mplot3d import Axes3D
-from nibabel import gifti
 
+from ..surface import load_surf_data, load_surf_mesh
 from .._utils.compat import _basestring
 from .img_plotting import _get_colorbar_and_data_ranges
-
-
-# function to figure out datatype and load data
-def load_surf_data(surf_data):
-    """Loading data to be represented on a surface mesh.
-
-    Parameters
-    ----------
-    surf_data : str or numpy.ndarray
-        Either a file containing surface data (valid format are .gii,
-        .mgz, .nii, .nii.gz, or Freesurfer specific files such as
-        .thickness, .curv, .sulc, .annot, .label) or
-        a Numpy array containing surface data.
-    Returns
-    -------
-    data : numpy.ndarray
-        An array containing surface data
-    """
-    # if the input is a filename, load it
-    if isinstance(surf_data, _basestring):
-        if (surf_data.endswith('nii') or surf_data.endswith('nii.gz') or
-                surf_data.endswith('mgz')):
-            data = np.squeeze(nibabel.load(surf_data).get_data())
-        elif (surf_data.endswith('curv') or surf_data.endswith('sulc') or
-                surf_data.endswith('thickness')):
-            data = nibabel.freesurfer.io.read_morph_data(surf_data)
-        elif surf_data.endswith('annot'):
-            data = nibabel.freesurfer.io.read_annot(surf_data)[0]
-        elif surf_data.endswith('label'):
-            data = nibabel.freesurfer.io.read_label(surf_data)
-        elif surf_data.endswith('gii'):
-            gii = gifti.read(surf_data)
-            try:
-                data = np.zeros((len(gii.darrays[0].data), len(gii.darrays)))
-                for arr in range(len(gii.darrays)):
-                    data[:, arr] = gii.darrays[arr].data
-                data = np.squeeze(data)
-            except IndexError:
-                raise ValueError('Gifti must contain at least one data array')
-        else:
-            raise ValueError(('The input type is not recognized. %r was given '
-                              'while valid inputs are a Numpy array or one of '
-                              'the following file formats: .gii, .mgz, .nii, '
-                              '.nii.gz, Freesurfer specific files such as '
-                              '.curv, .sulc, .thickness, .annot, '
-                              '.label') % surf_data)
-    # if the input is a numpy array
-    elif isinstance(surf_data, np.ndarray):
-        data = np.squeeze(surf_data)
-    else:
-        raise ValueError('The input type is not recognized. '
-                         'Valid inputs are a Numpy array or one of the '
-                         'following file formats: .gii, .mgz, .nii, .nii.gz, '
-                         'Freesurfer specific files such as .curv,  .sulc, '
-                         '.thickness, .annot, .label')
-    return data
-
-
-# function to figure out datatype and load data
-def load_surf_mesh(surf_mesh):
-    """Loading a surface mesh geometry
-
-    Parameters
-    ----------
-    surf_mesh : str or numpy.ndarray
-        Either a file containing surface mesh geometry (valid formats
-        are .gii or Freesurfer specific files such as .orig, .pial,
-        .sphere, .white, .inflated) or a list of two Numpy arrays,
-        the first containing the x-y-z coordinates of the mesh
-        vertices, the second containing the indices (into coords)
-        of the mesh faces.
-
-    Returns
-    --------
-    [coords, faces] : List of two numpy.ndarray
-        The first containing the x-y-z coordinates of the mesh vertices,
-        the second containing the indices (into coords) of the mesh faces.
-    """
-    # if input is a filename, try to load it
-    if isinstance(surf_mesh, _basestring):
-        if (surf_mesh.endswith('orig') or surf_mesh.endswith('pial') or
-                surf_mesh.endswith('white') or surf_mesh.endswith('sphere') or
-                surf_mesh.endswith('inflated')):
-            coords, faces = nibabel.freesurfer.io.read_geometry(surf_mesh)
-        elif surf_mesh.endswith('gii'):
-            try:
-                coords = gifti.read(surf_mesh).getArraysFromIntent(
-                    nibabel.nifti1.intent_codes['NIFTI_INTENT_POINTSET'])[0].data
-            except IndexError:
-                raise ValueError('Gifti file needs to contain a data array '
-                                 'with intent NIFTI_INTENT_POINTSET')
-            try:
-                faces = gifti.read(surf_mesh).getArraysFromIntent(
-                    nibabel.nifti1.intent_codes['NIFTI_INTENT_TRIANGLE'])[0].data
-            except IndexError:
-                raise ValueError('Gifti file needs to contain a data array '
-                                 'with intent NIFTI_INTENT_TRIANGLE')
-        else:
-            raise ValueError(('The input type is not recognized. %r was given '
-                              'while valid inputs are one of the following '
-                              'file formats: .gii, Freesurfer specific files '
-                              'such as .orig, .pial, .sphere, .white, '
-                              '.inflated or a list containing two Numpy '
-                              'arrays [vertex coordinates, face indices]'
-                              ) % surf_mesh)
-    elif isinstance(surf_mesh, list):
-        if len(surf_mesh) == 2:
-            coords, faces = surf_mesh[0], surf_mesh[1]
-        else:
-            raise ValueError(('If a list is given as input, it must have '
-                              'two elements, the first is a Numpy array '
-                              'containing the x-y-z coordinates of the mesh '
-                              'vertices, the second is a Numpy array '
-                              'containing  the indices (into coords) of the '
-                              'mesh faces. The input was a list with '
-                              '%r elements.') % len(surf_mesh))
-    else:
-        raise ValueError('The input type is not recognized. '
-                         'Valid inputs are one of the following file '
-                         'formats: .gii, Freesurfer specific files such as '
-                         '.orig, .pial, .sphere, .white, .inflated '
-                         'or a list containing two Numpy arrays '
-                         '[vertex coordinates, face indices]')
-
-    return [coords, faces]
 
 
 def plot_surf(surf_mesh, surf_map=None, bg_map=None,

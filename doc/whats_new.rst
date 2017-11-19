@@ -61,6 +61,9 @@ Enhancements
       :func:`nilearn.plotting.plot_surf_stat_map` and
       :func:`nilearn.plotting.plot_surf_roi`
 
+    - :func:`nilearn.surface.vol_to_surf` projects a 3d or 4d brain
+      volume on the cortical surface.
+
     - :class:`nilearn.decoding.SearchLight` has new parameter "groups" to
       do LeaveOneGroupOut type cv with new scikit-learn module model selection.
 
