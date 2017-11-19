@@ -4,8 +4,6 @@ Functions for surface manipulation.
 import os
 import warnings
 
-from distutils.version import LooseVersion
-
 import numpy as np
 from scipy import sparse, interpolate
 import sklearn.preprocessing
