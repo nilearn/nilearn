@@ -15,7 +15,7 @@ from sklearn.datasets.base import Bunch
 from .utils import _get_dataset_dir, _fetch_files, _get_dataset_descr
 from .._utils import check_niimg
 from .._utils.compat import _basestring
-from ..image import new_img_like, load_img
+from ..image import new_img_like
 
 _TALAIRACH_LEVELS = ['hemisphere', 'lobe', 'gyrus', 'tissue', 'ba']
 
@@ -1007,6 +1007,8 @@ def _separate_talairach_levels(atlas_img, labels, verbose=1):
             level_labels.setdefault(region, len(level_labels))
             level_img[atlas_img.get_data() == region_nb] = level_labels[
                 region]
+        # shift this level to its own octet ('hemisphere' to the least
+        # significant, 'lobe' to the next and so on)
         level_img <<= 8 * pos
         new_img |= level_img
         level_labels = list(list(
@@ -1031,7 +1033,8 @@ def _get_talairach_all_levels(data_dir=None, verbose=1):
     where the levels are in the order mentionned above.
 
     """
-    data_dir = _get_dataset_dir('talairach_atlas', data_dir=data_dir)
+    data_dir = _get_dataset_dir(
+        'talairach_atlas', data_dir=data_dir, verbose=verbose)
     img_file = os.path.join(data_dir, 'talairach.nii')
     labels_file = os.path.join(data_dir, 'talairach_labels.json')
     if os.path.isfile(img_file) and os.path.isfile(labels_file):
