@@ -420,10 +420,10 @@ def vol_to_surf(img, surf_mesh,
     interpolation : {'linear', 'nearest'}
         How the image intensity is measured at a sample point.
 
-        - 'nearest' (the default):
-            Use the intensity of the nearest voxel.
-        - 'linear':
+        - 'linear' (the default):
             Use a trilinear interpolation of neighboring voxels.
+        - 'nearest':
+            Use the intensity of the nearest voxel.
 
     n_samples : int or None, optional (default=None)
         How many samples are drawn around each vertex and averaged. If
@@ -474,9 +474,9 @@ def vol_to_surf(img, surf_mesh,
     voxels. 'linear' may give better results - for example, the projected
     values are more stable when resampling the 3d image or applying affine
     transformations to it. 'nearest' is slightly faster for one image, and much
-    faster for many images (an order of magnitude faster for 100 images, i.e. a
-    4d niimg with last dimension=100). Note that linear interpolation is only
-    available if your scipy version is 0.14 or more recent.
+    faster for many images (can be an order of magnitude faster for 100 images,
+    i.e. a 4d niimg with last dimension=100). Note that linear interpolation is
+    only available if your scipy version is 0.14 or more recent.
 
     Once the 3d image has been interpolated at each sample point, the
     interpolated values are averaged to produce the value associated to this
