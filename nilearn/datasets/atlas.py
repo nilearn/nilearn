@@ -993,12 +993,12 @@ def _separate_talairach_levels(atlas_img, labels, verbose=1):
 
     """
     labels = np.asarray(labels)
-    talairach_levels = _TALAIRACH_LEVELS
     if verbose:
-        print('Separating talairach atlas levels: {}'.format(talairach_levels))
+        print(
+            'Separating talairach atlas levels: {}'.format(_TALAIRACH_LEVELS))
     levels = []
     new_img = np.zeros(atlas_img.shape, dtype=np.int64)
-    for pos, level in enumerate(talairach_levels):
+    for pos, level in enumerate(_TALAIRACH_LEVELS):
         if verbose:
             print(level)
         level_img = np.zeros(atlas_img.shape, dtype=np.int64)
@@ -1102,10 +1102,10 @@ def fetch_atlas_talairach(level_name, data_dir=None, verbose=1):
     report on the development and evaluation of a forward-transform method. Hum
     Brain Mapp 5, 238-242, 1997.`
     """
-    levels = _TALAIRACH_LEVELS
-    if level_name not in levels:
-        raise ValueError('"level_name" should be one of {}'.format(levels))
-    position = levels.index(level_name)
+    if level_name not in _TALAIRACH_LEVELS:
+        raise ValueError('"level_name" should be one of {}'.format(
+            _TALAIRACH_LEVELS))
+    position = _TALAIRACH_LEVELS.index(level_name)
     atlas_file, labels_file = _get_talairach_all_levels(data_dir, verbose)
     atlas_img = check_niimg(atlas_file)
     with open(labels_file) as fp:
