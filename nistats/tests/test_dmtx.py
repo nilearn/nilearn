@@ -14,26 +14,14 @@ from nilearn._utils.testing import assert_raises_regex
 
 from nistats.design_matrix import (
     _convolve_regressors, make_design_matrix,
-    _cosine_drift, plot_design_matrix, check_design_matrix,
+    _cosine_drift, check_design_matrix,
     create_second_level_design)
 
 from nibabel.tmpdirs import InTemporaryDirectory
 
 from nose.tools import assert_true, assert_equal, assert_raises
-from numpy.testing import assert_almost_equal, dec, assert_array_equal
+from numpy.testing import assert_almost_equal, assert_array_equal
 
-# Set the backend to avoid having DISPLAY problems
-from nilearn.plotting import _set_mpl_backend
-# Avoid making pyflakes unhappy
-_set_mpl_backend
-try:
-    import matplotlib.pyplot
-    # Avoid making pyflakes unhappy
-    matplotlib.pyplot
-except ImportError:
-    have_mpl = False
-else:
-    have_mpl = True
 
 # load the spm file to test cosine basis
 my_path = osp.dirname(osp.abspath(__file__))
@@ -92,16 +80,6 @@ def block_paradigm():
                           'onset': onsets,
                           'duration': duration})
     return paradigm
-
-
-@dec.skipif(not have_mpl)
-def test_show_design_matrix():
-    # test that the show code indeed (formally) runs
-    frame_times = np.linspace(0, 127 * 1., 128)
-    DM = make_design_matrix(
-        frame_times, drift_model='polynomial', drift_order=3)
-    ax = plot_design_matrix(DM)
-    assert (ax is not None)
 
 
 def test_cosine_drift():

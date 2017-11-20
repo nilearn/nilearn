@@ -28,7 +28,9 @@ uses.
    :template: function.rst
 
    fetch_bids_langloc_dataset
-   fetch_bids_openfmri_dataset
+   fetch_openneuro_dataset_index
+   select_from_index
+   fetch_openneuro_dataset
    fetch_localizer_first_level
    fetch_spm_auditory
    fetch_spm_multimodal_fmri
@@ -78,7 +80,6 @@ uses.
 
    make_design_matrix
    check_design_matrix
-   plot_design_matrix
    create_second_level_design
 
 .. _experimental_paradigm_ref:
@@ -242,6 +243,28 @@ uses.
 
    fdr_threshold
    map_threshold
+   get_clusters_table
+
+.. _reporting_ref:
+
+:mod:`nistats.reporting`: Report plotting functions
+====================================================
+
+.. automodule:: nistats.reporting
+   :no-members:
+   :no-inherited-members:
+
+**Functions**:
+
+.. currentmodule:: nistats.reporting
+
+.. autosummary::
+   :toctree: generated/
+   :template: function.rst
+
+   compare_niimgs
+   plot_design_matrix
+   plot_contrast_matrix
 
 .. _utils_ref:
 

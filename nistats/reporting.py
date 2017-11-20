@@ -1,3 +1,9 @@
+"""
+This module implements plotting functions useful to report analysis results.
+
+Author: Martin Perez-Guevara, Elvis Dohmatob, 2017
+"""
+
 import os
 import warnings
 import numpy as np
@@ -6,6 +12,7 @@ import nilearn.plotting  # overrides the backend on headless servers
 import matplotlib
 import matplotlib.pyplot as plt
 from patsy import DesignInfo
+from .design_matrix import check_design_matrix
 matplotlib.rc('xtick', labelsize=20)
 
 
@@ -94,6 +101,52 @@ def compare_niimgs(ref_imgs, src_imgs, masker, plot_hist=True, log=True,
         plt.tight_layout()
 
     return corrs
+
+
+def plot_design_matrix(design_matrix, rescale=True, ax=None):
+    """Plot a design matrix provided as a DataFrame
+
+    Parameters
+    ----------
+    design matrix : pandas DataFrame,
+        Describes a design matrix.
+
+    rescale : bool, optional
+        Rescale columns magnitude for visualization or not.
+
+    ax : axis handle, optional
+        Handle to axis onto which we will draw design matrix.
+
+    Returns
+    -------
+    ax: axis handle
+        The axis used for plotting.
+    """
+    # We import _set_mpl_backend because just the fact that we are
+    # importing it sets the backend
+    from nilearn.plotting import _set_mpl_backend
+    # avoid unhappy pyflakes
+    _set_mpl_backend
+    import matplotlib.pyplot as plt
+
+    # normalize the values per column for better visualization
+    _, X, names = check_design_matrix(design_matrix)
+    if rescale:
+        X = X / np.maximum(1.e-12, np.sqrt(np.sum(X ** 2, 0)))
+    if ax is None:
+        plt.figure()
+        ax = plt.subplot(1, 1, 1)
+
+    ax.imshow(X, interpolation='nearest', aspect='auto')
+    ax.set_label('conditions')
+    ax.set_ylabel('scan number')
+
+    ax.set_xticks(range(len(names)))
+    ax.set_xticklabels(names, rotation=60, ha='right')
+
+    plt.tight_layout()
+
+    return ax
 
 
 def plot_contrast_matrix(contrast_def, design_matrix, colorbar=False, ax=None):

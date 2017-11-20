@@ -16,7 +16,8 @@ try:
 except ImportError:
     raise RuntimeError("This script needs the matplotlib library")
 
-from nistats.design_matrix import make_design_matrix, plot_design_matrix
+from nistats.design_matrix import make_design_matrix
+from nistats.reporting import plot_design_matrix
 import pandas as pd
 
 

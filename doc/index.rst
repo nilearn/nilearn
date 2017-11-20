@@ -13,20 +13,20 @@
 
 .. Here we are building the carrousel
 
-.. |hrf| image:: auto_examples/images/thumb/sphx_glr_plot_hrf_thumb.png
-   :target: auto_examples/plot_hrf.html
+.. |hrf| image:: auto_examples/04_low_level_functions/images/thumb/sphx_glr_plot_hrf_thumb.png
+   :target: auto_examples/04_low_level_functions/plot_hrf.html
 
-.. |design_matrix| image:: auto_examples/images/thumb/sphx_glr_plot_design_matrix_thumb.png
-     :target: auto_examples/plot_design_matrix.html
+.. |design_matrix| image:: auto_examples/04_low_level_functions/images/thumb/sphx_glr_plot_design_matrix_thumb.png
+     :target: auto_examples/04_low_level_functions/plot_design_matrix.html
 
-.. |first_level| image:: auto_examples/images/thumb/sphx_glr_plot_localizer_analysis_thumb.png
-     :target: auto_examples/plot_localizer_analysis.html
+.. |first_level| image:: auto_examples/02_first_level_models/images/thumb/sphx_glr_plot_localizer_analysis_thumb.png
+     :target: auto_examples/02_first_level_models/plot_localizer_analysis.html
 
-.. |second_level| image:: auto_examples/images/thumb/sphx_glr_plot_second_level_button_press_thumb.png
-     :target: auto_examples/plot_second_level_button_press.html
+.. |second_level| image:: auto_examples/03_second_level_models/images/thumb/sphx_glr_plot_second_level_button_press_thumb.png
+     :target: auto_examples/03_second_level_models/plot_second_level_button_press.html
 
-.. |bids| image:: auto_examples/images/thumb/sphx_glr_plot_bids_analysis_thumb.png
-     :target: auto_examples/plot_bids_analysis.html
+.. |bids| image:: auto_examples/01_tutorials/images/thumb/sphx_glr_plot_bids_analysis_thumb.png
+     :target: auto_examples/01_tutorials/plot_bids_analysis.html
 
 
 .. raw:: html
