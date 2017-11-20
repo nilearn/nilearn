@@ -103,6 +103,7 @@ elif [[ "$DISTRIB" == "conda" ]]; then
     # always be installed eventually. Defining NIBABEL_VERSION is only
     # useful if you happen to want a specific nibabel version rather
     # than the latest available one.
+    pip install pip --upgrade
     if [ -n "$NIBABEL_VERSION" ]; then
         pip install nibabel=="$NIBABEL_VERSION"
     fi
