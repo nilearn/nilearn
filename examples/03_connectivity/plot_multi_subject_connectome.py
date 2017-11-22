@@ -13,7 +13,7 @@ from nilearn import plotting
 n_subjects = 4  # subjects to consider for group-sparse covariance (max: 40)
 
 
-def plot_matrices(cov, prec, title):
+def plot_matrices(cov, prec, title, labels):
     """Plot covariance and precision matrices, for a given processing. """
 
     prec = prec.copy()  # avoid side effects
@@ -25,10 +25,12 @@ def plot_matrices(cov, prec, title):
 
     # Display covariance matrix
     plotting.plot_matrix(cov, cmap=plotting.cm.bwr,
-                         vmin=-1, vmax=1, title="%s / covariance" % title)
+                         vmin=-1, vmax=1, title="%s / covariance" % title,
+                         labels=labels)
     # Display precision matrix
     plotting.plot_matrix(cov, cmap=plotting.cm.bwr,
-                         vmin=-span, vmax=span, title="%s / precision" % title)
+                         vmin=-span, vmax=span, title="%s / precision" % title,
+                         labels=labels)
 
 
 ##############################################################################
@@ -92,6 +94,7 @@ gl.fit(np.concatenate(subject_time_series))
 # -------------------
 atlas_imgs = image.iter_img(msdl_atlas_dataset.maps)
 atlas_region_coords = [plotting.find_xyz_cut_coords(img) for img in atlas_imgs]
+labels = msdl_atlas_dataset.labels
 
 plotting.plot_connectome(gl.covariance_,
                          atlas_region_coords, edge_threshold='90%',
@@ -102,7 +105,7 @@ plotting.plot_connectome(-gl.precision_, atlas_region_coords,
                          title="Sparse inverse covariance (GraphLasso)",
                          display_mode="lzr",
                          edge_vmax=.5, edge_vmin=-.5)
-plot_matrices(gl.covariance_, gl.precision_, "GraphLasso")
+plot_matrices(gl.covariance_, gl.precision_, "GraphLasso", labels)
 
 title = "GroupSparseCovariance"
 plotting.plot_connectome(-gsc.precisions_[..., 0],
@@ -111,6 +114,6 @@ plotting.plot_connectome(-gsc.precisions_[..., 0],
                          display_mode="lzr",
                          edge_vmax=.5, edge_vmin=-.5)
 plot_matrices(gsc.covariances_[..., 0],
-              gsc.precisions_[..., 0], title)
+              gsc.precisions_[..., 0], title, labels)
 
 plotting.show()

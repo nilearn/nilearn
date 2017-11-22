@@ -356,6 +356,7 @@ def fetch_atlas_msdl(data_dir=None, url=None, resume=True, verbose=1):
     files = _fetch_files(data_dir, files, resume=resume, verbose=verbose)
     csv_data = np.recfromcsv(files[0])
     labels = [name.strip() for name in csv_data['name'].tolist()]
+    labels = [label.decode("utf-8") for label in labels]
     with warnings.catch_warnings():
         warnings.filterwarnings('ignore', module='numpy',
                                 category=FutureWarning)
