@@ -95,7 +95,6 @@ gl.fit(np.concatenate(subject_time_series))
 atlas_imgs = image.iter_img(msdl_atlas_dataset.maps)
 atlas_region_coords = [plotting.find_xyz_cut_coords(img) for img in atlas_imgs]
 labels = msdl_atlas_dataset.labels
-labels = [label.decode("utf-8") for label in labels]
 
 plotting.plot_connectome(gl.covariance_,
                          atlas_region_coords, edge_threshold='90%',
