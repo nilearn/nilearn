@@ -463,7 +463,7 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
     penalty : string, optional (default 'graph-net')
         Penalty to used in the model. Can be 'graph-net' or 'tv-l1'.
 
-    loss : string, optional (default "mse")
+    loss : string, optional (default None)
         Loss to be used in the model. Must be an one of "mse", or "logistic".
 
     is_classif : bool, optional (default False)
@@ -490,7 +490,7 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
         Length of the path. For example, ``eps=1e-3`` means that
         ``alpha_min / alpha_max = 1e-3``
 
-    mask : filename, niimg, NiftiMasker instance, optional default None)
+    mask : filename, niimg, NiftiMasker instance, optional (default None)
         Mask to be used on data. If an instance of masker is passed,
         then its mask will be used. If no mask is it will be computed
         automatically by a NiftiMasker.
@@ -520,7 +520,7 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
     screening_percentile : float in the interval [0, 100]; Optional (
     default 20)
         Percentile value for ANOVA univariate feature selection. A value of
-        100 means 'keep all features'. This percentile is is expressed
+        100 means 'keep all features'. This percentile is expressed
         w.r.t the volume of a standard (MNI152) brain, and so is corrected
         at runtime to correspond to the volume of the user-supplied mask
         (which is typically smaller). If '100' is given, all the features
@@ -568,15 +568,19 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
     ----------
     `all_coef_` : ndarray, shape (n_l1_ratios, n_folds, n_features)
         Coefficients for all folds and features.
+
     `alpha_grids_` : ndarray, shape (n_folds, n_alphas)
-        Alpha values tried for choosing the best ones (saved in best_model_params_)
+        Alpha values considered for selection of the best ones (saved in best_model_params_)
 
     `best_model_params_` : ndarray, shape (n_folds, n_parameter)
         Best model parameters (alpha, l1_ratio) saved for the different
         cross-validation folds.
 
+    `classes_` : ndarray of labels (n_classes_)
+        Labels of the classes (for classification problems)
+
     `n_classes_` : int
-        Number of classes
+        Number of classes (for classification problems)
 
     `coef_` : ndarray, shape
             (1, n_features) for 2 class classification problems (i.e n_classes = 2)
@@ -586,14 +590,8 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
     `coef_img_` : nifti image
         Masked model coefficients
 
-    `mask_` : ndarray
-        Mask image
-
-    `coef_img_` : nifti image
-        Masked model coefficients
-
-    `mask_` : ndarray
-        Mask image
+    `mask_` : ndarray 3D
+        An array contains masked values.
 
     `masker_` : instance of NiftiMasker
         The nifti masker used to mask the data.
@@ -612,9 +610,8 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
          It is available only when parameter intercept is set to True.
 
     `cv_` : list of pairs of lists
-         List of the (n_folds,) folds. For the corresponding fold,
-         each pair is composed of two lists of indices,
-         one for the train samples and one for the test samples.
+         Each pair is the list of indices for the train and test samples
+         for the corresponding fold.
 
     `cv_scores_` : ndarray, shape (n_folds, n_alphas) or (n_l1_ratios, n_folds, n_alphas)
         Scores (misclassification) for each alpha, and on each fold
@@ -990,7 +987,7 @@ class SpaceNetClassifier(BaseSpaceNet):
         Length of the path. For example, ``eps=1e-3`` means that
         ``alpha_min / alpha_max = 1e-3``.
 
-    mask : filename, niimg, NiftiMasker instance, optional default None)
+    mask : filename, niimg, NiftiMasker instance, optional (default None)
         Mask to be used on data. If an instance of masker is passed,
         then its mask will be used. If no mask is it will be computed
         automatically by a MultiNiftiMasker with default parameters.
@@ -1065,14 +1062,15 @@ class SpaceNetClassifier(BaseSpaceNet):
     ----------
     `all_coef_` : ndarray, shape (n_l1_ratios, n_folds, n_features)
         Coefficients for all folds and features.
+
     `alpha_grids_` : ndarray, shape (n_folds, n_alphas)
-        Alpha values tried for choosing the best ones (saved in best_model_params_)
+        Alpha values considered for selection of the best ones (saved in best_model_params_)
 
     `best_model_params_` : ndarray, shape (n_folds, n_parameter)
         Best model parameters (alpha, l1_ratio) saved for the different
         cross-validation folds.
 
-    `classes_` : array of labels (n_classes_)
+    `classes_` : ndarray of labels (n_classes_)
         Labels of the classes
 
     `n_classes_` : int
@@ -1086,14 +1084,8 @@ class SpaceNetClassifier(BaseSpaceNet):
     `coef_img_` : nifti image
         Masked model coefficients
 
-    `mask_` : ndarray
-        Mask image
-
-    `coef_img_` : nifti image
-        Masked model coefficients
-
-    `mask_` : ndarray
-        Mask image
+    `mask_` : ndarray 3D
+        An array contains masked values.
 
     `masker_` : instance of NiftiMasker
         The nifti masker used to mask the data.
@@ -1112,7 +1104,7 @@ class SpaceNetClassifier(BaseSpaceNet):
          It is available only when parameter intercept is set to True.
 
     `cv_` : list of pairs of lists
-         Each pair are are the list of indices for the train and test
+         Each pair is the list of indices for the train and test
          samples for the corresponding fold.
 
     `cv_scores_` : ndarray, shape (n_folds, n_alphas) or (n_l1_ratios, n_folds, n_alphas)
@@ -1191,7 +1183,7 @@ class SpaceNetClassifier(BaseSpaceNet):
 class SpaceNetRegressor(BaseSpaceNet):
     """Regression learners with sparsity and spatial priors.
 
-    `SpaceNetClassifier` implements Graph-Net and TV-L1 priors / penalties
+    `SpaceNetRegressor` implements Graph-Net and TV-L1 priors / penalties
     for regression problems. Thus, the penalty is a sum an L1 term and a
     spatial term. The aim of such a hybrid prior is to obtain weights maps
     which are structured (due to the spatial prior) and sparse (enforced
@@ -1222,7 +1214,7 @@ class SpaceNetRegressor(BaseSpaceNet):
         Length of the path. For example, ``eps=1e-3`` means that
         ``alpha_min / alpha_max = 1e-3``
 
-    mask : filename, niimg, NiftiMasker instance, optional default None)
+    mask : filename, niimg, NiftiMasker instance, optional (default None)
         Mask to be used on data. If an instance of masker is passed,
         then its mask will be used. If no mask is it will be computed
         automatically by a MultiNiftiMasker with default parameters.
@@ -1298,7 +1290,7 @@ class SpaceNetRegressor(BaseSpaceNet):
         Coefficients for all folds and features.
 
     `alpha_grids_` : ndarray, shape (n_folds, n_alphas)
-        Alpha values tried for choosing the best ones (saved in best_model_params_)
+        Alpha values considered for selection of the best ones (saved in best_model_params_)
 
     `best_model_params_` : ndarray, shape (n_folds, n_parameter)
         Best model parameters (alpha, l1_ratio) saved for the different
@@ -1310,14 +1302,8 @@ class SpaceNetRegressor(BaseSpaceNet):
     `coef_img_` : nifti image
         Masked model coefficients
 
-    `mask_` : ndarray
-        Mask image
-
-    `coef_img_` : nifti image
-        Masked model coefficients
-
-    `mask_` : ndarray
-        Mask image
+    `mask_` : ndarray 3D
+        An array contains masked values
 
     `masker_` : instance of NiftiMasker
         The nifti masker used to mask the data.
@@ -1333,7 +1319,7 @@ class SpaceNetRegressor(BaseSpaceNet):
          It is available only when parameter intercept is set to True.
 
     `cv_` : list of pairs of lists
-         Each pair are are the list of indices for the train and test
+         Each pair is the list of indices for the train and test
          samples for the corresponding fold.
 
     `cv_scores_` : ndarray, shape (n_folds, n_alphas) or (n_l1_ratios, n_folds, n_alphas)
