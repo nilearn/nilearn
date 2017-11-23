@@ -570,21 +570,22 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
         Coefficients for all folds and features.
 
     `alpha_grids_` : ndarray, shape (n_folds, n_alphas)
-        Alpha values considered for selection of the best ones (saved in best_model_params_)
+        Alpha values considered for selection of the best ones
+        (saved in `best_model_params_`)
 
     `best_model_params_` : ndarray, shape (n_folds, n_parameter)
         Best model parameters (alpha, l1_ratio) saved for the different
         cross-validation folds.
 
-    `classes_` : ndarray of labels (n_classes_)
+    `classes_` : ndarray of labels (`n_classes_`)
         Labels of the classes (for classification problems)
 
     `n_classes_` : int
         Number of classes (for classification problems)
 
     `coef_` : ndarray, shape
-            (1, n_features) for 2 class classification problems (i.e n_classes = 2)
-            (n_classes, n_features) for n_classes > 2
+        (1, n_features) for 2 class classification problems (i.e n_classes = 2)
+        (n_classes, n_features) for n_classes > 2
         Coefficient of the features in the decision function.
 
     `coef_img_` : nifti image
@@ -604,14 +605,14 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
     `memory_` : joblib memory cache
 
     `intercept_` : narray, shape
-            (1,) for 2 class classification problems (i.e n_classes = 2)
-            (n_classes,) for n_classes > 2
-         Intercept (a.k.a. bias) added to the decision function.
-         It is available only when parameter intercept is set to True.
+        (1,) for 2 class classification problems (i.e n_classes = 2)
+        (n_classes,) for n_classes > 2
+        Intercept (a.k.a. bias) added to the decision function.
+        It is available only when parameter intercept is set to True.
 
     `cv_` : list of pairs of lists
-         Each pair is the list of indices for the train and test samples
-         for the corresponding fold.
+        Each pair is the list of indices for the train and test samples
+        for the corresponding fold.
 
     `cv_scores_` : ndarray, shape (n_folds, n_alphas) or (n_l1_ratios, n_folds, n_alphas)
         Scores (misclassification) for each alpha, and on each fold
@@ -621,9 +622,9 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
         relative to the volume of standard brain.
 
     `w_` : ndarray, shape
-            (1, n_features + 1) for 2 class classification problems (i.e n_classes = 2)
-            (n_classes, n_features + 1) for n_classes > 2, and
-            (n_features,) for regression
+        (1, n_features + 1) for 2 class classification problems (i.e n_classes = 2)
+        (n_classes, n_features + 1) for n_classes > 2, and (n_features,) for
+        regression
         Model weights
 
     `ymean_` : array, shape (n_samples,)
@@ -1064,21 +1065,22 @@ class SpaceNetClassifier(BaseSpaceNet):
         Coefficients for all folds and features.
 
     `alpha_grids_` : ndarray, shape (n_folds, n_alphas)
-        Alpha values considered for selection of the best ones (saved in best_model_params_)
+        Alpha values considered for selection of the best ones
+        (saved in `best_model_params_`)
 
     `best_model_params_` : ndarray, shape (n_folds, n_parameter)
         Best model parameters (alpha, l1_ratio) saved for the different
         cross-validation folds.
 
-    `classes_` : ndarray of labels (n_classes_)
+    `classes_` : ndarray of labels (`n_classes_`)
         Labels of the classes
 
     `n_classes_` : int
         Number of classes
 
     `coef_` : ndarray, shape
-            (1, n_features) for 2 class classification problems (i.e n_classes = 2)
-            (n_classes, n_features) for n_classes > 2
+        (1, n_features) for 2 class classification problems (i.e n_classes = 2)
+        (n_classes, n_features) for n_classes > 2
         Coefficient of the features in the decision function.
 
     `coef_img_` : nifti image
@@ -1098,14 +1100,14 @@ class SpaceNetClassifier(BaseSpaceNet):
     `memory_` : joblib memory cache
 
     `intercept_` : narray, shape
-            (1, ) for 2 class classification problems (i.e n_classes = 2)
-            (n_classes, ) for n_classes > 2
-         Intercept (a.k.a. bias) added to the decision function.
-         It is available only when parameter intercept is set to True.
+        (1, ) for 2 class classification problems (i.e n_classes = 2)
+        (n_classes, ) for n_classes > 2
+        Intercept (a.k.a. bias) added to the decision function.
+        It is available only when parameter intercept is set to True.
 
     `cv_` : list of pairs of lists
-         Each pair is the list of indices for the train and test
-         samples for the corresponding fold.
+        Each pair is the list of indices for the train and test
+        samples for the corresponding fold.
 
     `cv_scores_` : ndarray, shape (n_folds, n_alphas) or (n_l1_ratios, n_folds, n_alphas)
         Scores (misclassification) for each alpha, and on each fold
@@ -1115,8 +1117,8 @@ class SpaceNetClassifier(BaseSpaceNet):
         relative to the volume of standard brain.
 
     `w_` : ndarray, shape
-            (1, n_features + 1) for 2 class classification problems (i.e n_classes = 2)
-            (n_classes, n_features + 1) for n_classes > 2
+        (1, n_features + 1) for 2 class classification problems (i.e n_classes = 2)
+        (n_classes, n_features + 1) for n_classes > 2
         Model weights
 
     `ymean_` : array, shape (n_samples,)
@@ -1290,7 +1292,8 @@ class SpaceNetRegressor(BaseSpaceNet):
         Coefficients for all folds and features.
 
     `alpha_grids_` : ndarray, shape (n_folds, n_alphas)
-        Alpha values considered for selection of the best ones (saved in best_model_params_)
+        Alpha values considered for selection of the best ones
+        (saved in `best_model_params_`)
 
     `best_model_params_` : ndarray, shape (n_folds, n_parameter)
         Best model parameters (alpha, l1_ratio) saved for the different
@@ -1315,12 +1318,12 @@ class SpaceNetRegressor(BaseSpaceNet):
     `memory_` : joblib memory cache
 
     `intercept_` : narray, shape (1)
-         Intercept (a.k.a. bias) added to the decision function.
-         It is available only when parameter intercept is set to True.
+        Intercept (a.k.a. bias) added to the decision function.
+        It is available only when parameter intercept is set to True.
 
     `cv_` : list of pairs of lists
-         Each pair is the list of indices for the train and test
-         samples for the corresponding fold.
+        Each pair is the list of indices for the train and test
+        samples for the corresponding fold.
 
     `cv_scores_` : ndarray, shape (n_folds, n_alphas) or (n_l1_ratios, n_folds, n_alphas)
         Scores (misclassification) for each alpha, and on each fold
