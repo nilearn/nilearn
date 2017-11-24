@@ -592,7 +592,7 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
         Masked model coefficients
 
     `mask_` : ndarray 3D
-        An array contains masked values.
+        An array contains values of the mask image.
 
     `masker_` : instance of NiftiMasker
         The nifti masker used to mask the data.
@@ -1087,7 +1087,7 @@ class SpaceNetClassifier(BaseSpaceNet):
         Masked model coefficients
 
     `mask_` : ndarray 3D
-        An array contains masked values.
+        An array contains values of the mask image.
 
     `masker_` : instance of NiftiMasker
         The nifti masker used to mask the data.
@@ -1306,7 +1306,7 @@ class SpaceNetRegressor(BaseSpaceNet):
         Masked model coefficients
 
     `mask_` : ndarray 3D
-        An array contains masked values
+        An array contains values of the mask image.
 
     `masker_` : instance of NiftiMasker
         The nifti masker used to mask the data.
