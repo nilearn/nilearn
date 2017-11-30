@@ -475,7 +475,6 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
         self._check_input(X)
         self.cov_estimator_ = clone(self.cov_estimator)
 
-
         covariances = [self.cov_estimator_.fit(x).covariance_ for x in X]
         if self.kind == 'tangent':
             self.mean_ = _geometric_mean(covariances, max_iter=30, tol=1e-7)
