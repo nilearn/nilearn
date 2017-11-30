@@ -15,7 +15,7 @@ from nilearn.tests.test_signal import generate_signals
 from nilearn.connectome.connectivity_matrices import (
     _check_square, _check_spd, _map_eigenvalues, _form_symmetric,
     _geometric_mean, sym_matrix_to_vec, vec_to_sym_matrix, prec_to_partial,
-    cov_to_corr, ConnectivityMeasure)
+    ConnectivityMeasure)
 
 
 def grad_geometric_mean(mats, init=None, max_iter=10, tol=1e-7):
@@ -414,6 +414,13 @@ def test_connectivity_measure_errors():
     # Raising error for input subjects with different number of features
     assert_raises(ValueError, conn_measure.fit,
                   [np.ones((100, 40)), np.ones((100, 41))])
+
+
+    # Raising an error for fit_transform with a single subject and
+    # kind=tangent
+    conn_measure = ConnectivityMeasure(kind='tangent')
+    assert_raises(ValueError, conn_measure.fit_transform,
+                  [np.ones((100, 40)), ])
 
 
 def test_connectivity_measure_outputs():

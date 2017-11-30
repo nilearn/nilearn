@@ -435,22 +435,7 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
         self.vectorize = vectorize
         self.discard_diagonal = discard_diagonal
 
-    def fit(self, X, y=None):
-        """Fit the covariance estimator to the given time series for each
-        subject.
-
-        Parameters
-        ----------
-        X : list of numpy.ndarray, shape for each (n_samples, n_features)
-            The input subjects time series. The number of samples may differ
-            from one subject to another.
-
-        Returns
-        -------
-        self : ConnectivityMatrix instance
-            The object itself. Useful for chaining operations.
-        """
-        self.cov_estimator_ = clone(self.cov_estimator)
+    def _check_input(self, X):
         if not hasattr(X, "__iter__"):
             raise ValueError("'subjects' input argument must be an iterable. "
                              "You provided {0}".format(X.__class__))
@@ -466,19 +451,57 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
                              "provided arrays of dimensions "
                              "{0}".format(str(subjects_dims)))
 
-        n_subjects = [s.shape[1] for s in X]
-        if len(set(n_subjects)) > 1:
+        features_dims = [s.shape[1] for s in X]
+        if len(set(features_dims)) > 1:
             raise ValueError("All subjects must have the same number of "
                              "features.\nYou provided: "
-                             "{0}".format(str(n_subjects)))
+                             "{0}".format(str(features_dims)))
 
+    def fit(self, X, y=None):
+        """Fit the covariance estimator to the given time series for each
+        subject.
+
+        Parameters
+        ----------
+        X : list of numpy.ndarray, shape for each (n_samples, n_features)
+            The input subjects time series. The number of samples may differ
+            from one subject to another.
+
+        Returns
+        -------
+        self : ConnectivityMatrix instance
+            The object itself. Useful for chaining operations.
+        """
+        self._check_input(X)
+        self.cov_estimator_ = clone(self.cov_estimator)
+
+
+        covariances = [self.cov_estimator_.fit(x).covariance_ for x in X]
         if self.kind == 'tangent':
-            covariances = [self.cov_estimator_.fit(x).covariance_ for x in X]
             self.mean_ = _geometric_mean(covariances, max_iter=30, tol=1e-7)
             self.whitening_ = _map_eigenvalues(lambda x: 1. / np.sqrt(x),
                                                self.mean_)
+        else:
+            self.mean_ = np.mean(covariances, axis=0)
+            # Fight numerical instabilities: make symmetric
+            self.mean_ = self.mean_ + self.mean_.T
+            self.mean_ *= .5
 
         return self
+
+    def fit_transform(self, X, y=None):
+        if self.kind in ('tangent', 'tangent_geometric'):
+            # Check that people are applying fit_transform to a group of
+            # subject
+            # We can only impose this in fit_transform, as it is legit to
+            # fit only on a single given reference point
+            if not len(X) > 1:
+                raise ValueError("Tangent space parametrization can only "
+                    "be applied to a group of subjects, as it returns "
+                    "deviations to the mean. You provided %r" % X
+                    )
+        self.fit(X, y)
+        return self.transform(X)
 
     def transform(self, X):
         """Apply transform to covariances matrices to get the connectivity
@@ -525,8 +548,6 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
                                  '"{}"'.format(self.kind))
 
         connectivities = np.array(connectivities)
-        if self.kind != 'tangent':
-            self.mean_ = connectivities.mean(axis=0)
 
         if self.vectorize:
             connectivities = sym_matrix_to_vec(
