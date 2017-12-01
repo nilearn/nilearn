@@ -489,7 +489,7 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
         return self
 
     def fit_transform(self, X, y=None):
-        if self.kind in ('tangent', 'tangent_geometric'):
+        if self.kind == 'tangent':
             # Check that people are applying fit_transform to a group of
             # subject
             # We can only impose this in fit_transform, as it is legit to
