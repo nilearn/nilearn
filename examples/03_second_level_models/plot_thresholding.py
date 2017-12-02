@@ -2,13 +2,11 @@
 Example of simple second level analysis
 =======================================
 
-Perform a one-sample t-test on a bunch of images 
+Perform a one-sample t-test on a bunch of images
 (a.k.a. second-level analyis in fMRI) and threshold a statistical image.
 This is based on the so-called localizer dataset.
 It shows activation related to a mental computation task,
 as opposed to narrative sentence reading/listening.
-
-Author: Bertrand.thirion, Virgile Fritsch, 2014--2015
 
 """
 from nilearn import datasets

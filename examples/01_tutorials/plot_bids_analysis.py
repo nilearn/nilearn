@@ -2,9 +2,6 @@
 BIDS dataset first and second level analysis
 ============================================
 
-Author : Martin Perez-Guevara: 2016
-
-
 
 Full step-by-step example of fitting a GLM to perform a first and second level
 analysis in a BIDS dataset and visualizing the results. Details about the BIDS

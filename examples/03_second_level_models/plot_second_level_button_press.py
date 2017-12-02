@@ -13,7 +13,6 @@ More specifically:
 
 (as fixed effects, then contrast estimation)
 
-Author : Martin Perez-Guevara: 2016
 """
 
 import pandas as pd
