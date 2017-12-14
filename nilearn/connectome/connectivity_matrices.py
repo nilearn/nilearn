@@ -414,9 +414,10 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
 
     `mean_` : numpy.ndarray
         The mean connectivity matrix across subjects. For 'tangent' kind,
-        individual connectivity patterns from both correlation and partial
-        correlation matrices are used to estimate a robust group covariance
-        matrix, called the geometric mean.
+        it is the geometric mean of covariances (a group covariance
+        matrix that captures information from both correlation and partial
+        correlation matrices). For other values for "kind", it is the
+        mean of the corresponding matrices
 
     `whitening_` : numpy.ndarray
         The inverted square-rooted geometric mean of the covariance matrices.
@@ -472,21 +473,63 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
         self : ConnectivityMatrix instance
             The object itself. Useful for chaining operations.
         """
-        self._check_input(X)
-        self.cov_estimator_ = clone(self.cov_estimator)
-
-        covariances = [self.cov_estimator_.fit(x).covariance_ for x in X]
-        if self.kind == 'tangent':
-            self.mean_ = _geometric_mean(covariances, max_iter=30, tol=1e-7)
-            self.whitening_ = _map_eigenvalues(lambda x: 1. / np.sqrt(x),
-                                               self.mean_)
-        else:
-            self.mean_ = np.mean(covariances, axis=0)
-            # Fight numerical instabilities: make symmetric
-            self.mean_ = self.mean_ + self.mean_.T
-            self.mean_ *= .5
-
+        self._fit_transform(X, do_fit=True)
         return self
+
+    def _fit_transform(self, X, do_transform=False, do_fit=False):
+        """ Internal function to avoid duplication of computation
+        """
+        self._check_input(X)
+        if do_fit:
+            self.cov_estimator_ = clone(self.cov_estimator)
+
+        # Compute all the matrices, stored in "connectivities"
+        if self.kind == 'correlation':
+            covariances_std = [self.cov_estimator_.fit(
+                signal._standardize(x, detrend=False, normalize=True)
+                ).covariance_ for x in X]
+            connectivities = [cov_to_corr(cov) for cov in covariances_std]
+        else:
+            covariances = [self.cov_estimator_.fit(x).covariance_ for x in X]
+            if self.kind in ('covariance', 'tangent'):
+                connectivities = covariances
+            elif self.kind == 'precision':
+                connectivities = [linalg.inv(cov) for cov in covariances]
+            elif self.kind == 'partial correlation':
+                connectivities = [prec_to_partial(linalg.inv(cov))
+                                  for cov in covariances]
+            else:
+                raise ValueError('Allowed connectivity kinds are '
+                                 '"correlation", '
+                                 '"partial correlation", "tangent", '
+                                 '"covariance" and "precision", got kind '
+                                 '"{}"'.format(self.kind))
+
+        # Store the mean
+        if do_fit:
+            if self.kind == 'tangent':
+                self.mean_ = _geometric_mean(covariances, max_iter=30, tol=1e-7)
+                self.whitening_ = _map_eigenvalues(lambda x: 1. / np.sqrt(x),
+                                                self.mean_)
+            else:
+                self.mean_ = np.mean(connectivities, axis=0)
+                # Fight numerical instabilities: make symmetric
+                self.mean_ = self.mean_ + self.mean_.T
+                self.mean_ *= .5
+
+        # Compute the vector we return on transform
+        if do_transform:
+            if self.kind == 'tangent':
+                connectivities = [_map_eigenvalues(np.log, self.whitening_.dot(
+                                                   cov).dot(self.whitening_))
+                                    for cov in connectivities]
+
+            connectivities = np.array(connectivities)
+            if self.vectorize:
+                connectivities = sym_matrix_to_vec(
+                    connectivities, discard_diagonal=self.discard_diagonal)
+
+        return connectivities
 
     def fit_transform(self, X, y=None):
         if self.kind == 'tangent':
@@ -499,8 +542,8 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
                     "be applied to a group of subjects, as it returns "
                     "deviations to the mean. You provided %r" % X
                     )
-        self.fit(X, y)
-        return self.transform(X)
+        return self._fit_transform(X, do_fit=True, do_transform=True)
+
 
     def transform(self, X):
         """Apply transform to covariances matrices to get the connectivity
@@ -521,38 +564,7 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
             The transformed individual connectivities, as matrices or vectors.
         """
         self._check_fitted()
-        if self.kind == 'correlation':
-            covariances_std = [self.cov_estimator_.fit(
-                signal._standardize(x, detrend=False, normalize=True)
-                ).covariance_ for x in X]
-            connectivities = [cov_to_corr(cov) for cov in covariances_std]
-        else:
-            covariances = [self.cov_estimator_.fit(x).covariance_ for x in X]
-            if self.kind == 'covariance':
-                connectivities = covariances
-            elif self.kind == 'tangent':
-                connectivities = [_map_eigenvalues(np.log, self.whitening_.dot(
-                                                   cov).dot(self.whitening_))
-                                  for cov in covariances]
-            elif self.kind == 'precision':
-                connectivities = [linalg.inv(cov) for cov in covariances]
-            elif self.kind == 'partial correlation':
-                connectivities = [prec_to_partial(linalg.inv(cov))
-                                  for cov in covariances]
-            else:
-                raise ValueError('Allowed connectivity kinds are '
-                                 '"correlation", '
-                                 '"partial correlation", "tangent", '
-                                 '"covariance" and "precision", got kind '
-                                 '"{}"'.format(self.kind))
-
-        connectivities = np.array(connectivities)
-
-        if self.vectorize:
-            connectivities = sym_matrix_to_vec(
-                connectivities, discard_diagonal=self.discard_diagonal)
-
-        return connectivities
+        return self._fit_transform(X, do_transform=True)
 
     def _check_fitted(self):
         if not hasattr(self, "cov_estimator_"):

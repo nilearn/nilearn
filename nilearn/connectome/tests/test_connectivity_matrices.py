@@ -496,6 +496,17 @@ def test_connectivity_measure_outputs():
         conn_measure = ConnectivityMeasure(kind=kind)
         conn_measure.fit_transform(signals)
         assert_equal((conn_measure.mean_).shape, (n_features, n_features))
+        if kind != 'tangent':
+            assert_array_almost_equal(
+                conn_measure.mean_,
+                np.mean(conn_measure.transform(signals), axis=0))
+
+    # Check that the mean isn't modified in transform
+    conn_measure = ConnectivityMeasure(kind='covariance')
+    conn_measure.fit(signals[:1])
+    mean = conn_measure.mean_
+    conn_measure.transform(signals[1:])
+    assert_array_equal(mean, conn_measure.mean_)
 
     # Check vectorization option
     for kind in kinds:
