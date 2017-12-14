@@ -6,6 +6,7 @@ from nose import SkipTest
 
 import platform
 import os
+import sys
 import nibabel
 from nibabel import Nifti1Image
 import numpy as np
@@ -23,6 +24,11 @@ from nilearn.image import threshold_img
 from nilearn.image import iter_img
 from nilearn.image import math_img
 from nilearn.image import largest_connected_component_img
+
+try:
+    import pandas as pd
+except Exception:
+    pass
 
 X64 = (platform.architecture()[0] == '64bit')
 
@@ -353,6 +359,18 @@ def test_index_img():
             IndexError,
             'out of bounds|invalid index|out of range|boolean index',
             image.index_img, img_4d, i)
+
+    # if pandas is in the testing environment
+    if 'pandas' in sys.modules:
+        rng = np.random.RandomState(0)
+
+        arr = rng.rand(fourth_dim_size) > 0.5
+        df = pd.DataFrame({"arr": arr})
+
+        np_index_img = image.index_img(img_4d, arr)
+        pd_index_img = image.index_img(img_4d, df)
+        assert_array_equal(np_index_img.get_data(),
+                           pd_index_img.get_data())
 
 
 def test_iter_img():
