@@ -22,7 +22,7 @@ matrix:
     - env: DISTRIB="conda" PYTHON_VERSION="2.7"
            NUMPY_VERSION="1.8.2" SCIPY_VERSION="0.14"
            SCIKIT_LEARN_VERSION="0.15.1" MATPLOTLIB_VERSION="1.3.1"
-           NIBABEL_VERSION="2.0.2" COVERAGE="true"
+           PANDAS_VERSION="0.13.0" NIBABEL_VERSION="2.0.2" COVERAGE="true"
     # Oldest supported versions without matplotlib
     - env: DISTRIB="conda" PYTHON_VERSION="2.7"
            NUMPY_VERSION="1.8.2" SCIPY_VERSION="0.14"
@@ -38,7 +38,7 @@ matrix:
            SCIKIT_LEARN_VERSION="0.15" MATPLOTLIB_VERSION="1.4"
     # Most recent versions
     - env: DISTRIB="conda" PYTHON_VERSION="3.5"
-           NUMPY_VERSION="*" SCIPY_VERSION="*"
+           NUMPY_VERSION="*" SCIPY_VERSION="*" PANDAS_VERSION="*"
            SCIKIT_LEARN_VERSION="*" MATPLOTLIB_VERSION="*" COVERAGE="true"
     # FLAKE8 linting on diff wrt common ancestor with upstream/master
     # Note: the python value is only there to trigger allow_failures

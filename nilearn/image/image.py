@@ -563,6 +563,9 @@ def index_img(imgs, index):
      (91, 109, 91)
     """
     imgs = check_niimg_4d(imgs)
+    # duck-type for pandas arrays, and select the 'values' attr
+    if hasattr(index, 'values') and hasattr(index, 'iloc'):
+        index = index.values.flatten()
     return _index_img(imgs, index)
 
 
