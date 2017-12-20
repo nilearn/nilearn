@@ -12,7 +12,7 @@ from nilearn.plotting.matrix_plotting import plot_matrix
 def test_matrix_plotting():
     from numpy import zeros
     mat = zeros((10, 10))
-    labels = str(range(10))
+    labels = [str(i) for i in range(10)]
     ax = plot_matrix(mat, labels=labels, title='foo')
     plt.close()
     # test if plotting lower triangle works
@@ -20,5 +20,6 @@ def test_matrix_plotting():
     # test if it returns an AxesImage
     ax.axes.set_title('Title')
     plt.close()
-
-
+    # test if reordering with default linkage works
+    ax = plot_matrix(mat, labels=labels, reorder=True)
+    plt.close()

@@ -62,8 +62,10 @@ import numpy as np
 from nilearn import plotting
 # Mask out the major diagonal
 np.fill_diagonal(correlation_matrix, 0)
+# We reorder the correlation matrix to make the block structure
+# of invidiual regions more visible.
 plotting.plot_matrix(correlation_matrix, labels=labels, colorbar=True,
-                     vmax=0.8, vmin=-0.8)
+                     vmax=0.8, vmin=-0.8, reorder=True)
 ############################################################################
 # And now display the corresponding graph
 # ----------------------------------------
