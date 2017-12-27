@@ -388,33 +388,26 @@ class BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
             self.masker_.fit()
         self.mask_img_ = self.masker_.mask_img_
 
-        # mask_and_reduce step is used only for decomposition estimators i.e.
+        # mask_and_reduce step for decomposition estimators i.e.
         # MultiPCA, CanICA and Dictionary Learning
-        if self.__class__.__name__ != 'BaseDecomposition':
-            if self.verbose:
-                print("[{0}] Loading data".format(self.__class__.__name__))
-            data = mask_and_reduce(
-                self.masker_, imgs, confounds=confounds,
-                n_components=self.n_components,
-                random_state=self.random_state,
-                memory=self.memory,
-                memory_level=max(0, self.memory_level + 1),
-                n_jobs=self.n_jobs)
-            self._raw_fit(data)
+        if self.verbose:
+            print("[{0}] Loading data".format(self.__class__.__name__))
+        data = mask_and_reduce(
+            self.masker_, imgs, confounds=confounds,
+            n_components=self.n_components,
+            random_state=self.random_state,
+            memory=self.memory,
+            memory_level=max(0, self.memory_level + 1),
+            n_jobs=self.n_jobs)
+        self._raw_fit(data)
 
         return self
 
     def _check_components_(self):
         if not hasattr(self, 'components_'):
-            if self.__class__.__name__ == 'BaseDecomposition':
-                raise ValueError("Object has no components_ attribute. "
-                                 "This may be because "
-                                 "BaseDecomposition is directly "
-                                 "being used.")
-            else:
-                raise ValueError("Object has no components_ attribute. "
-                                 "This is probably because fit has not "
-                                 "been called.")
+            raise ValueError("Object has no components_ attribute. "
+                             "This is probably because fit has not "
+                             "been called.")
 
     def transform(self, imgs, confounds=None):
         """Project the data into a reduced representation

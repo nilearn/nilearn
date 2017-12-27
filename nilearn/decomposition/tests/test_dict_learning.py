@@ -1,6 +1,7 @@
 import numpy as np
 
-from nilearn._utils.testing import assert_less_equal
+from nose.tools import assert_true
+from nilearn._utils.testing import assert_less_equal, assert_raises_regex
 from nilearn.decomposition.dict_learning import DictLearning
 from nilearn.decomposition.tests.test_canica import _make_canica_test_data
 from nilearn.image import iter_img
@@ -74,3 +75,34 @@ def test_component_sign():
             dict_learning.components_)):
         mp = mp.get_data()
         assert_less_equal(np.sum(mp[mp <= 0]), np.sum(mp[mp > 0]))
+
+
+def test_masker_attributes_with_fit():
+    # Test base module at sub-class
+    data, mask_img, components, rng = _make_canica_test_data(n_subjects=3)
+    # Passing mask_img
+    dict_learning = DictLearning(n_components=3, mask=mask_img, random_state=0)
+    dict_learning.fit(data)
+    assert_true(dict_learning.mask_img_ == mask_img)
+    assert_true(dict_learning.mask_img_ == dict_learning.masker_.mask_img_)
+    # Passing masker
+    masker = NiftiMasker(mask_img=mask_img)
+    dict_learning = DictLearning(n_components=3, mask=masker, random_state=0)
+    dict_learning.fit(data)
+    assert_true(dict_learning.mask_img_ == dict_learning.masker_.mask_img_)
+    dict_learning = DictLearning(mask=mask_img, n_components=3)
+    assert_raises_regex(ValueError,
+                        "Object has no components_ attribute. "
+                        "This is probably because fit has not been called",
+                        dict_learning.transform, data)
+    # Test if raises an error when empty list of provided.
+    assert_raises_regex(ValueError,
+                        'Need one or more Niimg-like objects as input, '
+                        'an empty list was given.',
+                        dict_learning.fit, [])
+    # Test passing masker arguments to estimator
+    dict_learning = DictLearning(n_components=3,
+                                 target_affine=np.eye(4),
+                                 target_shape=(6, 8, 10),
+                                 mask_strategy='background')
+    dict_learning.fit(data)

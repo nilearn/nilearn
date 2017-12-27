@@ -30,10 +30,14 @@ def test_multi_pca():
     mask_img = nibabel.Nifti1Image(np.ones(shape[:3], dtype=np.int8), affine)
     multi_pca = MultiPCA(mask=mask_img, n_components=3,
                          random_state=0)
+    # fit to the data and test for masker attributes
+    multi_pca.fit(data)
+    assert_true(multi_pca.mask_img_ == mask_img)
+    assert_true(multi_pca.mask_img_ == multi_pca.masker_.mask_img_)
 
     # Test that the components are the same if we put twice the same data, and
     # that fit output is deterministic
-    components1 = multi_pca.fit(data).components_
+    components1 = multi_pca.components_
     components2 = multi_pca.fit(data).components_
     components3 = multi_pca.fit(2 * data).components_
     np.testing.assert_array_equal(components1, components2)
@@ -49,6 +53,12 @@ def test_multi_pca():
     # Check that asking for too little components raises a ValueError
     multi_pca = MultiPCA()
     assert_raises(ValueError, multi_pca.fit, data[:2])
+
+    # Test fit on data with the use of a masker
+    masker = MultiNiftiMasker()
+    multi_pca = MultiPCA(mask=masker, n_components=3)
+    multi_pca.fit(data)
+    assert_true(multi_pca.mask_img_ == multi_pca.masker_.mask_img_)
 
     # Smoke test the use of a masker and without CCA
     multi_pca = MultiPCA(mask=MultiNiftiMasker(mask_args=dict(opening=0)),
@@ -66,7 +76,17 @@ def test_multi_pca():
                         "Object has no components_ attribute. "
                         "This is probably because fit has not been called",
                         multi_pca.transform, data)
-
+    # Test if raises an error when empty list of provided.
+    assert_raises_regex(ValueError,
+                        'Need one or more Niimg-like objects as input, '
+                        'an empty list was given.',
+                        multi_pca.fit, [])
+    # Test passing masker arguments to estimator
+    multi_pca = MultiPCA(target_affine=affine,
+                         target_shape=shape[:3],
+                         n_components=3,
+                         mask_strategy='background')
+    multi_pca.fit(data)
 
 
 def test_multi_pca_score():
