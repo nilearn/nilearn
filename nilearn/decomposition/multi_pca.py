@@ -19,7 +19,7 @@ class MultiPCA(BaseDecomposition):
     Parameters
     ----------
     n_components: int
-        Number of components to extract
+        Number of components to extract. By default n_components=20.
 
     do_cca: boolean, optional
         Indicate if a Canonical Correlation Analysis must be run after the
@@ -38,9 +38,26 @@ class MultiPCA(BaseDecomposition):
         it will be computed automatically by a MultiNiftiMasker with default
         parameters.
 
+    mask_strategy: {'background', 'epi'}, optional
+        The strategy used to compute the mask: use 'background' if your
+        images present a clear homogeneous background, and 'epi' if they
+        are raw EPI images. Depending on this value, the mask will be
+        computed from masking.compute_background_mask or
+        masking.compute_epi_mask. Default is 'epi'.
+
+    mask_args: dict, optional
+        If mask is None, these are additional parameters passed to
+        masking.compute_background_mask or masking.compute_epi_mask
+        to fine-tune mask computation. Please see the related documentation
+        for details.
+
     standardize : boolean, optional
         If standardize is True, the time-series are centered and normed:
         their variance is put to 1 in the time dimension.
+
+    detrend : boolean, optional
+        If detrend is True, the time-series will be detrended before
+        components extraction.
 
     target_affine: 3x3 or 4x4 matrix, optional
         This parameter is passed to image.resample_img. Please see the
@@ -94,6 +111,9 @@ class MultiPCA(BaseDecomposition):
     `components_` : 2D numpy array (n_components x n-voxels)
         Array of masked extracted components. They can be unmasked thanks to
         the `masker_` attribute.
+
+    `variance_` : numpy array (n_components,)
+        The amount of variance explained by each of the selected components.
 
     """
 

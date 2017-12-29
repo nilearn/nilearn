@@ -53,15 +53,15 @@ class DictLearning(BaseDecomposition):
         parameters.
 
     n_components: int
-        Number of components to extract.
+        Number of components to extract. By default n_components=20.
 
     batch_size : int, optional, default=20
         The number of samples to take in each batch.
 
-    n_epochs: float
+    n_epochs: float, default=1
         Number of epochs the algorithm should run on the data.
 
-    alpha: float, optional, default=1
+    alpha: float, optional, default=10
         Sparsity controlling parameter.
 
     dict_init: Niimg-like object, optional
@@ -74,7 +74,7 @@ class DictLearning(BaseDecomposition):
         - if set to 'auto', estimator will set the number of components per
           reduced session to be n_components.
 
-    method : {'lars', 'cd'}
+    method : {'lars', 'cd'}, default='cd'
         Coding method used by sklearn backend. Below are the possible values.
         lars: uses the least angle regression method to solve the lasso problem
         (linear_model.lars_path)
@@ -85,13 +85,17 @@ class DictLearning(BaseDecomposition):
     random_state: int or RandomState
         Pseudo number generator state used for random sampling.
 
-    smoothing_fwhm: float, optional
+    smoothing_fwhm: float, optional, default=4mm
         If smoothing_fwhm is not None, it gives the size in millimeters of the
         spatial smoothing to apply to the signal.
 
-    standardize : boolean, optional
+    standardize : boolean, optional, default=True
         If standardize is True, the time-series are centered and normed:
         their variance is put to 1 in the time dimension.
+
+    detrend : boolean, optional, default=True
+        If detrend is True, the time-series will be detrended before
+        components extraction.
 
     target_affine: 3x3 or 4x4 matrix, optional
         This parameter is passed to image.resample_img. Please see the
@@ -113,6 +117,19 @@ class DictLearning(BaseDecomposition):
         This parameter is passed to signal.clean. Please see the related
         documentation for details.
 
+    mask_strategy: {'background', 'epi'}, optional
+        The strategy used to compute the mask: use 'background' if your
+        images present a clear homogeneous background, and 'epi' if they
+        are raw EPI images. Depending on this value, the mask will be
+        computed from masking.compute_background_mask or
+        masking.compute_epi_mask. Default is 'epi'.
+
+    mask_args: dict, optional
+        If mask is None, these are additional parameters passed to
+        masking.compute_background_mask or masking.compute_epi_mask
+        to fine-tune mask computation. Please see the related documentation
+        for details.
+
     memory: instance of joblib.Memory or string
         Used to cache the masking process.
         By default, no caching is done. If a string is given, it is the
@@ -133,6 +150,11 @@ class DictLearning(BaseDecomposition):
     ----------
     `components_` : 2D numpy array (n_components x n-voxels)
         Dictionary components extracted from the images.
+
+    `components_img_` : Nifti image
+        Extracted components unmasked to image.
+
+        .. versionadded:: 0.4.1
 
     `masker_` : instance of MultiNiftiMasker
         Masker used to filter and mask data as first step. If an instance of
@@ -249,5 +271,6 @@ class DictLearning(BaseDecomposition):
         for component in self.components_:
             if np.sum(component > 0) < np.sum(component < 0):
                 component *= -1
+        self.components_img_ = self.masker_.inverse_transform(self.components_)
 
         return self

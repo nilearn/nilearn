@@ -28,9 +28,9 @@ class CanICA(MultiPCA):
         parameters.
 
     n_components: int
-        Number of components to extract
+        Number of components to extract. By default n_components=20.
 
-    smoothing_fwhm: float, optional
+    smoothing_fwhm: float, optional, default 6mm
         If smoothing_fwhm is not None, it gives the size in millimeters of the
         spatial smoothing to apply to the signal.
 
@@ -38,9 +38,13 @@ class CanICA(MultiPCA):
         Indicate if a Canonical Correlation Analysis must be run after the
         PCA.
 
-    standardize: boolean, optional
+    standardize: boolean, optional, default True
         If standardize is True, the time-series are centered and normed:
         their variance is put to 1 in the time dimension.
+
+    detrend : boolean, optional, default True
+        If detrend is True, the time-series will be detrended before
+        components extraction.
 
     threshold: None, 'auto' or float
         If None, no thresholding is applied. If 'auto',
@@ -77,6 +81,19 @@ class CanICA(MultiPCA):
         This parameter is passed to signal.clean. Please see the related
         documentation for details
 
+    mask_strategy: {'background', 'epi'}, optional
+        The strategy used to compute the mask: use 'background' if your
+        images present a clear homogeneous background, and 'epi' if they
+        are raw EPI images. Depending on this value, the mask will be
+        computed from masking.compute_background_mask or
+        masking.compute_epi_mask. Default is 'epi'.
+
+    mask_args: dict, optional
+        If mask is None, these are additional parameters passed to
+        masking.compute_background_mask or masking.compute_epi_mask
+        to fine-tune mask computation. Please see the related documentation
+        for details.
+
     memory: instance of joblib.Memory or string
         Used to cache the masking process.
         By default, no caching is done. If a string is given, it is the
@@ -97,7 +114,12 @@ class CanICA(MultiPCA):
     ----------
     `components_` : 2D numpy array (n_components x n-voxels)
         ICA components extracted from the images. They can be unmasked thanks to
-    the `masker_` attribute.
+        the `masker_` attribute.
+
+    `components_img_` : Nifti image
+        Extracted components unmasked to image.
+
+        .. versionadded:: 0.4.1
 
     `masker_` : instance of MultiNiftiMasker
         Masker used to filter and mask data as first step. If an instance of
@@ -195,6 +217,7 @@ class CanICA(MultiPCA):
         for component in self.components_:
             if component.max() < -component.min():
                 component *= -1
+        self.components_img_ = self.masker_.inverse_transform(self.components_)
 
     # Overriding MultiPCA._raw_fit overrides MultiPCA.fit behavior
     def _raw_fit(self, data):

@@ -2,7 +2,7 @@
 
 import numpy as np
 from numpy.testing import assert_array_almost_equal
-from nose.tools import assert_true, assert_raises
+from nose.tools import assert_true, assert_raises, assert_not_equal
 import nibabel
 
 from nilearn._utils.testing import (assert_less_equal,
@@ -174,3 +174,11 @@ def test_masker_attributes_with_fit():
                     target_shape=(6, 8, 10),
                     mask_strategy='background')
     canica.fit(data)
+
+
+def test_components_img():
+    data, mask_img, _, _ = _make_canica_test_data(n_subjects=3)
+    canica = CanICA(n_components=3, mask=mask_img)
+    components_img = canica.components_img_
+    assert_true(isinstance(components_img), nibabel.Nifti1Image)
+    assert_not_equal(components_img, '')

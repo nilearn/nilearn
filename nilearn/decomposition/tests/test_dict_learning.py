@@ -1,6 +1,7 @@
 import numpy as np
+import nibabel
 
-from nose.tools import assert_true
+from nose.tools import assert_true, assert_not_equal
 from nilearn._utils.testing import assert_less_equal, assert_raises_regex
 from nilearn.decomposition.dict_learning import DictLearning
 from nilearn.decomposition.tests.test_canica import _make_canica_test_data
@@ -106,3 +107,11 @@ def test_masker_attributes_with_fit():
                                  target_shape=(6, 8, 10),
                                  mask_strategy='background')
     dict_learning.fit(data)
+
+
+def test_components_img():
+    data, mask_img, _, _ = _make_canica_test_data(n_subjects=3)
+    dict_learning = DictLearning(n_components=3, mask=mask_img)
+    components_img = dict_learning.components_img_
+    assert_true(isinstance(components_img), nibabel.Nifti1Image)
+    assert_not_equal(components_img, '')

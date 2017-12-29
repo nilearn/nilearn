@@ -282,7 +282,7 @@ class BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
         images present a clear homogeneous background, and 'epi' if they
         are raw EPI images. Depending on this value, the mask will be
         computed from masking.compute_background_mask or
-        masking.compute_epi_mask. Default is 'background'.
+        masking.compute_epi_mask. Default is 'epi'.
 
     mask_args: dict, optional
         If mask is None, these are additional parameters passed to
