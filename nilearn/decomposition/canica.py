@@ -217,7 +217,8 @@ class CanICA(MultiPCA):
         for component in self.components_:
             if component.max() < -component.min():
                 component *= -1
-        self.components_img_ = self.masker_.inverse_transform(self.components_)
+        if hasattr(self, "masker_"):
+            self.components_img_ = self.masker_.inverse_transform(self.components_)
 
     # Overriding MultiPCA._raw_fit overrides MultiPCA.fit behavior
     def _raw_fit(self, data):

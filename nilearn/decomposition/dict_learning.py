@@ -271,6 +271,7 @@ class DictLearning(BaseDecomposition):
         for component in self.components_:
             if np.sum(component > 0) < np.sum(component < 0):
                 component *= -1
-        self.components_img_ = self.masker_.inverse_transform(self.components_)
+        if hasattr(self, "masker_"):
+            self.components_img_ = self.masker_.inverse_transform(self.components_)
 
         return self
