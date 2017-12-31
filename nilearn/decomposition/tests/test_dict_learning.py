@@ -114,5 +114,5 @@ def test_components_img():
     dict_learning = DictLearning(n_components=3, mask=mask_img)
     dict_learning.fit(data)
     components_img = dict_learning.components_img_
-    assert_true(isinstance(components_img), nibabel.Nifti1Image)
+    assert_true(isinstance(components_img, nibabel.Nifti1Image))
     assert_not_equal(components_img, '')

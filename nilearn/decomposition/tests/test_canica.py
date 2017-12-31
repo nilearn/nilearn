@@ -181,5 +181,5 @@ def test_components_img():
     canica = CanICA(n_components=3, mask=mask_img)
     canica.fit(data)
     components_img = canica.components_img_
-    assert_true(isinstance(components_img), nibabel.Nifti1Image)
+    assert_true(isinstance(components_img, nibabel.Nifti1Image))
     assert_not_equal(components_img, '')
