@@ -2,12 +2,8 @@
 Univariate analysis of block design, one condition versus rest, single subject
 ==============================================================================
 
-Authors: Bertrand Thirion, dohmatob elvis dopgima, Christophe Pallier, 2015--2017
-
-
-
-In this tutorial, we compare the fMRI signal during periods of auditory stimulation
-versus periods of rest, using a General Linear Model (GLM). We will
+In this tutorial, we compare the fMRI signal during periods of auditory
+stimulation versus periods of rest, using a General Linear Model (GLM). We will
 use a univariate approach in which independent tests are performed at
 each single-voxel.
 

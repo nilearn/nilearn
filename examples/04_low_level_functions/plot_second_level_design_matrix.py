@@ -2,9 +2,7 @@
 Example of second level design matrix
 =====================================
 
-Requires matplotlib
-
-Author : Martin Perez-Guevara: 2016
+Requires matplotlib.
 
 """
 

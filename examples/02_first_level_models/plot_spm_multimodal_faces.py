@@ -1,7 +1,6 @@
 """
 Minimal script for preprocessing single-subject data (two session)
 ==================================================================
-Author: DOHMATOB Elvis, Bertrand Thirion, 2015
 
 For details on the data, please see:
 Henson, R.N., Goshen-Gottstein, Y., Ganel, T., Otten, L.J., Quayle, A.,

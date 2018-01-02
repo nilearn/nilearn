@@ -20,7 +20,6 @@ More specifically:
 4. A GLM is applied to the dataset (effect/covariance,
    then contrast estimation)
 
-Author: Bertrand Thirion, 2015
 """
 from os import mkdir, path, getcwd
 
