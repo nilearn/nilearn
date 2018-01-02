@@ -102,7 +102,8 @@ duration = epoch_duration * np.ones(n_blocks)
 onset = np.linspace(0, (n_blocks - 1) * epoch_duration, n_blocks)
 
 import pandas as pd
-events = pd.DataFrame({'onset': onset, 'duration': duration, 'trial_type': conditions})
+events = pd.DataFrame(
+    {'onset': onset, 'duration': duration, 'trial_type': conditions})
 
 ###############################################################################
 # The ``events`` object contains the information for the design:
@@ -187,7 +188,7 @@ contrasts::
 # We can then compare the two conditions 'active' and 'rest' by
 # generating the relevant contrast:
 
-active_minus_rest =  contrasts['active'] - contrasts['rest']
+active_minus_rest = contrasts['active'] - contrasts['rest']
 
 eff_map = fmri_glm.compute_contrast(active_minus_rest,
                                     output_type='effect_size')

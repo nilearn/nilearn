@@ -343,7 +343,7 @@ def fetch_spm_auditory(data_dir=None, data_name='spm_auditory',
             if len(vol.shape) == 4:
                 vol = nib.Nifti1Image(vol.get_data()[:, :, :, 0],
                                       vol.affine)
-                vol.to_filename(x)
+                nib.save(vol, x)
 
         _subject_data["anat"] = [subject_data[x] for x in subject_data.keys()
                                  if re.match("^sM00223_002\.img$",
