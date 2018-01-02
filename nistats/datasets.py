@@ -354,7 +354,7 @@ def fetch_spm_auditory(data_dir=None, data_name='spm_auditory',
         if len(vol.shape) == 4:
             vol = nib.Nifti1Image(vol.get_data()[:, :, :, 0],
                                   vol.affine)
-            vol.to_filename(_subject_data["anat"])
+            nib.save(vol, _subject_data["anat"])
 
         return Bunch(**_subject_data)
 
