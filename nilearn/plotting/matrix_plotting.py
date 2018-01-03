@@ -66,12 +66,14 @@ def plot_matrix(mat, title=None, labels=None, figure=None, axes=None,
             If not False, reorders the matrix into blocks of clusters.
             Accepted linkage options for the clustering are 'single',
             'complete', and 'average'. True defaults to average linkage.
+            .. note::
+            This option is only available with SciPy >= 1.0.0.
         kwargs : extra keyword arguments
             Extra keyword arguments are sent to pylab.imshow
 
         Returns Matplotlib AxesImage instance
     """
-    if reorder is not False:
+    if reorder:
         if labels is None or labels is False:
             raise ValueError("Labels are needed to show the reordering.")
         try:
@@ -79,11 +81,12 @@ def plot_matrix(mat, title=None, labels=None, figure=None, axes=None,
                                                  leaves_list)
         except ImportError:
             raise ImportError("A scipy version of at least 1.0 is needed "
-                    "for ordering the matrix with optimal_leaf_ordering.")
+                              "for ordering the matrix with "
+                              "optimal_leaf_ordering.")
         valid_reorder_args = [True, 'single', 'complete', 'average']
         if reorder not in valid_reorder_args:
-            raise ValueError("Parameter reorder "
-            "needs to be one of {}.".format(valid_reorder_args))
+            raise ValueError("Parameter reorder needs to be "
+                             "one of {}.".format(valid_reorder_args))
         if reorder is True:
             reorder = 'average'
         linkage_matrix = linkage(mat, method=reorder)
