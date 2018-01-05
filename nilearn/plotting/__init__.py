@@ -40,14 +40,14 @@ from distutils.version import LooseVersion
 from . import cm
 from .img_plotting import plot_img, plot_anat, plot_epi, \
     plot_roi, plot_stat_map, plot_glass_brain, plot_connectome, \
-    plot_prob_atlas, show
+    plot_prob_atlas, plot_carpet, show
 from .find_cuts import find_xyz_cut_coords, find_cut_slices
 from .matrix_plotting import plot_matrix
 __all__ = ['cm', 'plot_img', 'plot_anat', 'plot_epi',
            'plot_roi', 'plot_stat_map', 'plot_glass_brain',
            'plot_connectome', 'plot_prob_atlas',
            'find_xyz_cut_coords', 'find_cut_slices',
-           'show', 'plot_matrix']
+           'show', 'plot_matrix', 'plot_carpet']
 
 # matplotlib older versions 1.1.1 will not work to plot surface data using
 # plotting functions from surf_plotting.py. Hence we check the version and
