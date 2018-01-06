@@ -169,17 +169,17 @@ $(function () {
     <h2>Machine learning for Neuro-Imaging in Python</h2>
   </div>
   <div class="search_form">
-    <div id="cse" style="width: 100%;"></div>
-    <script src="http://www.google.com/jsapi" type="text/javascript"></script>
-    <script type="text/javascript">
-      google.load('search', '1', {language : 'en'});
-      google.setOnLoadCallback(function() {
-      var customSearchControl = new google.search.CustomSearchControl('014136483057745874622:r-npolb1uki');
-      customSearchControl.setResultSetSize(google.search.Search.FILTERED_CSE_RESULTSET);
-      var options = new google.search.DrawOptions();
-      options.setAutoComplete(true);
-      customSearchControl.draw('cse', options);
-      }, true);
+    <div class="gcse-search" id="cse" style="width: 100%;"></div>
+    <script>
+      (function() {
+        var cx = '017289614950330089114:elrt9qoutrq';
+        var gcse = document.createElement('script');
+        gcse.type = 'text/javascript';
+        gcse.async = true;
+        gcse.src = 'https://cse.google.com/cse.js?cx=' + cx;
+        var s = document.getElementsByTagName('script')[0];
+        s.parentNode.insertBefore(gcse, s);
+      })();
     </script>
   </div>
 </div>
