@@ -20,6 +20,7 @@ import json
 
 import numpy as np
 import pandas as pd
+import nibabel as nib
 from nibabel import Nifti1Image, AnalyzeImage
 
 from sklearn.base import BaseEstimator, TransformerMixin, clone
@@ -286,12 +287,12 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
             self.memory = memory
         self.memory_level = memory_level
         self.standardize = standardize
-        if signal_scaling in [0, 1, (0, 1)]:
+        if signal_scaling is False:
+            self.signal_scaling = signal_scaling
+        elif signal_scaling in [0, 1, (0, 1)]:
             self.scaling_axis = signal_scaling
             self.signal_scaling = True
             self.standardize = False
-        elif signal_scaling is False:
-            self.signal_scaling = signal_scaling
         else:
             raise ValueError('signal_scaling must be "False", "0", "1"'
                              ' or "(0, 1)"')
