@@ -2,9 +2,6 @@
 First level analysis of a complete BIDS dataset from openneuro
 ===============================================================
 
-Author : Martin Perez-Guevara: 2017
-
-
 
 Full step-by-step example of fitting a GLM to perform a first level analysis
 in an openneuro BIDS dataset. We demonstrate how BIDS derivatives can be

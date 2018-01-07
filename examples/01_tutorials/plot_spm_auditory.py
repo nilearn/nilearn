@@ -2,12 +2,8 @@
 Univariate analysis of block design, one condition versus rest, single subject
 ==============================================================================
 
-Authors: Bertrand Thirion, dohmatob elvis dopgima, Christophe Pallier, 2015--2017
-
-
-
-In this tutorial, we compare the fMRI signal during periods of auditory stimulation
-versus periods of rest, using a General Linear Model (GLM). We will
+In this tutorial, we compare the fMRI signal during periods of auditory
+stimulation versus periods of rest, using a General Linear Model (GLM). We will
 use a univariate approach in which independent tests are performed at
 each single-voxel.
 
@@ -106,7 +102,8 @@ duration = epoch_duration * np.ones(n_blocks)
 onset = np.linspace(0, (n_blocks - 1) * epoch_duration, n_blocks)
 
 import pandas as pd
-events = pd.DataFrame({'onset': onset, 'duration': duration, 'trial_type': conditions})
+events = pd.DataFrame(
+    {'onset': onset, 'duration': duration, 'trial_type': conditions})
 
 ###############################################################################
 # The ``events`` object contains the information for the design:
@@ -191,7 +188,7 @@ contrasts::
 # We can then compare the two conditions 'active' and 'rest' by
 # generating the relevant contrast:
 
-active_minus_rest =  contrasts['active'] - contrasts['rest']
+active_minus_rest = contrasts['active'] - contrasts['rest']
 
 eff_map = fmri_glm.compute_contrast(active_minus_rest,
                                     output_type='effect_size')

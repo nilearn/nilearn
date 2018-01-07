@@ -2,13 +2,11 @@
 Example of simple second level analysis
 =======================================
 
-Perform a one-sample t-test on a bunch of images 
+Perform a one-sample t-test on a bunch of images
 (a.k.a. second-level analyis in fMRI) and threshold a statistical image.
 This is based on the so-called localizer dataset.
 It shows activation related to a mental computation task,
 as opposed to narrative sentence reading/listening.
-
-Author: Bertrand.thirion, Virgile Fritsch, 2014--2015
 
 """
 from nilearn import datasets
@@ -27,19 +25,18 @@ nifti_masker = NiftiMasker(
     smoothing_fwhm=5,
     memory='nilearn_cache', memory_level=1)  # cache options
 cmap_filenames = localizer_dataset.cmaps
-fmri_masked = nifti_masker.fit_transform(cmap_filenames)
 
 #########################################################################
 # Perform the second level analysis
 # ----------------------------------
 # perform a one-sample test on these values
-from scipy.stats import ttest_1samp
-_, p_values = ttest_1samp(fmri_masked, 0)
+import pandas as pd
+design_matrix = pd.DataFrame([1] * n_samples, columns=['intercept'])
 
-#########################################################################
-# z-transform of p-values
-from nistats.utils import z_score
-z_map = nifti_masker.inverse_transform(z_score(p_values))
+from nistats.second_level_model import SecondLevelModel
+second_level_model = SecondLevelModel().fit(
+    cmap_filenames, design_matrix=design_matrix)
+z_map = second_level_model.compute_contrast(output_type='z_score')
 
 #########################################################################
 # Threshold the resulting map:
