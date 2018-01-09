@@ -383,6 +383,7 @@ def test_first_level_models_from_bids():
         assert_raises(ValueError, first_level_models_from_bids,
                       bids_path, 'main', 'T1w')  # variant not specified
 
+
 def test_first_level_models_with_no_signal_scaling():
     """
     test to ensure that the FirstLevelModel works correctly with a
@@ -390,20 +391,20 @@ def test_first_level_models_with_no_signal_scaling():
     constant design matrix with a single valued fmri image
     """
     shapes, rk = [(3, 1, 1, 2)], 1
-    fmri_data = []
-    design_matrices = []
-    design_matrices.append( pd.DataFrame(np.ones((shapes[0][-1], rk) ),
-                                columns=list('abcdefghijklmnopqrstuvwxyz')[:rk]))
+    fmri_data = list()
+    design_matrices = list()
+    design_matrices.append(pd.DataFrame(np.ones((shapes[0][-1], rk)),
+                                        columns=list('abcdefghijklmnopqrstuvwxyz')[:rk]))
     first_level_model = FirstLevelModel(mask=False, noise_model='ols', signal_scaling=False)
-    fmri_data.append(Nifti1Image( np.zeros((1,1,1,2)) + 6, np.eye(4)))
+    fmri_data.append(Nifti1Image(np.zeros((1, 1, 1, 2)) + 6, np.eye(4)))
 
     first_level_model.fit(fmri_data, design_matrices=design_matrices)
     # trivial test of signal_scaling value
-    assert_true(first_level_model.signal_scaling==False)
+    assert_true(first_level_model.signal_scaling is False)
     # assert that our design matrix has one constant
     assert_true(first_level_model.design_matrices_[0].equals(
-                    pd.DataFrame([1.0, 1.0], columns=['a'])))
+        pd.DataFrame([1.0, 1.0], columns=['a'])))
     # assert that we only have one theta as there is only on voxel in our image
-    assert_true(first_level_model.results_[0][0].theta.shape == (1,1))
+    assert_true(first_level_model.results_[0][0].theta.shape == (1, 1))
     # assert that the theta is equal to the one voxel value
-    assert_almost_equal(first_level_model.results_[0][0].theta[0,0],6.0,2)
+    assert_almost_equal(first_level_model.results_[0][0].theta[0, 0], 6.0, 2)
