@@ -113,11 +113,12 @@ class CanICA(MultiPCA):
     Attributes
     ----------
     `components_` : 2D numpy array (n_components x n-voxels)
-        ICA components extracted from the images. They can be unmasked thanks to
-        the `masker_` attribute.
+        Masked ICA components extracted from the input images. They can be
+        unmasked thanks to the `masker_` attribute.
 
-    `components_img_` : Nifti image
-        Extracted components unmasked to image.
+    `components_img_` : 4D Nifti image
+        4D image giving the extracted ICA components. Each 3D image is a
+        component.
 
         .. versionadded:: 0.4.1
 

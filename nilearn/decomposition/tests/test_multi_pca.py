@@ -135,3 +135,29 @@ def test_multi_pca_score():
     assert_equal(s.shape, (5,))
     assert_true(np.all(s <= 1))
     assert_true(np.all(0 <= s))
+
+
+def test_components_img():
+    shape = (6, 8, 10, 5)
+    affine = np.eye(4)
+    rng = np.random.RandomState(0)
+
+    # Create a "multi-subject" dataset
+    data = []
+    for i in range(8):
+        this_data = rng.normal(size=shape)
+        # Create fake activation to get non empty mask
+        this_data[2:4, 2:4, 2:4, :] += 10
+        data.append(nibabel.Nifti1Image(this_data, affine))
+
+    mask_img = nibabel.Nifti1Image(np.ones(shape[:3], dtype=np.int8), affine)
+    n_components = 3
+    multi_pca = MultiPCA(mask=mask_img, n_components=n_components,
+                         random_state=0)
+    # fit to the data and test for components images
+    multi_pca.fit(data)
+    components_img = multi_pca.components_img_
+    assert_true(isinstance(components_img, nibabel.Nifti1Image))
+    check_shape = data[0].shape[:3] + (n_components,)
+    assert_equal(components_img.shape, check_shape)
+    assert_equal(len(components_img.shape), 4)

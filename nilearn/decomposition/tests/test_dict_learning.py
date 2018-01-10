@@ -111,8 +111,10 @@ def test_masker_attributes_with_fit():
 
 def test_components_img():
     data, mask_img, _, _ = _make_canica_test_data(n_subjects=3)
-    dict_learning = DictLearning(n_components=3, mask=mask_img)
+    n_components = 3
+    dict_learning = DictLearning(n_components=n_components, mask=mask_img)
     dict_learning.fit(data)
     components_img = dict_learning.components_img_
     assert_true(isinstance(components_img, nibabel.Nifti1Image))
-    assert_not_equal(components_img, '')
+    check_shape = data[0].shape + (n_components,)
+    assert_true(components_img.shape, check_shape)

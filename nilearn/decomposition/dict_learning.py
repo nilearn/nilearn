@@ -149,10 +149,10 @@ class DictLearning(BaseDecomposition):
     Attributes
     ----------
     `components_` : 2D numpy array (n_components x n-voxels)
-        Dictionary components extracted from the images.
+        Masked dictionary components extracted from the input images.
 
-    `components_img_` : Nifti image
-        Extracted components unmasked to image.
+    `components_img_` : 4D Nifti image
+        4D image giving the extracted components. Each 3D image is a component.
 
         .. versionadded:: 0.4.1
 

@@ -51,8 +51,15 @@ and then fit it on the data.
     :start-after: # Here we apply CanICA on the data
     :end-before: ####################################################################
 
-The components estimated are found as the `components_` attribute of the
-object.
+The components estimated are found as the `components_img_` attribute
+of the object. A 4D Nifti image.
+
+.. note::
+    The `components_img_` attribute is implemented from version 0.4.1 which
+    is easy for visualization without any additional step to unmask to image.
+    For users who have older versions, components image can be done by
+    unmasking attribute `components_`. See :ref:`section Inverse transform:
+    unmasking data <unmasking_step>`.
 
 Visualizing the results
 -----------------------
