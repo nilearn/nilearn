@@ -57,6 +57,7 @@ else:
         request = module_lookup
         error = module_lookup
         parse = module_lookup
+        urlencode = staticmethod(module_lookup.__getattr__("urlencode"))
 
     def md5_hash(string):
         m = hashlib.md5()

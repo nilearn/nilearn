@@ -14,8 +14,28 @@ import sys
 import tarfile
 import warnings
 import zipfile
+import shutil
+import tempfile
 
 from .._utils.compat import _basestring, cPickle, _urllib, md5_hash
+
+
+class TempDir(object):
+    """ Create a tempdir.
+    """
+    def __init__(self):
+        """ Initialize the TempDir class.
+        """
+        self.path = None
+        return
+
+    def __enter__(self):
+        self.path = tempfile.mkdtemp()
+        return self.path
+
+    def __exit__(self, type, value, traceback):
+        if self.path is not None:
+            shutil.rmtree(self.path)
 
 
 def _format_time(t):
