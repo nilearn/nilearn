@@ -215,7 +215,7 @@ def _convolve_regressors(paradigm, hrf_model, frame_times, fir_delays=[0],
         oversampling = 16
 
     trial_type, onset, duration, modulation = check_paradigm(paradigm)
-    for condition in np.unique(paradigm.trial_type):
+    for condition in np.unique(trial_type):
         condition_mask = (trial_type == condition)
         exp_condition = (onset[condition_mask],
                          duration[condition_mask],
