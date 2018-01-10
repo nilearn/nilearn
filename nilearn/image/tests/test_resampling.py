@@ -647,6 +647,20 @@ def test_reorder_img_non_native_endianness():
     np.testing.assert_equal(img_1.get_data(), img_2.get_data())
 
 
+def test_reorder_img_mirror():
+    affine = np.array([
+        [-1, -0., 0., 0.],
+        [-0., -1, 0., 0.],
+        [-0., -0., 1, 0.],
+        [0.,  0., 0., 1.]
+    ])
+    img = Nifti1Image(np.zeros((90, 100, 123)), affine=affine)
+    np.testing.assert_allclose(
+        reorder_img(img).affine[:, 3],
+        [-89, -99, 0, 1],
+    )
+
+
 def test_coord_transform_trivial():
     sform = np.eye(4)
     x = np.random.random((10,))
