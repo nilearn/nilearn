@@ -4,6 +4,7 @@ Massively Univariate Linear Model estimated with OLS and permutation test.
 # Author: Benoit Da Mota, <benoit.da_mota@inria.fr>, sept. 2011
 #         Virgile Fritsch, <virgile.fritsch@inria.fr>, jan. 2014
 import warnings
+from distutils.version import LooseVersion
 
 import numpy as np
 from scipy import linalg
@@ -52,6 +53,8 @@ def normalize_matrix_on_axis(m, axis=0):
         ret = normalize_matrix_on_axis(m.T).T
     else:
         raise ValueError('axis(=%d) out of bounds' % axis)
+    if LooseVersion(np.__version__) > LooseVersion('1.13'):
+        np.set_printoptions(legacy='1.13')
     return ret
 
 
