@@ -909,7 +909,7 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
     # downloaded. We use this option in order to be able to filter
     # localy the dataset.
     # TODO: use the 'zone partenaire' server root url
-    root_url = url or "http://localhost:9090/explore?project=localizer"
+    root_url = url or "http://is209426.intra.cea.fr/data/explore?project=localizer"
     params = {
         "export": "txt",
         "subjects": subject_ids,
