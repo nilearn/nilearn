@@ -6,7 +6,7 @@ that includes an 'onset' field.
 
 This yields the onset time of the events in the paradigm.
 It can also contain:
-    * a 'name' field that yields the condition identifier.
+    * a 'trial_type' field that yields the condition identifier.
     * a 'duration' field that yields event duration (for so-called block
         paradigms).
     * a 'modulation' field that associated a scalar value to each event.
