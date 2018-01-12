@@ -916,7 +916,7 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
         "modalitites": ["anat"],
         "processes": ["spm1level"]
     }
-    url = root_url + "&" + _urllib.urlencode(params)
+    url = root_url + "&" + _urllib.parse.urlencode(params)
     with TempDir() as tmp_dir:
         path = _fetch_file(
             url, tmp_dir, resume=False, overwrite=True,
