@@ -307,16 +307,16 @@ Basic numerics
 
     >>> import numpy as np
     >>> t = np.linspace(1, 10, 2000)  # 2000 points between 1 and 10
-    >>> t  # doctest: +SKIP
+    >>> t
     array([  1.        ,   1.00450225,   1.0090045 , ...,   9.9909955 ,
              9.99549775,  10.        ])
-    >>> t / 2  # doctest: +SKIP
+    >>> t / 2
     array([ 0.5       ,  0.50225113,  0.50450225, ...,  4.99549775,
             4.99774887,  5.        ])
-    >>> np.cos(t) # Operations on arrays are defined in the numpy module  # doctest: +SKIP
+    >>> np.cos(t) # Operations on arrays are defined in the numpy module
     array([ 0.54030231,  0.53650833,  0.53270348, ..., -0.84393609,
            -0.84151234, -0.83907153])
-    >>> t[:3] # In Python indexing is done with [] and starts at zero  # doctest: +SKIP
+    >>> t[:3] # In Python indexing is done with [] and starts at zero
     array([ 1.        ,  1.00450225,  1.0090045 ])
 
   `More documentation ...

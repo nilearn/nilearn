@@ -53,8 +53,6 @@ def normalize_matrix_on_axis(m, axis=0):
         ret = normalize_matrix_on_axis(m.T).T
     else:
         raise ValueError('axis(=%d) out of bounds' % axis)
-    if LooseVersion(np.__version__) > LooseVersion('1.13'):
-        np.set_printoptions(legacy='1.13')
     return ret
 
 
