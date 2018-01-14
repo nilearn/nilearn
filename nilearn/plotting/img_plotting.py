@@ -1307,9 +1307,10 @@ def plot_carpet(img, mask_img=None, detrend=True, output_file=None,
 
     if not mask_img:
         nifti_masker = NiftiMasker(mask_strategy='epi', standardize=False)
+        nifti_masker.fit(img_nii)
         mask_data = nifti_masker.mask_img_.get_data().astype(bool)
     else:
-        mask_nii = _utils.check_niimg_3d(img, dtype='auto')
+        mask_nii = _utils.check_niimg_3d(mask_img, dtype='auto')
         mask_data = _safe_get_data(mask_nii, ensure_finite=True)
 
     data = img_data[mask_data > 0].reshape(-1, ntsteps)
