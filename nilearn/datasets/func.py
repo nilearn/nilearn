@@ -665,7 +665,8 @@ def fetch_miyawaki2008(data_dir=None, url=None, resume=True, verbose=1):
 
 def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
                               get_masks=False, get_anats=False,
-                              data_dir=None, url=None, resume=True, verbose=1):
+                              data_dir=None, url=None, osf_project_id=None,
+                              resume=True, verbose=1):
     """Download and load Brainomics Localizer dataset (94 subjects).
 
     "The Functional Localizer is a simple and fast acquisition
@@ -776,6 +777,9 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
 
     url: string, optional
         Override download URL. Usefull if you setup a mirror of the data.
+
+    osf_project_id: sring, optional
+        The OSF project identifier.
 
     resume: bool
         Whether to resume download of a partly-downloaded file.
@@ -903,26 +907,33 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
         n_subjects = len(n_subjects)
     subject_ids = ["S%02d" % s for s in subject_mask]
 
-    # Define the download url
-    # TODO: use the 'zone partenaire' server root url
-    url = url or "http://is209426.intra.cea.fr/neurospin/localizer/"
-
     # Get the destinaiton folder
     dataset_name = "brainomics_localizer"
     data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
                                 verbose=verbose)
 
-    # Download the full dataset and filter locally
-    cmd = ["wget", "-N", "-P", data_dir, "-R", "index.html*", "--recursive",
-           "--no-parent", url]
-    if verbose == 0:
-        cmd.append("--quiet")
+    # Define the download url and perform this step.
+    # Two strategies: Directory or OSF resource.
+    if osf_project_id is not None:
+        cmd = ["osf", "-p", osf_project_id, "clone",  data_dir]
+        prefix_dir = "osfstorage"
+    else:
+        # TODO: use the 'zone partenaire' server root url
+        url = url or "http://is209426.intra.cea.fr/neurospin/localizer/"
+        prefix_dir = os.sep.join(url.rstrip(os.sep).split(os.sep)[2:])
+        cmd = ["wget", "-P", data_dir, "-R", "index.html*", "--recursive",
+               "--no-parent", url]
+        if verbose <= 1:
+            cmd.append("--quiet")
+        if resume:
+            cmd.append("-N")
+    if verbose > 0:
+        print("Download command: {0}.".format(" ".join(cmd)))
     subprocess.check_call(cmd)
     if verbose > 0:
-        print("All files download.")
+        print("All files downloaded.")
 
     # Replace the data directory
-    prefix_dir = os.sep.join(url.rstrip(os.sep).split(os.sep)[2:])
     data_dir = os.path.join(data_dir, prefix_dir)
 
     # Filter the available files based on the function arguments
