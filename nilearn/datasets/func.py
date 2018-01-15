@@ -7,15 +7,15 @@ import re
 import json
 import numpy as np
 import numbers
-import csv
+import subprocess
+import glob
 
 import nibabel
 from sklearn.datasets.base import Bunch
 from sklearn.utils import deprecated
 
 from .utils import (_get_dataset_dir, _fetch_files, _get_dataset_descr,
-                    _read_md5_sum_file, _tree, _filter_columns, _fetch_file,
-                    TempDir)
+                    _read_md5_sum_file, _tree, _filter_columns, _fetch_file)
 from .._utils import check_niimg
 from .._utils.compat import BytesIO, _basestring, _urllib
 from .._utils.numpy_conversions import csv_to_array
@@ -775,8 +775,7 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
         location.
 
     url: string, optional
-        Override download URL. Used for test only (or if you setup a mirror of
-        the data).
+        Override download URL. Usefull if you setup a mirror of the data.
 
     resume: bool
         Whether to resume download of a partly-downloaded file.
@@ -904,78 +903,83 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
         n_subjects = len(n_subjects)
     subject_ids = ["S%02d" % s for s in subject_mask]
 
-    # Define the download url and perform the download operation
-    # We use the TXT extraction mode to get a list of files that can be
-    # downloaded. We use this option in order to be able to filter
-    # localy the dataset.
+    # Define the download url
     # TODO: use the 'zone partenaire' server root url
-    root_url = url or "http://is209426.intra.cea.fr/data/explore?project=localizer"
-    params = {
-        "export": "txt",
-        "subjects": subject_ids,
-        "modalitites": ["anat"],
-        "processes": ["spm1level"]
-    }
-    url = root_url + "&" + _urllib.parse.urlencode(params)
-    with TempDir() as tmp_dir:
-        path = _fetch_file(
-            url, tmp_dir, resume=False, overwrite=True,
-            md5sum=None, username=None, password=None, handlers=[],
-            verbose=verbose)
-        with open(path) as open_file:
-            files = open_file.read().splitlines()
-    download_url = set(
-        [re.split("sourcedata|derivatives", e)[0] for e in files])
-    assert(len(download_url) == 1,
-           "Do not deal with multiple download urls in one dataset.")
-    download_url = download_url.pop()
-    if verbose > 0:
-        print("'{0}' files found.".format(len(files)))
+    url = url or "http://is209426.intra.cea.fr/neurospin/localizer/"
 
-    # Filter the available files based on the function arguments.
+    # Get the destinaiton folder
     dataset_name = "brainomics_localizer"
     data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
                                 verbose=verbose)
-    filenames = []
+
+    # Download the full dataset and filter locally
+    cmd = ["wget", "-N", "-P", data_dir, "-R", "index.html*", "--recursive",
+           "--no-parent", url]
+    if verbose == 0:
+        cmd.append("--quiet")
+    subprocess.check_call(cmd)
+    if verbose > 0:
+        print("All files download.")
+
+    # Replace the data directory
+    prefix_dir = os.sep.join(url.rstrip(os.sep).split(os.sep)[2:])
+    data_dir = os.path.join(data_dir, prefix_dir)
+
+    # Filter the available files based on the function arguments
+    if verbose > 0:
+        print("Filtering with options:")
+        print("Subjects:", subject_ids)
+        print("Get anatomicals:", get_anats)
+        print("Get masks:", get_masks)
+        print("Get Tmaps:", get_tmaps)
     masks, anats = [], []
     stats = {"cmaps": [], "tmaps": []}
-    for path in files:
-        basename = os.path.basename(path)
-        if get_masks and path.endswith("_defaceT1w.nii.gz"):
-            filenames.append((basename, path, {}))
-            masks.append(os.path.join(data_dir, basename))
-        if get_anats and path.endswith("_T1w.nii.gz"):
-            filenames.append((basename, path, {}))
-            anats.append(os.path.join(data_dir, basename))
-        for name in stat_names:
-            if path.endswith(name):
-                filenames.append((basename, path, {}))
-                stat_name = name.split("_")[-1].split(".")[0]
-                stats[stat_name] = os.path.join(data_dir, basename)
+    for sid in subject_ids:
+        anat_pattern = os.path.join(
+            data_dir, "sourcedata", "sub-{0}".format(sid), "*", "anat",
+            "*.nii.gz")
+        for path in glob.glob(anat_pattern):
+            if get_masks and path.endswith("_defaceT1w.nii.gz"):
+                masks.append(path)
+            if get_anats and path.endswith("_T1w.nii.gz"):
+                anats.append(path)
+        func_pattern = os.path.join(
+            data_dir, "derivatives", "spm1level", "sub-{0}".format(sid), "*",
+            "*.nii.gz")
+        for path in glob.glob(func_pattern):
+            for name in stat_names:
+                if path.endswith(name):
+                    stat_name = name.split("_")[-1].split(".")[0]
+                    stats[stat_name].append(path)
+
+    # Get subject characteristics
+    participants_file = os.path.join(data_dir, "participants.tsv")
+    ext_vars = np.recfromcsv(
+        participants_file, delimiter="\t", filling_values=np.nan,
+        case_sensitive=True)
+    all_sids = list(ext_vars["participant_id"])
+    to_remove_sids = set(all_sids) - set(subject_ids)
+    indices = []
+    for sid in to_remove_sids:
+        indices.append(all_sids.index(sid))
+    ext_vars = np.delete(ext_vars, tuple(indices))
+
+    # Status message
     if verbose > 0:
-        print("'{0}' files to download.".format(len(filenames)))
+        print("'{0}' anat files selected.".format(len(anats)))
+        print("'{0}' mask files selected.".format(len(masks)))
+        print("'{0}' cmaps files selected.".format(len(stats["cmaps"])))
+        print("'{0}' tmaps files selected.".format(len(stats["tmaps"])))
 
-    # Fetch subject characteristics
-    csv_data = {}
-    with TempDir() as tmp_dir:
-        url = os.path.join(download_url, "participants.tsv")
-        path = _fetch_file(
-            url, tmp_dir, resume=False, overwrite=True,
-            md5sum=None, username=None, password=None, handlers=[],
-            verbose=verbose)
-        with open(path) as open_file:
-            reader = csv.DictReader(open_file, delimiter="\t")
-            for row in reader:
-                subject = row["participant_id"]
-                del row["participant_id"]
-                csv_data[subject] = row
+    # Always return a recarray even if no subject characteristics has been
+    # found
+    if ext_vars is None:
+        ext_vars = np.recarray()
 
-    # Actual data fetching
     fdescr = _get_dataset_descr(dataset_name)
-    files = _fetch_files(data_dir, filenames, verbose=verbose)
-
-    return Bunch(cmaps=stats["cmaps"], tmaps=stats["tmaps"], masks=masks,
-                 anats=anats, ext_vars=csv_data, description=fdescr)
+    return Bunch(cmaps=stats["cmaps"] or None, tmaps=stats["tmaps"] or None,
+                 masks=masks  or None, anats=anats or None, ext_vars=ext_vars,
+                 description=fdescr)
 
 
 def fetch_localizer_calculation_task(n_subjects=1, data_dir=None, url=None,
