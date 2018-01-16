@@ -16,6 +16,7 @@ from nibabel import Nifti1Image
 
 from nilearn.image.resampling import resample_img, resample_to_img, reorder_img
 from nilearn.image.resampling import from_matrix_vector, coord_transform
+from nilearn.image.resampling import get_bounds
 from nilearn.image.resampling import BoundingBoxError
 from nilearn._utils import testing
 
@@ -645,6 +646,21 @@ def test_reorder_img_non_native_endianness():
     img_2 = _get_resampled_img('>f8')
 
     np.testing.assert_equal(img_1.get_data(), img_2.get_data())
+
+
+def test_reorder_img_mirror():
+    affine = np.array([
+        [-1.1, -0., 0., 0.],
+        [-0., -1.2, 0., 0.],
+        [-0., -0., 1.3, 0.],
+        [0.,  0., 0., 1.]
+    ])
+    img = Nifti1Image(np.zeros((4, 6, 8)), affine=affine)
+    reordered = reorder_img(img)
+    np.testing.assert_allclose(
+        get_bounds(reordered.shape, reordered.affine),
+        get_bounds(img.shape, img.affine),
+    )
 
 
 def test_coord_transform_trivial():
