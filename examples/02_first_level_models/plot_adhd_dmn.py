@@ -11,13 +11,13 @@ More specifically:
 2. A design matrix with the Posterior Cingulate Cortex seed is defined
 4. A GLM is applied to the dataset (effect/covariance,
    then contrast estimation)
-5. The Default Mode Network is display
+5. The Default Mode Network is displayed
 
 """
 import numpy as np
 
 from nilearn import datasets, plotting
-from nilearn.input_data import NiftiSpheresMasker, NiftiMasker
+from nilearn.input_data import NiftiSpheresMasker
 
 from nistats.first_level_model import FirstLevelModel
 from nistats.design_matrix import make_design_matrix
@@ -30,7 +30,7 @@ adhd_dataset = datasets.fetch_adhd(n_subjects=1)
 
 # Prepare timing
 t_r = 2.
-slice_time_ref = 0.5
+slice_time_ref = 0.
 n_scans = 176
 
 # Prepare seed
