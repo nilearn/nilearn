@@ -1,3 +1,8 @@
+.. for doc tests to run with recent NumPy 1.14, we need to set print options
+   to older versions. See issue #1593 for more details.
+    >>> import numpy as np
+    >>> np.set_printoptions(legacy='1.13')
+
 =====================================
 Introduction: nilearn in a nutshell
 =====================================
