@@ -33,10 +33,20 @@ signal                  --- Set of preprocessing functions for time series
 """
 
 import gzip
+from distutils.version import LooseVersion
 
 from .version import _check_module_dependencies, __version__
 
 _check_module_dependencies()
+
+# Temporary work around to address formatting issues in doc tests
+# with NumPy 1.14. NumPy had made more consistent str/repr formatting
+# of numpy arrays. Hence we print the options to old versions.
+import numpy as np
+if LooseVersion(np.__version__) >= LooseVersion("1.14"):
+    from ._utils.testing import is_nose_running
+    if is_nose_running():
+        np.set_printoptions(legacy='1.13')
 
 # Monkey-patch gzip to have faster reads on large gzip files
 if hasattr(gzip.GzipFile, 'max_read_chunk'):
