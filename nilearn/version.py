@@ -48,6 +48,22 @@ REQUIRED_MODULE_METADATA = (
 OPTIONAL_MATPLOTLIB_MIN_VERSION = '1.1.1'
 
 
+def get_module_status(module_name):
+    """
+    Returns a dictionary 'module_status' containing a boolean status
+    specifying whether module given in parameter module_name is installed
+    or not. Also, returns import "module" if found otherwise empty.
+    """
+    module_status = {}
+    try:
+        module = __import__(module_name)
+        module_status['installed'] = True
+    except ImportError:
+        module_status['installed'] = False
+        module = ""
+    return module, module_status
+
+
 def _import_module_with_version_check(
         module_name,
         minimum_version,
@@ -56,17 +72,16 @@ def _import_module_with_version_check(
     """
     from distutils.version import LooseVersion
 
-    try:
-        module = __import__(module_name)
-    except ImportError as exc:
+    module, module_status = get_module_status(module_name)
+    if module_status['installed'] is False:
         user_friendly_info = ('Module "{0}" could not be found. {1}').format(
             module_name,
             install_info or 'Please install it properly to use nilearn.')
-        exc.args += (user_friendly_info,)
-        raise
+        raise ImportError(user_friendly_info)
 
-    # Avoid choking on modules with no __version__ attribute
-    module_version = getattr(module, '__version__', '0.0.0')
+    if module_status['installed'] is True:
+        # Avoid choking on modules with no __version__ attribute
+        module_version = getattr(module, '__version__', '0.0.0')
 
     version_too_old = (not LooseVersion(module_version) >=
                        LooseVersion(minimum_version))
