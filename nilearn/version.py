@@ -63,6 +63,10 @@ def _import_module_with_version_check(
             module_name,
             install_info or 'Please install it properly to use nilearn.')
         exc.args += (user_friendly_info,)
+        # Necessary for Python 3 because the repr/str of ImportError
+        # objects was changed in Python 3
+        if hasattr(exc, 'msg'):
+            exc.msg += '. ' + user_friendly_info
         raise
 
     # Avoid choking on modules with no __version__ attribute
