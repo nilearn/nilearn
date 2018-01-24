@@ -91,3 +91,11 @@ def test_data_complete_mask():
     oslicer = OrthoSlicer(cut_coords=(0, 0, 0))
     oslicer.add_overlay(img)
     oslicer.close()
+
+
+def test_add_markers_cut_coords_is_none():
+    # A special case test for add_markers when cut_coords are None. This
+    # case is used when coords are placed on glass brain
+    orthoslicer = OrthoSlicer(cut_coords=(None, None, None))
+    orthoslicer.add_markers([(0, 0, 2)])
+    orthoslicer.close()
