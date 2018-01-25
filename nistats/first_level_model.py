@@ -286,12 +286,12 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
             self.memory = memory
         self.memory_level = memory_level
         self.standardize = standardize
-        if signal_scaling in [0, 1, (0, 1)]:
+        if signal_scaling is False:
+            self.signal_scaling = signal_scaling
+        elif signal_scaling in [0, 1, (0, 1)]:
             self.scaling_axis = signal_scaling
             self.signal_scaling = True
             self.standardize = False
-        elif signal_scaling is False:
-            self.signal_scaling = signal_scaling
         else:
             raise ValueError('signal_scaling must be "False", "0", "1"'
                              ' or "(0, 1)"')
@@ -364,8 +364,8 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         if self.mask is False:
             # We create a dummy mask to preserve functionality of api
             ref_img = check_niimg(run_imgs[0])
-            self.mask = nib.Nifti1Image(np.ones(ref_img.shape[:3]),
-                                    ref_img.affine)
+            self.mask = Nifti1Image(np.ones(ref_img.shape[:3]),
+                                                ref_img.affine)
         if not isinstance(self.mask, NiftiMasker):
             self.masker_ = NiftiMasker(
                 mask_img=self.mask, smoothing_fwhm=self.smoothing_fwhm,
