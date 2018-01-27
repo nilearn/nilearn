@@ -637,7 +637,7 @@ class BaseSlicer(object):
 
     def _map_show(self, img, type='imshow',
                   resampling_interpolation='continuous',
-                  threshold=None, **kwargs):
+                  threshold=None, auto_resize=True, **kwargs):
         img = reorder_img(img, resample=resampling_interpolation)
         threshold = float(threshold) if threshold is not None else None
 
@@ -700,7 +700,9 @@ class BaseSlicer(object):
                 # with matplotlib 2.1.0. See issue #9280 in matplotlib.
                 if data_2d.min() is np.ma.masked:
                     continue
-                im = display_ax.draw_2d(data_2d, data_bounds, bounding_box,
+                im = display_ax.draw_2d(data_2d, data_bounds,
+                                        bounding_box if auto_resize \
+                                        else [(0,0),(0,0),(0,0)],
                                         type=type, **kwargs)
                 ims.append(im)
         return ims
