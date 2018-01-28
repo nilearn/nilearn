@@ -14,12 +14,26 @@ from sklearn.datasets.base import Bunch
 from nilearn.datasets.utils import (
     _get_dataset_dir, _fetch_files, _fetch_file, _uncompress_file)
 
-import boto3
 from botocore.handlers import disable_signing
 
 SPM_AUDITORY_DATA_FILES = ["fM00223/fM00223_%03i.img" % index
                            for index in range(4, 100)]
 SPM_AUDITORY_DATA_FILES.append("sM00223/sM00223_002.img")
+
+
+def _check_import_boto3(module_name):
+    """Helper function which checks boto3 is installed or not
+
+    If not installed raises an ImportError with user friendly
+    information.
+    """
+    try:
+        module = __import__(module_name)
+    except ImportError:
+        info = "Please install boto3 necessary to download openneuro datasets."
+        raise ImportError("Module {0} cannot be found. {1} "
+                          .format(module_name, info))
+    return module
 
 
 def fetch_bids_langloc_dataset(data_dir=None, verbose=1):
@@ -66,6 +80,8 @@ def fetch_openneuro_dataset_index(
     Downloading the index allows to explore the dataset directories
     to select specific files to download. The index is a sorted list of urls.
 
+    Note: This function requires boto3 to be installed.
+
     Parameters
     ----------
     data_dir: string, optional
@@ -86,6 +102,7 @@ def fetch_openneuro_dataset_index(
     urls: list of string
         Sorted list of dataset directories
     """
+    boto3 = _check_import_boto3("boto3")
     data_prefix = '{}/{}/uncompressed'.format(
         dataset_version.split('_')[0], dataset_version)
     data_dir = _get_dataset_dir(data_prefix, data_dir=data_dir,
@@ -189,6 +206,8 @@ def fetch_openneuro_dataset(
         verbose=1):
     """Download openneuro bids dataset.
 
+    Note: This function requires boto3 to be installed.
+
     Parameters
     ----------
     urls: list of string, optional
@@ -213,6 +232,7 @@ def fetch_openneuro_dataset(
     downloaded_files: list of string
         Absolute paths of downloaded files on disk
     """
+    boto3 = _check_import_boto3("boto3")
     data_prefix = '{}/{}/uncompressed'.format(
         dataset_version.split('_')[0], dataset_version)
     data_dir = _get_dataset_dir(data_prefix, data_dir=data_dir,
