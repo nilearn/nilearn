@@ -30,7 +30,7 @@ def _check_import_boto3(module_name):
     try:
         module = __import__(module_name)
     except ImportError:
-        info = "Please install boto3 necessary to download openneuro datasets."
+        info = "Please install boto3 to download openneuro datasets."
         raise ImportError("Module {0} cannot be found. {1} "
                           .format(module_name, info))
     return module
