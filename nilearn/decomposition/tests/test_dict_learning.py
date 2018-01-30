@@ -28,8 +28,7 @@ def test_dict_learning():
     for estimator in [dict_learning,
                       dict_learning_auto_init]:
         estimator.fit(data)
-        maps[estimator] = estimator.masker_. \
-            inverse_transform(estimator.components_).get_data()
+        maps[estimator] = estimator.components_img_.get_data()
         maps[estimator] = np.reshape(
                         np.rollaxis(maps[estimator], 3, 0)[:, mask],
                         (4, flat_mask.sum()))
@@ -72,8 +71,7 @@ def test_component_sign():
                                  mask=mask_img,
                                  smoothing_fwhm=0., alpha=1)
     dict_learning.fit(data)
-    for mp in iter_img(dict_learning.masker_.inverse_transform(
-            dict_learning.components_)):
+    for mp in iter_img(dict_learning.components_img_):
         mp = mp.get_data()
         assert_less_equal(np.sum(mp[mp <= 0]), np.sum(mp[mp > 0]))
 
