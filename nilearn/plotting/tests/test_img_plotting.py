@@ -944,3 +944,10 @@ def test_plotting_functions_with_dim_invalid_input():
     # Test whether error raises with bad error to input
     img = _generate_img()
     assert_raises(ValueError, plot_stat_map, img, dim='-10')
+
+
+def test_add_markers_using_plot_glass_brain():
+    fig = plot_glass_brain(None)
+    coords = [(-34, -39, -9)]
+    fig.add_markers(coords)
+    fig.close()

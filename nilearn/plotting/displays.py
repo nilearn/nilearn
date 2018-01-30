@@ -829,13 +829,19 @@ class BaseSlicer(object):
             coord = display_ax.coord
             marker_coords_2d, third_d = _coords_3d_to_2d(
                 marker_coords, direction, return_direction=True)
-            # Heuristic that plots only markers that are 2mm away from the
-            # current slice.
-            # XXX: should we keep this heuristic?
-            mask = np.abs(third_d - coord) <= 2.
             xdata, ydata = marker_coords_2d.T
-            display_ax.ax.scatter(xdata[mask], ydata[mask],
-                                  s=marker_size,
+            # Check if coord has integer represents a cut in direction
+            # to follow the heuristic. If no foreground image is given
+            # coordinate is empty or None. This case is valid for plotting
+            # markers on glass brain without any foreground image.
+            if isinstance(coord, numbers.Number):
+                # Heuristic that plots only markers that are 2mm away
+                # from the current slice.
+                # XXX: should we keep this heuristic?
+                mask = np.abs(third_d - coord) <= 2.
+                xdata = xdata[mask]
+                ydata = ydata[mask]
+            display_ax.ax.scatter(xdata, ydata, s=marker_size,
                                   c=marker_color, **kwargs)
 
     def annotate(self, left_right=True, positions=True, size=12, **kwargs):
