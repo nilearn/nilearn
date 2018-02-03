@@ -37,23 +37,24 @@ REQUIRED_MODULE_METADATA = (
         'min_version': '0.14',
         'required_at_installation': True,
         'install_info': _NISTATS_INSTALL_MSG}),
-    ('nilearn', {
-        'min_version': '0.2.0',
+    ('sklearn', {
+        'min_version': '0.15.0',
         'required_at_installation': True,
         'install_info': _NISTATS_INSTALL_MSG}),
     ('nibabel', {
         'min_version': '2.0.2',
-        'required_at_installation': False}),
+        'required_at_installation': True,
+        'install_info': _NISTATS_INSTALL_MSG}),
+    ('nilearn', {
+        'min_version': '0.2.0',
+        'required_at_installation': True,
+        'install_info': _NISTATS_INSTALL_MSG}),
     ('pandas', {
         'min_version': '0.13.0',
         'required_at_installation': True,
         'install_info': _NISTATS_INSTALL_MSG}),
     ('patsy', {
         'min_version': '0.2.0',
-        'required_at_installation': True,
-        'install_info': _NISTATS_INSTALL_MSG}),
-    ('sklearn', {
-        'min_version': '0.15.0',
         'required_at_installation': True,
         'install_info': _NISTATS_INSTALL_MSG}),
     )
@@ -77,6 +78,11 @@ def _import_module_with_version_check(
             module_name,
             install_info or 'Please install it properly to use nistats.')
         exc.args += (user_friendly_info,)
+        # Necessary for Python 3 because the repr/str of ImportError
+        # objects was changed in Python 3. As a result, user friendly
+        # information is not displayed correctly.
+        if hasattr(exc, 'msg'):
+            exc.msg += '. ' + user_friendly_info
         raise
 
     # Avoid choking on modules with no __version__ attribute
