@@ -19,6 +19,15 @@ an explicit model of the signal. The reference papers are:
 
 Pre-prints for both papers are available on hal
 (http://hal.archives-ouvertes.fr)
+
+.. note::
+
+    The use of the attribute `components_img_` from decomposition
+    estimators is implemented from version 0.4.1.
+    For older versions, unmask the deprecated attribute `components_`
+    to get the components image using attribute `masker_` embedded in
+    estimator.
+    See the :ref:`section Inverse transform: unmasking data <unmasking_step>`.
 """
 
 ####################################################################
@@ -44,8 +53,11 @@ canica = CanICA(n_components=20, smoothing_fwhm=6.,
                 threshold=3., verbose=10, random_state=0)
 canica.fit(func_filenames)
 
-# Retrieve the independent components in brain space
-components_img = canica.masker_.inverse_transform(canica.components_)
+# Retrieve the independent components in brain space. Directly
+# accesible through attribute `components_img_`. Note that this
+# attribute is implemented from version 0.4.1. For older versions,
+# see note section above for details.
+components_img = canica.components_img_
 # components_img is a Nifti Image object, and can be saved to a file with
 # the following line:
 components_img.to_filename('canica_resting_state.nii.gz')

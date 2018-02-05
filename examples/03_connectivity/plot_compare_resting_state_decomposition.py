@@ -12,6 +12,14 @@ than ICA
    * Arthur Mensch et al. `Compressed online dictionary learning for fast resting-state fMRI decomposition
      <https://hal.archives-ouvertes.fr/hal-01271033/>`_,
      ISBI 2016, Lecture Notes in Computer Science
+
+.. note::
+
+    The use of the attribute `components_img_` from decomposition
+    estimators is implemented from version 0.4.1.
+    For older versions, unmask the deprecated attribute `components_` to
+    get the components image using attribute `masker_` embedded in estimator.
+    See the :ref:`section Inverse transform: unmasking data <unmasking_step>`.
 """
 ###############################################################################
 # Load ADHD rest dataset
@@ -60,10 +68,10 @@ for estimator in estimators:
     print('[Example] Learning maps using %s model' % names[estimator])
     estimator.fit(func_filenames)
     print('[Example] Saving results')
-    # Decomposition estimator embeds their own masker
-    masker = estimator.masker_
-    # Drop output maps to a Nifti   file
-    components_img = masker.inverse_transform(estimator.components_)
+    # Grab extracted components umasked back to Nifti image.
+    # Note: For older versions, less than 0.4.1. components_img_
+    # is not implemented. See Note section above for details.
+    components_img = estimator.components_img_
     components_img.to_filename('%s_resting_state.nii.gz' %
                                names[estimator])
     components_imgs.append(components_img)

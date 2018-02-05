@@ -301,6 +301,7 @@ is explained in details in :ref:`resampling`.
 
    :func:`nilearn.image.resample_img`, :func:`nilearn.image.resample_to_img`
 
+.. _unmasking_step:
 
 Inverse transform: unmasking data
 ---------------------------------
