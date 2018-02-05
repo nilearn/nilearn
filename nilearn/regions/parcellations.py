@@ -7,7 +7,7 @@ from sklearn.base import clone
 from sklearn.feature_extraction import image
 from sklearn.externals.joblib import Memory, delayed, Parallel
 
-from ..decomposition.base import BaseDecomposition
+from ..decomposition.multi_pca import MultiPCA
 from ..input_data import NiftiLabelsMasker
 from .._utils.compat import _basestring
 from .._utils.niimg import _safe_get_data
@@ -88,7 +88,7 @@ def _labels_masker_extraction(img, masker, confound):
     return signals
 
 
-class Parcellations(BaseDecomposition):
+class Parcellations(MultiPCA):
     """Learn parcellations on fMRI images.
 
     Four different types of clustering methods can be used such as kmeans,
@@ -200,12 +200,13 @@ class Parcellations(BaseDecomposition):
                  standardize=False, detrend=False,
                  low_pass=None, high_pass=None, t_r=None,
                  target_affine=None, target_shape=None,
+                 mask_strategy='epi', mask_args=None,
                  memory=Memory(cachedir=None),
                  memory_level=0, n_jobs=1, verbose=1):
         self.method = method
         self.n_parcels = n_parcels
 
-        BaseDecomposition.__init__(self, n_components=200,
+        MultiPCA.__init__(self, n_components=200,
                                    random_state=random_state,
                                    mask=mask, memory=memory,
                                    smoothing_fwhm=smoothing_fwhm,
@@ -213,7 +214,8 @@ class Parcellations(BaseDecomposition):
                                    low_pass=low_pass, high_pass=high_pass,
                                    t_r=t_r, target_affine=target_affine,
                                    target_shape=target_shape,
-                                   mask_strategy='epi', mask_args=None,
+                                   mask_strategy=mask_strategy,
+                                   mask_args=mask_args,
                                    memory_level=memory_level,
                                    n_jobs=n_jobs,
                                    verbose=verbose)
@@ -250,9 +252,6 @@ class Parcellations(BaseDecomposition):
                              "'{0}'. Valid methods are in {1}"
                              .format(self.method, valid_methods))
 
-        if self.verbose:
-            print("[Parcellations] Learning the data")
-
         # we delay importing Ward or AgglomerativeClustering and same
         # time import plotting module before that.
 
@@ -265,21 +264,22 @@ class Parcellations(BaseDecomposition):
         except:
             pass
 
+        components = MultiPCA._raw_fit(self, data)
+
         mask_img_ = self.masker_.mask_img_
+        if self.verbose:
+            print("[{0}] computing {1}".format(self.__class__.__name__,
+                self.method))
 
         if self.method == 'kmeans':
-            if self.verbose:
-                print("[{0} method] Learning".format(self.method))
             from sklearn.cluster import MiniBatchKMeans
             kmeans = MiniBatchKMeans(n_clusters=self.n_parcels,
                                      init='k-means++',
                                      random_state=self.random_state,
                                      verbose=self.verbose)
             labels = self._cache(_estimator_fit,
-                                 func_memory_level=1)(data, kmeans)
+                                 func_memory_level=1)(components.T, kmeans)
         else:
-            if self.verbose:
-                print("[{0} method] Learning".format(self.method))
             mask_ = _safe_get_data(mask_img_).astype(np.bool)
             shape = mask_.shape
             connectivity = image.grid_to_graph(n_x=shape[0], n_y=shape[1],
@@ -292,7 +292,8 @@ class Parcellations(BaseDecomposition):
                 linkage=self.method, memory=self.memory)
 
             labels = self._cache(_estimator_fit,
-                                 func_memory_level=1)(data, agglomerative)
+                                 func_memory_level=1)(components.T,
+                                                      agglomerative)
 
             self.connectivity_ = connectivity
         # Avoid 0 label
