@@ -7,7 +7,7 @@ from sklearn.base import clone
 from sklearn.feature_extraction import image
 from sklearn.externals.joblib import Memory, delayed, Parallel
 
-from ..decomposition.base import BaseDecomposition, mask_and_reduce
+from ..decomposition.base import BaseDecomposition
 from ..input_data import NiftiLabelsMasker
 from .._utils.compat import _basestring
 from .._utils.niimg import _safe_get_data
@@ -96,7 +96,7 @@ class Parcellations(BaseDecomposition):
     ward, complete, average are used within in Agglomerative Clustering.
     All methods are leveraged from scikit-learn.
 
-    .. versionadded:: 0.3.1
+    .. versionadded:: 0.4.1
 
     Parameters
     ----------
@@ -218,21 +218,17 @@ class Parcellations(BaseDecomposition):
                                    n_jobs=n_jobs,
                                    verbose=verbose)
 
-    def fit(self, imgs, y=None, confounds=None):
-        """ Computes the mask and reduces the dimensionality of images
-        using randomized_svd. Then, fit the parcellation method on this
-        reduced data.
+    def _raw_fit(self, data):
+        """ Fits the parcellation method on this reduced data.
+
+        Data is coming from a base decomposition estimator which computes
+        the mask and reduces the dimensionality of images using
+        randomized_svd.
 
         Parameters
         ----------
-        imgs : List of Niimg-like objects
-            See http://nilearn.github.io/manipulating_images/input_output.html.
-            Data from which parcellations will be returned.
-
-        confounds : CSV file path or 2D matrix
-            Confounds to clean them from signals.
-            This parameter is passed to nilearn.signal.clean. Please see the
-            related documentation for details
+        data : ndarray
+            Shape (n_samples, n_features)
 
         Returns
         -------
@@ -253,15 +249,6 @@ class Parcellations(BaseDecomposition):
             raise ValueError("The method you have selected is not implemented "
                              "'{0}'. Valid methods are in {1}"
                              .format(self.method, valid_methods))
-
-        BaseDecomposition.fit(self, imgs)
-
-        data = mask_and_reduce(self.masker_, imgs, confounds,
-                               reduction_ratio='auto',
-                               n_components=self.n_components,
-                               random_state=self.random_state,
-                               memory_level=self.memory_level,
-                               n_jobs=self.n_jobs, memory=self.memory)
 
         if self.verbose:
             print("[Parcellations] Learning the data")
