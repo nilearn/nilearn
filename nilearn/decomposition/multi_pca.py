@@ -112,11 +112,13 @@ class MultiPCA(BaseDecomposition):
         Array of masked extracted components. They can be unmasked thanks to
         the `masker_` attribute.
 
+        Deprecated since version 0.4.1. Use `components_img_` instead.
+
     `components_img_` : 4D Nifti image
         4D image giving the extracted PCA components. Each 3D image is a
         component.
 
-        .. versionadded:: 0.4.1
+        New in version 0.4.1.
 
     `variance_` : numpy array (n_components,)
         The amount of variance explained by each of the selected components.

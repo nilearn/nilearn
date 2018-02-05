@@ -1,7 +1,7 @@
 import numpy as np
 import nibabel
 
-from nose.tools import assert_true, assert_not_equal
+from nose.tools import assert_true
 from nilearn._utils.testing import assert_less_equal, assert_raises_regex
 from nilearn.decomposition.dict_learning import DictLearning
 from nilearn.decomposition.tests.test_canica import _make_canica_test_data

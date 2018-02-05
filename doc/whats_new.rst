@@ -10,6 +10,14 @@ Enhancements
       a Nifti image. This avoids the step of unmasking the attribute
       `components_` which is true for older versions.
 
+Changes
+-------
+
+    - Using output attribute `components_` which is an extracted components
+      in :class:`nilearn.decomposition.CanICA` and
+      :class:`nilearn.decomposition.DictLearning` is deprecated and will
+      be removed in next two releases. Use `components_img_` instead.
+
 0.4.0
 =====
 

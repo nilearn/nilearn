@@ -17,8 +17,8 @@ than ICA
 
     The use of the attribute `components_img_` from decomposition
     estimators is implemented from version 0.4.1.
-    For older versions, unmask the attribute `components_` to get the
-    components image using attribute `masker_` embedded in estimator.
+    For older versions, unmask the deprecated attribute `components_` to
+    get the components image using attribute `masker_` embedded in estimator.
     See the :ref:`section Inverse transform: unmasking data <unmasking_step>`.
 """
 ###############################################################################
