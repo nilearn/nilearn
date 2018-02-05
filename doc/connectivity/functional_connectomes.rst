@@ -211,6 +211,15 @@ with MNI coordinates for each region (see for instance example:
     >>> from nilearn import datasets
     >>> atlas_filename = datasets.fetch_atlas_msdl().maps # doctest: +SKIP
 
+For atlases without readily available label coordinates, center coordinates
+can be computed for each region on hard parcellation or probabilistic atlases.
+
+ * For hard parcellation atlases (eg. :func:`datasets.fetch_atlas_destrieux_2009`),
+   use the :func:`nilearn.plotting.find_parcellation_atlas_cut_coords`
+   function.
+ * For probabilistic atlases, use the
+   :func:`nilearn.plotting.find_probabilistic_atlas_cut_coords` function.
+
 For another atlas this information can be computed for each region with
 the :func:`nilearn.plotting.find_xyz_cut_coords` function
 (see example:

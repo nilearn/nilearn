@@ -1245,6 +1245,10 @@ def plot_connectome(adjacency_matrix, node_coords,
             If True, display a colorbar on the right of the plots.
             By default it is False.
 
+        See Also
+        ---------
+        nilearn.plotting.find_parcellation_cut_coords
+        nilearn.plotting.find_probabilistic_atlas_cut_coords
     """
     display = plot_glass_brain(None,
                                display_mode=display_mode,

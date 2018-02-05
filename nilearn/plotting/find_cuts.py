@@ -12,10 +12,10 @@ from scipy import ndimage
 
 # Local imports
 from .._utils.ndimage import largest_connected_component
-from ..image import new_img_like
+from ..image import new_img_like, reorder_img, iter_img
 from .._utils.extmath import fast_abs_percentile
 from .._utils.numpy_conversions import as_ndarray
-from .._utils import check_niimg_3d
+from .._utils import check_niimg_3d, check_niimg
 from .._utils.niimg import _safe_get_data
 from ..image.resampling import get_mask_bounds, coord_transform, reorder_img
 from ..image.image import _smooth_array
@@ -348,3 +348,116 @@ def find_cut_slices(img, direction='z', n_cuts=7, spacing='auto'):
     cut_coords.sort()
 
     return _transform_cut_coords(cut_coords, direction, affine)
+
+
+def find_parcellation_cut_coords(labels_img, background_label=0, return_label_names=False,
+                                 label_hemisphere = 'left'):
+    """ Return coordinates of center of mass of 3D parcellation atlas
+
+    Parameters
+    ----------
+    labels_img: 3D Nifti1Image
+        A brain parcellation atlas with specific mask labels for each
+        parcellated region.
+
+    background_label: int, optional (default 0)
+        Label value used in labels_img to represent background.
+
+    return_label_names: boolean, optional (default False)
+        Returns list of labels
+
+    label_hemisphere: 'left' or 'right', optional (default 'left')
+        Choice of hemisphere to compute label center coords for.
+        Applies only in cases where atlas labels are laterlized.
+        Eg. Yeo or Harvard Oxford atlas.
+
+    Returns
+    -------
+    coords: array
+        Label regions cut coordinates in image space (mm).
+
+    labels_list: list
+        Label region.
+    """
+    # Grab data and affine
+    labels_img = reorder_img(check_niimg_3d(labels_img))
+    labels_data = labels_img.get_data()
+    labels_affine = labels_img.affine
+
+    # Grab number of unique values in 3d image
+    unique_labels = set(np.unique(labels_data)) - set([background_label])
+
+    # Loop over parcellation labels, grab center of mass and dump into coords
+    # list
+    coord_list = []
+    label_list = []
+
+    for cur_label in unique_labels:
+        cur_img = labels_data == cur_label
+
+        # Below inspecting whether the current atlas label is (a)laterlized,
+        # (b)spans hemipsheres, or
+        # (c)is disconnected and present in both hemispheres
+
+        # Grab hemispheres separately
+        x, y, z = coord_transform(0, 0, 0, np.linalg.inv(labels_affine))
+        left_hemi = labels_img.get_data().copy() == cur_label
+        right_hemi = labels_img.get_data().copy() == cur_label
+        left_hemi[int(x):] = 0
+        right_hemi[:int(x)] = 0
+
+        # Case 1: One label in one hemisphere
+        if np.all(left_hemi == False) or np.all(right_hemi == False):
+            pass
+        # Case 2: Connected component spanning both hemispheres
+        # elif np.any(right_hemi[int(x)]) and np.any(left_hemi[int(x-1)]):
+        #    if not np.any(right_hemi[int(x-10)]) and
+        #    np.any(left_hemi[int(x-10)]):
+        #        pass
+        # Case 3: Two Connected component in both hemispheres
+        else:
+            if label_hemisphere is 'left':
+                cur_img = left_hemi.astype(int)
+            elif label_hemisphere is 'right':
+                cur_img = right_hemi.astype(int)
+
+        # Take the largest connected component
+        labels, label_nb = ndimage.label(cur_img)
+        label_count = np.bincount(labels.ravel().astype(int))
+        label_count[0] = 0
+        component = labels == label_count.argmax()
+
+        # Get parcellation center of mass
+        x, y, z = ndimage.center_of_mass(component)
+
+        # Dump label region and coordinates into a dictionary
+        label_list.append(cur_label)
+        coord_list.append((x, y, z))
+
+        # Transform coordinates
+        coords = [coord_transform(i[0], i[1], i[2], labels_affine) for i in coord_list]
+
+    if return_label_names:
+        return np.array(coords), label_list
+    else:
+        return np.array(coords)
+
+
+def find_probabilistic_atlas_cut_coords(label_img):
+    """ Return coordinates of center probabilistic atlas 4D image
+
+    Parameters
+    ----------
+    label_img: 4D Nifti1Image
+        A probabilistic brain atlas with probabolistic masks in the fourth
+        dimension.
+
+    Returns
+    -------
+    coords: array of shape (3, n_maps)
+        Label regions cut coordinates in image space (mm).
+    """
+    label_img = check_niimg(label_img)
+    label_imgs = iter_img(label_img)
+    coords = [find_xyz_cut_coords(img) for img in label_imgs]
+    return np.array(coords)
