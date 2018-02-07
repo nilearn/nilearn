@@ -51,7 +51,7 @@ Applying clustering
     Both clustering algorithms (as well as many others) are provided by
     this object :class:`nilearn.regions.Parcellations` and full
     code example in
-    :ref:`here<sphx_glr_auto_examples_03_connectivity_plot_rest_clustering.py>`.
+    :ref:`here<sphx_glr_auto_examples_03_connectivity_plot_rest_parcellations.py>`.
     Ward clustering is the easiest to use, as it can be done with the Feature
     agglomeration object. It is also very fast. We detail it below.
 
@@ -118,8 +118,8 @@ using *ward.fit*. We directly use the result for visualization.
 To visualize the clusters, we assign random colors to each cluster
 for the labels visualization.
 
-.. figure:: ../auto_examples/03_connectivity/images/sphx_glr_plot_rest_clustering_001.png
-   :target: ../auto_examples/03_connectivity/plot_rest_clustering.html
+.. figure:: ../auto_examples/03_connectivity/images/sphx_glr_plot_rest_parcellations_001.png
+   :target: ../auto_examples/03_connectivity/plot_rest_parcellations.html
    :align: center
    :scale: 80
 
@@ -134,12 +134,12 @@ representation, taking the average on each parcel:
 - call *ward.inverse_transform* on the previous result to turn it back into
   the masked picture shape
 
-.. |left_img| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_rest_clustering_002.png
-   :target: ../auto_examples/03_connectivity/plot_rest_clustering.html
+.. |left_img| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_rest_parcellations_002.png
+   :target: ../auto_examples/03_connectivity/plot_rest_parcellations.html
    :width: 49%
 
-.. |right_img| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_rest_clustering_003.png
-   :target: ../auto_examples/03_connectivity/plot_rest_clustering.html
+.. |right_img| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_rest_parcellations_003.png
+   :target: ../auto_examples/03_connectivity/plot_rest_parcellations.html
    :width: 49%
 
 |left_img| |right_img|
@@ -153,6 +153,6 @@ approximated.
 
    All the steps discussed in this section can be seen implemented in
    :ref:`a full code example
-   <sphx_glr_auto_examples_03_connectivity_plot_rest_clustering.py>`.
+   <sphx_glr_auto_examples_03_connectivity_plot_rest_parcellations.py>`.
 
 
