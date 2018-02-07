@@ -44,9 +44,13 @@ _check_module_dependencies()
 # of numpy arrays. Hence we print the options to old versions.
 import numpy as np
 if LooseVersion(np.__version__) >= LooseVersion("1.14"):
-    from ._utils.testing import is_nose_running
-    if is_nose_running():
-        np.set_printoptions(legacy='1.13')
+    # See issue #1600 in nilearn for reason to add try and except
+    try:
+        from ._utils.testing import is_nose_running
+        if is_nose_running():
+            np.set_printoptions(legacy='1.13')
+    except ImportError:
+        pass
 
 # Monkey-patch gzip to have faster reads on large gzip files
 if hasattr(gzip.GzipFile, 'max_read_chunk'):
