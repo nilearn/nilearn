@@ -135,8 +135,8 @@ plotting.plot_epi(mean_func_img, cut_coords=cut_coords,
                   title='Original (%i voxels)' % original_voxels,
                   vmax=vmax, vmin=vmin, display_mode='xz')
 
-# A reduced data can be create by taking the parcel-level average:
-# Note that, the Parcellations object with any method has opportunity to
+# A reduced dataset can be created by taking the parcel-level average:
+# Note that Parcellation objects with any method has opportunity to
 # use a transform method that modifies input features. Here it reduces their
 # dimension. Note that we fit before calling a transform so that average signals
 # can be created on the brain parcellations with fit call.

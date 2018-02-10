@@ -53,7 +53,7 @@ Applying clustering
     code example in
     :ref:`here<sphx_glr_auto_examples_03_connectivity_plot_rest_parcellations.py>`.
     Ward clustering is the easiest to use, as it can be done with the Feature
-    agglomeration object. It is also very fast. We detail it below.
+    agglomeration object. It is also quite fast. We detail it below.
 
 |
 

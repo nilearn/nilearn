@@ -14,12 +14,12 @@ from .._utils.niimg import _safe_get_data
 
 
 def _estimator_fit(data, estimator):
-    """ Estimator to fit on the reduced data
+    """ Estimator to fit on the data matrix
 
     Parameters
     ----------
-    data : numpy arrays
-        list of reduced numpy arrays
+    data : numpy array
+        Data matrix
 
     estimator : instance of estimator from sklearn
         MiniBatchKMeans or AgglomerativeClustering
@@ -207,23 +207,23 @@ class Parcellations(MultiPCA):
         self.n_parcels = n_parcels
 
         MultiPCA.__init__(self, n_components=200,
-                                   random_state=random_state,
-                                   mask=mask, memory=memory,
-                                   smoothing_fwhm=smoothing_fwhm,
-                                   standardize=standardize, detrend=detrend,
-                                   low_pass=low_pass, high_pass=high_pass,
-                                   t_r=t_r, target_affine=target_affine,
-                                   target_shape=target_shape,
-                                   mask_strategy=mask_strategy,
-                                   mask_args=mask_args,
-                                   memory_level=memory_level,
-                                   n_jobs=n_jobs,
-                                   verbose=verbose)
+                          random_state=random_state,
+                          mask=mask, memory=memory,
+                          smoothing_fwhm=smoothing_fwhm,
+                          standardize=standardize, detrend=detrend,
+                          low_pass=low_pass, high_pass=high_pass,
+                          t_r=t_r, target_affine=target_affine,
+                          target_shape=target_shape,
+                          mask_strategy=mask_strategy,
+                          mask_args=mask_args,
+                          memory_level=memory_level,
+                          n_jobs=n_jobs,
+                          verbose=verbose)
 
     def _raw_fit(self, data):
         """ Fits the parcellation method on this reduced data.
 
-        Data is coming from a base decomposition estimator which computes
+        Data are coming from a base decomposition estimator which computes
         the mask and reduces the dimensionality of images using
         randomized_svd.
 
@@ -269,7 +269,7 @@ class Parcellations(MultiPCA):
         mask_img_ = self.masker_.mask_img_
         if self.verbose:
             print("[{0}] computing {1}".format(self.__class__.__name__,
-                self.method))
+                                               self.method))
 
         if self.method == 'kmeans':
             from sklearn.cluster import MiniBatchKMeans
@@ -400,7 +400,7 @@ class Parcellations(MultiPCA):
         Returns
         -------
         imgs : List of or Nifti-like image
-            Brain images
+            Brain image(s)
         """
         from .signal_extraction import signals_to_img_labels
 
