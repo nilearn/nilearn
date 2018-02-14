@@ -15,81 +15,83 @@ from sklearn.datasets.base import Bunch
 from .utils import _get_dataset_dir, _fetch_files, _get_dataset_descr
 from .._utils import check_niimg
 from .._utils.compat import _basestring
-from ..image import new_img_like
+from ..image import new_img_like, index_img
 
 _TALAIRACH_LEVELS = ['hemisphere', 'lobe', 'gyrus', 'tissue', 'ba']
 
 
-def fetch_atlas_craddock_2012(data_dir=None, url=None, resume=True, verbose=1):
-    """Download and return file names for the Craddock 2012 parcellation
+# def fetch_atlas_craddock_2012(data_dir=None, url=None, resume=True, verbose=1):
+#     """Download and return file names for the Craddock 2012 parcellation
+#
+#     The provided images are in MNI152 space.
+#
+#     Parameters
+#     ----------
+#     data_dir: string
+#         directory where data should be downloaded and unpacked.
+#
+#     url: string
+#         url of file to download.
+#
+#     resume: bool
+#         whether to resumed download of a partly-downloaded file.
+#
+#     verbose: int
+#         verbosity level (0 means no message).
+#
+#     Returns
+#     -------
+#     data: sklearn.datasets.base.Bunch
+#         dictionary-like object, keys are:
+#         scorr_mean, tcorr_mean,
+#         scorr_2level, tcorr_2level,
+#         random
+#
+#     References
+#     ----------
+#     Licence: Creative Commons Attribution Non-commercial Share Alike
+#     http://creativecommons.org/licenses/by-nc-sa/2.5/
+#
+#     Craddock, R. Cameron, G.Andrew James, Paul E. Holtzheimer, Xiaoping P. Hu,
+#     and Helen S. Mayberg. "A Whole Brain fMRI Atlas Generated via Spatially
+#     Constrained Spectral Clustering". Human Brain Mapping 33, no 8 (2012):
+#     1914-1928. doi:10.1002/hbm.21333.
+#
+#     See http://www.nitrc.org/projects/cluster_roi/ for more information
+#     on this parcellation.
+#     """
+#
+#     if url is None:
+#         url = "ftp://www.nitrc.org/home/groups/cluster_roi/htdocs" \
+#               "/Parcellations/craddock_2011_parcellations.tar.gz"
+#     opts = {'uncompress': True}
+#
+#     dataset_name = "craddock_2012"
+#     keys = ("scorr_mean", "tcorr_mean",
+#             "scorr_2level", "tcorr_2level",
+#             "random")
+#     filenames = [
+#             ("scorr05_mean_all.nii.gz", url, opts),
+#             ("tcorr05_mean_all.nii.gz", url, opts),
+#             ("scorr05_2level_all.nii.gz", url, opts),
+#             ("tcorr05_2level_all.nii.gz", url, opts),
+#             ("random_all.nii.gz", url, opts)
+#     ]
+#
+#     data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
+#                                 verbose=verbose)
+#     sub_files = _fetch_files(data_dir, filenames, resume=resume,
+#                              verbose=verbose)
+#
+#     fdescr = _get_dataset_descr(dataset_name)
+#
+#     params = dict([('description', fdescr)] + list(zip(keys, sub_files)))
+#
+#     return Bunch(**params)
 
-    The provided images are in MNI152 space.
-
-    Parameters
-    ----------
-    data_dir: string
-        directory where data should be downloaded and unpacked.
-
-    url: string
-        url of file to download.
-
-    resume: bool
-        whether to resumed download of a partly-downloaded file.
-
-    verbose: int
-        verbosity level (0 means no message).
-
-    Returns
-    -------
-    data: sklearn.datasets.base.Bunch
-        dictionary-like object, keys are:
-        scorr_mean, tcorr_mean,
-        scorr_2level, tcorr_2level,
-        random
-
-    References
-    ----------
-    Licence: Creative Commons Attribution Non-commercial Share Alike
-    http://creativecommons.org/licenses/by-nc-sa/2.5/
-
-    Craddock, R. Cameron, G.Andrew James, Paul E. Holtzheimer, Xiaoping P. Hu,
-    and Helen S. Mayberg. "A Whole Brain fMRI Atlas Generated via Spatially
-    Constrained Spectral Clustering". Human Brain Mapping 33, no 8 (2012):
-    1914-1928. doi:10.1002/hbm.21333.
-
-    See http://www.nitrc.org/projects/cluster_roi/ for more information
-    on this parcellation.
-    """
-
-    if url is None:
-        url = "ftp://www.nitrc.org/home/groups/cluster_roi/htdocs" \
-              "/Parcellations/craddock_2011_parcellations.tar.gz"
-    opts = {'uncompress': True}
-
-    dataset_name = "craddock_2012"
-    keys = ("scorr_mean", "tcorr_mean",
-            "scorr_2level", "tcorr_2level",
-            "random")
-    filenames = [
-            ("scorr05_mean_all.nii.gz", url, opts),
-            ("tcorr05_mean_all.nii.gz", url, opts),
-            ("scorr05_2level_all.nii.gz", url, opts),
-            ("tcorr05_2level_all.nii.gz", url, opts),
-            ("random_all.nii.gz", url, opts)
-    ]
-
-    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
-                                verbose=verbose)
-    sub_files = _fetch_files(data_dir, filenames, resume=resume,
-                             verbose=verbose)
-
-    fdescr = _get_dataset_descr(dataset_name)
-
-    params = dict([('description', fdescr)] + list(zip(keys, sub_files)))
-
-    return Bunch(**params)
-
-def fetch_atlas_craddock_2012(atlas_name, data_dir=None, url=None, resume=True,
+def fetch_atlas_craddock_2012(atlas_name, number_of_regions, data_dir=None,
+                              url=None,
+                              resume=True,
                               verbose=1):
     """Download and return file names for the Craddock 2012 parcellation
 
@@ -98,12 +100,8 @@ def fetch_atlas_craddock_2012(atlas_name, data_dir=None, url=None, resume=True,
     Parameters
     ----------
     atlas_name: string
-        Name of atlas to load. Can be:
-        scorr_mean_10 (0)
-        tcorr_mean,
-        scorr_2level,
-        tcorr_2level,
-        random
+        Name of atlas to load. The name can be:
+        scorr_mean, tcorr_mean, scorr_2level, tcorr_2level, random
 
     data_dir: string
         directory where data should be downloaded and unpacked.
@@ -121,8 +119,10 @@ def fetch_atlas_craddock_2012(atlas_name, data_dir=None, url=None, resume=True,
     -------
     data: sklearn.datasets.base.Bunch
         dictionary-like object, keys are:
-        scorr_mean, tcorr_mean,
-        scorr_2level, tcorr_2level,
+        for scorr_mean:
+        tcorr_mean,
+        scorr_2level,
+        tcorr_2level,
         random
 
     References
@@ -145,7 +145,7 @@ def fetch_atlas_craddock_2012(atlas_name, data_dir=None, url=None, resume=True,
     opts = {'uncompress': True}
 
     dataset_name = "craddock_2012"
-    keys = ("scorr_mean", "tcorr_mean",
+    atlas_items = ("scorr_mean", "tcorr_mean",
             "scorr_2level", "tcorr_2level",
             "random")
     filenames = [
@@ -156,13 +156,40 @@ def fetch_atlas_craddock_2012(atlas_name, data_dir=None, url=None, resume=True,
             ("random_all.nii.gz", url, opts)
     ]
 
+    if atlas_name not in atlas_items:
+        raise ValueError("Invalid atlas name: {0}. Please chose an atlas "
+                         "among:\n{1}".format(
+                             atlas_name, '\n'.join(atlas_items)))
+
+
     data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
                                 verbose=verbose)
     sub_files = _fetch_files(data_dir, filenames, resume=resume,
                              verbose=verbose)
+    atlas_name_file = dictionary = dict(zip(atlas_items, sub_files))
 
+
+
+    # select indicated atlas file
+    atlas_selected = atlas_name_file[atlas_name]
+    img = check_niimg(atlas_selected)
+    data = img.get_data()
+    max_vol = data.shape[3]
+
+    # create the list of possible regions of selected atlas
+    regions = []
+    for i in list(range(max_vol)):
+        vol_i = index_img(img, i)
+        regions.append(vol_i.get_data().max())
+
+    if number_of_regions not in regions:
+        raise ValueError("Invalid number of regions: {0}. Please chose a "
+                         "number among:\n{1}".format(number_of_regions,
+                                                     regions))
+
+    stop
+    #atlas_file = sub_files[]
     fdescr = _get_dataset_descr(dataset_name)
-
     params = dict([('description', fdescr)] + list(zip(keys, sub_files)))
 
     return Bunch(**params)
