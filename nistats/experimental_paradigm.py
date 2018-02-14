@@ -6,7 +6,7 @@ that includes an 'onset' field.
 
 This yields the onset time of the events in the paradigm.
 It can also contain:
-    * a 'name' field that yields the condition identifier.
+    * a 'trial_type' field that yields the condition identifier.
     * a 'duration' field that yields event duration (for so-called block
         paradigms).
     * a 'modulation' field that associated a scalar value to each event.
@@ -14,6 +14,7 @@ It can also contain:
 Author: Bertrand Thirion, 2015
 """
 from __future__ import with_statement
+import warnings
 import numpy as np
 
 
@@ -53,10 +54,13 @@ def check_paradigm(paradigm):
     duration = np.zeros(n_events)
     modulation = np.ones(n_events)
     if 'trial_type' in paradigm.keys():
+        warnings.warn("'trial_type' key not found in the given paradigm.")
         trial_type = np.array(paradigm['trial_type'])
     if 'duration' in paradigm.keys():
+        warnings.warn("'duration' key not found in the given paradigm.")
         duration = np.array(paradigm['duration']).astype(np.float)
     if 'modulation' in paradigm.keys():
+        warnings.warn("'modulation' key not found in the given paradigm.")
         modulation = np.array(paradigm['modulation']).astype(np.float)
     return trial_type, onset, duration, modulation
 
