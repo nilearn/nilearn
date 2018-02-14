@@ -215,7 +215,7 @@ def _convolve_regressors(paradigm, hrf_model, frame_times, fir_delays=[0],
         oversampling = 16
 
     trial_type, onset, duration, modulation = check_paradigm(paradigm)
-    for condition in np.unique(paradigm.trial_type):
+    for condition in np.unique(trial_type):
         condition_mask = (trial_type == condition)
         exp_condition = (onset[condition_mask],
                          duration[condition_mask],
@@ -280,19 +280,35 @@ def make_design_matrix(
     Parameters
     ----------
     frame_times : array of shape (n_frames,)
-        The timing of the scans in seconds.
+        The timing of acquisition of the scans in seconds.
 
     paradigm : DataFrame instance, optional
-        Description of the experimental paradigm.
+        Description of the experimental paradigm. The DataFrame instance might
+        have those keys:
+            'onset': column to specify the start time of each events in
+                     seconds. An exception is raised if this key is missing.
+            'trial_type': column to specify per-event experimental conditions
+                          identifier. If missing each event are labelled
+                          'dummy' and considered to form a unique condition.
+            'duration': column to specify the duration of each events in
+                        seconds. If missing the duration of each events is set
+                        to zero.
+            'modulation': column to specify the amplitude of each
+                          events. If missing the default is set to
+                          ones(n_events).
+        A paradigm is considered as valid whenever it has an 'onset' key, if
+        this key is missing an exception will be thrown. For the others keys
+        only a simple warning will be displayed. A particular attention should
+        be given to the 'trial_type' key which defines the different conditions
+        in the paradigm.
 
     hrf_model : {'spm', 'spm + derivative', 'spm + derivative + dispersion',
         'glover', 'glover + derivative', 'glover + derivative + dispersion',
         'fir', None}, optional,
         Specifies the hemodynamic response function
 
-    drift_model : string, optional
+    drift_model : {'polynomial', 'cosine', None}, optional
         Specifies the desired drift model,
-        It can be 'polynomial', 'cosine' or None.
 
     period_cut : float, optional
         Cut period of the low-pass filter in seconds.
@@ -305,10 +321,11 @@ def make_design_matrix(
         model.
 
     add_regs : array of shape(n_frames, n_add_reg), optional
-        additional user-supplied regressors
+        additional user-supplied regressors, e.g. data driven noise regressors
+        or seed based regressors.
 
     add_reg_names : list of (n_add_reg,) strings, optional
-        If None, while n_add_reg > 0, these will be termed
+        If None, while add_regs was provided, these will be termed
         'reg_%i', i = 0..n_add_reg - 1
 
     min_onset : float, optional
@@ -318,7 +335,8 @@ def make_design_matrix(
     Returns
     -------
     design_matrix : DataFrame instance,
-        holding the computed design matrix
+        holding the computed design matrix, the index being the frames_times
+        and each column a regressor.
     """
     # check arguments
     # check that additional regressor specification is correct
