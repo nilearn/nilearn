@@ -101,7 +101,14 @@ def fetch_atlas_craddock_2012(atlas_name, number_of_regions, data_dir=None,
     ----------
     atlas_name: string
         Name of atlas to load. The name can be:
-        scorr_mean, tcorr_mean, scorr_2level, tcorr_2level, random
+        scorr_mean: group-mean parcellation results when emphasizing spatial
+                    homogeneity
+        tcorr_mean: group-mean parcellation results when emphasizing temporal
+                    homogeneity,
+        scorr_2level: parcellation results when emphasizing spatial homogeneity,
+        tcorr_2level: parcellation results when emphasizing temporal
+                      homogeneity,
+        random: result of random clustering for comparison.
 
     data_dir: string
         directory where data should be downloaded and unpacked.
@@ -119,11 +126,6 @@ def fetch_atlas_craddock_2012(atlas_name, number_of_regions, data_dir=None,
     -------
     data: sklearn.datasets.base.Bunch
         dictionary-like object, keys are:
-        for scorr_mean:
-        tcorr_mean,
-        scorr_2level,
-        tcorr_2level,
-        random
 
     References
     ----------
@@ -166,7 +168,7 @@ def fetch_atlas_craddock_2012(atlas_name, number_of_regions, data_dir=None,
                                 verbose=verbose)
     sub_files = _fetch_files(data_dir, filenames, resume=resume,
                              verbose=verbose)
-    atlas_name_file = dictionary = dict(zip(atlas_items, sub_files))
+    atlas_name_file = dict(zip(atlas_items, sub_files))
 
 
 
@@ -178,19 +180,29 @@ def fetch_atlas_craddock_2012(atlas_name, number_of_regions, data_dir=None,
 
     # create the list of possible regions of selected atlas
     regions = []
+    n_volume = []
     for i in list(range(max_vol)):
         vol_i = index_img(img, i)
+        n_volume.append(i)
         regions.append(vol_i.get_data().max())
+    dict_vol_region = dict(zip(regions, n_volume))
 
     if number_of_regions not in regions:
-        raise ValueError("Invalid number of regions: {0}. Please chose a "
+        raise ValueError("Invalid number of regions: {0}. Please choose a "
                          "number among:\n{1}".format(number_of_regions,
                                                      regions))
 
-    stop
+    # atlas with selected number of region
+    atlas_region = index_img(img, dict_vol_region[number_of_regions])
+
+    #save
+    filename_save = os.path.join(data_dir, atlas_name + '_' +
+                                 str(number_of_regions) + '.nii.gz')
+    atlas_region.to_filename(filename_save)
+
     #atlas_file = sub_files[]
     fdescr = _get_dataset_descr(dataset_name)
-    params = dict([('description', fdescr)] + list(zip(keys, sub_files)))
+    params = {'description': fdescr, 'maps': filename_save}
 
     return Bunch(**params)
 
