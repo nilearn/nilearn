@@ -109,6 +109,8 @@ def fetch_atlas_craddock_2012(atlas_name, number_of_regions, data_dir=None,
         tcorr_2level: parcellation results when emphasizing temporal
                       homogeneity,
         random: result of random clustering for comparison.
+    number_of_regions: int
+        Number of brain regions in the atlas
 
     data_dir: string
         directory where data should be downloaded and unpacked.
@@ -126,6 +128,9 @@ def fetch_atlas_craddock_2012(atlas_name, number_of_regions, data_dir=None,
     -------
     data: sklearn.datasets.base.Bunch
         dictionary-like object, keys are:
+
+        - 'maps': str, path to 3D nifti file containing atlas.
+        - 'description': details about the atlas.
 
     References
     ----------
@@ -170,8 +175,6 @@ def fetch_atlas_craddock_2012(atlas_name, number_of_regions, data_dir=None,
                              verbose=verbose)
     atlas_name_file = dict(zip(atlas_items, sub_files))
 
-
-
     # select indicated atlas file
     atlas_selected = atlas_name_file[atlas_name]
     img = check_niimg(atlas_selected)
@@ -191,16 +194,13 @@ def fetch_atlas_craddock_2012(atlas_name, number_of_regions, data_dir=None,
         raise ValueError("Invalid number of regions: {0}. Please choose a "
                          "number among:\n{1}".format(number_of_regions,
                                                      regions))
-
     # atlas with selected number of region
     atlas_region = index_img(img, dict_vol_region[number_of_regions])
 
-    #save
     filename_save = os.path.join(data_dir, atlas_name + '_' +
                                  str(number_of_regions) + '.nii.gz')
     atlas_region.to_filename(filename_save)
 
-    #atlas_file = sub_files[]
     fdescr = _get_dataset_descr(dataset_name)
     params = {'description': fdescr, 'maps': filename_save}
 
