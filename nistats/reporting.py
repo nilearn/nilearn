@@ -130,8 +130,18 @@ def get_clusters_table(stat_img, stat_threshold, cluster_threshold=None):
             i, j, k = row
             return input_arr[i, j, k]
 
-        subpeak_dist = int(np.round(8. / np.cbrt(voxel_size)))  # pylint: disable=no-member
-        subpeak_ijk = peak_local_max(masked_data, min_distance=subpeak_dist, num_peaks=4)
+        if np.std(stat_map[cluster_mask]) == 0 and cluster_size_mm > 1:
+            warnings.warn('Cluster appears to be single-valued. '
+                          'Reporting center of mass.')
+            subpeak_ijk = np.round(meas.center_of_mass(masked_data, cluster_mask,
+                                                       index=1)).astype(int)
+            subpeak_ijk = subpeak_ijk[None, :]
+        else:
+            subpeak_dist = int(np.round(8. / np.cbrt(voxel_size)))  # pylint: disable=no-member
+            subpeak_ijk = peak_local_max(masked_data, min_distance=subpeak_dist,
+                                         threshold_abs=stat_threshold, num_peaks=4,
+                                         exclude_border=False)
+
         subpeak_vals = np.apply_along_axis(arr=subpeak_ijk, axis=1, func1d=_get_val,
                                            input_arr=masked_data)
         order = (-subpeak_vals).argsort()
