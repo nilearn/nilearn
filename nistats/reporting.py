@@ -77,7 +77,9 @@ def get_clusters_table(stat_img, stat_threshold, cluster_threshold=None):
     Returns
     -------
     df : :obj:`pandas.DataFrame`
-        Table with peaks and subpeaks from thresholded `stat_img`.
+        Table with peaks and subpeaks from thresholded `stat_img`. For binary
+        clusters (clusters with >1 voxel containing only one value), the table
+        reports the center of mass of the cluster, rather than any peaks/subpeaks.
     """
     cols = ['Cluster ID', 'X', 'Y', 'Z', 'Peak Stat', 'Cluster Size (mm3)']
     stat_map = stat_img.get_data()
@@ -131,8 +133,8 @@ def get_clusters_table(stat_img, stat_threshold, cluster_threshold=None):
             return input_arr[i, j, k]
 
         if np.std(stat_map[cluster_mask]) == 0 and cluster_size_mm > 1:
-            warnings.warn('Cluster appears to be single-valued. '
-                          'Reporting center of mass.')
+            warnings.warn('Cluster {0} appears to be single-valued. '
+                          'Reporting center of mass.'.format(c_id))
             subpeak_ijk = np.round(meas.center_of_mass(masked_data, cluster_mask,
                                                        index=1)).astype(int)
             subpeak_ijk = subpeak_ijk[None, :]
