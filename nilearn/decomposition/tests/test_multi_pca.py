@@ -1,7 +1,8 @@
 """
 Test the multi-PCA module
 """
-
+import os
+import tempfile
 import numpy as np
 from nose.tools import assert_raises, assert_true
 import nibabel
@@ -10,6 +11,13 @@ from numpy.testing import assert_almost_equal, assert_equal
 from nilearn.decomposition.multi_pca import MultiPCA
 from nilearn.input_data import MultiNiftiMasker, NiftiMasker
 from nilearn._utils.testing import assert_raises_regex, write_tmp_imgs
+
+
+def _tmp_dir():
+    """For testing globbing patterns in input images
+    """
+    tmp_dir = tempfile.tempdir + os.sep
+    return tmp_dir
 
 
 def test_multi_pca():
@@ -171,7 +179,7 @@ def test_with_globbing_patterns_with_single_image():
     multi_pca = MultiPCA(n_components=3)
 
     with write_tmp_imgs(img_4d, create_files=True, use_wildcards=True) as img:
-        input_image = '/tmp/' + img
+        input_image = _tmp_dir() + img
         multi_pca.fit(input_image)
         components_img = multi_pca.components_img_
         assert_true(isinstance(components_img, nibabel.Nifti1Image))
@@ -190,7 +198,7 @@ def test_with_globbing_patterns_with_multiple_images():
 
     with write_tmp_imgs(img_4d, img_4d, create_files=True,
                         use_wildcards=True) as imgs:
-        input_image = '/tmp/' + imgs
+        input_image = _tmp_dir() + imgs
         multi_pca.fit(input_image)
         components_img = multi_pca.components_img_
         assert_true(isinstance(components_img, nibabel.Nifti1Image))

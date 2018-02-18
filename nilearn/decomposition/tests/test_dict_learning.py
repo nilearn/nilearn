@@ -8,6 +8,7 @@ from nilearn.decomposition.dict_learning import DictLearning
 from nilearn.decomposition.tests.test_canica import _make_canica_test_data
 from nilearn.image import iter_img
 from nilearn.input_data import NiftiMasker
+from nilearn.decomposition.tests.test_multi_pca import _tmp_dir
 
 
 def test_dict_learning():
@@ -125,7 +126,7 @@ def test_with_globbing_patterns_with_single_subject():
     n_components = 3
     dictlearn = DictLearning(n_components=n_components, mask=mask_img)
     with write_tmp_imgs(data[0], create_files=True, use_wildcards=True) as img:
-        input_image = '/tmp/' + img
+        input_image = _tmp_dir() + img
         dictlearn.fit(input_image)
         components_img = dictlearn.components_img_
         assert_true(isinstance(components_img, nibabel.Nifti1Image))
@@ -141,7 +142,7 @@ def test_with_globbing_patterns_with_multi_subjects():
     dictlearn = DictLearning(n_components=n_components, mask=mask_img)
     with write_tmp_imgs(data[0], data[1], data[2], create_files=True,
                         use_wildcards=True) as img:
-        input_image = '/tmp/' + img
+        input_image = _tmp_dir() + img
         dictlearn.fit(input_image)
         components_img = dictlearn.components_img_
         assert_true(isinstance(components_img, nibabel.Nifti1Image))

@@ -10,6 +10,7 @@ from nilearn._utils.testing import (assert_less_equal, write_tmp_imgs,
 from nilearn.decomposition.canica import CanICA
 from nilearn.input_data import MultiNiftiMasker
 from nilearn.image import iter_img
+from nilearn.decomposition.tests.test_multi_pca import _tmp_dir
 
 
 def _make_data_from_components(components, affine, shape, rng=None,
@@ -192,7 +193,7 @@ def test_with_globbing_patterns_with_single_subject():
     n_components = 3
     canica = CanICA(n_components=n_components, mask=mask_img)
     with write_tmp_imgs(data[0], create_files=True, use_wildcards=True) as img:
-        input_image = '/tmp/' + img
+        input_image = _tmp_dir() + img
         canica.fit(input_image)
         components_img = canica.components_img_
         assert_true(isinstance(components_img, nibabel.Nifti1Image))
@@ -208,7 +209,7 @@ def test_with_globbing_patterns_with_multi_subjects():
     canica = CanICA(n_components=n_components, mask=mask_img)
     with write_tmp_imgs(data[0], data[1], data[2], create_files=True,
                         use_wildcards=True) as img:
-        input_image = '/tmp/' + img
+        input_image = _tmp_dir() + img
         canica.fit(input_image)
         components_img = canica.components_img_
         assert_true(isinstance(components_img, nibabel.Nifti1Image))
