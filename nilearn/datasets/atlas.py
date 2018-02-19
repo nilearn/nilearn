@@ -20,76 +20,78 @@ from ..image import new_img_like, index_img
 _TALAIRACH_LEVELS = ['hemisphere', 'lobe', 'gyrus', 'tissue', 'ba']
 
 
-# def fetch_atlas_craddock_2012(data_dir=None, url=None, resume=True, verbose=1):
-#     """Download and return file names for the Craddock 2012 parcellation
-#
-#     The provided images are in MNI152 space.
-#
-#     Parameters
-#     ----------
-#     data_dir: string
-#         directory where data should be downloaded and unpacked.
-#
-#     url: string
-#         url of file to download.
-#
-#     resume: bool
-#         whether to resumed download of a partly-downloaded file.
-#
-#     verbose: int
-#         verbosity level (0 means no message).
-#
-#     Returns
-#     -------
-#     data: sklearn.datasets.base.Bunch
-#         dictionary-like object, keys are:
-#         scorr_mean, tcorr_mean,
-#         scorr_2level, tcorr_2level,
-#         random
-#
-#     References
-#     ----------
-#     Licence: Creative Commons Attribution Non-commercial Share Alike
-#     http://creativecommons.org/licenses/by-nc-sa/2.5/
-#
-#     Craddock, R. Cameron, G.Andrew James, Paul E. Holtzheimer, Xiaoping P. Hu,
-#     and Helen S. Mayberg. "A Whole Brain fMRI Atlas Generated via Spatially
-#     Constrained Spectral Clustering". Human Brain Mapping 33, no 8 (2012):
-#     1914-1928. doi:10.1002/hbm.21333.
-#
-#     See http://www.nitrc.org/projects/cluster_roi/ for more information
-#     on this parcellation.
-#     """
-#
-#     if url is None:
-#         url = "ftp://www.nitrc.org/home/groups/cluster_roi/htdocs" \
-#               "/Parcellations/craddock_2011_parcellations.tar.gz"
-#     opts = {'uncompress': True}
-#
-#     dataset_name = "craddock_2012"
-#     keys = ("scorr_mean", "tcorr_mean",
-#             "scorr_2level", "tcorr_2level",
-#             "random")
-#     filenames = [
-#             ("scorr05_mean_all.nii.gz", url, opts),
-#             ("tcorr05_mean_all.nii.gz", url, opts),
-#             ("scorr05_2level_all.nii.gz", url, opts),
-#             ("tcorr05_2level_all.nii.gz", url, opts),
-#             ("random_all.nii.gz", url, opts)
-#     ]
-#
-#     data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
-#                                 verbose=verbose)
-#     sub_files = _fetch_files(data_dir, filenames, resume=resume,
-#                              verbose=verbose)
-#
-#     fdescr = _get_dataset_descr(dataset_name)
-#
-#     params = dict([('description', fdescr)] + list(zip(keys, sub_files)))
-#
-#     return Bunch(**params)
+def _fetch_atlas_craddock_2012(data_dir=None, url=None, resume=True,
+verbose=1):
+    """Download and return file names for the Craddock 2012 parcellation
 
-def fetch_atlas_craddock_2012(atlas_name, number_of_regions, data_dir=None,
+    The provided images are in MNI152 space.
+
+    Parameters
+    ----------
+    data_dir: string
+        directory where data should be downloaded and unpacked.
+
+    url: string
+        url of file to download.
+
+    resume: bool
+        whether to resumed download of a partly-downloaded file.
+
+    verbose: int
+        verbosity level (0 means no message).
+
+    Returns
+    -------
+    data: sklearn.datasets.base.Bunch
+        dictionary-like object, keys are:
+        scorr_mean, tcorr_mean,
+        scorr_2level, tcorr_2level,
+        random
+
+    References
+    ----------
+    Licence: Creative Commons Attribution Non-commercial Share Alike
+    http://creativecommons.org/licenses/by-nc-sa/2.5/
+
+    Craddock, R. Cameron, G.Andrew James, Paul E. Holtzheimer, Xiaoping P. Hu,
+    and Helen S. Mayberg. "A Whole Brain fMRI Atlas Generated via Spatially
+    Constrained Spectral Clustering". Human Brain Mapping 33, no 8 (2012):
+    1914-1928. doi:10.1002/hbm.21333.
+
+    See http://www.nitrc.org/projects/cluster_roi/ for more information
+    on this parcellation.
+    """
+
+    if url is None:
+        url = "ftp://www.nitrc.org/home/groups/cluster_roi/htdocs" \
+              "/Parcellations/craddock_2011_parcellations.tar.gz"
+    opts = {'uncompress': True}
+
+    dataset_name = "craddock_2012"
+    keys = ("scorr_mean", "tcorr_mean",
+            "scorr_2level", "tcorr_2level",
+            "random")
+    filenames = [
+            ("scorr05_mean_all.nii.gz", url, opts),
+            ("tcorr05_mean_all.nii.gz", url, opts),
+            ("scorr05_2level_all.nii.gz", url, opts),
+            ("tcorr05_2level_all.nii.gz", url, opts),
+            ("random_all.nii.gz", url, opts)
+    ]
+
+    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
+                                verbose=verbose)
+    sub_files = _fetch_files(data_dir, filenames, resume=resume,
+                             verbose=verbose)
+
+    fdescr = _get_dataset_descr(dataset_name)
+
+    params = dict([('description', fdescr)] + list(zip(keys, sub_files)))
+
+    return Bunch(**params)
+
+def fetch_atlas_craddock_2012(atlas_name=None, number_of_regions=None,
+                              data_dir=None,
                               url=None,
                               resume=True,
                               verbose=1):
@@ -145,6 +147,16 @@ def fetch_atlas_craddock_2012(atlas_name, number_of_regions, data_dir=None,
     See http://www.nitrc.org/projects/cluster_roi/ for more information
     on this parcellation.
     """
+    if (atlas_name is None) or (number_of_regions is None):
+        warnings.simplefilter("always")
+        warnings.warn("The new parameters 'atlas_name' and 'number_of_regions' "
+                      "are added in current version and will be mandatory "
+                      "in the future releases. The new implementation save "
+                      "the atlas on your computer and returns the atlas path "
+                      "NOT Nifti.image.",
+                      category=DeprecationWarning)
+        return _fetch_atlas_craddock_2012(data_dir=data_dir, url=url,
+                                          resume=resume, verbose=verbose)
 
     if url is None:
         url = "ftp://www.nitrc.org/home/groups/cluster_roi/htdocs" \
@@ -152,22 +164,18 @@ def fetch_atlas_craddock_2012(atlas_name, number_of_regions, data_dir=None,
     opts = {'uncompress': True}
 
     dataset_name = "craddock_2012"
-    atlas_items = ("scorr_mean", "tcorr_mean",
-            "scorr_2level", "tcorr_2level",
-            "random")
-    filenames = [
-            ("scorr05_mean_all.nii.gz", url, opts),
-            ("tcorr05_mean_all.nii.gz", url, opts),
-            ("scorr05_2level_all.nii.gz", url, opts),
-            ("tcorr05_2level_all.nii.gz", url, opts),
-            ("random_all.nii.gz", url, opts)
-    ]
+    atlas_items = ("scorr_mean", "tcorr_mean", "scorr_2level", "tcorr_2level",
+                   "random")
+    filenames = [("scorr05_mean_all.nii.gz", url, opts),
+                 ("tcorr05_mean_all.nii.gz", url, opts),
+                 ("scorr05_2level_all.nii.gz", url, opts),
+                 ("tcorr05_2level_all.nii.gz", url, opts),
+                 ("random_all.nii.gz", url, opts)]
 
     if atlas_name not in atlas_items:
         raise ValueError("Invalid atlas name: {0}. Please chose an atlas "
                          "among:\n{1}".format(
                              atlas_name, '\n'.join(atlas_items)))
-
 
     data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
                                 verbose=verbose)
