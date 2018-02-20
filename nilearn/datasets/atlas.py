@@ -111,6 +111,7 @@ def fetch_atlas_craddock_2012(atlas_name=None, number_of_regions=None,
         tcorr_2level: parcellation results when emphasizing temporal
                       homogeneity,
         random: result of random clustering for comparison.
+        
     number_of_regions: int
         Number of brain regions in the atlas
 
