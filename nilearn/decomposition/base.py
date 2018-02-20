@@ -179,8 +179,10 @@ def mask_and_reduce(masker, imgs,
 
     n_samples = np.sum(subject_n_samples)
     n_voxels = int(np.sum(_safe_get_data(masker.mask_img_)))
+    dtype = (np.float64 if data_list[0].dtype.type is np.float64
+             else np.float32)
     data = np.empty((n_samples, n_voxels), order='F',
-                    dtype='float64')
+                    dtype=dtype)
 
     current_position = 0
     for i, next_position in enumerate(np.cumsum(subject_n_samples)):
