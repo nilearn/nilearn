@@ -638,7 +638,9 @@ def new_img_like(ref_niimg, data, affine=None, copy_header=False):
         header = copy.deepcopy(ref_niimg.header)
         header['scl_slope'] = 0.
         header['scl_inter'] = 0.
-        header['glmax'] = 0.
+        # "glmax" is available only for Nifti1Image
+        if not isinstance(ref_niimg, nibabel.nifti2.Nifti2Image):
+            header['glmax'] = 0.
         header['cal_max'] = np.max(data) if data.size > 0 else 0.
         header['cal_min'] = np.min(data) if data.size > 0 else 0.
     klass = ref_niimg.__class__
