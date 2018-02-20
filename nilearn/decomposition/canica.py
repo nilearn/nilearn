@@ -186,9 +186,10 @@ class CanICA(MultiPCA):
         random_state = check_random_state(self.random_state)
 
         seeds = random_state.randint(np.iinfo(np.int32).max, size=self.n_init)
+        # Note: fastICA is very unstable, hence we use 64bit on it
         results = Parallel(n_jobs=self.n_jobs, verbose=self.verbose)(
             delayed(self._cache(fastica, func_memory_level=2))
-            (self.components_.T, whiten=True, fun='cube',
+            (self.components_.T.astype(np.float64), whiten=True, fun='cube',
              random_state=seed)
             for seed in seeds)
 
@@ -214,7 +215,8 @@ class CanICA(MultiPCA):
                 abs_ica_maps,
                 100. - (100. / len(ica_maps)) * ratio)
             ica_maps[abs_ica_maps < threshold] = 0.
-        self.components_ = ica_maps
+        # We make sure that we keep the dtype of components
+        self.components_ = ica_maps.astype(self.components_.dtype)
 
         # flip signs in each component so that peak is +ve
         for component in self.components_:
