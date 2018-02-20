@@ -1,7 +1,8 @@
 """
 Test the multi-PCA module
 """
-
+import os
+import tempfile
 import numpy as np
 from nose.tools import assert_raises, assert_true
 import nibabel
@@ -9,7 +10,14 @@ from numpy.testing import assert_almost_equal, assert_equal
 
 from nilearn.decomposition.multi_pca import MultiPCA
 from nilearn.input_data import MultiNiftiMasker, NiftiMasker
-from nilearn._utils.testing import assert_raises_regex
+from nilearn._utils.testing import assert_raises_regex, write_tmp_imgs
+
+
+def _tmp_dir():
+    """For testing globbing patterns in input images
+    """
+    tmp_dir = tempfile.tempdir + os.sep
+    return tmp_dir
 
 
 def test_multi_pca():
@@ -161,3 +169,40 @@ def test_components_img():
     check_shape = data[0].shape[:3] + (n_components,)
     assert_equal(components_img.shape, check_shape)
     assert_equal(len(components_img.shape), 4)
+
+
+def test_with_globbing_patterns_with_single_image():
+    # With single image
+    data_4d = np.zeros((40, 40, 40, 3))
+    data_4d[20, 20, 20] = 1
+    img_4d = nibabel.Nifti1Image(data_4d, affine=np.eye(4))
+    multi_pca = MultiPCA(n_components=3)
+
+    with write_tmp_imgs(img_4d, create_files=True, use_wildcards=True) as img:
+        input_image = _tmp_dir() + img
+        multi_pca.fit(input_image)
+        components_img = multi_pca.components_img_
+        assert_true(isinstance(components_img, nibabel.Nifti1Image))
+        # n_components = 3
+        check_shape = img_4d.shape[:3] + (3,)
+        assert_equal(components_img.shape, check_shape)
+        assert_equal(len(components_img.shape), 4)
+
+
+def test_with_globbing_patterns_with_multiple_images():
+    # With multiple images
+    data_4d = np.zeros((40, 40, 40, 3))
+    data_4d[20, 20, 20] = 1
+    img_4d = nibabel.Nifti1Image(data_4d, affine=np.eye(4))
+    multi_pca = MultiPCA(n_components=3)
+
+    with write_tmp_imgs(img_4d, img_4d, create_files=True,
+                        use_wildcards=True) as imgs:
+        input_image = _tmp_dir() + imgs
+        multi_pca.fit(input_image)
+        components_img = multi_pca.components_img_
+        assert_true(isinstance(components_img, nibabel.Nifti1Image))
+        # n_components = 3
+        check_shape = img_4d.shape[:3] + (3,)
+        assert_equal(components_img.shape, check_shape)
+        assert_equal(len(components_img.shape), 4)
