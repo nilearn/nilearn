@@ -179,6 +179,14 @@ def test_smooth_img():
     out_fwhm_zero = image.smooth_img(img1, fwhm=0.)
     assert_array_equal(out_fwhm_none.get_data(), out_fwhm_zero.get_data())
 
+    data1 = np.zeros((10, 11, 12))
+    data1[2:4, 1:5, 3:6] = 1
+    data2 = np.zeros((13, 14, 15))
+    data2[2:4, 1:5, 3:6] = 9
+    img1_nifti2 = nibabel.Nifti2Image(data1, affine=np.eye(4))
+    img2_nifti2 = nibabel.Nifti2Image(data2, affine=np.eye(4))
+    out = image.smooth_img([img1_nifti2, img2_nifti2], fwhm=1.)
+
 
 def test__crop_img_to():
     data = np.zeros((5, 6, 7))
@@ -452,6 +460,11 @@ def test_new_img_like():
     img2 = new_img_like([img, ], data)
     np.testing.assert_array_equal(img.get_data(), img2.get_data())
 
+    # test_new_img_like_with_nifti2image_copy_header
+    img_nifti2 = nibabel.Nifti2Image(data, affine=affine)
+    img2_nifti2 = new_img_like([img_nifti2, ], data, copy_header=True)
+    np.testing.assert_array_equal(img_nifti2.get_data(), img2_nifti2.get_data())
+
 
 def test_validity_threshold_value_in_threshold_img():
     shape = (6, 8, 10)
@@ -559,6 +572,12 @@ def test_clean_img():
     nan_img = nibabel.Nifti1Image(data, np.eye(4))
     clean_im = image.clean_img(nan_img, ensure_finite=True)
     assert_true(np.any(np.isfinite(clean_im.get_data())), True)
+
+    # test_clean_img_passing_nifti2image
+    data_img_nifti2 = nibabel.Nifti2Image(data, np.eye(4))
+
+    data_img_nifti2_ = image.clean_img(
+        data_img_nifti2, detrend=True, standardize=False, low_pass=0.1)
 
 
 def test_largest_cc_img():

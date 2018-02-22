@@ -638,7 +638,10 @@ def new_img_like(ref_niimg, data, affine=None, copy_header=False):
         header = copy.deepcopy(ref_niimg.header)
         header['scl_slope'] = 0.
         header['scl_inter'] = 0.
-        header['glmax'] = 0.
+        # 'glmax' is removed for Nifti2Image. Modify only if 'glmax' is
+        # available in header. See issue #1611
+        if 'glmax' in header:
+            header['glmax'] = 0.
         header['cal_max'] = np.max(data) if data.size > 0 else 0.
         header['cal_min'] = np.min(data) if data.size > 0 else 0.
     klass = ref_niimg.__class__
