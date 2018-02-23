@@ -30,7 +30,7 @@ def _local_max(data, min_distance):
     ----------
     data : array_like
         3D array of with masked values for cluster.
-    
+
     min_distance : :obj:`int`
         Minimum distance between local maxima in ``data``, in terms of
         voxels (not mm).
@@ -163,7 +163,7 @@ def get_clusters_table(stat_img, stat_threshold, cluster_threshold=None):
         cluster_size_mm = int(np.sum(cluster_mask) * voxel_size)
 
         # Get peaks, subpeaks and associated statistics
-        subpeak_dist = int(np.round(8. / np.cbrt(voxel_size)))  # pylint: disable=no-member
+        subpeak_dist = int(np.round(8. / np.power(voxel_size, 1./3.)))  # pylint: disable=no-member
         subpeak_ijk = _local_max(masked_data, min_distance=subpeak_dist)
 
         subpeak_vals = np.apply_along_axis(arr=subpeak_ijk, axis=1, func1d=_get_val,
