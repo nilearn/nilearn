@@ -15,12 +15,41 @@ import nilearn.plotting  # overrides the backend on headless servers
 from nilearn.image.resampling import coord_transform
 import matplotlib
 import matplotlib.pyplot as plt
-import scipy.ndimage.measurements as meas
-from skimage.feature import peak_local_max
+from scipy import ndimage
 from patsy import DesignInfo
 
 from .design_matrix import check_design_matrix
 matplotlib.rc('xtick', labelsize=20)
+
+
+def _local_max(data, min_distance):
+    """Find all local maxima of the array, separated by at least min_distance.
+    From https://stackoverflow.com/a/22631583/2589328
+
+    Parameters
+    ----------
+    data : array_like
+        3D array of with masked values for cluster.
+    
+    min_distance : :obj:`int`
+        Minimum distance between local maxima in ``data``, in terms of
+        voxels (not mm).
+
+    Returns
+    -------
+    xy : :obj:`numpy.ndarray`
+        (n_foci, 3) array of local maxima indices for cluster.
+    """
+    data_max = ndimage.filters.maximum_filter(data, min_distance)
+    maxima = (data == data_max)
+    data_min = ndimage.filters.minimum_filter(data, min_distance)
+    diff = ((data_max - data_min) > 0)
+    maxima[diff == 0] = 0
+
+    labeled, num_objects = ndimage.label(maxima)
+    xy = np.array(ndimage.center_of_mass(data, labeled, range(1, num_objects+1)))
+    xy = np.round(xy).astype(int)
+    return xy
 
 
 def _get_conn(neighborhood=6):
@@ -29,11 +58,12 @@ def _get_conn(neighborhood=6):
 
     Parameters
     ----------
-    neighborhood : {6, 18, 26}
+    neighborhood : {6, 18, 26}, optional
         Voxel connectivity level.
         6: Voxels must be connected by faces.
         18: Voxels may be connected by faces or by edges.
         26: Voxels may be connected by faces, edges, or corners.
+        Default is 6.
 
     Returns
     -------
@@ -57,6 +87,13 @@ def _get_conn(neighborhood=6):
     else:
         raise Exception('Neighborhood must be `int` in set (6, 18, 26).')
     return mat
+
+
+def _get_val(row, input_arr):
+    """Small function for extracting values from array based on index.
+    """
+    i, j, k = row
+    return input_arr[i, j, k]
 
 
 def get_clusters_table(stat_img, stat_threshold, cluster_threshold=None):
@@ -97,7 +134,7 @@ def get_clusters_table(stat_img, stat_threshold, cluster_threshold=None):
         return pd.DataFrame(columns=cols)
 
     # Extract connected components above cluster size threshold
-    label_map = meas.label(binarized, conn_mat)[0]
+    label_map = ndimage.measurements.label(binarized, conn_mat)[0]
     clust_ids = sorted(list(np.unique(label_map)[1:]))
     for c_val in clust_ids:
         if cluster_threshold is not None and np.sum(label_map == c_val) < cluster_threshold:
@@ -113,7 +150,7 @@ def get_clusters_table(stat_img, stat_threshold, cluster_threshold=None):
         return pd.DataFrame(columns=cols)
 
     # Now re-label and create table
-    label_map = meas.label(binarized, conn_mat)[0]
+    label_map = ndimage.measurements.label(binarized, conn_mat)[0]
     clust_ids = sorted(list(np.unique(label_map)[1:]))
     peak_vals = np.array([np.max(stat_map * (label_map == c)) for c in clust_ids])
     clust_ids = [clust_ids[c] for c in (-peak_vals).argsort()]  # Sort by descending max value
@@ -125,24 +162,9 @@ def get_clusters_table(stat_img, stat_threshold, cluster_threshold=None):
 
         cluster_size_mm = int(np.sum(cluster_mask) * voxel_size)
 
-        # xyz and val
-        def _get_val(row, input_arr):
-            """Small function for extracting values from array based on index.
-            """
-            i, j, k = row
-            return input_arr[i, j, k]
-
-        if np.std(stat_map[cluster_mask]) == 0 and cluster_size_mm > 1:
-            warnings.warn('Cluster {0} appears to be single-valued. '
-                          'Reporting center of mass.'.format(c_id))
-            subpeak_ijk = np.round(meas.center_of_mass(masked_data, cluster_mask,
-                                                       index=1)).astype(int)
-            subpeak_ijk = subpeak_ijk[None, :]
-        else:
-            subpeak_dist = int(np.round(8. / np.cbrt(voxel_size)))  # pylint: disable=no-member
-            subpeak_ijk = peak_local_max(masked_data, min_distance=subpeak_dist,
-                                         threshold_abs=stat_threshold, num_peaks=4,
-                                         exclude_border=False)
+        # Get peaks, subpeaks and associated statistics
+        subpeak_dist = int(np.round(8. / np.cbrt(voxel_size)))  # pylint: disable=no-member
+        subpeak_ijk = _local_max(masked_data, min_distance=subpeak_dist)
 
         subpeak_vals = np.apply_along_axis(arr=subpeak_ijk, axis=1, func1d=_get_val,
                                            input_arr=masked_data)
@@ -155,11 +177,14 @@ def get_clusters_table(stat_img, stat_threshold, cluster_threshold=None):
                 stat_img.affine)).tolist()
         subpeak_xyz = np.array(subpeak_xyz).T
 
-        for subpeak in range(len(subpeak_vals)):
+        # Only report peak and, at most, top 3 subpeaks.
+        n_subpeaks = np.min((len(subpeak_vals), 4))
+        for subpeak in range(n_subpeaks):
             if subpeak == 0:
                 row = [c_id+1, subpeak_xyz[subpeak, 0], subpeak_xyz[subpeak, 1],
                        subpeak_xyz[subpeak, 2], subpeak_vals[subpeak], cluster_size_mm]
             else:
+                # Subpeak naming convention is cluster num + letter (1a, 1b, etc.)
                 sp_id = '{0}{1}'.format(c_id+1, ascii_lowercase[subpeak-1])
                 row = [sp_id, subpeak_xyz[subpeak, 0], subpeak_xyz[subpeak, 1],
                        subpeak_xyz[subpeak, 2], subpeak_vals[subpeak], '']
