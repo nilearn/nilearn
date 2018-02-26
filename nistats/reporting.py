@@ -52,43 +52,6 @@ def _local_max(data, min_distance):
     return xy
 
 
-def _get_conn(neighborhood=6):
-    """Generate 3x3x3 connectivity matrix for cluster labeling based on voxel
-    neighborhood definition.
-
-    Parameters
-    ----------
-    neighborhood : {6, 18, 26}, optional
-        Voxel connectivity level.
-        6: Voxels must be connected by faces.
-        18: Voxels may be connected by faces or by edges.
-        26: Voxels may be connected by faces, edges, or corners.
-        Default is 6.
-
-    Returns
-    -------
-    mat : :obj:`numpy.ndarray`
-        3x3x3 array of 1s and 0s. A 1 indicates that that a voxel located in
-        that position relative to a voxel located in the center of the array
-        would be considered part of the same cluster as the central voxel.
-    """
-    if neighborhood == 6:
-        mat = np.zeros((3, 3, 3), int)
-        mat[1, 1, :] = 1
-        mat[1, :, 1] = 1
-        mat[:, 1, 1] = 1
-    elif neighborhood == 18:
-        mat = np.zeros((3, 3, 3), int)
-        mat[:, :, 1] = 1
-        mat[:, 1, :] = 1
-        mat[1, :, :] = 1
-    elif neighborhood == 26:
-        mat = np.ones((3, 3, 3), int)
-    else:
-        raise Exception('Neighborhood must be `int` in set (6, 18, 26).')
-    return mat
-
-
 def _get_val(row, input_arr):
     """Small function for extracting values from array based on index.
     """
@@ -120,7 +83,10 @@ def get_clusters_table(stat_img, stat_threshold, cluster_threshold=None):
     """
     cols = ['Cluster ID', 'X', 'Y', 'Z', 'Peak Stat', 'Cluster Size (mm3)']
     stat_map = stat_img.get_data()
-    conn_mat = _get_conn(6)  # 6-connectivity, aka NN1 or "faces"
+    conn_mat = np.zeros((3, 3, 3), int)  # 6-connectivity, aka NN1 or "faces"
+    conn_mat[1, 1, :] = 1
+    conn_mat[1, :, 1] = 1
+    conn_mat[:, 1, 1] = 1
     voxel_size = np.prod(stat_img.header.get_zooms())
 
     # Binarize using CDT
