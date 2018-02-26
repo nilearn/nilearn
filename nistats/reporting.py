@@ -24,7 +24,7 @@ matplotlib.rc('xtick', labelsize=20)
 
 def _local_max(data, min_distance):
     """Find all local maxima of the array, separated by at least min_distance.
-    From https://stackoverflow.com/a/22631583/2589328
+    Adapted from https://stackoverflow.com/a/22631583/2589328
 
     Parameters
     ----------
@@ -37,8 +37,11 @@ def _local_max(data, min_distance):
 
     Returns
     -------
-    xy : :obj:`numpy.ndarray`
+    ijk : :obj:`numpy.ndarray`
         (n_foci, 3) array of local maxima indices for cluster.
+
+    vals : :obj:`numpy.ndarray`
+        (n_foci,) array of values from data at ijk.
     """
     data_max = ndimage.filters.maximum_filter(data, min_distance)
     maxima = (data == data_max)
@@ -47,9 +50,24 @@ def _local_max(data, min_distance):
     maxima[diff == 0] = 0
 
     labeled, num_objects = ndimage.label(maxima)
-    xy = np.array(ndimage.center_of_mass(data, labeled, range(1, num_objects+1)))
-    xy = np.round(xy).astype(int)
-    return xy
+    ijk = np.array(ndimage.center_of_mass(data, labeled, range(1, num_objects+1)))
+    ijk = np.round(ijk).astype(int)
+
+    vals = np.apply_along_axis(arr=ijk, axis=1, func1d=_get_val, input_arr=data)
+    order = (-vals).argsort()
+    vals = vals[order]
+    ijk = ijk[order, :]
+
+    # Reduce list of subpeaks based on distance
+    keep_idx = np.ones(ijk.shape[0]).astype(bool)
+    for i in range(ijk.shape[0]):
+        for j in range(i+1, ijk.shape[0]):
+            if keep_idx[i] == 1:
+                dist = np.linalg.norm(ijk[i, :] - ijk[j, :])
+                keep_idx[j] = dist > min_distance
+    ijk = ijk[keep_idx, :]
+    vals = vals[keep_idx]
+    return ijk, vals
 
 
 def _get_val(row, input_arr):
@@ -129,18 +147,12 @@ def get_clusters_table(stat_img, stat_threshold, cluster_threshold=None):
         cluster_size_mm = int(np.sum(cluster_mask) * voxel_size)
 
         # Get peaks, subpeaks and associated statistics
-        subpeak_dist = int(np.round(8. / np.power(voxel_size, 1./3.)))  # pylint: disable=no-member
-        subpeak_ijk = _local_max(masked_data, min_distance=subpeak_dist)
-
-        subpeak_vals = np.apply_along_axis(arr=subpeak_ijk, axis=1, func1d=_get_val,
-                                           input_arr=masked_data)
-        order = (-subpeak_vals).argsort()
-        subpeak_vals = subpeak_vals[order]
-        subpeak_ijk = subpeak_ijk[order, :]
-        subpeak_xyz = np.asarray(
-            coord_transform(
-                subpeak_ijk[:, 0], subpeak_ijk[:, 1], subpeak_ijk[:, 2],
-                stat_img.affine)).tolist()
+        min_dist = int(np.round(8. / np.power(voxel_size, 1./3.)))  # pylint: disable=no-member
+        subpeak_ijk, subpeak_vals = _local_max(masked_data, min_distance=min_dist)
+        subpeak_xyz = np.asarray(coord_transform(subpeak_ijk[:, 0],
+                                                 subpeak_ijk[:, 1],
+                                                 subpeak_ijk[:, 2],
+                                                 stat_img.affine)).tolist()
         subpeak_xyz = np.array(subpeak_xyz).T
 
         # Only report peak and, at most, top 3 subpeaks.
@@ -151,7 +163,7 @@ def get_clusters_table(stat_img, stat_threshold, cluster_threshold=None):
                        subpeak_xyz[subpeak, 2], subpeak_vals[subpeak], cluster_size_mm]
             else:
                 # Subpeak naming convention is cluster num + letter (1a, 1b, etc.)
-                sp_id = '{0}{1}'.format(c_id+1, ascii_lowercase[subpeak-1])
+                sp_id = '{0}{1}'.format(c_id + 1, ascii_lowercase[subpeak - 1])
                 row = [sp_id, subpeak_xyz[subpeak, 0], subpeak_xyz[subpeak, 1],
                        subpeak_xyz[subpeak, 2], subpeak_vals[subpeak], '']
             rows += [row]
@@ -275,7 +287,7 @@ def plot_design_matrix(design_matrix, rescale=True, ax=None):
     # normalize the values per column for better visualization
     _, X, names = check_design_matrix(design_matrix)
     if rescale:
-        X = X / np.maximum(1.e-12, np.sqrt(np.sum(X ** 2, 0)))
+        X = X / np.maximum(1.e-12, np.sqrt(np.sum(X ** 2, 0)))  # pylint: disable=no-member
     if ax is None:
         plt.figure()
         ax = plt.subplot(1, 1, 1)

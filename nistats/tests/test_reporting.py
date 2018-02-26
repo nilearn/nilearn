@@ -1,5 +1,5 @@
 from nistats.design_matrix import make_design_matrix
-from nistats.reporting import plot_design_matrix, get_clusters_table
+from nistats.reporting import plot_design_matrix, get_clusters_table, _local_max
 import nibabel as nib
 import numpy as np
 from numpy.testing import dec
@@ -27,6 +27,23 @@ def test_show_design_matrix():
         frame_times, drift_model='polynomial', drift_order=3)
     ax = plot_design_matrix(DM)
     assert (ax is not None)
+
+
+def test_local_max():
+    shape = (9, 10, 11)
+    data = np.zeros(shape)
+    # Two maxima (one global, one local), 10 voxels apart.
+    data[4, 5, :] = [4, 3, 2, 1, 1, 1, 1, 1, 2, 3, 4]
+    data[5, 5, :] = [5, 4, 3, 2, 1, 1, 1, 2, 3, 4, 6]
+    data[6, 5, :] = [4, 3, 2, 1, 1, 1, 1, 1, 2, 3, 4]
+
+    ijk, vals = _local_max(data, 9)
+    assert_true(np.array_equal(ijk, np.array([[5., 5., 10.], [5., 5., 0.]])))
+    assert_true(np.array_equal(vals, np.array([6, 5])))
+
+    ijk, vals = _local_max(data, 11)
+    assert_true(np.array_equal(ijk, np.array([[5., 5., 10.]])))
+    assert_true(np.array_equal(vals, np.array([6])))
 
 
 def test_get_clusters_table():
