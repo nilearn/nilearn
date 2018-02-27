@@ -111,7 +111,7 @@ def fetch_atlas_craddock_2012(atlas_name=None, number_of_regions=None,
         tcorr_2level: parcellation results when emphasizing temporal
                       homogeneity,
         random: result of random clustering for comparison.
-        
+
     number_of_regions: int
         Number of brain regions in the atlas
 
@@ -152,7 +152,7 @@ def fetch_atlas_craddock_2012(atlas_name=None, number_of_regions=None,
         warnings.simplefilter("always")
         warnings.warn("The new parameters 'atlas_name' and 'number_of_regions' "
                       "are added in current version and will be mandatory "
-                      "in the future releases. The new implementation save "
+                      "in the future releases. The new implementation saves "
                       "the atlas on your computer and returns the atlas path "
                       "NOT Nifti.image.",
                       category=DeprecationWarning)
@@ -185,8 +185,8 @@ def fetch_atlas_craddock_2012(atlas_name=None, number_of_regions=None,
     atlas_name_file = dict(zip(atlas_items, sub_files))
 
     # select indicated atlas file
-    atlas_selected = atlas_name_file[atlas_name]
-    img = check_niimg(atlas_selected)
+    selected_atlas = atlas_name_file[atlas_name]
+    img = check_niimg(selected_atlas)
     data = img.get_data()
     max_vol = data.shape[3]
 
