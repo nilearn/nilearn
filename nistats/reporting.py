@@ -13,7 +13,6 @@ import matplotlib
 import matplotlib.pyplot as plt
 from patsy import DesignInfo
 from .design_matrix import check_design_matrix
-matplotlib.rc('xtick', labelsize=20)
 
 
 def compare_niimgs(ref_imgs, src_imgs, masker, plot_hist=True, log=True,
