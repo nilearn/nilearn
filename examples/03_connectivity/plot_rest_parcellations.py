@@ -10,9 +10,8 @@ to create a 'compressed' representation of the data, replacing the data
 in the fMRI images by mean signals on the parcellation, which can
 subsequently be used for statistical analysis or machine learning.
 
-Also, these methods can be interesting to learn functional connectomes
-based on these parcellations and be able to used in a classification
-task between controls and disease states.
+Also, these methods can be used to learn functional connectomes
+and subsequently for classification tasks.
 
 References
 ----------
@@ -57,7 +56,7 @@ print('First subject functional nifti image (4D) is at: %s' %
 # ----------------------------------------
 #
 # Transforming list of images to data matrix and build brain parcellations,
-# all can be done at once using class `Parcellations`.
+# all can be done at once using `Parcellations` object.
 
 from nilearn.regions import Parcellations
 
@@ -79,7 +78,7 @@ ward = Parcellations(method='ward', n_parcels=1000,
 ward.fit(dataset.func)
 print("Ward agglomeration 1000 clusters: %.2fs" % (time.time() - start))
 
-# We compute now ward clustering with more number of clusters=2000 and compare
+# We compute now ward clustering with 2000 clusters and compare
 # time with 1000 clusters. To see the benefits of caching for second time.
 
 # We initialize class again with n_parcels=2000 this time.
@@ -137,9 +136,9 @@ plotting.plot_epi(mean_func_img, cut_coords=cut_coords,
 
 # A reduced dataset can be created by taking the parcel-level average:
 # Note that Parcellation objects with any method have the opportunity to
-# use a transform method that modifies input features. Here it reduces their
-# dimension. Note that we fit before calling a transform so that average signals
-# can be created on the brain parcellations with fit call.
+# use a `transform` call that modifies input features. Here it reduces their
+# dimension. Note that we `fit` before calling a `transform` so that average
+# signals can be created on the brain parcellations with fit call.
 fmri_reduced = ward.transform(dataset.func)
 
 # Display the corresponding data compressed using the parcellation using

@@ -189,7 +189,7 @@ class CanICA(MultiPCA):
         # Note: fastICA is very unstable, hence we use 64bit on it
         results = Parallel(n_jobs=self.n_jobs, verbose=self.verbose)(
             delayed(self._cache(fastica, func_memory_level=2))
-            (self.components_.T.astype(np.float64), whiten=True, fun='cube',
+            (components.T.astype(np.float64), whiten=True, fun='cube',
              random_state=seed)
             for seed in seeds)
 

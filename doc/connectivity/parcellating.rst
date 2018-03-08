@@ -90,10 +90,9 @@ used for caching.
 
 .. note::
 
-    The above steps detailed above such as computing connectivity matrix for
-    Ward, caching and clustering are all implemented within the object
-    :class:`nilearn.regions.Parcellations`,
-    and computes by itself while applying methods on the data.
+    The steps detailed above such as computing connectivity matrix for
+    Ward, caching and clustering are all implemented within the
+    :class:`nilearn.regions.Parcellations` object.
 
 .. seealso::
 
