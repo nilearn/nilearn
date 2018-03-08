@@ -261,6 +261,7 @@ uses.
    :template: class.rst
 
    RegionExtractor
+   Parcellations
 
 
 :mod:`nilearn.mass_univariate`: Mass-univariate analysis

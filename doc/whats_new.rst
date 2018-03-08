@@ -10,6 +10,9 @@ Enhancements
       a Nifti image. This avoids the step of unmasking the attribute
       `components_` which is true for older versions.
 
+    - New object :class:`nilearn.regions.Parcellations` for learning brain
+      parcellations on fmri data.
+
 Changes
 -------
 

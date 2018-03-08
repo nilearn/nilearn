@@ -28,7 +28,7 @@ mass_univariate         --- Defines a Massively Univariate Linear Model
                             estimated with OLS and permutation test
 plotting                --- Plotting code for nilearn
 region                  --- Set of functions for extracting region-defined
-                            signals
+                            signals, clustering methods, connected regions extraction
 signal                  --- Set of preprocessing functions for time series
 """
 
@@ -72,4 +72,4 @@ CHECK_CACHE_VERSION = True
 # list all submodules available in nilearn and version
 __all__ = ['datasets', 'decoding', 'decomposition', 'connectome',
            'image', 'input_data', 'masking', 'mass_univariate', 'plotting',
-           'region', 'signal', 'surface', '__version__']
+           'region', 'signal', 'surface', 'parcellations', '__version__']

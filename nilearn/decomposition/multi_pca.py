@@ -164,13 +164,15 @@ class MultiPCA(BaseDecomposition):
             S = np.sqrt(np.sum(data ** 2, axis=1))
             S[S == 0] = 1
             data /= S[:, np.newaxis]
-        self.components_, self.variance_, _ = self._cache(
+        components_, self.variance_, _ = self._cache(
             randomized_svd, func_memory_level=2)(
             data.T, n_components=self.n_components,
             transpose=True,
             random_state=self.random_state, n_iter=3)
         if self.do_cca:
             data *= S[:, np.newaxis]
-        self.components_ = self.components_.T
+        self.components_ = components_.T
         if hasattr(self, "masker_"):
-            self.components_img_ = self.masker_.inverse_transform(self.components_)
+            self.components_img_ = self.masker_.inverse_transform(
+                components_.T)
+        return components_
