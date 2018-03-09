@@ -460,6 +460,12 @@ def test_plot_connectome():
     plot_connectome(*args, display_mode='lzry')
     plt.close()
 
+    # test node_color as a string with display_mode='lzry'
+    plot_connectome(*args, node_color='red', display_mode='lzry')
+    plt.close()
+    plot_connectome(*args, node_color=['red'], display_mode='lzry')
+    plt.close()
+
 
 def test_plot_connectome_exceptions():
     node_coords = np.arange(2 * 3).reshape((2, 3))

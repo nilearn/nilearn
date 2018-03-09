@@ -308,6 +308,9 @@ class GlassBrainAxes(BaseAxes):
 
         # Allow markers only in their respective hemisphere when appropriate
         if self.direction in 'lr':
+            if not isinstance(marker_color, _utils.compat._basestring) and \
+                    not isinstance(marker_color, np.ndarray):
+                marker_color = np.asarray(marker_color)
             relevant_coords = []
             xcoords, ycoords, zcoords = marker_coords.T
             for cidx, xc in enumerate(xcoords):
@@ -317,7 +320,14 @@ class GlassBrainAxes(BaseAxes):
                         relevant_coords.append(cidx)
             xdata = xdata[relevant_coords]
             ydata = ydata[relevant_coords]
-            marker_color = marker_color[relevant_coords]
+            # if marker_color is string for example 'red' or 'blue', then
+            # we pass marker_color as it is to matplotlib scatter without
+            # making any selection in 'l' or 'r' color.
+            # More likely that user wants to display all nodes to be in
+            # same color.
+            if not isinstance(marker_color, _utils.compat._basestring) and \
+                    len(marker_color) != 1:
+                marker_color = marker_color[relevant_coords]
 
         defaults = {'marker': 'o',
                     'zorder': 1000}

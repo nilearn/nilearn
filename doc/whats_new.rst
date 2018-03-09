@@ -21,6 +21,13 @@ Changes
       :class:`nilearn.decomposition.DictLearning` is deprecated and will
       be removed in next two releases. Use `components_img_` instead.
 
+Bug fixes
+---------
+
+    - Fix issues using :func:`nilearn.plotting.plot_connectome` when string is
+      passed in `node_color` display modes left and right hemispheric cuts
+      in the glass brain.
+
 0.4.0
 =====
 

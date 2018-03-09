@@ -1186,7 +1186,8 @@ def plot_connectome(adjacency_matrix, node_coords,
         node_coords : numpy array_like of shape (n, 3)
             3d coordinates of the graph nodes in world space.
         node_color : color or sequence of colors
-            color(s) of the nodes.
+            color(s) of the nodes. If string is given, all nodes
+            are plotted with same color given in string.
         node_size : scalar or array_like
             size(s) of the nodes in points^2.
         edge_cmap : colormap
