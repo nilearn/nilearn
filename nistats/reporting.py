@@ -19,7 +19,6 @@ from scipy import ndimage
 from patsy import DesignInfo
 
 from .design_matrix import check_design_matrix
-matplotlib.rc('xtick', labelsize=20)
 
 
 def _local_max(data, min_distance):
