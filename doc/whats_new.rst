@@ -1,6 +1,8 @@
 0.4.1
 =====
 
+This bug fix release is focussed on few bug fixes and minor developments.
+
 Enhancements
 ------------
 
