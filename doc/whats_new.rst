@@ -13,6 +13,12 @@ Enhancements
     - New object :class:`nilearn.regions.Parcellations` for learning brain
       parcellations on fmri data.
 
+    - Add optional reordering of the matrix using a argument `reorder`
+      with :func:`nilearn.plotting.plot_matrix`.
+
+      .. note::
+        This feature is usable only if SciPy version is >= 1.0.0
+
 Changes
 -------
 
@@ -25,8 +31,21 @@ Bug fixes
 ---------
 
     - Fix issues using :func:`nilearn.plotting.plot_connectome` when string is
-      passed in `node_color` display modes left and right hemispheric cuts
+      passed in `node_color` with display modes left and right hemispheric cuts
       in the glass brain.
+
+    - Fix bug while plotting only coordinates using add_markers on glass brain.
+      See issue #1595
+
+    - Fix issues with estimators in decomposition module when input images are
+      given in glob patterns.
+
+    - Fix bug loading Nifti2Images.
+
+    - Fix bug while adjusting contrast of the background template while using
+      :func:`nilearn.plotting.plot_prob_atlas`
+
+    - Fix colormap bug with recent matplotlib 2.2.0
 
 0.4.0
 =====

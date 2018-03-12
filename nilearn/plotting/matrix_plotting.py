@@ -66,12 +66,19 @@ def plot_matrix(mat, title=None, labels=None, figure=None, axes=None,
             If not False, reorders the matrix into blocks of clusters.
             Accepted linkage options for the clustering are 'single',
             'complete', and 'average'. True defaults to average linkage.
+
             .. note::
-            This option is only available with SciPy >= 1.0.0.
+                This option is only available with SciPy >= 1.0.0.
+
+            .. versionadded:: 0.4.1
+
         kwargs : extra keyword arguments
             Extra keyword arguments are sent to pylab.imshow
 
-        Returns Matplotlib AxesImage instance
+        Returns
+        -------
+        display : instance of matplotlib
+            Axes image.
     """
     if reorder:
         if labels is None or labels is False:
