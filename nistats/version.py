@@ -31,15 +31,13 @@ _NISTATS_INSTALL_MSG = 'See %s for installation information.' % (
 REQUIRED_MODULE_METADATA = (
     ('numpy', {
         'min_version': '1.8.2',
-        'required_at_installation': True,
         'install_info': _NISTATS_INSTALL_MSG}),
     ('scipy', {
         'min_version': '0.14',
-        'required_at_installation': True,
         'install_info': _NISTATS_INSTALL_MSG}),
     ('sklearn', {
+        'pypi_name': 'scikit-learn',
         'min_version': '0.15.0',
-        'required_at_installation': True,
         'install_info': _NISTATS_INSTALL_MSG}),
     ('nibabel', {
         'min_version': '2.0.2',
@@ -47,17 +45,14 @@ REQUIRED_MODULE_METADATA = (
         'install_info': _NISTATS_INSTALL_MSG}),
     ('nilearn', {
         'min_version': '0.2.0',
-        'required_at_installation': True,
         'install_info': _NISTATS_INSTALL_MSG}),
     ('pandas', {
         'min_version': '0.13.0',
-        'required_at_installation': True,
         'install_info': _NISTATS_INSTALL_MSG}),
     ('patsy', {
         'min_version': '0.2.0',
-        'required_at_installation': True,
         'install_info': _NISTATS_INSTALL_MSG}),
-    )
+)
 
 OPTIONAL_MATPLOTLIB_MIN_VERSION = '1.3.1'
 OPTIONAL_BOTO3_MIN_VERSION = '1.0.0'
@@ -120,10 +115,7 @@ def _check_module_dependencies(is_nistats_installing=False):
     """
 
     for (module_name, module_metadata) in REQUIRED_MODULE_METADATA:
-        if not (is_nistats_installing and
-                not module_metadata['required_at_installation']):
-            # Skip check only when installing and it's a module that
-            # will be auto-installed.
+        if not is_nistats_installing:
             _import_module_with_version_check(
                 module_name=module_name,
                 minimum_version=module_metadata['min_version'],
