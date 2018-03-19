@@ -35,7 +35,7 @@ conditions = conditions[condition_mask]
 
 # We now have 2 conditions
 print(conditions.unique())
-session = behavioral[condition_mask]
+session = behavioral[condition_mask].to_records(index=False)
 
 #############################################################################
 # Prepare the fMRI data: smooth and apply the mask
@@ -89,7 +89,7 @@ from sklearn.cross_validation import LeaveOneLabelOut, cross_val_score
 # Define the cross-validation scheme used for validation.
 # Here we use a LeaveOneLabelOut cross-validation on the session label
 # which corresponds to a leave-one-session-out
-cv = LeaveOneLabelOut(session['chunks'])
+cv = LeaveOneLabelOut(session)
 
 # Compute the prediction accuracy for the different folds (i.e. session)
 cv_scores = cross_val_score(anova_svc, X, conditions, cv=cv)
