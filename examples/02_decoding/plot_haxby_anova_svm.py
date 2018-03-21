@@ -33,9 +33,13 @@ conditions = behavioral['labels']
 condition_mask = behavioral['labels'].isin(['face', 'house'])
 conditions = conditions[condition_mask]
 
-# We now have 2 conditions
+# Confirm that we now have 2 conditions
 print(conditions.unique())
+
+# Record these as an array of sessions, with fields
+# for condition (face or house) and run
 session = behavioral[condition_mask].to_records(index=False)
+print(session.dtype.names)
 
 #############################################################################
 # Prepare the fMRI data: smooth and apply the mask
