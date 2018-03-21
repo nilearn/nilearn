@@ -148,9 +148,10 @@ def fetch_haxby(data_dir=None, n_subjects=None, subjects=(2,),
     The anatomical image for subject 6 is unavailable.
     """
     if n_subjects is not None:
-        warnings.warn("The parameter 'n_subjects' is deprecated from 0.2.6 "
-                      "and will be removed in nilearn next release. Use "
-                      "parameter 'subjects' instead.")
+        warn_str = ("The parameter 'n_subjects' is deprecated from 0.2.6 and"
+                    "will be removed in nilearn next release. Use parameter"
+                    "'subjects' instead.")
+        warnings.warn(warn_str, np.VisibleDeprecationWarning)
         subjects = n_subjects
 
     if isinstance(subjects, numbers.Number) and subjects > 6:
