@@ -491,7 +491,7 @@ def clean(signals, sessions=None, detrend=True, standardize=True,
                 clean(signals[sessions == s],
                       detrend=detrend, standardize=standardize,
                       confounds=session_confounds, low_pass=low_pass,
-                      high_pass=high_pass, t_r=2.5)
+                      high_pass=high_pass, t_r=t_r)
 
     # detrend
     signals = _ensure_float(signals)
