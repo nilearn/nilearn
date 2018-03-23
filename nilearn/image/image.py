@@ -883,7 +883,7 @@ def clean_img(imgs, sessions=None, detrend=True, standardize=True,
     data = signal.clean(
         imgs_.get_data().reshape(-1, imgs_.shape[-1]).T, sessions=sessions,
         detrend=detrend, standardize=standardize, confounds=confounds,
-        low_pass=low_pass, high_pass=high_pass, t_r=2.5,
+        low_pass=low_pass, high_pass=high_pass, t_r=t_r,
         ensure_finite=ensure_finite).T.reshape(imgs_.shape)
     return new_img_like(imgs, data, copy_header=True)
 
