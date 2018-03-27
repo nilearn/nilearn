@@ -11,10 +11,8 @@ import distutils.version
 import warnings
 
 import numpy as np
-import scipy
-from scipy import signal, stats, linalg
+from scipy import stats, linalg, signal as sp_signal
 from sklearn.utils import gen_even_slices, as_float_array
-from distutils.version import LooseVersion
 
 from ._utils.compat import _basestring
 from ._utils.numpy_conversions import csv_to_array, as_ndarray
@@ -183,7 +181,7 @@ def _check_wn(btype, freq, nyq):
     return wn
 
 
-def butterworth(signals, sampling_rate, low_pass=None, high_pass=None,
+def butterworth(signals_in, sampling_rate, low_pass=None, high_pass=None,
                 order=5, copy=False, save_memory=False):
     """ Apply a low-pass, high-pass or band-pass Butterworth filter
 
@@ -192,7 +190,7 @@ def butterworth(signals, sampling_rate, low_pass=None, high_pass=None,
 
     Parameters
     ----------
-    signals: numpy.ndarray (1D sequence or n_samples x n_sources)
+    signals_in: numpy.ndarray (1D sequence or n_samples x n_sources)
         Signals to be filtered. A signal is assumed to be a column
         of `signals`.
 
@@ -224,9 +222,9 @@ def butterworth(signals, sampling_rate, low_pass=None, high_pass=None,
     """
     if low_pass is None and high_pass is None:
         if copy:
-            return signal.copy()
+            return signals_in.copy()
         else:
-            return signal
+            return signals_in
 
     if low_pass is not None and high_pass is not None \
             and high_pass >= low_pass:
@@ -252,24 +250,24 @@ def butterworth(signals, sampling_rate, low_pass=None, high_pass=None,
     else:
         critical_freq = critical_freq[0]
 
-    b, a = signal.butter(order, critical_freq, btype=btype)
-    if signals.ndim == 1:
+    b, a = sp_signal.butter(order, critical_freq, btype=btype, output='ba')
+    if signals_in.ndim == 1:
         # 1D case
-        output = signal.filtfilt(b, a, signals)
+        output = sp_signal.filtfilt(b, a, signals_in)
         if copy:  # filtfilt does a copy in all cases.
-            signals = output
+            signals_in = output
         else:
-            signals[...] = output
+            signals_in[...] = output
     else:
         if copy:
             # No way to save memory when a copy has been requested,
             # because filtfilt does out-of-place processing
-            signals = signal.filtfilt(b, a, signals, axis=0)
+            signals_in = sp_signal.filtfilt(b, a, signals_in, axis=0)
         else:
             # Lesser memory consumption, slower.
-            for timeseries in signals.T:
-                timeseries[:] = signal.filtfilt(b, a, timeseries)
-    return signals
+            for timeseries in signals_in.T:
+                timeseries[:] = sp_signal.filtfilt(b, a, timeseries)
+    return signals_in
 
 
 def high_variance_confounds(series, n_confounds=5, percentile=2.,
