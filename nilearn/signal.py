@@ -267,6 +267,9 @@ def butterworth(signals_in, sampling_rate, low_pass=None, high_pass=None,
             # Lesser memory consumption, slower.
             for timeseries in signals_in.T:
                 timeseries[:] = sp_signal.filtfilt(b, a, timeseries)
+
+            # results returned in-place
+
     return signals_in
 
 
