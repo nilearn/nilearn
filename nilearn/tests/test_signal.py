@@ -123,6 +123,7 @@ def test_butterworth():
                          low_pass=low_pass, high_pass=high_pass,
                          copy=False)
     np.testing.assert_almost_equal(out_single, data)
+    np.testing.assert_(id(out_single) != id(data))
 
     # multiple timeseries
     data = rand_gen.randn(n_samples, n_features)
@@ -133,6 +134,8 @@ def test_butterworth():
                                 low_pass=low_pass, high_pass=high_pass,
                                 copy=True)
     np.testing.assert_almost_equal(data, data_original)
+    np.testing.assert_(id(out1)!=id(data_original))
+
     # check that multiple- and single-timeseries filtering do the same thing.
     np.testing.assert_almost_equal(out1[:, 0], out_single)
     nisignal.butterworth(data, sampling,
@@ -148,6 +151,7 @@ def test_butterworth():
                                 low_pass=80.,  # Greater than nyq frequency
                                 copy=True)
     np.testing.assert_almost_equal(out1, out2)
+    np.testing.assert_(id(out1) != id(out2))
 
 
 def test_standardize():
