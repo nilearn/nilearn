@@ -287,7 +287,8 @@ def test_clean_detrending():
     assert_false(abs(x_undetrended - signals).max() < 0.06)
 
 
-def test_clean_TR():
+def test_clean_t_r():
+    """Different TRs must produce different results after filtering"""
 
     # n_features  Must be higher than 500
     for n_samples, n_features in zip(( 34,  42, 100),
@@ -309,8 +310,12 @@ def test_clean_TR():
                 det_diff_tr  = nisignal.clean(x_orig, t_r=tr2, low_pass=low_cutoff,
                                             high_pass=high_cutoff)
 
-                if not np.isclose(tr1, tr2, atol=0.2):
-                    msg = 'results do not differ for TRs {} and {}'.format(tr1, tr2)
+                if not np.isclose(tr1, tr2, atol=0.3):
+                    msg = 'results do not differ for different TRs: {} and {} ' \
+                          'at cutoffs: low_pass={}, high_pass={} ' \
+                          'n_samples={}, n_features={}'.format(tr1, tr2,
+                                                               low_cutoff, high_cutoff,
+                                                               n_samples, n_features)
                     np.testing.assert_(np.any(np.not_equal(det_one_tr, det_diff_tr)), msg)
 
                 del det_one_tr, det_diff_tr
