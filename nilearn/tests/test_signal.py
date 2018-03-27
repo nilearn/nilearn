@@ -121,7 +121,7 @@ def test_butterworth():
     np.testing.assert_almost_equal(data, data_original)
     nisignal.butterworth(data, sampling,
                          low_pass=low_pass, high_pass=high_pass,
-                         copy=False, save_memory=True)
+                         copy=False)
     np.testing.assert_almost_equal(out_single, data)
 
     # multiple timeseries
