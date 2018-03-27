@@ -166,11 +166,6 @@ def _detrend(signals, inplace=False, type="linear", n_batches=10):
 def _check_wn(btype, freq, nyq):
     wn = freq / float(nyq)
     if wn >= 1.:
-        warnings.warn(
-            'The frequency specified for the %s pass filter is '
-            'too high to be handled by a digital filter (superior to '
-            'nyquist frequency). It has been lowered to %.2f (nyquist '
-            'frequency).' % (btype, nyq))
         # results looked unstable when the critical frequencies are
         # exactly at the Nyquist frequency. See issue at SciPy
         # https://github.com/scipy/scipy/issues/6265. Before, SciPy 1.0.0 ("wn
@@ -178,6 +173,11 @@ def _check_wn(btype, freq, nyq):
         # results as pointed in the issue above. Hence, we forced the
         # critical frequencies to be slightly less than 1. but not 1.
         wn = 1 - 10 * np.finfo(1.).eps
+        warnings.warn(
+            'The frequency specified for the %s pass filter is '
+            'too high to be handled by a digital filter (superior to '
+            'nyquist frequency). It has been lowered to %.2f (nyquist '
+            'frequency).' % (btype, wn))
     return wn
 
 
