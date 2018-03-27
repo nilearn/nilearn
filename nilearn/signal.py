@@ -182,7 +182,7 @@ def _check_wn(btype, freq, nyq):
 
 
 def butterworth(signals_in, sampling_rate, low_pass=None, high_pass=None,
-                order=5, copy=False, save_memory=False):
+                order=5, copy=False):
     """ Apply a low-pass, high-pass or band-pass Butterworth filter
 
     Apply a filter to remove signal below the `low` frequency and above the
