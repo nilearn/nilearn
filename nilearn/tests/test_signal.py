@@ -278,6 +278,30 @@ def test_clean_detrending():
     assert_false(abs(x_undetrended - signals).max() < 0.06)
 
 
+def test_clean_TR():
+
+    # n_features  Must be higher than 500
+    for n_samples, n_features in zip(( 34,  42, 100),
+                                     (501, 647, 786)):
+        x_orig = generate_signals_plus_trends(n_features=n_features, n_samples=n_samples)
+        low_pass_freq_list = (1.0/100, 1.0/110, 1.0/128)
+        high_pass_freq_list = (1.0/210, 1.0/190, 1.0/175)
+        for low_cutoff, high_cutoff in zip(low_pass_freq_list, high_pass_freq_list):
+            random_tr_list1 = np.round(np.random.rand(10)*10, decimals=2)
+            random_tr_list2 = np.round(np.random.rand(10)*10, decimals=2)
+            for tr1, tr2 in zip(random_tr_list1, random_tr_list2):
+                det_one_tr = nisignal.clean(x_orig, t_r=tr1, low_pass=low_cutoff,
+                                            high_pass=high_cutoff)
+                det_diff_tr  = nisignal.clean(x_orig, t_r=tr2, low_pass=low_cutoff,
+                                            high_pass=high_cutoff)
+
+                if not np.isclose(tr1, tr2, atol=0.2):
+                    msg = 'results do not differ for TRs {} and {}'.format(tr1, tr2)
+                    np.testing.assert_(np.any(np.not_equal(det_one_tr, det_diff_tr)), msg)
+
+                del det_one_tr, det_diff_tr
+
+
 def test_clean_frequencies():
     sx1 = np.sin(np.linspace(0, 100, 2000))
     sx2 = np.sin(np.linspace(0, 100, 2000))
