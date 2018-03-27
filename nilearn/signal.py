@@ -181,7 +181,7 @@ def _check_wn(btype, freq, nyq):
     return wn
 
 
-def butterworth(signals_in, sampling_rate, low_pass=None, high_pass=None,
+def butterworth(signals, sampling_rate, low_pass=None, high_pass=None,
                 order=5, copy=False):
     """ Apply a low-pass, high-pass or band-pass Butterworth filter
 
@@ -190,7 +190,7 @@ def butterworth(signals_in, sampling_rate, low_pass=None, high_pass=None,
 
     Parameters
     ----------
-    signals_in: numpy.ndarray (1D sequence or n_samples x n_sources)
+    signals: numpy.ndarray (1D sequence or n_samples x n_sources)
         Signals to be filtered. A signal is assumed to be a column
         of `signals`.
 
@@ -222,9 +222,9 @@ def butterworth(signals_in, sampling_rate, low_pass=None, high_pass=None,
     """
     if low_pass is None and high_pass is None:
         if copy:
-            return signals_in.copy()
+            return signals.copy()
         else:
-            return signals_in
+            return signals
 
     if low_pass is not None and high_pass is not None \
             and high_pass >= low_pass:
@@ -251,26 +251,26 @@ def butterworth(signals_in, sampling_rate, low_pass=None, high_pass=None,
         critical_freq = critical_freq[0]
 
     b, a = sp_signal.butter(order, critical_freq, btype=btype, output='ba')
-    if signals_in.ndim == 1:
+    if signals.ndim == 1:
         # 1D case
-        output = sp_signal.filtfilt(b, a, signals_in)
+        output = sp_signal.filtfilt(b, a, signals)
         if copy:  # filtfilt does a copy in all cases.
-            signals_in = output
+            signals = output
         else:
-            signals_in[...] = output
+            signals[...] = output
     else:
         if copy:
             # No way to save memory when a copy has been requested,
             # because filtfilt does out-of-place processing
-            signals_in = sp_signal.filtfilt(b, a, signals_in, axis=0)
+            signals = sp_signal.filtfilt(b, a, signals, axis=0)
         else:
             # Lesser memory consumption, slower.
-            for timeseries in signals_in.T:
+            for timeseries in signals.T:
                 timeseries[:] = sp_signal.filtfilt(b, a, timeseries)
 
             # results returned in-place
 
-    return signals_in
+    return signals
 
 
 def high_variance_confounds(series, n_confounds=5, percentile=2.,
