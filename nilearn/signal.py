@@ -178,6 +178,14 @@ def _check_wn(btype, freq, nyq):
             'too high to be handled by a digital filter (superior to '
             'nyquist frequency). It has been lowered to %.2f (nyquist '
             'frequency).' % (btype, wn))
+
+    if wn < 0.0: # equal to 0.0 is okay
+        wn = np.finfo(1.).eps
+        warnings.warn(
+            'The frequency specified for the %s pass filter is '
+            'too low to be handled by a digital filter (must be non-negative).'
+            ' It has been set to eps: %.5e' % (btype, wn))
+
     return wn
 
 
