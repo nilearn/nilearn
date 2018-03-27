@@ -151,7 +151,7 @@ def fetch_haxby(data_dir=None, n_subjects=None, subjects=(2,),
         warn_str = ("The parameter 'n_subjects' is deprecated from 0.2.6 and "
                     "will be removed in nilearn next release. Use parameter "
                     "'subjects' instead.")
-        warnings.warn(warn_str, np.VisibleDeprecationWarning)
+        warnings.warn(warn_str, np.VisibleDeprecationWarning, stacklevel=2)
         subjects = n_subjects
 
     if isinstance(subjects, numbers.Number) and subjects > 6:
