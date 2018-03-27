@@ -101,6 +101,15 @@ def generate_trends(n_features=17, length=41):
     return trends * factors
 
 
+def generate_signals_plus_trends(n_features=17, n_samples=41):
+
+    signals, _, _ = generate_signals(n_features=n_features,
+                                     length=n_samples)
+    trends = generate_trends(n_features=n_features,
+                             length=n_samples)
+    return signals + trends
+
+
 def test_butterworth():
     rand_gen = np.random.RandomState(0)
     n_features = 20000
@@ -284,12 +293,17 @@ def test_clean_TR():
     for n_samples, n_features in zip(( 34,  42, 100),
                                      (501, 647, 786)):
         x_orig = generate_signals_plus_trends(n_features=n_features, n_samples=n_samples)
-        low_pass_freq_list = (1.0/100, 1.0/110, 1.0/128)
-        high_pass_freq_list = (1.0/210, 1.0/190, 1.0/175)
-        for low_cutoff, high_cutoff in zip(low_pass_freq_list, high_pass_freq_list):
-            random_tr_list1 = np.round(np.random.rand(10)*10, decimals=2)
-            random_tr_list2 = np.round(np.random.rand(10)*10, decimals=2)
-            for tr1, tr2 in zip(random_tr_list1, random_tr_list2):
+
+        random_tr_list1 = np.round(np.random.rand(10)*10, decimals=2)
+        random_tr_list2 = np.round(np.random.rand(10)*10, decimals=2)
+        for tr1, tr2 in zip(random_tr_list1, random_tr_list2):
+
+            low_pass_freq_list  = tr1* np.array([1.0 / 100, 1.0 / 110, 1.0 / 128])
+            high_pass_freq_list = tr1* np.array([1.0 / 210, 1.0 / 190, 1.0 / 175])
+
+            for low_cutoff, high_cutoff in zip(low_pass_freq_list,
+                                               high_pass_freq_list):
+
                 det_one_tr = nisignal.clean(x_orig, t_r=tr1, low_pass=low_cutoff,
                                             high_pass=high_cutoff)
                 det_diff_tr  = nisignal.clean(x_orig, t_r=tr2, low_pass=low_cutoff,
