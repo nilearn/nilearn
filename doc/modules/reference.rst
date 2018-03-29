@@ -243,7 +243,6 @@ uses.
 
    fdr_threshold
    map_threshold
-   get_clusters_table
 
 .. _reporting_ref:
 
@@ -265,6 +264,7 @@ uses.
    compare_niimgs
    plot_design_matrix
    plot_contrast_matrix
+   get_clusters_table
 
 .. _utils_ref:
 

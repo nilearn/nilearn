@@ -141,5 +141,5 @@ plt.show()
 
 ###############################################################################
 # We can get a latex table from a Pandas Dataframe for display and publication
-from nistats.thresholding import get_clusters_table
+from nistats.reporting import get_clusters_table
 print(get_clusters_table(z_map, norm.isf(0.001), 10).to_latex())
