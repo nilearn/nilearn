@@ -50,9 +50,9 @@ if __name__ == "__main__":
         module_check_fn(is_nistats_installing=True)
 
     install_requires = \
-        ['%s>=%s' % (mod, meta['min_version'])
-            for mod, meta in _VERSION_GLOBALS['REQUIRED_MODULE_METADATA']
-            if not meta['required_at_installation']]
+        ['%s>=%s' % (meta.get('pypi_name', mod), meta['min_version'])
+            for mod, meta in _VERSION_GLOBALS['REQUIRED_MODULE_METADATA']]
+    print(install_requires)
 
     setup(name=DISTNAME,
           maintainer=MAINTAINER,
