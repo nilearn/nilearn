@@ -15,7 +15,7 @@ from .._utils.ndimage import largest_connected_component
 from ..image import new_img_like, reorder_img, iter_img
 from .._utils.extmath import fast_abs_percentile
 from .._utils.numpy_conversions import as_ndarray
-from .._utils import check_niimg_3d, check_niimg
+from .._utils import check_niimg_3d, check_niimg_4d
 from .._utils.niimg import _safe_get_data
 from ..image.resampling import get_mask_bounds, coord_transform, reorder_img
 from ..image.image import _smooth_array
@@ -351,7 +351,7 @@ def find_cut_slices(img, direction='z', n_cuts=7, spacing='auto'):
 
 
 def find_parcellation_cut_coords(labels_img, background_label=0, return_label_names=False,
-                                 label_hemisphere = 'left'):
+                                 label_hemisphere='left'):
     """ Return coordinates of center of mass of 3D parcellation atlas
 
     Parameters
@@ -363,7 +363,7 @@ def find_parcellation_cut_coords(labels_img, background_label=0, return_label_na
     background_label: int, optional (default 0)
         Label value used in labels_img to represent background.
 
-    return_label_names: boolean, optional (default False)
+    return_label_names: bool, optional (default False)
         Returns list of labels
 
     label_hemisphere: 'left' or 'right', optional (default 'left')
@@ -449,7 +449,7 @@ def find_probabilistic_atlas_cut_coords(label_img):
     Parameters
     ----------
     label_img: 4D Nifti1Image
-        A probabilistic brain atlas with probabolistic masks in the fourth
+        A probabilistic brain atlas with probabilistic masks in the fourth
         dimension.
 
     Returns
@@ -457,7 +457,7 @@ def find_probabilistic_atlas_cut_coords(label_img):
     coords: array of shape (3, n_maps)
         Label regions cut coordinates in image space (mm).
     """
-    label_img = check_niimg(label_img)
+    label_img = check_niimg_4d(label_img)
     label_imgs = iter_img(label_img)
     coords = [find_xyz_cut_coords(img) for img in label_imgs]
     return np.array(coords)

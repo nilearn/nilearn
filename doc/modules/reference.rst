@@ -306,7 +306,7 @@ uses.
 
    find_cut_slices
    find_xyz_cut_coords
-   find_parcellation_atlas_cut_coords
+   find_parcellation_cut_coords
    find_probabilistic_atlas_cut_coords
    plot_anat
    plot_img

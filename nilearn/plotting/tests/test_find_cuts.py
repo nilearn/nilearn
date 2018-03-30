@@ -192,43 +192,51 @@ def test_fast_abs_percentile_no_index_error_find_cuts():
     assert_equal(len(find_xyz_cut_coords(img)), 3)
 
 
-def test_find_parcellation_atlas_cut_coords():
-    data = np.zeros((50, 50, 50))
-    x_map_a, y_map_a, z_map_a = (20, 20, 20)
+def test_find_parcellation_cut_coords():
+    data = np.zeros((100, 100, 100))
+    x_map_a, y_map_a, z_map_a = (10, 10, 10)
     x_map_b, y_map_b, z_map_b = (30, 30, 30)
-    x_map_c, y_map_c, z_map_c = (40, 40, 40)
-    data[x_map_a - 10:x_map_a + 10, y_map_a - 10:y_map_a + 10, z_map_a - 20: z_map_a + 20] = 1
-    data[x_map_b - 20:x_map_b + 20, y_map_b - 20:y_map_b + 20, z_map_b - 30: z_map_b + 30] = 1
-    data[x_map_c - 20:x_map_c + 20, y_map_c - 8:y_map_c + 8, z_map_c - 10: z_map_c + 10] = 2
+    x_map_c, y_map_c, z_map_c = (50, 50, 50)
+    # Defining 3 parcellations
+    data[x_map_a - 10:x_map_a + 10, y_map_a - 10:y_map_a + 10, z_map_a - 10: z_map_a + 10] = 1
+    data[x_map_b - 10:x_map_b + 10, y_map_b - 10:y_map_b + 10, z_map_b - 10: z_map_b + 10] = 2
+    data[x_map_c - 10:x_map_c + 10, y_map_c - 10:y_map_c + 10, z_map_c - 10: z_map_c + 10] = 3
 
     # identity affine
     affine = np.eye(4)
     img = nibabel.Nifti1Image(data, affine)
     coords = find_parcellation_cut_coords(img)
-    np.testing.assert_allclose((coords[0][0] + .9, coords[0][1] + .9, coords[0][2] + 5.9),
-                               (x_map_b, y_map_b, z_map_b), rtol=7e-2)
-    np.testing.assert_allclose((coords[1][0] + 5.5, coords[1][1] + .5, coords[1][2] + .5),
-                               (x_map_c, y_map_c, z_map_c))
+    # Match with the number of non-overlapping labels
+
+    np.testing.assert_allclose((coords[0][0], coords[0][1], coords[0][2]),
+                               (x_map_a, y_map_a, z_map_a), rtol=6e-2)
+    np.testing.assert_allclose((coords[1][0], coords[1][1], coords[1][2]),
+                               (x_map_b, y_map_b, z_map_b), rtol=6e-2)
+    np.testing.assert_allclose((coords[2][0], coords[2][1], coords[2][2]),
+                               (x_map_c, y_map_c, z_map_c), rtol=6e-2)
 
     # non-trivial affine
-    affine = np.diag([1 / 4., 1 / 5., 1 / 2., 1.])
+    affine = np.diag([1 / 2., 1 / 3., 1 / 4., 1.])
     img = nibabel.Nifti1Image(data, affine)
     coords = find_parcellation_cut_coords(img)
-    np.testing.assert_allclose((coords[0][0] + .3, coords[0][1] + .3, coords[0][2]),
-                               (x_map_b / 4., y_map_b / 5., z_map_b / 2.),
-                               rtol=7e-2)
+    np.testing.assert_allclose((coords[0][0], coords[0][1], coords[0][2]),
+                               (x_map_a / 2., y_map_a / 3., z_map_a / 4.),
+                               rtol=6e-2)
     np.testing.assert_allclose((coords[1][0], coords[1][1], coords[1][2]),
-                               (x_map_c / 4., y_map_c / 5., z_map_c / 2.),
-                               rtol=7e-2)
+                               (x_map_b / 2., y_map_b / 3., z_map_b / 4.),
+                               rtol=6e-2)
+    np.testing.assert_allclose((coords[2][0], coords[2][1], coords[2][2]),
+                               (x_map_c / 2., y_map_c / 3., z_map_c / 4.),
+                               rtol=6e-2)
 
 
 def test_find_probabilistic_atlas_cut_coords():
     # make data
-    arr1 = np.zeros((200, 200, 200))
-    x_map_a, y_map_a, z_map_a = 30, 60, 120
+    arr1 = np.zeros((100, 100, 100))
+    x_map_a, y_map_a, z_map_a = 30, 40, 50
     arr1[x_map_a - 10:x_map_a + 10, y_map_a - 20:y_map_a + 20, z_map_a - 30: z_map_a + 30] = 1
 
-    arr2 = np.zeros((200, 200, 200))
+    arr2 = np.zeros((100, 100, 100))
     x_map_b, y_map_b, z_map_b = 40, 50, 60
     arr2[x_map_b - 10:x_map_b + 10, y_map_b - 20:y_map_b + 20, z_map_b - 30: z_map_b + 30] = 1
 
@@ -240,19 +248,18 @@ def test_find_probabilistic_atlas_cut_coords():
     coords = find_probabilistic_atlas_cut_coords(img)
 
     np.testing.assert_allclose((coords[0][0], coords[0][1], coords[0][2]),
-                               (x_map_a - 0.5, y_map_a - 0.5, z_map_a - 0.5),
-                               rtol=6e-2)
+                               (x_map_a, y_map_a, z_map_a), rtol=6e-2)
     np.testing.assert_allclose((coords[1][0], coords[1][1], coords[1][2]),
                                (x_map_b - 0.5, y_map_b - 0.5, z_map_b - 0.5),
                                rtol=6e-2)
 
     # non-trivial affine
-    affine = np.diag([1 / 5., 1 / 3., 1 / 6., 1.])
+    affine = np.diag([1 / 2., 1 / 3., 1 / 4., 1.])
     img = nibabel.Nifti1Image(data, affine)
     coords = find_probabilistic_atlas_cut_coords(img)
     np.testing.assert_allclose((coords[0][0], coords[0][1], coords[0][2]),
-                               (x_map_a / 5., y_map_a / 3., z_map_a / 6.),
+                               (x_map_a / 2., y_map_a / 3., z_map_a / 4.),
                                rtol=6e-2)
     np.testing.assert_allclose((coords[1][0], coords[1][1], coords[1][2]),
-                               (x_map_b / 5., y_map_b / 3., z_map_b / 6.),
+                               (x_map_b / 2., y_map_b / 3., z_map_b / 4.),
                                rtol=6e-2)
