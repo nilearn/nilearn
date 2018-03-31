@@ -28,7 +28,8 @@ print('Yeo atlas nifti image (3D) with 17 parcels and liberal mask is located '
       'at: %s' % yeo['thick_17'])
 print('Harvard Oxford atlas nifti image (3D) thresholded at .25 is located '
       'at: %s' % harvard_oxford['maps'])
-
+# Store atlases and thresholds in a dictionary. Atlases are for extracting
+# coordinates and threshold for displaying the strength of the connectivity.
 atlases_and_thresholds = {'Destrieux Atlas (struct)': [destrieux['maps'], '97%'],
                           'Yeo Atlas 17 thick (func)': [yeo['thick_17'], '70%'],
                           'Harvard Oxford > 25% (struct)': [harvard_oxford['maps'], '90%']}

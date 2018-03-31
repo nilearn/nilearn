@@ -202,12 +202,25 @@ def test_find_parcellation_cut_coords():
     data[x_map_b - 10:x_map_b + 10, y_map_b - 10:y_map_b + 10, z_map_b - 10: z_map_b + 10] = 2
     data[x_map_c - 10:x_map_c + 10, y_map_c - 10:y_map_c + 10, z_map_c - 10: z_map_c + 10] = 3
 
+    # Number of labels
+    labels = np.unique(data)
+    labels = labels[labels != 0]
+    n_labels = len(labels)
+
     # identity affine
     affine = np.eye(4)
     img = nibabel.Nifti1Image(data, affine)
-    coords = find_parcellation_cut_coords(img)
-    # Match with the number of non-overlapping labels
+    # find coordinates with return label names is True
+    coords, labels_list = find_parcellation_cut_coords(img,
+                                                       return_label_names=True)
+    # Check outputs
+    assert_equal((n_labels, 3), coords.shape)
+    # number of labels in data should equal number of labels list returned
+    assert_equal(n_labels, len(labels_list))
+    # Labels numbered should match the numbers in returned labels list
+    assert_equal(list(labels), labels_list)
 
+    # Match with the number of non-overlapping labels
     np.testing.assert_allclose((coords[0][0], coords[0][1], coords[0][2]),
                                (x_map_a, y_map_a, z_map_a), rtol=6e-2)
     np.testing.assert_allclose((coords[1][0], coords[1][1], coords[1][2]),
@@ -219,6 +232,7 @@ def test_find_parcellation_cut_coords():
     affine = np.diag([1 / 2., 1 / 3., 1 / 4., 1.])
     img = nibabel.Nifti1Image(data, affine)
     coords = find_parcellation_cut_coords(img)
+    assert_equal((n_labels, 3), coords.shape)
     np.testing.assert_allclose((coords[0][0], coords[0][1], coords[0][2]),
                                (x_map_a / 2., y_map_a / 3., z_map_a / 4.),
                                rtol=6e-2)
@@ -242,10 +256,16 @@ def test_find_probabilistic_atlas_cut_coords():
 
     data = np.concatenate((arr1[..., np.newaxis], arr2[..., np.newaxis]), axis=3)
 
+    # Number of maps in time dimension
+    n_maps = data.shape[-1]
+
     # run test on img with identity affine
     affine = np.eye(4)
     img = nibabel.Nifti1Image(data, affine)
     coords = find_probabilistic_atlas_cut_coords(img)
+
+    # Check outputs
+    assert_equal((n_maps, 3), coords.shape)
 
     np.testing.assert_allclose((coords[0][0], coords[0][1], coords[0][2]),
                                (x_map_a, y_map_a, z_map_a), rtol=6e-2)
@@ -257,6 +277,8 @@ def test_find_probabilistic_atlas_cut_coords():
     affine = np.diag([1 / 2., 1 / 3., 1 / 4., 1.])
     img = nibabel.Nifti1Image(data, affine)
     coords = find_probabilistic_atlas_cut_coords(img)
+    # Check outputs
+    assert_equal((n_maps, 3), coords.shape)
     np.testing.assert_allclose((coords[0][0], coords[0][1], coords[0][2]),
                                (x_map_a / 2., y_map_a / 3., z_map_a / 4.),
                                rtol=6e-2)

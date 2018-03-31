@@ -373,11 +373,16 @@ def find_parcellation_cut_coords(labels_img, background_label=0, return_label_na
 
     Returns
     -------
-    coords: array
+    coords: numpy.ndarray of shape (n_labels, 3)
         Label regions cut coordinates in image space (mm).
 
     labels_list: list
         Label region.
+
+    See Also
+    --------
+    nilearn.plotting.find_probabilistic_atlas_cut_coords : For coordinates
+        extraction on probabilistic atlases (4D) (Eg. MSDL atlas)
     """
     # Grab data and affine
     labels_img = reorder_img(check_niimg_3d(labels_img))
@@ -454,8 +459,14 @@ def find_probabilistic_atlas_cut_coords(label_img):
 
     Returns
     -------
-    coords: array of shape (3, n_maps)
+    coords: numpy.ndarray of shape (n_maps, 3)
         Label regions cut coordinates in image space (mm).
+
+    See Also
+    --------
+    nilearn.plotting.find_parcellation_cut_coords : For coordinates
+        extraction on parcellations denoted with labels (3D)
+        (Eg. Harvard Oxford atlas)
     """
     label_img = check_niimg_4d(label_img)
     label_imgs = iter_img(label_img)
