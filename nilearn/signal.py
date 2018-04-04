@@ -11,7 +11,7 @@ import distutils.version
 import warnings
 
 import numpy as np
-from scipy import signal as sp_signal, stats, linalg
+from scipy import signal, stats, linalg
 from sklearn.utils import gen_even_slices, as_float_array
 
 from ._utils.compat import _basestring
@@ -166,6 +166,11 @@ def _detrend(signals, inplace=False, type="linear", n_batches=10):
 def _check_wn(btype, freq, nyq):
     wn = freq / float(nyq)
     if wn >= 1.:
+        warnings.warn(
+            'The frequency specified for the %s pass filter is '
+            'too high to be handled by a digital filter (superior to '
+            'nyquist frequency). It has been lowered to %.2f (nyquist '
+            'frequency).' % (btype, nyq))
         # results looked unstable when the critical frequencies are
         # exactly at the Nyquist frequency. See issue at SciPy
         # https://github.com/scipy/scipy/issues/6265. Before, SciPy 1.0.0 ("wn
@@ -173,24 +178,11 @@ def _check_wn(btype, freq, nyq):
         # results as pointed in the issue above. Hence, we forced the
         # critical frequencies to be slightly less than 1. but not 1.
         wn = 1 - 10 * np.finfo(1.).eps
-        warnings.warn(
-            'The frequency specified for the %s pass filter is '
-            'too high to be handled by a digital filter (superior to '
-            'nyquist frequency). It has been lowered to %.2f (nyquist '
-            'frequency).' % (btype, wn))
-
-    if wn < 0.0: # equal to 0.0 is okay
-        wn = np.finfo(1.).eps
-        warnings.warn(
-            'The frequency specified for the %s pass filter is '
-            'too low to be handled by a digital filter (must be non-negative).'
-            ' It has been set to eps: %.5e' % (btype, wn))
-
     return wn
 
 
 def butterworth(signals, sampling_rate, low_pass=None, high_pass=None,
-                order=5, copy=False):
+                order=5, copy=False, save_memory=False):
     """ Apply a low-pass, high-pass or band-pass Butterworth filter
 
     Apply a filter to remove signal below the `low` frequency and above the
@@ -230,9 +222,9 @@ def butterworth(signals, sampling_rate, low_pass=None, high_pass=None,
     """
     if low_pass is None and high_pass is None:
         if copy:
-            return signals.copy()
+            return signal.copy()
         else:
-            return signals
+            return signal
 
     if low_pass is not None and high_pass is not None \
             and high_pass >= low_pass:
@@ -258,10 +250,10 @@ def butterworth(signals, sampling_rate, low_pass=None, high_pass=None,
     else:
         critical_freq = critical_freq[0]
 
-    b, a = sp_signal.butter(order, critical_freq, btype=btype, output='ba')
+    b, a = signal.butter(order, critical_freq, btype=btype)
     if signals.ndim == 1:
         # 1D case
-        output = sp_signal.filtfilt(b, a, signals)
+        output = signal.filtfilt(b, a, signals)
         if copy:  # filtfilt does a copy in all cases.
             signals = output
         else:
@@ -270,14 +262,11 @@ def butterworth(signals, sampling_rate, low_pass=None, high_pass=None,
         if copy:
             # No way to save memory when a copy has been requested,
             # because filtfilt does out-of-place processing
-            signals = sp_signal.filtfilt(b, a, signals, axis=0)
+            signals = signal.filtfilt(b, a, signals, axis=0)
         else:
             # Lesser memory consumption, slower.
             for timeseries in signals.T:
-                timeseries[:] = sp_signal.filtfilt(b, a, timeseries)
-
-            # results returned in-place
-
+                timeseries[:] = signal.filtfilt(b, a, timeseries)
     return signals
 
 
@@ -502,7 +491,7 @@ def clean(signals, sessions=None, detrend=True, standardize=True,
                 clean(signals[sessions == s],
                       detrend=detrend, standardize=standardize,
                       confounds=session_confounds, low_pass=low_pass,
-                      high_pass=high_pass, t_r=t_r)
+                      high_pass=high_pass, t_r=2.5)
 
     # detrend
     signals = _ensure_float(signals)
