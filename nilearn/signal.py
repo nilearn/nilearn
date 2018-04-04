@@ -11,10 +11,8 @@ import distutils.version
 import warnings
 
 import numpy as np
-import scipy
 from scipy import signal, stats, linalg
 from sklearn.utils import gen_even_slices, as_float_array
-from distutils.version import LooseVersion
 
 from ._utils.compat import _basestring
 from ._utils.numpy_conversions import csv_to_array, as_ndarray
