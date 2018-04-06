@@ -48,7 +48,7 @@ def compute_contrast(labels, regression_result, con_val, contrast_type=None):
     if contrast_type is None:
         contrast_type = 't' if dim == 1 else 'F'
 
-    acceptable_contrast_types = ['t', 'F', 'safe_F']
+    acceptable_contrast_types = ['t', 'F']
     if contrast_type not in acceptable_contrast_types:
         raise ValueError(
             '"{0}" is not a known contrast type. Allowed types are {1}'.
@@ -63,22 +63,15 @@ def compute_contrast(labels, regression_result, con_val, contrast_type=None):
             effect_[:, label_mask] = resl.effect.T
             var_[:, :, label_mask] = (resl.sd ** 2).T
     elif contrast_type == 'F':
-        effect_ = np.zeros((dim, labels.size))
-        var_ = np.zeros((dim, dim, labels.size))
-        for label_ in regression_result:
-            label_mask = labels == label_
-            resl = regression_result[label_].Fcontrast(con_val)
-            effect_[:, label_mask] = resl.effect
-            var_[:, :, label_mask] = resl.covariance
-    else:
         from scipy.linalg import sqrtm
         effect_ = np.zeros((dim, labels.size))
         var_ = np.zeros((1, 1, labels.size))
         for label_ in regression_result:
             label_mask = labels == label_
             reg = regression_result[label_]
-            cbeta = np.dot(con_val, reg.theta)
-            invcov = np.linalg.inv(reg.vcov(matrix=con_val, dispersion=1.0))
+            cbeta = np.atleast_2d(np.dot(con_val, reg.theta))
+            invcov = np.linalg.inv(np.atleast_2d(
+                    reg.vcov(matrix=con_val, dispersion=1.0)))
             wcbeta = np.dot(sqrtm(invcov), cbeta)
             rss = reg.dispersion
             effect_[:, label_mask] = wcbeta
@@ -143,9 +136,6 @@ class Contrast(object):
             raise ValueError('Effect array should have 2 dimensions')
         if variance.shape[0] != variance.shape[1]:
             raise ValueError('Inconsistent shape for the variance estimate')
-        #if ((variance.shape[1] != effect.shape[0]) or
-        #    (variance.shape[2] != effect.shape[1])):
-        #    raise ValueError('Effect and variance have inconsistent shape')
 
         self.effect = effect
         self.variance = variance
@@ -191,25 +181,13 @@ class Contrast(object):
         self.baseline = baseline
 
         # Case: one-dimensional contrast ==> t or t**2
-        if self.contrast_type == 'safe_F':
+        if self.contrast_type == 'F':
             stat = np.sum((self.effect - baseline) ** 2, 0) / self.dim  /\
                 np.maximum(self.variance, self.tiny)
-        elif self.dim == 1:
+        elif self.contrast_type == 't':
             # avoids division by zero
             stat = (self.effect - baseline) / np.sqrt(
                 np.maximum(self.variance, self.tiny))
-            if self.contrast_type == 'F':
-                stat = stat ** 2
-        # Case: F contrast
-        elif self.contrast_type == 'F':
-            # F = |t|^2/q ,  |t|^2 = e^t inv(v) e
-            if self.effect.ndim == 1:
-                self.effect = self.effect[np.newaxis]
-            if self.variance.ndim == 1:
-                self.variance = self.variance[np.newaxis, np.newaxis]
-            stat = (multiple_mahalanobis(
-                    self.effect - baseline, self.variance) / self.dim)
-        # Unknwon stat
         else:
             raise ValueError('Unknown statistic type')
         self.stat_ = stat
@@ -234,8 +212,7 @@ class Contrast(object):
         # Valid conjunction as in Nichols et al, Neuroimage 25, 2005.
         if self.contrast_type == 't':
             p_values = sps.t.sf(self.stat_, np.minimum(self.dof, self.dofmax))
-        elif self.contrast_type in ['F', 'safe_F']:
-            print(self.dim, self.dof, self.dofmax)
+        elif self.contrast_type  == 'F':
             p_values = sps.f.sf(self.stat_, self.dim, np.minimum(
                                 self.dof, self.dofmax))
         else:
@@ -275,9 +252,8 @@ class Contrast(object):
             raise ValueError(
                 'The two contrasts do not have compatible dimensions')
         dof_ = self.dof + other.dof
-        if self.contrast_type == 'safe_F':
-            warn('Running fixed effects on F statistics.' + \
-                     'As an approximation is used, the results are only indicative')
+        if self.contrast_type == 'F':
+            warn('Running approximate fixed effects on F statistics.')
         effect_ = self.effect + other.effect
         variance_ = self.variance + other.variance
         return Contrast(effect=effect_, variance=variance_, dim=self.dim,
