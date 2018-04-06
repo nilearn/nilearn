@@ -71,18 +71,17 @@ def compute_contrast(labels, regression_result, con_val, contrast_type=None):
             effect_[:, label_mask] = resl.effect
             var_[:, :, label_mask] = resl.covariance
     else:
-        effect_ = np.zeros((1, labels.size))
+        from scipy.linalg import sqrtm
+        effect_ = np.zeros((dim, labels.size))
         var_ = np.zeros((1, 1, labels.size))
         for label_ in regression_result:
             label_mask = labels == label_
             reg = regression_result[label_]
-
-            ctheta = np.dot(con_val, reg.theta)
+            cbeta = np.dot(con_val, reg.theta)
             invcov = np.linalg.inv(reg.vcov(matrix=con_val, dispersion=1.0))
-            ess = np.sum(np.dot(ctheta.T, invcov) * ctheta.T, 1) /\
-                invcov.shape[0]
+            wcbeta = np.dot(sqrtm(invcov), cbeta)
             rss = reg.dispersion
-            effect_[:, label_mask] = np.sqrt(ess)
+            effect_[:, label_mask] = wcbeta
             var_[:, :, label_mask] = rss
 
     dof_ = regression_result[label_].df_resid
@@ -144,9 +143,9 @@ class Contrast(object):
             raise ValueError('Effect array should have 2 dimensions')
         if variance.shape[0] != variance.shape[1]:
             raise ValueError('Inconsistent shape for the variance estimate')
-        if ((variance.shape[1] != effect.shape[0]) or
-            (variance.shape[2] != effect.shape[1])):
-            raise ValueError('Effect and variance have inconsistent shape')
+        #if ((variance.shape[1] != effect.shape[0]) or
+        #    (variance.shape[2] != effect.shape[1])):
+        #    raise ValueError('Effect and variance have inconsistent shape')
 
         self.effect = effect
         self.variance = variance
@@ -193,7 +192,7 @@ class Contrast(object):
 
         # Case: one-dimensional contrast ==> t or t**2
         if self.contrast_type == 'safe_F':
-            stat = (self.effect - baseline) ** 2 /\
+            stat = np.sum((self.effect - baseline) ** 2, 0) / self.dim  /\
                 np.maximum(self.variance, self.tiny)
         elif self.dim == 1:
             # avoids division by zero
@@ -277,8 +276,8 @@ class Contrast(object):
                 'The two contrasts do not have compatible dimensions')
         dof_ = self.dof + other.dof
         if self.contrast_type == 'safe_F':
-            warn('Running fixed effects on F statistics. As an approximation "
-                  "is used, the results are only indicative')
+            warn('Running fixed effects on F statistics.' + \
+                     'As an approximation is used, the results are only indicative')
         effect_ = self.effect + other.effect
         variance_ = self.variance + other.variance
         return Contrast(effect=effect_, variance=variance_, dim=self.dim,
