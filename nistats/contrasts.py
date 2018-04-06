@@ -48,29 +48,45 @@ def compute_contrast(labels, regression_result, con_val, contrast_type=None):
     if contrast_type is None:
         contrast_type = 't' if dim == 1 else 'F'
 
-    acceptable_contrast_types = ['t', 'F']
+    acceptable_contrast_types = ['t', 'F', 'safe_F']
     if contrast_type not in acceptable_contrast_types:
         raise ValueError(
             '"{0}" is not a known contrast type. Allowed types are {1}'.
             format(contrast_type, acceptable_contrast_types))
 
-    effect_ = np.zeros((dim, labels.size))
-    var_ = np.zeros((dim, dim, labels.size))
     if contrast_type == 't':
+        effect_ = np.zeros((1, labels.size))
+        var_ = np.zeros((1, 1, labels.size))
         for label_ in regression_result:
             label_mask = labels == label_
             resl = regression_result[label_].Tcontrast(con_val)
             effect_[:, label_mask] = resl.effect.T
             var_[:, :, label_mask] = (resl.sd ** 2).T
-    else:
+    elif contrast_type == 'F':
+        effect_ = np.zeros((dim, labels.size))
+        var_ = np.zeros((dim, dim, labels.size))
         for label_ in regression_result:
             label_mask = labels == label_
             resl = regression_result[label_].Fcontrast(con_val)
             effect_[:, label_mask] = resl.effect
             var_[:, :, label_mask] = resl.covariance
+    else:
+        effect_ = np.zeros((1, labels.size))
+        var_ = np.zeros((1, 1, labels.size))
+        for label_ in regression_result:
+            label_mask = labels == label_
+            reg = regression_result[label_]
+
+            ctheta = np.dot(con_val, reg.theta)
+            invcov = np.linalg.inv(reg.vcov(matrix=con_val, dispersion=1.0))
+            ess = np.sum(np.dot(ctheta.T, invcov) * ctheta.T, 1) /\
+                invcov.shape[0]
+            rss = reg.dispersion
+            effect_[:, label_mask] = np.sqrt(ess)
+            var_[:, :, label_mask] = rss
 
     dof_ = regression_result[label_].df_resid
-    return Contrast(effect=effect_, variance=var_, dof=dof_,
+    return Contrast(effect=effect_, variance=var_, dim=dim, dof=dof_,
                     contrast_type=contrast_type)
 
 
@@ -105,7 +121,7 @@ class Contrast(object):
     (high-dimensional F constrasts may lead to memory breakage).
     """
 
-    def __init__(self, effect, variance, dof=DEF_DOFMAX, contrast_type='t',
+    def __init__(self, effect, variance, dim=None, dof=DEF_DOFMAX, contrast_type='t',
                  tiny=DEF_TINY, dofmax=DEF_DOFMAX):
         """
         Parameters
@@ -117,7 +133,7 @@ class Contrast(object):
             the associated variance estimate
 
         dof : scalar
-            the degrees of freedom of the resiudals
+            the degrees of freedom of the residuals
 
         contrast_type: {'t', 'F'}
             specification of the contrast type
@@ -135,7 +151,10 @@ class Contrast(object):
         self.effect = effect
         self.variance = variance
         self.dof = float(dof)
-        self.dim = effect.shape[0]
+        if dim is None:
+            self.dim = effect.shape[0]
+        else:
+            self.dim = dim
         if self.dim > 1 and contrast_type is 't':
             print('Automatically converted multi-dimensional t to F contrast')
             contrast_type = 'F'
@@ -173,7 +192,10 @@ class Contrast(object):
         self.baseline = baseline
 
         # Case: one-dimensional contrast ==> t or t**2
-        if self.dim == 1:
+        if self.contrast_type == 'safe_F':
+            stat = (self.effect - baseline) ** 2 /\
+                np.maximum(self.variance, self.tiny)
+        elif self.dim == 1:
             # avoids division by zero
             stat = (self.effect - baseline) / np.sqrt(
                 np.maximum(self.variance, self.tiny))
@@ -213,7 +235,8 @@ class Contrast(object):
         # Valid conjunction as in Nichols et al, Neuroimage 25, 2005.
         if self.contrast_type == 't':
             p_values = sps.t.sf(self.stat_, np.minimum(self.dof, self.dofmax))
-        elif self.contrast_type == 'F':
+        elif self.contrast_type in ['F', 'safe_F']:
+            print(self.dim, self.dof, self.dofmax)
             p_values = sps.f.sf(self.stat_, self.dim, np.minimum(
                                 self.dof, self.dofmax))
         else:
@@ -252,11 +275,26 @@ class Contrast(object):
         if self.dim != other.dim:
             raise ValueError(
                 'The two contrasts do not have compatible dimensions')
+        dof_ = self.dof + other.dof
+        if self.contrast_type == 'safe_F':
+            warn('Running fixed effects on F statistics. As Stoufer method \
+                  is used, only the p-values, stat and z_score make sense')
+            """z_score_ = (self.z_score() + other.z_score()) / np.sqrt(2)
+            p_values = sps.norm.sf(z_score_)
+            stat = sps.f.isf(p_values, self.dim, np.minimum(
+                    dof_, self.dofmax))
+            effect_ = np.sqrt(stat)[np.newaxis]
+            variance_ = np.ones_like(effect_)[np.newaxis]
+            """
+            #variance_ =   1. / (1. / self.variance +  1. / other.variance)
+            #effect_ = (self.effect / self.variance +
+            #           other.effect  / other.variance) * variance_
+            #effect_ = effect_.reshape(self.effect.shape)
+
         effect_ = self.effect + other.effect
         variance_ = self.variance + other.variance
-        dof_ = self.dof + other.dof
-        return Contrast(effect=effect_, variance=variance_, dof=dof_,
-                        contrast_type=self.contrast_type)
+        return Contrast(effect=effect_, variance=variance_, dim=self.dim,
+                        dof=dof_, contrast_type=self.contrast_type)
 
     def __rmul__(self, scalar):
         """Multiplication of the contrast by a scalar"""
