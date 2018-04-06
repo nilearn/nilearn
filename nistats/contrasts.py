@@ -277,20 +277,8 @@ class Contrast(object):
                 'The two contrasts do not have compatible dimensions')
         dof_ = self.dof + other.dof
         if self.contrast_type == 'safe_F':
-            warn('Running fixed effects on F statistics. As Stoufer method \
-                  is used, only the p-values, stat and z_score make sense')
-            """z_score_ = (self.z_score() + other.z_score()) / np.sqrt(2)
-            p_values = sps.norm.sf(z_score_)
-            stat = sps.f.isf(p_values, self.dim, np.minimum(
-                    dof_, self.dofmax))
-            effect_ = np.sqrt(stat)[np.newaxis]
-            variance_ = np.ones_like(effect_)[np.newaxis]
-            """
-            #variance_ =   1. / (1. / self.variance +  1. / other.variance)
-            #effect_ = (self.effect / self.variance +
-            #           other.effect  / other.variance) * variance_
-            #effect_ = effect_.reshape(self.effect.shape)
-
+            warn('Running fixed effects on F statistics. As an approximation "
+                  "is used, the results are only indicative')
         effect_ = self.effect + other.effect
         variance_ = self.variance + other.variance
         return Contrast(effect=effect_, variance=variance_, dim=self.dim,
