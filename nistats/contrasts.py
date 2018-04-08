@@ -124,6 +124,9 @@ class Contrast(object):
         variance : array of shape (contrast_dim, contrast_dim, n_voxels)
             the associated variance estimate
 
+        dim: int or None,
+            the dimension of the contrast
+
         dof : scalar
             the degrees of freedom of the residuals
 
@@ -212,7 +215,7 @@ class Contrast(object):
         # Valid conjunction as in Nichols et al, Neuroimage 25, 2005.
         if self.contrast_type == 't':
             p_values = sps.t.sf(self.stat_, np.minimum(self.dof, self.dofmax))
-        elif self.contrast_type  == 'F':
+        elif self.contrast_type == 'F':
             p_values = sps.f.sf(self.stat_, self.dim, np.minimum(
                                 self.dof, self.dofmax))
         else:
