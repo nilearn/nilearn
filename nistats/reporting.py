@@ -17,11 +17,12 @@ import matplotlib
 import matplotlib.pyplot as plt
 from scipy import ndimage
 from patsy import DesignInfo
+import nibabel as nib
 
 from .design_matrix import check_design_matrix
 
 
-def _local_max(data, min_distance):
+def _local_max(data, affine, min_distance):
     """Find all local maxima of the array, separated by at least min_distance.
     Adapted from https://stackoverflow.com/a/22631583/2589328
 
@@ -31,8 +32,7 @@ def _local_max(data, min_distance):
         3D array of with masked values for cluster.
 
     min_distance : :obj:`int`
-        Minimum distance between local maxima in ``data``, in terms of
-        voxels (not mm).
+        Minimum distance between local maxima in ``data``, in terms of mm.
 
     Returns
     -------
@@ -42,27 +42,33 @@ def _local_max(data, min_distance):
     vals : :obj:`numpy.ndarray`
         (n_foci,) array of values from data at ijk.
     """
-    data_max = ndimage.filters.maximum_filter(data, min_distance)
+    # Initial identification of subpeaks with minimal minimum distance
+    data_max = ndimage.filters.maximum_filter(data, 3)
     maxima = (data == data_max)
-    data_min = ndimage.filters.minimum_filter(data, min_distance)
+    data_min = ndimage.filters.minimum_filter(data, 3)
     diff = ((data_max - data_min) > 0)
     maxima[diff == 0] = 0
 
-    labeled, num_objects = ndimage.label(maxima)
-    ijk = np.array(ndimage.center_of_mass(data, labeled, range(1, num_objects+1)))
+    labeled, n_subpeaks = ndimage.label(maxima)
+    ijk = np.array(ndimage.center_of_mass(data, labeled,
+                                          range(1, n_subpeaks + 1)))
     ijk = np.round(ijk).astype(int)
 
-    vals = np.apply_along_axis(arr=ijk, axis=1, func1d=_get_val, input_arr=data)
+    vals = np.apply_along_axis(arr=ijk, axis=1, func1d=_get_val,
+                               input_arr=data)
+
+    # Sort subpeaks in cluster in descending order of stat value
     order = (-vals).argsort()
     vals = vals[order]
     ijk = ijk[order, :]
+    xyz = nib.affines.apply_affine(affine, ijk)  # Convert to xyz in mm
 
     # Reduce list of subpeaks based on distance
-    keep_idx = np.ones(ijk.shape[0]).astype(bool)
-    for i in range(ijk.shape[0]):
-        for j in range(i+1, ijk.shape[0]):
+    keep_idx = np.ones(xyz.shape[0]).astype(bool)
+    for i in range(xyz.shape[0]):
+        for j in range(i + 1, xyz.shape[0]):
             if keep_idx[i] == 1:
-                dist = np.linalg.norm(ijk[i, :] - ijk[j, :])
+                dist = np.linalg.norm(xyz[i, :] - xyz[j, :])
                 keep_idx[j] = dist > min_distance
     ijk = ijk[keep_idx, :]
     vals = vals[keep_idx]
@@ -76,7 +82,8 @@ def _get_val(row, input_arr):
     return input_arr[i, j, k]
 
 
-def get_clusters_table(stat_img, stat_threshold, cluster_threshold=None):
+def get_clusters_table(stat_img, stat_threshold, cluster_threshold=None,
+                       min_distance=8.):
     """Creates pandas dataframe with img cluster statistics.
 
     Parameters
@@ -90,6 +97,9 @@ def get_clusters_table(stat_img, stat_threshold, cluster_threshold=None):
 
     cluster_threshold : :obj:`int` or :obj:`None`, optional
         Cluster size threshold, in voxels.
+
+    min_distance: :obj:`float`, optional
+        Minimum distance between subpeaks in mm. Default is 8 mm.
 
     Returns
     -------
@@ -146,8 +156,8 @@ def get_clusters_table(stat_img, stat_threshold, cluster_threshold=None):
         cluster_size_mm = int(np.sum(cluster_mask) * voxel_size)
 
         # Get peaks, subpeaks and associated statistics
-        min_dist = int(np.round(8. / np.power(voxel_size, 1./3.)))  # pylint: disable=no-member
-        subpeak_ijk, subpeak_vals = _local_max(masked_data, min_distance=min_dist)
+        subpeak_ijk, subpeak_vals = _local_max(masked_data, stat_img.affine,
+                                               min_distance=min_distance)
         subpeak_xyz = np.asarray(coord_transform(subpeak_ijk[:, 0],
                                                  subpeak_ijk[:, 1],
                                                  subpeak_ijk[:, 2],
@@ -158,8 +168,9 @@ def get_clusters_table(stat_img, stat_threshold, cluster_threshold=None):
         n_subpeaks = np.min((len(subpeak_vals), 4))
         for subpeak in range(n_subpeaks):
             if subpeak == 0:
-                row = [c_id+1, subpeak_xyz[subpeak, 0], subpeak_xyz[subpeak, 1],
-                       subpeak_xyz[subpeak, 2], subpeak_vals[subpeak], cluster_size_mm]
+                row = [c_id + 1, subpeak_xyz[subpeak, 0],
+                       subpeak_xyz[subpeak, 1], subpeak_xyz[subpeak, 2],
+                       subpeak_vals[subpeak], cluster_size_mm]
             else:
                 # Subpeak naming convention is cluster num + letter (1a, 1b, etc.)
                 sp_id = '{0}{1}'.format(c_id + 1, ascii_lowercase[subpeak - 1])

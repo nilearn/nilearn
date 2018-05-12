@@ -1,5 +1,6 @@
 from nistats.design_matrix import make_design_matrix
-from nistats.reporting import plot_design_matrix, get_clusters_table, _local_max
+from nistats.reporting import (plot_design_matrix, get_clusters_table,
+                               _local_max)
 import nibabel as nib
 import numpy as np
 from numpy.testing import dec
@@ -36,12 +37,13 @@ def test_local_max():
     data[4, 5, :] = [4, 3, 2, 1, 1, 1, 1, 1, 2, 3, 4]
     data[5, 5, :] = [5, 4, 3, 2, 1, 1, 1, 2, 3, 4, 6]
     data[6, 5, :] = [4, 3, 2, 1, 1, 1, 1, 1, 2, 3, 4]
+    affine = np.eye(4)
 
-    ijk, vals = _local_max(data, 9)
+    ijk, vals = _local_max(data, affine, min_distance=9)
     assert_true(np.array_equal(ijk, np.array([[5., 5., 10.], [5., 5., 0.]])))
     assert_true(np.array_equal(vals, np.array([6, 5])))
 
-    ijk, vals = _local_max(data, 11)
+    ijk, vals = _local_max(data, affine, min_distance=11)
     assert_true(np.array_equal(ijk, np.array([[5., 5., 10.]])))
     assert_true(np.array_equal(vals, np.array([6])))
 
