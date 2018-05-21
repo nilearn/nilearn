@@ -10,14 +10,14 @@ from string import ascii_lowercase
 
 import numpy as np
 import pandas as pd
+import nibabel as nib
 from scipy import stats
+from scipy import ndimage
 import nilearn.plotting  # overrides the backend on headless servers
 from nilearn.image.resampling import coord_transform
 import matplotlib
 import matplotlib.pyplot as plt
-from scipy import ndimage
 from patsy import DesignInfo
-import nibabel as nib
 
 from .design_matrix import check_design_matrix
 
