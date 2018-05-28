@@ -20,7 +20,6 @@ from nilearn import datasets
 from nilearn._utils.testing import (mock_request, wrap_chunk_read_,
                                     FetchFilesMock, assert_raises_regex)
 
-
 currdir = os.path.dirname(os.path.abspath(__file__))
 datadir = os.path.join(currdir, 'data')
 tmpdir = None
@@ -148,7 +147,7 @@ def test_read_md5_sum_file():
     # Create dummy temporary file
     out, f = mkstemp()
     os.write(out, b'20861c8c3fe177da19a7e9539a5dbac  /tmp/test\n'
-             b'70886dcabe7bf5c5a1c24ca24e4cbd94  test/some_image.nii')
+                  b'70886dcabe7bf5c5a1c24ca24e4cbd94  test/some_image.nii')
     os.close(out)
     h = datasets.utils._read_md5_sum_file(f)
     assert_true('/tmp/test' in h)
@@ -262,7 +261,7 @@ def test_filter_columns():
 
     f = datasets.utils._filter_columns(values, {'STR': b'b'})
     assert_equal(np.sum(f), 167)
-    
+
     f = datasets.utils._filter_columns(values, {'STR': u'b'})
     assert_equal(np.sum(f), 167)
 
@@ -275,37 +274,46 @@ def test_filter_columns():
 
 
 def test_uncompress():
-    # Create dummy file
-    fd, temp = mkstemp()
-    os.close(fd)
-
     # Create a zipfile
     dtemp = mkdtemp()
     ztemp = os.path.join(dtemp, 'test.zip')
     ftemp = 'test'
-    with contextlib.closing(zipfile.ZipFile(ztemp, 'w')) as testzip:
-        testzip.writestr(ftemp, 'test')
-    datasets.utils._uncompress_file(ztemp, verbose=0)
-    assert(os.path.exists(os.path.join(dtemp, temp)))
-    shutil.rmtree(dtemp)
+    try:
+        with contextlib.closing(zipfile.ZipFile(ztemp, 'w')) as testzip:
+            testzip.writestr(ftemp, 'test')
+        datasets.utils._uncompress_file(ztemp, verbose=0)
+        assert (os.path.exists(os.path.join(dtemp, ftemp)))
+        shutil.rmtree(dtemp)
 
-    dtemp = mkdtemp()
-    ztemp = os.path.join(dtemp, 'test.tar')
-    with contextlib.closing(tarfile.open(ztemp, 'w')) as tar:
-        tar.add(temp)
-    datasets.utils._uncompress_file(ztemp, verbose=0)
-    assert(os.path.exists(os.path.join(dtemp, temp)))
-    shutil.rmtree(dtemp)
+        dtemp = mkdtemp()
+        ztemp = os.path.join(dtemp, 'test.tar')
+        ftemp = 'test'
 
-    dtemp = mkdtemp()
-    ztemp = os.path.join(dtemp, 'test.gz')
-    f = gzip.open(ztemp, 'wb')
-    f.close()
-    datasets.utils._uncompress_file(ztemp, verbose=0)
-    assert(os.path.exists(os.path.join(dtemp, temp)))
-    shutil.rmtree(dtemp)
+        # Create dummy file in the dtemp folder, so that the finally statement
+        # can easily remove it
+        fd, temp = mkstemp(dir=dtemp)
+        os.close(fd)
+        with contextlib.closing(tarfile.open(ztemp, 'w')) as tar:
+            tar.add(temp, arcname=ftemp)
+        datasets.utils._uncompress_file(ztemp, verbose=0)
+        assert (os.path.exists(os.path.join(dtemp, ftemp)))
+        shutil.rmtree(dtemp)
 
-    os.remove(temp)
+        dtemp = mkdtemp()
+        ttemp = os.path.join(dtemp, 'test')
+        with open(ttemp, 'wb') as f:
+            f.write('test'.encode('utf-8'))
+        ztemp = os.path.join(dtemp, 'test.gz')
+        with open(ttemp, 'rb') as f_in, gzip.open(ztemp, 'wb') as f_out:
+            shutil.copyfileobj(f_in, f_out)
+        datasets.utils._uncompress_file(ztemp, verbose=0)
+        # test.gz gets uncompressed into test
+        assert (os.path.exists(ttemp))
+        shutil.rmtree(dtemp)
+    finally:
+        # all temp files are created into dtemp except temp
+        if os.path.exists(dtemp):
+            shutil.rmtree(dtemp)
 
 
 @with_setup(setup_mock, teardown_mock)
