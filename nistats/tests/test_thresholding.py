@@ -5,8 +5,7 @@ from scipy.stats import norm
 from nose.tools import assert_true
 from numpy.testing import assert_almost_equal, assert_equal
 import nibabel as nib
-from nistats.thresholding import (fdr_threshold, map_threshold,
-                                  get_clusters_table)
+from nistats.thresholding import fdr_threshold, map_threshold
 
 
 def test_fdr():
@@ -71,22 +70,3 @@ def test_map_threshold():
         cluster_threshold=0)
     vals = th_map.get_data()
     assert_equal(np.sum(vals > 0), 8)
-
-
-def test_get_clusters_table():
-    shape = (9, 10, 11)
-    data = np.zeros(shape)
-    data[2:4, 5:7, 6:8] = 5.
-    stat_img = nib.Nifti1Image(data, np.eye(4))
-
-    # test one cluster extracted
-    cluster_table = get_clusters_table(stat_img, 4, 0)
-    assert_true(len(cluster_table) == 1)
-
-    # test empty table on high stat threshold
-    cluster_table = get_clusters_table(stat_img, 6, 0)
-    assert_true(len(cluster_table) == 0)
-
-    # test empty table on high cluster threshold
-    cluster_table = get_clusters_table(stat_img, 4, 9)
-    assert_true(len(cluster_table) == 0)
