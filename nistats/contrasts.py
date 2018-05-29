@@ -56,16 +56,16 @@ def compute_contrast(labels, regression_result, con_val, contrast_type=None):
 
     if contrast_type == 't':
         effect_ = np.zeros((1, labels.size))
-        var_ = np.zeros((1, 1, labels.size))
+        var_ = np.zeros(labels.size)
         for label_ in regression_result:
             label_mask = labels == label_
             resl = regression_result[label_].Tcontrast(con_val)
             effect_[:, label_mask] = resl.effect.T
-            var_[:, :, label_mask] = (resl.sd ** 2).T
+            var_[label_mask] = (resl.sd ** 2).T
     elif contrast_type == 'F':
         from scipy.linalg import sqrtm
         effect_ = np.zeros((dim, labels.size))
-        var_ = np.zeros((1, 1, labels.size))
+        var_ = np.zeros(labels.size)
         for label_ in regression_result:
             label_mask = labels == label_
             reg = regression_result[label_]
@@ -75,7 +75,7 @@ def compute_contrast(labels, regression_result, con_val, contrast_type=None):
             wcbeta = np.dot(sqrtm(invcov), cbeta)
             rss = reg.dispersion
             effect_[:, label_mask] = wcbeta
-            var_[:, :, label_mask] = rss
+            var_[label_mask] = rss
 
     dof_ = regression_result[label_].df_resid
     return Contrast(effect=effect_, variance=var_, dim=dim, dof=dof_,
@@ -121,7 +121,7 @@ class Contrast(object):
         effect : array of shape (contrast_dim, n_voxels)
             the effects related to the contrast
 
-        variance : array of shape (contrast_dim, contrast_dim, n_voxels)
+        variance : array of shape (n_voxels)
             the associated variance estimate
 
         dim: int or None,
@@ -133,12 +133,10 @@ class Contrast(object):
         contrast_type: {'t', 'F'}
             specification of the contrast type
         """
-        if variance.ndim != 3:
-            raise ValueError('Variance array should have 3 dimensions')
+        if variance.ndim != 1:
+            raise ValueError('Variance array should have 1 dimension')
         if effect.ndim != 2:
             raise ValueError('Effect array should have 2 dimensions')
-        if variance.shape[0] != variance.shape[1]:
-            raise ValueError('Inconsistent shape for the variance estimate')
 
         self.effect = effect
         self.variance = variance
@@ -165,7 +163,7 @@ class Contrast(object):
     def effect_variance(self):
         """Make access to summary statistics more straightforward when
         computing contrasts"""
-        return self.variance[0, 0, :]
+        return self.variance
 
     def stat(self, baseline=0.0):
         """ Return the decision statistic associated with the test of the
