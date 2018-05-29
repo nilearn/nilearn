@@ -97,6 +97,10 @@ def test_compute_background_mask():
     assert_true(isinstance(w[0].message, masking.MaskWarning))
 
 
+def test_compute_gray_matter_mask():
+    assert_true(1)
+
+
 def test_apply_mask():
     """ Test smoothing of timeseries extraction
     """

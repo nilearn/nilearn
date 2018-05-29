@@ -513,6 +513,50 @@ def compute_multi_background_mask(data_imgs, border_size=2, upper_cutoff=0.85,
     return mask
 
 
+def compute_gray_matter_mask(template_img, target_img, threshold,
+                             connected=True, opening=2, memory=None,
+                             verbose=0):
+    if verbose > 0:
+        print("Background mask computation")
+
+    template_img = _utils.check_niimg(template_img)
+    target_img = _utils.check_niimg(target_img)
+
+    from .image.image import _compute_mean
+    data, affine = cache(_compute_mean, memory)(template_img,
+                                            target_affine=target_img.affine,
+                                            target_shape=target_img.shape,
+                                            smooth=(1 if opening else False))
+
+    mask = data < threshold
+
+    mask, affine = _post_process_mask(mask, affine, opening=opening,
+        connected=connected, warning_msg="Are you sure that input "
+            "images are MNI template images.")
+    return new_img_like(template_img, mask, affine)
+
+
+def compute_multiple_gray_matter_mask(template_imgs, target_img, threshold,
+                                      connected=True, opening=2,
+                                      intersect_threshold=0.5, n_jobs=1,
+                                      memory=None, verbose=0):
+    if len(template_imgs) == 0:
+        raise TypeError('An empty object - %r - was passed instead of an '
+                        'image or a list of images' % template_imgs)
+    masks = Parallel(n_jobs=n_jobs, verbose=verbose)(
+        delayed(compute_gray_matter_mask)(img,
+                                  target_img=target_img,
+                                  threshold=threshold,
+                                  connected=connected,
+                                  opening=opening,
+                                  memory=memory)
+        for img in template_imgs)
+
+    mask = intersect_masks(masks, connected=connected,
+                           threshold=intersect_threshold)
+    return mask
+
+
 #
 # Time series extraction
 #
