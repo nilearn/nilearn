@@ -294,12 +294,12 @@ class SurfSearchLight(BaseEstimator):
         del process_surfmask_coords, surfmask_coords
         A = A.tolil()
 
-        print surfmask.shape
-        print giimgs.shape
+        print(surfmask.shape)
+        print(giimgs.shape)
 
         X = surf_masking._apply_surfmask_fmri(giimgs, surfmask)
         
-        print X.shape
+        print(X.shape)
 
         estimator = self.estimator
         if isinstance(estimator, _basestring):
@@ -311,7 +311,7 @@ class SurfSearchLight(BaseEstimator):
                                    self.scoring, self.cv, self.n_jobs,
                                    self.verbose)
                                    
-        print scores.shape                                   
+        print(scores.shape)
                                    
         scores_3D = np.zeros(process_surfmask.shape)
         scores_3D[process_surfmask] = scores
