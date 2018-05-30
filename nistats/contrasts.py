@@ -54,23 +54,31 @@ def compute_contrast(labels, regression_result, con_val, contrast_type=None):
             '"{0}" is not a known contrast type. Allowed types are {1}'.
             format(contrast_type, acceptable_contrast_types))
 
-    effect_ = np.zeros((dim, labels.size))
-    var_ = np.zeros((dim, dim, labels.size))
     if contrast_type == 't':
+        effect_ = np.zeros((1, labels.size))
+        var_ = np.zeros(labels.size)
         for label_ in regression_result:
             label_mask = labels == label_
             resl = regression_result[label_].Tcontrast(con_val)
             effect_[:, label_mask] = resl.effect.T
-            var_[:, :, label_mask] = (resl.sd ** 2).T
-    else:
+            var_[label_mask] = (resl.sd ** 2).T
+    elif contrast_type == 'F':
+        from scipy.linalg import sqrtm
+        effect_ = np.zeros((dim, labels.size))
+        var_ = np.zeros(labels.size)
         for label_ in regression_result:
             label_mask = labels == label_
-            resl = regression_result[label_].Fcontrast(con_val)
-            effect_[:, label_mask] = resl.effect
-            var_[:, :, label_mask] = resl.covariance
+            reg = regression_result[label_]
+            cbeta = np.atleast_2d(np.dot(con_val, reg.theta))
+            invcov = np.linalg.inv(np.atleast_2d(
+                    reg.vcov(matrix=con_val, dispersion=1.0)))
+            wcbeta = np.dot(sqrtm(invcov), cbeta)
+            rss = reg.dispersion
+            effect_[:, label_mask] = wcbeta
+            var_[label_mask] = rss
 
     dof_ = regression_result[label_].df_resid
-    return Contrast(effect=effect_, variance=var_, dof=dof_,
+    return Contrast(effect=effect_, variance=var_, dim=dim, dof=dof_,
                     contrast_type=contrast_type)
 
 
@@ -105,7 +113,7 @@ class Contrast(object):
     (high-dimensional F constrasts may lead to memory breakage).
     """
 
-    def __init__(self, effect, variance, dof=DEF_DOFMAX, contrast_type='t',
+    def __init__(self, effect, variance, dim=None, dof=DEF_DOFMAX, contrast_type='t',
                  tiny=DEF_TINY, dofmax=DEF_DOFMAX):
         """
         Parameters
@@ -113,29 +121,30 @@ class Contrast(object):
         effect : array of shape (contrast_dim, n_voxels)
             the effects related to the contrast
 
-        variance : array of shape (contrast_dim, contrast_dim, n_voxels)
+        variance : array of shape (n_voxels)
             the associated variance estimate
 
+        dim: int or None,
+            the dimension of the contrast
+
         dof : scalar
-            the degrees of freedom of the resiudals
+            the degrees of freedom of the residuals
 
         contrast_type: {'t', 'F'}
             specification of the contrast type
         """
-        if variance.ndim != 3:
-            raise ValueError('Variance array should have 3 dimensions')
+        if variance.ndim != 1:
+            raise ValueError('Variance array should have 1 dimension')
         if effect.ndim != 2:
             raise ValueError('Effect array should have 2 dimensions')
-        if variance.shape[0] != variance.shape[1]:
-            raise ValueError('Inconsistent shape for the variance estimate')
-        if ((variance.shape[1] != effect.shape[0]) or
-            (variance.shape[2] != effect.shape[1])):
-            raise ValueError('Effect and variance have inconsistent shape')
 
         self.effect = effect
         self.variance = variance
         self.dof = float(dof)
-        self.dim = effect.shape[0]
+        if dim is None:
+            self.dim = effect.shape[0]
+        else:
+            self.dim = dim
         if self.dim > 1 and contrast_type is 't':
             print('Automatically converted multi-dimensional t to F contrast')
             contrast_type = 'F'
@@ -154,7 +163,7 @@ class Contrast(object):
     def effect_variance(self):
         """Make access to summary statistics more straightforward when
         computing contrasts"""
-        return self.variance[0, 0, :]
+        return self.variance
 
     def stat(self, baseline=0.0):
         """ Return the decision statistic associated with the test of the
@@ -173,22 +182,13 @@ class Contrast(object):
         self.baseline = baseline
 
         # Case: one-dimensional contrast ==> t or t**2
-        if self.dim == 1:
+        if self.contrast_type == 'F':
+            stat = np.sum((self.effect - baseline) ** 2, 0) / self.dim  /\
+                np.maximum(self.variance, self.tiny)
+        elif self.contrast_type == 't':
             # avoids division by zero
             stat = (self.effect - baseline) / np.sqrt(
                 np.maximum(self.variance, self.tiny))
-            if self.contrast_type == 'F':
-                stat = stat ** 2
-        # Case: F contrast
-        elif self.contrast_type == 'F':
-            # F = |t|^2/q ,  |t|^2 = e^t inv(v) e
-            if self.effect.ndim == 1:
-                self.effect = self.effect[np.newaxis]
-            if self.variance.ndim == 1:
-                self.variance = self.variance[np.newaxis, np.newaxis]
-            stat = (multiple_mahalanobis(
-                    self.effect - baseline, self.variance) / self.dim)
-        # Unknwon stat
         else:
             raise ValueError('Unknown statistic type')
         self.stat_ = stat
@@ -252,11 +252,13 @@ class Contrast(object):
         if self.dim != other.dim:
             raise ValueError(
                 'The two contrasts do not have compatible dimensions')
+        dof_ = self.dof + other.dof
+        if self.contrast_type == 'F':
+            warn('Running approximate fixed effects on F statistics.')
         effect_ = self.effect + other.effect
         variance_ = self.variance + other.variance
-        dof_ = self.dof + other.dof
-        return Contrast(effect=effect_, variance=variance_, dof=dof_,
-                        contrast_type=self.contrast_type)
+        return Contrast(effect=effect_, variance=variance_, dim=self.dim,
+                        dof=dof_, contrast_type=self.contrast_type)
 
     def __rmul__(self, scalar):
         """Multiplication of the contrast by a scalar"""
