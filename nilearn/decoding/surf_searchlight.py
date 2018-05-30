@@ -29,7 +29,11 @@ import nibabel
 from .. import surf_masking
 from .._utils import as_ndarray
 
+from .._utils.compat import _basestring
+from .._utils.fixes import cross_val_score
+
 ESTIMATOR_CATALOG = dict(svc=svm.LinearSVC, svr=svm.SVR)
+
 
 def surf_search_light(X, y, estimator, A, scoring=None, cv=None, n_jobs=-1,
                  verbose=0):
@@ -298,7 +302,7 @@ class SurfSearchLight(BaseEstimator):
         print X.shape
 
         estimator = self.estimator
-        if isinstance(estimator, basestring):
+        if isinstance(estimator, _basestring):
             estimator = ESTIMATOR_CATALOG[estimator]()
 
         # scores is an 1D array of CV scores with length equals to the number
