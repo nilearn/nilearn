@@ -107,7 +107,7 @@ def intersect_masks(mask_imgs, threshold=0.5, connected=True):
     """ Compute intersection of several masks
 
     Given a list of input mask images, generate the output image which
-    is the the threshold-level intersection of the inputs
+    is the threshold-level intersection of the inputs
 
     Parameters
     ----------
