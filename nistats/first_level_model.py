@@ -509,12 +509,12 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
 
         output_type : str, optional
             Type of the output map. Can be 'z_score', 'stat', 'p_value',
-            'effect_size' or 'effect_variance'
+            'effect_size', 'effect_variance' or 'all'
 
         Returns
         -------
-        output : Nifti1Image
-            The desired output image
+        output : Nifti1Image or dict
+            The desired output image or dictionary of output images
 
         """
         if self.labels_ is None or self.results_ is None:
@@ -538,26 +538,31 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         if len(con_vals) != n_runs:
             warn('One contrast given, assuming it for all %d runs' % n_runs)
             con_vals = con_vals * n_runs
-        if isinstance(output_type, _basestring):
-            if output_type not in ['z_score', 'stat', 'p_value', 'effect_size',
-                                   'effect_variance']:
-                raise ValueError('output_type must be one of "z_score", "stat",'
-                                 ' "p_value","effect_size" or "effect_variance"')
-        else:
-            raise ValueError('output_type must be one of "z_score", "stat",'
-                             ' "p_value","effect_size" or "effect_variance"')
+
+        valid_types = ['z_score', 'stat', 'p_value', 'effect_size',
+                       'effect_variance']
+        if not (isinstance(output_type, _basestring) and
+                output_type in valid_types + ['all']):
+            raise ValueError('output_type must be one of "z_score", "stat", '
+                             '"p_value", "effect_size", "effect_variance" or '
+                             '"all"')
 
         contrast = _fixed_effect_contrast(self.labels_, self.results_,
                                           con_vals, stat_type)
 
-        estimate_ = getattr(contrast, output_type)()
-        # Prepare the returned images
-        output = self.masker_.inverse_transform(estimate_)
-        contrast_name = str(con_vals)
-        output.header['descrip'] = (
-            '%s of contrast %s' % (output_type, contrast_name))
+        output_types = valid_types if output_type == 'all' else [output_type]
 
-        return output
+        outputs = {}
+        for otype in output_types:
+            estimate_ = getattr(contrast, otype)()
+            # Prepare the returned images
+            output = self.masker_.inverse_transform(estimate_)
+            contrast_name = str(con_vals)
+            output.header['descrip'] = (
+                '%s of contrast %s' % (otype, contrast_name))
+            outputs[otype] = output
+
+        return outputs if output_type == 'all' else output
 
 
 def first_level_models_from_bids(
