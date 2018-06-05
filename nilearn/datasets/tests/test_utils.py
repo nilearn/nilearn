@@ -147,7 +147,7 @@ def test_read_md5_sum_file():
     # Create dummy temporary file
     out, f = mkstemp()
     os.write(out, b'20861c8c3fe177da19a7e9539a5dbac  /tmp/test\n'
-                  b'70886dcabe7bf5c5a1c24ca24e4cbd94  test/some_image.nii')
+             b'70886dcabe7bf5c5a1c24ca24e4cbd94  test/some_image.nii')
     os.close(out)
     h = datasets.utils._read_md5_sum_file(f)
     assert_true('/tmp/test' in h)
@@ -274,7 +274,12 @@ def test_filter_columns():
 
 
 def test_uncompress():
-    # Create a zipfile
+    # for each kind of compression, we create:
+    # - a temporary directory (dtemp)
+    # - a compressed object (ztemp)
+    # - a temporary file (temp) or a simple string to compress into ztemp
+    # we then uncompress the ztemp object into dtemp under the name ftemp
+    # and check if ftemp exists
     dtemp = mkdtemp()
     ztemp = os.path.join(dtemp, 'test.zip')
     ftemp = 'test'
@@ -282,12 +287,11 @@ def test_uncompress():
         with contextlib.closing(zipfile.ZipFile(ztemp, 'w')) as testzip:
             testzip.writestr(ftemp, 'test')
         datasets.utils._uncompress_file(ztemp, verbose=0)
-        assert (os.path.exists(os.path.join(dtemp, ftemp)))
+        assert(os.path.exists(os.path.join(dtemp, ftemp)))
         shutil.rmtree(dtemp)
 
         dtemp = mkdtemp()
         ztemp = os.path.join(dtemp, 'test.tar')
-        ftemp = 'test'
 
         # Create dummy file in the dtemp folder, so that the finally statement
         # can easily remove it
@@ -296,7 +300,7 @@ def test_uncompress():
         with contextlib.closing(tarfile.open(ztemp, 'w')) as tar:
             tar.add(temp, arcname=ftemp)
         datasets.utils._uncompress_file(ztemp, verbose=0)
-        assert (os.path.exists(os.path.join(dtemp, ftemp)))
+        assert(os.path.exists(os.path.join(dtemp, ftemp)))
         shutil.rmtree(dtemp)
 
         dtemp = mkdtemp()
@@ -308,7 +312,7 @@ def test_uncompress():
             shutil.copyfileobj(f_in, f_out)
         datasets.utils._uncompress_file(ztemp, verbose=0)
         # test.gz gets uncompressed into test
-        assert (os.path.exists(ttemp))
+        assert(os.path.exists(ttemp))
         shutil.rmtree(dtemp)
     finally:
         # all temp files are created into dtemp except temp
