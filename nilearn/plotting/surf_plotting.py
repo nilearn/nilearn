@@ -362,16 +362,14 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
 
     # Call _get_colorbar_and_data_ranges to derive symmetric vmin, vmax
     # And colorbar limits depending on symmetric_cbar settings
-    cbar_vmin, cbar_vmax, vmin, vmax = \
-        _get_colorbar_and_data_ranges(stat_map, vmax,
-                                      symmetric_cbar, kwargs)
+    cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
+        stat_map, vmax, symmetric_cbar, kwargs)
 
-    display = plot_surf(surf_mesh, surf_map=stat_map, bg_map=bg_map,
-                        hemi=hemi, view=view, avg_method='mean',
-                        threshold=threshold, cmap=cmap,
-                        alpha=alpha, bg_on_data=bg_on_data, darkness=1,
-                        vmax=vmax, title=title, output_file=output_file,
-                        axes=axes, figure=figure, **kwargs)
+    display = plot_surf(
+        surf_mesh, surf_map=stat_map, bg_map=bg_map, hemi=hemi, view=view,
+        avg_method='mean', threshold=threshold, cmap=cmap, alpha=alpha,
+        bg_on_data=bg_on_data, darkness=1, vmax=vmax, vmin=vmin, title=title,
+        output_file=output_file, axes=axes, figure=figure, **kwargs)
 
     return display
 
