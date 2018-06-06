@@ -264,7 +264,7 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
 
 def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
                        hemi='left', view='lateral', threshold=None,
-                       alpha='auto', vmax=None, cmap='coolwarm',
+                       alpha='auto', vmax=None, cmap='cold_hot',
                        symmetric_cbar="auto", bg_on_data=False, darkness=1,
                        title=None, output_file=None, axes=None, figure=None,
                        **kwargs):
@@ -376,7 +376,7 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
 
 def plot_surf_roi(surf_mesh, roi_map, bg_map=None,
                   hemi='left', view='lateral', alpha='auto',
-                  vmin=None, vmax=None, cmap='coolwarm',
+                  vmin=None, vmax=None, cmap='gist_ncar',
                   bg_on_data=False, darkness=1, title=None,
                   output_file=None, axes=None, figure=None, **kwargs):
     """ Plotting of surfaces with optional background and stats map
