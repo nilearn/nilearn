@@ -148,7 +148,7 @@ def test_read_md5_sum_file():
     # Create dummy temporary file
     out, f = mkstemp()
     os.write(out, b'20861c8c3fe177da19a7e9539a5dbac  /tmp/test\n'
-                  b'70886dcabe7bf5c5a1c24ca24e4cbd94  test/some_image.nii')
+             b'70886dcabe7bf5c5a1c24ca24e4cbd94  test/some_image.nii')
     os.close(out)
     h = datasets.utils._read_md5_sum_file(f)
     assert_true('/tmp/test' in h)
