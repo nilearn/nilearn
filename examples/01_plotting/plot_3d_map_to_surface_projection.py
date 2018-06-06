@@ -41,8 +41,7 @@ from nilearn import plotting
 
 plotting.plot_surf_stat_map(fsaverage.infl_right, texture, hemi='right',
                             title='Surface right hemisphere',
-                            threshold=1., bg_map=fsaverage.sulc_right,
-                            cmap='cold_hot')
+                            threshold=1., bg_map=fsaverage.sulc_right)
 
 ##############################################################################
 # Plot 3D image for comparison

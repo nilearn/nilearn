@@ -472,7 +472,7 @@ def plot_surf_roi(surf_mesh, roi_map, bg_map=None,
         roi_data = load_surf_data(roi_map)
         # or a single array with indices for a single roi
         if roi_data.shape[0] != v.shape[0]:
-            roi_map = np.zeros(v.shape[0])
+            roi_map = np.zeros(v.shape[0], dtype=int)
             roi_map[roi_data] = 1
 
     else:
@@ -483,7 +483,7 @@ def plot_surf_roi(surf_mesh, roi_map, bg_map=None,
                          'value for each vertex, or a list of Numpy arrays, '
                          'one array per ROI which contains indices of all '
                          'vertices included in that ROI')
-
+    vmin, vmax = np.min(roi_map), 1 + np.max(roi_map)
     display = plot_surf(surf_mesh, surf_map=roi_map, bg_map=bg_map,
                         hemi=hemi, view=view, avg_method='median',
                         cmap=cmap, alpha=alpha, bg_on_data=bg_on_data,
