@@ -29,6 +29,13 @@ Changes
       :class:`nilearn.decomposition.DictLearning` is deprecated and will
       be removed in next two releases. Use `components_img_` instead.
 
+    - Default colormaps for surface plotting functions have changed to be more
+      consistent with slice plotting.
+      :func:`nilearn.plotting.plot_surf_stat_map` now uses "cold_hot", as
+      :func:`nilearn.plotting.plot_stat_map` does, and
+      :func:`nilearn.plotting.plot_surf_roi` now uses "gist_ncar", as
+      :func:`nilearn.plotting.plot_roi` does.
+
 Bug fixes
 ---------
 
