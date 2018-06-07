@@ -306,8 +306,7 @@ def test_uncompress():
 
         dtemp = mkdtemp()
         ztemp = os.path.join(dtemp, 'test.gz')
-        with BytesIO() as f_in, gzip.open(ztemp, 'wb') as f_out:
-            shutil.copyfileobj(f_in, f_out)
+        gzip.open(ztemp, 'wb').close()
         datasets.utils._uncompress_file(ztemp, verbose=0)
         # test.gz gets uncompressed into test
         assert (os.path.exists(os.path.join(dtemp, 'test')))
