@@ -12,7 +12,6 @@ import zipfile
 import tarfile
 import gzip
 from tempfile import mkdtemp, mkstemp
-from io import BytesIO
 
 from nose import with_setup
 from nose.tools import assert_true, assert_false, assert_equal
