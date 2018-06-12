@@ -36,6 +36,9 @@ Changes
       :func:`nilearn.plotting.plot_surf_roi` now uses "gist_ncar", as
       :func:`nilearn.plotting.plot_roi` does.
 
+   - Improve 3D surface plotting: lock the aspect ratio of the plots and
+     reduce the whitespace around the plots.
+
 Bug fixes
 ---------
 
