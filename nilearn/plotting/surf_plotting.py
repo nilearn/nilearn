@@ -172,13 +172,14 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
     if axes is None:
         if figure is None:
             figure = plt.figure()
-        axes = figure.add_subplot(111, projection='3d',
-                                  xlim=limits, ylim=limits)
+        axes = Axes3D(figure, rect=[0, 0, 1, 1],
+                      xlim=limits, ylim=limits)
     else:
         if figure is None:
             figure = axes.get_figure()
         axes.set_xlim(*limits)
         axes.set_ylim(*limits)
+    axes.set_aspect(.74)
     axes.view_init(elev=elev, azim=azim)
     axes.set_axis_off()
 
