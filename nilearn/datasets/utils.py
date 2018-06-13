@@ -575,6 +575,10 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False,
             # Complete the reporting hook
             sys.stderr.write(' ...done. ({0:.0f} seconds, {1:.0f} min)\n'
                              .format(dt, dt // 60))
+    except (_urllib.error.HTTPError, _urllib.error.URLError) as e:
+        sys.stderr.write("Error while fetching file %s; dataset "
+                         "fetching aborted." % (file_name))
+        raise
     finally:
         if local_file is not None:
             if not local_file.closed:
