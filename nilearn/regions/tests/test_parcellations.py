@@ -252,3 +252,25 @@ def test_inverse_transform_single_nifti_image():
         assert_true(isinstance(fmri_compressed, nibabel.Nifti1Image))
         # returns shape of fmri_img
         assert_true(fmri_compressed.shape, (10, 11, 12, 10))
+
+
+def test_transform_3d_input_images():
+    # test list of 3D images
+    data = np.ones((10, 11, 12))
+    data[6, 7, 8] = 2
+    data[9, 10, 11] = 3
+    img = nibabel.Nifti1Image(data, affine=np.eye(4))
+    # list of 3
+    imgs = [img, img, img]
+    parcellate = Parcellations(method='ward', n_parcels=20)
+    X = parcellate.fit_transform(imgs)
+    assert_true(isinstance(X, list))
+    # (number of samples, number of features)
+    assert_equal(np.concatenate(X).shape, (3, 20))
+    # inverse transform
+    imgs_ = parcellate.inverse_transform(X)
+    assert_true(isinstance(imgs_, list))
+    # test single 3D image
+    X = parcellate.fit_transform(imgs[0])
+    assert_true(isinstance(X, np.ndarray))
+    assert_equal(X.shape, (1, 20))
