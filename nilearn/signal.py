@@ -11,7 +11,7 @@ import distutils.version
 import warnings
 
 import numpy as np
-from scipy import signal as sp_signal, stats, linalg
+from scipy import stats, linalg, signal as sp_signal
 from sklearn.utils import gen_even_slices, as_float_array
 
 from ._utils.compat import _basestring
