@@ -21,6 +21,9 @@
 .. |connectome| image:: auto_examples/03_connectivity/images/sphx_glr_plot_inverse_covariance_connectome_004.png
      :target: auto_examples/03_connectivity/plot_inverse_covariance_connectome.html
 
+.. |surface_plot| image:: auto_examples/01_plotting/images/sphx_glr_plot_3d_map_to_surface_projection_001.png
+     :target: auto_examples/01_plotting/plot_3d_map_to_surface_projection.html
+
 .. |haxby_weights| image:: auto_examples/images/sphx_glr_plot_decoding_tutorial_002.png
    :target: auto_examples/plot_decoding_tutorial.html
 
@@ -58,7 +61,7 @@
 
 * |glass_brain|
 
-* |haxby_weights|
+* |surface_plot|
 
 * |oasis_weights|
 
@@ -69,6 +72,8 @@
 * |canica|
 
 * |tvl1_haxby|
+
+* |haxby_weights|
 
 * |searchlight|
 
