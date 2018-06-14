@@ -1,3 +1,33 @@
+0.4.2
+=====
+Few important bugs fix release for OHBM conference.
+
+Changes
+-------
+    - Default colormaps for surface plotting functions have changed to be more
+      consistent with slice plotting.
+      :func:`nilearn.plotting.plot_surf_stat_map` now uses "cold_hot", as
+      :func:`nilearn.plotting.plot_stat_map` does, and
+      :func:`nilearn.plotting.plot_surf_roi` now uses "gist_ncar", as
+      :func:`nilearn.plotting.plot_roi` does.
+
+    - Improve 3D surface plotting: lock the aspect ratio of the plots and
+      reduce the whitespace around the plots.
+
+Bug fixes
+---------
+
+    - Fix bug with input repetition time (TR) which had no effect in signal
+      cleaning. Fixed by Pradeep Raamana.
+
+    - Fix issues with signal extraction on list of 3D images in
+      :class:`nilearn.regions.Parcellations`.
+
+    - Fix issues with raising AttributeError rather than HTTPError in datasets
+      fetching utilities. By Jerome Dockes.
+
+    - Fix issues in datasets testing function uncompression of files. By Pierre Glaser.
+
 0.4.1
 =====
 
@@ -28,16 +58,6 @@ Changes
       in :class:`nilearn.decomposition.CanICA` and
       :class:`nilearn.decomposition.DictLearning` is deprecated and will
       be removed in next two releases. Use `components_img_` instead.
-
-    - Default colormaps for surface plotting functions have changed to be more
-      consistent with slice plotting.
-      :func:`nilearn.plotting.plot_surf_stat_map` now uses "cold_hot", as
-      :func:`nilearn.plotting.plot_stat_map` does, and
-      :func:`nilearn.plotting.plot_surf_roi` now uses "gist_ncar", as
-      :func:`nilearn.plotting.plot_roi` does.
-
-   - Improve 3D surface plotting: lock the aspect ratio of the plots and
-     reduce the whitespace around the plots.
 
 Bug fixes
 ---------
