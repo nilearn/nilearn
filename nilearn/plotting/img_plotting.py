@@ -137,7 +137,7 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None,
         show_nan_msg = True
     if show_nan_msg:
         nan_msg = ('NaN is not permitted for the vmax and vmin arguments.\n'
-                   'Tip: Use np.nan_max() instead of np.max().')
+                   'Tip: Use np.nanmax() instead of np.max().')
         warnings.warn(nan_msg)
 
     if isinstance(cut_coords, numbers.Number) and display_mode == 'ortho':
