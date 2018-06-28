@@ -43,11 +43,12 @@ from .img_plotting import plot_img, plot_anat, plot_epi, \
     plot_prob_atlas, show
 from .find_cuts import find_xyz_cut_coords, find_cut_slices
 from .matrix_plotting import plot_matrix
+from .brain_to_html import brain_to_html
 __all__ = ['cm', 'plot_img', 'plot_anat', 'plot_epi',
            'plot_roi', 'plot_stat_map', 'plot_glass_brain',
            'plot_connectome', 'plot_prob_atlas',
            'find_xyz_cut_coords', 'find_cut_slices',
-           'show', 'plot_matrix']
+           'show', 'plot_matrix', 'brain_to_html']
 
 # matplotlib older versions 1.1.1 will not work to plot surface data using
 # plotting functions from surf_plotting.py. Hence we check the version and

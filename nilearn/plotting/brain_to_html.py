@@ -5,10 +5,10 @@ import cgi
 
 import numpy as np
 import matplotlib as mpl
-from matplotlib import cm
+import matplotlib.cm
 
-from .. import datasets, plotting
-from . import surface
+from .. import datasets, surface
+from . import cm
 
 HTML_TEMPLATE = """
 
@@ -308,7 +308,7 @@ class HTMLDocument(object):
 
 
 def colorscale(cmap, values, threshold=None):
-    cmap = cm.get_cmap(cmap)
+    cmap = mpl.cm.get_cmap(cmap)
     abs_values = np.abs(values)
     abs_max = abs_values.max()
     norm = mpl.colors.Normalize(vmin=-abs_max, vmax=abs_max)
@@ -351,7 +351,7 @@ def to_plotly(mesh):
 
 
 def full_brain_info(stat_map=None, surface_maps=None, mesh='fsaverage5',
-                    threshold=None, cmap=plotting.cm.cold_hot, black_bg=False):
+                    threshold=None, cmap=cm.cold_hot, black_bg=False):
     info = {}
     if mesh == 'fsaverage5':
         mesh = datasets.fetch_surf_fsaverage5()
@@ -373,7 +373,7 @@ def full_brain_info(stat_map=None, surface_maps=None, mesh='fsaverage5',
             mesh['infl_{}'.format(hemi)])
         vertexcolor = cmap(norm(surf_map).data)
         if threshold is not None:
-            anat_color = cm.get_cmap('Greys')(sulc_depth_map)
+            anat_color = mpl.cm.get_cmap('Greys')(sulc_depth_map)
             vertexcolor[np.abs(surf_map) < at] = anat_color[
                 np.abs(surf_map) < at]
         vertexcolor = np.asarray(vertexcolor * 255, dtype='uint8')
@@ -386,7 +386,7 @@ def full_brain_info(stat_map=None, surface_maps=None, mesh='fsaverage5',
 
 
 def brain_to_html(stat_map=None, surface_maps=None, mesh='fsaverage5',
-                  threshold=None, cmap=plotting.cm.cold_hot,
+                  threshold=None, cmap=cm.cold_hot,
                   embed_js=True, output_file=None, black_bg=False):
     """
     Insert a surface plot of a statistical map into an HTML page.
