@@ -7,7 +7,8 @@ import numpy as np
 from scipy import ndimage
 from sklearn.datasets.base import Bunch
 
-from .utils import _get_dataset_dir, _fetch_files, _get_dataset_descr
+from .utils import (_get_dataset_dir, _fetch_files,
+                    _get_dataset_descr, _uncompress_file)
 
 from .._utils import check_niimg, niimg
 from ..image import new_img_like
@@ -421,6 +422,23 @@ def fetch_oasis_vbm(n_subjects=None, dartel_version=True, data_dir=None,
         ext_vars=csv_data,
         data_usage_agreement=data_usage_agreement,
         description=fdescr)
+
+
+def fetch_surf_fsaverage(data_dir=None):
+    data_dir = _get_dataset_dir('fsaverage')
+    url = 'https://www.nitrc.org/frs/download.php/10846/fsaverage.tar.gz'
+    if not os.path.isdir(os.path.join(data_dir, 'fsaverage')):
+        _fetch_files(data_dir, [('fsaverage.tar.gz', url, {})])
+        _uncompress_file(os.path.join(data_dir, 'fsaverage.tar.gz'))
+    result = {
+        name: os.path.join(data_dir, 'fsaverage', name)
+        for name in ['pial_right', 'sulc_right', 'sulc_left', 'pial_left']}
+    result['infl_left'] = os.path.join(data_dir, 'fsaverage', 'inflated_left')
+    result['infl_right'] = os.path.join(
+        data_dir, 'fsaverage', 'inflated_right')
+
+    result['description'] = str(_get_dataset_descr('fsaverage'))
+    return Bunch(**result)
 
 
 def fetch_surf_fsaverage5(data_dir=None, url=None, resume=True, verbose=1):
