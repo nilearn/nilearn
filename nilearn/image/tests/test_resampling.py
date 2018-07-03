@@ -13,7 +13,7 @@ from numpy.testing import assert_array_equal, assert_array_almost_equal
 import numpy as np
 
 from nibabel import Nifti1Image
-
+from sklearn.utils.testing import assert_warns
 from nilearn.image.resampling import resample_img, resample_to_img, reorder_img
 from nilearn.image.resampling import from_matrix_vector, coord_transform
 from nilearn.image.resampling import get_bounds
@@ -465,7 +465,7 @@ def test_resampling_nan():
 
         # check 3x3 transformation matrix
         target_affine = np.eye(3)[axis_permutation]
-        resampled_img = testing.assert_warns(
+        resampled_img = assert_warns(
             RuntimeWarning, resample_img, source_img,
             target_affine=target_affine)
 
@@ -493,7 +493,7 @@ def test_resampling_nan():
     data = 10 * np.ones((10, 10, 10))
     data[4:6, 4:6, 4:6] = np.nan
     source_img = Nifti1Image(data, 2 * np.eye(4))
-    resampled_img = testing.assert_warns(
+    resampled_img = assert_warns(
         RuntimeWarning, resample_img, source_img,
         target_affine=np.eye(4))
 
