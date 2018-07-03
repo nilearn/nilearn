@@ -1,11 +1,19 @@
 0.4.3
 =====
 
+Changes
+-------
+
+    - :func:`nilearn.datasets.fetch_surf_fsaverage5` is deprecated and will be
+      removed in a future release. Use `nilearn.fetch_surf_fsaverage`, with the
+      parameter mesh="fsaverage5" (the default) instead.
+
+
 Enhancements
 ------------
 
-    - Add :func:`nilearn.datasets.fetch_surf_fsaverage` to download the Freesurfer
-      fsaverage mesh.
+    - Add :func:`nilearn.datasets.fetch_surf_fsaverage` to download either
+      fsaverage or fsaverage 5 (Freesurfer cortical meshes).
 
 
 0.4.2
