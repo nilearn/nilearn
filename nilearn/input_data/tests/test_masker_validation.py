@@ -5,7 +5,7 @@ import numpy as np
 from sklearn.base import BaseEstimator
 from sklearn.externals.joblib import Memory
 
-from nilearn._utils.testing import assert_warns
+from sklearn.utils.testing import assert_warns
 from nilearn.input_data.masker_validation import check_embedded_nifti_masker
 from nilearn.input_data import MultiNiftiMasker, NiftiMasker
 

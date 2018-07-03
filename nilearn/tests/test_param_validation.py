@@ -9,8 +9,9 @@ import nibabel
 
 from nose.tools import assert_equal, assert_true, assert_raises
 from sklearn.base import BaseEstimator
+from sklearn.utils.testing import assert_warns
 
-from nilearn._utils.testing import assert_raises_regex, assert_warns
+from nilearn._utils.testing import assert_raises_regex
 
 from nilearn._utils.extmath import fast_abs_percentile
 from nilearn._utils.param_validation import (MNI152_BRAIN_VOLUME,
