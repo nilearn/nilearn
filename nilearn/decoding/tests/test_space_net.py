@@ -10,7 +10,8 @@ from sklearn.linear_model import Lasso
 from sklearn.utils import check_random_state
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score
-from nilearn._utils.testing import assert_raises_regex, assert_warns
+from sklearn.utils.testing import assert_warns
+from nilearn._utils.testing import assert_raises_regex
 from nilearn.decoding.space_net import (
     _EarlyStoppingCallback, _space_net_alpha_grid, path_scores, BaseSpaceNet,
     _crop_mask, _univariate_feature_screening, SpaceNetClassifier,

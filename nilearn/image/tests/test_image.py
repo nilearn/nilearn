@@ -11,7 +11,8 @@ import nibabel
 from nibabel import Nifti1Image
 import numpy as np
 from numpy.testing import assert_array_equal, assert_allclose
-from nilearn._utils.testing import assert_raises_regex, assert_warns
+from sklearn.utils.testing import assert_warns
+from nilearn._utils.testing import assert_raises_regex
 from nilearn._utils.exceptions import DimensionError
 
 from nilearn import signal

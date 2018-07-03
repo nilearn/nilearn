@@ -1,9 +1,10 @@
 import numpy as np
 from nose.tools import assert_equal, assert_true
 import nibabel
+from sklearn.utils.testing import assert_warns
 from nilearn.plotting.find_cuts import (find_xyz_cut_coords, find_cut_slices,
                                         _transform_cut_coords)
-from nilearn._utils.testing import assert_raises_regex, assert_warns
+from nilearn._utils.testing import assert_raises_regex
 from nilearn.masking import compute_epi_mask
 
 
