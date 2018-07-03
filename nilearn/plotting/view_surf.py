@@ -213,9 +213,15 @@ HTML_TEMPLATE = """
     <script>
         $(document).ready(
             function() {
+                if(surfaceMapInfo["full_brain_mesh"]){
+                    $("#select-hemisphere").change(addPlot);
+                    $("#select-kind").change(addPlot);
+                }
+                else{
+                    $("#select-hemisphere").hide();
+                    $("#select-kind").hide();
+                }
                 addPlot();
-                $("#select-hemisphere").change(addPlot);
-                $("#select-kind").change(addPlot);
                 $("#select-view").change(addPlot);
                 $("#surface-plot").mouseup(function() {
                     $("#select-view").val("custom");
@@ -350,57 +356,90 @@ def to_plotly(mesh):
     return info
 
 
+def _to_color_strings(colors):
+    colors = np.asarray(colors * 255, dtype='uint8')
+    colors = ['#{:02x}{:02x}{:02x}'.format(*row) for row in colors]
+    return colors
+
+
+def _get_vertexcolor(surf_map, cmap, norm,
+                     absolute_threshold=None, sulc_depth_map=None):
+    vertexcolor = cmap(norm(surf_map).data)
+    if absolute_threshold is None:
+        return _to_color_strings(vertexcolor)
+    if sulc_depth_map is None:
+        sulc_depth_map = np.ones(len(surf_map)) * .5
+        anat_vmin, anat_vmax = 0, 1
+    else:
+        sulc_depth_map = surface.load_surf_data(sulc_depth_map)
+        anat_vmin, anat_vmax = np.min(sulc_depth_map), np.max(sulc_depth_map)
+    anat_norm = mpl.colors.Normalize(vmin=anat_vmin, vmax=anat_vmax)
+    anat_color = mpl.cm.get_cmap('Greys')(anat_norm(sulc_depth_map))
+    vertexcolor[np.abs(surf_map) < absolute_threshold] = anat_color[
+        np.abs(surf_map) < absolute_threshold]
+    return _to_color_strings(vertexcolor)
+
+
+def one_mesh_info(surf_map, surf_mesh, threshold=None, cmap=cm.cold_hot,
+                  black_bg=False, bg_map=None):
+    info = {}
+    colors, cmax, cmap, norm, abs_threshold = colorscale(
+        cmap, surf_map, threshold)
+    info['inflated_left'] = to_plotly(surf_mesh)
+    info['vertexcolor_left'] = _get_vertexcolor(
+        surf_map, cmap, norm, abs_threshold, bg_map)
+    info["cmin"], info["cmax"] = -cmax, cmax
+    info['black_bg'] = black_bg
+    info['full_brain_mesh'] = False
+    return info, colors
+
+
 def full_brain_info(stat_map=None, surface_maps=None, mesh='fsaverage5',
                     threshold=None, cmap=cm.cold_hot, black_bg=False):
     info = {}
-    if mesh == 'fsaverage5':
-        mesh = datasets.fetch_surf_fsaverage5()
-    if surface_maps is None:
-        assert stat_map is not None
-        surface_maps = {
-            h: surface.vol_to_surf(stat_map, mesh['pial_{}'.format(h)])
-            for h in ['left', 'right']
-        }
-    colors, cmax, cmap, norm, at = colorscale(
+    if mesh != 'fsaverage5':
+        raise ValueError(
+            'mesh should be fsaverage5 until fsaverage fetcher pr is merged')
+    mesh = datasets.fetch_surf_fsaverage5()
+    surface_maps = {
+        h: surface.vol_to_surf(stat_map, mesh['pial_{}'.format(h)])
+        for h in ['left', 'right']
+    }
+    colors, cmax, cmap, norm, abs_threshold = colorscale(
         cmap, np.asarray(list(surface_maps.values())).ravel(), threshold)
 
     for hemi, surf_map in surface_maps.items():
         sulc_depth_map = surface.load_surf_data(mesh['sulc_{}'.format(hemi)])
-        sulc_depth_map -= sulc_depth_map.min()
-        sulc_depth_map /= sulc_depth_map.max()
         info['pial_{}'.format(hemi)] = to_plotly(mesh['pial_{}'.format(hemi)])
         info['inflated_{}'.format(hemi)] = to_plotly(
             mesh['infl_{}'.format(hemi)])
-        vertexcolor = cmap(norm(surf_map).data)
-        if threshold is not None:
-            anat_color = mpl.cm.get_cmap('Greys')(sulc_depth_map)
-            vertexcolor[np.abs(surf_map) < at] = anat_color[
-                np.abs(surf_map) < at]
-        vertexcolor = np.asarray(vertexcolor * 255, dtype='uint8')
-        info['vertexcolor_{}'.format(hemi)] = [
-            '#{:02x}{:02x}{:02x}'.format(*row) for row in vertexcolor
-        ]
+
+        info['vertexcolor_{}'.format(hemi)] = _get_vertexcolor(
+            surf_map, cmap, norm, abs_threshold, sulc_depth_map)
     info["cmin"], info["cmax"] = -cmax, cmax
     info['black_bg'] = black_bg
+    info['full_brain_mesh'] = True
     return info, colors
 
 
-def brain_to_html(stat_map=None, surface_maps=None, mesh='fsaverage5',
-                  threshold=None, cmap=cm.cold_hot,
-                  embed_js=True, output_file=None, black_bg=False):
+def _fill_html_template(info, colors, embed_js=True):
+    as_json = json.dumps(info)
+    as_html = HTML_TEMPLATE.replace('INSERT_STAT_MAP_JSON_HERE', as_json)
+    as_html = as_html.replace('INSERT_COLORSCALE_HERE', colors)
+    as_html = add_js_lib(as_html, embed_js=embed_js)
+    return HTMLDocument(as_html)
+
+
+def view_img_on_surf(stat_map, mesh='fsaverage5',
+                     threshold=None, cmap=cm.cold_hot,
+                     black_bg=False, embed_js=True):
     """
     Insert a surface plot of a statistical map into an HTML page.
 
     Parameters
     ----------
-    stat_map : Niimg-like object, 3d, optional
+    stat_map : Niimg-like object, 3d
         See http://nilearn.github.io/manipulating_images/input_output.html
-        If None, surface_maps should be provided.
-
-    surface_maps : dict, optional
-       if specified, keys should be 'left' and 'right' and values should be
-       1-d arrays containing intensities at mesh nodes in the left and right
-       hemispheres. Ignored if stat_map is provided.
 
     mesh : str or dict, optional.
         if 'fsaverage5', use fsaverage5 mesh from nilearn.datasets
@@ -413,14 +452,11 @@ def brain_to_html(stat_map=None, surface_maps=None, mesh='fsaverage5',
 
     cmap : str or matplotlib colormap, optional
 
+    black_bg : bool, optional (default=False)
+
     embed_js : bool, optional (default=True)
         if True, jquery and plotly are embedded in resulting page.
         otherwise, they are loaded via CDNs.
-
-    output_file : str, optional
-        path to file in which resulting html page is written.
-
-    black_bg : bool, optional (default=False)
 
     Returns
     -------
@@ -428,13 +464,57 @@ def brain_to_html(stat_map=None, surface_maps=None, mesh='fsaverage5',
 
     """
     info, colors = full_brain_info(
-        stat_map=stat_map, surface_maps=surface_maps,
-        mesh=mesh, threshold=threshold, cmap=cmap, black_bg=black_bg)
-    as_json = json.dumps(info)
-    as_html = HTML_TEMPLATE.replace('INSERT_STAT_MAP_JSON_HERE', as_json)
-    as_html = as_html.replace('INSERT_COLORSCALE_HERE', colors)
-    as_html = add_js_lib(as_html, embed_js=embed_js)
-    if output_file is not None:
-        with open(output_file, 'w') as f:
-            f.write(as_html)
-    return HTMLDocument(as_html)
+        stat_map=stat_map, mesh=mesh, threshold=threshold,
+        cmap=cmap, black_bg=black_bg)
+    return _fill_html_template(info, colors, embed_js=embed_js)
+
+
+def view_surf(surf_mesh, surf_map=None, bg_map=None, threshold=None,
+              cmap=cm.cold_hot, black_bg=False, embed_js=True):
+    """
+    Insert a surface plot of a surface map into an HTML page.
+
+    Parameters
+    ----------
+    surf_mesh: str or list of two numpy.ndarray
+        Surface mesh geometry, can be a file (valid formats are
+        .gii or Freesurfer specific files such as .orig, .pial,
+        .sphere, .white, .inflated) or
+        a list of two Numpy arrays, the first containing the x-y-z coordinates
+        of the mesh vertices, the second containing the indices
+        (into coords) of the mesh faces.
+
+    surf_map: str or numpy.ndarray, optional.
+        Data to be displayed on the surface mesh. Can be a file (valid formats
+        are .gii, .mgz, .nii, .nii.gz, or Freesurfer specific files such as
+        .thickness, .curv, .sulc, .annot, .label) or
+        a Numpy array
+
+    bg_map: Surface data object (to be defined), optional,
+        Background image to be plotted on the mesh underneath the
+        surf_data in greyscale, most likely a sulcal depth map for
+        realistic shading.
+
+    threshold : int, optional
+        int in [0, 100]: percentage of values to be thresholded.
+
+    cmap : str or matplotlib colormap, optional
+
+    black_bg : bool, optional (default=False)
+
+    embed_js : bool, optional (default=True)
+        if True, jquery and plotly are embedded in resulting page.
+        otherwise, they are loaded via CDNs.
+
+    Returns
+    -------
+    HTMLDocument : html page containing a plot of the stat map.
+
+    """
+    surf_mesh = surface.load_surf_mesh(surf_mesh)
+    if surf_map is None:
+        surf_map = np.ones(len(surf_mesh[0]))
+    info, colors = one_mesh_info(
+        surf_map=surf_map, surf_mesh=surf_mesh, threshold=threshold,
+        cmap=cmap, black_bg=black_bg, bg_map=bg_map)
+    return _fill_html_template(info, colors, embed_js=embed_js)
