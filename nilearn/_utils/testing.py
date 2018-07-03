@@ -5,7 +5,6 @@ import contextlib
 import functools
 import inspect
 import os
-import re
 import sys
 import tempfile
 import warnings
@@ -14,7 +13,6 @@ import gc
 import numpy as np
 import scipy.signal
 from sklearn.utils import check_random_state
-from sklearn.utils.testing import assert_warns
 import scipy.linalg
 import nibabel
 
