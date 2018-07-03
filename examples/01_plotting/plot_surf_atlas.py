@@ -35,7 +35,7 @@ parcellation = destrieux_atlas['map_left']
 # Retrieve fsaverage5 surface dataset for the plotting background. It contains
 # the surface template as pial and inflated version and a sulcal depth maps
 # which is used for shading
-fsaverage = datasets.fetch_surf_fsaverage5()
+fsaverage = datasets.fetch_surf_fsaverage()
 
 # The fsaverage dataset contains file names pointing to the file locations
 print('Fsaverage5 pial surface of left hemisphere is at: %s' %
