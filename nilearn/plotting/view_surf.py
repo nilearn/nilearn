@@ -2,6 +2,8 @@ import os
 import base64
 import json
 import cgi
+import webbrowser
+import tempfile
 
 import numpy as np
 import matplotlib as mpl
@@ -315,6 +317,20 @@ class HTMLDocument(object):
 
     def __str__(self):
         return self.html
+
+    def save_as_html(self, file_name):
+        with open(file_name, 'wb') as f:
+            f.write(self.html.encode('utf-8'))
+
+    def open_in_browser(self, file_name=None):
+        if file_name is None:
+            _, file_name = tempfile.mkstemp('.html', 'nilearn_surface_plot_')
+        self.save_as_html(file_name)
+        file_size = os.path.getsize(file_name) / 1e6
+        print(("Saved HTML in temporary file: {}\n"
+               "file size is {:.1f}M, delete it when you're done!").format(
+                   file_name, file_size))
+        webbrowser.open(file_name)
 
 
 def colorscale(cmap, values, threshold=None):
