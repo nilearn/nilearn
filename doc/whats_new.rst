@@ -1,3 +1,13 @@
+0.4.3
+=====
+
+Enhancements
+------------
+
+    - Add :func:`nilearn.datasets.fetch_surf_fsaverage` to download the Freesurfer
+      fsaverage mesh.
+
+
 0.4.2
 =====
 Few important bugs fix release for OHBM conference.
