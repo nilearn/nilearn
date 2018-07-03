@@ -424,42 +424,19 @@ def fetch_oasis_vbm(n_subjects=None, dartel_version=True, data_dir=None,
         description=fdescr)
 
 
-def fetch_surf_fsaverage(data_dir=None):
-    data_dir = _get_dataset_dir('fsaverage')
-    url = 'https://www.nitrc.org/frs/download.php/10846/fsaverage.tar.gz'
-    if not os.path.isdir(os.path.join(data_dir, 'fsaverage')):
-        _fetch_files(data_dir, [('fsaverage.tar.gz', url, {})])
-        _uncompress_file(os.path.join(data_dir, 'fsaverage.tar.gz'))
-    result = {
-        name: os.path.join(data_dir, 'fsaverage', name)
-        for name in ['pial_right', 'sulc_right', 'sulc_left', 'pial_left']}
-    result['infl_left'] = os.path.join(data_dir, 'fsaverage', 'inflated_left')
-    result['infl_right'] = os.path.join(
-        data_dir, 'fsaverage', 'inflated_right')
-
-    result['description'] = str(_get_dataset_descr('fsaverage'))
-    return Bunch(**result)
-
-
-def fetch_surf_fsaverage5(data_dir=None, url=None, resume=True, verbose=1):
-
-    """ Download Freesurfer fsaverage5 surface
+def fetch_surf_fsaverage(mesh='fsaverage5', data_dir=None):
+    """ Download a Freesurfer fsaverage surface
 
     Parameters
     ----------
-    data_dir: str, optional
+    mesh : str, optional (default='fsaverage5')
+        Which mesh to fetch.
+        'fsaverage5': the low-resolution fsaverage5 mesh (10242 nodes)
+        'fsaverage': the high-resolution fsaverage mesh (163842 nodes)
+
+    data_dir: str, optional (default=None)
         Path of the data directory. Used to force data storage in a specified
-        location. Default: None
-
-    url: str, optional
-        Override download URL. Used for test only (or if you setup a mirror of
-        the data). Default: None
-
-    resume: bool, optional (default True)
-        If True, try resuming download if possible.
-
-    verbose: int, optional (default 1)
-        Defines the level of verbosity of the output.
+        location.
 
     Returns
     -------
@@ -477,7 +454,45 @@ def fetch_surf_fsaverage5(data_dir=None, url=None, resume=True, verbose=1):
     ----------
     Fischl et al, (1999). High-resolution intersubject averaging and a
     coordinate system for the cortical surface. Hum Brain Mapp 8, 272-284.
+
     """
+    meshes = {'fsaverage5': _fetch_surf_fsaverage5,
+              'fsaverage': _fetch_surf_fsaverage}
+    if mesh not in meshes:
+        raise ValueError(
+            "'mesh' should be one of {}; {!r} was provided".format(
+                list(meshes.keys()), mesh))
+    return meshes[mesh](data_dir=data_dir)
+
+
+def _fetch_surf_fsaverage(data_dir=None):
+    data_dir = _get_dataset_dir('fsaverage')
+    url = 'https://www.nitrc.org/frs/download.php/10846/fsaverage.tar.gz'
+    if not os.path.isdir(os.path.join(data_dir, 'fsaverage')):
+        _fetch_files(data_dir, [('fsaverage.tar.gz', url, {})])
+        _uncompress_file(os.path.join(data_dir, 'fsaverage.tar.gz'))
+    result = {
+        name: os.path.join(data_dir, 'fsaverage', '{}.gii'.format(name))
+        for name in ['pial_right', 'sulc_right', 'sulc_left', 'pial_left']}
+    result['infl_left'] = os.path.join(
+        data_dir, 'fsaverage', ' inflated_left.gii')
+    result['infl_right'] = os.path.join(
+        data_dir, 'fsaverage', 'inflated_right.gii')
+
+    result['description'] = str(_get_dataset_descr('fsaverage'))
+    return Bunch(**result)
+
+
+def fetch_surf_fsaverage5(data_dir=None, url=None, resume=True, verbose=1):
+    """ Deprecated. Use fetch_surf_fsaverage instead. """
+    warnings.warn("fetch_surf_fsaverage5 has been deprecated and will "
+                  "be removed in a future release. "
+                  "Use fetch_surf_fsaverage(mesh='fsaverage5')",
+                  DeprecationWarning)
+    return fetch_surf_fsaverage(mesh='fsaverage5', data_dir=data_dir)
+
+
+def _fetch_surf_fsaverage5(data_dir=None, url=None, resume=True, verbose=1):
     if url is None:
         url = 'https://www.nitrc.org/frs/download.php/'
 
