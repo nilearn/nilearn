@@ -64,9 +64,13 @@ HTML_TEMPLATE = """
             let camera = getCamera();
             let axisConfig = getAxisConfig();
 
+            let height = Math.min($(window).outerHeight() * .9,
+                                  $(window).width() * 2 / 3);
+            let width = height * 3 / 2;
+
             let layout = {
-                width: $(window).width() * .8,
-                height: $(window).outerHeight() * .8,
+                height: height, width: width,
+                margin: {l:0, r:0, b:0, t:0, pad:0},
                 hovermode: false,
                 paper_bgcolor: surfaceMapInfo['black_bg'] ? '#000': '#fff',
                 axis_bgcolor: '#333',
@@ -150,22 +154,22 @@ HTML_TEMPLATE = """
                 }
             }
             let cameras = {
-                "left": {eye: {x: -2, y: 0, z: 0},
+                "left": {eye: {x: -1.7, y: 0, z: 0},
                          up: {x: 0, y: 0, z: 1},
                          center: {x: 0, y: 0, z: 0}},
-                "right": {eye: {x: 2, y: 0, z: 0},
+                "right": {eye: {x: 1.7, y: 0, z: 0},
                           up: {x: 0, y: 0, z: 1},
                           center: {x: 0, y: 0, z: 0}},
-                "top": {eye: {x: 0, y: 0, z: 2},
+                "top": {eye: {x: 0, y: 0, z: 1.7},
                         up: {x: 0, y: 1, z: 0},
                         center: {x: 0, y: 0, z: 0}},
-                "bottom": {eye: {x: 0, y: 0, z: -2},
+                "bottom": {eye: {x: 0, y: 0, z: -1.7},
                            up: {x: 0, y: 1, z: 0},
                            center: {x: 0, y: 0, z: 0}},
-                "front": {eye: {x: 0, y: 2, z: 0},
+                "front": {eye: {x: 0, y: 1.7, z: 0},
                           up: {x: 0, y: 0, z: 1},
                           center: {x: 0, y: 0, z: 0}},
-                "back": {eye: {x: 0, y: -2, z: 0},
+                "back": {eye: {x: 0, y: -1.7, z: 0},
                          up: {x: 0, y: 0, z: 1},
                          center: {x: 0, y: 0, z: 0}},
             };
@@ -288,7 +292,7 @@ class HTMLDocument(object):
 
     """
 
-    def __init__(self, html, width=600, height=600):
+    def __init__(self, html, width=600, height=400):
         self.html = html
         self.width = width
         self.height = height
