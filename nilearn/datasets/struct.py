@@ -433,6 +433,8 @@ def fetch_surf_fsaverage(mesh='fsaverage5', data_dir=None):
         Which mesh to fetch.
         'fsaverage5': the low-resolution fsaverage5 mesh (10242 nodes)
         'fsaverage': the high-resolution fsaverage mesh (163842 nodes)
+        (high-resolution fsaverage will result in
+         more computation time and memory usage)
 
     data_dir: str, optional (default=None)
         Path of the data directory. Used to force data storage in a specified
