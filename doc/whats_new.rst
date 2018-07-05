@@ -5,8 +5,8 @@ Changes
 -------
 
     - :func:`nilearn.datasets.fetch_surf_fsaverage5` is deprecated and will be
-      removed in a future release. Use `nilearn.fetch_surf_fsaverage`, with the
-      parameter mesh="fsaverage5" (the default) instead.
+      removed in a future release. Use `nilearn.datasets.fetch_surf_fsaverage`,
+      with the parameter mesh="fsaverage5" (the default) instead.
 
 
 Enhancements
