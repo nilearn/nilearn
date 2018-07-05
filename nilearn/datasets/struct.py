@@ -468,18 +468,18 @@ def fetch_surf_fsaverage(mesh='fsaverage5', data_dir=None):
 
 
 def _fetch_surf_fsaverage(data_dir=None):
-    data_dir = _get_dataset_dir('fsaverage')
+    dataset_dir = _get_dataset_dir('fsaverage', data_dir=data_dir)
     url = 'https://www.nitrc.org/frs/download.php/10846/fsaverage.tar.gz'
-    if not os.path.isdir(os.path.join(data_dir, 'fsaverage')):
-        _fetch_files(data_dir, [('fsaverage.tar.gz', url, {})])
-        _uncompress_file(os.path.join(data_dir, 'fsaverage.tar.gz'))
+    if not os.path.isdir(os.path.join(dataset_dir, 'fsaverage')):
+        _fetch_files(dataset_dir, [('fsaverage.tar.gz', url, {})])
+        _uncompress_file(os.path.join(dataset_dir, 'fsaverage.tar.gz'))
     result = {
-        name: os.path.join(data_dir, 'fsaverage', '{}.gii'.format(name))
+        name: os.path.join(dataset_dir, 'fsaverage', '{}.gii'.format(name))
         for name in ['pial_right', 'sulc_right', 'sulc_left', 'pial_left']}
     result['infl_left'] = os.path.join(
-        data_dir, 'fsaverage', ' inflated_left.gii')
+        dataset_dir, 'fsaverage', ' inflated_left.gii')
     result['infl_right'] = os.path.join(
-        data_dir, 'fsaverage', 'inflated_right.gii')
+        dataset_dir, 'fsaverage', 'inflated_right.gii')
 
     result['description'] = str(_get_dataset_descr('fsaverage'))
     return Bunch(**result)
