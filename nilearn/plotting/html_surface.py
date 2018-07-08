@@ -414,13 +414,14 @@ def one_mesh_info(surf_map, surf_mesh, threshold=None, cmap=cm.cold_hot,
     info['inflated_left'] = to_plotly(surf_mesh)
     info['vertexcolor_left'] = _get_vertexcolor(
         surf_map, cmap, norm, abs_threshold, bg_map)
+    cmax = float(cmax)
     info["cmin"], info["cmax"] = -cmax, cmax
     info['black_bg'] = black_bg
     info['full_brain_mesh'] = False
     return info, colors
 
 
-def full_brain_info(stat_map=None, surface_maps=None, mesh='fsaverage5',
+def full_brain_info(stat_map, mesh='fsaverage5',
                     threshold=None, cmap=cm.cold_hot, black_bg=False):
     info = {}
     if mesh != 'fsaverage5':
@@ -442,6 +443,7 @@ def full_brain_info(stat_map=None, surface_maps=None, mesh='fsaverage5',
 
         info['vertexcolor_{}'.format(hemi)] = _get_vertexcolor(
             surf_map, cmap, norm, abs_threshold, sulc_depth_map)
+    cmax = float(cmax)
     info["cmin"], info["cmax"] = -cmax, cmax
     info['black_bg'] = black_bg
     info['full_brain_mesh'] = True
