@@ -14,7 +14,8 @@ from . import cm
 
 HTML_TEMPLATE = """
 
-<html>
+<!DOCTYPE html>
+<html lang="en">
 
 <head>
     <title>surface plot</title>
@@ -361,6 +362,10 @@ def _encode(a):
     return base64.b64encode(a.tobytes()).decode('utf-8')
 
 
+def _decode(b, dtype):
+    return np.frombuffer(base64.b64decode(b.encode('utf-8')), dtype)
+
+
 def to_plotly(mesh):
     mesh = surface.load_surf_mesh(mesh)
     x, y, z = map(_encode, np.asarray(mesh[0].T, dtype='<f4'))
@@ -377,6 +382,7 @@ def to_plotly(mesh):
 
 
 def _to_color_strings(colors):
+    colors = np.asarray(colors)
     colors = np.asarray(colors * 255, dtype='uint8')
     colors = ['#{:02x}{:02x}{:02x}'.format(*row) for row in colors]
     return colors

@@ -43,7 +43,7 @@ from .img_plotting import plot_img, plot_anat, plot_epi, \
     plot_prob_atlas, show
 from .find_cuts import find_xyz_cut_coords, find_cut_slices
 from .matrix_plotting import plot_matrix
-from .view_surf import view_surf, view_img_on_surf
+from .html_surface import view_surf, view_img_on_surf
 __all__ = ['cm', 'plot_img', 'plot_anat', 'plot_epi',
            'plot_roi', 'plot_stat_map', 'plot_glass_brain',
            'plot_connectome', 'plot_prob_atlas',
