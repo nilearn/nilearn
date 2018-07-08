@@ -1,12 +1,24 @@
 import re
 import json
 import base64
+import tempfile
+import os
 
 import numpy as np
+try:
+    from lxml import etree
+    LXML_INSTALLED = True
+except ImportError:
+    LXML_INSTALLED = False
 
 from nilearn import datasets, surface
 from nilearn.plotting import html_surface
 from nilearn.datasets import fetch_surf_fsaverage5 as fetch_surf_fsaverage
+
+
+# Note: html output by view_surf and view_img_on_surf
+# should validate as html5 using https://validator.w3.org/nu/ with no
+# warnings
 
 
 def _get_img():
@@ -173,7 +185,38 @@ def test_full_brain_info():
 
 
 def _check_html(html):
-    pass
+    fd, tmpfile = tempfile.mkstemp()
+    try:
+        os.close(fd)
+        html.save_as_html(tmpfile)
+        with open(tmpfile) as f:
+            saved = f.read()
+        assert saved == html.standalone()
+    finally:
+        os.remove(tmpfile)
+    assert html.standalone() == html.html
+    assert html._repr_html_() == html.iframe()
+    assert str(html) == html.standalone()
+    assert '<meta charset="UTF-8" />' in str(html)
+    if not LXML_INSTALLED:
+        return
+    root = etree.HTML(html.html)
+    head = root.find('head')
+    assert len(head.findall('script')) == 4
+    body = root.find('body')
+    div = body.find('div')
+    assert ('id', 'surface-plot') in div.items()
+    selects = body.findall('select')
+    assert len(selects) == 3
+    hemi = selects[0]
+    assert ('id', 'select-hemisphere') in hemi.items()
+    assert len(hemi.findall('option')) == 2
+    kind = selects[1]
+    assert ('id', 'select-kind') in kind.items()
+    assert len(kind.findall('option')) == 2
+    view = selects[2]
+    assert ('id', 'select-view') in view.items()
+    assert len(view.findall('option')) == 7
 
 
 def test_fill_html_template():
@@ -191,3 +234,18 @@ def test_fill_html_template():
     html = html_surface._fill_html_template(info, colors)
     _check_html(html)
     assert "* plotly.js (gl3d - minified) v1.38.3" in html.html
+
+
+def test_view_surf():
+    fsaverage = fetch_surf_fsaverage()
+    mesh = surface.load_surf_mesh(fsaverage['pial_right'])
+    surf_map = mesh[0][:, 0]
+    html = html_surface.view_surf(fsaverage['pial_right'], surf_map,
+                                  fsaverage['sulc_right'], 90)
+    _check_html(html)
+
+
+def test_view_img_on_surf():
+    img = _get_img()
+    html = html_surface.view_img_on_surf(img, threshold=95)
+    _check_html(html)
