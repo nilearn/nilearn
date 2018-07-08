@@ -194,6 +194,7 @@ def _check_html(html):
         assert saved == html.standalone()
     finally:
         os.remove(tmpfile)
+    assert "INSERT" not in html.html
     assert html.standalone() == html.html
     assert html._repr_html_() == html.iframe()
     assert str(html) == html.standalone()
