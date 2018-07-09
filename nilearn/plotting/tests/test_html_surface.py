@@ -66,38 +66,44 @@ def test_colorscale():
     cmap = 'jet'
     values = np.linspace(-13, -1.5, 20)
     threshold = None
-    (colors_json, abs_max, new_cmap, norm, abs_threshold
+    (colors_json, vmin, vmax, new_cmap, norm, abs_threshold
      ) = html_surface.colorscale(cmap, values, threshold)
     _check_colors(colors_json)
-    assert abs_max == 13
+    assert (vmin, vmax) == (-13, 13)
     assert new_cmap.N == 256
     assert (norm.vmax, norm.vmin) == (13, -13)
     assert abs_threshold is None
     threshold = 0
-    (colors_json, abs_max, new_cmap, norm, abs_threshold
+    (colors_json, vmin, vmax, new_cmap, norm, abs_threshold
      ) = html_surface.colorscale(cmap, values, threshold)
     _check_colors(colors_json)
-    assert abs_max == 13
+    assert (vmin, vmax) == (-13, 13)
     assert new_cmap.N == 256
     assert (norm.vmax, norm.vmin) == (13, -13)
     assert abs_threshold == 1.5
     threshold = 100
-    (colors_json, abs_max, new_cmap, norm, abs_threshold
+    (colors_json, vmin, vmax, new_cmap, norm, abs_threshold
      ) = html_surface.colorscale(cmap, values, threshold)
     _check_colors(colors_json)
-    assert abs_max == 13
+    assert (vmin, vmax) == (-13, 13)
     assert new_cmap.N == 256
     assert (norm.vmax, norm.vmin) == (13, -13)
     assert abs_threshold == 13
     threshold = 50
-    (colors_json, abs_max, new_cmap, norm, abs_threshold
+    (colors_json, vmin, vmax, new_cmap, norm, abs_threshold
      ) = html_surface.colorscale(cmap, values, threshold)
     val, cstring = _check_colors(colors_json)
     assert cstring[50] == 'rgb(127, 127, 127)'
-    assert abs_max == 13
+    assert (vmin, vmax) == (-13, 13)
     assert new_cmap.N == 256
     assert (norm.vmax, norm.vmin) == (13, -13)
     assert np.allclose(abs_threshold, 7.25)
+    values = np.arange(15)
+    (colors_json, vmin, vmax, new_cmap, norm, abs_threshold
+     ) = html_surface.colorscale(cmap, values, symmetric_cmap=False)
+    assert (vmin, vmax) == (0, 14)
+    assert new_cmap.N == 256
+    assert (norm.vmax, norm.vmin) == (14, 0)
 
 
 def _test_encode():
@@ -133,7 +139,7 @@ def test_get_vertexcolor():
     fsaverage = fetch_surf_fsaverage()
     mesh = surface.load_surf_mesh(fsaverage['pial_left'])
     surf_map = np.arange(len(mesh[0]))
-    colors, cmax, cmap, norm, abs_threshold = html_surface.colorscale(
+    colors, cmin, cmax, cmap, norm, abs_threshold = html_surface.colorscale(
         'jet', surf_map, 10)
     vertexcolors = html_surface._get_vertexcolor(
         surf_map, cmap, norm, abs_threshold, fsaverage['sulc_left'])
@@ -255,6 +261,10 @@ def test_view_surf():
                                   fsaverage['sulc_right'], 90)
     _check_html(html)
     html = html_surface.view_surf(fsaverage['pial_right'])
+    _check_html(html)
+    destrieux = datasets.fetch_atlas_surf_destrieux()['map_left']
+    html = html_surface.view_surf_roi(fsaverage['pial_left'], destrieux)
+    _check_html(html)
 
 
 def test_view_img_on_surf():
