@@ -54,3 +54,22 @@ plotting.plot_stat_map(localizer_tmap, display_mode='x', threshold=1.,
                        cut_coords=range(0, 51, 10), title='Slices')
 
 plotting.show()
+
+
+##############################################################################
+# More interactive visualization
+# ------------------------------
+# An alternative to plot_surf_stat_map is to use view_surf that gives a more
+# interactive visualization in a web browser
+
+visu = plotting.view_surf(fsaverage.infl_right, texture, threshold=90,
+                          bg_map=fsaverage.sulc_right)
+visu.open_in_browser()
+
+# We don't need to do the projection ourselves, with view_img_on_surf we can
+# use the 3d image directly:
+
+visu = plotting.view_img_on_surf(localizer_tmap, threshold=90)
+visu.open_in_browser()
+
+# visu will also be displayed correctly by a jupyter notebook

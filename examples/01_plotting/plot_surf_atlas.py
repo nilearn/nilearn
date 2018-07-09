@@ -78,3 +78,15 @@ plotting.plot_surf_roi(fsaverage['infl_left'], roi_map=parcellation,
                        bg_map=fsaverage['sulc_left'], bg_on_data=True,
                        darkness=.5)
 plotting.show()
+
+##############################################################################
+# More interactive visualization
+# ------------------------------
+# An alternative to plot_surf_stat_map is to use view_surf that gives a more
+# interactive visualization in a web browser
+
+visu = plotting.view_surf(
+    fsaverage.infl_left, parcellation, symmetric_cmap=False, cmap='gist_ncar')
+visu.open_in_browser()
+
+# visu will also be displayed correctly by a jupyter notebook
