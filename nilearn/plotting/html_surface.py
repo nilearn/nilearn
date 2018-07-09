@@ -89,6 +89,11 @@ HTML_TEMPLATE = """
 
         }
 
+        function updateLayout() {
+            let layout = getLayout();
+            Plotly.relayout("surface-plot", layout);
+        }
+
         function getConfig() {
             let config = {
                 modeBarButtonsToRemove: ["hoverClosest3d"],
@@ -229,11 +234,11 @@ HTML_TEMPLATE = """
                     $("#select-kind").hide();
                 }
                 addPlot();
-                $("#select-view").change(addPlot);
+                $("#select-view").change(updateLayout);
                 $("#surface-plot").mouseup(function() {
                     $("#select-view").val("custom");
                 });
-                $(window).resize(addPlot);
+                $(window).resize(updateLayout);
 
             });
     </script>
