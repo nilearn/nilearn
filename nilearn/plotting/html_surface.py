@@ -534,7 +534,7 @@ def view_surf(surf_mesh, surf_map=None, bg_map=None, threshold=None,
         .thickness, .curv, .sulc, .annot, .label) or
         a Numpy array
 
-    bg_map: Surface data object (to be defined), optional,
+    bg_map: Surface data, optional,
         Background image to be plotted on the mesh underneath the
         surf_data in greyscale, most likely a sulcal depth map for
         realistic shading.
