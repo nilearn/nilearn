@@ -369,7 +369,12 @@ def colorscale(cmap, values, threshold=None, symmetric_cmap=True):
 
 
 def _encode(a):
-    return base64.b64encode(a.tobytes()).decode('utf-8')
+    try:
+        data = a.tobytes()
+    except AttributeError:
+        # np < 1.9
+        data = a.tostring()
+    return base64.b64encode(data).decode('utf-8')
 
 
 def _decode(b, dtype):
