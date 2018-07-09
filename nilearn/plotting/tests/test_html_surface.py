@@ -254,6 +254,7 @@ def test_view_surf():
     html = html_surface.view_surf(fsaverage['pial_right'], surf_map,
                                   fsaverage['sulc_right'], 90)
     _check_html(html)
+    html = html_surface.view_surf(fsaverage['pial_right'])
 
 
 def test_view_img_on_surf():
