@@ -11,6 +11,8 @@ try:
 except ImportError:
     LXML_INSTALLED = False
 
+from numpy.testing import assert_raises
+
 from nilearn import datasets, surface
 from nilearn.plotting import html_surface
 from nilearn.datasets import fetch_surf_fsaverage5 as fetch_surf_fsaverage
@@ -139,6 +141,14 @@ def test_get_vertexcolor():
     vertexcolors = html_surface._get_vertexcolor(
         surf_map, cmap, norm, abs_threshold)
     assert len(vertexcolors) == len(mesh[0])
+
+
+def test_check_mesh():
+    mesh = html_surface._check_mesh('fsaverage5')
+    assert mesh is html_surface._check_mesh(mesh)
+    assert_raises(Exception, html_surface._check_mesh, 'fsaverage3')
+    mesh.pop('pial_left')
+    assert_raises(Exception, html_surface._check_mesh, mesh)
 
 
 def test_one_mesh_info():

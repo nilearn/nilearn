@@ -4,6 +4,7 @@ import json
 import cgi
 import webbrowser
 import tempfile
+import collections
 
 import numpy as np
 import matplotlib as mpl
@@ -426,13 +427,23 @@ def one_mesh_info(surf_map, surf_mesh, threshold=None, cmap=cm.cold_hot,
     return info, colors
 
 
-def full_brain_info(stat_map, mesh='fsaverage5',
-                    threshold=None, cmap=cm.cold_hot, black_bg=False):
-    info = {}
+def _check_mesh(mesh):
+    if not isinstance(mesh, str):
+        assert isinstance(mesh, collections.Mapping)
+        assert {'pial_left', 'pial_right', 'sulc_left', 'sulc_right',
+                'infl_left', 'infl_right'}.issubset(mesh.keys())
+        return mesh
     if mesh != 'fsaverage5':
         raise ValueError(
             'mesh should be fsaverage5 until fsaverage fetcher pr is merged')
     mesh = datasets.fetch_surf_fsaverage5()
+    return mesh
+
+
+def full_brain_info(stat_map, mesh='fsaverage5',
+                    threshold=None, cmap=cm.cold_hot, black_bg=False):
+    info = {}
+    mesh = _check_mesh(mesh)
     surface_maps = {
         h: surface.vol_to_surf(stat_map, mesh['pial_{}'.format(h)])
         for h in ['left', 'right']
