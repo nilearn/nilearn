@@ -89,6 +89,7 @@ uses.
    fetch_nyu_rest
    fetch_surf_nki_enhanced
    fetch_surf_fsaverage
+   fetch_surf_fsaverage5
    fetch_atlas_surf_destrieux
    fetch_atlas_talairach
    fetch_oasis_vbm
