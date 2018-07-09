@@ -520,22 +520,9 @@ def view_img_on_surf(stat_map, mesh='fsaverage5',
     return _fill_html_template(info, colors, embed_js=embed_js)
 
 
-def _view_surf(surf_mesh, surf_map=None, bg_map=None, threshold=None,
-               cmap=cm.cold_hot, black_bg=False, embed_js=True,
-               symmetric_cmap=True):
-
-    surf_mesh = surface.load_surf_mesh(surf_mesh)
-    if surf_map is None:
-        surf_map = np.ones(len(surf_mesh[0]))
-    info, colors = one_mesh_info(
-        surf_map=surf_map, surf_mesh=surf_mesh, threshold=threshold,
-        cmap=cmap, black_bg=black_bg, bg_map=bg_map,
-        symmetric_cmap=symmetric_cmap)
-    return _fill_html_template(info, colors, embed_js=embed_js)
-
-
 def view_surf(surf_mesh, surf_map=None, bg_map=None, threshold=None,
-              cmap=cm.cold_hot, black_bg=False, embed_js=True):
+              cmap=cm.cold_hot, black_bg=False, symmetric_cmap=True,
+              embed_js=True):
     """
     Insert a surface plot of a surface map into an HTML page.
 
@@ -564,8 +551,14 @@ def view_surf(surf_mesh, surf_map=None, bg_map=None, threshold=None,
         int in [0, 100]: percentage of values to be thresholded.
 
     cmap : str or matplotlib colormap, optional
+        You might want to change it to 'gnist_ncar' if plotting a
+        surface atlas.
 
     black_bg : bool, optional (default=False)
+
+    symmetric_cmap : bool, optional (default=True)
+        Make colormap symmetric (ranging from -vmax to vmax).
+        Set it to False if you are plotting a surface atlas.
 
     embed_js : bool, optional (default=True)
         if True, jquery and plotly are embedded in resulting page.
@@ -576,45 +569,11 @@ def view_surf(surf_mesh, surf_map=None, bg_map=None, threshold=None,
     HTMLDocument : html page containing a plot of the stat map.
 
     """
-    return _view_surf(
-        surf_mesh, surf_map=surf_map, bg_map=bg_map, threshold=threshold,
-        cmap=cmap, black_bg=black_bg, embed_js=embed_js, symmetric_cmap=True)
-
-
-def view_surf_roi(surf_mesh, surf_map,
-                  cmap='gist_ncar', black_bg=False, embed_js=True):
-    """
-    Insert a surface plot of a surface ROI map into an HTML page.
-
-    Parameters
-    ----------
-    surf_mesh: str or list of two numpy.ndarray
-        Surface mesh geometry, can be a file (valid formats are
-        .gii or Freesurfer specific files such as .orig, .pial,
-        .sphere, .white, .inflated) or
-        a list of two Numpy arrays, the first containing the x-y-z coordinates
-        of the mesh vertices, the second containing the indices
-        (into coords) of the mesh faces.
-
-    surf_map: str or numpy.ndarray
-        Data to be displayed on the surface mesh. Can be a file (valid formats
-        are .gii, .mgz, .nii, .nii.gz, or Freesurfer specific files such as
-        .thickness, .curv, .sulc, .annot, .label) or
-        a Numpy array
-
-    cmap : str or matplotlib colormap, optional
-
-    black_bg : bool, optional (default=False)
-
-    embed_js : bool, optional (default=True)
-        if True, jquery and plotly are embedded in resulting page.
-        otherwise, they are loaded via CDNs.
-
-    Returns
-    -------
-    HTMLDocument : html page containing a plot of the roi map.
-
-    """
-    return _view_surf(
-        surf_mesh, surf_map=surf_map, bg_map=None, threshold=None,
-        cmap=cmap, black_bg=black_bg, embed_js=embed_js, symmetric_cmap=False)
+    surf_mesh = surface.load_surf_mesh(surf_mesh)
+    if surf_map is None:
+        surf_map = np.ones(len(surf_mesh[0]))
+    info, colors = one_mesh_info(
+        surf_map=surf_map, surf_mesh=surf_mesh, threshold=threshold,
+        cmap=cmap, black_bg=black_bg, bg_map=bg_map,
+        symmetric_cmap=symmetric_cmap)
+    return _fill_html_template(info, colors, embed_js=embed_js)

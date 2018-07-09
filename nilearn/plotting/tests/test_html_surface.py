@@ -118,7 +118,6 @@ def _test_encode():
 
 def test_to_plotly():
     fsaverage = fetch_surf_fsaverage()
-    print(fsaverage)
     coord, triangles = surface.load_surf_mesh(fsaverage['pial_left'])
     plotly = html_surface.to_plotly(fsaverage['pial_left'])
     for i, key in enumerate(['_x', '_y', '_z']):
@@ -263,7 +262,8 @@ def test_view_surf():
     html = html_surface.view_surf(fsaverage['pial_right'])
     _check_html(html)
     destrieux = datasets.fetch_atlas_surf_destrieux()['map_left']
-    html = html_surface.view_surf_roi(fsaverage['pial_left'], destrieux)
+    html = html_surface.view_surf(
+        fsaverage['pial_left'], destrieux, symmetric_cmap=False)
     _check_html(html)
 
 
