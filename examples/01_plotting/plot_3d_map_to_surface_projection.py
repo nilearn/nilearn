@@ -23,7 +23,7 @@ localizer_tmap = localizer_dataset.tmaps[0]
 # Get a cortical mesh
 # -------------------
 
-fsaverage = datasets.fetch_surf_fsaverage5()
+fsaverage = datasets.fetch_surf_fsaverage()
 
 ##############################################################################
 # Sample the 3D data around each node of the mesh
@@ -52,5 +52,23 @@ plotting.plot_glass_brain(localizer_tmap, display_mode='r', plot_abs=False,
 
 plotting.plot_stat_map(localizer_tmap, display_mode='x', threshold=1.,
                        cut_coords=range(0, 51, 10), title='Slices')
+
+
+##############################################################################
+# Plot with higher-resolution mesh
+# --------------------------------
+#
+# `fetch_surf_fsaverage` takes a "mesh" argument which specifies
+# wether to fetch the low-resolution fsaverage5 mesh, or the high-resolution
+# fsaverage mesh. using mesh="fsaverage" will result in more memory usage and
+# computation time, but finer visualizations.
+
+big_fsaverage = datasets.fetch_surf_fsaverage('fsaverage')
+texture = surface.vol_to_surf(localizer_tmap, big_fsaverage.pial_right)
+
+plotting.plot_surf_stat_map(big_fsaverage.infl_right, texture, hemi='right',
+                            title='Surface right hemisphere: fine mesh',
+                            threshold=1., bg_map=big_fsaverage.sulc_right)
+
 
 plotting.show()

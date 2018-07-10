@@ -1,3 +1,21 @@
+0.4.3
+=====
+
+Changes
+-------
+
+    - `nilearn.datasets.fetch_surf_fsaverage5` is deprecated and will be
+      removed in a future release. Use :func:`nilearn.datasets.fetch_surf_fsaverage`,
+      with the parameter mesh="fsaverage5" (the default) instead.
+
+
+Enhancements
+------------
+
+    - Add :func:`nilearn.datasets.fetch_surf_fsaverage` to download either
+      fsaverage or fsaverage 5 (Freesurfer cortical meshes).
+
+
 0.4.2
 =====
 Few important bugs fix release for OHBM conference.
@@ -358,7 +376,7 @@ Enhancements
     - A function :func:`nilearn.plotting.plot_surf_roi` can be used for
       plotting statistical maps rois onto brain surface.
 
-    - A function :func:`nilearn.datasets.fetch_surf_fsaverage5` can be used
+    - A function `nilearn.datasets.fetch_surf_fsaverage5` can be used
       for surface data object to be as background map for the above plotting
       functions.
 
