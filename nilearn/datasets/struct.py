@@ -6,16 +6,12 @@ import os
 import numpy as np
 from scipy import ndimage
 from sklearn.datasets.base import Bunch
-try:
-    from numpy import VisibleDeprecationWarning
-except ImportError:
-    class VisibleDeprecationWarning(UserWarning):
-        pass
 
 from .utils import (_get_dataset_dir, _fetch_files,
                     _get_dataset_descr, _uncompress_file)
 
 from .._utils import check_niimg, niimg
+from .._utils.exceptions import VisibleDeprecationWarning
 from ..image import new_img_like
 
 _package_directory = os.path.dirname(os.path.abspath(__file__))
