@@ -1,3 +1,10 @@
+try:
+    from numpy import VisibleDeprecationWarning
+except ImportError:
+    class VisibleDeprecationWarning(DeprecationWarning):
+        pass
+
+
 AuthorizedException = (
         BufferError,
         ArithmeticError,

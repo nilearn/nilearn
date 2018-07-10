@@ -34,6 +34,7 @@ from .._utils.param_validation import check_threshold
 from .._utils.fixes.matplotlib_backports import (cbar_outline_get_xy,
                                                  cbar_outline_set_xy)
 from .._utils.ndimage import get_border_data
+from .._utils.exceptions import VisibleDeprecationWarning
 from ..datasets import load_mni152_template
 from ..image import iter_img
 from .displays import get_slicer, get_projector
@@ -807,7 +808,7 @@ def plot_prob_atlas(maps_img, bg_img=MNI152TEMPLATE, view_type='auto',
         bg_img = anat_img
         warn_str = ("anat_img is deprecated and will be removed in 0.5. "
                     "Use `bg_img` instead.")
-        warnings.warn(warn_str, np.VisibleDeprecationWarning, stacklevel=2)
+        warnings.warn(warn_str, VisibleDeprecationWarning, stacklevel=2)
 
     display = plot_anat(bg_img, cut_coords=cut_coords,
                         display_mode=display_mode,
