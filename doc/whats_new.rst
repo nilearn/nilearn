@@ -1,3 +1,13 @@
+0.4.3
+=====
+
+Enhancements
+------------
+    - :func:`nilearn.plotting.view_surf` and
+      :func:`nilearn.plotting.view_img_on_surf` for interactive visualization of
+      maps on the cortical surface in a web browser.
+
+
 0.4.2
 =====
 Few important bugs fix release for OHBM conference.
