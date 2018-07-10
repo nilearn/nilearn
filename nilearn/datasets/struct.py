@@ -491,7 +491,7 @@ def _fetch_surf_fsaverage(data_dir=None):
 
 
 def fetch_surf_fsaverage5(data_dir=None, url=None, resume=True, verbose=1):
-    """ Deprecated.
+    """ Deprecated since version 0.4.3
 
     Use fetch_surf_fsaverage instead.
 
