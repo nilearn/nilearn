@@ -85,8 +85,10 @@ plotting.show()
 # An alternative to plot_surf_stat_map is to use view_surf that gives a more
 # interactive visualization in a web browser
 
-visu = plotting.view_surf(
+view = plotting.view_surf(
     fsaverage.infl_left, parcellation, symmetric_cmap=False, cmap='gist_ncar')
-visu.open_in_browser()
+view.open_in_browser()
 
-# visu will also be displayed correctly by a jupyter notebook
+# visu will also be displayed correctly by a jupyter notebook:
+
+view
