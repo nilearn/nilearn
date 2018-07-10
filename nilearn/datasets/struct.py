@@ -482,7 +482,7 @@ def _fetch_surf_fsaverage(data_dir=None):
         name: os.path.join(dataset_dir, 'fsaverage', '{}.gii'.format(name))
         for name in ['pial_right', 'sulc_right', 'sulc_left', 'pial_left']}
     result['infl_left'] = os.path.join(
-        dataset_dir, 'fsaverage', ' inflated_left.gii')
+        dataset_dir, 'fsaverage', 'inflated_left.gii')
     result['infl_right'] = os.path.join(
         dataset_dir, 'fsaverage', 'inflated_right.gii')
 
