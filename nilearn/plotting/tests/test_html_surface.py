@@ -73,6 +73,7 @@ def test_colorscale():
     assert new_cmap.N == 256
     assert (norm.vmax, norm.vmin) == (13, -13)
     assert abs_threshold is None
+
     threshold = 0
     (colors_json, vmin, vmax, new_cmap, norm, abs_threshold
      ) = html_surface.colorscale(cmap, values, threshold)
@@ -81,6 +82,7 @@ def test_colorscale():
     assert new_cmap.N == 256
     assert (norm.vmax, norm.vmin) == (13, -13)
     assert abs_threshold == 1.5
+
     threshold = 100
     (colors_json, vmin, vmax, new_cmap, norm, abs_threshold
      ) = html_surface.colorscale(cmap, values, threshold)
@@ -89,6 +91,7 @@ def test_colorscale():
     assert new_cmap.N == 256
     assert (norm.vmax, norm.vmin) == (13, -13)
     assert abs_threshold == 13
+
     threshold = 50
     (colors_json, vmin, vmax, new_cmap, norm, abs_threshold
      ) = html_surface.colorscale(cmap, values, threshold)
@@ -98,6 +101,7 @@ def test_colorscale():
     assert new_cmap.N == 256
     assert (norm.vmax, norm.vmin) == (13, -13)
     assert np.allclose(abs_threshold, 7.25)
+
     values = np.arange(15)
     (colors_json, vmin, vmax, new_cmap, norm, abs_threshold
      ) = html_surface.colorscale(cmap, values, symmetric_cmap=False)
