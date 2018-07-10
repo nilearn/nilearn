@@ -317,6 +317,8 @@ uses.
    plot_surf
    plot_surf_roi
    plot_surf_stat_map
+   view_surf
+   view_img_on_surf
    show
 
 **Classes**:
