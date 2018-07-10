@@ -32,7 +32,7 @@ def _normalize_ws(text):
 
 
 def test_add_js_lib():
-    html = html_surface.HTML_TEMPLATE
+    html = html_surface._get_html_template()
     cdn = html_surface.add_js_lib(html, embed_js=False)
     assert _normalize_ws("""<script
     src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js">
