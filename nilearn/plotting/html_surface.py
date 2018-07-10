@@ -46,7 +46,7 @@ class HTMLDocument(object):
     Represents a web page.
 
     use str(document) or document.html to get a web page,
-    document.iframe() to have it wrapped in an iframe.
+    document.get_iframe() to have it wrapped in an iframe.
 
     """
 
@@ -55,7 +55,14 @@ class HTMLDocument(object):
         self.width = width
         self.height = height
 
-    def iframe(self, width=None, height=None):
+    def get_iframe(self, width=None, height=None):
+        """
+        Get the document wrapped in an inline frame.
+
+        For inserting in another HTML page of for display in a Jupyter
+        notebook.
+
+        """
         if width is None:
             width = self.width
         if height is None:
@@ -65,11 +72,12 @@ class HTMLDocument(object):
             escaped, width, height)
         return wrapped
 
-    def standalone(self):
+    def get_standalone(self):
+        """ Get the surface plot in an HTML page."""
         return self.html
 
     def _repr_html_(self):
-        return self.iframe()
+        return self.get_iframe()
 
     def __str__(self):
         return self.html

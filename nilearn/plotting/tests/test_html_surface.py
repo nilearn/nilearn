@@ -206,13 +206,13 @@ def _check_html(html):
         html.save_as_html(tmpfile)
         with open(tmpfile) as f:
             saved = f.read()
-        assert saved == html.standalone()
+        assert saved == html.get_standalone()
     finally:
         os.remove(tmpfile)
     assert "INSERT" not in html.html
-    assert html.standalone() == html.html
-    assert html._repr_html_() == html.iframe()
-    assert str(html) == html.standalone()
+    assert html.get_standalone() == html.html
+    assert html._repr_html_() == html.get_iframe()
+    assert str(html) == html.get_standalone()
     assert '<meta charset="UTF-8" />' in str(html)
     if not LXML_INSTALLED:
         return
