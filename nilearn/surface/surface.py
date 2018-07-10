@@ -637,3 +637,14 @@ def load_surf_mesh(surf_mesh):
                          '[vertex coordinates, face indices]')
 
     return [coords, faces]
+
+
+def check_mesh_and_data(mesh, data):
+    mesh = load_surf_mesh(mesh)
+    nodes, faces = mesh
+    data = load_surf_data(data)
+    if len(data) != len(nodes):
+        raise ValueError(
+            'Mismatch between number of nodes in mesh ({}) and '
+            'size of surface data ({})'.format(len(nodes), len(data)))
+    return mesh, data

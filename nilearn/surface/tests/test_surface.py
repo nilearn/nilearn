@@ -406,3 +406,14 @@ def _check_vol_to_surf_results(img, mesh):
         nodes, _ = surface.load_surf_mesh(mesh)
         assert_array_equal(proj_4d.shape, [nodes.shape[0], 2])
         assert_array_almost_equal(proj_4d[:, 0], proj_1, 3)
+
+
+def test_check_mesh_and_data():
+    mesh = _generate_surf()
+    data = mesh[0][:, 0]
+    m, d = surface.check_mesh_and_data(mesh, data)
+    assert (m[0] == mesh[0]).all()
+    assert (m[1] == mesh[1]).all()
+    assert (d == data).all()
+    data = mesh[0][::2, 0]
+    assert_raises(ValueError, surface.check_mesh_and_data, mesh, data)

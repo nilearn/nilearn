@@ -265,6 +265,9 @@ def test_view_surf():
     html = html_surface.view_surf(
         fsaverage['pial_left'], destrieux, symmetric_cmap=False)
     _check_html(html)
+    assert_raises(ValueError, html_surface.view_surf, mesh, mesh[0][::2, 0])
+    assert_raises(ValueError, html_surface.view_surf, mesh, mesh[0][:, 0],
+                  bg_map=mesh[0][::2, 0])
 
 
 def test_view_img_on_surf():
