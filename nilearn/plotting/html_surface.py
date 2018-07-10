@@ -180,6 +180,7 @@ def _get_vertexcolor(surf_map, cmap, norm,
 
 def one_mesh_info(surf_map, surf_mesh, threshold=None, cmap=cm.cold_hot,
                   black_bg=False, bg_map=None, symmetric_cmap=True):
+    """Prepare info for plotting one surface map on a single mesh."""
     info = {}
     colors, cmin, cmax, cmap, norm, abs_threshold = colorscale(
         cmap, surf_map, threshold, symmetric_cmap=symmetric_cmap)
@@ -209,6 +210,7 @@ def _check_mesh(mesh):
 def full_brain_info(stat_map, mesh='fsaverage5', threshold=None,
                     cmap=cm.cold_hot, black_bg=False, symmetric_cmap=True,
                     vol_to_surf_kwargs={}):
+    """Project 3d map on cortex; prepare info to plot both hemispheres."""
     info = {}
     mesh = _check_mesh(mesh)
     surface_maps = {
