@@ -207,14 +207,14 @@ def _check_mesh(mesh):
     return mesh
 
 
-def full_brain_info(stat_map, mesh='fsaverage5', threshold=None,
+def full_brain_info(volume_img, mesh='fsaverage5', threshold=None,
                     cmap=cm.cold_hot, black_bg=False, symmetric_cmap=True,
                     vol_to_surf_kwargs={}):
     """Project 3d map on cortex; prepare info to plot both hemispheres."""
     info = {}
     mesh = _check_mesh(mesh)
     surface_maps = {
-        h: surface.vol_to_surf(stat_map, mesh['pial_{}'.format(h)],
+        h: surface.vol_to_surf(volume_img, mesh['pial_{}'.format(h)],
                                **vol_to_surf_kwargs)
         for h in ['left', 'right']
     }
@@ -246,7 +246,7 @@ def _fill_html_template(info, colors, embed_js=True):
     return HTMLDocument(as_html)
 
 
-def view_img_on_surf(stat_map, mesh='fsaverage5',
+def view_img_on_surf(volume_img, mesh='fsaverage5',
                      threshold=None, cmap=cm.cold_hot,
                      black_bg=False, embed_js=True):
     """
@@ -254,7 +254,7 @@ def view_img_on_surf(stat_map, mesh='fsaverage5',
 
     Parameters
     ----------
-    stat_map : Niimg-like object, 3d
+    volume_img : Niimg-like object, 3d
         See http://nilearn.github.io/manipulating_images/input_output.html
 
     mesh : str or dict, optional.
@@ -280,7 +280,7 @@ def view_img_on_surf(stat_map, mesh='fsaverage5',
 
     """
     info, colors = full_brain_info(
-        stat_map=stat_map, mesh=mesh, threshold=threshold,
+        volume_img=volume_img, mesh=mesh, threshold=threshold,
         cmap=cmap, black_bg=black_bg)
     return _fill_html_template(info, colors, embed_js=embed_js)
 
