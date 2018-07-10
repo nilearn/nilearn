@@ -9,7 +9,7 @@ from sklearn.datasets.base import Bunch
 try:
     from numpy import VisibleDeprecationWarning
 except ImportError:
-    class VisibleDeprecationWarning(DeprecationWarning):
+    class VisibleDeprecationWarning(UserWarning):
         pass
 
 from .utils import (_get_dataset_dir, _fetch_files,
