@@ -1,7 +1,7 @@
 try:
     from numpy import VisibleDeprecationWarning
 except ImportError:
-    class VisibleDeprecationWarning(DeprecationWarning):
+    class VisibleDeprecationWarning(UserWarning):
         pass
 
 
