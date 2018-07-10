@@ -6,6 +6,11 @@ import os
 import numpy as np
 from scipy import ndimage
 from sklearn.datasets.base import Bunch
+try:
+    from numpy import VisibleDeprecationWarning
+except ImportError:
+    class VisibleDeprecationWarning(DeprecationWarning):
+        pass
 
 from .utils import (_get_dataset_dir, _fetch_files,
                     _get_dataset_descr, _uncompress_file)
@@ -517,7 +522,7 @@ def fetch_surf_fsaverage5(data_dir=None, url=None, resume=True, verbose=1):
     warnings.warn("fetch_surf_fsaverage5 has been deprecated and will "
                   "be removed in a future release. "
                   "Use fetch_surf_fsaverage(mesh='fsaverage5')",
-                  np.VisibleDeprecationWarning, stacklevel=2)
+                  VisibleDeprecationWarning, stacklevel=2)
     return fetch_surf_fsaverage(mesh='fsaverage5', data_dir=data_dir)
 
 
