@@ -517,7 +517,7 @@ def fetch_surf_fsaverage5(data_dir=None, url=None, resume=True, verbose=1):
     warnings.warn("fetch_surf_fsaverage5 has been deprecated and will "
                   "be removed in a future release. "
                   "Use fetch_surf_fsaverage(mesh='fsaverage5')",
-                  DeprecationWarning)
+                  np.VisibleDeprecationWarning, stacklevel=2)
     return fetch_surf_fsaverage(mesh='fsaverage5', data_dir=data_dir)
 
 
