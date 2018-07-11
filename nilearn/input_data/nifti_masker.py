@@ -110,7 +110,7 @@ class NiftiMasker(BaseMasker, CacheMixin):
         This parameter is passed to image.resample_img. Please see the
         related documentation for details.
 
-    mask_strategy: {'background' or 'epi'}, optional
+    mask_strategy: {'background' or 'epi' or 'template'}, optional
         The strategy used to compute the mask: use 'background' if your
         images present a clear homogeneous background, and 'epi' if they
         are raw EPI images. Depending on this value, the mask will be
