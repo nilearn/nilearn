@@ -611,8 +611,8 @@ def resample_to_img(source_img, target_img,
     target = _utils.check_niimg(target_img)
     target_shape = target.shape
 
-    # When target shape is greater than 3, we reduce to 3, ti be compatible
-    # with uniderlying call to resample_img
+    # When target shape is greater than 3, we reduce to 3, to be compatible
+    # with underlying call to resample_img
     if len(target_shape) > 3:
         target_shape = target.shape[:3]
 

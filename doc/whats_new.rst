@@ -1,3 +1,51 @@
+0.4.3
+=====
+
+Changes
+-------
+
+    - `nilearn.datasets.fetch_surf_fsaverage5` is deprecated and will be
+      removed in a future release. Use :func:`nilearn.datasets.fetch_surf_fsaverage`,
+      with the parameter mesh="fsaverage5" (the default) instead.
+
+
+Enhancements
+------------
+
+    - Add :func:`nilearn.datasets.fetch_surf_fsaverage` to download either
+      fsaverage or fsaverage 5 (Freesurfer cortical meshes).
+
+
+0.4.2
+=====
+Few important bugs fix release for OHBM conference.
+
+Changes
+-------
+    - Default colormaps for surface plotting functions have changed to be more
+      consistent with slice plotting.
+      :func:`nilearn.plotting.plot_surf_stat_map` now uses "cold_hot", as
+      :func:`nilearn.plotting.plot_stat_map` does, and
+      :func:`nilearn.plotting.plot_surf_roi` now uses "gist_ncar", as
+      :func:`nilearn.plotting.plot_roi` does.
+
+    - Improve 3D surface plotting: lock the aspect ratio of the plots and
+      reduce the whitespace around the plots.
+
+Bug fixes
+---------
+
+    - Fix bug with input repetition time (TR) which had no effect in signal
+      cleaning. Fixed by Pradeep Raamana.
+
+    - Fix issues with signal extraction on list of 3D images in
+      :class:`nilearn.regions.Parcellations`.
+
+    - Fix issues with raising AttributeError rather than HTTPError in datasets
+      fetching utilities. By Jerome Dockes.
+
+    - Fix issues in datasets testing function uncompression of files. By Pierre Glaser.
+
 0.4.1
 =====
 
@@ -328,7 +376,7 @@ Enhancements
     - A function :func:`nilearn.plotting.plot_surf_roi` can be used for
       plotting statistical maps rois onto brain surface.
 
-    - A function :func:`nilearn.datasets.fetch_surf_fsaverage5` can be used
+    - A function `nilearn.datasets.fetch_surf_fsaverage5` can be used
       for surface data object to be as background map for the above plotting
       functions.
 

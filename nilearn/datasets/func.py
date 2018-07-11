@@ -17,6 +17,7 @@ from .utils import (_get_dataset_dir, _fetch_files, _get_dataset_descr,
 from .._utils import check_niimg
 from .._utils.compat import BytesIO, _basestring, _urllib
 from .._utils.numpy_conversions import csv_to_array
+from .._utils.exceptions import VisibleDeprecationWarning
 
 
 @deprecated("fetch_haxby_simple will be removed in future releases. "
@@ -148,9 +149,10 @@ def fetch_haxby(data_dir=None, n_subjects=None, subjects=(2,),
     The anatomical image for subject 6 is unavailable.
     """
     if n_subjects is not None:
-        warnings.warn("The parameter 'n_subjects' is deprecated from 0.2.6 "
-                      "and will be removed in nilearn next release. Use "
-                      "parameter 'subjects' instead.")
+        warn_str = ("The parameter 'n_subjects' is deprecated from 0.2.6 and "
+                    "will be removed in nilearn next release. Use parameter "
+                    "'subjects' instead.")
+        warnings.warn(warn_str, VisibleDeprecationWarning, stacklevel=2)
         subjects = n_subjects
 
     if isinstance(subjects, numbers.Number) and subjects > 6:

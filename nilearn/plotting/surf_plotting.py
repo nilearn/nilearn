@@ -102,7 +102,7 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
 
     See Also
     --------
-    nilearn.datasets.fetch_surf_fsaverage5 : For surface data object to be
+    nilearn.datasets.fetch_surf_fsaverage : For surface data object to be
         used as background map for this plotting function.
 
     nilearn.plotting.plot_surf_roi : For plotting statistical maps on brain
@@ -172,13 +172,14 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
     if axes is None:
         if figure is None:
             figure = plt.figure()
-        axes = figure.add_subplot(111, projection='3d',
-                                  xlim=limits, ylim=limits)
+        axes = Axes3D(figure, rect=[0, 0, 1, 1],
+                      xlim=limits, ylim=limits)
     else:
         if figure is None:
             figure = axes.get_figure()
         axes.set_xlim(*limits)
         axes.set_ylim(*limits)
+    axes.set_aspect(.74)
     axes.view_init(elev=elev, azim=azim)
     axes.set_axis_off()
 
@@ -264,7 +265,7 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
 
 def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
                        hemi='left', view='lateral', threshold=None,
-                       alpha='auto', vmax=None, cmap='coolwarm',
+                       alpha='auto', vmax=None, cmap='cold_hot',
                        symmetric_cbar="auto", bg_on_data=False, darkness=1,
                        title=None, output_file=None, axes=None, figure=None,
                        **kwargs):
@@ -354,7 +355,7 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
 
     See Also
     --------
-    nilearn.datasets.fetch_surf_fsaverage5 : For surface data object to be
+    nilearn.datasets.fetch_surf_fsaverage : For surface data object to be
         used as background map for this plotting function.
 
     nilearn.plotting.plot_surf : For brain surface visualization.
@@ -362,23 +363,21 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
 
     # Call _get_colorbar_and_data_ranges to derive symmetric vmin, vmax
     # And colorbar limits depending on symmetric_cbar settings
-    cbar_vmin, cbar_vmax, vmin, vmax = \
-        _get_colorbar_and_data_ranges(stat_map, vmax,
-                                      symmetric_cbar, kwargs)
+    cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
+        stat_map, vmax, symmetric_cbar, kwargs)
 
-    display = plot_surf(surf_mesh, surf_map=stat_map, bg_map=bg_map,
-                        hemi=hemi, view=view, avg_method='mean',
-                        threshold=threshold, cmap=cmap,
-                        alpha=alpha, bg_on_data=bg_on_data, darkness=1,
-                        vmax=vmax, title=title, output_file=output_file,
-                        axes=axes, figure=figure, **kwargs)
+    display = plot_surf(
+        surf_mesh, surf_map=stat_map, bg_map=bg_map, hemi=hemi, view=view,
+        avg_method='mean', threshold=threshold, cmap=cmap, alpha=alpha,
+        bg_on_data=bg_on_data, darkness=1, vmax=vmax, vmin=vmin, title=title,
+        output_file=output_file, axes=axes, figure=figure, **kwargs)
 
     return display
 
 
 def plot_surf_roi(surf_mesh, roi_map, bg_map=None,
                   hemi='left', view='lateral', alpha='auto',
-                  vmin=None, vmax=None, cmap='coolwarm',
+                  vmin=None, vmax=None, cmap='gist_ncar',
                   bg_on_data=False, darkness=1, title=None,
                   output_file=None, axes=None, figure=None, **kwargs):
     """ Plotting of surfaces with optional background and stats map
@@ -452,7 +451,7 @@ def plot_surf_roi(surf_mesh, roi_map, bg_map=None,
 
     See Also
     --------
-    nilearn.datasets.fetch_surf_fsaverage5: For surface data object to be
+    nilearn.datasets.fetch_surf_fsaverage: For surface data object to be
         used as background map for this plotting function.
 
     nilearn.plotting.plot_surf: For brain surface visualization.
@@ -474,7 +473,7 @@ def plot_surf_roi(surf_mesh, roi_map, bg_map=None,
         roi_data = load_surf_data(roi_map)
         # or a single array with indices for a single roi
         if roi_data.shape[0] != v.shape[0]:
-            roi_map = np.zeros(v.shape[0])
+            roi_map = np.zeros(v.shape[0], dtype=int)
             roi_map[roi_data] = 1
 
     else:
@@ -485,7 +484,7 @@ def plot_surf_roi(surf_mesh, roi_map, bg_map=None,
                          'value for each vertex, or a list of Numpy arrays, '
                          'one array per ROI which contains indices of all '
                          'vertices included in that ROI')
-
+    vmin, vmax = np.min(roi_map), 1 + np.max(roi_map)
     display = plot_surf(surf_mesh, surf_map=roi_map, bg_map=bg_map,
                         hemi=hemi, view=view, avg_method='median',
                         cmap=cmap, alpha=alpha, bg_on_data=bg_on_data,
