@@ -69,7 +69,7 @@ parcellation = destrieux_atlas['map_left']
 labels = destrieux_atlas['labels']
 
 # Fsaverage5 surface template
-fsaverage = datasets.fetch_surf_fsaverage5()
+fsaverage = datasets.fetch_surf_fsaverage()
 
 # The fsaverage dataset contains file names pointing to
 # the file locations
