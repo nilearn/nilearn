@@ -200,10 +200,7 @@ def _check_mesh(mesh):
         assert {'pial_left', 'pial_right', 'sulc_left', 'sulc_right',
                 'infl_left', 'infl_right'}.issubset(mesh.keys())
         return mesh
-    if mesh != 'fsaverage5':
-        raise ValueError(
-            'mesh should be fsaverage5 until fsaverage fetcher pr is merged')
-    mesh = datasets.fetch_surf_fsaverage5()
+    mesh = datasets.fetch_surf_fsaverage(mesh)
     return mesh
 
 
@@ -259,6 +256,7 @@ def view_img_on_surf(volume_img, mesh='fsaverage5',
 
     mesh : str or dict, optional.
         if 'fsaverage5', use fsaverage5 mesh from nilearn.datasets
+        if 'fsaverage', use fsaverage mesh from nilearn.datasets
         if a dictionary, keys should be 'infl_left', 'pial_left', 'sulc_left',
         'infl_right', 'pial_right', 'sulc_right', containing inflated and
         pial meshes, and sulcal depth values for left and right hemispheres.
