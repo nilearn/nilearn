@@ -530,3 +530,15 @@ def test_fetch_atlas_talairach(data_dir=tst.tmpdir):
     assert_array_equal(talairach.maps.get_data().ravel(),
                        level_values.ravel())
     assert_raises(ValueError, atlas.fetch_atlas_talairach, 'bad_level')
+
+@with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
+def test_fetch_atlas_pauli_2017():
+    data_dir = os.path.join(tst.tmpdir, 'pauli_2017')
+    data = atlas.fetch_atlas_pauli_2017(data_dir)
+    
+    values = data.maps.get_data()
+    assert_equal(len(np.unique(values)), 17)
+    assert_equal(len(data.labels), 16)
+
+
+

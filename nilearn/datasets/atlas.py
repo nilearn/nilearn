@@ -1116,3 +1116,63 @@ def fetch_atlas_talairach(level_name, data_dir=None, verbose=1):
     description = _get_dataset_descr(
         'talairach_atlas').decode('utf-8').format(level_name)
     return Bunch(maps=atlas_img, labels=labels, description=description)
+
+def fetch_atlas_pauli_2017(data_dir=None, verbose=1):
+    """Download the Pauli et al. (2017) atlas with subcortical nodes.
+
+    Parameters
+    ----------
+
+    data_dir : str, optional (default=None)
+        Path of the data directory. Used to force data storage in a specified
+        location.
+
+    verbose : int
+        verbosity level (0 means no message).
+
+    Returns
+    -------
+    sklearn.datasets.base.Bunch
+        Dictionary-like object, contains:
+
+        - maps: 3D Nifti image, values are indices in the list of labels.
+        - labels: list of strings. Starts with 'Background'.
+        - description: a short description of the atlas and some references.
+
+    References
+    ----------
+    http://talairach.org/about.html#Labels
+
+    `Lancaster JL, Woldorff MG, Parsons LM, Liotti M, Freitas CS, Rainey L,
+    Kochunov PV, Nickerson D, Mikiten SA, Fox PT, "Automated Talairach Atlas
+    labels for functional brain mapping". Human Brain Mapping 10:120-131,
+    2000.`
+
+    `Lancaster JL, Rainey LH, Summerlin JL, Freitas CS, Fox PT, Evans AC, Toga
+    AW, Mazziotta JC. Automated labeling of the human brain: A preliminary
+    report on the development and evaluation of a forward-transform method. Hum
+    Brain Mapp 5, 238-242, 1997.`
+    """
+
+    url_maps = 'https://osf.io/5mqfx/download'
+    url_labels = 'https://osf.io/6qrcb/download'
+
+    dataset_name = 'pauli_2017'
+
+    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
+                                verbose=verbose)
+
+    files = [('pauli_2017.nii.gz',
+              url_maps,
+              {'move':'pauli_2017.nii.gz'}),
+             ('labels.txt',
+              url_labels,
+              {'move':'labels.txt'})]
+    atlas_file, labels = _fetch_files(data_dir, files)
+
+    atlas_img = check_niimg(atlas_file)
+
+    labels = np.loadtxt(labels, dtype=str)[:, 1].tolist()
+
+    return Bunch(maps=atlas_img,
+                 labels=labels)
