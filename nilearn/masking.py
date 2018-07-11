@@ -513,44 +513,132 @@ def compute_multi_background_mask(data_imgs, border_size=2, upper_cutoff=0.85,
     return mask
 
 
-def compute_gray_matter_mask(template_img, target_img, threshold,
-                             connected=True, opening=2, memory=None,
-                             verbose=0):
+def compute_gray_matter_mask(target_img, threshold=1,
+                             connected=True, opening=2,
+                             interpolation='nearest', verbose=0):
+    """ Compute a mask corresponding to the gray matter part of the brain.
+    The gray matter part is found through the resampling of MNI152 template
+    from which the range of values for GM is known
+
+    Parameters
+    ----------
+    target_img: Niimg-like object
+        See http://nilearn.github.io/manipulating_images/input_output.html
+        Images used to compute the mask. 3D and 4D images are accepted.
+        If a 3D image is given, we suggest to use the mean image
+
+    threshold: float, optional
+        The value under which the MNI template is cut off.
+
+    connected: boolean, optional
+        if connected is True, only the largest connect component is kept.
+
+    opening: bool or int, optional
+        if opening is True, a morphological opening is performed, to keep
+        only large structures. This step is useful to remove parts of
+        the skull that might have been included.
+        If opening is an integer `n`, it is performed via `n` erosions.
+        After estimation of the largest connected constituent, 2`n` closing
+        operations are performed followed by `n` erosions. This corresponds
+        to 1 opening operation of order `n` followed by a closing operator
+        of order `n`.
+
+    interpolation: str, optional
+        Specify the resampling strategy. The mask being binary (1=GM, 0=non GM)
+        it can be better to chose interpolation='nearest' or 'linear'
+        The threshold has to be lower than 1 if resampling='continuous'
+
+    verbose: int, optional
+
+    Returns
+    -------
+    mask: nibabel.Nifti1Image
+        The brain mask (3D image)
+    """
     if verbose > 0:
         print("Background mask computation")
 
-    template_img = _utils.check_niimg(template_img)
+    from .datasets import load_mni152_brain_mask
+    template = load_mni152_brain_mask()
     target_img = _utils.check_niimg(target_img)
 
-    from .image.image import _compute_mean
-    data, affine = cache(_compute_mean, memory)(template_img,
-                                            target_affine=target_img.affine,
-                                            target_shape=target_img.shape,
-                                            smooth=(1 if opening else False))
+    from .image.resampling import resample_to_img
+    resampled_template = resample_to_img(template, target_img,
+                                         interpolation=interpolation)
 
-    mask = data < threshold
+    mask = resampled_template.get_data() >= threshold
 
-    mask, affine = _post_process_mask(mask, affine, opening=opening,
-        connected=connected, warning_msg="Are you sure that input "
-            "images are MNI template images.")
-    return new_img_like(template_img, mask, affine)
+    mask, affine = _post_process_mask(mask, target_img.affine, opening=opening,
+                                      connected=connected,
+                                      warning_msg="Are you sure that input is "
+                                                  "anatomical data ?")
+    return new_img_like(target_img, mask, affine)
 
 
-def compute_multiple_gray_matter_mask(template_imgs, target_img, threshold,
-                                      connected=True, opening=2,
-                                      intersect_threshold=0.5, n_jobs=1,
-                                      memory=None, verbose=0):
-    if len(template_imgs) == 0:
+def compute_multiple_gray_matter_mask(target_imgs, threshold=1, connected=True,
+                                      opening=2, interpolation='nearest',
+                                      intersect_threshold=0.5,
+                                      n_jobs=1, memory=None, verbose=0):
+    """Compute a common Gray Matter mask for several sessions or subjects of
+        data
+
+    Parameters
+    ----------
+    target_imgs: list of Niimg-like objects
+        See http://nilearn.github.io/manipulating_images/input_output.html
+        A list of arrays, each item being a subject or a session.
+        3D and 4D images are accepted.
+        If 3D images is given, we suggest to use the mean image of each
+        session
+
+    threshold: float, optional
+        The value above which the MNI template is cut off. A typical value to
+        have a Gray Matter mask is to chose 5000.
+
+    connected: boolean, optional
+        if connected is True, only the largest connect component is kept.
+
+    opening: bool or int, optional
+        if opening is True, a morphological opening is performed, to keep
+        only large structures. This step is useful to remove parts of
+        the skull that might have been included.
+        If opening is an integer `n`, it is performed via `n` erosions.
+        After estimation of the largest connected constituent, 2`n` closing
+        operations are performed followed by `n` erosions. This corresponds
+        to 1 opening operation of order `n` followed by a closing operator
+        of order `n`.
+
+    intersect_threshold: float, optional
+        the inter-session threshold: the fraction of the
+        total number of session in for which a voxel must be in the
+        mask to be kept in the common mask.
+        threshold=1 corresponds to keeping the intersection of all
+        masks, whereas threshold=0 is the union of all masks.
+
+    n_jobs: integer, optional
+        The number of CPUs to use to do the computation. -1 means
+        'all CPUs'.
+
+    memory: instance of joblib.Memory or string
+        Used to cache the function call.
+
+    verbose: int, optional
+
+    Returns
+    -------
+    mask: nibabel.Nifti1Image
+        The brain mask (3D image)
+    """
+    if len(target_imgs) == 0:
         raise TypeError('An empty object - %r - was passed instead of an '
-                        'image or a list of images' % template_imgs)
+                        'image or a list of images' % target_imgs)
     masks = Parallel(n_jobs=n_jobs, verbose=verbose)(
         delayed(compute_gray_matter_mask)(img,
-                                  target_img=target_img,
                                   threshold=threshold,
                                   connected=connected,
                                   opening=opening,
-                                  memory=memory)
-        for img in template_imgs)
+                                  interpolation=interpolation)
+        for img in target_imgs)
 
     mask = intersect_masks(masks, connected=connected,
                            threshold=intersect_threshold)

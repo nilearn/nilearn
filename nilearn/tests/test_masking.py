@@ -13,8 +13,9 @@ from nibabel import Nifti1Image
 
 from nilearn import masking
 from nilearn.masking import (compute_epi_mask, compute_multi_epi_mask,
-                             compute_background_mask, unmask, _unmask_3d,
-                             _unmask_4d, intersect_masks, MaskWarning)
+                             compute_background_mask, compute_gray_matter_mask,
+                             unmask, _unmask_3d, _unmask_4d, intersect_masks,
+                             MaskWarning)
 from nilearn._utils.testing import (write_tmp_imgs, assert_raises_regex)
 from nilearn._utils.exceptions import DimensionError
 from nilearn.input_data import NiftiMasker
@@ -98,7 +99,19 @@ def test_compute_background_mask():
 
 
 def test_compute_gray_matter_mask():
-    assert_true(1)
+    image = Nifti1Image(np.ones((9, 9, 9)), np.eye(4))
+
+    mask = compute_gray_matter_mask(image, threshold=0)
+    mask1 = np.zeros((9, 9, 9))
+    mask1[2:-2, 2:-2, 2:-2] = 1
+
+    np.testing.assert_array_equal(mask1, mask.get_data())
+
+    # Check warning message if using continuous interpolation
+    with warnings.catch_warnings(record=True) as w:
+        compute_gray_matter_mask(image, interpolation='continuous')
+    assert_equal(len(w), 2)
+    assert_true(isinstance(w[1].message, masking.MaskWarning))
 
 
 def test_apply_mask():
