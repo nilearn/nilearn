@@ -20,7 +20,7 @@ jobs:
               MATPLOTLIB_VERSION: "*"
       - save_cache:
            key: v1-datasets-{{ .Branch }}
-           path:
+           paths:
              - ~/nilearn_data
       - store_artifacts:
           path: doc/_build/html
