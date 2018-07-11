@@ -8,7 +8,8 @@ jobs:
       - checkout
       - run: sudo apt install wget
       - run: ls -ra
-#      - run: cd ~/nilearn
+      - run: wget --help
+#      - run: cd ~/nilearn  # remove this. Current directory is repo root.
       - run:
           command: ./continuous_integration/install.sh
           environment:
