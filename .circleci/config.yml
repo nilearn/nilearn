@@ -6,11 +6,12 @@ jobs:
       - image: circleci/python:3.5
     steps:
       - checkout
+      - run: apt install wget
+      - run: cd ~/nilearn
       - run:
-          command: cd ~/nilearn
           command: ./continuous_integration/install.sh
           environment:
-              PATH: /home/ubuntu/miniconda2/bin:$PATH
+              PATH: ~/miniconda2/bin:$PATH
 #              MINICONDA_PATH: ~/miniconda
               DISTRIB: "conda"
               PYTHON_VERSION: "3.5"
