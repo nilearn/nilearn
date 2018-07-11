@@ -7,7 +7,8 @@ jobs:
     steps:
       - checkout
       - run: sudo apt install wget
-      - run: cd ~/nilearn
+      - run: ls -ra
+#      - run: cd ~/nilearn
       - run:
           command: ./continuous_integration/install.sh
           environment:
