@@ -556,7 +556,7 @@ def compute_gray_matter_mask(target_img, threshold=1,
         The brain mask (3D image)
     """
     if verbose > 0:
-        print("Background mask computation")
+        print("Template mask computation")
 
     from .datasets import load_mni152_brain_mask
     template = load_mni152_brain_mask()
@@ -578,7 +578,7 @@ def compute_gray_matter_mask(target_img, threshold=1,
 def compute_multiple_gray_matter_mask(target_imgs, threshold=1, connected=True,
                                       opening=2, interpolation='nearest',
                                       intersect_threshold=0.5,
-                                      n_jobs=1, memory=None, verbose=0):
+                                      n_jobs=1, verbose=0):
     """Compute a common Gray Matter mask for several sessions or subjects of
         data
 
@@ -592,8 +592,7 @@ def compute_multiple_gray_matter_mask(target_imgs, threshold=1, connected=True,
         session
 
     threshold: float, optional
-        The value above which the MNI template is cut off. A typical value to
-        have a Gray Matter mask is to chose 5000.
+        The value under which the MNI template is cut off.
 
     connected: boolean, optional
         if connected is True, only the largest connect component is kept.
@@ -608,6 +607,11 @@ def compute_multiple_gray_matter_mask(target_imgs, threshold=1, connected=True,
         to 1 opening operation of order `n` followed by a closing operator
         of order `n`.
 
+    interpolation: str, optional
+        Specify the resampling strategy. The mask being binary (1=GM, 0=non GM)
+        it can be better to chose interpolation='nearest' or 'linear'
+        The threshold has to be lower than 1 if resampling='continuous'
+
     intersect_threshold: float, optional
         the inter-session threshold: the fraction of the
         total number of session in for which a voxel must be in the
@@ -618,9 +622,6 @@ def compute_multiple_gray_matter_mask(target_imgs, threshold=1, connected=True,
     n_jobs: integer, optional
         The number of CPUs to use to do the computation. -1 means
         'all CPUs'.
-
-    memory: instance of joblib.Memory or string
-        Used to cache the function call.
 
     verbose: int, optional
 
@@ -634,10 +635,10 @@ def compute_multiple_gray_matter_mask(target_imgs, threshold=1, connected=True,
                         'image or a list of images' % target_imgs)
     masks = Parallel(n_jobs=n_jobs, verbose=verbose)(
         delayed(compute_gray_matter_mask)(img,
-                                  threshold=threshold,
-                                  connected=connected,
-                                  opening=opening,
-                                  interpolation=interpolation)
+                                          threshold=threshold,
+                                          connected=connected,
+                                          opening=opening,
+                                          interpolation=interpolation)
         for img in target_imgs)
 
     mask = intersect_masks(masks, connected=connected,
