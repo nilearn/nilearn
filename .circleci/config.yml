@@ -2,25 +2,52 @@ version: 2
 
 jobs:
   build:
-    machine: True
-    environment:
-        PATH: /home/ubuntu/miniconda2/bin:$PATH
-        DISTRIB: "conda"
-        PYTHON_VERSION: "3.5"
-        NUMPY_VERSION: "*"
-        SCIPY_VERSION: "*"
-        SCIKIT_LEARN_VERSION: "*"
-        MATPLOTLIB_VERSION: "*"
+    docker:
+      - image: circleci/python:3.5
+    steps:
+      - checkout
+      - run:
+          command: cd ~/nilearn
+          command: ./continuous_integration/install.sh
+          environment:
+            MINICONDA_PATH: ~/miniconda
+              PATH: /home/ubuntu/miniconda2/bin:$PATH
+              DISTRIB: "conda"
+              PYTHON_VERSION: "3.5"
+              NUMPY_VERSION: "*"
+              SCIPY_VERSION: "*"
+              SCIKIT_LEARN_VERSION: "*"
+              MATPLOTLIB_VERSION: "*"
+      - save_cache:
+           key: v1-datasets-{{ .Branch }}
+           path:
+             - ~/nilearn_data
+      - store_artifacts:
+          path: doc/_build/html
+          destination: doc
+      - store_artifacts:
+          path: coverage
+          destination: coverage
+      - store_artifacts:
+          path: ~/log.txt
+          destination: log.txt
 #        working_directory: ~/nilearn
 
-      steps:
-        - run: cd && rm -rf ~/.pyenv && rm -rf ~/virtualenvs
-        - run: sudo -E apt-get -yq remove texlive-binaries --purge
-        - run: sudo -E apt-get -yq update
-        - run: sudo -E apt-get -yq --no-install-suggests --no-install-recommends --force-yes install dvipng texlive-latex-base texlive-latex-extra
-        - run: cd ~/nilearn
-        - run: source continuous_integration/install.sh
-        - run: conda install sphinx coverage pillow pandas -y -n testenv
+
+workflows:
+  version: 2
+  build:
+    jobs:
+      - build
+
+#      steps:
+#        - run: cd && rm -rf ~/.pyenv && rm -rf ~/virtualenvs
+#        - run: sudo -E apt-get -yq remove texlive-binaries --purge
+#        - run: sudo -E apt-get -yq update
+#        - run: sudo -E apt-get -yq --no-install-suggests --no-install-recommends --force-yes install dvipng texlive-latex-base texlive-latex-extra
+#        - run: cd ~/nilearn
+#        - run: source continuous_integration/install.sh
+#        - run: conda install sphinx coverage pillow pandas -y -n testenv
 
 
 
