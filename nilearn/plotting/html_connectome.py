@@ -5,7 +5,8 @@ import numpy as np
 from scipy import sparse
 from nilearn import datasets
 
-from .html_surface import add_js_lib, HTMLDocument, to_plotly, _encode
+from .html_surface import (add_js_lib, HTMLDocument, to_plotly,
+                           _encode, colorscale, cm)
 
 
 def _get_html_template():
@@ -28,16 +29,20 @@ def _get_test_connectome():
     return connectome
 
 
-def _get_connectome(adjacency_matrix, coords, threshold=None):
+def _get_connectome(adjacency_matrix, coords, threshold=None,
+                    cmap=cm.cold_hot):
     connectome = {}
     coords = np.asarray(coords, dtype='<f4')
     adjacency_matrix = adjacency_matrix.copy()
+    colors, vmin, vmax, cmap, norm, abs_threshold = colorscale(
+        cmap, adjacency_matrix.ravel(), threshold=threshold)
+    colors = json.loads(colors)
+    connectome['colorscale'] = colors
+    connectome['cmin'], connectome['cmax'] = float(vmin), float(vmax)
     if threshold is not None:
-        abs_threshold = np.percentile(np.abs(adjacency_matrix), threshold)
         adjacency_matrix[np.abs(adjacency_matrix) < abs_threshold] = 0
     s = sparse.coo_matrix(adjacency_matrix)
     idx = np.asarray([s.row, s.col], dtype=int).T.ravel()
-    print(idx.shape)
     d = s.data
     padded = np.zeros(len(d) * 3, dtype='<f4')
     padded[::3] = d
@@ -45,8 +50,6 @@ def _get_connectome(adjacency_matrix, coords, threshold=None):
     connectome["_a_c"] = _encode(padded)
     c = coords[idx]
     x, y, z = c.T
-    print(d.shape)
-    print(x.shape)
     for coord, cname in [(x, "x"), (y, "y"), (z, "z")]:
         padded_coord = np.zeros(len(coord) * 3 // 2, dtype='<f4')
         padded_coord[::3] = coord[::2]
@@ -57,12 +60,11 @@ def _get_connectome(adjacency_matrix, coords, threshold=None):
 
 
 def view_connectome(adjacency_matrix, coords, threshold=None, embed_js=True,
-                    cmap='Viridis'):
+                    cmap=cm.cold_hot):
     mesh = datasets.fetch_surf_fsaverage5()
     mesh_info = {}
-    mesh_info['cmap'] = cmap
     mesh_info["connectome"] = _get_connectome(
-        adjacency_matrix, coords, threshold=threshold)
+        adjacency_matrix, coords, threshold=threshold, cmap=cmap)
     for hemi in ['pial_left', 'pial_right']:
         mesh_info[hemi] = to_plotly(mesh[hemi])
     as_json = json.dumps(mesh_info)
