@@ -10,14 +10,14 @@ jobs:
           command: cd ~/nilearn
           command: ./continuous_integration/install.sh
           environment:
-            MINICONDA_PATH: ~/miniconda
 #            PATH: /home/ubuntu/miniconda2/bin:$PATH
-            DISTRIB: "conda"
-            PYTHON_VERSION: "3.5"
-            NUMPY_VERSION: "*"
-            SCIPY_VERSION: "*"
-            SCIKIT_LEARN_VERSION: "*"
-            MATPLOTLIB_VERSION: "*"
+              MINICONDA_PATH: ~/miniconda
+              DISTRIB: "conda"
+              PYTHON_VERSION: "3.5"
+              NUMPY_VERSION: "*"
+              SCIPY_VERSION: "*"
+              SCIKIT_LEARN_VERSION: "*"
+              MATPLOTLIB_VERSION: "*"
       - save_cache:
            key: v1-datasets-{{ .Branch }}
            path:
