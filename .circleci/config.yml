@@ -11,7 +11,7 @@ jobs:
           command: ./continuous_integration/install.sh
           environment:
             MINICONDA_PATH: ~/miniconda
-            PATH: /home/ubuntu/miniconda2/bin:$PATH
+#            PATH: /home/ubuntu/miniconda2/bin:$PATH
             DISTRIB: "conda"
             PYTHON_VERSION: "3.5"
             NUMPY_VERSION: "*"
