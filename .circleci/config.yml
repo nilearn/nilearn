@@ -6,7 +6,7 @@ jobs:
       - image: circleci/python:3.5
     steps:
       - checkout
-      - run: apt install wget
+      - run: sudo apt install wget
       - run: cd ~/nilearn
       - run:
           command: ./continuous_integration/install.sh
