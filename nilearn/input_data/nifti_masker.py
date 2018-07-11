@@ -223,7 +223,7 @@ class NiftiMasker(BaseMasker, CacheMixin):
             elif self.mask_strategy == 'epi':
                 compute_mask = masking.compute_epi_mask
             elif self.mask_strategy == 'template':
-                compute_mask = masking.compute_grey_matter_mask
+                compute_mask = masking.compute_gray_matter_mask
             else:
                 raise ValueError("Unknown value of mask_strategy '%s'. "
                                  "Acceptable values are 'background' and "
