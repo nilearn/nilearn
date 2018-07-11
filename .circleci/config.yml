@@ -11,7 +11,7 @@ jobs:
 #      - run: wget --help
 #      - run: cd ~/nilearn  # remove this. Current directory is repo root.
       - run:
-          command: continuous_integration/install.sh
+          command: source continuous_integration/install.sh
           environment:
               PATH: ~/miniconda2/bin:$PATH
 #              MINICONDA_PATH: ~/miniconda
