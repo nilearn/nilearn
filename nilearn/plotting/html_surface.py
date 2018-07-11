@@ -41,7 +41,7 @@ def add_js_lib(html, embed_js=True):
     return html.replace('INSERT_JS_LIBRARIES_HERE', js_lib)
 
 
-class HTMLDocument(object):
+class SurfaceView(object):
     """
     Represents a web page.
 
@@ -240,7 +240,7 @@ def _fill_html_template(info, colors, embed_js=True):
         'INSERT_STAT_MAP_JSON_HERE', as_json)
     as_html = as_html.replace('INSERT_COLORSCALE_HERE', colors)
     as_html = add_js_lib(as_html, embed_js=embed_js)
-    return HTMLDocument(as_html)
+    return SurfaceView(as_html)
 
 
 def view_img_on_surf(volume_img, mesh='fsaverage5',
@@ -274,7 +274,9 @@ def view_img_on_surf(volume_img, mesh='fsaverage5',
 
     Returns
     -------
-    HTMLDocument : html page containing a plot of the stat map.
+    SurfaceView : plot of the stat map.
+        It can be saved as an html page or rendered (transparently) by the
+        Jupyter notebook.
 
     """
     info, colors = full_brain_info(
@@ -329,7 +331,9 @@ def view_surf(surf_mesh, surf_map=None, bg_map=None, threshold=None,
 
     Returns
     -------
-    HTMLDocument : html page containing a plot of the stat map.
+    SurfaceView : plot of the stat map.
+        It can be saved as an html page or rendered (transparently) by the
+        Jupyter notebook.
 
     """
     surf_mesh = surface.load_surf_mesh(surf_mesh)
