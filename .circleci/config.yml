@@ -36,9 +36,9 @@ jobs:
 
 workflows:
   version: 2
-#  build:
-  jobs:
-    - build
+  build:
+    jobs:
+      - build
 
 #      steps:
 #        - run: cd && rm -rf ~/.pyenv && rm -rf ~/virtualenvs
