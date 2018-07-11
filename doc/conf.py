@@ -14,8 +14,16 @@
 
 import sys
 import os
+import shutil
 import sphinx
 from distutils.version import LooseVersion
+
+shutil.copy(
+    os.path.join(os.path.dirname(os.path.dirname(__file__)),
+                 'nilearn', 'plotting', 'data', 'js', 'jquery.min.js'),
+    os.path.join(os.path.dirname(__file__), 'themes', 'nilearn', 'static',
+                 'jquery.js'))
+
 
 # If extensions (or modules to document with autodoc) are in another
 # directory, add these directories to sys.path here. If the directory
@@ -322,3 +330,5 @@ def touch_example_backreferences(app, what, name, obj, options, lines):
 def setup(app):
     app.add_javascript('copybutton.js')
     app.connect('autodoc-process-docstring', touch_example_backreferences)
+
+
