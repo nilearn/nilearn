@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>surface plot</title>
+    <meta charset="UTF-8" />
+    INSERT_JS_LIBRARIES_HERE
+    <script>
+        var surfaceMapInfo = INSERT_STAT_MAP_JSON_HERE;
+        var data = [];
+
+        function decodeBase64(encoded, dtype) {
+
+            let getter = {
+                "float32": "getFloat32",
+                "int32": "getInt32"
+            }[dtype];
+
+            let arrayType = {
+                "float32": Float32Array,
+                "int32": Int32Array
+            }[dtype];
+
+            let raw = atob(encoded)
+            let buffer = new ArrayBuffer(raw.length);
+            let asIntArray = new Uint8Array(buffer);
+            for (let i = 0; i !== raw.length; i++) {
+                asIntArray[i] = raw.charCodeAt(i);
+            }
+
+            let view = new DataView(buffer);
+            let decoded = new arrayType(
+                raw.length / arrayType.BYTES_PER_ELEMENT);
+            for (let i = 0, off = 0; i !== decoded.length;
+                i++, off += arrayType.BYTES_PER_ELEMENT) {
+                decoded[i] = view[getter](off, true);
+            }
+            return decoded;
+        }
+
+        function addPlot() {
+
+            for (let hemisphere of ["left", "right"]){
+                makePlot("pial", hemisphere,
+                         "surface-plot", display = null, erase = false);
+            }
+        }
+
+        function getLayout() {
+
+            let camera = getCamera();
+            let axisConfig = getAxisConfig();
+
+            let height = Math.min($(window).outerHeight() * .9,
+                                  $(window).width() * 2 / 3);
+            let width = height * 3 / 2;
+
+            let layout = {
+                height: height, width: width,
+                margin: {l:0, r:0, b:0, t:0, pad:0},
+                hovermode: false,
+                paper_bgcolor: surfaceMapInfo['black_bg'] ? '#000': '#fff',
+                axis_bgcolor: '#333',
+                scene: {
+                    camera: camera,
+                    xaxis: axisConfig,
+                    yaxis: axisConfig,
+                    zaxis: axisConfig
+                }
+            };
+
+            return layout;
+
+        }
+
+        function updateLayout() {
+            let layout = getLayout();
+            Plotly.relayout("surface-plot", layout);
+        }
+
+     function updateOpacity(){
+         data[0]["opacity"] = $("#opacity-range").val() / 100;
+         data[1]["opacity"] = $("#opacity-range").val() / 100;
+         Plotly.react("surface-plot", data, getLayout(), getConfig());
+     }
+
+        function getConfig() {
+            let config = {
+                modeBarButtonsToRemove: ["hoverClosest3d"],
+                displayLogo: false
+            };
+
+            return config;
+        }
+
+        function getAxisConfig() {
+            let axisConfig = {
+                showgrid: false,
+                showline: false,
+                ticks: '',
+                title: '',
+                showticklabels: false,
+                 zeroline: false,
+                showspikes: false,
+                spikesides: false
+            };
+
+            return axisConfig;
+        }
+
+        function getLighting() {
+            return {
+                "ambient": 0.5,
+                "diffuse": 1,
+                "fresnel": .1,
+                "specular": .05,
+                "roughness": .1,
+                "facenormalsepsilon": 1e-6,
+                "vertexnormalsepsilon": 1e-12
+            };
+
+        }
+
+        function getCamera() {
+            let view = $("#select-view").val();
+            if (view === "custom") {
+                try {
+                    return $("#surface-plot")[0].layout.scene.camera;
+                } catch (e) {
+                    return {};
+                }
+            }
+            let cameras = {
+                "left": {eye: {x: -1.7, y: 0, z: 0},
+                         up: {x: 0, y: 0, z: 1},
+                         center: {x: 0, y: 0, z: 0}},
+                "right": {eye: {x: 1.7, y: 0, z: 0},
+                          up: {x: 0, y: 0, z: 1},
+                          center: {x: 0, y: 0, z: 0}},
+                "top": {eye: {x: 0, y: 0, z: 1.7},
+                        up: {x: 0, y: 1, z: 0},
+                        center: {x: 0, y: 0, z: 0}},
+                "bottom": {eye: {x: 0, y: 0, z: -1.7},
+                           up: {x: 0, y: 1, z: 0},
+                           center: {x: 0, y: 0, z: 0}},
+                "front": {eye: {x: 0, y: 1.7, z: 0},
+                          up: {x: 0, y: 0, z: 1},
+                          center: {x: 0, y: 0, z: 0}},
+                "back": {eye: {x: 0, y: -1.7, z: 0},
+                         up: {x: 0, y: 0, z: 1},
+                         center: {x: 0, y: 0, z: 0}},
+            };
+
+            return cameras[view];
+
+        }
+
+        function makePlot(surface, hemisphere, divId) {
+
+            info = surfaceMapInfo[surface + "_" + hemisphere];
+
+            info["type"] = "mesh3d";
+
+
+            for (let attribute of ["x", "y", "z"]) {
+                if (!(attribute in info)) {
+                    info[attribute] = decodeBase64(
+                        info["_" + attribute], "float32");
+                }
+            }
+
+            for (let attribute of ["i", "j", "k"]) {
+                if (!(attribute in info)) {
+                    info[attribute] = decodeBase64(
+                        info["_" + attribute], "int32");
+                }
+            }
+
+            info["color"] = "#aaaaaa";
+            info["opacity"] = $("#opacity-range").val() / 100;
+
+            data.push(info);
+
+            info['lighting'] = getLighting();
+            let layout = getLayout();
+            let config = getConfig();
+
+            Plotly.plot(divId, data, layout, config);
+
+        }
+
+     function addConnectome(){
+         let info = surfaceMapInfo["connectome"];
+
+         for (let attribute of ["a_x", "a_y", "a_z", "a_c"]) {
+             if (!(attribute in info)) {
+                 info[attribute] = Array.from(decodeBase64(
+                     info["_" + attribute], "float32"));
+                 for (let i = 2; i < info[attribute].length; i+=3){
+                     info[attribute][i] = null;
+                 }
+             }
+         }
+        // info["a_c"] = decodeBase64(info["_a_c"], "float32");
+
+         console.log(info["a_x"]);
+         console.log(info["a_y"]);
+         console.log(info["a_z"]);
+         console.log(info["a_c"]);
+        Plotly.plot('surface-plot',
+        [{
+        type: 'scatter3d',
+        mode: 'lines+markers',
+        x: info["a_x"],
+        y: info["a_y"],
+        z: info["a_z"],
+        opacity: 1,
+        line: {
+            width: 6,
+            //color: "#000000",
+            color: info["a_c"],
+            colorscale: surfaceMapInfo["cmap"],
+            // reversescale: false
+        },
+            marker: {
+                size: 5,
+            color: info["a_c"],
+            //    colorscale: "Viridis"
+             colorscale: [[0, '#000000'], [1, "#000000"]],
+                                    }
+                                    }]
+        );
+
+     }
+
+
+    </script>
+    <script>
+        $(document).ready(
+            function() {
+                addPlot();
+                addConnectome();
+                $("#select-view").change(updateLayout);
+                $("#surface-plot").mouseup(function() {
+                    $("#select-view").val("custom");
+                });
+                $(window).resize(updateLayout);
+                $("#opacity-range").change(updateOpacity);
+
+            });
+    </script>
+</head>
+
+<body>
+    <div id="surface-plot"></div>
+    <select id="select-view">
+<option value="left">view: Left</option>
+<option value="right">view: Right</option>
+<option value="front">view: Front</option>
+<option value="back">view: Back</option>
+<option value="top">view: Top</option>
+<option value="bottom">view: Bottom</option>
+<option value="custom">view: -</option>
+</select>
+
+<input id="opacity-range" type="range" min="0" max="100" value="10"></input>
+
+</body>
+
+</html>
+
