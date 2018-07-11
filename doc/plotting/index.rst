@@ -363,3 +363,26 @@ NOTE: These functions works for only with matplotlib higher than 1.3.1.
                          :ref:`sphx_glr_auto_examples_01_plotting_plot_surf_stat_map.py`
 
 =====================   ===================================================================
+
+Nilearn also have functions for making interactive surface plots that can be
+seen in a web browser.
+
+:func:`view_surf`: Surface plot using a surface map and a mesh
+
+:func:`view_img_on_surf`: Surface plot using a 3d image.
+
+for example::
+
+    >>> from nilearn import plotting     # doctest: +SKIP
+    >>> view = plotting.view_img_on_surf(img, threshold=90)    # doctest: +SKIP
+    >>> view.open_in_browser()    # doctest: +
+
+
+will open this 3d plot in your web browser:
+
+.. image:: ../images/plotly_surface_plot.png
+
+these plots are also rendered correctly by the Jupyter notebook (whenever the
+plot object is the output of a cell)
+
+.. image:: ../images/plotly_surface_plot_notebook_screenshot.png
