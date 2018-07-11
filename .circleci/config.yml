@@ -10,8 +10,8 @@ jobs:
           command: cd ~/nilearn
           command: ./continuous_integration/install.sh
           environment:
-#            PATH: /home/ubuntu/miniconda2/bin:$PATH
-              MINICONDA_PATH: ~/miniconda
+              PATH: /home/ubuntu/miniconda2/bin:$PATH
+#              MINICONDA_PATH: ~/miniconda
               DISTRIB: "conda"
               PYTHON_VERSION: "3.5"
               NUMPY_VERSION: "*"
