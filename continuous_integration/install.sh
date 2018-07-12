@@ -61,6 +61,7 @@ create_new_conda_env() {
 
     # Use the miniconda installer for faster download / install of conda
     # itself
+    sudo apt install wget
     wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh \
         -O ~/miniconda.sh
     chmod +x ~/miniconda.sh && ~/miniconda.sh -b
