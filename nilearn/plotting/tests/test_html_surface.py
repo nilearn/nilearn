@@ -272,6 +272,7 @@ def _check_open_in_browser(html):
         except Exception:
             pass
 
+
 def test_fill_html_template():
     fsaverage = fetch_surf_fsaverage()
     mesh = surface.load_surf_mesh(fsaverage['pial_right'])
