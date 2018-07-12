@@ -40,7 +40,7 @@ def _get_connectome(adjacency_matrix, coords, threshold=None,
     connectome['colorscale'] = colors
     connectome['cmin'], connectome['cmax'] = float(vmin), float(vmax)
     if threshold is not None:
-        adjacency_matrix[np.abs(adjacency_matrix) < abs_threshold] = 0
+        adjacency_matrix[np.abs(adjacency_matrix) <= abs_threshold] = 0
     s = sparse.coo_matrix(adjacency_matrix)
     idx = np.asarray([s.row, s.col], dtype=int).T.ravel()
     d = s.data
