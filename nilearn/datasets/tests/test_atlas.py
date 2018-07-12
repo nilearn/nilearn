@@ -538,8 +538,8 @@ def test_fetch_atlas_pauli_2017():
     data = atlas.fetch_atlas_pauli_2017('det', data_dir)
     assert_equal(len(data.labels), 16)
 
-    values = data.maps.get_data()
+    values = nibabel.load(data.maps).get_data()
     assert_equal(len(np.unique(values)), 17)
 
     data = atlas.fetch_atlas_pauli_2017('prob', data_dir)
-    assert_equal(data.maps.shape[-1], 16)
+    assert_equal(nibabel.load(data.maps).shape[-1], 16)

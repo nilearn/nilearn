@@ -1177,12 +1177,10 @@ def fetch_atlas_pauli_2017(version='prob', data_dir=None, verbose=1):
               {'move':'labels.txt'})]
     atlas_file, labels = _fetch_files(data_dir, files)
 
-    atlas_img = check_niimg(atlas_file)
-
     labels = np.loadtxt(labels, dtype=str)[:, 1].tolist()
 
     fdescr = _get_dataset_descr(dataset_name)
 
-    return Bunch(maps=atlas_img,
+    return Bunch(maps=atlas_file,
                  labels=labels,
                  description=fdescr)
