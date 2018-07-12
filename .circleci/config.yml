@@ -1,0 +1,60 @@
+version: 2
+jobs:
+  build:
+    machine: true
+    # Get rid of existing virtualenvs on circle ci as they conflict with conda.
+    # Trick found here:
+    # https://discuss.circleci.com/t/disable-autodetection-of-project-or-application-of-python-venv/235/10
+    steps:
+      - checkout
+      - run: cd && rm -rf ~/.pyenv && rm -rf ~/virtualenvs
+      # We need to remove conflicting texlive packages.
+      - run: sudo -E apt-get -yq remove texlive-binaries --purge
+      # Installing required packages for `make -C doc check command` to work.
+      - run: sudo -E apt-get -yq update
+      - run: sudo -E apt-get -yq --no-install-suggests --no-install-recommends --force-yes install dvipng texlive-latex-base texlive-latex-extra
+      - save_cache:
+          key: v1-datasets-{{ .Branch }}
+          paths:
+            - ~/nilearn_data
+
+      # Moving to nilearn directory before performing the installation.
+      - run: cd ~/nilearn
+      - run:
+          command: ./continuous_integration/install.sh
+          environment:
+            PATH: ~/miniconda2/bin
+            DISTRIB: "conda"
+            PYTHON_VERSION: "3.5"
+            NUMPY_VERSION: "*"
+            SCIPY_VERSION: "*"
+            SCIKIT_LEARN_VERSION: "*"
+            MATPLOTLIB_VERSION: "*"
+      - run: conda install sphinx coverage pillow pandas -y -n testenv
+
+      # Generating html documentation (with warnings as errors)
+      # we need to do this here so the datasets will be cached
+      - run:
+          command: ./continuous_integration/circle_ci_test_doc.sh
+      - store_artifacts:
+          path: doc/_build/html
+          destination: doc
+      - store_artifacts:
+          path: coverage
+      - store_artifacts:
+          path: ~/log.txt
+          destination: log.txt
+
+  test:
+    machine: true
+    # override is needed otherwise nosetests is run by default
+    steps:
+      - checkout
+      - run: echo "Documentation has been built in the 'dependencies' step. No additional test to run"
+
+workflows:
+  version: 2
+  build_and_test:
+    jobs:
+      - build
+      - test
