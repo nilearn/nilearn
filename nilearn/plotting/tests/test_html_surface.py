@@ -218,7 +218,7 @@ def test_full_brain_info():
             info['pial_{}'.format(hemi)]['_j'], '<i4')) == len(mesh[1])
 
 
-def _check_html(html):
+def _check_html(html, check_selects=True):
     fd, tmpfile = tempfile.mkstemp()
     try:
         os.close(fd)
@@ -248,6 +248,8 @@ def _check_html(html):
     body = root.find('body')
     div = body.find('div')
     assert ('id', 'surface-plot') in div.items()
+    if not check_selects:
+        return
     selects = body.findall('select')
     assert len(selects) == 3
     hemi = selects[0]

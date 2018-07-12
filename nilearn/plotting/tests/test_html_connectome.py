@@ -48,6 +48,6 @@ def test_get_connectome():
 def test_view_connectome():
     adj, coord = _make_connectome()
     html = html_connectome.view_connectome(adj, coord)
-    _check_html(html)
+    _check_html(html, False)
     html = html_connectome.view_connectome(adj, coord, '85.3%')
-    _check_html(html)
+    _check_html(html, False)
