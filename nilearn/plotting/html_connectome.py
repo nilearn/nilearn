@@ -12,7 +12,7 @@ def _prepare_line(edges, nodes):
     path_edges = np.zeros(len(edges) * 3, dtype=int)
     path_edges[::3] = edges
     path_edges[1::3] = edges
-    path_nodes = np.zeros(np.prod(nodes.shape) * 3 // 2, dtype=int)
+    path_nodes = np.zeros(len(nodes) * 3, dtype=int)
     path_nodes[::3] = nodes[:, 0]
     path_nodes[1::3] = nodes[:, 1]
     return path_edges, path_nodes
