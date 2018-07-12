@@ -151,3 +151,24 @@ function addColorbar(colorscale, cmin, cmax, divId, layout, config) {
     Plotly.plot(divId, [dummy], layout, config);
 
 }
+
+
+function decodeHemisphere(surfaceInfo, surface, hemisphere){
+
+    let info = surfaceInfo[surface + "_" + hemisphere];
+
+    for (let attribute of ["x", "y", "z"]) {
+        if (!(attribute in info)) {
+            info[attribute] = decodeBase64(
+                info["_" + attribute], "float32");
+        }
+    }
+
+    for (let attribute of ["i", "j", "k"]) {
+        if (!(attribute in info)) {
+            info[attribute] = decodeBase64(
+                info["_" + attribute], "int32");
+        }
+    }
+
+}
