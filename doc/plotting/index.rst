@@ -393,7 +393,6 @@ If you are not using a notebook, you can open the plot in a browser like this::
 
     >>> view.open_in_browser()     # doctest: +SKIP
 
-
 This will open this 3D plot in your web browser:
 
 .. image:: ../images/plotly_surface_plot.png
