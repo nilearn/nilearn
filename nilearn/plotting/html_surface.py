@@ -23,21 +23,31 @@ def _get_html_template():
 
 
 def add_js_lib(html, embed_js=True):
+    js_dir = os.path.join(os.path.dirname(__file__), 'data', 'js')
+    with open(os.path.join(js_dir, 'surface-plot-utils.js')) as f:
+            js_utils = f.read()
     if not embed_js:
         js_lib = """
         <script
         src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js">
         </script>
         <script src="https://cdn.plot.ly/plotly-gl3d-latest.min.js"></script>
-        """
+        <script>
+        {}
+        </script>
+        """.format(js_utils)
     else:
-        js_dir = os.path.join(os.path.dirname(__file__), 'data', 'js')
         with open(os.path.join(js_dir, 'jquery.min.js')) as f:
             jquery = f.read()
         with open(os.path.join(js_dir, 'plotly-gl3d-latest.min.js')) as f:
             plotly = f.read()
-        js_lib = '<script>{}</script>\n<script>{}</script>'.format(
-            jquery, plotly)
+        js_lib = """
+        <script>{}</script>
+        <script>{}</script>
+        <script>
+        {}
+        </script>
+        """.format(jquery, plotly, js_utils)
     return html.replace('INSERT_JS_LIBRARIES_HERE', js_lib)
 
 

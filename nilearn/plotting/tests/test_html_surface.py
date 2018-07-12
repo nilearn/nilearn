@@ -34,6 +34,7 @@ def _normalize_ws(text):
 def test_add_js_lib():
     html = html_surface._get_html_template()
     cdn = html_surface.add_js_lib(html, embed_js=False)
+    assert "decodeBase64" in cdn
     assert _normalize_ws("""<script
     src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js">
     </script>
@@ -48,6 +49,7 @@ def test_add_js_lib():
                             * All rights reserved.
                             * Licensed under the MIT license
                             */ """) in inline
+    assert "decodeBase64" in inline
 
 
 def _check_colors(colors):
