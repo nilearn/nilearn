@@ -1150,7 +1150,7 @@ def fetch_atlas_pauli_2017(version='prob', data_dir=None, verbose=1):
 
     `Pauli, W. M., Nili, A. N., & Tyszka, J. M. (2018). A high-resolution 
     probabilistic in vivo atlas of human subcortical brain nuclei. 
-    Scientific Data, 5, 180063–13. http://doi.org/10.1038/sdata.2018.63`
+    Scientific Data, 5, 180063-13. http://doi.org/10.1038/sdata.2018.63``
     """
 
     if version == 'prob':
