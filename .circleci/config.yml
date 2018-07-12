@@ -20,6 +20,7 @@ jobs:
 
       # Moving to nilearn directory before performing the installation.
       - run: cd nilearn
+      - run: wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O ~/miniconda.sh
       - run:
           command: ./continuous_integration/install.sh
           environment:
