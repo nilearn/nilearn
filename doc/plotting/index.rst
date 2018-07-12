@@ -375,7 +375,7 @@ for example::
 
     >>> from nilearn import plotting     # doctest: +SKIP
     >>> view = plotting.view_img_on_surf(img, threshold=90)    # doctest: +SKIP
-    >>> view.open_in_browser()    # doctest: +
+    >>> view.open_in_browser()    # doctest: +SKIP
 
 
 will open this 3d plot in your web browser:
