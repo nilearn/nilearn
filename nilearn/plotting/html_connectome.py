@@ -1,4 +1,3 @@
-import os
 import json
 
 import numpy as np
@@ -6,27 +5,7 @@ from scipy import sparse
 from nilearn import datasets
 
 from .html_surface import (add_js_lib, SurfaceView, to_plotly,
-                           _encode, colorscale, cm)
-
-
-def _get_html_template():
-    template_path = os.path.join(
-        os.path.dirname(__file__),
-        'data', 'html', 'connectome_plot_template.html')
-    with open(template_path, 'rb') as f:
-        return f.read().decode('utf-8')
-
-
-def _get_test_connectome():
-    connectome = {}
-    a = np.asarray([[-50, 0, 0]])
-    b = np.asarray([[50, 0, 0]])
-    for points, name in [(a, "a"), (b, "b")]:
-        x, y, z = map(_encode, np.asarray(points.T, dtype='<f4'))
-        connectome["_{}_x".format(name)] = x
-        connectome["_{}_y".format(name)] = y
-        connectome["_{}_z".format(name)] = z
-    return connectome
+                           _encode, colorscale, cm, _get_html_template)
 
 
 def _get_connectome(adjacency_matrix, coords, threshold=None,
@@ -67,7 +46,7 @@ def view_connectome(adjacency_matrix, coords, threshold=None, embed_js=True,
     for hemi in ['pial_left', 'pial_right']:
         mesh_info[hemi] = to_plotly(mesh[hemi])
     as_json = json.dumps(mesh_info)
-    as_html = _get_html_template().replace(
+    as_html = _get_html_template('connectome_plot_template.html').replace(
         'INSERT_CONNECTOME_JSON_HERE', as_json)
     as_html = add_js_lib(as_html, embed_js=embed_js)
     return SurfaceView(as_html)
