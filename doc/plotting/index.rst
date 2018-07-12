@@ -255,7 +255,7 @@ plot, and has methods to add overlays, contours or edge maps::
      :scale: 50
 
 .. |plot_overlay| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_overlay_002.png
-     :target: ../auto_examples/_01_plotting/plot_overlay.html
+     :target: ../auto_examples/01_plotting/plot_overlay.html
      :scale: 50
 
 ================= =========================================================
