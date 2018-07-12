@@ -230,6 +230,12 @@ def _check_html(html):
     assert html._repr_html_() == html.get_iframe()
     assert str(html) == html.get_standalone()
     assert '<meta charset="UTF-8" />' in str(html)
+    _check_open_in_browser(html)
+    resized = html.resize(3, 17)
+    assert resized is html
+    assert (html.width, html.height) == (3, 17)
+    assert "width=3 height=17" in html.get_iframe()
+    assert "width=33 height=37" in html.get_iframe(33, 37)
     if not LXML_INSTALLED:
         return
     root = etree.HTML(html.html)
@@ -249,12 +255,6 @@ def _check_html(html):
     view = selects[2]
     assert ('id', 'select-view') in view.items()
     assert len(view.findall('option')) == 7
-    _check_open_in_browser(html)
-    resized = html.resize(3, 17)
-    assert resized is html
-    assert (html.width, html.height) == (3, 17)
-    assert "width=3 height=17" in html.get_iframe()
-    assert "width=33 height=37" in html.get_iframe(33, 37)
 
 
 def _open_mock(f):
