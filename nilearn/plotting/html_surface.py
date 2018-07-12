@@ -122,7 +122,7 @@ def colorscale(cmap, values, threshold=None, symmetric_cmap=True):
     colors = []
     for i, col in zip(x, rgb):
         colors.append([np.round(i, 3), "rgb({}, {}, {})".format(*col)])
-    return json.dumps(colors), vmin, vmax, our_cmap, norm, abs_threshold
+    return colors, vmin, vmax, our_cmap, norm, abs_threshold
 
 
 def _encode(a):
@@ -161,19 +161,19 @@ def _to_color_strings(colors):
 
 
 def _get_vertexcolor(surf_map, cmap, norm,
-                     absolute_threshold=None, sulc_depth_map=None):
+                     absolute_threshold=None, bg_map=None):
     vertexcolor = cmap(norm(surf_map).data)
     if absolute_threshold is None:
         return _to_color_strings(vertexcolor)
-    if sulc_depth_map is None:
-        sulc_depth_map = np.ones(len(surf_map)) * .5
-        anat_vmin, anat_vmax = 0, 1
+    if bg_map is None:
+        bg_map = np.ones(len(surf_map)) * .5
+        bg_vmin, bg_vmax = 0, 1
     else:
-        sulc_depth_map = surface.load_surf_data(sulc_depth_map)
-        anat_vmin, anat_vmax = np.min(sulc_depth_map), np.max(sulc_depth_map)
-    anat_norm = mpl.colors.Normalize(vmin=anat_vmin, vmax=anat_vmax)
-    anat_color = mpl.cm.get_cmap('Greys')(anat_norm(sulc_depth_map))
-    vertexcolor[np.abs(surf_map) < absolute_threshold] = anat_color[
+        bg_map = surface.load_surf_data(bg_map)
+        bg_vmin, bg_vmax = np.min(bg_map), np.max(bg_map)
+    bg_norm = mpl.colors.Normalize(vmin=bg_vmin, vmax=bg_vmax)
+    bg_color = mpl.cm.get_cmap('Greys')(bg_norm(bg_map))
+    vertexcolor[np.abs(surf_map) < absolute_threshold] = bg_color[
         np.abs(surf_map) < absolute_threshold]
     return _to_color_strings(vertexcolor)
 
@@ -187,11 +187,11 @@ def one_mesh_info(surf_map, surf_mesh, threshold=None, cmap=cm.cold_hot,
     info['inflated_left'] = to_plotly(surf_mesh)
     info['vertexcolor_left'] = _get_vertexcolor(
         surf_map, cmap, norm, abs_threshold, bg_map)
-    cmin, cmax = float(cmin), float(cmax)
-    info["cmin"], info["cmax"] = cmin, cmax
+    info["cmin"], info["cmax"] = float(cmin), float(cmax)
     info['black_bg'] = black_bg
     info['full_brain_mesh'] = False
-    return info, colors
+    info['colorscale'] = colors
+    return info
 
 
 def _check_mesh(mesh):
@@ -220,25 +220,24 @@ def full_brain_info(volume_img, mesh='fsaverage5', threshold=None,
         symmetric_cmap=symmetric_cmap)
 
     for hemi, surf_map in surface_maps.items():
-        sulc_depth_map = surface.load_surf_data(mesh['sulc_{}'.format(hemi)])
+        bg_map = surface.load_surf_data(mesh['sulc_{}'.format(hemi)])
         info['pial_{}'.format(hemi)] = to_plotly(mesh['pial_{}'.format(hemi)])
         info['inflated_{}'.format(hemi)] = to_plotly(
             mesh['infl_{}'.format(hemi)])
 
         info['vertexcolor_{}'.format(hemi)] = _get_vertexcolor(
-            surf_map, cmap, norm, abs_threshold, sulc_depth_map)
-    cmin, cmax = float(cmin), float(cmax)
-    info["cmin"], info["cmax"] = cmin, cmax
+            surf_map, cmap, norm, abs_threshold, bg_map)
+    info["cmin"], info["cmax"] = float(cmin), float(cmax)
     info['black_bg'] = black_bg
     info['full_brain_mesh'] = True
-    return info, colors
+    info['colorscale'] = colors
+    return info
 
 
-def _fill_html_template(info, colors, embed_js=True):
+def _fill_html_template(info, embed_js=True):
     as_json = json.dumps(info)
     as_html = _get_html_template().replace(
         'INSERT_STAT_MAP_JSON_HERE', as_json)
-    as_html = as_html.replace('INSERT_COLORSCALE_HERE', colors)
     as_html = add_js_lib(as_html, embed_js=embed_js)
     return SurfaceView(as_html)
 
@@ -279,10 +278,10 @@ def view_img_on_surf(volume_img, mesh='fsaverage5',
         Jupyter notebook.
 
     """
-    info, colors = full_brain_info(
+    info = full_brain_info(
         volume_img=volume_img, mesh=mesh, threshold=threshold,
         cmap=cmap, black_bg=black_bg)
-    return _fill_html_template(info, colors, embed_js=embed_js)
+    return _fill_html_template(info, embed_js=embed_js)
 
 
 def view_surf(surf_mesh, surf_map=None, bg_map=None, threshold=None,
@@ -343,8 +342,8 @@ def view_surf(surf_mesh, surf_map=None, bg_map=None, threshold=None,
         surface.check_mesh_and_data(surf_mesh, surf_map)
     if bg_map is not None:
         surface.check_mesh_and_data(surf_mesh, bg_map)
-    info, colors = one_mesh_info(
+    info = one_mesh_info(
         surf_map=surf_map, surf_mesh=surf_mesh, threshold=threshold,
         cmap=cmap, black_bg=black_bg, bg_map=bg_map,
         symmetric_cmap=symmetric_cmap)
-    return _fill_html_template(info, colors, embed_js=embed_js)
+    return _fill_html_template(info, embed_js=embed_js)

@@ -50,8 +50,7 @@ def test_add_js_lib():
                             */ """) in inline
 
 
-def _check_colors(colors_json):
-    colors = json.loads(colors_json)
+def _check_colors(colors):
     assert len(colors) == 100
     val, cstring = zip(*colors)
     assert np.allclose(np.linspace(0, 1, 100), val, atol=1e-3)
@@ -66,36 +65,36 @@ def test_colorscale():
     cmap = 'jet'
     values = np.linspace(-13, -1.5, 20)
     threshold = None
-    (colors_json, vmin, vmax, new_cmap, norm, abs_threshold
+    (colors, vmin, vmax, new_cmap, norm, abs_threshold
      ) = html_surface.colorscale(cmap, values, threshold)
-    _check_colors(colors_json)
+    _check_colors(colors)
     assert (vmin, vmax) == (-13, 13)
     assert new_cmap.N == 256
     assert (norm.vmax, norm.vmin) == (13, -13)
     assert abs_threshold is None
 
     threshold = 0
-    (colors_json, vmin, vmax, new_cmap, norm, abs_threshold
+    (colors, vmin, vmax, new_cmap, norm, abs_threshold
      ) = html_surface.colorscale(cmap, values, threshold)
-    _check_colors(colors_json)
+    _check_colors(colors)
     assert (vmin, vmax) == (-13, 13)
     assert new_cmap.N == 256
     assert (norm.vmax, norm.vmin) == (13, -13)
     assert abs_threshold == 1.5
 
     threshold = 100
-    (colors_json, vmin, vmax, new_cmap, norm, abs_threshold
+    (colors, vmin, vmax, new_cmap, norm, abs_threshold
      ) = html_surface.colorscale(cmap, values, threshold)
-    _check_colors(colors_json)
+    _check_colors(colors)
     assert (vmin, vmax) == (-13, 13)
     assert new_cmap.N == 256
     assert (norm.vmax, norm.vmin) == (13, -13)
     assert abs_threshold == 13
 
     threshold = 50
-    (colors_json, vmin, vmax, new_cmap, norm, abs_threshold
+    (colors, vmin, vmax, new_cmap, norm, abs_threshold
      ) = html_surface.colorscale(cmap, values, threshold)
-    val, cstring = _check_colors(colors_json)
+    val, cstring = _check_colors(colors)
     assert cstring[50] == 'rgb(127, 127, 127)'
     assert (vmin, vmax) == (-13, 13)
     assert new_cmap.N == 256
@@ -103,7 +102,7 @@ def test_colorscale():
     assert np.allclose(abs_threshold, 7.25)
 
     values = np.arange(15)
-    (colors_json, vmin, vmax, new_cmap, norm, abs_threshold
+    (colors, vmin, vmax, new_cmap, norm, abs_threshold
      ) = html_surface.colorscale(cmap, values, symmetric_cmap=False)
     assert (vmin, vmax) == (0, 14)
     assert new_cmap.N == 256
@@ -164,7 +163,7 @@ def test_one_mesh_info():
     fsaverage = fetch_surf_fsaverage()
     mesh = surface.load_surf_mesh(fsaverage['pial_right'])
     surf_map = mesh[0][:, 0]
-    info, col = html_surface.one_mesh_info(
+    info = html_surface.one_mesh_info(
         surf_map, fsaverage['pial_right'], 90, black_bg=True,
         bg_map=fsaverage['sulc_right'])
     assert {'_x', '_y', '_z', '_i', '_j', '_k'}.issubset(
@@ -178,14 +177,14 @@ def test_one_mesh_info():
     json.dumps(info)
     assert info['black_bg']
     assert not info['full_brain_mesh']
-    _check_colors(col)
+    _check_colors(info['colorscale'])
 
 
 def test_full_brain_info():
     fsaverage = fetch_surf_fsaverage()
     img = _get_img()
-    info, colors = html_surface.full_brain_info(img)
-    _check_colors(colors)
+    info = html_surface.full_brain_info(img)
+    _check_colors(info['colorscale'])
     assert {'pial_left', 'pial_right',
             'inflated_left', 'inflated_right',
             'vertexcolor_left', 'vertexcolor_right'}.issubset(info.keys())
@@ -222,7 +221,7 @@ def _check_html(html):
         return
     root = etree.HTML(html.html)
     head = root.find('head')
-    assert len(head.findall('script')) == 4
+    assert len(head.findall('script')) == 5
     body = root.find('body')
     div = body.find('div')
     assert ('id', 'surface-plot') in div.items()
@@ -244,14 +243,14 @@ def test_fill_html_template():
     mesh = surface.load_surf_mesh(fsaverage['pial_right'])
     surf_map = mesh[0][:, 0]
     img = _get_img()
-    info, colors = html_surface.one_mesh_info(
+    info = html_surface.one_mesh_info(
         surf_map, fsaverage['pial_right'], 90, black_bg=True,
         bg_map=fsaverage['sulc_right'])
-    html = html_surface._fill_html_template(info, colors, embed_js=False)
+    html = html_surface._fill_html_template(info, embed_js=False)
     _check_html(html)
     assert "jquery.min.js" in html.html
-    info, colors = html_surface.full_brain_info(img)
-    html = html_surface._fill_html_template(info, colors)
+    info = html_surface.full_brain_info(img)
+    html = html_surface._fill_html_template(info)
     _check_html(html)
     assert "* plotly.js (gl3d - minified) v1.38.3" in html.html
 
