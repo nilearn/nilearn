@@ -1118,7 +1118,8 @@ def fetch_atlas_talairach(level_name, data_dir=None, verbose=1):
     return Bunch(maps=atlas_img, labels=labels, description=description)
 
 def fetch_atlas_pauli_2017(data_dir=None, verbose=1):
-    """Download the Pauli et al. (2017) atlas with subcortical nodes.
+    """Download the Pauli et al. (2017) atlas with in total
+    12 subcortical nodes.
 
     Parameters
     ----------
@@ -1141,17 +1142,11 @@ def fetch_atlas_pauli_2017(data_dir=None, verbose=1):
 
     References
     ----------
-    http://talairach.org/about.html#Labels
+    https://osf.io/r2hvk/
 
-    `Lancaster JL, Woldorff MG, Parsons LM, Liotti M, Freitas CS, Rainey L,
-    Kochunov PV, Nickerson D, Mikiten SA, Fox PT, "Automated Talairach Atlas
-    labels for functional brain mapping". Human Brain Mapping 10:120-131,
-    2000.`
-
-    `Lancaster JL, Rainey LH, Summerlin JL, Freitas CS, Fox PT, Evans AC, Toga
-    AW, Mazziotta JC. Automated labeling of the human brain: A preliminary
-    report on the development and evaluation of a forward-transform method. Hum
-    Brain Mapp 5, 238-242, 1997.`
+    `Pauli, W. M., Nili, A. N., & Tyszka, J. M. (2018). A high-resolution 
+    probabilistic in vivo atlas of human subcortical brain nuclei. 
+    Scientific Data, 5, 180063–13. http://doi.org/10.1038/sdata.2018.63`
     """
 
     url_maps = 'https://osf.io/5mqfx/download'
@@ -1174,5 +1169,8 @@ def fetch_atlas_pauli_2017(data_dir=None, verbose=1):
 
     labels = np.loadtxt(labels, dtype=str)[:, 1].tolist()
 
+    fdescr = _get_dataset_descr(dataset_name)
+
     return Bunch(maps=atlas_img,
-                 labels=labels)
+                 labels=labels,
+                 description=fdescr)
