@@ -101,17 +101,17 @@ def test_compute_background_mask():
 def test_compute_gray_matter_mask():
     image = Nifti1Image(np.ones((9, 9, 9)), np.eye(4))
 
-    mask = compute_gray_matter_mask(image, threshold=0)
+    mask = compute_gray_matter_mask(image, threshold=-1)
     mask1 = np.zeros((9, 9, 9))
     mask1[2:-2, 2:-2, 2:-2] = 1
 
     np.testing.assert_array_equal(mask1, mask.get_data())
 
-    # Check warning message if using continuous interpolation
+    # Check that we get a useful warning for empty masks
     with warnings.catch_warnings(record=True) as w:
-        compute_gray_matter_mask(image, interpolation='continuous')
-    assert_equal(len(w), 2)
-    assert_true(isinstance(w[1].message, masking.MaskWarning))
+        compute_gray_matter_mask(image, threshold=1)
+    assert_equal(len(w), 1)
+    assert_true(isinstance(w[0].message, masking.MaskWarning))
 
 
 def test_apply_mask():
