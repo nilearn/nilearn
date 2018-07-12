@@ -4,8 +4,12 @@ import numpy as np
 from scipy import sparse
 from nilearn import datasets
 
-from .html_surface import (add_js_lib, SurfaceView, to_plotly,
+from .html_surface import (add_js_lib, HTMLDocument, to_plotly,
                            _encode, colorscale, cm, _get_html_template)
+
+
+class ConnectomeView(HTMLDocument):
+    pass
 
 
 def _prepare_line(edges, nodes):
@@ -54,4 +58,4 @@ def view_connectome(adjacency_matrix, coords, threshold=None, embed_js=True,
     as_html = _get_html_template('connectome_plot_template.html').replace(
         'INSERT_CONNECTOME_JSON_HERE', as_json)
     as_html = add_js_lib(as_html, embed_js=embed_js)
-    return SurfaceView(as_html)
+    return ConnectomeView(as_html)

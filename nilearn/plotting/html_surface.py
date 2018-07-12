@@ -68,7 +68,7 @@ def _remove_after_n_seconds(file_name, n_seconds):
     subprocess.Popen(['python', script, file_name, str(n_seconds)])
 
 
-class SurfaceView(object):
+class HTMLDocument(object):
     """
     Embeds a plot in a web page.
 
@@ -121,7 +121,7 @@ class SurfaceView(object):
         return wrapped
 
     def get_standalone(self):
-        """ Get the surface plot in an HTML page."""
+        """ Get the plot in an HTML page."""
         return self.html
 
     def _repr_html_(self):
@@ -183,6 +183,10 @@ class SurfaceView(object):
         os.remove(self._temp_file)
         print('removed {}'.format(self._temp_file))
         self._temp_file = None
+
+
+class SurfaceView(HTMLDocument):
+    pass
 
 
 def colorscale(cmap, values, threshold=None, symmetric_cmap=True):
