@@ -12,7 +12,7 @@ jobs:
       - run: sudo -E apt-get -yq remove texlive-binaries --purge
       # Installing required packages for `make -C doc check command` to work.
       - run: sudo -E apt-get -yq update
-      - run: sudo -E apt-get -yq --no-install-suggests --no-install-recommends --force-yes install dvipng texlive-latex-base texlive-latex-extra
+      - run: sudo -E apt-get -yq --no-install-suggests --no-install-recommends --force-yes install dvipng texlive-latex-base texlive-latex-extra wget
       - save_cache:
           key: v1-datasets-{{ .Branch }}
           paths:
