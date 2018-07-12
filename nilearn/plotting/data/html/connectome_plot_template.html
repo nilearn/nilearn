@@ -52,7 +52,7 @@
         function addConnectome() {
             let info = surfaceMapInfo["connectome"];
 
-            for (let attribute of ["c_x", "c_y", "c_z", "c_c"]) {
+            for (let attribute of ["con_x", "con_y", "con_z", "con_w"]) {
                 if (!(attribute in info)) {
                     info[attribute] = Array.from(decodeBase64(
                         info["_" + attribute], "float32"));
@@ -65,20 +65,20 @@
             Plotly.plot('surface-plot', [{
                 type: 'scatter3d',
                 mode: 'lines+markers',
-                x: info["c_x"],
-                y: info["c_y"],
-                z: info["c_z"],
+                x: info["con_x"],
+                y: info["con_y"],
+                z: info["con_z"],
                 opacity: 1,
                 line: {
                     width: 6,
-                    color: info["c_c"],
+                    color: info["con_w"],
                     colorscale: info["colorscale"],
                     cmin: info["cmin"],
                     cmax: info["cmax"]
                 },
                 marker: {
                     size: 3,
-                    color: info["c_c"],
+                    color: info["con_w"],
                     colorscale: [
                         [0, '#000000'],
                         [1, "#000000"]
