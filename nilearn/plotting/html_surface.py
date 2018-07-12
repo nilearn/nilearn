@@ -10,6 +10,8 @@ import numpy as np
 import matplotlib as mpl
 import matplotlib.cm
 
+from .._utils.extmath import fast_abs_percentile
+from .._utils.param_validation import check_threshold
 from .. import datasets, surface
 from . import cm
 
@@ -133,7 +135,7 @@ def colorscale(cmap, values, threshold=None, symmetric_cmap=True):
     cmaplist = [cmap(i) for i in range(cmap.N)]
     abs_threshold = None
     if threshold is not None:
-        abs_threshold = np.percentile(abs_values, threshold)
+        abs_threshold = check_threshold(threshold, values, fast_abs_percentile)
         istart = int(norm(-abs_threshold, clip=True) * (cmap.N - 1))
         istop = int(norm(abs_threshold, clip=True) * (cmap.N - 1))
         for i in range(istart, istop):
@@ -284,8 +286,13 @@ def view_img_on_surf(volume_img, mesh='fsaverage5',
         'infl_right', 'pial_right', 'sulc_right', containing inflated and
         pial meshes, and sulcal depth values for left and right hemispheres.
 
-    threshold : int, optional
-        int in [0, 100]: percentage of values to be thresholded.
+    threshold : str, number or None, optional (default=None)
+        If None, no thresholding.
+        If it is a number only values of amplitude greater
+        than threshold will be shown.
+        If it is a string it must finish with a percent sign,
+        e.g. "25.3%", and only values of amplitude above the
+        given percentile will be shown.
 
     cmap : str or matplotlib colormap, optional
 
@@ -335,8 +342,13 @@ def view_surf(surf_mesh, surf_map=None, bg_map=None, threshold=None,
         surf_data in greyscale, most likely a sulcal depth map for
         realistic shading.
 
-    threshold : int, optional
-        int in [0, 100]: percentage of values to be thresholded.
+    threshold : str, number or None, optional (default=None)
+        If None, no thresholding.
+        If it is a number only values of amplitude greater
+        than threshold will be shown.
+        If it is a string it must finish with a percent sign,
+        e.g. "25.3%", and only values of amplitude above the
+        given percentile will be shown.
 
     cmap : str or matplotlib colormap, optional
         You might want to change it to 'gnist_ncar' if plotting a

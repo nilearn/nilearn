@@ -64,9 +64,10 @@ plotting.plot_stat_map(localizer_tmap, display_mode='x', threshold=1.,
 # computation time, but finer visualizations.
 
 big_fsaverage = datasets.fetch_surf_fsaverage('fsaverage')
-texture = surface.vol_to_surf(localizer_tmap, big_fsaverage.pial_right)
+big_texture = surface.vol_to_surf(localizer_tmap, big_fsaverage.pial_right)
 
-plotting.plot_surf_stat_map(big_fsaverage.infl_right, texture, hemi='right',
+plotting.plot_surf_stat_map(big_fsaverage.infl_right,
+                            big_texture, hemi='right',
                             title='Surface right hemisphere: fine mesh',
                             threshold=1., bg_map=big_fsaverage.sulc_right)
 
@@ -80,14 +81,14 @@ plotting.show()
 # An alternative to plot_surf_stat_map is to use view_surf that gives a more
 # interactive visualization in a web browser
 
-view = plotting.view_surf(fsaverage.infl_right, texture, threshold=90,
+view = plotting.view_surf(fsaverage.infl_right, texture, threshold='90%',
                           bg_map=fsaverage.sulc_right)
 view.open_in_browser()
 
 # We don't need to do the projection ourselves, with view_img_on_surf we can
 # use the 3d image directly:
 
-view = plotting.view_img_on_surf(localizer_tmap, threshold=90)
+view = plotting.view_img_on_surf(localizer_tmap, threshold='90%')
 view.open_in_browser()
 
 # view will also be displayed correctly by a jupyter notebook:

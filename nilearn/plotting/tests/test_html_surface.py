@@ -76,7 +76,7 @@ def test_colorscale():
     assert (norm.vmax, norm.vmin) == (13, -13)
     assert abs_threshold is None
 
-    threshold = 0
+    threshold = '0%'
     (colors, vmin, vmax, new_cmap, norm, abs_threshold
      ) = html_surface.colorscale(cmap, values, threshold)
     _check_colors(colors)
@@ -85,7 +85,7 @@ def test_colorscale():
     assert (norm.vmax, norm.vmin) == (13, -13)
     assert abs_threshold == 1.5
 
-    threshold = 100
+    threshold = '99%'
     (colors, vmin, vmax, new_cmap, norm, abs_threshold
      ) = html_surface.colorscale(cmap, values, threshold)
     _check_colors(colors)
@@ -94,7 +94,17 @@ def test_colorscale():
     assert (norm.vmax, norm.vmin) == (13, -13)
     assert abs_threshold == 13
 
-    threshold = 50
+    threshold = '50%'
+    (colors, vmin, vmax, new_cmap, norm, abs_threshold
+     ) = html_surface.colorscale(cmap, values, threshold)
+    val, cstring = _check_colors(colors)
+    assert cstring[50] == 'rgb(127, 127, 127)'
+    assert (vmin, vmax) == (-13, 13)
+    assert new_cmap.N == 256
+    assert (norm.vmax, norm.vmin) == (13, -13)
+    assert np.allclose(abs_threshold, 7.55, 2)
+
+    threshold = 7.25
     (colors, vmin, vmax, new_cmap, norm, abs_threshold
      ) = html_surface.colorscale(cmap, values, threshold)
     val, cstring = _check_colors(colors)
@@ -167,7 +177,7 @@ def test_one_mesh_info():
     mesh = surface.load_surf_mesh(fsaverage['pial_right'])
     surf_map = mesh[0][:, 0]
     info = html_surface.one_mesh_info(
-        surf_map, fsaverage['pial_right'], 90, black_bg=True,
+        surf_map, fsaverage['pial_right'], '90%', black_bg=True,
         bg_map=fsaverage['sulc_right'])
     assert {'_x', '_y', '_z', '_i', '_j', '_k'}.issubset(
         info['inflated_left'].keys())
@@ -279,7 +289,7 @@ def test_fill_html_template():
     surf_map = mesh[0][:, 0]
     img = _get_img()
     info = html_surface.one_mesh_info(
-        surf_map, fsaverage['pial_right'], 90, black_bg=True,
+        surf_map, fsaverage['pial_right'], '90%', black_bg=True,
         bg_map=fsaverage['sulc_right'])
     html = html_surface._fill_html_template(info, embed_js=False)
     _check_html(html)
@@ -295,7 +305,10 @@ def test_view_surf():
     mesh = surface.load_surf_mesh(fsaverage['pial_right'])
     surf_map = mesh[0][:, 0]
     html = html_surface.view_surf(fsaverage['pial_right'], surf_map,
-                                  fsaverage['sulc_right'], 90)
+                                  fsaverage['sulc_right'], '90%')
+    _check_html(html)
+    html = html_surface.view_surf(fsaverage['pial_right'], surf_map,
+                                  fsaverage['sulc_right'], .3)
     _check_html(html)
     html = html_surface.view_surf(fsaverage['pial_right'])
     _check_html(html)
@@ -310,5 +323,7 @@ def test_view_surf():
 
 def test_view_img_on_surf():
     img = _get_img()
-    html = html_surface.view_img_on_surf(img, threshold=95)
+    html = html_surface.view_img_on_surf(img, threshold='92.3%')
+    _check_html(html)
+    html = html_surface.view_img_on_surf(img, threshold=.4)
     _check_html(html)
