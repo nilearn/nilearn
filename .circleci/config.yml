@@ -19,7 +19,7 @@ jobs:
             - ~/nilearn_data
 
       # Moving to nilearn directory before performing the installation.
-      - run: cd ~/nilearn
+      - run: cd nilearn
       - run:
           command: ./continuous_integration/install.sh
           environment:
