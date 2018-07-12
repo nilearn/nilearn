@@ -1117,12 +1117,16 @@ def fetch_atlas_talairach(level_name, data_dir=None, verbose=1):
         'talairach_atlas').decode('utf-8').format(level_name)
     return Bunch(maps=atlas_img, labels=labels, description=description)
 
-def fetch_atlas_pauli_2017(data_dir=None, verbose=1):
+def fetch_atlas_pauli_2017(version='prob', data_dir=None, verbose=1):
     """Download the Pauli et al. (2017) atlas with in total
     12 subcortical nodes.
 
     Parameters
     ----------
+
+    version: str, optional (default='prob')
+        Which version of the atlas should be download. This can be 'prob'
+        for the probabilistic atlas or 'det' for the deterministic atlas.
 
     data_dir : str, optional (default=None)
         Path of the data directory. Used to force data storage in a specified
@@ -1149,17 +1153,25 @@ def fetch_atlas_pauli_2017(data_dir=None, verbose=1):
     Scientific Data, 5, 180063–13. http://doi.org/10.1038/sdata.2018.63`
     """
 
-    url_maps = 'https://osf.io/5mqfx/download'
-    url_labels = 'https://osf.io/6qrcb/download'
+    if version == 'prob':
+        url_maps = 'https://osf.io/w8zq2/download'
+        filename = 'pauli_2017_det.nii.gz'
+    elif version == 'det':
+        url_maps = 'https://osf.io/5mqfx/download'
+        filename = 'pauli_2017_prob.nii.gz'
+    else:
+        raise NotImplementedError('{} is no valid version for '.format(version) + \
+                                  'the Pauli atlas')
 
+    url_labels = 'https://osf.io/6qrcb/download'
     dataset_name = 'pauli_2017'
 
     data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
                                 verbose=verbose)
 
-    files = [('pauli_2017.nii.gz',
+    files = [(filename,
               url_maps,
-              {'move':'pauli_2017.nii.gz'}),
+              {'move':filename}),
              ('labels.txt',
               url_labels,
               {'move':'labels.txt'})]

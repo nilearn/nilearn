@@ -534,11 +534,12 @@ def test_fetch_atlas_talairach(data_dir=tst.tmpdir):
 @with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
 def test_fetch_atlas_pauli_2017():
     data_dir = os.path.join(tst.tmpdir, 'pauli_2017')
-    data = atlas.fetch_atlas_pauli_2017(data_dir)
-    
-    values = data.maps.get_data()
-    assert_equal(len(np.unique(values)), 17)
+
+    data = atlas.fetch_atlas_pauli_2017('det', data_dir)
     assert_equal(len(data.labels), 16)
 
+    values = data.maps.get_data()
+    assert_equal(len(np.unique(values)), 17)
 
-
+    data = atlas.fetch_atlas_pauli_2017('prob', data_dir)
+    assert_equal(data.maps.shape[-1], 16)
