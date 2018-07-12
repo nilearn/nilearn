@@ -14,10 +14,9 @@ from .. import datasets, surface
 from . import cm
 
 
-def _get_html_template():
+def _get_html_template(template_name='surface_plot_template.html'):
     template_path = os.path.join(
-        os.path.dirname(__file__),
-        'data', 'html', 'surface_plot_template.html')
+        os.path.dirname(__file__), 'data', 'html', template_name)
     with open(template_path, 'rb') as f:
         return f.read().decode('utf-8')
 
