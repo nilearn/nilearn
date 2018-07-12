@@ -1155,8 +1155,8 @@ def fetch_atlas_pauli_2017(version='prob', data_dir=None, verbose=1):
 
     if version == 'prob':
         url_maps = 'https://osf.io/w8zq2/download'
-        filename = 'pauli_2017_det.nii.gz'
-    elif version == 'det':
+        filename = 'pauli_2017_labels.nii.gz'
+    elif version == 'labels':
         url_maps = 'https://osf.io/5mqfx/download'
         filename = 'pauli_2017_prob.nii.gz'
     else:

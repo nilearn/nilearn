@@ -535,7 +535,7 @@ def test_fetch_atlas_talairach(data_dir=tst.tmpdir):
 def test_fetch_atlas_pauli_2017():
     data_dir = os.path.join(tst.tmpdir, 'pauli_2017')
 
-    data = atlas.fetch_atlas_pauli_2017('det', data_dir)
+    data = atlas.fetch_atlas_pauli_2017('labels', data_dir)
     assert_equal(len(data.labels), 16)
 
     values = nibabel.load(data.maps).get_data()
