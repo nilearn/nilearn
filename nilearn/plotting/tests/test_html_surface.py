@@ -3,6 +3,7 @@ import json
 import base64
 import tempfile
 import os
+import webbrowser
 
 import numpy as np
 try:
@@ -238,7 +239,38 @@ def _check_html(html):
     view = selects[2]
     assert ('id', 'select-view') in view.items()
     assert len(view.findall('option')) == 7
+    _check_open_in_browser(html)
+    resized = html.resize(3, 17)
+    assert resized is html
+    assert (html.width, html.height) == (3, 17)
+    assert "width=3 height=17" in html.get_iframe()
+    assert "width=33 height=37" in html.get_iframe(33, 37)
 
+
+def _open_mock(f):
+    print('opened {}'.format(f))
+
+
+def _check_open_in_browser(html):
+    wb_open = webbrowser.open
+    webbrowser.open = _open_mock
+    try:
+        html.open_in_browser()
+        temp_file = html._temp_file
+        assert html._temp_file is not None
+        assert os.path.isfile(temp_file)
+        html.remove_temp_file()
+        assert html._temp_file is None
+        assert not os.path.isfile(temp_file)
+        html.remove_temp_file()
+        html._temp_file = 'aaaaaaaaaaaaaaaaaaaaaa'
+        html.remove_temp_file()
+    finally:
+        webbrowser.open = wb_open
+        try:
+            os.remove(temp_file)
+        except Exception:
+            pass
 
 def test_fill_html_template():
     fsaverage = fetch_surf_fsaverage()

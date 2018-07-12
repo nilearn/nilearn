@@ -64,6 +64,11 @@ class SurfaceView(object):
         self.html = html
         self.width = width
         self.height = height
+        self._temp_file = None
+
+    def resize(self, width, height):
+        self.width, self.height = width, height
+        return self
 
     def get_iframe(self, width=None, height=None):
         """
@@ -100,11 +105,21 @@ class SurfaceView(object):
         if file_name is None:
             _, file_name = tempfile.mkstemp('.html', 'nilearn_surface_plot_')
         self.save_as_html(file_name)
+        self._temp_file = file_name
         file_size = os.path.getsize(file_name) / 1e6
         print(("Saved HTML in temporary file: {}\n"
                "file size is {:.1f}M, delete it when you're done!").format(
                    file_name, file_size))
         webbrowser.open(file_name)
+
+    def remove_temp_file(self):
+        if self._temp_file is None:
+            return
+        if not os.path.isfile(self._temp_file):
+            return
+        print('remove {}'.format(self._temp_file))
+        os.remove(self._temp_file)
+        self._temp_file = None
 
 
 def colorscale(cmap, values, threshold=None, symmetric_cmap=True):
