@@ -179,9 +179,9 @@ print((prediction == conditions[-30:]).sum() / float(len(conditions[-30:])))
 #
 # We can split the data in train and test set repetitively in a `KFold`
 # strategy:
-from sklearn.cross_validation import KFold
+from sklearn.model_selection import KFold
 
-cv = KFold(n=len(fmri_masked), n_folds=5)
+cv = KFold(n_splits=5)
 
 for train, test in cv:
     conditions_masked = conditions.values[train]
