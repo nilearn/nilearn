@@ -43,6 +43,10 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
         If standardize is True, the time-series are centered and normed:
         their mean is put to 0 and their variance to 1 in the time dimension.
 
+    standardize_strategy : str, optional
+        This parameter sets how the signal gets normalized by signal.clean()
+        (z-scored or percent signal change).
+
     detrend: boolean, optional
         This parameter is passed to signal.clean. Please see the related
         documentation for details
@@ -121,10 +125,11 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
     """
 
     def __init__(self, mask_img=None, smoothing_fwhm=None,
-                 standardize=False, detrend=False,
-                 low_pass=None, high_pass=None, t_r=None,
-                 target_affine=None, target_shape=None,
-                 mask_strategy='background', mask_args=None, dtype=None,
+                 standardize=False, standardize_strategy='zscore' ,
+                 detrend=False, low_pass=None, high_pass=None,
+                 t_r=None, target_affine=None, target_shape=None,
+                 mask_strategy='background', mask_args=None,
+                 dtype=None,
                  memory=Memory(cachedir=None), memory_level=0,
                  n_jobs=1, verbose=0
                  ):
@@ -133,6 +138,7 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
 
         self.smoothing_fwhm = smoothing_fwhm
         self.standardize = standardize
+        self.standardize_strategy = standardize_strategy
         self.detrend = detrend
         self.low_pass = low_pass
         self.high_pass = high_pass
