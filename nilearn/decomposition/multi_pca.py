@@ -38,7 +38,7 @@ class MultiPCA(BaseDecomposition):
         it will be computed automatically by a MultiNiftiMasker with default
         parameters.
 
-    mask_strategy: {'background', 'epi'}, optional
+    mask_strategy: {'background', 'epi' or 'template'}, optional
         The strategy used to compute the mask: use 'background' if your
         images present a clear homogeneous background, and 'epi' if they
         are raw EPI images. Depending on this value, the mask will be
