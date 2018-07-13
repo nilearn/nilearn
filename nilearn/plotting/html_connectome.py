@@ -49,6 +49,41 @@ def _get_connectome(adjacency_matrix, coords, threshold=None,
 
 def view_connectome(adjacency_matrix, coords, threshold=None,
                     cmap=cm.cyan_orange, symmetric_cmap=True, embed_js=True):
+    """
+    Insert a 3d plot of a connectome into an HTML page.
+
+    Parameters
+    ----------
+    adjacency_matrix : ndarray, shape=(n_nodes, n_nodes)
+        the weights of the edges.
+
+    coords : ndarray, shape=(n_nodes, 3)
+        the coordinates of the nodes in MNI space.
+
+    threshold : str, number or None, optional (default=None)
+        If None, no thresholding.
+        If it is a number only connections of amplitude greater
+        than threshold will be shown.
+        If it is a string it must finish with a percent sign,
+        e.g. "25.3%", and only connections of amplitude above the
+        given percentile will be shown.
+
+    cmap : str or matplotlib colormap, optional
+
+    symmetric_cmap : bool, optional (default=True)
+        Make colormap symmetric (ranging from -vmax to vmax).
+
+    embed_js : bool, optional (default=True)
+        if True, jquery and plotly are embedded in resulting page.
+        otherwise, they are loaded via CDNs.
+
+    Returns
+    -------
+    ConnectomeView : plot of the connectome.
+        It can be saved as an html page or rendered (transparently) by the
+        Jupyter notebook.
+
+    """
     mesh = datasets.fetch_surf_fsaverage()
     mesh_info = {}
     mesh_info["connectome"] = _get_connectome(
