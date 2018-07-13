@@ -1117,6 +1117,7 @@ def fetch_atlas_talairach(level_name, data_dir=None, verbose=1):
         'talairach_atlas').decode('utf-8').format(level_name)
     return Bunch(maps=atlas_img, labels=labels, description=description)
 
+
 def fetch_atlas_pauli_2017(version='prob', data_dir=None, verbose=1):
     """Download the Pauli et al. (2017) atlas with in total
     12 subcortical nodes.
