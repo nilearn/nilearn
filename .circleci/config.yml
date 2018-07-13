@@ -1,7 +1,7 @@
 version: 2
 jobs:
   build:
-    machine: true
+    machine:
       image: circleci/classic:latest
 
     # Get rid of existing virtualenvs on circle ci as they conflict with conda.
