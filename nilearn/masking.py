@@ -82,8 +82,9 @@ def _extrapolate_out_mask(data, mask, iterations=1):
     outer_shell[1:-1, 1:-1, 1:-1] = np.logical_xor(new_mask, mask)
     outer_shell_x, outer_shell_y, outer_shell_z = np.where(outer_shell)
     extrapolation = list()
-    for i, j, k in [(0, 1, 0), (0, -1, 0), (1, 0, 0), (-1, 0, 0),
-                    (1, 0, 0), (-1, 0, 0)]:
+    for i, j, k in [(1, 0, 0), (-1, 0, 0), 
+                    (0, 1, 0), (0, -1, 0),
+                    (0, 0, 1), (0, 0, -1)]:
         this_x = outer_shell_x + i
         this_y = outer_shell_y + j
         this_z = outer_shell_z + k
