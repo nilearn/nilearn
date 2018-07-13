@@ -10,6 +10,8 @@ Enhancements
     - Add :func:`nilearn.datasets.fetch_surf_fsaverage` to download either
       fsaverage or fsaverage 5 (Freesurfer cortical meshes).
 
+    - Added :func:`nilearn.datasets.fetch_atlas_pauli_2017` to download a
+      recent subcortical neuroimaging atlas.
 
 
 Changes
