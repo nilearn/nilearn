@@ -183,7 +183,7 @@ from sklearn.model_selection import KFold
 
 cv = KFold(n_splits=5)
 
-for train, test in cv:
+for train, test in cv.split(X=fmri_masked):
     conditions_masked = conditions.values[train]
     svc.fit(fmri_masked[train], conditions_masked)
     prediction = svc.predict(fmri_masked[test])
