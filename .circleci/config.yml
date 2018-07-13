@@ -2,6 +2,8 @@ version: 2
 jobs:
   build:
     machine: true
+      image: circleci/classic:201708-01
+
     # Get rid of existing virtualenvs on circle ci as they conflict with conda.
     # Trick found here:
     # https://discuss.circleci.com/t/disable-autodetection-of-project-or-application-of-python-venv/235/10
@@ -20,11 +22,11 @@ jobs:
 
       # Moving to nilearn directory before performing the installation.
       - run: cd nilearn
-      - run: wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O ~/miniconda.sh
-      - run: chmod +x ~/miniconda.sh && ~/miniconda.sh -b
-      - run: export PATH=$HOME/miniconda2/bin:$PATH
-      - run: echo $PATH
-      - run: conda update --quiet --yes conda
+#      - run: wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O ~/miniconda.sh
+#      - run: chmod +x ~/miniconda.sh && ~/miniconda.sh -b
+#      - run: export PATH=$HOME/miniconda2/bin:$PATH
+#      - run: echo $PATH
+#      - run: conda update --quiet --yes conda
       - run:
           command: ./continuous_integration/install.sh
           environment:
