@@ -62,6 +62,10 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
         If standardize is True, the time-series are centered and normed:
         their mean is put to 0 and their variance to 1 in the time dimension.
 
+    standardize_strategy : str, optional
+        This parameter sets how the signal gets normalized by signal.clean()
+        (z-scored or percent signal change).
+
     detrend: boolean, optional
         This parameter is passed to signal.clean. Please see the related
         documentation for details
@@ -117,8 +121,10 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
 
     def __init__(self, maps_img, mask_img=None,
                  allow_overlap=True,
-                 smoothing_fwhm=None, standardize=False, detrend=False,
-                 low_pass=None, high_pass=None, t_r=None, dtype=None,
+                 smoothing_fwhm=None, standardize=False,
+                 standardize_strategy='zscore', detrend=False,
+                 low_pass=None, high_pass=None, t_r=None,
+                 dtype=None,
                  resampling_target="data",
                  memory=Memory(cachedir=None, verbose=0), memory_level=0,
                  verbose=0):
@@ -133,6 +139,7 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
 
         # Parameters for clean()
         self.standardize = standardize
+        self.standardize_strategy = standardize_strategy
         self.detrend = detrend
         self.low_pass = low_pass
         self.high_pass = high_pass

@@ -533,3 +533,17 @@ def test_high_variance_confounds():
     np.testing.assert_almost_equal(
         np.min(np.abs(np.dstack([outG - outGt, outG + outGt])), axis=2),
         np.zeros(outG.shape))
+
+
+
+def test_clean_psc():
+    rng = np.random.RandomState(0)
+    n_samples = 500
+    n_features = 5
+
+    signals, _, _ = generate_signals(n_features=n_features,
+                                     length=n_samples)
+
+    signals += rng.randn(1, n_features)
+    cleaned_signals = clean(signals, standardize_strategy='psc')
+    np.testing.assert_almost_equal(cleaned_signals.mean(), 0)
