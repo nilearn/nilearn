@@ -23,12 +23,13 @@ def _prepare_line(edges, nodes):
 
 
 def _get_connectome(adjacency_matrix, coords, threshold=None,
-                    cmap=cm.cold_hot):
+                    cmap=cm.cold_hot, symmetric_cmap=True):
     connectome = {}
     coords = np.asarray(coords, dtype='<f4')
     adjacency_matrix = adjacency_matrix.copy()
     colors, vmin, vmax, cmap, norm, abs_threshold = colorscale(
-        cmap, adjacency_matrix.ravel(), threshold=threshold)
+        cmap, adjacency_matrix.ravel(), threshold=threshold,
+        symmetric_cmap=symmetric_cmap)
     connectome['colorscale'] = colors
     connectome['cmin'], connectome['cmax'] = float(vmin), float(vmax)
     if threshold is not None:
@@ -46,12 +47,13 @@ def _get_connectome(adjacency_matrix, coords, threshold=None,
     return connectome
 
 
-def view_connectome(adjacency_matrix, coords, threshold=None, embed_js=True,
-                    cmap=cm.cold_hot):
+def view_connectome(adjacency_matrix, coords, threshold=None,
+                    cmap=cm.cyan_orange, symmetric_cmap=True, embed_js=True):
     mesh = datasets.fetch_surf_fsaverage()
     mesh_info = {}
     mesh_info["connectome"] = _get_connectome(
-        adjacency_matrix, coords, threshold=threshold, cmap=cmap)
+        adjacency_matrix, coords, threshold=threshold, cmap=cmap,
+        symmetric_cmap=symmetric_cmap)
     for hemi in ['pial_left', 'pial_right']:
         mesh_info[hemi] = to_plotly(mesh[hemi])
     as_json = json.dumps(mesh_info)
