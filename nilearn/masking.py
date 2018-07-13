@@ -636,7 +636,7 @@ def compute_multi_gray_matter_mask(target_imgs, threshold=.5,
                         'image or a list of images' % target_imgs)
 
     from ._utils.niimg_conversions import _check_same_fov
-    if not _check_same_fov(target_imgs):
+    if not _check_same_fov(*target_imgs):
         raise ValueError('The images in the list - %r - do not have the same '
                          'shape / affine' % target_imgs)
 
