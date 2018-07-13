@@ -35,8 +35,7 @@ jobs:
 
       # Generating html documentation (with warnings as errors)
       # we need to do this here so the datasets will be cached
-      - run:
-          command: ./continuous_integration/circle_ci_test_doc.sh
+      - run: ./continuous_integration/circle_ci_test_doc.sh
       - store_artifacts:
           path: doc/_build/html
           destination: doc
