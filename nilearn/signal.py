@@ -392,10 +392,10 @@ def clean(signals, sessions=None, detrend=True, standardize=True,
     This function can do several things on the input signals, in
     the following order:
 
-    - standardize
     - detrend
     - remove confounds
     - low- and high-pass filter
+    - standardize
 
     Low-pass filtering improves specificity.
 
