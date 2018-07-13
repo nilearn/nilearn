@@ -67,7 +67,7 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
         This parameter is passed to image.resample_img. Please see the
         related documentation for details.
 
-    mask_strategy: {'background' or 'epi'}, optional
+    mask_strategy: {'background' or 'epi' or 'template'}, optional
         The strategy used to compute the mask: use 'background' if your
         images present a clear homogeneous background, and 'epi' if they
         are raw EPI images. Depending on this value, the mask will be
@@ -176,6 +176,8 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
                 compute_mask = masking.compute_multi_background_mask
             elif self.mask_strategy == 'epi':
                 compute_mask = masking.compute_multi_epi_mask
+            elif self.mask_strategy == 'template':
+                compute_mask = masking.compute_multi_gray_matter_mask
             else:
                 raise ValueError("Unknown value of mask_strategy '%s'. "
                                  "Acceptable values are 'background' and 'epi'.")
