@@ -393,14 +393,20 @@ def clean(signals, sessions=None, detrend=True, standardize=True,
     the following order:
 
 <<<<<<< HEAD
+<<<<<<< HEAD
     - detrend
 =======
     - standardize
+=======
+>>>>>>> Documentation should reflect order correctly
     - detrend
     - remove confounds
 >>>>>>> First attempt at psc-extraction with nilearn
     - low- and high-pass filter
+<<<<<<< HEAD
     - remove confounds
+=======
+>>>>>>> Documentation should reflect order correctly
     - standardize
 
     Low-pass filtering improves specificity.
@@ -605,13 +611,6 @@ def clean(signals, sessions=None, detrend=True, standardize=True,
         Q = Q[:, np.abs(np.diag(R)) > np.finfo(np.float).eps * 100.]
         signals -= Q.dot(Q.T).dot(signals)
 
-<<<<<<< HEAD
-    if standardize:
-        signals = _standardize(signals, normalize=True, detrend=False)
-        signals *= np.sqrt(signals.shape[0])  # for unit variance
-
-    return signals
-=======
     if low_pass is not None or high_pass is not None:
         if t_r is None:
             raise ValueError("Repetition time (t_r) must be specified for "
@@ -631,5 +630,3 @@ def clean(signals, sessions=None, detrend=True, standardize=True,
                                normalization_strategy=standardize_strategy)
 
     return signals
-
->>>>>>> First attempt at psc-extraction with nilearn
