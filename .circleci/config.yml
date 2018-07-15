@@ -1,0 +1,61 @@
+version: 2
+
+jobs:
+  build:
+    docker:
+      - image: circleci/python:3.5
+    steps:
+      - checkout
+#      - run: sudo apt install wget
+#      - run: ls -ra
+#      - run: wget --help
+#      - run: cd ~/nilearn  # remove this. Current directory is repo root.
+      - run: ./continuous_integration/install.sh
+          environment:
+              PATH: ~/miniconda2/bin:$PATH
+#              MINICONDA_PATH: ~/miniconda
+              DISTRIB: "conda"
+              PYTHON_VERSION: "3.5"
+              NUMPY_VERSION: "*"
+              SCIPY_VERSION: "*"
+              SCIKIT_LEARN_VERSION: "*"
+              MATPLOTLIB_VERSION: "*"
+      - save_cache:
+           key: v1-datasets-{{ .Branch }}
+           paths:
+             - ~/nilearn_data
+      - store_artifacts:
+          path: doc/_build/html
+          destination: doc
+      - store_artifacts:
+          path: coverage
+          destination: coverage
+      - store_artifacts:
+          path: ~/log.txt
+          destination: log.txt
+#        working_directory: ~/nilearn
+
+
+workflows:
+  version: 2
+  build:
+    jobs:
+      - build
+
+#      steps:
+#        - run: cd && rm -rf ~/.pyenv && rm -rf ~/virtualenvs
+#        - run: sudo -E apt-get -yq remove texlive-binaries --purge
+#        - run: sudo -E apt-get -yq update
+#        - run: sudo -E apt-get -yq --no-install-suggests --no-install-recommends --force-yes install dvipng texlive-latex-base texlive-latex-extra
+#        - run: cd ~/nilearn
+#        - run: source continuous_integration/install.sh
+#        - run: conda install sphinx coverage pillow pandas -y -n testenv
+
+
+
+
+
+
+
+
+
