@@ -23,8 +23,7 @@ def _encode_nii(img):
         os.remove(temp)
 
 
-def view_stat_map(stat_map_img, threshold=None,
-                  bg_img=None, vmax=None, img_name="stat_map"):
+def view_stat_map(stat_map_img, threshold=None, bg_img=None, vmax=None):
     if bg_img is None:
         bg_img = datasets.load_mni152_template()
         bg_mask = datasets.load_mni152_brain_mask()
@@ -44,7 +43,6 @@ def view_stat_map(stat_map_img, threshold=None,
     html = _get_html_template('stat_map_template.html')
     html = html.replace('INSERT_STAT_MAP_DATA_HERE', _encode_nii(stat_map_img))
     html = html.replace('INSERT_MNI_DATA_HERE', _encode_nii(bg_img))
-    html = html.replace('INSERT_STAT_MAP_NAME_HERE', img_name)
     html = html.replace('INSERT_ABS_MIN_HERE', abs_threshold)
     html = html.replace('INSERT_ABS_MAX_HERE', str(vmax))
     return SurfaceView(html)
