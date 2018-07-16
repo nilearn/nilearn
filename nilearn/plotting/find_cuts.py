@@ -17,7 +17,7 @@ from .._utils.extmath import fast_abs_percentile
 from .._utils.numpy_conversions import as_ndarray
 from .._utils import check_niimg_3d
 from .._utils.niimg import _safe_get_data
-from ..image.resampling import get_mask_bounds, coord_transform
+from ..image.resampling import get_mask_bounds, coord_transform, reorder_img
 from ..image.image import _smooth_array
 
 ################################################################################
@@ -216,6 +216,12 @@ def find_cut_slices(img, direction='z', n_cuts=7, spacing='auto'):
     separated by a distance of at least 'spacing'. If n_cuts is very
     large and all the activated regions are covered, cuts with a spacing
     less than 'spacing' will be returned.
+
+    Warning
+    -------
+    If a non-diagonal img is given. This function automatically reorders
+    img to get it back to diagonal. This is to avoid finding same cuts in
+    the slices.
     """
 
     # misc
@@ -226,6 +232,14 @@ def find_cut_slices(img, direction='z', n_cuts=7, spacing='auto'):
     axis = 'xyz'.index(direction)
     img = check_niimg_3d(img)
     affine = img.affine
+    if not np.alltrue(np.diag(affine)[:3]):
+        warnings.warn('A non-diagonal affine is found in the given '
+                      'image. Reordering the image to get diagonal affine '
+                      'for finding cuts in the slices.', stacklevel=2)
+        # resample is set to avoid issues with an image having a non-diagonal
+        # affine and rotation.
+        img = reorder_img(img, resample='nearest')
+        affine = img.affine
     orig_data = np.abs(_safe_get_data(img))
     this_shape = orig_data.shape[axis]
 

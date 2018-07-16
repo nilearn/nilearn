@@ -1,5 +1,5 @@
 import numpy as np
-from nose.tools import assert_equal, assert_true
+from nose.tools import assert_equal, assert_true, assert_not_equal
 import nibabel
 from nilearn.plotting.find_cuts import (find_xyz_cut_coords, find_cut_slices,
                                         _transform_cut_coords)
@@ -87,6 +87,30 @@ def test_find_cut_slices():
         # Only a smoke test
         cuts = find_cut_slices(img, direction=direction,
                                n_cuts=n_cuts, spacing=2)
+
+    # non-diagonal affines
+    affine = np.array([[-1., 0., 0., 123.46980286],
+                       [0., 0., 1., -94.11079407],
+                       [0., -1., 0., 160.694],
+                       [0., 0., 0., 1.]])
+    img = nibabel.Nifti1Image(data, affine)
+    cuts = find_cut_slices(img, direction='z')
+    assert_not_equal(np.diff(cuts).min(), 0.)
+    affine = np.array([[-2., 0., 0., 123.46980286],
+                       [0., 0., 2., -94.11079407],
+                       [0., -2., 0., 160.694],
+                       [0., 0., 0., 1.]])
+    img = nibabel.Nifti1Image(data, affine)
+    cuts = find_cut_slices(img, direction='z')
+    assert_not_equal(np.diff(cuts).min(), 0.)
+    # Rotate it slightly
+    angle = np.pi / 180 * 15
+    rotation_matrix = np.array([[np.cos(angle), -np.sin(angle)],
+                                [np.sin(angle), np.cos(angle)]])
+    affine[:2, :2] = rotation_matrix * 2.0
+    img = nibabel.Nifti1Image(data, affine)
+    cuts = find_cut_slices(img, direction='z')
+    assert_not_equal(np.diff(cuts).min(), 0.)
 
 
 def test_validity_of_ncuts_error_in_find_cut_slices():

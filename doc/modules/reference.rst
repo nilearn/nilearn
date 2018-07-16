@@ -76,6 +76,7 @@ uses.
    fetch_atlas_aal
    fetch_atlas_basc_multiscale_2015
    fetch_atlas_allen_2011
+   fetch_atlas_pauli_2017
    fetch_coords_dosenbach_2010
    fetch_abide_pcp
    fetch_adhd
@@ -88,7 +89,7 @@ uses.
    fetch_miyawaki2008
    fetch_nyu_rest
    fetch_surf_nki_enhanced
-   fetch_surf_fsaverage5
+   fetch_surf_fsaverage
    fetch_atlas_surf_destrieux
    fetch_atlas_talairach
    fetch_oasis_vbm
