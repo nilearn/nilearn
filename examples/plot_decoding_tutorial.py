@@ -205,7 +205,7 @@ print(cv_score)
 #
 # By default, cross_val_score uses a 3-fold KFold. We can control this by
 # passing the "cv" object, here a 5-fold:
-cv_score = cross_val_score(svc, fmri_masked, conditions, cv=cv)
+cv_score = cross_val_score(svc, fmri_masked, conditions, cv=cv.split(X=fmri_masked))
 print(cv_score)
 
 ###########################################################################
