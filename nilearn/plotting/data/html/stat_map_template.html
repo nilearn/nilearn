@@ -95,6 +95,18 @@ if(!String.fromCodePoint){(function(){var af=String.fromCharCode;var S=Math.floo
            params["encodedImages"] = ["mni", "stat_map"];
            params["noNewFiles"] = true;
            params["fullScreen"] = true;
+           params["stat_map"] = {};
+           params["stat_map"]["lut"] = "Red Overlay";
+           params["stat_map"]["negative_lut"] = "Blue Overlay";
+           params["stat_map"]["symmetric"] = true;
+           params["stat_map"]["parametric"] = true;
+
+           var stat_map_min = INSERT_ABS_MIN_HERE;
+           var stat_map_max = INSERT_ABS_MAX_HERE;
+           if (stat_map_min !== null){
+             params["stat_map"]["min"] = stat_map_min;
+             params["stat_map"]["max"] = stat_map_max;
+           }
         </script>
 
 	</head>
