@@ -7,7 +7,7 @@ from nilearn import image, datasets
 
 from .._utils.extmath import fast_abs_percentile
 from .._utils.param_validation import check_threshold
-from .html_surface import _get_html_template, SurfaceView
+from .html_surface import _get_html_template, HTMLDocument
 
 
 def _encode_nii(img):
@@ -21,6 +21,10 @@ def _encode_nii(img):
             return encoded
     finally:
         os.remove(temp)
+
+
+class StatMapView(HTMLDocument):
+    pass
 
 
 def view_stat_map(stat_map_img, threshold=None, bg_img=None, vmax=None):
@@ -45,4 +49,4 @@ def view_stat_map(stat_map_img, threshold=None, bg_img=None, vmax=None):
     html = html.replace('INSERT_MNI_DATA_HERE', _encode_nii(bg_img))
     html = html.replace('INSERT_ABS_MIN_HERE', abs_threshold)
     html = html.replace('INSERT_ABS_MAX_HERE', str(vmax))
-    return SurfaceView(html)
+    return StatMapView(html)
