@@ -84,12 +84,18 @@ plotting.show()
 view = plotting.view_surf(fsaverage.infl_right, texture, threshold='90%',
                           bg_map=fsaverage.sulc_right)
 view.open_in_browser()
+import time
+time.sleep(5)
+view.remove_temp_file()
+
 
 # We don't need to do the projection ourselves, with view_img_on_surf we can
 # use the 3d image directly:
 
 view = plotting.view_img_on_surf(localizer_tmap, threshold='90%')
 view.open_in_browser()
+time.sleep(5)
+view.remove_temp_file()
 
 # view will also be displayed correctly by a jupyter notebook:
 

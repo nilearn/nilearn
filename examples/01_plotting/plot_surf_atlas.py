@@ -88,6 +88,9 @@ plotting.show()
 view = plotting.view_surf(
     fsaverage.infl_left, parcellation, symmetric_cmap=False, cmap='gist_ncar')
 view.open_in_browser()
+import time
+time.sleep(5)
+view.remove_temp_file()
 
 # visu will also be displayed correctly by a jupyter notebook:
 
