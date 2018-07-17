@@ -119,8 +119,8 @@ class SurfaceView(object):
             return
         if not os.path.isfile(self._temp_file):
             return
-        print('remove {}'.format(self._temp_file))
         os.remove(self._temp_file)
+        print('removed {}'.format(self._temp_file))
         self._temp_file = None
 
 
