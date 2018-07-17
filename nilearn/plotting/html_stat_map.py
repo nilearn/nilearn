@@ -40,6 +40,38 @@ class StatMapView(HTMLDocument):
 
 
 def view_stat_map(stat_map_img, threshold=None, bg_img=None, vmax=None):
+    """
+    Insert a surface plot of a surface map into an HTML page.
+
+    Parameters
+    ----------
+    stat_map_img : Niimg-like object
+        See http://nilearn.github.io/manipulating_images/input_output.html
+        The statistical map image
+
+    threshold : str, number or None, optional (default=None)
+        If None, no thresholding.
+        If it is a number only values of amplitude greater
+        than threshold will be shown.
+        If it is a string it must finish with a percent sign,
+        e.g. "25.3%", and only values of amplitude above the
+        given percentile will be shown.
+
+    bg_img : Niimg-like object, optional (default=None)
+        See http://nilearn.github.io/manipulating_images/input_output.html
+        The background image that the stat map will be plotted on top of.
+        If nothing is specified, the MNI152 template will be used.
+
+    vmax : float, optionsl (default=None)
+        Upper bound for plotting
+
+    Returns
+    -------
+    StatMapView : plot of the stat map.
+        It can be saved as an html page or rendered (transparently) by the
+        Jupyter notebook.
+
+    """
     if bg_img is None:
         bg_img = datasets.load_mni152_template()
         bg_mask = datasets.load_mni152_brain_mask()
