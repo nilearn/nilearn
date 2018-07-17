@@ -23,6 +23,18 @@ def _encode_nii(img):
         os.remove(temp)
 
 
+def _decode_nii(encoded):
+    fd, temp = tempfile.mkstemp(suffix='.nii')
+    os.close(fd)
+    try:
+        with open(temp, 'wb') as f:
+            f.write(base64.b64decode(encoded.encode('utf-8')))
+        img = image.load_img(temp)
+        return image.new_img_like(img, img.get_data())
+    finally:
+        os.remove(temp)
+
+
 class StatMapView(HTMLDocument):
     pass
 
