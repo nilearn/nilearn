@@ -635,10 +635,10 @@ def compute_multi_gray_matter_mask(target_imgs, threshold=.5,
         raise TypeError('An empty object - %r - was passed instead of an '
                         'image or a list of images' % target_imgs)
 
-    from ._utils.niimg_conversions import _check_same_fov
-    if not _check_same_fov(*target_imgs):
-        raise ValueError('The images in the list - %r - do not have the same '
-                         'shape / affine' % target_imgs)
+    # Check images in the list have the same FOV without loading them in memory
+    imgs_generator = _utils.check_niimg(target_imgs, return_iterator=True)
+    for _ in imgs_generator:
+        pass
 
     mask = compute_gray_matter_mask(target_imgs[0], threshold=threshold,
                                     connected=connected, opening=opening,
