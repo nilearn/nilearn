@@ -195,7 +195,7 @@ for train, test in cv.split(X=fmri_masked):
 # ...................................
 #
 # Scikit-learn has tools to perform cross-validation easier:
-from sklearn.cross_validation import cross_val_score
+from sklearn.model_selection import cross_val_score
 cv_score = cross_val_score(svc, fmri_masked, conditions)
 print(cv_score)
 
@@ -219,9 +219,9 @@ print(cv_score)
 # LeaveOneLabelOut object:
 session_label = behavioral['chunks'][condition_mask]
 
-from sklearn.cross_validation import LeaveOneLabelOut
-cv = LeaveOneLabelOut(session_label)
-cv_score = cross_val_score(svc, fmri_masked, conditions, cv=cv)
+from sklearn.model_selection import LeaveOneGroupOut
+cv = LeaveOneGroupOut()
+cv_score = cross_val_score(svc, fmri_masked, conditions, cv=cv.split(X=fmri_masked, groups=session_label))
 print(cv_score)
 
 
