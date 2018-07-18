@@ -215,8 +215,8 @@ print(cv_score)
 #
 # The number of the session is stored in the CSV file giving the
 # behavioral data. We have to apply our session mask, to select only cats
-# and faces. To leave a session out, we pass it to a
-# LeaveOneLabelOut object:
+# and faces. To leave a session out, we pass it to the split method of a
+# LeaveOneGroupOut object:
 session_label = behavioral['chunks'][condition_mask]
 
 from sklearn.model_selection import LeaveOneGroupOut
