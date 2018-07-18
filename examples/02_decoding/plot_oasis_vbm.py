@@ -129,7 +129,7 @@ display = plot_stat_map(weight_img, bg_img=bg_filename,
 display.title('SVM weights', y=1.2)
 
 # Measure accuracy with cross validation
-from sklearn.cross_validation import cross_val_score
+from sklearn.model_selection import cross_val_score
 cv_scores = cross_val_score(anova_svr, gm_maps_masked, age)
 
 # Return the corresponding mean prediction accuracy

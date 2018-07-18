@@ -97,8 +97,7 @@ anova_svc = Pipeline([('anova', feature_selection), ('svc', svc)])
 anova_svc.fit(X, y)
 y_pred = anova_svc.predict(X)
 
-from sklearn.cross_validation import LeaveOneLabelOut, cross_val_score
-cv = LeaveOneLabelOut(session[session < 10])
+from sklearn.model_selection import cross_val_score
 
 k_range = [10, 15, 30, 50, 150, 300, 500, 1000, 1500, 3000, 5000]
 cv_scores = []

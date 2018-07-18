@@ -100,8 +100,8 @@ classifiers = {'SVC': svm,
 # Run time for all these classifiers
 
 # Make a data splitting object for cross validation
-from sklearn.cross_validation import LeaveOneLabelOut, cross_val_score
-cv = LeaveOneLabelOut(session_labels)
+from sklearn.model_selection import LeaveOneGroupOut, cross_val_score
+cv = LeaveOneGroupOut()
 
 import time
 
@@ -114,11 +114,12 @@ for classifier_name, classifier in sorted(classifiers.items()):
     for category in categories:
         classification_target = stimuli[task_mask].isin([category])
         t0 = time.time()
-        classifiers_scores[classifier_name][category] = cross_val_score(
-            classifier,
-            masked_timecourses,
-            classification_target,
-            cv=cv, scoring="f1")
+        classifiers_scores[classifier_name][category] = cross_val_score(classifier,
+                                                                        masked_timecourses,
+                                                                        classification_target,
+                                                                        cv=cv.split(X=masked_timecourses, groups=session_labels),
+                                                                        scoring="f1",
+                                                                        )
 
         print("%10s: %14s -- scores: %1.2f +- %1.2f, time %.2fs" % (
             classifier_name, category,
