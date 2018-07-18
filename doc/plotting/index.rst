@@ -327,6 +327,8 @@ that can be used to save the plot to an image file::
     # Don't forget to close the display
     >>> display.close()     # doctest: +SKIP
 
+.. _surface-plotting:
+
 Surface plotting
 ================
 
@@ -364,10 +366,15 @@ NOTE: These functions works for only with matplotlib higher than 1.3.1.
 
 =====================   ===================================================================
 
-Nilearn also have functions for making interactive surface plots that can be
+.. _interactive-surface-plotting:
+
+Surface plotting in a web browser
+---------------------------------
+
+Nilearn also has functions for making interactive surface plots that can be
 seen in a web browser.
 
-:func:`view_surf`: Surface plot using a surface map and a mesh
+:func:`view_surf`: Surface plot using a surface map and a cortical mesh
 
 :func:`view_img_on_surf`: Surface plot using a 3d image.
 

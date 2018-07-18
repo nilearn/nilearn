@@ -76,27 +76,10 @@ plotting.show()
 
 
 ##############################################################################
-# More interactive visualization
-# ------------------------------
-# An alternative to plot_surf_stat_map is to use view_surf that gives a more
-# interactive visualization in a web browser
-
-view = plotting.view_surf(fsaverage.infl_right, texture, threshold='90%',
-                          bg_map=fsaverage.sulc_right)
-view.open_in_browser()
-import time
-time.sleep(5)
-view.remove_temp_file()
-
-
-# We don't need to do the projection ourselves, with view_img_on_surf we can
-# use the 3d image directly:
-
-view = plotting.view_img_on_surf(localizer_tmap, threshold='90%')
-view.open_in_browser()
-time.sleep(5)
-view.remove_temp_file()
-
-# view will also be displayed correctly by a jupyter notebook:
-
-view
+# 3D visualization in a web browser
+# ---------------------------------
+# An alternative to :func:`plot_surf_stat_map` is to use
+# :func:`nilearn.plotting.view_surf` or
+# :func:`nilearn.plotting.view_img_on_surf` that give more interactive
+# visualizations in a web browser. See :ref:`interactive-surface-plotting` for
+# more details.

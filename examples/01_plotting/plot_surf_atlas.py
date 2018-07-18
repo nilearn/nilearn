@@ -80,18 +80,10 @@ plotting.plot_surf_roi(fsaverage['infl_left'], roi_map=parcellation,
 plotting.show()
 
 ##############################################################################
-# More interactive visualization
-# ------------------------------
-# An alternative to plot_surf_stat_map is to use view_surf that gives a more
-# interactive visualization in a web browser
-
-view = plotting.view_surf(
-    fsaverage.infl_left, parcellation, symmetric_cmap=False, cmap='gist_ncar')
-view.open_in_browser()
-import time
-time.sleep(5)
-view.remove_temp_file()
-
-# visu will also be displayed correctly by a jupyter notebook:
-
-view
+# 3D visualization in a web browser
+# ---------------------------------
+# An alternative to :func:`plot_surf_roi` is to use
+# :func:`nilearn.plotting.view_surf` or
+# :func:`nilearn.plotting.view_img_on_surf` that give more interactive
+# visualizations in a web browser. See :ref:`interactive-surface-plotting` for
+# more details.
