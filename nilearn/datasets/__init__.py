@@ -23,7 +23,8 @@ from .atlas import (fetch_atlas_craddock_2012, fetch_atlas_destrieux_2009,
                     fetch_coords_dosenbach_2010,
                     fetch_atlas_allen_2011,
                     fetch_atlas_surf_destrieux,
-                    fetch_atlas_talairach)
+                    fetch_atlas_talairach,
+                    fetch_atlas_pauli_2017)
 
 from .utils import get_data_dirs
 from .neurovault import fetch_neurovault, fetch_neurovault_ids
