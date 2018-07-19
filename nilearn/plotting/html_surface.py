@@ -68,6 +68,7 @@ class SurfaceView(object):
         self._temp_file = None
 
     def resize(self, width, height):
+        """Resize the plot displayed in a Jupyter notebook."""
         self.width, self.height = width, height
         return self
 
@@ -93,16 +94,27 @@ class SurfaceView(object):
         return self.html
 
     def _repr_html_(self):
+        """
+        Used by the Jupyter notebook.
+
+        Users normally won't call this method explicitely.
+        """
         return self.get_iframe()
 
     def __str__(self):
         return self.html
 
     def save_as_html(self, file_name):
+        """
+        Save the plot in an HTML file, that can later be opened in a browser.
+        """
         with open(file_name, 'wb') as f:
             f.write(self.html.encode('utf-8'))
 
     def open_in_browser(self, file_name=None):
+        """
+        Save the plot to a temporary HTML file and open it in a browser.
+        """
         if file_name is None:
             fd, file_name = tempfile.mkstemp('.html', 'nilearn_surface_plot_')
             os.close(fd)
@@ -115,6 +127,9 @@ class SurfaceView(object):
         webbrowser.open(file_name)
 
     def remove_temp_file(self):
+        """
+        Remove the temporary file created by `open_in_browser`, if necessary.
+        """
         if self._temp_file is None:
             return
         if not os.path.isfile(self._temp_file):
