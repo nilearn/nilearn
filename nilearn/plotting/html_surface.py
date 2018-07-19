@@ -5,6 +5,8 @@ import cgi
 import webbrowser
 import tempfile
 import collections
+import weakref
+import warnings
 
 import numpy as np
 import matplotlib as mpl
@@ -67,12 +69,22 @@ class SurfaceView(object):
     document.get_iframe() to have it wrapped in an iframe.
 
     """
+    _all_open_html_repr = weakref.WeakSet()
 
     def __init__(self, html, width=600, height=400):
         self.html = html
         self.width = width
         self.height = height
         self._temp_file = None
+        self._check_n_open()
+
+    def _check_n_open(self):
+        SurfaceView._all_open_html_repr.add(self)
+        if len(SurfaceView._all_open_html_repr) > 9:
+            warnings.warn('It seems you have created more than 10 '
+                          'nilearn views. As each view uses dozens '
+                          'of megabytes of RAM, you might want to '
+                          'delete some of them.')
 
     def resize(self, width, height):
         """Resize the plot displayed in a Jupyter notebook."""

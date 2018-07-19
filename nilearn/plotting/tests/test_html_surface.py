@@ -12,7 +12,7 @@ try:
 except ImportError:
     LXML_INSTALLED = False
 
-from numpy.testing import assert_raises
+from numpy.testing import assert_raises, assert_warns, assert_no_warnings
 
 from nilearn import datasets, surface
 from nilearn.plotting import html_surface
@@ -281,6 +281,21 @@ def _check_open_in_browser(html):
             os.remove(temp_file)
         except Exception:
             pass
+
+
+def _open_views():
+    return [html_surface.SurfaceView('') for i in range(12)]
+
+
+def _open_one_view():
+    for i in range(12):
+        v = html_surface.SurfaceView('')
+    return v
+
+
+def test_open_view_warning():
+    assert_warns(UserWarning, _open_views)
+    assert_no_warnings(_open_one_view)
 
 
 def test_fill_html_template():
