@@ -148,6 +148,7 @@ class SurfaceView(object):
 
 
 def colorscale(cmap, values, threshold=None, symmetric_cmap=True):
+    """Normalize a cmap, put it in plotly format, get threshold and range"""
     cmap = mpl_cm.get_cmap(cmap)
     abs_values = np.abs(values)
     if symmetric_cmap:
