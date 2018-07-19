@@ -376,7 +376,7 @@ seen in a web browser.
 
 :func:`view_surf`: Surface plot using a surface map and a cortical mesh
 
-:func:`view_img_on_surf`: Surface plot using a 3d image.
+:func:`view_img_on_surf`: Surface plot using a 3D statistical map.
 
 for example::
 
@@ -385,7 +385,7 @@ for example::
     >>> view.open_in_browser()     # doctest: +SKIP
 
 
-will open this 3d plot in your web browser:
+will open this 3D plot in your web browser:
 
 .. image:: ../images/plotly_surface_plot.png
 
