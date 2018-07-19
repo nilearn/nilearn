@@ -600,8 +600,7 @@ def compute_multi_gray_matter_mask(target_imgs, threshold=.5,
 
     opening: bool or int, optional
         if opening is True, a morphological opening is performed, to keep
-        only large structures. This step is useful to remove parts of
-        the skull that might have been included.
+        only large structures.
         If opening is an integer `n`, it is performed via `n` erosions.
         After estimation of the largest connected constituent, 2`n` closing
         operations are performed followed by `n` erosions. This corresponds
