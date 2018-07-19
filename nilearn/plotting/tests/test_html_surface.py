@@ -33,7 +33,7 @@ def _normalize_ws(text):
 
 
 def test_add_js_lib():
-    html = html_surface._get_html_template()
+    html = html_surface.get_html_template('surface_plot_template.html')
     cdn = html_surface.add_js_lib(html, embed_js=False)
     assert "decodeBase64" in cdn
     assert _normalize_ws("""<script
@@ -125,10 +125,10 @@ def test_colorscale():
 def _test_encode():
     for dtype in ['<f4', '<i4', '>f4', '>i4']:
         a = np.arange(10, dtype=dtype)
-        encoded = html_surface._encode(a)
+        encoded = html_surface.encode(a)
         decoded = base64.b64decode(encoded.encode('utf-8'))
         b = np.frombuffer(decoded, dtype=dtype)
-        assert np.allclose(html_surface._decode(encoded), b)
+        assert np.allclose(html_surface.decode(encoded), b)
         assert np.allclose(a, b)
 
 
@@ -138,10 +138,10 @@ def test_to_plotly():
     plotly = html_surface.to_plotly(fsaverage['pial_left'])
     for i, key in enumerate(['_x', '_y', '_z']):
         assert np.allclose(
-            html_surface._decode(plotly[key], '<f4'), coord[:, i])
+            html_surface.decode(plotly[key], '<f4'), coord[:, i])
     for i, key in enumerate(['_i', '_j', '_k']):
         assert np.allclose(
-            html_surface._decode(plotly[key], '<i4'), triangles[:, i])
+            html_surface.decode(plotly[key], '<i4'), triangles[:, i])
 
 
 def test_to_color_strings():
@@ -181,7 +181,7 @@ def test_one_mesh_info():
         bg_map=fsaverage['sulc_right'])
     assert {'_x', '_y', '_z', '_i', '_j', '_k'}.issubset(
         info['inflated_left'].keys())
-    assert len(html_surface._decode(
+    assert len(html_surface.decode(
         info['inflated_left']['_x'], '<f4')) == len(surf_map)
     assert len(info['vertexcolor_left']) == len(surf_map)
     cmax = np.max(np.abs(surf_map))
@@ -209,9 +209,9 @@ def test_full_brain_info():
     for hemi in ['left', 'right']:
         mesh = surface.load_surf_mesh(fsaverage['pial_{}'.format(hemi)])
         assert len(info['vertexcolor_{}'.format(hemi)]) == len(mesh[0])
-        assert len(html_surface._decode(
+        assert len(html_surface.decode(
             info['inflated_{}'.format(hemi)]['_z'], '<f4')) == len(mesh[0])
-        assert len(html_surface._decode(
+        assert len(html_surface.decode(
             info['pial_{}'.format(hemi)]['_j'], '<i4')) == len(mesh[1])
 
 

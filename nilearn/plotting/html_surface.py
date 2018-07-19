@@ -16,7 +16,8 @@ from .. import datasets, surface
 from . import cm
 
 
-def _get_html_template(template_name='surface_plot_template.html'):
+def get_html_template(template_name):
+    """Get an HTML file from package data"""
     template_path = os.path.join(
         os.path.dirname(__file__), 'data', 'html', template_name)
     with open(template_path, 'rb') as f:
@@ -174,7 +175,8 @@ def colorscale(cmap, values, threshold=None, symmetric_cmap=True):
     return colors, vmin, vmax, our_cmap, norm, abs_threshold
 
 
-def _encode(a):
+def encode(a):
+    """Base64 encode a numpy array"""
     try:
         data = a.tobytes()
     except AttributeError:
@@ -183,14 +185,15 @@ def _encode(a):
     return base64.b64encode(data).decode('utf-8')
 
 
-def _decode(b, dtype):
+def decode(b, dtype):
+    """Decode a numpy array encoded as Base64"""
     return np.frombuffer(base64.b64decode(b.encode('utf-8')), dtype)
 
 
 def to_plotly(mesh):
     mesh = surface.load_surf_mesh(mesh)
-    x, y, z = map(_encode, np.asarray(mesh[0].T, dtype='<f4'))
-    i, j, k = map(_encode, np.asarray(mesh[1].T, dtype='<i4'))
+    x, y, z = map(encode, np.asarray(mesh[0].T, dtype='<f4'))
+    i, j, k = map(encode, np.asarray(mesh[1].T, dtype='<i4'))
     info = {
         "_x": x,
         "_y": y,
@@ -285,7 +288,7 @@ def full_brain_info(volume_img, mesh='fsaverage5', threshold=None,
 
 def _fill_html_template(info, embed_js=True):
     as_json = json.dumps(info)
-    as_html = _get_html_template().replace(
+    as_html = get_html_template('surface_plot_template.html').replace(
         'INSERT_STAT_MAP_JSON_HERE', as_json)
     as_html = add_js_lib(as_html, embed_js=embed_js)
     return SurfaceView(as_html)
