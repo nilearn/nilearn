@@ -5,7 +5,7 @@ $(document).ready(function() {
     var div = $('.highlight-python .highlight,' +
                 '.highlight-python3 .highlight,' + 
                 '.highlight-pycon .highlight,' +
-		'.highlight-default .highlight')
+		'.highlight-default .highlight');
     var pre = div.find('pre');
 
     // get the styles from the current theme
@@ -21,14 +21,14 @@ $(document).ready(function() {
         'border-width': border_width, 'color': border_color, 'text-size': '75%',
         'font-family': 'monospace', 'padding-left': '0.2em', 'padding-right': '0.2em',
         'border-radius': '0 3px 0 0'
-    }
+    };
 
     // create and add the button to all the code blocks that contain >>>
     div.each(function(index) {
         var jthis = $(this);
         if (jthis.find('.gp').length > 0) {
             var button = $('<span class="copybutton">&gt;&gt;&gt;</span>');
-            button.css(button_styles)
+            button.css(button_styles);
             button.attr('title', hide_text);
             button.data('hidden', 'false');
             jthis.prepend(button);

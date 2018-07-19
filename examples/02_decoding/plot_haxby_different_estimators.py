@@ -117,15 +117,23 @@ for classifier_name, classifier in sorted(classifiers.items()):
         classifiers_scores[classifier_name][category] = cross_val_score(classifier,
                                                                         masked_timecourses,
                                                                         classification_target,
-                                                                        cv=cv.split(X=masked_timecourses, groups=session_labels),
+                                                                        cv=cv.split(
+                                                                                X=masked_timecourses,
+                                                                                groups=session_labels
+                                                                                ),
                                                                         scoring="f1",
                                                                         )
 
-        print("%10s: %14s -- scores: %1.2f +- %1.2f, time %.2fs" % (
-            classifier_name, category,
-            classifiers_scores[classifier_name][category].mean(),
-            classifiers_scores[classifier_name][category].std(),
-            time.time() - t0))
+        print(
+                "%10s: %14s -- scores: %1.2f +- %1.2f, time %.2fs" %
+                (
+                    classifier_name,
+                    category,
+                    classifiers_scores[classifier_name][category].mean(),
+                    classifiers_scores[classifier_name][category].std(),
+                    time.time() - t0,
+                    ),
+                )
 
 
 ###############################################################################

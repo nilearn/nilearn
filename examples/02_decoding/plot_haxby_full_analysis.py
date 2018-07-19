@@ -82,14 +82,20 @@ for mask_name in mask_names:
         mask_scores[mask_name][category] = cross_val_score(classifier,
                                                            masked_timecourses,
                                                            classification_target,
-                                                           cv=cv.split(X=masked_timecourses, groups=session_labels),
+                                                           cv=cv.split(
+                                                                   X=masked_timecourses,
+                                                                   groups=session_labels,
+                                                                   ),
                                                            scoring="roc_auc",
                                                            )
 
         mask_chance_scores[mask_name][category] = cross_val_score(dummy_classifier,
                                                                   masked_timecourses,
                                                                   classification_target,
-                                                                  cv=cv.split(X=masked_timecourses, groups=session_labels),
+                                                                  cv=cv.split(
+                                                                          X=masked_timecourses,
+                                                                          groups=session_labels,
+                                                                          ),
                                                                   scoring="roc_auc",
                                                                   )
 
