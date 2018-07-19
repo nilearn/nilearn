@@ -183,6 +183,8 @@ from sklearn.model_selection import KFold
 
 cv = KFold(n_splits=5)
 
+# The "cv" object's split method can now accept data and create a
+# generator which can yield the splits.
 for train, test in cv.split(X=fmri_masked):
     conditions_masked = conditions.values[train]
     svc.fit(fmri_masked[train], conditions_masked)
@@ -204,7 +206,8 @@ print(cv_score)
 # with the n_jobs parameter.
 #
 # By default, cross_val_score uses a 3-fold KFold. We can control this by
-# passing the "cv" object, here a 5-fold:
+# passing the splits yielding generator of the "cv" object,
+# here a 5-fold:
 cv_score = cross_val_score(svc, fmri_masked, conditions, cv=cv.split(X=fmri_masked))
 print(cv_score)
 
