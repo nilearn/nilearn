@@ -1,3 +1,4 @@
+import time
 import re
 import json
 import base64
@@ -265,7 +266,7 @@ def _check_open_in_browser(html):
     wb_open = webbrowser.open
     webbrowser.open = _open_mock
     try:
-        html.open_in_browser()
+        html.open_in_browser(temp_file_lifetime=None)
         temp_file = html._temp_file
         assert html._temp_file is not None
         assert os.path.isfile(temp_file)
@@ -279,6 +280,27 @@ def _check_open_in_browser(html):
         webbrowser.open = wb_open
         try:
             os.remove(temp_file)
+        except Exception:
+            pass
+
+
+def test_temp_file_removing():
+    html = html_surface.SurfaceView('hello')
+    wb_open = webbrowser.open
+    webbrowser.open = _open_mock
+    try:
+        html.open_in_browser(temp_file_lifetime=1.5)
+        assert os.path.isfile(html._temp_file)
+        time.sleep(1.6)
+        assert not os.path.isfile(html._temp_file)
+        html.open_in_browser(temp_file_lifetime=None)
+        assert os.path.isfile(html._temp_file)
+        time.sleep(1.6)
+        assert os.path.isfile(html._temp_file)
+    finally:
+        webbrowser.open = wb_open
+        try:
+            os.remove(html._temp_file)
         except Exception:
             pass
 

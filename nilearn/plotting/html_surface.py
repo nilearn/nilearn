@@ -7,6 +7,7 @@ import tempfile
 import collections
 import weakref
 import warnings
+import subprocess
 
 import numpy as np
 import matplotlib as mpl
@@ -59,6 +60,11 @@ def add_js_lib(html, embed_js=True):
         </script>
         """.format(jquery, plotly, js_utils)
     return html.replace('INSERT_JS_LIBRARIES_HERE', js_lib)
+
+
+def _remove_after_n_seconds(file_name, n_seconds):
+    script = os.path.join(os.path.dirname(__file__), 'rm_file.py')
+    subprocess.Popen(['python', script, file_name, str(n_seconds)])
 
 
 class SurfaceView(object):
@@ -130,9 +136,20 @@ class SurfaceView(object):
         with open(file_name, 'wb') as f:
             f.write(self.html.encode('utf-8'))
 
-    def open_in_browser(self, file_name=None):
+    def open_in_browser(self, file_name=None, temp_file_lifetime=30):
         """
         Save the plot to a temporary HTML file and open it in a browser.
+
+        Parameters
+        ----------
+
+        file_name : str, optional
+            file to use as temporary file
+
+        temp_file_lifetime : float, optional (default=30.)
+            Time, in seconds, after which the temporary file is removed.
+            If None, it is never removed.
+
         """
         if file_name is None:
             fd, file_name = tempfile.mkstemp('.html', 'nilearn_surface_plot_')
@@ -140,10 +157,13 @@ class SurfaceView(object):
         self.save_as_html(file_name)
         self._temp_file = file_name
         file_size = os.path.getsize(file_name) / 1e6
-        print(("Saved HTML in temporary file: {}\n"
-               "file size is {:.1f}M, delete it when you're done, "
-               "for example by calling this.remove_temp_file").format(
-                   file_name, file_size))
+        if temp_file_lifetime is None:
+            print(("Saved HTML in temporary file: {}\n"
+                   "file size is {:.1f}M, delete it when you're done, "
+                   "for example by calling this.remove_temp_file").format(
+                       file_name, file_size))
+        else:
+            _remove_after_n_seconds(self._temp_file, temp_file_lifetime)
         webbrowser.open(file_name)
 
     def remove_temp_file(self):
