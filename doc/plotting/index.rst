@@ -389,6 +389,18 @@ will open this 3d plot in your web browser:
 
 .. image:: ../images/plotly_surface_plot.png
 
+and for an atlas::
+
+    >>> destrieux = datasets.fetch_atlas_surf_destrieux()
+    >>> fsaverage = datasets.fetch_surf_fsaverage()
+    >>> view = plotting.view_surf(fsaverage['infl_right'], destrieux['map_right'],
+    ...                           cmap='gist_ncar', symmetric_cmap=False)
+    ...
+    >>> view.open_in_browser()
+
+
+.. image:: ../images/plotly_surface_atlas_plot.png
+
 these plots are also rendered correctly by the Jupyter notebook (whenever the
 plot object is the output of a cell)
 
