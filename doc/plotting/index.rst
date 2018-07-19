@@ -391,12 +391,12 @@ will open this 3d plot in your web browser:
 
 and for an atlas::
 
-    >>> destrieux = datasets.fetch_atlas_surf_destrieux()
-    >>> fsaverage = datasets.fetch_surf_fsaverage()
-    >>> view = plotting.view_surf(fsaverage['infl_right'], destrieux['map_right'],
-    ...                           cmap='gist_ncar', symmetric_cmap=False)
+    >>> destrieux = datasets.fetch_atlas_surf_destrieux()     # doctest: +SKIP
+    >>> fsaverage = datasets.fetch_surf_fsaverage()     # doctest: +SKIP
+    >>> view = plotting.view_surf(fsaverage['infl_right'], destrieux['map_right'],     # doctest: +SKIP
+    ...                           cmap='gist_ncar', symmetric_cmap=False)     # doctest: +SKIP
     ...
-    >>> view.open_in_browser()
+    >>> view.open_in_browser()     # doctest: +SKIP
 
 
 .. image:: ../images/plotly_surface_atlas_plot.png
