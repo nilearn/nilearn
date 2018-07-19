@@ -24,6 +24,12 @@ def _get_html_template(template_name='surface_plot_template.html'):
 
 
 def add_js_lib(html, embed_js=True):
+    """
+    Add javascript libraries to html template.
+
+    if embed_js is True, jquery and plotly are embedded in resulting page.
+    otherwise, they are loaded via CDNs.
+    """
     js_dir = os.path.join(os.path.dirname(__file__), 'data', 'js')
     with open(os.path.join(js_dir, 'surface-plot-utils.js')) as f:
             js_utils = f.read()
@@ -287,7 +293,7 @@ def _fill_html_template(info, embed_js=True):
 
 def view_img_on_surf(stat_map_img, mesh='fsaverage5',
                      threshold=None, cmap=cm.cold_hot,
-                     black_bg=False, embed_js=True):
+                     black_bg=False):
     """
     Insert a surface plot of a statistical map into an HTML page.
 
@@ -315,10 +321,6 @@ def view_img_on_surf(stat_map_img, mesh='fsaverage5',
 
     black_bg : bool, optional (default=False)
 
-    embed_js : bool, optional (default=True)
-        if True, jquery and plotly are embedded in resulting page.
-        otherwise, they are loaded via CDNs.
-
     Returns
     -------
     SurfaceView : plot of the stat map.
@@ -332,12 +334,11 @@ def view_img_on_surf(stat_map_img, mesh='fsaverage5',
     info = full_brain_info(
         volume_img=stat_map_img, mesh=mesh, threshold=threshold,
         cmap=cmap, black_bg=black_bg)
-    return _fill_html_template(info, embed_js=embed_js)
+    return _fill_html_template(info, embed_js=True)
 
 
 def view_surf(surf_mesh, surf_map=None, bg_map=None, threshold=None,
-              cmap=cm.cold_hot, black_bg=False, symmetric_cmap=True,
-              embed_js=True):
+              cmap=cm.cold_hot, black_bg=False, symmetric_cmap=True):
     """
     Insert a surface plot of a surface map into an HTML page.
 
@@ -380,10 +381,6 @@ def view_surf(surf_mesh, surf_map=None, bg_map=None, threshold=None,
         Make colormap symmetric (ranging from -vmax to vmax).
         Set it to False if you are plotting a surface atlas.
 
-    embed_js : bool, optional (default=True)
-        if True, jquery and plotly are embedded in resulting page.
-        otherwise, they are loaded via CDNs.
-
     Returns
     -------
     SurfaceView : plot of the stat map.
@@ -405,4 +402,4 @@ def view_surf(surf_mesh, surf_map=None, bg_map=None, threshold=None,
         surf_map=surf_map, surf_mesh=surf_mesh, threshold=threshold,
         cmap=cmap, black_bg=black_bg, bg_map=bg_map,
         symmetric_cmap=symmetric_cmap)
-    return _fill_html_template(info, embed_js=embed_js)
+    return _fill_html_template(info, embed_js=True)
