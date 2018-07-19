@@ -154,7 +154,6 @@ class NiftiMasker(BaseMasker, CacheMixin):
     --------
     nilearn.masking.compute_background_mask
     nilearn.masking.compute_epi_mask
-    nilearn.masking.compute_gray_matter_mask
     nilearn.image.resample_img
     nilearn.masking.apply_mask
     nilearn.signal.clean
