@@ -327,3 +327,8 @@ def test_view_img_on_surf():
     _check_html(html)
     html = html_surface.view_img_on_surf(img, threshold=.4)
     _check_html(html)
+    html = html_surface.view_img_on_surf(
+        img, threshold=.4, cmap='hot', black_bg=True)
+    _check_html(html)
+    html = html_surface.view_img_on_surf(img, mesh='fsaverage')
+    _check_html(html)
