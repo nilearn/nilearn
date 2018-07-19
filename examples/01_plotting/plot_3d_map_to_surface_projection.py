@@ -78,8 +78,18 @@ plotting.show()
 ##############################################################################
 # 3D visualization in a web browser
 # ---------------------------------
-# An alternative to :func:`plot_surf_stat_map` is to use
+# An alternative to :func:`nilearn.plotting.plot_surf_stat_map` is to use
 # :func:`nilearn.plotting.view_surf` or
 # :func:`nilearn.plotting.view_img_on_surf` that give more interactive
 # visualizations in a web browser. See :ref:`interactive-surface-plotting` for
 # more details.
+
+view = plotting.view_surf(fsaverage.infl_right, texture, threshold='90%',
+                          bg_map=fsaverage.sulc_right)
+# uncomment this to open the plot in a web browser:
+# view.open_in_browser()
+
+# We don't need to do the projection ourselves, we can use view_img_on_surf:
+
+view = plotting.view_img_on_surf(localizer_tmap, threshold='90%')
+# view.open_in_browser()
