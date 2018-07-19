@@ -378,12 +378,13 @@ def view_img_on_surf(stat_map_img, mesh='fsaverage5',
     SurfaceView : plot of the stat map.
         It can be saved as an html page or rendered (transparently) by the
         Jupyter notebook. Useful methods are :
-         - 'resize' to resize the plot displayed in a Jupyter notebook
-         - 'save_as_html' to save the plot to a file
-         - 'open_in_browser' to save the plot and open it in a web browser.
 
-    See Also:
-    ---------
+        - 'resize' to resize the plot displayed in a Jupyter notebook
+        - 'save_as_html' to save the plot to a file
+        - 'open_in_browser' to save the plot and open it in a web browser.
+
+    See Also
+    --------
     nilearn.plotting.view_surf: plot from a surface map on a cortical mesh.
 
     """
@@ -442,9 +443,10 @@ def view_surf(surf_mesh, surf_map=None, bg_map=None, threshold=None,
     SurfaceView : plot of the stat map.
         It can be saved as an html page or rendered (transparently) by the
         Jupyter notebook. Useful methods are :
-         - 'resize' to resize the plot displayed in a Jupyter notebook
-         - 'save_as_html' to save the plot to a file
-         - 'open_in_browser' to save the plot and open it in a web browser.
+
+        - 'resize' to resize the plot displayed in a Jupyter notebook
+        - 'save_as_html' to save the plot to a file
+        - 'open_in_browser' to save the plot and open it in a web browser.
 
     See Also
     --------
