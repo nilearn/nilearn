@@ -122,7 +122,8 @@ class SurfaceView(object):
         self._temp_file = file_name
         file_size = os.path.getsize(file_name) / 1e6
         print(("Saved HTML in temporary file: {}\n"
-               "file size is {:.1f}M, delete it when you're done!").format(
+               "file size is {:.1f}M, delete it when you're done, "
+               "for example by calling this.remove_temp_file").format(
                    file_name, file_size))
         webbrowser.open(file_name)
 
