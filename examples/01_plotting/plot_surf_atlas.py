@@ -79,14 +79,6 @@ plotting.plot_surf_roi(fsaverage['infl_left'], roi_map=parcellation,
                        darkness=.5)
 plotting.show()
 
-##############################################################################
-# 3D visualization in a web browser
-# ---------------------------------
-# An alternative to :func:`plot_surf_roi` is to use
-# :func:`nilearn.plotting.view_surf` or
-# :func:`nilearn.plotting.view_img_on_surf` that give more interactive
-# visualizations in a web browser. See :ref:`interactive-surface-plotting` for
-# more details.
 
 ##############################################################################
 # 3D visualization in a web browser
