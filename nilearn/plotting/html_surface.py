@@ -8,7 +8,7 @@ import collections
 
 import numpy as np
 import matplotlib as mpl
-import matplotlib.cm
+from matplotlib import cm as mpl_cm
 
 from .._utils.extmath import fast_abs_percentile
 from .._utils.param_validation import check_threshold
@@ -147,7 +147,7 @@ class SurfaceView(object):
 
 
 def colorscale(cmap, values, threshold=None, symmetric_cmap=True):
-    cmap = mpl.cm.get_cmap(cmap)
+    cmap = mpl_cm.get_cmap(cmap)
     abs_values = np.abs(values)
     if symmetric_cmap:
         vmax = abs_values.max()
@@ -221,7 +221,7 @@ def _get_vertexcolor(surf_map, cmap, norm,
         bg_map = surface.load_surf_data(bg_map)
         bg_vmin, bg_vmax = np.min(bg_map), np.max(bg_map)
     bg_norm = mpl.colors.Normalize(vmin=bg_vmin, vmax=bg_vmax)
-    bg_color = mpl.cm.get_cmap('Greys')(bg_norm(bg_map))
+    bg_color = mpl_cm.get_cmap('Greys')(bg_norm(bg_map))
     vertexcolor[np.abs(surf_map) < absolute_threshold] = bg_color[
         np.abs(surf_map) < absolute_threshold]
     return _to_color_strings(vertexcolor)
