@@ -123,13 +123,13 @@ def test_colorscale():
     assert (norm.vmax, norm.vmin) == (14, 0)
 
 
-def _test_encode():
+def test_encode():
     for dtype in ['<f4', '<i4', '>f4', '>i4']:
         a = np.arange(10, dtype=dtype)
         encoded = html_surface.encode(a)
         decoded = base64.b64decode(encoded.encode('utf-8'))
         b = np.frombuffer(decoded, dtype=dtype)
-        assert np.allclose(html_surface.decode(encoded), b)
+        assert np.allclose(html_surface.decode(encoded, dtype=dtype), b)
         assert np.allclose(a, b)
 
 
