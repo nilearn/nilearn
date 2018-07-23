@@ -372,15 +372,17 @@ Surface plotting in a web browser
 ---------------------------------
 
 Nilearn also has functions for making interactive surface plots that can be
-seen in a web browser.
+seen in a web browser, :func:`view_img_on_surf` and :func:`view_surf`. Both
+produce a 3D plot on the cortical surface. The difference is that
+:func:`view_surf` takes as input a surface map and a cortical mesh, whereas
+:func:`view_img_on_surf` takes as input a volume statistical map, and projects
+it on the cortical surface before making the plot.
 
-:func:`view_surf`: Surface plot using a surface map and a cortical mesh
 
-:func:`view_img_on_surf`: Surface plot using a 3D statistical map.
+:func:`view_img_on_surf`: Surface plot using a 3D statistical map::
 
-for example::
-
-    >>> from nilearn import plotting     # doctest: +SKIP
+    >>> from nilearn import plotting, datasets     # doctest: +SKIP
+    >>> img = datasets.fetch_localizer_button_task()['tmaps'][0]     # doctest: +SKIP
     >>> view = plotting.view_img_on_surf(img, threshold='90%', mesh='fsaverage')     # doctest: +SKIP
     >>> view.open_in_browser()     # doctest: +SKIP
 
@@ -389,8 +391,10 @@ will open this 3D plot in your web browser:
 
 .. image:: ../images/plotly_surface_plot.png
 
-and for an atlas::
 
+:func:`view_surf`: Surface plot using a surface map and a cortical mesh::
+
+    >>> from nilearn import plotting, datasets     # doctest: +SKIP
     >>> destrieux = datasets.fetch_atlas_surf_destrieux()     # doctest: +SKIP
     >>> fsaverage = datasets.fetch_surf_fsaverage()     # doctest: +SKIP
     >>> view = plotting.view_surf(fsaverage['infl_right'], destrieux['map_right'],     # doctest: +SKIP
