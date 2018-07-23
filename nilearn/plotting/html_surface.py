@@ -145,7 +145,7 @@ class SurfaceView(object):
         ----------
 
         file_name : str, optional
-            file to use as temporary file
+            .html file to use as temporary file
 
         temp_file_lifetime : float, optional (default=30.)
             Time, in seconds, after which the temporary file is removed.
