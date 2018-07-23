@@ -17,7 +17,7 @@ from numpy.testing import assert_raises, assert_warns, assert_no_warnings
 
 from nilearn import datasets, surface
 from nilearn.plotting import html_surface
-from nilearn.datasets import fetch_surf_fsaverage5 as fetch_surf_fsaverage
+from nilearn.datasets import fetch_surf_fsaverage
 from nilearn._utils.exceptions import DimensionError
 
 # Note: html output by view_surf and view_img_on_surf
