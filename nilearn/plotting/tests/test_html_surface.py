@@ -367,6 +367,6 @@ def test_view_img_on_surf():
     html = html_surface.view_img_on_surf(
         img, threshold=.4, cmap='hot', black_bg=True)
     _check_html(html)
-    html = html_surface.view_img_on_surf(img, mesh='fsaverage')
+    html = html_surface.view_img_on_surf(img, surf_mesh='fsaverage')
     _check_html(html)
     assert_raises(DimensionError, html_surface.view_img_on_surf, [img, img])

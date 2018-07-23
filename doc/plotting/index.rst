@@ -383,7 +383,7 @@ it on the cortical surface before making the plot.
 
     >>> from nilearn import plotting, datasets     # doctest: +SKIP
     >>> img = datasets.fetch_localizer_button_task()['tmaps'][0]     # doctest: +SKIP
-    >>> view = plotting.view_img_on_surf(img, threshold='90%', mesh='fsaverage')     # doctest: +SKIP
+    >>> view = plotting.view_img_on_surf(img, threshold='90%', surf_mesh='fsaverage')     # doctest: +SKIP
     >>> view.open_in_browser()     # doctest: +SKIP
 
 

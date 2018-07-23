@@ -344,7 +344,7 @@ def _fill_html_template(info, embed_js=True):
     return SurfaceView(as_html)
 
 
-def view_img_on_surf(stat_map_img, mesh='fsaverage5',
+def view_img_on_surf(stat_map_img, surf_mesh='fsaverage5',
                      threshold=None, cmap=cm.cold_hot,
                      black_bg=False):
     """
@@ -355,7 +355,7 @@ def view_img_on_surf(stat_map_img, mesh='fsaverage5',
     stat_map_img : Niimg-like object, 3D
         See http://nilearn.github.io/manipulating_images/input_output.html
 
-    mesh : str or dict, optional.
+    surf_mesh : str or dict, optional.
         if 'fsaverage5', use fsaverage5 mesh from nilearn.datasets
         if 'fsaverage', use fsaverage mesh from nilearn.datasets
         if a dictionary, keys should be 'infl_left', 'pial_left', 'sulc_left',
@@ -391,7 +391,7 @@ def view_img_on_surf(stat_map_img, mesh='fsaverage5',
     """
     stat_map_img = check_niimg_3d(stat_map_img)
     info = full_brain_info(
-        volume_img=stat_map_img, mesh=mesh, threshold=threshold,
+        volume_img=stat_map_img, mesh=surf_mesh, threshold=threshold,
         cmap=cmap, black_bg=black_bg)
     return _fill_html_template(info, embed_js=True)
 
