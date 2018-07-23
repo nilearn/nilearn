@@ -116,7 +116,7 @@ print(stimuli.shape)
 # activity in this voxel.
 
 from sklearn.linear_model import Ridge
-from sklearn.cross_validation import KFold
+from sklearn.model_selection import KFold
 
 ##############################################################################
 # Using 10-fold cross-validation, we partition the data into 10 'folds'.
@@ -126,10 +126,10 @@ from sklearn.cross_validation import KFold
 from sklearn.metrics import r2_score
 
 estimator = Ridge(alpha=100.)
-cv = KFold(len(stimuli), 10)
+cv = KFold(n_splits=10)
 
 scores = []
-for train, test in cv:
+for train, test in cv.split(X=stimuli):
     # we train the Ridge estimator on the training set
     # and predict the fMRI activity for the test set
     predictions = Ridge(alpha=100.).fit(
