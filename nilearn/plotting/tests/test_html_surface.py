@@ -168,9 +168,11 @@ def test_get_vertexcolor():
 def test_check_mesh():
     mesh = html_surface._check_mesh('fsaverage5')
     assert mesh is html_surface._check_mesh(mesh)
-    assert_raises(Exception, html_surface._check_mesh, 'fsaverage3')
+    assert_raises(ValueError, html_surface._check_mesh, 'fsaverage3')
     mesh.pop('pial_left')
-    assert_raises(Exception, html_surface._check_mesh, mesh)
+    assert_raises(ValueError, html_surface._check_mesh, mesh)
+    assert_raises(TypeError, html_surface._check_mesh,
+                  surface.load_surf_mesh(mesh['pial_right']))
 
 
 def test_one_mesh_info():

@@ -289,12 +289,17 @@ def one_mesh_info(surf_map, surf_mesh, threshold=None, cmap=cm.cold_hot,
 
 
 def _check_mesh(mesh):
-    if not isinstance(mesh, str):
-        assert isinstance(mesh, collections.Mapping)
-        assert {'pial_left', 'pial_right', 'sulc_left', 'sulc_right',
-                'infl_left', 'infl_right'}.issubset(mesh.keys())
-        return mesh
-    mesh = datasets.fetch_surf_fsaverage(mesh)
+    if isinstance(mesh, str):
+        return datasets.fetch_surf_fsaverage(mesh)
+    if not isinstance(mesh, collections.Mapping):
+        raise TypeError("The mesh should be a str or a dictionary, "
+                        "you provided: {}.".format(type(mesh).__name__))
+    missing = {'pial_left', 'pial_right', 'sulc_left', 'sulc_right',
+               'infl_left', 'infl_right'}.difference(mesh.keys())
+    if missing:
+        raise ValueError(
+            "{} {} missing from the provided mesh dictionary".format(
+                missing, ('are' if len(missing) > 1 else 'is')))
     return mesh
 
 
