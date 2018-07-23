@@ -378,6 +378,8 @@ def view_img_on_surf(stat_map_img, surf_mesh='fsaverage5',
     cmap : str or matplotlib colormap, optional
 
     black_bg : bool, optional (default=False)
+        If True, image is plotted on a black background. Otherwise on a
+        white background.
 
     Returns
     -------
@@ -440,6 +442,8 @@ def view_surf(surf_mesh, surf_map=None, bg_map=None, threshold=None,
         surface atlas.
 
     black_bg : bool, optional (default=False)
+        If True, image is plotted on a black background. Otherwise on a
+        white background.
 
     symmetric_cmap : bool, optional (default=True)
         Make colormap symmetric (ranging from -vmax to vmax).
