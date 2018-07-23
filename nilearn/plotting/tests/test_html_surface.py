@@ -360,7 +360,10 @@ def test_view_surf():
 
 def test_view_img_on_surf():
     img = _get_img()
+    fsaverage = fetch_surf_fsaverage()
     html = html_surface.view_img_on_surf(img, threshold='92.3%')
+    _check_html(html)
+    html = html_surface.view_img_on_surf(img, threshold=0, surf_mesh=fsaverage)
     _check_html(html)
     html = html_surface.view_img_on_surf(img, threshold=.4)
     _check_html(html)
