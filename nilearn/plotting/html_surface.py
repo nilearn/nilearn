@@ -15,6 +15,7 @@ from matplotlib import cm as mpl_cm
 
 from .._utils.extmath import fast_abs_percentile
 from .._utils.param_validation import check_threshold
+from .._utils.niimg_conversions import check_niimg_3d
 from .. import datasets, surface
 from . import cm
 
@@ -301,7 +302,7 @@ def full_brain_info(volume_img, mesh='fsaverage5', threshold=None,
                     cmap=cm.cold_hot, black_bg=False, symmetric_cmap=True,
                     vol_to_surf_kwargs={}):
     """
-    Project 3d map on cortex; prepare info to plot both hemispheres.
+    Project 3D map on cortex; prepare info to plot both hemispheres.
 
 
     This computes the dictionary that gets inserted in the web page,
@@ -351,7 +352,7 @@ def view_img_on_surf(stat_map_img, mesh='fsaverage5',
 
     Parameters
     ----------
-    stat_map_img : Niimg-like object, 3d
+    stat_map_img : Niimg-like object, 3D
         See http://nilearn.github.io/manipulating_images/input_output.html
 
     mesh : str or dict, optional.
@@ -388,6 +389,7 @@ def view_img_on_surf(stat_map_img, mesh='fsaverage5',
     nilearn.plotting.view_surf: plot from a surface map on a cortical mesh.
 
     """
+    stat_map_img = check_niimg_3d(stat_map_img)
     info = full_brain_info(
         volume_img=stat_map_img, mesh=mesh, threshold=threshold,
         cmap=cmap, black_bg=black_bg)
