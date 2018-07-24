@@ -45,6 +45,8 @@ Mehdi Rahim, Philippe Gervais where payed by the `NiConnect
 project, funded by the French `Investissement d'Avenir
 <http://www.gouvernement.fr/investissements-d-avenir-cgi>`_.
 
+NiLearn is also supported by `DigiCosme <https://digicosme.lri.fr>`_ |digicomse logo|
+
 .. _citing:
 
 Citing nilearn
@@ -71,3 +73,7 @@ guarantee the future of the toolkit, if you use it, please cite it.
 See the scikit-learn documentation on `how to cite
 <http://scikit-learn.org/stable/about.html#citing-scikit-learn>`_.
 
+
+.. |digicomse logo| image:: /doc/logos/digi-saclay-logo-small.png
+    :height: 25
+    :alt: DigiComse Logo
