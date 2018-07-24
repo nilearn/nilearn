@@ -363,9 +363,11 @@ def view_img_on_surf(stat_map_img, surf_mesh='fsaverage5',
     surf_mesh : str or dict, optional.
         if 'fsaverage5', use fsaverage5 mesh from nilearn.datasets
         if 'fsaverage', use fsaverage mesh from nilearn.datasets
-        if a dictionary, keys should be 'infl_left', 'pial_left', 'sulc_left',
-        'infl_right', 'pial_right', 'sulc_right', containing inflated and
-        pial meshes, and sulcal depth values for left and right hemispheres.
+        if a dictionary, it should have the same structure as those returned by
+        nilearn.datasets.fetch_surf_fsaverage, i.e. keys should be 'infl_left',
+        'pial_left', 'sulc_left', 'infl_right', 'pial_right', and 'sulc_right',
+        containing inflated and pial meshes, and sulcal depth values for left
+        and right hemispheres.
 
     threshold : str, number or None, optional (default=None)
         If None, no thresholding.
