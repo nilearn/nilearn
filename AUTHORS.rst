@@ -74,6 +74,6 @@ See the scikit-learn documentation on `how to cite
 <http://scikit-learn.org/stable/about.html#citing-scikit-learn>`_.
 
 
-.. |digicomse logo| image:: /doc/logos/digi-saclay-logo-small.png
+.. |digicomse logo| image:: logos/digi-saclay-logo-small.png
     :height: 25
     :alt: DigiComse Logo
