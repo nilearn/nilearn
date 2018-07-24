@@ -241,7 +241,8 @@ def _check_html(html):
     assert "width=33 height=37" in html.get_iframe(33, 37)
     if not LXML_INSTALLED:
         return
-    root = etree.HTML(html.html)
+    root = etree.HTML(html.html.encode('utf-8'),
+                      parser=etree.HTMLParser(huge_tree=True))
     head = root.find('head')
     assert len(head.findall('script')) == 5
     body = root.find('body')
