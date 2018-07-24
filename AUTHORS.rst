@@ -24,6 +24,8 @@ particular:
 * Andres Hoyos Idrobo
 * Salma Bougacha
 * Mehdi Rahim
+* Sylvain Lanuzel
+* `Kshitij Chawla <https://github.com/kchawla-pi>`_
 
 Many of also contributed outside of Parietal, notably:
 
