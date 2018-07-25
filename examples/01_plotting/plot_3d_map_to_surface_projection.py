@@ -89,7 +89,12 @@ view = plotting.view_surf(fsaverage.infl_right, texture, threshold='90%',
 # uncomment this to open the plot in a web browser:
 # view.open_in_browser()
 
+view
+
+##############################################################################
 # We don't need to do the projection ourselves, we can use view_img_on_surf:
 
 view = plotting.view_img_on_surf(localizer_tmap, threshold='90%')
 # view.open_in_browser()
+
+view

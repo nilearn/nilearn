@@ -92,3 +92,5 @@ view = plotting.view_surf(fsaverage.infl_left, parcellation,
                           cmap='gist_ncar', symmetric_cmap=False)
 # uncomment this to open the plot in a web browser:
 # view.open_in_browser()
+
+view
