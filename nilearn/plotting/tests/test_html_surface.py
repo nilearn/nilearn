@@ -319,6 +319,8 @@ def _open_one_view():
 
 
 def test_open_view_warning():
+    # opening many views (without deleting the SurfaceView objects)
+    # should raise a warning about memory usage
     assert_warns(UserWarning, _open_views)
     assert_no_warnings(_open_one_view)
 
