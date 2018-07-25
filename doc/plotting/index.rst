@@ -368,8 +368,8 @@ NOTE: These functions works for only with matplotlib higher than 1.3.1.
 
 .. _interactive-surface-plotting:
 
-Surface plotting in a web browser
----------------------------------
+Interactive surface plotting
+----------------------------
 
 Nilearn also has functions for making interactive surface plots that can be
 seen in a web browser, :func:`view_img_on_surf` and :func:`view_surf`. Both
@@ -384,12 +384,24 @@ it on the cortical surface before making the plot.
     >>> from nilearn import plotting, datasets     # doctest: +SKIP
     >>> img = datasets.fetch_localizer_button_task()['tmaps'][0]     # doctest: +SKIP
     >>> view = plotting.view_img_on_surf(img, threshold='90%', surf_mesh='fsaverage')     # doctest: +SKIP
+
+If you are running a notebook, displaying ``view`` will embed an interactive plot:
+
+.. image:: ../images/plotly_surface_plot_notebook_screenshot.png
+
+If you are not using a notebook, you can open the plot in a browser like this::
+
     >>> view.open_in_browser()     # doctest: +SKIP
 
 
-will open this 3D plot in your web browser:
+This will open this 3D plot in your web browser:
 
 .. image:: ../images/plotly_surface_plot.png
+
+
+Or you can save it to an html file::
+
+    >>> view.save_as_html("surface_plot.html")     # doctest: +SKIP
 
 
 :func:`view_surf`: Surface plot using a surface map and a cortical mesh::
@@ -404,8 +416,3 @@ will open this 3D plot in your web browser:
 
 
 .. image:: ../images/plotly_surface_atlas_plot.png
-
-these plots are also rendered correctly by the Jupyter notebook (whenever the
-plot object is the output of a cell)
-
-.. image:: ../images/plotly_surface_plot_notebook_screenshot.png
