@@ -70,10 +70,15 @@ def _remove_after_n_seconds(file_name, n_seconds):
 
 class SurfaceView(object):
     """
-    Represents a web page.
+    Embeds a plot in a web page.
 
-    use str(document) or document.html to get a web page,
-    document.get_iframe() to have it wrapped in an iframe.
+    If you are running a Jupyter notebook, the plot will be displayed
+    inline if this object is the output of a cell.
+    Otherwise, use open_in_browser() to open it in a web browser (or
+    save_as_html("filename.html") to save it as an html file).
+
+    use str(document) or document.html to get the content of the web page,
+    and document.get_iframe() to have it wrapped in an iframe.
 
     """
     _all_open_html_repr = weakref.WeakSet()
