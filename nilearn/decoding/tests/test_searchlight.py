@@ -34,9 +34,9 @@ def test_searchlight():
         from sklearn.model_selection import KFold
         cv = KFold(n_splits=4)
     else:
-        from sklearn.cross_validation import KFold
+        from sklearn.model_selection import KFold
         # avoid using KFold for compatibility with sklearn < 0.18
-        cv = KFold(len(cond), 4)
+        cv = KFold(n_splits=4)
     n_jobs = 1
 
     # Run Searchlight with different radii
