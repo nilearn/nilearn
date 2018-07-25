@@ -14,6 +14,7 @@ import time
 import sys
 import warnings
 from distutils.version import LooseVersion
+from types import GeneratorType
 
 import numpy as np
 
@@ -79,12 +80,24 @@ def search_light(X, y, estimator, A, groups=None, scoring=None,
         search_light scores
     """
     group_iter = GroupIterator(A.shape[0], n_jobs)
-    scores = Parallel(n_jobs=n_jobs, verbose=verbose)(
-        delayed(_group_iter_search_light)(
-            A.rows[list_i],
-            estimator, X, y, groups, scoring, cv,
-            thread_id + 1, A.shape[0], verbose)
-        for thread_id, list_i in enumerate(group_iter))
+    scores = Parallel(n_jobs=n_jobs,
+                      verbose=verbose,
+                      )(
+            delayed(_group_iter_search_light)
+                    (
+                    A.rows[list_i],
+                    estimator,
+                    X,
+                    y,
+                    groups,
+                    scoring,
+                    cv,
+                    thread_id + 1,
+                    A.shape[0],
+                    verbose,
+                    )
+            for thread_id, list_i in enumerate(group_iter)
+            )
     return np.concatenate(scores)
 
 
@@ -267,7 +280,8 @@ class SearchLight(BaseEstimator):
         self.estimator = estimator
         self.n_jobs = n_jobs
         self.scoring = scoring
-        self.cv = cv
+        self.cv = list(cv) if isinstance(cv, GeneratorType) else cv
+            # self.cv causes error in SearchLight.fit() method if it is a generator.
         self.verbose = verbose
 
     def fit(self, imgs, y, groups=None):
