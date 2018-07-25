@@ -203,10 +203,8 @@ for kind in kinds:
     cv_scores = cross_val_score(svc,
                                 connectivity_biomarkers[kind],
                                 y=adhd_labels,
-                                cv=cv.split(
-                                        X=np.zeros(len(adhd_labels)),  # dummy data
-                                        y=adhd_labels,
-                                        ),
+                                cv=cv,
+                                groups=adhd_labels,
                                 scoring='accuracy',
                                 )
     mean_scores.append(cv_scores.mean())

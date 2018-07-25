@@ -96,7 +96,7 @@ from sklearn.model_selection import LeaveOneGroupOut, cross_val_score
 cv = LeaveOneGroupOut()
 
 # Compute the prediction accuracy for the different folds (i.e. session)
-cv_scores = cross_val_score(anova_svc, X, conditions, cv=cv.split(X=X, groups=session))
+cv_scores = cross_val_score(anova_svc, X, conditions, cv=cv, groups=session)
 
 # Return the corresponding mean prediction accuracy
 classification_accuracy = cv_scores.mean()

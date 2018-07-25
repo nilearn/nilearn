@@ -227,7 +227,8 @@ cv = LeaveOneGroupOut()
 cv_score = cross_val_score(svc,
                            fmri_masked,
                            conditions,
-                           cv=cv.split(X=fmri_masked, groups=session_label),
+                           cv=cv,
+                           groups=session_label,
                            )
 print(cv_score)
 

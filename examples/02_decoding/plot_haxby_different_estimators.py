@@ -117,10 +117,8 @@ for classifier_name, classifier in sorted(classifiers.items()):
         classifiers_scores[classifier_name][category] = cross_val_score(classifier,
                                                                         masked_timecourses,
                                                                         classification_target,
-                                                                        cv=cv.split(
-                                                                                X=masked_timecourses,
-                                                                                groups=session_labels
-                                                                                ),
+                                                                        cv=cv,
+                                                                        groups=session_labels,
                                                                         scoring="f1",
                                                                         )
 
