@@ -40,7 +40,7 @@ from scipy import linalg, ndimage
 
 from sklearn import linear_model, svm
 from sklearn.utils import check_random_state
-from sklearn.cross_validation import KFold
+from sklearn.model_selection import KFold
 from sklearn.feature_selection import f_regression
 
 import nibabel
@@ -162,7 +162,7 @@ estimators = [
     ('searchlight', decoding.SearchLight(
         mask_img, process_mask_img=process_mask_img,
         radius=2.7, scoring='r2', estimator=svm.SVR(kernel="linear"),
-        cv=KFold(y_train.size, n_folds=4),
+        cv=KFold(n_splits=4),
         verbose=1, n_jobs=1))
 ]
 
