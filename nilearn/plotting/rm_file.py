@@ -1,3 +1,9 @@
+"""
+Remove a file after a certain time. This is run in a subprocess
+by nilearn.plotting.html_surface.SurfaceView to remove the temporary
+file it uses to open a plot in a web browser.
+
+"""
 import os
 import time
 import warnings
