@@ -321,7 +321,7 @@ def compute_multi_epi_mask(epi_imgs, lower_cutoff=0.2, upper_cutoff=0.85,
     upper_cutoff: float, optional
         upper fraction of the histogram to be discarded.
 
-    connected: boolean, optional
+    connected: bool, optional
         if connected is True, only the largest connect component is kept.
 
     exclude_zeros: boolean, optional
@@ -473,7 +473,7 @@ def compute_multi_background_mask(data_imgs, border_size=2, upper_cutoff=0.85,
         The size, in voxel of the border used on the side of the image
         to determine the value of the background.
 
-    connected: boolean, optional
+    connected: bool, optional
         if connected is True, only the largest connect component is kept.
 
     target_affine: 3x3 or 4x4 matrix, optional
@@ -518,7 +518,7 @@ def compute_gray_matter_mask(target_img, threshold=.5,
                              verbose=0):
     """ Compute a mask corresponding to the gray matter part of the brain.
     The gray matter part is calculated through the resampling of MNI152
-    template Gray Matter mask onto the image
+    template gray matter mask onto the target image
 
     Parameters
     ----------
@@ -529,9 +529,11 @@ def compute_gray_matter_mask(target_img, threshold=.5,
 
     threshold: float, optional
         The value under which the MNI template is cut off.
+        Default value is 0.5
 
-    connected: boolean, optional
-        if connected is True, only the largest connect component is kept.
+    connected: bool, optional
+        if connected is True, only the largest connected component is kept.
+        Default is True
 
     opening: bool or int, optional
         if opening is True, a morphological opening is performed, to keep
@@ -542,7 +544,7 @@ def compute_gray_matter_mask(target_img, threshold=.5,
         to 1 opening operation of order `n` followed by a closing operator
         of order `n`.
 
-    memory: instance of joblib.Memory or string
+    memory: instance of joblib.Memory or str
         Used to cache the function call.
 
     verbose: int, optional
@@ -570,8 +572,10 @@ def compute_gray_matter_mask(target_img, threshold=.5,
 
     mask, affine = _post_process_mask(mask, target_img.affine, opening=opening,
                                       connected=connected,
-                                      warning_msg="Are you sure that input is "
-                                                  "anatomical data ?")
+                                      warning_msg="Gray matter mask is empty, "
+                                                  "lower the threshold or "
+                                                  "check your input FOV")
+
     return new_img_like(target_img, mask, affine)
 
 
@@ -581,7 +585,7 @@ def compute_multi_gray_matter_mask(target_imgs, threshold=.5,
     """ Compute a mask corresponding to the gray matter part of the brain for
     a list of images.
     The gray matter part is calculated through the resampling of MNI152
-    template Gray Matter mask onto the image
+    template gray matter mask onto the target image
 
     Parameters
     ----------
@@ -594,9 +598,11 @@ def compute_multi_gray_matter_mask(target_imgs, threshold=.5,
 
     threshold: float, optional
         The value under which the MNI template is cut off.
+        Default value is 0.5
 
-    connected: boolean, optional
+    connected: bool, optional
         if connected is True, only the largest connect component is kept.
+        Default is True
 
     opening: bool or int, optional
         if opening is True, a morphological opening is performed, to keep
@@ -607,7 +613,7 @@ def compute_multi_gray_matter_mask(target_imgs, threshold=.5,
         to 1 opening operation of order `n` followed by a closing operator
         of order `n`.
 
-    memory: instance of joblib.Memory or string
+    memory: instance of joblib.Memory or str
         Used to cache the function call.
 
     n_jobs: integer, optional
