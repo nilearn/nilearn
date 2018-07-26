@@ -1,3 +1,4 @@
+import time
 import re
 import json
 import base64
@@ -12,12 +13,12 @@ try:
 except ImportError:
     LXML_INSTALLED = False
 
-from numpy.testing import assert_raises
+from numpy.testing import assert_raises, assert_warns, assert_no_warnings
 
 from nilearn import datasets, surface
 from nilearn.plotting import html_surface
-from nilearn.datasets import fetch_surf_fsaverage5 as fetch_surf_fsaverage
-
+from nilearn.datasets import fetch_surf_fsaverage
+from nilearn._utils.exceptions import DimensionError
 
 # Note: html output by view_surf and view_img_on_surf
 # should validate as html5 using https://validator.w3.org/nu/ with no
@@ -33,7 +34,7 @@ def _normalize_ws(text):
 
 
 def test_add_js_lib():
-    html = html_surface._get_html_template()
+    html = html_surface.get_html_template('surface_plot_template.html')
     cdn = html_surface.add_js_lib(html, embed_js=False)
     assert "decodeBase64" in cdn
     assert _normalize_ws("""<script
@@ -122,13 +123,13 @@ def test_colorscale():
     assert (norm.vmax, norm.vmin) == (14, 0)
 
 
-def _test_encode():
+def test_encode():
     for dtype in ['<f4', '<i4', '>f4', '>i4']:
         a = np.arange(10, dtype=dtype)
-        encoded = html_surface._encode(a)
+        encoded = html_surface.encode(a)
         decoded = base64.b64decode(encoded.encode('utf-8'))
         b = np.frombuffer(decoded, dtype=dtype)
-        assert np.allclose(html_surface._decode(encoded), b)
+        assert np.allclose(html_surface.decode(encoded, dtype=dtype), b)
         assert np.allclose(a, b)
 
 
@@ -138,10 +139,10 @@ def test_to_plotly():
     plotly = html_surface.to_plotly(fsaverage['pial_left'])
     for i, key in enumerate(['_x', '_y', '_z']):
         assert np.allclose(
-            html_surface._decode(plotly[key], '<f4'), coord[:, i])
+            html_surface.decode(plotly[key], '<f4'), coord[:, i])
     for i, key in enumerate(['_i', '_j', '_k']):
         assert np.allclose(
-            html_surface._decode(plotly[key], '<i4'), triangles[:, i])
+            html_surface.decode(plotly[key], '<i4'), triangles[:, i])
 
 
 def test_to_color_strings():
@@ -167,9 +168,11 @@ def test_get_vertexcolor():
 def test_check_mesh():
     mesh = html_surface._check_mesh('fsaverage5')
     assert mesh is html_surface._check_mesh(mesh)
-    assert_raises(Exception, html_surface._check_mesh, 'fsaverage3')
+    assert_raises(ValueError, html_surface._check_mesh, 'fsaverage3')
     mesh.pop('pial_left')
-    assert_raises(Exception, html_surface._check_mesh, mesh)
+    assert_raises(ValueError, html_surface._check_mesh, mesh)
+    assert_raises(TypeError, html_surface._check_mesh,
+                  surface.load_surf_mesh(mesh['pial_right']))
 
 
 def test_one_mesh_info():
@@ -181,7 +184,7 @@ def test_one_mesh_info():
         bg_map=fsaverage['sulc_right'])
     assert {'_x', '_y', '_z', '_i', '_j', '_k'}.issubset(
         info['inflated_left'].keys())
-    assert len(html_surface._decode(
+    assert len(html_surface.decode(
         info['inflated_left']['_x'], '<f4')) == len(surf_map)
     assert len(info['vertexcolor_left']) == len(surf_map)
     cmax = np.max(np.abs(surf_map))
@@ -209,9 +212,9 @@ def test_full_brain_info():
     for hemi in ['left', 'right']:
         mesh = surface.load_surf_mesh(fsaverage['pial_{}'.format(hemi)])
         assert len(info['vertexcolor_{}'.format(hemi)]) == len(mesh[0])
-        assert len(html_surface._decode(
+        assert len(html_surface.decode(
             info['inflated_{}'.format(hemi)]['_z'], '<f4')) == len(mesh[0])
-        assert len(html_surface._decode(
+        assert len(html_surface.decode(
             info['pial_{}'.format(hemi)]['_j'], '<i4')) == len(mesh[1])
 
 
@@ -238,7 +241,8 @@ def _check_html(html):
     assert "width=33 height=37" in html.get_iframe(33, 37)
     if not LXML_INSTALLED:
         return
-    root = etree.HTML(html.html)
+    root = etree.HTML(html.html.encode('utf-8'),
+                      parser=etree.HTMLParser(huge_tree=True))
     head = root.find('head')
     assert len(head.findall('script')) == 5
     body = root.find('body')
@@ -265,7 +269,7 @@ def _check_open_in_browser(html):
     wb_open = webbrowser.open
     webbrowser.open = _open_mock
     try:
-        html.open_in_browser()
+        html.open_in_browser(temp_file_lifetime=None)
         temp_file = html._temp_file
         assert html._temp_file is not None
         assert os.path.isfile(temp_file)
@@ -281,6 +285,44 @@ def _check_open_in_browser(html):
             os.remove(temp_file)
         except Exception:
             pass
+
+
+def test_temp_file_removing():
+    html = html_surface.SurfaceView('hello')
+    wb_open = webbrowser.open
+    webbrowser.open = _open_mock
+    try:
+        html.open_in_browser(temp_file_lifetime=1.5)
+        assert os.path.isfile(html._temp_file)
+        time.sleep(1.6)
+        assert not os.path.isfile(html._temp_file)
+        html.open_in_browser(temp_file_lifetime=None)
+        assert os.path.isfile(html._temp_file)
+        time.sleep(1.6)
+        assert os.path.isfile(html._temp_file)
+    finally:
+        webbrowser.open = wb_open
+        try:
+            os.remove(html._temp_file)
+        except Exception:
+            pass
+
+
+def _open_views():
+    return [html_surface.SurfaceView('') for i in range(12)]
+
+
+def _open_one_view():
+    for i in range(12):
+        v = html_surface.SurfaceView('')
+    return v
+
+
+def test_open_view_warning():
+    # opening many views (without deleting the SurfaceView objects)
+    # should raise a warning about memory usage
+    assert_warns(UserWarning, _open_views)
+    assert_no_warnings(_open_one_view)
 
 
 def test_fill_html_template():
@@ -323,7 +365,16 @@ def test_view_surf():
 
 def test_view_img_on_surf():
     img = _get_img()
+    fsaverage = dict(fetch_surf_fsaverage())
     html = html_surface.view_img_on_surf(img, threshold='92.3%')
+    _check_html(html)
+    html = html_surface.view_img_on_surf(img, threshold=0, surf_mesh=fsaverage)
     _check_html(html)
     html = html_surface.view_img_on_surf(img, threshold=.4)
     _check_html(html)
+    html = html_surface.view_img_on_surf(
+        img, threshold=.4, cmap='hot', black_bg=True)
+    _check_html(html)
+    html = html_surface.view_img_on_surf(img, surf_mesh='fsaverage')
+    _check_html(html)
+    assert_raises(DimensionError, html_surface.view_img_on_surf, [img, img])

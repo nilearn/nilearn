@@ -640,6 +640,7 @@ def load_surf_mesh(surf_mesh):
 
 
 def check_mesh_and_data(mesh, data):
+    """Load surface mesh and data, check that they have compatible shapes."""
     mesh = load_surf_mesh(mesh)
     nodes, faces = mesh
     data = load_surf_data(data)
