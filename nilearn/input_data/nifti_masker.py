@@ -229,8 +229,8 @@ class NiftiMasker(BaseMasker, CacheMixin):
                 compute_mask = masking.compute_gray_matter_mask
             else:
                 raise ValueError("Unknown value of mask_strategy '%s'. "
-                                 "Acceptable values are 'background' and "
-                                 "'epi'." % self.mask_strategy)
+                                 "Acceptable values are 'background', "
+                                 "'epi' and 'template'." % self.mask_strategy)
             if self.verbose > 0:
                 print("[%s.fit] Computing the mask" % self.__class__.__name__)
             self.mask_img_ = self._cache(compute_mask, ignore=['verbose'])(

@@ -183,7 +183,8 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
                 compute_mask = masking.compute_multi_gray_matter_mask
             else:
                 raise ValueError("Unknown value of mask_strategy '%s'. "
-                                 "Acceptable values are 'background' and 'epi'.")
+                                 "Acceptable values are 'background', 'epi' "
+                                 "and 'template'.")
 
             self.mask_img_ = self._cache(
                 compute_mask, ignore=['n_jobs', 'verbose', 'memory'])(
