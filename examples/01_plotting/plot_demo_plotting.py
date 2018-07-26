@@ -53,7 +53,7 @@ view = plotting.view_stat_map(
     localizer_tmap_filename, bg_img=localizer_anat_filename, threshold=3)
 
 # uncomment this to open the plot in a web browser:
-view.open_in_browser()
+# view.open_in_browser()
 
 ##############################################################################
 # In a Jupyter notebook, if ``view`` is the output of a cell, it will
