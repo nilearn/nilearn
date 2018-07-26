@@ -45,7 +45,7 @@ REQUIRED_MODULE_METADATA = (
         'min_version': '2.0.2',
         'required_at_installation': False}))
 
-OPTIONAL_MATPLOTLIB_MIN_VERSION = '1.1.1'
+OPTIONAL_MATPLOTLIB_MIN_VERSION = '2.2.2'
 
 
 def _import_module_with_version_check(
