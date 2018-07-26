@@ -320,6 +320,7 @@ uses.
    plot_surf_stat_map
    view_surf
    view_img_on_surf
+   view_connectome
    show
 
 **Classes**:
