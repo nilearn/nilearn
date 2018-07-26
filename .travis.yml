@@ -19,23 +19,23 @@ matrix:
     - python: 2.7
   include:
     # Oldest supported versions (with neurodebian)
-    - env: DISTRIB="conda" PYTHON_VERSION="2.7"
-           NUMPY_VERSION="1.9" SCIPY_VERSION="0.15"
-           SCIKIT_LEARN_VERSION="0.18" MATPLOTLIB_VERSION="1.4"
-           PANDAS_VERSION="0.13.0" NIBABEL_VERSION="2.0.2" COVERAGE="true"
+    - env: DISTRIB="conda" PYTHON_VERSION="2.7.3"
+           NUMPY_VERSION="1.11" SCIPY_VERSION="0.17"
+           SCIKIT_LEARN_VERSION="0.18" MATPLOTLIB_VERSION="1.5.1"
+           PANDAS_VERSION="0.18.0" NIBABEL_VERSION="2.0.2" COVERAGE="true"
     # Oldest supported versions without matplotlib
     - env: DISTRIB="conda" PYTHON_VERSION="2.7"
-           NUMPY_VERSION="1.9" SCIPY_VERSION="0.15"
+           NUMPY_VERSION="1.11" SCIPY_VERSION="0.17"
            SCIKIT_LEARN_VERSION="0.18"
     # Fake Ubuntu Xenial (Travis doesn't support Xenial yet)
     - env: DISTRIB="conda" PYTHON_VERSION="2.7"
-           NUMPY_VERSION="1.9" SCIPY_VERSION="0.17"
+           NUMPY_VERSION="1.11.2" SCIPY_VERSION="0.17"
            SCIKIT_LEARN_VERSION="0.18"
            NIBABEL_VERSION="2.0.2"
     # Python 3.4 with intermediary versions
     - env: DISTRIB="conda" PYTHON_VERSION="3.4"
-           NUMPY_VERSION="1.9" SCIPY_VERSION="0.15"
-           SCIKIT_LEARN_VERSION="0.18" MATPLOTLIB_VERSION="1.4"
+           NUMPY_VERSION="1.11" SCIPY_VERSION="0.17"
+           SCIKIT_LEARN_VERSION="0.18" MATPLOTLIB_VERSION="1.5.1"
     # Most recent versions
     - env: DISTRIB="conda" PYTHON_VERSION="3.5"
            NUMPY_VERSION="*" SCIPY_VERSION="*" PANDAS_VERSION="*"
