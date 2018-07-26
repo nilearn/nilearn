@@ -47,7 +47,8 @@ dict_learning = DictLearning(n_components=n_components,
                              memory="nilearn_cache", memory_level=2,
                              verbose=1,
                              random_state=0,
-                             n_epochs=1)
+                             n_epochs=1,
+                             mask_strategy='template')
 ###############################################################################
 # CanICA
 # ------
@@ -55,7 +56,8 @@ canica = CanICA(n_components=n_components,
                 memory="nilearn_cache", memory_level=2,
                 threshold=3.,
                 n_init=1,
-                verbose=1)
+                verbose=1,
+                mask_strategy='template')
 
 ###############################################################################
 # Fit both estimators
@@ -84,7 +86,7 @@ from nilearn.plotting import (plot_prob_atlas, find_xyz_cut_coords, show,
 from nilearn.image import index_img
 
 # Selecting specific maps to display: maps were manually chosen to be similar
-indices = {dict_learning: 1, canica: 31}
+indices = {dict_learning: 25, canica: 33}
 # We select relevant cut coordinates for displaying
 cut_component = index_img(components_imgs[0], indices[dict_learning])
 cut_coords = find_xyz_cut_coords(cut_component)

@@ -548,6 +548,8 @@ def compute_gray_matter_mask(target_img, threshold=.5,
         Used to cache the function call.
 
     verbose: int, optional
+        Controls the amount of verbosity: higher numbers give
+        more messages
 
     Returns
     -------
@@ -625,6 +627,8 @@ def compute_multi_gray_matter_mask(target_imgs, threshold=.5,
         which does not need such arguments.
 
     verbose: int, optional
+        Controls the amount of verbosity: higher numbers give
+        more messages
 
     Returns
     -------
