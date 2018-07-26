@@ -43,6 +43,10 @@ n_components = 40
 ###############################################################################
 # Dictionary learning
 # --------------------
+# 
+# We use as "template" as a strategy to compute the mask, as this leads
+# to slightly faster and more reproducible results. However, the images
+# need to be in MNI template space
 dict_learning = DictLearning(n_components=n_components,
                              memory="nilearn_cache", memory_level=2,
                              verbose=1,

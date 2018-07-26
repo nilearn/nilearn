@@ -133,56 +133,37 @@ Alternatively, the mask computation parameters can still be modified.
 See the :class:`NiftiMasker` documentation for a complete list of
 mask computation parameters.
 
-As a first example, we will now automatically build a mask from a dataset.
-We will here use the Haxby dataset because it provides the original mask that
-we can compare the data-derived mask against.
-
-Generate a mask with default parameters and visualize it (it is in the
-`mask_img_` attribute of the masker):
+The mask can be retrieved and visualized from the `mask_img_` attribute
+of the masker:
 
 .. literalinclude:: ../../examples/04_manipulating_images/plot_mask_computation.py
-    :start-after: # Simple mask extraction from EPI images
+    :start-after: # We need to specify an 'epi' mask_strategy, as this is raw EPI data
     :end-before: # Generate mask with strong opening
 
 
-.. figure:: ../auto_examples/04_manipulating_images/images/sphx_glr_plot_mask_computation_002.png
+.. figure:: ../auto_examples/04_manipulating_images/images/sphx_glr_plot_mask_computation_004.png
     :target: ../auto_examples/04_manipulating_images/plot_mask_computation.html
     :scale: 50%
 
-Changing mask parameters: opening, cutoff
+Different masking strategies
+.............................
+
+The `mask_strategy` argument controls how the mask is computed:
+
+* `background`: detects a continuous background
+* `epi`: suitable for EPI images
+* `template`: uses an MNI grey-matter template
+
+Extra mask parameters: opening, cutoff...
 ..........................................
 
-We can then fine-tune the outline of the mask by increasing the number of
-opening steps (`opening=10`) using the `mask_args` argument of the
-:class:`NiftiMasker`. This effectively performs erosion and dilation operations
-on the outer voxel layers of the mask, which can for example remove remaining
-skull parts in the image.
+The underlying function is :func:`nilearn.masking.compute_epi_mask`
+called using the `mask_args` argument of the :class:`NiftiMasker`.
+Controling these arguments set the fine aspects of the mask. See the
+functions documentation, or :doc:`the NiftiMasker example
+<../auto_examples/04_manipulating_images/plot_mask_computation>`.
 
-.. literalinclude:: ../../examples/04_manipulating_images/plot_mask_computation.py
-    :start-after: # Generate mask with strong opening
-    :end-before: # Generate mask with a high lower cutoff
-
-
-.. figure:: ../auto_examples/04_manipulating_images/images/sphx_glr_plot_mask_computation_003.png
-    :target: ../auto_examples/04_manipulating_images/plot_mask_computation.html
-    :scale: 50%
-
-
-Looking at the :func:`nilearn.masking.compute_epi_mask` called by the
-:class:`NiftiMasker` object, we see two interesting parameters:
-`lower_cutoff` and `upper_cutoff`. These set the grey-value bounds in
-which the masking algorithm will search for its threshold
-(0 being the minimum of the image and 1 the maximum). We will here increase
-the lower cutoff to enforce selection of those
-voxels that appear as bright in the EPI image.
-
-
-.. literalinclude:: ../../examples/04_manipulating_images/plot_mask_computation.py
-    :start-after: # Generate mask with a high lower cutoff
-    :end-before: ###############################################################################
-
-
-.. figure:: ../auto_examples/04_manipulating_images/images/sphx_glr_plot_mask_computation_004.png
+.. figure:: ../auto_examples/04_manipulating_images/images/sphx_glr_plot_mask_computation_005.png
     :target: ../auto_examples/04_manipulating_images/plot_mask_computation.html
     :scale: 50%
 
@@ -308,14 +289,14 @@ Inverse transform: unmasking data
 
 Once voxel signals have been processed, the result can be visualized as
 images after unmasking (masked-reduced data transformed back into
-the original whole-brain space). This step is present in almost all
-the :ref:`examples <examples-index>` provided in nilearn. Below you will find
+the original whole-brain space). This step is present in many
+:ref:`examples <examples-index>` provided in nilearn. Below you will find
 an excerpt of :ref:`the example performing Anova-SVM on the Haxby data
 <sphx_glr_auto_examples_02_decoding_plot_haxby_anova_svm.py>`):
 
 .. literalinclude:: ../../examples/02_decoding/plot_haxby_anova_svm.py
     :start-after: # Look at the SVC's discriminating weights
-    :end-before: # Create the figure
+    :end-before: # Use the mean image as a background
 
 |
 
