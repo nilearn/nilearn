@@ -73,15 +73,15 @@ def view_connectome(adjacency_matrix, coords, threshold=None,
     symmetric_cmap : bool, optional (default=True)
         Make colormap symmetric (ranging from -vmax to vmax).
 
-    embed_js : bool, optional (default=True)
-        if True, jquery and plotly are embedded in resulting page.
-        otherwise, they are loaded via CDNs.
-
     Returns
     -------
     ConnectomeView : plot of the connectome.
         It can be saved as an html page or rendered (transparently) by the
-        Jupyter notebook.
+        Jupyter notebook. Useful methods are :
+
+        - 'resize' to resize the plot displayed in a Jupyter notebook
+        - 'save_as_html' to save the plot to a file
+        - 'open_in_browser' to save the plot and open it in a web browser.
 
     """
     mesh = datasets.fetch_surf_fsaverage()
