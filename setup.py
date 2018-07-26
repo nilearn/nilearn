@@ -87,6 +87,8 @@ if __name__ == "__main__":
           packages=find_packages(),
           package_data={'nilearn.datasets.data': ['*.nii.gz', '*.csv'],
                         'nilearn.surface.data': ['*.csv'],
+                        'nilearn.plotting.data.js': ['*.js'],
+                        'nilearn.plotting.data.html': ['*.html'],
                         'nilearn.plotting.glass_brain_files': ['*.json'],
                         'nilearn.tests.data': ['*'],
                         'nilearn.image.tests.data': ['*.mgz'],

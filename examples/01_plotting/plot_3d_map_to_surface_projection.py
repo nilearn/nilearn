@@ -64,11 +64,41 @@ plotting.plot_stat_map(localizer_tmap, display_mode='x', threshold=1.,
 # computation time, but finer visualizations.
 
 big_fsaverage = datasets.fetch_surf_fsaverage('fsaverage')
-texture = surface.vol_to_surf(localizer_tmap, big_fsaverage.pial_right)
+big_texture = surface.vol_to_surf(localizer_tmap, big_fsaverage.pial_right)
 
-plotting.plot_surf_stat_map(big_fsaverage.infl_right, texture, hemi='right',
+plotting.plot_surf_stat_map(big_fsaverage.infl_right,
+                            big_texture, hemi='right',
                             title='Surface right hemisphere: fine mesh',
                             threshold=1., bg_map=big_fsaverage.sulc_right)
 
 
 plotting.show()
+
+
+##############################################################################
+# 3D visualization in a web browser
+# ---------------------------------
+# An alternative to :func:`nilearn.plotting.plot_surf_stat_map` is to use
+# :func:`nilearn.plotting.view_surf` or
+# :func:`nilearn.plotting.view_img_on_surf` that give more interactive
+# visualizations in a web browser. See :ref:`interactive-surface-plotting` for
+# more details.
+
+view = plotting.view_surf(fsaverage.infl_right, texture, threshold='90%',
+                          bg_map=fsaverage.sulc_right)
+# uncomment this to open the plot in a web browser:
+# view.open_in_browser()
+
+##############################################################################
+# In a Jupyter notebook, if ``view`` is the output of a cell, it will
+# be displayed below the cell
+
+view
+
+##############################################################################
+# We don't need to do the projection ourselves, we can use view_img_on_surf:
+
+view = plotting.view_img_on_surf(localizer_tmap, threshold='90%')
+# view.open_in_browser()
+
+view

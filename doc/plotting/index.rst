@@ -327,6 +327,8 @@ that can be used to save the plot to an image file::
     # Don't forget to close the display
     >>> display.close()     # doctest: +SKIP
 
+.. _surface-plotting:
+
 Surface plotting
 ================
 
@@ -363,3 +365,54 @@ NOTE: These functions works for only with matplotlib higher than 1.3.1.
                          :ref:`sphx_glr_auto_examples_01_plotting_plot_surf_stat_map.py`
 
 =====================   ===================================================================
+
+.. _interactive-surface-plotting:
+
+Interactive surface plotting
+----------------------------
+
+Nilearn also has functions for making interactive surface plots that can be
+seen in a web browser, :func:`view_img_on_surf` and :func:`view_surf`. Both
+produce a 3D plot on the cortical surface. The difference is that
+:func:`view_surf` takes as input a surface map and a cortical mesh, whereas
+:func:`view_img_on_surf` takes as input a volume statistical map, and projects
+it on the cortical surface before making the plot.
+
+
+:func:`view_img_on_surf`: Surface plot using a 3D statistical map::
+
+    >>> from nilearn import plotting, datasets     # doctest: +SKIP
+    >>> img = datasets.fetch_localizer_button_task()['tmaps'][0]     # doctest: +SKIP
+    >>> view = plotting.view_img_on_surf(img, threshold='90%', surf_mesh='fsaverage')     # doctest: +SKIP
+
+If you are running a notebook, displaying ``view`` will embed an interactive plot:
+
+.. image:: ../images/plotly_surface_plot_notebook_screenshot.png
+
+If you are not using a notebook, you can open the plot in a browser like this::
+
+    >>> view.open_in_browser()     # doctest: +SKIP
+
+
+This will open this 3D plot in your web browser:
+
+.. image:: ../images/plotly_surface_plot.png
+
+
+Or you can save it to an html file::
+
+    >>> view.save_as_html("surface_plot.html")     # doctest: +SKIP
+
+
+:func:`view_surf`: Surface plot using a surface map and a cortical mesh::
+
+    >>> from nilearn import plotting, datasets     # doctest: +SKIP
+    >>> destrieux = datasets.fetch_atlas_surf_destrieux()     # doctest: +SKIP
+    >>> fsaverage = datasets.fetch_surf_fsaverage()     # doctest: +SKIP
+    >>> view = plotting.view_surf(fsaverage['infl_right'], destrieux['map_right'],     # doctest: +SKIP
+    ...                           cmap='gist_ncar', symmetric_cmap=False)     # doctest: +SKIP
+    ...
+    >>> view.open_in_browser()     # doctest: +SKIP
+
+
+.. image:: ../images/plotly_surface_atlas_plot.png
