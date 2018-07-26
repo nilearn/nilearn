@@ -76,6 +76,7 @@ def view_stat_map(stat_map_img, threshold=None, bg_img=None, vmax=None):
         bg_img = datasets.load_mni152_template()
         bg_mask = datasets.load_mni152_brain_mask()
     else:
+        bg_img = image.load_img(bg_img)
         bg_mask = image.new_img_like(bg_img, bg_img.get_data() != 0)
     stat_map_img = image.resample_to_img(stat_map_img, bg_img)
     stat_map_img = image.new_img_like(
