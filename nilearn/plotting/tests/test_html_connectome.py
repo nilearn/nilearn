@@ -26,7 +26,7 @@ def _make_connectome():
 def test_get_connectome():
     adj, coord = _make_connectome()
     connectome = html_connectome._get_connectome(adj, coord)
-    con_x = html_surface._decode(connectome['_con_x'], '<f4')
+    con_x = html_surface.decode(connectome['_con_x'], '<f4')
     expected_x = np.asarray(
         [0, 0, 0,
          0, 20, 0,

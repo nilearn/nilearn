@@ -5,7 +5,7 @@ from scipy import sparse
 from nilearn import datasets
 
 from .html_surface import (add_js_lib, HTMLDocument, to_plotly,
-                           _encode, colorscale, cm, _get_html_template)
+                           encode, colorscale, cm, get_html_template)
 
 
 class ConnectomeView(HTMLDocument):
@@ -38,11 +38,11 @@ def _get_connectome(adjacency_matrix, coords, threshold=None,
     nodes = np.asarray([s.row, s.col], dtype=int).T
     edges = np.arange(len(nodes))
     path_edges, path_nodes = _prepare_line(edges, nodes)
-    connectome["_con_w"] = _encode(np.asarray(s.data, dtype='<f4')[path_edges])
+    connectome["_con_w"] = encode(np.asarray(s.data, dtype='<f4')[path_edges])
     c = coords[path_nodes]
     x, y, z = c.T
     for coord, cname in [(x, "x"), (y, "y"), (z, "z")]:
-        connectome["_con_{}".format(cname)] = _encode(
+        connectome["_con_{}".format(cname)] = encode(
             np.asarray(coord, dtype='<f4'))
     return connectome
 
@@ -92,7 +92,7 @@ def view_connectome(adjacency_matrix, coords, threshold=None,
     for hemi in ['pial_left', 'pial_right']:
         mesh_info[hemi] = to_plotly(mesh[hemi])
     as_json = json.dumps(mesh_info)
-    as_html = _get_html_template('connectome_plot_template.html').replace(
+    as_html = get_html_template('connectome_plot_template.html').replace(
         'INSERT_CONNECTOME_JSON_HERE', as_json)
     as_html = add_js_lib(as_html, embed_js=embed_js)
     return ConnectomeView(as_html)
