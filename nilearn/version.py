@@ -30,15 +30,15 @@ _NILEARN_INSTALL_MSG = 'See %s for installation information.' % (
 #   in some meaningful order (more => less 'core').
 REQUIRED_MODULE_METADATA = (
     ('numpy', {
-        'min_version': '1.6.1',
+        'min_version': '1.9',
         'required_at_installation': True,
         'install_info': _NILEARN_INSTALL_MSG}),
     ('scipy', {
-        'min_version': '0.14',
+        'min_version': '0.15',
         'required_at_installation': True,
         'install_info': _NILEARN_INSTALL_MSG}),
     ('sklearn', {
-        'min_version': '0.15',
+        'min_version': '0.18',
         'required_at_installation': True,
         'install_info': _NILEARN_INSTALL_MSG}),
     ('nibabel', {
