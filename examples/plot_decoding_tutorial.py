@@ -204,12 +204,6 @@ print(cv_score)
 ###########################################################################
 # Note that we can speed things up to use all the CPUs of our computer
 # with the n_jobs parameter.
-#
-# By default, cross_val_score uses a 3-fold KFold. We can control this by
-# passing the splits yielding generator of the "cv" object,
-# here a 5-fold:
-cv_score = cross_val_score(svc, fmri_masked, conditions, cv=cv.split(X=fmri_masked))
-print(cv_score)
 
 ###########################################################################
 # The best way to do cross-validation is to respect the structure of
@@ -218,9 +212,16 @@ print(cv_score)
 #
 # The number of the session is stored in the CSV file giving the
 # behavioral data. We have to apply our session mask, to select only cats
-# and faces. To leave a session out, we pass it to the split method of a
-# LeaveOneGroupOut object:
+# and faces.
 session_label = behavioral['chunks'][condition_mask]
+
+# To leave a session out, we pass it to the groups parameter of cross_val_score.
+#
+# By default, cross_val_score uses a 3-fold KFold. We can control this by
+# passing the "cv" object, here a 5-fold:
+cv_score = cross_val_score(svc, fmri_masked, conditions, cv=cv)
+print(cv_score)
+
 
 from sklearn.model_selection import LeaveOneGroupOut
 cv = LeaveOneGroupOut()

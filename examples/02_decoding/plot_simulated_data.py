@@ -159,12 +159,16 @@ estimators = [
                                           l1_ratio=0.05)),
     ('ridge_cv', linear_model.RidgeCV(alphas=[100, 10, 1, 0.1], cv=5)),
     ('svr', svm.SVR(kernel='linear', C=0.001)),
-    ('searchlight', decoding.SearchLight(
-        mask_img, process_mask_img=process_mask_img,
-        radius=2.7, scoring='r2', estimator=svm.SVR(kernel="linear"),
-        cv=KFold(n_splits=4),
-        verbose=1, n_jobs=1))
-]
+    ('searchlight', decoding.SearchLight(mask_img, process_mask_img=process_mask_img,
+                                         radius=2.7,
+                                         scoring='r2',
+                                         estimator=svm.SVR(kernel="linear"),
+                                         cv=KFold(n_splits=4),
+                                         verbose=1,
+                                         n_jobs=1,
+                                         )
+     )
+    ]
 
 ###############################################################################
 # Run the estimators
