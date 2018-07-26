@@ -637,7 +637,7 @@ def compute_multi_gray_matter_mask(target_imgs, threshold=.5,
 
     See also
     --------
-    nilearn.decomposition.base.BaseDecomposition
+    nilearn.masking.compute_gray_matter_mask
     """
     if len(target_imgs) == 0:
         raise TypeError('An empty object - %r - was passed instead of an '
