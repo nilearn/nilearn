@@ -89,6 +89,10 @@ view = plotting.view_surf(fsaverage.infl_right, texture, threshold='90%',
 # uncomment this to open the plot in a web browser:
 # view.open_in_browser()
 
+##############################################################################
+# In a Jupyter notebook, if ``view`` is the output of a cell, it will
+# be displayed below the cell
+
 view
 
 ##############################################################################
