@@ -147,7 +147,7 @@ Relevant functions:
 
 * compute a mask from EPI images: :func:`nilearn.masking.compute_epi_mask`
 * compute a grey-matter mask using the MNI template:
-  :func:`nilearn.masking.compute_grey_matter_mask`.
+  :func:`nilearn.masking.compute_gray_matter_mask`.
 * compute a mask from images with a flat background:
   :func:`nilearn.masking.compute_background_mask`
 * compute for multiple sessions/subjects:
