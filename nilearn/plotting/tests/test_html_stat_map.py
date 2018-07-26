@@ -1,5 +1,3 @@
-import base64
-
 import numpy as np
 
 from nilearn import datasets
