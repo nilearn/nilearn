@@ -368,7 +368,7 @@ def find_parcellation_cut_coords(labels_img, background_label=0, return_label_na
 
     label_hemisphere: 'left' or 'right', optional (default 'left')
         Choice of hemisphere to compute label center coords for.
-        Applies only in cases where atlas labels are laterlized.
+        Applies only in cases where atlas labels are lateralized.
         Eg. Yeo or Harvard Oxford atlas.
 
     Returns
@@ -376,8 +376,8 @@ def find_parcellation_cut_coords(labels_img, background_label=0, return_label_na
     coords: numpy.ndarray of shape (n_labels, 3)
         Label regions cut coordinates in image space (mm).
 
-    labels_list: list
-        Label region.
+    labels_list: list, optional
+        Label region. Returned only when return_label_names is True.
 
     See Also
     --------
