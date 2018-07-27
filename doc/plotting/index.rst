@@ -366,17 +366,23 @@ NOTE: These functions works for only with matplotlib higher than 1.3.1.
 
 =====================   ===================================================================
 
+
 .. _interactive-surface-plotting:
 
-Interactive surface plotting
-----------------------------
+Interactive plots
+=================
 
-Nilearn also has functions for making interactive surface plots that can be
-seen in a web browser, :func:`view_img_on_surf` and :func:`view_surf`. Both
-produce a 3D plot on the cortical surface. The difference is that
-:func:`view_surf` takes as input a surface map and a cortical mesh, whereas
-:func:`view_img_on_surf` takes as input a volume statistical map, and projects
-it on the cortical surface before making the plot.
+Nilearn also has functions for making interactive plots that can be
+seen in a web browser.
+
+For 3D surface plots of statistical maps or surface atlases, use
+:func:`view_img_on_surf` and :func:`view_surf`. Both produce a 3D plot on the
+cortical surface. The difference is that :func:`view_surf` takes as input a
+surface map and a cortical mesh, whereas :func:`view_img_on_surf` takes as input
+a volume statistical map, and projects it on the cortical surface before making
+the plot.
+
+For 3D plots of a connectome, use :func:`view_connectome`.
 
 
 :func:`view_img_on_surf`: Surface plot using a 3D statistical map::
@@ -385,7 +391,9 @@ it on the cortical surface before making the plot.
     >>> img = datasets.fetch_localizer_button_task()['tmaps'][0]     # doctest: +SKIP
     >>> view = plotting.view_img_on_surf(img, threshold='90%', surf_mesh='fsaverage')     # doctest: +SKIP
 
-If you are running a notebook, displaying ``view`` will embed an interactive plot:
+If you are running a notebook, displaying ``view`` will embed an interactive
+plot (this is the case for all interactive plots produced by nilearn's "view"
+functions):
 
 .. image:: ../images/plotly_surface_plot_notebook_screenshot.png
 
@@ -415,3 +423,12 @@ Or you can save it to an html file::
 
 
 .. image:: ../images/plotly_surface_atlas_plot.png
+
+
+:func:`view_connectome`: 3D plot of a connectome::
+
+      >>> view = plotting.view_connectome(correlation_matrix, coords, threshold='90%')    # doctest: + SKIP
+      >>> view.open_in_browser()
+
+
+.. image:: ../images/plotly_connectome_plot.png

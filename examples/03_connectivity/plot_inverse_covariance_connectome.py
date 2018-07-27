@@ -97,7 +97,9 @@ plotting.show()
 # ---------------------------------
 # An alternative to :func:`nilearn.plotting.plot_connectome` is to use
 # :func:`nilearn.plotting.view_connectome` that gives more interactive
-# visualizations in a web browser.
+# visualizations in a web browser. See :ref:`interactive-surface-plotting` for
+# more details.
+
 
 view = plotting.view_connectome(-estimator.precision_, coords)
 
