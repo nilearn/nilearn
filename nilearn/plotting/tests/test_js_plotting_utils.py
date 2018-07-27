@@ -6,6 +6,7 @@ import time
 import tempfile
 
 import numpy as np
+import matplotlib
 from numpy.testing import assert_warns, assert_no_warnings
 try:
     from lxml import etree
@@ -261,10 +262,6 @@ def test_to_color_strings():
     as_str = js_plotting_utils.to_color_strings(colors)
     assert as_str == ['#0000ff', '#ff0000', '#7f7f7f']
 
-    colors = ['#0000ffff', '#ff0000ab', '#7f7f7f00']
-    as_str = js_plotting_utils.to_color_strings(colors)
-    assert as_str == ['#0000ff', '#ff0000', '#7f7f7f']
-
     colors = [[0, 0, 1, 1], [1, 0, 0, 1], [.5, .5, .5, 0]]
     as_str = js_plotting_utils.to_color_strings(colors)
     assert as_str == ['#0000ff', '#ff0000', '#7f7f7f']
@@ -272,3 +269,10 @@ def test_to_color_strings():
     colors = ['r', 'green', 'black', 'white']
     as_str = js_plotting_utils.to_color_strings(colors)
     assert as_str == ['#ff0000', '#008000', '#000000', '#ffffff']
+
+    if matplotlib.__version__ < '2':
+        return
+
+    colors = ['#0000ffff', '#ff0000ab', '#7f7f7f00']
+    as_str = js_plotting_utils.to_color_strings(colors)
+    assert as_str == ['#0000ff', '#ff0000', '#7f7f7f']
