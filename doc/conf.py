@@ -22,7 +22,6 @@ from distutils.version import LooseVersion
 # is relative to the documentation root, use os.path.abspath to make it
 # absolute, like shown here.
 sys.path.insert(0, os.path.abspath('sphinxext'))
-import sphinx_gallery
 
 # We also add the directory just above to enable local imports of nilearn
 sys.path.insert(0, os.path.abspath('..'))
@@ -294,10 +293,10 @@ sphinx_gallery_conf = {
     'reference_url'     : {
         'nilearn': None,
         'matplotlib': 'http://matplotlib.org',
-        'numpy': 'http://docs.scipy.org/doc/numpy-1.6.0',
-        'scipy': 'http://docs.scipy.org/doc/scipy-0.11.0/reference',
+        'numpy': 'http://docs.scipy.org/doc/numpy-1.11.0',
+        'scipy': 'http://docs.scipy.org/doc/scipy-0.17.0/reference',
         'nibabel': 'http://nipy.org/nibabel',
-        'sklearn': 'http://scikit-learn.org/0.17/',
+        'sklearn': 'http://scikit-learn.org/0.18/',
         'pandas': 'http://pandas.pydata.org'}
     }
 
