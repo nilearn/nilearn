@@ -190,10 +190,11 @@ def colorscale(cmap, values, threshold=None, symmetric_cmap=True):
     cmap = mpl_cm.get_cmap(cmap)
     abs_values = np.abs(values)
     if symmetric_cmap:
-        vmax = abs_values.max()
-        vmin = - vmax
+        vmax = fast_abs_percentile(abs_values, 99.7)
+        vmin = -vmax
     else:
-        vmin, vmax = values.min(), values.max()
+        vmin = fast_abs_percentile(abs_values, 0.3)
+        vmax = fast_abs_percentile(abs_values, 99.7)
     norm = mpl.colors.Normalize(vmin=vmin, vmax=vmax)
     cmaplist = [cmap(i) for i in range(cmap.N)]
     abs_threshold = None
