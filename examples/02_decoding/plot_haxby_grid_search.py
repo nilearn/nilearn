@@ -117,7 +117,7 @@ for k in k_range:
 ###########################################################################
 # Nested cross-validation
 # -------------------------
-from sklearn.grid_search import GridSearchCV
+from sklearn.model_selection import GridSearchCV
 # We are going to tune the parameter 'k' of the step called 'anova' in
 # the pipeline. Thus we need to address it as 'anova__k'.
 

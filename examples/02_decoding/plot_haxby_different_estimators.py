@@ -61,7 +61,7 @@ logistic_50 = LogisticRegression(C=50., penalty="l1")
 logistic_l2 = LogisticRegression(C=1., penalty="l2")
 
 # Cross-validated versions of these classifiers
-from sklearn.grid_search import GridSearchCV
+from sklearn.model_selection import GridSearchCV
 # GridSearchCV is slow, but note that it takes an 'n_jobs' parameter that
 # can significantly speed up the fitting process on computers with
 # multiple cores
