@@ -2,7 +2,7 @@ import json
 
 import numpy as np
 from scipy import sparse
-from nilearn import datasets
+from .. import datasets
 
 from .html_surface import (add_js_lib, HTMLDocument, to_plotly,
                            encode, colorscale, cm, get_html_template)
