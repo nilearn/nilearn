@@ -419,6 +419,17 @@ def test_compute_multi_gray_matter_mask():
             Nifti1Image(np.ones((9, 9, 8)), np.eye(4))]
     assert_raises(ValueError, compute_multi_gray_matter_mask, imgs)
 
+    # Check results are the same if affine is the same
+    imgs1 = [Nifti1Image(np.random.randn((9, 9, 9)), np.eye(4)),
+            Nifti1Image(np.random.randn((9, 9, 9)), np.eye(4))]
+    mask1 = compute_multi_gray_matter_mask(imgs1)
+
+    imgs2 = [Nifti1Image(np.random.randn((9, 9, 9)), np.eye(4)),
+             Nifti1Image(np.random.randn((9, 9, 9)), np.eye(4))]
+    mask2 = compute_multi_gray_matter_mask(imgs2)
+
+    assert_array_equal(mask1.get_data(), mask2.get_data())
+
 
 def test_error_shape(random_state=42, shape=(3, 5, 7, 11)):
     # open-ended `if .. elif` in masking.unmask
