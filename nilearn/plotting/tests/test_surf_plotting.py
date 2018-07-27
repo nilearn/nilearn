@@ -16,11 +16,6 @@ from nilearn.surface.tests.test_surface import _generate_surf
 
 
 def test_plot_surf():
-    # Axes3DSubplot has no attribute 'plot_trisurf' for older versions of
-    # matplotlib
-    if LooseVersion(matplotlib.__version__) <= LooseVersion('1.3.1'):
-        raise SkipTest
-
     mesh = _generate_surf()
     rng = np.random.RandomState(0)
     bg = rng.randn(mesh[0].shape[0], )
@@ -43,10 +38,6 @@ def test_plot_surf():
 
 
 def test_plot_surf_error():
-    # Axes3DSubplot has no attribute 'plot_trisurf' for older versions of
-    # matplotlib
-    if LooseVersion(matplotlib.__version__) <= LooseVersion('1.3.1'):
-        raise SkipTest
     mesh = _generate_surf()
     rng = np.random.RandomState(0)
 
@@ -74,11 +65,6 @@ def test_plot_surf_error():
 
 
 def test_plot_surf_stat_map():
-    # Axes3DSubplot has no attribute 'plot_trisurf' for older versions of
-    # matplotlib
-    if LooseVersion(matplotlib.__version__) <= LooseVersion('1.3.1'):
-        raise SkipTest
-
     mesh = _generate_surf()
     rng = np.random.RandomState(0)
     bg = rng.randn(mesh[0].shape[0], )
@@ -114,10 +100,6 @@ def test_plot_surf_stat_map():
 
 
 def test_plot_surf_stat_map_error():
-    # Axes3DSubplot has no attribute 'plot_trisurf' for older versions of
-    # matplotlib
-    if LooseVersion(matplotlib.__version__) <= LooseVersion('1.3.1'):
-        raise SkipTest
     mesh = _generate_surf()
     rng = np.random.RandomState(0)
     data = 10 * rng.randn(mesh[0].shape[0], )
@@ -140,10 +122,6 @@ def test_plot_surf_stat_map_error():
 
 
 def test_plot_surf_roi():
-    # Axes3DSubplot has no attribute 'plot_trisurf' for older versions of
-    # matplotlib
-    if LooseVersion(matplotlib.__version__) <= LooseVersion('1.3.1'):
-        raise SkipTest
     mesh = _generate_surf()
     rng = np.random.RandomState(0)
     roi1 = rng.randint(0, mesh[0].shape[0], size=5)
