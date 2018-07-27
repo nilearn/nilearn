@@ -254,7 +254,12 @@ def test_find_probabilistic_atlas_cut_coords():
     x_map_b, y_map_b, z_map_b = 40, 50, 60
     arr2[x_map_b - 10:x_map_b + 10, y_map_b - 20:y_map_b + 20, z_map_b - 30: z_map_b + 30] = 1
 
-    data = np.concatenate((arr1[..., np.newaxis], arr2[..., np.newaxis]), axis=3)
+    # make data with empty in between non-empty maps to make sure that
+    # code does not crash
+    arr3 = np.zeros((100, 100, 100))
+
+    data = np.concatenate((arr1[..., np.newaxis], arr3[..., np.newaxis],
+                           arr2[..., np.newaxis]), axis=3)
 
     # Number of maps in time dimension
     n_maps = data.shape[-1]
@@ -269,7 +274,7 @@ def test_find_probabilistic_atlas_cut_coords():
 
     np.testing.assert_allclose((coords[0][0], coords[0][1], coords[0][2]),
                                (x_map_a, y_map_a, z_map_a), rtol=6e-2)
-    np.testing.assert_allclose((coords[1][0], coords[1][1], coords[1][2]),
+    np.testing.assert_allclose((coords[2][0], coords[2][1], coords[2][2]),
                                (x_map_b - 0.5, y_map_b - 0.5, z_map_b - 0.5),
                                rtol=6e-2)
 
@@ -282,6 +287,6 @@ def test_find_probabilistic_atlas_cut_coords():
     np.testing.assert_allclose((coords[0][0], coords[0][1], coords[0][2]),
                                (x_map_a / 2., y_map_a / 3., z_map_a / 4.),
                                rtol=6e-2)
-    np.testing.assert_allclose((coords[1][0], coords[1][1], coords[1][2]),
+    np.testing.assert_allclose((coords[2][0], coords[2][1], coords[2][2]),
                                (x_map_b / 2., y_map_b / 3., z_map_b / 4.),
                                rtol=6e-2)
