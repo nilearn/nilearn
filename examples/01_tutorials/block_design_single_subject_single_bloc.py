@@ -1,28 +1,22 @@
 """
-Univariate analysis of block design, one condition versus rest, single subject
-==============================================================================
+Analysis of a block design (stimulation vs rest), single session, single subject.
+=================================================================================
 
 In this tutorial, we compare the fMRI signal during periods of auditory
-stimulation versus periods of rest, using a General Linear Model (GLM). We will
-use a univariate approach in which independent tests are performed at
-each single-voxel.
+stimulation versus periods of rest, using a General Linear Model (GLM).
 
-The dataset comes from experiment conducted at the FIL by Geriant Rees
+The dataset comes from an experiment conducted at the FIL by Geriant Rees
 under the direction of Karl Friston. It is provided by FIL methods
 group which develops the SPM software.
 
-According to SPM documentation, 96 acquisitions were made (RT=7s), in
-blocks of 6, giving 16 42s blocks. The condition for successive blocks
-alternated between rest and auditory stimulation, starting with rest.
-Auditory stimulation was bi-syllabic words presented binaurally at a
-rate of 60 per minute. The functional data starts at acquisiton 4,
-image fM00223_004.
+According to SPM documentation, 96 scans were acquired (RT=7s) in one session. THe paradigm consisted of alternating periods of stimulation and rest, lasting 42s each (that is, for 6 scans). The sesssion started with a rest block.
+Auditory stimulation consisted of bi-syllabic words presented binaurally at a
+rate of 60 per minute. The functional data starts at scan number 4, that is the 
+image file ``fM00223_004``.
 
-The whole brain BOLD/EPI images were acquired on a modified 2T Siemens
-MAGNETOM Vision system. Each acquisition consisted of 64 contiguous
-slices (64x64x64 3mm x 3mm x 3mm voxels). Acquisition took 6.05s, with
-the scan to scan repeat time (RT) set arbitrarily to 7s.
-
+The whole brain BOLD/EPI images were acquired on a  2T Siemens
+MAGNETOM Vision system. Each scan consisted of 64 contiguous
+slices (64x64x64 3mm x 3mm x 3mm voxels). Acquisition of one scan took 6.05s, with the scan to scan repeat time (RT) set arbitrarily to 7s.
 
 This analyse described here is performed in the native space, on the
 original EPI scans without any spatial or temporal preprocessing.
@@ -31,7 +25,7 @@ spatially normalized and smoothed images).
 
 
 To run this example, you must launch IPython via ``ipython
---matplotlib`` in a terminal, or use the Jupyter notebook.
+--matplotlib`` in a terminal, or use ``jupyter-notebook``.
 
 .. contents:: **Contents**
     :local:
