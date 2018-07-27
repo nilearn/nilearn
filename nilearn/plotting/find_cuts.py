@@ -400,10 +400,6 @@ def find_parcellation_cut_coords(labels_img, background_label=0, return_label_na
     for cur_label in unique_labels:
         cur_img = labels_data == cur_label
 
-        # Below inspecting whether the current atlas label is (a)laterlized,
-        # (b)spans hemipsheres, or
-        # (c)is disconnected and present in both hemispheres
-
         # Grab hemispheres separately
         x, y, z = coord_transform(0, 0, 0, np.linalg.inv(labels_affine))
         left_hemi = labels_img.get_data().copy() == cur_label
@@ -411,16 +407,8 @@ def find_parcellation_cut_coords(labels_img, background_label=0, return_label_na
         left_hemi[int(x):] = 0
         right_hemi[:int(x)] = 0
 
-        # Case 1: One label in one hemisphere
-        if np.all(left_hemi == False) or np.all(right_hemi == False):
-            pass
-        # Case 2: Connected component spanning both hemispheres
-        # elif np.any(right_hemi[int(x)]) and np.any(left_hemi[int(x-1)]):
-        #    if not np.any(right_hemi[int(x-10)]) and
-        #    np.any(left_hemi[int(x-10)]):
-        #        pass
-        # Case 3: Two Connected component in both hemispheres
-        else:
+        # Two connected component in both hemispheres
+        if not np.all(left_hemi == False) or np.all(right_hemi == False):
             if label_hemisphere is 'left':
                 cur_img = left_hemi.astype(int)
             elif label_hemisphere is 'right':
@@ -448,7 +436,7 @@ def find_parcellation_cut_coords(labels_img, background_label=0, return_label_na
         return np.array(coords)
 
 
-def find_probabilistic_atlas_cut_coords(label_img):
+def find_probabilistic_atlas_cut_coords(maps_img):
     """ Return coordinates of center probabilistic atlas 4D image
 
     Parameters
@@ -468,7 +456,7 @@ def find_probabilistic_atlas_cut_coords(label_img):
         extraction on parcellations denoted with labels (3D)
         (Eg. Harvard Oxford atlas)
     """
-    label_img = check_niimg_4d(label_img)
-    label_imgs = iter_img(label_img)
-    coords = [find_xyz_cut_coords(img) for img in label_imgs]
+    maps_img = check_niimg_4d(maps_img)
+    maps_imgs = iter_img(maps_img)
+    coords = [find_xyz_cut_coords(img) for img in maps_imgs]
     return np.array(coords)
