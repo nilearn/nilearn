@@ -382,7 +382,8 @@ surface map and a cortical mesh, whereas :func:`view_img_on_surf` takes as input
 a volume statistical map, and projects it on the cortical surface before making
 the plot.
 
-For 3D plots of a connectome, use :func:`view_connectome`.
+For 3D plots of a connectome, use :func:`view_connectome`. To see only markers,
+use :func:`view_markers`.
 
 
 :func:`view_img_on_surf`: Surface plot using a 3D statistical map::
