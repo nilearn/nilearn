@@ -13,6 +13,12 @@ Enhancements
     - Added :func:`nilearn.datasets.fetch_atlas_pauli_2017` to download a
       recent subcortical neuroimaging atlas.
 
+    - Added :func:`nilearn.plotting.find_parcellation_cut_coords` for
+      extraction of coordinates on brain parcellations denoted as labels.
+
+    - Added :func:`nilearn.plotting.find_probabilistic_atlas_cut_coords` for
+      extraction of coordinates on brain probabilistic maps.
+
 
 Changes
 -------

@@ -92,8 +92,8 @@ gl.fit(np.concatenate(subject_time_series))
 ##############################################################################
 # Displaying results
 # -------------------
-atlas_imgs = image.iter_img(msdl_atlas_dataset.maps)
-atlas_region_coords = [plotting.find_xyz_cut_coords(img) for img in atlas_imgs]
+atlas_img = msdl_atlas_dataset.maps
+atlas_region_coords = plotting.find_probabilistic_atlas_cut_coords(atlas_img)
 labels = msdl_atlas_dataset.labels
 
 plotting.plot_connectome(gl.covariance_,
