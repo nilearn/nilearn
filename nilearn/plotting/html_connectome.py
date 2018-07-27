@@ -3,9 +3,10 @@ import json
 import numpy as np
 from scipy import sparse
 from .. import datasets
+from . import cm
 
-from .html_surface import (add_js_lib, HTMLDocument, to_plotly,
-                           encode, colorscale, cm, get_html_template)
+from .js_plotting_utils import (add_js_lib, HTMLDocument, mesh_to_plotly,
+                                encode, colorscale, get_html_template)
 
 
 class ConnectomeView(HTMLDocument):
@@ -90,7 +91,7 @@ def view_connectome(adjacency_matrix, coords, threshold=None,
         adjacency_matrix, coords, threshold=threshold, cmap=cmap,
         symmetric_cmap=symmetric_cmap)
     for hemi in ['pial_left', 'pial_right']:
-        mesh_info[hemi] = to_plotly(mesh[hemi])
+        mesh_info[hemi] = mesh_to_plotly(mesh[hemi])
     as_json = json.dumps(mesh_info)
     as_html = get_html_template('connectome_plot_template.html').replace(
         'INSERT_CONNECTOME_JSON_HERE', as_json)

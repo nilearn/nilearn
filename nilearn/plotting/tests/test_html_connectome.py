@@ -1,6 +1,7 @@
 import numpy as np
 
-from nilearn.plotting import html_connectome, html_surface
+from nilearn.plotting.js_plotting_utils import decode
+from nilearn.plotting import html_connectome
 
 from .test_html_surface import _check_html
 
@@ -26,7 +27,7 @@ def _make_connectome():
 def test_get_connectome():
     adj, coord = _make_connectome()
     connectome = html_connectome._get_connectome(adj, coord)
-    con_x = html_surface.decode(connectome['_con_x'], '<f4')
+    con_x = decode(connectome['_con_x'], '<f4')
     expected_x = np.asarray(
         [0, 0, 0,
          0, 20, 0,
