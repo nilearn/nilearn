@@ -25,19 +25,19 @@ What is nistats?
 A primer on BOLD-fMRI data analysis
 ===================================
 
-Functional magnetic resonance imaging (fMRI) is based on the fact that when local neural activity increases, increases in metabolism and blood flow lead to fluctuations of the relative concentrations of oxyhemoglobine (the red cells in the blood that carry oxygen) and deoxyhemoglobine (the same red cells after they have delivered the oxygen). Because oxy and deoxy hemoglobine have different magnetic properties (one is diamagnetic while the other is paramagnetic), they affect the local magnetic field in different ways. The signal picked up by the MRI scanner is sensitive to these modifications of the local magnetic field. To record cerebral activity, during functional sessions, the scanner is tuned to detect this "Blood Oxygen Level Dependent" (BOLD) contrast.
+Functional magnetic resonance imaging (fMRI) is based on the fact that when local neural activity increases, increases in metabolism and blood flow lead to fluctuations of the relative concentrations of oxyhemoglobin (the red cells in the blood that carry oxygen) and deoxyhemoglobin (the same red cells after they have delivered the oxygen). Because oxy- and deoxy-hemoglobin have different magnetic properties (one is diamagnetic while the other is paramagnetic), they affect the local magnetic field in different ways. The signal picked up by the MRI scanner is sensitive to these modifications of the local magnetic field. To record cerebral activity, during functional sessions, the scanner is tuned to detect this "Blood Oxygen Level Dependent" (BOLD) signal.
 
-Brain activity is measured in sessions that last several minutes, during which the participant performs some kind of cognitive task while the scanner acquires brain images, typically every 2 or 3 seconds (the time between two successive image acquisition is called the Time of Repetition, or TR).
+Brain activity is measured in sessions that span several minutes, while the participant performs some a cognitive task and the scanner acquires brain images, typically every 2 or 3 seconds (the time between two successive image acquisition is called the Repetition time, or RT).
 
-A cerebral MR image provides a 3D image of the brain that can be decomposed into `a voxels`_ (the equivalent of pixels, but in 3 dimensions). The series of images acquired during a functional session provides, in each voxel, a time series of positive real number representing the MRI signal, sampled at the TR.
+A cerebral MR image provides a 3D image of the brain that can be decomposed into `a voxels`_ (the equivalent of pixels, but in 3 dimensions). The series of images acquired during a functional session provides, in each voxel, a time series of positive real number representing the MRI signal, sampled at the RT.
 
 .. _a voxels: https://en.wikipedia.org/wiki/Voxel
 
 TODO: INSERT HERE A SAMPLE OF A TIME SERIES IN A VOXEL (or several voxels)
 
-.. note:: A typical step in the preprocessing of MR images, involves spatially morphing these images onto a standard template (e.g. the MNI152 template from the Montreal Neurological Institute). One this is done, the coordinates of a voxel are in the same space as the template and can be used to estimate its brain location using brain atlases.
+.. note:: A typical step in the preprocessing of MR images, involves spatially morphing these images onto a standard template (e.g. the MNI152 template from the Montreal Neurological Institute). One this is done, the coordinates of a voxel are in the same space as the template and can be used to estimate its brain location using brain atlases. As already mentioned, the nistats package is not meant to perform spiatal preprocessing, but only statistical analyses on the voxel times series, regardless of the coordinate system. 
 
-One way to analyze such times series consists in comparing them to a *model* built from our knowledge of the events that occurred during the functional session. Events can correspond to actions of the participant (e.g. button presses), presentations of sensory stimui (e.g. sound, images), or hypothesized internal processes (e.g. memorization of a stimulus), ...
+One way to analyze times series consists in comparing them to a *model* built from our knowledge of the events that occurred during the functional session. Events can correspond to actions of the participant (e.g. button presses), presentations of sensory stimui (e.g. sound, images), or hypothesized internal processes (e.g. memorization of a stimulus), ...
 
 
 .. figure:: images/stimulation-time-diagram.png
@@ -72,7 +72,7 @@ In most fMRI experiments, several predictors are needed to fullly describe the  
 
 In brief, the analysis of fMRI images involves:
 
-1. describing the paradigm in terms of events of various types occuring at certain times and having a certain duration.
+1. describing the paradigm in terms of events of various types occuring at certain times and having some durations.
 2. from this description, creating predictors for each type of event, typically using a convolution by the impulse haemodynamic response.
 3. assembling these predictors in a design-matrix, providing a *linear model*
 4. estimate the parameters of the model, that is, the weights associated with each predictors at each voxel, using linear regression.

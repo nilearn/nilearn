@@ -18,7 +18,7 @@ The whole brain BOLD/EPI images were acquired on a  2T Siemens
 MAGNETOM Vision system. Each scan consisted of 64 contiguous
 slices (64x64x64 3mm x 3mm x 3mm voxels). Acquisition of one scan took 6.05s, with the scan to scan repeat time (RT) set arbitrarily to 7s.
 
-This analyse described here is performed in the native space, on the
+The analyse described here is performed in the native space, directly on the
 original EPI scans without any spatial or temporal preprocessing.
 (More sensitive results would likely be obtained on the corrected,
 spatially normalized and smoothed images).
@@ -40,95 +40,99 @@ import matplotlib.pyplot as plt
 # -------------------
 #
 # .. note:: In this tutorial, we load the data using a data downloading
-#           function.To input your own data, you will need to pass
-#           a list of paths to your own files.
+#           function. To input your own data, you will need to provide
+#           a list of paths to your own files in the ``subject_data`` variable.
 
 from nistats.datasets import fetch_spm_auditory
 subject_data = fetch_spm_auditory()
-
-
+print(subject_data.func)  # print the list of names of functional images 
+ 
 ###############################################################################
-# We can list the filenames of the functional images
-print(subject_data.func)
-
-###############################################################################
-# Display the first functional image:
+# We can display the first functional image and the subject's anatomy:
 from nilearn.plotting import plot_stat_map, plot_anat, plot_img
 plot_img(subject_data.func[0])
-
-###############################################################################
-# Display the subject's anatomical image:
 plot_anat(subject_data.anat)
 
-
 ###############################################################################
-# Next, we concatenate all the 3D EPI image into a single 4D image:
-
-from nilearn.image import concat_imgs
-fmri_img = concat_imgs(subject_data.func)
-
-###############################################################################
-# And we average all the EPI images in order to create a background
+# Next, we concatenate all the 3D EPI image into a single 4D image, 
+# the we average them in order to create a background
 # image that will be used to display the activations:
 
-from nilearn import image
-mean_img = image.mean_img(fmri_img)
+from nilearn.image import concat_imgs, mean_img
+fmri_img = concat_imgs(subject_data.func)
+mean_img = mean_img(fmri_img)
 
 ###############################################################################
 # Specifying the experimental paradigm
 # ------------------------------------
 #
-# We must provide a description of the experiment, that is, define the
+# We must provide now a description of the experiment, that is, define the
 # timing of the auditory stimulation and rest periods. According to
-# the documentation of the dataset, there were 16 42s blocks --- in
+# the documentation of the dataset, there were sixteen 42s-long blocks --- in
 # which 6 scans were acquired --- alternating between rest and
-# auditory stimulation, starting with rest. We use standard python
-# functions to create a pandas.DataFrame object that specifies the
-# timings:
+# auditory stimulation, starting with rest.
+#
+# The following table provide all the relevant informations: 
+#
 
-import numpy as np
-tr = 7.
-slice_time_ref = 0.
-n_scans = 96
-epoch_duration = 6 * tr  # duration in seconds
-conditions = ['rest', 'active'] * 8
-n_blocks = len(conditions)
-duration = epoch_duration * np.ones(n_blocks)
-onset = np.linspace(0, (n_blocks - 1) * epoch_duration, n_blocks)
+"""
+duration,  onset,  trial_type
+    42  ,    0  ,  rest
+    42  ,   42  ,  active
+    42  ,   84  ,  rest
+    42  ,  126  ,  active
+    42  ,  168  ,  rest
+    42  ,  210  ,  active
+    42  ,  252  ,  rest
+    42  ,  294  ,  active
+    42  ,  336  ,  rest
+    42  ,  378  ,  active
+    42  ,  420  ,  rest
+    42  ,  462  ,  active
+    42  ,  504  ,  rest
+    42  ,  546  ,  active
+    42  ,  588  ,  rest
+    42  ,  630  ,  active
+"""
+
+# We can read such a table from a spreadsheet file  created with OpenOffice Calcor Office Excel, and saved under the *comma separated values* format (``.csv``).  
 
 import pandas as pd
-events = pd.DataFrame(
-    {'onset': onset, 'duration': duration, 'trial_type': conditions})
-
-###############################################################################
-# The ``events`` object contains the information for the design:
+events = pd.read_csv('auditory_block_paradigm.csv')
 print(events)
+
+# ## ###################################################################
+# # Alternatively, we could have used standard python
+# # functions to create a pandas.DataFrame object that specifies the
+# # timings:
+
+# import numpy as np
+# tr = 7.
+# slice_time_ref = 0.
+# n_scans = 96
+# epoch_duration = 6 * tr  # duration in seconds
+# conditions = ['rest', 'active'] * 8
+# n_blocks = len(conditions)
+# duration = epoch_duration * np.ones(n_blocks)
+# onset = np.linspace(0, (n_blocks - 1) * epoch_duration, n_blocks)
+# events = pd.DataFrame(
+#     {'onset': onset, 'duration': duration, 'trial_type': conditions})
 
 
 ###############################################################################
 # Performing the GLM analysis
 # ---------------------------
 #
-# We need to construct a *design matrix* using the timing information
-# provided by the ``events`` object. The design matrix contains
-# regressors of interest as well as regressors of non-interest
-# modeling temporal drifts:
-
-frame_times = np.linspace(0, (n_scans - 1) * tr, n_scans)
-drift_model = 'Cosine'
-period_cut = 4. * epoch_duration
-hrf_model = 'glover + derivative'
-
-###############################################################################
-# It is now time to create a ``FirstLevelModel`` object
-# and fit it to the 4D dataset (Fitting means that the coefficients of the
-# model are estimated to best approximate data)
+# It is now time to create and estimate a ``FirstLevelModel`` object, which will# generate the *design matrix* using the  information provided by the ``events` object. 
 
 from nistats.first_level_model import FirstLevelModel
 
-fmri_glm = FirstLevelModel(tr, slice_time_ref, noise_model='ar1',
-                           standardize=False, hrf_model=hrf_model,
-                           drift_model=drift_model, period_cut=period_cut)
+fmri_glm = FirstLevelModel(t_r=7,
+                           noise_model='ar1',
+                           standardize=False,
+                           hrf_model='spm',
+                           drift_model='cosine',
+                           period_cut=160)
 fmri_glm = fmri_glm.fit(fmri_img, events)
 
 ###############################################################################
@@ -144,7 +148,6 @@ plt.show()
 # The first column contains the expected reponse profile of regions which are
 # sensitive to the auditory stimulation.
 
-
 plt.plot(design_matrix['active'])
 plt.xlabel('scan')
 plt.title('Expected Auditory Response')
@@ -157,7 +160,9 @@ plt.show()
 #
 # To access the estimated coefficients (Betas of the GLM model), we
 # created constrasts with a single '1' in each of the columns:
+# TODO: simplify!!!
 
+import numpy as np
 contrast_matrix = np.eye(design_matrix.shape[1])
 contrasts = dict([(column, contrast_matrix[i])
                   for i, column in enumerate(design_matrix.columns)])
@@ -213,37 +218,3 @@ from os.path import join
 nibabel.save(z_map, join('results', 'active_vs_rest_z_map.nii'))
 nibabel.save(eff_map, join('results', 'active_vs_rest_eff_map.nii'))
 
-###############################################################################
-#  Extract the signal from a voxel
-#  -------------------------------
-#
-# We search for the voxel with the larger z-score and plot the signal
-# (warning: this is "double dipping")
-
-
-# Find the coordinates of the peak
-
-from nibabel.affines import apply_affine
-values = z_map.get_data()
-coord_peaks = np.dstack(np.unravel_index(np.argsort(-values.ravel()),
-                                         values.shape))[0, 0, :]
-coord_mm = apply_affine(z_map.affine, coord_peaks)
-
-###############################################################################
-# We create a masker for the voxel (allowing us to detrend the signal)
-# and extract the time course
-
-from nilearn.input_data import NiftiSpheresMasker
-mask = NiftiSpheresMasker([coord_mm], radius=3,
-                          detrend=True, standardize=True,
-                          high_pass=None, low_pass=None, t_r=7.)
-sig = mask.fit_transform(fmri_img)
-
-##########################################################
-# Let's plot the signal and the theoretical response
-
-plt.plot(frame_times, sig, label='voxel %d %d %d' % tuple(coord_mm))
-plt.plot(design_matrix['active'], color='red', label='model')
-plt.xlabel('scan')
-plt.legend()
-plt.show()
