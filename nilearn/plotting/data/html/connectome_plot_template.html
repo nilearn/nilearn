@@ -34,6 +34,9 @@
             for (let hemisphere of ["left", "right"]) {
                 makePlot("pial", hemisphere, "connectome-plot");
             }
+            if(connectomeInfo["connectome"]["markers_only"]){
+                return;
+            }
             addColorbar(
                 connectomeInfo["connectome"]["colorscale"],
                 connectomeInfo["connectome"]["cmin"],
@@ -58,6 +61,10 @@
 
         function addConnectome() {
             let info = connectomeInfo["connectome"];
+            if (info["markers_only"]){
+                addMarkers();
+                return;
+            }
 
             for (let attribute of ["con_x", "con_y", "con_z", "con_w"]) {
                 if (!(attribute in info)) {
@@ -94,6 +101,31 @@
             }]);
 
         }
+
+        function addMarkers(){
+            let info = connectomeInfo["connectome"];
+
+            for (let attribute of ["con_x", "con_y", "con_z"]) {
+                if (!(attribute in info)) {
+                    info[attribute] = Array.from(decodeBase64(
+                        info["_" + attribute], "float32"));
+                }
+            }
+
+            Plotly.plot('connectome-plot', [{
+                type: 'scatter3d',
+                mode: 'markers',
+                x: info["con_x"],
+                y: info["con_y"],
+                z: info["con_z"],
+                opacity: 1,
+                marker: {
+                    size: info["marker_size"],
+                    color: info["marker_color"],
+                }
+            }]);
+
+     }
     </script>
     <script>
         $(document).ready(

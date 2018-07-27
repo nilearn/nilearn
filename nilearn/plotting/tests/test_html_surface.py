@@ -16,12 +16,6 @@ def _get_img():
     return datasets.fetch_localizer_button_task()['tmaps'][0]
 
 
-def test_to_color_strings():
-    colors = [[0, 0, 1], [1, 0, 0], [.5, .5, .5]]
-    as_str = html_surface._to_color_strings(colors)
-    assert as_str == ['#0000ff', '#ff0000', '#7f7f7f']
-
-
 def test_get_vertexcolor():
     fsaverage = fetch_surf_fsaverage()
     mesh = surface.load_surf_mesh(fsaverage['pial_left'])

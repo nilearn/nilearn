@@ -55,3 +55,25 @@ def test_view_connectome():
     html = html_connectome.view_connectome(adj, coord, '85.3%',
                                            linewidth=8.5, marker_size=4.2)
     check_html(html, False, 'connectome-plot')
+
+
+def test_get_markers():
+    coords = np.arange(12).reshape((4, 3))
+    colors = ['r', 'g', 'black', 'white']
+    markers = html_connectome._get_markers(coords, colors)
+    assert markers["marker_color"] == [
+        '#ff0000', '#007f00', '#000000', '#ffffff']
+    assert markers['markers_only']
+    con_x = decode(markers['_con_x'], '<f4')
+    assert np.allclose(con_x, coords[:, 0])
+
+
+def test_view_markers():
+    coords = np.arange(12).reshape((4, 3))
+    colors = ['r', 'g', 'black', 'white']
+    html = html_connectome.view_markers(coords, colors)
+    check_html(html)
+    html = html_connectome.view_markers(coords)
+    check_html(html)
+    html = html_connectome.view_markers(coords, marker_size=15)
+    check_html(html)

@@ -6,7 +6,8 @@ from .. import datasets
 from . import cm
 
 from .js_plotting_utils import (add_js_lib, HTMLDocument, mesh_to_plotly,
-                                encode, colorscale, get_html_template)
+                                encode, colorscale, get_html_template,
+                                to_color_strings)
 
 
 class ConnectomeView(HTMLDocument):
@@ -45,11 +46,36 @@ def _get_connectome(adjacency_matrix, coords, threshold=None,
     for coord, cname in [(x, "x"), (y, "y"), (z, "z")]:
         connectome["_con_{}".format(cname)] = encode(
             np.asarray(coord, dtype='<f4'))
+    connectome["markers_only"] = False
     return connectome
 
 
+def _get_markers(coords, colors):
+    connectome = {}
+    coords = np.asarray(coords, dtype='<f4')
+    x, y, z = coords.T
+    for coord, cname in [(x, "x"), (y, "y"), (z, "z")]:
+        connectome["_con_{}".format(cname)] = encode(
+            np.asarray(coord, dtype='<f4'))
+    connectome["marker_color"] = to_color_strings(colors)
+    connectome["markers_only"] = True
+    return connectome
+
+
+def _make_connectome_html(connectome_info, embed_js=True):
+    plot_info = {"connectome": connectome_info}
+    mesh = datasets.fetch_surf_fsaverage()
+    for hemi in ['pial_left', 'pial_right']:
+        plot_info[hemi] = mesh_to_plotly(mesh[hemi])
+    as_json = json.dumps(plot_info)
+    as_html = get_html_template('connectome_plot_template.html').replace(
+        'INSERT_CONNECTOME_JSON_HERE', as_json)
+    as_html = add_js_lib(as_html, embed_js=embed_js)
+    return ConnectomeView(as_html)
+
+
 def view_connectome(adjacency_matrix, coords, threshold=None,
-                    cmap=cm.cyan_orange, symmetric_cmap=True, embed_js=True,
+                    cmap=cm.cyan_orange, symmetric_cmap=True,
                     linewidth=6., marker_size=3.):
     """
     Insert a 3d plot of a connectome into an HTML page.
@@ -96,22 +122,64 @@ def view_connectome(adjacency_matrix, coords, threshold=None,
     nilearn.plotting.plot_connectome:
         projected views of a connectome in a glass brain.
 
+    nilearn.plottinv.view_markers:
+        interactive plot of colored markers
+
     nilearn.plotting.view_surf, nilearn.plotting.view_img_on_surf:
         interactive view of statistical maps or surface atlases on the cortical
         surface.
 
     """
-    mesh = datasets.fetch_surf_fsaverage()
-    plot_info = {}
-    plot_info["connectome"] = _get_connectome(
+    connectome_info = _get_connectome(
         adjacency_matrix, coords, threshold=threshold, cmap=cmap,
         symmetric_cmap=symmetric_cmap)
-    plot_info["connectome"]["line_width"] = linewidth
-    plot_info["connectome"]["marker_size"] = marker_size
-    for hemi in ['pial_left', 'pial_right']:
-        plot_info[hemi] = mesh_to_plotly(mesh[hemi])
-    as_json = json.dumps(plot_info)
-    as_html = get_html_template('connectome_plot_template.html').replace(
-        'INSERT_CONNECTOME_JSON_HERE', as_json)
-    as_html = add_js_lib(as_html, embed_js=embed_js)
-    return ConnectomeView(as_html)
+    connectome_info["line_width"] = linewidth
+    connectome_info["marker_size"] = marker_size
+    return _make_connectome_html(connectome_info)
+
+
+def view_markers(coords, colors=None, marker_size=5.):
+    """
+    Insert a 3d plot of markers in a brain into an HTML page.
+
+    Parameters
+    ----------
+    coords : ndarray, shape=(n_nodes, 3)
+        the coordinates of the nodes in MNI space.
+
+    colors : ndarray, shape=(n_nodes,)
+        colors of the markers: list of strings, hex rgb or rgba strings, rgb
+        triplets, or rgba triplets (i.e. formats accepted by matplotlib, see
+        https://matplotlib.org/users/colors.html#specifying-colors)
+
+    marker_size : float, optional (default=3.)
+        Size of the markers showing the seeds.
+
+    Returns
+    -------
+    ConnectomeView : plot of the markers.
+        It can be saved as an html page or rendered (transparently) by the
+        Jupyter notebook. Useful methods are :
+
+        - 'resize' to resize the plot displayed in a Jupyter notebook
+        - 'save_as_html' to save the plot to a file
+        - 'open_in_browser' to save the plot and open it in a web browser.
+
+    See Also
+    --------
+    nilearn.plotting.plot_connectome:
+        projected views of a connectome in a glass brain.
+
+    nilearn.plotting.view_connectome:
+        interactive plot of a connectome.
+
+    nilearn.plotting.view_surf, nilearn.plotting.view_img_on_surf:
+        interactive view of statistical maps or surface atlases on the cortical
+        surface.
+
+    """
+    if colors is None:
+        colors = ['black' for i in range(len(coords))]
+    connectome_info = _get_markers(coords, colors)
+    connectome_info["marker_size"] = marker_size
+    return _make_connectome_html(connectome_info)

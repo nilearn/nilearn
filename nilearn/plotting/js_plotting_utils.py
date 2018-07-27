@@ -238,3 +238,11 @@ def mesh_to_plotly(mesh):
         "_k": k,
     }
     return info
+
+
+def to_color_strings(colors):
+    cmap = mpl.colors.ListedColormap(colors)
+    colors = cmap(np.arange(cmap.N))[:, :3]
+    colors = np.asarray(colors * 255, dtype='uint8')
+    colors = ['#{:02x}{:02x}{:02x}'.format(*row) for row in colors]
+    return colors

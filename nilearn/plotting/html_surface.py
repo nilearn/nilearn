@@ -9,25 +9,19 @@ from .._utils.niimg_conversions import check_niimg_3d
 from .. import datasets, surface
 from . import cm
 from .js_plotting_utils import (
-    HTMLDocument, colorscale, mesh_to_plotly, get_html_template, add_js_lib)
+    HTMLDocument, colorscale, mesh_to_plotly, get_html_template, add_js_lib,
+    to_color_strings)
 
 
 class SurfaceView(HTMLDocument):
     pass
 
 
-def _to_color_strings(colors):
-    colors = np.asarray(colors)
-    colors = np.asarray(colors * 255, dtype='uint8')
-    colors = ['#{:02x}{:02x}{:02x}'.format(*row) for row in colors]
-    return colors
-
-
 def _get_vertexcolor(surf_map, cmap, norm,
                      absolute_threshold=None, bg_map=None):
     vertexcolor = cmap(norm(surf_map).data)
     if absolute_threshold is None:
-        return _to_color_strings(vertexcolor)
+        return to_color_strings(vertexcolor)
     if bg_map is None:
         bg_map = np.ones(len(surf_map)) * .5
         bg_vmin, bg_vmax = 0, 1
@@ -38,7 +32,7 @@ def _get_vertexcolor(surf_map, cmap, norm,
     bg_color = mpl_cm.get_cmap('Greys')(bg_norm(bg_map))
     vertexcolor[np.abs(surf_map) < absolute_threshold] = bg_color[
         np.abs(surf_map) < absolute_threshold]
-    return _to_color_strings(vertexcolor)
+    return to_color_strings(vertexcolor)
 
 
 def one_mesh_info(surf_map, surf_mesh, threshold=None, cmap=cm.cold_hot,

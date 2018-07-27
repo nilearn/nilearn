@@ -246,3 +246,29 @@ def test_open_view_warning():
     # should raise a warning about memory usage
     assert_warns(UserWarning, _open_views)
     assert_no_warnings(_open_one_view)
+
+
+def test_to_color_strings():
+    colors = [[0, 0, 1], [1, 0, 0], [.5, .5, .5]]
+    as_str = js_plotting_utils.to_color_strings(colors)
+    assert as_str == ['#0000ff', '#ff0000', '#7f7f7f']
+
+    colors = [[0, 0, 1, 1], [1, 0, 0, 1], [.5, .5, .5, 0]]
+    as_str = js_plotting_utils.to_color_strings(colors)
+    assert as_str == ['#0000ff', '#ff0000', '#7f7f7f']
+
+    colors = ['#0000ff', '#ff0000', '#7f7f7f']
+    as_str = js_plotting_utils.to_color_strings(colors)
+    assert as_str == ['#0000ff', '#ff0000', '#7f7f7f']
+
+    colors = ['#0000ffff', '#ff0000ab', '#7f7f7f00']
+    as_str = js_plotting_utils.to_color_strings(colors)
+    assert as_str == ['#0000ff', '#ff0000', '#7f7f7f']
+
+    colors = [[0, 0, 1, 1], [1, 0, 0, 1], [.5, .5, .5, 0]]
+    as_str = js_plotting_utils.to_color_strings(colors)
+    assert as_str == ['#0000ff', '#ff0000', '#7f7f7f']
+
+    colors = ['r', 'green', 'black', 'white']
+    as_str = js_plotting_utils.to_color_strings(colors)
+    assert as_str == ['#ff0000', '#008000', '#000000', '#ffffff']
