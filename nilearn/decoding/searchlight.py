@@ -166,10 +166,8 @@ def _group_iter_search_light(list_rows, estimator, X, y, groups,
     t0 = time.time()
     for i, row in enumerate(list_rows):
         kwargs = dict()
-        if not LooseVersion(sklearn.__version__) < LooseVersion('0.15'):
-            kwargs['scoring'] = scoring
-            if LooseVersion(sklearn.__version__) >= LooseVersion('0.18'):
-                kwargs['groups'] = groups
+        if LooseVersion(sklearn.__version__) >= LooseVersion('0.18'):
+            kwargs['groups'] = groups
         elif scoring is not None:
             warnings.warn('Scikit-learn version is too old. '
                           'scoring argument ignored', stacklevel=2)

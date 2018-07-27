@@ -30,13 +30,8 @@ def test_searchlight():
     data_img = nibabel.Nifti1Image(data, np.eye(4))
 
     # Define cross validation
-    if LooseVersion(sklearn.__version__) >= LooseVersion('0.18'):
-        from sklearn.model_selection import KFold
-        cv = KFold(n_splits=4)
-    else:
-        from sklearn.model_selection import KFold
-        # avoid using KFold for compatibility with sklearn < 0.18
-        cv = KFold(n_splits=4)
+    from sklearn.model_selection import KFold
+    cv = KFold(n_splits=4)
     n_jobs = 1
 
     # Run Searchlight with different radii

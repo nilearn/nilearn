@@ -22,9 +22,9 @@ from .base import BaseDecomposition
 from .canica import CanICA
 
 
-if LooseVersion(sklearn.__version__) >= LooseVersion('0.17'):
-    # check_input=False is an optimization available only in sklearn >=0.17
-    sparse_encode_args = {'check_input': False}
+
+# check_input=False is an optimization available in sklearn.
+sparse_encode_args = {'check_input': False}
 
 
 def _compute_loadings(components, data):

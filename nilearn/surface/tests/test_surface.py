@@ -259,13 +259,10 @@ def test_load_uniform_ball_cloud():
             assert_equal(len(w), 0)
     assert_warns(surface.EfficiencyWarning,
                  surface._load_uniform_ball_cloud, n_points=3)
-    # before 0.18 k-means was computed differently, so the result
-    # would differ from the stored values, computed with version 0.2
-    if LooseVersion(sklearn.__version__) >= LooseVersion('0.18'):
-        for n_points in [3, 10, 20]:
-            computed = surface._uniform_ball_cloud(n_points)
-            loaded = surface._load_uniform_ball_cloud(n_points)
-            assert_array_almost_equal(computed, loaded)
+    for n_points in [3, 10, 20]:
+        computed = surface._uniform_ball_cloud(n_points)
+        loaded = surface._load_uniform_ball_cloud(n_points)
+        assert_array_almost_equal(computed, loaded)
 
 
 def test_sample_locations():

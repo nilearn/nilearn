@@ -22,10 +22,7 @@ import numpy as np
 from scipy import stats, ndimage
 from sklearn.base import RegressorMixin
 from sklearn.utils.extmath import safe_sparse_dot
-try:
-    from sklearn.utils import atleast2d_or_csr
-except ImportError: # sklearn 0.15
-    from sklearn.utils import check_array as atleast2d_or_csr
+from sklearn.utils import check_array
 from sklearn.linear_model.base import LinearModel
 from sklearn.feature_selection import (SelectPercentile, f_regression,
                                        f_classif)
@@ -798,14 +795,8 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
         case1 = (None in [alphas, l1_ratios]) and self.n_alphas > 1
         case2 = (alphas is not None) and min(len(l1_ratios), len(alphas)) > 1
         if case1 or case2:
-            if LooseVersion(sklearn.__version__) >= LooseVersion('0.18'):
-                # scikit-learn >= 0.18
-                self.cv_ = list(check_cv(
-                    self.cv, y=y, classifier=self.is_classif).split(X, y))
-            else:
-                # scikit-learn < 0.18
-                self.cv_ = list(check_cv(self.cv, X=X, y=y,
-                                         classifier=self.is_classif))
+            self.cv_ = list(check_cv(
+                self.cv, y=y, classifier=self.is_classif).split(X, y))
         else:
             # no cross-validation needed, user supplied all params
             self.cv_ = [(np.arange(n_samples), [])]
@@ -907,7 +898,7 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
         if not self.is_classif:
             return LinearModel.decision_function(self, X)
 
-        X = atleast2d_or_csr(X)
+        X = check_array(X)
         n_features = self.coef_.shape[1]
         if X.shape[1] != n_features:
             raise ValueError("X has %d features per sample; expecting %d"
