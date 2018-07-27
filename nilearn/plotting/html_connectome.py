@@ -122,7 +122,7 @@ def view_connectome(adjacency_matrix, coords, threshold=None,
     nilearn.plotting.plot_connectome:
         projected views of a connectome in a glass brain.
 
-    nilearn.plottinv.view_markers:
+    nilearn.plotting.view_markers:
         interactive plot of colored markers
 
     nilearn.plotting.view_surf, nilearn.plotting.view_img_on_surf:
