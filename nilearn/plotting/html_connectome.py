@@ -84,6 +84,15 @@ def view_connectome(adjacency_matrix, coords, threshold=None,
         - 'save_as_html' to save the plot to a file
         - 'open_in_browser' to save the plot and open it in a web browser.
 
+    See Also
+    --------
+    nilearn.plotting.plot_connectome:
+        projected views of a connectome in a glass brain.
+
+    nilearn.plotting.view_surf, nilearn.plotting.view_img_on_surf:
+        interactive view of statistical maps or surface atlases on the cortical
+        surface.
+
     """
     mesh = datasets.fetch_surf_fsaverage()
     mesh_info = {}
