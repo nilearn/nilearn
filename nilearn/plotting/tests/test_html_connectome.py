@@ -72,8 +72,8 @@ def test_view_markers():
     coords = np.arange(12).reshape((4, 3))
     colors = ['r', 'g', 'black', 'white']
     html = html_connectome.view_markers(coords, colors)
-    check_html(html)
+    check_html(html, False, 'connectome-plot')
     html = html_connectome.view_markers(coords)
-    check_html(html)
+    check_html(html, False, 'connectome-plot')
     html = html_connectome.view_markers(coords, marker_size=15)
-    check_html(html)
+    check_html(html, False, 'connectome-plot')
