@@ -9,12 +9,14 @@ parcellation based on labels and
 :func:`nilearn.plotting.find_probabilistic_atlas_cut_coords` for
 parcellation based on probabilistic values.
 
-As an intermediary step, we make use of
+In the intermediary steps, we make use of
 :class:`nilearn.input_data.NiftiLabelsMasker` to
 extract time series from nifti objects using different parcellation atlases.
+The time series of all subjects of the ADHD Dataset are concatenated and
+given directly to :class:`nilearn.connectome.ConnectivityMeasure` for
+computing parcel-wise correlation matrices for each atlas across all subjects.
 
-The time series of all subjects of the ADHD Dataset are concatenated to create
-parcel-wise correlation matrices for each atlas.
+Mean correlation matrix is displayed on glass brain on extracted coordinates.
 
 # author: Amadeus Kanaan
 
@@ -46,15 +48,22 @@ atlases = {'Destrieux Atlas (struct)': destrieux['maps'],
 # --------------------
 data = datasets.fetch_adhd(n_subjects=10)
 
-print('Functional nifti images (4D, one per subject) are located at : %r'
-      % data['func'])
-print('Counfound csv files (one per subject) are located at : %r'
-      % data['confounds'])
+print('Functional nifti images (4D, e.g., one subject) are located at : %r'
+      % data['func'][0])
+print('Counfound csv files (of same subject) are located at : %r'
+      % data['confounds'][0])
 
 ##########################################################################
 # Iterate over fetched atlases to extract coordinates
 # ---------------------------------------------------
 from nilearn.input_data import NiftiLabelsMasker
+from nilearn.connectome import ConnectivityMeasure
+
+# ConenctivityMeasure from Nilearn uses simple 'correlation' to compute
+# connectivity matrices for all subjects in a list
+connectome_measure = ConnectivityMeasure(kind='correlation')
+
+# useful for plotting connectivity interactions on glass brain
 from nilearn import plotting
 
 for name, atlas in sorted(atlases.items()):
@@ -68,16 +77,18 @@ for name, atlas in sorted(atlases.items()):
     for func, confounds in zip(data.func, data.confounds):
         time_series.append(masker.fit_transform(func, confounds=confounds))
 
-    time_series = np.concatenate(time_series)
+    # calculate correlation matrices across subjects and display
+    correlation_matrices = connectome_measure.fit_transform(time_series)
 
-    # calculate correlation matrix and display
-    correlation_matrix = np.corrcoef(time_series.T)
+    # Mean correlation matrix across 10 subjects can be grabbed like this,
+    # using connectome measure object
+    mean_correlation_matrix = connectome_measure.mean_
 
     # grab center coordinates for atlas labels
     coordinates = plotting.find_parcellation_cut_coords(atlas)
 
     # plot connectome with 80% edge strength in the connectivity
-    plotting.plot_connectome(correlation_matrix, coordinates,
+    plotting.plot_connectome(mean_correlation_matrix, coordinates,
                              edge_threshold="80%", title=name)
 
 plotting.show()
