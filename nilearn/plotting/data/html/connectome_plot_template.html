@@ -5,7 +5,7 @@
     <title>connectome plot</title>
     <meta charset="UTF-8" /> INSERT_JS_LIBRARIES_HERE
     <script>
-        var surfaceMapInfo = INSERT_CONNECTOME_JSON_HERE;
+        var connectomeInfo = INSERT_CONNECTOME_JSON_HERE;
         var data = [];
 
         function getOpacity(){
@@ -15,15 +15,15 @@
 
         function makePlot(surface, hemisphere, divId) {
 
-            decodeHemisphere(surfaceMapInfo, surface, hemisphere);
-            info = surfaceMapInfo[surface + "_" + hemisphere];
+            decodeHemisphere(connectomeInfo, surface, hemisphere);
+            info = connectomeInfo[surface + "_" + hemisphere];
             info["type"] = "mesh3d";
             info["color"] = "#aaaaaa";
             info["opacity"] = getOpacity();
             info['lighting'] = getLighting();
             data.push(info);
 
-            let layout = getLayout("surface-plot", "select-view", false);
+            let layout = getLayout("connectome-plot", "select-view", false);
             let config = getConfig();
 
             Plotly.plot(divId, data, layout, config);
@@ -32,13 +32,14 @@
         function addPlot() {
 
             for (let hemisphere of ["left", "right"]) {
-                makePlot("pial", hemisphere, "surface-plot");
+                makePlot("pial", hemisphere, "connectome-plot");
             }
             addColorbar(
-                surfaceMapInfo["connectome"]["colorscale"],
-                surfaceMapInfo["connectome"]["cmin"],
-                surfaceMapInfo["connectome"]["cmax"],
-                "surface-plot", getLayout("surface-plot", "select-view", false),
+                connectomeInfo["connectome"]["colorscale"],
+                connectomeInfo["connectome"]["cmin"],
+                connectomeInfo["connectome"]["cmax"],
+                "connectome-plot", getLayout("connectome-plot",
+                                             "select-view", false),
                 getConfig());
         }
 
@@ -46,17 +47,17 @@
             let opacity = getOpacity();
             data[0]["opacity"] = opacity;
             data[1]["opacity"] = opacity;
-            Plotly.react("surface-plot", data,
-                         getLayout("surface-plot", "select-view", false),
+            Plotly.react("connectome-plot", data,
+                         getLayout("connectome-plot", "select-view", false),
                          getConfig());
         }
 
         function surfaceRelayout(){
-            return updateLayout("surface-plot", "select-view", false);
+            return updateLayout("connectome-plot", "select-view", false);
         }
 
         function addConnectome() {
-            let info = surfaceMapInfo["connectome"];
+            let info = connectomeInfo["connectome"];
 
             for (let attribute of ["con_x", "con_y", "con_z", "con_w"]) {
                 if (!(attribute in info)) {
@@ -68,7 +69,7 @@
                 }
             }
 
-            Plotly.plot('surface-plot', [{
+            Plotly.plot('connectome-plot', [{
                 type: 'scatter3d',
                 mode: 'lines+markers',
                 x: info["con_x"],
@@ -76,14 +77,14 @@
                 z: info["con_z"],
                 opacity: 1,
                 line: {
-                    width: 6,
+                    width: info["line_width"],
                     color: info["con_w"],
                     colorscale: info["colorscale"],
                     cmin: info["cmin"],
                     cmax: info["cmax"]
                 },
                 marker: {
-                    size: 3,
+                    size: info["marker_size"],
                     color: info["con_w"],
                     colorscale: [
                         [0, '#000000'],
@@ -100,7 +101,7 @@
                 addPlot();
                 addConnectome();
                 $("#select-view").change(surfaceRelayout);
-                $("#surface-plot").mouseup(function() {
+                $("#connectome-plot").mouseup(function() {
                     $("#select-view").val("custom");
                 });
                 $(window).resize(surfaceRelayout);
@@ -112,7 +113,7 @@
 
 <body>
 
-    <div id="surface-plot"></div>
+    <div id="connectome-plot"></div>
     <select id="select-view">
         <option value="left">view: Left</option>
         <option value="right">view: Right</option>

@@ -139,7 +139,7 @@ def test_mesh_to_plotly():
             js_plotting_utils.decode(plotly[key], '<i4'), triangles[:, i])
 
 
-def check_html(html, check_selects=True):
+def check_html(html, check_selects=True, plot_div_id='surface-plot'):
     fd, tmpfile = tempfile.mkstemp()
     try:
         os.close(fd)
@@ -168,7 +168,7 @@ def check_html(html, check_selects=True):
     assert len(head.findall('script')) == 5
     body = root.find('body')
     div = body.find('div')
-    assert ('id', 'surface-plot') in div.items()
+    assert ('id', plot_div_id) in div.items()
     if not check_selects:
         return
     selects = body.findall('select')

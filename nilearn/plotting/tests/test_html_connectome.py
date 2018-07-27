@@ -3,7 +3,7 @@ import numpy as np
 from nilearn.plotting.js_plotting_utils import decode
 from nilearn.plotting import html_connectome
 
-from .test_html_surface import _check_html
+from .test_js_plotting_utils import check_html
 
 
 def test_prepare_line():
@@ -49,6 +49,9 @@ def test_get_connectome():
 def test_view_connectome():
     adj, coord = _make_connectome()
     html = html_connectome.view_connectome(adj, coord)
-    _check_html(html, False)
+    check_html(html, False, 'connectome-plot')
     html = html_connectome.view_connectome(adj, coord, '85.3%')
-    _check_html(html, False)
+    check_html(html, False, 'connectome-plot')
+    html = html_connectome.view_connectome(adj, coord, '85.3%',
+                                           linewidth=8.5, marker_size=4.2)
+    check_html(html, False, 'connectome-plot')

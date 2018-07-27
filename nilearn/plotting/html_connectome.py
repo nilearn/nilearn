@@ -49,7 +49,8 @@ def _get_connectome(adjacency_matrix, coords, threshold=None,
 
 
 def view_connectome(adjacency_matrix, coords, threshold=None,
-                    cmap=cm.cyan_orange, symmetric_cmap=True, embed_js=True):
+                    cmap=cm.cyan_orange, symmetric_cmap=True, embed_js=True,
+                    linewidth=6., marker_size=3.):
     """
     Insert a 3d plot of a connectome into an HTML page.
 
@@ -74,6 +75,12 @@ def view_connectome(adjacency_matrix, coords, threshold=None,
     symmetric_cmap : bool, optional (default=True)
         Make colormap symmetric (ranging from -vmax to vmax).
 
+    linewidth : float, optional (default=6.)
+        Width of the lines that show connections.
+
+    marker_size : float, optional (default=3.)
+        Size of the markers showing the seeds.
+
     Returns
     -------
     ConnectomeView : plot of the connectome.
@@ -95,13 +102,15 @@ def view_connectome(adjacency_matrix, coords, threshold=None,
 
     """
     mesh = datasets.fetch_surf_fsaverage()
-    mesh_info = {}
-    mesh_info["connectome"] = _get_connectome(
+    plot_info = {}
+    plot_info["connectome"] = _get_connectome(
         adjacency_matrix, coords, threshold=threshold, cmap=cmap,
         symmetric_cmap=symmetric_cmap)
+    plot_info["connectome"]["line_width"] = linewidth
+    plot_info["connectome"]["marker_size"] = marker_size
     for hemi in ['pial_left', 'pial_right']:
-        mesh_info[hemi] = mesh_to_plotly(mesh[hemi])
-    as_json = json.dumps(mesh_info)
+        plot_info[hemi] = mesh_to_plotly(mesh[hemi])
+    as_json = json.dumps(plot_info)
     as_html = get_html_template('connectome_plot_template.html').replace(
         'INSERT_CONNECTOME_JSON_HERE', as_json)
     as_html = add_js_lib(as_html, embed_js=embed_js)
