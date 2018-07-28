@@ -19,6 +19,7 @@ from nilearn import datasets, surface
 from nilearn.plotting import html_surface
 from nilearn.datasets import fetch_surf_fsaverage
 from nilearn._utils.exceptions import DimensionError
+from nilearn._utils.extmath import fast_abs_percentile
 
 # Note: html output by view_surf and view_img_on_surf
 # should validate as html5 using https://validator.w3.org/nu/ with no
@@ -187,7 +188,7 @@ def test_one_mesh_info():
     assert len(html_surface.decode(
         info['inflated_left']['_x'], '<f4')) == len(surf_map)
     assert len(info['vertexcolor_left']) == len(surf_map)
-    cmax = np.max(np.abs(surf_map))
+    cmax = fast_abs_percentile(np.abs(surf_map), 99.7)
     assert (info['cmin'], info['cmax']) == (-cmax, cmax)
     assert type(info['cmax']) == float
     json.dumps(info)
