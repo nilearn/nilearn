@@ -57,6 +57,14 @@ def test_find_cut_coords():
     img_4d = nibabel.Nifti1Image(data_4d, affine)
     assert_equal(find_xyz_cut_coords(img_3d), find_xyz_cut_coords(img_4d))
 
+    # test passing empty image returns coordinates pointing to AC-PC line
+    data = np.zeros((20, 30, 40))
+    affine = np.eye(4)
+    img = nibabel.Nifti1Image(data, affine)
+    cut_coords = find_xyz_cut_coords(img)
+    assert_equal(cut_coords, [0.0, 0.0, 0.0])
+    cut_coords = assert_warns(UserWarning, find_xyz_cut_coords, img)
+
 
 def test_find_cut_slices():
     data = np.zeros((50, 50, 50))
