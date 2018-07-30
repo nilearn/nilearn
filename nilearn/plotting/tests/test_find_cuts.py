@@ -242,6 +242,11 @@ def test_find_parcellation_cut_coords():
     np.testing.assert_allclose((coords[2][0], coords[2][1], coords[2][2]),
                                (x_map_c / 2., y_map_c / 3., z_map_c / 4.),
                                rtol=6e-2)
+    # test raises an error with wrong label_hemisphere name with 'lft'
+    error_msg = ("Invalid label_hemisphere name:lft. Should be one of "
+                 "these 'left' or 'right'.")
+    assert_raises_regex(ValueError, error_msg, find_parcellation_cut_coords,
+                        labels_img=img, label_hemisphere='lft')
 
 
 def test_find_probabilistic_atlas_cut_coords():

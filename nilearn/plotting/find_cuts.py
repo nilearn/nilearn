@@ -384,6 +384,10 @@ def find_parcellation_cut_coords(labels_img, background_label=0, return_label_na
     nilearn.plotting.find_probabilistic_atlas_cut_coords : For coordinates
         extraction on probabilistic atlases (4D) (Eg. MSDL atlas)
     """
+    # check label_hemisphere input
+    if label_hemisphere not in ['left', 'right']:
+        raise ValueError("Invalid label_hemisphere name:{0}. Should be one "
+                         "of these 'left' or 'right'.".format(label_hemisphere))
     # Grab data and affine
     labels_img = reorder_img(check_niimg_3d(labels_img))
     labels_data = labels_img.get_data()

@@ -219,8 +219,8 @@ node is connected to every other one. This is because it also captures
 indirect connections. In the next section we will see how to focus on
 only direct connections.
 
-A functional connectome: extraction of MNI coordinates
-======================================================
+A functional connectome: extracting coordinates of regions
+==========================================================
 For atlases without readily available label coordinates, center coordinates
 can be computed for each region on hard parcellation or probabilistic atlases.
 
