@@ -217,7 +217,7 @@ with MNI coordinates for each region (see for instance example:
 As you can see, the correlation matrix gives a very "full" graph: every
 node is connected to every other one. This is because it also captures
 indirect connections. In the next section we will see how to focus on
-only direct connections.
+direct connections only.
 
 A functional connectome: extracting coordinates of regions
 ==========================================================
