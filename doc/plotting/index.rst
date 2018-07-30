@@ -367,7 +367,7 @@ NOTE: These functions works for only with matplotlib higher than 1.3.1.
 =====================   ===================================================================
 
 
-.. _interactive-surface-plotting:
+.. _interactive-plotting:
 
 Interactive plots
 =================
@@ -385,6 +385,11 @@ the plot.
 For 3D plots of a connectome, use :func:`view_connectome`. To see only markers,
 use :func:`view_markers`.
 
+
+.. _interactive-surface-plotting:
+
+3D Plots of statistical maps or atlases on the cortical surface
+---------------------------------------------------------------
 
 :func:`view_img_on_surf`: Surface plot using a 3D statistical map::
 
@@ -425,6 +430,10 @@ Or you can save it to an html file::
 
 .. image:: ../images/plotly_surface_atlas_plot.png
 
+.. _interactive-connectome-plotting:
+
+3D Plots of connectomes
+-----------------------
 
 :func:`view_connectome`: 3D plot of a connectome::
 
@@ -433,3 +442,21 @@ Or you can save it to an html file::
 
 
 .. image:: ../images/plotly_connectome_plot.png
+
+
+.. _interactive-markers-plotting:
+
+3D Plots of markers
+-------------------
+
+:func:`view_markers`: showing markers (e.g. seed locations) in 3D::
+
+    >>> from nilearn import plotting  # doctest: +SKIP
+    >>> dmn_coords = [(0, -52, 18), (-46, -68, 32), (46, -68, 32), (1, 50, -5)] # doctest: +SKIP
+    >>> view = plotting.view_markers( # doctest: +SKIP
+    >>>       dmn_coords, ['red', 'cyan', 'magenta', 'orange'], marker_size=10) # doctest: +SKIP
+    >>> view.open_in_browser() # doctest: +SKIP
+
+
+
+.. image:: ../images/plotly_markers_plot.png
