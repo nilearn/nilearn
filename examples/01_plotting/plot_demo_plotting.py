@@ -49,6 +49,11 @@ plotting.plot_stat_map(localizer_tmap_filename, bg_img=localizer_anat_filename,
 ###############################################################################
 # Making interactive plots with function `view_stat_map`
 # ------------------------------------------------------
+# An alternative to :func:`nilearn.plotting.plot_stat_map` is to use
+# :func:`nilearn.plotting.view_stat_map` that gives more interactive
+# visualizations in a web browser. See :ref:`interactive-stat-map-plotting`
+# for more details.
+
 view = plotting.view_stat_map(
     localizer_tmap_filename, bg_img=localizer_anat_filename, threshold=3)
 
