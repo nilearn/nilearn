@@ -269,7 +269,8 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
                                        target_fov=target_fov,
                                        memory=self.memory,
                                        memory_level=self.memory_level,
-                                       verbose=self.verbose)
+                                       verbose=self.verbose,
+                                       dtype=self.dtype)
 
         if confounds is None:
             confounds = itertools.repeat(None, len(imgs_list))
