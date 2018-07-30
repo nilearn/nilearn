@@ -186,15 +186,23 @@ class HTMLDocument(object):
         self._temp_file = None
 
 
-def colorscale(cmap, values, threshold=None, symmetric_cmap=True):
+def colorscale(cmap, values, threshold=None, symmetric_cmap=True, vmax=None):
     """Normalize a cmap, put it in plotly format, get threshold and range"""
     cmap = mpl_cm.get_cmap(cmap)
     abs_values = np.abs(values)
-    if symmetric_cmap:
-        vmax = abs_values.max()
-        vmin = - vmax
+    if not symmetric_cmap and (values.min() < 0):
+        warnings.warn('you have specified symmetric_cmap=False'
+                      'but the map contains negative values; '
+                      'setting symmetric_cmap to True')
+        symmetric_cmap = True
+    if vmax is None:
+        if symmetric_cmap:
+            vmax = abs_values.max()
+            vmin = - vmax
+        else:
+            vmin, vmax = values.min(), values.max()
     else:
-        vmin, vmax = values.min(), values.max()
+        vmin = -vmax if symmetric_cmap else 0
     norm = mpl.colors.Normalize(vmin=vmin, vmax=vmax)
     cmaplist = [cmap(i) for i in range(cmap.N)]
     abs_threshold = None
