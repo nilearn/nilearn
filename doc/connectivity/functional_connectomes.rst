@@ -233,8 +233,8 @@ can be computed for each region on hard parcellation or probabilistic atlases.
    :func:`nilearn.plotting.find_probabilistic_atlas_cut_coords` function.
    See example: :ref:`sphx_glr_auto_examples_03_connectivity_plot_multi_subject_connectome.py`::
 
- >>> from nilearn import plotting
- >>> atlas_region_coords = plotting.find_probabilistic_atlas_cut_coords(atlas_filename) # doctest: +SKIP
+        >>> from nilearn import plotting
+        >>> atlas_region_coords = plotting.find_probabilistic_atlas_cut_coords(atlas_filename) # doctest: +SKIP
 
 
 |
