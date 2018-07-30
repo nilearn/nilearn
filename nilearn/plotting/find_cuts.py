@@ -56,7 +56,7 @@ def find_xyz_cut_coords(img, mask_img=None, activation_threshold=None):
     data = _safe_get_data(img)
 
     # when given image is empty, return (0., 0., 0.)
-    if data.sum() == 0.:
+    if np.all(data == 0.):
         warnings.warn(
             "Given img is empty. Returning default cut_coords={0} instead."
             .format(DEFAULT_CUT_COORDS))
