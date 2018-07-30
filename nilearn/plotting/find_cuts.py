@@ -24,6 +24,8 @@ from ..image.image import _smooth_array
 # Functions for automatic choice of cuts coordinates
 ################################################################################
 
+DEFAULT_CUT_COORDS = (0., 0., 0.)
+
 
 def find_xyz_cut_coords(img, mask_img=None, activation_threshold=None):
     """ Find the center of the largest activation connected component.
@@ -52,6 +54,15 @@ def find_xyz_cut_coords(img, mask_img=None, activation_threshold=None):
     # we reduce to a single 3D image to find the coordinates
     img = check_niimg_3d(img)
     data = _safe_get_data(img)
+
+    # when given image is empty, return (0., 0., 0.)
+    if np.all(data == 0.):
+        warnings.warn(
+            "Given img is empty. Returning default cut_coords={0} instead."
+            .format(DEFAULT_CUT_COORDS))
+        x_map, y_map, z_map = DEFAULT_CUT_COORDS
+        return np.asarray(coord_transform(x_map, y_map, z_map,
+                                          img.affine)).tolist()
 
     # Retrieve optional mask
     if mask_img is not None:
