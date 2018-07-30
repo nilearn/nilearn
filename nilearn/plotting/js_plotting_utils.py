@@ -1,3 +1,8 @@
+"""
+Helper functions for views, i.e. interactive plots from html_surface and
+html_connectome.
+"""
+
 import os
 import base64
 import cgi
