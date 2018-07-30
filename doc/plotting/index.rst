@@ -422,7 +422,7 @@ Or you can save it to an html file::
     >>> from nilearn import plotting, datasets     # doctest: +SKIP
     >>> destrieux = datasets.fetch_atlas_surf_destrieux()     # doctest: +SKIP
     >>> fsaverage = datasets.fetch_surf_fsaverage()     # doctest: +SKIP
-    >>> view = plotting.view_surf(fsaverage['infl_right'], destrieux['map_right'],     # doctest: +SKIP
+    >>> view = plotting.view_surf(fsaverage['infl_left'], destrieux['map_left'],     # doctest: +SKIP
     ...                           cmap='gist_ncar', symmetric_cmap=False)     # doctest: +SKIP
     ...
     >>> view.open_in_browser()     # doctest: +SKIP
