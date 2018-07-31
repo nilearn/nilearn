@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>connectome plot</title>
+    <meta charset="UTF-8" /> INSERT_JS_LIBRARIES_HERE
+    <script>
+        var connectomeInfo = INSERT_CONNECTOME_JSON_HERE;
+        var data = [];
+
+        function getOpacity(){
+            let opacity = $("#opacity-range").val();
+            return opacity == 100 ? 1 : opacity / 300;
+        }
+
+        function makePlot(surface, hemisphere, divId) {
+
+            decodeHemisphere(connectomeInfo, surface, hemisphere);
+            info = connectomeInfo[surface + "_" + hemisphere];
+            info["type"] = "mesh3d";
+            info["color"] = "#aaaaaa";
+            info["opacity"] = getOpacity();
+            info['lighting'] = getLighting();
+            data.push(info);
+
+            let layout = getLayout("connectome-plot", "select-view", false);
+            let config = getConfig();
+
+            Plotly.plot(divId, data, layout, config);
+        }
+
+        function addPlot() {
+
+            for (let hemisphere of ["left", "right"]) {
+                makePlot("pial", hemisphere, "connectome-plot");
+            }
+            if(connectomeInfo["connectome"]["markers_only"]){
+                return;
+            }
+            addColorbar(
+                connectomeInfo["connectome"]["colorscale"],
+                connectomeInfo["connectome"]["cmin"],
+                connectomeInfo["connectome"]["cmax"],
+                "connectome-plot", getLayout("connectome-plot",
+                                             "select-view", false),
+                getConfig());
+        }
+
+        function updateOpacity() {
+            let opacity = getOpacity();
+            data[0]["opacity"] = opacity;
+            data[1]["opacity"] = opacity;
+            Plotly.react("connectome-plot", data,
+                         getLayout("connectome-plot", "select-view", false),
+                         getConfig());
+        }
+
+        function surfaceRelayout(){
+            return updateLayout("connectome-plot", "select-view", false);
+        }
+
+        function addConnectome() {
+            let info = connectomeInfo["connectome"];
+            if (info["markers_only"]){
+                addMarkers();
+                return;
+            }
+
+            for (let attribute of ["con_x", "con_y", "con_z", "con_w"]) {
+                if (!(attribute in info)) {
+                    info[attribute] = Array.from(decodeBase64(
+                        info["_" + attribute], "float32"));
+                    for (let i = 2; i < info[attribute].length; i += 3) {
+                        info[attribute][i] = null;
+                    }
+                }
+            }
+
+            Plotly.plot('connectome-plot', [{
+                type: 'scatter3d',
+                mode: 'lines+markers',
+                x: info["con_x"],
+                y: info["con_y"],
+                z: info["con_z"],
+                opacity: 1,
+                line: {
+                    width: info["line_width"],
+                    color: info["con_w"],
+                    colorscale: info["colorscale"],
+                    cmin: info["cmin"],
+                    cmax: info["cmax"]
+                },
+                marker: {
+                    size: info["marker_size"],
+                    color: info["con_w"],
+                    colorscale: [
+                        [0, '#000000'],
+                        [1, "#000000"]
+                    ],
+                }
+            }]);
+
+        }
+
+        function addMarkers(){
+            let info = connectomeInfo["connectome"];
+
+            for (let attribute of ["con_x", "con_y", "con_z"]) {
+                if (!(attribute in info)) {
+                    info[attribute] = Array.from(decodeBase64(
+                        info["_" + attribute], "float32"));
+                }
+            }
+
+            Plotly.plot('connectome-plot', [{
+                type: 'scatter3d',
+                mode: 'markers',
+                x: info["con_x"],
+                y: info["con_y"],
+                z: info["con_z"],
+                opacity: 1,
+                marker: {
+                    size: info["marker_size"],
+                    color: info["marker_color"],
+                }
+            }]);
+
+     }
+    </script>
+    <script>
+        $(document).ready(
+            function() {
+                addPlot();
+                addConnectome();
+                $("#select-view").change(surfaceRelayout);
+                $("#connectome-plot").mouseup(function() {
+                    $("#select-view").val("custom");
+                });
+                $(window).resize(surfaceRelayout);
+                $("#opacity-range").change(updateOpacity);
+
+            });
+    </script>
+</head>
+
+<body>
+
+    <div id="connectome-plot"></div>
+    <select id="select-view">
+        <option value="left">view: Left</option>
+        <option value="right">view: Right</option>
+        <option value="front">view: Front</option>
+        <option value="back">view: Back</option>
+        <option value="top">view: Top</option>
+        <option value="bottom">view: Bottom</option>
+        <option value="custom">view: -</option>
+    </select>
+    <input id="opacity-range" type="range" min="0" max="100" value="30"></input>
+
+</body>
+
+</html>
