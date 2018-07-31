@@ -11,6 +11,8 @@ from .js_plotting_utils import get_html_template, HTMLDocument
 
 
 def _encode_nii(img):
+    # downcast to float32 to save memory
+    img = image.load_img(img, dtype='auto')
     fd, temp = tempfile.mkstemp(suffix='.nii')
     os.close(fd)
     try:
