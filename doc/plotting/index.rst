@@ -97,6 +97,11 @@ different heuristics to find cutting coordinates.
                      |hack|
                      Plotting a connectome
 
+                     Functions for automatic extraction of coords based on
+                     brain parcellations useful for :func:`plot_connectome`
+                     are demonstrated in
+                     **Example:** :ref:`sphx_glr_auto_examples_03_connectivity_plot_atlas_comparison.py`
+
 |plot_prob_atlas|    :func:`plot_prob_atlas`
                      |hack|
                      Plotting 4D probabilistic atlas maps
