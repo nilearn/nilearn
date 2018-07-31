@@ -36,7 +36,8 @@ def _get_vertexcolor(surf_map, cmap, norm,
 
 
 def one_mesh_info(surf_map, surf_mesh, threshold=None, cmap=cm.cold_hot,
-                  black_bg=False, bg_map=None, symmetric_cmap=True):
+                  black_bg=False, bg_map=None, symmetric_cmap=True,
+                  vmax=None):
     """
     Prepare info for plotting one surface map on a single mesh.
 
@@ -48,7 +49,8 @@ def one_mesh_info(surf_map, surf_mesh, threshold=None, cmap=cm.cold_hot,
     """
     info = {}
     colors, cmin, cmax, cmap, norm, abs_threshold = colorscale(
-        cmap, surf_map, threshold, symmetric_cmap=symmetric_cmap)
+        cmap, surf_map, threshold, symmetric_cmap=symmetric_cmap,
+        vmax=vmax)
     info['inflated_left'] = mesh_to_plotly(surf_mesh)
     info['vertexcolor_left'] = _get_vertexcolor(
         surf_map, cmap, norm, abs_threshold, bg_map)
@@ -76,7 +78,7 @@ def _check_mesh(mesh):
 
 def full_brain_info(volume_img, mesh='fsaverage5', threshold=None,
                     cmap=cm.cold_hot, black_bg=False, symmetric_cmap=True,
-                    vol_to_surf_kwargs={}):
+                    vmax=None, vol_to_surf_kwargs={}):
     """
     Project 3D map on cortex; prepare info to plot both hemispheres.
 
@@ -95,7 +97,7 @@ def full_brain_info(volume_img, mesh='fsaverage5', threshold=None,
     }
     colors, cmin, cmax, cmap, norm, abs_threshold = colorscale(
         cmap, np.asarray(list(surface_maps.values())).ravel(), threshold,
-        symmetric_cmap=symmetric_cmap)
+        symmetric_cmap=symmetric_cmap, vmax=vmax)
 
     for hemi, surf_map in surface_maps.items():
         bg_map = surface.load_surf_data(mesh['sulc_{}'.format(hemi)])
@@ -123,7 +125,7 @@ def _fill_html_template(info, embed_js=True):
 
 def view_img_on_surf(stat_map_img, surf_mesh='fsaverage5',
                      threshold=None, cmap=cm.cold_hot,
-                     black_bg=False):
+                     black_bg=False, vmax=None):
     """
     Insert a surface plot of a statistical map into an HTML page.
 
@@ -155,6 +157,10 @@ def view_img_on_surf(stat_map_img, surf_mesh='fsaverage5',
         If True, image is plotted on a black background. Otherwise on a
         white background.
 
+    vmax : float or None, optional (default=None)
+        upper bound for the colorbar. if None, use the absolute max of the
+        brain map.
+
     Returns
     -------
     SurfaceView : plot of the stat map.
@@ -173,12 +179,13 @@ def view_img_on_surf(stat_map_img, surf_mesh='fsaverage5',
     stat_map_img = check_niimg_3d(stat_map_img)
     info = full_brain_info(
         volume_img=stat_map_img, mesh=surf_mesh, threshold=threshold,
-        cmap=cmap, black_bg=black_bg)
+        cmap=cmap, black_bg=black_bg, vmax=vmax)
     return _fill_html_template(info, embed_js=True)
 
 
 def view_surf(surf_mesh, surf_map=None, bg_map=None, threshold=None,
-              cmap=cm.cold_hot, black_bg=False, symmetric_cmap=True):
+              cmap=cm.cold_hot, black_bg=False, vmax=None,
+              symmetric_cmap=True):
     """
     Insert a surface plot of a surface map into an HTML page.
 
@@ -223,6 +230,10 @@ def view_surf(surf_mesh, surf_map=None, bg_map=None, threshold=None,
         Make colormap symmetric (ranging from -vmax to vmax).
         Set it to False if you are plotting a surface atlas.
 
+    vmax : float or None, optional (default=None)
+        upper bound for the colorbar. if None, use the absolute max of the
+        brain map.
+
     Returns
     -------
     SurfaceView : plot of the stat map.
@@ -248,5 +259,5 @@ def view_surf(surf_mesh, surf_map=None, bg_map=None, threshold=None,
     info = one_mesh_info(
         surf_map=surf_map, surf_mesh=surf_mesh, threshold=threshold,
         cmap=cmap, black_bg=black_bg, bg_map=bg_map,
-        symmetric_cmap=symmetric_cmap)
+        symmetric_cmap=symmetric_cmap, vmax=vmax)
     return _fill_html_template(info, embed_js=True)

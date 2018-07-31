@@ -67,12 +67,15 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
         This parameter is passed to image.resample_img. Please see the
         related documentation for details.
 
-    mask_strategy: {'background' or 'epi'}, optional
+    mask_strategy: {'background', 'epi' or 'template'}, optional
         The strategy used to compute the mask: use 'background' if your
-        images present a clear homogeneous background, and 'epi' if they
-        are raw EPI images. Depending on this value, the mask will be
-        computed from masking.compute_background_mask or
-        masking.compute_epi_mask. Default is 'background'.
+        images present a clear homogeneous background, 'epi' if they
+        are raw EPI images, or you could use 'template' which will
+        extract the gray matter part of your data by resampling the MNI152
+        brain mask for your data's field of view.
+        Depending on this value, the mask will be computed from
+        masking.compute_background_mask, masking.compute_epi_mask or
+        masking.compute_gray_matter_mask. Default is 'background'.
 
     mask_args : dict, optional
         If mask is None, these are additional parameters passed to
@@ -176,9 +179,12 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
                 compute_mask = masking.compute_multi_background_mask
             elif self.mask_strategy == 'epi':
                 compute_mask = masking.compute_multi_epi_mask
+            elif self.mask_strategy == 'template':
+                compute_mask = masking.compute_multi_gray_matter_mask
             else:
                 raise ValueError("Unknown value of mask_strategy '%s'. "
-                                 "Acceptable values are 'background' and 'epi'.")
+                                 "Acceptable values are 'background', 'epi' "
+                                 "and 'template'.")
 
             self.mask_img_ = self._cache(
                 compute_mask, ignore=['n_jobs', 'verbose', 'memory'])(
