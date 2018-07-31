@@ -426,7 +426,7 @@ def test_unmask_list(random_state=42):
     assert_array_equal(a.get_data(), b.get_data())
 
 
- def test__extrapolate_out_mask():
+def test__extrapolate_out_mask():
     # Input data:
     initial_data = np.zeros((5,5,5))
     initial_data[1,2,2] = 1
