@@ -6,6 +6,7 @@ import tempfile
 import base64
 
 import numpy as np
+import nibabel
 
 from .. import image, datasets
 from .._utils.extmath import fast_abs_percentile
@@ -35,7 +36,8 @@ def _decode_nii(encoded):
         with open(temp, 'wb') as f:
             f.write(base64.b64decode(encoded.encode('utf-8')))
         img = image.load_img(temp)
-        return image.new_img_like(img, np.asarray(img.get_data()).copy())
+        return nibabel.Nifti1Image(np.asarray(img.get_data()).copy(),
+                                   np.asarray(img.affine).copy())
     finally:
         os.remove(temp)
 
