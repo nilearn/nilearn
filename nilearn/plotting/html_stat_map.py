@@ -1,10 +1,13 @@
+"""
+Visualizing 3D stat maps in a Papaya viewer
+"""
 import os
 import tempfile
 import base64
 
 import numpy as np
-from nilearn import image, datasets
 
+from .. import image, datasets
 from .._utils.extmath import fast_abs_percentile
 from .._utils.param_validation import check_threshold
 from .js_plotting_utils import get_html_template, HTMLDocument
