@@ -474,5 +474,6 @@ Interactive visualization of statistical map slices
     >>> view = plotting.view_stat_map(img, threshold=2, vmax=4)     # doctest: +SKIP
     >>> view.open_in_browser()   # doctest: +SKIP
 
+will open a viewer in your web browser. Or in a Jupyter notebook:
 
-.. image:: ../images/papaya_stat_map_plot_screenshot.png
+.. image:: ../images/papaya_stat_map_plot_screenshot_notebook.png
