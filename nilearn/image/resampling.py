@@ -298,7 +298,7 @@ def resample_img(img, target_affine=None, target_shape=None,
 
     target_affine: numpy.ndarray, optional
         If specified, the image is resampled corresponding to this new affine.
-        target_affine can be a 3x3 or a 4x4 matrixFscipy. (See notes)
+        target_affine can be a 3x3 or a 4x4 matrix. (See notes)
 
     target_shape: tuple or list, optional
         If specified, the image will be resized to match this new shape.
