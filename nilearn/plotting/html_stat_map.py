@@ -7,7 +7,7 @@ from nilearn import image, datasets
 
 from .._utils.extmath import fast_abs_percentile
 from .._utils.param_validation import check_threshold
-from .html_surface import get_html_template, HTMLDocument
+from .js_plotting_utils import get_html_template, HTMLDocument
 
 
 def _encode_nii(img):
@@ -62,7 +62,7 @@ def view_stat_map(stat_map_img, threshold=None, bg_img=None, vmax=None):
         The background image that the stat map will be plotted on top of.
         If nothing is specified, the MNI152 template will be used.
 
-    vmax : float, optionsl (default=None)
+    vmax : float, optional (default=None)
         Upper bound for plotting
 
     Returns
