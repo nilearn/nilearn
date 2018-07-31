@@ -13,8 +13,10 @@ from nibabel import Nifti1Image
 
 from nilearn import masking
 from nilearn.masking import (compute_epi_mask, compute_multi_epi_mask,
-                             compute_background_mask, unmask, _unmask_3d,
-                             _unmask_4d, intersect_masks, MaskWarning)
+                             compute_background_mask, compute_gray_matter_mask,
+                             compute_multi_gray_matter_mask,
+                             unmask, _unmask_3d, _unmask_4d, intersect_masks,
+                             MaskWarning)
 from nilearn._utils.testing import (write_tmp_imgs, assert_raises_regex)
 from nilearn._utils.exceptions import DimensionError
 from nilearn.input_data import NiftiMasker
@@ -95,6 +97,31 @@ def test_compute_background_mask():
         compute_background_mask(mean_image)
     assert_equal(len(w), 1)
     assert_true(isinstance(w[0].message, masking.MaskWarning))
+
+
+def test_compute_gray_matter_mask():
+    image = Nifti1Image(np.ones((9, 9, 9)), np.eye(4))
+
+    mask = compute_gray_matter_mask(image, threshold=-1)
+    mask1 = np.zeros((9, 9, 9))
+    mask1[2:-2, 2:-2, 2:-2] = 1
+
+    np.testing.assert_array_equal(mask1, mask.get_data())
+
+    # Check that we get a useful warning for empty masks
+    with warnings.catch_warnings(record=True) as w:
+        compute_gray_matter_mask(image, threshold=1)
+    assert_equal(len(w), 1)
+    assert_true(isinstance(w[0].message, masking.MaskWarning))
+
+    # Check that masks obtained from same FOV are the same
+    img1 = Nifti1Image(np.full((9, 9, 9), np.random.rand()), np.eye(4))
+    img2 = Nifti1Image(np.full((9, 9, 9), np.random.rand()), np.eye(4))
+
+    mask_img1 = compute_gray_matter_mask(img1)
+    mask_img2 = compute_gray_matter_mask(img2)
+    np.testing.assert_array_equal(mask_img1.get_data(),
+                                  mask_img2.get_data())
 
 
 def test_apply_mask():
@@ -382,6 +409,26 @@ def test_compute_multi_epi_mask():
                                       target_affine=np.eye(4),
                                       target_shape=(4, 4, 1))
     assert_array_equal(mask_ab, mask_ab_.get_data())
+
+
+def test_compute_multi_gray_matter_mask():
+    assert_raises(TypeError, compute_multi_gray_matter_mask, [])
+
+    # Check error raised if images with different shapes are given as input
+    imgs = [Nifti1Image(np.ones((9, 9, 9)), np.eye(4)),
+            Nifti1Image(np.ones((9, 9, 8)), np.eye(4))]
+    assert_raises(ValueError, compute_multi_gray_matter_mask, imgs)
+
+    # Check results are the same if affine is the same
+    imgs1 = [Nifti1Image(np.random.randn(9, 9, 9), np.eye(4)),
+            Nifti1Image(np.random.randn(9, 9, 9), np.eye(4))]
+    mask1 = compute_multi_gray_matter_mask(imgs1)
+
+    imgs2 = [Nifti1Image(np.random.randn(9, 9, 9), np.eye(4)),
+             Nifti1Image(np.random.randn(9, 9, 9), np.eye(4))]
+    mask2 = compute_multi_gray_matter_mask(imgs2)
+
+    assert_array_equal(mask1.get_data(), mask2.get_data())
 
 
 def test_error_shape(random_state=42, shape=(3, 5, 7, 11)):

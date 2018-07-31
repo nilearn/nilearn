@@ -162,3 +162,25 @@ def test_shelving():
         # enables to delete "filename" on windows
         del masker
         shutil.rmtree(cachedir, ignore_errors=True)
+
+
+def test_compute_multi_gray_matter_mask():
+    # Check mask is correctly is correctly calculated
+    imgs = [Nifti1Image(np.random.rand(9, 9, 5), np.eye(4)),
+            Nifti1Image(np.random.rand(9, 9, 5), np.eye(4))]
+
+    masker = MultiNiftiMasker(mask_strategy='template')
+    masker.fit(imgs)
+
+    # Check that the order of the images does not change the output
+    masker2 = MultiNiftiMasker(mask_strategy='template')
+    masker2.fit(imgs[::-1])
+
+    mask = masker.mask_img_
+    mask2 = masker2.mask_img_
+
+    mask_ref = np.zeros((9, 9, 5))
+    mask_ref[2:7, 2:7, 2] = 1
+
+    np.testing.assert_array_equal(mask.get_data(), mask_ref)
+    np.testing.assert_array_equal(mask2.get_data(), mask_ref)
