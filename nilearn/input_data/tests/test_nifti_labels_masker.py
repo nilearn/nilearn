@@ -239,3 +239,22 @@ def test_nifti_labels_masker_resampling():
     with testing.write_tmp_imgs(fmri22_img) as filename:
         masker = NiftiLabelsMasker(labels33_img, resampling_target='data')
         masker.fit_transform(filename)
+
+    # test labels masker with resampling target in 'data', 'labels' to return
+    # resampled labels having number of labels equal with transformed shape of
+    # 2nd dimension. This tests are added based on issue #1673 in Nilearn
+    shape = (13, 11, 12)
+    affine = np.eye(4) * 2
+
+    fmri_img, _ = generate_random_img(shape, affine=affine, length=21)
+    labels_img = testing.generate_labeled_regions((9, 8, 6), affine=np.eye(4),
+                                                  n_regions=10)
+    for resampling_target in ['data', 'labels']:
+        masker = NiftiLabelsMasker(labels_img=labels_img,
+                                   resampling_target=resampling_target)
+        transformed = masker.fit_transform(fmri_img)
+        resampled_labels_img = masker._resampled_labels_img_
+        n_resampled_labels = len(np.unique(resampled_labels_img.get_data()))
+        assert_equal(n_resampled_labels - 1, transformed.shape[1])
+        # inverse transform
+        compressed_img = masker.inverse_transform(transformed)
