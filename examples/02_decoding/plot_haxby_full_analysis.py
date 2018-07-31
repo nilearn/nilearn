@@ -79,21 +79,23 @@ for mask_name in mask_names:
     for category in categories:
         print("Processing %s %s" % (mask_name, category))
         classification_target = (stimuli[task_mask] == category)
-        mask_scores[mask_name][category] = cross_val_score(classifier,
-                                                           masked_timecourses,
-                                                           classification_target,
-                                                           cv=cv,
-                                                           groups=session_labels,
-                                                           scoring="roc_auc",
-                                                           )
+        mask_scores[mask_name][category] = cross_val_score(
+            classifier,
+            masked_timecourses,
+            classification_target,
+            cv=cv,
+            groups=session_labels,
+            scoring="roc_auc",
+        )
 
-        mask_chance_scores[mask_name][category] = cross_val_score(dummy_classifier,
-                                                                  masked_timecourses,
-                                                                  classification_target,
-                                                                  cv=cv,
-                                                                  groups=session_labels,
-                                                                  scoring="roc_auc",
-                                                                  )
+        mask_chance_scores[mask_name][category] = cross_val_score(
+            dummy_classifier,
+            masked_timecourses,
+            classification_target,
+            cv=cv,
+            groups=session_labels,
+            scoring="roc_auc",
+        )
 
         print("Scores: %1.2f +- %1.2f" % (
             mask_scores[mask_name][category].mean(),

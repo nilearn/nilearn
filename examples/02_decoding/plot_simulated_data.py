@@ -63,8 +63,8 @@ def create_simulation_data(snr=0, n_samples=2 * 100, size=12, random_state=1):
     w[0:roi_size, -roi_size:, -roi_size:] = -0.6
     w[-roi_size:, 0:roi_size:, -roi_size:] = 0.5
     w[(size - roi_size) // 2:(size + roi_size) // 2,
-      (size - roi_size) // 2:(size + roi_size) // 2,
-      (size - roi_size) // 2:(size + roi_size) // 2] = 0.5
+    (size - roi_size) // 2:(size + roi_size) // 2,
+    (size - roi_size) // 2:(size + roi_size) // 2] = 0.5
     w = w.ravel()
     # Generate smooth background noise
     XX = generator.randn(n_samples, size, size, size)
@@ -159,7 +159,8 @@ estimators = [
                                           l1_ratio=0.05)),
     ('ridge_cv', linear_model.RidgeCV(alphas=[100, 10, 1, 0.1], cv=5)),
     ('svr', svm.SVR(kernel='linear', C=0.001)),
-    ('searchlight', decoding.SearchLight(mask_img, process_mask_img=process_mask_img,
+    ('searchlight', decoding.SearchLight(mask_img,
+                                         process_mask_img=process_mask_img,
                                          radius=2.7,
                                          scoring='r2',
                                          estimator=svm.SVR(kernel="linear"),
@@ -168,7 +169,7 @@ estimators = [
                                          n_jobs=1,
                                          )
      )
-    ]
+]
 
 ###############################################################################
 # Run the estimators
@@ -193,14 +194,14 @@ for name, estimator in estimators:
         coefs = np.reshape(coefs, [size, size, size])
         score = estimator.score(X_test, y_test)
         title = '%s: prediction score %.3f, training time: %.2fs' % (
-                estimator.__class__.__name__, score,
-                elapsed_time)
+            estimator.__class__.__name__, score,
+            elapsed_time)
 
     else:  # Searchlight
         coefs = estimator.scores_
         title = '%s: training time: %.2fs' % (
-                estimator.__class__.__name__,
-                elapsed_time)
+            estimator.__class__.__name__,
+            elapsed_time)
 
     # We use the plot_slices function provided in the example to
     # plot the results
@@ -230,5 +231,3 @@ plt.show()
 # slow.
 
 from sklearn.feature_selection import RFE
-
-

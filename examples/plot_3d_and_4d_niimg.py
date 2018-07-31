@@ -105,4 +105,3 @@ plotting.show()
 # to break down 4D images into 3D images, and on the other hand
 # :func:`nilearn.image.concat_imgs` to group a list of 3D images into a 4D
 # image.
-

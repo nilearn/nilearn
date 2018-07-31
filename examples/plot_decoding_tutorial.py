@@ -220,7 +220,7 @@ session_label = behavioral['chunks'][condition_mask]
 cv_score = cross_val_score(svc, fmri_masked, conditions, cv=cv)
 print(cv_score)
 
-# To leave a session out, we pass it to the groups parameter of cross_val_score.
+# To leave a session out, pass it to the groups parameter of cross_val_score.
 from sklearn.model_selection import LeaveOneGroupOut
 cv = LeaveOneGroupOut()
 cv_score = cross_val_score(svc,
