@@ -35,9 +35,7 @@ def _decode_nii(encoded):
         with open(temp, 'wb') as f:
             f.write(base64.b64decode(encoded.encode('utf-8')))
         img = image.load_img(temp)
-        new_img = image.new_img_like(img, img.get_data())
-        del img
-        return new_img
+        return image.new_img_like(img, np.asarray(img.get_data()).copy())
     finally:
         os.remove(temp)
 
