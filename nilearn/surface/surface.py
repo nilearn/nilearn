@@ -3,6 +3,7 @@ Functions for surface manipulation.
 """
 import os
 import warnings
+import gzip
 
 import numpy as np
 from scipy import sparse, interpolate
@@ -609,6 +610,13 @@ def load_surf_mesh(surf_mesh):
             except IndexError:
                 raise ValueError('Gifti file needs to contain a data array '
                                  'with intent NIFTI_INTENT_TRIANGLE')
+        elif surf_mesh.endswith('.gii.gz'):
+            with gzip.open(surf_mesh) as f:
+                as_bytes = f.read()
+
+            parser = gifti.GiftiImage.parser()
+            parser.parse(as_bytes)
+            coords, faces = (a.data for a in parser.img.darrays)
         else:
             raise ValueError(('The input type is not recognized. %r was given '
                               'while valid inputs are one of the following '
