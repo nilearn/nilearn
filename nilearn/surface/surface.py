@@ -514,6 +514,51 @@ def vol_to_surf(img, surf_mesh,
     return texture.T
 
 
+def _load_surf_files_gifti_gzip(surf_file):
+    """Load surface data Gifti files which are gzipped. This
+    function is used by load_surf_mesh and load_surf_data for
+    extracting gzipped files.
+
+    Part of the code can be removed while bumping nibabel 2.0.2
+    """
+    with gzip.open(surf_file) as f:
+        as_bytes = f.read()
+    if LooseVersion(nibabel.__version__) >= LooseVersion('2.1.0'):
+        parser = gifti.GiftiImage.parser()
+        parser.parse(as_bytes)
+        gifti_img = parser.img
+    else:
+        from nibabel.gifti.parse_gifti_fast import ParserCreate, Outputter
+        parser = ParserCreate()
+        parser.buffer_text = True
+        HANDLER_NAMES = ['StartElementHandler', 'EndElementHandler',
+                         'CharacterDataHandler']
+        out = Outputter()
+        for name in HANDLER_NAMES:
+            setattr(parser, name, getattr(out, name))
+        parser.Parse(as_bytes)
+        gifti_img = out.img
+    return gifti_img
+
+
+def _load_surf_depth_img_to_data(gifti_img):
+    """Load surface sulcal depth image in nibabel.gifti.GiftiImage
+    to data
+
+    Used by load_surf_data function in common to surface sulcal data
+    acceptable to .gii or .gii.gz
+    """
+    try:
+        data = np.zeros((len(gifti_img.darrays[0].data),
+                         len(gifti_img.darrays)))
+        for arr in range(len(gifti_img.darrays)):
+            data[:, arr] = gifti_img.darrays[arr].data
+        data = np.squeeze(data)
+    except IndexError:
+        raise ValueError('Gifti must contain at least one data array')
+    return data
+
+
 # function to figure out datatype and load data
 def load_surf_data(surf_data):
     """Loading data to be represented on a surface mesh.
@@ -544,13 +589,10 @@ def load_surf_data(surf_data):
             data = nibabel.freesurfer.io.read_label(surf_data)
         elif surf_data.endswith('gii'):
             gii = gifti.read(surf_data)
-            try:
-                data = np.zeros((len(gii.darrays[0].data), len(gii.darrays)))
-                for arr in range(len(gii.darrays)):
-                    data[:, arr] = gii.darrays[arr].data
-                data = np.squeeze(data)
-            except IndexError:
-                raise ValueError('Gifti must contain at least one data array')
+            data = _load_surf_depth_img_to_data(gii)
+        elif surf_data.endswith('gii.gz'):
+            gii = _load_surf_files_gifti_gzip(surf_data)
+            data = _load_surf_depth_img_to_data(gii)
         else:
             raise ValueError(('The input type is not recognized. %r was given '
                               'while valid inputs are a Numpy array or one of '
@@ -568,32 +610,6 @@ def load_surf_data(surf_data):
                          'Freesurfer specific files such as .curv,  .sulc, '
                          '.thickness, .annot, .label')
     return data
-
-
-def _load_surf_mesh_gifti_gzip(surf_mesh):
-    """Load surface mesh Gifti files which are gzipped.
-
-    Part of the code can be removed while bumping nibabel 2.0.2
-    """
-    with gzip.open(surf_mesh) as f:
-        as_bytes = f.read()
-    if LooseVersion(nibabel.__version__) >= LooseVersion('2.1.0'):
-        parser = gifti.GiftiImage.parser()
-        parser.parse(as_bytes)
-        gifti_img = parser.img
-        coords, faces = _load_surf_mesh_img_to_data(gifti_img)
-    else:
-        from nibabel.gifti.parse_gifti_fast import ParserCreate, Outputter
-        parser = ParserCreate()
-        parser.buffer_text = True
-        HANDLER_NAMES = ['StartElementHandler', 'EndElementHandler',
-                         'CharacterDataHandler']
-        out = Outputter()
-        for name in HANDLER_NAMES:
-            setattr(parser, name, getattr(out, name))
-        parser.Parse(as_bytes)
-        coords, faces = _load_surf_mesh_img_to_data(out.img)
-    return coords, faces
 
 
 def _load_surf_mesh_img_to_data(gifti_img):
@@ -648,7 +664,8 @@ def load_surf_mesh(surf_mesh):
             gifti_img = gifti.read(surf_mesh)
             coords, faces = _load_surf_mesh_img_to_data(gifti_img)
         elif surf_mesh.endswith('.gii.gz'):
-            coords, faces = _load_surf_mesh_gifti_gzip(surf_mesh)
+            gifti_img = _load_surf_files_gifti_gzip(surf_mesh)
+            coords, faces = _load_surf_mesh_img_to_data(gifti_img)
         else:
             raise ValueError(('The input type is not recognized. %r was given '
                               'while valid inputs are one of the following '

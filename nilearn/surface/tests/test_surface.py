@@ -25,7 +25,8 @@ from nilearn.image import resampling
 from nilearn.image.tests.test_resampling import rotation
 from nilearn.surface import surface
 from nilearn.surface import load_surf_data, load_surf_mesh, vol_to_surf
-from nilearn.surface.surface import _load_surf_mesh_img_to_data
+from nilearn.surface.surface import (_load_surf_mesh_img_to_data,
+                                     _load_surf_files_gifti_gzip)
 
 currdir = os.path.dirname(os.path.abspath(__file__))
 datadir = os.path.join(currdir, 'data')
@@ -80,6 +81,23 @@ def test_load_surf_data_file_nii_gii():
     assert_array_equal(load_surf_data(filename_niigz), np.zeros((20, )))
     os.remove(filename_nii)
     os.remove(filename_niigz)
+
+
+def test_load_surf_data_gii_gz():
+    # Test the loader `load_surf_data` with gzipped fsaverage5 files
+
+    # surface data
+    fsaverage = datasets.fetch_surf_fsaverage().sulc_left
+    gii = _load_surf_files_gifti_gzip(fsaverage)
+    assert_true(isinstance(gii, gifti.GiftiImage))
+
+    data = load_surf_data(fsaverage)
+    assert_true(isinstance(data, np.ndarray))
+
+    # surface mesh
+    fsaverage = datasets.fetch_surf_fsaverage().pial_left
+    gii = _load_surf_files_gifti_gzip(fsaverage)
+    assert_true(isinstance(gii, gifti.GiftiImage))
 
 
 def test_load_surf_data_file_freesurfer():
@@ -171,9 +189,9 @@ def test_load_surf_mesh_img_to_data():
 
 
 def test_load_surf_mesh_file_gii_gz():
-    # Test the loader `load_surf_mesh` with gzipped files
+    # Test the loader `load_surf_mesh` with gzipped fsaverage5 files
 
-    fsaverage = datasets.fetch_surf_fsaverage5().pial_left
+    fsaverage = datasets.fetch_surf_fsaverage().pial_left
     coords, faces = load_surf_mesh(fsaverage)
     assert_true(isinstance(coords, np.ndarray))
     assert_true(isinstance(faces, np.ndarray))
