@@ -17,7 +17,8 @@ from ..image import new_img_like
 _package_directory = os.path.dirname(os.path.abspath(__file__))
 # Useful for the very simple examples
 MNI152_FILE_PATH = os.path.join(_package_directory, "data",
-                             "avg152T1_brain.nii.gz")
+                                "avg152T1_brain.nii.gz")
+FSAVERAGE5_PATH = os.path.join(_package_directory, "data", "fsaverage5")
 
 
 def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
@@ -523,6 +524,15 @@ def fetch_surf_fsaverage5(data_dir=None, url=None, resume=True, verbose=1):
 
 
 def _fetch_surf_fsaverage5(data_dir=None, url=None, resume=True, verbose=1):
+    """Helper function to fetch fsaverage5 surfaces and sulcal information
+
+    Part of the data is directly shipped with Nilearn from
+    nilearn/datasets/data/fsaverage5 while some part is downloaded from
+    nitrc. For instance, pial surfaces are shipped directly with Nilearn
+    and sulcal surfaces are downloaded from nitrc.
+    """
+    import shutil
+
     if url is None:
         url = 'https://www.nitrc.org/frs/download.php/'
 
@@ -535,45 +545,45 @@ def _fetch_surf_fsaverage5(data_dir=None, url=None, resume=True, verbose=1):
     fdescr = _get_dataset_descr(dataset_name)
 
     # Download fsaverage surfaces and sulcal information
-    surf_file = '%s.%s.gii'
-    surf_url = url + '%i/%s.%s.gii'
-    surf_nids = {'lh pial': 9344, 'rh pial': 9345,
-                 'lh infl': 9346, 'rh infl': 9347,
-                 'lh sulc': 9348, 'rh sulc': 9349}
+    pial_file = '%s.%s.gii.gz'
+    pial_path = os.path.join(FSAVERAGE5_PATH, pial_file)
+
+    sulc_file = '%s.%s.gii'
+    sulcal_url = url + '%i/%s.%s.gii'
+    sulcal_nids = {'lh sulc': 9348, 'rh sulc': 9349}
 
     pials = []
     infls = []
     sulcs = []
     for hemi in [('lh', 'left'), ('rh', 'right')]:
+        # pial
+        new_pial_path = os.path.join(data_dir,
+                                     pial_file % ('pial', hemi[1]))
+        shutil.copy(pial_path % ('pial', hemi[1]), new_pial_path)
+        _uncompress_file(new_pial_path, verbose=0)
+        pials.append(os.path.splitext(new_pial_path)[0])
 
-        pial = _fetch_files(data_dir,
-                            [(surf_file % ('pial', hemi[1]),
-                                surf_url % (surf_nids['%s pial' % hemi[0]],
-                                            'pial', hemi[1]),
-                              {})],
-                            resume=resume, verbose=verbose)
-        pials.append(pial)
-
-        infl = _fetch_files(data_dir,
-                            [(surf_file % ('pial_inflated', hemi[1]),
-                              surf_url % (surf_nids['%s infl' % hemi[0]],
-                                          'pial_inflated', hemi[1]),
-                              {})],
-                            resume=resume, verbose=verbose)
-        infls.append(infl)
-
+        # pial_inflated
+        new_pial_infl_path = os.path.join(data_dir,
+                                          pial_file % ('pial_inflated',
+                                                       hemi[1]))
+        shutil.copy(pial_path % ('pial_inflated', hemi[1]),
+                    new_pial_infl_path)
+        _uncompress_file(new_pial_infl_path, verbose=0)
+        infls.append(os.path.splitext(new_pial_infl_path)[0])
+        # sulcal
         sulc = _fetch_files(data_dir,
-                            [(surf_file % ('sulc', hemi[1]),
-                              surf_url % (surf_nids['%s sulc' % hemi[0]],
-                                          'sulc', hemi[1]),
+                            [(sulc_file % ('sulc', hemi[1]),
+                              sulcal_url % (sulcal_nids['%s sulc' % hemi[0]],
+                                            'sulc', hemi[1]),
                               {})],
                             resume=resume, verbose=verbose)
         sulcs.append(sulc)
 
-    return Bunch(pial_left=pials[0][0],
-                 pial_right=pials[1][0],
-                 infl_left=infls[0][0],
-                 infl_right=infls[1][0],
+    return Bunch(pial_left=pials[0],
+                 pial_right=pials[1],
+                 infl_left=infls[0],
+                 infl_right=infls[1],
                  sulc_left=sulcs[0][0],
                  sulc_right=sulcs[1][0],
                  description=fdescr)
