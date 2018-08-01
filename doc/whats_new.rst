@@ -1,21 +1,31 @@
 0.4.3
 =====
 
+Enhancements
+------------
+    - :func:`nilearn.plotting.view_surf` and
+      :func:`nilearn.plotting.view_img_on_surf` for interactive visualization of
+      maps on the cortical surface in a web browser.
+
+    - Add :func:`nilearn.datasets.fetch_surf_fsaverage` to download either
+      fsaverage or fsaverage 5 (Freesurfer cortical meshes).
+
+    - Added :func:`nilearn.datasets.fetch_atlas_pauli_2017` to download a
+      recent subcortical neuroimaging atlas.
+
+    - Added :func:`nilearn.plotting.find_parcellation_cut_coords` for
+      extraction of coordinates on brain parcellations denoted as labels.
+
+    - Added :func:`nilearn.plotting.find_probabilistic_atlas_cut_coords` for
+      extraction of coordinates on brain probabilistic maps.
+
+
 Changes
 -------
 
     - `nilearn.datasets.fetch_surf_fsaverage5` is deprecated and will be
       removed in a future release. Use :func:`nilearn.datasets.fetch_surf_fsaverage`,
       with the parameter mesh="fsaverage5" (the default) instead.
-
-
-Enhancements
-------------
-
-    - Add :func:`nilearn.datasets.fetch_surf_fsaverage` to download either
-      fsaverage or fsaverage 5 (Freesurfer cortical meshes).
-    - Added :func:`nilearn.datasets.fetch_atlas_pauli_2017` to download a 
-      recent subcortical neuroimaging atlas.
 
 
 0.4.2

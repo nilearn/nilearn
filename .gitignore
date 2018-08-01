@@ -33,3 +33,5 @@ tags
 *.tgz
 
 .idea/
+
+doc/themes/nilearn/static/jquery.js

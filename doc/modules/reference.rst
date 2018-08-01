@@ -225,6 +225,8 @@ uses.
 
    compute_epi_mask
    compute_multi_epi_mask
+   compute_gray_matter_mask
+   compute_multi_gray_matter_mask
    compute_background_mask
    compute_multi_background_mask
    intersect_masks
@@ -306,6 +308,8 @@ uses.
 
    find_cut_slices
    find_xyz_cut_coords
+   find_parcellation_cut_coords
+   find_probabilistic_atlas_cut_coords
    plot_anat
    plot_img
    plot_epi
@@ -318,6 +322,10 @@ uses.
    plot_surf
    plot_surf_roi
    plot_surf_stat_map
+   view_surf
+   view_img_on_surf
+   view_connectome
+   view_markers
    show
 
 **Classes**:
