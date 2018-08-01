@@ -11,7 +11,7 @@ from nilearn import datasets, plotting, image
 
 ###############################################################################
 # Retrieve the data: the localizer dataset with contrast maps.
-motor_images = datasets.fetch_neurovault_ids(image_ids=[10426])
+motor_images = datasets.fetch_motor_task()
 stat_img = motor_images.images[0]
 
 ###############################################################################

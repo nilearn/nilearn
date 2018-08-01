@@ -30,7 +30,7 @@ haxby_mask_filename = haxby_dataset.mask_vt[0]
 haxby_func_filename = haxby_dataset.func[0]
 
 # one motor contrast map from NeuroVault
-motor_images = datasets.fetch_neurovault_ids(image_ids=[10426])
+motor_images = datasets.fetch_neurovault_motor_task()
 stat_img = motor_images.images[0]
 
 ###############################################################################

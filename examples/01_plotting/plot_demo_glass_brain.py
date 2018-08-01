@@ -12,7 +12,7 @@ See :ref:`plotting` for more plotting functionalities.
 
 from nilearn import datasets
 
-motor_images = datasets.fetch_neurovault_ids(image_ids=[10426])
+motor_images = datasets.fetch_neurovault_motor_task()
 stat_img = motor_images.images[0]
 
 ###############################################################################

@@ -15,7 +15,7 @@ from nilearn.datasets import load_mni152_template
 
 template = load_mni152_template()
 
-motor_images = fetch_neurovault_ids(image_ids=[10426])
+motor_images = fetch_neurovault_motor_task()
 stat_img = motor_images.images[0]
 
 ###############################################################################

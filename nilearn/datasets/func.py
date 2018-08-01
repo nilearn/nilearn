@@ -1846,3 +1846,4 @@ def fetch_surf_nki_enhanced(n_subjects=10, data_dir=None,
     return Bunch(func_left=func_left, func_right=func_right,
                  phenotypic=phenotypic,
                  description=fdescr)
+ 

@@ -33,7 +33,7 @@ print('Datasets shipped with nilearn are stored in: %r' % datasets.get_data_dirs
 # Let us now retrieve a motor task contrast map
 # corresponding to a group one-sample t-test
 
-motor_images = datasets.fetch_neurovault_ids(image_ids=[10426])
+motor_images = datasets.fetch_neurovault_motor_task()
 stat_img = motor_images.images[0]
 
 ###############################################################################

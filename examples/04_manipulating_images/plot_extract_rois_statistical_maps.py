@@ -18,7 +18,7 @@ function :func:`nilearn.image.threshold_img` and extract objects using a functio
 # utilities
 from nilearn import datasets
 
-localizer = datasets.fetch_neurovault_ids(image_ids=[32980])
+localizer = datasets.fetch_neurovault_auditory_computation_task()
 tmap_filename = localizer.images[0]
 
 ################################################################################

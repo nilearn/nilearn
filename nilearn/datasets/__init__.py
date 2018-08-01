@@ -27,7 +27,11 @@ from .atlas import (fetch_atlas_craddock_2012, fetch_atlas_destrieux_2009,
                     fetch_atlas_pauli_2017)
 
 from .utils import get_data_dirs
-from .neurovault import fetch_neurovault, fetch_neurovault_ids
+from .neurovault import (fetch_neurovault,
+                         fetch_neurovault_ids,
+                         fetch_neurovault_motor_task,
+                         fetch_neurovault_auditory_computation_task
+)
 
 __all__ = ['MNI152_FILE_PATH', 'fetch_icbm152_2009', 'load_mni152_template',
            'fetch_oasis_vbm',

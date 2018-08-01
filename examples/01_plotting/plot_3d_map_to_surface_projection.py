@@ -16,7 +16,7 @@ NOTE: Example needs matplotlib version higher than 1.3.1.
 
 from nilearn import datasets
 
-motor_images = datasets.fetch_neurovault_ids(image_ids=[10426])
+motor_images = datasets.fetch_neurovault_motor_task()
 stat_img = motor_images.images[0]
 
 
@@ -99,7 +99,7 @@ view
 ##############################################################################
 # We don't need to do the projection ourselves, we can use view_img_on_surf:
 
-view = plotting.view_img_on_surf(localizer_tmap, threshold='90%')
+view = plotting.view_img_on_surf(stat_img, threshold='90%')
 # view.open_in_browser()
 
 view
