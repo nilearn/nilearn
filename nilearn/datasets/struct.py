@@ -524,66 +524,44 @@ def fetch_surf_fsaverage5(data_dir=None, url=None, resume=True, verbose=1):
 
 
 def _fetch_surf_fsaverage5(data_dir=None, url=None, resume=True, verbose=1):
-    """Helper function to fetch fsaverage5 surfaces and sulcal information
+    """Helper function to ship fsaverage5 surfaces and sulcal information
+    with Nilearn.
 
-    Part of the data is directly shipped with Nilearn from
-    nilearn/datasets/data/fsaverage5 while some part is downloaded from
-    nitrc. For instance, pial surfaces are shipped directly with Nilearn
-    and sulcal surfaces are downloaded from nitrc.
+    The source of the data is coming from nitrc based on this PR #1016.
+    Manually downloaded gzipped and shipped with this function.
+
+    Shipping is done with Nilearn based on issue #1705.
     """
-    import shutil
 
-    if url is None:
-        url = 'https://www.nitrc.org/frs/download.php/'
-
-    # Preliminary checks and declarations
     dataset_name = 'fsaverage5'
-    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
-                                verbose=verbose)
 
     # Dataset description
     fdescr = _get_dataset_descr(dataset_name)
 
     # Download fsaverage surfaces and sulcal information
-    pial_file = '%s.%s.gii.gz'
-    pial_path = os.path.join(FSAVERAGE5_PATH, pial_file)
-
-    sulc_file = '%s.%s.gii'
-    sulcal_url = url + '%i/%s.%s.gii'
-    sulcal_nids = {'lh sulc': 9348, 'rh sulc': 9349}
+    surface_file = '%s.%s.gii.gz'
+    surface_path = os.path.join(FSAVERAGE5_PATH, surface_file)
 
     pials = []
     infls = []
     sulcs = []
     for hemi in [('lh', 'left'), ('rh', 'right')]:
         # pial
-        new_pial_path = os.path.join(data_dir,
-                                     pial_file % ('pial', hemi[1]))
-        shutil.copy(pial_path % ('pial', hemi[1]), new_pial_path)
-        _uncompress_file(new_pial_path, verbose=0)
-        pials.append(os.path.splitext(new_pial_path)[0])
+        pial_path = surface_path % ('pial', hemi[1])
+        pials.append(pial_path)
 
         # pial_inflated
-        new_pial_infl_path = os.path.join(data_dir,
-                                          pial_file % ('pial_inflated',
-                                                       hemi[1]))
-        shutil.copy(pial_path % ('pial_inflated', hemi[1]),
-                    new_pial_infl_path)
-        _uncompress_file(new_pial_infl_path, verbose=0)
-        infls.append(os.path.splitext(new_pial_infl_path)[0])
+        pial_infl_path = surface_path % ('pial_inflated', hemi[1])
+        infls.append(pial_infl_path)
+
         # sulcal
-        sulc = _fetch_files(data_dir,
-                            [(sulc_file % ('sulc', hemi[1]),
-                              sulcal_url % (sulcal_nids['%s sulc' % hemi[0]],
-                                            'sulc', hemi[1]),
-                              {})],
-                            resume=resume, verbose=verbose)
+        sulc = surface_path % ('sulc', hemi[1])
         sulcs.append(sulc)
 
     return Bunch(pial_left=pials[0],
                  pial_right=pials[1],
                  infl_left=infls[0],
                  infl_right=infls[1],
-                 sulc_left=sulcs[0][0],
-                 sulc_right=sulcs[1][0],
+                 sulc_left=sulcs[0],
+                 sulc_right=sulcs[1],
                  description=fdescr)
