@@ -531,11 +531,10 @@ def _load_surf_files_gifti_gzip(surf_file):
         from nibabel.gifti.parse_gifti_fast import ParserCreate, Outputter
         parser = ParserCreate()
         parser.buffer_text = True
-        HANDLER_NAMES = ['StartElementHandler', 'EndElementHandler',
-                         'CharacterDataHandler']
         out = Outputter()
-        for name in HANDLER_NAMES:
-            setattr(parser, name, getattr(out, name))
+        parser.StartElementHandler = out.StartElementHandler
+        parser.EndElementHandler = out.EndElementHandler
+        parser.CharacterDataHandler = out.CharacterDataHandler
         parser.Parse(as_bytes)
         gifti_img = out.img
     return gifti_img
