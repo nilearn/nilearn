@@ -260,7 +260,7 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
             else:
                 face_colors[kept_indices] = cmap(surf_map_faces[kept_indices])
 
-            if colorbar and vmin != vmax:
+            if colorbar:
                 our_cmap = get_cmap(cmap)
                 norm = Normalize(vmin=vmin, vmax=vmax)
 
@@ -269,14 +269,14 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
                 bounds = np.linspace(vmin, vmax, our_cmap.N)
 
                 if threshold is not None:
-                    # some colormap hacking
                     cmaplist = [our_cmap(i) for i in range(our_cmap.N)]
-                    istart = int(norm(-threshold, clip=True)
-                                 * (our_cmap.N - 1))
-                    istop = int(norm(threshold, clip=True)
-                                * (our_cmap.N - 1))
+                    # set colors to grey for absolute values < threshold
+                    istart = int(norm(-threshold, clip=True) *
+                                 (our_cmap.N - 1))
+                    istop = int(norm(threshold, clip=True) *
+                                (our_cmap.N - 1))
                     for i in range(istart, istop):
-                        cmaplist[i] = (0.5, 0.5, 0.5, 1.)  # just an average gray color
+                        cmaplist[i] = (0.5, 0.5, 0.5, 1.)
                     our_cmap = LinearSegmentedColormap.from_list(
                         'Custom cmap', cmaplist, our_cmap.N)
 
@@ -288,7 +288,6 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
                 figure.colorbar(proxy_mappable, cax=cax, ticks=ticks,
                                 boundaries=bounds, spacing='proportional',
                                 format='%.2g', orientation='vertical')
-
 
         p3dcollec.set_facecolors(face_colors)
 
