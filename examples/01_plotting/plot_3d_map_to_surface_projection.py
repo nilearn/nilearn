@@ -6,8 +6,6 @@ project a 3D statistical map onto a cortical mesh using
 :func:`nilearn.surface.vol_to_surf`. Display a surface plot of the projected
 map using :func:`nilearn.plotting.plot_surf_stat_map`.
 
-NOTE: Example needs matplotlib version higher than 1.3.1.
-
 """
 
 ##############################################################################
