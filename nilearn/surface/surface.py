@@ -569,6 +569,28 @@ def load_surf_data(surf_data):
     return data
 
 
+def _load_surf_mesh_img_to_data(gifti_img):
+    """Load surface image in nibabel.gifti.GiftiImage to data
+
+    Used by load_surf_mesh function in common to surface mesh
+    acceptable to .gii or .gii.gz
+    """
+    try:
+        coords = gifti_img.getArraysFromIntent(
+            nibabel.nifti1.intent_codes['NIFTI_INTENT_POINTSET'])[0].data
+    except IndexError:
+        raise ValueError('Gifti file needs to contain a data array '
+                         'with intent NIFTI_INTENT_POINTSET')
+    try:
+        faces = gifti_img.getArraysFromIntent(
+            nibabel.nifti1.intent_codes['NIFTI_INTENT_TRIANGLE'])[0].data
+    except IndexError:
+        raise ValueError('Gifti file needs to contain a data array '
+                         'with intent NIFTI_INTENT_TRIANGLE')
+
+    return coords, faces
+
+
 # function to figure out datatype and load data
 def load_surf_mesh(surf_mesh):
     """Loading a surface mesh geometry
@@ -596,27 +618,16 @@ def load_surf_mesh(surf_mesh):
                 surf_mesh.endswith('inflated')):
             coords, faces = nibabel.freesurfer.io.read_geometry(surf_mesh)
         elif surf_mesh.endswith('gii'):
-            try:
-                coords = gifti.read(surf_mesh).getArraysFromIntent(
-                    nibabel.nifti1.intent_codes[
-                        'NIFTI_INTENT_POINTSET'])[0].data
-            except IndexError:
-                raise ValueError('Gifti file needs to contain a data array '
-                                 'with intent NIFTI_INTENT_POINTSET')
-            try:
-                faces = gifti.read(surf_mesh).getArraysFromIntent(
-                    nibabel.nifti1.intent_codes[
-                        'NIFTI_INTENT_TRIANGLE'])[0].data
-            except IndexError:
-                raise ValueError('Gifti file needs to contain a data array '
-                                 'with intent NIFTI_INTENT_TRIANGLE')
+            gifti_img = gifti.read(surf_mesh)
+            coords, faces = _load_surf_mesh_img_to_data(gifti_img)
         elif surf_mesh.endswith('.gii.gz'):
             with gzip.open(surf_mesh) as f:
                 as_bytes = f.read()
 
             parser = gifti.GiftiImage.parser()
             parser.parse(as_bytes)
-            coords, faces = (a.data for a in parser.img.darrays)
+            gifti_img = parser.img
+            coords, faces = _load_surf_mesh_img_to_data(gifti_img)
         else:
             raise ValueError(('The input type is not recognized. %r was given '
                               'while valid inputs are one of the following '
