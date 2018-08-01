@@ -618,18 +618,32 @@ def _load_surf_mesh_img_to_data(gifti_img):
     Used by load_surf_mesh function in common to surface mesh
     acceptable to .gii or .gii.gz
     """
-    try:
-        coords = gifti_img.getArraysFromIntent(
-            nibabel.nifti1.intent_codes['NIFTI_INTENT_POINTSET'])[0].data
-    except IndexError:
-        raise ValueError('Gifti file needs to contain a data array '
-                         'with intent NIFTI_INTENT_POINTSET')
-    try:
-        faces = gifti_img.getArraysFromIntent(
-            nibabel.nifti1.intent_codes['NIFTI_INTENT_TRIANGLE'])[0].data
-    except IndexError:
-        raise ValueError('Gifti file needs to contain a data array '
-                         'with intent NIFTI_INTENT_TRIANGLE')
+    if LooseVersion(nibabel.__version__) >= LooseVersion('2.1.0'):
+        try:
+            coords = gifti_img.get_arrays_from_intent(
+                nibabel.nifti1.intent_codes['NIFTI_INTENT_POINTSET'])[0].data
+        except IndexError:
+            raise ValueError('Gifti file needs to contain a data array '
+                             'with intent NIFTI_INTENT_POINTSET')
+        try:
+            faces = gifti_img.get_arrays_from_intent(
+                nibabel.nifti1.intent_codes['NIFTI_INTENT_TRIANGLE'])[0].data
+        except IndexError:
+            raise ValueError('Gifti file needs to contain a data array '
+                             'with intent NIFTI_INTENT_TRIANGLE')
+    else:
+        try:
+            coords = gifti_img.getArraysFromIntent(
+                nibabel.nifti1.intent_codes['NIFTI_INTENT_POINTSET'])[0].data
+        except IndexError:
+            raise ValueError('Gifti file needs to contain a data array '
+                             'with intent NIFTI_INTENT_POINTSET')
+        try:
+            faces = gifti_img.getArraysFromIntent(
+                nibabel.nifti1.intent_codes['NIFTI_INTENT_TRIANGLE'])[0].data
+        except IndexError:
+            raise ValueError('Gifti file needs to contain a data array '
+                             'with intent NIFTI_INTENT_TRIANGLE')
 
     return coords, faces
 
@@ -661,7 +675,10 @@ def load_surf_mesh(surf_mesh):
                 surf_mesh.endswith('inflated')):
             coords, faces = nibabel.freesurfer.io.read_geometry(surf_mesh)
         elif surf_mesh.endswith('gii'):
-            gifti_img = gifti.read(surf_mesh)
+            if LooseVersion(nibabel.__version__) >= LooseVersion('2.1.0'):
+                gifti_img = nibabel.load(surf_mesh)
+            else:
+                gifti_img = gifti.read(surf_mesh)
             coords, faces = _load_surf_mesh_img_to_data(gifti_img)
         elif surf_mesh.endswith('.gii.gz'):
             gifti_img = _load_surf_files_gifti_gzip(surf_mesh)

@@ -173,7 +173,6 @@ def test_load_surf_mesh_img_to_data():
     if not LooseVersion(nb.__version__) >= LooseVersion('2.1.0'):
         raise SkipTest
     mesh = _generate_surf()
-    filename_gii_mesh = tempfile.mktemp(suffix='.gii')
 
     coord_array = gifti.GiftiDataArray(data=mesh[0],
                                        intent=nb.nifti1.intent_codes[
