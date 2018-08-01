@@ -25,6 +25,7 @@ from nilearn.image import resampling
 from nilearn.image.tests.test_resampling import rotation
 from nilearn.surface import surface
 from nilearn.surface import load_surf_data, load_surf_mesh, vol_to_surf
+from nilearn.surface.surface import _load_surf_mesh_img_to_data
 
 currdir = os.path.dirname(os.path.abspath(__file__))
 datadir = os.path.join(currdir, 'data')
@@ -148,6 +149,34 @@ def test_load_surf_mesh_list():
     assert_raises_regex(ValueError, 'input type is not recognized',
                         load_surf_mesh, dict())
     del mesh
+
+
+def test_load_surf_mesh_img_to_data():
+    if not LooseVersion(nb.__version__) >= LooseVersion('2.1.0'):
+        raise SkipTest
+    mesh = _generate_surf()
+    filename_gii_mesh = tempfile.mktemp(suffix='.gii')
+
+    coord_array = gifti.GiftiDataArray(data=mesh[0],
+                                       intent=nb.nifti1.intent_codes[
+                                           'NIFTI_INTENT_POINTSET'])
+    face_array = gifti.GiftiDataArray(data=mesh[1],
+                                      intent=nb.nifti1.intent_codes[
+                                          'NIFTI_INTENT_TRIANGLE'])
+
+    gii = gifti.GiftiImage(darrays=[coord_array, face_array])
+    coords, faces = _load_surf_mesh_img_to_data(gii)
+    assert_array_equal(coords, mesh[0])
+    assert_array_equal(faces, mesh[1])
+
+
+def test_load_surf_mesh_file_gii_gz():
+    # Test the loader `load_surf_mesh` with gzipped files
+
+    fsaverage = datasets.fetch_surf_fsaverage5().pial_left
+    coords, faces = load_surf_mesh(fsaverage)
+    assert_true(isinstance(coords, np.ndarray))
+    assert_true(isinstance(faces, np.ndarray))
 
 
 def test_load_surf_mesh_file_gii():

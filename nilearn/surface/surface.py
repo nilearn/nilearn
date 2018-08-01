@@ -4,6 +4,7 @@ Functions for surface manipulation.
 import os
 import warnings
 import gzip
+from distutils.version import LooseVersion
 
 import numpy as np
 from scipy import sparse, interpolate
@@ -569,6 +570,32 @@ def load_surf_data(surf_data):
     return data
 
 
+def _load_surf_mesh_gifti_gzip(surf_mesh):
+    """Load surface mesh Gifti files which are gzipped.
+
+    Part of the code can be removed while bumping nibabel 2.0.2
+    """
+    with gzip.open(surf_mesh) as f:
+        as_bytes = f.read()
+    if LooseVersion(nibabel.__version__) >= LooseVersion('2.1.0'):
+        parser = gifti.GiftiImage.parser()
+        parser.parse(as_bytes)
+        gifti_img = parser.img
+        coords, faces = _load_surf_mesh_img_to_data(gifti_img)
+    else:
+        from nibabel.gifti.parse_gifti_fast import ParserCreate, Outputter
+        parser = ParserCreate()
+        parser.buffer_text = True
+        HANDLER_NAMES = ['StartElementHandler', 'EndElementHandler',
+                         'CharacterDataHandler']
+        out = Outputter()
+        for name in HANDLER_NAMES:
+            setattr(parser, name, getattr(out, name))
+        parser.Parse(as_bytes)
+        coords, faces = _load_surf_mesh_img_to_data(out.img)
+    return coords, faces
+
+
 def _load_surf_mesh_img_to_data(gifti_img):
     """Load surface image in nibabel.gifti.GiftiImage to data
 
@@ -621,13 +648,7 @@ def load_surf_mesh(surf_mesh):
             gifti_img = gifti.read(surf_mesh)
             coords, faces = _load_surf_mesh_img_to_data(gifti_img)
         elif surf_mesh.endswith('.gii.gz'):
-            with gzip.open(surf_mesh) as f:
-                as_bytes = f.read()
-
-            parser = gifti.GiftiImage.parser()
-            parser.parse(as_bytes)
-            gifti_img = parser.img
-            coords, faces = _load_surf_mesh_img_to_data(gifti_img)
+            coords, faces = _load_surf_mesh_gifti_gzip(surf_mesh)
         else:
             raise ValueError(('The input type is not recognized. %r was given '
                               'while valid inputs are one of the following '
