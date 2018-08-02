@@ -545,17 +545,17 @@ def _fetch_surf_fsaverage5(data_dir=None, url=None, resume=True, verbose=1):
     pials = []
     infls = []
     sulcs = []
-    for hemi in [('lh', 'left'), ('rh', 'right')]:
+    for hemi in ['left', 'right']:
         # pial
-        pial_path = surface_path % ('pial', hemi[1])
+        pial_path = surface_path % ('pial', hemi)
         pials.append(pial_path)
 
         # pial_inflated
-        pial_infl_path = surface_path % ('pial_inflated', hemi[1])
+        pial_infl_path = surface_path % ('pial_inflated', hemi)
         infls.append(pial_infl_path)
 
         # sulcal
-        sulc = surface_path % ('sulc', hemi[1])
+        sulc = surface_path % ('sulc', hemi)
         sulcs.append(sulc)
 
     return Bunch(pial_left=pials[0],

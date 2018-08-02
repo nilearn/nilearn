@@ -25,7 +25,7 @@ from nilearn.image import resampling
 from nilearn.image.tests.test_resampling import rotation
 from nilearn.surface import surface
 from nilearn.surface import load_surf_data, load_surf_mesh, vol_to_surf
-from nilearn.surface.surface import (_load_surf_mesh_img_to_data,
+from nilearn.surface.surface import (_gifti_img_to_mesh,
                                      _load_surf_files_gifti_gzip)
 
 currdir = os.path.dirname(os.path.abspath(__file__))
@@ -182,7 +182,7 @@ def test_load_surf_mesh_img_to_data():
                                           'NIFTI_INTENT_TRIANGLE'])
 
     gii = gifti.GiftiImage(darrays=[coord_array, face_array])
-    coords, faces = _load_surf_mesh_img_to_data(gii)
+    coords, faces = _gifti_img_to_mesh(gii)
     assert_array_equal(coords, mesh[0])
     assert_array_equal(faces, mesh[1])
 

@@ -540,22 +540,16 @@ def _load_surf_files_gifti_gzip(surf_file):
     return gifti_img
 
 
-def _load_surf_depth_img_to_data(gifti_img):
-    """Load surface sulcal depth image in nibabel.gifti.GiftiImage
-    to data
+def _gifti_img_to_data(gifti_img):
+    """Load surface image e.g. sulcal depth or statistical map in
+    nibabel.gifti.GiftiImage to data
 
     Used by load_surf_data function in common to surface sulcal data
     acceptable to .gii or .gii.gz
     """
-    try:
-        data = np.zeros((len(gifti_img.darrays[0].data),
-                         len(gifti_img.darrays)))
-        for arr in range(len(gifti_img.darrays)):
-            data[:, arr] = gifti_img.darrays[arr].data
-        data = np.squeeze(data)
-    except IndexError:
+    if not gifti_img.darrays:
         raise ValueError('Gifti must contain at least one data array')
-    return data
+    return np.asarray([arr.data for arr in gifti_img.darrays]).T.squeeze()
 
 
 # function to figure out datatype and load data
@@ -566,7 +560,7 @@ def load_surf_data(surf_data):
     ----------
     surf_data : str or numpy.ndarray
         Either a file containing surface data (valid format are .gii,
-        .mgz, .nii, .nii.gz, or Freesurfer specific files such as
+        .gii.gz, .mgz, .nii, .nii.gz, or Freesurfer specific files such as
         .thickness, .curv, .sulc, .annot, .label) or
         a Numpy array containing surface data.
     Returns
@@ -587,17 +581,20 @@ def load_surf_data(surf_data):
         elif surf_data.endswith('label'):
             data = nibabel.freesurfer.io.read_label(surf_data)
         elif surf_data.endswith('gii'):
-            gii = gifti.read(surf_data)
-            data = _load_surf_depth_img_to_data(gii)
+            if LooseVersion(nibabel.__version__) >= LooseVersion('2.1.0'):
+                gii = nibabel.load(surf_data)
+            else:
+                gii = gifti.read(surf_data)
+            data = _gifti_img_to_data(gii)
         elif surf_data.endswith('gii.gz'):
             gii = _load_surf_files_gifti_gzip(surf_data)
-            data = _load_surf_depth_img_to_data(gii)
+            data = _gifti_img_to_data(gii)
         else:
             raise ValueError(('The input type is not recognized. %r was given '
                               'while valid inputs are a Numpy array or one of '
-                              'the following file formats: .gii, .mgz, .nii, '
-                              '.nii.gz, Freesurfer specific files such as '
-                              '.curv, .sulc, .thickness, .annot, '
+                              'the following file formats: .gii, .gii.gz, '
+                              '.mgz, .nii, .nii.gz, Freesurfer specific files '
+                              'such as .curv, .sulc, .thickness, .annot, '
                               '.label') % surf_data)
     # if the input is a numpy array
     elif isinstance(surf_data, np.ndarray):
@@ -605,13 +602,13 @@ def load_surf_data(surf_data):
     else:
         raise ValueError('The input type is not recognized. '
                          'Valid inputs are a Numpy array or one of the '
-                         'following file formats: .gii, .mgz, .nii, .nii.gz, '
-                         'Freesurfer specific files such as .curv,  .sulc, '
-                         '.thickness, .annot, .label')
+                         'following file formats: .gii, .gii.gz, .mgz, .nii, '
+                         '.nii.gz, Freesurfer specific files such as .curv, '
+                         '.sulc, .thickness, .annot, .label')
     return data
 
 
-def _load_surf_mesh_img_to_data(gifti_img):
+def _gifti_img_to_mesh(gifti_img):
     """Load surface image in nibabel.gifti.GiftiImage to data
 
     Used by load_surf_mesh function in common to surface mesh
@@ -655,7 +652,7 @@ def load_surf_mesh(surf_mesh):
     ----------
     surf_mesh : str or numpy.ndarray
         Either a file containing surface mesh geometry (valid formats
-        are .gii or Freesurfer specific files such as .orig, .pial,
+        are .gii .gii.gz or Freesurfer specific files such as .orig, .pial,
         .sphere, .white, .inflated) or a list of two Numpy arrays,
         the first containing the x-y-z coordinates of the mesh
         vertices, the second containing the indices (into coords)
@@ -678,15 +675,15 @@ def load_surf_mesh(surf_mesh):
                 gifti_img = nibabel.load(surf_mesh)
             else:
                 gifti_img = gifti.read(surf_mesh)
-            coords, faces = _load_surf_mesh_img_to_data(gifti_img)
+            coords, faces = _gifti_img_to_mesh(gifti_img)
         elif surf_mesh.endswith('.gii.gz'):
             gifti_img = _load_surf_files_gifti_gzip(surf_mesh)
-            coords, faces = _load_surf_mesh_img_to_data(gifti_img)
+            coords, faces = _gifti_img_to_mesh(gifti_img)
         else:
             raise ValueError(('The input type is not recognized. %r was given '
                               'while valid inputs are one of the following '
-                              'file formats: .gii, Freesurfer specific files '
-                              'such as .orig, .pial, .sphere, .white, '
+                              'file formats: .gii, .gii.gz, Freesurfer specific'
+                              ' files such as .orig, .pial, .sphere, .white, '
                               '.inflated or a list containing two Numpy '
                               'arrays [vertex coordinates, face indices]'
                               ) % surf_mesh)
@@ -704,8 +701,8 @@ def load_surf_mesh(surf_mesh):
     else:
         raise ValueError('The input type is not recognized. '
                          'Valid inputs are one of the following file '
-                         'formats: .gii, Freesurfer specific files such as '
-                         '.orig, .pial, .sphere, .white, .inflated '
+                         'formats: .gii, .gii.gz, Freesurfer specific files '
+                         'such as .orig, .pial, .sphere, .white, .inflated '
                          'or a list containing two Numpy arrays '
                          '[vertex coordinates, face indices]')
 
