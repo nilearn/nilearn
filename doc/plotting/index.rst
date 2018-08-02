@@ -477,8 +477,12 @@ Interactive visualization of statistical map slices
     >>> from nilearn import plotting, datasets     # doctest: +SKIP
     >>> img = datasets.fetch_localizer_button_task()['tmaps'][0]     # doctest: +SKIP
     >>> view = plotting.view_stat_map(img, threshold=2, vmax=4)     # doctest: +SKIP
-    >>> view.open_in_browser()   # doctest: +SKIP
 
-will open a viewer in your web browser. Or in a Jupyter notebook:
+in a Jupyter notebook, you can view the image as such:
 
 .. image:: ../images/papaya_stat_map_plot_screenshot_notebook.png
+
+Or you can open a viewer in your web browser if you are not in the
+notebook::
+
+    >>> view.open_in_browser()   # doctest: +SKIP
