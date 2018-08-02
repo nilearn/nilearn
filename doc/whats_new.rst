@@ -1,5 +1,9 @@
 0.4.3
 =====
+Highlights
+----------
+
+* **scikit-learn v0.18 is now the minimum supported version.**
 
 Enhancements
 ------------
@@ -19,13 +23,17 @@ Enhancements
     - Added :func:`nilearn.plotting.find_probabilistic_atlas_cut_coords` for
       extraction of coordinates on brain probabilistic maps.
 
-
 Changes
 -------
 
     - `nilearn.datasets.fetch_surf_fsaverage5` is deprecated and will be
       removed in a future release. Use :func:`nilearn.datasets.fetch_surf_fsaverage`,
       with the parameter mesh="fsaverage5" (the default) instead.
+
+    - `sklearn.cross_validation` and `sklearn.grid_search` have been
+      replaced by `sklearn.model_selection` in all the examples.
+
+    - `nilearn._utils.fixes` module has been removed.
 
 
 0.4.2
