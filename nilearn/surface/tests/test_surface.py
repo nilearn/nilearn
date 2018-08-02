@@ -162,24 +162,21 @@ def test_load_surf_mesh_list():
                         load_surf_mesh, [mesh[0]])
     assert_raises_regex(ValueError, 'it must have two elements',
                         load_surf_mesh, [mesh[0], mesh[1], mesh[1]])
-    assert_raises_regex(ValueError, 'input type is not recognized',
+    assert_raises_regex(ValueError, 'it must have two elements',
                         load_surf_mesh, mesh[0])
-    assert_raises_regex(ValueError, 'input type is not recognized',
+    assert_raises_regex(ValueError, 'it must have two elements',
                         load_surf_mesh, dict())
     del mesh
 
 
-def test_load_surf_mesh_img_to_data():
-    if not LooseVersion(nb.__version__) >= LooseVersion('2.1.0'):
-        raise SkipTest
+def test_gifti_img_to_mesh():
     mesh = _generate_surf()
 
-    coord_array = gifti.GiftiDataArray(data=mesh[0],
-                                       intent=nb.nifti1.intent_codes[
-                                           'NIFTI_INTENT_POINTSET'])
-    face_array = gifti.GiftiDataArray(data=mesh[1],
-                                      intent=nb.nifti1.intent_codes[
-                                          'NIFTI_INTENT_TRIANGLE'])
+    coord_array = gifti.GiftiDataArray(data=mesh[0])
+    coord_array.intent = nb.nifti1.intent_codes['NIFTI_INTENT_POINTSET']
+
+    face_array = gifti.GiftiDataArray(data=mesh[1])
+    face_array.intent = nb.nifti1.intent_codes['NIFTI_INTENT_TRIANGLE']
 
     gii = gifti.GiftiImage(darrays=[coord_array, face_array])
     coords, faces = _gifti_img_to_mesh(gii)

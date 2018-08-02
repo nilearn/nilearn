@@ -4,6 +4,7 @@ Functions for surface manipulation.
 import os
 import warnings
 import gzip
+import collections
 from distutils.version import LooseVersion
 
 import numpy as np
@@ -653,7 +654,7 @@ def load_surf_mesh(surf_mesh):
     surf_mesh : str or numpy.ndarray
         Either a file containing surface mesh geometry (valid formats
         are .gii .gii.gz or Freesurfer specific files such as .orig, .pial,
-        .sphere, .white, .inflated) or a list of two Numpy arrays,
+        .sphere, .white, .inflated) or a list or tuple of two Numpy arrays,
         the first containing the x-y-z coordinates of the mesh
         vertices, the second containing the indices (into coords)
         of the mesh faces.
@@ -687,16 +688,16 @@ def load_surf_mesh(surf_mesh):
                               '.inflated or a list containing two Numpy '
                               'arrays [vertex coordinates, face indices]'
                               ) % surf_mesh)
-    elif isinstance(surf_mesh, list):
-        if len(surf_mesh) == 2:
-            coords, faces = surf_mesh[0], surf_mesh[1]
-        else:
-            raise ValueError(('If a list is given as input, it must have '
-                              'two elements, the first is a Numpy array '
-                              'containing the x-y-z coordinates of the mesh '
-                              'vertices, the second is a Numpy array '
-                              'containing  the indices (into coords) of the '
-                              'mesh faces. The input was a list with '
+    elif isinstance(surf_mesh, collections.Iterable):
+        try:
+            coords, faces = surf_mesh
+        except Exception:
+            raise ValueError(('If a list or tuple or iterable is given as '
+                              'input, it must have two elements, the first is '
+                              'a Numpy array containing the x-y-z coordinates '
+                              'of the mesh vertices, the second is a Numpy '
+                              'array containing  the indices (into coords) of '
+                              'the mesh faces. The input was a list with '
                               '%r elements.') % len(surf_mesh))
     else:
         raise ValueError('The input type is not recognized. '
