@@ -184,3 +184,14 @@ def test_compute_multi_gray_matter_mask():
 
     np.testing.assert_array_equal(mask.get_data(), mask_ref)
     np.testing.assert_array_equal(mask2.get_data(), mask_ref)
+
+def test_dtype():
+    data = np.zeros((9, 9, 9), dtype=np.float64)
+    data[2:-2, 2:-2, 2:-2] = 10
+    img = Nifti1Image(data, np.eye(4))
+
+    masker = MultiNiftiMasker(dtype='auto')
+    masker.fit([[img]])
+
+    masked_img = masker.transform([[img]])
+    assert(masked_img[0].dtype == np.float32)
