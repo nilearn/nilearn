@@ -4,7 +4,6 @@ Functions for surface manipulation.
 import os
 import warnings
 import gzip
-import collections
 from distutils.version import LooseVersion
 
 import numpy as np
@@ -688,12 +687,12 @@ def load_surf_mesh(surf_mesh):
                               '.inflated or a list containing two Numpy '
                               'arrays [vertex coordinates, face indices]'
                               ) % surf_mesh)
-    elif isinstance(surf_mesh, collections.Iterable):
+    elif isinstance(surf_mesh, (list, tuple)):
         try:
             coords, faces = surf_mesh
         except Exception:
-            raise ValueError(('If a list or tuple or iterable is given as '
-                              'input, it must have two elements, the first is '
+            raise ValueError(('If a list or tuple is given as input, '
+                              'it must have two elements, the first is '
                               'a Numpy array containing the x-y-z coordinates '
                               'of the mesh vertices, the second is a Numpy '
                               'array containing  the indices (into coords) of '

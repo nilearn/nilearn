@@ -162,9 +162,9 @@ def test_load_surf_mesh_list():
                         load_surf_mesh, [mesh[0]])
     assert_raises_regex(ValueError, 'it must have two elements',
                         load_surf_mesh, [mesh[0], mesh[1], mesh[1]])
-    assert_raises_regex(ValueError, 'it must have two elements',
+    assert_raises_regex(ValueError, 'input type is not recognized',
                         load_surf_mesh, mesh[0])
-    assert_raises_regex(ValueError, 'it must have two elements',
+    assert_raises_regex(ValueError, 'input type is not recognized',
                         load_surf_mesh, dict())
     del mesh
 
