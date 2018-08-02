@@ -24,7 +24,8 @@ class _ExtractionFunctor(object):
         self.mask_img_ = mask_img_
 
     def __call__(self, imgs):
-        return masking.apply_mask(imgs, self.mask_img_), imgs.affine
+        return(masking.apply_mask(imgs, self.mask_img_,
+                                  dtype=imgs.get_data_dtype()), imgs.affine)
 
 
 def filter_and_mask(imgs, mask_img_, parameters,
@@ -33,8 +34,7 @@ def filter_and_mask(imgs, mask_img_, parameters,
                     confounds=None,
                     copy=True,
                     dtype=None):
-    imgs = _utils.check_niimg(imgs, atleast_4d=True, ensure_ndim=4,
-                              dtype=dtype)
+    imgs = _utils.check_niimg(imgs, atleast_4d=True, ensure_ndim=4)
 
     # Check whether resampling is truly necessary. If so, crop mask
     # as small as possible in order to speed up the process
@@ -51,7 +51,8 @@ def filter_and_mask(imgs, mask_img_, parameters,
                                       memory_level=memory_level,
                                       memory=memory,
                                       verbose=verbose,
-                                      confounds=confounds, copy=copy)
+                                      confounds=confounds, copy=copy,
+                                      dtype=dtype)
 
     # For _later_: missing value removal or imputing of missing data
     # (i.e. we want to get rid of NaNs, if smoothing must be done
