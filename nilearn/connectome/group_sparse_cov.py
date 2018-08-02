@@ -23,7 +23,7 @@ from sklearn.externals.joblib import Memory, delayed, Parallel
 from .._utils import CacheMixin
 from .._utils import logger
 from .._utils.extmath import is_spd
-from .._utils.fixes import check_cv
+from sklearn.model_selection import check_cv
 from .._utils.compat import izip
 
 
