@@ -258,3 +258,11 @@ def test_nifti_labels_masker_resampling():
         assert_equal(n_resampled_labels - 1, transformed.shape[1])
         # inverse transform
         compressed_img = masker.inverse_transform(transformed)
+
+        # Test that compressing the image a second time should yield an image
+        # with the same data as compressed_img.
+        transformed2 = masker.fit_transform(fmri_img)
+        # inverse transform again
+        compressed_img2 = masker.inverse_transform(transformed2)
+        np.testing.assert_array_equal(compressed_img.get_data(),
+                                      compressed_img2.get_data())
