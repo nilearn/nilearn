@@ -123,6 +123,22 @@ def test_plot_surf_stat_map():
     for ax in axes.flatten():
         plot_surf_stat_map(mesh, stat_map=data, ax=ax, colorbar=True)
 
+    fig = plot_surf_stat_map(mesh, stat_map=data, colorbar=False)
+    assert len(fig.axes) == 1
+    # symmetric_cbar
+    fig = plot_surf_stat_map(
+        mesh, stat_map=data, colorbar=True, symmetric_cbar=True)
+    assert len(fig.axes) == 2
+    yticklabels = fig.axes[1].get_yticklabels()
+    first, last = yticklabels[0].get_text(), yticklabels[-1].get_text()
+    assert float(first) == - float(last)
+    # no symmetric_cbar
+    fig = plot_surf_stat_map(
+        mesh, stat_map=data, colorbar=True, symmetric_cbar=False)
+    assert len(fig.axes) == 2
+    yticklabels = fig.axes[1].get_yticklabels()
+    first, last = yticklabels[0].get_text(), yticklabels[-1].get_text()
+    assert float(first) != - float(last)
     # Save execution time and memory
     plt.close()
 

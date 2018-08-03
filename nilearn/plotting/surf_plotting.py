@@ -14,13 +14,14 @@ from matplotlib.colors import Normalize, LinearSegmentedColormap
 
 from ..surface import load_surf_data, load_surf_mesh
 from .._utils.compat import _basestring
-from .img_plotting import _get_colorbar_and_data_ranges
+from .img_plotting import _get_colorbar_and_data_ranges, _crop_colorbar
 
 
 def plot_surf(surf_mesh, surf_map=None, bg_map=None,
               hemi='left', view='lateral', cmap=None, colorbar=False,
               avg_method='mean', threshold=None, alpha='auto',
               bg_on_data=False, darkness=1, vmin=None, vmax=None,
+              cbar_vmin=None, cbar_vmax=None,
               title=None, output_file=None, axes=None, figure=None, **kwargs):
     """ Plotting of surfaces with optional background and data
 
@@ -285,9 +286,11 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
                 proxy_mappable.set_array(surf_map_faces)
                 cax, kw = make_axes(axes, location='right', fraction=.1,
                                     shrink=.6, pad=.0)
-                figure.colorbar(proxy_mappable, cax=cax, ticks=ticks,
-                                boundaries=bounds, spacing='proportional',
-                                format='%.2g', orientation='vertical')
+                cbar = figure.colorbar(
+                    proxy_mappable, cax=cax, ticks=ticks,
+                    boundaries=bounds, spacing='proportional',
+                    format='%.2g', orientation='vertical')
+                _crop_colorbar(cbar, cbar_vmin, cbar_vmax)
 
         p3dcollec.set_facecolors(face_colors)
 
@@ -413,7 +416,7 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
         avg_method='mean', threshold=threshold, cmap=cmap, colorbar=colorbar,
         alpha=alpha, bg_on_data=bg_on_data, darkness=1, vmax=vmax, vmin=vmin,
         title=title, output_file=output_file, axes=axes, figure=figure,
-        **kwargs)
+        cbar_vmin=cbar_vmin, cbar_vmax=cbar_vmax, **kwargs)
 
     return display
 

@@ -189,29 +189,34 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None,
         display.draw_cross()
     if title is not None and not title == '':
         display.title(title)
-    if (cbar_vmax is not None) or (cbar_vmin is not None):
-        if hasattr(display, '_cbar'):
-            cbar = display._cbar
-            cbar_tick_locs = cbar.locator.locs
-            if cbar_vmax is None:
-                cbar_vmax = cbar_tick_locs.max()
-            if cbar_vmin is None:
-                cbar_vmin = cbar_tick_locs.min()
-            new_tick_locs = np.linspace(cbar_vmin, cbar_vmax,
-                                        len(cbar_tick_locs))
-            cbar.ax.set_ylim(cbar.norm(cbar_vmin), cbar.norm(cbar_vmax))
-            outline = cbar_outline_get_xy(cbar.outline)
-            outline[:2, 1] += cbar.norm(cbar_vmin)
-            outline[2:6, 1] -= (1. - cbar.norm(cbar_vmax))
-            outline[6:, 1] += cbar.norm(cbar_vmin)
-            cbar_outline_set_xy(cbar.outline, outline)
-            cbar.set_ticks(new_tick_locs, update_ticks=True)
-
+    if hasattr(display, '_cbar'):
+        cbar = display._cbar
+        _crop_colorbar(cbar, cbar_vmin, cbar_vmax)
     if output_file is not None:
         display.savefig(output_file)
         display.close()
         display = None
     return display
+
+
+def _crop_colorbar(cbar, cbar_vmin, cbar_vmax):
+    if (cbar_vmin is None) and (cbar_vmax is None):
+        return
+    cbar_tick_locs = cbar.locator.locs
+    if cbar_vmax is None:
+        cbar_vmax = cbar_tick_locs.max()
+    if cbar_vmin is None:
+        cbar_vmin = cbar_tick_locs.min()
+    new_tick_locs = np.linspace(cbar_vmin, cbar_vmax,
+                                len(cbar_tick_locs))
+    cbar.ax.set_ylim(cbar.norm(cbar_vmin), cbar.norm(cbar_vmax))
+    outline = cbar_outline_get_xy(cbar.outline)
+    outline[:2, 1] += cbar.norm(cbar_vmin)
+    outline[2:6, 1] -= (1. - cbar.norm(cbar_vmax))
+    outline[6:, 1] += cbar.norm(cbar_vmin)
+    cbar_outline_set_xy(cbar.outline, outline)
+    cbar.set_ticks(new_tick_locs, update_ticks=True)
+
 
 
 def plot_img(img, cut_coords=None, output_file=None, display_mode='ortho',
