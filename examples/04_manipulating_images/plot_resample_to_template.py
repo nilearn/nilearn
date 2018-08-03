@@ -10,7 +10,7 @@ Function :func:`nilearn.image.resample_img` could also be used to achieve this.
 
 ###############################################################################
 # First we load the required datasets using the nilearn datasets module.
-from nilearn.datasets import fetch_neurovault_ids
+from nilearn.datasets import fetch_neurovault_motor_task
 from nilearn.datasets import load_mni152_template
 
 template = load_mni152_template()

@@ -13,7 +13,7 @@ See :ref:`plotting` for more plotting functionalities and
 :ref:`Section 4.3 <display_modules>` for more details about display objects
 in Nilearn.
 
-Also, see :func:`nilearn.datasets.fetch_neurovault_ids` for details
+Also, see :func:`nilearn.datasets.fetch_neurovault_motor_task` for details
 about the plotting data and associated meta-data.
 """
 
@@ -35,6 +35,8 @@ print('Datasets shipped with nilearn are stored in: %r' % datasets.get_data_dirs
 
 motor_images = datasets.fetch_neurovault_motor_task()
 stat_img = motor_images.images[0]
+# stat_img is just the name of the file that we downloded
+print(stat_img)
 
 ###############################################################################
 # Demo glass brain plotting

@@ -50,6 +50,8 @@ __all__ = ['MNI152_FILE_PATH', 'fetch_icbm152_2009', 'load_mni152_template',
            'fetch_surf_fsaverage',
            'fetch_atlas_basc_multiscale_2015', 'fetch_coords_dosenbach_2010',
            'fetch_neurovault', 'fetch_neurovault_ids',
+           'fetch_neurovault_motor_task',
+           'fetch_neurovault_auditory_computation_task',
            'load_mni152_brain_mask', 'fetch_icbm152_brain_gm_mask',
            'fetch_atlas_surf_destrieux', 'fetch_atlas_talairach',
            'get_data_dirs']

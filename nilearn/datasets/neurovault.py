@@ -2616,7 +2616,7 @@ def fetch_neurovault_motor_task(data_dir=None, verbose=1):
 
     Returns
     -------
-    data: Bunch         
+    data: Bunch
         A dict-like object which exposes its items as attributes. It contains:
             - 'images', the paths to downloaded files.
             - 'images_meta', the metadata for the images in a list of
@@ -2630,12 +2630,14 @@ def fetch_neurovault_motor_task(data_dir=None, verbose=1):
 
     This function is only a caller for the fetch_localizer_contrasts in order
     to simplify examples reading and understanding.
-    The 'left vs right button press' contrast is used.
+    The 'left vs right button press' contrast is used:
+    https://neurovault.org/images/10426/
 
     See Also
     ---------
     nilearn.datasets.fetch_neurovault_ids
     nilearn.datasets.fetch_neurovault
+    nilearn.datasets.fetch_neurovault_auditory_computation_task
 
     """
     data = fetch_neurovault_ids(image_ids=[10426], data_dir=data_dir,
@@ -2645,7 +2647,7 @@ def fetch_neurovault_motor_task(data_dir=None, verbose=1):
 
 def fetch_neurovault_auditory_computation_task(data_dir=None, verbose=1):
     """Fetch a contrast map from NeuroVault showing
-    the effect of mental subtraction uopn auditory instructions
+    the effect of mental subtraction upon auditory instructions
 
     Parameters
     ----------
@@ -2658,7 +2660,7 @@ def fetch_neurovault_auditory_computation_task(data_dir=None, verbose=1):
 
     Returns
     -------
-    data: Bunch         
+    data: Bunch
         A dict-like object which exposes its items as attributes. It contains:
             - 'images', the paths to downloaded files.
             - 'images_meta', the metadata for the images in a list of
@@ -2672,12 +2674,14 @@ def fetch_neurovault_auditory_computation_task(data_dir=None, verbose=1):
 
     This function is only a caller for the fetch_localizer_contrasts in order
     to simplify examples reading and understanding.
-    The 'left vs right button press' contrast is used.
+    The 'auditory_calculation_vs_baseline' contrast is used:
+    https://neurovault.org/images/32980/
 
     See Also
     ---------
     nilearn.datasets.fetch_neurovault_ids
     nilearn.datasets.fetch_neurovault
+    nilearn.datasets.fetch_neurovault_motor_task
 
     """
     data = fetch_neurovault_ids(image_ids=[32980], data_dir=data_dir,
