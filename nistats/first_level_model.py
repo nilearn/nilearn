@@ -462,7 +462,7 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
             if self.verbose > 1:
                 t_glm = time.time()
                 sys.stderr.write('Performing GLM computation\r')
-            labels, results = mem_glm(Y, design.as_matrix(),
+            labels, results = mem_glm(Y, design.values,
                                       noise_model=self.noise_model,
                                       bins=100, n_jobs=self.n_jobs)
             if self.verbose > 1:

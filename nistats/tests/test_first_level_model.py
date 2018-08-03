@@ -269,7 +269,7 @@ def test_first_level_model_glm_computation():
         results1 = model.results_[0]
         labels2, results2 = run_glm(
             model.masker_.transform(func_img),
-            model.design_matrices_[0].as_matrix(), 'ar1')
+            model.design_matrices_[0].values, 'ar1')
         # ar not giving consistent results in python 3.4
         # assert_almost_equal(labels1, labels2, decimal=2) ####FIX
         # assert_equal(len(results1), len(results2)) ####FIX
