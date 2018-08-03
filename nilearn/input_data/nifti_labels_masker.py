@@ -285,5 +285,5 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
 
         logger.log("computing image from signals", verbose=self.verbose)
         return signal_extraction.signals_to_img_labels(
-            signals, self.labels_img_, self.mask_img_,
+            signals, self._resampled_labels_img_, self.mask_img_,
             background_label=self.background_label)
