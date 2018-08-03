@@ -114,9 +114,13 @@ def test_compute_gray_matter_mask():
     try:
         assert_equal(len(w), 1)
     except AssertionError:
-        print('There was an ERROR!', '\n', w)
+        print('WARNING LENGTH ERROR!')
     else:
-        print('No Assertion ERROR:', '\n', w)
+        print('no WARNING LENGTH ERROR:')
+    finally:
+        from pprint import pprint
+        print('All warnings:', w)
+        pprint([warning.message for warning in w])
     assert_true(isinstance(w[0].message, masking.MaskWarning))
 
     # Check that masks obtained from same FOV are the same
