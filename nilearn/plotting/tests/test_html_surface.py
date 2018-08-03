@@ -13,7 +13,7 @@ from .test_js_plotting_utils import check_colors, check_html
 
 
 def _get_img():
-    return datasets.fetch_localizer_button_task()['tmaps'][0]
+    return datasets.load_mni152_template()
 
 
 def test_get_vertexcolor():
