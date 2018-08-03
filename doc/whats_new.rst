@@ -27,6 +27,9 @@ Changes
       removed in a future release. Use :func:`nilearn.datasets.fetch_surf_fsaverage`,
       with the parameter mesh="fsaverage5" (the default) instead.
 
+    - fsaverage5 surface data files are now shipped directly with Nilearn.
+      Look to issue #1705 for discussion.
+
 
 0.4.2
 =====
