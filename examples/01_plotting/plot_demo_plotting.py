@@ -47,6 +47,26 @@ plotting.plot_stat_map(localizer_tmap_filename, bg_img=localizer_anat_filename,
                        cut_coords=[36, -27, 66])
 
 ###############################################################################
+# Making interactive plots with function `view_stat_map`
+# ------------------------------------------------------
+# An alternative to :func:`nilearn.plotting.plot_stat_map` is to use
+# :func:`nilearn.plotting.view_stat_map` that gives more interactive
+# visualizations in a web browser. See :ref:`interactive-stat-map-plotting`
+# for more details.
+
+view = plotting.view_stat_map(
+    localizer_tmap_filename, bg_img=localizer_anat_filename, threshold=3)
+
+# uncomment this to open the plot in a web browser:
+# view.open_in_browser()
+
+##############################################################################
+# In a Jupyter notebook, if ``view`` is the output of a cell, it will
+# be displayed below the cell
+
+view
+
+###############################################################################
 # Plotting statistical maps in a glass brain with function `plot_glass_brain`
 # ---------------------------------------------------------------------------
 #
