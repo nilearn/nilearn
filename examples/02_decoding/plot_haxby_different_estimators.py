@@ -12,7 +12,6 @@ decoding task.
 
 # Fetch data using nilearn dataset fetcher
 from nilearn import datasets
-
 # by default 2nd subject data will be fetched
 haxby_dataset = datasets.fetch_haxby()
 
@@ -25,7 +24,6 @@ print('First subject functional nifti image (4D) is located at: %s' %
 # load labels
 import numpy as np
 import pandas as pd
-
 labels = pd.read_csv(haxby_dataset.session_target[0], sep=" ")
 stimuli = labels['labels']
 # identify resting state labels in order to be able to remove them
@@ -47,25 +45,25 @@ func_filename = haxby_dataset.func[0]
 masked_timecourses = masker.fit_transform(
     func_filename)[task_mask]
 
+
 #############################################################################
 # Then we define the various classifiers that we use
 # ---------------------------------------------------
 # A support vector classifier
 from sklearn.svm import SVC
-
 svm = SVC(C=1., kernel="linear")
 
 # The logistic regression
-from sklearn.linear_model import LogisticRegression, RidgeClassifier, \
-    RidgeClassifierCV
-
+from sklearn.linear_model import (LogisticRegression,
+                                  RidgeClassifier,
+                                  RidgeClassifierCV,
+                                  )
 logistic = LogisticRegression(C=1., penalty="l1")
 logistic_50 = LogisticRegression(C=50., penalty="l1")
 logistic_l2 = LogisticRegression(C=1., penalty="l2")
 
 # Cross-validated versions of these classifiers
 from sklearn.model_selection import GridSearchCV
-
 # GridSearchCV is slow, but note that it takes an 'n_jobs' parameter that
 # can significantly speed up the fitting process on computers with
 # multiple cores
@@ -106,7 +104,6 @@ classifiers = {'SVC': svm,
 
 # Make a data splitting object for cross validation
 from sklearn.model_selection import LeaveOneGroupOut, cross_val_score
-
 cv = LeaveOneGroupOut()
 
 import time
@@ -143,7 +140,6 @@ for classifier_name, classifier in sorted(classifiers.items()):
 ###############################################################################
 # Then we make a rudimentary diagram
 import matplotlib.pyplot as plt
-
 plt.figure()
 
 tick_position = np.arange(len(categories))
@@ -171,7 +167,6 @@ plt.tight_layout()
 
 # Use the average EPI as a background
 from nilearn import image
-
 mean_epi_img = image.mean_img(func_filename)
 
 # Restrict the decoding to face vs house
