@@ -20,7 +20,7 @@ Enhancements
       extraction of coordinates on brain probabilistic maps.
 
     - Added :func:`nilearn.datasets.fetch_neurovault_auditory_computation_task`
-      and :func:`fetch_neurovault_motor_task` for simple example data.
+      and :func:`nilearn.datasets.fetch_neurovault_motor_task` for simple example data.
 
 
 
