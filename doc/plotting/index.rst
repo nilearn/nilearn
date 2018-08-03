@@ -478,7 +478,7 @@ Interactive visualization of statistical map slices
     >>> img = datasets.fetch_localizer_button_task()['tmaps'][0]     # doctest: +SKIP
     >>> view = plotting.view_stat_map(img, threshold=2, vmax=4)     # doctest: +SKIP
 
-in a Jupyter notebook, you can view the image as such:
+in a Jupyter notebook, you can view the image like this:
 
 .. image:: ../images/papaya_stat_map_plot_screenshot_notebook.png
 

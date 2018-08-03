@@ -8,6 +8,10 @@ Enhancements
       :func:`nilearn.plotting.view_img_on_surf` for interactive visualization of
       maps on the cortical surface in a web browser.
 
+    - New functions :func:`nilearn.plotting.view_connectome` and
+      :func:`nilearn.plotting.view_markers` to visualize connectomes and
+      seed locations in 3D
+
     - New function :func:`nilearn.plotting.view_stat_map` for interactive
       visualization of volumes with 3 orthogonal cuts.
 
