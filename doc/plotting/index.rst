@@ -232,14 +232,15 @@ Different display modes
 ================= =========================================================
 
 Available Colormaps
-========================
+===================
 
-Nilearn's plotting library ships with a set of extra colormaps, as seen in the
-image below::
+Nilearn plotting library ships with a set of extra colormaps, as seen in the
+image below
 
-.. image:: ../auto_examples/01_plotting/images/sphx_glr_plot_nilearn_colormaps_001.png
-           :target: ../auto_examples/01_plotting/plot_nilearn_colormaps.html
-           :scale: 50
+.. |colormaps| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_colormaps_001.png
+     :target: ../auto_examples/01_plotting/plot_colormaps.html
+     :scale: 50
+
 These colormaps can be used as any other matplotlib colormap.
 
 .. _display_modules:
