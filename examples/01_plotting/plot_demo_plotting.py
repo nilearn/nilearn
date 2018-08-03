@@ -53,8 +53,7 @@ plotting.plot_stat_map(stat_img,
 # visualizations in a web browser. See :ref:`interactive-stat-map-plotting`
 # for more details.
 
-view = plotting.view_stat_map(
-    localizer_tmap_filename, bg_img=localizer_anat_filename, threshold=3)
+view = plotting.view_stat_map(stat_img, threshold=3)
 
 # uncomment this to open the plot in a web browser:
 # view.open_in_browser()
