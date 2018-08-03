@@ -249,7 +249,7 @@ class SecondLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
             columns = second_level_input.columns.tolist()
             column_index = columns.index('subject_label')
             sorted_matrix = sorted(
-                second_level_input.as_matrix(), key=lambda x: x[column_index])
+                second_level_input.values, key=lambda x: x[column_index])
             sorted_input = pd.DataFrame(sorted_matrix, columns=columns)
             second_level_input = sorted_input
 
@@ -402,7 +402,7 @@ class SecondLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
             mem_glm = self.memory.cache(run_glm, ignore=arg_ignore)
         else:
             mem_glm = run_glm
-        labels, results = mem_glm(Y, self.design_matrix_.as_matrix(),
+        labels, results = mem_glm(Y, self.design_matrix_.values,
                                   n_jobs=self.n_jobs, noise_model='ols')
         # We save memory if inspecting model details is not necessary
         if self.minimize_memory:
