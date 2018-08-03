@@ -9,8 +9,6 @@ Enhancements
 
     - New functions :func:`nilearn.plotting.view_surf` and
       :func:`nilearn.plotting.view_surf` and
-
-    - :func:`nilearn.plotting.view_surf` and
       :func:`nilearn.plotting.view_img_on_surf` for interactive visualization of
       maps on the cortical surface in a web browser.
 
