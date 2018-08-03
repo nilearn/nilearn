@@ -76,6 +76,11 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
         This parameter is passed to signal.clean. Please see the related
         documentation for details
 
+    dtype: {dtype, "auto"}
+        Data type toward which the data should be converted. If "auto", the
+        data will be converted to int32 if dtype is discrete and float32 if it
+        is continuous.
+
     resampling_target: {"data", "labels", None}, optional.
         Gives which image gives the final shape/size. For example, if
         `resampling_target` is "data", the atlas is resampled to the
@@ -104,7 +109,7 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
 
     def __init__(self, labels_img, background_label=0, mask_img=None,
                  smoothing_fwhm=None, standardize=False, detrend=False,
-                 low_pass=None, high_pass=None, t_r=None,
+                 low_pass=None, high_pass=None, t_r=None, dtype=None,
                  resampling_target="data",
                  memory=Memory(cachedir=None, verbose=0), memory_level=1,
                  verbose=0):
@@ -121,6 +126,7 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
         self.low_pass = low_pass
         self.high_pass = high_pass
         self.t_r = t_r
+        self.dtype = dtype
 
         # Parameters for resampling
         self.resampling_target = resampling_target
@@ -253,6 +259,7 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
             # Pre-processing
             params,
             confounds=confounds,
+            dtype=self.dtype,
             # Caching
             memory=self.memory,
             memory_level=self.memory_level,
@@ -285,5 +292,5 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
 
         logger.log("computing image from signals", verbose=self.verbose)
         return signal_extraction.signals_to_img_labels(
-            signals, self.labels_img_, self.mask_img_,
+            signals, self._resampled_labels_img_, self.mask_img_,
             background_label=self.background_label)
