@@ -45,14 +45,16 @@ from .find_cuts import find_xyz_cut_coords, find_cut_slices, \
     find_parcellation_cut_coords, find_probabilistic_atlas_cut_coords
 from .matrix_plotting import plot_matrix
 from .html_surface import view_surf, view_img_on_surf
+from .html_stat_map import view_stat_map
 from .html_connectome import view_connectome, view_markers
 __all__ = ['cm', 'plot_img', 'plot_anat', 'plot_epi',
            'plot_roi', 'plot_stat_map', 'plot_glass_brain',
            'plot_connectome', 'plot_prob_atlas',
            'find_xyz_cut_coords', 'find_cut_slices',
            'show', 'plot_matrix', 'view_surf', 'view_img_on_surf',
-           'view_connectome', 'view_markers',
-           'find_parcellation_cut_coords', 'find_probabilistic_atlas_cut_coords']
+           'view_stat_map', 'view_connectome', 'view_markers',
+           'find_parcellation_cut_coords',
+           'find_probabilistic_atlas_cut_coords']
 
 # matplotlib older versions 1.1.1 will not work to plot surface data using
 # plotting functions from surf_plotting.py. Hence we check the version and

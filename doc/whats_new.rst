@@ -4,9 +4,22 @@
 Enhancements
 ------------
 
+    - All NiftiMaskers now have a `dtype` argument. For now the default behaviour
+      is to keep the same data type as the input data.
+
+    - New functions :func:`nilearn.plotting.view_surf` and
+      :func:`nilearn.plotting.view_surf` and
+
     - :func:`nilearn.plotting.view_surf` and
       :func:`nilearn.plotting.view_img_on_surf` for interactive visualization of
       maps on the cortical surface in a web browser.
+
+    - New functions :func:`nilearn.plotting.view_connectome` and
+      :func:`nilearn.plotting.view_markers` to visualize connectomes and
+      seed locations in 3D
+
+    - New function :func:`nilearn.plotting.view_stat_map` for interactive
+      visualization of volumes with 3 orthogonal cuts.
 
     - Add :func:`nilearn.datasets.fetch_surf_fsaverage` to download either
       fsaverage or fsaverage 5 (Freesurfer cortical meshes).

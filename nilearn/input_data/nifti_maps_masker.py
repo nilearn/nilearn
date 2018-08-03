@@ -78,6 +78,11 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
         This parameter is passed to signal.clean. Please see the related
         documentation for details
 
+    dtype: {dtype, "auto"}
+        Data type toward which the data should be converted. If "auto", the
+        data will be converted to int32 if dtype is discrete and float32 if it
+        is continuous.
+
     resampling_target: {"mask", "maps", "data", None} optional.
         Gives which image gives the final shape/size. For example, if
         `resampling_target` is "mask" then maps_img and images provided to
@@ -113,7 +118,7 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
     def __init__(self, maps_img, mask_img=None,
                  allow_overlap=True,
                  smoothing_fwhm=None, standardize=False, detrend=False,
-                 low_pass=None, high_pass=None, t_r=None,
+                 low_pass=None, high_pass=None, t_r=None, dtype=None,
                  resampling_target="data",
                  memory=Memory(cachedir=None, verbose=0), memory_level=0,
                  verbose=0):
@@ -132,6 +137,7 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
         self.low_pass = low_pass
         self.high_pass = high_pass
         self.t_r = t_r
+        self.dtype = dtype
 
         # Parameters for resampling
         self.resampling_target = resampling_target
@@ -161,7 +167,7 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
                    _utils._repr_niimgs(self.maps_img)[:200],
                    verbose=self.verbose)
 
-        self.maps_img_ = _utils.check_niimg_4d(self.maps_img)
+        self.maps_img_ = _utils.check_niimg_4d(self.maps_img, dtype=self.dtype)
         self.maps_img_ = image.clean_img(self.maps_img_, detrend=False,
                                          standardize=False,
                                          ensure_finite=True)
@@ -312,6 +318,7 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
                 # Pre-treatments
                 params,
                 confounds=confounds,
+                dtype=self.dtype,
                 # Caching
                 memory=self.memory,
                 memory_level=self.memory_level,
