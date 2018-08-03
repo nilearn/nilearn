@@ -178,8 +178,8 @@ preparation::
    >>> from nilearn import input_data
    >>> masker = input_data.NiftiMasker()
    >>> masker
-   NiftiMasker(detrend=False, high_pass=None, low_pass=None, mask_args=None,
-         mask_img=None, mask_strategy='background',
+   NiftiMasker(detrend=False, dtype=None, high_pass=None, low_pass=None,
+         mask_args=None, mask_img=None, mask_strategy='background',
          memory=Memory(cachedir=None), memory_level=1, sample_mask=None,
          sessions=None, smoothing_fwhm=None, standardize=False, t_r=None,
          target_affine=None, target_shape=None, verbose=0)
@@ -187,6 +187,14 @@ preparation::
 The meaning of each parameter is described in the documentation of
 :class:`NiftiMasker` (click on the name :class:`NiftiMasker`), here we
 comment on the most important.
+
+.. topic:: **`dtype` argument**
+
+    Forcing your data to have a `dtype` of **float32** can help
+    save memory and is often a good-enough numerical precision.
+    You can force this cast by choosing `dtype` to be 'auto'.
+    In the future this cast will be the default behaviour.
+
 
 .. seealso::
 
