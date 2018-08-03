@@ -111,7 +111,12 @@ def test_compute_gray_matter_mask():
     # Check that we get a useful warning for empty masks
     with warnings.catch_warnings(record=True) as w:
         compute_gray_matter_mask(image, threshold=1)
-    assert_equal(len(w), 1)
+    try:
+        assert_equal(len(w), 1)
+    except AssertionError:
+        print('There was an ERROR!', '\n', w.message)
+    else:
+        print('No Assertion ERROR:', '\n', w.message)
     assert_true(isinstance(w[0].message, masking.MaskWarning))
 
     # Check that masks obtained from same FOV are the same
