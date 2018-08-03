@@ -19,6 +19,10 @@ Enhancements
     - Added :func:`nilearn.plotting.find_probabilistic_atlas_cut_coords` for
       extraction of coordinates on brain probabilistic maps.
 
+    - Added :func:`nilearn.datasets.fetch_neurovault_auditory_computation_task`
+      and :func:`fetch_neurovault_motor_task` for simple example data.
+
+
 
 Changes
 -------
