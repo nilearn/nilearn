@@ -59,7 +59,7 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
         colormap object. If None, matplolib default will be chosen
 
     colorbar : bool, optional, default is False
-        If True, a colorbar is added.
+        If True, a colorbar of surf_map is displayed.
 
     avg_method: {'mean', 'median'}, default is 'mean'
         How to average vertex values to derive the face value, mean results
@@ -305,7 +305,7 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
 def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
                        hemi='left', view='lateral', threshold=None,
                        alpha='auto', vmax=None, cmap='cold_hot',
-                       colorbar=False, symmetric_cbar="auto", bg_on_data=False,
+                       colorbar=True, symmetric_cbar="auto", bg_on_data=False,
                        darkness=1, title=None, output_file=None, axes=None,
                        figure=None, **kwargs):
     """ Plotting a stats map on a surface mesh with optional background
@@ -352,7 +352,7 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
         colormap object.
 
     colorbar : bool, optional, default is False
-        If True, a colorbar is added.
+        If True, a symmetric colorbar of the statistical map is displayed.
 
     alpha : float, alpha level of the mesh (not the stat_map), default 'auto'
         If 'auto' is chosen, alpha will default to .5 when no bg_map is
