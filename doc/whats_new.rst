@@ -1,8 +1,9 @@
-0.4.3
-=====
+0.5.0 alpha
+===========
 
 Highlights
 ----------
+
     - **Minimum supported versions of packages have been bumped up.**
         - scikit-learn -- v0.18
         - scipy -- v0.17
@@ -10,6 +11,8 @@ Highlights
         - numpy -- v1.11
         - matplotlib -- v1.5.1
 
+    - New :ref:`interactive plotting functions <interactive-plotting>`__,
+      eg for use in a notebook.
 
 Enhancements
 ------------
