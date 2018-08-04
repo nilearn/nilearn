@@ -35,7 +35,6 @@ Enhancements
       and :func:`nilearn.datasets.fetch_neurovault_motor_task` for simple example data.
 
 
-
 Changes
 -------
 
