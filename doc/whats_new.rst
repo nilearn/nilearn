@@ -1,6 +1,11 @@
 0.5.0 alpha
 ===========
 
+This is an alpha release: to download it, you need to explicitly ask for
+the version number::
+
+   pip install nilearn==0.5.0a0
+
 Highlights
 ----------
 
