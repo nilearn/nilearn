@@ -231,6 +231,23 @@ Different display modes
 
 ================= =========================================================
 
+Available Colormaps
+===================
+
+Nilearn plotting library ships with a set of extra colormaps, as seen in the
+image below
+
+.. image:: ../auto_examples/01_plotting/images/sphx_glr_plot_colormaps_001.png
+     :target: ../auto_examples/01_plotting/plot_colormaps.html
+     :scale: 50
+
+These colormaps can be used as any other matplotlib colormap.
+
+.. image:: ../auto_examples/01_plotting/images/sphx_glr_plot_colormaps_002.png
+     :target: ../auto_examples/01_plotting/plot_colormaps.html
+     :scale: 50
+
+
 .. _display_modules:
 
 Adding overlays, edges, contours, contour fillings and markers

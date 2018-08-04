@@ -174,6 +174,29 @@ for color, name in (((1, 0, 0), 'red'),
         color, alpha_min=0,
         alpha_max=1, name=name)
 
+###############################################################################
+# HCP Connectome Workbench colormaps
+# As seen in  https://github.com/Washington-University/workbench src/Pallete
+roy_big_bl = _np.array([(255, 255, 0), (255, 200, 0),
+                        (255, 120, 0), (255, 0, 0),
+                        (200, 0, 0), (150, 0, 0),
+                        (100, 0, 0), (60, 0, 0),
+                        (0, 0, 0), (0, 0, 80),
+                        (0, 0, 170), (75, 0, 125),
+                        (125, 0, 160), (75, 125, 0),
+                        (0, 200, 0), (0, 255, 0),
+                        (0, 255, 255), (0, 255, 255)][::-1]) / 255
+
+videen_style = ['#000000', '#bbbbbb', '#dddddd', '#ffffff',
+                '#ff388d', '#e251e2', '#10b010', '#00ff00',
+                '#00ffff', '#000000', '#660033', '#33334c',
+                '#4c4c7f', '#7f7fcc', '#00ff00', '#10b010',
+                '#ffff00', '#ff9900', '#ff6900', '#ff0000']
+
+_cmap_d['roy_big_bl'] = _colors.LinearSegmentedColormap.from_list(
+    'roy_big_bl', roy_big_bl.tolist())
+_cmap_d['videen_style'] = _colors.LinearSegmentedColormap.from_list(
+    'videen_style', videen_style)
 
 # Save colormaps in the scope of the module
 locals().update(_cmap_d)
