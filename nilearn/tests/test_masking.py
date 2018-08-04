@@ -11,7 +11,6 @@ from nose.tools import (
     assert_false,
     assert_equal,
     assert_raises,
-    assert_warns,
     )
 
 from nibabel import Nifti1Image
@@ -23,6 +22,7 @@ from nilearn.masking import (compute_epi_mask, compute_multi_epi_mask,
                              unmask, _unmask_3d, _unmask_4d, intersect_masks,
                              MaskWarning)
 from nilearn._utils.testing import (write_tmp_imgs, assert_raises_regex)
+from nilearn._utils.testing import assert_warns
 from nilearn._utils.exceptions import DimensionError
 from nilearn.input_data import NiftiMasker
 
