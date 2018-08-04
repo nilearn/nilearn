@@ -16,7 +16,7 @@ Highlights
         - numpy -- v1.11
         - matplotlib -- v1.5.1
 
-    - New :ref:`interactive plotting functions <interactive-plotting>`__,
+    - New :ref:`interactive plotting functions <interactive-plotting>`,
       eg for use in a notebook.
 
 Enhancements
