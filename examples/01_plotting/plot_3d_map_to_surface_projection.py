@@ -38,7 +38,7 @@ texture = surface.vol_to_surf(localizer_tmap, fsaverage.pial_right)
 from nilearn import plotting
 
 plotting.plot_surf_stat_map(fsaverage.infl_right, texture, hemi='right',
-                            title='Surface right hemisphere',
+                            title='Surface right hemisphere', colorbar=True,
                             threshold=1., bg_map=fsaverage.sulc_right)
 
 ##############################################################################
@@ -65,7 +65,7 @@ big_fsaverage = datasets.fetch_surf_fsaverage('fsaverage')
 big_texture = surface.vol_to_surf(localizer_tmap, big_fsaverage.pial_right)
 
 plotting.plot_surf_stat_map(big_fsaverage.infl_right,
-                            big_texture, hemi='right',
+                            big_texture, hemi='right', colorbar=True,
                             title='Surface right hemisphere: fine mesh',
                             threshold=1., bg_map=big_fsaverage.sulc_right)
 

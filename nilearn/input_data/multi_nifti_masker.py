@@ -83,6 +83,11 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
         to fine-tune mask computation. Please see the related documentation
         for details.
 
+    dtype: {dtype, "auto"}
+        Data type toward which the data should be converted. If "auto", the
+        data will be converted to int32 if dtype is discrete and float32 if it
+        is continuous.
+
     memory: instance of joblib.Memory or string
         Used to cache the masking process.
         By default, no caching is done. If a string is given, it is the
@@ -119,7 +124,7 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
                  standardize=False, detrend=False,
                  low_pass=None, high_pass=None, t_r=None,
                  target_affine=None, target_shape=None,
-                 mask_strategy='background', mask_args=None,
+                 mask_strategy='background', mask_args=None, dtype=None,
                  memory=Memory(cachedir=None), memory_level=0,
                  n_jobs=1, verbose=0
                  ):
@@ -136,6 +141,7 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
         self.target_shape = target_shape
         self.mask_strategy = mask_strategy
         self.mask_args = mask_args
+        self.dtype = dtype
 
         self.memory = memory
         self.memory_level = memory_level
@@ -286,6 +292,7 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
                           verbose=self.verbose,
                           confounds=cfs,
                           copy=copy,
+                          dtype=self.dtype
                           )
             for imgs, cfs in izip(niimg_iter, confounds))
         return data

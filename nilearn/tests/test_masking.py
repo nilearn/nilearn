@@ -20,7 +20,7 @@ from nilearn.masking import (compute_epi_mask, compute_multi_epi_mask,
                              compute_background_mask, compute_gray_matter_mask,
                              compute_multi_gray_matter_mask,
                              unmask, _unmask_3d, _unmask_4d, intersect_masks,
-                             MaskWarning)
+                             MaskWarning, _extrapolate_out_mask)
 from nilearn._utils.testing import (write_tmp_imgs, assert_raises_regex)
 from nilearn._utils.testing import assert_warns
 from nilearn._utils.exceptions import DimensionError
@@ -34,7 +34,7 @@ _TEST_DIM_ERROR_MSG = ("Input data has incompatible dimensionality: "
                        "Expected dimension is 3D and you provided "
                        "a %s image")
 
-
+                       
 def test_compute_epi_mask():
     mean_image = np.ones((9, 9, 3))
     mean_image[3:-2, 3:-2, :] = 10
@@ -472,3 +472,83 @@ def test_unmask_list(random_state=42):
     a = unmask(mask_data[mask_data], mask_img)
     b = unmask(mask_data[mask_data].tolist(), mask_img)  # shouldn't crash
     assert_array_equal(a.get_data(), b.get_data())
+
+
+def test__extrapolate_out_mask():
+    # Input data:
+    initial_data = np.zeros((5,5,5))
+    initial_data[1,2,2] = 1
+    initial_data[2,1,2] = 2
+    initial_data[2,2,1] = 3
+    initial_data[3,2,2] = 4
+    initial_data[2,3,2] = 5
+    initial_data[2,2,3] = 6
+    initial_mask = initial_data.copy() != 0
+
+    # Expected result
+    target_data = np.array([[[0. , 0. , 0. , 0. , 0. ],
+                             [0. , 0. , 0. , 0. , 0. ],
+                             [0. , 0. , 1. , 0. , 0. ],
+                             [0. , 0. , 0. , 0. , 0. ],
+                             [0. , 0. , 0. , 0. , 0. ]],
+
+                            [[0. , 0. , 0. , 0. , 0. ],
+                             [0. , 0. , 1.5, 0. , 0. ],
+                             [0. , 2. , 1. , 3.5, 0. ],
+                             [0. , 0. , 3. , 0. , 0. ],
+                             [0. , 0. , 0. , 0. , 0. ]],
+
+                            [[0. , 0. , 2. , 0. , 0. ],
+                             [0. , 2.5, 2. , 4. , 0. ],
+                             [3. , 3. , 3.5, 6. , 6. ],
+                             [0. , 4. , 5. , 5.5, 0. ],
+                             [0. , 0. , 5. , 0. , 0. ]],
+
+                            [[0. , 0. , 0. , 0. , 0. ],
+                             [0. , 0. , 3. , 0. , 0. ],
+                             [0. , 3.5, 4. , 5. , 0. ],
+                             [0. , 0. , 4.5, 0. , 0. ],
+                             [0. , 0. , 0. , 0. , 0. ]],
+
+                            [[0. , 0. , 0. , 0. , 0. ],
+                             [0. , 0. , 0. , 0. , 0. ],
+                             [0. , 0. , 4. , 0. , 0. ],
+                             [0. , 0. , 0. , 0. , 0. ],
+                             [0. , 0. , 0. , 0. , 0. ]]])
+    target_mask = np.array([[[False, False, False, False, False],
+                             [False, False, False, False, False],
+                             [False, False,  True, False, False],
+                             [False, False, False, False, False],
+                             [False, False, False, False, False]],
+
+                            [[False, False, False, False, False],
+                             [False, False,  True, False, False],
+                             [False,  True,  True,  True, False],
+                             [False, False,  True, False, False],
+                             [False, False, False, False, False]],
+
+                            [[False, False,  True, False, False],
+                             [False,  True,  True,  True, False],
+                             [ True,  True,  True,  True,  True],
+                             [False,  True,  True,  True, False],
+                             [False, False,  True, False, False]],
+
+                            [[False, False, False, False, False],
+                             [False, False,  True, False, False],
+                             [False,  True,  True,  True, False],
+                             [False, False,  True, False, False],
+                             [False, False, False, False, False]],
+
+                            [[False, False, False, False, False],
+                             [False, False, False, False, False],
+                             [False, False,  True, False, False],
+                             [False, False, False, False, False],
+                             [False, False, False, False, False]]])
+
+
+    # Test:
+    extrapolated_data, extrapolated_mask = _extrapolate_out_mask(initial_data, 
+                                                                 initial_mask, 
+                                                                 iterations=1)
+    assert_array_equal(extrapolated_data, target_data)
+    assert_array_equal(extrapolated_mask, target_mask)

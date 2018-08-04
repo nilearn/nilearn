@@ -24,14 +24,16 @@ class _ExtractionFunctor(object):
         self.mask_img_ = mask_img_
 
     def __call__(self, imgs):
-        return masking.apply_mask(imgs, self.mask_img_), imgs.affine
+        return(masking.apply_mask(imgs, self.mask_img_,
+                                  dtype=imgs.get_data_dtype()), imgs.affine)
 
 
 def filter_and_mask(imgs, mask_img_, parameters,
                     memory_level=0, memory=Memory(cachedir=None),
                     verbose=0,
                     confounds=None,
-                    copy=True):
+                    copy=True,
+                    dtype=None):
     imgs = _utils.check_niimg(imgs, atleast_4d=True, ensure_ndim=4)
 
     # Check whether resampling is truly necessary. If so, crop mask
@@ -49,7 +51,8 @@ def filter_and_mask(imgs, mask_img_, parameters,
                                       memory_level=memory_level,
                                       memory=memory,
                                       verbose=verbose,
-                                      confounds=confounds, copy=copy)
+                                      confounds=confounds, copy=copy,
+                                      dtype=dtype)
 
     # For _later_: missing value removal or imputing of missing data
     # (i.e. we want to get rid of NaNs, if smoothing must be done
@@ -133,6 +136,11 @@ class NiftiMasker(BaseMasker, CacheMixin):
         This is useful to perform data subselection as part of a scikit-learn
         pipeline.
 
+    `dtype: {dtype, "auto"}
+        Data type toward which the data should be converted. If "auto", the
+        data will be converted to int32 if dtype is discrete and float32 if it
+        is continuous.
+
     memory : instance of joblib.Memory or string
         Used to cache the masking process.
         By default, no caching is done. If a string is given, it is the
@@ -167,7 +175,7 @@ class NiftiMasker(BaseMasker, CacheMixin):
                  low_pass=None, high_pass=None, t_r=None,
                  target_affine=None, target_shape=None,
                  mask_strategy='background',
-                 mask_args=None, sample_mask=None,
+                 mask_args=None, sample_mask=None, dtype=None,
                  memory_level=1, memory=Memory(cachedir=None),
                  verbose=0
                  ):
@@ -186,6 +194,7 @@ class NiftiMasker(BaseMasker, CacheMixin):
         self.mask_strategy = mask_strategy
         self.mask_args = mask_args
         self.sample_mask = sample_mask
+        self.dtype = dtype
 
         self.memory = memory
         self.memory_level = memory_level
@@ -294,7 +303,8 @@ class NiftiMasker(BaseMasker, CacheMixin):
             memory=self.memory,
             verbose=self.verbose,
             confounds=confounds,
-            copy=copy
+            copy=copy,
+            dtype=self.dtype
         )
 
         return data

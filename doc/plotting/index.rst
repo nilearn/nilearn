@@ -462,3 +462,24 @@ Or you can save it to an html file::
 
 
 .. image:: ../images/plotly_markers_plot.png
+
+
+.. _interactive-stat-map-plotting:
+
+Interactive visualization of statistical map slices
+---------------------------------------------------
+
+:func:`view_stat_map`: open stat map in a Papaya viewer (https://github.com/rii-mango/Papaya)::
+
+    >>> from nilearn import plotting, datasets     # doctest: +SKIP
+    >>> img = datasets.fetch_localizer_button_task()['tmaps'][0]     # doctest: +SKIP
+    >>> view = plotting.view_stat_map(img, threshold=2, vmax=4)     # doctest: +SKIP
+
+in a Jupyter notebook, you can view the image like this:
+
+.. image:: ../images/papaya_stat_map_plot_screenshot_notebook.png
+
+Or you can open a viewer in your web browser if you are not in the
+notebook::
+
+    >>> view.open_in_browser()   # doctest: +SKIP
