@@ -40,7 +40,7 @@ def fetch_haxby_simple(data_dir=None, url=None, resume=True, verbose=1):
         target data.
         'mask': string. Path to nifti mask file.
         'session': list of string. Path to text file containing labels
-        (can be used for LeaveOneLabelOut cross validation for example).
+        (can be used for LeaveOneGroupOut cross validation for example).
 
     References
     ----------
