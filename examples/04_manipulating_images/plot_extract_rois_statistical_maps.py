@@ -5,7 +5,8 @@ Region Extraction using a t-statistical map (3D)
 This example shows how to extract regions or separate the regions
 from a statistical map.
 
-We use localizer t-statistic maps from :func:`nilearn.datasets.fetch_localizer_contrasts`
+We use localizer t-statistic maps from
+:func:`nilearn.datasets.fetch_neurovault_auditory_computation_task`
 as an input image.
 
 The idea is to threshold an image to get foreground objects using a
@@ -18,10 +19,8 @@ function :func:`nilearn.image.threshold_img` and extract objects using a functio
 # utilities
 from nilearn import datasets
 
-n_subjects = 3
-localizer_path = datasets.fetch_localizer_contrasts(
-    ['calculation (auditory cue)'], n_subjects=n_subjects, get_tmaps=True)
-tmap_filename = localizer_path.tmaps[0]
+localizer = datasets.fetch_neurovault_auditory_computation_task()
+tmap_filename = localizer.images[0]
 
 ################################################################################
 # Threshold the t-statistic image by importing threshold function
@@ -34,7 +33,7 @@ threshold_percentile_img = threshold_img(tmap_filename, threshold='97%')
 
 # Type 2: threshold strategy used will be based on image intensity
 # Here, threshold value should be within the limits i.e. less than max value.
-threshold_value_img = threshold_img(tmap_filename, threshold=4.)
+threshold_value_img = threshold_img(tmap_filename, threshold=3.0)
 
 ################################################################################
 # Visualization
