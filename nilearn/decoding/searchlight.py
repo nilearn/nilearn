@@ -136,8 +136,6 @@ def _group_iter_search_light(list_rows, estimator, X, y, groups,
 
     groups : array-like, optional
         group label for each sample for cross validation.
-        NOTE: will have no effect for scikit learn < 0.18
-
     scoring : string or callable, optional
         Scoring strategy to use. See the scikit-learn documentation.
         If callable, takes as arguments the fitted estimator, the
@@ -166,11 +164,8 @@ def _group_iter_search_light(list_rows, estimator, X, y, groups,
     t0 = time.time()
     for i, row in enumerate(list_rows):
         kwargs = dict()
-        if LooseVersion(sklearn.__version__) >= LooseVersion('0.18'):
-            kwargs['groups'] = groups
-        elif scoring is not None:
-            warnings.warn('Scikit-learn version is too old. '
-                          'scoring argument ignored', stacklevel=2)
+        kwargs['scoring'] = scoring
+        kwargs['groups'] = groups
         par_scores[i] = np.mean(cross_val_score(estimator, X[:, row],
                                                 y, cv=cv, n_jobs=1,
                                                 **kwargs))

@@ -942,17 +942,12 @@ class GroupSparseCovarianceCV(BaseEstimator, CacheMixin):
         # One cv generator per subject must be created, because each subject
         # can have a different number of samples from the others.
         cv = []
-        if LooseVersion(sklearn.__version__) >= LooseVersion('0.18'):
-            # scikit-learn >= 0.18
-            for k in range(n_subjects):
-                cv.append(check_cv(self.cv, np.ones(subjects[k].shape[0]),
-                                   classifier=False).split(subjects[k]))
-        else:
-            # scikit-learn < 0.18
-            for k in range(n_subjects):
-                cv.append(check_cv(self.cv, subjects[k], None,
-                                   classifier=False))
-
+        for k in range(n_subjects):
+            cv.append(check_cv(
+                    self.cv, np.ones(subjects[k].shape[0]),
+                    classifier=False
+                    ).split(subjects[k])
+                      )
         path = list()  # List of (alpha, scores, covs)
         n_alphas = self.alphas
 
