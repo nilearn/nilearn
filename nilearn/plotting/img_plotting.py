@@ -218,7 +218,6 @@ def _crop_colorbar(cbar, cbar_vmin, cbar_vmax):
     cbar.set_ticks(new_tick_locs, update_ticks=True)
 
 
-
 def plot_img(img, cut_coords=None, output_file=None, display_mode='ortho',
              figure=None, axes=None, title=None, threshold=None,
              annotate=True, draw_cross=True, black_bg=False, colorbar=False,
