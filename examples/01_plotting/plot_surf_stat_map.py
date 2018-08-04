@@ -26,8 +26,6 @@ See also :ref:`for a similar example but using volumetric input data
 
 See :ref:`plotting` for more details on plotting tools.
 
-NOTE: This example needs matplotlib version higher than 1.3.1.
-
 References
 ----------
 

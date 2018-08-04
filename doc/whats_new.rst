@@ -1,6 +1,16 @@
 0.4.3
 =====
 
+Highlights
+----------
+    - **Minimum supported versions of packages have been bumped up.**
+        - scikit-learn -- v0.18
+        - scipy -- v0.17
+        - pandas -- v0.18
+        - numpy -- v1.11
+        - matplotlib -- v1.5.1
+
+
 Enhancements
 ------------
 
@@ -44,6 +54,9 @@ Changes
 
     - fsaverage5 surface data files are now shipped directly with Nilearn.
       Look to issue #1705 for discussion.
+
+    - `sklearn.cross_validation` and `sklearn.grid_search` have been
+      replaced by `sklearn.model_selection` in all the examples.
 
 
 0.4.2
@@ -945,3 +958,4 @@ Contributors (from ``git shortlog -ns 0.1``)::
      1  Matthias Ekman
      1  Michael Waskom
      1  Vincent Michel
+

@@ -55,12 +55,6 @@ def _apply_mask_and_get_affinity(seeds, niimg, radius, allow_overlap,
                                   mask_coords[2], affine)
     mask_coords = np.asarray(mask_coords).T
 
-    if (radius is not None and
-            LooseVersion(sklearn.__version__) < LooseVersion('0.16')):
-        # Fix for scikit learn versions below 0.16. See
-        # https://github.com/scikit-learn/scikit-learn/issues/4072
-        radius += 1e-6
-
     clf = neighbors.NearestNeighbors(radius=radius)
     A = clf.fit(mask_coords).radius_neighbors_graph(seeds)
     A = A.tolil()

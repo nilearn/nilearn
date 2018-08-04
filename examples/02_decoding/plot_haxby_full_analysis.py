@@ -57,8 +57,8 @@ from sklearn.dummy import DummyClassifier
 dummy_classifier = DummyClassifier()
 
 # Make a data splitting object for cross validation
-from sklearn.cross_validation import LeaveOneLabelOut, cross_val_score
-cv = LeaveOneLabelOut(session_labels)
+from sklearn.model_selection import LeaveOneGroupOut, cross_val_score
+cv = LeaveOneGroupOut()
 
 mask_names = ['mask_vt', 'mask_face', 'mask_house']
 
@@ -83,13 +83,19 @@ for mask_name in mask_names:
             classifier,
             masked_timecourses,
             classification_target,
-            cv=cv, scoring="roc_auc")
+            cv=cv,
+            groups=session_labels,
+            scoring="roc_auc",
+        )
 
         mask_chance_scores[mask_name][category] = cross_val_score(
             dummy_classifier,
             masked_timecourses,
             classification_target,
-            cv=cv, scoring="roc_auc")
+            cv=cv,
+            groups=session_labels,
+            scoring="roc_auc",
+        )
 
         print("Scores: %1.2f +- %1.2f" % (
             mask_scores[mask_name][category].mean(),

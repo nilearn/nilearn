@@ -6,8 +6,12 @@ import warnings
 import numpy as np
 
 from numpy.testing import assert_array_equal
-from nose.tools import assert_true, assert_false, assert_equal, \
-    assert_raises
+from nose.tools import (
+    assert_true,
+    assert_false,
+    assert_equal,
+    assert_raises,
+    )
 
 from nibabel import Nifti1Image
 
@@ -18,6 +22,7 @@ from nilearn.masking import (compute_epi_mask, compute_multi_epi_mask,
                              unmask, _unmask_3d, _unmask_4d, intersect_masks,
                              MaskWarning, _extrapolate_out_mask)
 from nilearn._utils.testing import (write_tmp_imgs, assert_raises_regex)
+from nilearn._utils.testing import assert_warns
 from nilearn._utils.exceptions import DimensionError
 from nilearn.input_data import NiftiMasker
 
@@ -109,10 +114,7 @@ def test_compute_gray_matter_mask():
     np.testing.assert_array_equal(mask1, mask.get_data())
 
     # Check that we get a useful warning for empty masks
-    with warnings.catch_warnings(record=True) as w:
-        compute_gray_matter_mask(image, threshold=1)
-    assert_equal(len(w), 1)
-    assert_true(isinstance(w[0].message, masking.MaskWarning))
+    assert_warns(masking.MaskWarning, compute_gray_matter_mask, image, threshold=1)
 
     # Check that masks obtained from same FOV are the same
     img1 = Nifti1Image(np.full((9, 9, 9), np.random.rand()), np.eye(4))
