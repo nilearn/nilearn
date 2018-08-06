@@ -42,4 +42,7 @@ def test_view_stat_map():
     html = html_stat_map.view_stat_map(img, threshold=2., vmax=4.)
     _check_html(html)
     html = html_stat_map.view_stat_map(img, symmetric_cmap=False)
+    img_4d = image.new_img_like(img, img.get_data()[:, :, :, np.newaxis])
+    assert len(img_4d.shape) == 4
+    html = html_stat_map.view_stat_map(img_4d, threshold=2., vmax=4.)
     _check_html(html)
