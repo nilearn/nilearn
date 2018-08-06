@@ -103,7 +103,7 @@ def view_stat_map(stat_map_img, threshold=None, bg_img='MNI152',
 
     symmetric_cmap : bool, optional (default=True)
         Make colormap symmetric (ranging from -vmax to vmax).
-        Set it to False if you are plotting an atlas or an anatomy image.
+        Set it to False if you are plotting an atlas or an anatomical image.
 
     Returns
     -------
