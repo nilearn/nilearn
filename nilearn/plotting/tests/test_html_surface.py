@@ -3,7 +3,7 @@ import json
 import numpy as np
 from numpy.testing import assert_raises
 
-from nilearn import datasets, surface
+from nilearn import datasets, surface, image
 from nilearn.plotting import html_surface
 from nilearn.plotting.js_plotting_utils import decode
 from nilearn.datasets import fetch_surf_fsaverage
@@ -136,3 +136,7 @@ def test_view_img_on_surf():
     html = html_surface.view_img_on_surf(img, surf_mesh='fsaverage')
     check_html(html)
     assert_raises(DimensionError, html_surface.view_img_on_surf, [img, img])
+    img_4d = image.new_img_like(img, img.get_data()[:, :, :, np.newaxis])
+    assert len(img_4d.shape) == 4
+    html = html_surface.view_img_on_surf(img, threshold='92.3%')
+    check_html(html)

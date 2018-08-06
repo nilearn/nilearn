@@ -270,13 +270,13 @@ def test_temp_file_removing():
     wb_open = webbrowser.open
     webbrowser.open = _open_mock
     try:
-        html.open_in_browser(temp_file_lifetime=1.5)
+        html.open_in_browser(temp_file_lifetime=.5)
         assert os.path.isfile(html._temp_file)
-        time.sleep(1.6)
+        time.sleep(1.5)
         assert not os.path.isfile(html._temp_file)
         html.open_in_browser(temp_file_lifetime=None)
         assert os.path.isfile(html._temp_file)
-        time.sleep(1.6)
+        time.sleep(1.5)
         assert os.path.isfile(html._temp_file)
     finally:
         webbrowser.open = wb_open
