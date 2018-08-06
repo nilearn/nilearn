@@ -57,7 +57,8 @@ def view_stat_map(stat_map_img, threshold=None, bg_img=None, vmax=None):
     ----------
     stat_map_img : Niimg-like object
         See http://nilearn.github.io/manipulating_images/input_output.html
-        The statistical map image
+        The statistical map image. Should be 3D or
+        4D with exactly one time point (i.e. stat_map_img.shape[-1] = 1)
 
     threshold : str, number or None, optional (default=None)
         If None, no thresholding.
