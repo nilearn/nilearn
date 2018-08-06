@@ -48,6 +48,7 @@ class StatMapView(HTMLDocument):
 
 
 def _to_papaya(cmap, norm, abs_min, vmax, symmetric_cmap):
+    """Create colormaps ('lookup tables') given to papaya viewer"""
     n_colors = 100
     if not symmetric_cmap:
         x = np.linspace(norm(abs_min), norm(vmax), n_colors)
@@ -66,6 +67,7 @@ def _to_papaya(cmap, norm, abs_min, vmax, symmetric_cmap):
 
 
 def _rgb_to_papaya(x, cmap):
+    """Transform (values, rgb array) to format expected by papaya"""
     cmap = [[float(m)] + list(map(float, col)) for m, col in zip(x, cmap)]
     return cmap
 
