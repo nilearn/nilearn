@@ -48,16 +48,16 @@ def one_mesh_info(surf_map, surf_mesh, threshold=None, cmap=cm.cold_hot,
 
     """
     info = {}
-    colors, cmin, cmax, cmap, norm, abs_threshold = colorscale(
-        cmap, surf_map, threshold, symmetric_cmap=symmetric_cmap,
-        vmax=vmax)
+    colors = colorscale(
+        cmap, surf_map, threshold, symmetric_cmap=symmetric_cmap, vmax=vmax)
     info['inflated_left'] = mesh_to_plotly(surf_mesh)
     info['vertexcolor_left'] = _get_vertexcolor(
-        surf_map, cmap, norm, abs_threshold, bg_map)
-    info["cmin"], info["cmax"] = float(cmin), float(cmax)
+        surf_map, colors['cmap'], colors['norm'],
+        colors['abs_threshold'], bg_map)
+    info["cmin"], info["cmax"] = float(colors['vmin']), float(colors['vmax'])
     info['black_bg'] = black_bg
     info['full_brain_mesh'] = False
-    info['colorscale'] = colors
+    info['colorscale'] = colors['colors']
     return info
 
 
@@ -95,7 +95,7 @@ def full_brain_info(volume_img, mesh='fsaverage5', threshold=None,
                                **vol_to_surf_kwargs)
         for h in ['left', 'right']
     }
-    colors, cmin, cmax, cmap, norm, abs_threshold = colorscale(
+    colors = colorscale(
         cmap, np.asarray(list(surface_maps.values())).ravel(), threshold,
         symmetric_cmap=symmetric_cmap, vmax=vmax)
 
@@ -107,11 +107,12 @@ def full_brain_info(volume_img, mesh='fsaverage5', threshold=None,
             mesh['infl_{}'.format(hemi)])
 
         info['vertexcolor_{}'.format(hemi)] = _get_vertexcolor(
-            surf_map, cmap, norm, abs_threshold, bg_map)
-    info["cmin"], info["cmax"] = float(cmin), float(cmax)
+            surf_map, colors['cmap'], colors['norm'],
+            colors['abs_threshold'], bg_map)
+    info["cmin"], info["cmax"] = float(colors['vmin']), float(colors['vmax'])
     info['black_bg'] = black_bg
     info['full_brain_mesh'] = True
-    info['colorscale'] = colors
+    info['colorscale'] = colors['colors']
     return info
 
 

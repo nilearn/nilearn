@@ -30,12 +30,14 @@ def _check_html(html):
 def test_view_stat_map():
     mni = datasets.load_mni152_template()
     # Create a fake functional image by resample the template
-    img = image.resample_img(mni, target_affine=3*np.eye(3))
+    img = image.resample_img(mni, target_affine=3 * np.eye(3))
     html = html_stat_map.view_stat_map(img)
     _check_html(html)
     html = html_stat_map.view_stat_map(img, threshold='95%')
     _check_html(html)
     html = html_stat_map.view_stat_map(img, bg_img=mni)
+    _check_html(html)
+    html = html_stat_map.view_stat_map(img, bg_img=None)
     _check_html(html)
     html = html_stat_map.view_stat_map(img, threshold=2., vmax=4.)
     _check_html(html)

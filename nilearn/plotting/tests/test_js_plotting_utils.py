@@ -64,98 +64,97 @@ def test_colorscale_no_threshold():
     cmap = 'jet'
     values = np.linspace(-13, -1.5, 20)
     threshold = None
-    (colors, vmin, vmax, new_cmap, norm, abs_threshold
-     ) = js_plotting_utils.colorscale(cmap, values, threshold)
-    check_colors(colors)
-    assert (vmin, vmax) == (-13, 13)
-    assert new_cmap.N == 256
-    assert (norm.vmax, norm.vmin) == (13, -13)
-    assert abs_threshold is None
+    colors = js_plotting_utils.colorscale(cmap, values, threshold)
+    check_colors(colors['colors'])
+    assert (colors['vmin'], colors['vmax']) == (-13, 13)
+    assert colors['cmap'].N == 256
+    assert (colors['norm'].vmax, colors['norm'].vmin) == (13, -13)
+    assert colors['abs_threshold'] is None
 
 
 def test_colorscale_threshold_0():
     cmap = 'jet'
     values = np.linspace(-13, -1.5, 20)
     threshold = '0%'
-    (colors, vmin, vmax, new_cmap, norm, abs_threshold
-     ) = js_plotting_utils.colorscale(cmap, values, threshold)
-    check_colors(colors)
-    assert (vmin, vmax) == (-13, 13)
-    assert new_cmap.N == 256
-    assert (norm.vmax, norm.vmin) == (13, -13)
-    assert abs_threshold == 1.5
+    colors = js_plotting_utils.colorscale(cmap, values, threshold)
+    check_colors(colors['colors'])
+    assert (colors['vmin'], colors['vmax']) == (-13, 13)
+    assert colors['cmap'].N == 256
+    assert (colors['norm'].vmax, colors['norm'].vmin) == (13, -13)
+    assert colors['abs_threshold'] == 1.5
+    assert colors['symmetric_cmap']
 
 
 def test_colorscale_threshold_99():
     cmap = 'jet'
     values = np.linspace(-13, -1.5, 20)
     threshold = '99%'
-    (colors, vmin, vmax, new_cmap, norm, abs_threshold
-     ) = js_plotting_utils.colorscale(cmap, values, threshold)
-    check_colors(colors)
-    assert (vmin, vmax) == (-13, 13)
-    assert new_cmap.N == 256
-    assert (norm.vmax, norm.vmin) == (13, -13)
-    assert abs_threshold == 13
+    colors = js_plotting_utils.colorscale(cmap, values, threshold)
+    check_colors(colors['colors'])
+    assert (colors['vmin'], colors['vmax']) == (-13, 13)
+    assert colors['cmap'].N == 256
+    assert (colors['norm'].vmax, colors['norm'].vmin) == (13, -13)
+    assert colors['abs_threshold'] == 13
+    assert colors['symmetric_cmap']
 
 
 def test_colorscale_threshold_50():
     cmap = 'jet'
     values = np.linspace(-13, -1.5, 20)
     threshold = '50%'
-    (colors, vmin, vmax, new_cmap, norm, abs_threshold
-     ) = js_plotting_utils.colorscale(cmap, values, threshold)
-    val, cstring = check_colors(colors)
+    colors = js_plotting_utils.colorscale(cmap, values, threshold)
+    val, cstring = check_colors(colors['colors'])
     assert cstring[50] == 'rgb(127, 127, 127)'
-    assert (vmin, vmax) == (-13, 13)
-    assert new_cmap.N == 256
-    assert (norm.vmax, norm.vmin) == (13, -13)
-    assert np.allclose(abs_threshold, 7.55, 2)
+    assert (colors['vmin'], colors['vmax']) == (-13, 13)
+    assert colors['cmap'].N == 256
+    assert (colors['norm'].vmax, colors['norm'].vmin) == (13, -13)
+    assert np.allclose(colors['abs_threshold'], 7.55, 2)
+    assert colors['symmetric_cmap']
 
 
 def test_colorscale_absolute_threshold():
     cmap = 'jet'
     values = np.linspace(-13, -1.5, 20)
     threshold = 7.25
-    (colors, vmin, vmax, new_cmap, norm, abs_threshold
-     ) = js_plotting_utils.colorscale(cmap, values, threshold)
-    val, cstring = check_colors(colors)
+    colors = js_plotting_utils.colorscale(cmap, values, threshold)
+    val, cstring = check_colors(colors['colors'])
     assert cstring[50] == 'rgb(127, 127, 127)'
-    assert (vmin, vmax) == (-13, 13)
-    assert new_cmap.N == 256
-    assert (norm.vmax, norm.vmin) == (13, -13)
-    assert np.allclose(abs_threshold, 7.25)
+    assert (colors['vmin'], colors['vmax']) == (-13, 13)
+    assert colors['cmap'].N == 256
+    assert (colors['norm'].vmax, colors['norm'].vmin) == (13, -13)
+    assert np.allclose(colors['abs_threshold'], 7.25)
+    assert colors['symmetric_cmap']
 
 
 def test_colorscale_asymmetric_cmap():
     cmap = 'jet'
     values = np.arange(15)
-    (colors, vmin, vmax, new_cmap, norm, abs_threshold
-     ) = js_plotting_utils.colorscale(cmap, values, symmetric_cmap=False)
-    assert (vmin, vmax) == (0, 14)
-    assert new_cmap.N == 256
-    assert (norm.vmax, norm.vmin) == (14, 0)
+    colors = js_plotting_utils.colorscale(cmap, values, symmetric_cmap=False)
+    assert (colors['vmin'], colors['vmax']) == (0, 14)
+    assert colors['cmap'].N == 256
+    assert (colors['norm'].vmax, colors['norm'].vmin) == (14, 0)
+    assert not colors['symmetric_cmap']
 
 
 def test_colorscale_vmax():
     cmap = 'jet'
     values = np.arange(15)
-    (colors, vmin, vmax, new_cmap, norm, abs_threshold
-     ) = js_plotting_utils.colorscale(cmap, values, vmax=7)
-    assert (vmin, vmax) == (-7, 7)
-    assert new_cmap.N == 256
-    assert (norm.vmax, norm.vmin) == (7, -7)
+    colors = js_plotting_utils.colorscale(cmap, values, vmax=7)
+    assert (colors['vmin'], colors['vmax']) == (-7, 7)
+    assert colors['cmap'].N == 256
+    assert (colors['norm'].vmax, colors['norm'].vmin) == (7, -7)
+    assert colors['symmetric_cmap']
 
 
 def test_colorscale_asymmetric_cmap_vmax():
     cmap = 'jet'
     values = np.arange(15)
-    (colors, vmin, vmax, new_cmap, norm, abs_threshold
-     ) = js_plotting_utils.colorscale(cmap, values, vmax=7,
-                                      symmetric_cmap=False)
-    assert (vmin, vmax) == (0, 7)
-    assert new_cmap.N == 256
-    assert (norm.vmax, norm.vmin) == (7, 0)
+    colors = js_plotting_utils.colorscale(cmap, values, vmax=7,
+                                          symmetric_cmap=False)
+    assert (colors['vmin'], colors['vmax']) == (0, 7)
+    assert colors['cmap'].N == 256
+    assert (colors['norm'].vmax, colors['norm'].vmin) == (7, 0)
+    assert not colors['symmetric_cmap']
 
 
 def test_colorscale_asymmetric_cmap_negative_values():
@@ -164,12 +163,12 @@ def test_colorscale_asymmetric_cmap_negative_values():
     assert_warns(UserWarning, js_plotting_utils.colorscale, cmap,
                  values, symmetric_cmap=False)
 
-    (colors, vmin, vmax, new_cmap, norm, abs_threshold
-     ) = js_plotting_utils.colorscale(cmap, values, vmax=7,
-                                      symmetric_cmap=False)
-    assert (vmin, vmax) == (-7, 7)
-    assert new_cmap.N == 256
-    assert (norm.vmax, norm.vmin) == (7, -7)
+    colors = js_plotting_utils.colorscale(cmap, values, vmax=7,
+                                          symmetric_cmap=False)
+    assert (colors['vmin'], colors['vmax']) == (-7, 7)
+    assert colors['cmap'].N == 256
+    assert (colors['norm'].vmax, colors['norm'].vmin) == (7, -7)
+    assert colors['symmetric_cmap']
 
 
 def test_encode():

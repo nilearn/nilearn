@@ -4,13 +4,12 @@ Visualizing 3D stat maps in a Papaya viewer
 import os
 import tempfile
 import base64
+import json
 
 import numpy as np
 
 from .. import image, datasets
-from .._utils.extmath import fast_abs_percentile
-from .._utils.param_validation import check_threshold
-from .js_plotting_utils import get_html_template, HTMLDocument
+from .js_plotting_utils import get_html_template, HTMLDocument, colorscale
 
 
 def _encode_nii(img):
@@ -48,7 +47,31 @@ class StatMapView(HTMLDocument):
     pass
 
 
-def view_stat_map(stat_map_img, threshold=None, bg_img=None, vmax=None):
+def _to_papaya(cmap, norm, abs_min, vmax, symmetric_cmap):
+    n_colors = 100
+    if not symmetric_cmap:
+        x = np.linspace(norm(abs_min), norm(vmax), n_colors)
+        rgb = cmap(x)[:, :3]
+        return {'positive_cmap': _rgb_to_papaya(x, rgb),
+                'negative_cmap': None}
+    papaya = {}
+    x = np.linspace(norm(-vmax), norm(-abs_min), n_colors)
+    y = np.linspace(0, 1, n_colors)
+    rgb = cmap(x)[::-1, :3]
+    papaya['negative_cmap'] = _rgb_to_papaya(y, rgb)
+    x = np.linspace(norm(abs_min), norm(vmax), n_colors)
+    rgb = cmap(x)[:, :3]
+    papaya['positive_cmap'] = _rgb_to_papaya(y, rgb)
+    return papaya
+
+
+def _rgb_to_papaya(x, cmap):
+    cmap = [[float(m)] + list(map(float, col)) for m, col in zip(x, cmap)]
+    return cmap
+
+
+def view_stat_map(stat_map_img, threshold=None, bg_img='MNI152',
+                  vmax=None, cmap='cold_hot', symmetric_cmap=True):
     """
     Insert a surface plot of a surface map into an HTML page.
 
@@ -66,13 +89,19 @@ def view_stat_map(stat_map_img, threshold=None, bg_img=None, vmax=None):
         e.g. "25.3%", and only values of amplitude above the
         given percentile will be shown.
 
-    bg_img : Niimg-like object, optional (default=None)
+    bg_img : Niimg-like object, optional (default='MNI152')
         See http://nilearn.github.io/manipulating_images/input_output.html
         The background image that the stat map will be plotted on top of.
         If nothing is specified, the MNI152 template will be used.
 
     vmax : float, optional (default=None)
         Upper bound for plotting
+
+    cmap : str or matplotlib colormap, optional
+
+    symmetric_cmap : bool, optional (default=True)
+        Make colormap symmetric (ranging from -vmax to vmax).
+        Set it to False if you are plotting an atlas or an anatomy image.
 
     Returns
     -------
@@ -81,26 +110,33 @@ def view_stat_map(stat_map_img, threshold=None, bg_img=None, vmax=None):
         Jupyter notebook.
 
     """
-    if bg_img is None:
+    stat_map_img = image.load_img(stat_map_img)
+    if bg_img == 'MNI152':
         bg_img = datasets.load_mni152_template()
-        bg_mask = datasets.load_mni152_brain_mask()
-    else:
+    if bg_img is not None and bg_img is not False:
         bg_img = image.load_img(bg_img)
+        stat_map_img = image.resample_to_img(stat_map_img, bg_img)
         bg_mask = image.new_img_like(bg_img, bg_img.get_data() != 0)
-    stat_map_img = image.resample_to_img(stat_map_img, bg_img)
-    stat_map_img = image.new_img_like(
-        stat_map_img, stat_map_img.get_data() * bg_mask.get_data())
-    if threshold is None:
-        abs_threshold = 'null'
+        stat_map_img = image.new_img_like(
+            stat_map_img, stat_map_img.get_data() * bg_mask.get_data())
+        encoded_bg = '"{}"'.format(_encode_nii(bg_img))
     else:
-        abs_threshold = check_threshold(
-            threshold, stat_map_img.get_data(), fast_abs_percentile)
-        abs_threshold = str(abs_threshold)
-    if vmax is None:
-        vmax = np.abs(stat_map_img.get_data()).max()
+        encoded_bg = 'null'
+    colors = colorscale(
+        cmap, stat_map_img.get_data().ravel(),
+        threshold=threshold, symmetric_cmap=symmetric_cmap, vmax=vmax)
+    abs_threshold = colors['abs_threshold']
+    abs_threshold = 0. if abs_threshold is None else float(abs_threshold)
+    papaya_cmaps = _to_papaya(
+        colors['cmap'], colors['norm'],
+        abs_threshold, colors['vmax'], colors['symmetric_cmap'])
+    stat_map_params = {
+        'min': abs_threshold, 'max': float(colors['vmax']),
+        'cmap': papaya_cmaps, 'symmetric': colors['symmetric_cmap']}
     html = get_html_template('stat_map_template.html')
-    html = html.replace('INSERT_STAT_MAP_DATA_HERE', _encode_nii(stat_map_img))
-    html = html.replace('INSERT_MNI_DATA_HERE', _encode_nii(bg_img))
-    html = html.replace('INSERT_ABS_MIN_HERE', abs_threshold)
-    html = html.replace('INSERT_ABS_MAX_HERE', str(vmax))
+    html = html.replace(
+        'INSERT_STAT_MAP_DATA_HERE', '"{}"'.format(_encode_nii(stat_map_img)))
+    html = html.replace('INSERT_MNI_DATA_HERE', encoded_bg)
+    html = html.replace('INSERT_STAT_MAP_PARAMS_HERE',
+                        json.dumps(stat_map_params))
     return StatMapView(html)
