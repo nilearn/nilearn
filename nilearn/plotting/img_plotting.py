@@ -198,6 +198,11 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None,
 
 
 def _crop_colorbar(cbar, cbar_vmin, cbar_vmax):
+    """
+    crop a colorbar to show from cbar_vmin to cbar_vmax
+
+    Used when symmetric_cbar=False is used.
+    """
     if (cbar_vmin is None) and (cbar_vmax is None):
         return
     cbar_tick_locs = cbar.locator.locs
