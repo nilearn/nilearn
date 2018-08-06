@@ -29,13 +29,15 @@ def _get_connectome(adjacency_matrix, coords, threshold=None,
     connectome = {}
     coords = np.asarray(coords, dtype='<f4')
     adjacency_matrix = adjacency_matrix.copy()
-    colors, vmin, vmax, cmap, norm, abs_threshold = colorscale(
+    colors = colorscale(
         cmap, adjacency_matrix.ravel(), threshold=threshold,
         symmetric_cmap=symmetric_cmap)
-    connectome['colorscale'] = colors
-    connectome['cmin'], connectome['cmax'] = float(vmin), float(vmax)
+    connectome['colorscale'] = colors['colors']
+    connectome['cmin'] = float(colors['vmin'])
+    connectome['cmax'] = float(colors['vmax'])
     if threshold is not None:
-        adjacency_matrix[np.abs(adjacency_matrix) <= abs_threshold] = 0
+        adjacency_matrix[
+            np.abs(adjacency_matrix) <= colors['abs_threshold']] = 0
     s = sparse.coo_matrix(adjacency_matrix)
     nodes = np.asarray([s.row, s.col], dtype=int).T
     edges = np.arange(len(nodes))

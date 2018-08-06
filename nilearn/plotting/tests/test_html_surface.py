@@ -20,13 +20,13 @@ def test_get_vertexcolor():
     fsaverage = fetch_surf_fsaverage()
     mesh = surface.load_surf_mesh(fsaverage['pial_left'])
     surf_map = np.arange(len(mesh[0]))
-    colors, cmin, cmax, cmap, norm, abs_threshold = html_surface.colorscale(
-        'jet', surf_map, 10)
+    colors = html_surface.colorscale('jet', surf_map, 10)
     vertexcolors = html_surface._get_vertexcolor(
-        surf_map, cmap, norm, abs_threshold, fsaverage['sulc_left'])
+        surf_map, colors['cmap'], colors['norm'], colors['abs_threshold'],
+        fsaverage['sulc_left'])
     assert len(vertexcolors) == len(mesh[0])
     vertexcolors = html_surface._get_vertexcolor(
-        surf_map, cmap, norm, abs_threshold)
+        surf_map, colors['cmap'], colors['norm'], colors['abs_threshold'])
     assert len(vertexcolors) == len(mesh[0])
 
 
