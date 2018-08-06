@@ -911,8 +911,6 @@ def test_plot_stat_map_with_nans():
 
 def test_plotting_functions_with_cmaps():
     img = load_mni152_template()
-    # some cmaps such as 'viridis' (the new default in 2.0), 'magma', 'plasma',
-    # and 'inferno' are not supported for older matplotlib version from < 1.5
     cmaps = ['Paired', 'Set1', 'Set2', 'Set3']
     for cmap in cmaps:
         plot_roi(img, cmap=cmap, colorbar=True)

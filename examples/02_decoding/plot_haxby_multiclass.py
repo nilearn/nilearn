@@ -75,7 +75,7 @@ svc_ova = OneVsRestClassifier(Pipeline([
 ##############################################################################
 # Now we compute cross-validation scores
 # ----------------------------------------
-from sklearn.cross_validation import cross_val_score
+from sklearn.model_selection import cross_val_score
 
 cv_scores_ovo = cross_val_score(svc_ovo, X, y, cv=5, verbose=1)
 

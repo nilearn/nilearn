@@ -31,8 +31,6 @@ from .. import _utils
 from ..image import new_img_like
 from .._utils.extmath import fast_abs_percentile
 from .._utils.param_validation import check_threshold
-from .._utils.fixes.matplotlib_backports import (cbar_outline_get_xy,
-                                                 cbar_outline_set_xy)
 from .._utils.ndimage import get_border_data
 from .._utils.exceptions import VisibleDeprecationWarning
 from ..datasets import load_mni152_template
@@ -210,11 +208,11 @@ def _crop_colorbar(cbar, cbar_vmin, cbar_vmax):
     new_tick_locs = np.linspace(cbar_vmin, cbar_vmax,
                                 len(cbar_tick_locs))
     cbar.ax.set_ylim(cbar.norm(cbar_vmin), cbar.norm(cbar_vmax))
-    outline = cbar_outline_get_xy(cbar.outline)
+    outline = cbar.outline.get_xy()
     outline[:2, 1] += cbar.norm(cbar_vmin)
     outline[2:6, 1] -= (1. - cbar.norm(cbar_vmax))
     outline[6:, 1] += cbar.norm(cbar_vmin)
-    cbar_outline_set_xy(cbar.outline, outline)
+    cbar.outline.set_xy(outline)
     cbar.set_ticks(new_tick_locs, update_ticks=True)
 
 

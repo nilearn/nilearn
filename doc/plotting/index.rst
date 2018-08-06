@@ -359,9 +359,6 @@ on a brain surface.
 
 .. versionadded:: 0.3
 
-NOTE: These functions works for only with matplotlib higher than 1.3.1.
-
-
 .. |plot_surf_roi| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_surf_atlas_001.png
      :target: ../auto_examples/01_plotting/plot_surf_atlas.html
      :scale: 50
@@ -396,6 +393,10 @@ Interactive plots
 
 Nilearn also has functions for making interactive plots that can be
 seen in a web browser.
+
+.. versionadded:: 0.5
+
+   Interactive plotting is new in nilearn 0.5
 
 For 3D surface plots of statistical maps or surface atlases, use
 :func:`view_img_on_surf` and :func:`view_surf`. Both produce a 3D plot on the

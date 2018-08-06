@@ -1,5 +1,23 @@
-0.4.3
-=====
+0.5.0 alpha
+===========
+
+This is an alpha release: to download it, you need to explicitly ask for
+the version number::
+
+   pip install nilearn==0.5.0a0
+
+Highlights
+----------
+
+    - **Minimum supported versions of packages have been bumped up.**
+        - scikit-learn -- v0.18
+        - scipy -- v0.17
+        - pandas -- v0.18
+        - numpy -- v1.11
+        - matplotlib -- v1.5.1
+
+    - New :ref:`interactive plotting functions <interactive-plotting>`,
+      eg for use in a notebook.
 
 Enhancements
 ------------
@@ -44,6 +62,9 @@ Changes
 
     - fsaverage5 surface data files are now shipped directly with Nilearn.
       Look to issue #1705 for discussion.
+
+    - `sklearn.cross_validation` and `sklearn.grid_search` have been
+      replaced by `sklearn.model_selection` in all the examples.
 
 
 0.4.2
@@ -945,3 +966,4 @@ Contributors (from ``git shortlog -ns 0.1``)::
      1  Matthias Ekman
      1  Michael Waskom
      1  Vincent Michel
+

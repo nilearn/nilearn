@@ -1,6 +1,6 @@
 machine:
   environment:
-    PATH: /home/ubuntu/miniconda2/bin:$PATH
+    PATH: /home/ubuntu/miniconda3/bin:$PATH
 
 dependencies:
   cache_directories:

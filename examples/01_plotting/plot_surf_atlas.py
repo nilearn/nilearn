@@ -10,8 +10,6 @@ to plot the parcellation on the pial surface.
 
 See :ref:`plotting` for more details.
 
-NOTE: Example needs matplotlib version higher than 1.3.1.
-
 References
 ----------
 
