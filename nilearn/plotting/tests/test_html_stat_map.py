@@ -41,3 +41,5 @@ def test_view_stat_map():
     _check_html(html)
     html = html_stat_map.view_stat_map(img, threshold=2., vmax=4.)
     _check_html(html)
+    html = html_stat_map.view_stat_map(img, symmetric_cmap=False)
+    _check_html(html)
