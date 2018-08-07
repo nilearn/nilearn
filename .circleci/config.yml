@@ -5,46 +5,44 @@ jobs:
     docker:
       - image: circleci/python:3.5
 
-        steps:
-          - checkout
-          - run: echo 'export PATH=/home/ubuntu/miniconda2/bin:$PATH' >> $BASH_ENV
-          - run:
-          - save_cache:
-              key: dependency-cache
-              paths:
+    steps:
+      - checkout
+      - run: echo "export PATH=/home/ubuntu/miniconda2/bin:$PATH" >> $BASH_ENV
+      - save_cache:
+          key: dependency-cache
+          paths:
             - "~/nilearn_data"
-          - restore_cache: dependency-cache
-            # Get rid of existing virtualenvs on circle ci as they conflict with conda.
-            # Trick found here:
-            # https://discuss.circleci.com/t/disable-autodetection-of-project-or-application-of-python-venv/235/10
-          - run: cd && rm -rf ~/.pyenv && rm -rf ~/virtualenvs
-            # We need to remove conflicting texlive packages.
-          - run: sudo -E apt-get -yq remove texlive-binaries --purge
-            # Installing required packages for `make -C doc check command` to work.
-          - run: sudo -E apt-get -yq update
-          - run: sudo -E apt-get -yq --no-install-suggests --no-install-recommends --force-yes install dvipng texlive-latex-base texlive-latex-extra
-            # Moving to nilearn directory before performing the installation.
-          - run: cd ~/nilearn
-          - run:
-              name: ci_install_sh
-              command: source continuous_integration/install.sh
-              environment:
-                DISTRIB: "conda"
-                PYTHON_VERSION: "3.5"
-                NUMPY_VERSION: "*"
-                SCIPY_VERSION: "*"
-                SCIKIT_LEARN_VERSION: "*"
-                MATPLOTLIB_VERSION: "*"
-          - run: conda install sphinx coverage pillow pandas -y -n testenv
-          - run: source continuous_integration/circle_ci_test_doc.sh
-              timeout: 2500 # seconds
-          - store_artifacts:
-              path: "doc/_build/html"
-          - store_artifacts:
-              path: "coverage"
-          - store_artifacts:
-              path: "~"
-              destination: "log.txt"
+      - restore_cache: dependency-cache
+        # Get rid of existing virtualenvs on circle ci as they conflict with conda.
+        # Trick found here:
+        # https://discuss.circleci.com/t/disable-autodetection-of-project-or-application-of-python-venv/235/10
+      - run: cd && rm -rf ~/.pyenv && rm -rf ~/virtualenvs
+        # We need to remove conflicting texlive packages.
+      - run: sudo -E apt-get -yq remove texlive-binaries --purge
+        # Installing required packages for `make -C doc check command` to work.
+      - run: sudo -E apt-get -yq update
+      - run: sudo -E apt-get -yq --no-install-suggests --no-install-recommends --force-yes install dvipng texlive-latex-base texlive-latex-extra
+        # Moving to nilearn directory before performing the installation.
+      - run: cd ~/nilearn
+      - run:
+          command: source continuous_integration/install.sh
+          environment:
+            DISTRIB: "conda"
+            PYTHON_VERSION: "3.5"
+            NUMPY_VERSION: "*"
+            SCIPY_VERSION: "*"
+            SCIKIT_LEARN_VERSION: "*"
+            MATPLOTLIB_VERSION: "*"
+      - run: conda install sphinx coverage pillow pandas -y -n testenv
+      - run: source continuous_integration/circle_ci_test_doc.sh
+#              timeout: 2500 # seconds
+      - store_artifacts:
+          path: "doc/_build/html"
+      - store_artifacts:
+          path: "coverage"
+      - store_artifacts:
+          path: "~"
+          destination: "log.txt"
 
 
 
