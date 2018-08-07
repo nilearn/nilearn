@@ -23,7 +23,7 @@ jobs:
       - run: sudo -E apt-get -yq update
       - run: sudo -E apt-get -yq --no-install-suggests --no-install-recommends --force-yes install dvipng texlive-latex-base texlive-latex-extra
         # Moving to nilearn directory before performing the installation.
-      - run: cd ~/nilearn
+#      - run: cd ~/nilearn
       - run:
           command: source continuous_integration/install.sh
           environment:
