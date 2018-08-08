@@ -28,9 +28,12 @@ jobs:
       - run: wget http://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda.sh
       - run: chmod +x ~/miniconda.sh && ~/miniconda.sh -b
       - run: echo "export PATH=/home/circleci/miniconda3/bin:$PATH" >> /home/circleci/.bashrc
+      - run: echo $PATH  # Diagnostic: to see the PATH
       - run: source /home/circleci/.bashrc
-      - run: /home/circleci/miniconda3/bin/conda create -n testenv -y
-      - run: /home/circleci/miniconda3/bin/conda install sphinx coverage pillow pandas -y
+      - run: conda create - testenv -y
+      - run: conda install sphinx coverage pillow pandas -y
+#      - run: /home/circleci/miniconda3/bin/conda create -n testenv -y
+#      - run: /home/circleci/miniconda3/bin/conda install sphinx coverage pillow pandas -y
       - run: source /home/circleci/miniconda3/bin/activate testenv
       - run: source continuous_integration/install.sh
       - run: source continuous_integration/circle_ci_test_doc.sh
