@@ -24,7 +24,7 @@ jobs:
       - run: sudo -E apt-get -yq update
       - run: sudo -E apt-get -yq --no-install-suggests --no-install-recommends --force-yes install dvipng texlive-latex-base texlive-latex-extra
       - restore_cache:
-          key: dependency-cache
+          key: v1-datasets-{{ .Branch }}
       - run: wget http://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda.sh
       - run: chmod +x ~/miniconda.sh && ~/miniconda.sh -b
       - run: echo "export PATH=/home/circleci/miniconda3/bin:$PATH" >> /home/circleci/.bashrc
@@ -36,7 +36,7 @@ jobs:
       - run: source continuous_integration/circle_ci_test_doc.sh
     #              timeout: 2500 # second
       - save_cache:
-          key: dependency-cache
+          key: v1-datasets-{{ .Branch }}
           paths:
           - "~/nilearn_data"
       - store_artifacts:
