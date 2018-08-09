@@ -32,8 +32,8 @@ jobs:
           command: |
             echo 'export PATH="$HOME/miniconda3/bin:$PATH"'  >> $BASH_ENV
       - run: conda create -n testenv -y
-      - run: conda install sphinx coverage pillow pandas -y
       - run: source activate testenv
+      - run: conda install sphinx coverage pillow pandas -y
       - run: source continuous_integration/install.sh
       - run: source continuous_integration/circle_ci_test_doc.sh
     #              timeout: 2500 # second
