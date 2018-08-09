@@ -75,10 +75,8 @@ def fast_svd(X, n_components, random_state=None):
         S = S[:n_components]
         V = V[:n_components].copy()
     else:
-        if LooseVersion(sklearn.__version__) >= LooseVersion('0.18'):
-            n_iter = 'auto'
-        else:
-            n_iter = 3
+        n_iter = 'auto'
+
         U, S, V = randomized_svd(X, n_components=n_components,
                                  n_iter=n_iter,
                                  flip_sign=True,

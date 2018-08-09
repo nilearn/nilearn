@@ -97,6 +97,8 @@ uses.
    fetch_cobre
    fetch_neurovault
    fetch_neurovault_ids
+   fetch_neurovault_auditory_computation_task
+   fetch_neurovault_motor_task
    get_data_dirs
    load_mni152_template
    load_mni152_brain_mask
@@ -326,6 +328,7 @@ uses.
    view_img_on_surf
    view_connectome
    view_markers
+   view_stat_map
    show
 
 **Classes**:

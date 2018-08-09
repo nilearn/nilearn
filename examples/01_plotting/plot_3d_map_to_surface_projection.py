@@ -6,8 +6,6 @@ project a 3D statistical map onto a cortical mesh using
 :func:`nilearn.surface.vol_to_surf`. Display a surface plot of the projected
 map using :func:`nilearn.plotting.plot_surf_stat_map`.
 
-NOTE: Example needs matplotlib version higher than 1.3.1.
-
 """
 
 ##############################################################################
@@ -16,8 +14,9 @@ NOTE: Example needs matplotlib version higher than 1.3.1.
 
 from nilearn import datasets
 
-localizer_dataset = datasets.fetch_localizer_button_task()
-localizer_tmap = localizer_dataset.tmaps[0]
+motor_images = datasets.fetch_neurovault_motor_task()
+stat_img = motor_images.images[0]
+
 
 ##############################################################################
 # Get a cortical mesh
@@ -31,7 +30,7 @@ fsaverage = datasets.fetch_surf_fsaverage()
 
 from nilearn import surface
 
-texture = surface.vol_to_surf(localizer_tmap, fsaverage.pial_right)
+texture = surface.vol_to_surf(stat_img, fsaverage.pial_right)
 
 ##############################################################################
 # Plot the result
@@ -40,17 +39,17 @@ texture = surface.vol_to_surf(localizer_tmap, fsaverage.pial_right)
 from nilearn import plotting
 
 plotting.plot_surf_stat_map(fsaverage.infl_right, texture, hemi='right',
-                            title='Surface right hemisphere',
+                            title='Surface right hemisphere', colorbar=True,
                             threshold=1., bg_map=fsaverage.sulc_right)
 
 ##############################################################################
 # Plot 3D image for comparison
 # ----------------------------
 
-plotting.plot_glass_brain(localizer_tmap, display_mode='r', plot_abs=False,
+plotting.plot_glass_brain(stat_img, display_mode='r', plot_abs=False,
                           title='Glass brain', threshold=2.)
 
-plotting.plot_stat_map(localizer_tmap, display_mode='x', threshold=1.,
+plotting.plot_stat_map(stat_img, display_mode='x', threshold=1.,
                        cut_coords=range(0, 51, 10), title='Slices')
 
 
@@ -64,10 +63,10 @@ plotting.plot_stat_map(localizer_tmap, display_mode='x', threshold=1.,
 # computation time, but finer visualizations.
 
 big_fsaverage = datasets.fetch_surf_fsaverage('fsaverage')
-big_texture = surface.vol_to_surf(localizer_tmap, big_fsaverage.pial_right)
+big_texture = surface.vol_to_surf(stat_img, big_fsaverage.pial_right)
 
 plotting.plot_surf_stat_map(big_fsaverage.infl_right,
-                            big_texture, hemi='right',
+                            big_texture, hemi='right', colorbar=True,
                             title='Surface right hemisphere: fine mesh',
                             threshold=1., bg_map=big_fsaverage.sulc_right)
 
@@ -98,7 +97,7 @@ view
 ##############################################################################
 # We don't need to do the projection ourselves, we can use view_img_on_surf:
 
-view = plotting.view_img_on_surf(localizer_tmap, threshold='90%')
+view = plotting.view_img_on_surf(stat_img, threshold='90%')
 # view.open_in_browser()
 
 view

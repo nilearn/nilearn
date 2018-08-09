@@ -3,7 +3,7 @@ import json
 import numpy as np
 from numpy.testing import assert_raises
 
-from nilearn import datasets, surface
+from nilearn import datasets, surface, image
 from nilearn.plotting import html_surface
 from nilearn.plotting.js_plotting_utils import decode
 from nilearn.datasets import fetch_surf_fsaverage
@@ -13,20 +13,20 @@ from .test_js_plotting_utils import check_colors, check_html
 
 
 def _get_img():
-    return datasets.fetch_localizer_button_task()['tmaps'][0]
+    return datasets.load_mni152_template()
 
 
 def test_get_vertexcolor():
     fsaverage = fetch_surf_fsaverage()
     mesh = surface.load_surf_mesh(fsaverage['pial_left'])
     surf_map = np.arange(len(mesh[0]))
-    colors, cmin, cmax, cmap, norm, abs_threshold = html_surface.colorscale(
-        'jet', surf_map, 10)
+    colors = html_surface.colorscale('jet', surf_map, 10)
     vertexcolors = html_surface._get_vertexcolor(
-        surf_map, cmap, norm, abs_threshold, fsaverage['sulc_left'])
+        surf_map, colors['cmap'], colors['norm'], colors['abs_threshold'],
+        fsaverage['sulc_left'])
     assert len(vertexcolors) == len(mesh[0])
     vertexcolors = html_surface._get_vertexcolor(
-        surf_map, cmap, norm, abs_threshold)
+        surf_map, colors['cmap'], colors['norm'], colors['abs_threshold'])
     assert len(vertexcolors) == len(mesh[0])
 
 
@@ -136,3 +136,7 @@ def test_view_img_on_surf():
     html = html_surface.view_img_on_surf(img, surf_mesh='fsaverage')
     check_html(html)
     assert_raises(DimensionError, html_surface.view_img_on_surf, [img, img])
+    img_4d = image.new_img_like(img, img.get_data()[:, :, :, np.newaxis])
+    assert len(img_4d.shape) == 4
+    html = html_surface.view_img_on_surf(img, threshold='92.3%')
+    check_html(html)

@@ -30,7 +30,7 @@ def add_js_lib(html, embed_js=True):
     """
     js_dir = os.path.join(os.path.dirname(__file__), 'data', 'js')
     with open(os.path.join(js_dir, 'surface-plot-utils.js')) as f:
-            js_utils = f.read()
+        js_utils = f.read()
     if not embed_js:
         js_lib = """
         <script
@@ -220,7 +220,11 @@ def colorscale(cmap, values, threshold=None, symmetric_cmap=True, vmax=None):
     colors = []
     for i, col in zip(x, rgb):
         colors.append([np.round(i, 3), "rgb({}, {}, {})".format(*col)])
-    return colors, vmin, vmax, our_cmap, norm, abs_threshold
+    return {
+        'colors': colors, 'vmin': vmin, 'vmax': vmax, 'cmap': our_cmap,
+        'norm': norm, 'abs_threshold': abs_threshold,
+        'symmetric_cmap': symmetric_cmap
+    }
 
 
 def encode(a):

@@ -231,6 +231,23 @@ Different display modes
 
 ================= =========================================================
 
+Available Colormaps
+===================
+
+Nilearn plotting library ships with a set of extra colormaps, as seen in the
+image below
+
+.. image:: ../auto_examples/01_plotting/images/sphx_glr_plot_colormaps_001.png
+     :target: ../auto_examples/01_plotting/plot_colormaps.html
+     :scale: 50
+
+These colormaps can be used as any other matplotlib colormap.
+
+.. image:: ../auto_examples/01_plotting/images/sphx_glr_plot_colormaps_002.png
+     :target: ../auto_examples/01_plotting/plot_colormaps.html
+     :scale: 50
+
+
 .. _display_modules:
 
 Adding overlays, edges, contours, contour fillings and markers
@@ -342,9 +359,6 @@ on a brain surface.
 
 .. versionadded:: 0.3
 
-NOTE: These functions works for only with matplotlib higher than 1.3.1.
-
-
 .. |plot_surf_roi| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_surf_atlas_001.png
      :target: ../auto_examples/01_plotting/plot_surf_atlas.html
      :scale: 50
@@ -379,6 +393,10 @@ Interactive plots
 
 Nilearn also has functions for making interactive plots that can be
 seen in a web browser.
+
+.. versionadded:: 0.5
+
+   Interactive plotting is new in nilearn 0.5
 
 For 3D surface plots of statistical maps or surface atlases, use
 :func:`view_img_on_surf` and :func:`view_surf`. Both produce a 3D plot on the
@@ -465,3 +483,24 @@ Or you can save it to an html file::
 
 
 .. image:: ../images/plotly_markers_plot.png
+
+
+.. _interactive-stat-map-plotting:
+
+Interactive visualization of statistical map slices
+---------------------------------------------------
+
+:func:`view_stat_map`: open stat map in a Papaya viewer (https://github.com/rii-mango/Papaya)::
+
+    >>> from nilearn import plotting, datasets     # doctest: +SKIP
+    >>> img = datasets.fetch_localizer_button_task()['tmaps'][0]     # doctest: +SKIP
+    >>> view = plotting.view_stat_map(img, threshold=2, vmax=4)     # doctest: +SKIP
+
+in a Jupyter notebook, you can view the image like this:
+
+.. image:: ../images/papaya_stat_map_plot_screenshot_notebook.png
+
+Or you can open a viewer in your web browser if you are not in the
+notebook::
+
+    >>> view.open_in_browser()   # doctest: +SKIP
