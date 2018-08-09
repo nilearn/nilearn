@@ -46,7 +46,7 @@ jobs:
       - store_artifacts:
           path: "coverage"
       - store_artifacts:
-          path: "~"
+          path: $HOME
           destination: "log.txt"
 
 
