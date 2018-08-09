@@ -25,7 +25,7 @@ jobs:
       - run: sudo -E apt-get -yq --no-install-suggests --no-install-recommends --force-yes install dvipng texlive-latex-base texlive-latex-extra
       - restore_cache:
           key: v1-datasets-{{ .Branch }}
-      - run: wget https://repo.continuum.io/miniconda/Miniconda3-4.2.12-Linux-x86_64.sh -O ~/miniconda.sh
+      - run: wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda.sh
       - run: chmod +x ~/miniconda.sh && ~/miniconda.sh -b
       - run:
           name: Setup conda path in env variables
@@ -36,13 +36,18 @@ jobs:
       - run: conda install python=3.5.2 numpy scipy scikit-learn matplotlib pandas flake8 lxml nose cython mkl sphinx coverage pillow pandas -yq
       - run: conda install nibabel nose-timer -c conda-forge
 #      - run: source continuous_integration/install.sh
-      - run: source continuous_integration/circle_ci_test_doc.sh
-    #              timeout: 2500 # second
       - save_cache:
           key: v1-datasets-{{ .Branch }}
           paths:
           - $HOME/nilearn_data
           - $HOME/miniconda3
+      - run:
+          name: Running CircleCI test (make html)
+          command: |
+            set -o pipefail && cd doc && make html-strict 2>&1 | tee ~/log.txt
+
+#      - run: source continuous_integration/circle_ci_test_doc.sh
+    #              timeout: 2500 # second
       - store_artifacts:
           path: doc/_build/html
       - store_artifacts:
