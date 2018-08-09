@@ -45,6 +45,7 @@ jobs:
           name: Running CircleCI test (make html)
           command: |
             set -o pipefail && cd doc && make html-strict 2>&1 | tee ~/log.txt
+          no_output_timeout: 42m
 
 #      - run: source continuous_integration/circle_ci_test_doc.sh
     #              timeout: 2500 # second
