@@ -33,8 +33,9 @@ jobs:
             echo 'export PATH="$HOME/miniconda3/bin:$PATH"'  >> $BASH_ENV
       - run: conda create -n testenv -y
       - run: source activate testenv
-      - run: conda install sphinx coverage pillow pandas -y
-      - run: source continuous_integration/install.sh
+      - run: conda install python=3.5 numpy scipy scikit-learn matplotlib pandas flake8 lxml nose cython mkl sphinx coverage pillow pandas -yq
+      - run: pip install nibabel nose-timer
+#      - run: source continuous_integration/install.sh
       - run: source continuous_integration/circle_ci_test_doc.sh
     #              timeout: 2500 # second
       - save_cache:
