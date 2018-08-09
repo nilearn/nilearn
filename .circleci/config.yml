@@ -35,6 +35,7 @@ jobs:
       - run: source activate testenv
       - run: conda install python=3.5.2 numpy scipy scikit-learn matplotlib pandas flake8 lxml nose cython mkl sphinx coverage pillow pandas -yq
       - run: conda install nibabel nose-timer -c conda-forge
+      - run: pip install .
 #      - run: source continuous_integration/install.sh
       - save_cache:
           key: v1-datasets-{{ .Branch }}
