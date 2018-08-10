@@ -98,4 +98,16 @@ def test_searchlight():
     assert_equal(np.where(sl.scores_ == 1)[0].size, 7)
     assert_equal(sl.scores_[2, 2, 2], 1.)
 
+    # Check whether searchlight works on list of 3D images
+    rand = np.random.RandomState(0)
+    data = rand.rand(5, 5, 5)
+    data_img = nibabel.Nifti1Image(data, affine=np.eye(4))
+    imgs = [data_img, data_img, data_img, data_img, data_img, data_img]
+
+    # labels
+    y = [0, 1, 0, 1, 0, 1]
+
+    # run searchlight on list of 3D images
+    sl = searchlight.SearchLight(mask_img)
+    sl.fit(imgs, y)
 
