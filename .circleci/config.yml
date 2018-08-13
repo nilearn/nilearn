@@ -3,10 +3,10 @@ version: 2
 jobs:
   build:
     docker:
-      - image: circleci/python:3.5
+      - image: circleci/python:3.6
     environment:
       DISTRIB: "conda"
-      PYTHON_VERSION: "3.5"
+      PYTHON_VERSION: "3.6"
       NUMPY_VERSION: "*"
       SCIPY_VERSION: "*"
       SCIKIT_LEARN_VERSION: "*"
@@ -34,7 +34,7 @@ jobs:
       - run:
           name: Create conda env
           command: |
-            conda create -n testenv python=3.5.2 numpy scipy scikit-learn matplotlib pandas \
+            conda create -n testenv python=3.6 numpy scipy scikit-learn matplotlib pandas \
             flake8 lxml nose cython mkl sphinx coverage pillow pandas -yq
             conda install -n testenv nibabel nose-timer -c conda-forge -yq
 #      - run: source continuous_integration/install.sh
