@@ -24,7 +24,7 @@ jobs:
       - run: sudo -E apt-get -yq update
       - run: sudo -E apt-get -yq --no-install-suggests --no-install-recommends --force-yes install dvipng texlive-latex-base texlive-latex-extra
       - restore_cache:
-          key: v1-datasets-{{ .Branch }}
+          key: v1-packages+datasets-{{ .Branch }}
       - run: wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda.sh
       - run: chmod +x ~/miniconda.sh && ~/miniconda.sh -b
       - run:
@@ -46,7 +46,7 @@ jobs:
 #            set -o pipefail && cd doc && make html-strict 2>&1 | tee ~/log.txt
           no_output_timeout: 42m
       - save_cache:
-          key: v1-datasets-{{ .Branch }}
+          key: v1-packages+datasets-{{ .Branch }}
           paths:
           - $HOME/nilearn_data
           - $HOME/miniconda3
