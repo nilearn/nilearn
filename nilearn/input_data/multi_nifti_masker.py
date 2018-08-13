@@ -117,8 +117,8 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
     """
 
     def __init__(self, mask_img=None, smoothing_fwhm=None,
-                 standardize=False, standardize_strategy='zscore'
-                 ,detrend=False, low_pass=None, high_pass=None,
+                 standardize=False, standardize_strategy='zscore',
+                 detrend=False, low_pass=None, high_pass=None,
                  t_r=None, target_affine=None, target_shape=None,
                  mask_strategy='background', mask_args=None,
                  memory=Memory(cachedir=None), memory_level=0,
