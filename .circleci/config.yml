@@ -36,14 +36,14 @@ jobs:
           command: |
             conda create -n testenv python=3.5.2 numpy scipy scikit-learn matplotlib pandas \
             flake8 lxml nose cython mkl sphinx coverage pillow pandas -yq
-            conda install -n testenv nibabel nose-timer -c conda-forge
+            conda install -n testenv nibabel nose-timer -c conda-forge -yq
 #      - run: source continuous_integration/install.sh
       - run:
           name: Running CircleCI test (make html)
           command: |
             source activate testenv
             pip install -e .
-            set -o pipefail && cd doc && make html-strict 2>&1 | tee ~/log.txt
+#            set -o pipefail && cd doc && make html-strict 2>&1 | tee ~/log.txt
           no_output_timeout: 42m
       - save_cache:
           key: v1-datasets-{{ .Branch }}
