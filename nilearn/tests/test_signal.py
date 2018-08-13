@@ -546,4 +546,28 @@ def test_clean_psc():
 
     signals += rng.randn(1, n_features)
     cleaned_signals = clean(signals, standardize_strategy='psc')
-    np.testing.assert_almost_equal(cleaned_signals.mean(), 0)
+    np.testing.assert_almost_equal(cleaned_signals.mean(0), 0)
+
+def test_clean_variance():
+    rng = np.random.RandomState(0)
+    n_samples = 500
+    n_features = 5
+
+    signals, _, _ = generate_signals(n_features=n_features,
+                                     length=n_samples)
+
+    signals += rng.randn(1, n_features)
+    cleaned_signals = clean(signals, standardize_strategy='energy')
+    np.testing.assert_almost_equal((cleaned_signals**2).sum(0), 1)
+
+def test_clean_zscore():
+    rng = np.random.RandomState(0)
+    n_samples = 500
+    n_features = 5
+
+    signals, _, _ = generate_signals(n_features=n_features,
+                                     length=n_samples)
+
+    signals += rng.randn(1, n_features)
+    cleaned_signals = clean(signals, standardize_strategy='zscore')
+    np.testing.assert_almost_equal((cleaned_signals).std(0), 1)
