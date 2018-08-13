@@ -85,8 +85,13 @@ def _standardize(signals, detrend=False, normalize=True,
             std[std < np.finfo(np.float).eps] = 1.  # avoid numerical problems
             signals /= std
 
-        elif normalization_strategy == 'psc':
-            mean_signal = signals.mean(0)
+        elif standardize_strategy == 'psc':
+            mean_signal = signals.mean(axis=0)
+            if np.any(mean_signal < np.finfo(np.float).eps):
+                raise Exception('psc standardization strategy is meaningless '
+                                'for features that have a mean of 0 or '
+                                'smaller than zero')
+
             signals = (signals / mean_signal) * 100
             signals -= 100
 
