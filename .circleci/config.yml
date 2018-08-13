@@ -31,11 +31,12 @@ jobs:
           name: Setup conda path in env variables
           command: |
             echo 'export PATH="$HOME/miniconda3/bin:$PATH"'  >> $BASH_ENV
-      - run: conda create -n testenv -y
-      - run: source activate testenv
-      - run: conda install python=3.5.2 numpy scipy scikit-learn matplotlib pandas flake8 lxml nose cython mkl sphinx coverage pillow pandas -yq
-      - run: conda install nibabel nose-timer -c conda-forge
-      - run: pip install .
+      - run:
+          name: Create conda env
+          command: |
+            conda create -n testenv python=3.5.2 numpy scipy scikit-learn matplotlib pandas \
+            flake8 lxml nose cython mkl sphinx coverage pillow pandas -yq
+            conda install -n testenv nibabel nose-timer -c conda-forge
 #      - run: source continuous_integration/install.sh
       - save_cache:
           key: v1-datasets-{{ .Branch }}
@@ -45,6 +46,8 @@ jobs:
       - run:
           name: Running CircleCI test (make html)
           command: |
+            source activate testenv
+            pip install -e .
             set -o pipefail && cd doc && make html-strict 2>&1 | tee ~/log.txt
           no_output_timeout: 42m
 
