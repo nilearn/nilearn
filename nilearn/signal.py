@@ -36,13 +36,13 @@ def _standardize(signals, detrend=False, standardize=True,
         if True, signal gets standardized
 
     standardize_strategy: str, optional
-       Strategy to standardize the signal.
-       'energy': Timeseries are shifted to zero mean and scaled
-       to unit energy (i.e., sum of squares equals 1).
-       'zscore': the signal is z-scored. Timeseries are shifted
-       to zero mean and scaled to unit variance.
-       'psc':  Timeseries are shifted to zero mean value and scaled
-       to percent signal change (as compared to original mean signal).
+        Strategy to standardize the signal.
+        'energy': Timeseries are shifted to zero mean and scaled
+        to unit energy (i.e., sum of squares equals 1).
+        'zscore': the signal is z-scored. Timeseries are shifted
+        to zero mean and scaled to unit variance.
+        'psc':  Timeseries are shifted to zero mean value and scaled
+        to percent signal change (as compared to original mean signal).
 
 
     Returns
@@ -446,13 +446,13 @@ def clean(signals, sessions=None, detrend=True, standardize=True,
         If True, returned signals are standardized.
 
     standardize_strategy: {'energy', 'zscore', 'psc'}, default is 'energy'
-       Strategy to standardize the signal.
-       'energy': Timeseries are shifted to zero mean and scaled
-       to unit energy (i.e., sum of squares equals 1).
-       'zscore': the signal is z-scored. Timeseries are shifted
-       to zero mean and scaled to unit variance.
-       'psc':  Timeseries are shifted to zero mean value and scaled
-       to percent signal change (as compared to original mean signal).
+        Strategy to standardize the signal.
+        'energy': Timeseries are shifted to zero mean and scaled
+        to unit energy (i.e., sum of squares equals 1).
+        'zscore': the signal is z-scored. Timeseries are shifted
+        to zero mean and scaled to unit variance.
+        'psc':  Timeseries are shifted to zero mean value and scaled
+        to percent signal change (as compared to original mean signal).
 
     ensure_finite: bool
         If True, the non-finite values (NANs and infs) found in the data
