@@ -20,9 +20,9 @@ from ._utils.numpy_conversions import csv_to_array, as_ndarray
 NP_VERSION = distutils.version.LooseVersion(np.version.short_version).version
 
 
-def _standardize(signals, detrend=False, normalize=True, 
-                 normalization_strategy='variance'):
-    """ Center and norm a given signal (time is along first axis)
+def _standardize(signals, detrend=False, standardize=True, 
+                 standardize_strategy='energy'):
+    """ Center and standardize a given signal (time is along first axis)
 
     Parameters
     ----------
@@ -32,51 +32,49 @@ def _standardize(signals, detrend=False, normalize=True,
     detrend: bool
         if detrending of timeseries is requested
 
-    normalize: bool
-        if True, shift timeseries to zero mean value and scale
-        to unit energy (sum of squares).
+    standardize: {bool}
+        if True, signal gets standardized
 
-    normalize: {bool}
-        if True, signal gets normalized
+    standardize_strategy: str, optional
+       Strategy to standardize the signal.
+       'variance': Timeseries are shifted to zero mean and scaled
+       to unit variance (i.e., sum of squares equals 1).
+       'zscore': the signal is z-scored. Timeseries are shifted
+       to zero mean and scaled to unit variance.
+       'psc':  Timeseries are shifted to zero mean value and scaled
+       to percent signal change (as compared to original mean signal).
 
-    normalization_strategy: str, optional
-       Signals normalization strategy.
-       'variance', shift timeseries to zero mean value and scale
-        to unit energy (sum of squares).
-       'zscore', the signal is z-scored, variance is set to 1.
-       'psc', variance of the signal corresponds to the percent signal
-       change (percent of the mean signal). The mean of the signal is set to
-       0.
 
     Returns
     -------
     std_signals: numpy.ndarray
-        copy of signals, normalized.
+        copy of signals, standardized.
     """
 
-    if normalization_strategy not in ['psc', 'zscore', 'variance']:
-        raise Exception('{} is no valid normalization strategy.'.format(normalization_strategy))
+    if standardize_strategy not in ['psc', 'zscore', 'variance']:
+        raise Exception('{} is no valid standardize strategy.'
+                        .format(standardize_strategy))
 
     if detrend:
         signals = _detrend(signals, inplace=False)
     else:
         signals = signals.copy()
 
-    if normalize:
+    if standardize:
         if signals.shape[0] == 1:
             warnings.warn('Standardization of 3D signal has been requested but'
                 ' would lead to zero values. Skipping.')
             return signals
 
-        if normalization_strategy == 'variance':
+        if standardize_strategy == 'variance':
             if not detrend:
                 signals = signals - signals.mean(axis=0)
 
-            std = np.sqrt((signals ** 2).sum(axis=0))
-            std[std < np.finfo(np.float).eps] = 1.  # avoid numerical problems
-            signals /= std
+            var = np.sqrt((signals ** 2).sum(axis=0))
+            var[var < np.finfo(np.float).eps] = 1.  # avoid numerical problems
+            signals /= var
 
-        elif normalization_strategy == 'zscore':
+        elif standardize_strategy == 'zscore':
             if not detrend:
                 # remove mean if not already detrended
                 signals = signals - signals.mean(axis=0)
@@ -397,21 +395,9 @@ def clean(signals, sessions=None, detrend=True, standardize=True,
     This function can do several things on the input signals, in
     the following order:
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-    - detrend
-=======
-    - standardize
-=======
->>>>>>> Documentation should reflect order correctly
     - detrend
     - remove confounds
->>>>>>> First attempt at psc-extraction with nilearn
     - low- and high-pass filter
-<<<<<<< HEAD
-    - remove confounds
-=======
->>>>>>> Documentation should reflect order correctly
     - standardize
 
     Low-pass filtering improves specificity.
@@ -457,17 +443,16 @@ def clean(signals, sessions=None, detrend=True, standardize=True,
         confound removal)
 
     standardize: bool
-        If True, returned signals are z-scored (unit variance) or converted
-        to percent signal-change.
+        If True, returned signals are standardized.
 
-    standardize_strategy: str
-       Signals normalization method.
-       'variance', shift timeseries to zero mean value and scale
-        to unit energy (sum of squares).
-       'zscore', the signal is z-scored, variance is set to 1.
-       'psc', variance of the signal corresponds to the percent signal
-       change (percent of the mean signal). The mean of the signal is set to
-       0.
+    standardize_strategy: {'energy', 'zscore', 'psc'}, default is 'energy'
+       Strategy to standardize the signal.
+       'energy': Timeseries are shifted to zero mean and scaled
+       to unit energy (i.e., sum of squares equals 1).
+       'zscore': the signal is z-scored. Timeseries are shifted
+       to zero mean and scaled to unit variance.
+       'psc':  Timeseries are shifted to zero mean value and scaled
+       to percent signal change (as compared to original mean signal).
 
     ensure_finite: bool
         If True, the non-finite values (NANs and infs) found in the data
@@ -578,7 +563,7 @@ def clean(signals, sessions=None, detrend=True, standardize=True,
 
     if detrend:
         mean_signals = signals.mean(axis=0)
-        signals = _standardize(signals, normalize=False, detrend=detrend)
+        signals = _standardize(signals, standardize=False, detrend=detrend)
 
     # Apply low- and high-pass filters
     if low_pass is not None or high_pass is not None:
@@ -600,7 +585,7 @@ def clean(signals, sessions=None, detrend=True, standardize=True,
             confounds = butterworth(confounds, sampling_rate=1. / t_r,
                                     low_pass=low_pass, high_pass=high_pass)
 
-        confounds = _standardize(confounds, normalize=standardize,
+        confounds = _standardize(confounds, standardize=standardize,
                                  detrend=detrend)
 
         if not standardize:
@@ -625,13 +610,13 @@ def clean(signals, sessions=None, detrend=True, standardize=True,
                               low_pass=low_pass, high_pass=high_pass)
 
     # Standardize
-    if detrend:
-        signals = _standardize(signals + mean_signals, normalize=standardize,
+    if detrend and (standardize_strategy == 'psc'):
+        signals = _standardize(signals + mean_signals, standardize=standardize,
                                detrend=False,
-                               normalization_strategy=standardize_strategy)
+                               standardize_strategy=standardize_strategy)
     else:
-        signals = _standardize(signals, normalize=standardize,
+        signals = _standardize(signals, standardize=standardize,
                                detrend=False,
-                               normalization_strategy=standardize_strategy)
+                               standardize_strategy=standardize_strategy)
 
     return signals
