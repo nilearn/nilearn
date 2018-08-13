@@ -89,9 +89,14 @@ class NiftiMasker(BaseMasker, CacheMixin):
         If standardize is True, the time-series are normalized using
         signal.clean().
 
-    standardize_strategy : str, optional
-        This parameter sets how the signal gets normalized by signal.clean()
-        (z-scored or percent signal change).
+    standardize_strategy: {'energy', 'zscore', 'psc'}, default is 'energy'
+        Strategy to standardize the signal.
+        'energy': Timeseries are shifted to zero mean and scaled
+        to unit energy (i.e., sum of squares equals 1).
+        'zscore': the signal is z-scored. Timeseries are shifted
+        to zero mean and scaled to unit variance.
+        'psc':  Timeseries are shifted to zero mean value and scaled
+        to percent signal change (as compared to original mean signal).
 
     detrend : boolean, optional
         This parameter is passed to signal.clean. Please see the related
