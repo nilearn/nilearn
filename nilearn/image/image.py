@@ -110,8 +110,8 @@ def _fast_smooth_array(arr):
     smoothed_arr: numpy.ndarray
         Smoothed array.
 
-    Note
-    ----
+    Notes
+    -----
     Rather than calling this function directly, users are encouraged
     to call the high-level function :func:`smooth_img` with
     fwhm='fast'.

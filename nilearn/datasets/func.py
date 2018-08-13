@@ -40,7 +40,7 @@ def fetch_haxby_simple(data_dir=None, url=None, resume=True, verbose=1):
         target data.
         'mask': string. Path to nifti mask file.
         'session': list of string. Path to text file containing labels
-        (can be used for LeaveOneLabelOut cross validation for example).
+        (can be used for LeaveOneGroupOut cross validation for example).
 
     References
     ----------
@@ -1846,3 +1846,4 @@ def fetch_surf_nki_enhanced(n_subjects=10, data_dir=None,
     return Bunch(func_left=func_left, func_right=func_right,
                  phenotypic=phenotypic,
                  description=fdescr)
+ 

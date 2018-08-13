@@ -1,5 +1,57 @@
-0.4.3
-=====
+0.5.0 alpha
+===========
+
+This is an alpha release: to download it, you need to explicitly ask for
+the version number::
+
+   pip install nilearn==0.5.0a0
+
+Highlights
+----------
+
+    - **Minimum supported versions of packages have been bumped up.**
+        - scikit-learn -- v0.18
+        - scipy -- v0.17
+        - pandas -- v0.18
+        - numpy -- v1.11
+        - matplotlib -- v1.5.1
+
+    - New :ref:`interactive plotting functions <interactive-plotting>`,
+      eg for use in a notebook.
+
+Enhancements
+------------
+
+    - All NiftiMaskers now have a `dtype` argument. For now the default behaviour
+      is to keep the same data type as the input data.
+
+    - New functions :func:`nilearn.plotting.view_surf` and
+      :func:`nilearn.plotting.view_surf` and
+      :func:`nilearn.plotting.view_img_on_surf` for interactive visualization of
+      maps on the cortical surface in a web browser.
+
+    - New functions :func:`nilearn.plotting.view_connectome` and
+      :func:`nilearn.plotting.view_markers` to visualize connectomes and
+      seed locations in 3D
+
+    - New function :func:`nilearn.plotting.view_stat_map` for interactive
+      visualization of volumes with 3 orthogonal cuts.
+
+    - Add :func:`nilearn.datasets.fetch_surf_fsaverage` to download either
+      fsaverage or fsaverage 5 (Freesurfer cortical meshes).
+
+    - Added :func:`nilearn.datasets.fetch_atlas_pauli_2017` to download a
+      recent subcortical neuroimaging atlas.
+
+    - Added :func:`nilearn.plotting.find_parcellation_cut_coords` for
+      extraction of coordinates on brain parcellations denoted as labels.
+
+    - Added :func:`nilearn.plotting.find_probabilistic_atlas_cut_coords` for
+      extraction of coordinates on brain probabilistic maps.
+
+    - Added :func:`nilearn.datasets.fetch_neurovault_auditory_computation_task`
+      and :func:`nilearn.datasets.fetch_neurovault_motor_task` for simple example data.
+
 
 Changes
 -------
@@ -8,12 +60,11 @@ Changes
       removed in a future release. Use :func:`nilearn.datasets.fetch_surf_fsaverage`,
       with the parameter mesh="fsaverage5" (the default) instead.
 
+    - fsaverage5 surface data files are now shipped directly with Nilearn.
+      Look to issue #1705 for discussion.
 
-Enhancements
-------------
-
-    - Add :func:`nilearn.datasets.fetch_surf_fsaverage` to download either
-      fsaverage or fsaverage 5 (Freesurfer cortical meshes).
+    - `sklearn.cross_validation` and `sklearn.grid_search` have been
+      replaced by `sklearn.model_selection` in all the examples.
 
 
 0.4.2
@@ -915,3 +966,4 @@ Contributors (from ``git shortlog -ns 0.1``)::
      1  Matthias Ekman
      1  Michael Waskom
      1  Vincent Michel
+

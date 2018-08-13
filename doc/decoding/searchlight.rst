@@ -113,7 +113,7 @@ Kriegskorte et al. use a 5.6mm radius because it yielded the best detection
 performance in their simulation.
 
 .. literalinclude:: ../../examples/02_decoding/plot_haxby_searchlight.py
-    :start-after: import nilearn.decoding
+    :start-after: cv = KFold(n_splits=4)
     :end-before: # F-scores computation
 	
 Visualization

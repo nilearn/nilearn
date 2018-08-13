@@ -35,7 +35,8 @@ print_conda_requirements() {
     #   - for scikit-learn, SCIKIT_LEARN_VERSION is used
     TO_INSTALL_ALWAYS="pip nose"
     REQUIREMENTS="$TO_INSTALL_ALWAYS"
-    TO_INSTALL_MAYBE="python numpy scipy matplotlib scikit-learn pandas flake8"
+    TO_INSTALL_MAYBE="python numpy scipy matplotlib scikit-learn pandas \
+flake8 lxml"
     for PACKAGE in $TO_INSTALL_MAYBE; do
         # Capitalize package name and add _VERSION
         PACKAGE_VERSION_VARNAME="${PACKAGE^^}_VERSION"
@@ -61,10 +62,10 @@ create_new_conda_env() {
 
     # Use the miniconda installer for faster download / install of conda
     # itself
-    wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh \
+    wget http://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh \
         -O ~/miniconda.sh
     chmod +x ~/miniconda.sh && ~/miniconda.sh -b
-    export PATH=$HOME/miniconda2/bin:$PATH
+    export PATH=$HOME/miniconda3/bin:$PATH
     echo $PATH
     conda update --quiet --yes conda
 
