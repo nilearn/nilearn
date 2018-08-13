@@ -37,8 +37,8 @@ def _standardize(signals, detrend=False, standardize=True,
 
     standardize_strategy: str, optional
        Strategy to standardize the signal.
-       'variance': Timeseries are shifted to zero mean and scaled
-       to unit variance (i.e., sum of squares equals 1).
+       'energy': Timeseries are shifted to zero mean and scaled
+       to unit energy (i.e., sum of squares equals 1).
        'zscore': the signal is z-scored. Timeseries are shifted
        to zero mean and scaled to unit variance.
        'psc':  Timeseries are shifted to zero mean value and scaled
@@ -51,7 +51,7 @@ def _standardize(signals, detrend=False, standardize=True,
         copy of signals, standardized.
     """
 
-    if standardize_strategy not in ['psc', 'zscore', 'variance']:
+    if standardize_strategy not in ['psc', 'zscore', 'energy']:
         raise Exception('{} is no valid standardize strategy.'
                         .format(standardize_strategy))
 
@@ -66,7 +66,7 @@ def _standardize(signals, detrend=False, standardize=True,
                 ' would lead to zero values. Skipping.')
             return signals
 
-        if standardize_strategy == 'variance':
+        if standardize_strategy == 'energy':
             if not detrend:
                 signals = signals - signals.mean(axis=0)
 
