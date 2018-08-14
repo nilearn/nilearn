@@ -20,8 +20,8 @@ from ._utils.numpy_conversions import csv_to_array, as_ndarray
 NP_VERSION = distutils.version.LooseVersion(np.version.short_version).version
 
 
-def _standardize(signals, detrend=False, standardize=True, 
-                 standardize_strategy='energy'):
+def _standardize(signals, detrend=False, standardize=True,
+                 standardize_strategy='zscore'):
     """ Center and standardize a given signal (time is along first axis)
 
     Parameters
@@ -35,15 +35,12 @@ def _standardize(signals, detrend=False, standardize=True,
     standardize: {bool}
         if True, signal gets standardized
 
-    standardize_strategy: str, optional
+    standardize_strategy: {'zscore', 'psc'}, default is 'zscore'
         Strategy to standardize the signal.
-        'energy': Timeseries are shifted to zero mean and scaled
-        to unit energy (i.e., sum of squares equals 1).
         'zscore': the signal is z-scored. Timeseries are shifted
         to zero mean and scaled to unit variance.
         'psc':  Timeseries are shifted to zero mean value and scaled
         to percent signal change (as compared to original mean signal).
-
 
     Returns
     -------
@@ -51,7 +48,7 @@ def _standardize(signals, detrend=False, standardize=True,
         copy of signals, standardized.
     """
 
-    if standardize_strategy not in ['psc', 'zscore', 'energy']:
+    if standardize_strategy not in ['psc', 'zscore']:
         raise Exception('{} is no valid standardize strategy.'
                         .format(standardize_strategy))
 
@@ -65,14 +62,6 @@ def _standardize(signals, detrend=False, standardize=True,
             warnings.warn('Standardization of 3D signal has been requested but'
                 ' would lead to zero values. Skipping.')
             return signals
-
-        if standardize_strategy == 'energy':
-            if not detrend:
-                signals = signals - signals.mean(axis=0)
-
-            var = np.sqrt((signals ** 2).sum(axis=0))
-            var[var < np.finfo(np.float).eps] = 1.  # avoid numerical problems
-            signals /= var
 
         elif standardize_strategy == 'zscore':
             if not detrend:
@@ -445,10 +434,8 @@ def clean(signals, sessions=None, detrend=True, standardize=True,
     standardize: bool
         If True, returned signals are standardized.
 
-    standardize_strategy: {'energy', 'zscore', 'psc'}, default is 'energy'
+    standardize_strategy: {'zscore', 'psc'}, default is 'zscore'
         Strategy to standardize the signal.
-        'energy': Timeseries are shifted to zero mean and scaled
-        to unit energy (i.e., sum of squares equals 1).
         'zscore': the signal is z-scored. Timeseries are shifted
         to zero mean and scaled to unit variance.
         'psc':  Timeseries are shifted to zero mean value and scaled
