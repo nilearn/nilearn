@@ -49,7 +49,7 @@ def _standardize(signals, detrend=False, standardize=True,
     """
 
     if standardize_strategy not in ['psc', 'zscore']:
-        raise Exception('{} is no valid standardize strategy.'
+        raise ValueError('{} is no valid standardize strategy.'
                         .format(standardize_strategy))
 
     if detrend:
