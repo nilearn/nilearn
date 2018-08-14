@@ -85,14 +85,12 @@ class NiftiMasker(BaseMasker, CacheMixin):
         If smoothing_fwhm is not None, it gives the full-width half maximum in
         millimeters of the spatial smoothing to apply to the signal.
 
-    standardize : boolean, optional
+    standardize: boolean, optional
         If standardize is True, the time-series are normalized using
-        signal.clean().
+        signal.clean(). Also see standardize_strategy.
 
-    standardize_strategy: {'energy', 'zscore', 'psc'}, default is 'energy'
+    standardize_strategy: {'zscore', 'psc'}, default is 'zscore'
         Strategy to standardize the signal.
-        'energy': Timeseries are shifted to zero mean and scaled
-        to unit energy (i.e., sum of squares equals 1).
         'zscore': the signal is z-scored. Timeseries are shifted
         to zero mean and scaled to unit variance.
         'psc':  Timeseries are shifted to zero mean value and scaled
