@@ -602,6 +602,8 @@ def clean(signals, sessions=None, detrend=True, standardize=True,
 
     # Standardize
     if detrend and (standardize_strategy == 'psc'):
+        # If the signal is detrended, we have to know the original mean
+        # signal to calculate the psc.
         signals = _standardize(signals + mean_signals, standardize=standardize,
                                detrend=False,
                                standardize_strategy=standardize_strategy)
