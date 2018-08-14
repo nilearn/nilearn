@@ -190,8 +190,8 @@ def test_standardize():
     # transpose array to fit _standardize input.
     # Without trend removal
     b = nisignal._standardize(a, standardize=True)
-    energies = (b ** 2).sum(axis=0)
-    np.testing.assert_almost_equal(energies, np.ones(n_features))
+    std = b.std(axis=0)
+    np.testing.assert_almost_equal(std, np.ones(n_features))
     np.testing.assert_almost_equal(b.sum(axis=0), np.zeros(n_features))
 
     # With trend removal
@@ -534,8 +534,6 @@ def test_high_variance_confounds():
         np.min(np.abs(np.dstack([outG - outGt, outG + outGt])), axis=2),
         np.zeros(outG.shape))
 
-
-
 def test_clean_psc():
     rng = np.random.RandomState(0)
     n_samples = 500
@@ -543,22 +541,16 @@ def test_clean_psc():
 
     signals, _, _ = generate_signals(n_features=n_features,
                                      length=n_samples)
+    means = rng.randn(1, n_features)
+    signals += means
 
-    signals += rng.randn(1, n_features)
     cleaned_signals = clean(signals, standardize_strategy='psc')
     np.testing.assert_almost_equal(cleaned_signals.mean(0), 0)
 
-def test_clean_variance():
-    rng = np.random.RandomState(0)
-    n_samples = 500
-    n_features = 5
-
-    signals, _, _ = generate_signals(n_features=n_features,
-                                     length=n_samples)
-
-    signals += rng.randn(1, n_features)
-    cleaned_signals = clean(signals, standardize_strategy='energy')
-    np.testing.assert_almost_equal((cleaned_signals**2).sum(0), 1)
+    std = cleaned_signals.std(axis=0)
+    np.testing.assert_almost_equal(cleaned_signals.mean(0), 0)
+    np.testing.assert_almost_equal(cleaned_signals,
+                                   signals / signals.mean(0) *100 - 100)
 
 def test_clean_zscore():
     rng = np.random.RandomState(0)
@@ -570,4 +562,5 @@ def test_clean_zscore():
 
     signals += rng.randn(1, n_features)
     cleaned_signals = clean(signals, standardize_strategy='zscore')
-    np.testing.assert_almost_equal((cleaned_signals).std(0), 1)
+    np.testing.assert_almost_equal(cleaned_signals.mean(0), 0)
+    np.testing.assert_almost_equal(cleaned_signals.std(0), 1)
