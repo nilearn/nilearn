@@ -392,11 +392,11 @@ def test_dtype():
     assert(masker_2.fit_transform(img_64).dtype == np.float64)
 
 def test_standardization():
-    data_shape = (9 ,9, 5)
+    data_shape = (9, 9, 5)
     n_samples = 500
 
     signals = np.random.randn(np.prod(data_shape), n_samples)
-    means = np.random.randn(np.prod(data_shape), 1)*50 + 1000
+    means = np.random.randn(np.prod(data_shape), 1) * 50 + 1000
     signals += means
     img = Nifti1Image(signals.reshape(data_shape + (n_samples,)), np.eye(4))
 
