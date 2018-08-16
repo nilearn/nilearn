@@ -26,6 +26,7 @@ from .. import masking
 from ..image.resampling import coord_transform
 from ..input_data.nifti_spheres_masker import _apply_mask_and_get_affinity
 from .._utils.compat import _basestring
+from .._utils import check_niimg_4d
 from sklearn.model_selection import cross_val_score
 
 ESTIMATOR_CATALOG = dict(svc=svm.LinearSVC, svr=svm.SVR)
@@ -282,6 +283,9 @@ class SearchLight(BaseEstimator):
             NOTE: will have no effect for scikit learn < 0.18
 
         """
+
+        # check if image is 4D
+        imgs = check_niimg_4d(imgs)
 
         # Get the seeds
         process_mask_img = self.process_mask_img
