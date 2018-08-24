@@ -58,16 +58,19 @@ dmtx = make_design_matrix(
 
 # Setup and fit GLM
 from nistats.first_level_model import run_glm
-labels, res = run_glm(texture.T, dmtx.values, bins=10)
+labels, res = run_glm(texture.T, dmtx.values)
 
 #########################################################################
 # Estimate contrasts
 # ------------------
 # Specify the contrasts
 contrast_matrix = np.eye(dmtx.shape[1])
+
+# first create elementary contrasts
 contrasts = dict([(column, contrast_matrix[i])
                   for i, column in enumerate(dmtx.columns)])
 
+# create some intermediate contrasts 
 contrasts["audio"] = contrasts["clicDaudio"] + contrasts["clicGaudio"] +\
     contrasts["calculaudio"] + contrasts["phraseaudio"]
 contrasts["video"] = contrasts["clicDvideo"] + contrasts["clicGvideo"] + \
@@ -78,14 +81,14 @@ contrasts["sentences"] = contrasts["phraseaudio"] + contrasts["phrasevideo"]
 #########################################################################
 # Short list of more relevant contrasts
 contrasts = {
-    "left-right": (contrasts["clicGaudio"] + contrasts["clicGvideo"]
-                   - contrasts["clicDaudio"] - contrasts["clicDvideo"]),
-    "H-V": contrasts["damier_H"] - contrasts["damier_V"],
-    "audio-video": contrasts["audio"] - contrasts["video"],
-    "video-audio": -contrasts["audio"] + contrasts["video"],
-    "computation-sentences": (contrasts["computation"] -
-                              contrasts["sentences"]),
-    "reading-visual": contrasts["phrasevideo"] - contrasts["damier_H"]
+    "left - right button press": (
+        contrasts["clicGaudio"] + contrasts["clicGvideo"]
+        - contrasts["clicDaudio"] - contrasts["clicDvideo"]),
+    "horizontal - vertical checkerboard": (
+        contrasts["damier_H"] - contrasts["damier_V"]),
+    "audio - video": contrasts["audio"] - contrasts["video"],
+    "computation - sentences": (contrasts["computation"] -
+                                contrasts["sentences"])
     }
 
 #########################################################################
@@ -105,6 +108,21 @@ for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
         title=contrast_id, colorbar=True,
         threshold=3., bg_map=fsaverage.sulc_right)
 
+#########################################################################
+# Analysing the left hemisphere
+# Note that it requires little additional code
+texture = surface.vol_to_surf(fmri_img, fsaverage.pial_left)
+labels, res = run_glm(texture.T, dmtx.values)
+for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
+    print('  Contrast % i out of %i: %s' %
+          (index + 1, len(contrasts), contrast_id))
+    # compute contrasts
+    contrast = compute_contrast(labels, res, contrast_val, contrast_type='t')
+    z_score = contrast.z_score()
 
-    
+    plotting.plot_surf_stat_map(
+        fsaverage.infl_left, z_score, hemi='left',
+        title=contrast_id, colorbar=True,
+        threshold=3., bg_map=fsaverage.sulc_left)
+
 plotting.show()
