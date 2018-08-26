@@ -43,7 +43,7 @@ fmri_img = data.epi_img
 # Project the fMRI image to the surface
 # -------------------------------------
 
-fsaverage = nilearn.datasets.fetch_surf_fsaverage()
+fsaverage = nilearn.datasets.fetch_surf_fsaverage5()
 from nilearn import surface
 texture = surface.vol_to_surf(fmri_img, fsaverage.pial_right)
 
