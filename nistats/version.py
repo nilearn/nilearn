@@ -37,6 +37,7 @@ REQUIRED_MODULE_METADATA = (
         'install_info': _NISTATS_INSTALL_MSG}),
     ('sklearn', {
         'pypi_name': 'scikit-learn',
+
         'min_version': '0.18',
         'install_info': _NISTATS_INSTALL_MSG}),
     ('nibabel', {
