@@ -426,7 +426,7 @@ def plot_surf_roi(surf_mesh, roi_map, bg_map=None,
                   vmin=None, vmax=None, cmap='gist_ncar',
                   bg_on_data=False, darkness=1, title=None,
                   output_file=None, axes=None, figure=None, **kwargs):
-    """ Plotting of surfaces with optional background and stats map
+    """ Plotting ROI on a surface mesh with optional background
 
     .. versionadded:: 0.3
 
