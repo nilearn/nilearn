@@ -14,15 +14,9 @@ More specifically:
    then contrast estimation)
 
 """
-from os import mkdir, path
-
 import numpy as np
 import pandas as pd
 import nilearn
-import nistats
-
-from nistats.first_level_model import FirstLevelModel
-
 
 #########################################################################
 # Prepare data and analysis parameters
@@ -70,7 +64,7 @@ contrast_matrix = np.eye(dmtx.shape[1])
 contrasts = dict([(column, contrast_matrix[i])
                   for i, column in enumerate(dmtx.columns)])
 
-# create some intermediate contrasts 
+# create some intermediate contrasts
 contrasts["audio"] = contrasts["clicDaudio"] + contrasts["clicGaudio"] +\
     contrasts["calculaudio"] + contrasts["phraseaudio"]
 contrasts["video"] = contrasts["clicDvideo"] + contrasts["clicGvideo"] + \
@@ -84,8 +78,6 @@ contrasts = {
     "left - right button press": (
         contrasts["clicGaudio"] + contrasts["clicGvideo"]
         - contrasts["clicDaudio"] - contrasts["clicDvideo"]),
-    "horizontal - vertical checkerboard": (
-        contrasts["damier_H"] - contrasts["damier_V"]),
     "audio - video": contrasts["audio"] - contrasts["video"],
     "computation - sentences": (contrasts["computation"] -
                                 contrasts["sentences"])
@@ -93,11 +85,11 @@ contrasts = {
 
 #########################################################################
 # contrast estimation
-from  nistats.contrasts import compute_contrast
+from nistats.contrasts import compute_contrast
 from nilearn import plotting
 
 for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
-    print('  Contrast % i out of %i: %s' %
+    print('  Contrast % i out of %i: %s, right hemisphere' %
           (index + 1, len(contrasts), contrast_id))
     # compute contrasts
     contrast = compute_contrast(labels, res, contrast_val, contrast_type='t')
@@ -114,7 +106,7 @@ for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
 texture = surface.vol_to_surf(fmri_img, fsaverage.pial_left)
 labels, res = run_glm(texture.T, dmtx.values)
 for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
-    print('  Contrast % i out of %i: %s' %
+    print('  Contrast % i out of %i: %s, left hemisphere' %
           (index + 1, len(contrasts), contrast_id))
     # compute contrasts
     contrast = compute_contrast(labels, res, contrast_val, contrast_type='t')
