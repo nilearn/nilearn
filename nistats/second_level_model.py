@@ -155,7 +155,6 @@ class SecondLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
             from second_level_input.
             Ensure that the order of maps given by a second_level_input
             list of Niimgs matches the order of the rows in the design matrix.
-            Must contain a column of 1s with column name 'intercept'.
         """
         # Check parameters
         # check first level input
@@ -238,8 +237,6 @@ class SecondLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         if design_matrix is not None:
             if not isinstance(design_matrix, pd.DataFrame):
                 raise ValueError('design matrix must be a pandas DataFrame')
-            if 'intercept' not in design_matrix.columns:
-                raise ValueError('design matrix must contain "intercept"')
 
         # sort a pandas dataframe by subject_label to avoid inconsistencies
         # with the design matrix row order when automatically extracting maps
@@ -309,7 +306,7 @@ class SecondLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         return self
 
     def compute_contrast(
-            self, second_level_contrast='intercept', first_level_contrast=None,
+            self, second_level_contrast=None, first_level_contrast=None,
             second_level_stat_type=None, output_type='z_score'):
         """Generate different outputs corresponding to
         the contrasts provided e.g. z_map, t_map, effects and variance.
@@ -324,11 +321,10 @@ class SecondLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
             the fitted model combined with operators /*+- and numbers.
             Please check the patsy documentation for formula examples:
             http://patsy.readthedocs.io/en/latest/API-reference.html#patsy.DesignInfo.linear_constraint
-
-            VERY IMPORTANT: The 'intercept' corresponds to the second level
-            effect after taking confounders in consideration. If there are
-            no confounders then this will be equivalent to a simple t test.
-            By default we compute the 'intercept' second level contrast.
+            The default (None) is accepted if the design matrix has a single
+            column, in which case the only possible contrast array([1]) is
+            applied; when the design matrix has multiple columns, an error is
+            raised.
 
         first_level_contrast: str or array of shape (n_col) with respect to
                               FirstLevelModel, optional
@@ -366,6 +362,11 @@ class SecondLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
                                  'compute_contrast method of FirstLevelModel')
 
         # check contrast definition
+        if second_level_contrast is None:
+            if self.design_matrix_.shape[1] == 1:
+                second_level_contrast = np.ones([1])
+            else:
+                raise ValueError('No second-level contrast is specified.')
         if isinstance(second_level_contrast, np.ndarray):
             con_val = second_level_contrast
             if np.all(con_val == 0):
