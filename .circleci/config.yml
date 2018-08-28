@@ -35,7 +35,7 @@ jobs:
           name: Create conda env
           command: |
             conda create -n testenv python=3.6 numpy scipy scikit-learn matplotlib pandas \
-            flake8 lxml nose cython mkl sphinx coverage pillow pandas -yq
+            flake8 lxml nose cython mkl sphinx coverage patsy boto3 pillow pandas -yq
             conda install -n testenv nibabel nilearn nose-timer -c conda-forge -yq
       - run:
           name: Running CircleCI test (make html)
