@@ -16,6 +16,7 @@ from matplotlib import cm as mpl_cm
 from matplotlib import lines
 from matplotlib import transforms, colors
 from matplotlib.colorbar import ColorbarBase
+from matplotlib.font_manager import FontProperties
 from scipy import sparse, stats
 
 from . import glass_brain, cm
@@ -52,6 +53,7 @@ class BaseAxes(object):
         self.direction = direction
         self.coord = coord
         self._object_bounds = list()
+        self.shape = None
 
     def transform_to_2d(self, data, affine):
         raise NotImplementedError("'transform_to_2d' needs to be implemented "
@@ -93,6 +95,7 @@ class BaseAxes(object):
                                **kwargs)
 
         self.add_object_bounds((xmin_, xmax_, zmin_, zmax_))
+        self.shape = data_2d.T.shape
 
         # The bounds of the object do not take into account a possible
         # inversion of the axis. As such, we check that the axis is properly
@@ -136,6 +139,38 @@ class BaseAxes(object):
                 size=size,
                 bbox=dict(boxstyle="square,pad=0", ec=bg_color, fc=bg_color),
                 **kwargs)
+
+    def draw_scale_bar(self, bg_color, scale_width=5, units='cm', **kwargs):
+        from mpl_toolkits.axes_grid1.anchored_artists import AnchoredSizeBar
+        ax = self.ax
+        fontproperties = kwargs.get('fontproperties', FontProperties())
+        if kwargs.get('size'):
+            fontproperties.set_size(kwargs.pop('size'))
+
+        # xlims = ax.get_xlim()
+        # print(xlims[1] - xlims[0])
+        # pixsize = (xlims[1] - xlims[0]) / self.shape[0]
+        length = scale_width
+        if units == 'cm':
+            length *= 10
+
+        frameon = kwargs.pop('frameon', False) is True
+        asb = AnchoredSizeBar(
+            ax.transData,
+            length,
+            '%g%s' % (scale_width, units),
+            loc=kwargs.pop('loc', 4),
+            pad=kwargs.pop('pad', 0.1),
+            borderpad=kwargs.pop('borderpad', 0.5),
+            sep=kwargs.pop('sep', 5),
+            frameon=frameon,
+            fontproperties=fontproperties,
+            **kwargs)
+
+        if frameon:
+            asb.patch.set_facecolor(bg_color)
+            asb.patch.set_edgecolor('none')
+        ax.add_artist(asb)
 
     def draw_position(self, size, bg_color, **kwargs):
         raise NotImplementedError("'draw_position' should be implemented "
@@ -854,7 +889,8 @@ class BaseSlicer(object):
             display_ax.ax.scatter(xdata, ydata, s=marker_size,
                                   c=marker_color, **kwargs)
 
-    def annotate(self, left_right=True, positions=True, size=12, **kwargs):
+    def annotate(self, left_right=True, positions=True, scalebar=False,
+                 size=12, **kwargs):
         """ Add annotations to the plot.
 
         Parameters
@@ -888,6 +924,11 @@ class BaseSlicer(object):
             for display_ax in self.axes.values():
                 display_ax.draw_position(size=size, bg_color=bg_color,
                                          **kwargs)
+
+        if scalebar:
+            axes = self.axes.values()
+            for display_ax in axes:
+                display_ax.draw_scale_bar(bg_color=bg_color, size=size, **kwargs)
 
     def close(self):
         """ Close the figure. This is necessary to avoid leaking memory.
