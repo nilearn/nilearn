@@ -147,9 +147,6 @@ class BaseAxes(object):
         if kwargs.get('size'):
             fontproperties.set_size(kwargs.pop('size'))
 
-        # xlims = ax.get_xlim()
-        # print(xlims[1] - xlims[0])
-        # pixsize = (xlims[1] - xlims[0]) / self.shape[0]
         length = scale_width
         if units == 'cm':
             length *= 10
