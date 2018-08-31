@@ -33,7 +33,7 @@ print_conda_requirements() {
     # if yes which version to install. For example:
     #   - for numpy, NUMPY_VERSION is used
     #   - for scikit-learn, SCIKIT_LEARN_VERSION is used
-    TO_INSTALL_ALWAYS="pip nose libgfortran=1.0=0 nomkl"
+    TO_INSTALL_ALWAYS="pip nose libgfortran=3.0=0 nomkl"
     REQUIREMENTS="$TO_INSTALL_ALWAYS"
     TO_INSTALL_MAYBE="python numpy scipy matplotlib scikit-learn pandas"
     for PACKAGE in $TO_INSTALL_MAYBE; do
@@ -61,10 +61,10 @@ create_new_conda_env() {
 
     # Use the miniconda installer for faster download / install of conda
     # itself
-    wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh \
+    wget http://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh \
         -O miniconda.sh
     chmod +x miniconda.sh && ./miniconda.sh -b
-    export PATH=/home/travis/miniconda2/bin:$PATH
+    export PATH=/home/travis/miniconda3/bin:$PATH
     echo $PATH
     conda update --quiet --yes conda
 
