@@ -1,0 +1,59 @@
+version: 2
+
+jobs:
+  build:
+    docker:
+      - image: circleci/python:3.6
+    environment:
+      DISTRIB: "conda"
+      PYTHON_VERSION: "3.6"
+      NUMPY_VERSION: "*"
+      SCIPY_VERSION: "*"
+      SCIKIT_LEARN_VERSION: "*"
+      MATPLOTLIB_VERSION: "*"
+
+    steps:
+      - checkout
+        # Get rid of existing virtualenvs on circle ci as they conflict with conda.
+        # Trick found here:
+        # https://discuss.circleci.com/t/disable-autodetection-of-project-or-application-of-python-venv/235/10
+      - run: cd && rm -rf ~/.pyenv && rm -rf ~/virtualenvs
+        # We need to remove conflicting texlive packages.
+      - run: sudo -E apt-get -yq remove texlive-binaries --purge
+        # Installing required packages for `make -C doc check command` to work.
+      - run: sudo -E apt-get -yq update
+      - run: sudo -E apt-get -yq --no-install-suggests --no-install-recommends --force-yes install dvipng texlive-latex-base texlive-latex-extra
+      - restore_cache:
+          key: v1-packages+datasets-{{ .Branch }}
+      - run: wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda.sh
+      - run: chmod +x ~/miniconda.sh && ~/miniconda.sh -b
+      - run:
+          name: Setup conda path in env variables
+          command: |
+            echo 'export PATH="$HOME/miniconda3/bin:$PATH"'  >> $BASH_ENV
+      - run:
+          name: Create conda env
+          command: |
+            conda create -n testenv python=3.6 numpy scipy scikit-learn matplotlib pandas \
+            flake8 lxml nose cython mkl sphinx coverage patsy boto3 pillow pandas -yq
+            conda install -n testenv nibabel nilearn nose-timer -c conda-forge -yq
+      - run:
+          name: Running CircleCI test (make html)
+          command: |
+            source activate testenv
+            pip install -e .
+            set -o pipefail && cd doc && make html 2>&1 | tee ~/log.txt
+          no_output_timeout: 5h
+      - save_cache:
+          key: v1-packages+datasets-{{ .Branch }}
+          paths:
+          - $HOME/nilearn_data
+          - $HOME/miniconda3
+
+      - store_artifacts:
+          path: doc/_build/html
+      - store_artifacts:
+          path: coverage
+      - store_artifacts:
+          path: $HOME/log.txt
+          destination: log.txt

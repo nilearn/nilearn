@@ -281,6 +281,7 @@ extlinks = {
 
 sphinx_gallery_conf = {
     'doc_module'        : 'nistats',
+    'backreferences_dir': os.path.join('modules', 'generated'),
     'reference_url'     : {
         'nilearn': 'http://nilearn.github.io',
         'matplotlib': 'http://matplotlib.org',
