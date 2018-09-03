@@ -270,7 +270,7 @@ def _sample_condition(exp_condition, frame_times, oversampling=16,
     # Get the condition information
     onsets, durations, values = tuple(map(np.asanyarray, exp_condition))
     if (onsets < frame_times[0] + min_onset).any():
-        warnings.warn(('Some stimulus onsets are earlier than %d in the' +
+        warnings.warn(('Some stimulus onsets are earlier than %s in the'
                        ' experiment and are thus not considered in the model'
                 % (frame_times[0] + min_onset)), UserWarning)
 
