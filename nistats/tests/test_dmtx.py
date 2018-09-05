@@ -421,6 +421,29 @@ def test_fir_block():
     assert_true((X[idx + 2, 6] == 1).all())
     assert_true((X[idx + 3, 7] == 1).all())
 
+def test_oversampling():
+    paradigm = basic_paradigm()
+    frame_times = np.linspace(0, 127, 128)
+    X1 = make_design_matrix(
+        frame_times, paradigm, drift_model=None)
+    X2 = make_design_matrix(
+        frame_times, paradigm, drift_model=None, oversampling=16)
+    X3 = make_design_matrix(
+        frame_times, paradigm, drift_model=None, oversampling=10)
+
+    # oversampling = 16 is the default so X2 = X1, X3 \neq X1, X3 close to X2
+    assert_almost_equal(X1.values, X2.values)
+    assert_almost_equal(X2.values, X3.values, 0)
+    assert_true(np.linalg.norm(X2.values - X3.values) / np.linalg.norm(X2.values) > 1.e-4)
+
+    # fir model, oversampling is forced to 1
+    X4 = make_design_matrix(
+        frame_times, paradigm, hrf_model='fir', drift_model=None,
+        fir_delays=range(0, 4), oversampling=1)
+    X5 = make_design_matrix(
+        frame_times, paradigm, hrf_model='fir', drift_model=None,
+        fir_delays=range(0, 4), oversampling=3)
+    assert_almost_equal(X4.values, X5.values)
 
 def test_csv_io():
     # test the csv io on design matrices
