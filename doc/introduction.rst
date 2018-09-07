@@ -33,7 +33,7 @@ A cerebral MR image provides a 3D image of the brain that can be decomposed into
 
 .. _a voxels: https://en.wikipedia.org/wiki/Voxel
 
-TODO: INSERT HERE A SAMPLE OF A TIME SERIES IN A VOXEL (or several voxels)
+.. figure:: images/stimulation-time-diagram.png
 
 .. note:: A typical step in the preprocessing of MR images, involves spatially morphing these images onto a standard template (e.g. the MNI152 template from the Montreal Neurological Institute). One this is done, the coordinates of a voxel are in the same space as the template and can be used to estimate its brain location using brain atlases. As already mentioned, the nistats package is not meant to perform spiatal preprocessing, but only statistical analyses on the voxel times series, regardless of the coordinate system. 
 
@@ -43,7 +43,8 @@ One way to analyze times series consists in comparing them to a *model* built fr
 .. figure:: images/stimulation-time-diagram.png
 
 
-One expects that a brain region involved in the processing of a certain type of event (e.g. the auditory cortex for sounds), would show a time course of activation that correlates with the time-diagram of these events. If the fMRI signal directly showed neural activity and did not contain any noise, we could just look at it in various voxel and detect those that conform to the time-diagrams.
+One expects that a brain region involved in the processing of a certain type of event (e.g. the auditory cortex for sounds), would show a time course of activation that correlates with the time-diagram of these events. If the fMRI signal directly showed neural activity and did not contain any noise, we could just look at it in various voxel and d
+etect those that conform to the time-diagrams.
 
 Yet, we know, from previous measurements, that the BOLD signal does not follow the exact time course of stimulus processing and the underlying neural activity. The BOLD response reflects changes in blood flow and concentrations in oxy-deoxy hemoglobin, all together forming an  `a haemodynamic response`_ which is sluggish and long-lasting, as can be seen on the following figurte showing the response to an impulsive event (for example, an auditory click played to the participants).  
 
