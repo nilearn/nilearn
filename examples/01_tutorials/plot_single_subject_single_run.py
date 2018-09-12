@@ -64,7 +64,7 @@ mean_img = mean_img(fmri_img)
 # Specifying the experimental paradigm
 # ------------------------------------
 #
-# We must provide now a description of the experiment, that is, define the
+# We must now provide a description of the experiment, that is, define the
 # timing of the auditory stimulation and rest periods. According to
 # the documentation of the dataset, there were sixteen 42s-long blocks --- in
 # which 6 scans were acquired --- alternating between rest and
@@ -93,6 +93,7 @@ duration,  onset,  trial_type
     42  ,  630  ,  active
 """
 
+###############################################################################
 # We can read such a table from a spreadsheet file  created with OpenOffice Calcor Office Excel, and saved under the *comma separated values* format (``.csv``). 
 import pandas as pd
 events = pd.read_csv('auditory_block_paradigm.csv')
@@ -102,20 +103,17 @@ print(events)
 # Performing the GLM analysis
 # ---------------------------
 #
-# It is now time to create and estimate a ``FirstLevelModel`` object, which will# generate the *design matrix* using the  information provided by the ``events` object.
+# It is now time to create and estimate a ``FirstLevelModel`` object, that will generate the *design matrix* using the  information provided by the ``events` object.
 
 from nistats.first_level_model import FirstLevelModel
 
 ###############################################################################
 # t_r=7(s) is the time of repetition of acquisitions
-# noise_model='ar1' specifies the noise covariance model: a lag-1 dependence
-# standardize=False means that we do not want to rescale the time
-# series to mean 0, variance 1
-# hrf_model='spm' means that we rely on the SPM "canonical hrf" model
-# (without time or dispersion derivatives)
-# drift_model='cosine' means that we model the signal drifts as slow
-# oscillating time functions
-# periodècut=160(s) defines the cutoff frequency (its inverse actually).
+# - noise_model='ar1' specifies the noise covariance model: a lag-1 dependence
+# - standardize=False means that we do not want to rescale the time series to mean 0, variance 1
+# - hrf_model='spm' means that we rely on the SPM "canonical hrf" model (without time or dispersion derivatives)
+# - drift_model='cosine' means that we model the signal drifts as slow oscillating time functions
+# - periodècut=160(s) defines the cutoff frequency (its inverse actually).
 
 fmri_glm = FirstLevelModel(t_r=7,
                            noise_model='ar1',
@@ -158,8 +156,8 @@ plt.show()
 # -----------------------------------------
 #
 # To access the estimated coefficients (Betas of the GLM model), we
-# created constrast with a single '1' in each of the columns: The role of the contrast is to select some columns of the model --and potentially weight them-- to study the associated statistics. So in a nutshell, a contrast is a linear combination of the estimated effects
-# Here we can define canonical contrasts that just consider the two condition in isolation, let's call them "conditions", then a contrast that makes the difference between these conditions.
+# created constrast with a single '1' in each of the columns: The role of the contrast is to select some columns of the model --and potentially weight them-- to study the associated statistics. So in a nutshell, a contrast is a weigted  combination of the estimated effects.
+# Here we can define canonical contrasts that just consider the two condition in isolation ---let's call them "conditions"--- then a contrast that makes the difference between these conditions.
 
 from numpy import array
 conditions = {
@@ -169,25 +167,25 @@ conditions = {
 
 ###############################################################################
 # We can then compare the two conditions 'active' and 'rest' by
-# generating the relevant contrast:
+# defining the corresponding contrast:
 
 active_minus_rest = conditions['active'] - conditions['rest']
 
 ###############################################################################
-# this is the estimated effect. It is in BOLD signal unit, but has no statistical guarantees, because it does not take into account the associated variance
+# below, we compute the estimated effect. It is in BOLD signal unit, but has no statistical guarantees, because it does not take into account the associated variance.
 
 eff_map = fmri_glm.compute_contrast(active_minus_rest,
                                     output_type='effect_size')
 
 ###############################################################################
-# In order to get statistical significance, we form a t-statistic, and directly convert is into z-scale.
+# In order to get statistical significance, we form a t-statistic, and directly convert is into z-scale. The z-scale means that the values are scaled to match a standard Gaussian distribution (mean=0, variance=1), across voxels, if there are now effects in reality.
 
 z_map = fmri_glm.compute_contrast(active_minus_rest,
                                   output_type='z_score')
 
 ###############################################################################
 # Plot thresholded z scores map
-# we display it on top of the average functional image of the seris (could be the anatomical image of the subject).
+# we display it on top of the average functional image of the series (could be the anatomical image of the subject).
 # we use arbitrarily a threshold of 3.0 in z-scale. We'll see later how to use corrected thresholds.
 # we show to display 3 axial views: display_mode='z', cut_coords=3
 
@@ -197,8 +195,53 @@ plot_stat_map(z_map, bg_img=mean_img, threshold=3.0,
 plt.show()
 
 ###############################################################################
+# Statistical signifiance testing
+# One should worry about the statistical validity of the procedure: here we used an arbitrary threshold of 3.0 but the threshold should provide some guarantees on the risk of false detections (aka type-1 errors in statistics). One first suggestion is to control the false positive rate (fpr) at a certain level, e.g. 0.001: 
+
+from nistats.thresholding import map_threshold
+_, threshold = map_threshold(z_map, threshold=.001, height_control='fpr')
+print('Uncorrected p<0.001 threshold: %.3f' % threshold)
+plot_stat_map(z_map, bg_img=mean_img, threshold=threshold,
+              display_mode='z', cut_coords=3, black_bg=True,
+              title='Active minus Rest (p<0.001)')
+plt.show()
+
+###############################################################################
+# The problem is that with this you expect a fraction of 0.001 * n_voxels to show up while they're not active. A more conservative solution is to control the family wise errro rate, i.e. the probability of making ony one false detection, say at 5%. For that we use the so-called Bonferroni correction
+
+_, threshold = map_threshold(z_map, threshold=.05, height_control='bonferroni')
+print('Bonferroni-corrected, p<0.05 threshold: %.3f' % threshold)
+plot_stat_map(z_map, bg_img=mean_img, threshold=threshold,
+              display_mode='z', cut_coords=3, black_bg=True,
+              title='Active minus Rest (p<0.05, corrected)')
+plt.show()
+
+###############################################################################
+# This is quite conservative indeed ! 
+# A popular alternative is to control the false discovery rate, i.e. the expected proportion of false discoveries among detections. This is called the false disovery rate
+
+_, threshold = map_threshold(z_map, threshold=.05, height_control='fdr')
+print('False Discovery rate = 0.05 threshold: %.3f' % threshold)
+plot_stat_map(z_map, bg_img=mean_img, threshold=threshold,
+              display_mode='z', cut_coords=3, black_bg=True,
+              title='Active minus Rest (fdr=0.05)')
+plt.show()
+
+###############################################################################
+# Finally people like to discard isolated voxels (aka "small clusters") from these images. It is possible to generate a thresholded map with small clusters removed by providing a cluster_threshold argument. here clusters smaller than 10 voxels will be discarded.
+
+clean_map, threshold = map_threshold(
+    z_map, threshold=.05, height_control='fdr', cluster_threshold=10)
+plot_stat_map(clean_map, bg_img=mean_img, threshold=threshold,
+              display_mode='z', cut_coords=3, black_bg=True,
+              title='Active minus Rest (fdr=0.05)')
+plt.show()
+
+
+
+###############################################################################
 # We can save the effect and zscore maps to the disk
-# first create a directory where you want tow rite the images
+# first create a directory where you want to write the images
 
 import os
 outdir = 'results'
