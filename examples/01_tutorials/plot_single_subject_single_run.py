@@ -108,12 +108,14 @@ print(events)
 from nistats.first_level_model import FirstLevelModel
 
 ###############################################################################
-# t_r=7(s) is the time of repetition of acquisitions
-# - noise_model='ar1' specifies the noise covariance model: a lag-1 dependence
-# - standardize=False means that we do not want to rescale the time series to mean 0, variance 1
-# - hrf_model='spm' means that we rely on the SPM "canonical hrf" model (without time or dispersion derivatives)
-# - drift_model='cosine' means that we model the signal drifts as slow oscillating time functions
-# - periodècut=160(s) defines the cutoff frequency (its inverse actually).
+# Parameters of the first-level model
+#
+# * t_r=7(s) is the time of repetition of acquisitions
+# * noise_model='ar1' specifies the noise covariance model: a lag-1 dependence
+# * standardize=False means that we do not want to rescale the time series to mean 0, variance 1
+# * hrf_model='spm' means that we rely on the SPM "canonical hrf" model (without time or dispersion derivatives)
+# * drift_model='cosine' means that we model the signal drifts as slow oscillating time functions
+# * period_cut=160(s) defines the cutoff frequency (its inverse actually).
 
 fmri_glm = FirstLevelModel(t_r=7,
                            noise_model='ar1',
@@ -234,7 +236,7 @@ clean_map, threshold = map_threshold(
     z_map, threshold=.05, height_control='fdr', cluster_threshold=10)
 plot_stat_map(clean_map, bg_img=mean_img, threshold=threshold,
               display_mode='z', cut_coords=3, black_bg=True,
-              title='Active minus Rest (fdr=0.05)')
+              title='Active minus Rest (fdr=0.05), clusters > 10 voxels')
 plt.show()
 
 
@@ -252,5 +254,18 @@ if not os.path.exists(outdir):
 # Then save the images in this directory
     
 from os.path import join
-z_map.to_filename(join('results', 'active_vs_rest_z_map.nii.gz'))
-eff_map.to_filename(join('results', 'active_vs_rest_eff_map.nii.gz'))
+z_map.to_filename(join(outdir, 'active_vs_rest_z_map.nii.gz'))
+eff_map.to_filename(join(outdir, 'active_vs_rest_eff_map.nii.gz'))
+
+###############################################################################
+# Report the found positions in a table
+
+from nistats.reporting import get_clusters_table
+table = get_clusters_table(z_map, stat_threshold=threshold,
+                           cluster_threshold=20)
+print(table)
+
+###############################################################################
+# the table can be saved for future use
+
+table.to_csv(join(outdir, 'table.csv'))
