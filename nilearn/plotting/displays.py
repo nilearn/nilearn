@@ -763,8 +763,9 @@ class BaseSlicer(object):
         cmaplist = [our_cmap(i) for i in range(our_cmap.N)]
         istart = int(norm(-offset, clip=True) * (our_cmap.N - 1))
         istop = int(norm(offset, clip=True) * (our_cmap.N - 1))
+        mid_gray = (0.5, 0.5, 0.5)  # just an average gray color
         for i in range(istart, istop):
-            cmaplist[i] = (0.5, 0.5, 0.5, 1.)  # just an average gray color
+            cmaplist[i] = mid_gray + (0.,)  # transparent
         if norm.vmin == norm.vmax:  # len(np.unique(data)) == 1 ?
             return
         else:
@@ -775,6 +776,7 @@ class BaseSlicer(object):
             self._colorbar_ax, ticks=ticks, norm=norm,
             orientation='vertical', cmap=our_cmap, boundaries=bounds,
             spacing='proportional', format='%.2g')
+        self._cbar.patch.set_facecolor(mid_gray)
 
         self._colorbar_ax.yaxis.tick_left()
         tick_color = 'w' if self._black_bg else 'k'
