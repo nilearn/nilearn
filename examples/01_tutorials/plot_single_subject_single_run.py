@@ -125,7 +125,7 @@ fmri_glm = FirstLevelModel(t_r=7,
                            period_cut=160)
 
 ###############################################################################
-# Now that we have specified the mdoel, we can run it on the fMRI image
+# Now that we have specified the model, we can run it on the fMRI image
 fmri_glm = fmri_glm.fit(fmri_img, events)
 
 ###############################################################################
