@@ -210,10 +210,12 @@ plt.show()
 # We don't see too much here: the onset times and hrf delay we're using are probably fine.
 
 #########################################################################
-# But we could also add the so-called dispersion derivative, to dicount hrf shape differeneces. Let's give a try
-# Once again, we're only going to test the main regressor, not the dispersion derivative. This new model only changes the variance term.
+# The noise model ar(1) or ols ?
+# ------------------------------
+#
+# So far,we have implitly use an lag-1 autoregressive model ---aka ar(1)--- for the temporal  structure of the noise. an alternative choice is to use an ordinaly least sqaure model (ols) that neglects that assumes no temporal structure (independent noise) 
 
-first_level_model = FirstLevelModel(t_r, hrf_model='spm + derivative + dispersion')
+first_level_model = FirstLevelModel(t_r, hrf_model='spm + derivative', noise_model='ols')
 first_level_model = first_level_model.fit(fmri_img, events=events)
 design_matrix = first_level_model.design_matrices_[0]
 plot_design_matrix(design_matrix)
@@ -221,72 +223,35 @@ plot_contrast(first_level_model)
 plt.show()
 
 #########################################################################
-# There are some milde effects. Maybe not worth the complexity increase !
-# 
-# Next solution is to try fininte impulse reponse (FIR) models: we just say that the hrf is an arbitrary function that lags behind the stimulus onset.
-# In the present case, given that the numbers of condition is high, we should use a simple FIR model.
-# 
-# Concretely, we set `hrf_model` to 'fir' and `fir_delays` to [3, 5, 7] (s)
+# While the difference is not obvious you should rather stick to the ar(1) model, which is arguably more accurate.
 
+#########################################################################
+# Removing confounds
+# ------------------
+#
+# A problematic feature of fMRI is the presence of unconctrolled confounds in the data, sue to scanner instabilities (spikes) or physiological phenomena (motion, heart and repoiration rate)
+# Side measurements are sometimes acquired to charcterise these effects. We don't have access to those.
+# What we can do instead id to estimate confounding effects from the data themselves, using the compcorr approach, and take those nto account in the model
 
-first_level_model = FirstLevelModel(t_r, hrf_model='fir', fir_delays=[3, 5, 7])
-first_level_model = first_level_model.fit(fmri_img, events=events)
+from nilearn.image import high_variance_confounds
+confounds = pd.DataFrame(high_variance_confounds(fmri_img, percentile=1))
+first_level_model = FirstLevelModel(t_r, hrf_model='spm + derivative')
+first_level_model = first_level_model.fit(fmri_img, events=events,
+                                          confounds=confounds)
 design_matrix = first_level_model.design_matrices_[0]
 plot_design_matrix(design_matrix)
+plot_contrast(first_level_model)
 plt.show()
 
 #########################################################################
-# We have to change the contrast specification. We characterize the BOLD reposne by the sum across the three time lags. It's a bit hairy, sorry, but this is the price to pay for flexibility... 
-
-contrast_matrix = np.eye(design_matrix.shape[1])
-contrasts = dict([(column, contrast_matrix[i])
-                  for i, column in enumerate(design_matrix.columns)])
-conditions = events.trial_type.unique()
-for condition in conditions:
-    contrasts[condition] = np.sum(
-        [contrasts[name] for name in design_matrix.columns
-         if name[:len(condition)] == condition], 0)
-
-contrasts["audio"] = np.sum(
-    [contrasts[name] for name in
-     ["clicDaudio", "clicGaudio", "calculaudio", "phraseaudio"]], 0)
-contrasts["video"] = np.sum(
-    [contrasts[name] for name in
-     ["clicDvideo", "clicGvideo", "calculvideo", "phrasevideo"]], 0)
-contrasts["computation"] = contrasts["calculaudio"] + contrasts["calculvideo"]
-contrasts["sentences"] = contrasts["phraseaudio"] + contrasts["phrasevideo"]
-
-contrasts = {
-    "left-right": (contrasts["clicGaudio"] + contrasts["clicGvideo"]
-                   - contrasts["clicDaudio"] - contrasts["clicDvideo"]),
-    "H-V": contrasts["damier_H"] - contrasts["damier_V"],
-    "audio-video": contrasts["audio"] - contrasts["video"],
-    "computation-sentences": (contrasts["computation"] -
-                              contrasts["sentences"]),
-    }
-
-#########################################################################
-# Take a breathe.
+#  Note the five additional columns in the design matrix
 #
-# We can now  proceed by estimating the contrasts and displaying them.
-
-
-fig = plt.figure(figsize=(11, 3))
-for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
-    ax = plt.subplot(1, len(contrasts), 1 + index)
-    z_map = first_level_model.compute_contrast(
-        contrast_val, output_type='z_score')
-    plotting.plot_stat_map(
-        z_map, display_mode='z', threshold=3.0, title=contrast_id, axes=ax,
-        cut_coords=1)
-
-#########################################################################
-# The result is not convincing to my eyes. Maybe we're asking a bit too much to a small dataset, with a relatively large number of experimental conditions!
-#
+# The effect on activation maps is complex: auditory/visual effects are killed, probably because they were somewhat colinear to the confounds. On the other hand, some of the maps become cleaner (H-V, computation) after this effects.
 
 
 #########################################################################
 # Conclusion
 # ----------
 #
-# Interestingly, the model used here seems quite resilient to manipulation of modeling parameters: this is reassuing. It shows that Nistats defaults ('cosine' drift, cutoff=128s, 'glover' hrf) are actually reasonable.
+# Interestingly, the model used here seems quite resilient to manipulation of modeling parameters: this is reassuring. It shows that Nistats defaults ('cosine' drift, cutoff=128s, 'glover' hrf, ar(1) model) are actually reasonable.
+# Note that these conclusions are specific to this dataset and may vary with other ones.
