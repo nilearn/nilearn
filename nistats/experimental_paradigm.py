@@ -14,8 +14,9 @@ It can also contain:
 Author: Bertrand Thirion, 2015
 """
 from __future__ import with_statement
-import warnings
 import numpy as np
+import pandas
+import warnings
 
 
 def check_paradigm(paradigm):
@@ -80,5 +81,23 @@ def paradigm_from_csv(csv_file):
     paradigm : pandas DataFrame,
         Holding the paradigm information.
     """
-    import pandas
     return pandas.read_csv(csv_file)
+
+
+def paradigm_from_tsv(tsv_file):
+    """Utility function to directly read the paradigm from a tsv file
+
+    This is simply meant to avoid explicitly import pandas everywhere.
+
+    Parameters
+    ----------
+    tsv_file : string,
+        Path to a tsv file.
+
+    Returns
+    -------
+    paradigm : pandas DataFrame,
+        Holding the paradigm information.
+    """
+    return pandas.read_table(tsv_file)
+
