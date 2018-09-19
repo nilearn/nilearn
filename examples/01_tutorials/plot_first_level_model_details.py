@@ -250,6 +250,59 @@ plt.show()
 
 
 #########################################################################
+#  Smoothing
+# ----------
+#
+# Smoothing is a regularization of the model. It has two benefits: decrease the noise level in images, and reduce the discrepancy between individuals. The drawback is that it biases the shape and position of activation.
+# We simply illustrate here the statistical gains.
+# We use a mild smoothing of 5mm full-width at half maximum (fwhm). 
+
+first_level_model = FirstLevelModel(
+    t_r, hrf_model='spm + derivative', smoothing_fwhm=5).fit(
+        fmri_img, events=events, confounds=confounds)
+design_matrix = first_level_model.design_matrices_[0]
+plot_design_matrix(design_matrix)
+plot_contrast(first_level_model)
+plt.show()
+
+#########################################################################
+#  The design is unchanged but the maps are smoother and more contrasted
+# 
+
+#########################################################################
+#  Masking
+# --------
+# Masking consists in selecting the region of the image on which the model is run: it is useless to run it outside of the brain.
+# the approach taken by FirstLeveModel is to estimate it from the fMRI data themselves when no mask is explicitly provided.
+# Since the data have been resampled into MNI space, we can use instead a mask  of the grey matter in MNI space. The benefit is that it makes voxel-level comparisons easier across subjects and datasets, and removed non-grey matter regions, in which no BOLD signal is expected.
+# The down side is that the mask may not fit very well these particular data
+
+from nilearn.plotting import plot_roi 
+from nilearn.datasets import fetch_icbm152_brain_gm_mask
+icbm_mask = fetch_icbm152_brain_gm_mask()
+data_mask = first_level_model.masker_.mask_img_
+plt.figure(figsize=(16, 4))
+ax = plt.subplot(121)
+plot_roi(icbm_mask, title='ICBM mask', axes=ax)
+ax = plt.subplot(122)
+plot_roi(data_mask, title='Data-driven mask', axes=ax)
+plt.show()
+
+#########################################################################
+#  Impact on the first-level model
+
+
+first_level_model = FirstLevelModel(
+    t_r, hrf_model='spm + derivative', smoothing_fwhm=5).fit(
+        fmri_img, events=events, confounds=confounds)
+design_matrix = first_level_model.design_matrices_[0]
+plot_design_matrix(design_matrix)
+plot_contrast(first_level_model)
+plt.show()
+
+
+
+#########################################################################
 # Conclusion
 # ----------
 #
