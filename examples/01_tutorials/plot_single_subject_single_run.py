@@ -240,7 +240,6 @@ plot_stat_map(clean_map, bg_img=mean_img, threshold=threshold,
 plt.show()
 
 
-
 ###############################################################################
 # We can save the effect and zscore maps to the disk
 # first create a directory where you want to write the images
@@ -269,3 +268,27 @@ print(table)
 # the table can be saved for future use
 
 table.to_csv(join(outdir, 'table.csv'))
+
+###############################################################################
+# Performing an F-test
+#
+# "active vs rest" is a typical t test: condition versus baseline. Another popular type of test is an F test in which one seeks whether a certain combination of conditions (possibly two-, three- or higher-dimensional) explains a significant proportion of the signal.
+# Here one might for instance test which voxels are well explained by combination of the active and rest condition. Atcually, the contrast specification is done exactly the same way as for t contrasts.
+
+import numpy as np
+effects_of_interest = np.vstack((conditions['active'], conditions['rest']))
+z_map = fmri_glm.compute_contrast(effects_of_interest,
+                                  output_type='z_score')
+from nistats.reporting import plot_contrast_matrix
+plot_contrast_matrix(effects_of_interest, design_matrix)
+plt.show()
+
+###############################################################################
+# Note that the statistic has been converted to a z-variable, which makes it easier to represent it.
+
+clean_map, threshold = map_threshold(
+    z_map, threshold=.05, height_control='fdr', cluster_threshold=10)
+plot_stat_map(clean_map, bg_img=mean_img, threshold=threshold,
+              display_mode='z', cut_coords=3, black_bg=True,
+              title='Effects of interest (fdr=0.05), clusters > 10 voxels')
+plt.show()
