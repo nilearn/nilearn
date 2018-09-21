@@ -64,8 +64,8 @@ mask_img = resample_to_img(
 from nistats.second_level_model import SecondLevelModel
 import pandas as pd
 
-design_matrix = pd.DataFrame(np.vstack((age, sex, 
-                                        np.ones(n_subjects))).T,
+intercept = np.ones(n_subjects)
+design_matrix = pd.DataFrame(np.vstack((age, sex, intercept)).T,
                              columns=['age', 'sex', 'intercept'])
 # plot the design matrix
 from nistats.reporting import plot_design_matrix
@@ -74,7 +74,9 @@ ax.set_title('Second level design matrix', fontsize=12)
 ax.set_ylabel('maps')
 plt.tight_layout()
 
+##########################################################################
 # specify and fit the model
+
 second_level_model = SecondLevelModel(smoothing_fwhm=2.0, mask=mask_img)
 second_level_model.fit(gray_matter_map_filenames,
                        design_matrix=design_matrix)
@@ -94,7 +96,7 @@ _, threshold = map_threshold(
 
 display = plotting.plot_stat_map(
     z_map, threshold=threshold, colorbar=True, display_mode='z',
-    cut_coords=3,
+    cut_coords=[-4, 26],
     title='age effect on grey matter density (FDR < .05)')
 
 ###########################################################################
@@ -109,7 +111,5 @@ plotting.plot_stat_map(
     title='sex effect on grey matter density (FDR < .05)')
 
 plotting.show()
-# Note that there is no significant effect of sex on grey matter density
-
-
-
+###########################################################################
+# Note that there is no significant effect of sex on grey matter density.
