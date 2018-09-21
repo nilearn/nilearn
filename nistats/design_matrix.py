@@ -164,7 +164,7 @@ def _make_drift(drift_model, frame_times, order=1, period_cut=128.):
 
 
 def _convolve_regressors(paradigm, hrf_model, frame_times, fir_delays=[0],
-                         min_onset=-24, oversampling=None):
+                         min_onset=-24, oversampling=50):
     """ Creation of  a matrix that comprises
     the convolution of the conditions onset with a certain hrf model
 
@@ -191,9 +191,9 @@ def _convolve_regressors(paradigm, hrf_model, frame_times, fir_delays=[0],
         Minimal onset relative to frame_times[0] (in seconds) events
         that start before frame_times[0] + min_onset are not considered.
 
-    oversampling: float or None, optional,
-        Oversampling factor used in temporal convolutions. Should be 1 for
-        whenever hrf_mode is 'fir' and 16 otherwise.
+    oversampling: int or None, optional, default:50,
+        Oversampling factor used in temporal convolutions.
+        Should be 1 whenever hrf_model is 'fir'.
 
     Returns
     -------
@@ -219,7 +219,7 @@ def _convolve_regressors(paradigm, hrf_model, frame_times, fir_delays=[0],
                  'impulse response hrf model')
         oversampling = 1
     elif oversampling is None:
-        oversampling = 16
+        oversampling = 50
 
     trial_type, onset, duration, modulation = check_paradigm(paradigm)
     for condition in np.unique(trial_type):
@@ -281,7 +281,7 @@ def _full_rank(X, cmax=1e15):
 def make_design_matrix(
     frame_times, paradigm=None, hrf_model='glover',
     drift_model='cosine', period_cut=128, drift_order=1, fir_delays=[0],
-    add_regs=None, add_reg_names=None, min_onset=-24, oversampling=None):
+        add_regs=None, add_reg_names=None, min_onset=-24, oversampling=50):
     """Generate a design matrix from the input parameters
 
     Parameters
@@ -339,9 +339,9 @@ def make_design_matrix(
         Minimal onset relative to frame_times[0] (in seconds)
         events that start before frame_times[0] + min_onset are not considered.
 
-    oversampling: float or None, optional,
-        Oversampling factor used in temporal convolutions. Should be 1 for
-        whenever hrf_mode is 'fir' and 16 otherwise.
+    oversampling: int or None, optional,
+        Oversampling factor used in temporal convolutions.
+        Should be 1 whenever hrf_model is 'fir'.
 
     Returns
     -------

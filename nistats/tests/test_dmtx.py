@@ -427,7 +427,7 @@ def test_oversampling():
     X1 = make_design_matrix(
         frame_times, paradigm, drift_model=None)
     X2 = make_design_matrix(
-        frame_times, paradigm, drift_model=None, oversampling=16)
+        frame_times, paradigm, drift_model=None, oversampling=50)
     X3 = make_design_matrix(
         frame_times, paradigm, drift_model=None, oversampling=10)
 
