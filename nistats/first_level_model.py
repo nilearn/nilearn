@@ -12,6 +12,7 @@ Author: Bertrand Thirion, Martin Perez-Guevara, 2016
 """
 
 from warnings import warn
+import csv
 import time
 import sys
 import os
@@ -33,8 +34,9 @@ from patsy import DesignInfo
 from .regression import OLSModel, ARModel, SimpleRegressionResults
 from .design_matrix import make_design_matrix
 from .contrasts import _fixed_effect_contrast
-from .utils import (_basestring, _check_run_tables, get_bids_files,
-                    parse_bids_filename)
+from .utils import (_basestring, _check_run_tables,
+                    _verify_file_value_separators_are_tabs_commas,
+                    get_bids_files, parse_bids_filename)
 
 
 def mean_scaling(Y, axis=0):
@@ -355,8 +357,8 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         # Check that number of events and confound files match number of runs
         # Also check that events and confound files can be loaded as DataFrame
         if events is not None:
+            _verify_file_value_separators_are_tabs_commas(filepaths=events)
             events = _check_run_tables(run_imgs, events, 'events')
-
         if confounds is not None:
             confounds = _check_run_tables(run_imgs, confounds, 'confounds')
 
