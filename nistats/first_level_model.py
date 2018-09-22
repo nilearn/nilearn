@@ -161,10 +161,10 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         expressed as a percentage of the t_r (time repetition), so it can have
         values between 0. and 1.
 
-    hrf_model : string, optional
-        This parameter specifies the hemodynamic response function (HRF) for
-        the design matrices. It can be 'canonical', 'canonical with derivative'
-        or 'fir'.
+    hrf_model : {'spm', 'spm + derivative', 'spm + derivative + dispersion',
+        'glover', 'glover + derivative', 'glover + derivative + dispersion',
+        'fir', None}
+        String that specifies the hemodynamic response function. Defaults to 'glover'.
 
     drift_model : string, optional
         This parameter specifies the desired drift model for the design
@@ -316,7 +316,7 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         Parameters
         ----------
         run_imgs: Niimg-like object or list of Niimg-like objects,
-            See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+            See http://nilearn.github.io/manipulating_images/input_output.html#inputing-data-file-names-or-image-objects
             Data on which the GLM will be fitted. If this is a list,
             the affine is considered the same for all.
 
