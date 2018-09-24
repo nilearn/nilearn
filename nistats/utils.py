@@ -86,7 +86,9 @@ def _verify_delimiters_used(filepaths, delimiters=None):
             with open(filepath_, 'r') as svfile:
                 sample = svfile.read()
         except (IsADirectoryError, FileNotFoundError):
-            raise FileNotFoundError('Not a valid filepath, or file does not exist.', filepath_)
+            raise FileNotFoundError(
+                    'Not a valid filepath, or file does not exist.', filepath_
+                    )
         except TypeError:
             raise TypeError('Not a readable text file.', filepath_)
 
