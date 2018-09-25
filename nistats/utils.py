@@ -42,6 +42,28 @@ def _check_and_load_tables(tables_, var_name):
     return tables
 
 
+def _verify_events_file_uses_valid_value_separators(events_files):
+    valid_separators = [',', '\t']
+    events_files = [events_files] if isinstance(events_files, str) else events_files
+    for events_file_ in events_files:
+        try:
+            with open(events_file_, 'r') as events_file_obj:
+                events_file_sample = events_file_obj.read(1024)
+        except TypeError as err:
+            pass
+        except IOError:
+            pass
+        else:
+            try:
+                csv.Sniffer().sniff(sample=events_file_sample,
+                                    delimiters=valid_separators,
+                                    )
+            except csv.Error:
+                raise ValueError(
+                    'The values in the events file are not separated by tabs or commas',
+                    events_file_)
+
+
 def _check_run_tables(run_imgs, tables_, tables_name):
     """Check fMRI runs and corresponding tables to raise error if necessary"""
     if isinstance(tables_, (_basestring, pd.DataFrame)):
@@ -51,79 +73,7 @@ def _check_run_tables(run_imgs, tables_, tables_name):
     return tables_
 
 
-def _verify_delimiters_used(filepaths, delimiters=None):
-    """ Accepts a list of filepaths and verifies the delimiter used.
-    Raises an error if they do not use one of the specified delimiters
-    or if the file cannot be read.
-    If no delimiters specified,
-    checks for presence of any standard delimiter.
-    
-    Parameters
-    ----------
-    filepaths: list[str],
-        A list/tuple of filepaths of files to be verified.
-        
-    delimiters: list[str], None (default)
-        A list/tuple of allowed characters for separating values.
-        If None, will check for presence of any standard delimiter.
 
-    Returns
-    -------
-        None
-
-    Raises
-    ------
-    ValueError:
-        If the file does not use one of the indicated delimiters.
-    TypeError:
-        If the filepath points to a non-text file (usually a csv or tsv).
-    FileNotFoundError:
-        If the filepath is incorrect or the file does not exist.
-    """
-    filepaths = [filepaths] if isinstance(filepaths, str) else filepaths
-    for filepath_ in filepaths:
-        try:
-            with open(filepath_, 'r') as svfile:
-                sample = svfile.read()
-        except (IsADirectoryError, FileNotFoundError):
-            raise FileNotFoundError(
-                    'Not a valid filepath, or file does not exist.', filepath_
-                    )
-        except TypeError:
-            raise TypeError('Not a readable text file.', filepath_)
-
-        try:
-            csv.Sniffer().sniff(sample=sample, delimiters=delimiters,)
-        except csv.Error:
-            raise csv.Error(filepath_)
-
-def _verify_file_value_separators_are_tabs_commas(filepaths):
-    """
-    Accepts list/tuple of paths for events files (tsv or csv) and
-    verifies they use only tabs or commas to spearate their values.
-    
-    Parameters
-    ----------
-    filepaths: List[str], Tuple[str]
-    
-    Returns
-    -------
-        None
-        
-    Raises
-    ------
-        ValueError:
-            If tabs or commas are not the detected separators.
-    """
-    valid_delimiters = [',', '\t', ]
-    try:
-        _verify_delimiters_used(filepaths=filepaths, delimiters=valid_delimiters)
-    except (FileNotFoundError, TypeError):
-        pass
-    except csv.Error as err:
-        raise ValueError('The provided text file does not seem to use '
-                         'either tabs or commas for separating values '
-                         , err.args) from err
 
 
 def z_score(pvalue):
