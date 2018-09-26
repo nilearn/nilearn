@@ -80,14 +80,17 @@ def _verify_events_file_uses_tab_separators(events_files, _raise_delimiter_error
             with open(events_file_, 'r') as events_file_obj:
                 events_file_sample = events_file_obj.readline()
         except TypeError:
-            if not _raise_delimiter_errors_only:  # Do nothing if events is defined in a Pandas dataframe.
-                raise  # except when testing code.
+            # No exceptions raised if events is a Pandas dataframe  except test
+            if not _raise_delimiter_errors_only:
+                raise
         except UnicodeDecodeError:
-            if not _raise_delimiter_errors_only:  # Do nothing in Py3 if file is binary.
+            # No exceptions raised in Py3 if file is binary except for testing.
+            if not _raise_delimiter_errors_only:
                 raise  # except when testing code.
         except IOError:
-            if not _raise_delimiter_errors_only:  # Do nothing if filepath is invalid.
-                raise  # except when testing code.
+            # No exceptions raised if filepath is invalid except for testing.
+            if not _raise_delimiter_errors_only:
+                raise
         else:
             try:
                 csv.Sniffer().sniff(sample=events_file_sample,
