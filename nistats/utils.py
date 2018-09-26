@@ -41,18 +41,53 @@ def _check_and_load_tables(tables_, var_name):
                             (var_name, type(table), table_idx))
     return tables
 
+ 
+def _verify_events_file_uses_tab_separators(events_files, _not_test=True):
+    """
+    Raises a ValueError if provided list of text based data files
+    (.csv, .tsv, etc) do not enforce the BIDS convention of using Tabs
+    as separators.
+    
+    Only scans their first row.
+    Does nothing if:
+        If the separator used is BIDS compliant.
+        Paths are invalid.
+        File(s) are not text files.
 
-def _verify_events_file_uses_valid_value_separators(events_files):
+    Does not flag comma-separated-values-files for compatibility reasons;
+    this may change in future as commas are not BIDS compliant.
+    
+    parameters
+    ----------
+    events_files: str, List/Tuple[str]
+        A single file's path or a collection of filepaths.
+        Files are expected to be text files.
+        Non-text files will raise ValueError.
+    
+    Returns
+    -------
+    None
+    
+    Raises
+    ------
+    ValueError:
+        If value separators are not Tabs (or commas)
+    """
     valid_separators = [',', '\t']
     events_files = [events_files] if isinstance(events_files, str) else events_files
     for events_file_ in events_files:
         try:
             with open(events_file_, 'r') as events_file_obj:
-                events_file_sample = events_file_obj.read(1024)
-        except TypeError as err:
-            pass
+                events_file_sample = events_file_obj.readline()
+        except TypeError:
+            if not _not_test:  # Do nothing if events is defined in a Pandas dataframe.
+                raise  # except when testing code.
+        except UnicodeDecodeError:
+            if not _not_test:  # Do nothing in Py3 if file is binary.
+                raise  # except when testing code.
         except IOError:
-            pass
+            if not _not_test:  # Do nothing if filepath is invalid.
+                raise  # except when testing code.
         else:
             try:
                 csv.Sniffer().sniff(sample=events_file_sample,
@@ -60,7 +95,8 @@ def _verify_events_file_uses_valid_value_separators(events_files):
                                     )
             except csv.Error:
                 raise ValueError(
-                    'The values in the events file are not separated by tabs or commas',
+                    'The values in the events file are not separated by tabs; '
+                    'please enforce BIDS conventions',
                     events_file_)
 
 
@@ -71,9 +107,6 @@ def _check_run_tables(run_imgs, tables_, tables_name):
     _check_list_length_match(run_imgs, tables_, 'run_imgs', tables_name)
     tables_ = _check_and_load_tables(tables_, tables_name)
     return tables_
-
-
-
 
 
 def z_score(pvalue):
