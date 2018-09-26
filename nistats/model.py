@@ -75,7 +75,7 @@ class LikelihoodModelResults(object):
         self.df_model = model.df_model
         # put this as a parameter of LikelihoodModel
         self.df_resid = self.df_total - self.df_model
-
+        
     @setattr_on_read
     def logL(self):
         """

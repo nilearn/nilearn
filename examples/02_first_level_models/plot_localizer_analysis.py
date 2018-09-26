@@ -14,8 +14,6 @@ More specifically:
    then contrast estimation)
 
 """
-from os import mkdir, path
-
 import numpy as np
 import pandas as pd
 from nilearn import plotting
