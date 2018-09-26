@@ -42,7 +42,7 @@ def _check_and_load_tables(tables_, var_name):
     return tables
 
  
-def _verify_events_file_uses_tab_separators(events_files, _not_test=True):
+def _verify_events_file_uses_tab_separators(events_files, _raise_delimiter_errors_only=True):
     """
     Raises a ValueError if provided list of text based data files
     (.csv, .tsv, etc) do not enforce the BIDS convention of using Tabs
@@ -80,13 +80,13 @@ def _verify_events_file_uses_tab_separators(events_files, _not_test=True):
             with open(events_file_, 'r') as events_file_obj:
                 events_file_sample = events_file_obj.readline()
         except TypeError:
-            if not _not_test:  # Do nothing if events is defined in a Pandas dataframe.
+            if not _raise_delimiter_errors_only:  # Do nothing if events is defined in a Pandas dataframe.
                 raise  # except when testing code.
         except UnicodeDecodeError:
-            if not _not_test:  # Do nothing in Py3 if file is binary.
+            if not _raise_delimiter_errors_only:  # Do nothing in Py3 if file is binary.
                 raise  # except when testing code.
         except IOError:
-            if not _not_test:  # Do nothing if filepath is invalid.
+            if not _raise_delimiter_errors_only:  # Do nothing if filepath is invalid.
                 raise  # except when testing code.
         else:
             try:
