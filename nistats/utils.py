@@ -78,7 +78,7 @@ def _verify_events_file_uses_tab_separators(events_files):
         If value separators are not Tabs (or commas)
     """
     valid_separators = [',', '\t']
-    events_files = [events_files] if isinstance(events_files, str) else events_files
+    events_files = [events_files] if not isinstance(events_files, (list, tuple)) else events_files
     errors_raised = []
     for events_file_ in events_files:
         try:
