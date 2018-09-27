@@ -139,9 +139,8 @@ if __name__ == '__main__':
             test_binary_opening_an_image,
             test_binary_bytearray_of_ints_data,
             ]
-    
-    for test_ in tests:
-        _run_tests_print_test_messages(test_func=test_)
+        for test_ in tests:
+            _run_tests_print_test_messages(test_func=test_)
 
 
 
