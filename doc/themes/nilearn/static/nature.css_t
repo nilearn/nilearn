@@ -107,6 +107,30 @@ div.highlight-python pre {
     font-size: 90%;
 }
 
+div.highlight:hover span.copybutton {
+    background-color: #3F556B;
+}
+
+div.highlight:hover span.copybutton:hover {
+    background-color: #20252B;
+}
+
+@media (min-width: 1060px) {
+    div.highlight:hover span.copybutton:after{
+	background: #3F556B;
+	border-radius: 5px;
+	color: white;
+	content: attr(title);
+	left: 110%;
+	padding: 5px 15px;
+	position: absolute;
+	z-index: 98;
+	width: 140px;
+	top: -10px;
+    }
+}
+
+
 @media (max-width: 800px) {
     div.highlight-python pre {
         font-size: 85%;
@@ -1091,6 +1115,11 @@ div.max-height pre {
 
 div.body p {
     margin: 1.2em 0 .5em 0;
+}
+
+/* More vertical space after a code block */
+div.highlight-python + p {
+    margin-top: 1.5em;
 }
 
 .float-right {

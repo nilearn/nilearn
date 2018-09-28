@@ -7,7 +7,6 @@ from sklearn.externals.joblib import Memory
 
 from .. import _utils
 from .._utils import logger, CacheMixin
-from .._utils.niimg import _get_data_dtype
 from .._utils.class_inspect import get_params
 from .._utils.niimg_conversions import _check_same_fov
 from .. import image
@@ -37,15 +36,18 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
     extracted (contrarily to NiftiLabelsMasker). Use case: Summarize brain
     signals from large-scale networks obtained by prior PCA or ICA.
 
+    Note that, Inf or NaN present in the given input images are automatically
+    put to zero rather than considered as missing data.
+
     Parameters
-    ==========
+    ----------
     maps_img: 4D niimg-like object
-        See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
+        See http://nilearn.github.io/manipulating_images/input_output.html
         Set of continuous maps. One representative time course per map is
         extracted using least square regression.
 
     mask_img: 3D niimg-like object, optional
-        See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
+        See http://nilearn.github.io/manipulating_images/input_output.html
         Mask to apply to regions before extracting signals.
 
     allow_overlap: boolean, optional
@@ -64,11 +66,11 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
         This parameter is passed to signal.clean. Please see the related
         documentation for details
 
-    low_pass: False or float, optional
+    low_pass: None or float, optional
         This parameter is passed to signal.clean. Please see the related
         documentation for details
 
-    high_pass: False or float, optional
+    high_pass: None or float, optional
         This parameter is passed to signal.clean. Please see the related
         documentation for details
 
@@ -76,12 +78,17 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
         This parameter is passed to signal.clean. Please see the related
         documentation for details
 
-    resampling_target: {"mask", "maps", None} optional.
+    dtype: {dtype, "auto"}
+        Data type toward which the data should be converted. If "auto", the
+        data will be converted to int32 if dtype is discrete and float32 if it
+        is continuous.
+
+    resampling_target: {"mask", "maps", "data", None} optional.
         Gives which image gives the final shape/size. For example, if
         `resampling_target` is "mask" then maps_img and images provided to
         fit() are resampled to the shape and affine of mask_img. "None" means
         no resampling: if shapes and affines do not match, a ValueError is
-        raised. Default value: "maps".
+        raised. Default value: "data".
 
     memory: joblib.Memory or str, optional
         Used to cache the region extraction process.
@@ -96,13 +103,13 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
         Indicate the level of verbosity. By default, nothing is printed
 
     Notes
-    =====
-    With the default value for resampling_target, every 3D image processed by
+    -----
+    If resampling_target is set to "maps", every 3D image processed by
     transform() will be resampled to the shape of maps_img. It may lead to a
-    very large memory consumption if the voxel number in labels_img is large.
+    very large memory consumption if the voxel number in maps_img is large.
 
     See also
-    ========
+    --------
     nilearn.input_data.NiftiMasker
     nilearn.input_data.NiftiLabelsMasker
     """
@@ -111,7 +118,7 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
     def __init__(self, maps_img, mask_img=None,
                  allow_overlap=True,
                  smoothing_fwhm=None, standardize=False, detrend=False,
-                 low_pass=None, high_pass=None, t_r=None,
+                 low_pass=None, high_pass=None, t_r=None, dtype=None,
                  resampling_target="data",
                  memory=Memory(cachedir=None, verbose=0), memory_level=0,
                  verbose=0):
@@ -130,6 +137,7 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
         self.low_pass = low_pass
         self.high_pass = high_pass
         self.t_r = t_r
+        self.dtype = dtype
 
         # Parameters for resampling
         self.resampling_target = resampling_target
@@ -159,7 +167,10 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
                    _utils._repr_niimgs(self.maps_img)[:200],
                    verbose=self.verbose)
 
-        self.maps_img_ = _utils.check_niimg_4d(self.maps_img)
+        self.maps_img_ = _utils.check_niimg_4d(self.maps_img, dtype=self.dtype)
+        self.maps_img_ = image.clean_img(self.maps_img_, detrend=False,
+                                         standardize=False,
+                                         ensure_finite=True)
 
         if self.mask_img is not None:
             logger.log("loading mask from %s" %
@@ -179,7 +190,7 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
                 print("Resampling maps")
             self.maps_img_ = image.resample_img(
                 self.maps_img_,
-                target_affine=self.mask_img_.get_affine(),
+                target_affine=self.mask_img_.affine,
                 target_shape=self.mask_img_.shape,
                 interpolation="continuous",
                 copy=True)
@@ -189,7 +200,7 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
                 print("Resampling mask")
             self.mask_img_ = image.resample_img(
                 self.mask_img_,
-                target_affine=self.maps_img_.get_affine(),
+                target_affine=self.maps_img_.affine,
                 target_shape=self.maps_img_.shape[:3],
                 interpolation="nearest",
                 copy=True)
@@ -213,7 +224,7 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
         Parameters
         ----------
         imgs: 3D/4D Niimg-like object
-            See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
+            See http://nilearn.github.io/manipulating_images/input_output.html
             Images to process. It must boil down to a 4D image with scans
             number as last dimension.
 
@@ -260,7 +271,7 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
                 self._resampled_maps_img_ = self._cache(image.resample_img)(
                         self.maps_img_, interpolation="continuous",
                         target_shape=ref_img.shape[:3],
-                        target_affine=ref_img.get_affine())
+                        target_affine=ref_img.affine)
 
             if (self.mask_img_ is not None and
                     not _check_same_fov(ref_img, self.mask_img_)):
@@ -269,14 +280,14 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
                 self._resampled_mask_img_ = self._cache(image.resample_img)(
                         self.mask_img_, interpolation="nearest",
                         target_shape=ref_img.shape[:3],
-                        target_affine=ref_img.get_affine())
+                        target_affine=ref_img.affine)
 
         if not self.allow_overlap:
             # Check if there is an overlap.
 
             # If float, we set low values to 0
-            dtype = _get_data_dtype(self._resampled_maps_img_)
             data = self._resampled_maps_img_.get_data()
+            dtype = data.dtype
             if dtype.kind == 'f':
                 data[data < np.finfo(dtype).eps] = 0.
 
@@ -292,7 +303,7 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
         target_affine = None
         if self.resampling_target != 'data':
             target_shape = self._resampled_maps_img_.shape[:3]
-            target_affine = self._resampled_maps_img_.get_affine()
+            target_affine = self._resampled_maps_img_.affine
 
         params = get_params(NiftiMapsMasker, self,
                             ignore=['resampling_target'])
@@ -307,6 +318,7 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
                 # Pre-treatments
                 params,
                 confounds=confounds,
+                dtype=self.dtype,
                 # Caching
                 memory=self.memory,
                 memory_level=self.memory_level,
@@ -322,13 +334,13 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
         Any mask given at initialization is taken into account.
 
         Parameters
-        ==========
+        ----------
         region_signals: 2D numpy.ndarray
             Signal for each region.
             shape: (number of scans, number of regions)
 
         Returns
-        =======
+        -------
         voxel_signals: nibabel.Nifti1Image
             Signal for each voxel. shape: that of maps.
         """

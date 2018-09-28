@@ -1,3 +1,10 @@
+try:
+    from numpy import VisibleDeprecationWarning
+except ImportError:
+    class VisibleDeprecationWarning(UserWarning):
+        pass
+
+
 AuthorizedException = (
         BufferError,
         ArithmeticError,
@@ -49,18 +56,20 @@ class DimensionError(TypeError):
 
     @property
     def message(self):
-        message = (
-                "Data must be a %iD Niimg-like object but you provided a "
-                "%s%iD image%s. "
-                "See http://nilearn.github.io/manipulating_visualizing/"
-                "manipulating_images.html#niimg." % (
-                    self.required_dimension + self.stack_counter,
-                    "list of " * self.stack_counter,
-                    self.file_dimension,
-                    "s" * (self.stack_counter != 0)
+        return ("Input data has incompatible dimensionality: "
+                "Expected dimension is {0}D and you provided a "
+                "{1}{2}D image{3}{4}. "
+                "See http://nilearn.github.io/manipulating_images/"
+                "input_output.html."
+                .format(self.required_dimension + self.stack_counter,
+                        "list of " * self.stack_counter,
+                        self.file_dimension,
+                        "s" * (self.stack_counter != 0),
+                        (" (%iD)" %
+                            (self.file_dimension + self.stack_counter)) *
+                        (self.stack_counter > 0)
+                        )
                 )
-        )
-        return message
 
     def __str__(self):
         return self.message

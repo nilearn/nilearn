@@ -10,7 +10,7 @@ It is slightly oriented towards a *decoding* application, that is the
 prediction of external variables such as behavior or clinical traits from
 brain images. For a didactic introduction to decoding with nilearn, see
 the :ref:`dedicated section of the nilearn documentation
-<decoding_tutorial>`.
+<decoding_intro>`.
 
 .. contents:: **Contents**
     :local:
@@ -68,7 +68,7 @@ There are two noteworthy strategies:
 
 The "One vs One" strategy is more computationally costly than the "One
 vs All". The former scales as the square of the number of classes,
-whereas the former is linear with the number of classes.
+whereas the latter is linear with the number of classes.
 
 .. seealso::
 
@@ -81,18 +81,18 @@ whereas the former is linear with the number of classes.
 :func:`sklearn.metrics.confusion_matrix` is a useful tool to 
 understand the classifier's errors in a multiclass problem.
 
-.. figure:: ../auto_examples/decoding/images/sphx_glr_plot_haxby_multiclass_001.png
-   :target: ../auto_examples/decoding/plot_haxby_multiclass.html
+.. figure:: ../auto_examples/02_decoding/images/sphx_glr_plot_haxby_multiclass_001.png
+   :target: ../auto_examples/02_decoding/plot_haxby_multiclass.html
    :align: left
    :scale: 60
 
-.. figure:: ../auto_examples/decoding/images/sphx_glr_plot_haxby_multiclass_002.png
-   :target: ../auto_examples/decoding/plot_haxby_multiclass.html
+.. figure:: ../auto_examples/02_decoding/images/sphx_glr_plot_haxby_multiclass_002.png
+   :target: ../auto_examples/02_decoding/plot_haxby_multiclass.html
    :align: left
    :scale: 40
 
-.. figure:: ../auto_examples/decoding/images/sphx_glr_plot_haxby_multiclass_003.png
-   :target: ../auto_examples/decoding/plot_haxby_multiclass.html
+.. figure:: ../auto_examples/02_decoding/images/sphx_glr_plot_haxby_multiclass_003.png
+   :target: ../auto_examples/02_decoding/plot_haxby_multiclass.html
    :align: left
    :scale: 40
 
@@ -109,13 +109,13 @@ will have bumps and peaks due to this noise. These will not generalize to
 new data and chances are that the corresponding choice of parameter will
 not perform as well on new data.
 
-.. figure:: ../auto_examples/decoding/images/sphx_glr_plot_haxby_grid_search_001.png
-   :target: ../auto_examples/decoding/plot_haxby_grid_search.html
+.. figure:: ../auto_examples/02_decoding/images/sphx_glr_plot_haxby_grid_search_001.png
+   :target: ../auto_examples/02_decoding/plot_haxby_grid_search.html
    :align: center
    :scale: 60
 
 With scikit-learn nested cross-validation is done via
-:class:`sklearn.grid_search.GridSearchCV`. It is unfortunately time
+:class:`sklearn.model_selection.GridSearchCV`. It is unfortunately time
 consuming, but the ``n_jobs`` argument can spread the load on multiple
 CPUs.
 
@@ -125,7 +125,7 @@ CPUs.
    * `The scikit-learn documentation on parameter selection
      <http://scikit-learn.org/stable/modules/grid_search.html>`_
 
-   * The example :ref:`sphx_glr_auto_examples_decoding_plot_haxby_grid_search.py`
+   * The example :ref:`sphx_glr_auto_examples_02_decoding_plot_haxby_grid_search.py`
 
 Different linear models
 =======================
@@ -163,8 +163,8 @@ Here we apply a few linear models to fMRI data:
      in every situation.
 
 
-.. figure:: ../auto_examples/decoding/images/sphx_glr_plot_haxby_different_estimators_001.png
-   :target: ../auto_examples/decoding/plot_haxby_different_estimators.html
+.. figure:: ../auto_examples/02_decoding/images/sphx_glr_plot_haxby_different_estimators_001.png
+   :target: ../auto_examples/02_decoding/plot_haxby_different_estimators.html
    :align: center
    :scale: 80
 
@@ -181,52 +181,50 @@ the other, although the prediction scores are fairly similar. In other
 terms, a well-performing estimator in terms of prediction error gives us
 little guarantee on the brain maps.
 
-.. figure:: ../auto_examples/decoding/images/sphx_glr_plot_haxby_different_estimators_007.png
-   :target: ../auto_examples/decoding/plot_haxby_different_estimators.html
-   :align: left
+.. image:: ../auto_examples/02_decoding/images/sphx_glr_plot_haxby_different_estimators_007.png
+   :target: ../auto_examples/02_decoding/plot_haxby_different_estimators.html
+   :scale: 70
+.. image:: ../auto_examples/02_decoding/images/sphx_glr_plot_haxby_different_estimators_008.png
+   :target: ../auto_examples/02_decoding/plot_haxby_different_estimators.html
+   :scale: 70
+.. image:: ../auto_examples/02_decoding/images/sphx_glr_plot_haxby_different_estimators_005.png
+   :target: ../auto_examples/02_decoding/plot_haxby_different_estimators.html
+   :scale: 70
+.. image:: ../auto_examples/02_decoding/images/sphx_glr_plot_haxby_different_estimators_006.png
+   :target: ../auto_examples/02_decoding/plot_haxby_different_estimators.html
+   :scale: 70
+.. image:: ../auto_examples/02_decoding/images/sphx_glr_plot_haxby_different_estimators_004.png
+   :target: ../auto_examples/02_decoding/plot_haxby_different_estimators.html
+   :scale: 70
+.. image:: ../auto_examples/02_decoding/images/sphx_glr_plot_haxby_different_estimators_002.png
+   :target: ../auto_examples/02_decoding/plot_haxby_different_estimators.html
+   :scale: 70
+.. image:: ../auto_examples/02_decoding/images/sphx_glr_plot_haxby_different_estimators_003.png
+   :target: ../auto_examples/02_decoding/plot_haxby_different_estimators.html
+   :scale: 70
+.. image:: ../auto_examples/02_decoding/images/sphx_glr_plot_haxby_different_estimators_009.png
+   :target: ../auto_examples/02_decoding/plot_haxby_different_estimators.html
+   :scale: 70
+.. image:: ../auto_examples/02_decoding/images/sphx_glr_plot_haxby_different_estimators_010.png
+   :target: ../auto_examples/02_decoding/plot_haxby_different_estimators.html
    :scale: 70
 
-.. figure:: ../auto_examples/decoding/images/sphx_glr_plot_haxby_different_estimators_008.png
-   :target: ../auto_examples/decoding/plot_haxby_different_estimators.html
-   :align: left
-   :scale: 70
-
-.. figure:: ../auto_examples/decoding/images/sphx_glr_plot_haxby_different_estimators_005.png
-   :target: ../auto_examples/decoding/plot_haxby_different_estimators.html
-   :align: left
-   :scale: 70
-
-.. figure:: ../auto_examples/decoding/images/sphx_glr_plot_haxby_different_estimators_006.png
-   :target: ../auto_examples/decoding/plot_haxby_different_estimators.html
-   :align: left
-   :scale: 70
-
-.. figure:: ../auto_examples/decoding/images/sphx_glr_plot_haxby_different_estimators_004.png
-   :target: ../auto_examples/decoding/plot_haxby_different_estimators.html
-   :align: left
-   :scale: 70
-
-.. figure:: ../auto_examples/decoding/images/sphx_glr_plot_haxby_different_estimators_002.png
-   :target: ../auto_examples/decoding/plot_haxby_different_estimators.html
-   :align: left
-   :scale: 70
-
-.. figure:: ../auto_examples/decoding/images/sphx_glr_plot_haxby_different_estimators_003.png
-   :target: ../auto_examples/decoding/plot_haxby_different_estimators.html
-   :align: left
-   :scale: 70
-
-.. figure:: ../auto_examples/decoding/images/sphx_glr_plot_haxby_different_estimators_009.png
-   :target: ../auto_examples/decoding/plot_haxby_different_estimators.html
-   :align: left
-   :scale: 70
-
-.. figure:: ../auto_examples/decoding/images/sphx_glr_plot_haxby_different_estimators_010.png
-   :target: ../auto_examples/decoding/plot_haxby_different_estimators.html
-   :align: left
-   :scale: 70
 
 .. seealso::
 
    * :ref:`space_net`
+
+|
+
+.. topic:: **Decoding on simulated data**
+
+   Simple simulations may be useful to understand the behavior of a given
+   decoder on data. In particular, simulations enable us to set the true
+   weight maps and compare them to the ones retrieved by decoders. A full
+   example running simulations and discussing them can be found in
+   :ref:`sphx_glr_auto_examples_02_decoding_plot_simulated_data.py`
+   Simulated data cannot easily mimic all properties of brain data. An
+   important aspect, however, is its spatial structure, that we create in
+   the simulations.
+
 

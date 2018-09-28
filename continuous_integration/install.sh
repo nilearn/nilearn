@@ -27,7 +27,7 @@ create_new_venv() {
 
 print_conda_requirements() {
     # Echo a conda requirement string for example
-    # "pip nose python='.7.3 scikit-learn=*". It has a hardcoded
+    # "pip nose python='2.7.3 scikit-learn=*". It has a hardcoded
     # list of possible packages to install and looks at _VERSION
     # environment variables to know whether to install a given package and
     # if yes which version to install. For example:
@@ -35,7 +35,8 @@ print_conda_requirements() {
     #   - for scikit-learn, SCIKIT_LEARN_VERSION is used
     TO_INSTALL_ALWAYS="pip nose"
     REQUIREMENTS="$TO_INSTALL_ALWAYS"
-    TO_INSTALL_MAYBE="python numpy scipy matplotlib scikit-learn"
+    TO_INSTALL_MAYBE="python numpy scipy matplotlib scikit-learn pandas \
+flake8 lxml"
     for PACKAGE in $TO_INSTALL_MAYBE; do
         # Capitalize package name and add _VERSION
         PACKAGE_VERSION_VARNAME="${PACKAGE^^}_VERSION"
@@ -52,29 +53,35 @@ print_conda_requirements() {
 }
 
 create_new_conda_env() {
-    # Deactivate the travis-provided virtual environment and setup a
-    # conda-based environment instead
-    deactivate
+    # Skip Travis related code on circle ci.
+    if [ -z $CIRCLECI ]; then
+        # Deactivate the travis-provided virtual environment and setup a
+        # conda-based environment instead
+        deactivate
+    fi
 
     # Use the miniconda installer for faster download / install of conda
     # itself
-    wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh \
-        -O miniconda.sh
-    chmod +x miniconda.sh && ./miniconda.sh -b
-    export PATH=/home/travis/miniconda2/bin:$PATH
-    conda update --yes conda
+    wget http://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh \
+        -O ~/miniconda.sh
+    chmod +x ~/miniconda.sh && ~/miniconda.sh -b
+    export PATH=$HOME/miniconda3/bin:$PATH
+    echo $PATH
+    conda update --quiet --yes conda
 
     # Configure the conda environment and put it in the path using the
     # provided versions
     REQUIREMENTS=$(print_conda_requirements)
     echo "conda requirements string: $REQUIREMENTS"
-    conda create -n testenv --yes $REQUIREMENTS
+    conda create -n testenv --quiet --yes $REQUIREMENTS
     source activate testenv
 
     if [[ "$INSTALL_MKL" == "true" ]]; then
         # Make sure that MKL is used
-        conda install --yes mkl
-    else
+        conda install --quiet --yes mkl
+    elif [[ -z $CIRCLECI ]]; then
+        # Travis doesn't use MKL but circle ci does for speeding up examples
+        # generation in the html documentation.
         # Make sure that MKL is not used
         conda remove --yes --features mkl || echo "MKL not installed"
     fi
@@ -98,12 +105,18 @@ elif [[ "$DISTRIB" == "conda" ]]; then
     fi
 
 else
-    echo "Unrecognized distribution ($DISTRIB); cannot setup travis environment."
+    echo "Unrecognized distribution ($DISTRIB); cannot setup CI environment."
     exit 1
 fi
 
+pip install psutil memory_profiler
+
 if [[ "$COVERAGE" == "true" ]]; then
-    pip install coverage coveralls
+    pip install codecov
 fi
 
-python setup.py install
+# numpy not installed when skipping the tests so we do not want to run
+# setup.py install
+if [[ "$SKIP_TESTS" != "true" ]]; then
+    python setup.py install
+fi

@@ -1,6 +1,6 @@
 """
 Functions to do automatic visualization of Niimg-like objects
-See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
+See http://nilearn.github.io/manipulating_images/input_output.html
 
 Only matplotlib is required.
 """
@@ -9,10 +9,10 @@ Only matplotlib is required.
 # License: BSD
 
 # Standard library imports
+import collections
 import functools
 import numbers
 import warnings
-import collections
 
 # Standard scientific libraries imports (more specific imports are
 # delayed, so that the part module can be used without them).
@@ -22,16 +22,17 @@ from nibabel.spatialimages import SpatialImage
 
 from .._utils.numpy_conversions import as_ndarray
 from .._utils.compat import _basestring
+from .._utils.niimg import _safe_get_data
 
+import matplotlib
 import matplotlib.pyplot as plt
 
 from .. import _utils
 from ..image import new_img_like
 from .._utils.extmath import fast_abs_percentile
 from .._utils.param_validation import check_threshold
-from .._utils.fixes.matplotlib_backports import (cbar_outline_get_xy,
-                                                 cbar_outline_set_xy)
 from .._utils.ndimage import get_border_data
+from .._utils.exceptions import VisibleDeprecationWarning
 from ..datasets import load_mni152_template
 from ..image import iter_img
 from .displays import get_slicer, get_projector
@@ -50,7 +51,7 @@ def show():
 # Core, usage-agnostic functions
 
 
-def _get_colorbar_and_data_ranges(stat_map_img, vmax, symmetric_cbar, kwargs,
+def _get_colorbar_and_data_ranges(stat_map_data, vmax, symmetric_cbar, kwargs,
                                   force_min_stat_map_value=None):
     """ Internal function for setting colormap and colorbar limits
 
@@ -68,11 +69,10 @@ def _get_colorbar_and_data_ranges(stat_map_img, vmax, symmetric_cbar, kwargs,
 
     # make sure that the color range is symmetrical
     if vmax is None or symmetric_cbar in ['auto', False]:
-        stat_map_data = stat_map_img.get_data()
         # Avoid dealing with masked_array:
         if hasattr(stat_map_data, '_mask'):
             stat_map_data = np.asarray(
-                    stat_map_data[np.logical_not(stat_map_data._mask)])
+                stat_map_data[np.logical_not(stat_map_data._mask)])
         stat_map_max = np.nanmax(stat_map_data)
         if force_min_stat_map_value is None:
             stat_map_min = np.nanmin(stat_map_data)
@@ -136,13 +136,19 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None,
         show_nan_msg = True
     if show_nan_msg:
         nan_msg = ('NaN is not permitted for the vmax and vmin arguments.\n'
-                   'Tip: Use np.nan_max() instead of np.max().')
+                   'Tip: Use np.nanmax() instead of np.max().')
         warnings.warn(nan_msg)
+
+    if isinstance(cut_coords, numbers.Number) and display_mode == 'ortho':
+        raise ValueError(
+            "The input given for display_mode='ortho' needs to be "
+            "a list of 3d world coordinates in (x, y, z). "
+            "You provided single cut, cut_coords={0}".format(cut_coords))
 
     if img is not False and img is not None:
         img = _utils.check_niimg_3d(img, dtype='auto')
-        data = img.get_data()
-        affine = img.get_affine()
+        data = _safe_get_data(img, ensure_finite=True)
+        affine = img.affine
 
         if np.isnan(np.sum(data)):
             data = np.nan_to_num(data)
@@ -181,24 +187,9 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None,
         display.draw_cross()
     if title is not None and not title == '':
         display.title(title)
-    if (cbar_vmax is not None) or (cbar_vmin is not None):
-        if hasattr(display, '_cbar'):
-            cbar = display._cbar
-            cbar_tick_locs = cbar.locator.locs
-            if cbar_vmax is None:
-                cbar_vmax = cbar_tick_locs.max()
-            if cbar_vmin is None:
-                cbar_vmin = cbar_tick_locs.min()
-            new_tick_locs = np.linspace(cbar_vmin, cbar_vmax,
-                                        len(cbar_tick_locs))
-            cbar.ax.set_ylim(cbar.norm(cbar_vmin), cbar.norm(cbar_vmax))
-            outline = cbar_outline_get_xy(cbar.outline)
-            outline[:2, 1] += cbar.norm(cbar_vmin)
-            outline[2:6, 1] -= (1. - cbar.norm(cbar_vmax))
-            outline[6:, 1] += cbar.norm(cbar_vmin)
-            cbar_outline_set_xy(cbar.outline, outline)
-            cbar.set_ticks(new_tick_locs, update_ticks=True)
-
+    if hasattr(display, '_cbar'):
+        cbar = display._cbar
+        _crop_colorbar(cbar, cbar_vmin, cbar_vmax)
     if output_file is not None:
         display.savefig(output_file)
         display.close()
@@ -206,16 +197,40 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None,
     return display
 
 
+def _crop_colorbar(cbar, cbar_vmin, cbar_vmax):
+    """
+    crop a colorbar to show from cbar_vmin to cbar_vmax
+
+    Used when symmetric_cbar=False is used.
+    """
+    if (cbar_vmin is None) and (cbar_vmax is None):
+        return
+    cbar_tick_locs = cbar.locator.locs
+    if cbar_vmax is None:
+        cbar_vmax = cbar_tick_locs.max()
+    if cbar_vmin is None:
+        cbar_vmin = cbar_tick_locs.min()
+    new_tick_locs = np.linspace(cbar_vmin, cbar_vmax,
+                                len(cbar_tick_locs))
+    cbar.ax.set_ylim(cbar.norm(cbar_vmin), cbar.norm(cbar_vmax))
+    outline = cbar.outline.get_xy()
+    outline[:2, 1] += cbar.norm(cbar_vmin)
+    outline[2:6, 1] -= (1. - cbar.norm(cbar_vmax))
+    outline[6:, 1] += cbar.norm(cbar_vmin)
+    cbar.outline.set_xy(outline)
+    cbar.set_ticks(new_tick_locs, update_ticks=True)
+
+
 def plot_img(img, cut_coords=None, output_file=None, display_mode='ortho',
              figure=None, axes=None, title=None, threshold=None,
              annotate=True, draw_cross=True, black_bg=False, colorbar=False,
-             **kwargs):
+             resampling_interpolation='continuous', **kwargs):
     """ Plot cuts of a given image (by default Frontal, Axial, and Lateral)
 
         Parameters
         ----------
         img: Niimg-like object
-            See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
+            See http://nilearn.github.io/manipulating_images/input_output.html
         cut_coords: None, a tuple of floats, or an integer
             The MNI coordinates of the point where the cut is performed
             If display_mode is 'ortho', this should be a 3-tuple: (x, y, z)
@@ -228,8 +243,8 @@ def plot_img(img, cut_coords=None, output_file=None, display_mode='ortho',
             The name of an image file to export the plot to. Valid extensions
             are .png, .pdf, .svg. If output_file is not None, the plot
             is saved to a file, and the display is closed.
-        display_mode: {'ortho', 'x', 'y', 'z'}
-            Choose the direction of the cuts: 'x' - saggital, 'y' - coronal,
+        display_mode : {'ortho', 'x', 'y', 'z', 'xy', 'xz', 'yz'}
+            Choose the direction of the cuts: 'x' - sagittal, 'y' - coronal,
             'z' - axial, 'ortho' - three cuts are performed in orthogonal
             directions.
         figure : integer or matplotlib figure, optional
@@ -260,15 +275,21 @@ def plot_img(img, cut_coords=None, output_file=None, display_mode='ortho',
             to matplotlib.pyplot.savefig.
         colorbar: boolean, optional
             If True, display a colorbar on the right of the plots.
+        resampling_interpolation : str
+            Interpolation to use when resampling the image to the destination
+            space. Can be "continuous" (default) to use 3rd-order spline
+            interpolation, or "nearest" to use nearest-neighbor mapping.
+            "nearest" is faster but can be noisier in some cases.
         kwargs: extra keyword arguments, optional
             Extra keyword arguments passed to matplotlib.pyplot.imshow
-    """
+    """  # noqa: E501
     display = _plot_img_with_bg(
         img, cut_coords=cut_coords,
         output_file=output_file, display_mode=display_mode,
         figure=figure, axes=axes, title=title,
         threshold=threshold, annotate=annotate,
-        draw_cross=draw_cross, resampling_interpolation='continuous',
+        draw_cross=draw_cross,
+        resampling_interpolation=resampling_interpolation,
         black_bg=black_bg, colorbar=colorbar, **kwargs)
 
     return display
@@ -299,7 +320,7 @@ class _MNI152Template(SpatialImage):
             data = data.astype(np.float)
             anat_mask = ndimage.morphology.binary_fill_holes(data > 0)
             data = np.ma.masked_array(data, np.logical_not(anat_mask))
-            self.affine = anat_img.get_affine()
+            self._affine = anat_img.affine
             self.data = data
             self.vmax = data.max()
             self._shape = anat_img.shape
@@ -308,9 +329,14 @@ class _MNI152Template(SpatialImage):
         self.load()
         return self.data
 
+    @property
+    def affine(self):
+        self.load()
+        return self._affine
+
     def get_affine(self):
         self.load()
-        return self.affine
+        return self._affine
 
     @property
     def shape(self):
@@ -324,12 +350,15 @@ class _MNI152Template(SpatialImage):
     def __str__(self):
         return "<MNI152Template>"
 
+    def __repr__(self):
+        return "<MNI152Template>"
+
 
 # The constant that we use as a default in functions
 MNI152TEMPLATE = _MNI152Template()
 
 
-def _load_anat(anat_img=MNI152TEMPLATE, dim=False, black_bg='auto'):
+def _load_anat(anat_img=MNI152TEMPLATE, dim='auto', black_bg='auto'):
     """ Internal function used to load anatomy, for optional diming
     """
     vmin = None
@@ -350,11 +379,14 @@ def _load_anat(anat_img=MNI152TEMPLATE, dim=False, black_bg='auto'):
             black_bg = False
     else:
         anat_img = _utils.check_niimg_3d(anat_img)
+        # Clean anat_img for non-finite values to avoid computing unnecessary
+        # border data values.
+        data = _safe_get_data(anat_img, ensure_finite=True)
+        anat_img = new_img_like(anat_img, data, affine=anat_img.affine)
         if dim or black_bg == 'auto':
             # We need to inspect the values of the image
-            data = anat_img.get_data()
-            vmin = data.min()
-            vmax = data.max()
+            vmin = np.nanmin(data)
+            vmax = np.nanmax(data)
         if black_bg == 'auto':
             # Guess if the background is rather black or light based on
             # the values of voxels near the border
@@ -364,6 +396,10 @@ def _load_anat(anat_img=MNI152TEMPLATE, dim=False, black_bg='auto'):
             else:
                 black_bg = True
     if dim:
+        if dim != 'auto' and not isinstance(dim, numbers.Number):
+            raise ValueError(
+                "The input given for 'dim' needs to be a float. "
+                "You provided dim=%s in %s" % (str(dim), type(dim)))
         vmean = .5 * (vmin + vmax)
         ptp = .5 * (vmax - vmin)
         if black_bg:
@@ -373,18 +409,18 @@ def _load_anat(anat_img=MNI152TEMPLATE, dim=False, black_bg='auto'):
         else:
             if not isinstance(dim, numbers.Number):
                 dim = .6
-            vmin = vmean - (1 + dim) * ptp
+            vmin = .5 * (2 - dim) * vmean - (1 + dim) * ptp
     return anat_img, black_bg, vmin, vmax
 
 
-################################################################################
+###############################################################################
 # Usage-specific functions
 
 
 def plot_anat(anat_img=MNI152TEMPLATE, cut_coords=None,
               output_file=None, display_mode='ortho', figure=None,
               axes=None, title=None, annotate=True, threshold=None,
-              draw_cross=True, black_bg='auto', dim=False, cmap=plt.cm.gray,
+              draw_cross=True, black_bg='auto', dim='auto', cmap=plt.cm.gray,
               vmin=None, vmax=None, **kwargs):
     """ Plot cuts of an anatomical image (by default 3 cuts:
         Frontal, Axial, and Lateral)
@@ -392,10 +428,10 @@ def plot_anat(anat_img=MNI152TEMPLATE, cut_coords=None,
         Parameters
         ----------
         anat_img : Niimg-like object
-            See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
+            See http://nilearn.github.io/manipulating_images/input_output.html
             The anatomical image to be used as a background. If None is
             given, nilearn tries to find a T1 template.
-        cut_coords: None, a tuple of floats, or an integer
+        cut_coords : None, a tuple of floats, or an integer
             The MNI coordinates of the point where the cut is performed
             If display_mode is 'ortho', this should be a 3-tuple: (x, y, z)
             For display_mode == 'x', 'y', or 'z', then these are the
@@ -403,12 +439,12 @@ def plot_anat(anat_img=MNI152TEMPLATE, cut_coords=None,
             If None is given, the cuts is calculated automaticaly.
             If display_mode is 'x', 'y' or 'z', cut_coords can be an integer,
             in which case it specifies the number of cuts to perform
-        output_file: string, or None, optional
+        output_file : string, or None, optional
             The name of an image file to export the plot to. Valid extensions
             are .png, .pdf, .svg. If output_file is not None, the plot
             is saved to a file, and the display is closed.
-        display_mode: {'ortho', 'x', 'y', 'z'}
-            Choose the direction of the cuts: 'x' - saggital, 'y' - coronal,
+        display_mode : {'ortho', 'x', 'y', 'z', 'yx', 'xz', 'yz'}
+            Choose the direction of the cuts: 'x' - sagittal, 'y' - coronal,
             'z' - axial, 'ortho' - three cuts are performed in orthogonal
             directions.
         figure : integer or matplotlib figure, optional
@@ -420,7 +456,7 @@ def plot_anat(anat_img=MNI152TEMPLATE, cut_coords=None,
             figure is used.
         title : string, optional
             The title displayed on the figure.
-        annotate: boolean, optional
+        annotate : boolean, optional
             If annotate is True, positions and left/right annotation
             are added to the plot.
         threshold : a number, None, or 'auto', optional
@@ -429,28 +465,35 @@ def plot_anat(anat_img=MNI152TEMPLATE, cut_coords=None,
             values below the threshold (in absolute value) are plotted
             as transparent. If auto is given, the threshold is determined
             magically by analysis of the image.
-        draw_cross: boolean, optional
+        draw_cross : boolean, optional
             If draw_cross is True, a cross is drawn on the plot to
             indicate the cut plosition.
-        black_bg: boolean, optional
+        black_bg : boolean, optional
             If True, the background of the image is set to be black. If
             you wish to save figures with a black background, you
             will need to pass "facecolor='k', edgecolor='k'"
             to matplotlib.pyplot.savefig.
-        dim: boolean or float, optional
-            Dimming factor applied to background image. If True, automatic
-            heuristics are applied. Accepted float values are between -1 and 1.
-        cmap: matplotlib colormap, optional
+        dim : float, 'auto' (by default), optional
+            Dimming factor applied to background image. By default, automatic
+            heuristics are applied based upon the image intensity.
+            Accepted float values, where a typical span is between -2 and 2
+            (-2 = increase contrast; 2 = decrease contrast), but larger
+            values can be used for a more pronounced effect. 0 means no
+            dimming.
+        cmap : matplotlib colormap, optional
             The colormap for the anat
-        vmin: float
+        vmin : float
             Lower bound for plotting, passed to matplotlib.pyplot.imshow
-        vmax: float
+        vmax : float
             Upper bound for plotting, passed to matplotlib.pyplot.imshow
 
         Notes
         -----
         Arrays should be passed in numpy convention: (x, y, z)
         ordered.
+
+        For visualization, non-finite values found in passed 'anat_img'
+        are set to zero.
     """
     anat_img, black_bg, anat_vmin, anat_vmax = _load_anat(
         anat_img,
@@ -473,7 +516,7 @@ def plot_anat(anat_img=MNI152TEMPLATE, cut_coords=None,
 def plot_epi(epi_img=None, cut_coords=None, output_file=None,
              display_mode='ortho', figure=None, axes=None, title=None,
              annotate=True, draw_cross=True, black_bg=True,
-             cmap=plt.cm.spectral, vmin=None, vmax=None, **kwargs):
+             cmap=plt.cm.nipy_spectral, vmin=None, vmax=None, **kwargs):
     """ Plot cuts of an EPI image (by default 3 cuts:
         Frontal, Axial, and Lateral)
 
@@ -481,7 +524,7 @@ def plot_epi(epi_img=None, cut_coords=None, output_file=None,
         ----------
         epi_img : a nifti-image like object or a filename
             The EPI (T2*) image
-        cut_coords: None, a tuple of floats, or an integer
+        cut_coords : None, a tuple of floats, or an integer
             The MNI coordinates of the point where the cut is performed
             If display_mode is 'ortho', this should be a 3-tuple: (x, y, z)
             For display_mode == 'x', 'y', or 'z', then these are the
@@ -489,12 +532,12 @@ def plot_epi(epi_img=None, cut_coords=None, output_file=None,
             If None is given, the cuts is calculated automaticaly.
             If display_mode is 'x', 'y' or 'z', cut_coords can be an integer,
             in which case it specifies the number of cuts to perform
-        output_file: string, or None, optional
+        output_file : string, or None, optional
             The name of an image file to export the plot to. Valid extensions
             are .png, .pdf, .svg. If output_file is not None, the plot
             is saved to a file, and the display is closed.
-        display_mode: {'ortho', 'x', 'y', 'z'}
-            Choose the direction of the cuts: 'x' - saggital, 'y' - coronal,
+        display_mode : {'ortho', 'x', 'y', 'z', 'yx', 'xz', 'yz'}
+            Choose the direction of the cuts: 'x' - sagittal, 'y' - coronal,
             'z' - axial, 'ortho' - three cuts are performed in orthogonal
             directions.
         figure : integer or matplotlib figure, optional
@@ -506,18 +549,18 @@ def plot_epi(epi_img=None, cut_coords=None, output_file=None,
             figure is used.
         title : string, optional
             The title displayed on the figure.
-        annotate: boolean, optional
+        annotate : boolean, optional
             If annotate is True, positions and left/right annotation
             are added to the plot.
-        draw_cross: boolean, optional
+        draw_cross : boolean, optional
             If draw_cross is True, a cross is drawn on the plot to
             indicate the cut plosition.
-        black_bg: boolean, optional
+        black_bg : boolean, optional
             If True, the background of the image is set to be black. If
             you wish to save figures with a black background, you
             will need to pass "facecolor='k', edgecolor='k'"
             to matplotlib.pyplot.savefig.
-        cmap: matplotlib colormap, optional
+        cmap : matplotlib colormap, optional
             The colormap for specified image
         threshold : a number, None, or 'auto'
             If None is given, the image is not thresholded.
@@ -525,9 +568,9 @@ def plot_epi(epi_img=None, cut_coords=None, output_file=None,
             values below the threshold (in absolute value) are plotted
             as transparent. If auto is given, the threshold is determined
             magically by analysis of the image.
-        vmin: float
+        vmin : float
             Lower bound for plotting, passed to matplotlib.pyplot.imshow
-        vmax: float
+        vmax : float
             Upper bound for plotting, passed to matplotlib.pyplot.imshow
 
         Notes
@@ -547,7 +590,8 @@ def plot_epi(epi_img=None, cut_coords=None, output_file=None,
 def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None,
              output_file=None, display_mode='ortho', figure=None, axes=None,
              title=None, annotate=True, draw_cross=True, black_bg='auto',
-             alpha=0.7, cmap=plt.cm.gist_ncar, dim=True, vmin=None, vmax=None,
+             threshold=0.5, alpha=0.7, cmap=plt.cm.gist_ncar, dim='auto',
+             vmin=None, vmax=None, resampling_interpolation='nearest',
              **kwargs):
     """ Plot cuts of an ROI/mask image (by default 3 cuts: Frontal, Axial, and
         Lateral)
@@ -555,26 +599,27 @@ def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None,
         Parameters
         ----------
         roi_img : Niimg-like object
-            See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
+            See http://nilearn.github.io/manipulating_images/input_output.html
             The ROI/mask image, it could be binary mask or an atlas or ROIs
             with integer values.
         bg_img : Niimg-like object
-            See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
+            See http://nilearn.github.io/manipulating_images/input_output.html
             The background image that the ROI/mask will be plotted on top of.
-            If not specified MNI152 template will be used.
-        cut_coords: None, or a tuple of floats
+            If nothing is specified, the MNI152 template will be used.
+            To turn off background image, just pass "bg_img=None".
+        cut_coords : None, or a tuple of floats
             The MNI coordinates of the point where the cut is performed, in
             MNI coordinates and order.
             If display_mode is 'ortho', this should be a 3-tuple: (x, y, z)
             For display_mode == 'x', 'y', or 'z', then these are the
             coordinates of each cut in the corresponding direction.
             If None is given, the cuts is calculated automaticaly.
-        output_file: string, or None, optional
+        output_file : string, or None, optional
             The name of an image file to export the plot to. Valid extensions
             are .png, .pdf, .svg. If output_file is not None, the plot
             is saved to a file, and the display is closed.
-        display_mode: {'ortho', 'x', 'y', 'z'}
-            Choose the direction of the cuts: 'x' - saggital, 'y' - coronal,
+        display_mode : {'ortho', 'x', 'y', 'z', 'yx', 'xz', 'yz'}
+            Choose the direction of the cuts: 'x' - sagittal, 'y' - coronal,
             'z' - axial, 'ortho' - three cuts are performed in orthogonal
             directions.
         figure : integer or matplotlib figure, optional
@@ -586,94 +631,128 @@ def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None,
             figure is used.
         title : string, optional
             The title displayed on the figure.
-        annotate: boolean, optional
+        annotate : boolean, optional
             If annotate is True, positions and left/right annotation
             are added to the plot.
-        draw_cross: boolean, optional
+        draw_cross : boolean, optional
             If draw_cross is True, a cross is drawn on the plot to
             indicate the cut plosition.
-        black_bg: boolean, optional
+        black_bg : boolean, optional
             If True, the background of the image is set to be black. If
             you wish to save figures with a black background, you
             will need to pass "facecolor='k', edgecolor='k'"
             to matplotlib.pyplot.savefig.
-        threshold : a number, None, or 'auto'
+        threshold : None, 'auto', or a number (0.5 by default), optional
             If None is given, the image is not thresholded.
             If a number is given, it is used to threshold the image:
             values below the threshold (in absolute value) are plotted
             as transparent. If auto is given, the threshold is determined
             magically by analysis of the image.
-        dim: boolean or float, optional
-            Dimming factor applied to background image. If True, automatic
-            heuristics are applied. Accepted float values are between -1 and 1.
-        vmin: float
+        dim : float, 'auto' (by default), optional
+            Dimming factor applied to background image. By default, automatic
+            heuristics are applied based upon the background image intensity.
+            Accepted float values, where a typical span is between -2 and 2
+            (-2 = increase contrast; 2 = decrease contrast), but larger values
+            can be used for a more pronounced effect. 0 means no dimming.
+        vmin : float
             Lower bound for plotting, passed to matplotlib.pyplot.imshow
-        vmax: float
+        vmax : float
             Upper bound for plotting, passed to matplotlib.pyplot.imshow
+        resampling_interpolation : str
+            Interpolation to use when resampling the image to the destination
+            space. Can be "continuous" to use 3rd-order spline interpolation,
+            or "nearest" (default) to use nearest-neighbor mapping.
+            "nearest" is faster but can be noisier in some cases.
 
-    """
+        Notes
+        -----
+        A small threshold is applied by default to eliminate numerical
+        background noise.
+
+        For visualization, non-finite values found in passed 'roi_img' or
+        'bg_img' are set to zero.
+
+        See Also
+        --------
+        nilearn.plotting.plot_prob_atlas : To simply plot probabilistic atlases
+            (4D images)
+    """  # noqa: E501
     bg_img, black_bg, bg_vmin, bg_vmax = _load_anat(bg_img, dim=dim,
                                                     black_bg=black_bg)
 
-    display = _plot_img_with_bg(img=roi_img, bg_img=bg_img,
-                                cut_coords=cut_coords,
-                                output_file=output_file,
-                                display_mode=display_mode,
-                                figure=figure, axes=axes, title=title,
-                                annotate=annotate,
-                                draw_cross=draw_cross,
-                                black_bg=black_bg, threshold=0.5,
-                                bg_vmin=bg_vmin, bg_vmax=bg_vmax,
-                                resampling_interpolation='nearest',
-                                alpha=alpha, cmap=cmap,
-                                vmin=vmin, vmax=vmax, **kwargs)
+    display = _plot_img_with_bg(
+        img=roi_img, bg_img=bg_img, cut_coords=cut_coords,
+        output_file=output_file, display_mode=display_mode,
+        figure=figure, axes=axes, title=title, annotate=annotate,
+        draw_cross=draw_cross, black_bg=black_bg,
+        threshold=threshold, bg_vmin=bg_vmin, bg_vmax=bg_vmax,
+        resampling_interpolation=resampling_interpolation,
+        alpha=alpha, cmap=cmap, vmin=vmin, vmax=vmax, **kwargs)
     return display
 
 
-def plot_prob_atlas(maps_img, anat_img=MNI152TEMPLATE, view_type='auto',
-                    threshold=None, linewidths=2.5, cut_coords=None,
+def plot_prob_atlas(maps_img, bg_img=MNI152TEMPLATE, view_type='auto',
+                    threshold='auto', linewidths=2.5, cut_coords=None,
                     output_file=None, display_mode='ortho',
                     figure=None, axes=None, title=None, annotate=True,
-                    draw_cross=True, black_bg='auto', dim=False,
+                    draw_cross=True, black_bg='auto', dim='auto',
+                    colorbar=False,
                     cmap=plt.cm.gist_rainbow, vmin=None, vmax=None,
-                    alpha=0.5, **kwargs):
-
+                    alpha=0.5, anat_img=None, **kwargs):
     """ Plot the probabilistic atlases onto the anatomical image
         by default MNI template
 
         Parameters
         ----------
-        maps_img: Niimg-like object or the filename
+        maps_img : Niimg-like object or the filename
             4D image of the probabilistic atlas maps
+        bg_img : Niimg-like object
+            See http://nilearn.github.io/manipulating_images/input_output.html
+            The anatomical image to be used as a background.
+            If nothing is specified, the MNI152 template will be used.
+            To turn off background image, just pass "bg_img=False".
+
+            .. versionadded:: 0.4.0
+
         anat_img : Niimg-like object
-            See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
-            The anatomical image to be used as a background. If None is
-            given, nilearn tries to find a T1 template.
-        view_type: {'auto', 'contours', 'filled_contours', 'continuous'}, optional
-            By default view_type == 'auto', which means maps are overlayed as
-            contours if number of maps to display are more or
-            overlayed as continuous colors if number of maps are less.
+            See `bg_img` for complete description.
+            Note : anat_img is deprecated and will be removed in 0.5.
+            Use `bg_img` instead.
+
+            .. deprecated:: 0.4.0
+
+        view_type : {'auto', 'contours', 'filled_contours', 'continuous'}, optional
+            By default view_type == 'auto', means maps will be displayed
+            automatically using any one of the three view types. The automatic
+            selection of view type depends on the total number of maps.
             If view_type == 'contours', maps are overlayed as contours
             If view_type == 'filled_contours', maps are overlayed as contours
             along with color fillings inside the contours.
             If view_type == 'continuous', maps are overlayed as continous
             colors irrespective of the number maps.
-        threshold: None, a str or a number, list of either str or number, optional
-            If threshold is a string it must finish with a percent sign,
-            e.g. "25.3%", and it is a percentile. Or if it is a number,
-            it should be a real number, in which case it is the value
-            to threshold at.
-            This option is served for two purposes, for contours and contour
-            fillings threshold serves to select the level of the maps
-            to display and same threshold is applied for color fillings.
-            For continuous overlays this threshold value serves to select
-            the maps which are greater than a given value or list of given
-            values. If None is given, the maps are thresholded with default
-            value.
-        linewidths: float, optional
+        threshold : a str or a number, list of str or numbers, None
+            This parameter is optional and is used to threshold the maps image
+            using the given value or automatically selected value. The values
+            in the image above the threshold level will be visualized.
+            The default strategy, computes a threshold level that seeks to
+            minimize (yet not eliminate completely) the overlap between several
+            maps for a better visualization.
+            The threshold can also be expressed as a percentile over the values
+            of the whole atlas. In that case, the value must be specified as
+            string finishing with a percent sign, e.g., "25.3%".
+            If a single string is provided, the same percentile will be applied
+            over the whole atlas. Otherwise, if a list of percentiles is
+            provided, each 3D map is thresholded with certain percentile
+            sequentially. Length of percentiles given should match the number
+            of 3D map in time (4th) dimension.
+            If a number or a list of numbers, the given value will be used
+            directly to threshold the maps without any percentile calculation.
+            If None, a very small threshold is applied to remove numerical
+            noise from the maps background.
+        linewidths : float, optional
             This option can be used to set the boundary thickness of the
             contours.
-        cut_coords: None, a tuple of floats, or an integer
+        cut_coords : None, a tuple of floats, or an integer
             The MNI coordinates of the point where the cut is performed
             If display_mode is 'ortho', this should be a 3-tuple: (x, y, z)
             For display_mode == 'x', 'y', or 'z', then these are the
@@ -681,27 +760,27 @@ def plot_prob_atlas(maps_img, anat_img=MNI152TEMPLATE, view_type='auto',
             If None is given, the cuts is calculated automaticaly.
             If display_mode is 'x', 'y' or 'z', cut_coords can be an integer,
             in which case it specifies the number of cuts to perform
-        output_file: string, or None, optional
+        output_file : string, or None, optional
             The name of an image file to export the plot to. Valid extensions
             are .png, .pdf, .svg. If output_file is not None, the plot
             is saved to a file, and the display is closed.
-        display_mode: {'ortho', 'x', 'y', 'z'}
-            Choose the direction of the cuts: 'x' - saggital, 'y' - coronal,
+        display_mode : {'ortho', 'x', 'y', 'z', 'yx', 'xz', 'yz'}
+            Choose the direction of the cuts: 'x' - sagittal, 'y' - coronal,
             'z' - axial, 'ortho' - three cuts are performed in orthogonal
             directions.
-        figure: integer or matplotlib figure, optional
+        figure : integer or matplotlib figure, optional
             Matplotlib figure used or its number. If None is given, a
             new figure is created.
-        axes: matplotlib axes or 4 tuple of float: (xmin, ymin, width, height), optional
+        axes : matplotlib axes or 4 tuple of float: (xmin, ymin, width, height), optional
             The axes, or the coordinates, in matplotlib figure space,
             of the axes used to display the plot. If None, the complete
             figure is used.
-        title: string, optional
+        title : string, optional
             The title displayed on the figure.
-        annotate: boolean, optional
+        annotate : boolean, optional
             If annotate is True, positions and left/right annotation
             are added to the plot.
-        draw_cross: boolean, optional
+        draw_cross : boolean, optional
             If draw_cross is True, a cross is drawn on the plot to
             indicate the cut plosition.
         black_bg: boolean, optional
@@ -709,24 +788,40 @@ def plot_prob_atlas(maps_img, anat_img=MNI152TEMPLATE, view_type='auto',
             you wish to save figures with a black background, you
             will need to pass "facecolor='k', edgecolor='k'" to pylab's
             savefig.
-        dim: boolean or float, optional
-            Dimming factor applied to background image. If True, automatic
-            heuristics are applied. Accepted float values are between -1 and 1.
-        cmap: matplotlib colormap, optional
+        dim : float, 'auto' (by default), optional
+            Dimming factor applied to background image. By default, automatic
+            heuristics are applied based upon the background image intensity.
+            Accepted float values, where a typical span is between -2 and 2
+            (-2 = increase contrast; 2 = decrease contrast), but larger values
+            can be used for a more pronounced effect. 0 means no dimming.
+        cmap : matplotlib colormap, optional
             The colormap for the atlas maps
-        vmin: float
+        colorbar : boolean, optional
+            If True, display a colorbar on the right of the plots.
+        vmin : float
             Lower bound for plotting, passed to matplotlib.pyplot.imshow
-        vmax: float
+        vmax : float
             Upper bound for plotting, passed to matplotlib.pyplot.imshow
-        alpha: float between 0 and 1
+        alpha : float between 0 and 1
             Alpha sets the transparency of the color inside the filled
             contours.
+
+        See Also
+        --------
+        nilearn.plotting.plot_roi : To simply plot max-prob atlases (3D images)
+
     """
-    display = plot_anat(anat_img, cut_coords=cut_coords,
+    if anat_img is not None:
+        bg_img = anat_img
+        warn_str = ("anat_img is deprecated and will be removed in 0.5. "
+                    "Use `bg_img` instead.")
+        warnings.warn(warn_str, VisibleDeprecationWarning, stacklevel=2)
+
+    display = plot_anat(bg_img, cut_coords=cut_coords,
                         display_mode=display_mode,
                         figure=figure, axes=axes, title=title,
                         annotate=annotate, draw_cross=draw_cross,
-                        black_bg=black_bg, **kwargs)
+                        black_bg=black_bg, dim=dim, **kwargs)
 
     maps_img = _utils.check_niimg_4d(maps_img)
     n_maps = maps_img.shape[3]
@@ -750,6 +845,8 @@ def plot_prob_atlas(maps_img, anat_img=MNI152TEMPLATE, view_type='auto',
             view_type = 'continuous'
 
     if threshold is None:
+        threshold = 1e-6
+    elif threshold == 'auto':
         # it will use default percentage,
         # strategy is to avoid maximum overlaps as possible
         if view_type == 'contours':
@@ -770,7 +867,6 @@ def plot_prob_atlas(maps_img, anat_img=MNI152TEMPLATE, view_type='auto',
         threshold = [threshold] * n_maps
 
     filled = view_type.startswith('filled')
-
     for (map_img, color, thr) in zip(iter_img(maps_img), color_list,
                                      threshold):
         data = map_img.get_data()
@@ -780,6 +876,7 @@ def plot_prob_atlas(maps_img, anat_img=MNI152TEMPLATE, view_type='auto',
                               name='threshold')
         # Get rid of background values in all cases
         thr = max(thr, 1e-6)
+
         if view_type == 'continuous':
             display.add_overlay(map_img, threshold=thr,
                                 cmap=cm.alpha_cmap(color))
@@ -787,8 +884,28 @@ def plot_prob_atlas(maps_img, anat_img=MNI152TEMPLATE, view_type='auto',
             display.add_contours(map_img, levels=[thr],
                                  linewidths=linewidths,
                                  colors=[color], filled=filled,
-                                 alpha=alpha, linestyles='solid')
-
+                                 alpha=alpha, linestyles='solid', )
+    if colorbar:
+        display._colorbar = True
+        # Create a colormap from color list to feed display
+        cmap = matplotlib.colors.LinearSegmentedColormap.from_list(
+            'segmented colors', color_list, n_maps + 1)
+        display._show_colorbar(cmap, matplotlib.colors.Normalize(1,
+                                                                 n_maps + 1))
+        tick_locator = matplotlib.ticker.MaxNLocator(nbins=10)
+        display.locator = tick_locator
+        display._cbar.update_ticks()
+        tick_location = np.round(np.linspace(1,
+                                             n_maps,
+                                             min(n_maps, 10))).astype('int')
+        display._cbar.set_ticks(tick_location + .5)
+        display._cbar.set_ticklabels(tick_location)
+        left, bottom, width, height = display._colorbar_ax.\
+            get_position().bounds
+        display._colorbar_ax.set_position([left, bottom, width, height * 0.95])
+        display._colorbar_ax.annotate('Map #', xy=(1, 1.03), ha='right',
+                                      va='bottom',
+                                      xycoords='axes fraction')
     if output_file is not None:
         display.savefig(output_file)
         display.close()
@@ -802,19 +919,21 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
                   figure=None, axes=None, title=None, threshold=1e-6,
                   annotate=True, draw_cross=True, black_bg='auto',
                   cmap=cm.cold_hot, symmetric_cbar="auto",
-                  dim=True, vmax=None, **kwargs):
+                  dim='auto', vmax=None, resampling_interpolation='continuous',
+                  **kwargs):
     """ Plot cuts of an ROI/mask image (by default 3 cuts: Frontal, Axial, and
         Lateral)
 
         Parameters
         ----------
         stat_map_img : Niimg-like object
-            See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
+            See http://nilearn.github.io/manipulating_images/input_output.html
             The statistical map image
         bg_img : Niimg-like object
-            See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
+            See http://nilearn.github.io/manipulating_images/input_output.html
             The background image that the ROI/mask will be plotted on top of.
-            If not specified MNI152 template will be used.
+            If nothing is specified, the MNI152 template will be used.
+            To turn off background image, just pass "bg_img=False".
         cut_coords : None, a tuple of floats, or an integer
             The MNI coordinates of the point where the cut is performed
             If display_mode is 'ortho', this should be a 3-tuple: (x, y, z)
@@ -827,8 +946,8 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
             The name of an image file to export the plot to. Valid extensions
             are .png, .pdf, .svg. If output_file is not None, the plot
             is saved to a file, and the display is closed.
-        display_mode : {'ortho', 'x', 'y', 'z'}
-            Choose the direction of the cuts: 'x' - saggital, 'y' - coronal,
+        display_mode : {'ortho', 'x', 'y', 'z', 'yx', 'xz', 'yz'}
+            Choose the direction of the cuts: 'x' - sagittal, 'y' - coronal,
             'z' - axial, 'ortho' - three cuts are performed in orthogonal
             directions.
         colorbar : boolean, optional
@@ -848,33 +967,55 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
             values below the threshold (in absolute value) are plotted
             as transparent. If auto is given, the threshold is determined
             magically by analysis of the image.
-        annotate: boolean, optional
+        annotate : boolean, optional
             If annotate is True, positions and left/right annotation
             are added to the plot.
-        draw_cross: boolean, optional
+        draw_cross : boolean, optional
             If draw_cross is True, a cross is drawn on the plot to
             indicate the cut plosition.
-        black_bg: boolean, optional
+        black_bg : boolean, optional
             If True, the background of the image is set to be black. If
             you wish to save figures with a black background, you
             will need to pass "facecolor='k', edgecolor='k'"
             to matplotlib.pyplot.savefig.
-        cmap: matplotlib colormap, optional
+        cmap : matplotlib colormap, optional
             The colormap for specified image. The ccolormap *must* be
             symmetrical.
-        symmetric_cbar: boolean or 'auto', optional, default 'auto'
+        symmetric_cbar : boolean or 'auto', optional, default 'auto'
             Specifies whether the colorbar should range from -vmax to vmax
             or from vmin to vmax. Setting to 'auto' will select the latter if
             the range of the whole image is either positive or negative.
             Note: The colormap will always be set to range from -vmax to vmax.
-        vmax: float
+        dim : float, 'auto' (by default), optional
+            Dimming factor applied to background image. By default, automatic
+            heuristics are applied based upon the background image intensity.
+            Accepted float values, where a typical scan is between -2 and 2
+            (-2 = increase constrast; 2 = decrease contrast), but larger values
+            can be used for a more pronounced effect. 0 means no dimming.
+        vmax : float
             Upper bound for plotting, passed to matplotlib.pyplot.imshow
+        resampling_interpolation : str
+            Interpolation to use when resampling the image to the destination
+            space. Can be "continuous" (default) to use 3rd-order spline
+            interpolation, or "nearest" to use nearest-neighbor mapping.
+            "nearest" is faster but can be noisier in some cases.
 
         Notes
         -----
         Arrays should be passed in numpy convention: (x, y, z)
         ordered.
-    """
+
+        For visualization, non-finite values found in passed 'stat_map_img' or
+        'bg_img' are set to zero.
+
+        See Also
+        --------
+
+        nilearn.plotting.plot_anat : To simply plot anatomical images
+        nilearn.plotting.plot_epi : To simply plot raw EPI images
+        nilearn.plotting.plot_glass_brain : To plot maps in a glass brain
+
+    """  # noqa: E501
     # dim the background
     bg_img, black_bg, bg_vmin, bg_vmax = _load_anat(bg_img, dim=dim,
                                                     black_bg=black_bg)
@@ -882,23 +1023,19 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
     stat_map_img = _utils.check_niimg_3d(stat_map_img, dtype='auto')
 
     cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
-        stat_map_img,
+        _safe_get_data(stat_map_img, ensure_finite=True),
         vmax,
         symmetric_cbar,
         kwargs)
 
-    display = _plot_img_with_bg(img=stat_map_img, bg_img=bg_img,
-                                cut_coords=cut_coords,
-                                output_file=output_file,
-                                display_mode=display_mode,
-                                figure=figure, axes=axes, title=title,
-                                annotate=annotate, draw_cross=draw_cross,
-                                black_bg=black_bg, threshold=threshold,
-                                bg_vmin=bg_vmin, bg_vmax=bg_vmax, cmap=cmap,
-                                vmin=vmin, vmax=vmax, colorbar=colorbar,
-                                cbar_vmin=cbar_vmin, cbar_vmax=cbar_vmax,
-                                resampling_interpolation='continuous',
-                                **kwargs)
+    display = _plot_img_with_bg(
+        img=stat_map_img, bg_img=bg_img, cut_coords=cut_coords,
+        output_file=output_file, display_mode=display_mode,
+        figure=figure, axes=axes, title=title, annotate=annotate,
+        draw_cross=draw_cross, black_bg=black_bg, threshold=threshold,
+        bg_vmin=bg_vmin, bg_vmax=bg_vmax, cmap=cmap, vmin=vmin, vmax=vmax,
+        colorbar=colorbar, cbar_vmin=cbar_vmin, cbar_vmax=cbar_vmax,
+        resampling_interpolation=resampling_interpolation, **kwargs)
 
     return display
 
@@ -913,25 +1050,32 @@ def plot_glass_brain(stat_map_img,
                      vmin=None, vmax=None,
                      plot_abs=True,
                      symmetric_cbar="auto",
+                     resampling_interpolation='continuous',
                      **kwargs):
     """Plot 2d projections of an ROI/mask image (by default 3 projections:
         Frontal, Axial, and Lateral). The brain glass schematics
         are added on top of the image.
 
+        The plotted image should be in MNI space for this function to work
+        properly.
+
         Parameters
         ----------
         stat_map_img : Niimg-like object
-            See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
+            See http://nilearn.github.io/manipulating_images/input_output.html
             The statistical map image. It needs to be in MNI space
             in order to align with the brain schematics.
         output_file : string, or None, optional
             The name of an image file to export the plot to. Valid extensions
             are .png, .pdf, .svg. If output_file is not None, the plot
             is saved to a file, and the display is closed.
-        display_mode : {'ortho', 'x', 'y', 'z'}
-            Choose the direction of the cuts: 'x' - saggital, 'y' - coronal,
-            'z' - axial, 'ortho' - three cuts are performed in orthogonal
-            directions.
+        display_mode : string, optional. Default is 'ortho'
+            Choose the direction of the cuts: 'x' - sagittal, 'y' - coronal,
+            'z' - axial, 'l' - sagittal left hemisphere only,
+            'r' - sagittal right hemisphere only, 'ortho' - three cuts are
+            performed in orthogonal directions. Possible values are: 'ortho',
+            'x', 'y', 'z', 'xz', 'yx', 'yz', 'l', 'r', 'lr', 'lzr', 'lyr',
+            'lzry', 'lyrz'.
         colorbar : boolean, optional
             If True, display a colorbar on the right of the plots.
         figure : integer or matplotlib figure, optional
@@ -949,32 +1093,37 @@ def plot_glass_brain(stat_map_img,
             values below the threshold (in absolute value) are plotted
             as transparent. If auto is given, the threshold is determined
             magically by analysis of the image.
-        annotate: boolean, optional
+        annotate : boolean, optional
             If annotate is True, positions and left/right annotation
             are added to the plot.
-        black_bg: boolean, optional
+        black_bg : boolean, optional
             If True, the background of the image is set to be black. If
             you wish to save figures with a black background, you
             will need to pass "facecolor='k', edgecolor='k'"
             to matplotlib.pyplot.savefig.
-        cmap: matplotlib colormap, optional
+        cmap : matplotlib colormap, optional
             The colormap for specified image
-        alpha: float between 0 and 1
+        alpha : float between 0 and 1
             Alpha transparency for the brain schematics
-        vmax: float
+        vmax : float
             Upper bound for plotting, passed to matplotlib.pyplot.imshow
-        plot_abs: boolean, optional
+        plot_abs : boolean, optional
             If set to True (default) maximum intensity projection of the
             absolute value will be used (rendering positive and negative
             values in the same manner). If set to false the sign of the
             maximum intensity will be represented with different colors.
-            See http://nilearn.github.io/auto_examples/manipulating_visualizing/plot_demo_glass_brain_extensive.html
+            See http://nilearn.github.io/auto_examples/01_plotting/plot_demo_glass_brain_extensive.html
             for examples.
-        symmetric_cbar: boolean or 'auto', optional, default 'auto'
+        symmetric_cbar : boolean or 'auto', optional, default 'auto'
             Specifies whether the colorbar should range from -vmax to vmax
             or from vmin to vmax. Setting to 'auto' will select the latter if
             the range of the whole image is either positive or negative.
             Note: The colormap will always be set to range from -vmax to vmax.
+        resampling_interpolation : str
+            Interpolation to use when resampling the image to the destination
+            space. Can be "continuous" (default) to use 3rd-order spline
+            interpolation, or "nearest" to use nearest-neighbor mapping.
+            "nearest" is faster but can be noisier in some cases.
 
         Notes
         -----
@@ -989,14 +1138,14 @@ def plot_glass_brain(stat_map_img,
         stat_map_img = _utils.check_niimg_3d(stat_map_img, dtype='auto')
         if plot_abs:
             cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
-                stat_map_img,
+                _safe_get_data(stat_map_img),
                 vmax,
                 symmetric_cbar,
                 kwargs,
                 0)
         else:
             cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
-                stat_map_img,
+                _safe_get_data(stat_map_img),
                 vmax,
                 symmetric_cbar,
                 kwargs)
@@ -1006,18 +1155,14 @@ def plot_glass_brain(stat_map_img,
     def display_factory(display_mode):
         return functools.partial(get_projector(display_mode),
                                  alpha=alpha, plot_abs=plot_abs)
-    display = _plot_img_with_bg(img=stat_map_img,
-                                output_file=output_file,
-                                display_mode=display_mode,
-                                figure=figure, axes=axes, title=title,
-                                annotate=annotate,
-                                black_bg=black_bg, threshold=threshold,
-                                cmap=cmap, colorbar=colorbar,
-                                display_factory=display_factory,
-                                resampling_interpolation='continuous',
-                                vmin=vmin, vmax=vmax,
-                                cbar_vmin=cbar_vmin, cbar_vmax=cbar_vmax,
-                                **kwargs)
+
+    display = _plot_img_with_bg(
+        img=stat_map_img, output_file=output_file, display_mode=display_mode,
+        figure=figure, axes=axes, title=title, annotate=annotate,
+        black_bg=black_bg, threshold=threshold, cmap=cmap, colorbar=colorbar,
+        display_factory=display_factory, vmin=vmin, vmax=vmax,
+        cbar_vmin=cbar_vmin, cbar_vmax=cbar_vmax,
+        resampling_interpolation=resampling_interpolation, **kwargs)
 
     return display
 
@@ -1031,30 +1176,38 @@ def plot_connectome(adjacency_matrix, node_coords,
                     figure=None, axes=None, title=None,
                     annotate=True, black_bg=False,
                     alpha=0.7,
-                    edge_kwargs=None, node_kwargs=None):
+                    edge_kwargs=None, node_kwargs=None,
+                    colorbar=False):
     """Plot connectome on top of the brain glass schematics.
+
+        The plotted image should be in MNI space for this function to work
+        properly.
+
+        In the case of 'l' and 'r' directions (for hemispheric projections),
+        markers in the coordinate x == 0 are included in both hemispheres.
 
         Parameters
         ----------
-        adjacency_matrix: numpy array of shape (n, n)
+        adjacency_matrix : numpy array of shape (n, n)
             represents the link strengths of the graph. Assumed to be
             a symmetric matrix.
-        node_coords: numpy array_like of shape (n, 3)
+        node_coords : numpy array_like of shape (n, 3)
             3d coordinates of the graph nodes in world space.
-        node_color: color or sequence of colors
-            color(s) of the nodes.
-        node_size: scalar or array_like
+        node_color : color or sequence of colors
+            color(s) of the nodes. If string is given, all nodes
+            are plotted with same color given in string.
+        node_size : scalar or array_like
             size(s) of the nodes in points^2.
-        edge_cmap: colormap
+        edge_cmap : colormap
             colormap used for representing the strength of the edges.
-        edge_vmin: float, optional, default: None
-        edge_vmax: float, optional, default: None
+        edge_vmin : float, optional, default: None
+        edge_vmax : float, optional, default: None
                 If not None, either or both of these values will be used to
                 as the minimum and maximum values to color edges. If None are
                 supplied the maximum absolute value within the given threshold
                 will be used as minimum (multiplied by -1) and maximum
                 coloring levels.
-        edge_threshold: str or number
+        edge_threshold : str or number
             If it is a number only the edges with a value greater than
             edge_threshold will be shown.
             If it is a string it must finish with a percent sign,
@@ -1064,10 +1217,13 @@ def plot_connectome(adjacency_matrix, node_coords,
             The name of an image file to export the plot to. Valid extensions
             are .png, .pdf, .svg. If output_file is not None, the plot
             is saved to a file, and the display is closed.
-        display_mode : {'ortho', 'x', 'y', 'z'}
-            Choose the direction of the cuts: 'x' - saggital, 'y' - coronal,
-            'z' - axial, 'ortho' - three cuts are performed in orthogonal
-            directions.
+        display_mode : string, optional. Default is 'ortho'.
+            Choose the direction of the cuts: 'x' - sagittal, 'y' - coronal,
+            'z' - axial, 'l' - sagittal left hemisphere only,
+            'r' - sagittal right hemisphere only, 'ortho' - three cuts are
+            performed in orthogonal directions. Possible values are: 'ortho',
+            'x', 'y', 'z', 'xz', 'yx', 'yz', 'l', 'r', 'lr', 'lzr', 'lyr',
+            'lzry', 'lyrz'.
         figure : integer or matplotlib figure, optional
             Matplotlib figure used or its number. If None is given, a
             new figure is created.
@@ -1077,22 +1233,31 @@ def plot_connectome(adjacency_matrix, node_coords,
             figure is used.
         title : string, optional
             The title displayed on the figure.
-        annotate: boolean, optional
+        annotate : boolean, optional
             If annotate is True, positions and left/right annotation
             are added to the plot.
-        black_bg: boolean, optional
+        black_bg : boolean, optional
             If True, the background of the image is set to be black. If
             you wish to save figures with a black background, you
             will need to pass "facecolor='k', edgecolor='k'"
             to matplotlib.pyplot.savefig.
-        alpha: float between 0 and 1
+        alpha : float between 0 and 1
             Alpha transparency for the brain schematics.
-        edge_kwargs: dict
+        edge_kwargs : dict
             will be passed as kwargs for each edge matlotlib Line2D.
-        node_kwargs: dict
+        node_kwargs : dict
             will be passed as kwargs to the plt.scatter call that plots all
             the nodes in one go
+        colorbar : bool, optional
+            If True, display a colorbar on the right of the plots.
+            By default it is False.
 
+        See Also
+        ---------
+        nilearn.plotting.find_parcellation_cut_coords : Extraction of node
+            coords on brain parcellations.
+        nilearn.plotting.find_probabilistic_atlas_cut_coords : Extraction of
+            node coords on brain probabilisitic atlases.
     """
     display = plot_glass_brain(None,
                                display_mode=display_mode,
@@ -1105,7 +1270,8 @@ def plot_connectome(adjacency_matrix, node_coords,
                       edge_cmap=edge_cmap,
                       edge_vmin=edge_vmin, edge_vmax=edge_vmax,
                       edge_threshold=edge_threshold,
-                      edge_kwargs=edge_kwargs, node_kwargs=node_kwargs)
+                      edge_kwargs=edge_kwargs, node_kwargs=node_kwargs,
+                      colorbar=colorbar)
 
     if output_file is not None:
         display.savefig(output_file)

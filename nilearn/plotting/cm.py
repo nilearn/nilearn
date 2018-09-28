@@ -166,16 +166,43 @@ for _cmapname in list(_cmaps_data.keys()):  # needed as dict changes within loop
 ################################################################################
 # A few transparent colormaps
 for color, name in (((1, 0, 0), 'red'),
-                    ((0, 1, 0), 'blue'),
-                    ((0, 0, 1), 'green'),
+                    ((0, 1, 0), 'green'),
+                    ((0, 0, 1), 'blue'),
                     ):
     _cmap_d['%s_transparent' % name] = alpha_cmap(color, name=name)
     _cmap_d['%s_transparent_full_alpha_range' % name] = alpha_cmap(
         color, alpha_min=0,
         alpha_max=1, name=name)
 
+###############################################################################
+# HCP Connectome Workbench colormaps
+# As seen in  https://github.com/Washington-University/workbench src/Pallete
+roy_big_bl = _np.array([(255, 255, 0), (255, 200, 0),
+                        (255, 120, 0), (255, 0, 0),
+                        (200, 0, 0), (150, 0, 0),
+                        (100, 0, 0), (60, 0, 0),
+                        (0, 0, 0), (0, 0, 80),
+                        (0, 0, 170), (75, 0, 125),
+                        (125, 0, 160), (75, 125, 0),
+                        (0, 200, 0), (0, 255, 0),
+                        (0, 255, 255), (0, 255, 255)][::-1]) / 255
 
+videen_style = ['#000000', '#bbbbbb', '#dddddd', '#ffffff',
+                '#ff388d', '#e251e2', '#10b010', '#00ff00',
+                '#00ffff', '#000000', '#660033', '#33334c',
+                '#4c4c7f', '#7f7fcc', '#00ff00', '#10b010',
+                '#ffff00', '#ff9900', '#ff6900', '#ff0000']
+
+_cmap_d['roy_big_bl'] = _colors.LinearSegmentedColormap.from_list(
+    'roy_big_bl', roy_big_bl.tolist())
+_cmap_d['videen_style'] = _colors.LinearSegmentedColormap.from_list(
+    'videen_style', videen_style)
+
+# Save colormaps in the scope of the module
 locals().update(_cmap_d)
+# Register cmaps in matplotlib too
+for k, v in _cmap_d.items():
+    _cm.register_cmap(name=k, cmap=v)
 
 
 ################################################################################

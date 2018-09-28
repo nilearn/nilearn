@@ -1,6 +1,9 @@
 import warnings
 
+import numpy as np
+
 from .._utils.class_inspect import get_params
+from .._utils.cache_mixin import _check_memory
 from .multi_nifti_masker import MultiNiftiMasker
 from .nifti_masker import NiftiMasker
 
@@ -49,14 +52,14 @@ def check_embedded_nifti_masker(estimator, multi_subject=True):
     if multi_subject and hasattr(estimator, 'n_jobs'):
         # For MultiNiftiMasker only
         new_masker_params['n_jobs'] = estimator.n_jobs
-    new_masker_params['memory'] = estimator.memory
+    new_masker_params['memory'] = _check_memory(estimator.memory)
     new_masker_params['memory_level'] = max(0, estimator.memory_level - 1)
     new_masker_params['verbose'] = estimator.verbose
 
     # Raising warning if masker override parameters
     conflict_string = ""
     for param_key in sorted(estimator_params):
-        if new_masker_params[param_key] != estimator_params[param_key]:
+        if np.any(new_masker_params[param_key] != estimator_params[param_key]):
             conflict_string += ("Parameter {0} :\n"
                                 "    Masker parameter {1}"
                                 " - overriding estimator parameter {2}\n"

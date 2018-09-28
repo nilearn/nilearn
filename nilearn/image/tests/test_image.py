@@ -1,16 +1,20 @@
 """
 Test image pre-processing functions
 """
-from nose.tools import assert_true, assert_false
-from distutils.version import LooseVersion
+from nose.tools import assert_true, assert_false, assert_equal, assert_raises
 from nose import SkipTest
 
 import platform
 import os
+import sys
 import nibabel
+from nibabel import Nifti1Image
 import numpy as np
 from numpy.testing import assert_array_equal, assert_allclose
+from nilearn._utils.testing import assert_raises_regex, assert_warns
+from nilearn._utils.exceptions import DimensionError
 
+from nilearn import signal
 from nilearn.image import image
 from nilearn.image import resampling
 from nilearn.image import concat_imgs
@@ -18,6 +22,13 @@ from nilearn._utils import testing, niimg_conversions
 from nilearn.image import new_img_like
 from nilearn.image import threshold_img
 from nilearn.image import iter_img
+from nilearn.image import math_img
+from nilearn.image import largest_connected_component_img
+
+try:
+    import pandas as pd
+except Exception:
+    pass
 
 X64 = (platform.architecture()[0] == '64bit')
 
@@ -122,6 +133,15 @@ def test__smooth_array():
         np.testing.assert_equal(image._smooth_array(data, affine, fwhm='fast'),
                                 image._fast_smooth_array(data))
 
+    # Check corner case when fwhm=0. See #1537
+    # Test whether function _smooth_array raises a warning when fwhm=0.
+    assert_warns(UserWarning, image._smooth_array, data, affine, fwhm=0.)
+
+    # Test output equal when fwhm=None and fwhm=0
+    out_fwhm_none = image._smooth_array(data, affine, fwhm=None)
+    out_fwhm_zero = image._smooth_array(data, affine, fwhm=0.)
+    assert_array_equal(out_fwhm_none, out_fwhm_zero)
+
 
 def test_smooth_img():
     # This function only checks added functionalities compared
@@ -150,6 +170,23 @@ def test_smooth_img():
             assert_true(isinstance(out, nibabel.Nifti1Image))
             assert_true(out.shape == (shapes[0] + (lengths[0],)))
 
+    # Check corner case situations when fwhm=0, See issue #1537
+    # Test whether function smooth_img raises a warning when fwhm=0.
+    assert_warns(UserWarning, image.smooth_img, img1, fwhm=0.)
+
+    # Test output equal when fwhm=None and fwhm=0
+    out_fwhm_none = image.smooth_img(img1, fwhm=None)
+    out_fwhm_zero = image.smooth_img(img1, fwhm=0.)
+    assert_array_equal(out_fwhm_none.get_data(), out_fwhm_zero.get_data())
+
+    data1 = np.zeros((10, 11, 12))
+    data1[2:4, 1:5, 3:6] = 1
+    data2 = np.zeros((13, 14, 15))
+    data2[2:4, 1:5, 3:6] = 9
+    img1_nifti2 = nibabel.Nifti2Image(data1, affine=np.eye(4))
+    img2_nifti2 = nibabel.Nifti2Image(data2, affine=np.eye(4))
+    out = image.smooth_img([img1_nifti2, img2_nifti2], fwhm=1.)
+
 
 def test__crop_img_to():
     data = np.zeros((5, 6, 7))
@@ -167,7 +204,7 @@ def test__crop_img_to():
     assert_true(cropped_img.shape == (2, 4, 3))
 
     # check that affine was adjusted correctly
-    assert_true((cropped_img.get_affine()[:3, 3] == new_origin).all())
+    assert_true((cropped_img.affine[:3, 3] == new_origin).all())
 
     # check that data was really not copied
     data[2:4, 1:5, 3:6] = 2
@@ -238,13 +275,13 @@ def test_mean_img():
         truth = np.mean(arrays, axis=0)
 
         mean_img = image.mean_img(imgs)
-        assert_array_equal(mean_img.get_affine(), affine)
+        assert_array_equal(mean_img.affine, affine)
         assert_array_equal(mean_img.get_data(), truth)
 
         # Test with files
         with testing.write_tmp_imgs(*imgs) as imgs:
             mean_img = image.mean_img(imgs)
-            assert_array_equal(mean_img.get_affine(), affine)
+            assert_array_equal(mean_img.affine, affine)
             if X64:
                 assert_array_equal(mean_img.get_data(), truth)
             else:
@@ -255,7 +292,6 @@ def test_mean_img():
                 assert_allclose(mean_img.get_data(), truth,
                                 rtol=np.finfo(truth.dtype).resolution,
                                 atol=0)
-
 
 
 def test_mean_img_resample():
@@ -273,9 +309,9 @@ def test_mean_img_resample():
                                               target_affine=target_affine)
     assert_array_equal(resampled_mean_image.get_data(),
                        mean_img_with_resampling.get_data())
-    assert_array_equal(resampled_mean_image.get_affine(),
-                       mean_img_with_resampling.get_affine())
-    assert_array_equal(mean_img_with_resampling.get_affine(), target_affine)
+    assert_array_equal(resampled_mean_image.affine,
+                       mean_img_with_resampling.affine)
+    assert_array_equal(mean_img_with_resampling.affine, target_affine)
 
 
 def test_swap_img_hemispheres():
@@ -301,7 +337,10 @@ def test_concat_imgs():
 
 def test_index_img():
     img_3d = nibabel.Nifti1Image(np.ones((3, 4, 5)), np.eye(4))
-    testing.assert_raises_regex(TypeError, '4D Niimg-like',
+    testing.assert_raises_regex(TypeError,
+                                "Input data has incompatible dimensionality: "
+                                "Expected dimension is 4D and you provided "
+                                "a 3D image.",
                                 image.index_img, img_3d, 0)
 
     affine = np.array([[1., 2., 3., 4.],
@@ -319,21 +358,47 @@ def test_index_img():
         expected_data_3d = img_4d.get_data()[..., i]
         assert_array_equal(this_img.get_data(),
                            expected_data_3d)
-        assert_array_equal(this_img.get_affine(),
-                           img_4d.get_affine())
+        assert_array_equal(this_img.affine, img_4d.affine)
 
     for i in [fourth_dim_size, - fourth_dim_size - 1,
               [0, fourth_dim_size],
               np.repeat(True, fourth_dim_size + 1)]:
         testing.assert_raises_regex(
             IndexError,
-            'out of bounds|invalid index|out of range',
+            'out of bounds|invalid index|out of range|boolean index',
             image.index_img, img_4d, i)
+
+
+def test_pd_index_img():
+    # confirm indices from pandas dataframes are handled correctly
+    if 'pandas' not in sys.modules:
+        raise SkipTest
+
+    affine = np.array([[1., 2., 3., 4.],
+                       [5., 6., 7., 8.],
+                       [9., 10., 11., 12.],
+                       [0., 0., 0., 1.]])
+    img_4d, _ = testing.generate_fake_fmri(affine=affine)
+
+    fourth_dim_size = img_4d.shape[3]
+
+    rng = np.random.RandomState(0)
+
+    arr = rng.rand(fourth_dim_size) > 0.5
+    df = pd.DataFrame({"arr": arr})
+
+    np_index_img = image.index_img(img_4d, arr)
+    pd_index_img = image.index_img(img_4d, df)
+    assert_array_equal(np_index_img.get_data(),
+                       pd_index_img.get_data())
 
 
 def test_iter_img():
     img_3d = nibabel.Nifti1Image(np.ones((3, 4, 5)), np.eye(4))
-    testing.assert_raises_regex(TypeError, '4D Niimg-like',
+    testing.assert_raises_regex(TypeError,
+                                "Input data has incompatible dimensionality: "
+                                "Expected dimension is 4D and you provided "
+                                "a 3D image.",
                                 image.iter_img, img_3d)
 
     affine = np.array([[1., 2., 3., 4.],
@@ -346,16 +411,14 @@ def test_iter_img():
         expected_data_3d = img_4d.get_data()[..., i]
         assert_array_equal(img.get_data(),
                            expected_data_3d)
-        assert_array_equal(img.get_affine(),
-                           img_4d.get_affine())
+        assert_array_equal(img.affine, img_4d.affine)
 
     with testing.write_tmp_imgs(img_4d) as img_4d_filename:
         for i, img in enumerate(image.iter_img(img_4d_filename)):
             expected_data_3d = img_4d.get_data()[..., i]
             assert_array_equal(img.get_data(),
                                expected_data_3d)
-            assert_array_equal(img.get_affine(),
-                               img_4d.get_affine())
+            assert_array_equal(img.affine, img_4d.affine)
         # enables to delete "img_4d_filename" on windows
         del img
 
@@ -364,16 +427,14 @@ def test_iter_img():
         expected_data_3d = img_4d.get_data()[..., i]
         assert_array_equal(img.get_data(),
                            expected_data_3d)
-        assert_array_equal(img.get_affine(),
-                           img_4d.get_affine())
+        assert_array_equal(img.affine, img_4d.affine)
 
     with testing.write_tmp_imgs(*img_3d_list) as img_3d_filenames:
         for i, img in enumerate(image.iter_img(img_3d_filenames)):
             expected_data_3d = img_4d.get_data()[..., i]
             assert_array_equal(img.get_data(),
                                expected_data_3d)
-            assert_array_equal(img.get_affine(),
-                               img_4d.get_affine())
+            assert_array_equal(img.affine, img_4d.affine)
         # enables to delete "img_3d_filename" on windows
         del img
 
@@ -384,13 +445,9 @@ def test_new_img_like_mgz():
     when using plot_stap_map
     """
 
-    if not LooseVersion(nibabel.__version__) >= LooseVersion('1.2.0'):
-        # Old nibabel do not support MGZ files
-        raise SkipTest
-
     ref_img = nibabel.load(os.path.join(datadir, 'test.mgz'))
     data = np.ones(ref_img.get_data().shape, dtype=np.bool)
-    affine = ref_img.get_affine()
+    affine = ref_img.affine
     new_img_like(ref_img, data, affine, copy_header=False)
 
 
@@ -403,16 +460,20 @@ def test_new_img_like():
     img2 = new_img_like([img, ], data)
     np.testing.assert_array_equal(img.get_data(), img2.get_data())
 
+    # test_new_img_like_with_nifti2image_copy_header
+    img_nifti2 = nibabel.Nifti2Image(data, affine=affine)
+    img2_nifti2 = new_img_like([img_nifti2, ], data, copy_header=True)
+    np.testing.assert_array_equal(img_nifti2.get_data(), img2_nifti2.get_data())
+
 
 def test_validity_threshold_value_in_threshold_img():
     shape = (6, 8, 10)
-    maps = testing.generate_maps(shape, n_regions=2)
-    map_0 = maps[0]
+    maps, _ = testing.generate_maps(shape, n_regions=2)
 
     # testing to raise same error when threshold=None case
     testing.assert_raises_regex(ValueError,
                                 "The input parameter 'threshold' is empty. ",
-                                threshold_img, map_0, threshold=None)
+                                threshold_img, maps, threshold=None)
 
     invalid_threshold_values = ['90t%', 's%', 't', '0.1']
     name = 'threshold'
@@ -420,21 +481,163 @@ def test_validity_threshold_value_in_threshold_img():
         testing.assert_raises_regex(ValueError,
                                     '{0}.+should be a number followed by '
                                     'the percent sign'.format(name),
-                                    threshold_img, map_0, threshold=thr)
+                                    threshold_img, maps, threshold=thr)
 
 
 def test_threshold_img():
     # to check whether passes with valid threshold inputs
     shape = (10, 20, 30)
-    maps = testing.generate_maps(shape, n_regions=4)
-    map_0 = maps[0]
+    maps, _ = testing.generate_maps(shape, n_regions=4)
     affine = np.eye(4)
     mask_img = nibabel.Nifti1Image(np.ones((shape), dtype=np.int8), affine)
 
-    for img in iter_img(map_0):
+    for img in iter_img(maps):
         # when threshold is a float value
         thr_maps_img = threshold_img(img, threshold=0.8)
         # when we provide mask image
         thr_maps_percent = threshold_img(img, threshold=1, mask_img=mask_img)
         # when threshold is a percentile
         thr_maps_percent2 = threshold_img(img, threshold='2%')
+
+
+def test_isnan_threshold_img_data():
+    shape = (10, 10, 10)
+    maps, _ = testing.generate_maps(shape, n_regions=2)
+    data = maps.get_data()
+    data[:, :, 0] = np.nan
+
+    maps_img = nibabel.Nifti1Image(data, np.eye(4))
+    # test threshold_img to converge properly when input image has nans.
+    threshold_img(maps_img, threshold=0.8)
+
+
+def test_math_img_exceptions():
+    img1 = Nifti1Image(np.ones((10, 10, 10, 10)), np.eye(4))
+    img2 = Nifti1Image(np.zeros((10, 20, 10, 10)), np.eye(4))
+    img3 = Nifti1Image(np.ones((10, 10, 10, 10)), np.eye(4))
+    img4 = Nifti1Image(np.ones((10, 10, 10, 10)), np.eye(4) * 2)
+
+    formula = "np.mean(img1, axis=-1) - np.mean(img2, axis=-1)"
+    # Images with different shapes should raise a ValueError exception.
+    assert_raises_regex(ValueError,
+                        "Input images cannot be compared",
+                        math_img, formula, img1=img1, img2=img2)
+
+    # Images with different affines should raise a ValueError exception.
+    assert_raises_regex(ValueError,
+                        "Input images cannot be compared",
+                        math_img, formula, img1=img1, img2=img4)
+
+    bad_formula = "np.toto(img1, axis=-1) - np.mean(img3, axis=-1)"
+    assert_raises_regex(AttributeError,
+                        "Input formula couldn't be processed",
+                        math_img, bad_formula, img1=img1, img3=img3)
+
+
+def test_math_img():
+    img1 = Nifti1Image(np.ones((10, 10, 10, 10)), np.eye(4))
+    img2 = Nifti1Image(np.zeros((10, 10, 10, 10)), np.eye(4))
+    expected_result = Nifti1Image(np.ones((10, 10, 10)), np.eye(4))
+
+    formula = "np.mean(img1, axis=-1) - np.mean(img2, axis=-1)"
+    for create_files in (True, False):
+        with testing.write_tmp_imgs(img1, img2,
+                                    create_files=create_files) as imgs:
+            result = math_img(formula, img1=imgs[0], img2=imgs[1])
+            assert_array_equal(result.get_data(),
+                               expected_result.get_data())
+            assert_array_equal(result.affine, expected_result.affine)
+            assert_equal(result.shape, expected_result.shape)
+
+
+def test_clean_img():
+
+    rng = np.random.RandomState(0)
+
+    data = rng.randn(10, 10, 10, 100) + .5
+    data_flat = data.T.reshape(100, -1)
+    data_img = nibabel.Nifti1Image(data, np.eye(4))
+
+    data_img_ = image.clean_img(
+        data_img, detrend=True, standardize=False, low_pass=0.1)
+    data_flat_ = signal.clean(
+        data_flat, detrend=True, standardize=False, low_pass=0.1)
+
+    np.testing.assert_almost_equal(data_img_.get_data().T.reshape(100, -1),
+                                   data_flat_)
+    # if NANs
+    data[:, 9, 9] = np.nan
+    # if infinity
+    data[:, 5, 5] = np.inf
+    nan_img = nibabel.Nifti1Image(data, np.eye(4))
+    clean_im = image.clean_img(nan_img, ensure_finite=True)
+    assert_true(np.any(np.isfinite(clean_im.get_data())), True)
+
+    # test_clean_img_passing_nifti2image
+    data_img_nifti2 = nibabel.Nifti2Image(data, np.eye(4))
+
+    data_img_nifti2_ = image.clean_img(
+        data_img_nifti2, detrend=True, standardize=False, low_pass=0.1)
+
+
+def test_largest_cc_img():
+    """ Check the extraction of the largest connected component, for niftis
+
+    Similiar to smooth_img tests for largest connected_component_img, here also
+    only the added features for largest_connected_component are tested.
+    """
+
+    # Test whether dimension of 3Dimg and list of 3Dimgs are kept.
+    shapes = ((10, 11, 12), (13, 14, 15))
+    regions = [1, 3]
+
+    img1 = testing.generate_labeled_regions(shape=shapes[0],
+                                            n_regions=regions[0])
+    img2 = testing.generate_labeled_regions(shape=shapes[1],
+                                            n_regions=regions[1])
+
+    for create_files in (False, True):
+        with testing.write_tmp_imgs(img1, img2,
+                                    create_files=create_files) as imgs:
+            # List of images as input
+            out = largest_connected_component_img(imgs)
+            assert_true(isinstance(out, list))
+            assert_true(len(out) == 2)
+            for o, s in zip(out, shapes):
+                assert_true(o.shape == (s))
+
+            # Single image as input
+            out = largest_connected_component_img(imgs[0])
+            assert_true(isinstance(out, Nifti1Image))
+            assert_true(out.shape == (shapes[0]))
+
+        # Test whether 4D Nifti throws the right error.
+        img_4D = testing.generate_fake_fmri(shapes[0], length=17)
+        assert_raises(DimensionError, largest_connected_component_img, img_4D)
+
+    # tests adapted to non-native endian data dtype
+    img1_change_dtype = nibabel.Nifti1Image(img1.get_data().astype('>f8'),
+                                            affine=img1.affine)
+    img2_change_dtype = nibabel.Nifti1Image(img2.get_data().astype('>f8'),
+                                            affine=img2.affine)
+
+    for create_files in (False, True):
+        with testing.write_tmp_imgs(img1_change_dtype, img2_change_dtype,
+                                    create_files=create_files) as imgs:
+            # List of images as input
+            out = largest_connected_component_img(imgs)
+            assert_true(isinstance(out, list))
+            assert_true(len(out) == 2)
+            for o, s in zip(out, shapes):
+                assert_true(o.shape == (s))
+
+            # Single image as input
+            out = largest_connected_component_img(imgs[0])
+            assert_true(isinstance(out, Nifti1Image))
+            assert_true(out.shape == (shapes[0]))
+
+    # Test the output with native and without native
+    out_native = largest_connected_component_img(img1)
+
+    out_non_native = largest_connected_component_img(img1_change_dtype)
+    np.testing.assert_equal(out_native.get_data(), out_non_native.get_data())

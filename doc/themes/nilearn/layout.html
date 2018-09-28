@@ -22,7 +22,7 @@
 <li><a href="{{pathto('user_guide')}}">User Guide</a> |&nbsp;</li>
 <li><a href="{{pathto('auto_examples/index')}}">Examples</a> |&nbsp;</li>
 <li><a href="{{pathto('modules/reference')}}">Reference</a> |&nbsp;</li>
-<li id="navbar-about"><a href="{{pathto('AUTHORS')}}">About</a>|&nbsp;</li>
+<li id="navbar-about"><a href="{{pathto('authors')}}">About</a>|&nbsp;</li>
 <li id="navbar-ecosystem"><a href="http://www.nipy.org/">Nipy ecosystem</a></li>
 {% endblock %}
 
@@ -105,10 +105,10 @@ $(function () {
         for(i in sections){
             if(sections[i] > pos){
 		break;
-            };
-	    if($('a.internal[href$="' + i + '"]').is(':visible')){
+            }
+            if($('a.internal[href$="' + i + '"]').is(':visible')){
 		current_section = i;
-	    };
+        }
         }
 	$('a.internal[href$="' + current_section + '"]').addClass('active');
     });
@@ -156,7 +156,7 @@ $(function () {
       <big><a href="{{pathto('connectivity/resting_state_networks')}}">ICA</a></big>
     </li>
     <li>
-      <a href="{{pathto('manipulating_visualizing/data_preparation')}}">Nifti IO</a>
+      <a href="{{pathto('manipulating_images/data_preparation')}}">Nifti IO</a>
     </li>
     <li>
       <a href="{{pathto('modules/reference')}}#module-nilearn.datasets">Datasets</a>
@@ -169,17 +169,17 @@ $(function () {
     <h2>Machine learning for Neuro-Imaging in Python</h2>
   </div>
   <div class="search_form">
-    <div id="cse" style="width: 100%;"></div>
-    <script src="http://www.google.com/jsapi" type="text/javascript"></script>
-    <script type="text/javascript">
-      google.load('search', '1', {language : 'en'});
-      google.setOnLoadCallback(function() {
-      var customSearchControl = new google.search.CustomSearchControl('014136483057745874622:r-npolb1uki');
-      customSearchControl.setResultSetSize(google.search.Search.FILTERED_CSE_RESULTSET);
-      var options = new google.search.DrawOptions();
-      options.setAutoComplete(true);
-      customSearchControl.draw('cse', options);
-      }, true);
+    <div class="gcse-search" id="cse" style="width: 100%;"></div>
+    <script>
+      (function() {
+        var cx = '017289614950330089114:elrt9qoutrq';
+        var gcse = document.createElement('script');
+        gcse.type = 'text/javascript';
+        gcse.async = true;
+        gcse.src = 'https://cse.google.com/cse.js?cx=' + cx;
+        var s = document.getElementsByTagName('script')[0];
+        s.parentNode.insertBefore(gcse, s);
+      })();
     </script>
   </div>
 </div>
@@ -195,9 +195,13 @@ $(function () {
 
 <h4> News </h4>
   <ul>
-      <li><p> <strong>Dec 13th 2015</strong>: Nilearn 0.2.1 released
+      <li><p> <strong>June 14th 2018</strong>: Nilearn 0.4.2 released
       </p></li>
-      <li><p> <strong>July 13th 2015</strong>: Nilearn 0.1.4 released
+      <li><p> <strong>March 12th 2018</strong>: Nilearn 0.4.1 released
+      </p></li>
+      <li><p> <strong>November 19th 2017</strong>: Nilearn 0.4 released
+      </p></li>
+      <li><p> <strong>June 20th 2017</strong>: Nilearn 0.3.1 released
       </p></li>
       <li><p> <strong>March 2014</strong>: <a
           href="http://journal.frontiersin.org/Journal/10.3389/fninf.2014.00014/abstract"
@@ -224,14 +228,15 @@ $(function () {
     <li><p><a class="reference external"
 	href="https://github.com/nilearn/nilearn">Nilearn on GitHub</a></p></li>
     <li><p>All material Free Software: <strong>BSD license</strong> (3 clause).</p></li>
-    <li><p><a href="{{pathto('AUTHORS')}}">Authors</a></p></li>
+    <li><p><a href="{{pathto('authors')}}">Authors</a></p></li>
+    <li><p><a href="{{pathto('contributing')}}">Contributing</a></p></li>
   </ul>
 {% endif %}
 
 
 <h4> Giving credit </h4>
   <ul class="simple">
-    <li><p>Please consider <a href="{{pathto('AUTHORS')}}#citing">citing the
+    <li><p>Please consider <a href="{{pathto('authors')}}#citing">citing the
                     papers</a>.</p></li>
   </ul>
 {% endblock %}

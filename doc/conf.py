@@ -15,6 +15,18 @@
 import sys
 import os
 import shutil
+import sphinx
+from distutils.version import LooseVersion
+
+# jquery is included in plotting package data because it is needed for
+# interactive plots. It is also needed by the documentation, so we copy
+# it to the themes/nilearn/static folder.
+shutil.copy(
+    os.path.join(os.path.dirname(os.path.dirname(__file__)),
+                 'nilearn', 'plotting', 'data', 'js', 'jquery.min.js'),
+    os.path.join(os.path.dirname(__file__), 'themes', 'nilearn', 'static',
+                 'jquery.js'))
+
 
 # If extensions (or modules to document with autodoc) are in another
 # directory, add these directories to sys.path here. If the directory
@@ -26,20 +38,17 @@ import sphinx_gallery
 # We also add the directory just above to enable local imports of nilearn
 sys.path.insert(0, os.path.abspath('..'))
 
-try:
-    shutil.copy('../AUTHORS.rst', '.')
-except IOError:
-    # When nose scans this file, it is not in the right working
-    # directory, and thus the line above fails
-    pass
-
 # -- General configuration ---------------------------------------------------
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions = ['sphinx.ext.autodoc', 'sphinx.ext.autosummary',
-              'sphinx.ext.pngmath', 'sphinx.ext.intersphinx',
-              'numpy_ext.numpydoc',
+extensions = ['sphinx.ext.autodoc',
+              'sphinx.ext.autosummary',
+              ('sphinx.ext.imgmath'  # only available for sphinx >= 1.4
+                  if sphinx.version_info[:2] >= (1, 4)
+                  else 'sphinx.ext.pngmath'),
+              'sphinx.ext.intersphinx',
+              'numpydoc.numpydoc',
               'sphinx_gallery.gen_gallery',
               ]
 
@@ -91,7 +100,10 @@ language = 'en'
 
 # List of documents that shouldn't be included in the build.
 #unused_docs = []
-exclude_patterns = ['tune_toc.rst', ]
+exclude_patterns = ['tune_toc.rst',
+                    'includes/big_toc_css.rst',
+                    'includes/bigger_toc_css.rst',
+                    ]
 
 # List of directories, relative to source directory, that shouldn't be
 # searched for source files.
@@ -228,11 +240,6 @@ latex_logo = "logos/nilearn-logo.png"
 #latex_use_parts = False
 
 # Additional stuff for the LaTeX preamble.
-latex_preamble = r"""
-\usepackage{amsmath}\usepackage{amsfonts}\usepackage{bm}\usepackage{morefloats}
-\let\oldfootnote\footnote
-\def\footnote#1{\oldfootnote{\small #1}}
-"""
 
 # Documents to append as an appendix to all manuals.
 #latex_appendices = []
@@ -243,8 +250,24 @@ latex_elements = {
   'printindex': '',
 }
 
+if LooseVersion(sphinx.__version__) < LooseVersion('1.5'):
+    latex_preamble = r"""
+    \usepackage{amsmath}\usepackage{amsfonts}\usepackage{bm}\usepackage{morefloats}
+    \let\oldfootnote\footnote
+    \def\footnote#1{\oldfootnote{\small #1}}
+    """
+else:
+    latex_elements['preamble'] = r"""
+    \usepackage{amsmath}\usepackage{amsfonts}\usepackage{bm}\usepackage{morefloats}
+    \let\oldfootnote\footnote
+    \def\footnote#1{\oldfootnote{\small #1}}
+    """
+
+
 # If false, no module index is generated.
-latex_use_modindex = False
+if LooseVersion(sphinx.__version__) < LooseVersion('1.5'):
+    latex_use_modindex = False
+
 latex_domain_indices = False
 
 # Show the page numbers in the references
@@ -255,7 +278,7 @@ latex_show_urls = 'footnote'
 
 trim_doctests_flags = True
 
-_python_doc_base = 'http://docs.python.org/2.7'
+_python_doc_base = 'http://docs.python.org/3.6'
 
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {
@@ -263,12 +286,12 @@ intersphinx_mapping = {
     'http://docs.scipy.org/doc/numpy': None,
     'http://docs.scipy.org/doc/scipy/reference': None,
     'http://matplotlib.org/': None,
-    'http://scikit-learn.org/stable': None,
+    'http://scikit-learn.org/0.18': None,
     'http://nipy.org/nibabel': None,
+    'http://pandas.pydata.org': None,
     #'http://scikit-image.org/docs/0.8.0/': None,
     #'http://docs.enthought.com/mayavi/mayavi/': None,
     #'http://statsmodels.sourceforge.net/': None,
-    #'http://pandas.pydata.org': None,
 }
 
 extlinks = {
@@ -278,14 +301,22 @@ extlinks = {
 
 sphinx_gallery_conf = {
     'doc_module'        : 'nilearn',
+    'backreferences_dir': os.path.join('modules', 'generated'),
     'reference_url'     : {
         'nilearn': None,
         'matplotlib': 'http://matplotlib.org',
-        'numpy': 'http://docs.scipy.org/doc/numpy-1.6.0',
-        'scipy': 'http://docs.scipy.org/doc/scipy-0.11.0/reference',
+        'numpy': 'http://docs.scipy.org/doc/numpy-1.11.0',
+        'scipy': 'http://docs.scipy.org/doc/scipy-0.17.0/reference',
         'nibabel': 'http://nipy.org/nibabel',
-        'sklearn': 'http://scikit-learn.org/stable'}
+        'sklearn': 'http://scikit-learn.org/0.18/',
+        'pandas': 'http://pandas.pydata.org'}
     }
+
+# Get rid of spurious warnings due to some interaction between
+# autosummary and numpydoc. See
+# https://github.com/phn/pytpm/issues/3#issuecomment-12133978 for more
+# details
+numpydoc_show_class_members = False
 
 
 def touch_example_backreferences(app, what, name, obj, options, lines):
@@ -299,6 +330,8 @@ def touch_example_backreferences(app, what, name, obj, options, lines):
 
 # Add the 'copybutton' javascript, to hide/show the prompt in code
 # examples
+
+
 def setup(app):
     app.add_javascript('copybutton.js')
     app.connect('autodoc-process-docstring', touch_example_backreferences)

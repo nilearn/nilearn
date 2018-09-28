@@ -9,8 +9,8 @@ environment:
       PYTHON_VERSION: "2.7.x"
       PYTHON_ARCH: "64"
 
-    - PYTHON: "C:\\Miniconda3-x64"
-      PYTHON_VERSION: "3.4.x"
+    - PYTHON: "C:\\Miniconda35-x64"
+      PYTHON_VERSION: "3.5.x"
       PYTHON_ARCH: "64"
 
 install:
@@ -24,6 +24,10 @@ install:
   - "python -c \"import struct; print(struct.calcsize('P') * 8)\""
 
   # Installed prebuilt dependencies from conda
+  # a temporary work around with failures related to matplotlib 2.1.0
+  # See similar fix which made for travis and circleci
+  # https://github.com/nilearn/nilearn/pull/1525
+  # Should be removed after a new matplotlib release 2.1.1
   - "conda install pip numpy scipy scikit-learn nose wheel matplotlib -y -q"
 
   # Install other nilearn dependencies

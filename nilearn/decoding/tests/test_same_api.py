@@ -28,7 +28,7 @@ def _make_data(rng=None, masked=False, dim=(2, 2, 2)):
     if rng is None:
         rng = check_random_state(42)
     mask = np.ones(dim).astype(np.bool)
-    mask[rng.rand() < .7] = 0
+    mask[rng.rand(*dim) < .7] = 0
     w = np.zeros(dim)
     w[dim[0] // 2:, dim[1] // 2:, :dim[2] // 2] = 1
     n = 5

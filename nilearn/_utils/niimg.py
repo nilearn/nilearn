@@ -14,9 +14,23 @@ import nibabel
 from .compat import _basestring
 
 
-def _safe_get_data(img):
+def _safe_get_data(img, ensure_finite=False):
     """ Get the data in the image without having a side effect on the
         Nifti1Image object
+
+    Parameters
+    ----------
+    img: Nifti image/object
+        Image to get data.
+
+    ensure_finite: bool
+        If True, non-finite values such as (NaNs and infs) found in the
+        image will be replaced by zeros.
+
+    Returns
+    -------
+    data: numpy array
+        get_data() return from Nifti image.
     """
     if hasattr(img, '_data_cache') and img._data_cache is None:
         # By loading directly dataobj, we prevent caching if the data is
@@ -25,18 +39,14 @@ def _safe_get_data(img):
     # typically the line below can double memory usage
     # that's why we invoke a forced call to the garbage collector
     gc.collect()
-    return img.get_data()
 
+    data = img.get_data()
+    if ensure_finite:
+        non_finite_mask = np.logical_not(np.isfinite(data))
+        if non_finite_mask.sum() > 0: # any non_finite_mask values?
+            data[non_finite_mask] = 0
 
-def _get_data_dtype(img):
-    """Returns the dtype of an image.
-    If the image is non standard (no get_data_dtype member), this function
-    relies on the data itself.
-    """
-    try:
-        return img.get_data_dtype()
-    except AttributeError:
-        return img.get_data().dtype
+    return data
 
 
 def _get_target_dtype(dtype, target_dtype):
@@ -80,7 +90,7 @@ def load_niimg(niimg, dtype=None):
     -----------
 
     niimg: Niimg-like object
-        See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
+        See http://nilearn.github.io/manipulating_images/input_output.html
         Image to load.
 
     dtype: {dtype, "auto"}
@@ -103,11 +113,11 @@ def load_niimg(niimg, dtype=None):
                         " not compatible with nibabel format:\n"
                         + short_repr(niimg))
 
-    dtype = _get_target_dtype(_get_data_dtype(niimg), dtype)
+    dtype = _get_target_dtype(niimg.get_data().dtype, dtype)
 
     if dtype is not None:
         niimg = new_img_like(niimg, niimg.get_data().astype(dtype),
-                             niimg.get_affine())
+                             niimg.affine)
     return niimg
 
 
@@ -115,12 +125,12 @@ def copy_img(img):
     """Copy an image to a nibabel.Nifti1Image.
 
     Parameters
-    ==========
+    ----------
     img: image
         nibabel SpatialImage object to copy.
 
     Returns
-    =======
+    -------
     img_copy: image
         copy of input (data, affine and header)
     """
@@ -128,7 +138,7 @@ def copy_img(img):
 
     if not isinstance(img, nibabel.spatialimages.SpatialImage):
         raise ValueError("Input value is not an image")
-    return new_img_like(img, _safe_get_data(img).copy(), img.get_affine().copy(),
+    return new_img_like(img, _safe_get_data(img).copy(), img.affine.copy(),
                         copy_header=True)
 
 
@@ -144,12 +154,12 @@ def _repr_niimgs(niimgs):
         filename = niimgs.get_filename()
         if filename is not None:
             return "%s('%s')" % (niimgs.__class__.__name__,
-                                filename)
+                                 filename)
         else:
             return "%s(\nshape=%s,\naffine=%s\n)" % \
                    (niimgs.__class__.__name__,
                     repr(niimgs.shape),
-                    repr(niimgs.get_affine()))
+                    repr(niimgs.affine))
     except:
         pass
     return repr(niimgs)

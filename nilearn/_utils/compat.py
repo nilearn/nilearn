@@ -4,6 +4,10 @@ Compatibility layer for Python 3/Python 2 single codebase
 import sys
 import hashlib
 
+from distutils.version import LooseVersion
+
+import nibabel
+
 
 if sys.version_info[0] == 3:
     import pickle
@@ -58,3 +62,4 @@ else:
         m = hashlib.md5()
         m.update(string)
         return m.hexdigest()
+

@@ -16,12 +16,36 @@ particular:
 * `Gael Varoquaux <http://gael-varoquaux.info/>`_
 * Philippe Gervais
 * Michael Eickenberg
-* `Chris Filo Gorgolewski <http://multiplecomparisons.blogspot.fr/>`_
 * Danilo Bzdok
 * Loïc Estève
+* Kamalakar Reddy Daddy
+* Elvis Dohmatob
+* Alexandre Abadie
+* Andres Hoyos Idrobo
+* Salma Bougacha
+* Mehdi Rahim
+* Sylvain Lanuzel
+* `Kshitij Chawla <https://github.com/kchawla-pi>`_
+
+Many of also contributed outside of Parietal, notably:
+
+* `Chris Filo Gorgolewski <http://multiplecomparisons.blogspot.fr/>`_
 * `Ben Cipollini <http://cseweb.ucsd.edu/~bcipolli/>`_
+* Julia Huntenburg
+* Martin Perez-Guevara
 
 Thanks to M. Hanke and Y. Halchenko for data and packaging.
+
+Funding
+........
+
+Alexandre Abraham, Gael Varoquaux, Kamalakar Reddy Daddy, Loïc Estève,
+Mehdi Rahim, Philippe Gervais where payed by the `NiConnect
+<https://team.inria.fr/parietal/18-2/spatial_patterns/niconnect>`_
+project, funded by the French `Investissement d'Avenir
+<http://www.gouvernement.fr/investissements-d-avenir-cgi>`_.
+
+NiLearn is also supported by `DigiCosme <https://digicosme.lri.fr>`_ |digicomse logo|
 
 .. _citing:
 
@@ -49,3 +73,7 @@ guarantee the future of the toolkit, if you use it, please cite it.
 See the scikit-learn documentation on `how to cite
 <http://scikit-learn.org/stable/about.html#citing-scikit-learn>`_.
 
+
+.. |digicomse logo| image:: logos/digi-saclay-logo-small.png
+    :height: 25
+    :alt: DigiComse Logo

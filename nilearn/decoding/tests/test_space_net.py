@@ -1,12 +1,9 @@
-import os
-import warnings
 import itertools
 from functools import partial
 from nose import SkipTest
 from nose.tools import (assert_equal, assert_true, assert_false,
                         assert_raises)
 import numpy as np
-import nibabel
 from sklearn.datasets import load_iris
 from sklearn.utils import extmath
 from sklearn.linear_model import Lasso
@@ -15,10 +12,10 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score
 from nilearn._utils.testing import assert_raises_regex, assert_warns
 from nilearn.decoding.space_net import (
-    _EarlyStoppingCallback, _space_net_alpha_grid, MNI152_BRAIN_VOLUME,
-    path_scores, BaseSpaceNet, _crop_mask, _univariate_feature_screening,
-    _get_mask_volume, SpaceNetClassifier, SpaceNetRegressor,
-    _adjust_screening_percentile)
+    _EarlyStoppingCallback, _space_net_alpha_grid, path_scores, BaseSpaceNet,
+    _crop_mask, _univariate_feature_screening, SpaceNetClassifier,
+    SpaceNetRegressor)
+from nilearn._utils.param_validation import _adjust_screening_percentile
 from nilearn.decoding.space_net_solvers import (_graph_net_logistic,
                                                 _graph_net_squared_loss)
 
@@ -112,8 +109,12 @@ def test_params_correctly_propagated_in_constructors():
 
 
 def test_screening_space_net():
+    for verbose in [0, 2]:
+        screening_percentile = assert_warns(UserWarning,
+                                            _adjust_screening_percentile, 10,
+                                            mask, verbose)
     screening_percentile = assert_warns(UserWarning,
-        _adjust_screening_percentile, 10, mask)
+                                        _adjust_screening_percentile, 10, mask)
     # We gave here a very small mask, judging by standards of brain size
     # thus the screening_percentile_ corrected for brain size should
     # be 100%
@@ -283,16 +284,6 @@ def test_univariate_feature_screening(dim=(11, 12, 13), n_samples=10):
         assert_true(n_features_ <= n_features)
 
 
-def test_get_mask_volume():
-    # Test that hard-coded standard mask volume can be corrected computed
-    if os.path.isfile(mni152_brain_mask):
-        assert_equal(MNI152_BRAIN_VOLUME, _get_mask_volume(nibabel.load(
-            mni152_brain_mask)))
-    else:
-        warnings.warn("Couldn't find %s (for testing)" % (
-            mni152_brain_mask))
-
-
 def test_space_net_classifier_subclass():
     for penalty, alpha, l1_ratio, verbose in itertools.product(
             ["graph-net", "tv-l1"], [.4, .01], [.5, 1.], [True, False]):
@@ -354,3 +345,20 @@ def test_space_net_one_alpha_no_crash():
     for model in [SpaceNetRegressor, SpaceNetClassifier]:
         model(n_alphas=1, mask=mask).fit(X, y)
         model(alphas=None, n_alphas=2, mask=mask).fit(X, y)
+
+
+def test_checking_inputs_length():
+    iris = load_iris()
+    X, y = iris.data, iris.target
+    y = 2 * (y > 0) - 1
+    X_, mask = to_niimgs(X, (2, 2, 2))
+
+    # Remove ten samples from y
+    y = y[:-10]
+
+    for model in [SpaceNetRegressor, SpaceNetClassifier]:
+
+        assert_raises(ValueError, model(mask=mask,
+                                        alphas=1. / .01 / X.shape[0],
+                                        l1_ratios=1., tol=1e-10,
+                                        screening_percentile=100.).fit, X_, y)
