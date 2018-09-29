@@ -320,7 +320,7 @@ def view_stat_map(stat_map_img, bg_img='MNI152', cut_coords=None,
         if isinstance(bg_img, str) and bg_img == "MNI152":
             bg_img = load_mni152_template()
         bg_img, black_bg, bg_min, bg_max = _load_anat(bg_img,dim=dim,black_bg = black_bg)
-        bg_img = _resample_to_self(bg_img,interpolation=resampling_interpolation)
+        bg_img = _resample_to_self(bg_img,interpolation='nearest')
         stat_map_img = resample_to_img(stat_map_img, bg_img , interpolation=resampling_interpolation)
 
     else:
@@ -352,7 +352,7 @@ def view_stat_map(stat_map_img, bg_img='MNI152', cut_coords=None,
 
     # Create a base64 sprite for the background
     bg_sprite = BytesIO()
-    save_sprite(bg_img,output_sprite=bg_sprite,cmap='gray',format='jpg',resample=False,vmin=bg_min, vmax=bg_max)
+    save_sprite(bg_img,output_sprite=bg_sprite,cmap='gray',format='png',resample=False,vmin=bg_min, vmax=bg_max)
     bg_sprite.seek(0)
     bg_base64 = encodebytes(bg_sprite.read()).decode('utf-8')
     bg_sprite.close()
