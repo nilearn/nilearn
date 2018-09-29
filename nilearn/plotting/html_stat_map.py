@@ -3,15 +3,14 @@ Visualizing 3D stat maps in a Brainsprite viewer
 """
 import warnings
 import os
-import numpy as np
 import json
 import numpy as np
 import numbers
 import matplotlib.pyplot as plt
 
 from matplotlib.image import imsave
-from nilearn.image import resample_img, resample_to_img , new_img_like
-from io import BytesIO , StringIO
+from nilearn.image import resample_img, resample_to_img, new_img_like
+from io import BytesIO, StringIO
 from .js_plotting_utils import get_html_template, HTMLDocument
 from matplotlib import cm as mpl_cm
 from matplotlib import colors
@@ -26,11 +25,14 @@ from .._utils.param_validation import check_threshold
 from .._utils.niimg import _safe_get_data
 from ..datasets import load_mni152_template
 
-def _resample_to_self(img,interpolation):
-    u,s,vh = np.linalg.svd(img.affine[0:3,0:3])
+
+def _resample_to_self(img, interpolation):
+    u, s, vh = np.linalg.svd(img.affine[0:3, 0:3])
     vsize = np.min(np.abs(s))
-    img = resample_img(img,target_affine=np.diag([vsize,vsize,vsize]),interpolation=interpolation)
+    img = resample_img(img, target_affine=np.diag([vsize, vsize, vsize]),
+                       interpolation=interpolation)
     return img
+
 
 def _data2sprite(data):
     nx, ny, nz = data.shape
@@ -42,15 +44,16 @@ def _data2sprite(data):
 
     for xx in range(nx):
         # we need to flip the image in the x axis
-        sprite[(indrow[xx] * nz):((indrow[xx] + 1) * nz),
-        (indcol[xx] * ny):((indcol[xx] + 1) * ny)] = data[xx, :,::-1].transpose()
+        sprite[(indrow[xx] * nz):((indrow[xx] + 1) * nz), (indcol[xx]*ny):
+               ((indcol[xx]+1)*ny)] = data[xx, :, ::-1].transpose()
 
     return sprite
 
-def save_sprite(img , output_sprite , output_cmap=None , output_json=None,
-                vmax=None , vmin=None , cmap='Greys' , threshold=None ,
-                n_colors=256 , format = 'png', resample=True ,
-                interpolation = 'nearest') :
+
+def save_sprite(img, output_sprite, output_cmap=None, output_json=None,
+                vmax=None, vmin=None, cmap='Greys', threshold=None,
+                n_colors=256, format='png', resample=True,
+                interpolation='nearest'):
     """ Generate a sprite from a 3D Niimg-like object.
 
         Parameters
@@ -105,14 +108,14 @@ def save_sprite(img , output_sprite , output_cmap=None , output_json=None,
     """
 
     # Get cmap
-    if isinstance(cm,str):
+    if isinstance(cm, str):
         cmap = plt.cm.get_cmap(cmap)
 
     img = check_niimg_3d(img, dtype='auto')
 
     # resample to isotropic voxel with standard orientation
     if resample:
-        img = _resample_to_self(img,interpolation)
+        img = _resample_to_self(img, interpolation)
 
     # Read data
     data = _safe_get_data(img, ensure_finite=True)
@@ -155,15 +158,16 @@ def save_sprite(img , output_sprite , output_cmap=None , output_json=None,
             sprite = np.ma.masked_equal(sprite, 0, copy=False)
         else:
             sprite = np.ma.masked_inside(sprite, -threshold, threshold,
-                                           copy=False)
+                                         copy=False)
     # Save the sprite
-    imsave(output_sprite,sprite,vmin=vmin,vmax=vmax,cmap=cmap,format=format)
+    imsave(output_sprite, sprite, vmin=vmin, vmax=vmax, cmap=cmap,
+           format=format)
 
     # Save the parameters
     if type(vmin).__module__ == 'numpy':
-        vmin = vmin.tolist() # json does not deal with numpy array
+        vmin = vmin.tolist()  # json does not deal with numpy array
     if type(vmax).__module__ == 'numpy':
-        vmax = vmax.tolist() # json does not deal with numpy array
+        vmax = vmax.tolist()  # json does not deal with numpy array
 
     if output_json is not None:
         params = {
@@ -176,8 +180,8 @@ def save_sprite(img , output_sprite , output_cmap=None , output_json=None,
                     'max': vmax,
                     'affine': img.affine.tolist()
                  }
-        if isinstance(output_json,str):
-            f = open(output_json,'w')
+        if isinstance(output_json, str):
+            f = open(output_json, 'w')
             f.write(json.dumps(params))
             f.close
         else:
@@ -185,23 +189,24 @@ def save_sprite(img , output_sprite , output_cmap=None , output_json=None,
 
     # save the colormap
     if output_cmap is not None:
-        data = np.arange(0,n_colors)/(n_colors-1)
-        data = data.reshape([1,n_colors])
-        imsave(output_cmap,data,cmap=cmap,format=format)
+        data = np.arange(0, n_colors)/(n_colors-1)
+        data = data.reshape([1, n_colors])
+        imsave(output_cmap, data, cmap=cmap, format=format)
 
     return sprite
 
-def _custom_cmap(cmap,vmin,vmax,threshold=None):
+
+def _custom_cmap(cmap, vmin, vmax, threshold=None):
     # For internal use only
 
-    # This is taken from https://github.com/nilearn/nilearn/blob/master/nilearn/plotting/displays.py#L754-L772
-    # Ideally this code would be reused in plot_stat_map, not just view_stat_map
+    # Generation of a custom color map, with under-threshold "greyed" values
+    # This is taken from nilearn/plotting/displays.py#L754-L772
 
     our_cmap = mpl_cm.get_cmap(cmap)
+    norm = colors.Normalize(vmin=vmin, vmax=vmax)
     # edge case where the data has a single value
     # yields a cryptic matplotlib error message
     # when trying to plot the color bar
-    norm = colors.Normalize(vmin=vmin,vmax=vmax)
     nb_ticks = 5 if norm.vmin != norm.vmax else 1
     ticks = np.linspace(norm.vmin, norm.vmax, nb_ticks)
     bounds = np.linspace(norm.vmin, norm.vmax, our_cmap.N)
@@ -225,15 +230,17 @@ def _custom_cmap(cmap,vmin,vmax,threshold=None):
             'Custom cmap', cmaplist, our_cmap.N)
         return our_cmap
 
+
 class StatMapView(HTMLDocument):
     pass
 
+
 def view_stat_map(stat_map_img, bg_img='MNI152', cut_coords=None,
-                colorbar=True, title=None, threshold=None, annotate=True,
-                draw_cross=True, black_bg='auto', cmap=cm.cold_hot,
-                symmetric_cbar='auto', dim='auto',vmax=None,
-                resampling_interpolation='continuous', n_colors=256, opacity=1,
-                **kwargs):
+                  colorbar=True, title=None, threshold=None, annotate=True,
+                  draw_cross=True, black_bg='auto', cmap=cm.cold_hot,
+                  symmetric_cbar='auto', dim='auto', vmax=None,
+                  resampling_interpolation='continuous', n_colors=256,
+                  opacity=1, **kwargs):
     """
     Intarctive viewer of a statistical map, with optional background
 
@@ -311,21 +318,23 @@ def view_stat_map(stat_map_img, bg_img='MNI152', cut_coords=None,
 
     cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
         _safe_get_data(stat_map_img, ensure_finite=True),
-        vmax,
-        symmetric_cbar,
-        kwargs)
+        vmax, symmetric_cbar, kwargs)
 
     # load background image, and resample stat map
-    if bg_img is not None and bg_img is not False :
+    if bg_img is not None and bg_img is not False:
         if isinstance(bg_img, str) and bg_img == "MNI152":
             bg_img = load_mni152_template()
-        bg_img, black_bg, bg_min, bg_max = _load_anat(bg_img,dim=dim,black_bg = black_bg)
-        bg_img = _resample_to_self(bg_img,interpolation='nearest')
-        stat_map_img = resample_to_img(stat_map_img, bg_img , interpolation=resampling_interpolation)
-
+        bg_img, black_bg, bg_min, bg_max = _load_anat(bg_img, dim=dim,
+                                                      black_bg=black_bg)
+        bg_img = _resample_to_self(bg_img, interpolation='nearest')
+        stat_map_img = resample_to_img(stat_map_img, bg_img,
+                                       interpolation=resampling_interpolation)
     else:
-        stat_map_img = _resample_to_self(stat_map_img,interpolation=resampling_interpolation)
-        bg_img = new_img_like(stat_map_img,np.zeros(stat_map_img.shape),stat_map_img.affine)
+        stat_map_img = _resample_to_self(stat_map_img,
+                                         interpolation=resampling_interpolation
+                                         )
+        bg_img = new_img_like(stat_map_img, np.zeros(stat_map_img.shape),
+                              stat_map_img.affine)
         bg_min = 0
         bg_max = 0
         if black_bg is 'auto':
@@ -352,7 +361,8 @@ def view_stat_map(stat_map_img, bg_img='MNI152', cut_coords=None,
 
     # Create a base64 sprite for the background
     bg_sprite = BytesIO()
-    save_sprite(bg_img,output_sprite=bg_sprite,cmap='gray',format='png',resample=False,vmin=bg_min, vmax=bg_max)
+    save_sprite(bg_img, output_sprite=bg_sprite, cmap='gray', format='png',
+                resample=False, vmin=bg_min, vmax=bg_max)
     bg_sprite.seek(0)
     bg_base64 = encodebytes(bg_sprite.read()).decode('utf-8')
     bg_sprite.close()
@@ -365,9 +375,9 @@ def view_stat_map(stat_map_img, bg_img='MNI152', cut_coords=None,
         stat_map_cm = BytesIO()
     else:
         stat_map_cm = None
-    cmap_c = _custom_cmap(cmap,vmin,vmax,threshold)
-    save_sprite(stat_map_img,stat_map_sprite,stat_map_cm,stat_map_json,vmax,vmin,cmap_c,
-                    threshold,n_colors,'png',False)
+    cmap_c = _custom_cmap(cmap, vmin, vmax, threshold)
+    save_sprite(stat_map_img, stat_map_sprite, stat_map_cm, stat_map_json,
+                vmax, vmin, cmap_c, threshold, n_colors, 'png', False)
 
     # Convert the sprite and colormap to base64
     stat_map_sprite.seek(0)
@@ -388,7 +398,7 @@ def view_stat_map(stat_map_img, bg_img='MNI152', cut_coords=None,
 
     # Convet cut coordinates into cut slices
     cut_slices = np.round(apply_affine(
-            np.linalg.inv(stat_map_img.affine),cut_coords))
+        np.linalg.inv(stat_map_img.affine), cut_coords))
 
     # Create a json-like structure
     # with all the brain sprite parameters
@@ -416,24 +426,24 @@ def view_stat_map(stat_map_img, bg_img='MNI152', cut_coords=None,
                     }
     if colorbar:
         sprite_params['colorMap'] = {
-                    'img' : 'colorMap',
-                    'min' : params['min'],
-                    'max' : params['max']
+                    'img': 'colorMap',
+                    'min': params['min'],
+                    'max': params['max']
                 }
 
     # Load javascript libraries
     js_dir = os.path.join(os.path.dirname(__file__), 'data', 'js')
     with open(os.path.join(js_dir, 'jquery.min.js')) as f:
-      js_jquery = f.read()
+        js_jquery = f.read()
     with open(os.path.join(js_dir, 'brainsprite.min.js')) as f:
-      js_brainsprite = f.read()
+        js_brainsprite = f.read()
 
     # Load the html template, and plug base64 data and meta-data
     html = get_html_template('stat_map_template.html')
     html = html.replace('INSERT_SPRITE_PARAMS_HERE', json.dumps(sprite_params))
     html = html.replace('INSERT_BG_DATA_HERE', bg_base64)
-    html = html.replace('INSERT_STAT_MAP_DATA_HERE',stat_map_base64)
-    html = html.replace('INSERT_CM_DATA_HERE',cm_base64)
-    html = html.replace('INSERT_JQUERY_HERE',js_jquery)
-    html = html.replace('INSERT_BRAINSPRITE_HERE',js_brainsprite)
+    html = html.replace('INSERT_STAT_MAP_DATA_HERE', stat_map_base64)
+    html = html.replace('INSERT_CM_DATA_HERE', cm_base64)
+    html = html.replace('INSERT_JQUERY_HERE', js_jquery)
+    html = html.replace('INSERT_BRAINSPRITE_HERE', js_brainsprite)
     return StatMapView(html)
