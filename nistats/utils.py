@@ -66,11 +66,7 @@ def _verify_events_file_uses_tab_separators(events_files):
     
     Returns
     -------
-    errors_raised: List[List[(events filepath or dataframe, error]]
-        Possible errors:
-            TypeError: If events is a pandadas dataframe.
-            UnicodeDecodeError: If events is a binary file (Python3 only)
-            IOError: If events file's path is invalid
+    None
     
     Raises
     ------
@@ -79,17 +75,16 @@ def _verify_events_file_uses_tab_separators(events_files):
     """
     valid_separators = [',', '\t']
     events_files = [events_files] if not isinstance(events_files, (list, tuple)) else events_files
-    errors_raised = []
     for events_file_ in events_files:
         try:
             with open(events_file_, 'r') as events_file_obj:
                 events_file_sample = events_file_obj.readline()
-        except TypeError as type_err:
-            errors_raised.append([events_file_, type_err])  # events is Pandas dataframe.
-        except UnicodeDecodeError as unicode_err:
-            errors_raised.append([events_file_, unicode_err])  # py3:if binary file
-        except IOError as io_err:
-            errors_raised.append([events_file_, io_err])  # if invalid filepath.
+        except TypeError as type_err:  # events is Pandas dataframe.
+            pass
+        except UnicodeDecodeError as unicode_err:  # py3:if binary file
+            pass
+        except IOError as io_err:  # if invalid filepath.
+            pass
         else:
             try:
                 csv.Sniffer().sniff(sample=events_file_sample,
@@ -100,8 +95,7 @@ def _verify_events_file_uses_tab_separators(events_files):
                     'The values in the events file are not separated by tabs; '
                     'please enforce BIDS conventions',
                     events_file_)
-    return errors_raised
-
+    
 
 def _check_run_tables(run_imgs, tables_, tables_name):
     """Check fMRI runs and corresponding tables to raise error if necessary"""

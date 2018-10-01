@@ -42,7 +42,7 @@ def _run_test_for_invalid_separator(filepath, delimiter_name):
             _verify_events_file_uses_tab_separators(events_files=filepath)
     else:
         result = _verify_events_file_uses_tab_separators(events_files=filepath)
-        assert_true(result == [])
+        assert_true(result is None)
 
 
 def test_for_invalid_separator():
@@ -65,9 +65,7 @@ def test_with_2D_dataframe():
     events_pandas_dataframe = pd.DataFrame(data_for_pandas_dataframe)
     result = _verify_events_file_uses_tab_separators(
             events_files=events_pandas_dataframe)
-    expected_error = result[0][1]
-    with assert_raises(TypeError):
-        raise expected_error
+    assert_true(result is None)
 
 
 def test_with_1D_dataframe():
@@ -76,27 +74,20 @@ def test_with_1D_dataframe():
         events_pandas_dataframe = pd.DataFrame(dataframe_)
         result = _verify_events_file_uses_tab_separators(
                 events_files=events_pandas_dataframe)
-        expected_error = result[0][1]
-        with assert_raises(TypeError):
-            raise expected_error
-
+        assert_true(result is None)
 
 def test_for_invalid_filepath():
     filepath = 'junk_file_path.csv'
     result = _verify_events_file_uses_tab_separators(events_files=filepath)
-    expected_error = result[0][1]
-    with assert_raises(IOError):
-        raise expected_error
+    assert_true(result is None)
 
 
 def test_for_pandas_dataframe():
     events_pandas_dataframe = pd.DataFrame([['a', 'b', 'c'], [0, 1, 2]])
     result = _verify_events_file_uses_tab_separators(
             events_files=events_pandas_dataframe)
-    expected_error = result[0][1]
-    with assert_raises(TypeError):
-        raise expected_error
-
+    assert_true(result is None)
+    
 
 def test_binary_opening_an_image():
     img_data = bytearray(
@@ -141,7 +132,6 @@ if __name__ == '__main__':
             ]
         for test_ in tests:
             _run_tests_print_test_messages(test_func=test_)
-
 
 
     run_test_suite()
