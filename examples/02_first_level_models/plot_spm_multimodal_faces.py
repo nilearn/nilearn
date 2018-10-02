@@ -134,8 +134,8 @@ for contrast_id, contrast_val in contrasts.items():
         cut_coords=3, black_bg=True, title=contrast_id)
 
 #########################################################################
-# Show the resulting maps
+# Show the resulting maps:
+# We observe that the analysis results in wide activity for the 'effects of interest' contrast, showing the implications of large portions of the visual cortex in the conditions. By contrast, the differential effect between "faces" and "scambled" involves sparser, more anterior and lateral regions. It displays also some responses in the frontal lobe.
+
 plotting.show()
 
-#########################################################################
-# We observe that the analysis results in wide activity for the 'effects of interest' contrast, showing the implications of large portions of the visual cortex in the conditions. By contrast, the differential effect between "faces" and "scambled" involves sparser, more anterior and lateral regions. It displays also some responses in the frontal lobe.

@@ -19,64 +19,69 @@ and gray matter density from the VBM data. We use only 100 subjects
 from the OASIS dataset to limit the memory usage.
 
 Note that more power would be obtained from using a larger sample of subjects.
-____
-
 """
 # Authors: Bertrand Thirion, <bertrand.thirion@inria.fr>, July 2018
 #          Elvis Dhomatob, <elvis.dohmatob@inria.fr>, Apr. 2014
 #          Virgile Fritsch, <virgile.fritsch@inria.fr>, Apr 2014
 #          Gael Varoquaux, Apr 2014
-import numpy as np
-import matplotlib.pyplot as plt
-from nilearn import datasets
-from nilearn.input_data import NiftiMasker
+
 
 n_subjects = 100  # more subjects requires more memory
 
 ############################################################################
 # Load Oasis dataset
-# -------------------
+# ------------------
+
+from nilearn import datasets
 oasis_dataset = datasets.fetch_oasis_vbm(n_subjects=n_subjects)
 gray_matter_map_filenames = oasis_dataset.gray_matter_maps
 age = oasis_dataset.ext_vars['age'].astype(float)
 
-# sex is encoded as 'M' or 'F'. make it a binary variable
+###############################################################################
+# Sex is encoded as 'M' or 'F'. make it a binary variable
 sex = oasis_dataset.ext_vars['mf'] == b'F'
 
-# print basic information on the dataset
+###############################################################################
+# Print basic information on the dataset
 print('First gray-matter anatomy image (3D) is located at: %s' %
       oasis_dataset.gray_matter_maps[0])  # 3D data
 print('First white-matter anatomy image (3D) is located at: %s' %
       oasis_dataset.white_matter_maps[0])  # 3D data
 
-## get a mask image
+###############################################################################
+# Get a mask image: A mask of the  cortex of the ISBM template
 gm_mask = datasets.fetch_icbm152_brain_gm_mask()
 
-## Since this mask has a different resolution
+###############################################################################
+# Resample the images, since this mask has a different resolution
 from nilearn.image import resample_to_img
 mask_img = resample_to_img(
     gm_mask, gray_matter_map_filenames[0], interpolation='nearest')
 
 #############################################################################
 # Analyse data
-# ----------------
-
-from nistats.second_level_model import SecondLevelModel
+# ------------
+#
+# First create an adequate design matrix with three columns: 'age',
+# 'sex', 'intercept'.
 import pandas as pd
-
+import numpy as np
 intercept = np.ones(n_subjects)
 design_matrix = pd.DataFrame(np.vstack((age, sex, intercept)).T,
                              columns=['age', 'sex', 'intercept'])
-# plot the design matrix
+
+#############################################################################
+# Plot the design matrix
 from nistats.reporting import plot_design_matrix
 ax = plot_design_matrix(design_matrix)
 ax.set_title('Second level design matrix', fontsize=12)
 ax.set_ylabel('maps')
-plt.tight_layout()
 
 ##########################################################################
-# specify and fit the model
+# Specify and fit the second-level model when loading the data, we
+# smooth a little bit tom improve statistical behavior
 
+from nistats.second_level_model import SecondLevelModel
 second_level_model = SecondLevelModel(smoothing_fwhm=2.0, mask=mask_img)
 second_level_model.fit(gray_matter_map_filenames,
                        design_matrix=design_matrix)
@@ -88,19 +93,25 @@ z_map = second_level_model.compute_contrast(second_level_contrast=[1, 0, 0],
                                             output_type='z_score')
 
 ###########################################################################
-# We threshold the second level contrast at uncorrected p < 0.001 and plot
-from nilearn import plotting
+# We threshold the second level contrast at uncorrected p < 0.001 and plot it.
+# First compute the threshold.
 from nistats.thresholding import map_threshold
 _, threshold = map_threshold(
     z_map, threshold=.05, height_control='fdr')
+print('The FDR=.05-corrected threshold is: %.3g' % threshold)
 
+###########################################################################
+# The plot it
+from nilearn import plotting
 display = plotting.plot_stat_map(
     z_map, threshold=threshold, colorbar=True, display_mode='z',
     cut_coords=[-4, 26],
-    title='age effect on grey matter density (FDR < .05)')
+    title='age effect on grey matter density (FDR = .05)')
+plotting.show()
 
 ###########################################################################
-# Can also study the effect of sex
+# Can also study the effect of sex: compute the stat, compute the
+# threshold, plot the map
 
 z_map = second_level_model.compute_contrast(second_level_contrast='sex',
                                             output_type='z_score')
@@ -108,8 +119,8 @@ _, threshold = map_threshold(
     z_map, threshold=.05, height_control='fdr')
 plotting.plot_stat_map(
     z_map, threshold=threshold, colorbar=True,
-    title='sex effect on grey matter density (FDR < .05)')
+    title='sex effect on grey matter density (FDR = .05)')
 
-plotting.show()
 ###########################################################################
-# Note that there is no significant effect of sex on grey matter density.
+# Note that there does not seem to be any significant effect of sex on grey matter density on that dataset.
+
