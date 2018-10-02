@@ -10,8 +10,8 @@ new features in the analysis and look at the outcome, i.e. the
 resulting brain maps.
 
 Readers without prior experience in fMRI data analysis should first
-run the plot_sing_subject_single_run tutorial to get a bit more
-familiar with the base concepts, and only then run thi script.
+run the :ref:`plot_single_subject_single_run` tutorial to get a bit more
+familiar with the base concepts, and only then run this tutorial example.
 
 To run this example, you must launch IPython via ``ipython
 --matplotlib`` in a terminal, or use ``jupyter-notebook``.
@@ -25,7 +25,6 @@ To run this example, you must launch IPython via ``ipython
 import numpy as np
 import pandas as pd
 from nilearn import plotting
-
 from nistats import datasets
 
 ###############################################################################
@@ -36,37 +35,51 @@ from nistats import datasets
 # acquisition of a fast event-related dataset.
 
 data = datasets.fetch_localizer_first_level()
+fmri_img = data.epi_img
+
+###############################################################################
+# Define the paradigm that will be used
+#
+# We just get the provided file and make it BIDS-compliant. 
 t_r = 2.4
 paradigm_file = data.paradigm
 events= pd.read_csv(paradigm_file, sep=' ', header=None, index_col=None)
 events.columns = ['session', 'trial_type', 'onset']
-fmri_img = data.epi_img
 
 ###############################################################################
 # Running a basic model
 # ---------------------
-
+#
+# First specify a linear model.
+# the fit() model creates the design matrix and the beta maps.
+#
 from nistats.first_level_model import FirstLevelModel
 first_level_model = FirstLevelModel(t_r)
 first_level_model = first_level_model.fit(fmri_img, events=events)
 design_matrix = first_level_model.design_matrices_[0]
 
+#########################################################################
+# Let us take a look at the design matrix: it has 10 main columns corresponding to 10 experimental conditions, followed by 3 columns describing low-frequency signals (drifts) and a constant regressor.
 from nistats.reporting import plot_design_matrix
 plot_design_matrix(design_matrix)
+import matplotlib.pyplot as plt
+plt.show()
 
 #########################################################################
-# Specify the contrasts.
+# Specification of the contrasts.
 # 
-# For this, let's create a function that, given the deisgn matrix,
+# For this, let's create a function that, given the design matrix,
 # generates the corresponding contrasts.
-# This will be useful
+# This will be useful to repeat contast specification when we change the design matrix.
 
 def make_localizer_contrasts(design_matrix):
     """ returns a dictionary of four contasts, given the design matrix"""
+
     # first generate canonical contrasts 
     contrast_matrix = np.eye(design_matrix.shape[1])
     contrasts = dict([(column, contrast_matrix[i])
                       for i, column in enumerate(design_matrix.columns)])
+
     # Add more complex contrasts
     contrasts["audio"] = contrasts["clicDaudio"] + contrasts["clicGaudio"] +\
                          contrasts["calculaudio"] + contrasts["phraseaudio"]
@@ -75,8 +88,7 @@ def make_localizer_contrasts(design_matrix):
     contrasts["computation"] = contrasts["calculaudio"] + contrasts["calculvideo"]
     contrasts["sentences"] = contrasts["phraseaudio"] + contrasts["phrasevideo"]
 
-    #########################################################################
-    # Short list of more relevant contrasts
+    # Short dictionary of more relevant contrasts
     contrasts = {
         "left-right": (contrasts["clicGaudio"] + contrasts["clicGvideo"]
                        - contrasts["clicDaudio"] - contrasts["clicDvideo"]),
@@ -87,16 +99,24 @@ def make_localizer_contrasts(design_matrix):
     }
     return contrasts
 
+#########################################################################
+# So let's look at these computed contrasts
+
 contrasts = make_localizer_contrasts(design_matrix)
-# TODO: plot contrasts
+plt.figure(figsize=(5, 9))
+from nistats.reporting import plot_contrast_matrix
+for i, (key, values) in enumerate(contrasts.items()):
+    ax = plt.subplot(5, 1, i + 1)
+    plot_contrast_matrix(values, design_matrix=design_matrix, ax=ax)
+
+plt.show()
 
 #########################################################################
-# contrast estimation and plotting
+# Contrast estimation and plotting
+#
 # Since this script will be repeated several times, for the sake of readbility,
 # we encapsulate it in a function that we call when needed.
 #
-
-import matplotlib.pyplot as plt
 
 def plot_contrast(first_level_model):
     """ Given a first model, specify, enstimate and plot the main contrasts"""
@@ -104,6 +124,7 @@ def plot_contrast(first_level_model):
     # Call the contrast specification within the function
     contrasts = make_localizer_contrasts(design_matrix)
     fig = plt.figure(figsize=(11, 3))
+    # compute the per-contrast z-map
     for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
         ax = plt.subplot(1, len(contrasts), 1 + index)
         z_map = first_level_model.compute_contrast(
@@ -112,6 +133,10 @@ def plot_contrast(first_level_model):
             z_map, display_mode='z', threshold=3.0, title=contrast_id, axes=ax,
             cut_coords=1)
 
+#########################################################################
+# Let's run the model and look at the outcome.
+
+plot_contrast(first_level_model)
 plt.show()
 
 #########################################################################
@@ -134,9 +159,9 @@ plot_contrast(first_level_model)
 plt.show()
 
 #########################################################################
-# Note that the design matrix has more columns to model dirft terms
+# Note that the design matrix has more columns to model drifts in the data.
 #
-# Anyway, this model performs rather poorly
+# We notice however that this model performs rather poorly.
 #
 # Another solution is to remove these drift terms. Maybe they're simply useless.
 # this is done by setting drift_model to None.
@@ -172,7 +197,7 @@ plt.show()
 #
 # This is the filter used to convert the event sequence into a reference BOLD signal for the design matrix.
 #
-# The first thing that we can do is to change the default model (the so-called Glover hrf) for the so-called canocial model of SPM --which has slightly weaker undershoot component.  
+# The first thing that we can do is to change the default model (the so-called Glover hrf) for the so-called canonical model of SPM --which has slightly weaker undershoot component.  
  
 first_level_model = FirstLevelModel(t_r, hrf_model='spm')
 first_level_model = first_level_model.fit(fmri_img, events=events)
@@ -184,7 +209,7 @@ plt.show()
 #########################################################################
 # No strong --positive or negative-- effect.
 #
-# We could try to go one step further: using not only the so-called canocial hrf, but also its time derivative. Note that in that case, we still perform the contrasts  and obtain statistical significance for the main effect ---not the time derivative. This means that the inclusion of time derivative in the design matrix has the sole effect of discounting timing misspecification from the error term, which vould decrease the estimated variance and enhance the statistical significance of the effect. Is it the case ?
+# We could try to go one step further: using not only the so-called canonical hrf, but also its time derivative. Note that in that case, we still perform the contrasts  and obtain statistical significance for the main effect ---not the time derivative. This means that the inclusion of time derivative in the design matrix has the sole effect of discounting timing misspecification from the error term, which vould decrease the estimated variance and enhance the statistical significance of the effect. Is it the case ?
 
 first_level_model = FirstLevelModel(t_r, hrf_model='spm + derivative')
 first_level_model = first_level_model.fit(fmri_img, events=events)
@@ -194,7 +219,7 @@ plot_contrast(first_level_model)
 plt.show()
 
 #########################################################################
-# Not a huge effect, but rather positive overall. We could keep that one
+# Not a huge effect, but rather positive overall. We could keep that one.
 #
 # Bzw, a benefit of this approach is that we can test which voxels are well explined by the derivative term, hinting at misfit regions, a possibly valuable information
 # This is implemented by an F test on the time derivative regressors.
@@ -210,10 +235,24 @@ plt.show()
 # We don't see too much here: the onset times and hrf delay we're using are probably fine.
 
 #########################################################################
+# We can also consider adding the so-called dispersion derivative to capture some mis-specification in the shape of the hrf. 
+# this is done by specifying `hrf_model='spm + derivative + dispersion'`
+#
+first_level_model = FirstLevelModel(t_r, hrf_model='spm + derivative + dispersion')
+first_level_model = first_level_model.fit(fmri_img, events=events)
+design_matrix = first_level_model.design_matrices_[0]
+plot_design_matrix(design_matrix)
+plot_contrast(first_level_model)
+plt.show()
+
+#########################################################################
+# Not a huge effect. For the sake of simplicity and readibility, we can drop that one.
+
+#########################################################################
 # The noise model ar(1) or ols ?
 # ------------------------------
 #
-# So far,we have implitly use an lag-1 autoregressive model ---aka ar(1)--- for the temporal  structure of the noise. an alternative choice is to use an ordinaly least sqaure model (ols) that neglects that assumes no temporal structure (independent noise) 
+# So far,we have implicitly used a lag-1 autoregressive model ---aka ar(1)--- for the temporal structure of the noise. An alternative choice is to use an ordinaly least squares model (ols) that assumes no temporal structure (time-independent noise) 
 
 first_level_model = FirstLevelModel(t_r, hrf_model='spm + derivative', noise_model='ols')
 first_level_model = first_level_model.fit(fmri_img, events=events)
@@ -229,9 +268,12 @@ plt.show()
 # Removing confounds
 # ------------------
 #
-# A problematic feature of fMRI is the presence of unconctrolled confounds in the data, sue to scanner instabilities (spikes) or physiological phenomena (motion, heart and repoiration rate)
-# Side measurements are sometimes acquired to charcterise these effects. We don't have access to those.
-# What we can do instead id to estimate confounding effects from the data themselves, using the compcorr approach, and take those nto account in the model
+# A problematic feature of fMRI is the presence of unconctrolled confounds in the data, sue to scanner instabilities (spikes) or physiological phenomena, such as motion, heart and respiration-related blood oxygenation flucturations.
+# Side measurements are sometimes acquired to charcterise these effects. Here we don't have access to those.
+# What we can do instead is to estimate confounding effects from the data themselves, using the compcorr approach, and take those into account in the model.
+#
+# For this we rely on the so-called  :ref:`high_variance_confounds <https://nilearn.github.io/modules/generated/nilearn.image.high_variance_confounds.html>` routine of Nilearn.
+
 
 from nilearn.image import high_variance_confounds
 confounds = pd.DataFrame(high_variance_confounds(fmri_img, percentile=1))
@@ -246,7 +288,7 @@ plt.show()
 #########################################################################
 #  Note the five additional columns in the design matrix
 #
-# The effect on activation maps is complex: auditory/visual effects are killed, probably because they were somewhat colinear to the confounds. On the other hand, some of the maps become cleaner (H-V, computation) after this effects.
+# The effect on activation maps is complex: auditory/visual effects are killed, probably because they were somewhat colinear to the confounds. On the other hand, some of the maps become cleaner (H-V, computation) after this addition.
 
 
 #########################################################################
@@ -275,7 +317,7 @@ plt.show()
 # Masking consists in selecting the region of the image on which the model is run: it is useless to run it outside of the brain.
 # the approach taken by FirstLeveModel is to estimate it from the fMRI data themselves when no mask is explicitly provided.
 # Since the data have been resampled into MNI space, we can use instead a mask  of the grey matter in MNI space. The benefit is that it makes voxel-level comparisons easier across subjects and datasets, and removed non-grey matter regions, in which no BOLD signal is expected.
-# The down side is that the mask may not fit very well these particular data
+# The downside is that the mask may not fit very well these particular data.
 
 from nilearn.plotting import plot_roi 
 from nilearn.datasets import fetch_icbm152_brain_gm_mask

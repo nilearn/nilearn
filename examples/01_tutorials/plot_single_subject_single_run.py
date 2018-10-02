@@ -133,14 +133,12 @@ fmri_glm = fmri_glm.fit(fmri_img, events)
 
 ###############################################################################
 # One can inspect the design matrix (rows represent time, and
-# columns contain the predictors):
-
+# columns contain the predictors).
 design_matrix = fmri_glm.design_matrices_[0]
 
 ###############################################################################
 # Formally, we have taken the first design matrix, because the model is
 # implictily meant to for multiple runs.
-
 from nistats.reporting import plot_design_matrix
 plot_design_matrix(design_matrix)
 import matplotlib.pyplot as plt
@@ -177,10 +175,9 @@ conditions = {
 active_minus_rest = conditions['active'] - conditions['rest']
 
 ###############################################################################
-# Let's look at it
+# Let's look at it: plot the coefficients of the contrast, indexed by the names of the columns of the design matrix.
 
 from nistats.reporting import plot_contrast_matrix
-
 plot_contrast_matrix(active_minus_rest, design_matrix=design_matrix)
 
 ###############################################################################
@@ -283,13 +280,17 @@ table.to_csv(join(outdir, 'table.csv'))
 # Performing an F-test
 #
 # "active vs rest" is a typical t test: condition versus baseline. Another popular type of test is an F test in which one seeks whether a certain combination of conditions (possibly two-, three- or higher-dimensional) explains a significant proportion of the signal.
-# Here one might for instance test which voxels are well explained by combination of the active and rest condition. Atcually, the contrast specification is done exactly the same way as for t contrasts.
-
+# Here one might for instance test which voxels are well explained by combination of the active and rest condition. 
 import numpy as np
 effects_of_interest = np.vstack((conditions['active'], conditions['rest']))
+plot_contrast_matrix(effects_of_interest, design_matrix)
+plt.show()
+
+###############################################################################
+# Specify the contrast and compute the correspoding map. Actually, the contrast specification is done exactly the same way as for t contrasts.
+
 z_map = fmri_glm.compute_contrast(effects_of_interest,
                                   output_type='z_score')
-plot_contrast_matrix(effects_of_interest, design_matrix)
 plt.show()
 
 ###############################################################################
