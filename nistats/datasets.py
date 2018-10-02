@@ -277,6 +277,11 @@ def fetch_openneuro_dataset(
     return data_dir, sorted(downloaded)
 
 
+def _check_bids_compliance_localizer_first_level_paradigm_file(paradigm_file):
+    paradigm = pd.read_csv(paradigm_file, sep='\t')
+    return list(paradigm.columns) == ['trial_type', 'onset']
+
+
 def _make_localizer_first_level_paradigm_file_bids_compliant(paradigm_file):
     """ Makes the first-level localizer fMRI dataset events file
     BIDS compliant. Overwrites the original file.
@@ -330,7 +335,13 @@ def fetch_localizer_first_level(data_dir=None, verbose=1):
                              verbose=verbose)
 
     params = dict(zip(sorted(files.keys()), sub_files))
-    _make_localizer_first_level_paradigm_file_bids_compliant(paradigm_file=
+    bids_compliant_paradigm = (
+            _check_bids_compliance_localizer_first_level_paradigm_file(
+                                            paradigm_file=params['paradigm']
+                                            )
+                    )
+    if not bids_compliant_paradigm:
+        _make_localizer_first_level_paradigm_file_bids_compliant(paradigm_file=
                                                              params['paradigm']
                                                              )
     
