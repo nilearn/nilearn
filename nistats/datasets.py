@@ -282,7 +282,7 @@ def _check_bids_compliance_localizer_first_level_paradigm_file(paradigm_file):
     return list(paradigm.columns) == ['trial_type', 'onset']
 
 
-def _make_localizer_first_level_paradigm_file_bids_compliant(paradigm_file):
+def _make_bids_compliant_localizer_first_level_paradigm_file(paradigm_file):
     """ Makes the first-level localizer fMRI dataset events file
     BIDS compliant. Overwrites the original file.
         Adds headers in first row.
@@ -341,9 +341,9 @@ def fetch_localizer_first_level(data_dir=None, verbose=1):
                                             )
                     )
     if not bids_compliant_paradigm:
-        _make_localizer_first_level_paradigm_file_bids_compliant(paradigm_file=
+        _make_bids_compliant_localizer_first_level_paradigm_file(paradigm_file=
                                                              params['paradigm']
-                                                             )
+                                                                 )
     
     return Bunch(**params)
 

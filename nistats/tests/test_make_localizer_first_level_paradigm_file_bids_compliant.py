@@ -3,7 +3,7 @@ from tempfile import NamedTemporaryFile
 
 from nose.tools import assert_true
 import pandas as pd
-from nistats.datasets import _make_localizer_first_level_paradigm_file_bids_compliant
+from nistats.datasets import _make_bids_compliant_localizer_first_level_paradigm_file
 
 def _input_data_for_test_file():
     file_data = [
@@ -38,7 +38,7 @@ def run_test():
                               header=False,
                               sep=' ',
                               )
-        _make_localizer_first_level_paradigm_file_bids_compliant(
+        _make_bids_compliant_localizer_first_level_paradigm_file(
                 temp_csv_obj.name
                 )
         data_from_test_file_post_mod = pd.read_csv(temp_csv_obj.name, sep='\t')
