@@ -33,8 +33,9 @@ from patsy import DesignInfo
 from .regression import OLSModel, ARModel, SimpleRegressionResults
 from .design_matrix import make_design_matrix
 from .contrasts import _fixed_effect_contrast
-from .utils import (_basestring, _check_run_tables, get_bids_files,
-                    parse_bids_filename)
+from .utils import (_basestring, _check_run_tables,
+                    _verify_events_file_uses_tab_separators,
+                    get_bids_files, parse_bids_filename)
 
 
 def mean_scaling(Y, axis=0):
@@ -341,6 +342,9 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         """
         # Check arguments
         # Check imgs type
+        if events is not None:
+            _verify_events_file_uses_tab_separators(
+                events_files=events)
         if not isinstance(run_imgs, (list, tuple)):
             run_imgs = [run_imgs]
         if design_matrices is None:
@@ -356,7 +360,6 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         # Also check that events and confound files can be loaded as DataFrame
         if events is not None:
             events = _check_run_tables(run_imgs, events, 'events')
-
         if confounds is not None:
             confounds = _check_run_tables(run_imgs, confounds, 'confounds')
 
