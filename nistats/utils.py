@@ -2,6 +2,7 @@
 
 Authors: Bertrand Thirion, Matthew Brett, 2015
 """
+import csv
 import sys
 import scipy.linalg as spl
 import numpy as np
@@ -40,6 +41,61 @@ def _check_and_load_tables(tables_, var_name):
                             (var_name, type(table), table_idx))
     return tables
 
+ 
+def _verify_events_file_uses_tab_separators(events_files):
+    """
+    Raises a ValueError if provided list of text based data files
+    (.csv, .tsv, etc) do not enforce the BIDS convention of using Tabs
+    as separators.
+    
+    Only scans their first row.
+    Does nothing if:
+        If the separator used is BIDS compliant.
+        Paths are invalid.
+        File(s) are not text files.
+
+    Does not flag comma-separated-values-files for compatibility reasons;
+    this may change in future as commas are not BIDS compliant.
+    
+    parameters
+    ----------
+    events_files: str, List/Tuple[str]
+        A single file's path or a collection of filepaths.
+        Files are expected to be text files.
+        Non-text files will raise ValueError.
+    
+    Returns
+    -------
+    None
+    
+    Raises
+    ------
+    ValueError:
+        If value separators are not Tabs (or commas)
+    """
+    valid_separators = [',', '\t']
+    events_files = [events_files] if not isinstance(events_files, (list, tuple)) else events_files
+    for events_file_ in events_files:
+        try:
+            with open(events_file_, 'r') as events_file_obj:
+                events_file_sample = events_file_obj.readline()
+        except TypeError as type_err:  # events is Pandas dataframe.
+            pass
+        except UnicodeDecodeError as unicode_err:  # py3:if binary file
+            pass
+        except IOError as io_err:  # if invalid filepath.
+            pass
+        else:
+            try:
+                csv.Sniffer().sniff(sample=events_file_sample,
+                                    delimiters=valid_separators,
+                                    )
+            except csv.Error:
+                raise ValueError(
+                    'The values in the events file are not separated by tabs; '
+                    'please enforce BIDS conventions',
+                    events_file_)
+    
 
 def _check_run_tables(run_imgs, tables_, tables_name):
     """Check fMRI runs and corresponding tables to raise error if necessary"""
