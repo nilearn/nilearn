@@ -19,6 +19,8 @@ from nilearn.datasets.utils import (_fetch_file,
                                     )
 from sklearn.datasets.base import Bunch
 
+from nistats.utils import _verify_events_file_uses_tab_separators
+
 
 SPM_AUDITORY_DATA_FILES = ["fM00223/fM00223_%03i.img" % index
                            for index in range(4, 100)]
@@ -277,11 +279,6 @@ def fetch_openneuro_dataset(
     return data_dir, sorted(downloaded)
 
 
-def _check_bids_compliance_localizer_first_level_paradigm_file(paradigm_file):
-    paradigm = pd.read_csv(paradigm_file, sep='\t')
-    return list(paradigm.columns) == ['trial_type', 'onset']
-
-
 def _make_bids_compliant_localizer_first_level_paradigm_file(paradigm_file):
     """ Makes the first-level localizer fMRI dataset events file
     BIDS compliant. Overwrites the original file.
@@ -335,12 +332,9 @@ def fetch_localizer_first_level(data_dir=None, verbose=1):
                              verbose=verbose)
 
     params = dict(zip(sorted(files.keys()), sub_files))
-    bids_compliant_paradigm = (
-            _check_bids_compliance_localizer_first_level_paradigm_file(
-                                            paradigm_file=params['paradigm']
-                                            )
-                    )
-    if not bids_compliant_paradigm:
+    try:
+        _verify_events_file_uses_tab_separators(params['paradigm'])
+    except ValueError:
         _make_bids_compliant_localizer_first_level_paradigm_file(paradigm_file=
                                                              params['paradigm']
                                                                  )
