@@ -87,7 +87,7 @@ second_level_model.fit(gray_matter_map_filenames,
                        design_matrix=design_matrix)
 
 ##########################################################################
-# To estimate the contrast is very simple. We can just provide the column
+# Estimate the contrast is very simple. We can just provide the column
 # name of the design matrix.
 z_map = second_level_model.compute_contrast(second_level_contrast=[1, 0, 0],
                                             output_type='z_score')

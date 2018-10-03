@@ -1,9 +1,9 @@
 """
-GLM fitting in second level fMRI
-================================
+Second-level fMRI model: one sample test
+========================================
 
-Full step-by-step example of fitting a GLM to perform a second level analysis
-in experimental data and visualizing the results.
+Full step-by-step example of fitting a GLM to perform a second-level analysis (one-sample test)
+and visualizing the results.
 
 More specifically:
 
@@ -11,23 +11,16 @@ More specifically:
 2. a mask of the useful brain volume is computed
 3. A one-sample t-test is applied to the brain maps
 
-(as fixed effects, then contrast estimation)
+We focus on a given contrast of the localizer dataset: the motor response to left versus right button press. Both at the ndividual and group level, this is expected to elicit activity in the motor cortex (positive in the right hemisphere, negative in the left hemisphere).
 
 """
-
-import pandas as pd
-from nilearn import plotting
-from scipy.stats import norm
-import matplotlib.pyplot as plt
-
-from nilearn.datasets import fetch_localizer_contrasts
-from nistats.second_level_model import SecondLevelModel
 
 #########################################################################
 # Fetch dataset
 # --------------
 # We download a list of left vs right button press contrasts from a
-# localizer dataset.
+# localizer dataset. Note that we fetc individual t-maps that represent the Bold activity estimate divided by the uncertainty about this estimate. 
+from nilearn.datasets import fetch_localizer_contrasts
 n_subjects = 16
 data = fetch_localizer_contrasts(["left vs right button press"], n_subjects,
                                  get_tmaps=True)
@@ -38,6 +31,8 @@ data = fetch_localizer_contrasts(["left vs right button press"], n_subjects,
 # We plot a grid with all the subjects t-maps thresholded at t = 2 for
 # simple visualization purposes. The button press effect is visible among
 # all subjects
+from nilearn import plotting
+import matplotlib.pyplot as plt
 subjects = [subject_data[0] for subject_data in data['ext_vars']]
 fig, axes = plt.subplots(nrows=4, ncols=4)
 for cidx, tmap in enumerate(data['tmaps']):
@@ -53,10 +48,14 @@ plt.show()
 # ---------------------------
 # We define the input maps and the design matrix for the second level model
 # and fit it.
+import pandas as pd
 second_level_input = data['cmaps']
 design_matrix = pd.DataFrame([1] * len(second_level_input),
                              columns=['intercept'])
 
+############################################################################
+# Model specification and fit
+from nistats.second_level_model import SecondLevelModel
 second_level_model = SecondLevelModel(smoothing_fwhm=8.0)
 second_level_model = second_level_model.fit(second_level_input,
                                             design_matrix=design_matrix)
@@ -68,10 +67,13 @@ z_map = second_level_model.compute_contrast(output_type='z_score')
 
 ###########################################################################
 # We threshold the second level contrast at uncorrected p < 0.001 and plot
+from scipy.stats import norm
 p_val = 0.001
-z_th = norm.isf(p_val)
+p001_unc = norm.isf(p_val)
 display = plotting.plot_glass_brain(
-    z_map, threshold=z_th, colorbar=True, plot_abs=False, display_mode='z',
+    z_map, threshold=p001_unc, colorbar=True, display_mode='z', plot_abs=False,
     title='group left-right button press (unc p<0.001')
 
+###########################################################################
+# As expected, we find the motor cortex
 plotting.show()
