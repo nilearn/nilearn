@@ -47,12 +47,12 @@ z_map = second_level_model.compute_contrast(output_type='z_score')
 # false positive rate < .001, cluster size > 10 voxels
 from nistats.thresholding import map_threshold
 thresholded_map1, threshold1 = map_threshold(
-    z_map, threshold=.001, height_control='fpr', cluster_threshold=10)
+    z_map, level=.001, height_control='fpr', cluster_threshold=10)
 
 #########################################################################
 # Now use FDR <.05, (False Discovery Rate) no cluster-level threshold
 thresholded_map2, threshold2 = map_threshold(
-    z_map, threshold=.05, height_control='fdr')
+    z_map, level=.05, height_control='fdr')
 print('The FDR=.05 threshold is %.3g' % threshold2)
 
 #########################################################################

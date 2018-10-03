@@ -10,21 +10,36 @@ from nilearn.input_data import NiftiMasker
 
 
 def fdr_threshold(z_vals, alpha):
-    """ return the BH fdr for the input z_vals"""
+    """ return the Benjamini-Hochberg FDR threshold for the input z_vals
+    
+    Parameters
+    ----------
+    z_vals: array,
+            a set of z-variates from which an FDR
+    alpha: float,
+           desired FDR control
+    
+    Returns
+    -------
+    threshold: float,
+               FDR-controling threshold from the Benjamini-Hochberg procedure
+    """
+    if alpha < 0 or alpha > 1:
+        raise ValueError('alpha should be between 0 and 1')
     z_vals_ = - np.sort(- z_vals)
     p_vals = norm.sf(z_vals_)
     n_samples = len(p_vals)
     pos = p_vals < alpha * np.linspace(
         .5 / n_samples, 1 - .5 / n_samples, n_samples)
     if pos.any():
-        return (z_vals_[pos][-1] - 1.e-8)
+        return (z_vals_[pos][-1] - 1.e-12)
     else:
         return np.infty
 
 
-def map_threshold(stat_img, mask_img=None, threshold=.001,
+def map_threshold(stat_img, mask_img=None, level=.001,
                   height_control='fpr', cluster_threshold=0):
-    """ Threshold the provided map
+    """ Compute the required threhsold level and return the thresholded map
 
     Parameters
     ----------
@@ -34,15 +49,21 @@ def map_threshold(stat_img, mask_img=None, threshold=.001,
     mask_img : Niimg-like object, optional,
         mask image
 
-    threshold: float, optional
-        cluster forming threshold (either a p-value or z-scale value)
+    level: float, optional
+        number controling the thresholding (either a p-value or z-scale value)
+        Not te be confused with the z-scale threshold: level can be a p-values,
+        e.g. "0.05" or another type of number depending on the height_
+        control parameter. The z-scale threshold is actually returned by
+        the function.
 
     height_control: string, optional
         false positive control meaning of cluster forming
         threshold: 'fpr'|'fdr'|'bonferroni'|'none'
 
     cluster_threshold : float, optional
-        cluster size threshold
+        cluster size threshold. In the returned thresholded map,
+        sets of connected voxels (`clusters`) with size smaller
+        than this number will be removed.
 
     Returns
     -------
@@ -51,6 +72,11 @@ def map_threshold(stat_img, mask_img=None, threshold=.001,
 
     threshold: float,
         the voxel-level threshold used actually
+
+    Note
+    ----
+    If the input image is not z-scaled (i.e. some z-transformed statistic)
+    the computed threshold is not rigorous and likely meaningless
     """
     # Masking
     if mask_img is None:
@@ -62,24 +88,24 @@ def map_threshold(stat_img, mask_img=None, threshold=.001,
 
     # Thresholding
     if height_control == 'fpr':
-        z_th = norm.isf(threshold)
+        threshold = norm.isf(level)
     elif height_control == 'fdr':
-        z_th = fdr_threshold(stats, threshold)
+        threshold = fdr_threshold(stats, level)
     elif height_control == 'bonferroni':
-        z_th = norm.isf(threshold / n_voxels)
+        threshold = norm.isf(level / n_voxels)
     else:  # Brute-force thresholding
-        z_th = threshold
-    stats *= (stats > z_th)
+        threshold = level
+    stats *= (stats > threshold)
 
     # embed it back to 3D grid
     stat_map = masker.inverse_transform(stats).get_data()
 
     # Extract connected components above threshold
-    label_map, n_labels = label(stat_map > z_th)
+    label_map, n_labels = label(stat_map > threshold)
     labels = label_map[masker.mask_img_.get_data() > 0]
 
     for label_ in range(1, n_labels + 1):
         if np.sum(labels == label_) < cluster_threshold:
             stats[labels == label_] = 0
 
-    return masker.inverse_transform(stats), z_th
+    return masker.inverse_transform(stats), threshold
