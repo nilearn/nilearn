@@ -78,7 +78,7 @@ frame_times = t_r * (np.arange(n_scans) + .5)
 # Create the design matrix
 #
 # We specify an hrf model containing Glover model and its time derivative
-# the drift model is implicitly a cosine basis with period cutodd 128s.
+# the drift model is implicitly a cosine basis with period cutoff 128s.
 from nistats.design_matrix import make_design_matrix
 design_matrix = make_design_matrix(
     frame_times, paradigm=paradigm, hrf_model='glover + derivative')

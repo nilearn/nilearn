@@ -63,7 +63,7 @@ design_matrices = []
 # loop over the two sessions
 for idx in range(len(fmri_img)):
     # The following manipulations are meant to build a valid events descriptor
-    # define the onset times of the vents
+    # define the onset times of the events
     n_scans = fmri_img[idx].shape[-1]
     timing = loadmat(getattr(subject_data, "trials_ses%i" % (idx + 1)),
                      squeeze_me=True, struct_as_record=False)

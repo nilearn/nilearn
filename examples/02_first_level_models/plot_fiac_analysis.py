@@ -46,7 +46,7 @@ data = datasets.fetch_fiac_first_level()
 fmri_img = [data['func1'], data['func2']]
 
 #########################################################################
-# Create a mean image for plotting puepose
+# Create a mean image for plotting purpose
 from nilearn.image import mean_img
 mean_img_ = mean_img(fmri_img[0])
 
@@ -104,14 +104,23 @@ for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
         contrast_val, output_type='z_score')
     
     # Write the resulting stat images to file 
-    z_image_path = path.join(write_dir, '%s_z_map.nii' % contrast_id)
+    z_image_path = path.join(write_dir, '%s_z_map.nii.gz' % contrast_id)
     z_map.to_filename(z_image_path)
 
 #########################################################################
-# make a snapshot of the 'Effects_of_interest' contrast map
+# make a snapshot of the 'Effects_of_interest' contrast map.
+# We first compute a threshold corresponding to an FDR correction of .05
+# We also discard isolated sets of less that 10 voxels
+from nistats.thresholding import map_threshold
 zmap = path.join(write_dir, 'Effects_of_interest_z_map.nii')
+thresholded_map, threshold = map_threshold(
+    zmap, height_control='fdr', threshold=.05, cluster_threshold=10)
+
+#########################################################################
+# Then display the map
 display = plotting.plot_stat_map(
-    zmap, bg_img=mean_img_, threshold=2.5, title=contrast_id)
+    thresholded_map, bg_img=mean_img_, threshold=threshold,
+    title='%s, fdr=.05' % 'Effects of interest')
 
 #########################################################################
 # We can save the figure a posteriori
