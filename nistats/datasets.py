@@ -11,6 +11,7 @@ import re
 
 from botocore.handlers import disable_signing
 import nibabel as nib
+import numpy as np
 import pandas as pd
 from nilearn.datasets.utils import (_fetch_file,
                                     _fetch_files,
@@ -342,6 +343,97 @@ def fetch_localizer_first_level(data_dir=None, verbose=1):
     return Bunch(**params)
 
 
+def _download_spm_auditory_data(data_dir, subject_dir, subject_id):
+    print("Data absent, downloading...")
+    url = ("http://www.fil.ion.ucl.ac.uk/spm/download/data/MoAEpilot/"
+           "MoAEpilot.zip")
+    archive_path = os.path.join(subject_dir, os.path.basename(url))
+    _fetch_file(url, subject_dir)
+    try:
+        _uncompress_file(archive_path)
+    except:
+        print("Archive corrupted, trying to download it again.")
+        return fetch_spm_auditory(data_dir=data_dir, data_name="",
+                                  subject_id=subject_id)
+
+
+def _prepare_downloaded_spm_auditory_data(subject_dir):
+    """glob data from subject_dir.
+
+    """
+    subject_data = {}
+    for file_name in SPM_AUDITORY_DATA_FILES:
+        file_path = os.path.join(subject_dir, file_name)
+        if os.path.exists(file_path):
+            subject_data[file_name] = file_path
+        else:
+            print("%s missing from filelist!" % file_name)
+            return None
+
+    _subject_data = {}
+    _subject_data["func"] = sorted(
+            [subject_data[x] for x in subject_data.keys()
+             if re.match("^fM00223_0\d\d\.img$", os.path.basename(x))])
+
+    # volumes for this dataset of shape (64, 64, 64, 1); let's fix this
+    for x in _subject_data["func"]:
+        vol = nib.load(x)
+        if len(vol.shape) == 4:
+            vol = nib.Nifti1Image(vol.get_data()[:, :, :, 0],
+                                  vol.affine)
+            nib.save(vol, x)
+
+    _subject_data["anat"] = [subject_data[x] for x in subject_data.keys()
+                             if re.match("^sM00223_002\.img$",
+                                         os.path.basename(x))][0]
+
+    # ... same thing for anat
+    vol = nib.load(_subject_data["anat"])
+    if len(vol.shape) == 4:
+        vol = nib.Nifti1Image(vol.get_data()[:, :, :, 0],
+                              vol.affine)
+        nib.save(vol, _subject_data["anat"])
+
+    return Bunch(**_subject_data)
+    
+
+def _make_spm_auditory_events_file(events_file_location):
+    """
+    Accepts path of a directory and creates the events file necessary
+    for the spm_auditory dataset.
+    The provided path is expected to be the same as the directory contaning spm_auditory fMRI data.
+    The created file's name follows the format <dirname>_events.tsv .
+    
+    Parameters
+    ----------
+    events_file_location: string
+        The path where the events file will be created;
+        expected to be the directory with fMRI data.
+        The name of the last directory in the path
+        is used to generate the name of the events file.
+    
+    Returns
+    -------
+    events_filepath: string
+        The full path of the created events file.
+    
+    """
+    events_filename = os.path.basename(events_file_location) + '_events' + '.tsv'
+    events_filepath = os.path.join(events_file_location, events_filename)
+    tr = 7.
+    slice_time_ref = 0.
+    n_scans = 96
+    epoch_duration = 6 * tr  # duration in seconds
+    conditions = ['rest', 'active'] * 8
+    n_blocks = len(conditions)
+    duration = epoch_duration * np.ones(n_blocks)
+    onset = np.linspace(0, (n_blocks - 1) * epoch_duration, n_blocks)
+    events = pd.DataFrame(
+            {'onset': onset, 'duration': duration, 'trial_type': conditions})
+    events.to_csv(events_filepath, sep='\t', index=False, columns=['onset', 'duration', 'trial_type'])
+    return events_filepath
+
+
 def fetch_spm_auditory(data_dir=None, data_name='spm_auditory',
                        subject_id="sub001", verbose=1):
     """Function to fetch SPM auditory single-subject data.
@@ -369,69 +461,16 @@ def fetch_spm_auditory(data_dir=None, data_name='spm_auditory',
     data_dir = _get_dataset_dir(data_name, data_dir=data_dir,
                                 verbose=verbose)
     subject_dir = os.path.join(data_dir, subject_id)
-
-    def _glob_spm_auditory_data():
-        """glob data from subject_dir.
-
-        """
-
-        if not os.path.exists(subject_dir):
-            return None
-
-        subject_data = {}
-        for file_name in SPM_AUDITORY_DATA_FILES:
-            file_path = os.path.join(subject_dir, file_name)
-            if os.path.exists(file_path):
-                subject_data[file_name] = file_path
-            else:
-                print("%s missing from filelist!" % file_name)
-                return None
-
-        _subject_data = {}
-        _subject_data["func"] = sorted(
-            [subject_data[x] for x in subject_data.keys()
-             if re.match("^fM00223_0\d\d\.img$", os.path.basename(x))])
-
-        # volumes for this dataset of shape (64, 64, 64, 1); let's fix this
-        for x in _subject_data["func"]:
-            vol = nib.load(x)
-            if len(vol.shape) == 4:
-                vol = nib.Nifti1Image(vol.get_data()[:, :, :, 0],
-                                      vol.affine)
-                nib.save(vol, x)
-
-        _subject_data["anat"] = [subject_data[x] for x in subject_data.keys()
-                                 if re.match("^sM00223_002\.img$",
-                                             os.path.basename(x))][0]
-
-        # ... same thing for anat
-        vol = nib.load(_subject_data["anat"])
-        if len(vol.shape) == 4:
-            vol = nib.Nifti1Image(vol.get_data()[:, :, :, 0],
-                                  vol.affine)
-            nib.save(vol, _subject_data["anat"])
-
-        return Bunch(**_subject_data)
-
-    # maybe data_dir already contains the data ?
-    data = _glob_spm_auditory_data()
-    if data is not None:
-        return data
-
-    # No. Download the data
-    print("Data absent, downloading...")
-    url = ("http://www.fil.ion.ucl.ac.uk/spm/download/data/MoAEpilot/"
-           "MoAEpilot.zip")
-    archive_path = os.path.join(subject_dir, os.path.basename(url))
-    _fetch_file(url, subject_dir)
+    if not os.path.exists(subject_dir):
+        _download_spm_auditory_data(data_dir, subject_dir, subject_id)
+    spm_auditory_data = _prepare_downloaded_spm_auditory_data(subject_dir)
     try:
-        _uncompress_file(archive_path)
-    except:
-        print("Archive corrupted, trying to download it again.")
-        return fetch_spm_auditory(data_dir=data_dir, data_name="",
-                                  subject_id=subject_id)
-
-    return _glob_spm_auditory_data()
+        spm_auditory_data['paradigm']
+    except KeyError:
+        events_file_location = os.path.dirname(spm_auditory_data['func'][0])
+        events_filepath = _make_spm_auditory_events_file(events_file_location)
+        spm_auditory_data['paradigm'] = events_filepath
+    return spm_auditory_data
 
 
 def fetch_spm_multimodal_fmri(data_dir=None, data_name="spm_multimodal_fmri",
