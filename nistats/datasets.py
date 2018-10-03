@@ -358,8 +358,13 @@ def _download_spm_auditory_data(data_dir, subject_dir, subject_id):
 
 
 def _prepare_downloaded_spm_auditory_data(subject_dir):
-    """glob data from subject_dir.
-
+    """ Uncompresses downloaded spm_auditory dataset and organizes
+    the data into apprpriate directories.
+    
+    Parameters
+    ---------
+    subject_dir: string
+        Path to subject's data directory.
     """
     subject_data = {}
     for file_name in SPM_AUDITORY_DATA_FILES:
@@ -396,33 +401,42 @@ def _prepare_downloaded_spm_auditory_data(subject_dir):
 
     return Bunch(**_subject_data)
     
-
-def _make_spm_auditory_events_file(events_file_location):
-    """
-    Accepts path of a directory and creates the events file necessary
-    for the spm_auditory dataset.
-    The provided path is expected to be the same as the directory contaning spm_auditory fMRI data.
-    The created file's name follows the format <dirname>_events.tsv .
     
+def _make_path_events_file_spm_auditory_events(spm_auditory_data):
+    """
+    Accepts data for spm_auditory dataset as Bunch
+    and constructs the filepath for its events descriptor file.
     Parameters
     ----------
-    events_file_location: string
-        The path where the events file will be created;
-        expected to be the directory with fMRI data.
-        The name of the last directory in the path
-        is used to generate the name of the events file.
+    spm_auditory_data: Bunch
     
     Returns
     -------
     events_filepath: string
-        The full path of the created events file.
-    
+        Full path to the events.tsv file for spm_auditory dataset.
     """
+    events_file_location = os.path.dirname(spm_auditory_data['func'][0])
     events_filename = os.path.basename(events_file_location) + '_events' + '.tsv'
     events_filepath = os.path.join(events_file_location, events_filename)
+    return events_filepath
+
+
+def _make_events_file_spm_auditory(events_filepath):
+    """
+    Accepts destination filepath including filename and
+    creates the events.tsv file for the spm_auditory dataset.
+    
+    Parameters
+    ----------
+    events_filepath: string
+        The path where the events file will be created;
+    
+    Returns
+    -------
+    None
+    
+    """
     tr = 7.
-    slice_time_ref = 0.
-    n_scans = 96
     epoch_duration = 6 * tr  # duration in seconds
     conditions = ['rest', 'active'] * 8
     n_blocks = len(conditions)
@@ -430,9 +444,9 @@ def _make_spm_auditory_events_file(events_file_location):
     onset = np.linspace(0, (n_blocks - 1) * epoch_duration, n_blocks)
     events = pd.DataFrame(
             {'onset': onset, 'duration': duration, 'trial_type': conditions})
-    events.to_csv(events_filepath, sep='\t', index=False, columns=['onset', 'duration', 'trial_type'])
-    return events_filepath
-
+    events.to_csv(events_filepath, sep='\t', index=False,
+                       columns=['onset', 'duration', 'trial_type'])
+    
 
 def fetch_spm_auditory(data_dir=None, data_name='spm_auditory',
                        subject_id="sub001", verbose=1):
@@ -467,8 +481,10 @@ def fetch_spm_auditory(data_dir=None, data_name='spm_auditory',
     try:
         spm_auditory_data['paradigm']
     except KeyError:
-        events_file_location = os.path.dirname(spm_auditory_data['func'][0])
-        events_filepath = _make_spm_auditory_events_file(events_file_location)
+        events_filepath = _make_path_events_file_spm_auditory_events(
+                                                            spm_auditory_data)
+        if not os.path.isfile(events_filepath):
+            _make_events_file_spm_auditory(events_filepath)
         spm_auditory_data['paradigm'] = events_filepath
     return spm_auditory_data
 
