@@ -5,6 +5,7 @@ import nibabel as nib
 import numpy as np
 from numpy.testing import dec
 from nose.tools import assert_true
+from nibabel.tmpdirs import InTemporaryDirectory
 
 # Set the backend to avoid having DISPLAY problems
 from nilearn.plotting import _set_mpl_backend
@@ -24,11 +25,17 @@ else:
 def test_show_design_matrix():
     # test that the show code indeed (formally) runs
     frame_times = np.linspace(0, 127 * 1., 128)
-    DM = make_design_matrix(
+    dmtx = make_design_matrix(
         frame_times, drift_model='polynomial', drift_order=3)
-    ax = plot_design_matrix(DM)
+    ax = plot_design_matrix(dmtx)
     assert (ax is not None)
-
+    with InTemporaryDirectory():
+        ax = plot_design_matrix(dmtx, output_file='dmtx.png')
+        assert os.path.exists('dmtx.png')
+        assert (ax is None)
+        plot_design_matrix(dmtx, output_file='dmtx.pdf')
+        assert os.path.exists('dmtx.pdf')
+        
 
 def test_local_max():
     shape = (9, 10, 11)

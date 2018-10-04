@@ -15,7 +15,6 @@ from scipy import stats
 from scipy import ndimage
 import nilearn.plotting  # overrides the backend on headless servers
 from nilearn.image.resampling import coord_transform
-import matplotlib
 import matplotlib.pyplot as plt
 from patsy import DesignInfo
 
@@ -268,7 +267,7 @@ def compare_niimgs(ref_imgs, src_imgs, masker, plot_hist=True, log=True,
     return corrs
 
 
-def plot_design_matrix(design_matrix, rescale=True, ax=None):
+def plot_design_matrix(design_matrix, rescale=True, ax=None, output_file=None):
     """Plot a design matrix provided as a DataFrame
 
     Parameters
@@ -282,6 +281,11 @@ def plot_design_matrix(design_matrix, rescale=True, ax=None):
     ax : axis handle, optional
         Handle to axis onto which we will draw design matrix.
 
+    output_file: string or None, optional,
+        The name of an image file to export the plot to. Valid extensions
+        are .png, .pdf, .svg. If output_file is not None, the plot
+        is saved to a file, and the display is closed.
+   
     Returns
     -------
     ax: axis handle
@@ -292,14 +296,13 @@ def plot_design_matrix(design_matrix, rescale=True, ax=None):
     from nilearn.plotting import _set_mpl_backend
     # avoid unhappy pyflakes
     _set_mpl_backend
-    import matplotlib.pyplot as plt
 
     # normalize the values per column for better visualization
     _, X, names = check_design_matrix(design_matrix)
     if rescale:
         X = X / np.maximum(1.e-12, np.sqrt(np.sum(X ** 2, 0)))  # pylint: disable=no-member
     if ax is None:
-        plt.figure()
+        display = plt.figure()
         ax = plt.subplot(1, 1, 1)
 
     ax.imshow(X, interpolation='nearest', aspect='auto')
@@ -310,7 +313,10 @@ def plot_design_matrix(design_matrix, rescale=True, ax=None):
     ax.set_xticklabels(names, rotation=60, ha='right')
 
     plt.tight_layout()
-
+    if output_file is not None:
+        display.savefig(output_file)
+        display.close()
+        ax = None
     return ax
 
 
