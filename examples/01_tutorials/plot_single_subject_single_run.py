@@ -66,10 +66,8 @@ mean_img = mean_img(fmri_img)
 #
 # We must now provide a description of the experiment, that is, define the
 # timing of the auditory stimulation and rest periods. This is typically
-# provided in an events.tsv or events.csv file. The path of this file is
+# provided in an events.tsv file. The path of this file is
 # provided in the dataset.
-# Please note that events are sometimes called paradigms, though this
-# is contrary to BIDS specification.
 import pandas as pd
 events = pd.read_table(subject_data['paradigm'])
 print(events)
