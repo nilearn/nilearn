@@ -497,6 +497,105 @@ def fetch_spm_auditory(data_dir=None, data_name='spm_auditory',
     return spm_auditory_data
 
 
+def _get_func_data_spm_multimodal(subject_dir, session, _subject_data):
+    session_func = sorted(glob.glob(
+            os.path.join(
+                    subject_dir,
+                    ("fMRI/Session%i/fMETHODS-000%i-*-01.img" % (
+                        session + 1, session + 5)))))
+    if len(session_func) < 390:
+        print("Missing %i functional scans for session %i." % (
+            390 - len(session_func), session))
+        return None
+    
+    _subject_data['func%i' % (session + 1)] = session_func
+    return _subject_data
+
+
+def _get_session_trials_spm_multimodal(subject_dir, session, _subject_data):
+    sess_trials = os.path.join(
+            subject_dir,
+            "fMRI/trials_ses%i.mat" % (session + 1))
+    if not os.path.isfile(sess_trials):
+        print("Missing session file: %s" % sess_trials)
+        return None
+    
+    _subject_data['trials_ses%i' % (session + 1)] = sess_trials
+    return _subject_data
+
+
+def _get_anatomical_data_spm_multimodal(subject_dir, _subject_data):
+    anat = os.path.join(subject_dir, "sMRI/smri.img")
+    if not os.path.isfile(anat):
+        print("Missing structural image.")
+        return None
+    
+    _subject_data["anat"] = anat
+    return _subject_data
+
+
+def _glob_spm_multimodal_fmri_data(subject_dir):
+    """glob data from subject_dir."""
+    _subject_data = {'slice_order': 'descending'}
+
+    for session in range(2):
+        # glob func data for session s + 1
+        _subject_data = _get_func_data_spm_multimodal(subject_dir, session, _subject_data)
+        if not _subject_data:
+            return None
+        # glob trials .mat file
+        _subject_data = _get_session_trials_spm_multimodal(subject_dir, session, _subject_data)
+        if not _subject_data:
+            return None
+
+    # glob for anat data
+    _subject_data = _get_anatomical_data_spm_multimodal(subject_dir, _subject_data)
+    if not _subject_data:
+        return None
+    
+    return Bunch(**_subject_data)
+
+
+def _download_data_spm_multimodal(data_dir, subject_dir, subject_id):
+    print("Data absent, downloading...")
+    urls = [
+        # fmri
+        ("http://www.fil.ion.ucl.ac.uk/spm/download/data/mmfaces/"
+        "multimodal_fmri.zip"),
+
+        # structural
+        ("http://www.fil.ion.ucl.ac.uk/spm/download/data/mmfaces/"
+         "multimodal_smri.zip")
+        ]
+
+    for url in urls:
+        archive_path = os.path.join(subject_dir, os.path.basename(url))
+        _fetch_file(url, subject_dir)
+        try:
+            _uncompress_file(archive_path)
+        except:
+            print("Archive corrupted, trying to download it again.")
+            return fetch_spm_multimodal_fmri(data_dir=data_dir,
+                                             data_name="",
+                                             subject_id=subject_id)
+
+    return _glob_spm_multimodal_fmri_data(subject_dir)
+
+
+def _make_events_file_spm_multimodal_fmri(subject_data, fmri_img):
+    tr = 2.
+    for idx in range(len(fmri_img)):
+        timing = loadmat(getattr(subject_data, "trials_ses%i" % (idx + 1)),
+                         squeeze_me=True, struct_as_record=False)
+        faces_onsets = timing['onsets'][0].ravel()
+        scrambled_onsets = timing['onsets'][1].ravel()
+        onsets = np.hstack((faces_onsets, scrambled_onsets))
+        onsets *= tr  # because onsets were reporting in 'scans' units
+        conditions = (['faces'] * len(faces_onsets) +
+                      ['scrambled'] * len(scrambled_onsets))
+        paradigm = pd.DataFrame({'trial_type': conditions, 'onset': onsets})
+
+
 def fetch_spm_multimodal_fmri(data_dir=None, data_name="spm_multimodal_fmri",
                               subject_id="sub001", verbose=1):
     """Fetcher for Multi-modal Face Dataset.
@@ -525,77 +624,16 @@ def fetch_spm_multimodal_fmri(data_dir=None, data_name="spm_multimodal_fmri",
 
     """
 
-    data_dir = _get_dataset_dir(data_name, data_dir=data_dir,
-                                verbose=verbose)
+    data_dir = _get_dataset_dir(data_name, data_dir=data_dir, verbose=verbose)
     subject_dir = os.path.join(data_dir, subject_id)
 
-    def _glob_spm_multimodal_fmri_data():
-        """glob data from subject_dir."""
-        _subject_data = {'slice_order': 'descending'}
-
-        for session in range(2):
-            # glob func data for session s + 1
-            session_func = sorted(glob.glob(
-                    os.path.join(
-                        subject_dir,
-                        ("fMRI/Session%i/fMETHODS-000%i-*-01.img" % (
-                                session + 1, session + 5)))))
-            if len(session_func) < 390:
-                print("Missing %i functional scans for session %i." % (
-                    390 - len(session_func), session))
-                return None
-
-            _subject_data['func%i' % (session + 1)] = session_func
-
-            # glob trials .mat file
-            sess_trials = os.path.join(
-                subject_dir,
-                "fMRI/trials_ses%i.mat" % (session + 1))
-            if not os.path.isfile(sess_trials):
-                print("Missing session file: %s" % sess_trials)
-                return None
-
-            _subject_data['trials_ses%i' % (session + 1)] = sess_trials
-
-        # glob for anat data
-        anat = os.path.join(subject_dir, "sMRI/smri.img")
-        if not os.path.isfile(anat):
-            print("Missing structural image.")
-            return None
-
-        _subject_data["anat"] = anat
-
-        return Bunch(**_subject_data)
-
     # maybe data_dir already contains the data ?
-    data = _glob_spm_multimodal_fmri_data()
+    data = _glob_spm_multimodal_fmri_data(subject_dir)
     if data is not None:
         return data
 
     # No. Download the data
-    print("Data absent, downloading...")
-    urls = [
-        # fmri
-        ("http://www.fil.ion.ucl.ac.uk/spm/download/data/mmfaces/"
-        "multimodal_fmri.zip"),
-
-        # structural
-        ("http://www.fil.ion.ucl.ac.uk/spm/download/data/mmfaces/"
-         "multimodal_smri.zip")
-        ]
-
-    for url in urls:
-        archive_path = os.path.join(subject_dir, os.path.basename(url))
-        _fetch_file(url, subject_dir)
-        try:
-            _uncompress_file(archive_path)
-        except:
-            print("Archive corrupted, trying to download it again.")
-            return fetch_spm_multimodal_fmri(data_dir=data_dir,
-                                             data_name="",
-                                             subject_id=subject_id)
-
-    return _glob_spm_multimodal_fmri_data()
+    return _download_data_spm_multimodal(data_dir, subject_dir, subject_id)
 
 
 def fetch_fiac_first_level(data_dir=None, verbose=1):
