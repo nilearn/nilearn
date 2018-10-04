@@ -314,13 +314,14 @@ def plot_design_matrix(design_matrix, rescale=True, ax=None, output_file=None):
 
     plt.tight_layout()
     if output_file is not None:
-        display.savefig(output_file)
+        plt.savefig(output_file)
         plt.close()
         ax = None
     return ax
 
 
-def plot_contrast_matrix(contrast_def, design_matrix, colorbar=False, ax=None):
+def plot_contrast_matrix(contrast_def, design_matrix, colorbar=False, ax=None,
+                         output_file=None):
     """Creates plot for contrast definition.
 
     Parameters
@@ -344,6 +345,12 @@ def plot_contrast_matrix(contrast_def, design_matrix, colorbar=False, ax=None):
 
     ax: matplotlib Axes object, optional (default None)
         Directory where plotted figures will be stored.
+    
+    output_file: string or None, optional,
+        The name of an image file to export the plot to. Valid extensions
+        are .png, .pdf, .svg. If output_file is not None, the plot
+        is saved to a file, and the display is closed.
+
 
     Returns
     -------
@@ -352,19 +359,20 @@ def plot_contrast_matrix(contrast_def, design_matrix, colorbar=False, ax=None):
 
     design_column_names = design_matrix.columns.tolist()
     if isinstance(contrast_def, str):
-        di = DesignInfo(design_column_names)
-        contrast_def = di.linear_constraint(contrast_def).coefs
+        design_info = DesignInfo(design_column_names)
+        contrast_def = design_info.linear_constraint(contrast_def).coefs
+
+    maxval = np.max(np.abs(contrast_def))
+    con_matrix = np.asmatrix(contrast_def)
 
     if ax is None:
         plt.figure(figsize=(8, 4))
         ax = plt.gca()
 
-    maxval = np.max(np.abs(contrast_def))
+    mat = ax.matshow(con_matrix, aspect='equal',
+                     extent=[0, con_matrix.shape[1], 0, con_matrix.shape[0]],
+                     cmap='gray', vmin=-maxval, vmax=maxval)
 
-    con_mx = np.asmatrix(contrast_def)
-    mat = ax.matshow(con_mx, aspect='equal', extent=[0, con_mx.shape[1],
-                     0, con_mx.shape[0]], cmap='gray', vmin=-maxval,
-                     vmax=maxval)
     ax.set_label('conditions')
     ax.set_ylabel('')
     ax.set_yticklabels(['' for x in ax.get_yticklabels()])
@@ -372,11 +380,15 @@ def plot_contrast_matrix(contrast_def, design_matrix, colorbar=False, ax=None):
     # Shift ticks to be at 0.5, 1.5, etc
     ax.xaxis.set(ticks=np.arange(1.0, len(design_column_names) + 1.0),
                  ticklabels=design_column_names)
-    ax.set_xticklabels(design_column_names, rotation=90, ha='right')
+    ax.set_xticklabels(design_column_names, rotation=60, ha='right')
 
     if colorbar:
         plt.colorbar(mat, fraction=0.025, pad=0.04)
 
     plt.tight_layout()
+    if output_file is not None:
+        plt.savefig(output_file)
+        plt.close()
+        ax = None
 
     return ax
