@@ -72,3 +72,26 @@ def test_map_threshold():
         cluster_threshold=0)
     vals = th_map.get_data()
     assert_equal(np.sum(vals > 0), 8)
+
+    # test 7 without a map
+    th_map, threshold = map_threshold(
+        None, None, 3.0, height_control=None,
+        cluster_threshold=0)
+    assert_equal(threshold, 3.0)
+    assert_equal(th_map, None)
+
+    th_map, threshold = map_threshold(
+        None, None, level=0.05, height_control='fpr',
+        cluster_threshold=0)
+    assert (threshold > 1.64)
+    assert_equal(th_map, None)
+
+    assert_raises(ValueError, map_threshold, None, None, level=0.05,
+                  height_control='fdr')
+    assert_raises(ValueError, map_threshold, None, None, level=0.05,
+                  height_control='bonferroni')
+
+    # test 8 wrong procedure
+    assert_raises(ValueError, map_threshold, None, None, level=0.05,
+              height_control='plop')
+    

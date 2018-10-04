@@ -1,4 +1,4 @@
-0.0.2a
+0.0.1b
 =======
 
 Changelog
@@ -13,7 +13,8 @@ Updated the minimum versions of the dependencies
 * Pandas >= 0.18.0
 * Sklearn >= 0.18.0
 
-
+* third argument of map_threshold is now called 'level'.
+  
 0.0.1a
 =======
 
