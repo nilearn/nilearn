@@ -144,8 +144,9 @@ def test_convolve_regressors():
     # tests for convolve_regressors helper function
     conditions = ['c0', 'c1']
     onsets = [20, 40]
-    paradigm = pd.DataFrame({'trial_type': conditions,
-                             'onset': onsets})
+    dduration = [1, 1]
+    paradigm = pd.DataFrame(
+        {'trial_type': conditions, 'onset': onsets, 'duration': duration})
     # names not passed -> default names
     frame_times = np.arange(100)
     f, names = _convolve_regressors(paradigm, 'glover', frame_times)
