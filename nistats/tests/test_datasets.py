@@ -219,7 +219,7 @@ def test_make_spm_auditory_events_file():
     
     def create_actual_data():
         events_filepath = os.path.join(os.getcwd(), 'tests_events.tsv')
-        datasets._make_events_file_spm_auditory(
+        datasets._make_events_file_spm_auditory_data(
             events_filepath=events_filepath)
         with open(events_filepath, 'r') as actual_events_file_obj:
             actual_events_data_string = actual_events_file_obj.read()

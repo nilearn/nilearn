@@ -18,6 +18,7 @@ from nilearn.datasets.utils import (_fetch_file,
                                     _get_dataset_dir,
                                     _uncompress_file,
                                     )
+from scipy.io import loadmat
 from sklearn.datasets.base import Bunch
 
 from nistats.utils import _verify_events_file_uses_tab_separators
@@ -362,9 +363,16 @@ def _prepare_downloaded_spm_auditory_data(subject_dir):
     the data into apprpriate directories.
     
     Parameters
-    ---------
+    ----------
     subject_dir: string
         Path to subject's data directory.
+        
+    Returns
+    -------
+    _subject_data: skl.Bunch object
+        Scikit-Learn Bunch object containing data of a single subject
+         from the SPM Auditory dataset.
+    
     """
     subject_data = {}
     for file_name in SPM_AUDITORY_DATA_FILES:
@@ -402,7 +410,7 @@ def _prepare_downloaded_spm_auditory_data(subject_dir):
     return Bunch(**_subject_data)
     
     
-def _make_path_events_file_spm_auditory_events(spm_auditory_data):
+def _make_path_events_file_spm_auditory_data(spm_auditory_data):
     """
     Accepts data for spm_auditory dataset as Bunch
     and constructs the filepath for its events descriptor file.
@@ -416,12 +424,12 @@ def _make_path_events_file_spm_auditory_events(spm_auditory_data):
         Full path to the events.tsv file for spm_auditory dataset.
     """
     events_file_location = os.path.dirname(spm_auditory_data['func'][0])
-    events_filename = os.path.basename(events_file_location) + '_events' + '.tsv'
+    events_filename = os.path.basename(events_file_location) + '_events.tsv'
     events_filepath = os.path.join(events_file_location, events_filename)
     return events_filepath
 
 
-def _make_events_file_spm_auditory(events_filepath):
+def _make_events_file_spm_auditory_data(events_filepath):
     """
     Accepts destination filepath including filename and
     creates the events.tsv file for the spm_auditory dataset.
@@ -481,10 +489,10 @@ def fetch_spm_auditory(data_dir=None, data_name='spm_auditory',
     try:
         spm_auditory_data['paradigm']
     except KeyError:
-        events_filepath = _make_path_events_file_spm_auditory_events(
+        events_filepath = _make_path_events_file_spm_auditory_data(
                                                             spm_auditory_data)
         if not os.path.isfile(events_filepath):
-            _make_events_file_spm_auditory(events_filepath)
+            _make_events_file_spm_auditory_data(events_filepath)
         spm_auditory_data['paradigm'] = events_filepath
     return spm_auditory_data
 
