@@ -435,7 +435,8 @@ class BaseSlicer(object):
     _default_figsize = [2.2, 2.6]
     _axes_class = CutAxes
 
-    def __init__(self, cut_coords, axes=None, black_bg=False, **kwargs):
+    def __init__(self, cut_coords, axes=None, black_bg=False,
+                 brain_color=(0.5, 0.5, 0.5), **kwargs):
         """ Create 3 linked axes for plotting orthogonal cuts.
 
         Parameters
@@ -449,7 +450,9 @@ class BaseSlicer(object):
             black. If you wish to save figures with a black background,
             you will need to pass "facecolor='k', edgecolor='k'"
             to matplotlib.pyplot.savefig.
-
+        brain_color : tuple
+            The brain color to use as the background color (e.g., for
+            transparent colorbars).
         """
         self.cut_coords = cut_coords
         if axes is None:
@@ -460,6 +463,7 @@ class BaseSlicer(object):
         bb = axes.get_position()
         self.rect = (bb.x0, bb.y0, bb.x1, bb.y1)
         self._black_bg = black_bg
+        self._brain_color = brain_color
         self._colorbar = False
         self._colorbar_width = 0.05 * bb.width
         self._colorbar_margin = dict(left=0.25 * bb.width,
@@ -478,7 +482,7 @@ class BaseSlicer(object):
     def init_with_figure(cls, img, threshold=None,
                          cut_coords=None, figure=None, axes=None,
                          black_bg=False, leave_space=False, colorbar=False,
-                         **kwargs):
+                         brain_color=(0.5, 0.5, 0.5), **kwargs):
         "Initialize the slicer with an image"
         # deal with "fake" 4D images
         if img is not None and img is not False:
@@ -519,7 +523,7 @@ class BaseSlicer(object):
         # People forget to turn their axis off, or to set the zorder, and
         # then they cannot see their slicer
         axes.axis('off')
-        return cls(cut_coords, axes, black_bg, **kwargs)
+        return cls(cut_coords, axes, black_bg, brain_color, **kwargs)
 
     def title(self, text, x=0.01, y=0.99, size=15, color=None, bgcolor=None,
               alpha=1, **kwargs):
@@ -763,9 +767,8 @@ class BaseSlicer(object):
         cmaplist = [our_cmap(i) for i in range(our_cmap.N)]
         istart = int(norm(-offset, clip=True) * (our_cmap.N - 1))
         istop = int(norm(offset, clip=True) * (our_cmap.N - 1))
-        mid_gray = (0.5, 0.5, 0.5)  # just an average gray color
         for i in range(istart, istop):
-            cmaplist[i] = mid_gray + (0.,)  # transparent
+            cmaplist[i] = self._brain_color + (0.,)  # transparent
         if norm.vmin == norm.vmax:  # len(np.unique(data)) == 1 ?
             return
         else:
@@ -776,7 +779,7 @@ class BaseSlicer(object):
             self._colorbar_ax, ticks=ticks, norm=norm,
             orientation='vertical', cmap=our_cmap, boundaries=bounds,
             spacing='proportional', format='%.2g')
-        self._cbar.patch.set_facecolor(mid_gray)
+        self._cbar.patch.set_facecolor(self._brain_color)
 
         self._colorbar_ax.yaxis.tick_left()
         tick_color = 'w' if self._black_bg else 'k'
