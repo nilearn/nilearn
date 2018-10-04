@@ -8,6 +8,7 @@ import glob
 import json
 import os
 import re
+import warnings
 
 from botocore.handlers import disable_signing
 import nibabel as nib
@@ -19,6 +20,7 @@ from nilearn.datasets.utils import (_fetch_file,
                                     _uncompress_file,
                                     )
 from scipy.io import loadmat
+from scipy.io.matlab.miobase import MatReadError
 from sklearn.datasets.base import Bunch
 
 from nistats.utils import _verify_events_file_uses_tab_separators
@@ -547,6 +549,15 @@ def _glob_spm_multimodal_fmri_data(subject_dir):
         _subject_data = _get_session_trials_spm_multimodal(subject_dir, session, _subject_data)
         if not _subject_data:
             return None
+        try:
+            paradigm = _make_events_file_spm_multimodal_fmri(_subject_data, session)
+        except MatReadError as mat_err:
+            warnings.warn('{}. An events.tsv file cannot be generated'.format(str(mat_err)))
+        else:
+            events_filepath = _make_events_filepath_spm_multimodal_fmri(_subject_data, session)
+            paradigm.to_csv(events_filepath, sep='\t', index=False)
+            _subject_data['events{}'.format(session+1)] = events_filepath
+        
 
     # glob for anat data
     _subject_data = _get_anatomical_data_spm_multimodal(subject_dir, _subject_data)
@@ -582,18 +593,26 @@ def _download_data_spm_multimodal(data_dir, subject_dir, subject_id):
     return _glob_spm_multimodal_fmri_data(subject_dir)
 
 
-def _make_events_file_spm_multimodal_fmri(subject_data, fmri_img):
+def _make_events_filepath_spm_multimodal_fmri(_subject_data, session):
+    key = 'trials_ses{}'.format(session+1)
+    events_file_location = os.path.dirname(_subject_data[key])
+    events_filename = 'session{}_events.tsv'.format(session+1)
+    events_filepath = os.path.join(events_file_location, events_filename)
+    return events_filepath
+
+
+def _make_events_file_spm_multimodal_fmri(_subject_data, session):
     tr = 2.
-    for idx in range(len(fmri_img)):
-        timing = loadmat(getattr(subject_data, "trials_ses%i" % (idx + 1)),
-                         squeeze_me=True, struct_as_record=False)
-        faces_onsets = timing['onsets'][0].ravel()
-        scrambled_onsets = timing['onsets'][1].ravel()
-        onsets = np.hstack((faces_onsets, scrambled_onsets))
-        onsets *= tr  # because onsets were reporting in 'scans' units
-        conditions = (['faces'] * len(faces_onsets) +
-                      ['scrambled'] * len(scrambled_onsets))
-        paradigm = pd.DataFrame({'trial_type': conditions, 'onset': onsets})
+    timing = loadmat(_subject_data["trials_ses%i" % (session + 1)],
+                     squeeze_me=True, struct_as_record=False)
+    faces_onsets = timing['onsets'][0].ravel()
+    scrambled_onsets = timing['onsets'][1].ravel()
+    onsets = np.hstack((faces_onsets, scrambled_onsets))
+    onsets *= tr  # because onsets were reporting in 'scans' units
+    conditions = (['faces'] * len(faces_onsets) +
+                  ['scrambled'] * len(scrambled_onsets))
+    paradigm = pd.DataFrame({'trial_type': conditions, 'onset': onsets})
+    return paradigm
 
 
 def fetch_spm_multimodal_fmri(data_dir=None, data_name="spm_multimodal_fmri",
