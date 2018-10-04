@@ -45,21 +45,21 @@ def design_matrix_light(
 def basic_paradigm():
     conditions = ['c0', 'c0', 'c0', 'c1', 'c1', 'c1', 'c2', 'c2', 'c2']
     onsets = [30, 70, 100, 10, 30, 90, 30, 40, 60]
-    duration = 1 * np.ones(9)
+    durations = 1 * np.ones(9)
     paradigm = pd.DataFrame({'trial_type': conditions,
                           'onset': onsets,
-                          'duration': duration})
+                          'duration': durations})
     return paradigm
 
 
 def modulated_block_paradigm():
     conditions = ['c0', 'c0', 'c0', 'c1', 'c1', 'c1', 'c2', 'c2', 'c2']
     onsets = [30, 70, 100, 10, 30, 90, 30, 40, 60]
-    duration = 5 + 5 * np.random.rand(len(onsets))
+    durations = 5 + 5 * np.random.rand(len(onsets))
     values = 1 + np.random.rand(len(onsets))
     paradigm = pd.DataFrame({'trial_type': conditions,
                           'onset': onsets,
-                          'duration': duration,
+                          'duration': durations,
                           'modulation': values})
     return paradigm
 
@@ -67,11 +67,11 @@ def modulated_block_paradigm():
 def modulated_event_paradigm():
     conditions = ['c0', 'c0', 'c0', 'c1', 'c1', 'c1', 'c2', 'c2', 'c2']
     onsets = [30, 70, 100, 10, 30, 90, 30, 40, 60]
-    duration = 1 * np.ones(9)
+    durations = 1 * np.ones(9)
     values = 1 + np.random.rand(len(onsets))
     paradigm = pd.DataFrame({'trial_type': conditions,
                           'onset': onsets,
-                          'duration': duration,
+                          'duration': durations,
                           'modulation': values})
     return paradigm
 
@@ -79,10 +79,10 @@ def modulated_event_paradigm():
 def block_paradigm():
     conditions = ['c0', 'c0', 'c0', 'c1', 'c1', 'c1', 'c2', 'c2', 'c2']
     onsets = [30, 70, 100, 10, 30, 90, 30, 40, 60]
-    duration = 5 * np.ones(9)
+    durations = 5 * np.ones(9)
     paradigm = pd.DataFrame({'trial_type': conditions,
                           'onset': onsets,
-                          'duration': duration})
+                          'duration': durations})
     return paradigm
 
 
@@ -226,10 +226,12 @@ def test_design_matrix7():
     tr = 1.0
     frame_times = np.linspace(0, 127 * tr, 128)
     conditions = [0, 0, 0, 1, 1, 1, 3, 3, 3]
+    durations = 1 * np.ones(9)
     # no condition 'c2'
     onsets = [30, 70, 100, 10, 30, 90, 30, 40, 60]
     paradigm = pd.DataFrame({'trial_type': conditions,
-                          'onset': onsets})
+                          'onset': onsets,
+                          'duration':durations})
     hrf_model = 'glover'
     X, names = design_matrix_light(frame_times, paradigm, hrf_model=hrf_model,
                           drift_model='polynomial', drift_order=3)
@@ -473,8 +475,10 @@ def test_spm_1():
     frame_times = np.linspace(0, 99, 100)
     conditions = ['c0', 'c0', 'c0', 'c1', 'c1', 'c1', 'c2', 'c2', 'c2']
     onsets = [30, 50, 70, 10, 30, 80, 30, 40, 60]
+    durations = 1 * np.ones(9)
     paradigm = pd.DataFrame({'trial_type': conditions,
-                             'onset': onsets})
+                             'onset': onsets,
+                             'duration': durations})
     X1 = make_design_matrix(frame_times, paradigm, drift_model=None)
     _, matrix, _ = check_design_matrix(X1)
     spm_design_matrix = DESIGN_MATRIX['arr_0']
@@ -488,10 +492,10 @@ def test_spm_2():
     frame_times = np.linspace(0, 99, 100)
     conditions = ['c0', 'c0', 'c0', 'c1', 'c1', 'c1', 'c2', 'c2', 'c2']
     onsets = [30, 50, 70, 10, 30, 80, 30, 40, 60]
-    duration = 10 * np.ones(9)
+    durations = 10 * np.ones(9)
     paradigm = pd.DataFrame({'trial_type': conditions,
                              'onset': onsets,
-                             'duration': duration})
+                             'duration': durations})
     X1 = make_design_matrix(frame_times, paradigm, drift_model=None)
     spm_design_matrix = DESIGN_MATRIX['arr_1']
     _, matrix, _ = check_design_matrix(X1)
