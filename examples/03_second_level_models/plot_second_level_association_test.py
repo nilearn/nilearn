@@ -1,6 +1,6 @@
 """
-Group analysis of a motor task from the Localizer dataset
-=========================================================
+Example of generic design in second-level models
+================================================
 
 This example shows the results obtained in a group analysis using a more
 complex contrast than a one- or two-sample t test.
@@ -12,29 +12,34 @@ is included in the model.
 
 """
 # Author: Virgile Fritsch, Bertrand Thirion, 2014 -- 2018
-import numpy as np
-import matplotlib.pyplot as plt
-from nilearn import datasets, plotting
+
 
 ##############################################################################
 # Load Localizer contrast
+from nilearn import datasets
 n_samples = 94
 localizer_dataset = datasets.fetch_localizer_contrasts(
     ['left button press (auditory cue)'], n_subjects=n_samples)
 
+##############################################################################
 # print basic information on the dataset
 print('First contrast nifti image (3D) is located at: %s' %
       localizer_dataset.cmaps[0])
 
+##############################################################################
+# Load the behavioral variable
 tested_var = localizer_dataset.ext_vars['pseudo']
+print(tested_var)
+
+##############################################################################
 # Quality check / Remove subjects with bad tested variate
+import numpy as np
 mask_quality_check = np.where(tested_var != b'None')[0]
 n_samples = mask_quality_check.size
 contrast_map_filenames = [localizer_dataset.cmaps[i]
                           for i in mask_quality_check]
 tested_var = tested_var[mask_quality_check].astype(float).reshape((-1, 1))
 print("Actual number of subjects after quality check: %d" % n_samples)
-
 
 ############################################################################
 # Estimate second level model
@@ -46,6 +51,8 @@ design_matrix = pd.DataFrame(
     np.hstack((tested_var, np.ones_like(tested_var))),
     columns=['fluency', 'intercept'])
 
+###########################################################################
+# Fit of the second-level model
 from nistats.second_level_model import SecondLevelModel
 model = SecondLevelModel(smoothing_fwhm=5.0)
 model.fit(contrast_map_filenames, design_matrix=design_matrix)
@@ -56,10 +63,13 @@ model.fit(contrast_map_filenames, design_matrix=design_matrix)
 z_map = model.compute_contrast('fluency', output_type='z_score')
 
 ###########################################################################
-# We threshold the second level contrast at uncorrected p < 0.001 and plot
+# We compute the fdr-corrected p = 0.05 threshold for these data
 from nistats.thresholding import map_threshold
 _, threshold = map_threshold(z_map, threshold=.05, height_control='fdr')
 
+###########################################################################
+#Let us plot the second level contrast at the computed thresholds 
+from nilearn import plotting
 plotting.plot_stat_map(
     z_map, threshold=threshold, colorbar=True,
     title='Group-level association between motor activity \n'
