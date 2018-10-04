@@ -315,7 +315,7 @@ def plot_design_matrix(design_matrix, rescale=True, ax=None, output_file=None):
     plt.tight_layout()
     if output_file is not None:
         display.savefig(output_file)
-        display.close()
+        plt.close()
         ax = None
     return ax
 
