@@ -302,7 +302,7 @@ def plot_design_matrix(design_matrix, rescale=True, ax=None, output_file=None):
     if rescale:
         X = X / np.maximum(1.e-12, np.sqrt(np.sum(X ** 2, 0)))  # pylint: disable=no-member
     if ax is None:
-        display = plt.figure()
+        plt.figure()
         ax = plt.subplot(1, 1, 1)
 
     ax.imshow(X, interpolation='nearest', aspect='auto')
