@@ -52,24 +52,14 @@ mean_image = mean_img(fmri_img)
 #########################################################################
 # Make design matrices
 design_matrices = []
-for idx in range(len(fmri_img)):
+for idx, img in enumerate(fmri_img, start=1):
     # Build paradigm
-    n_scans = fmri_img[idx].shape[-1]
-    timing = loadmat(getattr(subject_data, "trials_ses%i" % (idx + 1)),
-                     squeeze_me=True, struct_as_record=False)
-
-    faces_onsets = timing['onsets'][0].ravel()
-    scrambled_onsets = timing['onsets'][1].ravel()
-    onsets = np.hstack((faces_onsets, scrambled_onsets))
-    onsets *= tr  # because onsets were reporting in 'scans' units
-    conditions = (['faces'] * len(faces_onsets) +
-                  ['scrambled'] * len(scrambled_onsets))
-    paradigm = pd.DataFrame({'trial_type': conditions, 'onset': onsets})
-
+    n_scans = img.shape[-1]
+    events = pd.read_table(subject_data['events{}'.format(idx)])
     # Build design matrix
     frame_times = np.arange(n_scans) * tr
     design_matrix = make_design_matrix(
-        frame_times, paradigm, hrf_model=hrf_model, drift_model=drift_model,
+        frame_times, events, hrf_model=hrf_model, drift_model=drift_model,
         period_cut=period_cut)
     design_matrices.append(design_matrix)
 

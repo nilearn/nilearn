@@ -504,25 +504,28 @@ def _get_func_data_spm_multimodal(subject_dir, session, _subject_data):
             os.path.join(
                     subject_dir,
                     ("fMRI/Session%i/fMETHODS-000%i-*-01.img" % (
-                        session + 1, session + 5)))))
+                        session, session + 4)
+                     )
+                    )
+            ))
     if len(session_func) < 390:
         print("Missing %i functional scans for session %i." % (
             390 - len(session_func), session))
         return None
     
-    _subject_data['func%i' % (session + 1)] = session_func
+    _subject_data['func%i' % (session)] = session_func
     return _subject_data
 
 
 def _get_session_trials_spm_multimodal(subject_dir, session, _subject_data):
     sess_trials = os.path.join(
             subject_dir,
-            "fMRI/trials_ses%i.mat" % (session + 1))
+            "fMRI/trials_ses%i.mat" % (session))
     if not os.path.isfile(sess_trials):
         print("Missing session file: %s" % sess_trials)
         return None
     
-    _subject_data['trials_ses%i' % (session + 1)] = sess_trials
+    _subject_data['trials_ses%i' % (session)] = sess_trials
     return _subject_data
 
 
@@ -540,8 +543,8 @@ def _glob_spm_multimodal_fmri_data(subject_dir):
     """glob data from subject_dir."""
     _subject_data = {'slice_order': 'descending'}
 
-    for session in range(2):
-        # glob func data for session s + 1
+    for session in range(1, 3):
+        # glob func data for session
         _subject_data = _get_func_data_spm_multimodal(subject_dir, session, _subject_data)
         if not _subject_data:
             return None
@@ -556,7 +559,7 @@ def _glob_spm_multimodal_fmri_data(subject_dir):
         else:
             events_filepath = _make_events_filepath_spm_multimodal_fmri(_subject_data, session)
             paradigm.to_csv(events_filepath, sep='\t', index=False)
-            _subject_data['events{}'.format(session+1)] = events_filepath
+            _subject_data['events{}'.format(session)] = events_filepath
         
 
     # glob for anat data
@@ -594,16 +597,16 @@ def _download_data_spm_multimodal(data_dir, subject_dir, subject_id):
 
 
 def _make_events_filepath_spm_multimodal_fmri(_subject_data, session):
-    key = 'trials_ses{}'.format(session+1)
+    key = 'trials_ses{}'.format(session)
     events_file_location = os.path.dirname(_subject_data[key])
-    events_filename = 'session{}_events.tsv'.format(session+1)
+    events_filename = 'session{}_events.tsv'.format(session)
     events_filepath = os.path.join(events_file_location, events_filename)
     return events_filepath
 
 
 def _make_events_file_spm_multimodal_fmri(_subject_data, session):
     tr = 2.
-    timing = loadmat(_subject_data["trials_ses%i" % (session + 1)],
+    timing = loadmat(_subject_data["trials_ses%i" % (session)],
                      squeeze_me=True, struct_as_record=False)
     faces_onsets = timing['onsets'][0].ravel()
     scrambled_onsets = timing['onsets'][1].ravel()
@@ -670,7 +673,7 @@ def fetch_fiac_first_level(data_dir=None, verbose=1):
         _subject_data = {}
         subject_dir = os.path.join(data_dir, 'nipy-data-0.2/data/fiac/fiac0')
         for session in [1, 2]:
-            # glob func data for session session + 1
+            # glob func data for session
             session_func = os.path.join(subject_dir, 'run%i.nii.gz' % session)
             if not os.path.isfile(session_func):
                 print('Missing functional scan for session %i.' % session)
