@@ -89,7 +89,11 @@ plotting.plot_stat_map(thresholded_map3, cut_coords=display.cut_coords,
                        threshold=threshold3)
 
 #########################################################################
-# These different thresholds correpond to different statistical guarnatees:
-# in the FWER corrected image there is only a probability<.05 of observing any false positive voxel. In the FDR-corrected image, 5% of the voxels found are likely to be false positive. In the uncorrected image, one expects a few tens of alse positive voxels. 
+# These different thresholds correspond to different statistical
+# guarantees: in the FWER corrected image there is only a
+# probability<.05 of observing any false positive voxel. In the
+# FDR-corrected image, 5% of the voxels found are likely to be false
+# positive. In the uncorrected image, one expects a few tens of false
+# positive voxels.
 
 plotting.show()

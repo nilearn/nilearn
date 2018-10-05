@@ -49,7 +49,7 @@ print('First white-matter anatomy image (3D) is located at: %s' %
       oasis_dataset.white_matter_maps[0])  # 3D data
 
 ###############################################################################
-# Get a mask image: A mask of the  cortex of the ISBM template
+# Get a mask image: A mask of the  cortex of the ICBM template
 gm_mask = datasets.fetch_icbm152_brain_gm_mask()
 
 ###############################################################################
@@ -79,7 +79,7 @@ ax.set_ylabel('maps')
 
 ##########################################################################
 # Specify and fit the second-level model when loading the data, we
-# smooth a little bit tom improve statistical behavior
+# smooth a little bit to improve statistical behavior
 
 from nistats.second_level_model import SecondLevelModel
 second_level_model = SecondLevelModel(smoothing_fwhm=2.0, mask=mask_img)

@@ -1,4 +1,4 @@
-"""Studying firts-level-model details in a trials-and-error fashion
+"""Studying first-level-model details in a trials-and-error fashion
 ================================================================
 
 In this tutorial, we study the parametrization of the first-level
@@ -69,11 +69,11 @@ plt.show()
 # Specification of the contrasts.
 # 
 # For this, let's create a function that, given the design matrix,
-# generates the corresponding contrasts.
-# This will be useful to repeat contast specification when we change the design matrix.
+# generates the corresponding contrasts.  This will be useful to
+# repeat contrast specification when we change the design matrix.
 
 def make_localizer_contrasts(design_matrix):
-    """ returns a dictionary of four contasts, given the design matrix"""
+    """ returns a dictionary of four contrasts, given the design matrix"""
 
     # first generate canonical contrasts 
     contrast_matrix = np.eye(design_matrix.shape[1])
@@ -114,7 +114,7 @@ plt.show()
 #########################################################################
 # Contrast estimation and plotting
 #
-# Since this script will be repeated several times, for the sake of readbility,
+# Since this script will be repeated several times, for the sake of readability,
 # we encapsulate it in a function that we call when needed.
 #
 
