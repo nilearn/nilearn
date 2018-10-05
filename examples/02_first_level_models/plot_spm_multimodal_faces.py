@@ -54,7 +54,6 @@ mean_image = mean_img(fmri_img)
 #########################################################################
 # Make design matrices
 import numpy as np
-from scipy.io import loadmat
 import pandas as pd
 from nistats.design_matrix import make_design_matrix
 design_matrices = []
@@ -87,10 +86,12 @@ basic_contrasts = dict([(column, contrast_matrix[i])
                   for i, column in enumerate(design_matrix.columns)])
 
 #########################################################################
-# We actually want more interesting contrasts
-# The simplest contrast just makes the difference between the two main conditions.
-# We define the two opposite versions to run one-tail t-tests.
-# We also define the effects of interest contrast, a 2-dimensional contrasts spanning the two conditions.
+# We actually want more interesting contrasts. The simplest contrast
+# just makes the difference between the two main conditions.  We
+# define the two opposite versions to run one-tail t-tests.  We also
+# define the effects of interest contrast, a 2-dimensional contrasts
+# spanning the two conditions.
+
 contrasts = {
     'faces-scrambled': basic_contrasts['faces'] - basic_contrasts['scrambled'],
     'scrambled-faces': -basic_contrasts['faces'] + basic_contrasts['scrambled'],
@@ -125,7 +126,11 @@ for contrast_id, contrast_val in contrasts.items():
         cut_coords=3, black_bg=True, title=contrast_id)
 
 #########################################################################
-# Show the resulting maps:
-# We observe that the analysis results in wide activity for the 'effects of interest' contrast, showing the implications of large portions of the visual cortex in the conditions. By contrast, the differential effect between "faces" and "scambled" involves sparser, more anterior and lateral regions. It displays also some responses in the frontal lobe.
+# Show the resulting maps: We observe that the analysis results in
+# wide activity for the 'effects of interest' contrast, showing the
+# implications of large portions of the visual cortex in the
+# conditions. By contrast, the differential effect between "faces" and
+# "scambled" involves sparser, more anterior and lateral regions. It
+# displays also some responses in the frontal lobe.
 
 plotting.show()
