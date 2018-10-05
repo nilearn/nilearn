@@ -56,10 +56,11 @@ thresholded_map2, threshold2 = map_threshold(
 print('The FDR=.05 threshold is %.3g' % threshold2)
 
 #########################################################################
-# Now use FWER <.05, (Familywise Error Rate) no cluster-level threshold
-# As the data have not been intensively smoothed, we can use a simple Bonferroni correction
+# Now use FWER <.05, (Familywise Error Rate) no cluster-level
+# threshold.  As the data have not been intensively smoothed, we can
+# use a simple Bonferroni correction
 thresholded_map3, threshold3 = map_threshold(
-    z_map, threshold=.05, height_control='bonferroni')
+    z_map, level=.05, height_control='bonferroni')
 print('The p<.05 Bonferroni-corrected threshold is %.3g' % threshold3)
 
 #########################################################################
