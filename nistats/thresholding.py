@@ -45,9 +45,9 @@ def map_threshold(stat_img=None, mask_img=None, level=.001,
     ----------
     stat_img : Niimg-like object or None, optional
        statistical image (presumably in z scale)
-       whenever height_control is 'fpr' or 'none', 
-       stat_img=None os acceptable. 
-       If it is 'fdr' or 'bonferroni', an error is raised       
+       whenever height_control is 'fpr' or None,
+       stat_img=None is acceptable.
+       If it is 'fdr' or 'bonferroni', an error is raised if stat_img is None.
 
     mask_img : Niimg-like object, optional,
         mask image
