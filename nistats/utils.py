@@ -23,15 +23,39 @@ def _check_list_length_match(list_1, list_2, var_name_1, var_name_2):
             % (str(var_name_1), len(list_1), str(var_name_2), len(list_2)))
 
 
+def _read_events_table(table):
+    """
+    Accepts the path to en event.tsv file and loads it as a Pandas Dataframe.
+    Raises an error if loading fails.
+    Parameters
+    ----------
+    table: string
+        Accepts the path to an events file
+    
+    Returns
+    -------
+    loaded: pandas.Dataframe object
+        Pandas Dataframe witht e events data.
+    """
+    try:
+        # kept for historical reasons, a lot of tests use csv with index column
+        loaded = pd.read_csv(table, index_col=0)
+    except:
+        raise ValueError('table path %s could not be loaded' % table)
+    if loaded.empty:
+        try:
+            loaded = pd.read_table(table)
+        except:
+            raise ValueError('table path %s could not be loaded' % table)
+    return loaded
+
+
 def _check_and_load_tables(tables_, var_name):
     """Check tables can be loaded in DataFrame to raise error if necessary"""
     tables = []
     for table_idx, table in enumerate(tables_):
         if isinstance(table, _basestring):
-            try:
-                loaded = pd.read_csv(table, index_col=0)
-            except:
-                raise ValueError('table path %s could not be loaded' % table)
+            loaded = _read_events_table(table)
             tables.append(loaded)
         elif isinstance(table, pd.DataFrame):
             tables.append(table)
