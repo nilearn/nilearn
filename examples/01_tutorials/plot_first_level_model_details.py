@@ -22,18 +22,13 @@ To run this example, you must launch IPython via ``ipython
 
 """
 
-import numpy as np
-import pandas as pd
-from nilearn import plotting
-from nistats import datasets
-
 ###############################################################################
 # Retrieving the data
 # -------------------
 #
 # We use a so-called localizer dataset, which consists in a 5-minutes
 # acquisition of a fast event-related dataset.
-
+from nistats import datasets
 data = datasets.fetch_localizer_first_level()
 fmri_img = data.epi_img
 
@@ -43,7 +38,13 @@ fmri_img = data.epi_img
 # We just get the provided file and make it BIDS-compliant. 
 t_r = 2.4
 paradigm_file = data.paradigm
+import pandas as pd
 events= pd.read_table(paradigm_file)
+
+###############################################################################
+# Add a column for 'duration' (filled with ones) for BIDS compliance
+import numpy as np
+events['duration'] = np.ones_like(events.onset)
 
 ###############################################################################
 # Running a basic model
@@ -116,6 +117,7 @@ plt.show()
 # Since this script will be repeated several times, for the sake of readability,
 # we encapsulate it in a function that we call when needed.
 #
+from nilearn import plotting
 
 def plot_contrast(first_level_model):
     """ Given a first model, specify, enstimate and plot the main contrasts"""
