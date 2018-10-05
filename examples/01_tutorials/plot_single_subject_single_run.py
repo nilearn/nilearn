@@ -145,6 +145,18 @@ import matplotlib.pyplot as plt
 plt.show()
 
 ###############################################################################
+# Save the design matrix image to disk
+# first create a directory where you want to write the images
+
+import os
+outdir = 'results'
+if not os.path.exists(outdir):
+    os.mkdir(outdir)
+
+from os.path import join
+plot_design_matrix(design_matrix, output_file=join(outdir, 'design_matrix.png'))
+
+###############################################################################
 # The first column contains the expected reponse profile of regions which are
 # sensitive to the auditory stimulation.
 # Let's plot this first column
@@ -276,19 +288,9 @@ plot_stat_map(clean_map, bg_img=mean_img, threshold=threshold,
 plt.show()
 
 
+
 ###############################################################################
 # We can save the effect and zscore maps to the disk
-# first create a directory where you want to write the images
-
-import os
-outdir = 'results'
-if not os.path.exists(outdir):
-    os.mkdir(outdir)
-
-###############################################################################
-# Then save the images in this directory
-    
-from os.path import join
 z_map.to_filename(join(outdir, 'active_vs_rest_z_map.nii.gz'))
 eff_map.to_filename(join(outdir, 'active_vs_rest_eff_map.nii.gz'))
 
