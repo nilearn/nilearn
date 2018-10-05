@@ -65,7 +65,7 @@ z_map = model.compute_contrast('fluency', output_type='z_score')
 ###########################################################################
 # We compute the fdr-corrected p = 0.05 threshold for these data
 from nistats.thresholding import map_threshold
-_, threshold = map_threshold(z_map, threshold=.05, height_control='fdr')
+_, threshold = map_threshold(z_map, level=.05, height_control='fdr')
 
 ###########################################################################
 #Let us plot the second level contrast at the computed thresholds 
