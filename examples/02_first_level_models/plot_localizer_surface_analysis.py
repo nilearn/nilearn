@@ -29,7 +29,7 @@ slice_time_ref = 0.5
 from nistats.datasets import fetch_localizer_first_level
 data = fetch_localizer_first_level()
 paradigm_file = data.paradigm
-paradigm = pd.read_csv(paradigm_file, sep='\t', index_col=None)
+paradigm = pd.read_table(paradigm_file)
 fmri_img = data.epi_img
 
 #########################################################################
