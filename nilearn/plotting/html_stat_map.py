@@ -446,4 +446,4 @@ def view_stat_map(stat_map_img, bg_img='MNI152', cut_coords=None,
     html = html.replace('INSERT_CM_DATA_HERE', cm_base64)
     html = html.replace('INSERT_JQUERY_HERE', js_jquery)
     html = html.replace('INSERT_BRAINSPRITE_HERE', js_brainsprite)
-    return StatMapView(html)
+    return StatMapView(html,ratio=44)
