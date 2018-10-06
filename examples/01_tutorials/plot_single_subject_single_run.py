@@ -239,7 +239,7 @@ plt.show()
 # declaring active an inactive voxel.
 
 from nistats.thresholding import map_threshold
-_, threshold = map_threshold(z_map, threshold=.001, height_control='fpr')
+_, threshold = map_threshold(z_map, level=.001, height_control='fpr')
 print('Uncorrected p<0.001 threshold: %.3f' % threshold)
 plot_stat_map(z_map, bg_img=mean_img, threshold=threshold,
               display_mode='z', cut_coords=3, black_bg=True,
@@ -253,7 +253,7 @@ plt.show()
 # i.e. the probability of making ony one false detection, say at
 # 5%. For that we use the so-called Bonferroni correction
 
-_, threshold = map_threshold(z_map, threshold=.05, height_control='bonferroni')
+_, threshold = map_threshold(z_map, level=.05, height_control='bonferroni')
 print('Bonferroni-corrected, p<0.05 threshold: %.3f' % threshold)
 plot_stat_map(z_map, bg_img=mean_img, threshold=threshold,
               display_mode='z', cut_coords=3, black_bg=True,
@@ -266,7 +266,7 @@ plt.show()
 # false discoveries among detections. This is called the false
 # disovery rate
 
-_, threshold = map_threshold(z_map, threshold=.05, height_control='fdr')
+_, threshold = map_threshold(z_map, level=.05, height_control='fdr')
 print('False Discovery rate = 0.05 threshold: %.3f' % threshold)
 plot_stat_map(z_map, bg_img=mean_img, threshold=threshold,
               display_mode='z', cut_coords=3, black_bg=True,
@@ -281,7 +281,7 @@ plt.show()
 # will be discarded.
 
 clean_map, threshold = map_threshold(
-    z_map, threshold=.05, height_control='fdr', cluster_threshold=10)
+    z_map, level=.05, height_control='fdr', cluster_threshold=10)
 plot_stat_map(clean_map, bg_img=mean_img, threshold=threshold,
               display_mode='z', cut_coords=3, black_bg=True,
               title='Active minus Rest (fdr=0.05), clusters > 10 voxels')
@@ -335,7 +335,7 @@ plt.show()
 # makes it easier to represent it.
 
 clean_map, threshold = map_threshold(
-    z_map, threshold=.05, height_control='fdr', cluster_threshold=10)
+    z_map, level=.05, height_control='fdr', cluster_threshold=10)
 plot_stat_map(clean_map, bg_img=mean_img, threshold=threshold,
               display_mode='z', cut_coords=3, black_bg=True,
               title='Effects of interest (fdr=0.05), clusters > 10 voxels')

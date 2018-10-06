@@ -97,7 +97,7 @@ z_map = second_level_model.compute_contrast(second_level_contrast=[1, 0, 0],
 # First compute the threshold.
 from nistats.thresholding import map_threshold
 _, threshold = map_threshold(
-    z_map, threshold=.05, height_control='fdr')
+    z_map, level=.05, height_control='fdr')
 print('The FDR=.05-corrected threshold is: %.3g' % threshold)
 
 ###########################################################################
@@ -116,11 +116,12 @@ plotting.show()
 z_map = second_level_model.compute_contrast(second_level_contrast='sex',
                                             output_type='z_score')
 _, threshold = map_threshold(
-    z_map, threshold=.05, height_control='fdr')
+    z_map, level=.05, height_control='fdr')
 plotting.plot_stat_map(
     z_map, threshold=threshold, colorbar=True,
     title='sex effect on grey matter density (FDR = .05)')
 
 ###########################################################################
-# Note that there does not seem to be any significant effect of sex on grey matter density on that dataset.
+# Note that there does not seem to be any significant effect of sex on
+# grey matter density on that dataset.
 
