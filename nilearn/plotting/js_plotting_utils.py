@@ -133,7 +133,7 @@ class HTMLDocument(object):
                    style="width: {}%; padding-top: {}%">
                    <iframe srcdoc="{}" class="embed-responsive-item">
                    </iframe>
-                   </div>'''.format(width,width*ratio/100,escaped)
+                   </div>'''.format(width, width*ratio/100, escaped)
         return wrapped
 
     def get_standalone(self):
