@@ -43,8 +43,7 @@ fmri_img = data.epi_img
 # We just get the provided file and make it BIDS-compliant. 
 t_r = 2.4
 paradigm_file = data.paradigm
-events= pd.read_csv(paradigm_file, sep=' ', header=None, index_col=None)
-events.columns = ['session', 'trial_type', 'onset']
+events= pd.read_table(paradigm_file)
 
 ###############################################################################
 # Running a basic model
@@ -81,21 +80,21 @@ def make_localizer_contrasts(design_matrix):
                       for i, column in enumerate(design_matrix.columns)])
 
     # Add more complex contrasts
-    contrasts["audio"] = contrasts["clicDaudio"] + contrasts["clicGaudio"] +\
-                         contrasts["calculaudio"] + contrasts["phraseaudio"]
-    contrasts["video"] = contrasts["clicDvideo"] + contrasts["clicGvideo"] + \
-                         contrasts["calculvideo"] + contrasts["phrasevideo"]
-    contrasts["computation"] = contrasts["calculaudio"] + contrasts["calculvideo"]
-    contrasts["sentences"] = contrasts["phraseaudio"] + contrasts["phrasevideo"]
+    contrasts['audio'] = contrasts['clicDaudio'] + contrasts['clicGaudio'] +\
+                         contrasts['calculaudio'] + contrasts['phraseaudio']
+    contrasts['video'] = contrasts['clicDvideo'] + contrasts['clicGvideo'] + \
+                         contrasts['calculvideo'] + contrasts['phrasevideo']
+    contrasts['computation'] = contrasts['calculaudio'] + contrasts['calculvideo']
+    contrasts['sentences'] = contrasts['phraseaudio'] + contrasts['phrasevideo']
 
     # Short dictionary of more relevant contrasts
     contrasts = {
-        "left-right": (contrasts["clicGaudio"] + contrasts["clicGvideo"]
-                       - contrasts["clicDaudio"] - contrasts["clicDvideo"]),
-        "H-V": contrasts["damier_H"] - contrasts["damier_V"],
-        "audio-video": contrasts["audio"] - contrasts["video"],
-        "computation-sentences": (contrasts["computation"] -
-                                  contrasts["sentences"]),
+        'left-right': (contrasts['clicGaudio'] + contrasts['clicGvideo']
+                       - contrasts['clicDaudio'] - contrasts['clicDvideo']),
+        'H-V': contrasts['damier_H'] - contrasts['damier_V'],
+        'audio-video': contrasts['audio'] - contrasts['video'],
+        'computation-sentences': (contrasts['computation'] -
+                                  contrasts['sentences']),
     }
     return contrasts
 
@@ -228,7 +227,7 @@ contrast_val = np.eye(design_matrix.shape[1])[1:2:21]
 z_map = first_level_model.compute_contrast(
     contrast_val, output_type='z_score')
 plotting.plot_stat_map(
-    z_map, display_mode='z', threshold=3.0, title="effect of time derivatives")
+    z_map, display_mode='z', threshold=3.0, title='effect of time derivatives')
 plt.show()
 
 #########################################################################
