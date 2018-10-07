@@ -67,38 +67,11 @@ mean_img = mean_img(fmri_img)
 # ------------------------------------
 #
 # We must now provide a description of the experiment, that is, define the
-# timing of the auditory stimulation and rest periods. According to
-# the documentation of the dataset, there were sixteen 42s-long blocks --- in
-# which 6 scans were acquired --- alternating between rest and
-# auditory stimulation, starting with rest.
-#
-# The following table provide all the relevant informations:
-#
-
-"""
-duration,  onset,  trial_type
-    42  ,    0  ,  rest
-    42  ,   42  ,  active
-    42  ,   84  ,  rest
-    42  ,  126  ,  active
-    42  ,  168  ,  rest
-    42  ,  210  ,  active
-    42  ,  252  ,  rest
-    42  ,  294  ,  active
-    42  ,  336  ,  rest
-    42  ,  378  ,  active
-    42  ,  420  ,  rest
-    42  ,  462  ,  active
-    42  ,  504  ,  rest
-    42  ,  546  ,  active
-    42  ,  588  ,  rest
-    42  ,  630  ,  active
-"""
-
-###############################################################################
-# We can read such a table from a spreadsheet file  created with OpenOffice Calcor Office Excel, and saved under the *comma separated values* format (``.csv``). 
+# timing of the auditory stimulation and rest periods. This is typically
+# provided in an events.tsv file. The path of this file is
+# provided in the dataset.
 import pandas as pd
-events = pd.read_csv('auditory_block_paradigm.csv')
+events = pd.read_table(subject_data['paradigm'])
 print(events)
 
 ###############################################################################

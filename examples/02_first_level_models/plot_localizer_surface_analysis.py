@@ -14,11 +14,11 @@ More specifically:
 
 The result of the analysis are statistical maps that are defined on the brain mesh. We disply them using Nilearn capabilities.
 
-The projection of fMRI data onto a given brain mesh requires that both are initially defined in the same space. 
+The projection of fMRI data onto a given brain mesh requires that both are initially defined in the same space.
 
-* The functional data should be coregistered to the anatomy from which the mesh was obtained. 
+* The functional data should be coregistered to the anatomy from which the mesh was obtained.
 
-* Another possibility, used here, is to project the normalized fMRI data to an MNI-coregistered mesh, such as fsaverage. 
+* Another possibility, used here, is to project the normalized fMRI data to an MNI-coregistered mesh, such as fsaverage.
 
 The advantage of this second approach is that it makes it easy to run second-level analyses on the surface. On the other hand, it is obviously less accurate than using a subject-tailored mesh.
 
@@ -43,9 +43,8 @@ fmri_img = data.epi_img
 # Second the experimental paradigm
 paradigm_file = data.paradigm
 import pandas as pd
-paradigm = pd.read_csv(paradigm_file, sep=' ', header=None, index_col=None)
-paradigm.columns = ['session', 'trial_type', 'onset']
-
+paradigm = pd.read_table(paradigm_file)
+fmri_img = data.epi_img
 
 #########################################################################
 # Project the fMRI image to the surface
@@ -156,7 +155,7 @@ for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
     z_score = contrast.z_score()
     # we plot it on the surface, on the inflated fsaverage mesh,
     # together with a suitable background to give an impression
-    # of the cortex folding. 
+    # of the cortex folding.
     plotting.plot_surf_stat_map(
         fsaverage.infl_right, z_score, hemi='right',
         title=contrast_id, colorbar=True,
@@ -165,7 +164,7 @@ for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
 #########################################################################
 # Analysing the left hemisphere
 # -----------------------------
-# 
+#
 # Note that it requires little additional code!
 
 #########################################################################
