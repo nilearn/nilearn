@@ -22,8 +22,8 @@
 .. |first_level| image:: auto_examples/02_first_level_models/images/thumb/sphx_glr_plot_localizer_analysis_thumb.png
      :target: auto_examples/02_first_level_models/plot_localizer_analysis.html
 
-.. |second_level| image:: auto_examples/03_second_level_models/images/thumb/sphx_glr_plot_second_level_button_press_thumb.png
-     :target: auto_examples/03_second_level_models/plot_second_level_button_press.html
+.. |second_level| image:: auto_examples/03_second_level_models/images/thumb/sphx_glr_plot_thresholding_thumb.png
+     :target: auto_examples/03_second_level_models/plot_thresholding.html
 
 .. |bids| image:: auto_examples/01_tutorials/images/thumb/sphx_glr_plot_bids_analysis_thumb.png
      :target: auto_examples/01_tutorials/plot_bids_analysis.html
