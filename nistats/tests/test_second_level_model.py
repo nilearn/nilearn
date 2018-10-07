@@ -18,7 +18,7 @@ from nose.tools import assert_true, assert_equal, assert_raises
 from numpy.testing import (assert_almost_equal, assert_array_equal)
 from nibabel.tmpdirs import InTemporaryDirectory
 import pandas as pd
-
+from nilearn.image import concat_imgs
 
 # This directory path
 BASEDIR = os.path.dirname(os.path.abspath(__file__))
@@ -92,6 +92,7 @@ def test_fmri_inputs():
                   ['03', 'a', FUNCFILE]]
         niidf = pd.DataFrame(dfrows, columns=dfcols)
         niimgs = [FUNCFILE, FUNCFILE, FUNCFILE]
+        niimg_4d = concat_imgs(niimgs)
         confounds = pd.DataFrame([['01', 1], ['02', 2], ['03', 3]],
                                  columns=['subject_label', 'conf1'])
         sdes = pd.DataFrame(X[:3, :3], columns=['intercept', 'b', 'c'])
@@ -110,6 +111,9 @@ def test_fmri_inputs():
         SecondLevelModel().fit(niidf, None, sdes)
         # niimgs as input
         SecondLevelModel().fit(niimgs, None, sdes)
+        # 4d niimg as input
+        SecondLevelModel().fit(niimg_4d, None, sdes)
+
         # test wrong input errors
         # test first level model requirements
         assert_raises(ValueError, SecondLevelModel().fit, flm)
