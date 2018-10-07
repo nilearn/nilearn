@@ -1,27 +1,33 @@
-"""
-Example of surface-based first-level analysis
+"""Example of surface-based first-level analysis
 =============================================
 
-Full step-by-step example of fitting a GLM to experimental data sampled on the cortical surface and visualizing the results.
+Full step-by-step example of fitting a GLM to experimental data
+sampled on the cortical surface and visualizing the results.
 
 More specifically:
 
 1. A sequence of fMRI volumes are loaded
-2. fMRI data are projected onto a reference cortical surface (the freesurfer template, fsaverage)
+2. fMRI data are projected onto a reference cortical surface (the
+freesurfer template, fsaverage)
 3. A design matrix describing all the effects related to the data is computed
 4. A GLM is applied to the dataset (effect/covariance,
    then contrast estimation)
 
-The result of the analysis are statistical maps that are defined on the brain mesh. We disply them using Nilearn capabilities.
+The result of the analysis are statistical maps that are defined on
+the brain mesh. We display them using Nilearn capabilities.
 
-The projection of fMRI data onto a given brain mesh requires that both are initially defined in the same space.
+The projection of fMRI data onto a given brain mesh requires that both
+are initially defined in the same space.
 
-* The functional data should be coregistered to the anatomy from which the mesh was obtained.
+* The functional data should be coregistered to the anatomy from which
+  the mesh was obtained.
 
-* Another possibility, used here, is to project the normalized fMRI data to an MNI-coregistered mesh, such as fsaverage.
+* Another possibility, used here, is to project the normalized fMRI
+  data to an MNI-coregistered mesh, such as fsaverage.
 
-The advantage of this second approach is that it makes it easy to run second-level analyses on the surface. On the other hand, it is obviously less accurate than using a subject-tailored mesh.
-
+The advantage of this second approach is that it makes it easy to run
+second-level analyses on the surface. On the other hand, it is
+obviously less accurate than using a subject-tailored mesh.
 
 """
 
@@ -34,13 +40,13 @@ slice_time_ref = 0.5
 
 #########################################################################
 # Prepare data
-# First the fMRI data
+# First the volume-based fMRI data.
 from nistats.datasets import fetch_localizer_first_level
 data = fetch_localizer_first_level()
 fmri_img = data.epi_img
 
 #########################################################################
-# Second the experimental paradigm
+# Second the experimental paradigm.
 paradigm_file = data.paradigm
 import pandas as pd
 paradigm = pd.read_table(paradigm_file)
@@ -50,8 +56,10 @@ fmri_img = data.epi_img
 # Project the fMRI image to the surface
 # -------------------------------------
 #
-# For this we need to get a mesh representing the geometry of the surface.
-# we could use an individual mesh, but we first resort to a standard mesh, the so-called fsaverage5 template from the Freesurfer software.
+# For this we need to get a mesh representing the geometry of the
+# surface.  we could use an individual mesh, but we first resort to a
+# standard mesh, the so-called fsaverage5 template from the Freesurfer
+# software.
 
 import nilearn
 fsaverage = nilearn.datasets.fetch_surf_fsaverage5()
@@ -150,7 +158,8 @@ for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
     print('  Contrast % i out of %i: %s, right hemisphere' %
           (index + 1, len(contrasts), contrast_id))
     # compute contrast-related statistics
-    contrast = compute_contrast(labels, estimates, contrast_val, contrast_type='t')
+    contrast = compute_contrast(labels, estimates, contrast_val,
+                                contrast_type='t')
     # we present the Z-transform of the t map
     z_score = contrast.z_score()
     # we plot it on the surface, on the inflated fsaverage mesh,
@@ -181,7 +190,8 @@ for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
     print('  Contrast % i out of %i: %s, left hemisphere' %
           (index + 1, len(contrasts), contrast_id))
     # compute contrasts
-    contrast = compute_contrast(labels, estimates, contrast_val, contrast_type='t')
+    contrast = compute_contrast(labels, estimates, contrast_val,
+                                contrast_type='t')
     z_score = contrast.z_score()
     # Plot the result
     plotting.plot_surf_stat_map(

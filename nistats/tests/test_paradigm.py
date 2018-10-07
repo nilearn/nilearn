@@ -15,18 +15,21 @@ from nose.tools import assert_true
 def basic_paradigm():
     conditions = ['c0', 'c0', 'c0', 'c1', 'c1', 'c1', 'c2', 'c2', 'c2']
     onsets = [30, 70, 100, 10, 30, 90, 30, 40, 60]
-    paradigm = pd.DataFrame({'name': conditions, 'onset': onsets})
+    durations = 1 * np.ones(9)
+    paradigm = pd.DataFrame({'name': conditions, 
+                            'onset': onsets,
+                            'duration': durations})
     return paradigm
 
 
 def modulated_block_paradigm():
     conditions = ['c0', 'c0', 'c0', 'c1', 'c1', 'c1', 'c2', 'c2', 'c2']
     onsets = [30, 70, 100, 10, 30, 90, 30, 40, 60]
-    duration = 5 + 5 * np.random.rand(len(onsets))
+    durations = 5 + 5 * np.random.rand(len(onsets))
     values = np.random.rand(len(onsets))
     paradigm = pd.DataFrame({'name': conditions,
                           'onset': onsets,
-                          'duration': duration,
+                          'duration': durations,
                           'modulation': values})
     return paradigm
 
@@ -34,9 +37,11 @@ def modulated_block_paradigm():
 def modulated_event_paradigm():
     conditions = ['c0', 'c0', 'c0', 'c1', 'c1', 'c1', 'c2', 'c2', 'c2']
     onsets = [30, 70, 100, 10, 30, 90, 30, 40, 60]
+    durations = 1 * np.ones(9)
     values = np.random.rand(len(onsets))
     paradigm = pd.DataFrame({'name': conditions,
                           'onset': onsets,
+                          'durations': durations,
                           'amplitude': values})
     return paradigm
 
@@ -44,10 +49,10 @@ def modulated_event_paradigm():
 def block_paradigm():
     conditions = ['c0', 'c0', 'c0', 'c1', 'c1', 'c1', 'c2', 'c2', 'c2']
     onsets = [30, 70, 100, 10, 30, 90, 30, 40, 60]
-    duration = 5 * np.ones(9)
+    durations = 5 * np.ones(9)
     paradigm = pd.DataFrame({'name': conditions,
                           'onset': onsets,
-                          'duration': duration})
+                          'duration': durations})
     return paradigm
 
 

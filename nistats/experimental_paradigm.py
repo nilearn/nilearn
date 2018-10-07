@@ -48,19 +48,18 @@ def check_paradigm(paradigm):
     """
     if 'onset' not in paradigm.keys():
         raise ValueError('The provided paradigm has no onset key')
+    if 'duration' not in paradigm.keys():
+        raise ValueError('The provided paradigm has no duration key')
 
     onset = np.array(paradigm['onset'])
+    duration = np.array(paradigm['duration']).astype(np.float)
     n_events = len(onset)
-    trial_type = np.repeat('dummy', n_events)
-    duration = np.zeros(n_events)
+    trial_type = np.array(paradigm['trial_type'])
     modulation = np.ones(n_events)
-    if 'trial_type' in paradigm.keys():
+    if 'trial_type' not in paradigm.keys():
         warnings.warn("'trial_type' key not found in the given paradigm.")
-        trial_type = np.array(paradigm['trial_type'])
-    if 'duration' in paradigm.keys():
-        warnings.warn("'duration' key not found in the given paradigm.")
-        duration = np.array(paradigm['duration']).astype(np.float)
+        trial_type = np.repeat('dummy', n_events)
     if 'modulation' in paradigm.keys():
-        warnings.warn("'modulation' key not found in the given paradigm.")
+        warnings.warn("'modulation' key found in the given paradigm.")
         modulation = np.array(paradigm['modulation']).astype(np.float)
     return trial_type, onset, duration, modulation

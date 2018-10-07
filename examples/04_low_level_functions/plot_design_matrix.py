@@ -29,6 +29,7 @@ frame_times = np.arange(n_scans) * tr  # here are the corespoding frame times
 
 # these are the types of the different trials
 conditions = ['c0', 'c0', 'c0', 'c1', 'c1', 'c1', 'c3', 'c3', 'c3']
+duration = [1., 1., 1., 1., 1., 1., 1., 1., 1.]
 # these are the corresponding onset times
 onsets = [30., 70., 100., 10., 30., 90., 30., 40., 60.]
 # Next, we simulate 6 motion parameters jointly observed with fMRI acquisitions
@@ -43,7 +44,8 @@ add_reg_names = ['tx', 'ty', 'tz', 'rx', 'ry', 'rz']
 # The same parameters allow us to obtain a variety of design matrices
 # We first create an event object
 import pandas as pd
-paradigm = pd.DataFrame({'trial_type': conditions, 'onset': onsets})
+paradigm = pd.DataFrame({'trial_type': conditions, 'onset': onsets,
+                         'duration': duration})
 
 #########################################################################
 # We sample the paradigm into a design matrix, also including additional regressors
@@ -67,7 +69,8 @@ X2 = make_design_matrix(frame_times, paradigm, drift_model='polynomial',
 
 #########################################################################
 # Finally we compute a FIR model
-paradigm = pd.DataFrame({'trial_type': conditions, 'onset': onsets})
+paradigm = pd.DataFrame({'trial_type': conditions, 'onset': onsets,
+                         'duration': duration})
 hrf_model = 'FIR'
 X3 = make_design_matrix(frame_times, paradigm, hrf_model='fir',
                         drift_model='polynomial', drift_order=3,
