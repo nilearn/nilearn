@@ -303,6 +303,8 @@ def _make_bids_compliant_localizer_first_level_paradigm_file(paradigm_file):
                            names=['session', 'trial_type', 'onset'],
                            )
     paradigm.drop(labels='session', axis=1, inplace=True)
+    # duration is required in BIDS specification
+    paradigm['duration'] = np.ones_like(paradigm.onset)
     paradigm.to_csv(paradigm_file, sep='\t', index=False)
 
 
@@ -614,7 +616,9 @@ def _make_events_file_spm_multimodal_fmri(_subject_data, session):
     onsets *= tr  # because onsets were reporting in 'scans' units
     conditions = (['faces'] * len(faces_onsets) +
                   ['scrambled'] * len(scrambled_onsets))
-    paradigm = pd.DataFrame({'trial_type': conditions, 'onset': onsets})
+    duration = np.ones_like(onsets)
+    paradigm = pd.DataFrame({'trial_type': conditions, 'onset': onsets,
+                             'duration': duration})
     return paradigm
 
 
