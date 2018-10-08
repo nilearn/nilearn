@@ -4,7 +4,7 @@
 An experimental protocol is handled as a pandas DataFrame
 that includes an 'onset' field.
 
-This yields the onset time of the events in the paradigm.
+This yields the onset time of the events in the experimental paradigm.
 It can also contain:
     * a 'trial_type' field that yields the condition identifier.
     * a 'duration' field that yields event duration (for so-called block
@@ -19,15 +19,15 @@ import pandas
 import warnings
 
 
-def check_paradigm(paradigm):
-    """Test that the DataFrame is describes a valid experimental paradigm
+def check_events(events):
+    """Test that the events data describes a valid experimental paradigm
 
-    A DataFrame is considered as valid whenever it has an 'onset' key.
+    It is valid if the events data  has an 'onset' key.
 
     Parameters
     ----------
-    paradigm : pandas DataFrame
-        Describes a functional paradigm.
+    events : pandas DataFrame
+        Events data that describes a functional experimental paradigm.
 
     Returns
     -------
@@ -46,20 +46,20 @@ def check_paradigm(paradigm):
         Per-event modulation, (in seconds)
         defaults to ones(n_events) when no duration is provided
     """
-    if 'onset' not in paradigm.keys():
-        raise ValueError('The provided paradigm has no onset key')
-    if 'duration' not in paradigm.keys():
-        raise ValueError('The provided paradigm has no duration key')
+    if 'onset' not in events.keys():
+        raise ValueError('The provided events data has no onset column.')
+    if 'duration' not in events.keys():
+        raise ValueError('The provided events data has no duration column.')
 
-    onset = np.array(paradigm['onset'])
-    duration = np.array(paradigm['duration']).astype(np.float)
+    onset = np.array(events['onset'])
+    duration = np.array(events['duration']).astype(np.float)
     n_events = len(onset)
-    trial_type = np.array(paradigm['trial_type'])
+    trial_type = np.array(events['trial_type'])
     modulation = np.ones(n_events)
-    if 'trial_type' not in paradigm.keys():
-        warnings.warn("'trial_type' key not found in the given paradigm.")
+    if 'trial_type' not in events.keys():
+        warnings.warn("'trial_type' column not found in the given events data.")
         trial_type = np.repeat('dummy', n_events)
-    if 'modulation' in paradigm.keys():
-        warnings.warn("'modulation' key found in the given paradigm.")
-        modulation = np.array(paradigm['modulation']).astype(np.float)
+    if 'modulation' in events.keys():
+        warnings.warn("'modulation' column found in the given events data.")
+        modulation = np.array(events['modulation']).astype(np.float)
     return trial_type, onset, duration, modulation

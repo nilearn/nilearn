@@ -1,4 +1,4 @@
-"""Example of a paradigm .csv file generation: the neurospin/localizer paradigm.
+"""Example of a events.tsv file generation: the neurospin/localizer events.
 =============================================================================
 
 The protocol described is the so-called "archi standard" localizer
@@ -59,7 +59,7 @@ events = pd.DataFrame({'trial_type': trial_type,
                        'duration': duration})
 
 #########################################################################
-# Export them to a csv file
-csvfile = 'localizer_paradigm.csv'
-events.to_csv(csvfile)
-print("Created the paradigm file in %s " % csvfile)
+# Export them to a tsv file
+tsvfile = 'localizer_events.tsv'
+events.to_csv(tsvfile, sep='\t', index=False)
+print("Created the events file in %s " % tsvfile)

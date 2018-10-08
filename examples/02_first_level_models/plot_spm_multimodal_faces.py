@@ -61,7 +61,7 @@ design_matrices = []
 #########################################################################
 # loop over the two sessions
 for idx, img in enumerate(fmri_img, start=1):
-    # Build paradigm
+    # Build experimental paradigm
     n_scans = img.shape[-1]
     events = pd.read_table(subject_data['events{}'.format(idx)])
     # Define the sampling times for the design matrix

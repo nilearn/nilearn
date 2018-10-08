@@ -99,8 +99,7 @@ uses.
    :toctree: generated/
    :template: function.rst
 
-   check_paradigm
-   paradigm_from_csv
+   check_events
 
 .. _model_ref:
 

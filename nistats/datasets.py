@@ -283,7 +283,7 @@ def fetch_openneuro_dataset(
     return data_dir, sorted(downloaded)
 
 
-def _make_bids_compliant_localizer_first_level_paradigm_file(paradigm_file):
+def _make_events_file_localizer_first_level(events_file):
     """ Makes the first-level localizer fMRI dataset events file
     BIDS compliant. Overwrites the original file.
         Adds headers in first row.
@@ -292,20 +292,20 @@ def _make_bids_compliant_localizer_first_level_paradigm_file(paradigm_file):
     
     Parameters
     ----------
-    paradigm_file: string
+    events_file: string
         path to the localizer_first_level dataset's events file.
     
     Returns
     -------
     None
     """
-    paradigm = pd.read_csv(paradigm_file, sep=' ', header=None, index_col=None,
+    events = pd.read_csv(events_file, sep=' ', header=None, index_col=None,
                            names=['session', 'trial_type', 'onset'],
                            )
-    paradigm.drop(labels='session', axis=1, inplace=True)
+    events.drop(labels='session', axis=1, inplace=True)
     # duration is required in BIDS specification
-    paradigm['duration'] = np.ones_like(paradigm.onset)
-    paradigm.to_csv(paradigm_file, sep='\t', index=False)
+    events['duration'] = np.ones_like(events.onset)
+    events.to_csv(events_file, sep='\t', index=False)
 
 
 def fetch_localizer_first_level(data_dir=None, verbose=1):
@@ -319,15 +319,15 @@ def fetch_localizer_first_level(data_dir=None, verbose=1):
     Returns
     -------
     data: sklearn.datasets.base.Bunch
-        dictionary-like object, keys are:
+        dictionary-like object, with the keys:
         epi_img: the input 4D image
-        paradigm: a csv file describing the paardigm
+        events: a csv file describing the paardigm
     """
     url = 'ftp://ftp.cea.fr/pub/dsv/madic/download/nipy'
 
     dataset_name = "localizer_first_level"
     files = dict(epi_img="s12069_swaloc1_corr.nii.gz",
-                 paradigm="localizer_paradigm.csv")
+                 events="localizer_paradigm.csv")
     # The options needed for _fetch_files
     options = [(filename, os.path.join(url, filename), {})
                for _, filename in sorted(files.items())]
@@ -339,11 +339,11 @@ def fetch_localizer_first_level(data_dir=None, verbose=1):
 
     params = dict(zip(sorted(files.keys()), sub_files))
     try:
-        _verify_events_file_uses_tab_separators(params['paradigm'])
+        _verify_events_file_uses_tab_separators(params['events'])
     except ValueError:
-        _make_bids_compliant_localizer_first_level_paradigm_file(paradigm_file=
-                                                             params['paradigm']
-                                                                 )
+        _make_events_file_localizer_first_level(events_file=
+                                                             params['events']
+                                                )
     
     return Bunch(**params)
 
@@ -491,13 +491,13 @@ def fetch_spm_auditory(data_dir=None, data_name='spm_auditory',
         _download_spm_auditory_data(data_dir, subject_dir, subject_id)
     spm_auditory_data = _prepare_downloaded_spm_auditory_data(subject_dir)
     try:
-        spm_auditory_data['paradigm']
+        spm_auditory_data['events']
     except KeyError:
         events_filepath = _make_path_events_file_spm_auditory_data(
                                                             spm_auditory_data)
         if not os.path.isfile(events_filepath):
             _make_events_file_spm_auditory_data(events_filepath)
-        spm_auditory_data['paradigm'] = events_filepath
+        spm_auditory_data['events'] = events_filepath
     return spm_auditory_data
 
 
@@ -555,12 +555,12 @@ def _glob_spm_multimodal_fmri_data(subject_dir):
         if not _subject_data:
             return None
         try:
-            paradigm = _make_events_file_spm_multimodal_fmri(_subject_data, session)
+            events = _make_events_file_spm_multimodal_fmri(_subject_data, session)
         except MatReadError as mat_err:
             warnings.warn('{}. An events.tsv file cannot be generated'.format(str(mat_err)))
         else:
             events_filepath = _make_events_filepath_spm_multimodal_fmri(_subject_data, session)
-            paradigm.to_csv(events_filepath, sep='\t', index=False)
+            events.to_csv(events_filepath, sep='\t', index=False)
             _subject_data['events{}'.format(session)] = events_filepath
         
 
@@ -617,9 +617,9 @@ def _make_events_file_spm_multimodal_fmri(_subject_data, session):
     conditions = (['faces'] * len(faces_onsets) +
                   ['scrambled'] * len(scrambled_onsets))
     duration = np.ones_like(onsets)
-    paradigm = pd.DataFrame({'trial_type': conditions, 'onset': onsets,
+    events = pd.DataFrame({'trial_type': conditions, 'onset': onsets,
                              'duration': duration})
-    return paradigm
+    return events
 
 
 def fetch_spm_multimodal_fmri(data_dir=None, data_name="spm_multimodal_fmri",
