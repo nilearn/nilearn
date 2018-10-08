@@ -87,7 +87,7 @@ frame_times = t_r * (np.arange(n_scans) + .5)
 # the drift model is implicitly a cosine basis with period cutoff 128s.
 from nistats.design_matrix import make_design_matrix
 design_matrix = make_design_matrix(frame_times,
-                                   paradigm=events,
+                                   events=events,
                                    hrf_model='glover + derivative'
                                    )
 

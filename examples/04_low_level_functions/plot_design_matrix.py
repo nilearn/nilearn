@@ -22,7 +22,7 @@ except ImportError:
 import numpy as np
 tr = 1.0  # repetition time is 1 second
 n_scans = 128  # the acquisition comprises 128 scans 
-frame_times = np.arange(n_scans) * tr  # here are the corespoding frame times
+frame_times = np.arange(n_scans) * tr  # here are the correspoding frame times
 
 #########################################################################
 # then we define parameters related to the experimental design
@@ -42,37 +42,37 @@ add_reg_names = ['tx', 'ty', 'tz', 'rx', 'ry', 'rz']
 # Create design matrices
 # -------------------------------------
 # The same parameters allow us to obtain a variety of design matrices
-# We first create an event object
+# We first create an events object
 import pandas as pd
-paradigm = pd.DataFrame({'trial_type': conditions, 'onset': onsets,
+events = pd.DataFrame({'trial_type': conditions, 'onset': onsets,
                          'duration': duration})
 
 #########################################################################
-# We sample the paradigm into a design matrix, also including additional regressors
+# We sample the events into a design matrix, also including additional regressors
 hrf_model = 'glover'
 from nistats.design_matrix import make_design_matrix
 X1 = make_design_matrix(
-    frame_times, paradigm, drift_model='polynomial', drift_order=3,
+    frame_times, events, drift_model='polynomial', drift_order=3,
     add_regs=motion, add_reg_names=add_reg_names, hrf_model=hrf_model)
 
 #########################################################################
 # Now we compute a block design matrix. We add duration to create the blocks.
 # For this we first define an event structure that includes the duration parameter
 duration = 7. * np.ones(len(conditions))
-paradigm = pd.DataFrame({'trial_type': conditions, 'onset': onsets,
+events = pd.DataFrame({'trial_type': conditions, 'onset': onsets,
                          'duration': duration})
 
 #########################################################################
 # Then we sample the design matrix
-X2 = make_design_matrix(frame_times, paradigm, drift_model='polynomial',
+X2 = make_design_matrix(frame_times, events, drift_model='polynomial',
                         drift_order=3, hrf_model=hrf_model)
 
 #########################################################################
 # Finally we compute a FIR model
-paradigm = pd.DataFrame({'trial_type': conditions, 'onset': onsets,
+events = pd.DataFrame({'trial_type': conditions, 'onset': onsets,
                          'duration': duration})
 hrf_model = 'FIR'
-X3 = make_design_matrix(frame_times, paradigm, hrf_model='fir',
+X3 = make_design_matrix(frame_times, events, hrf_model='fir',
                         drift_model='polynomial', drift_order=3,
                         fir_delays=np.arange(1, 6))
 
