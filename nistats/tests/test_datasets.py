@@ -150,7 +150,7 @@ def test_fetch_openneuro_dataset():
     assert_true(len(dl_files) == 9)
 
 
-def test_make_bids_compliant_localizer_first_level_paradigm_file():
+def test_make_events_file_localizer_first_level():
     def _input_data_for_test_file():
         file_data = [
             [0, 'calculvideo', 0.0],
@@ -182,7 +182,7 @@ def test_make_bids_compliant_localizer_first_level_paradigm_file():
                                   header=False,
                                   sep=' ',
                                   )
-            datasets._make_bids_compliant_localizer_first_level_paradigm_file(
+            datasets._make_events_file_localizer_first_level(
                     temp_csv_obj.name
                     )
             data_from_test_file_post_mod = pd.read_csv(temp_csv_obj.name,
@@ -198,7 +198,7 @@ def test_make_bids_compliant_localizer_first_level_paradigm_file():
 @with_setup(setup_mock, teardown_mock)
 def test_fetch_localizer():
     dataset = datasets.fetch_localizer_first_level()
-    assert_true(isinstance(dataset.paradigm, _basestring))
+    assert_true(isinstance(dataset['events'], _basestring))
     assert_true(isinstance(dataset.epi_img, _basestring))
 
 

@@ -71,7 +71,7 @@ mean_img = mean_img(fmri_img)
 # provided in an events.tsv file. The path of this file is
 # provided in the dataset.
 import pandas as pd
-events = pd.read_table(subject_data['paradigm'])
+events = pd.read_table(subject_data['events'])
 print(events)
 
 ###############################################################################

@@ -33,13 +33,13 @@ data = datasets.fetch_localizer_first_level()
 fmri_img = data.epi_img
 
 ###############################################################################
-# Define the paradigm that will be used
+# Define the experimental events that will be used
 #
 # We just get the provided file and make it BIDS-compliant. 
 t_r = 2.4
-paradigm_file = data.paradigm
+events_file = data['events']
 import pandas as pd
-events= pd.read_table(paradigm_file)
+events= pd.read_table(events_file)
 
 ###############################################################################
 # Add a column for 'duration' (filled with ones) for BIDS compliance
@@ -81,21 +81,31 @@ def make_localizer_contrasts(design_matrix):
                       for i, column in enumerate(design_matrix.columns)])
 
     # Add more complex contrasts
-    contrasts['audio'] = contrasts['clicDaudio'] + contrasts['clicGaudio'] +\
-                         contrasts['calculaudio'] + contrasts['phraseaudio']
-    contrasts['video'] = contrasts['clicDvideo'] + contrasts['clicGvideo'] + \
-                         contrasts['calculvideo'] + contrasts['phrasevideo']
+    contrasts['audio'] = (contrasts['clicDaudio']
+                          + contrasts['clicGaudio']
+                          + contrasts['calculaudio']
+                          + contrasts['phraseaudio']
+                          )
+    contrasts['video'] = (contrasts['clicDvideo']
+                          + contrasts['clicGvideo']
+                          + contrasts['calculvideo']
+                          + contrasts['phrasevideo']
+                          )
     contrasts['computation'] = contrasts['calculaudio'] + contrasts['calculvideo']
     contrasts['sentences'] = contrasts['phraseaudio'] + contrasts['phrasevideo']
 
     # Short dictionary of more relevant contrasts
     contrasts = {
-        'left-right': (contrasts['clicGaudio'] + contrasts['clicGvideo']
-                       - contrasts['clicDaudio'] - contrasts['clicDvideo']),
+        'left-right': (contrasts['clicGaudio']
+                       + contrasts['clicGvideo']
+                       - contrasts['clicDaudio']
+                       - contrasts['clicDvideo']
+                       ),
         'H-V': contrasts['damier_H'] - contrasts['damier_V'],
         'audio-video': contrasts['audio'] - contrasts['video'],
         'computation-sentences': (contrasts['computation'] -
-                                  contrasts['sentences']),
+                                  contrasts['sentences']
+                                  ),
     }
     return contrasts
 
