@@ -440,6 +440,9 @@ def test_plot_connectome():
     plt.close()
 
     # NaN matrix support
+    node_color = ['green', 'blue', 'k']
+    # Overriding 'node_color' for 3  elements of size 3.
+    kwargs['node_color'] = node_color
     nan_adjacency_matrix = np.array([[1., np.nan, 0.],
                                      [np.nan, 1., 2.],
                                      [np.nan, 2., 1.]])
