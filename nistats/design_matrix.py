@@ -303,8 +303,9 @@ def make_design_matrix(
             'modulation': column to specify the amplitude of each
                           events. If missing the default is set to
                           ones(n_events).
-        An experimental paradigm is valid if it has an 'onset' key.
-        If this key is missing an error will be raised.
+        An experimental paradigm is valid if it has an 'onset' key
+        and a 'duration' key.
+        If these keys are missing an error will be raised.
         For the others keys a warning will be displayed.
         Particular attention should be given to the 'trial_type' key
         which defines the different conditions in the experimental paradigm.
