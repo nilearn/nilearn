@@ -36,8 +36,8 @@ extra_info_subjects = pd.DataFrame({'subject_label': subjects_label,
 #########################################################################
 # Create a second level design matrix
 # -----------------------------------
-from nistats.design_matrix import create_second_level_design
-design_matrix = create_second_level_design(subjects_label, extra_info_subjects)
+from nistats.design_matrix import make_second_level_design_matrix
+design_matrix = make_second_level_design_matrix(subjects_label, extra_info_subjects)
 
 #########################################################################
 # plot the results

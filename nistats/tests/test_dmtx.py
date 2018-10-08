@@ -13,9 +13,9 @@ import pandas as pd
 from nilearn._utils.testing import assert_raises_regex
 
 from nistats.design_matrix import (
-    _convolve_regressors, make_design_matrix,
+    _convolve_regressors, make_first_level_design_matrix,
     _cosine_drift, check_design_matrix,
-    create_second_level_design)
+    make_second_level_design_matrix)
 
 from nibabel.tmpdirs import InTemporaryDirectory
 
@@ -33,11 +33,11 @@ def design_matrix_light(
     frame_times, events=None, hrf_model='glover',
     drift_model='cosine', period_cut=128, drift_order=1, fir_delays=[0],
     add_regs=None, add_reg_names=None, min_onset=-24, path=None):
-    """ Idem make_design_matrix, but only returns the computed matrix
+    """ Idem make_first_level_design_matrix, but only returns the computed matrix
     and associated names """
-    dmtx = make_design_matrix(frame_times, events, hrf_model,
-    drift_model, period_cut, drift_order, fir_delays,
-    add_regs, add_reg_names, min_onset)
+    dmtx = make_first_level_design_matrix(frame_times, events, hrf_model,
+                                          drift_model, period_cut, drift_order, fir_delays,
+                                          add_regs, add_reg_names, min_onset)
     _, matrix, names = check_design_matrix(dmtx)
     return matrix, names
 
@@ -101,7 +101,7 @@ def test_design_matrix0():
     # Test design matrix creation when no experimental paradigm is provided
     tr = 1.0
     frame_times = np.linspace(0, 127 * tr, 128)
-    _, X, names = check_design_matrix(make_design_matrix(
+    _, X, names = check_design_matrix(make_first_level_design_matrix(
         frame_times, drift_model='polynomial', drift_order=3))
     assert_equal(len(names), 4)
     x = np.linspace(- 0.5, .5, 128)
@@ -113,7 +113,7 @@ def test_design_matrix0c():
     tr = 1.0
     frame_times = np.linspace(0, 127 * tr, 128)
     ax = np.random.randn(128, 4)
-    _, X, names = check_design_matrix(make_design_matrix(
+    _, X, names = check_design_matrix(make_first_level_design_matrix(
                 frame_times, drift_model='polynomial',
                 drift_order=3, add_regs=ax))
     assert_almost_equal(X[:, 0], ax[:, 0])
@@ -121,12 +121,12 @@ def test_design_matrix0c():
     assert_raises_regex(
         AssertionError,
         "Incorrect specification of additional regressors:.",
-        make_design_matrix, frame_times, add_regs=ax)
+        make_first_level_design_matrix, frame_times, add_regs=ax)
     ax = np.random.randn(128, 4)
     assert_raises_regex(
         ValueError,
         "Incorrect number of additional regressor names.",
-        make_design_matrix, frame_times, add_regs=ax, add_reg_names='')
+        make_first_level_design_matrix, frame_times, add_regs=ax, add_reg_names='')
 
 
 def test_design_matrix0d():
@@ -134,7 +134,7 @@ def test_design_matrix0d():
     tr = 1.0
     frame_times = np.linspace(0, 127 * tr, 128)
     ax = np.random.randn(128, 4)
-    _, X, names = check_design_matrix(make_design_matrix(
+    _, X, names = check_design_matrix(make_first_level_design_matrix(
             frame_times, drift_model='polynomial', drift_order=3, add_regs=ax))
     assert_equal(len(names), 8)
     assert_equal(X.shape[1], 8)
@@ -431,11 +431,11 @@ def test_fir_block():
 def test_oversampling():
     events = basic_paradigm()
     frame_times = np.linspace(0, 127, 128)
-    X1 = make_design_matrix(
+    X1 = make_first_level_design_matrix(
         frame_times, events, drift_model=None)
-    X2 = make_design_matrix(
+    X2 = make_first_level_design_matrix(
         frame_times, events, drift_model=None, oversampling=50)
-    X3 = make_design_matrix(
+    X3 = make_first_level_design_matrix(
         frame_times, events, drift_model=None, oversampling=10)
 
     # oversampling = 16 is the default so X2 = X1, X3 \neq X1, X3 close to X2
@@ -444,10 +444,10 @@ def test_oversampling():
     assert_true(np.linalg.norm(X2.values - X3.values) / np.linalg.norm(X2.values) > 1.e-4)
 
     # fir model, oversampling is forced to 1
-    X4 = make_design_matrix(
+    X4 = make_first_level_design_matrix(
         frame_times, events, hrf_model='fir', drift_model=None,
         fir_delays=range(0, 4), oversampling=1)
-    X5 = make_design_matrix(
+    X5 = make_first_level_design_matrix(
         frame_times, events, hrf_model='fir', drift_model=None,
         fir_delays=range(0, 4), oversampling=3)
     assert_almost_equal(X4.values, X5.values)
@@ -457,8 +457,8 @@ def test_csv_io():
     tr = 1.0
     frame_times = np.linspace(0, 127 * tr, 128)
     events = modulated_event_paradigm()
-    DM = make_design_matrix(frame_times, events, hrf_model='glover',
-                            drift_model='polynomial', drift_order=3)
+    DM = make_first_level_design_matrix(frame_times, events, hrf_model='glover',
+                                        drift_model='polynomial', drift_order=3)
     path = 'design_matrix.csv'
     with InTemporaryDirectory():
         DM.to_csv(path)
@@ -480,7 +480,7 @@ def test_spm_1():
     events = pd.DataFrame({'trial_type': conditions,
                              'onset': onsets,
                              'duration': durations})
-    X1 = make_design_matrix(frame_times, events, drift_model=None)
+    X1 = make_first_level_design_matrix(frame_times, events, drift_model=None)
     _, matrix, _ = check_design_matrix(X1)
     spm_design_matrix = DESIGN_MATRIX['arr_0']
     assert_true(((spm_design_matrix - matrix) ** 2).sum() /
@@ -497,7 +497,7 @@ def test_spm_2():
     events = pd.DataFrame({'trial_type': conditions,
                              'onset': onsets,
                              'duration': durations})
-    X1 = make_design_matrix(frame_times, events, drift_model=None)
+    X1 = make_first_level_design_matrix(frame_times, events, drift_model=None)
     spm_design_matrix = DESIGN_MATRIX['arr_1']
     _, matrix, _ = check_design_matrix(X1)
     assert_true(((spm_design_matrix - matrix) ** 2).sum() /
@@ -519,7 +519,7 @@ def test_create_second_level_design():
     subjects_label = ['02', '01']  # change order to test right output order
     regressors = [['01', 0.1], ['02', 0.75]]
     regressors = pd.DataFrame(regressors, columns=['subject_label', 'f1'])
-    design = create_second_level_design(subjects_label, regressors)
+    design = make_second_level_design_matrix(subjects_label, regressors)
     expected_design = np.array([[0.75, 1], [0.1, 1]])
     assert_array_equal(design, expected_design)
     assert_true(len(design.columns) == 2)

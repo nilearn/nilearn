@@ -31,7 +31,7 @@ from sklearn.externals.joblib import Parallel, delayed
 from patsy import DesignInfo
 
 from .regression import OLSModel, ARModel, SimpleRegressionResults
-from .design_matrix import make_design_matrix
+from .design_matrix import make_first_level_design_matrix
 from .contrasts import _fixed_effect_contrast
 from .utils import (_basestring, _check_run_tables,
                     _verify_events_file_uses_tab_separators,
@@ -434,11 +434,11 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
                 start_time = self.slice_time_ref * self.t_r
                 end_time = (n_scans - 1 + self.slice_time_ref) * self.t_r
                 frame_times = np.linspace(start_time, end_time, n_scans)
-                design = make_design_matrix(frame_times, events[run_idx],
-                                            self.hrf_model, self.drift_model,
-                                            self.period_cut, self.drift_order,
-                                            self.fir_delays, confounds_matrix,
-                                            confounds_names, self.min_onset)
+                design = make_first_level_design_matrix(frame_times, events[run_idx],
+                                                        self.hrf_model, self.drift_model,
+                                                        self.period_cut, self.drift_order,
+                                                        self.fir_delays, confounds_matrix,
+                                                        confounds_names, self.min_onset)
             else:
                 design = design_matrices[run_idx]
             self.design_matrices_.append(design)

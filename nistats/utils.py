@@ -137,7 +137,7 @@ def z_score(pvalue):
     return norm.isf(pvalue)
 
 
-def multiple_fast_inv(a):
+def multiple_fast_inverse(a):
     """Compute the inverse of a set of arrays.
 
     Parameters
@@ -226,7 +226,7 @@ def multiple_mahalanobis(effect, covariance):
     Xt, Kt = np.ascontiguousarray(effect.T), np.ascontiguousarray(covariance.T)
 
     # compute the inverse of the covariances
-    Kt = multiple_fast_inv(Kt)
+    Kt = multiple_fast_inverse(Kt)
 
     # derive the squared Mahalanobis distances
     sqd = np.sum(np.sum(Xt[:, :, np.newaxis] * Xt[:, np.newaxis] * Kt, 1), 1)
@@ -265,7 +265,7 @@ def full_rank(X, cmax=1e15):
     return X, cmax
 
 
-def pos_recipr(X):
+def positive_reciprocal(X):
     """ Return element-wise reciprocal of array, setting `X`>=0 to 0
 
     Return the reciprocal of an array, setting all entries less than or

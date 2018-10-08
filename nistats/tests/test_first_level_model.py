@@ -13,7 +13,7 @@ from nibabel import load, Nifti1Image
 
 from nistats.first_level_model import (mean_scaling, run_glm, FirstLevelModel,
                                        first_level_models_from_bids)
-from nistats.design_matrix import check_design_matrix, make_design_matrix
+from nistats.design_matrix import check_design_matrix, make_first_level_design_matrix
 
 from nose.tools import assert_true, assert_equal, assert_raises
 from numpy.testing import (assert_almost_equal, assert_array_equal)
@@ -244,8 +244,8 @@ def test_first_level_model_design_creation():
         start_time = slice_time_ref * t_r
         end_time = (n_scans - 1 + slice_time_ref) * t_r
         frame_times = np.linspace(start_time, end_time, n_scans)
-        design = make_design_matrix(frame_times, events,
-                                    drift_model='polynomial', drift_order=3)
+        design = make_first_level_design_matrix(frame_times, events,
+                                                drift_model='polynomial', drift_order=3)
         frame2, X2, names2 = check_design_matrix(design)
         assert_array_equal(frame1, frame2)
         assert_array_equal(X1, X2)

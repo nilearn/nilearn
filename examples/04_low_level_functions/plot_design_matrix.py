@@ -50,8 +50,8 @@ events = pd.DataFrame({'trial_type': conditions, 'onset': onsets,
 #########################################################################
 # We sample the events into a design matrix, also including additional regressors
 hrf_model = 'glover'
-from nistats.design_matrix import make_design_matrix
-X1 = make_design_matrix(
+from nistats.design_matrix import make_first_level_design_matrix
+X1 = make_first_level_design_matrix(
     frame_times, events, drift_model='polynomial', drift_order=3,
     add_regs=motion, add_reg_names=add_reg_names, hrf_model=hrf_model)
 
@@ -64,17 +64,17 @@ events = pd.DataFrame({'trial_type': conditions, 'onset': onsets,
 
 #########################################################################
 # Then we sample the design matrix
-X2 = make_design_matrix(frame_times, events, drift_model='polynomial',
-                        drift_order=3, hrf_model=hrf_model)
+X2 = make_first_level_design_matrix(frame_times, events, drift_model='polynomial',
+                                    drift_order=3, hrf_model=hrf_model)
 
 #########################################################################
 # Finally we compute a FIR model
 events = pd.DataFrame({'trial_type': conditions, 'onset': onsets,
                          'duration': duration})
 hrf_model = 'FIR'
-X3 = make_design_matrix(frame_times, events, hrf_model='fir',
-                        drift_model='polynomial', drift_order=3,
-                        fir_delays=np.arange(1, 6))
+X3 = make_first_level_design_matrix(frame_times, events, hrf_model='fir',
+                                    drift_model='polynomial', drift_order=3,
+                                    fir_delays=np.arange(1, 6))
 
 #########################################################################
 # Here the three designs side by side
