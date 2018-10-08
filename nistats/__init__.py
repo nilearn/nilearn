@@ -37,7 +37,10 @@ def py2_deprecation_warning():
     py2_warning = ('Python2 support is deprecated and will be removed in '
                    'a future release. Consider switching to Python3.')
     if six.PY2:
-        warnings.warn(message=py2_warning, category=DeprecationWarning, stacklevel=4)
+        warnings.warn(message=py2_warning,
+                      category=DeprecationWarning,
+                      stacklevel=4,
+                      )
 
 _check_module_dependencies()
 
