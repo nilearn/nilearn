@@ -135,7 +135,12 @@ def make_localizer_contrasts(design_matrix):
 
 #########################################################################
 # So let's look at these computed contrasts
-
+#
+# * "left - right button press" probes motor activity in left versus right button presses
+# * 'H-V': probes the differential activity in viewing a horizontal vs vertical checkerboard
+# * "audio - video" probes the difference of activity between listening to some content or reading the same type of content (instructions, stories)
+# * "computation - sentences" looks at the activity when performing a mental comptation task  versus simply reading sentences.
+#
 contrasts = make_localizer_contrasts(design_matrix)
 plt.figure(figsize=(5, 9))
 from nistats.reporting import plot_contrast_matrix
