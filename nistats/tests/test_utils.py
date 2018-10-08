@@ -119,9 +119,9 @@ def write_fake_bold_img(file_path, shape, rk=3, affine=np.eye(4)):
 def basic_paradigm():
     conditions = ['c0', 'c0', 'c0', 'c1', 'c1', 'c1', 'c2', 'c2', 'c2']
     onsets = [30, 70, 100, 10, 30, 90, 30, 40, 60]
-    paradigm = pd.DataFrame({'trial_type': conditions,
+    events = pd.DataFrame({'trial_type': conditions,
                              'onset': onsets})
-    return paradigm
+    return events
 
 
 def basic_confounds(length):

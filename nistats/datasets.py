@@ -327,7 +327,7 @@ def fetch_localizer_first_level(data_dir=None, verbose=1):
 
     dataset_name = "localizer_first_level"
     files = dict(epi_img="s12069_swaloc1_corr.nii.gz",
-                 events="localizer_events.tsv")
+                 events="localizer_paradigm.csv")
     # The options needed for _fetch_files
     options = [(filename, os.path.join(url, filename), {})
                for _, filename in sorted(files.items())]
