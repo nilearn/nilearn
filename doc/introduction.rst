@@ -95,22 +95,29 @@ However, if we assume that the noise is Gaussian, and that the model is correctl
 
 :math: `dof = n_scans - n_columns`
 
-With this we can do statistical inference: Given a pre-defined error rate :math:`\alpha`, we compare the observed `t` to the :math:`(1-\alpha)` quantile of the Student distribution with `dof` degrees of freedom. If t is greater than this number, we can reject the null hypothesis with a *p-value* :math:`\alpha`, meaning: if there were no effect, the probability of oberving an effect as large as t would be less than `\alpha`
+With this we can do statistical inference: Given a pre-defined error rate :math:`\alpha`, we compare the observed `t` to the :math:`(1-\alpha)` quantile of the Student distribution with `dof` degrees of freedom. If t is greater than this number, we can reject the null hypothesis with a *p-value* :math:`\alpha`, meaning: if there were no effect, the probability of oberving an effect as large as t would be less than `\alpha`.
 
-.. note:: A frequent misconception consists in interpreting :math:`1-\alpha` as the probability that there is indeed an effect: this is not true ! Here we rely on a frequentist approach, that does not support Bayesian interpretation.
+.. figure:: images/student.png
 
+.. note:: A frequent misconception consists in interpreting :math:`1-\alpha` as the probability that there is indeed an effect: this is not true ! Here we rely on a frequentist approach, that does not support Bayesian interpretation. See e.g. https://en.wikipedia.org/wiki/Frequentist_inference
+          
 .. note:: It is cumbersome to work with Student distributions, since those always require to specify the number `dof` of degrees of freedom. To avoid this, we can transform `t` to another variable `z` such that comparing `t` to the Student distribution with `dof` degrees of freedom is equivalent to comparing `z` to a standard normal distribution. We call this a z-transform of `t`. We call the :math:`(1-\alpha)` quantile of the normal distribution the *threshold*, since we use this value to declare voxels active or not.
           
 Multiple comparisons
 --------------------
 
 A well-known issue that arrives then is that of multiple comparisons:
- when a statistical tests is repeated a large number times, say one for each voxel, i.e. `n_voxels` times, then one can expect that, in the absence of any effect,  the number of detections ---false detections since there is no effect--- will be roughly :math:`n_voxels \alpha`. Then, take :math:`\alpha=.001` and :math:`n=10^5`, the number of false detections will be about 100. The danger is that one may no longer trust the detections, i.e. values of `z` larger than the :math:`(1-\alpha)`-quantile of the standard normal distribution.
+ when a statistical tests is repeated a large number times, say one for each voxel, i.e. `n_voxels` times, then one can expect that, in the absence of any effect,  the number of detections ---false detections since there is no effect--- will be roughly :math:`n\_voxels \alpha`. Then, take :math:`\alpha=.001` and :math:`n=10^5`, the number of false detections will be about 100. The danger is that one may no longer trust the detections, i.e. values of `z` larger than the :math:`(1-\alpha)`-quantile of the standard normal distribution.
 
-The first idea that one might think of is to take a much smaller :math:`\alpha`: for instance, if we take :math:`\alpha=\frac{0.05}{n\_voxels}`, then the expected number of false discoveries is only about 0.05, meaning that there is a 5% chance to declare active a truly inactive voxel. This correction on the signifiance is known as Bonferroni procedure. It is fairly accurate when the different tesst are independent or close to independent, and becomes conservative otherwise.
+The first idea that one might think of is to take a much smaller :math:`\alpha`: for instance, if we take, :math:`\alpha=\frac{0.05}{n\_voxels}` then the expected number of false discoveries is only about 0.05, meaning that there is a 5% chance to declare active a truly inactive voxel. This correction on the signifiance is known as Bonferroni procedure. It is fairly accurate when the different tesst are independent or close to independent, and becomes conservative otherwise.
 The problem with his approach is that truly activated voxel may not surpass the corresponding threshold, which is typically very high, because `n\_voxels` is large.
 
 A second possibility is to choose a threshold so that the proportion of true discoveries among the discoveries reaches a certain proportion `0<q<1`, typically `q=0.05`. This means that after statistical inference, one can trust the proporti `1-q` of the discoveries made. The number `q`, is the expected proportion of false discoveries  and is known as the *false discovery rate*. Controling the false dicovery rate is a reasonable compromise in practice. The thresholding yielding this level of control is typically obtained using the so-called Benjamini-Hochberg procedure.   
+
+.. note:: Note that `q` (as well as `\alpha`) are *arbitrary*. It is recommended not to rely on low values, otherwise the inference is meaningless. Ideally one should use  :math:`\alpha=\frac{0.05}{n\_voxels}`, or `q=0.05`.
+          
+
+Note also that supra-threshold sets of voxels are often gathered into connected components (aka *clusters*), so that only large connected components are retained and isolated supra-threshold are discarded. The rationale is that isolated voxels are unlikely to represent extended brain areas, hence are most likely some noise: discarding them most often improves the quality and the reliability of the results.
 
 
 Tutorials
