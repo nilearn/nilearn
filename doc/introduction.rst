@@ -36,7 +36,7 @@ A cerebral MR image provides a 3D image of the brain that can be decomposed into
 
 .. _a voxels: https://en.wikipedia.org/wiki/Voxel
 
-.. note:: A typical step in the preprocessing of MR images, involves spatially morphing these images onto a standard template (e.g. the MNI152 template from the Montreal Neurological Institute). One this is done, the coordinates of a voxel are in the same space as the template and can be used to estimate its brain location using brain atlases. As already mentioned, the nistats package is not meant to perform spatial preprocessing, but only statistical analyses on the voxel times series, regardless of the coordinate system. 
+.. note:: Before fMRI images can be used to do meaningful comparisons, they must be processed to ensure that the voxels that are being compared represent the same brain regions, irrespective of the variability in size and shape of the brain and its microarchitecture across different subjects in the experiment. The process is called spatial registration or spatial normalization. During this procedure, the voxels of all the brain images are 'registered' to correspond to the same region of the brain. Usually, the images (their voxels) are registered to a standard 'template' brain image (its voxels) . One often used standard template is the MNI152 template from the Montreal Neurological Institute. One this is done, the coordinates of a voxel are in the same space as the template and can be used to estimate its brain location using brain atlases based on tht same template.As already mentioned, the nistats package is not meant to perform spatial preprocessing, but only statistical analyses on the voxel times series, regardless of the coordinate system.
 
 FMRI data modeling
 ------------------
