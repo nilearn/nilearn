@@ -32,7 +32,7 @@ Functional magnetic resonance imaging (fMRI) is based on the fact that when loca
 
 Brain activity is measured in sessions that span several minutes, while the participant performs some a cognitive task and the scanner acquires brain images, typically every 2 or 3 seconds (the time between two successive image acquisition is called the Repetition time, or TR).
 
-A cerebral MR image provides a 3D image of the brain that can be decomposed into `a voxels`_ (the equivalent of pixels, but in 3 dimensions). The series of images acquired during a functional session provides, in each voxel, a time series of positive real number representing the MRI signal, sampled at the TR.
+A cerebral MR image provides a 3D image of the brain that can be decomposed into `voxels`_ (the equivalent of pixels, but in 3 dimensions). The series of images acquired during a functional session provides, in each voxel, a time series of positive real number representing the MRI signal, sampled at the TR.
 
 .. _a voxels: https://en.wikipedia.org/wiki/Voxel
 
@@ -49,7 +49,7 @@ One way to analyze times series consists in comparing them to a *model* built fr
 
 One expects that a brain region involved in the processing of a certain type of event (e.g. the auditory cortex for sounds), would show a time course of activation that correlates with the time-diagram of these events. If the fMRI signal directly showed neural activity and did not contain any noise, we could just look at it in various voxel and detect those that conform to the time-diagrams.
 
-Yet, we know, from previous measurements, that the BOLD signal does not follow the exact time course of stimulus processing and the underlying neural activity. The BOLD response reflects changes in blood flow and concentrations in oxy-deoxy hemoglobin, all together forming an  `a haemodynamic response`_ which is sluggish and long-lasting, as can be seen on the following figure showing the response to an impulsive event (for example, an auditory click played to the participants).  
+Yet, we know, from previous measurements, that the BOLD signal does not follow the exact time course of stimulus processing and the underlying neural activity. The BOLD response reflects changes in blood flow and concentrations in oxy-deoxy hemoglobin, all together forming an  `haemodynamic response`_ which is sluggish and long-lasting, as can be seen on the following figure showing the response to an impulsive event (for example, an auditory click played to the participants).  
 
 .. figure:: images/spm_iHRF.png
 
