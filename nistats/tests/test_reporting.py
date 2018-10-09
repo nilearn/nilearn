@@ -5,7 +5,7 @@ from numpy.testing import dec
 from nose.tools import assert_true
 from nibabel.tmpdirs import InTemporaryDirectory
 
-from nistats.design_matrix import make_design_matrix
+from nistats.design_matrix import make_first_level_design_matrix
 from nistats.reporting import (plot_design_matrix, get_clusters_table,
                                _local_max, plot_contrast_matrix)
 
@@ -27,7 +27,7 @@ else:
 def test_show_design_matrix():
     # test that the show code indeed (formally) runs
     frame_times = np.linspace(0, 127 * 1., 128)
-    dmtx = make_design_matrix(
+    dmtx = make_first_level_design_matrix(
         frame_times, drift_model='polynomial', drift_order=3)
     ax = plot_design_matrix(dmtx)
     assert (ax is not None)
@@ -42,7 +42,7 @@ def test_show_design_matrix():
 def test_show_contrast_matrix():
     # test that the show code indeed (formally) runs
     frame_times = np.linspace(0, 127 * 1., 128)
-    dmtx = make_design_matrix(
+    dmtx = make_first_level_design_matrix(
         frame_times, drift_model='polynomial', drift_order=3)
     contrast = np.ones(4)
     ax = plot_contrast_matrix(contrast, dmtx)

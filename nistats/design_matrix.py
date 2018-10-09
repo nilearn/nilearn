@@ -5,7 +5,7 @@ This module implements fMRI Design Matrix creation.
 
 Design matrices are represented by Pandas DataFrames
 Computations of the different parts of the design matrix are confined
-to the make_design_matrix function, that create a DataFrame
+to the make_first_level_design_matrix function, that create a DataFrame
 All the others are ancillary functions.
 
 Design matrices contain three different types of regressors:
@@ -278,7 +278,7 @@ def _full_rank(X, cmax=1e15):
 ######################################################################
 
 
-def make_design_matrix(
+def make_first_level_design_matrix(
     frame_times, events=None, hrf_model='glover',
     drift_model='cosine', period_cut=128, drift_order=1, fir_delays=[0],
         add_regs=None, add_reg_names=None, min_onset=-24, oversampling=50):
@@ -441,7 +441,7 @@ def check_design_matrix(design_matrix):
     return frame_times, matrix, names
 
 
-def create_second_level_design(subjects_label, confounds=None):
+def make_second_level_design_matrix(subjects_label, confounds=None):
     """Sets up a second level design.
 
     Construct a design matrix with an intercept and subject specific confounds.

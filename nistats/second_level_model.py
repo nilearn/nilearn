@@ -27,7 +27,7 @@ from .first_level_model import run_glm
 from .regression import SimpleRegressionResults
 from .contrasts import compute_contrast
 from .utils import _basestring
-from .design_matrix import create_second_level_design
+from .design_matrix import make_second_level_design_matrix
 
 
 def _infer_effect_maps(second_level_input, contrast_def):
@@ -284,8 +284,8 @@ class SecondLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
 
         # Create and set design matrix, if not given
         if design_matrix is None:
-            design_matrix = create_second_level_design(subjects_label,
-                                                       confounds)
+            design_matrix = make_second_level_design_matrix(subjects_label,
+                                                            confounds)
         self.design_matrix_ = design_matrix
 
         # Learn the mask. Assume the first level imgs have been masked.
