@@ -15,7 +15,8 @@ from matplotlib.image import imsave
 from matplotlib import colors
 
 from nibabel.affines import apply_affine
-from .image import resample_img, resample_to_img, new_img_like
+
+from ..image import resample_img, resample_to_img, new_img_like
 from .js_plotting_utils import get_html_template, HTMLDocument
 from ..plotting import cm
 from ..plotting.find_cuts import find_xyz_cut_coords
@@ -240,8 +241,7 @@ def view_stat_map(stat_map_img, bg_img='MNI152', cut_coords=None,
                   colorbar=True, title=None, threshold=None, annotate=True,
                   draw_cross=True, black_bg='auto', cmap=cm.cold_hot,
                   symmetric_cbar='auto', dim='auto', vmax=None,
-                  resampling_interpolation='continuous', n_colors=256,
-                  opacity=1, **kwargs):
+                  resampling_interpolation='continuous', opacity=1, **kwargs):
     """
     Intarctive viewer of a statistical map, with optional background
 
@@ -301,9 +301,6 @@ def view_stat_map(stat_map_img, bg_img='MNI152', cut_coords=None,
     resampling_interpolation : string, optional (default nearest)
         The interpolation method for resampling
         See nilearn.image.resample_img
-    n_colors : integer (default=256)
-        The number of discrete colors to use in the colormap, if it is
-        generated.
     opacity : float in [0,1] (default 1)
         The level of opacity of the overlay (0: transparent, 1: opaque)
 
@@ -313,6 +310,9 @@ def view_stat_map(stat_map_img, bg_img='MNI152', cut_coords=None,
         It can be saved as an html page or rendered (transparently) by the
         Jupyter notebook.
     """
+
+    # Hard-coded number of colors in the image
+    n_colors = 256
 
     # Load stat map
     stat_map_img = check_niimg_3d(stat_map_img, dtype='auto')
