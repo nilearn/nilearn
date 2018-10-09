@@ -15,8 +15,6 @@ More specifically:
    in this case the preprocessed bold images were already normalized to the
    same MNI space.
 
-
-
 To run this example, you must launch IPython via ``ipython
 --matplotlib`` in a terminal, or use the Jupyter notebook.
 
@@ -36,6 +34,10 @@ To run this example, you must launch IPython via ``ipython
 # confounds.tsv files.
 from nistats.datasets import fetch_bids_langloc_dataset
 data_dir, _ = fetch_bids_langloc_dataset()
+
+##############################################################################
+# Here is the location of the dataset on disk
+print(data_dir)
 
 ##############################################################################
 # Obtain automatically FirstLevelModel objects and fit arguments
@@ -118,6 +120,9 @@ plotting.show()
 # column names)
 from nistats.second_level_model import SecondLevelModel
 second_level_input = models
+
+#########################################################################
+# Note that we apply a smoothing of 8mm.
 second_level_model = SecondLevelModel(smoothing_fwhm=8.0)
 second_level_model = second_level_model.fit(second_level_input)
 
@@ -126,7 +131,8 @@ second_level_model = second_level_model.fit(second_level_input)
 # Since we are not providing confounders we are performing an one-sample test
 # at the second level with the images determined by the specified first level
 # contrast.
-zmap = second_level_model.compute_contrast(first_level_contrast='language-string')
+zmap = second_level_model.compute_contrast(
+    first_level_contrast='language-string')
 
 #########################################################################
 # The group level contrast reveals a left lateralized fronto-temporal
