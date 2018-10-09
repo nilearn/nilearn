@@ -14,7 +14,17 @@ Updated the minimum versions of the dependencies
 * Sklearn >= 0.18.0
 
 * third argument of map_threshold is now called 'level'.
-  
+
+* Added comprehensive tutorial
+
+* changed the term `paradigm` to `events` and made it
+  BIDS-compliant. Set the event file to be tab-separated
+
+* Changed the defaut oversampling value for the hemodynamic response
+  to 50 and exposed this parameter.
+
+* Second-level model accepts 4D images as input.  
+
 0.0.1a
 =======
 
