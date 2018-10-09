@@ -52,7 +52,7 @@ def _data2sprite(data):
     return sprite
 
 
-def save_sprite(img, output_sprite, output_cmap=None, output_json=None,
+def _save_sprite(img, output_sprite, output_cmap=None, output_json=None,
                 vmax=None, vmin=None, cmap='Greys', threshold=None,
                 n_colors=256, format='png', resample=True,
                 interpolation='nearest'):
@@ -362,7 +362,7 @@ def view_stat_map(stat_map_img, bg_img='MNI152', cut_coords=None,
 
     # Create a base64 sprite for the background
     bg_sprite = BytesIO()
-    save_sprite(bg_img, output_sprite=bg_sprite, cmap='gray', format='png',
+    _save_sprite(bg_img, output_sprite=bg_sprite, cmap='gray', format='png',
                 resample=False, vmin=bg_min, vmax=bg_max)
     bg_sprite.seek(0)
     bg_base64 = encodebytes(bg_sprite.read()).decode('utf-8')
@@ -377,7 +377,7 @@ def view_stat_map(stat_map_img, bg_img='MNI152', cut_coords=None,
     else:
         stat_map_cm = None
     cmap_c = _custom_cmap(cmap, vmin, vmax, threshold)
-    save_sprite(stat_map_img, stat_map_sprite, stat_map_cm, stat_map_json,
+    _save_sprite(stat_map_img, stat_map_sprite, stat_map_cm, stat_map_json,
                 vmax, vmin, cmap_c, threshold, n_colors, 'png', False)
 
     # Convert the sprite and colormap to base64
