@@ -28,23 +28,46 @@ To run this example, you must launch IPython via ``ipython
 #
 # We use a so-called localizer dataset, which consists in a 5-minutes
 # acquisition of a fast event-related dataset.
+#
 from nistats import datasets
 data = datasets.fetch_localizer_first_level()
 fmri_img = data.epi_img
 
 ###############################################################################
-# Define the experimental events that will be used
+# Define the paradigm that will be used. Here, we just need to get the provided file.
 #
-# We just get the provided file and make it BIDS-compliant. 
+# This task, described in Pinel et al., BMC neuroscience 2007 probes
+# basic functions, such as button with the left or right hand, viewing
+# horizontal and vertical checkerboards, reading and listening to
+# short sentences, and mental computations (subractions).
+#
+#  Visual stimuli were displayed in four 250-ms epochs, separated by
+#  100ms intervals (i.e., 1.3s in total). Auditory stimuli were drawn
+#  from a recorded male voice (i.e., a total of 1.6s for motor
+#  instructions, 1.2-1.7s for sentences, and 1.2-1.3s for
+#  subtraction). The auditory or visual stimuli were shown to the
+#  participants for passive viewing or button response in
+#  event-related paradigms.  Post-scan questions verified that the
+#  experimental tasks were understood and followed correctly.
+# 
+# This task comprises 10 conditions:
+#
+# * clicGaudio: Left-hand three-times button press, indicated by visual instruction
+# * clicDaudio: Right-hand three-times button press, indicated by visual instruction
+# * clicGvideo: Left-hand three-times button press, indicated by auditory instruction
+# * clicDvideo:  Right-hand three-times button press, indicated by auditory instruction
+# * damier_H: Visualization of flashing horizontal checkerboards
+# * damier_V: Visualization of flashing vertical checkerboards
+# * phraseaudio: Listen to narrative sentences
+# * phrasevideo: Read narrative sentences
+# * calculaudio: Mental subtraction, indicated by auditory instruction
+# * calculvideo: Mental subtraction, indicated by visual instruction
+#
+
 t_r = 2.4
 events_file = data['events']
 import pandas as pd
 events= pd.read_table(events_file)
-
-###############################################################################
-# Add a column for 'duration' (filled with ones) for BIDS compliance
-import numpy as np
-events['duration'] = np.ones_like(events.onset)
 
 ###############################################################################
 # Running a basic model
@@ -71,6 +94,7 @@ plt.show()
 # For this, let's create a function that, given the design matrix,
 # generates the corresponding contrasts.  This will be useful to
 # repeat contrast specification when we change the design matrix.
+import numpy as np
 
 def make_localizer_contrasts(design_matrix):
     """ returns a dictionary of four contrasts, given the design matrix"""
@@ -192,7 +216,8 @@ plt.show()
 # Another alternative to get a drift model is to specify a set of polynomials
 # Let's take a basis of 5 polynomials
 
-first_level_model = FirstLevelModel(t_r, drift_model='polynomial', drift_order=5)
+first_level_model = FirstLevelModel(t_r, drift_model='polynomial',
+                                    drift_order=5)
 first_level_model = first_level_model.fit(fmri_img, events=events)
 design_matrix = first_level_model.design_matrices_[0]
 plot_design_matrix(design_matrix)
@@ -206,9 +231,12 @@ plt.show()
 # Changing the hemodynamic response model
 # ---------------------------------------
 #
-# This is the filter used to convert the event sequence into a reference BOLD signal for the design matrix.
+# This is the filter used to convert the event sequence into a
+# reference BOLD signal for the design matrix.
 #
-# The first thing that we can do is to change the default model (the so-called Glover hrf) for the so-called canonical model of SPM --which has slightly weaker undershoot component.  
+# The first thing that we can do is to change the default model (the
+# so-called Glover hrf) for the so-called canonical model of SPM
+# --which has slightly weaker undershoot component.
  
 first_level_model = FirstLevelModel(t_r, hrf_model='spm')
 first_level_model = first_level_model.fit(fmri_img, events=events)
@@ -220,7 +248,14 @@ plt.show()
 #########################################################################
 # No strong --positive or negative-- effect.
 #
-# We could try to go one step further: using not only the so-called canonical hrf, but also its time derivative. Note that in that case, we still perform the contrasts  and obtain statistical significance for the main effect ---not the time derivative. This means that the inclusion of time derivative in the design matrix has the sole effect of discounting timing misspecification from the error term, which vould decrease the estimated variance and enhance the statistical significance of the effect. Is it the case ?
+# We could try to go one step further: using not only the so-called
+# canonical hrf, but also its time derivative. Note that in that case,
+# we still perform the contrasts and obtain statistical significance
+# for the main effect ---not the time derivative. This means that the
+# inclusion of time derivative in the design matrix has the sole
+# effect of discounting timing misspecification from the error term,
+# which vould decrease the estimated variance and enhance the
+# statistical significance of the effect. Is it the case ?
 
 first_level_model = FirstLevelModel(t_r, hrf_model='spm + derivative')
 first_level_model = first_level_model.fit(fmri_img, events=events)
@@ -232,8 +267,10 @@ plt.show()
 #########################################################################
 # Not a huge effect, but rather positive overall. We could keep that one.
 #
-# Bzw, a benefit of this approach is that we can test which voxels are well explined by the derivative term, hinting at misfit regions, a possibly valuable information
-# This is implemented by an F test on the time derivative regressors.
+# Bzw, a benefit of this approach is that we can test which voxels are
+# well explined by the derivative term, hinting at misfit regions, a
+# possibly valuable information This is implemented by an F test on
+# the time derivative regressors.
 
 contrast_val = np.eye(design_matrix.shape[1])[1:2:21]
 z_map = first_level_model.compute_contrast(
@@ -243,11 +280,14 @@ plotting.plot_stat_map(
 plt.show()
 
 #########################################################################
-# We don't see too much here: the onset times and hrf delay we're using are probably fine.
+# We don't see too much here: the onset times and hrf delay we're
+# using are probably fine.
 
 #########################################################################
-# We can also consider adding the so-called dispersion derivative to capture some mis-specification in the shape of the hrf. 
-# this is done by specifying `hrf_model='spm + derivative + dispersion'`
+# We can also consider adding the so-called dispersion derivative to
+# capture some mis-specification in the shape of the hrf.
+#
+# This is done by specifying `hrf_model='spm + derivative + dispersion'`
 #
 first_level_model = FirstLevelModel(t_r, hrf_model='spm + derivative + dispersion')
 first_level_model = first_level_model.fit(fmri_img, events=events)
@@ -257,13 +297,17 @@ plot_contrast(first_level_model)
 plt.show()
 
 #########################################################################
-# Not a huge effect. For the sake of simplicity and readibility, we can drop that one.
+# Not a huge effect. For the sake of simplicity and readibility, we
+# can drop that one.
 
 #########################################################################
 # The noise model ar(1) or ols ?
 # ------------------------------
 #
-# So far,we have implicitly used a lag-1 autoregressive model ---aka ar(1)--- for the temporal structure of the noise. An alternative choice is to use an ordinaly least squares model (ols) that assumes no temporal structure (time-independent noise) 
+# So far,we have implicitly used a lag-1 autoregressive model ---aka
+# ar(1)--- for the temporal structure of the noise. An alternative
+# choice is to use an ordinaly least squares model (ols) that assumes
+# no temporal structure (time-independent noise)
 
 first_level_model = FirstLevelModel(t_r, hrf_model='spm + derivative', noise_model='ols')
 first_level_model = first_level_model.fit(fmri_img, events=events)
@@ -279,11 +323,18 @@ plt.show()
 # Removing confounds
 # ------------------
 #
-# A problematic feature of fMRI is the presence of unconctrolled confounds in the data, sue to scanner instabilities (spikes) or physiological phenomena, such as motion, heart and respiration-related blood oxygenation flucturations.
-# Side measurements are sometimes acquired to charcterise these effects. Here we don't have access to those.
-# What we can do instead is to estimate confounding effects from the data themselves, using the compcorr approach, and take those into account in the model.
+# A problematic feature of fMRI is the presence of unconctrolled
+# confounds in the data, sue to scanner instabilities (spikes) or
+# physiological phenomena, such as motion, heart and
+# respiration-related blood oxygenation flucturations.  Side
+# measurements are sometimes acquired to charcterise these
+# effects. Here we don't have access to those.  What we can do instead
+# is to estimate confounding effects from the data themselves, using
+# the compcorr approach, and take those into account in the model.
 #
-# For this we rely on the so-called  :ref:`high_variance_confounds <https://nilearn.github.io/modules/generated/nilearn.image.high_variance_confounds.html>` routine of Nilearn.
+# For this we rely on the so-called :ref:`high_variance_confounds
+# <https://nilearn.github.io/modules/generated/nilearn.image.high_variance_confounds.html>`
+# routine of Nilearn.
 
 
 from nilearn.image import high_variance_confounds
@@ -299,16 +350,22 @@ plt.show()
 #########################################################################
 #  Note the five additional columns in the design matrix
 #
-# The effect on activation maps is complex: auditory/visual effects are killed, probably because they were somewhat colinear to the confounds. On the other hand, some of the maps become cleaner (H-V, computation) after this addition.
+# The effect on activation maps is complex: auditory/visual effects
+# are killed, probably because they were somewhat colinear to the
+# confounds. On the other hand, some of the maps become cleaner (H-V,
+# computation) after this addition.
 
 
 #########################################################################
 #  Smoothing
 # ----------
 #
-# Smoothing is a regularization of the model. It has two benefits: decrease the noise level in images, and reduce the discrepancy between individuals. The drawback is that it biases the shape and position of activation.
-# We simply illustrate here the statistical gains.
-# We use a mild smoothing of 5mm full-width at half maximum (fwhm). 
+# Smoothing is a regularization of the model. It has two benefits:
+# decrease the noise level in images, and reduce the discrepancy
+# between individuals. The drawback is that it biases the shape and
+# position of activation.  We simply illustrate here the statistical
+# gains.  We use a mild smoothing of 5mm full-width at half maximum
+# (fwhm).
 
 first_level_model = FirstLevelModel(
     t_r, hrf_model='spm + derivative', smoothing_fwhm=5).fit(
@@ -326,9 +383,15 @@ plt.show()
 #  Masking
 # --------
 # Masking consists in selecting the region of the image on which the model is run: it is useless to run it outside of the brain.
-# the approach taken by FirstLeveModel is to estimate it from the fMRI data themselves when no mask is explicitly provided.
-# Since the data have been resampled into MNI space, we can use instead a mask  of the grey matter in MNI space. The benefit is that it makes voxel-level comparisons easier across subjects and datasets, and removed non-grey matter regions, in which no BOLD signal is expected.
-# The downside is that the mask may not fit very well these particular data.
+#
+# The approach taken by FirstLeveModel is to estimate it from the fMRI
+# data themselves when no mask is explicitly provided.  Since the data
+# have been resampled into MNI space, we can use instead a mask of the
+# grey matter in MNI space. The benefit is that it makes voxel-level
+# comparisons easier across subjects and datasets, and removed
+# non-grey matter regions, in which no BOLD signal is expected.  The
+# downside is that the mask may not fit very well these particular
+# data.
 
 from nilearn.plotting import plot_roi 
 from nilearn.datasets import fetch_icbm152_brain_gm_mask
@@ -359,5 +422,8 @@ plt.show()
 # Conclusion
 # ----------
 #
-# Interestingly, the model used here seems quite resilient to manipulation of modeling parameters: this is reassuring. It shows that Nistats defaults ('cosine' drift, cutoff=128s, 'glover' hrf, ar(1) model) are actually reasonable.
-# Note that these conclusions are specific to this dataset and may vary with other ones.
+# Interestingly, the model used here seems quite resilient to
+# manipulation of modeling parameters: this is reassuring. It shows
+# that Nistats defaults ('cosine' drift, cutoff=128s, 'glover' hrf,
+# ar(1) model) are actually reasonable.  Note that these conclusions
+# are specific to this dataset and may vary with other ones.
