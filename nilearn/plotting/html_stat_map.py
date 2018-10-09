@@ -4,18 +4,19 @@ Visualizing 3D stat maps in a Brainsprite viewer
 import warnings
 import os
 import json
-import numpy as np
-import numbers
-import matplotlib.pyplot as plt
-
-from matplotlib.image import imsave
-from nilearn.image import resample_img, resample_to_img, new_img_like
 from io import BytesIO, StringIO
-from .js_plotting_utils import get_html_template, HTMLDocument
-from matplotlib import cm as mpl_cm
-from matplotlib import colors
 from base64 import encodebytes
+import numbers
+
+import numpy as np
+import matplotlib.pyplot as plt
+import matplotlib.cm as mpl_cm
+from matplotlib.image import imsave
+from matplotlib import colors
+
 from nibabel.affines import apply_affine
+from .image import resample_img, resample_to_img, new_img_like
+from .js_plotting_utils import get_html_template, HTMLDocument
 from ..plotting import cm
 from ..plotting.find_cuts import find_xyz_cut_coords
 from ..plotting.img_plotting import _load_anat, _get_colorbar_and_data_ranges
@@ -396,7 +397,7 @@ def view_stat_map(stat_map_img, bg_img='MNI152', cut_coords=None,
     params = json.load(stat_map_json)
     stat_map_json.close()
 
-    # Convet cut coordinates into cut slices
+    # Convert cut coordinates into cut slices
     cut_slices = np.round(apply_affine(
         np.linalg.inv(stat_map_img.affine), cut_coords))
 
