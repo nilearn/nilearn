@@ -52,10 +52,57 @@ def _data2sprite(data):
     return sprite
 
 
+def _get_vmin_vmax(data, vmin=None, vmax=None):
+
+    """ For internal use only
+        Detect vmin and vmax in a data array
+    """
+
+    # Get vmin vmax
+    show_nan_msg = False
+    if vmax is not None and np.isnan(vmax):
+        vmax = None
+        show_nan_msg = True
+    if vmin is not None and np.isnan(vmin):
+        vmin = None
+        show_nan_msg = True
+    if show_nan_msg:
+        nan_msg = ('NaN is not permitted for the vmax and vmin arguments.\n'
+                   'Tip: Use np.nanmax() instead of np.max().')
+        warnings.warn(nan_msg)
+
+    if vmax is None:
+        vmax = np.nanmax(data)
+    if vmin is None:
+        vmin = np.nanmin(data)
+    return vmin, vmax
+
+
+def _threshold_data(data,threshold=None):
+    """ For internal use only.
+        Threshold a data array.
+    """
+    # Deal with automatic settings of plot parameters
+    if threshold == 'auto':
+        # Threshold epsilon below a percentile value, to be sure that some
+        # voxels pass the threshold
+        threshold = fast_abs_percentile(data) - 1e-5
+
+    # threshold
+    threshold = float(threshold) if threshold is not None else None
+
+    # Mask sprite
+    if threshold is not None:
+        if threshold == 0:
+            data = np.ma.masked_equal(data, 0, copy=False)
+        else:
+            data = np.ma.masked_inside(data, -threshold, threshold,
+                                             copy=False)
+    return data
+
 def _save_sprite(img, output_sprite, output_cmap=None, output_json=None,
                 vmax=None, vmin=None, cmap='Greys', threshold=None,
-                n_colors=256, format='png', resample=True,
-                interpolation='nearest'):
+                format='png', mask_img=None):
     """ Generate a sprite from a 3D Niimg-like object.
 
         Parameters
@@ -88,26 +135,22 @@ def _save_sprite(img, output_sprite, output_cmap=None, output_json=None,
             values below the threshold (in absolute value) are plotted
             as transparent. If auto is given, the threshold is determined
             magically by analysis of the image.
-        n_colors : integer, optional (default 256)
-            The number of discrete colors to use in the colormap, if it is
-            generated.
         format : string, optional (default 'png')
             One of the file extensions supported by the active backend.  Most
             backends support png, pdf, ps, eps and svg.
-        resample : boolean, optional (default True)
-            Resample to isotropic voxels, with a LR/AP/VD orientation.
-            This is necessary for proper rendering of arbitrary Niimg volumes,
-            but not necessary if the image is in an isotropic standard space.
-        interpolation : string, optional (default nearest)
-            The interpolation method for resampling
-            See nilearn.image.resample_img
-        black_bg : boolean, optional
-            If True, the background of the image is set to be black.
+        mask_img :  Niimg-like object
+            Binary mask. Any voxel in the mask will be set to transparent.
 
         Returns
         ----------
         sprite : numpy array with the sprite
+
+        Notes
+        ----------
+        The brain images need to be resampled to a diagonal isotropic affine.
     """
+    # Hard-code the number of colors
+    n_colors = 256
 
     # Get cmap
     if isinstance(cm, str):
@@ -115,52 +158,23 @@ def _save_sprite(img, output_sprite, output_cmap=None, output_json=None,
 
     img = check_niimg_3d(img, dtype='auto')
 
-    # resample to isotropic voxel with standard orientation
-    if resample:
-        img = _resample_to_self(img, interpolation)
-
     # Read data
     data = _safe_get_data(img, ensure_finite=True)
     if np.isnan(np.sum(data)):
         data = np.nan_to_num(data)
 
-    # Deal with automatic settings of plot parameters
-    if threshold == 'auto':
-        # Threshold epsilon below a percentile value, to be sure that some
-        # voxels pass the threshold
-        threshold = fast_abs_percentile(data) - 1e-5
-
-    # threshold
-    threshold = float(threshold) if threshold is not None else None
-
-    # Get vmin vmax
-    show_nan_msg = False
-    if vmax is not None and np.isnan(vmax):
-        vmax = None
-        show_nan_msg = True
-    if vmin is not None and np.isnan(vmin):
-        vmin = None
-        show_nan_msg = True
-    if show_nan_msg:
-        nan_msg = ('NaN is not permitted for the vmax and vmin arguments.\n'
-                   'Tip: Use np.nanmax() instead of np.max().')
-        warnings.warn(nan_msg)
-
-    if vmax is None:
-        vmax = np.nanmax(data)
-    if vmin is None:
-        vmin = np.nanmin(data)
+    # Get vmin, vmax
+    vmin, vmax = _get_vmin_vmax(data,vmin,vmax)
 
     # Create sprite
     sprite = _data2sprite(data)
 
-    # Mask sprite
-    if threshold is not None:
-        if threshold == 0:
-            sprite = np.ma.masked_equal(sprite, 0, copy=False)
-        else:
-            sprite = np.ma.masked_inside(sprite, -threshold, threshold,
-                                         copy=False)
+    # Mask the sprite
+    if mask_img is not None:
+        mask = _safe_get_data(mask_img, ensure_finite=True)
+        mask = _data2sprite(mask)
+        sprite = np.ma.array(sprite,mask=mask)
+
     # Save the sprite
     imsave(output_sprite, sprite, vmin=vmin, vmax=vmax, cmap=cmap,
            format=format)
@@ -238,7 +252,7 @@ class StatMapView(HTMLDocument):
 
 
 def view_stat_map(stat_map_img, bg_img='MNI152', cut_coords=None,
-                  colorbar=True, title=None, threshold=None, annotate=True,
+                  colorbar=True, title=None, threshold=1e-6, annotate=True,
                   draw_cross=True, black_bg='auto', cmap=cm.cold_hot,
                   symmetric_cbar='auto', dim='auto', vmax=None,
                   resampling_interpolation='continuous', opacity=1, **kwargs):
@@ -265,7 +279,7 @@ def view_stat_map(stat_map_img, bg_img='MNI152', cut_coords=None,
     title : string or None (default=None)
         The title displayed on the figure (or None: no title).
         This parameter is not currently supported.
-    threshold : str, number or None  (default=None)
+    threshold : str, number or None  (default=1e-6)
         If None is given, the image is not thresholded.
         If a number is given, it is used to threshold the image:
         values below the threshold (in absolute value) are plotted
@@ -311,16 +325,25 @@ def view_stat_map(stat_map_img, bg_img='MNI152', cut_coords=None,
         Jupyter notebook.
     """
 
-    # Hard-coded number of colors in the image
-    n_colors = 256
 
     # Load stat map
     stat_map_img = check_niimg_3d(stat_map_img, dtype='auto')
 
-    cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
-        _safe_get_data(stat_map_img, ensure_finite=True),
-        vmax, symmetric_cbar, kwargs)
+    # Get data
+    data = _safe_get_data(stat_map_img, ensure_finite=True)
 
+    # Get color bar and data ranges
+    cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
+        data, vmax, symmetric_cbar, kwargs)
+
+    # threshold the stat_map
+    if threshold is not None:
+        data = _threshold_data(data,threshold)
+        mask_img = new_img_like(stat_map_img,data.mask,stat_map_img.affine)
+    else:
+        mask_img = new_img_like(stat_map_img,np.zeros(data.shape),
+                                stat_map_img.affine)
+                                
     # load background image, and resample stat map
     if bg_img is not None and bg_img is not False:
         if isinstance(bg_img, str) and bg_img == "MNI152":
@@ -330,10 +353,13 @@ def view_stat_map(stat_map_img, bg_img='MNI152', cut_coords=None,
         bg_img = _resample_to_self(bg_img, interpolation='nearest')
         stat_map_img = resample_to_img(stat_map_img, bg_img,
                                        interpolation=resampling_interpolation)
+        mask_img = resample_to_img(mask_img, bg_img,
+                                       interpolation='nearest')
     else:
         stat_map_img = _resample_to_self(stat_map_img,
                                          interpolation=resampling_interpolation
                                          )
+        mask_img = _resample_to_self(mask_img,interpolation='nearest')
         bg_img = new_img_like(stat_map_img, np.zeros(stat_map_img.shape),
                               stat_map_img.affine)
         bg_min = 0
@@ -363,7 +389,7 @@ def view_stat_map(stat_map_img, bg_img='MNI152', cut_coords=None,
     # Create a base64 sprite for the background
     bg_sprite = BytesIO()
     _save_sprite(bg_img, output_sprite=bg_sprite, cmap='gray', format='png',
-                resample=False, vmin=bg_min, vmax=bg_max)
+                vmin=bg_min, vmax=bg_max)
     bg_sprite.seek(0)
     bg_base64 = encodebytes(bg_sprite.read()).decode('utf-8')
     bg_sprite.close()
@@ -378,7 +404,7 @@ def view_stat_map(stat_map_img, bg_img='MNI152', cut_coords=None,
         stat_map_cm = None
     cmap_c = _custom_cmap(cmap, vmin, vmax, threshold)
     _save_sprite(stat_map_img, stat_map_sprite, stat_map_cm, stat_map_json,
-                vmax, vmin, cmap_c, threshold, n_colors, 'png', False)
+                vmax, vmin, cmap_c, threshold, 'png', mask_img)
 
     # Convert the sprite and colormap to base64
     stat_map_sprite.seek(0)
