@@ -75,6 +75,25 @@ def _rgb_to_papaya(x, cmap):
     return cmap
 
 
+def _view_stat_map_change_warning():
+    """
+    While view_stat_map() is undergoing development, raises a warning
+    that view_stat_map() may change in future.
+    
+    Raises
+    ------
+    FutureWarning
+    """
+    import warnings
+    warnings.simplefilter('always')
+    message = ('"{}()" is under actve development and its interface and functionality'
+               'may change in future without warning. Please do not rely on it '
+               'in critical and production environments.'
+        .format(view_stat_map.__name__)
+               )
+    warnings.warn(message=message, category= FutureWarning,stacklevel=1,)
+    
+
 def view_stat_map(stat_map_img, threshold=None, bg_img='MNI152',
                   vmax=None, cmap='cold_hot', symmetric_cmap=True):
     """
@@ -116,6 +135,7 @@ def view_stat_map(stat_map_img, threshold=None, bg_img='MNI152',
         Jupyter notebook.
 
     """
+    _view_stat_map_change_warning()
     stat_map_img = check_niimg_3d(stat_map_img, dtype='auto')
     if bg_img == 'MNI152':
         bg_img = datasets.load_mni152_template()
