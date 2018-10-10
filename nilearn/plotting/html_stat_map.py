@@ -223,7 +223,7 @@ def _custom_cmap(cmap, vmin, vmax, threshold=None):
     cmaplist = [our_cmap(i) for i in range(our_cmap.N)]
     istart = int(norm(-offset, clip=True) * (our_cmap.N - 1))
     istop = int(norm(offset, clip=True) * (our_cmap.N - 1))
-    for i in range(istart, istop):
+    for i in range(istart+1, istop-1):
         cmaplist[i] = (0.5, 0.5, 0.5, 1.)  # just an average gray color
     if norm.vmin == norm.vmax:  # len(np.unique(data)) == 1 ?
         return
