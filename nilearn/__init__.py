@@ -33,9 +33,21 @@ signal                  --- Set of preprocessing functions for time series
 """
 
 import gzip
+import six
+import warnings
 from distutils.version import LooseVersion
 
 from .version import _check_module_dependencies, __version__
+
+def _py2_deprecation_warning():
+    warnings.simplefilter('once')
+    py2_warning = ('Python2 support is deprecated and will be removed in '
+                   'a future release. Consider switching to Python3.')
+    if six.PY2:
+        warnings.warn(message=py2_warning,
+                      category=DeprecationWarning,
+                      stacklevel=3,
+                      )
 
 _check_module_dependencies()
 
@@ -73,3 +85,5 @@ CHECK_CACHE_VERSION = True
 __all__ = ['datasets', 'decoding', 'decomposition', 'connectome',
            'image', 'input_data', 'masking', 'mass_univariate', 'plotting',
            'region', 'signal', 'surface', 'parcellations', '__version__']
+
+_py2_deprecation_warning()
