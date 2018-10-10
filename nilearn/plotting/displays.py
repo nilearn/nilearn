@@ -765,9 +765,9 @@ class BaseSlicer(object):
 
         # some colormap hacking
         cmaplist = [our_cmap(i) for i in range(our_cmap.N)]
-        istart = int(norm(-offset, clip=True) * (our_cmap.N - 1))
-        istop = int(norm(offset, clip=True) * (our_cmap.N - 1))
-        for i in range(istart, istop):
+        transparent_start = int(norm(-offset, clip=True) * (our_cmap.N - 1))
+        transparent_stop = int(norm(offset, clip=True) * (our_cmap.N - 1))
+        for i in range(transparent_start, transparent_stop):
             cmaplist[i] = self._brain_color + (0.,)  # transparent
         if norm.vmin == norm.vmax:  # len(np.unique(data)) == 1 ?
             return
