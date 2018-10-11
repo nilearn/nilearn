@@ -159,7 +159,7 @@ class BaseAxes(object):
             function.
         """
         from mpl_toolkits.axes_grid1.anchored_artists import AnchoredSizeBar
-        ax = self.ax
+        axis = self.ax
         font_properties = kwargs.get('fontproperties', FontProperties())
         if kwargs.get('size'):
             font_properties.set_size(kwargs.pop('size'))
@@ -170,7 +170,7 @@ class BaseAxes(object):
 
         frame_on = kwargs.pop('frameon', False) is True
         anchor_size_bar = AnchoredSizeBar(
-            ax.transData,
+            axis.transData,
             width_mm,
             '%g%s' % (scale_width, units),
             loc=kwargs.pop('loc', 4),
@@ -184,7 +184,7 @@ class BaseAxes(object):
         if frame_on:
             anchor_size_bar.patch.set_facecolor(bg_color)
             anchor_size_bar.patch.set_edgecolor('none')
-        ax.add_artist(anchor_size_bar)
+        axis.add_artist(anchor_size_bar)
 
     def draw_position(self, size, bg_color, **kwargs):
         raise NotImplementedError("'draw_position' should be implemented "
@@ -940,20 +940,21 @@ class BaseSlicer(object):
             if key in kwargs}
 
         if left_right:
-            for display_ax in self.axes.values():
-                display_ax.draw_left_right(size=size, bg_color=bg_color,
-                                           **kwargs)
+            for display_axis in self.axes.values():
+                display_axis.draw_left_right(size=size, bg_color=bg_color,
+                                             **kwargs)
 
         if positions:
-            for display_ax in self.axes.values():
-                display_ax.draw_position(size=size, bg_color=bg_color,
-                                         **kwargs)
+            for display_axis in self.axes.values():
+                display_axis.draw_position(size=size, bg_color=bg_color,
+                                           **kwargs)
 
         if scalebar:
             kwargs.update(scale_bar_kwargs)  # Insert kwargs back
             axes = self.axes.values()
-            for display_ax in axes:
-                display_ax.draw_scale_bar(bg_color=bg_color, size=size, **kwargs)
+            for display_axis in axes:
+                display_axis.draw_scale_bar(bg_color=bg_color, size=size,
+                                            **kwargs)
 
     def close(self):
         """ Close the figure. This is necessary to avoid leaking memory.
