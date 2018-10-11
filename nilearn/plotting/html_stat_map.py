@@ -29,6 +29,10 @@ from ..datasets import load_mni152_template
 
 
 def _resample_to_self(img, interpolation):
+    """ For internal use.
+        Resample an image to have a diagonal, isotropic affine.
+    """
+
     u, s, vh = np.linalg.svd(img.affine[0:3, 0:3])
     vsize = np.min(np.abs(s))
     img = resample_img(img, target_affine=np.diag([vsize, vsize, vsize]),
@@ -37,6 +41,10 @@ def _resample_to_self(img, interpolation):
 
 
 def _data2sprite(data):
+    """ For internal use.
+        Convert a 3D array into a sprite of sagittal slices.
+    """
+
     nx, ny, nz = data.shape
     nrows = int(np.ceil(np.sqrt(nx)))
     ncolumns = int(np.ceil(nx / float(nrows)))
@@ -53,9 +61,8 @@ def _data2sprite(data):
 
 
 def _get_vmin_vmax(data, vmin=None, vmax=None):
-
-    """ For internal use only
-        Detect vmin and vmax in a data array
+    """ For internal use.
+        Detect vmin and vmax in a data array.
     """
 
     # Get vmin vmax
@@ -88,10 +95,10 @@ def _threshold_data(data,threshold=None):
         # voxels pass the threshold
         threshold = fast_abs_percentile(data) - 1e-5
 
-    # threshold
+    # Threshold
     threshold = float(threshold) if threshold is not None else None
 
-    # Mask sprite
+    # Mask data
     if threshold is not None:
         if threshold == 0:
             data = np.ma.masked_equal(data, 0, copy=False)
@@ -100,7 +107,7 @@ def _threshold_data(data,threshold=None):
                                              copy=False)
     return data
 
-def _save_sprite(img, output_sprite, output_cmap=None, output_json=None,
+def _save_sprite(img, output_sprite, output_json=None,
                 vmax=None, vmin=None, cmap='Greys', threshold=None,
                 format='png', mask_img=None):
     """ Generate a sprite from a 3D Niimg-like object.
@@ -113,11 +120,6 @@ def _save_sprite(img, output_sprite, output_cmap=None, output_json=None,
             Path string to a filename, or a Python file-like object.
             If *format* is *None* and *fname* is a string, the output
             format is deduced from the extension of the filename.
-        output_cmap : string, file-like or None, optional (default None)
-            Path string to a filename, or a Python file-like object.
-            The color map will be saved in that file (unless it is None).
-            If *format* is *None* and *fname* is a string, the output format is
-            deduced from the extension of the filename.
         output_json : string, file-like or None, optional (default None)
             Path string to a filename, or a Python file-like object.
             The parameters of the sprite will be saved in that file
@@ -149,8 +151,6 @@ def _save_sprite(img, output_sprite, output_cmap=None, output_json=None,
         ----------
         The brain images need to be resampled to a diagonal isotropic affine.
     """
-    # Hard-code the number of colors
-    n_colors = 256
 
     # Get cmap
     if isinstance(cm, str):
@@ -203,14 +203,33 @@ def _save_sprite(img, output_sprite, output_cmap=None, output_json=None,
         else:
             output_json.write(json.dumps(params))
 
+    return sprite
+
+
+def _bytesIO_to_base64(file):
+    """ For internal use.
+        Encode a bytesIO virtual file as base64.
+        Also closes the file.
+    """
+    file.seek(0)
+    data = encodebytes(file.read()).decode('utf-8')
+    file.close()
+    return data
+
+def _save_cm(output_cmap, cmap, format='png'):
+    """ For internal use.
+        Save the colormap of an image as a png file.
+    """
+
+    # Hard-coded number of colors
+    n_colors = 256
+
     # save the colormap
     if output_cmap is not None:
         data = np.arange(0, n_colors)/(n_colors-1)
         data = data.reshape([1, n_colors])
         imsave(output_cmap, data, cmap=cmap, format=format)
-
-    return sprite
-
+    return
 
 def _custom_cmap(cmap, vmin, vmax, threshold=None):
     # For internal use only
@@ -457,6 +476,10 @@ def view_stat_map(stat_map_img, bg_img='MNI152', cut_coords=None,
         cut_coords = find_xyz_cut_coords(
                     stat_map_img, activation_threshold=threshold)
 
+    # Convert cut coordinates into cut slices
+    cut_slices = np.round(apply_affine(
+        np.linalg.inv(stat_map_img.affine), cut_coords))
+
     # Create a base64 sprite for the background
     bg_sprite = BytesIO()
     _save_sprite(bg_img, output_sprite=bg_sprite, cmap='gray', format='png',
@@ -469,34 +492,27 @@ def view_stat_map(stat_map_img, bg_img='MNI152', cut_coords=None,
     # Possibly, also generate a file with the colormap
     stat_map_sprite = BytesIO()
     stat_map_json = StringIO()
+    _save_sprite(stat_map_img, stat_map_sprite, stat_map_json,
+                vmax, vmin, cmap, threshold, 'png', mask_img)
+
+    # Save the colormap
     if colorbar:
         stat_map_cm = BytesIO()
+        cmap_c = _custom_cmap(cmap, vmin, vmax, threshold)
+        _save_cm(stat_map_cm,cmap_c,'png')
+        cm_base64 = _bytesIO_to_base64(stat_map_cm)
     else:
-        stat_map_cm = None
-    cmap_c = _custom_cmap(cmap, vmin, vmax, threshold)
-    _save_sprite(stat_map_img, stat_map_sprite, stat_map_cm, stat_map_json,
-                vmax, vmin, cmap_c, threshold, 'png', mask_img)
+        cm_base64 = ''
 
-    # Convert the sprite and colormap to base64
+    # Load the sprite
     stat_map_sprite.seek(0)
     stat_map_base64 = encodebytes(stat_map_sprite.read()).decode('utf-8')
     stat_map_sprite.close()
-
-    if colorbar:
-        stat_map_cm.seek(0)
-        cm_base64 = encodebytes(stat_map_cm.read()).decode('utf-8')
-        stat_map_cm.close()
-    else:
-        cm_base64 = ''
 
     # Load the sprite meta-data from the json dump
     stat_map_json.seek(0)
     params = json.load(stat_map_json)
     stat_map_json.close()
-
-    # Convert cut coordinates into cut slices
-    cut_slices = np.round(apply_affine(
-        np.linalg.inv(stat_map_img.affine), cut_coords))
 
     # Build a json-like structure with all parameters for brainsprite
     sprite_params = _json_sprite(params, cut_slices, black_bg, opacity,
