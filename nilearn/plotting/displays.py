@@ -13,13 +13,15 @@ import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib import cm as mpl_cm
-from matplotlib import lines
-from matplotlib import transforms, colors
+from matplotlib import (colors,
+                        lines,
+                        transforms,
+                        )
 from matplotlib.colorbar import ColorbarBase
 from matplotlib.font_manager import FontProperties
 from scipy import sparse, stats
 
-from . import glass_brain, cm
+from . import cm, glass_brain
 from .edge_detect import _edge_map
 from .find_cuts import find_xyz_cut_coords, find_cut_slices
 from .. import _utils
@@ -141,33 +143,48 @@ class BaseAxes(object):
                 **kwargs)
 
     def draw_scale_bar(self, bg_color, scale_width=5, units='cm', **kwargs):
+        """ Adds a scale bar annotation to the display
+
+        Parameters
+        ----------
+
+        bgcolor: matplotlib color: string or (r, g, b) value
+            The background color of the scale bar annotation
+        scale_width: float (default: 5.0)
+            A width for the scale given in ``units``
+        units: str
+            Physical units to use on the scale bar (`'cm'` or `'mm'`)
+        kwargs:
+            Extra keyword arguments are passed to matplotlib's text
+            function.
+        """
         from mpl_toolkits.axes_grid1.anchored_artists import AnchoredSizeBar
         ax = self.ax
-        fontproperties = kwargs.get('fontproperties', FontProperties())
+        font_properties = kwargs.get('fontproperties', FontProperties())
         if kwargs.get('size'):
-            fontproperties.set_size(kwargs.pop('size'))
+            font_properties.set_size(kwargs.pop('size'))
 
-        length = scale_width
+        width_mm = scale_width
         if units == 'cm':
-            length *= 10
+            width_mm *= 10
 
-        frameon = kwargs.pop('frameon', False) is True
-        asb = AnchoredSizeBar(
+        frame_on = kwargs.pop('frameon', False) is True
+        anchor_size_bar = AnchoredSizeBar(
             ax.transData,
-            length,
+            width_mm,
             '%g%s' % (scale_width, units),
             loc=kwargs.pop('loc', 4),
             pad=kwargs.pop('pad', 0.1),
             borderpad=kwargs.pop('borderpad', 0.5),
             sep=kwargs.pop('sep', 5),
-            frameon=frameon,
-            fontproperties=fontproperties,
+            frameon=frame_on,
+            fontproperties=font_properties,
             **kwargs)
 
-        if frameon:
-            asb.patch.set_facecolor(bg_color)
-            asb.patch.set_edgecolor('none')
-        ax.add_artist(asb)
+        if frame_on:
+            anchor_size_bar.patch.set_facecolor(bg_color)
+            anchor_size_bar.patch.set_edgecolor('none')
+        ax.add_artist(anchor_size_bar)
 
     def draw_position(self, size, bg_color, **kwargs):
         raise NotImplementedError("'draw_position' should be implemented "
