@@ -537,8 +537,8 @@ def fetch_atlas_yeo_2011(data_dir=None, url=None, resume=True, verbose=1):
     Licence: unknown.
     """
     if url is None:
-        url = "ftp://surfer.nmr.mgh.harvard.edu/" \
-              "pub/data/archive/Yeo_JNeurophysiol11_MNI152.zip"
+        url = ('ftp://surfer.nmr.mgh.harvard.edu/pub/data/'
+               'Yeo_JNeurophysiol11_MNI152.zip')
     opts = {'uncompress': True}
 
     dataset_name = "yeo_2011"
