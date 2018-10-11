@@ -207,6 +207,26 @@ display = plotting.plot_anat(mean_haxby_img, title="add_markers",
 coords = [(-34, -39, -9)]
 display.add_markers(coords, marker_color='y', marker_size=100)
 
+#########################################
+# Annotating plots
+# ------------------------------
+# It is possible to alter the default annotations of plots, using the `annotate`
+# member function of display objects.
+# For example, we can add a scale bar at the bottom right of each view:
+
+display = plotting.plot_anat(mean_haxby_img,
+                             title="adding a scale bar",
+                             cut_coords=[-34, -39, -9])
+display.annotate(scalebar=True, scale_width=2.5)
+
+
+###############################################################################
+# We can also alter the default units of centimeters, by changing `units` to mm.
+display = plotting.plot_anat(mean_haxby_img,
+                             title="adding a scale bar",
+                             cut_coords=[-34, -39, -9])
+display.annotate(scalebar=True, scale_width=25, units='mm')
+
 ###############################################################################
 # Finally, saving the plots to file with two different ways
 
