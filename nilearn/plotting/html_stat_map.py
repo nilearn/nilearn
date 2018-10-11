@@ -237,7 +237,7 @@ def _custom_cmap(cmap, vmin, vmax, threshold=None):
     cmaplist = [our_cmap(i) for i in range(our_cmap.N)]
     istart = int(norm(-offset, clip=True) * (our_cmap.N - 1))
     istop = int(norm(offset, clip=True) * (our_cmap.N - 1))
-    for i in range(istart+1, istop-1):
+    for i in range(istart, istop):
         cmaplist[i] = (0.5, 0.5, 0.5, 1.)  # just an average gray color
     if norm.vmin == norm.vmax:  # len(np.unique(data)) == 1 ?
         return
@@ -249,6 +249,114 @@ def _custom_cmap(cmap, vmin, vmax, threshold=None):
 
 class StatMapView(HTMLDocument):
     pass
+
+
+def _load_stat_map(stat_map_img,bg_img='MNI152',threshold=None, dim='auto',
+                   black_bg='auto',resampling_interpolation='continuous'):
+
+    # Load stat map
+    stat_map_img = check_niimg_3d(stat_map_img, dtype='auto')
+
+    # Get data
+    data = _safe_get_data(stat_map_img, ensure_finite=True)
+
+    # threshold the stat_map
+    if threshold is not None:
+        data = _threshold_data(data,threshold)
+        mask_img = new_img_like(stat_map_img,data.mask,stat_map_img.affine)
+    else:
+        mask_img = new_img_like(stat_map_img,np.zeros(data.shape),
+                                stat_map_img.affine)
+
+    # load background image, and resample stat map
+    if bg_img is not None and bg_img is not False:
+        if isinstance(bg_img, str) and bg_img == "MNI152":
+            bg_img = load_mni152_template()
+        bg_img, black_bg, bg_min, bg_max = _load_anat(bg_img, dim=dim,
+                                                      black_bg=black_bg)
+        bg_img = _resample_to_self(bg_img, interpolation='nearest')
+        stat_map_img = resample_to_img(stat_map_img, bg_img,
+                                       interpolation=resampling_interpolation)
+        mask_img = resample_to_img(mask_img, bg_img,
+                                       interpolation='nearest')
+    else:
+        stat_map_img = _resample_to_self(stat_map_img,
+                                         interpolation=resampling_interpolation
+                                         )
+        mask_img = _resample_to_self(mask_img,interpolation='nearest')
+        bg_img = new_img_like(stat_map_img, np.zeros(stat_map_img.shape),
+                              stat_map_img.affine)
+        bg_min = 0
+        bg_max = 0
+
+    return stat_map_img, bg_img, mask_img, bg_min, bg_max, data
+
+
+def _json_sprite(params, cut_slices, black_bg=False, opacity=1,
+                 draw_cross=True, annotate=True, title=None, colorbar=True):
+
+    # Set color parameters
+    if black_bg:
+        cfont = '#FFFFFF'
+        cbg = '#000000'
+    else:
+        cfont = '#000000'
+        cbg = '#FFFFFF'
+
+    # Create a json-like structure
+    # with all the brain sprite parameters
+    sprite_params = {
+                        'canvas': '3Dviewer',
+                        'sprite': 'spriteImg',
+                        'nbSlice': params['nbSlice'],
+                        'overlay': {
+                                'sprite': 'overlayImg',
+                                'nbSlice': params['nbSlice'],
+                                'opacity': opacity
+                                },
+                        'colorBackground': cbg,
+                        'colorFont': cfont,
+                        'crosshair': draw_cross,
+                        'affine': params['affine'],
+                        'flagCoordinates': annotate,
+                        'title': title,
+                        'flagValue': annotate,
+                        'numSlice': {
+                            'X': cut_slices[0],
+                            'Y': cut_slices[1],
+                            'Z': cut_slices[2]
+                        },
+                    }
+    if colorbar:
+        sprite_params['colorMap'] = {
+                    'img': 'colorMap',
+                    'min': params['min'],
+                    'max': params['max']
+                }
+    return sprite_params
+
+
+def _html_brainsprite(sprite_params, stat_map_base64, bg_base64, cm_base64):
+    """ For internal use.
+        Fill a brainsprite html template with relevant parameters and data.
+    """
+
+    # Load javascript libraries
+    js_dir = os.path.join(os.path.dirname(__file__), 'data', 'js')
+    with open(os.path.join(js_dir, 'jquery.min.js')) as f:
+        js_jquery = f.read()
+    with open(os.path.join(js_dir, 'brainsprite.min.js')) as f:
+        js_brainsprite = f.read()
+
+    # Load the html template, and plug base64 data and meta-data
+    html = get_html_template('stat_map_template.html')
+    html = html.replace('INSERT_SPRITE_PARAMS_HERE', json.dumps(sprite_params))
+    html = html.replace('INSERT_BG_DATA_HERE', bg_base64)
+    html = html.replace('INSERT_STAT_MAP_DATA_HERE', stat_map_base64)
+    html = html.replace('INSERT_CM_DATA_HERE', cm_base64)
+    html = html.replace('INSERT_JQUERY_HERE', js_jquery)
+    html = html.replace('INSERT_BRAINSPRITE_HERE', js_brainsprite)
+    return StatMapView(html,ratio=44)
 
 
 def view_stat_map(stat_map_img, bg_img='MNI152', cut_coords=None,
@@ -320,60 +428,23 @@ def view_stat_map(stat_map_img, bg_img='MNI152', cut_coords=None,
 
     Returns
     -------
-    StatMapView : plot of the stat map.
+    view : the viewer object.
         It can be saved as an html page or rendered (transparently) by the
         Jupyter notebook.
     """
 
+    # If no background is used, switch to the white background color style
+    if (bg_img is None or bg_img is False) and black_bg is 'auto':
+        black_bg = False
 
-    # Load stat map
-    stat_map_img = check_niimg_3d(stat_map_img, dtype='auto')
-
-    # Get data
-    data = _safe_get_data(stat_map_img, ensure_finite=True)
+    # Load and resample the data
+    stat_map_img, bg_img, mask_img, bg_min, bg_max, data = _load_stat_map(
+        stat_map_img, bg_img, threshold, dim, black_bg,
+        resampling_interpolation)
 
     # Get color bar and data ranges
     cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
         data, vmax, symmetric_cbar, kwargs)
-
-    # threshold the stat_map
-    if threshold is not None:
-        data = _threshold_data(data,threshold)
-        mask_img = new_img_like(stat_map_img,data.mask,stat_map_img.affine)
-    else:
-        mask_img = new_img_like(stat_map_img,np.zeros(data.shape),
-                                stat_map_img.affine)
-                                
-    # load background image, and resample stat map
-    if bg_img is not None and bg_img is not False:
-        if isinstance(bg_img, str) and bg_img == "MNI152":
-            bg_img = load_mni152_template()
-        bg_img, black_bg, bg_min, bg_max = _load_anat(bg_img, dim=dim,
-                                                      black_bg=black_bg)
-        bg_img = _resample_to_self(bg_img, interpolation='nearest')
-        stat_map_img = resample_to_img(stat_map_img, bg_img,
-                                       interpolation=resampling_interpolation)
-        mask_img = resample_to_img(mask_img, bg_img,
-                                       interpolation='nearest')
-    else:
-        stat_map_img = _resample_to_self(stat_map_img,
-                                         interpolation=resampling_interpolation
-                                         )
-        mask_img = _resample_to_self(mask_img,interpolation='nearest')
-        bg_img = new_img_like(stat_map_img, np.zeros(stat_map_img.shape),
-                              stat_map_img.affine)
-        bg_min = 0
-        bg_max = 0
-        if black_bg is 'auto':
-            black_bg = False
-
-    # Set color parameters
-    if black_bg:
-        cfont = '#FFFFFF'
-        cbg = '#000000'
-    else:
-        cfont = '#000000'
-        cbg = '#FFFFFF'
 
     # Select coordinates for the cut
     # https://github.com/nilearn/nilearn/blob/master/nilearn/plotting/displays.py#L943
@@ -427,50 +498,10 @@ def view_stat_map(stat_map_img, bg_img='MNI152', cut_coords=None,
     cut_slices = np.round(apply_affine(
         np.linalg.inv(stat_map_img.affine), cut_coords))
 
-    # Create a json-like structure
-    # with all the brain sprite parameters
-    sprite_params = {
-                        'canvas': '3Dviewer',
-                        'sprite': 'spriteImg',
-                        'nbSlice': params['nbSlice'],
-                        'overlay': {
-                                'sprite': 'overlayImg',
-                                'nbSlice': params['nbSlice'],
-                                'opacity': opacity
-                                },
-                        'colorBackground': cbg,
-                        'colorFont': cfont,
-                        'crosshair': draw_cross,
-                        'affine': params['affine'],
-                        'flagCoordinates': annotate,
-                        'title': title,
-                        'flagValue': annotate,
-                        'numSlice': {
-                            'X': cut_slices[0],
-                            'Y': cut_slices[1],
-                            'Z': cut_slices[2]
-                        },
-                    }
-    if colorbar:
-        sprite_params['colorMap'] = {
-                    'img': 'colorMap',
-                    'min': params['min'],
-                    'max': params['max']
-                }
+    # Build a json-like structure with all parameters for brainsprite
+    sprite_params = _json_sprite(params, cut_slices, black_bg, opacity,
+                                 draw_cross, annotate, title, colorbar)
 
-    # Load javascript libraries
-    js_dir = os.path.join(os.path.dirname(__file__), 'data', 'js')
-    with open(os.path.join(js_dir, 'jquery.min.js')) as f:
-        js_jquery = f.read()
-    with open(os.path.join(js_dir, 'brainsprite.min.js')) as f:
-        js_brainsprite = f.read()
-
-    # Load the html template, and plug base64 data and meta-data
-    html = get_html_template('stat_map_template.html')
-    html = html.replace('INSERT_SPRITE_PARAMS_HERE', json.dumps(sprite_params))
-    html = html.replace('INSERT_BG_DATA_HERE', bg_base64)
-    html = html.replace('INSERT_STAT_MAP_DATA_HERE', stat_map_base64)
-    html = html.replace('INSERT_CM_DATA_HERE', cm_base64)
-    html = html.replace('INSERT_JQUERY_HERE', js_jquery)
-    html = html.replace('INSERT_BRAINSPRITE_HERE', js_brainsprite)
-    return StatMapView(html,ratio=44)
+    # Generate the viewer
+    view = _html_brainsprite(sprite_params, stat_map_base64, bg_base64, cm_base64)
+    return view
