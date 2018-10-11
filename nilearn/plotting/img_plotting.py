@@ -112,6 +112,7 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None,
                       bg_vmin=None, bg_vmax=None, interpolation="nearest",
                       display_factory=get_slicer,
                       cbar_vmin=None, cbar_vmax=None,
+                      brain_color=(0.5, 0.5, 0.5),
                       **kwargs):
     """ Internal function, please refer to the docstring of plot_img for
         parameters not listed below.
@@ -167,7 +168,9 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None,
         cut_coords=cut_coords,
         figure=figure, axes=axes,
         black_bg=black_bg,
-        colorbar=colorbar)
+        colorbar=colorbar,
+        brain_color=brain_color,
+        )
 
     if bg_img is not None:
         bg_img = _utils.check_niimg_3d(bg_img)
@@ -1156,12 +1159,13 @@ def plot_glass_brain(stat_map_img,
         return functools.partial(get_projector(display_mode),
                                  alpha=alpha, plot_abs=plot_abs)
 
+    brain_color = (0. if black_bg else 1.,) * 3
     display = _plot_img_with_bg(
         img=stat_map_img, output_file=output_file, display_mode=display_mode,
         figure=figure, axes=axes, title=title, annotate=annotate,
         black_bg=black_bg, threshold=threshold, cmap=cmap, colorbar=colorbar,
         display_factory=display_factory, vmin=vmin, vmax=vmax,
-        cbar_vmin=cbar_vmin, cbar_vmax=cbar_vmax,
+        cbar_vmin=cbar_vmin, cbar_vmax=cbar_vmax, brain_color=brain_color,
         resampling_interpolation=resampling_interpolation, **kwargs)
 
     return display
