@@ -107,9 +107,8 @@ def _threshold_data(data,threshold=None):
                                              copy=False)
     return data
 
-def _save_sprite(img, output_sprite, output_json=None,
-                vmax=None, vmin=None, cmap='Greys', threshold=None,
-                format='png', mask_img=None):
+def _save_sprite(img, output_sprite, vmax=None, vmin=None, cmap='Greys',
+                 threshold=None, format='png', mask_img=None):
     """ Generate a sprite from a 3D Niimg-like object.
 
         Parameters
@@ -179,30 +178,6 @@ def _save_sprite(img, output_sprite, output_json=None,
     imsave(output_sprite, sprite, vmin=vmin, vmax=vmax, cmap=cmap,
            format=format)
 
-    # Save the parameters
-    if type(vmin).__module__ == 'numpy':
-        vmin = vmin.tolist()  # json does not deal with numpy array
-    if type(vmax).__module__ == 'numpy':
-        vmax = vmax.tolist()  # json does not deal with numpy array
-
-    if output_json is not None:
-        params = {
-                    'nbSlice': {
-                        'X': data.shape[0],
-                        'Y': data.shape[1],
-                        'Z': data.shape[2]
-                    },
-                    'min': vmin,
-                    'max': vmax,
-                    'affine': img.affine.tolist()
-                 }
-        if isinstance(output_json, str):
-            f = open(output_json, 'w')
-            f.write(json.dumps(params))
-            f.close
-        else:
-            output_json.write(json.dumps(params))
-
     return sprite
 
 
@@ -216,6 +191,7 @@ def _bytesIO_to_base64(file):
     file.close()
     return data
 
+
 def _save_cm(output_cmap, cmap, format='png'):
     """ For internal use.
         Save the colormap of an image as a png file.
@@ -225,11 +201,10 @@ def _save_cm(output_cmap, cmap, format='png'):
     n_colors = 256
 
     # save the colormap
-    if output_cmap is not None:
-        data = np.arange(0, n_colors)/(n_colors-1)
-        data = data.reshape([1, n_colors])
-        imsave(output_cmap, data, cmap=cmap, format=format)
-    return
+    data = np.arange(0, n_colors)/(n_colors-1)
+    data = data.reshape([1, n_colors])
+    imsave(output_cmap, data, cmap=cmap, format=format)
+
 
 def _custom_cmap(cmap, vmin, vmax, threshold=None):
     # For internal use only
@@ -311,8 +286,12 @@ def _load_stat_map(stat_map_img,bg_img='MNI152',threshold=None, dim='auto',
     return stat_map_img, bg_img, mask_img, bg_min, bg_max, data
 
 
-def _json_sprite(params, cut_slices, black_bg=False, opacity=1,
-                 draw_cross=True, annotate=True, title=None, colorbar=True):
+def _json_sprite(shape, affine, vmin, vmax, cut_slices, black_bg=False,
+                 opacity=1, draw_cross=True, annotate=True, title=None,
+                 colorbar=True):
+    """ For internal use.
+        Create a json-like structure, with all the brainsprite parameters.
+    """
 
     # Set color parameters
     if black_bg:
@@ -322,36 +301,49 @@ def _json_sprite(params, cut_slices, black_bg=False, opacity=1,
         cfont = '#000000'
         cbg = '#FFFFFF'
 
-    # Create a json-like structure
-    # with all the brain sprite parameters
+    # Deal with limitations of json dump regarding types
+    if type(vmin).__module__ == 'numpy':
+        vmin = vmin.tolist()  # json does not deal with numpy array
+    if type(vmax).__module__ == 'numpy':
+        vmax = vmax.tolist()  # json does not deal with numpy array
+
     sprite_params = {
-                        'canvas': '3Dviewer',
-                        'sprite': 'spriteImg',
-                        'nbSlice': params['nbSlice'],
-                        'overlay': {
-                                'sprite': 'overlayImg',
-                                'nbSlice': params['nbSlice'],
-                                'opacity': opacity
+                     'canvas': '3Dviewer',
+                     'sprite': 'spriteImg',
+                     'nbSlice': {
+                                 'X': shape[0],
+                                 'Y': shape[1],
+                                 'Z': shape[2]
                                 },
-                        'colorBackground': cbg,
-                        'colorFont': cfont,
-                        'crosshair': draw_cross,
-                        'affine': params['affine'],
-                        'flagCoordinates': annotate,
-                        'title': title,
-                        'flagValue': annotate,
-                        'numSlice': {
-                            'X': cut_slices[0],
-                            'Y': cut_slices[1],
-                            'Z': cut_slices[2]
-                        },
-                    }
+                     'overlay': {
+                                 'sprite': 'overlayImg',
+                                 'nbSlice': {
+                                             'X': shape[0],
+                                             'Y': shape[1],
+                                             'Z': shape[2]
+                                            },
+                                 'opacity': opacity
+                                },
+                     'colorBackground': cbg,
+                     'colorFont': cfont,
+                     'crosshair': draw_cross,
+                     'affine': affine.tolist(),
+                     'flagCoordinates': annotate,
+                     'title': title,
+                     'flagValue': annotate,
+                     'numSlice': {
+                                  'X': cut_slices[0],
+                                  'Y': cut_slices[1],
+                                  'Z': cut_slices[2]
+                                 },
+                 }
+
     if colorbar:
         sprite_params['colorMap'] = {
-                    'img': 'colorMap',
-                    'min': params['min'],
-                    'max': params['max']
-                }
+                                     'img': 'colorMap',
+                                     'min': vmin,
+                                     'max': vmax
+                                    }
     return sprite_params
 
 
@@ -377,6 +369,23 @@ def _html_brainsprite(sprite_params, stat_map_base64, bg_base64, cm_base64):
     html = html.replace('INSERT_BRAINSPRITE_HERE', js_brainsprite)
     return StatMapView(html,ratio=44)
 
+
+def _get_cut_slices(stat_map_img, cut_coords=None, threshold=None):
+    # Select coordinates for the cut
+    # https://github.com/nilearn/nilearn/blob/master/nilearn/plotting/displays.py#L943
+    if isinstance(cut_coords, numbers.Number):
+        raise ValueError(
+            "The input given for display_mode='ortho' needs to be "
+            "a list of 3d world coordinates in (x, y, z). "
+            "You provided single cut, cut_coords={0}".format(cut_coords))
+    if cut_coords is None:
+        cut_coords = find_xyz_cut_coords(
+                    stat_map_img, activation_threshold=threshold)
+
+    # Convert cut coordinates into cut slices
+    cut_slices = np.round(apply_affine(
+        np.linalg.inv(stat_map_img.affine), cut_coords))
+    return cut_slices
 
 def view_stat_map(stat_map_img, bg_img='MNI152', cut_coords=None,
                   colorbar=True, title=None, threshold=1e-6, annotate=True,
@@ -465,20 +474,8 @@ def view_stat_map(stat_map_img, bg_img='MNI152', cut_coords=None,
     cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
         data, vmax, symmetric_cbar, kwargs)
 
-    # Select coordinates for the cut
-    # https://github.com/nilearn/nilearn/blob/master/nilearn/plotting/displays.py#L943
-    if isinstance(cut_coords, numbers.Number):
-        raise ValueError(
-            "The input given for display_mode='ortho' needs to be "
-            "a list of 3d world coordinates in (x, y, z). "
-            "You provided single cut, cut_coords={0}".format(cut_coords))
-    if cut_coords is None:
-        cut_coords = find_xyz_cut_coords(
-                    stat_map_img, activation_threshold=threshold)
-
-    # Convert cut coordinates into cut slices
-    cut_slices = np.round(apply_affine(
-        np.linalg.inv(stat_map_img.affine), cut_coords))
+    # Get the slices for the cut
+    cut_slices = _get_cut_slices(stat_map_img, cut_coords, threshold)
 
     # Create a base64 sprite for the background
     bg_sprite = BytesIO()
@@ -491,9 +488,11 @@ def view_stat_map(stat_map_img, bg_img='MNI152', cut_coords=None,
     # Create a base64 sprite for the stat map
     # Possibly, also generate a file with the colormap
     stat_map_sprite = BytesIO()
-    stat_map_json = StringIO()
-    _save_sprite(stat_map_img, stat_map_sprite, stat_map_json,
-                vmax, vmin, cmap, threshold, 'png', mask_img)
+    _save_sprite(stat_map_img, stat_map_sprite, vmax, vmin, cmap, threshold,
+                 'png', mask_img)
+    stat_map_sprite.seek(0)
+    stat_map_base64 = encodebytes(stat_map_sprite.read()).decode('utf-8')
+    stat_map_sprite.close()
 
     # Save the colormap
     if colorbar:
@@ -504,18 +503,9 @@ def view_stat_map(stat_map_img, bg_img='MNI152', cut_coords=None,
     else:
         cm_base64 = ''
 
-    # Load the sprite
-    stat_map_sprite.seek(0)
-    stat_map_base64 = encodebytes(stat_map_sprite.read()).decode('utf-8')
-    stat_map_sprite.close()
-
-    # Load the sprite meta-data from the json dump
-    stat_map_json.seek(0)
-    params = json.load(stat_map_json)
-    stat_map_json.close()
-
     # Build a json-like structure with all parameters for brainsprite
-    sprite_params = _json_sprite(params, cut_slices, black_bg, opacity,
+    sprite_params = _json_sprite(stat_map_img.shape, stat_map_img.affine, vmin,
+                                 vmax, cut_slices, black_bg, opacity,
                                  draw_cross, annotate, title, colorbar)
 
     # Generate the viewer
