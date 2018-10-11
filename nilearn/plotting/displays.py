@@ -164,7 +164,7 @@ class BaseAxes(object):
         if kwargs.get('size'):
             font_properties.set_size(kwargs.pop('size'))
 
-        width_mm = scale_width
+        width_mm = scale_width or kwargs.pop('scale_width', 5)
         if units == 'cm':
             width_mm *= 10
 
@@ -923,8 +923,7 @@ class BaseSlicer(object):
         size: integer, optional
             The size of the text used.
         kwargs:
-            Extra keyword arguments are passed to matplotlib's text
-            function.
+            Extra keyword arguments are passed to matplotlib.
         """
         kwargs = kwargs.copy()
         if 'color' not in kwargs:
@@ -934,6 +933,12 @@ class BaseSlicer(object):
                 kwargs['color'] = 'k'
 
         bg_color = ('k' if self._black_bg else 'w')
+
+        # Cleanup scale bar's kwargs
+        scale_bar_kwargs = {
+            key: kwargs.pop(key) for key in ['scale_width', 'units']
+            if key in kwargs}
+
         if left_right:
             for display_ax in self.axes.values():
                 display_ax.draw_left_right(size=size, bg_color=bg_color,
@@ -945,6 +950,7 @@ class BaseSlicer(object):
                                          **kwargs)
 
         if scalebar:
+            kwargs.update(scale_bar_kwargs)  # Insert kwargs back
             axes = self.axes.values()
             for display_ax in axes:
                 display_ax.draw_scale_bar(bg_color=bg_color, size=size, **kwargs)
