@@ -4,7 +4,7 @@ Visualizing 3D stat maps in a Brainsprite viewer
 import warnings
 import os
 import json
-from io import BytesIO, StringIO
+from io import BytesIO
 from base64 import encodebytes
 import numbers
 
@@ -23,7 +23,6 @@ from ..plotting.find_cuts import find_xyz_cut_coords
 from ..plotting.img_plotting import _load_anat, _get_colorbar_and_data_ranges
 from .._utils import check_niimg_3d
 from .._utils.extmath import fast_abs_percentile
-from .._utils.param_validation import check_threshold
 from .._utils.niimg import _safe_get_data
 from ..datasets import load_mni152_template
 
@@ -54,8 +53,8 @@ def _data2sprite(data):
 
     for xx in range(nx):
         # we need to flip the image in the x axis
-        sprite[(indrow[xx] * nz):((indrow[xx] + 1) * nz), (indcol[xx]*ny):
-               ((indcol[xx]+1)*ny)] = data[xx, :, ::-1].transpose()
+        sprite[(indrow[xx] * nz):((indrow[xx] + 1) * nz), (indcol[xx] * ny):
+               ((indcol[xx] + 1) * ny)] = data[xx, :, ::-1].transpose()
 
     return sprite
 
@@ -85,7 +84,7 @@ def _get_vmin_vmax(data, vmin=None, vmax=None):
     return vmin, vmax
 
 
-def _threshold_data(data,threshold=None):
+def _threshold_data(data, threshold=None):
     """ For internal use only.
         Threshold a data array.
     """
@@ -103,9 +102,9 @@ def _threshold_data(data,threshold=None):
         if threshold == 0:
             data = np.ma.masked_equal(data, 0, copy=False)
         else:
-            data = np.ma.masked_inside(data, -threshold, threshold,
-                                             copy=False)
+            data = np.ma.masked_inside(data, -threshold, threshold, copy=False)
     return data
+
 
 def _save_sprite(data, output_sprite, vmax, vmin, mask=None, cmap='Greys',
                  format='png'):
@@ -119,7 +118,7 @@ def _save_sprite(data, output_sprite, vmax, vmin, mask=None, cmap='Greys',
     # Mask the sprite
     if mask is not None:
         mask = _data2sprite(mask)
-        sprite = np.ma.array(sprite,mask=mask)
+        sprite = np.ma.array(sprite, mask=mask)
 
     # Save the sprite
     imsave(output_sprite, sprite, vmin=vmin, vmax=vmax, cmap=cmap,
@@ -148,7 +147,7 @@ def _save_cm(output_cmap, cmap, format='png'):
     n_colors = 256
 
     # save the colormap
-    data = np.arange(0, n_colors)/(n_colors-1)
+    data = np.arange(0, n_colors) / (n_colors - 1)
     data = data.reshape([1, n_colors])
     imsave(output_cmap, data, cmap=cmap, format=format)
 
@@ -161,14 +160,7 @@ def _custom_cmap(cmap, vmin, vmax, threshold=None):
 
     our_cmap = mpl_cm.get_cmap(cmap)
     norm = colors.Normalize(vmin=vmin, vmax=vmax)
-    # edge case where the data has a single value
-    # yields a cryptic matplotlib error message
-    # when trying to plot the color bar
-    nb_ticks = 5 if norm.vmin != norm.vmax else 1
-    ticks = np.linspace(norm.vmin, norm.vmax, nb_ticks)
-    bounds = np.linspace(norm.vmin, norm.vmax, our_cmap.N)
 
-    # some colormap hacking
     if threshold is None:
         offset = 0
     else:
@@ -192,8 +184,8 @@ class StatMapView(HTMLDocument):
     pass
 
 
-def _load_stat_map(stat_map_img,bg_img='MNI152',threshold=None, dim='auto',
-                   black_bg='auto',resampling_interpolation='continuous'):
+def _load_stat_map(stat_map_img, bg_img='MNI152', threshold=None, dim='auto',
+                   black_bg='auto', resampling_interpolation='continuous'):
     """ For internal use.
         Safely load the background image and the stat map.
         All images are resampled to a common, isotropic resolution,
@@ -211,10 +203,10 @@ def _load_stat_map(stat_map_img,bg_img='MNI152',threshold=None, dim='auto',
 
     # threshold the stat_map
     if threshold is not None:
-        data = _threshold_data(data,threshold)
-        mask_img = new_img_like(stat_map_img,data.mask,stat_map_img.affine)
+        data = _threshold_data(data, threshold)
+        mask_img = new_img_like(stat_map_img, data.mask, stat_map_img.affine)
     else:
-        mask_img = new_img_like(stat_map_img,np.zeros(data.shape),
+        mask_img = new_img_like(stat_map_img, np.zeros(data.shape),
                                 stat_map_img.affine)
 
     # load background image, and resample stat map
@@ -227,12 +219,12 @@ def _load_stat_map(stat_map_img,bg_img='MNI152',threshold=None, dim='auto',
         stat_map_img = resample_to_img(stat_map_img, bg_img,
                                        interpolation=resampling_interpolation)
         mask_img = resample_to_img(mask_img, bg_img,
-                                       interpolation='nearest')
+                                   interpolation='nearest')
     else:
         stat_map_img = _resample_to_self(stat_map_img,
                                          interpolation=resampling_interpolation
                                          )
-        mask_img = _resample_to_self(mask_img,interpolation='nearest')
+        mask_img = _resample_to_self(mask_img, interpolation='nearest')
         bg_img = new_img_like(stat_map_img, np.zeros(stat_map_img.shape),
                               stat_map_img.affine)
         bg_min = 0
@@ -262,23 +254,16 @@ def _json_sprite(shape, affine, vmin, vmax, cut_slices, black_bg=False,
     if type(vmax).__module__ == 'numpy':
         vmax = vmax.tolist()  # json does not deal with numpy array
 
-    sprite_params = {
-                     'canvas': '3Dviewer',
+    sprite_params = {'canvas': '3Dviewer',
                      'sprite': 'spriteImg',
-                     'nbSlice': {
-                                 'X': shape[0],
+                     'nbSlice': {'X': shape[0],
                                  'Y': shape[1],
-                                 'Z': shape[2]
-                                },
-                     'overlay': {
-                                 'sprite': 'overlayImg',
-                                 'nbSlice': {
-                                             'X': shape[0],
+                                 'Z': shape[2]},
+                     'overlay': {'sprite': 'overlayImg',
+                                 'nbSlice': {'X': shape[0],
                                              'Y': shape[1],
-                                             'Z': shape[2]
-                                            },
-                                 'opacity': opacity
-                                },
+                                             'Z': shape[2]},
+                                 'opacity': opacity},
                      'colorBackground': cbg,
                      'colorFont': cfont,
                      'crosshair': draw_cross,
@@ -286,19 +271,14 @@ def _json_sprite(shape, affine, vmin, vmax, cut_slices, black_bg=False,
                      'flagCoordinates': annotate,
                      'title': title,
                      'flagValue': annotate,
-                     'numSlice': {
-                                  'X': cut_slices[0],
+                     'numSlice': {'X': cut_slices[0],
                                   'Y': cut_slices[1],
-                                  'Z': cut_slices[2]
-                                 },
-                 }
+                                  'Z': cut_slices[2]}}
 
     if colorbar:
-        sprite_params['colorMap'] = {
-                                     'img': 'colorMap',
+        sprite_params['colorMap'] = {'img': 'colorMap',
                                      'min': vmin,
-                                     'max': vmax
-                                    }
+                                     'max': vmax}
     return sprite_params
 
 
@@ -322,7 +302,7 @@ def _html_brainsprite(sprite_params, stat_map_base64, bg_base64, cm_base64):
     html = html.replace('INSERT_CM_DATA_HERE', cm_base64)
     html = html.replace('INSERT_JQUERY_HERE', js_jquery)
     html = html.replace('INSERT_BRAINSPRITE_HERE', js_brainsprite)
-    return StatMapView(html,ratio=44)
+    return StatMapView(html, ratio=44)
 
 
 def _get_cut_slices(stat_map_img, cut_coords=None, threshold=None):
@@ -338,13 +318,14 @@ def _get_cut_slices(stat_map_img, cut_coords=None, threshold=None):
             "a list of 3d world coordinates in (x, y, z). "
             "You provided single cut, cut_coords={0}".format(cut_coords))
     if cut_coords is None:
-        cut_coords = find_xyz_cut_coords(
-                    stat_map_img, activation_threshold=threshold)
+        cut_coords = find_xyz_cut_coords(stat_map_img,
+                                         activation_threshold=threshold)
 
     # Convert cut coordinates into cut slices
     cut_slices = np.round(apply_affine(
         np.linalg.inv(stat_map_img.affine), cut_coords))
     return cut_slices
+
 
 def view_stat_map(stat_map_img, bg_img='MNI152', cut_coords=None,
                   colorbar=True, title=None, threshold=1e-6, annotate=True,
@@ -457,7 +438,7 @@ def view_stat_map(stat_map_img, bg_img='MNI152', cut_coords=None,
     if colorbar:
         stat_map_cm = BytesIO()
         cmap_c = _custom_cmap(cmap, vmin, vmax, threshold)
-        _save_cm(stat_map_cm,cmap_c,'png')
+        _save_cm(stat_map_cm, cmap_c, 'png')
         cm_base64 = _bytesIO_to_base64(stat_map_cm)
     else:
         cm_base64 = ''
@@ -468,5 +449,6 @@ def view_stat_map(stat_map_img, bg_img='MNI152', cut_coords=None,
                                  draw_cross, annotate, title, colorbar)
 
     # Generate the viewer
-    view = _html_brainsprite(sprite_params, stat_map_base64, bg_base64, cm_base64)
+    view = _html_brainsprite(sprite_params, stat_map_base64, bg_base64,
+                             cm_base64)
     return view
