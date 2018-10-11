@@ -217,16 +217,17 @@ display.add_markers(coords, marker_color='y', marker_size=100)
 display = plotting.plot_anat(mean_haxby_img,
                              title="adding a scale bar",
                              cut_coords=[-34, -39, -9])
-display.annotate(scalebar=True, scale_width=2.5)
+display.annotate(scalebar=True)
 
 
 ###############################################################################
-# We can also alter the default units of centimeters, by changing ``units``
-# to `mm`.
+# Further configuration can be achieved by setting ``scalebar_kwargs``.
+# For instance, changing ``units`` to `mm` or a different scale bar width.
 display = plotting.plot_anat(mean_haxby_img,
                              title="adding a scale bar",
                              cut_coords=[-34, -39, -9])
-display.annotate(scalebar=True, scale_width=25, units='mm')
+display.annotate(scalebar=True,
+                 scalebar_kwargs={'scale_width': 25, 'units': 'mm'})
 
 #########################################
 # Saving plots to file

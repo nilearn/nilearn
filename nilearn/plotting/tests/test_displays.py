@@ -107,15 +107,28 @@ def test_annotations():
     # In particular, exercise some of the keyword arguments for scale bars
     orthoslicer = OrthoSlicer(cut_coords=(None, None, None))
     orthoslicer.annotate(size=10, left_right=True, positions=False)
-    orthoslicer.annotate(size=12, left_right=False, positions=False, scalebar=True,
-                         scale_width=2.5, units='cm',
-                         loc=3, size_vertical=2, label_top=False, frameon=True,
-                         borderpad=0.1)
-    orthoslicer.annotate(size=12, left_right=False, positions=False, scalebar=True,
-                         scale_width=2.5, units='mm',
-                         loc=3, size_vertical=2, label_top=True, frameon=False,
-                         borderpad=0.1)
+    orthoslicer.annotate(size=10, left_right=True, positions=True,
+                         scalebar=True)
+    orthoslicer.annotate(size=12, left_right=False, positions=False,
+                         scalebar=True,
+                         scalebar_kwargs={'scale_width': 2.5,
+                                          'units': 'cm',
+                                          'loc': 3,
+                                          'size_vertical': 2,
+                                          'label_top': False,
+                                          'frameon': True,
+                                          'borderpad': 0.1})
+    orthoslicer.annotate(size=12, left_right=False, positions=False,
+                         scalebar=True,
+                         scalebar_kwargs={'scale_width': 2.5,
+                                          'units': 'mm',
+                                          'loc': 3,
+                                          'size_vertical': 2,
+                                          'label_top': True,
+                                          'frameon': False,
+                                          'borderpad': 0.1})
     orthoslicer.close()
+
 
 def test_add_graph_with_node_color_as_string():
     lzry_projector = LZRYProjector(cut_coords=(0, 0, 0, 0))

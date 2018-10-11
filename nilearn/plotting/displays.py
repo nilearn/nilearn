@@ -142,7 +142,7 @@ class BaseAxes(object):
                 bbox=dict(boxstyle="square,pad=0", ec=bg_color, fc=bg_color),
                 **kwargs)
 
-    def draw_scale_bar(self, bg_color, scale_width=5, units='cm', **kwargs):
+    def draw_scale_bar(self, bg_color, scalebar_kwargs, **kwargs):
         """ Adds a scale bar annotation to the display
 
         Parameters
@@ -150,36 +150,58 @@ class BaseAxes(object):
 
         bgcolor: matplotlib color: string or (r, g, b) value
             The background color of the scale bar annotation
-        scale_width: float (default: 5.0)
-            A width for the scale given in ``units``
-        units: str
-            Physical units to use on the scale bar (`'cm'` or `'mm'`)
+        scalebar_kwargs: dict
+            Arguments to define how the scale bar will be rendered.
+            Allowed keys are:
+            `scale_width` (a float with default: 5.0
+            that defines the width of the scale given in `units`);
+            `units` (str representing the physical units to use on
+            the scale bar -`'cm'` or `'mm'`);
+            `fontproperties` (a matplotlib's ``FontProperties`` object
+            or dict, if `fontproperties` is defined then the `size`
+            keyword argument will be dismissed);
+            `frameon` (boolean, whether the scale bar is plotted with
+            a border);
+            `loc` (matplotlib's location int or str indicating where
+            the scale bar should be placed with default: 4 - bottom-right);
+            `pad` (float - margin from the view edges);
+            `borderpad` (float - inner padding from the edges of the scale
+            bar annotation);
+            `sep` (float - separation between text and the bar);
+            for additional keywords please check matplotlib's
+            `AnchoredSizeBar <https://matplotlib.org/mpl_toolkits/axes_grid\
+            /api/anchored_artists_api.html>`__ documentation.
         kwargs:
-            Extra keyword arguments are passed to matplotlib's text
-            function.
+            Extra keyword arguments are passed to matplotlib's
+            FontProperties object used by AnchoredSizeBar.
         """
         from mpl_toolkits.axes_grid1.anchored_artists import AnchoredSizeBar
-        axis = self.ax
-        font_properties = kwargs.get('fontproperties', FontProperties())
-        if kwargs.get('size'):
-            font_properties.set_size(kwargs.pop('size'))
 
-        width_mm = scale_width or kwargs.pop('scale_width', 5)
+        # Sanity check to replace None by empty dict
+        scalebar_kwargs = scalebar_kwargs or {}
+
+        axis = self.ax
+        font_properties = scalebar_kwargs.get('fontproperties',
+                                              FontProperties(**kwargs))
+
+        scale_width = scalebar_kwargs.pop('scale_width', 5)
+        units = scalebar_kwargs.pop('units', 'cm')
+        width_mm = scale_width
         if units == 'cm':
             width_mm *= 10
 
-        frame_on = kwargs.pop('frameon', False) is True
+        frame_on = scalebar_kwargs.pop('frameon', False) is True
         anchor_size_bar = AnchoredSizeBar(
             axis.transData,
             width_mm,
             '%g%s' % (scale_width, units),
-            loc=kwargs.pop('loc', 4),
-            pad=kwargs.pop('pad', 0.1),
-            borderpad=kwargs.pop('borderpad', 0.5),
-            sep=kwargs.pop('sep', 5),
+            loc=scalebar_kwargs.pop('loc', 4),
+            pad=scalebar_kwargs.pop('pad', 0.1),
+            borderpad=scalebar_kwargs.pop('borderpad', 0.5),
+            sep=scalebar_kwargs.pop('sep', 5),
             frameon=frame_on,
             fontproperties=font_properties,
-            **kwargs)
+            **scalebar_kwargs)
 
         if frame_on:
             anchor_size_bar.patch.set_facecolor(bg_color)
@@ -909,7 +931,7 @@ class BaseSlicer(object):
                                   c=marker_color, **kwargs)
 
     def annotate(self, left_right=True, positions=True, scalebar=False,
-                 size=12, **kwargs):
+                 size=12, scalebar_kwargs=None, **kwargs):
         """ Add annotations to the plot.
 
         Parameters
@@ -920,10 +942,16 @@ class BaseSlicer(object):
         positions: boolean, optional
             If positions is True, annotations indicating the
             positions of the cuts are drawn.
+        scalebar: boolean, optional
+            If scalebar is True, cuts are annotated with a reference
+            scale bar (bottom-right position by default).
         size: integer, optional
             The size of the text used.
+        scalebar_kwargs: dict, optional
+            Arguments to control how the scale bar is drawn.
         kwargs:
-            Extra keyword arguments are passed to matplotlib.
+            Extra keyword arguments are passed to matplotlib's text
+            function.
         """
         kwargs = kwargs.copy()
         if 'color' not in kwargs:
@@ -933,11 +961,6 @@ class BaseSlicer(object):
                 kwargs['color'] = 'k'
 
         bg_color = ('k' if self._black_bg else 'w')
-
-        # Cleanup scale bar's kwargs
-        scale_bar_kwargs = {
-            key: kwargs.pop(key) for key in ['scale_width', 'units']
-            if key in kwargs}
 
         if left_right:
             for display_axis in self.axes.values():
@@ -950,11 +973,11 @@ class BaseSlicer(object):
                                            **kwargs)
 
         if scalebar:
-            kwargs.update(scale_bar_kwargs)  # Insert kwargs back
             axes = self.axes.values()
             for display_axis in axes:
-                display_axis.draw_scale_bar(bg_color=bg_color, size=size,
-                                            **kwargs)
+                display_axis.draw_scale_bar(bg_color=bg_color,
+                                            scalebar_kwargs=scalebar_kwargs,
+                                            size=size, **kwargs)
 
     def close(self):
         """ Close the figure. This is necessary to avoid leaking memory.
