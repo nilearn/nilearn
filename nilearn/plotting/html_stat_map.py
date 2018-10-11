@@ -107,70 +107,17 @@ def _threshold_data(data,threshold=None):
                                              copy=False)
     return data
 
-def _save_sprite(img, output_sprite, vmax=None, vmin=None, cmap='Greys',
-                 threshold=None, format='png', mask_img=None):
-    """ Generate a sprite from a 3D Niimg-like object.
-
-        Parameters
-        ----------
-        img :  Niimg-like object
-            See http://nilearn.github.io/manipulating_images/input_output.html
-        output_file : string or file-like
-            Path string to a filename, or a Python file-like object.
-            If *format* is *None* and *fname* is a string, the output
-            format is deduced from the extension of the filename.
-        output_json : string, file-like or None, optional (default None)
-            Path string to a filename, or a Python file-like object.
-            The parameters of the sprite will be saved in that file
-            (unless it is None): Y and Z sizes, vmin, vmax, affine transform.
-        vmax : float, or None, optional (default None)
-            max value for mapping colors.
-        vmin : float, or None, optional (default None)
-            min value for mapping color.
-        cmap : name of a matplotlib colormap, optional (default 'Greys')
-            The colormap for the sprite. A matplotlib colormap can also
-            be passed directly in cmap.
-        threshold : a number, None, or 'auto', optional (default None)
-            If None is given, the image is not thresholded.
-            If a number is given, it is used to threshold the image:
-            values below the threshold (in absolute value) are plotted
-            as transparent. If auto is given, the threshold is determined
-            magically by analysis of the image.
-        format : string, optional (default 'png')
-            One of the file extensions supported by the active backend.  Most
-            backends support png, pdf, ps, eps and svg.
-        mask_img :  Niimg-like object
-            Binary mask. Any voxel in the mask will be set to transparent.
-
-        Returns
-        ----------
-        sprite : numpy array with the sprite
-
-        Notes
-        ----------
-        The brain images need to be resampled to a diagonal isotropic affine.
+def _save_sprite(data, output_sprite, vmax, vmin, mask=None, cmap='Greys',
+                 format='png'):
+    """ For internal use.
+        Generate a sprite from a 3D Niimg-like object.
     """
-
-    # Get cmap
-    if isinstance(cm, str):
-        cmap = plt.cm.get_cmap(cmap)
-
-    img = check_niimg_3d(img, dtype='auto')
-
-    # Read data
-    data = _safe_get_data(img, ensure_finite=True)
-    if np.isnan(np.sum(data)):
-        data = np.nan_to_num(data)
-
-    # Get vmin, vmax
-    vmin, vmax = _get_vmin_vmax(data,vmin,vmax)
 
     # Create sprite
     sprite = _data2sprite(data)
 
     # Mask the sprite
-    if mask_img is not None:
-        mask = _safe_get_data(mask_img, ensure_finite=True)
+    if mask is not None:
         mask = _data2sprite(mask)
         sprite = np.ma.array(sprite,mask=mask)
 
@@ -207,10 +154,10 @@ def _save_cm(output_cmap, cmap, format='png'):
 
 
 def _custom_cmap(cmap, vmin, vmax, threshold=None):
-    # For internal use only
-
-    # Generation of a custom color map, with under-threshold "greyed" values
-    # This is taken from nilearn/plotting/displays.py#L754-L772
+    """ For internal use.
+        Generation of a custom color map, with under-threshold "greyed" values
+        This is taken from nilearn/plotting/displays.py#L754-L772
+    """
 
     our_cmap = mpl_cm.get_cmap(cmap)
     norm = colors.Normalize(vmin=vmin, vmax=vmax)
@@ -247,6 +194,14 @@ class StatMapView(HTMLDocument):
 
 def _load_stat_map(stat_map_img,bg_img='MNI152',threshold=None, dim='auto',
                    black_bg='auto',resampling_interpolation='continuous'):
+    """ For internal use.
+        Safely load the background image and the stat map.
+        All images are resampled to a common, isotropic resolution,
+        with a diagonal affine matrix.
+        Thresholding of the stat map is done in the original space, and the
+        mask is resampled to the final resolution/space with nearest
+        interpolation.
+    """
 
     # Load stat map
     stat_map_img = check_niimg_3d(stat_map_img, dtype='auto')
@@ -371,6 +326,10 @@ def _html_brainsprite(sprite_params, stat_map_base64, bg_base64, cm_base64):
 
 
 def _get_cut_slices(stat_map_img, cut_coords=None, threshold=None):
+    """ For internal use.
+        Find slice numbers for the cut.
+        Based on find_xyz_cut_coords
+    """
     # Select coordinates for the cut
     # https://github.com/nilearn/nilearn/blob/master/nilearn/plotting/displays.py#L943
     if isinstance(cut_coords, numbers.Number):
@@ -461,6 +420,10 @@ def view_stat_map(stat_map_img, bg_img='MNI152', cut_coords=None,
         Jupyter notebook.
     """
 
+    # Get cmap
+    if isinstance(cm, str):
+        cmap = plt.cm.get_cmap(cmap)
+
     # If no background is used, switch to the white background color style
     if (bg_img is None or bg_img is False) and black_bg is 'auto':
         black_bg = False
@@ -479,22 +442,18 @@ def view_stat_map(stat_map_img, bg_img='MNI152', cut_coords=None,
 
     # Create a base64 sprite for the background
     bg_sprite = BytesIO()
-    _save_sprite(bg_img, output_sprite=bg_sprite, cmap='gray', format='png',
-                vmin=bg_min, vmax=bg_max)
-    bg_sprite.seek(0)
-    bg_base64 = encodebytes(bg_sprite.read()).decode('utf-8')
-    bg_sprite.close()
+    bg_data = _safe_get_data(bg_img, ensure_finite=True)
+    _save_sprite(bg_data, bg_sprite, bg_max, bg_min, None, 'gray', 'png')
+    bg_base64 = _bytesIO_to_base64(bg_sprite)
 
     # Create a base64 sprite for the stat map
-    # Possibly, also generate a file with the colormap
     stat_map_sprite = BytesIO()
-    _save_sprite(stat_map_img, stat_map_sprite, vmax, vmin, cmap, threshold,
-                 'png', mask_img)
-    stat_map_sprite.seek(0)
-    stat_map_base64 = encodebytes(stat_map_sprite.read()).decode('utf-8')
-    stat_map_sprite.close()
+    data = _safe_get_data(stat_map_img, ensure_finite=True)
+    mask = _safe_get_data(mask_img, ensure_finite=True)
+    _save_sprite(data, stat_map_sprite, vmax, vmin, mask, cmap, 'png')
+    stat_map_base64 = _bytesIO_to_base64(stat_map_sprite)
 
-    # Save the colormap
+    # Create a base64 colormap
     if colorbar:
         stat_map_cm = BytesIO()
         cmap_c = _custom_cmap(cmap, vmin, vmax, threshold)
