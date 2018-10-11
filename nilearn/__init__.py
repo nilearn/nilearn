@@ -33,17 +33,19 @@ signal                  --- Set of preprocessing functions for time series
 """
 
 import gzip
-import sys
 import warnings
 from distutils.version import LooseVersion
 
+from sklearn.externals import six
+
 from .version import _check_module_dependencies, __version__
+
 
 def _py2_deprecation_warning():
     warnings.simplefilter('once')
     py2_warning = ('Python2 support is deprecated and will be removed in '
                    'a future release. Consider switching to Python3.')
-    if LooseVersion(sys.version) < LooseVersion('3'):
+    if six.PY2:
         warnings.warn(message=py2_warning,
                       category=DeprecationWarning,
                       stacklevel=3,
