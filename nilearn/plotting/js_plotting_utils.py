@@ -171,7 +171,7 @@ class HTMLDocument(object):
                        file_name, file_size))
         else:
             _remove_after_n_seconds(self._temp_file, temp_file_lifetime)
-        webbrowser.open(file_name)
+        webbrowser.open('file://{}'.format(file_name))
 
     def remove_temp_file(self):
         """

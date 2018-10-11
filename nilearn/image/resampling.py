@@ -122,7 +122,7 @@ def coord_transform(x, y, z, affine):
 
         >>> from nilearn import datasets, image
         >>> niimg = datasets.load_mni152_template()
-        >>> # Find the MNI coordinates of the voxel (10, 10, 10)
+        >>> # Find the MNI coordinates of the voxel (50, 50, 50)
         >>> image.coord_transform(50, 50, 50, niimg.affine)
         (-10.0, -26.0, 28.0)
 
