@@ -1,7 +1,7 @@
 version: 2
 
 jobs:
-  per-psuh:
+  per-push:
     docker:
       - image: circleci/python:3.6
     environment:
@@ -61,7 +61,7 @@ jobs:
           root: doc/_build/html
           paths: .
 
-  nightly:
+  full:
     docker:
       - image: circleci/python:3.6
     environment:
@@ -124,16 +124,24 @@ workflows:
   diff:
     jobs:
       - per-push
-  full:
+        filter:
+          branches:
+            ignore:
+              - master
+  complete:
     jobs:
-      - nightly
-  nightly:
-    triggers:
-      - schedule:
-          cron: "5 4 * * *"
+      - full
           filter:
             branches:
               only:
                 - master
-                - /^\[MRG*/
-                - /^\[mrg*/
+  nightly:
+    triggers:
+      - schedule:
+      cron: "5 4 * * *"
+      filter:
+      branches:
+      only:
+      - master
+    jobs:
+    - full
