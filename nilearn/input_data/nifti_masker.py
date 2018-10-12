@@ -4,6 +4,7 @@ Transformer used to apply basic transformations on MRI data.
 # Author: Gael Varoquaux, Alexandre Abraham
 # License: simplified BSD
 
+import numpy as np
 from copy import copy as copy_object
 
 from sklearn.externals.joblib import Memory
@@ -247,6 +248,10 @@ class NiftiMasker(BaseMasker, CacheMixin):
         else:
             self.mask_img_ = _utils.check_niimg_3d(self.mask_img)
 
+        # sanity check on number of values in mask_img_ attribute before
+        # resampling
+        pre_resample_mask_values = np.unique(self.mask_img_.get_data())
+
         # If resampling is requested, resample also the mask
         # Resampling: allows the user to change the affine, the shape or both
         if self.verbose > 0:
@@ -256,6 +261,11 @@ class NiftiMasker(BaseMasker, CacheMixin):
             target_affine=self.target_affine,
             target_shape=self.target_shape,
             copy=False)
+        # sanity check on post-resampled mask image
+        post_resample_mask_values = np.unique(self.mask_img_.get_data())
+        if pre_resample_mask_values != post_resample_mask_values:
+            self.mask_img_ = _keep_binary_mask_img(self.mask_img_)
+
         if self.target_affine is not None:
             self.affine_ = self.target_affine
         else:
