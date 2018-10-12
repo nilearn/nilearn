@@ -378,9 +378,8 @@ def plot_contrast_matrix(contrast_def, design_matrix, colorbar=False, ax=None,
     ax.set_yticklabels(['' for x in ax.get_yticklabels()])
 
     # Shift ticks to be at 0.5, 1.5, etc
-    ax.xaxis.set(ticks=np.arange(1.0, len(design_column_names) + 1.0),
-                 ticklabels=design_column_names)
-    ax.set_xticklabels(design_column_names, rotation=60, ha='right')
+    ax.xaxis.set(ticks=np.arange(len(design_column_names)))
+    ax.set_xticklabels(design_column_names, rotation=60, ha='left')
 
     if colorbar:
         plt.colorbar(mat, fraction=0.025, pad=0.04)

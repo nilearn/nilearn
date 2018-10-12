@@ -145,7 +145,7 @@ contrasts = make_localizer_contrasts(design_matrix)
 plt.figure(figsize=(5, 9))
 from nistats.reporting import plot_contrast_matrix
 for i, (key, values) in enumerate(contrasts.items()):
-    ax = plt.subplot(5, 1, i + 1)
+    ax = plt.subplot(len(contrasts) + 1, 1, i + 1)
     plot_contrast_matrix(values, design_matrix=design_matrix, ax=ax)
 
 plt.show()
@@ -278,6 +278,9 @@ plt.show()
 # the time derivative regressors.
 
 contrast_val = np.eye(design_matrix.shape[1])[1:21:2]
+plot_contrast_matrix(contrast_val, design_matrix)
+plt.show()
+
 z_map = first_level_model.compute_contrast(
     contrast_val, output_type='z_score')
 plotting.plot_stat_map(
@@ -432,6 +435,7 @@ plt.show()
 
 #########################################################################
 # For the sake of time saving, we reample icbm_mask to our data
+# For this we call the resample_to_img routine of Nilearn.
 # We use interpolation = 'nearest' to keep the mask a binary image
 from nilearn.image import resample_to_img
 resampled_icbm_mask = resample_to_img(icbm_mask, data_mask,
