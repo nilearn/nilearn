@@ -5,6 +5,8 @@ Test the signals module
 # License: simplified BSD
 
 import os.path
+import warnings
+from distutils.version import LooseVersion
 
 import numpy as np
 from nose.tools import assert_true, assert_false, assert_raises
@@ -123,7 +125,20 @@ def test_butterworth():
     # single timeseries
     data = rand_gen.randn(n_samples)
     data_original = data.copy()
-
+    '''
+    May be only on py3.5:
+    Bug in scipy 1.1.0 generates an unavoidable FutureWarning.
+    (More info: https://github.com/scipy/scipy/issues/9086)
+    The number of warnings generated is overwhelming TravisCI's log limit,
+     causing it to fail tests.
+     This hack prevents that and will be removed in future.
+    '''
+    buggy_scipy = (LooseVersion(scipy.__version__) < LooseVersion('1.2')
+                   and LooseVersion(scipy.__version__) > LooseVersion('1.0')
+                   )
+    if buggy_scipy:
+        warnings.simplefilter('ignore')
+    ''' END HACK '''
     out_single = nisignal.butterworth(data, sampling,
                                       low_pass=low_pass, high_pass=high_pass,
                                       copy=True)
