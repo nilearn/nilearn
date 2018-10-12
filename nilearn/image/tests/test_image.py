@@ -18,7 +18,7 @@ from nilearn import signal
 from nilearn.image import image
 from nilearn.image import resampling
 from nilearn.image import concat_imgs
-from nilearn._utils import testing, niimg_conversions
+from nilearn._utils import testing, niimg_conversions, data_gen
 from nilearn.image import new_img_like
 from nilearn.image import threshold_img
 from nilearn.image import iter_img
@@ -45,7 +45,7 @@ def test_high_variance_confounds():
     length = 17
     n_confounds = 10
 
-    img, mask_img = testing.generate_fake_fmri(shape=shape, length=length)
+    img, mask_img = data_gen.generate_fake_fmri(shape=shape, length=length)
 
     confounds1 = image.high_variance_confounds(img, mask_img=mask_img,
                                                percentile=10.,
@@ -150,10 +150,10 @@ def test_smooth_img():
     lengths = (17, 18)
     fwhm = (1., 2., 3.)
 
-    img1, mask1 = testing.generate_fake_fmri(shape=shapes[0],
-                                             length=lengths[0])
-    img2, mask2 = testing.generate_fake_fmri(shape=shapes[1],
-                                             length=lengths[1])
+    img1, mask1 = data_gen.generate_fake_fmri(shape=shapes[0],
+                                              length=lengths[0])
+    img2, mask2 = data_gen.generate_fake_fmri(shape=shapes[1],
+                                              length=lengths[1])
 
     for create_files in (False, True):
         with testing.write_tmp_imgs(img1, img2,
@@ -347,7 +347,7 @@ def test_index_img():
                        [5., 6., 7., 8.],
                        [9., 10., 11., 12.],
                        [0., 0., 0., 1.]])
-    img_4d, _ = testing.generate_fake_fmri(affine=affine)
+    img_4d, _ = data_gen.generate_fake_fmri(affine=affine)
 
     fourth_dim_size = img_4d.shape[3]
     tested_indices = (list(range(fourth_dim_size)) +
@@ -378,7 +378,7 @@ def test_pd_index_img():
                        [5., 6., 7., 8.],
                        [9., 10., 11., 12.],
                        [0., 0., 0., 1.]])
-    img_4d, _ = testing.generate_fake_fmri(affine=affine)
+    img_4d, _ = data_gen.generate_fake_fmri(affine=affine)
 
     fourth_dim_size = img_4d.shape[3]
 
@@ -405,7 +405,7 @@ def test_iter_img():
                        [5., 6., 7., 8.],
                        [9., 10., 11., 12.],
                        [0., 0., 0., 1.]])
-    img_4d, _ = testing.generate_fake_fmri(affine=affine)
+    img_4d, _ = data_gen.generate_fake_fmri(affine=affine)
 
     for i, img in enumerate(image.iter_img(img_4d)):
         expected_data_3d = img_4d.get_data()[..., i]
@@ -468,7 +468,7 @@ def test_new_img_like():
 
 def test_validity_threshold_value_in_threshold_img():
     shape = (6, 8, 10)
-    maps, _ = testing.generate_maps(shape, n_regions=2)
+    maps, _ = data_gen.generate_maps(shape, n_regions=2)
 
     # testing to raise same error when threshold=None case
     testing.assert_raises_regex(ValueError,
@@ -487,7 +487,7 @@ def test_validity_threshold_value_in_threshold_img():
 def test_threshold_img():
     # to check whether passes with valid threshold inputs
     shape = (10, 20, 30)
-    maps, _ = testing.generate_maps(shape, n_regions=4)
+    maps, _ = data_gen.generate_maps(shape, n_regions=4)
     affine = np.eye(4)
     mask_img = nibabel.Nifti1Image(np.ones((shape), dtype=np.int8), affine)
 
@@ -502,7 +502,7 @@ def test_threshold_img():
 
 def test_isnan_threshold_img_data():
     shape = (10, 10, 10)
-    maps, _ = testing.generate_maps(shape, n_regions=2)
+    maps, _ = data_gen.generate_maps(shape, n_regions=2)
     data = maps.get_data()
     data[:, :, 0] = np.nan
 
@@ -591,10 +591,10 @@ def test_largest_cc_img():
     shapes = ((10, 11, 12), (13, 14, 15))
     regions = [1, 3]
 
-    img1 = testing.generate_labeled_regions(shape=shapes[0],
-                                            n_regions=regions[0])
-    img2 = testing.generate_labeled_regions(shape=shapes[1],
-                                            n_regions=regions[1])
+    img1 = data_gen.generate_labeled_regions(shape=shapes[0],
+                                             n_regions=regions[0])
+    img2 = data_gen.generate_labeled_regions(shape=shapes[1],
+                                             n_regions=regions[1])
 
     for create_files in (False, True):
         with testing.write_tmp_imgs(img1, img2,
@@ -612,7 +612,7 @@ def test_largest_cc_img():
             assert_true(out.shape == (shapes[0]))
 
         # Test whether 4D Nifti throws the right error.
-        img_4D = testing.generate_fake_fmri(shapes[0], length=17)
+        img_4D = data_gen.generate_fake_fmri(shapes[0], length=17)
         assert_raises(DimensionError, largest_connected_component_img, img_4D)
 
     # tests adapted to non-native endian data dtype
