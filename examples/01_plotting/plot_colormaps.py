@@ -11,6 +11,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from nilearn.plotting.cm import _cmap_d as nilearn_cmaps
+from nilearn.plotting import show
 
 ###########################################################################
 # Plot color maps
@@ -47,4 +48,4 @@ for index, cmap in enumerate(m_cmaps):
     plt.axis('off')
     plt.title(cmap, fontsize=10, va='bottom', rotation=90)
 
-plt.show()
+show()
