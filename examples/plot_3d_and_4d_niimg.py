@@ -16,13 +16,13 @@ from nilearn import datasets
 print('Datasets are stored in: %r' % datasets.get_data_dirs())
 
 ###############################################################################
-# Let's now retrieve a motor contrast from a localizer experiment
-tmap_filenames = datasets.fetch_localizer_button_task()['tmaps']
-print(tmap_filenames)
+# Let's now retrieve a motor contrast from a Neurovault repository
+motor_images = datasets.fetch_neurovault_motor_task()
+print(motor_images.images)
 
 ###############################################################################
-# tmap_filenames is a list of filenames. We need to take the first one
-tmap_filename = tmap_filenames[0]
+# motor_images is a list of filenames. We need to take the first one
+tmap_filename = motor_images.images[0]
 
 
 ###############################################################################
