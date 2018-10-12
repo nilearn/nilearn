@@ -58,9 +58,9 @@ from sklearn.linear_model import (LogisticRegression,
                                   RidgeClassifier,
                                   RidgeClassifierCV,
                                   )
-logistic = LogisticRegression(C=1., penalty="l1", solver='lbfgs')
-logistic_50 = LogisticRegression(C=50., penalty="l1", solver='lbfgs')
-logistic_l2 = LogisticRegression(C=1., penalty="l2", solver='lbfgs')
+logistic = LogisticRegression(C=1., penalty="l1", solver='liblinear')
+logistic_50 = LogisticRegression(C=50., penalty="l1", solver='liblinear')
+logistic_l2 = LogisticRegression(C=1., penalty="l2", solver='liblinear')
 
 # Cross-validated versions of these classifiers
 from sklearn.model_selection import GridSearchCV
