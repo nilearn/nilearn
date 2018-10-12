@@ -21,6 +21,7 @@ import sklearn
 from sklearn.externals.joblib import Parallel, delayed, cpu_count
 from sklearn import svm
 from sklearn.base import BaseEstimator
+from sklearn.exceptions import ConvergenceWarning
 
 from .. import masking
 from ..image.resampling import coord_transform
@@ -80,12 +81,14 @@ def search_light(X, y, estimator, A, groups=None, scoring=None,
         search_light scores
     """
     group_iter = GroupIterator(A.shape[0], n_jobs)
-    scores = Parallel(n_jobs=n_jobs, verbose=verbose)(
-        delayed(_group_iter_search_light)(
-            A.rows[list_i],
-            estimator, X, y, groups, scoring, cv,
-            thread_id + 1, A.shape[0], verbose)
-        for thread_id, list_i in enumerate(group_iter))
+    with warnings.catch_warnings():  # might not converge
+        warnings.simplefilter('ignore', ConvergenceWarning)
+        scores = Parallel(n_jobs=n_jobs, verbose=verbose)(
+            delayed(_group_iter_search_light)(
+                A.rows[list_i],
+                estimator, X, y, groups, scoring, cv,
+                thread_id + 1, A.shape[0], verbose)
+            for thread_id, list_i in enumerate(group_iter))
     return np.concatenate(scores)
 
 
