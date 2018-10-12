@@ -111,22 +111,22 @@ def test_annotations():
                          scalebar=True)
     orthoslicer.annotate(size=12, left_right=False, positions=False,
                          scalebar=True,
-                         scalebar_kwargs={'scale_width': 2.5,
-                                          'units': 'cm',
-                                          'loc': 3,
-                                          'size_vertical': 2,
-                                          'label_top': False,
-                                          'frameon': True,
-                                          'borderpad': 0.1})
-    orthoslicer.annotate(size=12, left_right=False, positions=False,
+                         scale_size=2.5,
+                         scale_units='cm',
+                         scale_loc=3,
+                         scale_size_vertical=2,
+                         scale_label_top=False,
+                         scale_frameon=True,
+                         scale_borderpad=0.1)
+    orthoslicer.annotate(size=12, left_right=True, positions=False,
                          scalebar=True,
-                         scalebar_kwargs={'scale_width': 2.5,
-                                          'units': 'mm',
-                                          'loc': 3,
-                                          'size_vertical': 2,
-                                          'label_top': True,
-                                          'frameon': False,
-                                          'borderpad': 0.1})
+                         scale_size=2.5,
+                         scale_units='mm',
+                         scale_loc=3,
+                         scale_size_vertical=2,
+                         scale_label_top=True,
+                         scale_frameon=False,
+                         scale_borderpad=0.1)
     orthoslicer.close()
 
 

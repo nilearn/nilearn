@@ -221,13 +221,12 @@ display.annotate(scalebar=True)
 
 
 ###############################################################################
-# Further configuration can be achieved by setting ``scalebar_kwargs``.
-# For instance, changing ``units`` to `mm` or a different scale bar width.
+# Further configuration can be achieved by setting ``scale_*`` keyword args.
+# For instance, changing ``units`` to `mm` or a different scale bar size.
 display = plotting.plot_anat(mean_haxby_img,
                              title="adding a scale bar",
                              cut_coords=[-34, -39, -9])
-display.annotate(scalebar=True,
-                 scalebar_kwargs={'scale_width': 25, 'units': 'mm'})
+display.annotate(scalebar=True, scale_size=25, scale_units='mm')
 
 #########################################
 # Saving plots to file
