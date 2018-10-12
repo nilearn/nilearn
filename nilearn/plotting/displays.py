@@ -181,6 +181,8 @@ class BaseAxes(object):
         scalebar_kwargs = scalebar_kwargs or {}
 
         axis = self.ax
+
+        color = kwargs.pop('color')
         font_properties = scalebar_kwargs.get('fontproperties',
                                               FontProperties(**kwargs))
 
@@ -195,6 +197,7 @@ class BaseAxes(object):
             axis.transData,
             width_mm,
             '%g%s' % (scale_width, units),
+            color=color,
             loc=scalebar_kwargs.pop('loc', 4),
             pad=scalebar_kwargs.pop('pad', 0.1),
             borderpad=scalebar_kwargs.pop('borderpad', 0.5),
