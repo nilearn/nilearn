@@ -47,6 +47,7 @@ import nibabel
 
 from nilearn import decoding
 import nilearn.masking
+from nilearn.plotting import show
 
 
 ##############################################################################
@@ -216,7 +217,7 @@ p_values[np.isnan(p_values)] = 0
 p_values[p_values > 10] = 10
 plot_slices(p_values, title="f_regress")
 
-plt.show()
+show()
 
 ###############################################################################
 # An exercice to go further

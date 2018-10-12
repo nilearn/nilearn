@@ -70,16 +70,20 @@ n_jobs = 1
 # splitting the samples in 4 folds and make 4 runs using each fold as a test
 # set once and the others as learning sets
 from sklearn.model_selection import KFold
+from sklearn.exceptions import ConvergenceWarning
 cv = KFold(n_splits=4)
 
 import nilearn.decoding
+import warnings
 # The radius is the one of the Searchlight sphere that will scan the volume
-searchlight = nilearn.decoding.SearchLight(
-    mask_img,
-    process_mask_img=process_mask_img,
-    radius=5.6, n_jobs=n_jobs,
-    verbose=1, cv=cv)
-searchlight.fit(fmri_img, y)
+with warnings.catch_warnings():
+    warnings.simplefilter('ignore', ConvergenceWarning)  # might not converge
+    searchlight = nilearn.decoding.SearchLight(
+        mask_img,
+        process_mask_img=process_mask_img,
+        radius=5.6, n_jobs=n_jobs,
+        verbose=1, cv=cv)
+    searchlight.fit(fmri_img, y)
 
 #########################################################################
 # F-scores computation

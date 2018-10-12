@@ -105,6 +105,7 @@ img_4d_affine_in_mm_space = resample_img(
 #############################################################################
 # Finally, visualize
 import matplotlib.pyplot as plt
+from nilearn.plotting import show
 plt.figure()
 plt.imshow(image, interpolation="nearest", vmin=0, vmax=vmax)
 plt.title("The original data in voxel space")
@@ -125,4 +126,4 @@ plt.imshow(img_4d_affine_in_mm_space.get_data()[:, :, 0],
 plt.title("Transformed using a 4x4 affine -\n Uses affine anchor "
           "and estimates bounding box size")
 
-plt.show()
+show()
