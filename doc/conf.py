@@ -28,6 +28,16 @@ shutil.copy(
                  'jquery.js'))
 
 
+# -- Parallel computing ------------------------------------------------------
+try:
+    from sklearn.utils import parallel_backend, cpu_count
+    parallel_backend(max(cpu_count, 4))
+except:
+    pass
+
+# ----------------------------------------------------------------------------
+
+
 # If extensions (or modules to document with autodoc) are in another
 # directory, add these directories to sys.path here. If the directory
 # is relative to the documentation root, use os.path.abspath to make it
