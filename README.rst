@@ -49,10 +49,8 @@ If you want to download openneuro datasets Boto3 >= 1.2 is required
 Install
 =======
 
-In order to perform the installation, run the following command from the nistats directory::
-
-    python setup.py install --user
-
+The installation instructions are found on the webpage:
+https://nistats.github.io/
 
 Development
 ===========
