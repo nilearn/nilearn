@@ -5,7 +5,6 @@ graphical models.
 # Authors: Philippe Gervais
 # License: simplified BSD
 
-from distutils.version import LooseVersion
 import warnings
 import collections
 import operator
@@ -14,7 +13,6 @@ import itertools
 import numpy as np
 import scipy.linalg
 
-import sklearn
 from sklearn.base import BaseEstimator
 from sklearn.covariance import empirical_covariance
 from sklearn.externals.joblib import Memory, delayed, Parallel

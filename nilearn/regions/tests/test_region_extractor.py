@@ -12,7 +12,8 @@ from nilearn.regions.region_extractor import (_threshold_maps_ratio,
                                               _remove_small_regions)
 
 from nilearn._utils import testing
-from nilearn._utils.testing import assert_raises_regex, generate_maps
+from nilearn._utils.testing import assert_raises_regex
+from nilearn._utils.data_gen import generate_maps
 from nilearn._utils.exceptions import DimensionError
 
 
