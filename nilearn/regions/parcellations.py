@@ -277,7 +277,7 @@ class Parcellations(MultiPCA):
             kmeans = MiniBatchKMeans(n_clusters=self.n_parcels,
                                      init='k-means++',
                                      random_state=self.random_state,
-                                     verbose=self.verbose)
+                                     verbose=max(0, self.verbose - 1))
             labels = self._cache(_estimator_fit,
                                  func_memory_level=1)(components.T, kmeans)
         else:
