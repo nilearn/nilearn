@@ -74,6 +74,7 @@ def test_compute_epi_mask():
     mean_image = Nifti1Image(mean_image, np.eye(4))
     with warnings.catch_warnings(record=True) as w:
         compute_epi_mask(mean_image, exclude_zeros=True)
+    print(repr(w))  # Code inserted temporarily for debugging, will be removed.
     assert_equal(len(w), 1)
     assert_true(isinstance(w[0].message, masking.MaskWarning))
 
