@@ -68,7 +68,7 @@ of the estimator::
     >>> estimator.precision_  # doctest: +SKIP
 
 
-.. |covariance| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_inverse_covariance_connectome_001.png
+.. |covariance| image:: ../_images/sphx_glr_plot_inverse_covariance_connectome_001.png
     :target: ../auto_examples/03_connectivity/plot_inverse_covariance_connectome.html
     :scale: 40
 .. |precision| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_inverse_covariance_connectome_003.png
