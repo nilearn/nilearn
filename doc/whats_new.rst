@@ -66,6 +66,9 @@ Changes
     - `sklearn.cross_validation` and `sklearn.grid_search` have been
       replaced by `sklearn.model_selection` in all the examples.
 
+    - Colorbars in plotting functions now have a middle gray background
+      suitable for use with custom colormaps with a non-unity alpha channel.
+
 
 0.4.2
 =====
