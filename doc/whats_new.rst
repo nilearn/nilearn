@@ -25,6 +25,10 @@ Enhancements
     - All NiftiMaskers now have a `dtype` argument. For now the default behaviour
       is to keep the same data type as the input data.
 
+    - Displays created by plotting functions can now add a scale bar to
+      indicate the size in mm or cm (see :ref:`plotting`), contributed by
+      Oscar Esteban
+
     - New functions :func:`nilearn.plotting.view_surf` and
       :func:`nilearn.plotting.view_surf` and
       :func:`nilearn.plotting.view_img_on_surf` for interactive visualization of
@@ -51,10 +55,6 @@ Enhancements
 
     - Added :func:`nilearn.datasets.fetch_neurovault_auditory_computation_task`
       and :func:`nilearn.datasets.fetch_neurovault_motor_task` for simple example data.
-
-    - Added :func:`nilearn.plotting.displays.BaseAxes.draw_scale_bar` which is
-      accessible through :func:`nilearn.plotting.displays.BaseSlicer.annotate`
-      to add a scale reference bar into sliced plots.
 
 Changes
 -------
