@@ -45,7 +45,7 @@ def _py2_deprecation_warning():
     warnings.simplefilter('once')
     py2_warning = ('Python2 support is deprecated and will be removed in '
                    'a future release. Consider switching to Python3.')
-    if LooseVersion(sys.version) < LooseVersion('3'):
+    if sys.version_info.major == 2:
         warnings.warn(message=py2_warning,
                       category=DeprecationWarning,
                       stacklevel=3,
