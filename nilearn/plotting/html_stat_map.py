@@ -5,6 +5,7 @@ import os
 import tempfile
 import base64
 import json
+import warnings
 
 import numpy as np
 
@@ -116,6 +117,12 @@ def view_stat_map(stat_map_img, threshold=None, bg_img='MNI152',
         Jupyter notebook.
 
     """
+    change_warn_msg = (
+        '"{}" is under actve development and its interface and functionality '
+        'may change in future without warning.\n Please do not rely on it'
+        'in critical and production environments.'
+    ).format('view_stat_map')
+    warnings.warn(message=change_warn_msg, category=FutureWarning)
     stat_map_img = check_niimg_3d(stat_map_img, dtype='auto')
     if bg_img == 'MNI152':
         bg_img = datasets.load_mni152_template()
