@@ -151,7 +151,8 @@ def signals_to_img_labels(signals, labels_img, mask_img=None,
     --------
     nilearn.regions.img_to_signals_labels
     nilearn.regions.signals_to_img_maps
-    nilearn.input_data.NiftiMasker
+    nilearn.input_data.NiftiLabelsMasker : Signal extraction on labels
+        images e.g. clusters
     """
 
     labels_img = _utils.check_niimg_3d(labels_img)
