@@ -52,6 +52,9 @@ Enhancements
     - Added :func:`nilearn.datasets.fetch_neurovault_auditory_computation_task`
       and :func:`nilearn.datasets.fetch_neurovault_motor_task` for simple example data.
 
+    - Added :func:`nilearn.plotting.displays.BaseAxes.draw_scale_bar` which is
+      accessible through :func:`nilearn.plotting.displays.BaseSlicer.annotate`
+      to add a scale reference bar into sliced plots.
 
 Changes
 -------
