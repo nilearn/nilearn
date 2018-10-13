@@ -309,7 +309,7 @@ def signals_to_img_maps(region_signals, maps_img, mask_img=None):
     --------
     nilearn.regions.signals_to_img_labels
     nilearn.regions.img_to_signals_maps
-    nilearn.input_data.NiftiMasker
+    nilearn.input_data.NiftiMapsMasker
     """
 
     maps_img = _utils.check_niimg_4d(maps_img)
