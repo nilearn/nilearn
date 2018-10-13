@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 
 
 # Generate synthetic data
-from nilearn._utils.testing import generate_group_sparse_gaussian_graphs
+from nilearn._utils.data_gen import generate_group_sparse_gaussian_graphs
 from nilearn.plotting import show
 
 n_subjects = 20  # number of subjects
