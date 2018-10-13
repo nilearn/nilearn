@@ -11,7 +11,7 @@ from scipy import ndimage
 from sklearn.externals.joblib import Parallel, delayed
 
 from . import _utils
-from .image import new_img_like
+from .image import new_img_like, math_img
 from ._utils.cache_mixin import cache
 from ._utils.ndimage import largest_connected_component, get_border_data
 from ._utils.niimg import _safe_get_data
@@ -22,6 +22,15 @@ class MaskWarning(UserWarning):
 
 
 warnings.simplefilter("always", MaskWarning)
+
+
+def _keep_binary_mask_img(mask_img):
+    """Keeps given mask to binary when there are more than 2 values
+    in the given mask.
+    """
+    mask_img = _utils.check_niimg_3d(mask_img)
+    mask_img = math_img("img > .5", img=mask_img)
+    return mask_img
 
 
 def _load_mask_img(mask_img, allow_empty=False):
@@ -82,7 +91,7 @@ def _extrapolate_out_mask(data, mask, iterations=1):
     outer_shell[1:-1, 1:-1, 1:-1] = np.logical_xor(new_mask, mask)
     outer_shell_x, outer_shell_y, outer_shell_z = np.where(outer_shell)
     extrapolation = list()
-    for i, j, k in [(1, 0, 0), (-1, 0, 0), 
+    for i, j, k in [(1, 0, 0), (-1, 0, 0),
                     (0, 1, 0), (0, -1, 0),
                     (0, 0, 1), (0, 0, -1)]:
         this_x = outer_shell_x + i
