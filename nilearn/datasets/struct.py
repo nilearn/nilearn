@@ -63,28 +63,34 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
     -----
     For more information about this dataset's structure:
     http://www.bic.mni.mcgill.ca/ServicesAtlases/ICBM152NLin2009
+
+    The original download URL is
+    http://www.bic.mni.mcgill.ca/~vfonov/icbm/2009/mni_icbm152_nlin_sym_09a_nifti.zip
     """
     if url is None:
-        url = "http://www.bic.mni.mcgill.ca/~vfonov/icbm/2009/" \
-              "mni_icbm152_nlin_sym_09a_nifti.zip"
+        # The URL can be retrieved from the nilearn account on OSF (Open
+        # Science Framework), https://osf.io/4r3jt/quickfiles/
+        # Clicking on the "share" button gives the root of the URL.
+        url = "https://osf.io/7pj92/download"
     opts = {'uncompress': True}
 
     keys = ("csf", "gm", "wm",
             "pd", "t1", "t2", "t2_relax",
             "eye_mask", "face_mask", "mask")
     filenames = [(os.path.join("mni_icbm152_nlin_sym_09a", name), url, opts)
-                 for name in ("mni_icbm152_csf_tal_nlin_sym_09a.nii",
-                              "mni_icbm152_gm_tal_nlin_sym_09a.nii",
-                              "mni_icbm152_wm_tal_nlin_sym_09a.nii",
+                 for name in (
+                    "mni_icbm152_csf_tal_nlin_sym_09a.nii.gz",
+                    "mni_icbm152_gm_tal_nlin_sym_09a.nii.gz",
+                    "mni_icbm152_wm_tal_nlin_sym_09a.nii.gz",
 
-                              "mni_icbm152_pd_tal_nlin_sym_09a.nii",
-                              "mni_icbm152_t1_tal_nlin_sym_09a.nii",
-                              "mni_icbm152_t2_tal_nlin_sym_09a.nii",
-                              "mni_icbm152_t2_relx_tal_nlin_sym_09a.nii",
+                    "mni_icbm152_pd_tal_nlin_sym_09a.nii.gz",
+                    "mni_icbm152_t1_tal_nlin_sym_09a.nii.gz",
+                    "mni_icbm152_t2_tal_nlin_sym_09a.nii.gz",
+                    "mni_icbm152_t2_relx_tal_nlin_sym_09a.nii.gz",
 
-                              "mni_icbm152_t1_tal_nlin_sym_09a_eye_mask.nii",
-                              "mni_icbm152_t1_tal_nlin_sym_09a_face_mask.nii",
-                              "mni_icbm152_t1_tal_nlin_sym_09a_mask.nii")]
+                    "mni_icbm152_t1_tal_nlin_sym_09a_eye_mask.nii.gz",
+                    "mni_icbm152_t1_tal_nlin_sym_09a_face_mask.nii.gz",
+                    "mni_icbm152_t1_tal_nlin_sym_09a_mask.nii.gz")]
 
     dataset_name = 'icbm152_2009'
     data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,

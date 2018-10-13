@@ -211,6 +211,9 @@ for kind in kinds:
 
 ###############################################################################
 # Finally, we can display the classification scores.
+
+from nilearn.plotting import show
+
 plt.figure(figsize=(6, 4))
 positions = np.arange(len(kinds)) * .1 + .1
 plt.barh(positions, mean_scores, align='center', height=.05)
@@ -220,4 +223,4 @@ plt.xlabel('Classification accuracy')
 plt.grid(True)
 plt.tight_layout()
 
-plt.show()
+show()
