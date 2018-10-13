@@ -3,8 +3,9 @@ import numpy as np
 
 from nose.tools import assert_equal, assert_raises
 
-from nilearn._utils.testing import generate_fake_fmri, with_memory_profiler
+from nilearn._utils.testing import with_memory_profiler
 from nilearn._utils.testing import assert_memory_less_than, assert_raises_regex
+from nilearn._utils.data_gen import generate_fake_fmri
 
 
 def create_object(size):

@@ -19,6 +19,7 @@ from nose.tools import assert_true, assert_false, assert_raises
 from numpy.testing import assert_array_equal, assert_equal
 
 from nilearn._utils import testing
+from nilearn._utils import data_gen
 from nilearn._utils.class_inspect import get_params
 from nilearn._utils.exceptions import DimensionError
 from nilearn._utils.testing import assert_raises_regex
@@ -100,7 +101,7 @@ def test_matrix_orientation():
     # the "step" kind generate heavyside-like signals for each voxel.
     # all signals being identical, standardizing along the wrong axis
     # would leave a null signal. Along the correct axis, the step remains.
-    fmri, mask = testing.generate_fake_fmri(shape=(40, 41, 42), kind="step")
+    fmri, mask = data_gen.generate_fake_fmri(shape=(40, 41, 42), kind="step")
     masker = NiftiMasker(mask_img=mask, standardize=True, detrend=True)
     timeseries = masker.fit_transform(fmri)
     assert(timeseries.shape[0] == fmri.shape[3])

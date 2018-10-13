@@ -61,7 +61,7 @@ print('Mean square error (MSE) on the predicted age: %.2f' % mse)
 
 ###########################################################################
 # Visualize the resulting maps
-from nilearn.plotting import plot_stat_map
+from nilearn.plotting import plot_stat_map, show
 # weights map
 background_img = gm_imgs[0]
 plot_stat_map(coef_img, background_img, title="graph-net weights",
@@ -86,4 +86,4 @@ ax2.plot(age_test - y_pred, label="True age - predicted age",
 ax2.set_xlabel("subject")
 plt.legend(loc="best")
 
-plt.show()
+show()

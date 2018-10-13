@@ -11,8 +11,8 @@ from nilearn.regions import (connected_regions, RegionExtractor,
 from nilearn.regions.region_extractor import (_threshold_maps_ratio,
                                               _remove_small_regions)
 
-from nilearn._utils import testing
-from nilearn._utils.testing import assert_raises_regex, generate_maps
+from nilearn._utils.testing import assert_raises_regex
+from nilearn._utils.data_gen import generate_maps, generate_labeled_regions
 from nilearn._utils.exceptions import DimensionError
 
 
@@ -202,8 +202,8 @@ def test_error_messages_connected_label_regions():
     shape = (13, 11, 12)
     affine = np.eye(4)
     n_regions = 2
-    labels_img = testing.generate_labeled_regions(shape, affine=affine,
-                                                  n_regions=n_regions)
+    labels_img = generate_labeled_regions(shape, affine=affine,
+                                          n_regions=n_regions)
     assert_raises_regex(ValueError,
                         "Expected 'min_size' to be specified as integer.",
                         connected_label_regions,
@@ -243,8 +243,8 @@ def test_connected_label_regions():
     shape = (13, 11, 12)
     affine = np.eye(4)
     n_regions = 9
-    labels_img = testing.generate_labeled_regions(shape, affine=affine,
-                                                  n_regions=n_regions)
+    labels_img = generate_labeled_regions(shape, affine=affine,
+                                          n_regions=n_regions)
     labels_data = labels_img.get_data()
     n_labels_wo_reg_ext = len(np.unique(labels_data))
 
@@ -353,8 +353,8 @@ def test_connected_label_regions():
     # Test if labels (or names to regions) given is a string without a list.
     # Then, we expect it to be split to regions extracted and returned as list.
     labels_in_str = 'region_a'
-    labels_img_in_str = testing.generate_labeled_regions(shape, affine=affine,
-                                                         n_regions=1)
+    labels_img_in_str = generate_labeled_regions(shape, affine=affine,
+                                                 n_regions=1)
     extract_regions, new_labels = connected_label_regions(labels_img_in_str,
                                                           labels=labels_in_str)
     assert_true(isinstance(new_labels, list))
