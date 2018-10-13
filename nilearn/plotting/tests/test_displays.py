@@ -107,26 +107,11 @@ def test_annotations():
     # In particular, exercise some of the keyword arguments for scale bars
     orthoslicer = OrthoSlicer(cut_coords=(None, None, None))
     orthoslicer.annotate(size=10, left_right=True, positions=False)
-    orthoslicer.annotate(size=10, left_right=True, positions=False,
-                         scalebar=True)
     orthoslicer.annotate(size=12, left_right=False, positions=False,
                          scalebar=True,
                          scale_size=2.5,
                          scale_units='cm',
-                         scale_loc=3,
-                         scale_size_vertical=2,
-                         scale_label_top=False,
-                         scale_frameon=True,
-                         scale_borderpad=0.1)
-    orthoslicer.annotate(size=12, left_right=True, positions=False,
-                         scalebar=True,
-                         scale_size=2.5,
-                         scale_units='mm',
-                         scale_loc=3,
-                         scale_size_vertical=2,
-                         scale_label_top=True,
-                         scale_frameon=False,
-                         scale_borderpad=0.1)
+                         scale_loc=3)
     orthoslicer.close()
 
 

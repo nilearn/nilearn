@@ -939,7 +939,8 @@ class BaseSlicer(object):
                                   c=marker_color, **kwargs)
 
     def annotate(self, left_right=True, positions=True, scalebar=False,
-                 size=12, **kwargs):
+                 size=12, scale_size=5.0, scale_units='cm', scale_loc=4,
+                 **kwargs):
         """ Add annotations to the plot.
 
         Parameters
@@ -956,11 +957,25 @@ class BaseSlicer(object):
             :meth:`~nilearn.plotting.displays.BaseAxes.draw_scale_bar`.
         size: integer, optional
             The size of the text used.
+        scale_size: number, optional
+            The length of the scalebar, in units of scale_units
+        scale_units: {'mm', 'cm'}
+            The units for the scalebar
+        scale_loc: integer
+            The positioning for the scalebar, valid location codes are::
+                    'upper right'  : 1,
+                    'upper left'   : 2,
+                    'lower left'   : 3,
+                    'lower right'  : 4,
+                    'right'        : 5,
+                    'center left'  : 6,
+                    'center right' : 7,
+                    'lower center' : 8,
+                    'upper center' : 9,
+                    'center'       : 10
         kwargs:
             Extra keyword arguments are passed to matplotlib's text
-            function. If the keyword starts with `scale_`, then it is
-            redirected to :meth:`~nilearn.plotting.displays.BaseAxes.\
-            draw_scale_bar` if ``scalebar`` is ``True``.
+            function.
         """
         kwargs = kwargs.copy()
         if 'color' not in kwargs:
@@ -970,13 +985,6 @@ class BaseSlicer(object):
                 kwargs['color'] = 'k'
 
         bg_color = ('k' if self._black_bg else 'w')
-
-        # Remove scalebar's kwargs as they will conflict with matplotlib's
-        # kwargs of other annotations
-        scalebar_args = {}
-        for kw in list(kwargs.keys()):
-            if kw.startswith('scale_'):
-                scalebar_args[kw[6:]] = kwargs.pop(kw)
 
         if left_right:
             for display_axis in self.axes.values():
@@ -989,11 +997,13 @@ class BaseSlicer(object):
                                            **kwargs)
 
         if scalebar:
-            kwargs.update(scalebar_args)  # Insert args back
             axes = self.axes.values()
             for display_axis in axes:
                 display_axis.draw_scale_bar(bg_color=bg_color,
                                             fontsize=size,
+                                            size=scale_size,
+                                            units=scale_units,
+                                            loc=scale_loc,
                                             **kwargs)
 
     def close(self):
