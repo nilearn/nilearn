@@ -954,7 +954,8 @@ class BaseSlicer(object):
         scalebar: boolean, optional
             If ``True``, cuts are annotated with a reference scale bar.
             For finer control of the scale bar, please check out
-            :meth:`~nilearn.plotting.displays.BaseAxes.draw_scale_bar`.
+            the draw_scale_bar method on the axes in "axes" attribute of
+            this object.
         size: integer, optional
             The size of the text used.
         scale_size: number, optional
