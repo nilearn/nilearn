@@ -237,8 +237,9 @@ class BoundingBoxError(ValueError):
 ###############################################################################
 # Resampling
 
-def _resample_one_img(data, A, b, target_shape, fill,
-                      interpolation_order, out, copy=True):
+def _resample_one_img(data, A, b, target_shape,
+                      interpolation_order, out, copy=True,
+                      fill_value=0):
     "Internal function for resample_img, do not use"
     if data.dtype.kind in ('i', 'u'):
         # Integers are always finite
@@ -269,7 +270,7 @@ def _resample_one_img(data, A, b, target_shape, fill,
                                  offset=b,
                                  output_shape=target_shape,
                                  output=out,
-                                 cval=fill,
+                                 cval=fill_value,
                                  order=interpolation_order)
 
     if has_not_finite:
@@ -288,7 +289,7 @@ def _resample_one_img(data, A, b, target_shape, fill,
 
 def resample_img(img, target_affine=None, target_shape=None,
                  interpolation='continuous', copy=True, order="F",
-                 clip=True, fill=0):
+                 clip=True, fill_value=0):
     """Resample a Niimg-like object
 
     Parameters
@@ -327,7 +328,7 @@ def resample_img(img, target_affine=None, target_shape=None,
         value when extrapolating out of field of view.
         If False no clip is preformed.
 
-    fill: float, optional
+    fill_value: float, optional
         Use a fill value for points outside of input volume (default 0).
 
     Returns
@@ -535,10 +536,11 @@ def resample_img(img, target_affine=None, target_shape=None,
     # separable in the extra dimensions. This reduces the
     # computational cost
     for ind in np.ndindex(*other_shape):
-        _resample_one_img(data[all_img + ind], A, b, target_shape, fill,
+        _resample_one_img(data[all_img + ind], A, b, target_shape,
                           interpolation_order,
                           out=resampled_data[all_img + ind],
-                          copy=not input_img_is_string)
+                          copy=not input_img_is_string,
+                          fill_value=fill_value)
 
     if clip:
         # force resampled data to have a range contained in the original data
@@ -552,8 +554,9 @@ def resample_img(img, target_affine=None, target_shape=None,
     return new_img_like(img, resampled_data, target_affine)
 
 
-def resample_to_img(source_img, target_img, fill=0,
-                    interpolation='continuous', copy=True, order='F', clip=False):
+def resample_to_img(source_img, target_img,
+                    interpolation='continuous', copy=True, order='F',
+                    clip=False, fill_value=0):
     """Resample a Niimg-like source image on a target Niimg-like image
     (no registration is performed: the image should already be aligned).
 
@@ -587,7 +590,7 @@ def resample_to_img(source_img, target_img, fill=0,
         If True all resampled image values above max(img) and under min(img) are
         clipped to min(img) and max(img)
 
-    fill: float, optional
+    fill_value: float, optional
         Use a fill value for points outside of input volume (default 0).
 
     Returns
@@ -613,7 +616,7 @@ def resample_to_img(source_img, target_img, fill=0,
                         target_affine=target.affine,
                         target_shape=target_shape,
                         interpolation=interpolation, copy=copy, order=order,
-                        fill=fill, clip=clip)
+                        clip=clip, fill_value=fill_value)
 
 
 def reorder_img(img, resample=None):
