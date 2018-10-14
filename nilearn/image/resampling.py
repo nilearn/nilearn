@@ -118,11 +118,11 @@ def coord_transform(x, y, z, affine):
     --------
     Transform data from coordinates to brain space. The "affine" matrix
     can be found as the ".affine" attribute of a nifti image, or using
-    the "get_affine()" method for older nibabel installations::
+    the "get_affine()" method for older nibabel installations:
 
         >>> from nilearn import datasets, image
         >>> niimg = datasets.load_mni152_template()
-        >>> # Find the MNI coordinates of the voxel (10, 10, 10)
+        >>> # Find the MNI coordinates of the voxel (50, 50, 50)
         >>> image.coord_transform(50, 50, 50, niimg.affine)
         (-10.0, -26.0, 28.0)
 
@@ -237,7 +237,7 @@ class BoundingBoxError(ValueError):
 ###############################################################################
 # Resampling
 
-def _resample_one_img(data, A, b, target_shape,
+def _resample_one_img(data, A, b, target_shape, fill,
                       interpolation_order, out, copy=True):
     "Internal function for resample_img, do not use"
     if data.dtype.kind in ('i', 'u'):
@@ -269,6 +269,7 @@ def _resample_one_img(data, A, b, target_shape,
                                  offset=b,
                                  output_shape=target_shape,
                                  output=out,
+                                 cval=fill,
                                  order=interpolation_order)
 
     if has_not_finite:
@@ -287,7 +288,7 @@ def _resample_one_img(data, A, b, target_shape,
 
 def resample_img(img, target_affine=None, target_shape=None,
                  interpolation='continuous', copy=True, order="F",
-                 clip=True):
+                 clip=True, fill=0):
     """Resample a Niimg-like object
 
     Parameters
@@ -325,6 +326,9 @@ def resample_img(img, target_affine=None, target_shape=None,
         0 is added as an image value for clipping, and it is the padding
         value when extrapolating out of field of view.
         If False no clip is preformed.
+
+    fill: float, optional
+        Use a fill value for points outside of input volume (default 0).
 
     Returns
     -------
@@ -531,7 +535,7 @@ def resample_img(img, target_affine=None, target_shape=None,
     # separable in the extra dimensions. This reduces the
     # computational cost
     for ind in np.ndindex(*other_shape):
-        _resample_one_img(data[all_img + ind], A, b, target_shape,
+        _resample_one_img(data[all_img + ind], A, b, target_shape, fill,
                           interpolation_order,
                           out=resampled_data[all_img + ind],
                           copy=not input_img_is_string)
@@ -548,7 +552,7 @@ def resample_img(img, target_affine=None, target_shape=None,
     return new_img_like(img, resampled_data, target_affine)
 
 
-def resample_to_img(source_img, target_img,
+def resample_to_img(source_img, target_img, fill=0,
                     interpolation='continuous', copy=True, order='F', clip=False):
     """Resample a Niimg-like source image on a target Niimg-like image
     (no registration is performed: the image should already be aligned).
@@ -583,6 +587,9 @@ def resample_to_img(source_img, target_img,
         If True all resampled image values above max(img) and under min(img) are
         clipped to min(img) and max(img)
 
+    fill: float, optional
+        Use a fill value for points outside of input volume (default 0).
+
     Returns
     -------
     resampled: nibabel.Nifti1Image
@@ -605,7 +612,8 @@ def resample_to_img(source_img, target_img,
     return resample_img(source_img,
                         target_affine=target.affine,
                         target_shape=target_shape,
-                        interpolation=interpolation, copy=copy, order=order, clip=clip)
+                        interpolation=interpolation, copy=copy, order=order,
+                        fill=fill, clip=clip)
 
 
 def reorder_img(img, resample=None):
