@@ -371,6 +371,10 @@ div.related ul li a:hover {
     color: #3CA8E7;
 }
 
+div.related-wrapper {
+    background: #ffffff;
+}
+
 div.body {
     margin: 0;
     padding: 1em 20px 30px 20px;
