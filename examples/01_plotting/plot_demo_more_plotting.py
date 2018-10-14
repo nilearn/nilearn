@@ -207,7 +207,30 @@ display = plotting.plot_anat(mean_haxby_img, title="add_markers",
 coords = [(-34, -39, -9)]
 display.add_markers(coords, marker_color='y', marker_size=100)
 
+#########################################
+# Annotating plots
+# ------------------------------
+# It is possible to alter the default annotations of plots, using the
+# ``annotate`` member function of display objects.
+# For example, we can add a scale bar at the bottom right of each view:
+
+display = plotting.plot_anat(mean_haxby_img,
+                             title="adding a scale bar",
+                             cut_coords=[-34, -39, -9])
+display.annotate(scalebar=True)
+
+
 ###############################################################################
+# Further configuration can be achieved by setting ``scale_*`` keyword args.
+# For instance, changing ``units`` to `mm` or a different scale bar size.
+display = plotting.plot_anat(mean_haxby_img,
+                             title="adding a scale bar",
+                             cut_coords=[-34, -39, -9])
+display.annotate(scalebar=True, scale_size=25, scale_units='mm')
+
+#########################################
+# Saving plots to file
+# --------------------
 # Finally, saving the plots to file with two different ways
 
 # Contrast maps plotted with function `plot_stat_map` can be saved using an
