@@ -832,8 +832,7 @@ class GroupSparseCovarianceCV(BaseEstimator, CacheMixin):
         number of times the initial grid should be refined.
 
     cv : integer
-        number of folds in a K-fold cross-validation scheme. If None is passed,
-        defaults to 3.
+        number of folds in a K-fold cross-validation scheme.
 
     tol_cv : float
         tolerance used to get the optimal alpha value. It has the same meaning
@@ -900,7 +899,7 @@ class GroupSparseCovarianceCV(BaseEstimator, CacheMixin):
     computed, then a new refined grid is centered around the maximum, and so
     on.
     """
-    def __init__(self, alphas=4, n_refinements=4, cv=None,
+    def __init__(self, alphas=4, n_refinements=4, cv=3,
                  tol_cv=1e-2, max_iter_cv=50,
                  tol=1e-3, max_iter=100, verbose=0,
                  n_jobs=1, debug=False, early_stopping=True):
