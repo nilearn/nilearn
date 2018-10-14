@@ -184,17 +184,10 @@ class StatMapView(HTMLDocument):
     pass
 
 
-def _load_stat_map(stat_map_img, bg_img='MNI152', threshold=None, dim='auto',
-                   black_bg='auto', resampling_interpolation='continuous'):
+def _mask_stat_map(stat_map_img, threshold=None):
     """ For internal use.
-        Safely load the background image and the stat map.
-        All images are resampled to a common, isotropic resolution,
-        with a diagonal affine matrix.
-        Thresholding of the stat map is done in the original space, and the
-        mask is resampled to the final resolution/space with nearest
-        interpolation.
+        Load a stat map and apply a threshold.
     """
-
     # Load stat map
     stat_map_img = check_niimg_3d(stat_map_img, dtype='auto')
 
@@ -208,29 +201,47 @@ def _load_stat_map(stat_map_img, bg_img='MNI152', threshold=None, dim='auto',
     else:
         mask_img = new_img_like(stat_map_img, np.zeros(data.shape),
                                 stat_map_img.affine)
+    return mask_img, stat_map_img, data
 
-    # load background image, and resample stat map
+
+def _load_bg_img(stat_map_img, bg_img='MNI152', black_bg='auto', dim='auto'):
+    """ For internal use.
+        resample bg_img in an isotropic resolution,
+        with a positive diagonal affine matrix.
+    """
+    # If no background is used, switch to the white background color style
+    if (bg_img is None or bg_img is False) and black_bg is 'auto':
+        black_bg = False
+
     if bg_img is not None and bg_img is not False:
         if isinstance(bg_img, str) and bg_img == "MNI152":
             bg_img = load_mni152_template()
         bg_img, black_bg, bg_min, bg_max = _load_anat(bg_img, dim=dim,
-                                                      black_bg=black_bg)
-        bg_img = _resample_to_self(bg_img, interpolation='nearest')
-        stat_map_img = resample_to_img(stat_map_img, bg_img,
-                                       interpolation=resampling_interpolation)
-        mask_img = resample_to_img(mask_img, bg_img,
-                                   interpolation='nearest')
+                                                  black_bg=black_bg)
     else:
-        stat_map_img = _resample_to_self(stat_map_img,
-                                         interpolation=resampling_interpolation
-                                         )
-        mask_img = _resample_to_self(mask_img, interpolation='nearest')
         bg_img = new_img_like(stat_map_img, np.zeros(stat_map_img.shape),
                               stat_map_img.affine)
         bg_min = 0
         bg_max = 0
+    bg_img = _resample_to_self(bg_img, interpolation='nearest')
+    return bg_img, bg_min, bg_max, black_bg
 
-    return stat_map_img, bg_img, mask_img, bg_min, bg_max, data
+def _resample_stat_map(stat_map_img, bg_img, mask_img,
+                   resampling_interpolation='continuous'):
+    """ For internal use.
+        Safely load the stat map ande resample to background.
+        Thresholding of the stat map is done in the original space, and the
+        mask is resampled to the final resolution/space with nearest
+        interpolation.
+    """
+
+    # resample stat map
+    stat_map_img = resample_to_img(stat_map_img, bg_img,
+                                       interpolation=resampling_interpolation)
+    mask_img = resample_to_img(mask_img, bg_img, fill=1,
+                                   interpolation='nearest')
+
+    return stat_map_img, mask_img
 
 
 def _json_sprite(shape, affine, vmin, vmax, cut_slices, black_bg=False,
@@ -401,22 +412,23 @@ def view_stat_map(stat_map_img, bg_img='MNI152', cut_coords=None,
         Jupyter notebook.
     """
 
-    # Get cmap
-    if isinstance(cm, str):
-        cmap = plt.cm.get_cmap(cmap)
+    cmap = plt.cm.get_cmap(cmap)
 
-    # If no background is used, switch to the white background color style
-    if (bg_img is None or bg_img is False) and black_bg is 'auto':
-        black_bg = False
-
-    # Load and resample the data
-    stat_map_img, bg_img, mask_img, bg_min, bg_max, data = _load_stat_map(
-        stat_map_img, bg_img, threshold, dim, black_bg,
-        resampling_interpolation)
+    # Mask stat map
+    mask_img, stat_map_img, data = _mask_stat_map(stat_map_img,threshold)
 
     # Get color bar and data ranges
     cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
         data, vmax, symmetric_cbar, kwargs)
+
+    # Load background image
+    bg_img, bg_min, bg_max, black_bg = _load_bg_img(stat_map_img, bg_img,
+                                                    black_bg, dim)
+
+    # Resample stat map
+    stat_map_img, mask_img = _resample_stat_map(stat_map_img, bg_img, mask_img,
+                                            resampling_interpolation)
+
 
     # Get the slices for the cut
     cut_slices = _get_cut_slices(stat_map_img, cut_coords, threshold)
