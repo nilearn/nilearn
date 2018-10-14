@@ -49,8 +49,9 @@ function updateTopMenuPosition(height, width) {
         //begin to scroll
         $('.related-wrapper').css("z-index", 1000)
         $('.related-wrapper').css("position", "sticky")
+        $('.related-wrapper').css("top", 0)
         $('.related-wrapper').css("width", width)
-    } else{
+    } else {
         //lock it back into place
         $('.related-wrapper').css("position", "relative")
         $('.related-wrapper').css("top", 0)
