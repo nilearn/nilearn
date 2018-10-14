@@ -29,10 +29,9 @@ haxby_anat_filename = haxby_dataset.anat[0]
 haxby_mask_filename = haxby_dataset.mask_vt[0]
 haxby_func_filename = haxby_dataset.func[0]
 
-# localizer dataset to have contrast maps
-localizer_dataset = datasets.fetch_localizer_button_task(get_anats=True)
-localizer_anat_filename = localizer_dataset.anats[0]
-localizer_tmap_filename = localizer_dataset.tmaps[0]
+# one motor contrast map from NeuroVault
+motor_images = datasets.fetch_neurovault_motor_task()
+stat_img = motor_images.images[0]
 
 ###############################################################################
 # Plotting statistical maps with function `plot_stat_map`
@@ -40,11 +39,30 @@ localizer_tmap_filename = localizer_dataset.tmaps[0]
 
 from nilearn import plotting
 
-# Visualizing t-map image on subject specific anatomical image with manual
+# Visualizing t-map image on EPI template with manual
 # positioning of coordinates using cut_coords given as a list
-plotting.plot_stat_map(localizer_tmap_filename, bg_img=localizer_anat_filename,
+plotting.plot_stat_map(stat_img,
                        threshold=3, title="plot_stat_map",
                        cut_coords=[36, -27, 66])
+
+###############################################################################
+# Making interactive plots with function `view_stat_map`
+# ------------------------------------------------------
+# An alternative to :func:`nilearn.plotting.plot_stat_map` is to use
+# :func:`nilearn.plotting.view_stat_map` that gives more interactive
+# visualizations in a web browser. See :ref:`interactive-stat-map-plotting`
+# for more details.
+
+view = plotting.view_stat_map(stat_img, threshold=3)
+
+# uncomment this to open the plot in a web browser:
+# view.open_in_browser()
+
+##############################################################################
+# In a Jupyter notebook, if ``view`` is the output of a cell, it will
+# be displayed below the cell
+
+view
 
 ###############################################################################
 # Plotting statistical maps in a glass brain with function `plot_glass_brain`
@@ -52,7 +70,7 @@ plotting.plot_stat_map(localizer_tmap_filename, bg_img=localizer_anat_filename,
 #
 # Now, the t-map image is mapped on glass brain representation where glass
 # brain is always a fixed background template
-plotting.plot_glass_brain(localizer_tmap_filename, title='plot_glass_brain',
+plotting.plot_glass_brain(stat_img, title='plot_glass_brain',
                           threshold=3)
 
 ###############################################################################

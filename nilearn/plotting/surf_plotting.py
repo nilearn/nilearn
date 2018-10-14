@@ -8,15 +8,20 @@ import matplotlib.pyplot as plt
 
 from mpl_toolkits.mplot3d import Axes3D
 
+from matplotlib.colorbar import make_axes
+from matplotlib.cm import ScalarMappable, get_cmap
+from matplotlib.colors import Normalize, LinearSegmentedColormap
+
 from ..surface import load_surf_data, load_surf_mesh
 from .._utils.compat import _basestring
-from .img_plotting import _get_colorbar_and_data_ranges
+from .img_plotting import _get_colorbar_and_data_ranges, _crop_colorbar
 
 
 def plot_surf(surf_mesh, surf_map=None, bg_map=None,
-              hemi='left', view='lateral', cmap=None,
+              hemi='left', view='lateral', cmap=None, colorbar=False,
               avg_method='mean', threshold=None, alpha='auto',
               bg_on_data=False, darkness=1, vmin=None, vmax=None,
+              cbar_vmin=None, cbar_vmax=None,
               title=None, output_file=None, axes=None, figure=None, **kwargs):
     """ Plotting of surfaces with optional background and data
 
@@ -53,6 +58,9 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
         To use for plotting of the stat_map. Either a string
         which is a name of a matplotlib colormap, or a matplotlib
         colormap object. If None, matplolib default will be chosen
+
+    colorbar : bool, optional, default is False
+        If True, a colorbar of surf_map is displayed.
 
     avg_method: {'mean', 'median'}, default is 'mean'
         How to average vertex values to derive the face value, mean results
@@ -102,7 +110,7 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
 
     See Also
     --------
-    nilearn.datasets.fetch_surf_fsaverage5 : For surface data object to be
+    nilearn.datasets.fetch_surf_fsaverage : For surface data object to be
         used as background map for this plotting function.
 
     nilearn.plotting.plot_surf_roi : For plotting statistical maps on brain
@@ -189,6 +197,9 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
                                   antialiased=False,
                                   color='white')
 
+    # reduce viewing distance to remove space around mesh
+    axes.dist = 8
+
     # If depth_map and/or surf_map are provided, map these onto the surface
     # set_facecolors function of Poly3DCollection is used as passing the
     # facecolors argument to plot_trisurf does not seem to work
@@ -250,10 +261,41 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
             else:
                 face_colors[kept_indices] = cmap(surf_map_faces[kept_indices])
 
+            if colorbar:
+                our_cmap = get_cmap(cmap)
+                norm = Normalize(vmin=vmin, vmax=vmax)
+
+                nb_ticks = 5
+                ticks = np.linspace(vmin, vmax, nb_ticks)
+                bounds = np.linspace(vmin, vmax, our_cmap.N)
+
+                if threshold is not None:
+                    cmaplist = [our_cmap(i) for i in range(our_cmap.N)]
+                    # set colors to grey for absolute values < threshold
+                    istart = int(norm(-threshold, clip=True) *
+                                 (our_cmap.N - 1))
+                    istop = int(norm(threshold, clip=True) *
+                                (our_cmap.N - 1))
+                    for i in range(istart, istop):
+                        cmaplist[i] = (0.5, 0.5, 0.5, 1.)
+                    our_cmap = LinearSegmentedColormap.from_list(
+                        'Custom cmap', cmaplist, our_cmap.N)
+
+                # we need to create a proxy mappable
+                proxy_mappable = ScalarMappable(cmap=our_cmap, norm=norm)
+                proxy_mappable.set_array(surf_map_faces)
+                cax, kw = make_axes(axes, location='right', fraction=.1,
+                                    shrink=.6, pad=.0)
+                cbar = figure.colorbar(
+                    proxy_mappable, cax=cax, ticks=ticks,
+                    boundaries=bounds, spacing='proportional',
+                    format='%.2g', orientation='vertical')
+                _crop_colorbar(cbar, cbar_vmin, cbar_vmax)
+
         p3dcollec.set_facecolors(face_colors)
 
     if title is not None:
-        axes.set_title(title, position=(.5, .9))
+        axes.set_title(title, position=(.5, .95))
 
     # save figure if output file is given
     if output_file is not None:
@@ -266,9 +308,9 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
 def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
                        hemi='left', view='lateral', threshold=None,
                        alpha='auto', vmax=None, cmap='cold_hot',
-                       symmetric_cbar="auto", bg_on_data=False, darkness=1,
-                       title=None, output_file=None, axes=None, figure=None,
-                       **kwargs):
+                       colorbar=True, symmetric_cbar="auto", bg_on_data=False,
+                       darkness=1, title=None, output_file=None, axes=None,
+                       figure=None, **kwargs):
     """ Plotting a stats map on a surface mesh with optional background
 
     .. versionadded:: 0.3
@@ -311,6 +353,9 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
         To use for plotting of the stat_map. Either a string
         which is a name of a matplotlib colormap, or a matplotlib
         colormap object.
+
+    colorbar : bool, optional, default is False
+        If True, a symmetric colorbar of the statistical map is displayed.
 
     alpha : float, alpha level of the mesh (not the stat_map), default 'auto'
         If 'auto' is chosen, alpha will default to .5 when no bg_map is
@@ -355,7 +400,7 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
 
     See Also
     --------
-    nilearn.datasets.fetch_surf_fsaverage5 : For surface data object to be
+    nilearn.datasets.fetch_surf_fsaverage : For surface data object to be
         used as background map for this plotting function.
 
     nilearn.plotting.plot_surf : For brain surface visualization.
@@ -368,9 +413,10 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
 
     display = plot_surf(
         surf_mesh, surf_map=stat_map, bg_map=bg_map, hemi=hemi, view=view,
-        avg_method='mean', threshold=threshold, cmap=cmap, alpha=alpha,
-        bg_on_data=bg_on_data, darkness=1, vmax=vmax, vmin=vmin, title=title,
-        output_file=output_file, axes=axes, figure=figure, **kwargs)
+        avg_method='mean', threshold=threshold, cmap=cmap, colorbar=colorbar,
+        alpha=alpha, bg_on_data=bg_on_data, darkness=1, vmax=vmax, vmin=vmin,
+        title=title, output_file=output_file, axes=axes, figure=figure,
+        cbar_vmin=cbar_vmin, cbar_vmax=cbar_vmax, **kwargs)
 
     return display
 
@@ -380,7 +426,7 @@ def plot_surf_roi(surf_mesh, roi_map, bg_map=None,
                   vmin=None, vmax=None, cmap='gist_ncar',
                   bg_on_data=False, darkness=1, title=None,
                   output_file=None, axes=None, figure=None, **kwargs):
-    """ Plotting of surfaces with optional background and stats map
+    """ Plotting ROI on a surface mesh with optional background
 
     .. versionadded:: 0.3
 
@@ -451,7 +497,7 @@ def plot_surf_roi(surf_mesh, roi_map, bg_map=None,
 
     See Also
     --------
-    nilearn.datasets.fetch_surf_fsaverage5: For surface data object to be
+    nilearn.datasets.fetch_surf_fsaverage: For surface data object to be
         used as background map for this plotting function.
 
     nilearn.plotting.plot_surf: For brain surface visualization.

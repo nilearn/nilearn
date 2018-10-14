@@ -77,4 +77,3 @@ plotting.show()
 # To recap, all the nilearn tools can take data as filenames or in-memory
 # objects, and return brain volumes as in-memory objects. These can be
 # passed on to other nilearn tools, or saved to disk.
-

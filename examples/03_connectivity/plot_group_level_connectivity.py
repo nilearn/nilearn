@@ -182,26 +182,38 @@ print('{0} correlation biomarkers for each subject.'.format(
 # We stratify the dataset into homogeneous classes according to phenotypic
 # and scan site. We then split the subjects into 3 folds with the same
 # proportion of each class as in the whole cohort
-from sklearn.cross_validation import StratifiedKFold
+from sklearn.model_selection import StratifiedKFold
 
 classes = ['{0}{1}'.format(site_name, adhd_label)
            for site_name, adhd_label in zip(site_names, adhd_labels)]
-cv = StratifiedKFold(classes, n_folds=3)
-
+cv = StratifiedKFold(n_splits=3)
 ###############################################################################
 # and use the connectivity coefficients to classify ADHD patients vs controls.
+
+# Note that in cv.split(X, y),
+# providing y is sufficient to generate the splits and
+# hence np.zeros(n_samples) may be used as a placeholder for X
+# instead of actual training data.
 from sklearn.svm import LinearSVC
-from sklearn.cross_validation import cross_val_score
+from sklearn.model_selection import cross_val_score
 
 mean_scores = []
 for kind in kinds:
     svc = LinearSVC(random_state=0)
-    cv_scores = cross_val_score(svc, connectivity_biomarkers[kind],
-                                y=adhd_labels, cv=cv, scoring='accuracy')
+    cv_scores = cross_val_score(svc,
+                                connectivity_biomarkers[kind],
+                                y=adhd_labels,
+                                cv=cv,
+                                groups=adhd_labels,
+                                scoring='accuracy',
+                                )
     mean_scores.append(cv_scores.mean())
 
 ###############################################################################
 # Finally, we can display the classification scores.
+
+from nilearn.plotting import show
+
 plt.figure(figsize=(6, 4))
 positions = np.arange(len(kinds)) * .1 + .1
 plt.barh(positions, mean_scores, align='center', height=.05)
@@ -211,4 +223,4 @@ plt.xlabel('Classification accuracy')
 plt.grid(True)
 plt.tight_layout()
 
-plt.show()
+show()

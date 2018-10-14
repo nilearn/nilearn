@@ -25,6 +25,8 @@ from nilearn.image import resampling
 from nilearn.image.tests.test_resampling import rotation
 from nilearn.surface import surface
 from nilearn.surface import load_surf_data, load_surf_mesh, vol_to_surf
+from nilearn.surface.surface import (_gifti_img_to_mesh,
+                                     _load_surf_files_gifti_gzip)
 
 currdir = os.path.dirname(os.path.abspath(__file__))
 datadir = os.path.join(currdir, 'data')
@@ -79,6 +81,23 @@ def test_load_surf_data_file_nii_gii():
     assert_array_equal(load_surf_data(filename_niigz), np.zeros((20, )))
     os.remove(filename_nii)
     os.remove(filename_niigz)
+
+
+def test_load_surf_data_gii_gz():
+    # Test the loader `load_surf_data` with gzipped fsaverage5 files
+
+    # surface data
+    fsaverage = datasets.fetch_surf_fsaverage().sulc_left
+    gii = _load_surf_files_gifti_gzip(fsaverage)
+    assert_true(isinstance(gii, gifti.GiftiImage))
+
+    data = load_surf_data(fsaverage)
+    assert_true(isinstance(data, np.ndarray))
+
+    # surface mesh
+    fsaverage = datasets.fetch_surf_fsaverage().pial_left
+    gii = _load_surf_files_gifti_gzip(fsaverage)
+    assert_true(isinstance(gii, gifti.GiftiImage))
 
 
 def test_load_surf_data_file_freesurfer():
@@ -148,6 +167,30 @@ def test_load_surf_mesh_list():
     assert_raises_regex(ValueError, 'input type is not recognized',
                         load_surf_mesh, dict())
     del mesh
+
+
+def test_gifti_img_to_mesh():
+    mesh = _generate_surf()
+
+    coord_array = gifti.GiftiDataArray(data=mesh[0])
+    coord_array.intent = nb.nifti1.intent_codes['NIFTI_INTENT_POINTSET']
+
+    face_array = gifti.GiftiDataArray(data=mesh[1])
+    face_array.intent = nb.nifti1.intent_codes['NIFTI_INTENT_TRIANGLE']
+
+    gii = gifti.GiftiImage(darrays=[coord_array, face_array])
+    coords, faces = _gifti_img_to_mesh(gii)
+    assert_array_equal(coords, mesh[0])
+    assert_array_equal(faces, mesh[1])
+
+
+def test_load_surf_mesh_file_gii_gz():
+    # Test the loader `load_surf_mesh` with gzipped fsaverage5 files
+
+    fsaverage = datasets.fetch_surf_fsaverage().pial_left
+    coords, faces = load_surf_mesh(fsaverage)
+    assert_true(isinstance(coords, np.ndarray))
+    assert_true(isinstance(faces, np.ndarray))
 
 
 def test_load_surf_mesh_file_gii():
@@ -259,13 +302,10 @@ def test_load_uniform_ball_cloud():
             assert_equal(len(w), 0)
     assert_warns(surface.EfficiencyWarning,
                  surface._load_uniform_ball_cloud, n_points=3)
-    # before 0.18 k-means was computed differently, so the result
-    # would differ from the stored values, computed with version 0.2
-    if LooseVersion(sklearn.__version__) >= LooseVersion('0.18'):
-        for n_points in [3, 10, 20]:
-            computed = surface._uniform_ball_cloud(n_points)
-            loaded = surface._load_uniform_ball_cloud(n_points)
-            assert_array_almost_equal(computed, loaded)
+    for n_points in [3, 10, 20]:
+        computed = surface._uniform_ball_cloud(n_points)
+        loaded = surface._load_uniform_ball_cloud(n_points)
+        assert_array_almost_equal(computed, loaded)
 
 
 def test_sample_locations():
@@ -406,3 +446,14 @@ def _check_vol_to_surf_results(img, mesh):
         nodes, _ = surface.load_surf_mesh(mesh)
         assert_array_equal(proj_4d.shape, [nodes.shape[0], 2])
         assert_array_almost_equal(proj_4d[:, 0], proj_1, 3)
+
+
+def test_check_mesh_and_data():
+    mesh = _generate_surf()
+    data = mesh[0][:, 0]
+    m, d = surface.check_mesh_and_data(mesh, data)
+    assert (m[0] == mesh[0]).all()
+    assert (m[1] == mesh[1]).all()
+    assert (d == data).all()
+    data = mesh[0][::2, 0]
+    assert_raises(ValueError, surface.check_mesh_and_data, mesh, data)

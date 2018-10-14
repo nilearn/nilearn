@@ -122,7 +122,7 @@ def coord_transform(x, y, z, affine):
 
         >>> from nilearn import datasets, image
         >>> niimg = datasets.load_mni152_template()
-        >>> # Find the MNI coordinates of the voxel (10, 10, 10)
+        >>> # Find the MNI coordinates of the voxel (50, 50, 50)
         >>> image.coord_transform(50, 50, 50, niimg.affine)
         (-10.0, -26.0, 28.0)
 
@@ -260,12 +260,6 @@ def _resample_one_img(data, A, b, target_shape,
         data = _extrapolate_out_mask(data, np.logical_not(not_finite),
                                      iterations=2)[0]
 
-    # See https://github.com/nilearn/nilearn/issues/346 Copying the
-    # array makes it C continuous and as such the int32 index in the C
-    # code is a lot less likely to overflow
-    if (LooseVersion(scipy.__version__) < LooseVersion('0.14.1')):
-        data = data.copy()
-
     # Suppresses warnings in https://github.com/nilearn/nilearn/issues/1363
     with warnings.catch_warnings():
         if LooseVersion(scipy.__version__) >= LooseVersion('0.18'):
@@ -276,13 +270,6 @@ def _resample_one_img(data, A, b, target_shape,
                                  output_shape=target_shape,
                                  output=out,
                                  order=interpolation_order)
-
-    # Bug in ndimage.affine_transform when out does not have native endianness
-    # see https://github.com/nilearn/nilearn/issues/275
-    # Bug was fixed in scipy 0.15
-    if (LooseVersion(scipy.__version__) < LooseVersion('0.15') and
-        not out.dtype.isnative):
-        out.byteswap(True)
 
     if has_not_finite:
         # Suppresses warnings in https://github.com/nilearn/nilearn/issues/1363
@@ -520,19 +507,18 @@ def resample_img(img, target_affine=None, target_shape=None,
     else:
         resampled_data_dtype = data.dtype
 
-    if LooseVersion(scipy.__version__) >= LooseVersion('0.17'):
-        # Since the release of 0.17, resampling nifti images have some issues
-        # when affine is passed as 1D array and if data is of non-native
-        # endianess.
-        # See issue https://github.com/nilearn/nilearn/issues/1445.
-        # If affine is passed as 1D, scipy uses _nd_image.zoom_shift rather
-        # than _geometric_transform (2D) where _geometric_transform is able
-        # to swap byte order in scipy later than 0.15 for nonnative endianess.
+    # Since the release of 0.17, resampling nifti images have some issues
+    # when affine is passed as 1D array and if data is of non-native
+    # endianess.
+    # See issue https://github.com/nilearn/nilearn/issues/1445.
+    # If affine is passed as 1D, scipy uses _nd_image.zoom_shift rather
+    # than _geometric_transform (2D) where _geometric_transform is able
+    # to swap byte order in scipy later than 0.15 for nonnative endianess.
 
-        # We convert to 'native' order to not have any issues either with
-        # 'little' or 'big' endian data dtypes (non-native endians).
-        if len(A.shape) == 1 and not resampled_data_dtype.isnative:
-            resampled_data_dtype = resampled_data_dtype.newbyteorder('N')
+    # We convert to 'native' order to not have any issues either with
+    # 'little' or 'big' endian data dtypes (non-native endians).
+    if len(A.shape) == 1 and not resampled_data_dtype.isnative:
+        resampled_data_dtype = resampled_data_dtype.newbyteorder('N')
 
     # Code is generic enough to work for both 3D and 4D images
     other_shape = data_shape[3:]

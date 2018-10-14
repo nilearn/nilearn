@@ -10,21 +10,23 @@ decrease it (dim the background).
 
 This *dim* argument may also be useful for the plot_roi function used to
 display ROIs on top of a background image.
+
 """
 
 #########################################################################
 # Retrieve the data: the localizer dataset with contrast maps
-# -----------------------------------------------------------
+# ------------------------------------------------------------
 
 from nilearn import datasets
 
-localizer_dataset = datasets.fetch_localizer_button_task(get_anats=True)
-localizer_anat_filename = localizer_dataset.anats[0]
-localizer_tmap_filename = localizer_dataset.tmaps[0]
-
-########################################################################
+localizer_dataset = datasets.fetch_localizer_button_task()
+# Contrast map of motor task
+localizer_tmap_filename = localizer_dataset.tmap
+# Subject specific anatomical image
+localizer_anat_filename = localizer_dataset.anat
+###########################################################################
 # Plotting with enhancement of background image with dim=-.5
-# ----------------------------------------------------------
+# --------------------------------------------------------------------------
 
 from nilearn import plotting
 plotting.plot_stat_map(localizer_tmap_filename,

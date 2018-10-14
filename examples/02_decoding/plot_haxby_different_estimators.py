@@ -54,28 +54,35 @@ from sklearn.svm import SVC
 svm = SVC(C=1., kernel="linear")
 
 # The logistic regression
-from sklearn.linear_model import LogisticRegression, RidgeClassifier, \
-    RidgeClassifierCV
-logistic = LogisticRegression(C=1., penalty="l1")
-logistic_50 = LogisticRegression(C=50., penalty="l1")
-logistic_l2 = LogisticRegression(C=1., penalty="l2")
+from sklearn.linear_model import (LogisticRegression,
+                                  RidgeClassifier,
+                                  RidgeClassifierCV,
+                                  )
+logistic = LogisticRegression(C=1., penalty="l1", solver='liblinear')
+logistic_50 = LogisticRegression(C=50., penalty="l1", solver='liblinear')
+logistic_l2 = LogisticRegression(C=1., penalty="l2", solver='liblinear')
 
 # Cross-validated versions of these classifiers
-from sklearn.grid_search import GridSearchCV
+from sklearn.model_selection import GridSearchCV
 # GridSearchCV is slow, but note that it takes an 'n_jobs' parameter that
 # can significantly speed up the fitting process on computers with
 # multiple cores
 svm_cv = GridSearchCV(SVC(C=1., kernel="linear"),
-                      param_grid={'C': [.1, .5, 1., 5., 10., 50., 100.]},
-                      scoring='f1', n_jobs=1)
+                      param_grid={'C': [.1, 1., 10., 100.]},
+                      scoring='f1', n_jobs=1, cv=3, iid=False)
 
-logistic_cv = GridSearchCV(LogisticRegression(C=1., penalty="l1"),
-                           param_grid={'C': [.1, .5, 1., 5., 10., 50., 100.]},
-                           scoring='f1')
-logistic_l2_cv = GridSearchCV(LogisticRegression(C=1., penalty="l2"),
-                              param_grid={
-                                  'C': [.1, .5, 1., 5., 10., 50., 100.]},
-                              scoring='f1')
+logistic_cv = GridSearchCV(
+        LogisticRegression(C=1., penalty="l1", solver='liblinear'),
+        param_grid={'C': [.1, 1., 10., 100.]},
+        scoring='f1', cv=3, iid=False,
+        )
+logistic_l2_cv = GridSearchCV(
+        LogisticRegression(C=1., penalty="l2", solver='liblinear'),
+        param_grid={
+            'C': [.1, 1., 10., 100.]
+            },
+        scoring='f1', cv=3, iid=False,
+        )
 
 # The ridge classifier has a specific 'CV' object that can set it's
 # parameters faster than using a GridSearchCV
@@ -91,8 +98,8 @@ classifiers = {'SVC': svm,
                'log l2': logistic_l2,
                'log l2 cv': logistic_l2_cv,
                'ridge': ridge,
-               'ridge cv': ridge_cv}
-
+               'ridge cv': ridge_cv
+               }
 
 #############################################################################
 # Here we compute prediction scores
@@ -100,8 +107,8 @@ classifiers = {'SVC': svm,
 # Run time for all these classifiers
 
 # Make a data splitting object for cross validation
-from sklearn.cross_validation import LeaveOneLabelOut, cross_val_score
-cv = LeaveOneLabelOut(session_labels)
+from sklearn.model_selection import LeaveOneGroupOut, cross_val_score
+cv = LeaveOneGroupOut()
 
 import time
 
@@ -118,14 +125,21 @@ for classifier_name, classifier in sorted(classifiers.items()):
             classifier,
             masked_timecourses,
             classification_target,
-            cv=cv, scoring="f1")
+            cv=cv,
+            groups=session_labels,
+            scoring="f1",
+        )
 
-        print("%10s: %14s -- scores: %1.2f +- %1.2f, time %.2fs" % (
-            classifier_name, category,
-            classifiers_scores[classifier_name][category].mean(),
-            classifiers_scores[classifier_name][category].std(),
-            time.time() - t0))
-
+        print(
+            "%10s: %14s -- scores: %1.2f +- %1.2f, time %.2fs" %
+            (
+                classifier_name,
+                category,
+                classifiers_scores[classifier_name][category].mean(),
+                classifiers_scores[classifier_name][category].std(),
+                time.time() - t0,
+            ),
+        )
 
 ###############################################################################
 # Then we make a rudimentary diagram
@@ -148,9 +162,9 @@ plt.ylabel('Classification accurancy (f1 score)')
 plt.xlabel('Visual stimuli category')
 plt.ylim(ymin=0)
 plt.legend(loc='lower center', ncol=3)
-plt.title('Category-specific classification accuracy for different classifiers')
+plt.title(
+    'Category-specific classification accuracy for different classifiers')
 plt.tight_layout()
-
 
 ###############################################################################
 # Finally, w plot the face vs house map for the different classifiers

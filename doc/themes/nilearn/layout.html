@@ -105,10 +105,10 @@ $(function () {
         for(i in sections){
             if(sections[i] > pos){
 		break;
-            };
-	    if($('a.internal[href$="' + i + '"]').is(':visible')){
+            }
+            if($('a.internal[href$="' + i + '"]').is(':visible')){
 		current_section = i;
-	    };
+        }
         }
 	$('a.internal[href$="' + current_section + '"]').addClass('active');
     });

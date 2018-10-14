@@ -164,18 +164,14 @@ def test_fetch_icbm152_brain_gm_mask():
 @with_setup(setup_mock, teardown_mock)
 @with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
 def test_fetch_surf_fsaverage():
+    # for mesh in ['fsaverage5', 'fsaverage']:
+    for mesh in ['fsaverage']:
 
-    dataset = struct.fetch_surf_fsaverage5(data_dir=tst.tmpdir, verbose=0)
+        dataset = struct.fetch_surf_fsaverage(
+            mesh, data_dir=tst.tmpdir)
 
-    keys = ['pial_left', 'pial_right', 'infl_left', 'infl_right',
-            'sulc_left', 'sulc_right']
+        keys = {'pial_left', 'pial_right', 'infl_left', 'infl_right',
+                'sulc_left', 'sulc_right'}
 
-    filenames = ['pial.left.gii', 'pial.right.gii', 'pial_inflated.left.gii',
-                 'pial_inflated.right.gii', 'sulc.left.gii', 'sulc.right.gii']
-
-    for key, filename in zip(keys, filenames):
-        assert_equal(dataset[key], os.path.join(tst.tmpdir, 'fsaverage5',
-                                                filename))
-
-    assert_not_equal(dataset.description, '')
-    assert_equal(len(tst.mock_url_request.urls), len(keys))
+        assert keys.issubset(set(dataset.keys()))
+        assert_not_equal(dataset.description, '')
