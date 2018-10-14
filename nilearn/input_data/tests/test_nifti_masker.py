@@ -14,7 +14,6 @@ from tempfile import mkdtemp
 import nibabel
 import numpy as np
 from nibabel import Nifti1Image
-from nose import SkipTest
 from nose.tools import assert_true, assert_false, assert_raises
 from numpy.testing import assert_array_equal, assert_equal
 
@@ -56,6 +55,19 @@ def test_detrend():
     mask = data.astype(np.int)
     mask_img = Nifti1Image(mask, np.eye(4))
     masker = NiftiMasker(mask_img=mask_img, detrend=True)
+    # Smoke test the fit
+    X = masker.fit_transform(img)
+    assert_true(np.any(X != 0))
+
+
+def test_resample():
+    # Check that target_affine triggers the right resampling
+    data = np.zeros((9, 9, 9))
+    data[3:-3, 3:-3, 3:-3] = 10
+    img = Nifti1Image(data, np.eye(4))
+    mask = data.astype(np.int)
+    mask_img = Nifti1Image(mask, np.eye(4))
+    masker = NiftiMasker(mask_img=mask_img, target_affine=2 * np.eye(3))
     # Smoke test the fit
     X = masker.fit_transform(img)
     assert_true(np.any(X != 0))

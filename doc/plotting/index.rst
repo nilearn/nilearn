@@ -250,8 +250,8 @@ These colormaps can be used as any other matplotlib colormap.
 
 .. _display_modules:
 
-Adding overlays, edges, contours, contour fillings and markers
-==============================================================
+Adding overlays, edges, contours, contour fillings, markers, scale bar
+=======================================================================
 
 To add overlays, contours, or edges, use the return value of the plotting
 functions. Indeed, these return a display object, such as the
@@ -278,6 +278,10 @@ plot, and has methods to add overlays, contours or edge maps::
 
 .. |plot_overlay| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_overlay_002.png
      :target: ../auto_examples/01_plotting/plot_overlay.html
+     :scale: 50
+
+.. |plot_scalebar| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_demo_more_plotting_013.png
+     :target: ../auto_examples/01_plotting/plot_demo_more_plotting.html
      :scale: 50
 
 ================= =========================================================
@@ -316,6 +320,13 @@ plot, and has methods to add overlays, contours or edge maps::
                   based regions specific interpretation of brain images.
                   |hack|
                   **Example:** :ref:`sphx_glr_auto_examples_03_connectivity_plot_seed_to_voxel_correlation.py`
+
+|plot_scalebar|   `display.annotate(scalebar=True)`
+                  |hack|
+                  Adds annotations such as a scale bar, or the cross of
+                  the cut coordinates
+                  |hack|
+                  **Example:** :ref:`sphx_glr_auto_examples_01_plotting_plot_demo_more_plotting.py`
 
 ================= =========================================================
 
