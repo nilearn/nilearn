@@ -9,12 +9,10 @@ body {
     letter-spacing: -0.01em;
     line-height: 150%;
     text-align: center;
-    background-color: #4eacc5;
     padding: 0;
-    border: 1px solid #aaa;
+    /*border: 1px solid #aaa;*/
     margin: 0px auto;
     min-width: 20em;
-    max-width: 84em;
     color: #3E4349;
 }
 
@@ -36,6 +34,11 @@ div.search_form {
 
 table.gsc-branding {
     display: none;
+}
+
+div.gsc-control-cse {
+    background-color: transparent !important;
+    border: none;
 }
 
 @media (max-width: 800px) {
@@ -304,7 +307,6 @@ div.related h3 {
 }
 
 div.related ul {
-    background-image: url(navigation.png);
     height: 2em;
     list-style: none;
     border-top: 1px solid #ddd;
@@ -372,11 +374,13 @@ div.related ul li a:hover {
 }
 
 div.related-wrapper {
-    background-color: #ffffff;
+    background-color: #e8eef0;
+    /*background-image: linear-gradient(160deg, #e8eef0, #97c6d2);*/
+    background-image: linear-gradient(30deg, #e8eef0, #97c6d2);
 }
 
 div.body {
-    margin: 0;
+    margin: 0 auto 0 auto;
     padding: 1em 20px 30px 20px;
     max-width: 62em;
 }
@@ -412,7 +416,6 @@ div.body p.sphx-glr-script-out {
 div.bodywrapper {
     margin: 0 246px 0 auto;
     border-right: 1px solid #EEE;
-    max-width: 65.5em;
 }
 
 @media (max-width: 800px) {
@@ -1141,6 +1144,7 @@ div#logo-banner {
     background-color: white;
     padding: 10px 10px 15px 15px;
     overflow: hidden;
+    background-image: linear-gradient(160deg, #fff, #dbdbdb);
 }
 
 
@@ -1151,7 +1155,6 @@ div#logo-banner {
 }
 
 div#logo-banner .logo {
-    background-color: white;
     padding: 7px 20px 0 15px;
     float: left;
     max-width: 16em;
