@@ -5,6 +5,7 @@ import os
 import tempfile
 import base64
 import json
+import warnings
 
 import numpy as np
 
@@ -75,6 +76,7 @@ def _rgb_to_papaya(x, cmap):
     return cmap
 
 
+
 def view_stat_map(stat_map_img, threshold=None, bg_img='MNI152',
                   vmax=None, cmap='cold_hot', symmetric_cmap=True):
     """
@@ -116,6 +118,13 @@ def view_stat_map(stat_map_img, threshold=None, bg_img='MNI152',
         Jupyter notebook.
 
     """
+    change_warn_msg = ('view_stat_map() is under actve development. \n'
+                       'Its interface and functionality may change '
+                       'in future without warning. \nPlease do not rely on it '
+                       'in critical and production environments.'
+                       )
+    warnings.warn(message=change_warn_msg, category=FutureWarning)
+    
     stat_map_img = check_niimg_3d(stat_map_img, dtype='auto')
     if bg_img == 'MNI152':
         bg_img = datasets.load_mni152_template()
