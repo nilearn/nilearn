@@ -29,13 +29,14 @@ form.gsc-search-box {
 }
 
 div.search_form {
-    margin: -1em -1em -0.9em 0;
+    margin: -2em -1.5em -0.9em 0;
 }
 
 table.gsc-branding {
     display: none;
 }
 
+/* Override google search form */
 div.gsc-control-cse {
     background-color: transparent !important;
     border: none;
@@ -296,6 +297,7 @@ div.document {
     text-align: left;
     background-image: url(contents.png);
     background-repeat: repeat-x;
+    margin-top: 1em;
 }
 
 div.clearer {
@@ -310,7 +312,7 @@ div.related ul {
     height: 2em;
     list-style: none;
     border-top: 1px solid #ddd;
-    border-bottom: 1px solid #ddd;
+    border-bottom: 2px solid #727272;
     margin: 0;
     padding-left: 10px;
 }
