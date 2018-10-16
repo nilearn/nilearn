@@ -20,7 +20,7 @@ import json
 
 import numpy as np
 import pandas as pd
-from nibabel import Nifti1Image, AnalyzeImage
+from nibabel import Nifti1Image
 
 from sklearn.base import BaseEstimator, TransformerMixin, clone
 from sklearn.externals.joblib import Memory
