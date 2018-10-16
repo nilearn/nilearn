@@ -16,6 +16,7 @@ import numpy as np
 from nibabel import Nifti1Image
 
 from sklearn.base import BaseEstimator, TransformerMixin, clone
+from sklearn.externals.joblib import Memory
 from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._utils import CacheMixin
 from nilearn.input_data import NiftiMasker
@@ -101,11 +102,14 @@ class SecondLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
 
     """
     def __init__(self, mask=None, smoothing_fwhm=None,
-                 memory=None, memory_level=1, verbose=0,
+                 memory=Memory(None), memory_level=1, verbose=0,
                  n_jobs=1, minimize_memory=True):
         self.mask = mask
         self.smoothing_fwhm = smoothing_fwhm
-        self.memory = memory
+        if isinstance(memory, _basestring):
+            self.memory = Memory(memory)
+        else:
+            self.memory = memory
         self.memory_level = memory_level
         self.verbose = verbose
         self.n_jobs = n_jobs
@@ -406,8 +410,7 @@ class SecondLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         # Fit an OLS regression for parametric statistics
         Y = self.masker_.transform(effect_maps)
         if self.memory is not None:
-            arg_ignore = ['n_jobs']
-            mem_glm = self.memory.cache(run_glm, ignore=arg_ignore)
+            mem_glm = self.memory.cache(run_glm, ignore=['n_jobs'])
         else:
             mem_glm = run_glm
         labels, results = mem_glm(Y, self.design_matrix_.values,

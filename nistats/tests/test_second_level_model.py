@@ -205,3 +205,44 @@ def test_second_level_model_contrast_computation():
         X = pd.DataFrame(np.random.rand(4, 2), columns=['r1', 'r2'])
         model = model.fit(Y, design_matrix=X)
         assert_raises(ValueError, model.compute_contrast, None)
+
+
+def test_second_level_model_contrast_computation_with_mem():
+    with InTemporaryDirectory():
+        shapes = ((7, 8, 9, 1),)
+        mask, FUNCFILE, _ = write_fake_fmri_data(shapes)
+        FUNCFILE = FUNCFILE[0]
+        func_img = load(FUNCFILE)
+        # ols case
+        model = SecondLevelModel(mask=mask, memory='nilearn_cache')
+        # asking for contrast before model fit gives error
+        assert_raises(ValueError, model.compute_contrast, 'intercept')
+        # fit model
+        Y = [func_img] * 4
+        X = pd.DataFrame([[1]] * 4, columns=['intercept'])
+        model = model.fit(Y, design_matrix=X)
+        ncol = len(model.design_matrix_.columns)
+        c1, cnull = np.eye(ncol)[0, :], np.zeros(ncol)
+        # smoke test for different contrasts in fixed effects
+        model.compute_contrast(c1)
+        model.compute_contrast(c1, output_type='z_score')
+        model.compute_contrast(c1, output_type='stat')
+        model.compute_contrast(c1, output_type='p_value')
+        model.compute_contrast(c1, output_type='effect_size')
+        model.compute_contrast(c1, output_type='effect_variance')
+        # formula should work (passing variable name directly)
+        model.compute_contrast('intercept')
+        # or simply pass nothing
+        model.compute_contrast()
+        # passing null contrast should give back a value error
+        assert_raises(ValueError, model.compute_contrast, cnull)
+        # passing wrong parameters
+        assert_raises(ValueError, model.compute_contrast, [])
+        assert_raises(ValueError, model.compute_contrast, c1, None, '')
+        assert_raises(ValueError, model.compute_contrast, c1, None, [])
+        assert_raises(ValueError, model.compute_contrast, c1, None, None, '')
+        # check that passing no explicit contrast when the dsign
+        # matrix has morr than one columns raises an error
+        X = pd.DataFrame(np.random.rand(4, 2), columns=['r1', 'r2'])
+        model = model.fit(Y, design_matrix=X)
+        assert_raises(ValueError, model.compute_contrast, None)
