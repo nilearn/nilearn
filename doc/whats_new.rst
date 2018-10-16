@@ -49,7 +49,7 @@ Contributors
 The following people contributed to this release::
 
   58  Gael Varoquaux
-  111  kchawla-pi
+  115  kchawla-pi
   15  Jerome Dockes
   14  oesteban
   10  Eric Larson
