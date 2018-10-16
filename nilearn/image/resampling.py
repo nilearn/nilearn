@@ -118,7 +118,7 @@ def coord_transform(x, y, z, affine):
     --------
     Transform data from coordinates to brain space. The "affine" matrix
     can be found as the ".affine" attribute of a nifti image, or using
-    the "get_affine()" method for older nibabel installations:
+    the "get_affine()" method for older nibabel installations::
 
         >>> from nilearn import datasets, image
         >>> niimg = datasets.load_mni152_template()

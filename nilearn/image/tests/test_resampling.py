@@ -158,12 +158,18 @@ def test_resampling_fill_value():
 
     # Try a few different fill values
     for data in [data_3d, data_4d]:
-        for val in (-3, -1.7537, 0, 0.666, 11):
-            rot_img = resample_img(Nifti1Image(data, np.eye(4)),
-                                   target_affine=rot,
-                                   interpolation='nearest',
-                                   fill_value=val,
-                                   clip = False)
+        for val in (-3.75, 2.24, 0):
+            if val:
+                rot_img = resample_img(Nifti1Image(data, np.eye(4)),
+                                       target_affine=rot,
+                                       interpolation='nearest',
+                                       fill_value=val,
+                                       clip = False)
+            else:
+                rot_img = resample_img(Nifti1Image(data, np.eye(4)),
+                                       target_affine=rot,
+                                       interpolation='nearest',
+                                       clip = False)
             assert_equal(rot_img.get_data().flatten()[0],
                          val)
 
