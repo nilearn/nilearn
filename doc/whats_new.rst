@@ -72,6 +72,51 @@ Changes
     - Colorbars in plotting functions now have a middle gray background
       suitable for use with custom colormaps with a non-unity alpha channel.
 
+Contributors
+------------
+
+The following people contributed to the Beta release of Nilearn 0.5.0::
+
+    58  Gael Varoquaux
+    3  Bertrand Thirion
+    111  Kshitij Chawla (kchawla-pi)
+    15  Jerome Dockes
+    14  oesteban
+    10  Eric Larson
+    6  Kamalakar Daddy
+    5  Alexandre Abadie
+    4  Sourav Singh
+    3  Alex Rothberg
+    3  AnaLu
+    3  Demian Wassermann
+    3  Horea Christian
+    3  Jason Gors
+    3  Jean Remi King
+    3  MADHYASTHA Meghana
+    3  SRSteinkamp
+    3  Simon Steinkamp
+    3  jerome-alexis_chevalier
+    3  salma
+    3  sfvnMAC
+    2  Akshay
+    2  Daniel Gomez
+    2  Guillaume Lemaitre
+    2  Pierre Bellec
+    2  arokem
+    2  erramuzpe
+    2  foucault
+    2  jehane
+    1  Sylvain LANNUZEL
+    1  Aki Nikolaidis
+    1  Christophe Bedetti
+    1  Dan Gale
+    1  Dillon Plunkett
+    1  Dimitri Papadopoulos Orfanos
+    1  Greg Operto
+    1  Ivan Gonzalez
+    1  Yaroslav Halchenko
+    1  dtyulman
+
 
 0.4.2
 =====
