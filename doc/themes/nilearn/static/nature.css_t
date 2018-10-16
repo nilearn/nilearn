@@ -297,7 +297,6 @@ div.document {
     text-align: left;
     background-image: url(contents.png);
     background-repeat: repeat-x;
-    margin-top: 1em;
 }
 
 div.clearer {
@@ -416,8 +415,8 @@ div.body p.sphx-glr-script-out {
 }
 
 div.bodywrapper {
-    margin: 0 246px 0 auto;
-    border-right: 1px solid #EEE;
+    margin: 1em 246px 0 auto;
+    /*border-right: 1px solid #EEE;*/
 }
 
 @media (max-width: 800px) {
@@ -501,15 +500,15 @@ h6 {
 }
 
 div.body h2 {
-    margin-top: 40px;
+    margin-top: 50px;
 }
 
 div.body h3, div.body hr {
-    margin-top: 35px;
+    margin-top: 40px;
 }
 
 div.body h2 {
-    margin-top: 30px;
+    margin-top: 35px;
 }
 
 div.bodywrapper h1 {
@@ -522,7 +521,8 @@ div.bodywrapper h1 {
 div.sphinxsidebar {
     margin: 0;
     padding: 0.5em 15px 15px 0;
-    width: 226px;
+    min-width: 226px;
+    width: 17%;
     float: right;
     text-align: left;
 }
