@@ -163,6 +163,23 @@ Changes
       suitable for use with custom colormaps with a non-unity alpha channel.
 
 
+Contributors
+------------
+
+The following people contributed to this release::
+
+    49  Gael Varoquaux
+    180  Jerome Dockes
+    57  kchawla-pi
+    38  SylvainLan
+    36  Kamalakar Daddy
+    10  Gilles de Hollander
+    4  Bertrand Thirion
+    4  MENUET Romuald
+    3  Moritz Boos
+    1  Peer Herholz
+    1  Pierre Bellec
+
 0.4.2
 =====
 Few important bugs fix release for OHBM conference.
