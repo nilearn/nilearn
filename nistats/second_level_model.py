@@ -409,7 +409,7 @@ class SecondLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
 
         # Fit an OLS regression for parametric statistics
         Y = self.masker_.transform(effect_maps)
-        if self.memory is not None:
+        if self.memory:
             mem_glm = self.memory.cache(run_glm, ignore=['n_jobs'])
         else:
             mem_glm = run_glm
@@ -423,7 +423,7 @@ class SecondLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         self.results_ = results
 
         # We compute contrast object
-        if self.memory is not None:
+        if self.memory:
             mem_contrast = self.memory.cache(compute_contrast)
         else:
             mem_contrast = compute_contrast

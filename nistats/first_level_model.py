@@ -452,11 +452,11 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
 
             if self.verbose > 1:
                 t_masking = time.time() - t_masking
-                sys.stderr.write('Masker took %d seconds          \n' % t_masking)
+                sys.stderr.write('Masker took %d seconds       \n' % t_masking)
 
             if self.signal_scaling:
                 Y, _ = mean_scaling(Y, self.scaling_axis)
-            if self.memory is not None:
+            if self.memory:
                 mem_glm = self.memory.cache(run_glm, ignore=['n_jobs'])
             else:
                 mem_glm = run_glm
