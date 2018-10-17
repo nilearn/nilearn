@@ -333,6 +333,12 @@ div.related ul li#navbar-ecosystem {
     margin-right: 0.5em;
 }
 
+@media (max-width: 800px) {
+    div.related ul li#navbar-ecosystem {
+	display: none;
+    }
+}
+
 @media (min-width: 800px) {
     div.related ul li#navbar-about {
         display: none;
