@@ -16,7 +16,7 @@ from matplotlib import colors
 
 from nibabel.affines import apply_affine
 
-from ..image import resample_img, resample_to_img, new_img_like
+from ..image import resample_img, resample_to_img, new_img_like, reorder_img
 from .js_plotting_utils import get_html_template, HTMLDocument
 from ..plotting import cm
 from ..plotting.find_cuts import find_xyz_cut_coords
@@ -27,21 +27,24 @@ from .._utils.niimg import _safe_get_data
 from ..datasets import load_mni152_template
 
 
-def _resample_to_self(img, interpolation):
+def _resample_to_isotropic_affine(img, interpolation):
     """ For internal use.
         Resample an image to have a diagonal, positive & isotropic affine.
     """
 
-    u, s, vh = np.linalg.svd(img.affine[0:3, 0:3])
-    vsize = np.min(np.abs(s))
-    img = resample_img(img, target_affine=np.diag([vsize, vsize, vsize]),
-                       interpolation=interpolation)
+    try:
+        # Start by trying a simple reordering of axes
+        img = reorder_img(img,resample='nearest')
+    except:
+        u, s, vh = np.linalg.svd(img.affine[0:3, 0:3])
+        vsize = np.min(np.abs(s))
+        img = resample_img(img, target_affine=np.diag([vsize, vsize, vsize]),
+                           interpolation=interpolation)
     return img
 
 
 def _data2sprite(data):
-    """ For internal use.
-        Convert a 3D array into a sprite of sagittal slices.
+    """ Convert a 3D array into a sprite of sagittal slices.
     """
 
     nx, ny, nz = data.shape
@@ -60,8 +63,7 @@ def _data2sprite(data):
 
 
 def _get_vmin_vmax(data, vmin=None, vmax=None):
-    """ For internal use.
-        Detect vmin and vmax in a data array.
+    """ Detect vmin and vmax in a data array.
     """
 
     # Get vmin vmax
@@ -85,8 +87,7 @@ def _get_vmin_vmax(data, vmin=None, vmax=None):
 
 
 def _threshold_data(data, threshold=None):
-    """ For internal use only.
-        Threshold a data array.
+    """ Threshold a data array.
     """
     # Deal with automatic settings of plot parameters
     if threshold == 'auto':
@@ -108,8 +109,7 @@ def _threshold_data(data, threshold=None):
 
 def _save_sprite(data, output_sprite, vmax, vmin, mask=None, cmap='Greys',
                  format='png'):
-    """ For internal use.
-        Generate a sprite from a 3D Niimg-like object.
+    """ Generate a sprite from a 3D Niimg-like object.
     """
 
     # Create sprite
@@ -128,8 +128,7 @@ def _save_sprite(data, output_sprite, vmax, vmin, mask=None, cmap='Greys',
 
 
 def _bytesIO_to_base64(file):
-    """ For internal use.
-        Encode a bytesIO virtual file as base64.
+    """ Encode a bytesIO virtual file as base64.
         Also closes the file.
     """
     file.seek(0)
@@ -139,8 +138,7 @@ def _bytesIO_to_base64(file):
 
 
 def _save_cm(output_cmap, cmap, format='png'):
-    """ For internal use.
-        Save the colormap of an image as a png file.
+    """ Save the colormap of an image as a png file.
     """
 
     # Hard-coded number of colors
@@ -157,8 +155,7 @@ class StatMapView(HTMLDocument):
 
 
 def _mask_stat_map(stat_map_img, threshold=None):
-    """ For internal use.
-        Load a stat map and apply a threshold.
+    """ Load a stat map and apply a threshold.
     """
     # Load stat map
     stat_map_img = check_niimg_3d(stat_map_img, dtype='auto')
@@ -177,8 +174,7 @@ def _mask_stat_map(stat_map_img, threshold=None):
 
 
 def _load_bg_img(stat_map_img, bg_img='MNI152', black_bg='auto', dim='auto'):
-    """ For internal use.
-        resample bg_img in an isotropic resolution,
+    """ Resample bg_img in an isotropic resolution,
         with a positive diagonal affine matrix.
     """
     # If no background is used, switch to the white background color style
@@ -195,13 +191,12 @@ def _load_bg_img(stat_map_img, bg_img='MNI152', black_bg='auto', dim='auto'):
                               stat_map_img.affine)
         bg_min = 0
         bg_max = 0
-    bg_img = _resample_to_self(bg_img, interpolation='nearest')
+    bg_img = _resample_to_isotropic_affine(bg_img, interpolation='nearest')
     return bg_img, bg_min, bg_max, black_bg
 
 def _resample_stat_map(stat_map_img, bg_img, mask_img,
                    resampling_interpolation='continuous'):
-    """ For internal use.
-        Safely load the stat map ande resample to background.
+    """ Safely load the stat map ande resample to background.
         Thresholding of the stat map is done in the original space, and the
         mask is resampled to the final resolution/space with nearest
         interpolation.
@@ -219,8 +214,7 @@ def _resample_stat_map(stat_map_img, bg_img, mask_img,
 def _json_sprite(shape, affine, vmin, vmax, cut_slices, black_bg=False,
                  opacity=1, draw_cross=True, annotate=True, title=None,
                  colorbar=True):
-    """ For internal use.
-        Create a json-like structure, with all the brainsprite parameters.
+    """ Create a json-like structure, with all the brainsprite parameters.
     """
 
     # Set color parameters
@@ -266,8 +260,7 @@ def _json_sprite(shape, affine, vmin, vmax, cut_slices, black_bg=False,
 
 
 def _html_brainsprite(sprite_params, stat_map_base64, bg_base64, cm_base64):
-    """ For internal use.
-        Fill a brainsprite html template with relevant parameters and data.
+    """ Fill a brainsprite html template with relevant parameters and data.
     """
 
     # Load javascript libraries
