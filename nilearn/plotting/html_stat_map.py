@@ -38,7 +38,7 @@ def _resample_to_isotropic_affine(img, interpolation):
     except:
         # We need to resample that image
         flag_res = True
-        
+
     # Extract the voxel sizes
     u, s, vh = np.linalg.svd(img.affine[0:3, 0:3])
     vsize = np.min(np.abs(s))
@@ -137,13 +137,13 @@ def _save_sprite(data, output_sprite, vmax, vmin, mask=None, cmap='Greys',
     return sprite
 
 
-def _bytesIO_to_base64(file):
-    """ Encode a bytesIO virtual file as base64.
+def _bytesIO_to_base64(bytesio_png):
+    """ Encode the content of a bytesIO virtual .png file as base64.
         Also closes the file.
     """
-    file.seek(0)
-    data = encodebytes(file.read()).decode('utf-8')
-    file.close()
+    bytesio_png.seek(0)
+    data = encodebytes(bytesio_png.read()).decode('utf-8')
+    bytesio_png.close()
     return data
 
 
