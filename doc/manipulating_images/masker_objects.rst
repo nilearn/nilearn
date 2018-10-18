@@ -177,12 +177,17 @@ preparation::
 
    >>> from nilearn import input_data
    >>> masker = input_data.NiftiMasker()
-   >>> masker
+   >>> masker # doctest: +ELLIPSIS
    NiftiMasker(detrend=False, dtype=None, high_pass=None, low_pass=None,
          mask_args=None, mask_img=None, mask_strategy='background',
-         memory=Memory(cachedir=None), memory_level=1, sample_mask=None,
+         memory=Memory(...), memory_level=1, sample_mask=None,
          sessions=None, smoothing_fwhm=None, standardize=False, t_r=None,
          target_affine=None, target_shape=None, verbose=0)
+
+.. note::
+
+    From scikit-learn 0.20, the argument `cachedir` is deprecated in
+    favour of `location`. Hence `cachedir` might not be seen as here.
 
 The meaning of each parameter is described in the documentation of
 :class:`NiftiMasker` (click on the name :class:`NiftiMasker`), here we

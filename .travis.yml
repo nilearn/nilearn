@@ -41,7 +41,12 @@ matrix:
            NUMPY_VERSION="*" SCIPY_VERSION="*" PANDAS_VERSION="*"
            SCIKIT_LEARN_VERSION="*" MATPLOTLIB_VERSION="*" COVERAGE="true"
            LXML_VERSION="*"
-    # FLAKE8 linting on diff wrt common ancestor with upstream/master
+    - env: DISTRIB="conda" PYTHON_VERSION="3.7"
+           NUMPY_VERSION="*" SCIPY_VERSION="*" PANDAS_VERSION="*"
+           SCIKIT_LEARN_VERSION="*" MATPLOTLIB_VERSION="*" COVERAGE="true"
+           LXML_VERSION="*"
+
+  # FLAKE8 linting on diff wrt common ancestor with upstream/master
     # Note: the python value is only there to trigger allow_failures
     - python: 2.7
       env: DISTRIB="conda" PYTHON_VERSION="2.7" FLAKE8_VERSION="*" SKIP_TESTS="true"

@@ -24,8 +24,8 @@ from nilearn import plotting
 plotting.plot_glass_brain(stat_img, threshold=3)
 
 ###############################################################################
-# Glass brain plotting: black backgrond
-# -------------------------------------
+# Glass brain plotting: black background
+# --------------------------------------
 # On a black background (option "black_bg"), and with only the x and
 # the z view (option "display_mode").
 plotting.plot_glass_brain(

@@ -210,7 +210,7 @@ def _resample_stat_map(stat_map_img, bg_img, mask_img,
     # resample stat map
     stat_map_img = resample_to_img(stat_map_img, bg_img,
                                        interpolation=resampling_interpolation)
-    mask_img = resample_to_img(mask_img, bg_img, fill=1,
+    mask_img = resample_to_img(mask_img, bg_img, fill_value=1,
                                    interpolation='nearest')
 
     return stat_map_img, mask_img

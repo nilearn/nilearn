@@ -99,7 +99,7 @@ plt.title('Prediction: accuracy score')
 # We fit on the the first 10 sessions and plot a confusion matrix on the
 # last 2 sessions
 from sklearn.metrics import confusion_matrix
-from nilearn.plotting import plot_matrix
+from nilearn.plotting import plot_matrix, show
 
 svc_ovo.fit(X[session < 10], y[session < 10])
 y_pred_ovo = svc_ovo.predict(X[session >= 10])
@@ -115,4 +115,4 @@ plot_matrix(confusion_matrix(y_pred_ova, y[session >= 10]),
             labels=unique_conditions,
             title='Confusion matrix: One vs All', cmap='hot_r')
 
-plt.show()
+show()

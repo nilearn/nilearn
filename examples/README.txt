@@ -13,6 +13,8 @@ Nilearn usage examples
     :local:
     :depth: 1
 
+.. _tutorial_examples:
+
 Tutorial examples
 ------------------
 

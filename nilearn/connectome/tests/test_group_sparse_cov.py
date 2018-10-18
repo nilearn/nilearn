@@ -1,7 +1,7 @@
 from nose.tools import assert_equal, assert_true, assert_raises
 
 import numpy as np
-from nilearn._utils.testing import generate_group_sparse_gaussian_graphs
+from nilearn._utils.data_gen import generate_group_sparse_gaussian_graphs
 from nilearn.connectome.group_sparse_cov import (group_sparse_covariance,
                                                         group_sparse_scores)
 from nilearn.connectome import GroupSparseCovariance, GroupSparseCovarianceCV
