@@ -152,34 +152,6 @@ def _save_cm(output_cmap, cmap, format='png'):
     imsave(output_cmap, data, cmap=cmap, format=format)
 
 
-def _custom_cmap(cmap, vmin, vmax, threshold=None):
-    """ For internal use.
-        Generation of a custom color map, with under-threshold "greyed" values
-        This is taken from nilearn/plotting/displays.py#L754-L772
-    """
-
-    our_cmap = mpl_cm.get_cmap(cmap)
-    norm = colors.Normalize(vmin=vmin, vmax=vmax)
-
-    if threshold is None:
-        offset = 0
-    else:
-        offset = threshold
-    if offset > norm.vmax:
-        offset = norm.vmax
-    cmaplist = [our_cmap(i) for i in range(our_cmap.N)]
-    istart = int(norm(-offset, clip=True) * (our_cmap.N - 1))
-    istop = int(norm(offset, clip=True) * (our_cmap.N - 1))
-    for i in range(istart, istop):
-        cmaplist[i] = (0.5, 0.5, 0.5, 1.)  # just an average gray color
-    if norm.vmin == norm.vmax:  # len(np.unique(data)) == 1 ?
-        return
-    else:
-        our_cmap = colors.LinearSegmentedColormap.from_list(
-            'Custom cmap', cmaplist, our_cmap.N)
-        return our_cmap
-
-
 class StatMapView(HTMLDocument):
     pass
 
@@ -429,7 +401,6 @@ def view_stat_map(stat_map_img, bg_img='MNI152', cut_coords=None,
     stat_map_img, mask_img = _resample_stat_map(stat_map_img, bg_img, mask_img,
                                             resampling_interpolation)
 
-
     # Get the slices for the cut
     cut_slices = _get_cut_slices(stat_map_img, cut_coords, threshold)
 
@@ -449,7 +420,8 @@ def view_stat_map(stat_map_img, bg_img='MNI152', cut_coords=None,
     # Create a base64 colormap
     if colorbar:
         stat_map_cm = BytesIO()
-        cmap_c = _custom_cmap(cmap, vmin, vmax, threshold)
+        norm = colors.Normalize(vmin=vmin, vmax=vmax)
+        cmap_c = cm.threshold_cmap(cmap, norm, threshold)
         _save_cm(stat_map_cm, cmap_c, 'png')
         cm_base64 = _bytesIO_to_base64(stat_map_cm)
     else:

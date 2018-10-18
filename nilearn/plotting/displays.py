@@ -715,6 +715,7 @@ class BaseSlicer(object):
                 ims.append(im)
         return ims
 
+
     def _show_colorbar(self, cmap, norm, threshold=None):
         """
         Parameters
@@ -727,12 +728,7 @@ class BaseSlicer(object):
         threshold: float or None
             The absolute value at which the colorbar is thresholded
         """
-        if threshold is None:
-            offset = 0
-        else:
-            offset = threshold
-        if offset > norm.vmax:
-            offset = norm.vmax
+        our_cmap = cm.threshold_cmap(cmap, norm, threshold=threshold)
 
         # create new  axis for the colorbar
         figure = self.frame_axes.figure
@@ -751,25 +747,12 @@ class BaseSlicer(object):
         else:
             self._colorbar_ax.set_axis_bgcolor('w')
 
-        our_cmap = mpl_cm.get_cmap(cmap)
         # edge case where the data has a single value
         # yields a cryptic matplotlib error message
         # when trying to plot the color bar
         nb_ticks = 5 if norm.vmin != norm.vmax else 1
         ticks = np.linspace(norm.vmin, norm.vmax, nb_ticks)
         bounds = np.linspace(norm.vmin, norm.vmax, our_cmap.N)
-
-        # some colormap hacking
-        cmaplist = [our_cmap(i) for i in range(our_cmap.N)]
-        istart = int(norm(-offset, clip=True) * (our_cmap.N - 1))
-        istop = int(norm(offset, clip=True) * (our_cmap.N - 1))
-        for i in range(istart, istop):
-            cmaplist[i] = (0.5, 0.5, 0.5, 1.)  # just an average gray color
-        if norm.vmin == norm.vmax:  # len(np.unique(data)) == 1 ?
-            return
-        else:
-            our_cmap = colors.LinearSegmentedColormap.from_list(
-                'Custom cmap', cmaplist, our_cmap.N)
 
         self._cbar = ColorbarBase(
             self._colorbar_ax, ticks=ticks, norm=norm,
