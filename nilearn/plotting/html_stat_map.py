@@ -278,7 +278,17 @@ def _html_brainsprite(sprite_params, stat_map_base64, bg_base64, cm_base64):
     html = html.replace('INSERT_CM_DATA_HERE', cm_base64)
     html = html.replace('INSERT_JQUERY_HERE', js_jquery)
     html = html.replace('INSERT_BRAINSPRITE_HERE', js_brainsprite)
-    return StatMapView(html, width=600, height=260)
+
+    # compute the internal size of the viewer
+    width = sprite_params['nbSlice']['Y'] + 2 * sprite_params['nbSlice']['X']
+    height = np.max([sprite_params['nbSlice']['Y'],
+                     sprite_params['nbSlice']['Z']])
+    # there is a 10% extra height for the fonts
+    # adding another 10% breathing room
+    ratio = 1.20 * height / width
+    true_width = 600;
+    return StatMapView(html, width=true_width,
+                       height=np.ceil(ratio * true_width))
 
 
 def _get_cut_slices(stat_map_img, cut_coords=None, threshold=None):
