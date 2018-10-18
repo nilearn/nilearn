@@ -158,7 +158,7 @@ def test_resampling_fill_value():
 
     # Try a few different fill values
     for data in [data_3d, data_4d]:
-        for val in (-3.75, 2.24, 0):
+        for val in (-3.75, 0):
             if val:
                 rot_img = resample_img(Nifti1Image(data, np.eye(4)),
                                        target_affine=rot,
