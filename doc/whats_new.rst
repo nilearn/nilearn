@@ -1,3 +1,93 @@
+0.5.0 beta
+==========
+
+
+Highlights
+----------
+
+**Nilearn Python2 support is being removed in the near future.
+Users with a Python2 environment will be warned at their first Nilearn import.**
+
+Improvements
+------------
+
+Displays created by plotting functions can now add a scale bar
+ to indicate the size in mm or cm (see :ref:`plotting`),
+ contributed by Oscar Esteban
+
+Colorbars in plotting functions now have a middle gray background
+ suitable for use with custom colormaps with a non-unity alpha channel.
+ Contributed by Eric Larson (larsoner)
+
+Loads of fixes and quality of life improvements
+
+- A cleaner layout and improved navigation for the website, with a better introduction.
+- Less warnings and verbosity while using certain functions and during dataset downloads.
+- Improved backend for the dataset fetchers means more reliable dataset downloads.
+- Some datasets, such as the ICBM, are now compressed to take up less disk space.
+
+
+Fixes
+-----
+
+- Searchlight().fit() now accepts 4D niimgs. Contributed by Dan Gale (danjgale).
+- plotting.view_markers.open_in_browser() in js plotting utils fixed
+- Brainomics dataset has been replaced in several examples.
+- Lots of other fixes in documentation and examples.
+
+
+Changes
+-------
+
+- In nilearn.regions.img_to_signals_labels, the See Also section in documentation now also points to NiftiLabelsMasker and NiftiMapsMasker
+- Scipy is listed as a dependency for Nilearn installation.
+- Anaconda link in the installation documentation updated.
+
+Contributors
+-------------
+
+The following people contributed to this release::
+
+  58  Gael Varoquaux
+  115  kchawla-pi
+  15  Jerome Dockes
+  14  oesteban
+  10  Eric Larson
+  6  Kamalakar Daddy
+  3  Bertrand Thirion
+  5  Alexandre Abadie
+  4  Sourav Singh
+  3  Alex Rothberg
+  3  AnaLu
+  3  Demian Wassermann
+  3  Horea Christian
+  3  Jason Gors
+  3  Jean Remi King
+  3  MADHYASTHA Meghana
+  3  SRSteinkamp
+  3  Simon Steinkamp
+  3  jerome-alexis_chevalier
+  3  salma
+  3  sfvnMAC
+  2  Akshay
+  2  Daniel Gomez
+  2  Guillaume Lemaitre
+  2  Pierre Bellec
+  2  arokem
+  2  erramuzpe
+  2  foucault
+  2  jehane
+  1  Sylvain LANNUZEL
+  1  Aki Nikolaidis
+  1  Christophe Bedetti
+  1  Dan Gale
+  1  Dillon Plunkett
+  1  Dimitri Papadopoulos Orfanos
+  1  Greg Operto
+  1  Ivan Gonzalez
+  1  Yaroslav Halchenko
+  1  dtyulman
+
 0.5.0 alpha
 ===========
 
@@ -24,6 +114,10 @@ Enhancements
 
     - All NiftiMaskers now have a `dtype` argument. For now the default behaviour
       is to keep the same data type as the input data.
+
+    - Displays created by plotting functions can now add a scale bar to
+      indicate the size in mm or cm (see :ref:`plotting`), contributed by
+      Oscar Esteban
 
     - New functions :func:`nilearn.plotting.view_surf` and
       :func:`nilearn.plotting.view_surf` and
@@ -52,7 +146,6 @@ Enhancements
     - Added :func:`nilearn.datasets.fetch_neurovault_auditory_computation_task`
       and :func:`nilearn.datasets.fetch_neurovault_motor_task` for simple example data.
 
-
 Changes
 -------
 
@@ -66,6 +159,26 @@ Changes
     - `sklearn.cross_validation` and `sklearn.grid_search` have been
       replaced by `sklearn.model_selection` in all the examples.
 
+    - Colorbars in plotting functions now have a middle gray background
+      suitable for use with custom colormaps with a non-unity alpha channel.
+
+
+Contributors
+------------
+
+The following people contributed to this release::
+
+    49  Gael Varoquaux
+    180  Jerome Dockes
+    57  kchawla-pi
+    38  SylvainLan
+    36  Kamalakar Daddy
+    10  Gilles de Hollander
+    4  Bertrand Thirion
+    4  MENUET Romuald
+    3  Moritz Boos
+    1  Peer Herholz
+    1  Pierre Bellec
 
 0.4.2
 =====

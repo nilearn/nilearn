@@ -14,11 +14,11 @@ from tempfile import mkdtemp
 import nibabel
 import numpy as np
 from nibabel import Nifti1Image
-from nose import SkipTest
 from nose.tools import assert_true, assert_false, assert_raises
 from numpy.testing import assert_array_equal, assert_equal
 
 from nilearn._utils import testing
+from nilearn._utils import data_gen
 from nilearn._utils.class_inspect import get_params
 from nilearn._utils.exceptions import DimensionError
 from nilearn._utils.testing import assert_raises_regex
@@ -55,6 +55,19 @@ def test_detrend():
     mask = data.astype(np.int)
     mask_img = Nifti1Image(mask, np.eye(4))
     masker = NiftiMasker(mask_img=mask_img, detrend=True)
+    # Smoke test the fit
+    X = masker.fit_transform(img)
+    assert_true(np.any(X != 0))
+
+
+def test_resample():
+    # Check that target_affine triggers the right resampling
+    data = np.zeros((9, 9, 9))
+    data[3:-3, 3:-3, 3:-3] = 10
+    img = Nifti1Image(data, np.eye(4))
+    mask = data.astype(np.int)
+    mask_img = Nifti1Image(mask, np.eye(4))
+    masker = NiftiMasker(mask_img=mask_img, target_affine=2 * np.eye(3))
     # Smoke test the fit
     X = masker.fit_transform(img)
     assert_true(np.any(X != 0))
@@ -100,7 +113,7 @@ def test_matrix_orientation():
     # the "step" kind generate heavyside-like signals for each voxel.
     # all signals being identical, standardizing along the wrong axis
     # would leave a null signal. Along the correct axis, the step remains.
-    fmri, mask = testing.generate_fake_fmri(shape=(40, 41, 42), kind="step")
+    fmri, mask = data_gen.generate_fake_fmri(shape=(40, 41, 42), kind="step")
     masker = NiftiMasker(mask_img=mask, standardize=True, detrend=True)
     timeseries = masker.fit_transform(fmri)
     assert(timeseries.shape[0] == fmri.shape[3])

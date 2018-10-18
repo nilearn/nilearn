@@ -58,9 +58,9 @@ from sklearn.linear_model import (LogisticRegression,
                                   RidgeClassifier,
                                   RidgeClassifierCV,
                                   )
-logistic = LogisticRegression(C=1., penalty="l1")
-logistic_50 = LogisticRegression(C=50., penalty="l1")
-logistic_l2 = LogisticRegression(C=1., penalty="l2")
+logistic = LogisticRegression(C=1., penalty="l1", solver='liblinear')
+logistic_50 = LogisticRegression(C=50., penalty="l1", solver='liblinear')
+logistic_l2 = LogisticRegression(C=1., penalty="l2", solver='liblinear')
 
 # Cross-validated versions of these classifiers
 from sklearn.model_selection import GridSearchCV
@@ -68,17 +68,21 @@ from sklearn.model_selection import GridSearchCV
 # can significantly speed up the fitting process on computers with
 # multiple cores
 svm_cv = GridSearchCV(SVC(C=1., kernel="linear"),
-                      param_grid={'C': [.1, .5, 1., 5., 10., 50., 100.]},
-                      scoring='f1', n_jobs=1)
+                      param_grid={'C': [.1, 1., 10., 100.]},
+                      scoring='f1', n_jobs=1, cv=3, iid=False)
 
-logistic_cv = GridSearchCV(LogisticRegression(C=1., penalty="l1"),
-                           param_grid={'C': [.1, .5, 1., 5., 10., 50., 100.]},
-                           scoring='f1')
-logistic_l2_cv = GridSearchCV(LogisticRegression(C=1., penalty="l2"),
-                              param_grid={
-                                  'C': [.1, .5, 1., 5., 10., 50., 100.]
-                              },
-                              scoring='f1')
+logistic_cv = GridSearchCV(
+        LogisticRegression(C=1., penalty="l1", solver='liblinear'),
+        param_grid={'C': [.1, 1., 10., 100.]},
+        scoring='f1', cv=3, iid=False,
+        )
+logistic_l2_cv = GridSearchCV(
+        LogisticRegression(C=1., penalty="l2", solver='liblinear'),
+        param_grid={
+            'C': [.1, 1., 10., 100.]
+            },
+        scoring='f1', cv=3, iid=False,
+        )
 
 # The ridge classifier has a specific 'CV' object that can set it's
 # parameters faster than using a GridSearchCV

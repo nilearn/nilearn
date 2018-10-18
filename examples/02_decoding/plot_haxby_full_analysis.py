@@ -107,6 +107,8 @@ for mask_name in mask_names:
 # ---------------------------------------------------
 import numpy as np
 import matplotlib.pyplot as plt
+from nilearn.plotting import show
+
 plt.figure()
 
 tick_position = np.arange(len(categories))
@@ -133,4 +135,4 @@ plt.title('Category-specific classification accuracy for different masks')
 plt.tight_layout()
 
 
-plt.show()
+show()

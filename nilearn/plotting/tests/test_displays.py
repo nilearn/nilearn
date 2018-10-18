@@ -102,6 +102,19 @@ def test_add_markers_cut_coords_is_none():
     orthoslicer.close()
 
 
+def test_annotations():
+    # Check calls to display.annotate()
+    # In particular, exercise some of the keyword arguments for scale bars
+    orthoslicer = OrthoSlicer(cut_coords=(None, None, None))
+    orthoslicer.annotate(size=10, left_right=True, positions=False)
+    orthoslicer.annotate(size=12, left_right=False, positions=False,
+                         scalebar=True,
+                         scale_size=2.5,
+                         scale_units='cm',
+                         scale_loc=3)
+    orthoslicer.close()
+
+
 def test_add_graph_with_node_color_as_string():
     lzry_projector = LZRYProjector(cut_coords=(0, 0, 0, 0))
     matrix = np.array([[0, 3], [3, 0]])
