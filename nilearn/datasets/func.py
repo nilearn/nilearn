@@ -109,7 +109,7 @@ def fetch_haxby(data_dir=None, n_subjects=None, subjects=(2,),
 
     fetch_stimuli: boolean, optional
         Indicate if stimuli images must be downloaded. They will be presented
-        as a dictionnary of categories.
+        as a dictionary of categories.
 
     Returns
     -------
