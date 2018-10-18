@@ -164,7 +164,7 @@ def test_resampling_fill_value():
                                        target_affine=rot,
                                        interpolation='nearest',
                                        fill_value=val,
-                                       clip = False)
+                                       clip=False)
             else:
                 rot_img = resample_img(Nifti1Image(data, np.eye(4)),
                                        target_affine=rot,
