@@ -728,7 +728,7 @@ class BaseSlicer(object):
         threshold: float or None
             The absolute value at which the colorbar is thresholded
         """
-        our_cmap = cm.threshold_cmap(cmap, norm, threshold=threshold)
+        our_cmap = cm._threshold_cmap(cmap, norm, threshold=threshold)
 
         # create new  axis for the colorbar
         figure = self.frame_axes.figure

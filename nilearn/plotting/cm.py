@@ -85,8 +85,9 @@ def _concat_cmap(cmap1, cmap2):
 
     return cdict
 
-def threshold_cmap(cmap, norm, threshold=None):
-    """ Grey-out the values that do not pass a threshold in a symmetric cmap.
+def _threshold_cmap(cmap, norm, threshold=None):
+    """ Utility function to turn grey the values that do not pass a threshold
+        in a symmetric cmap.
     """
 
     our_cmap = _cm.get_cmap(cmap)

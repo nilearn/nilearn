@@ -29,7 +29,7 @@ from ..datasets import load_mni152_template
 
 def _resample_to_self(img, interpolation):
     """ For internal use.
-        Resample an image to have a diagonal, isotropic affine.
+        Resample an image to have a diagonal, positive & isotropic affine.
     """
 
     u, s, vh = np.linalg.svd(img.affine[0:3, 0:3])
@@ -421,7 +421,7 @@ def view_stat_map(stat_map_img, bg_img='MNI152', cut_coords=None,
     if colorbar:
         stat_map_cm = BytesIO()
         norm = colors.Normalize(vmin=vmin, vmax=vmax)
-        cmap_c = cm.threshold_cmap(cmap, norm, threshold)
+        cmap_c = cm._threshold_cmap(cmap, norm, threshold)
         _save_cm(stat_map_cm, cmap_c, 'png')
         cm_base64 = _bytesIO_to_base64(stat_map_cm)
     else:
