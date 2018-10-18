@@ -387,7 +387,7 @@ div.related-wrapper {
 }
 
 div.body {
-    margin: 0 auto 0 auto;
+    margin: 1em auto 0 auto;
     padding: 1em 20px 30px 20px;
     max-width: 62em;
 }
@@ -421,7 +421,7 @@ div.body p.sphx-glr-script-out {
 }
 
 div.bodywrapper {
-    margin: 1em 246px 0 auto;
+    margin: 0 246px 0 auto;
     /*border-right: 1px solid #EEE;*/
 }
 
