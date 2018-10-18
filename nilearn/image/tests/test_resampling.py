@@ -169,7 +169,7 @@ def test_resampling_fill_value():
                 rot_img = resample_img(Nifti1Image(data, np.eye(4)),
                                        target_affine=rot,
                                        interpolation='nearest',
-                                       clip = False)
+                                       clip=False)
             assert_equal(rot_img.get_data().flatten()[0],
                          val)
 
