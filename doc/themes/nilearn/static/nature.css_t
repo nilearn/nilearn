@@ -387,8 +387,8 @@ div.related-wrapper {
 }
 
 div.body {
-    margin: 1em auto 0 auto;
-    padding: 1em 20px 30px 20px;
+    margin: 0 auto 0 auto;
+    padding: 1.5em 20px 30px 20px;
     max-width: 62em;
 }
 
@@ -526,7 +526,7 @@ div.bodywrapper h1 {
 
 div.sphinxsidebar {
     margin: 0;
-    padding: 0.5em 15px 15px 0;
+    padding: 0 15px 15px 0;
     min-width: 226px;
     width: 17%;
     float: right;
@@ -683,6 +683,7 @@ div.sphinxsidebar ul ul li {
 
 div.sphinxsidebarwrapper {
     width: 227px;
+    padding-top: .5em;
 }
 
 div.sphinxsidebarwrapper ul li p {
