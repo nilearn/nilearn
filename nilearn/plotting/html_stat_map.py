@@ -31,13 +31,23 @@ def _resample_to_isotropic_affine(img, interpolation):
     """ For internal use.
         Resample an image to have a diagonal, positive & isotropic affine.
     """
-
     try:
         # Start by trying a simple reordering of axes
         img = reorder_img(img,resample='nearest')
+        flag_res = False
     except:
-        u, s, vh = np.linalg.svd(img.affine[0:3, 0:3])
-        vsize = np.min(np.abs(s))
+        # We need to resample that image
+        flag_res = True
+        
+    # Extract the voxel sizes
+    u, s, vh = np.linalg.svd(img.affine[0:3, 0:3])
+    vsize = np.min(np.abs(s))
+
+    # Test if the voxel steps are isotropic positive,
+    # if not, force resampling
+    diff = np.max(s - vsize)
+    flag_res = (diff > 10^(-3)) or flag_res
+    if flag_res:
         img = resample_img(img, target_affine=np.diag([vsize, vsize, vsize]),
                            interpolation=interpolation)
     return img
