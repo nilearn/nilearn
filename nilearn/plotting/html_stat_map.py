@@ -313,7 +313,7 @@ def _html_brainsprite(sprite_params, stat_map_base64, bg_base64, cm_base64):
     html = html.replace('INSERT_CM_DATA_HERE', cm_base64)
     html = html.replace('INSERT_JQUERY_HERE', js_jquery)
     html = html.replace('INSERT_BRAINSPRITE_HERE', js_brainsprite)
-    return StatMapView(html, ratio=44)
+    return StatMapView(html, width=600, height=260)
 
 
 def _get_cut_slices(stat_map_img, cut_coords=None, threshold=None):

@@ -84,10 +84,10 @@ class HTMLDocument(object):
     """
     _all_open_html_repr = weakref.WeakSet()
 
-    def __init__(self, html, width=72, ratio=68):
+    def __init__(self, html, width=600, height=400):
         self.html = html
         self.width = width
-        self.ratio = ratio
+        self.height = height
         self._temp_file = None
         self._check_n_open()
 
@@ -99,41 +99,26 @@ class HTMLDocument(object):
                           'of megabytes of RAM, you might want to '
                           'delete some of them.')
 
-    def resize(self, width, ratio):
+    def resize(self, width, height):
         """Resize the plot displayed in a Jupyter notebook."""
-        self.width, self.ratio = width, ratio
+        self.width, self.height = width, height
         return self
 
-    def get_iframe(self, width=None, ratio=None):
+    def get_iframe(self, width=None, height=None):
         """
         Get the document wrapped in an inline frame.
 
         For inserting in another HTML page of for display in a Jupyter
         notebook.
 
-        Parameters
-        ----------
-        self :  an HTMLDocument object
-        width : integer, typically between 0 and 100, or None (default None)
-            the width of the iframe, expressed as a percentage of the parent
-            element in the webpage. Can be larger than 100
-        ratio : non-negative integer, or None (default None)
-            the ratio height / width, expressed as a percentage.
-            Portrait-like aspect ratios will be larger than 100.
-
-        If width or ratio are None, then the current value for the HTMLdocument
-        will be used.
         """
         if width is None:
             width = self.width
-        if ratio is None:
-            ratio = self.ratio
+        if height is None:
+            height = self.height
         escaped = cgi.escape(self.html, quote=True)
-        wrapped = '''<div class="embed-responsive"
-                   style="width: {}%; padding-top: {}%">
-                   <iframe srcdoc="{}" class="embed-responsive-item">
-                   </iframe>
-                   </div>'''.format(width, width*ratio/100, escaped)
+        wrapped = '<iframe srcdoc="{}" width={} height={} frameBorder="0"></iframe>'.format(
+            escaped, width, height)
         return wrapped
 
     def get_standalone(self):
