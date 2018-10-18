@@ -145,6 +145,42 @@ def test_downsample():
                                        rot_img.get_data()[:x, :y, :z, ...])
 
 
+def test_resampling_fill_value():
+    """ Test resampling with a non-zero fill value
+    """
+    prng = np.random.RandomState(10)
+
+    data_3d = prng.rand(1, 4, 4)
+    data_4d = prng.rand(1, 4, 4, 3)
+
+    angle = np.pi/4
+    rot = rotation(0, angle)
+
+    # Try a few different fill values
+    for data in [data_3d, data_4d]:
+        for val in (-3.75, 0):
+            if val:
+                rot_img = resample_img(Nifti1Image(data, np.eye(4)),
+                                       target_affine=rot,
+                                       interpolation='nearest',
+                                       fill_value=val,
+                                       clip=False)
+            else:
+                rot_img = resample_img(Nifti1Image(data, np.eye(4)),
+                                       target_affine=rot,
+                                       interpolation='nearest',
+                                       clip=False)
+            assert_equal(rot_img.get_data().flatten()[0],
+                         val)
+
+            rot_img2 = resample_to_img(Nifti1Image(data, np.eye(4)),
+                                       rot_img,
+                                       interpolation='nearest',
+                                       fill_value=val)
+            assert_equal(rot_img2.get_data().flatten()[0],
+                         val)
+
+
 def test_resampling_with_affine():
     """ Test resampling with a given rotation part of the affine.
     """
