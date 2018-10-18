@@ -28,13 +28,6 @@ shutil.copy(
                  'jquery.js'))
 
 
-# -- Parallel computing ------------------------------------------------------
-try:
-    from sklearn.utils import parallel_backend, cpu_count
-    parallel_backend(max(cpu_count, 4))
-except:
-    pass
-
 # ----------------------------------------------------------------------------
 
 
