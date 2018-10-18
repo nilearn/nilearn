@@ -295,8 +295,6 @@ pre a {
 div.document {
     background-color: white;
     text-align: left;
-    background-image: url(contents.png);
-    background-repeat: repeat-x;
 }
 
 div.clearer {
