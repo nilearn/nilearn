@@ -16,7 +16,7 @@ from matplotlib import colors
 
 from nibabel.affines import apply_affine
 
-from ..image import resample_img, resample_to_img, new_img_like, reorder_img
+from ..image import resample_to_img, new_img_like, reorder_img
 from .js_plotting_utils import get_html_template, HTMLDocument
 from ..plotting import cm
 from ..plotting.find_cuts import find_xyz_cut_coords
@@ -29,6 +29,12 @@ from ..datasets import load_mni152_template
 
 def _data2sprite(data):
     """ Convert a 3D array into a sprite of sagittal slices.
+        Each sagital slice is nz (height) x ny (width) pixels.
+        The sprite is (M x nz) x (N x ny)
+        where M and N are computed to be roughly equal, and such that
+        M x N is larger than the number of sagital slices (nx)
+        All slices are pasted together, starting top left, and moving left to
+        right, one row at a time. The last row is padded with empty slices.
     """
 
     nx, ny, nz = data.shape
@@ -169,7 +175,7 @@ def _load_bg_img(stat_map_img, bg_img='MNI152', black_bg='auto', dim='auto'):
         if isinstance(bg_img, str) and bg_img == "MNI152":
             bg_img = load_mni152_template()
         bg_img, black_bg, bg_min, bg_max = _load_anat(bg_img, dim=dim,
-                                                  black_bg=black_bg)
+                                                      black_bg=black_bg)
     else:
         bg_img = new_img_like(stat_map_img, np.zeros(stat_map_img.shape),
                               stat_map_img.affine)
@@ -178,8 +184,9 @@ def _load_bg_img(stat_map_img, bg_img='MNI152', black_bg='auto', dim='auto'):
     bg_img = reorder_img(bg_img, resample='nearest')
     return bg_img, bg_min, bg_max, black_bg
 
+
 def _resample_stat_map(stat_map_img, bg_img, mask_img,
-                   resampling_interpolation='continuous'):
+                       resampling_interpolation='continuous'):
     """ Safely load the stat map ande resample to background.
         Thresholding of the stat map is done in the original space, and the
         mask is resampled to the final resolution/space with nearest
@@ -188,9 +195,9 @@ def _resample_stat_map(stat_map_img, bg_img, mask_img,
 
     # resample stat map
     stat_map_img = resample_to_img(stat_map_img, bg_img,
-                                       interpolation=resampling_interpolation)
+                                   interpolation=resampling_interpolation)
     mask_img = resample_to_img(mask_img, bg_img, fill_value=1,
-                                   interpolation='nearest')
+                               interpolation='nearest')
 
     return stat_map_img, mask_img
 
@@ -246,10 +253,15 @@ def _json_sprite(shape, affine, vmin, vmax, cut_slices, black_bg=False,
 def _get_size_sprite(sprite_params):
     """ Define the width and height of the viewer.
     """
-    # compute the internal size of the viewer
-    w_sprite = sprite_params['nbSlice']['Y'] + 2 * sprite_params['nbSlice']['X']
-    h_sprite = np.max([sprite_params['nbSlice']['Y'],
-                      sprite_params['nbSlice']['Z']])
+    # get the dimensions of voxel space
+    nx = sprite_params['nbSlice']['X']
+    ny = sprite_params['nbSlice']['Y']
+    nz = sprite_params['nbSlice']['Z']
+    # width sagittal = ny, coronal = nx, axial = nx
+    w_sprite = ny + 2 * nx
+    # height of the slices is the max height of one of the slices
+    # height sagittal = nz, coronal = nz, axial = ny
+    h_sprite = np.max([ny, nz])
     # there is a 10% extra height for the fonts
     # adding another 10% breathing room
     ratio = 1.20 * h_sprite / w_sprite
