@@ -22,6 +22,7 @@ from ..plotting import cm
 from ..plotting.find_cuts import find_xyz_cut_coords
 from ..plotting.img_plotting import _load_anat, _get_colorbar_and_data_ranges
 from .._utils import check_niimg_3d
+from .._utils.param_validation import check_threshold
 from .._utils.extmath import fast_abs_percentile
 from .._utils.niimg import _safe_get_data
 from ..datasets import load_mni152_template
@@ -86,7 +87,9 @@ def _threshold_data(data, threshold=None):
         threshold = fast_abs_percentile(data) - 1e-5
 
     # Threshold
-    threshold = float(threshold) if threshold is not None else None
+    threshold = check_threshold(threshold, data,
+                                percentile_func=fast_abs_percentile,
+                                name='threshold')
 
     # Mask data
     if threshold is not None:
@@ -94,7 +97,7 @@ def _threshold_data(data, threshold=None):
             data = np.ma.masked_equal(data, 0, copy=False)
         else:
             data = np.ma.masked_inside(data, -threshold, threshold, copy=False)
-    return data
+    return data, threshold
 
 
 def _save_sprite(data, output_sprite, vmax, vmin, mask=None, cmap='Greys',
@@ -155,12 +158,12 @@ def _mask_stat_map(stat_map_img, threshold=None):
 
     # threshold the stat_map
     if threshold is not None:
-        data = _threshold_data(data, threshold)
+        data, threshold = _threshold_data(data, threshold)
         mask_img = new_img_like(stat_map_img, data.mask, stat_map_img.affine)
     else:
         mask_img = new_img_like(stat_map_img, np.zeros(data.shape),
                                 stat_map_img.affine)
-    return mask_img, stat_map_img, data
+    return mask_img, stat_map_img, data, threshold
 
 
 def _load_bg_img(stat_map_img, bg_img='MNI152', black_bg='auto', dim='auto'):
@@ -346,6 +349,8 @@ def view_stat_map(stat_map_img, bg_img='MNI152', cut_coords=None,
         This parameter is not currently supported.
     threshold : str, number or None  (default=1e-6)
         If None is given, the image is not thresholded.
+        If a string of the form "90%" is given, use the 90-th percentile of
+        the absolute value in the image.  
         If a number is given, it is used to threshold the image:
         values below the threshold (in absolute value) are plotted
         as transparent. If auto is given, the threshold is determined
@@ -393,7 +398,8 @@ def view_stat_map(stat_map_img, bg_img='MNI152', cut_coords=None,
     cmap = plt.cm.get_cmap(cmap)
 
     # Mask stat map
-    mask_img, stat_map_img, data = _mask_stat_map(stat_map_img, threshold)
+    mask_img, stat_map_img, data, threshold = _mask_stat_map(
+        stat_map_img, threshold)
 
     # Get color bar and data ranges
     cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
