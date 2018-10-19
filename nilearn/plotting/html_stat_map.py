@@ -7,6 +7,7 @@ import json
 from io import BytesIO
 from base64 import encodebytes
 import numbers
+from string import Template
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -138,7 +139,7 @@ def _save_sprite(data, output_sprite, vmax, vmin, mask=None, cmap='Greys',
 
 
 def _bytesIO_to_base64(bytesio_png):
-    """ Encode the content of a bytesIO virtual .png file as base64.
+    """ Encode the content of a bytesIO virtual png file as base64.
         Also closes the file.
     """
     bytesio_png.seek(0)
@@ -269,36 +270,42 @@ def _json_sprite(shape, affine, vmin, vmax, cut_slices, black_bg=False,
     return sprite_params
 
 
-def _html_brainsprite(sprite_params, stat_map_base64, bg_base64, cm_base64):
+def _get_size_sprite(sprite_params):
+    """ Define the width and height of the viewer.
+    """
+    # compute the internal size of the viewer
+    w_sprite = sprite_params['nbSlice']['Y'] + 2 * sprite_params['nbSlice']['X']
+    h_sprite = np.max([sprite_params['nbSlice']['Y'],
+                      sprite_params['nbSlice']['Z']])
+    # there is a 10% extra height for the fonts
+    # adding another 10% breathing room
+    ratio = 1.20 * h_sprite / w_sprite
+    width = 600;
+    height = np.ceil(ratio * width)
+    return width, height
+
+def _html_brainsprite(sprite):
     """ Fill a brainsprite html template with relevant parameters and data.
     """
+
+    # Fix the size of the viewer
+    width, height = _get_size_sprite(sprite['params'])
+
+    # convert params into json
+    sprite['params'] = json.dumps(sprite['params'])
 
     # Load javascript libraries
     js_dir = os.path.join(os.path.dirname(__file__), 'data', 'js')
     with open(os.path.join(js_dir, 'jquery.min.js')) as f:
-        js_jquery = f.read()
+        sprite['js_jquery'] = f.read()
     with open(os.path.join(js_dir, 'brainsprite.min.js')) as f:
-        js_brainsprite = f.read()
+        sprite['js_brainsprite'] = f.read()
 
-    # Load the html template, and plug base64 data and meta-data
+    # Load the html template, and plug in all the data
     html = get_html_template('stat_map_template.html')
-    html = html.replace('INSERT_SPRITE_PARAMS_HERE', json.dumps(sprite_params))
-    html = html.replace('INSERT_BG_DATA_HERE', bg_base64)
-    html = html.replace('INSERT_STAT_MAP_DATA_HERE', stat_map_base64)
-    html = html.replace('INSERT_CM_DATA_HERE', cm_base64)
-    html = html.replace('INSERT_JQUERY_HERE', js_jquery)
-    html = html.replace('INSERT_BRAINSPRITE_HERE', js_brainsprite)
+    html = Template(html).safe_substitute(sprite)
 
-    # compute the internal size of the viewer
-    width = sprite_params['nbSlice']['Y'] + 2 * sprite_params['nbSlice']['X']
-    height = np.max([sprite_params['nbSlice']['Y'],
-                     sprite_params['nbSlice']['Z']])
-    # there is a 10% extra height for the fonts
-    # adding another 10% breathing room
-    ratio = 1.20 * height / width
-    true_width = 600;
-    return StatMapView(html, width=true_width,
-                       height=np.ceil(ratio * true_width))
+    return StatMapView(html, width=width, height=height)
 
 
 def _get_cut_slices(stat_map_img, cut_coords=None, threshold=None):
@@ -417,18 +424,22 @@ def view_stat_map(stat_map_img, bg_img='MNI152', cut_coords=None,
     # Get the slices for the cut
     cut_slices = _get_cut_slices(stat_map_img, cut_coords, threshold)
 
+    # Initialise brainsprite data structure
+    sprite = dict.fromkeys(['bg_base64', 'stat_map_base64', 'cm_base64',
+                            'params', 'js_jquery', 'js_brainsprite'])
+
     # Create a base64 sprite for the background
     bg_sprite = BytesIO()
     bg_data = _safe_get_data(bg_img, ensure_finite=True)
     _save_sprite(bg_data, bg_sprite, bg_max, bg_min, None, 'gray', 'png')
-    bg_base64 = _bytesIO_to_base64(bg_sprite)
+    sprite['bg_base64'] = _bytesIO_to_base64(bg_sprite)
 
     # Create a base64 sprite for the stat map
     stat_map_sprite = BytesIO()
     data = _safe_get_data(stat_map_img, ensure_finite=True)
     mask = _safe_get_data(mask_img, ensure_finite=True)
     _save_sprite(data, stat_map_sprite, vmax, vmin, mask, cmap, 'png')
-    stat_map_base64 = _bytesIO_to_base64(stat_map_sprite)
+    sprite['stat_map_base64'] = _bytesIO_to_base64(stat_map_sprite)
 
     # Create a base64 colormap
     if colorbar:
@@ -436,16 +447,15 @@ def view_stat_map(stat_map_img, bg_img='MNI152', cut_coords=None,
         norm = colors.Normalize(vmin=vmin, vmax=vmax)
         cmap_c = cm._threshold_cmap(cmap, norm, threshold)
         _save_cm(stat_map_cm, cmap_c, 'png')
-        cm_base64 = _bytesIO_to_base64(stat_map_cm)
+        sprite['cm_base64'] = _bytesIO_to_base64(stat_map_cm)
     else:
-        cm_base64 = ''
+        sprite['cm_base64'] = ''
 
     # Build a json-like structure with all parameters for brainsprite
-    sprite_params = _json_sprite(stat_map_img.shape, stat_map_img.affine, vmin,
+    sprite['params'] = _json_sprite(stat_map_img.shape, stat_map_img.affine, vmin,
                                  vmax, cut_slices, black_bg, opacity,
                                  draw_cross, annotate, title, colorbar)
 
     # Generate the viewer
-    view = _html_brainsprite(sprite_params, stat_map_base64, bg_base64,
-                             cm_base64)
+    view = _html_brainsprite(sprite)
     return view

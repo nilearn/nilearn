@@ -8,26 +8,26 @@
     <!-- this is the canvas that will feature the brain slices -->
     <canvas id="3Dviewer">
     <!-- load a hidden version of the sprite image that includes all (sagital) brain slices -->
-    <img id="spriteImg" class="hidden" src="data:image/jpg;base64, INSERT_BG_DATA_HERE" alt="background" />
+    <img id="spriteImg" class="hidden" src="data:image/jpg;base64, $bg_base64" alt="background" />
     <!-- the colormap -->
-    <img id="colorMap" class="hidden" src="data:image/jpg;base64, INSERT_CM_DATA_HERE" alt="colormap">
+    <img id="colorMap" class="hidden" src="data:image/jpg;base64, $cm_base64" alt="colormap">
     <!-- another sprite image, with an overlay-->
-    <img id="overlayImg" class="hidden" src="data:image/png;base64, INSERT_STAT_MAP_DATA_HERE" alt="overlay">
+    <img id="overlayImg" class="hidden" src="data:image/png;base64, $stat_map_base64" alt="overlay">
   </div>
 
   <script type="text/javascript" >
-    INSERT_JQUERY_HERE
+    $js_jquery
   </script>
   <script type="text/javascript">
-    INSERT_BRAINSPRITE_HERE
+    $js_brainsprite
   </script>
 
   <script>
   // On load: build all figures
-  $( window ).on('load',function() {
+  $$( window ).on('load',function() {
     // Create brain slices
     var brain = brainsprite(
-    INSERT_SPRITE_PARAMS_HERE
+    $params
     );
   });
   </script>
