@@ -11,7 +11,6 @@ from string import Template
 
 import numpy as np
 import matplotlib.pyplot as plt
-import matplotlib.cm as mpl_cm
 from matplotlib.image import imsave
 from matplotlib import colors
 
@@ -26,32 +25,6 @@ from .._utils import check_niimg_3d
 from .._utils.extmath import fast_abs_percentile
 from .._utils.niimg import _safe_get_data
 from ..datasets import load_mni152_template
-
-
-def _resample_to_isotropic_affine(img, interpolation):
-    """ For internal use.
-        Resample an image to have a diagonal, positive & isotropic affine.
-    """
-    try:
-        # Start by trying a simple reordering of axes
-        img = reorder_img(img,resample='nearest')
-        flag_res = False
-    except:
-        # We need to resample that image
-        flag_res = True
-
-    # Extract the voxel sizes
-    u, s, vh = np.linalg.svd(img.affine[0:3, 0:3])
-    vsize = np.min(np.abs(s))
-
-    # Test if the voxel steps are isotropic positive,
-    # if not, force resampling
-    diff = np.max(s - vsize)
-    flag_res = (diff > 10^(-3)) or flag_res
-    if flag_res:
-        img = resample_img(img, target_affine=np.diag([vsize, vsize, vsize]),
-                           interpolation=interpolation)
-    return img
 
 
 def _data2sprite(data):
@@ -202,7 +175,7 @@ def _load_bg_img(stat_map_img, bg_img='MNI152', black_bg='auto', dim='auto'):
                               stat_map_img.affine)
         bg_min = 0
         bg_max = 0
-    bg_img = _resample_to_isotropic_affine(bg_img, interpolation='nearest')
+    bg_img = reorder_img(bg_img, resample='nearest')
     return bg_img, bg_min, bg_max, black_bg
 
 def _resample_stat_map(stat_map_img, bg_img, mask_img,
