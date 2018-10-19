@@ -6,24 +6,6 @@ import numpy as np
 from nilearn import datasets, image
 from nilearn.plotting import html_stat_map
 
-
-def test_encode_nii():
-    mni = datasets.load_mni152_template()
-    encoded = html_stat_map._encode_nii(mni)
-    decoded = html_stat_map._decode_nii(encoded)
-    assert np.allclose(mni.get_data(), decoded.get_data())
-
-    mni = image.new_img_like(mni, np.asarray(mni.get_data(), dtype='>f8'))
-    encoded = html_stat_map._encode_nii(mni)
-    decoded = html_stat_map._decode_nii(encoded)
-    assert np.allclose(mni.get_data(), decoded.get_data())
-
-    mni = image.new_img_like(mni, np.asarray(mni.get_data(), dtype='<i4'))
-    encoded = html_stat_map._encode_nii(mni)
-    decoded = html_stat_map._decode_nii(encoded)
-    assert np.allclose(mni.get_data(), decoded.get_data())
-
-
 def _check_html(html):
     assert isinstance(html, html_stat_map.StatMapView)
     assert "var mni =" in str(html)
