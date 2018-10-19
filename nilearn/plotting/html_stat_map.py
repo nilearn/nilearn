@@ -265,9 +265,10 @@ def _get_size_sprite(sprite_params):
     # there is a 10% extra height for the fonts
     # adding another 10% breathing room
     ratio = 1.20 * h_sprite / w_sprite
-    width = 600;
+    width = 600
     height = np.ceil(ratio * width)
     return width, height
+
 
 def _html_brainsprite(sprite):
     """ Fill a brainsprite html template with relevant parameters and data.
@@ -392,7 +393,7 @@ def view_stat_map(stat_map_img, bg_img='MNI152', cut_coords=None,
     cmap = plt.cm.get_cmap(cmap)
 
     # Mask stat map
-    mask_img, stat_map_img, data = _mask_stat_map(stat_map_img,threshold)
+    mask_img, stat_map_img, data = _mask_stat_map(stat_map_img, threshold)
 
     # Get color bar and data ranges
     cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
@@ -404,7 +405,7 @@ def view_stat_map(stat_map_img, bg_img='MNI152', cut_coords=None,
 
     # Resample stat map
     stat_map_img, mask_img = _resample_stat_map(stat_map_img, bg_img, mask_img,
-                                            resampling_interpolation)
+                                                resampling_interpolation)
 
     # Get the slices for the cut
     cut_slices = _get_cut_slices(stat_map_img, cut_coords, threshold)
@@ -437,9 +438,9 @@ def view_stat_map(stat_map_img, bg_img='MNI152', cut_coords=None,
         sprite['cm_base64'] = ''
 
     # Build a json-like structure with all parameters for brainsprite
-    sprite['params'] = _json_sprite(stat_map_img.shape, stat_map_img.affine, vmin,
-                                 vmax, cut_slices, black_bg, opacity,
-                                 draw_cross, annotate, title, colorbar)
+    sprite['params'] = _json_sprite(stat_map_img.shape, stat_map_img.affine,
+                                    vmin, vmax, cut_slices, black_bg, opacity,
+                                    draw_cross, annotate, title, colorbar)
 
     # Generate the viewer
     view = _html_brainsprite(sprite)
