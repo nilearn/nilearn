@@ -5,7 +5,7 @@ html_connectome.
 
 import os
 import base64
-import cgi
+import html as html_lib
 import webbrowser
 import tempfile
 import warnings
@@ -116,9 +116,9 @@ class HTMLDocument(object):
             width = self.width
         if height is None:
             height = self.height
-        escaped = cgi.escape(self.html, quote=True)
-        wrapped = '<iframe srcdoc="{}" width={} height={} frameBorder="0"></iframe>'.format(
-            escaped, width, height)
+        escaped = html_lib.escape(self.html, quote=True)
+        wrapped = ('<iframe srcdoc="{}" width={} height={} '
+                   'frameBorder="0"></iframe>').format(escaped, width, height)
         return wrapped
 
     def get_standalone(self):
