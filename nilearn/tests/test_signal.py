@@ -337,12 +337,13 @@ def test_clean_frequencies():
     sx1 = np.sin(np.linspace(0, 100, 2000))
     sx2 = np.sin(np.linspace(0, 100, 2000))
     sx = np.vstack((sx1, sx2)).T
-    assert_true(clean(sx, standardize=False, high_pass=0.002, low_pass=None)
-                .max() > 0.1)
-    assert_true(clean(sx, standardize=False, high_pass=0.2, low_pass=None)
-                .max() < 0.01)
-    assert_true(clean(sx, standardize=False, low_pass=0.01).max() > 0.9)
-    assert_raises(ValueError, clean, sx, low_pass=0.4, high_pass=0.5)
+    assert_true(clean(sx, standardize=False, high_pass=0.002, low_pass=None,
+                      t_r=2.5).max() > 0.1)
+    assert_true(clean(sx, standardize=False, high_pass=0.2, low_pass=None,
+                      t_r=2.5) .max() < 0.01)
+    assert_true(
+        clean(sx, standardize=False, low_pass=0.01, t_r=2.5).max() > 0.9)
+    assert_raises(ValueError, clean, sx, low_pass=0.4, high_pass=0.5, t_r=2.5)
 
 
 def test_clean_confounds():
