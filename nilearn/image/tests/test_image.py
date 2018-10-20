@@ -579,6 +579,9 @@ def test_clean_img():
     data_img_nifti2_ = image.clean_img(
         data_img_nifti2, detrend=True, standardize=False, low_pass=0.1)
 
+    assert_raises(
+        ValueError, image.clean_img, data_img, t_r=None, low_pass=0.1)
+
 
 def test_largest_cc_img():
     """ Check the extraction of the largest connected component, for niftis
