@@ -355,7 +355,7 @@ def _ensure_float(data):
 
 
 def clean(signals, sessions=None, detrend=True, standardize=True,
-          confounds=None, low_pass=None, high_pass=None, t_r=2.5,
+          confounds=None, low_pass=None, high_pass=None, t_r=None,
           ensure_finite=False):
     """Improve SNR on masked fMRI signals.
 
