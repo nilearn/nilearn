@@ -5,7 +5,7 @@ import warnings
 import os
 import json
 from io import BytesIO
-from base64 import encodebytes
+from base64 import encodestring
 import numbers
 from string import Template
 
@@ -21,7 +21,7 @@ from .js_plotting_utils import get_html_template, HTMLDocument
 from ..plotting import cm
 from ..plotting.find_cuts import find_xyz_cut_coords
 from ..plotting.img_plotting import _load_anat, _get_colorbar_and_data_ranges
-from .._utils import check_niimg_3d
+from .._utils.niimg_conversions import check_niimg_3d
 from .._utils.param_validation import check_threshold
 from .._utils.extmath import fast_abs_percentile
 from .._utils.niimg import _safe_get_data
@@ -125,7 +125,7 @@ def _bytesIO_to_base64(bytesio_png):
         Also closes the file.
     """
     bytesio_png.seek(0)
-    data = encodebytes(bytesio_png.read()).decode('utf-8')
+    data = encodestring(bytesio_png.read()).decode('utf-8')
     bytesio_png.close()
     return data
 
@@ -195,7 +195,6 @@ def _resample_stat_map(stat_map_img, bg_img, mask_img,
         mask is resampled to the final resolution/space with nearest
         interpolation.
     """
-
     # resample stat map
     stat_map_img = resample_to_img(stat_map_img, bg_img,
                                    interpolation=resampling_interpolation)
@@ -203,7 +202,6 @@ def _resample_stat_map(stat_map_img, bg_img, mask_img,
                                interpolation='nearest')
 
     return stat_map_img, mask_img
-
 
 def _json_sprite(shape, affine, vmin, vmax, cut_slices, black_bg=False,
                  opacity=1, draw_cross=True, annotate=True, title=None,
@@ -350,7 +348,7 @@ def view_stat_map(stat_map_img, bg_img='MNI152', cut_coords=None,
     threshold : str, number or None  (default=1e-6)
         If None is given, the image is not thresholded.
         If a string of the form "90%" is given, use the 90-th percentile of
-        the absolute value in the image.  
+        the absolute value in the image.
         If a number is given, it is used to threshold the image:
         values below the threshold (in absolute value) are plotted
         as transparent. If auto is given, the threshold is determined
