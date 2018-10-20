@@ -14,17 +14,11 @@ def _check_html(html):
     assert "overlayImg" in str(html)
 
 
-def _assert_warnings_in(list1, list2):
+def _assert_warnings_in(set1, set2):
     """ Check that warnings are inside a list
     """
-    diff = list(list1 - list2)
-    try:
-        assert(len(diff) == 0)
-    except AssertionError as e:
-        e.args += ('The following warnings were not expected',
-                   diff)
-        raise
-
+    assert set1.issubset(set2), ("the following warnings were not "
+                                 "expected: {}").format(set1.difference(set2))
 
 def test_view_stat_map():
     mni = datasets.load_mni152_template()
