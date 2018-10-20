@@ -171,7 +171,7 @@ def _load_bg_img(stat_map_img, bg_img='MNI152', black_bg='auto', dim='auto'):
         with a positive diagonal affine matrix.
     """
     # If no background is used, switch to the white background color style
-    if (bg_img is None or bg_img is False) and black_bg is 'auto':
+    if (bg_img is None or bg_img is False) and black_bg == 'auto':
         black_bg = False
 
     if bg_img is not None and bg_img is not False:
@@ -301,7 +301,6 @@ def _get_cut_slices(stat_map_img, cut_coords=None, threshold=None):
         Based on find_xyz_cut_coords
     """
     # Select coordinates for the cut
-    # https://github.com/nilearn/nilearn/blob/master/nilearn/plotting/displays.py#L943
     if isinstance(cut_coords, numbers.Number):
         raise ValueError(
             "The input given for display_mode='ortho' needs to be "
