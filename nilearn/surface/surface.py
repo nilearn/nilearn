@@ -613,56 +613,41 @@ def _gifti_img_to_mesh(gifti_img):
 
     Used by load_surf_mesh function in common to surface mesh
     acceptable to .gii or .gii.gz
+
     """
+    error_message = ('The surf_mesh input is not recognized. Valid Freesurfer '
+                     'surface mesh inputs are .pial, .inflated, .sphere, '
+                     '.orig, .white. You provided input which have no '
+                     '{0} or of empty value={1}') 
     if LooseVersion(nibabel.__version__) >= LooseVersion('2.1.0'):
         try:
             coords = gifti_img.get_arrays_from_intent(
                 nibabel.nifti1.intent_codes['NIFTI_INTENT_POINTSET'])[0].data
         except IndexError:
-            raise ValueError('The surf_mesh input is not recognized.'
-                             'Valid Freesurfer surface mesh inputs are .pial,'
-                             ' .inflated, .sphere, .orig, .white '
-                             'which have intent code NIFTI_INTENT_POINTSET. '
-                             'You provided input which has no '
-                             'NIFTI_INTENT_POINTSET or of value={0}'
-                             .format(gifti_img.get_arrays_from_intent(
+            raise ValueError(error_message.format(
+                     'NIFTI_INTENT_POINTSET', gifti_img.get_arrays_from_intent(
                         nibabel.nifti1.intent_codes['NIFTI_INTENT_POINTSET'])))
         try:
             faces = gifti_img.get_arrays_from_intent(
                 nibabel.nifti1.intent_codes['NIFTI_INTENT_TRIANGLE'])[0].data
         except IndexError:
-            raise ValueError('The surf_mesh input is not recognized.'
-                             'Valid Freesurfer surface mesh inputs are .pial,'
-                             ' .inflated, .sphere , .orig , .white '
-                             'which have intent code NIFTI_INTENT_TRIANGLE. '
-                             'You provided input which has no '
-                             'NIFTI_INTENT_TRIANGLE or of value={0}'
-                             .format(gifti_img.get_arrays_from_intent(
+            raise ValueError(error_message.format(
+                     'NIFTI_INTENT_TRIANGLE', gifti_img.get_arrays_from_intent(
                         nibabel.nifti1.intent_codes['NIFTI_INTENT_TRIANGLE'])))
     else:
         try:
             coords = gifti_img.getArraysFromIntent(
                 nibabel.nifti1.intent_codes['NIFTI_INTENT_POINTSET'])[0].data
         except IndexError:
-            raise ValueError('The surf_mesh input is not recognized.'
-                             'Valid Freesurfer surface mesh inputs are .pial,'
-                             ' .inflated, .sphere, .orig, .white '
-                             'which have intent code NIFTI_INTENT_POINTSET. '
-                             'You provided input which has no '
-                             'NIFTI_INTENT_POINTSET or of value={0}'
-                             .format(gifti_img.getArraysFromIntent(
+            raise ValueError(error_message.format(
+                        'NIFTI_INTENT_POINTSET', gifti_img.getArraysFromIntent(
                         nibabel.nifti1.intent_codes['NIFTI_INTENT_POINTSET'])))
         try:
             faces = gifti_img.getArraysFromIntent(
                 nibabel.nifti1.intent_codes['NIFTI_INTENT_TRIANGLE'])[0].data
         except IndexError:
-            raise ValueError('The surf_mesh input is not recognized.'
-                             'Valid Freesurfer surface mesh inputs are .pial,'
-                             ' .inflated, .sphere, .orig, .white '
-                             'which have intent code NIFTI_INTENT_TRIANGLE. '
-                             'You provided input which has no'
-                             'NIFTI_INTENT_TRIANGLE or of value={0}'
-                             .format(gifti_img.getArraysFromIntent(
+            raise ValueError(error_message.format(
+                        'NIFTI_INTENT_TRIANGLE', gifti_img.getArraysFromIntent(
                         nibabel.nifti1.intent_codes['NIFTI_INTENT_TRIANGLE'])))
 
     return coords, faces
