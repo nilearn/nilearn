@@ -196,13 +196,11 @@ def colorscale(cmap, values, threshold=None, symmetric_cmap=True, vmax=None):
                       'setting symmetric_cmap to True')
         symmetric_cmap = True
     if vmax is None:
-        if symmetric_cmap:
-            vmax = abs_values.max()
-            vmin = - vmax
-        else:
-            vmin, vmax = values.min(), values.max()
+        vmax = abs_values.max()
+    if symmetric_cmap:
+        vmin = - vmax
     else:
-        vmin = -vmax if symmetric_cmap else 0
+        vmin = values.min()
     norm = mpl.colors.Normalize(vmin=vmin, vmax=vmax)
     cmaplist = [cmap(i) for i in range(cmap.N)]
     abs_threshold = None
