@@ -5,7 +5,11 @@ import warnings
 import os
 import json
 from io import BytesIO
-from base64 import encodestring
+try:
+    from base64 import encodebytes
+except ImportError:
+    # Retro compatibility with python2
+    from base64 import encodestring as encodebytes
 import numbers
 from string import Template
 
@@ -124,7 +128,7 @@ def _bytesIO_to_base64(bytesio_png):
         Also closes the file.
     """
     bytesio_png.seek(0)
-    data = encodestring(bytesio_png.read()).decode('utf-8')
+    data = encodebytes(bytesio_png.read()).decode('utf-8')
     bytesio_png.close()
     return data
 
