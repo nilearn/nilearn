@@ -371,16 +371,22 @@ def view_stat_map(stat_map_img, bg_img='MNI152', cut_coords=None,
         The colormap for specified image. The colormap *must* be
         symmetrical.
     symmetric_cmap : bool, optional (default=True)
-        Make colormap symmetric (ranging from -vmax to vmax).
-        Set it to False if you are plotting an atlas or an anatomical image.
+        True: make colormap symmetric (ranging from -vmax to vmax).
+        False: the colormap will go from the minimum of the volume to vmax.
+        Set it to False if you are plotting a positive volume, e.g. an atlas
+        or an anatomical image.
     dim : float, 'auto' (default='auto')
         Dimming factor applied to background image. By default, automatic
         heuristics are applied based upon the background image intensity.
         Accepted float values, where a typical scan is between -2 and 2
         (-2 = increase constrast; 2 = decrease contrast), but larger values
         can be used for a more pronounced effect. 0 means no dimming.
-    vmax : float, or None (default=)
+    vmax : float, or None (default=None)
         max value for mapping colors.
+        If vmax is None and symmetric_cmap is True, vmax is the max
+        absolute value of the volume.
+        If vmax is None and symmetric_cmap is False, vmax is the max
+        value of the volume.
     resampling_interpolation : string, optional (default nearest)
         The interpolation method for resampling
         See nilearn.image.resample_img
