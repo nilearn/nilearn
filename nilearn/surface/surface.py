@@ -613,7 +613,6 @@ def _gifti_img_to_mesh(gifti_img):
 
     Used by load_surf_mesh function in common to surface mesh
     acceptable to .gii or .gii.gz
-
     """
     error_message = ('The surf_mesh input is not recognized. Valid Freesurfer '
                      'surface mesh inputs are .pial, .inflated, .sphere, '
