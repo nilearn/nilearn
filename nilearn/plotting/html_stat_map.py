@@ -12,15 +12,14 @@ from string import Template
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.image import imsave
-from matplotlib import colors
 
 from nibabel.affines import apply_affine
 
 from ..image import resample_to_img, new_img_like, reorder_img
-from .js_plotting_utils import get_html_template, HTMLDocument
+from .js_plotting_utils import get_html_template, HTMLDocument, colorscale
 from ..plotting import cm
 from ..plotting.find_cuts import find_xyz_cut_coords
-from ..plotting.img_plotting import _load_anat, _get_colorbar_and_data_ranges
+from ..plotting.img_plotting import _load_anat
 from .._utils.niimg_conversions import check_niimg_3d
 from .._utils.param_validation import check_threshold
 from .._utils.extmath import fast_abs_percentile
@@ -203,6 +202,7 @@ def _resample_stat_map(stat_map_img, bg_img, mask_img,
 
     return stat_map_img, mask_img
 
+
 def _json_sprite(shape, affine, vmin, vmax, cut_slices, black_bg=False,
                  opacity=1, draw_cross=True, annotate=True, title=None,
                  colorbar=True):
@@ -319,7 +319,7 @@ def _get_cut_slices(stat_map_img, cut_coords=None, threshold=None):
 def view_stat_map(stat_map_img, bg_img='MNI152', cut_coords=None,
                   colorbar=True, title=None, threshold=1e-6, annotate=True,
                   draw_cross=True, black_bg='auto', cmap=cm.cold_hot,
-                  symmetric_cbar='auto', dim='auto', vmax=None,
+                  symmetric_cmap=True, dim='auto', vmax=None,
                   resampling_interpolation='continuous', opacity=1, **kwargs):
     """
     Intarctive viewer of a statistical map, with optional background
@@ -366,11 +366,9 @@ def view_stat_map(stat_map_img, bg_img='MNI152', cut_coords=None,
     cmap : matplotlib colormap, optional
         The colormap for specified image. The colormap *must* be
         symmetrical.
-    symmetric_cbar : boolean or 'auto' (default='auto')
-        Specifies whether the colorbar should range from -vmax to vmax
-        or from vmin to vmax. Setting to 'auto' will select the latter if
-        the range of the whole image is either positive or negative.
-        Note: The colormap will always be set to range from -vmax to vmax.
+    symmetric_cmap : bool, optional (default=True)
+        Make colormap symmetric (ranging from -vmax to vmax).
+        Set it to False if you are plotting an atlas or an anatomical image.
     dim : float, 'auto' (default='auto')
         Dimming factor applied to background image. By default, automatic
         heuristics are applied based upon the background image intensity.
@@ -399,8 +397,8 @@ def view_stat_map(stat_map_img, bg_img='MNI152', cut_coords=None,
         stat_map_img, threshold)
 
     # Get color bar and data ranges
-    cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
-        data, vmax, symmetric_cbar, kwargs)
+    colors = colorscale(cmap, data.ravel(), threshold=threshold,
+                        symmetric_cmap=symmetric_cmap, vmax=vmax)
 
     # Load background image
     bg_img, bg_min, bg_max, black_bg = _load_bg_img(stat_map_img, bg_img,
@@ -427,23 +425,23 @@ def view_stat_map(stat_map_img, bg_img='MNI152', cut_coords=None,
     stat_map_sprite = BytesIO()
     data = _safe_get_data(stat_map_img, ensure_finite=True)
     mask = _safe_get_data(mask_img, ensure_finite=True)
-    _save_sprite(data, stat_map_sprite, vmax, vmin, mask, cmap, 'png')
+    _save_sprite(data, stat_map_sprite, colors['vmax'], colors['vmin'],
+                 mask, cmap, 'png')
     sprite['stat_map_base64'] = _bytesIO_to_base64(stat_map_sprite)
 
     # Create a base64 colormap
     if colorbar:
         stat_map_cm = BytesIO()
-        norm = colors.Normalize(vmin=vmin, vmax=vmax)
-        cmap_c = cm._threshold_cmap(cmap, norm, threshold)
-        _save_cm(stat_map_cm, cmap_c, 'png')
+        _save_cm(stat_map_cm, colors['cmap'], 'png')
         sprite['cm_base64'] = _bytesIO_to_base64(stat_map_cm)
     else:
         sprite['cm_base64'] = ''
 
     # Build a json-like structure with all parameters for brainsprite
     sprite['params'] = _json_sprite(stat_map_img.shape, stat_map_img.affine,
-                                    vmin, vmax, cut_slices, black_bg, opacity,
-                                    draw_cross, annotate, title, colorbar)
+                                    colors['vmin'], colors['vmax'], cut_slices,
+                                    black_bg, opacity, draw_cross, annotate,
+                                    title, colorbar)
 
     # Generate the viewer
     view = _html_brainsprite(sprite)
