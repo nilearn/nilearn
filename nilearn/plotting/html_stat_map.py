@@ -244,9 +244,9 @@ def _json_sprite(shape, affine, vmin, vmax, cut_slices, black_bg=False,
                      'flagCoordinates': annotate,
                      'title': title,
                      'flagValue': annotate,
-                     'numSlice': {'X': cut_slices[0],
-                                  'Y': cut_slices[1],
-                                  'Z': cut_slices[2]}}
+                     'numSlice': {'X': cut_slices[0]-1,
+                                  'Y': cut_slices[1]-1,
+                                  'Z': cut_slices[2]-1}}
 
     if colorbar:
         sprite_params['colorMap'] = {'img': 'colorMap',
@@ -315,8 +315,7 @@ def _get_cut_slices(stat_map_img, cut_coords=None, threshold=None):
                                          activation_threshold=threshold)
 
     # Convert cut coordinates into cut slices
-    cut_slices = np.round(apply_affine(
-        np.linalg.inv(stat_map_img.affine), cut_coords))
+    cut_slices = apply_affine(np.linalg.inv(stat_map_img.affine), cut_coords)
     return cut_slices
 
 
