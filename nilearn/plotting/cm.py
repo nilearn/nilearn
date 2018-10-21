@@ -46,7 +46,7 @@ def _pigtailed_cmap(cmap, swap_order=('green', 'red', 'blue')):
                         for (p, c1, c2) in reversed(orig_cdict[swap_order[2]])]
 
     for color in ('red', 'green', 'blue'):
-        cdict[color].extend([(0.5*(1+p), c1, c2)
+        cdict[color].extend([(0.5*(1+p), c1, c2) 
                                     for (p, c1, c2) in orig_cdict[color]])
 
     return cdict
@@ -84,31 +84,6 @@ def _concat_cmap(cmap1, cmap2):
             cdict['blue'].append((.5*(1+p), b, b))
 
     return cdict
-
-def _threshold_cmap(cmap, norm, threshold=None):
-    """ Utility function to turn grey the values that do not pass a threshold
-        in a symmetric cmap.
-    """
-
-    our_cmap = _cm.get_cmap(cmap)
-
-    if threshold is None:
-        offset = 0
-    else:
-        offset = threshold
-    if offset > norm.vmax:
-        offset = norm.vmax
-    cmaplist = [our_cmap(i) for i in range(our_cmap.N)]
-    istart = int(norm(-offset, clip=True) * (our_cmap.N - 1))
-    istop = int(norm(offset, clip=True) * (our_cmap.N - 1))
-    for i in range(istart, istop):
-        cmaplist[i] = (0.5, 0.5, 0.5, 1.)  # just an average gray color
-    if norm.vmin == norm.vmax:  # len(np.unique(data)) == 1 ?
-        return
-    else:
-        our_cmap = _colors.LinearSegmentedColormap.from_list(
-            'Custom cmap', cmaplist, our_cmap.N)
-        return our_cmap
 
 
 def alpha_cmap(color, name='', alpha_min=0.5, alpha_max=1.):
@@ -238,7 +213,7 @@ def dim_cmap(cmap, factor=.3, to_white=True):
     """ Dim a colormap to white, or to black.
     """
     assert factor >= 0 and factor <=1, ValueError(
-            'Dimming factor must be larger than 0 and smaller than 1, %s was passed.'
+            'Dimming factor must be larger than 0 and smaller than 1, %s was passed.' 
                                                         % factor)
     if to_white:
         dimmer = lambda c: 1 - factor*(1-c)
@@ -261,9 +236,9 @@ def replace_inside(outer_cmap, inner_cmap, vmin, vmax):
     """ Replace a colormap by another inside a pair of values.
     """
     assert vmin < vmax, ValueError('vmin must be smaller than vmax')
-    assert vmin >= 0,    ValueError('vmin must be larger than 0, %s was passed.'
+    assert vmin >= 0,    ValueError('vmin must be larger than 0, %s was passed.' 
                                         % vmin)
-    assert vmax <= 1,    ValueError('vmax must be smaller than 1, %s was passed.'
+    assert vmax <= 1,    ValueError('vmax must be smaller than 1, %s was passed.' 
                                         % vmax)
     outer_cdict = outer_cmap._segmentdata.copy()
     inner_cdict = inner_cmap._segmentdata.copy()
@@ -291,7 +266,7 @@ def replace_inside(outer_cmap, inner_cmap, vmin, vmax):
                 break
             color_lst.append((value, c1, c2))
 
-        color_lst.append((vmin, outer_cmap(vmin)[c_index],
+        color_lst.append((vmin, outer_cmap(vmin)[c_index], 
                                 inner_cmap(vmin)[c_index]))
 
         for value, c1, c2 in inner_cdict[color]:
@@ -315,3 +290,5 @@ def replace_inside(outer_cmap, inner_cmap, vmin, vmax):
                                 '%s_inside_%s' % (inner_cmap.name, outer_cmap.name),
                                 cdict,
                                 _cm.LUTSIZE)
+
+
