@@ -881,10 +881,13 @@ def clean_img(imgs, sessions=None, detrend=True, standardize=True,
 
     imgs_ = check_niimg_4d(imgs)
 
-    # Check if t_r is set, otherwise propse t_r from imgs header
+    # Check if t_r is set, otherwise propose t_r from imgs header
     if low_pass is not None or high_pass is not None:
         if t_r is None:
             t_r = imgs.header.get_zooms()[3]
+
+            # We raise an error, instead of using the header's t_r as this
+            # value is considered to be non-reliable
             raise ValueError(
                 "Repetition time (t_r) must be specified for filtering. You "
                 "specified None. imgs header suggest it to be {0}".format(t_r))
