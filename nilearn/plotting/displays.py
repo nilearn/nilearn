@@ -798,7 +798,6 @@ class BaseSlicer(object):
                 ims.append(im)
         return ims
 
-
     def _show_colorbar(self, cmap, norm, threshold=None):
         """
         Parameters
@@ -811,7 +810,12 @@ class BaseSlicer(object):
         threshold: float or None
             The absolute value at which the colorbar is thresholded
         """
-        our_cmap = cm._threshold_cmap(cmap, norm, threshold=threshold)
+        if threshold is None:
+            offset = 0
+        else:
+            offset = threshold
+        if offset > norm.vmax:
+            offset = norm.vmax
 
         # create new  axis for the colorbar
         figure = self.frame_axes.figure
@@ -830,12 +834,25 @@ class BaseSlicer(object):
         else:
             self._colorbar_ax.set_axis_bgcolor('w')
 
+        our_cmap = mpl_cm.get_cmap(cmap)
         # edge case where the data has a single value
         # yields a cryptic matplotlib error message
         # when trying to plot the color bar
         nb_ticks = 5 if norm.vmin != norm.vmax else 1
         ticks = np.linspace(norm.vmin, norm.vmax, nb_ticks)
         bounds = np.linspace(norm.vmin, norm.vmax, our_cmap.N)
+
+        # some colormap hacking
+        cmaplist = [our_cmap(i) for i in range(our_cmap.N)]
+        transparent_start = int(norm(-offset, clip=True) * (our_cmap.N - 1))
+        transparent_stop = int(norm(offset, clip=True) * (our_cmap.N - 1))
+        for i in range(transparent_start, transparent_stop):
+            cmaplist[i] = self._brain_color + (0.,)  # transparent
+        if norm.vmin == norm.vmax:  # len(np.unique(data)) == 1 ?
+            return
+        else:
+            our_cmap = colors.LinearSegmentedColormap.from_list(
+                'Custom cmap', cmaplist, our_cmap.N)
 
         self._cbar = ColorbarBase(
             self._colorbar_ax, ticks=ticks, norm=norm,
@@ -1024,7 +1041,7 @@ class OrthoSlicer(BaseSlicer):
     Attributes
     ----------
 
-    axes: dictionnary of axes
+    axes: dictionary of axes
         The 3 axes used to plot each view.
     frame_axes: axes
         The axes framing the whole set of views.
@@ -1040,7 +1057,7 @@ class OrthoSlicer(BaseSlicer):
 
     @classmethod
     def find_cut_coords(self, img=None, threshold=None, cut_coords=None):
-        "Instanciate the slicer and find cut coordinates"
+        "Instantiate the slicer and find cut coordinates"
         if cut_coords is None:
             if img is None or img is False:
                 cut_coords = (0, 0, 0)
@@ -1197,7 +1214,7 @@ class BaseStackedSlicer(BaseSlicer):
     Attributes
     ----------
 
-    axes: dictionnary of axes
+    axes: dictionary of axes
         The axes used to plot each view.
     frame_axes: axes
         The axes framing the whole set of views.
@@ -1210,7 +1227,7 @@ class BaseStackedSlicer(BaseSlicer):
     """
     @classmethod
     def find_cut_coords(cls, img=None, threshold=None, cut_coords=None):
-        "Instanciate the slicer and find cut coordinates"
+        "Instantiate the slicer and find cut coordinates"
         if cut_coords is None:
             cut_coords = 7
 
@@ -1274,7 +1291,7 @@ class BaseStackedSlicer(BaseSlicer):
             bounds = display_ax.get_object_bounds()
             if not bounds:
                 # This happens if the call to _map_show was not
-                # succesful. As it happens asyncroniously (during a
+                # successful. As it happens asynchronously (during a
                 # refresh of the figure) we capture the problem and
                 # ignore it: it only adds a non informative traceback
                 bounds = [0, 1, 0, 1]
