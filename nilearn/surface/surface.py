@@ -619,27 +619,51 @@ def _gifti_img_to_mesh(gifti_img):
             coords = gifti_img.get_arrays_from_intent(
                 nibabel.nifti1.intent_codes['NIFTI_INTENT_POINTSET'])[0].data
         except IndexError:
-            raise ValueError('Gifti file needs to contain a data array '
-                             'with intent NIFTI_INTENT_POINTSET')
+            raise ValueError('The surf_mesh input is not recognized.'
+                             'Valid Freesurfer surface mesh inputs are ”pial”'
+                             'or “inflated” or “sphere” or “orig” or “white” '
+                             'which has intent code “NIFTI_INTENT_POINTSET”. '
+                             'You provided input which has no '
+                             '“NIFTI_INTENT_POINTSET” or of value={0}'
+                             .format(gifti_img.get_arrays_from_intent(
+                        nibabel.nifti1.intent_codes['NIFTI_INTENT_POINTSET'])))
         try:
             faces = gifti_img.get_arrays_from_intent(
                 nibabel.nifti1.intent_codes['NIFTI_INTENT_TRIANGLE'])[0].data
         except IndexError:
-            raise ValueError('Gifti file needs to contain a data array '
-                             'with intent NIFTI_INTENT_TRIANGLE')
+            raise ValueError('The surf_mesh input is not recognized.'
+                             'Valid Freesurfer surface mesh inputs are ”pial”'
+                             'or “inflated” or “sphere” or “orig” or “white” '
+                             'which has intent code “NIFTI_INTENT_POINTSET”. '
+                             'You provided input which has no '
+                             '“NIFTI_INTENT_TRIANGLE” or of value={0}'
+                             .format(gifti_img.get_arrays_from_intent(
+                        nibabel.nifti1.intent_codes['NIFTI_INTENT_TRIANGLE'])))
     else:
         try:
             coords = gifti_img.getArraysFromIntent(
                 nibabel.nifti1.intent_codes['NIFTI_INTENT_POINTSET'])[0].data
         except IndexError:
-            raise ValueError('Gifti file needs to contain a data array '
-                             'with intent NIFTI_INTENT_POINTSET')
+            raise ValueError('The surf_mesh input is not recognized.'
+                             'Valid Freesurfer surface mesh inputs are ”pial”'
+                             'or “inflated” or “sphere” or “orig” or “white” '
+                             'which has intent code “NIFTI_INTENT_POINTSET”. '
+                             'You provided input which has no '
+                             '“NIFTI_INTENT_POINTSET” or of value={0}'
+                             .format(gifti_img.getArraysFromIntent(
+                        nibabel.nifti1.intent_codes['NIFTI_INTENT_POINTSET'])))
         try:
             faces = gifti_img.getArraysFromIntent(
                 nibabel.nifti1.intent_codes['NIFTI_INTENT_TRIANGLE'])[0].data
         except IndexError:
-            raise ValueError('Gifti file needs to contain a data array '
-                             'with intent NIFTI_INTENT_TRIANGLE')
+            raise ValueError('The surf_mesh input is not recognized.'
+                             'Valid Freesurfer surface mesh inputs are ”pial”'
+                             'or “inflated” or “sphere” or “orig” or “white” '
+                             'which has intent code “NIFTI_INTENT_POINTSET”. '
+                             'You provided input which has no'
+                             '“NIFTI_INTENT_TRIANGLE” or of value={0}'
+                             .format(gifti_img.getArraysFromIntent(
+                        nibabel.nifti1.intent_codes['NIFTI_INTENT_TRIANGLE'])))
 
     return coords, faces
 
