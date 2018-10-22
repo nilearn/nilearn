@@ -65,6 +65,42 @@ def test_data2sprite():
                              np.concatenate((O,O,O), axis=1),
                              np.concatenate((Z,Z,Z), axis=1)),
                              axis=0)
-                             
+
     # Check that the sprite matches ground truth
     assert (sprite == gtruth).all()
+
+
+def test_get_vmin_vmax():
+
+    # Generate a simulated volume with a square inside
+    data = np.zeros([8,8,8])
+    data[2:6,2:6,2:6] = 1
+
+    # Check default vmin, vmax
+    vmin, vmax = html_stat_map._get_vmin_vmax(data)
+    assert (vmin == 0) and (vmax == 1)
+
+    # Force vmin and vmax
+    vmin, vmax = html_stat_map._get_vmin_vmax(data, vmin=.5, vmax=.7)
+    assert (vmin == .5) and (vmax == .7)
+
+    # Try to use NaN for vmax
+    with warnings.catch_warnings(record=True) as w:
+        vmin, vmax = html_stat_map._get_vmin_vmax(data, vmin=.5, vmax=np.nan)
+    warning_categories = set(warning_.category for warning_ in w)
+    expected_categories = set([UserWarning])
+    assert(expected_categories.issubset(warning_categories))
+
+    # Try to use NaN for vmin
+    with warnings.catch_warnings(record=True) as w:
+        vmin, vmax = html_stat_map._get_vmin_vmax(data, vmin=np.nan, vmax=0.7)
+    warning_categories = set(warning_.category for warning_ in w)
+    expected_categories = set([UserWarning])
+    assert(expected_categories.issubset(warning_categories))
+
+    # Try to feed vmax smaller than vmin
+    try:
+        vmin, vmax = html_stat_map._get_vmin_vmax(data, vmin=3, vmax=0.7)
+    except ValueError:
+        pass
+    
