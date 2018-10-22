@@ -363,9 +363,9 @@ def clean(signals, sessions=None, detrend=True, standardize=True,
     the following order:
 
     - detrend
-    - standardize
-    - remove confounds
     - low- and high-pass filter
+    - remove confounds
+    - standardize
 
     Low-pass filtering improves specificity.
 
