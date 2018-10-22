@@ -73,10 +73,17 @@ def _get_vmin_vmax(data, vmin=None, vmax=None):
                    'Tip: Use np.nanmax() instead of np.max().')
         warnings.warn(nan_msg)
 
+    # Extract defaults if needed
     if vmax is None:
         vmax = np.nanmax(data)
     if vmin is None:
         vmin = np.nanmin(data)
+
+    # Check that vmin and vmax make sense
+    if vmax <= vmin:
+        raise ValueError("vmax needs to be greater than vmin."
+                         " Maybe an empty image?")
+
     return vmin, vmax
 
 
