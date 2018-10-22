@@ -44,3 +44,27 @@ def test_view_stat_map():
     expected_categories = set([FutureWarning, UserWarning,
                                DeprecationWarning])
     _assert_warnings_in(warning_categories, expected_categories)
+
+
+def test_data2sprite():
+
+    # Generate a simulated volume with a square inside
+    data = np.zeros([8,8,8])
+    data[2:6,2:6,2:6] = 1
+
+    # turn that into a sprite and check it has the right shape
+    sprite = html_stat_map._data2sprite(data)
+    assert sprite.shape == (24, 24)
+
+    # Generate ground truth for the sprite
+    Z = np.zeros([8,8])
+    Zr = np.zeros([2,8])
+    Or = np.matlib.repmat(np.array([[0, 0, 1, 1, 1, 1, 0, 0]]),4,1)
+    O = np.concatenate((Zr,Or,Zr),axis=0)
+    gtruth = np.concatenate((np.concatenate((Z,Z,O), axis=1),
+                             np.concatenate((O,O,O), axis=1),
+                             np.concatenate((Z,Z,Z), axis=1)),
+                             axis=0)
+                             
+    # Check that the sprite matches ground truth
+    assert (sprite == gtruth).all()
