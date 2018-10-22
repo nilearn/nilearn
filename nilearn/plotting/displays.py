@@ -1041,7 +1041,7 @@ class OrthoSlicer(BaseSlicer):
     Attributes
     ----------
 
-    axes: dictionnary of axes
+    axes: dictionary of axes
         The 3 axes used to plot each view.
     frame_axes: axes
         The axes framing the whole set of views.
@@ -1057,7 +1057,7 @@ class OrthoSlicer(BaseSlicer):
 
     @classmethod
     def find_cut_coords(self, img=None, threshold=None, cut_coords=None):
-        "Instanciate the slicer and find cut coordinates"
+        "Instantiate the slicer and find cut coordinates"
         if cut_coords is None:
             if img is None or img is False:
                 cut_coords = (0, 0, 0)
@@ -1214,7 +1214,7 @@ class BaseStackedSlicer(BaseSlicer):
     Attributes
     ----------
 
-    axes: dictionnary of axes
+    axes: dictionary of axes
         The axes used to plot each view.
     frame_axes: axes
         The axes framing the whole set of views.
@@ -1227,7 +1227,7 @@ class BaseStackedSlicer(BaseSlicer):
     """
     @classmethod
     def find_cut_coords(cls, img=None, threshold=None, cut_coords=None):
-        "Instanciate the slicer and find cut coordinates"
+        "Instantiate the slicer and find cut coordinates"
         if cut_coords is None:
             cut_coords = 7
 
@@ -1291,7 +1291,7 @@ class BaseStackedSlicer(BaseSlicer):
             bounds = display_ax.get_object_bounds()
             if not bounds:
                 # This happens if the call to _map_show was not
-                # succesful. As it happens asyncroniously (during a
+                # successful. As it happens asynchronously (during a
                 # refresh of the figure) we capture the problem and
                 # ignore it: it only adds a non informative traceback
                 bounds = [0, 1, 0, 1]
