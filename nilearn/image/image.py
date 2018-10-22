@@ -852,7 +852,8 @@ def clean_img(imgs, sessions=None, detrend=True, standardize=True,
         Respectively low and high cutoff frequencies, in Hertz.
 
     t_r: float, optional
-        Repetition time, in second (sampling period).
+        Repetition time, in second (sampling period). Set to None if not
+        specified. Mandatory if used together with low_pass or high_pass.
 
     ensure_finite: bool, optional
         If True, the non-finite values (NaNs and infs) found in the images

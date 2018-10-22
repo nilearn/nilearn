@@ -395,7 +395,8 @@ def clean(signals, sessions=None, detrend=True, standardize=True,
         signal, as if all were in the same array.
 
     t_r: float
-        Repetition time, in second (sampling period).
+        Repetition time, in second (sampling period). Set to None if not
+        specified. Mandatory if used together with low_pass or high_pass.
 
     low_pass, high_pass: float
         Respectively low and high cutoff frequencies, in Hertz.
