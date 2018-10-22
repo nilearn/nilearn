@@ -42,6 +42,7 @@ Changes
 - In nilearn.regions.img_to_signals_labels, the See Also section in documentation now also points to NiftiLabelsMasker and NiftiMapsMasker
 - Scipy is listed as a dependency for Nilearn installation.
 - Anaconda link in the installation documentation updated.
+- Default value of t_r in signal.clean and clean_img is changed from 2.5 to None. If low_pass or high_pass is specified, then t_r needs to be specified as well otherwise it will raise an error.
 
 Contributors
 -------------
@@ -87,6 +88,7 @@ The following people contributed to this release::
   1  Ivan Gonzalez
   1  Yaroslav Halchenko
   1  dtyulman
+  1  Michael Notter
 
 0.5.0 alpha
 ===========
