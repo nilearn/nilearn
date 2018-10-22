@@ -529,7 +529,7 @@ def clean(signals, sessions=None, detrend=True, standardize=True,
     if low_pass is not None or high_pass is not None:
         if t_r is None:
             raise ValueError("Repetition time (t_r) must be specified for "
-                             "filtering")
+                             "filtering. You specified None.")
 
         signals = butterworth(signals, sampling_rate=1. / t_r,
                               low_pass=low_pass, high_pass=high_pass)
@@ -539,5 +539,3 @@ def clean(signals, sessions=None, detrend=True, standardize=True,
         signals *= np.sqrt(signals.shape[0])  # for unit variance
 
     return signals
-
-
