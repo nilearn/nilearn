@@ -529,8 +529,6 @@ def clean(signals, sessions=None, detrend=True, standardize=True,
     # Remove confounds
     if confounds is not None:
         confounds = _ensure_float(confounds)
-        confounds = _standardize(confounds, normalize=standardize,
-                                 detrend=detrend)
 
         # Apply low- and high-pass filters to keep filters orthogonal
         # (according to Lindquist et al. (2018))
@@ -538,6 +536,9 @@ def clean(signals, sessions=None, detrend=True, standardize=True,
 
             confounds = butterworth(confounds, sampling_rate=1. / t_r,
                                     low_pass=low_pass, high_pass=high_pass)
+
+        confounds = _standardize(confounds, normalize=standardize,
+                                 detrend=detrend)
 
         if not standardize:
             # Improve numerical stability by controlling the range of
