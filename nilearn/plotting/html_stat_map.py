@@ -90,6 +90,10 @@ def _get_vmin_vmax(data, vmin=None, vmax=None):
 def _threshold_data(data, threshold=None):
     """ Threshold a data array.
     """
+    # If threshold is None, do nothing
+    if threshold is None:
+        return data, threshold
+
     # Deal with automatic settings of plot parameters
     if threshold == 'auto':
         # Threshold epsilon below a percentile value, to be sure that some
@@ -102,11 +106,10 @@ def _threshold_data(data, threshold=None):
                                 name='threshold')
 
     # Mask data
-    if threshold is not None:
-        if threshold == 0:
-            data = np.ma.masked_equal(data, 0, copy=False)
-        else:
-            data = np.ma.masked_inside(data, -threshold, threshold, copy=False)
+    if threshold == 0:
+        data = np.ma.masked_equal(data, 0, copy=False)
+    else:
+        data = np.ma.masked_inside(data, -threshold, threshold, copy=False)
     return data, threshold
 
 
