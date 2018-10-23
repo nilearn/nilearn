@@ -1,7 +1,7 @@
 import warnings
 
 import numpy as np
-
+from numpy.testing import assert_warns, assert_raises
 from nilearn import datasets, image
 from nilearn.plotting import html_stat_map
 
