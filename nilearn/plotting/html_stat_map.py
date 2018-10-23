@@ -254,9 +254,9 @@ def _json_sprite(shape, affine, vmin, vmax, cut_slices, black_bg=False,
                      'flagCoordinates': annotate,
                      'title': title,
                      'flagValue': annotate,
-                     'numSlice': {'X': cut_slices[0]-1,
-                                  'Y': cut_slices[1]-1,
-                                  'Z': cut_slices[2]-1}}
+                     'numSlice': {'X': cut_slices[0] - 1,
+                                  'Y': cut_slices[1] - 1,
+                                  'Z': cut_slices[2] - 1}}
 
     if colorbar:
         sprite_params['colorMap'] = {'img': 'colorMap',
