@@ -59,7 +59,7 @@ def test_data2sprite():
     # Generate ground truth for the sprite
     Z = np.zeros([8,8])
     Zr = np.zeros([2,8])
-    Or = np.matlib.repmat(np.array([[0, 0, 1, 1, 1, 1, 0, 0]]),4,1)
+    Or = np.tile(np.array([[0, 0, 1, 1, 1, 1, 0, 0]]),[4,1])
     O = np.concatenate((Zr,Or,Zr),axis=0)
     gtruth = np.concatenate((np.concatenate((Z,Z,O), axis=1),
                              np.concatenate((O,O,O), axis=1),
