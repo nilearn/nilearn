@@ -733,9 +733,10 @@ def _fetch_files(data_dir, files, resume=True, mock=False, verbose=1):
                                   password=opts.get('password', None),
                                   handlers=opts.get('handlers', []),
                                   overwrite=overwrite)
-            if 'move' in opts:
-                # XXX: here, move is supposed to be a dir, it can be a name
+            try:
                 dl_file = _move_dataset_files(dl_file, temp_dir, opts['move'])
+            except KeyError:
+                pass  # Do nothing if there is no 'move' key in the options.
             if 'uncompress' in opts:
                 abort = _uncompress_dataset_files(dl_file, mock, abort,
                                                   verbose)
