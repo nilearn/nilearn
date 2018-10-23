@@ -355,7 +355,7 @@ def _ensure_float(data):
 
 
 def clean(signals, sessions=None, detrend=True, standardize=True,
-          confounds=None, low_pass=None, high_pass=None, t_r=2.5,
+          confounds=None, low_pass=None, high_pass=None, t_r=None,
           ensure_finite=False):
     """Improve SNR on masked fMRI signals.
 
@@ -399,7 +399,8 @@ def clean(signals, sessions=None, detrend=True, standardize=True,
         signal, as if all were in the same array.
 
     t_r: float
-        Repetition time, in second (sampling period).
+        Repetition time, in second (sampling period). Set to None if not
+        specified. Mandatory if used together with low_pass or high_pass.
 
     low_pass, high_pass: float
         Respectively low and high cutoff frequencies, in Hertz.
@@ -521,7 +522,7 @@ def clean(signals, sessions=None, detrend=True, standardize=True,
     if low_pass is not None or high_pass is not None:
         if t_r is None:
             raise ValueError("Repetition time (t_r) must be specified for "
-                             "filtering")
+                             "filtering. You specified None.")
 
         signals = butterworth(signals, sampling_rate=1. / t_r,
                               low_pass=low_pass, high_pass=high_pass)
