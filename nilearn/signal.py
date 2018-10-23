@@ -363,9 +363,9 @@ def clean(signals, sessions=None, detrend=True, standardize=True,
     the following order:
 
     - detrend
-    - standardize
-    - remove confounds
     - low- and high-pass filter
+    - remove confounds
+    - standardize
 
     Low-pass filtering improves specificity.
 
@@ -373,6 +373,10 @@ def clean(signals, sessions=None, detrend=True, standardize=True,
     sensitivity.
 
     Filtering is only meaningful on evenly-sampled signals.
+
+    According to Lindquist et al. (2018), removal of confounds will be done
+    orthogonally to temporal filters (low- and/or high-pass filters), if both
+    are specified.
 
     Parameters
     ----------
@@ -425,6 +429,11 @@ def clean(signals, sessions=None, detrend=True, standardize=True,
     "Statistical Parametric Maps in Functional Imaging: A General
     Linear Approach". Human Brain Mapping 2, no 4 (1994): 189-210.
     <http://dx.doi.org/10.1002/hbm.460020402>`_
+
+    Orthogonalization between temporal filters and confound removal is based on
+    suggestions in `Lindquist, M., Geuter, S., Wager, T., & Caffo, B. (2018).
+    Modular preprocessing pipelines can reintroduce artifacts into fMRI data.
+    bioRxiv, 407676. <http://dx.doi.org/10.1101/407676>`_
 
     See Also
     --------
@@ -509,11 +518,29 @@ def clean(signals, sessions=None, detrend=True, standardize=True,
     signals = _ensure_float(signals)
     signals = _standardize(signals, normalize=False, detrend=detrend)
 
+    # Apply low- and high-pass filters
+    if low_pass is not None or high_pass is not None:
+        if t_r is None:
+            raise ValueError("Repetition time (t_r) must be specified for "
+                             "filtering. You specified None.")
+
+        signals = butterworth(signals, sampling_rate=1. / t_r,
+                              low_pass=low_pass, high_pass=high_pass)
+
     # Remove confounds
     if confounds is not None:
         confounds = _ensure_float(confounds)
+
+        # Apply low- and high-pass filters to keep filters orthogonal
+        # (according to Lindquist et al. (2018))
+        if low_pass is not None or high_pass is not None:
+
+            confounds = butterworth(confounds, sampling_rate=1. / t_r,
+                                    low_pass=low_pass, high_pass=high_pass)
+
         confounds = _standardize(confounds, normalize=standardize,
                                  detrend=detrend)
+
         if not standardize:
             # Improve numerical stability by controlling the range of
             # confounds. We don't rely on _standardize as it removes any
@@ -526,14 +553,6 @@ def clean(signals, sessions=None, detrend=True, standardize=True,
         Q, R, _ = linalg.qr(confounds, mode='economic', pivoting=True)
         Q = Q[:, np.abs(np.diag(R)) > np.finfo(np.float).eps * 100.]
         signals -= Q.dot(Q.T).dot(signals)
-
-    if low_pass is not None or high_pass is not None:
-        if t_r is None:
-            raise ValueError("Repetition time (t_r) must be specified for "
-                             "filtering. You specified None.")
-
-        signals = butterworth(signals, sampling_rate=1. / t_r,
-                              low_pass=low_pass, high_pass=high_pass)
 
     if standardize:
         signals = _standardize(signals, normalize=True, detrend=False)
