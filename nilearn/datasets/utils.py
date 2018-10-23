@@ -711,9 +711,9 @@ def _fetch_files(data_dir, files, resume=True, mock=False, verbose=1):
         temp_target_file = os.path.join(temp_dir, file_)
         # Whether to keep existing files
         overwrite = opts.get('overwrite', False)
-        file_does_not_exist = _file_does_not_exist(target_file,
-                                                   temp_target_file,
-                                                   )
+        file_does_not_exist = _check_files_existence(target_file,
+                                                     temp_target_file,
+                                                     )
         if not abort and (file_does_not_exist or overwrite):
 
             # We may be in a global read-only repository. If so, we cannot
@@ -735,22 +735,22 @@ def _fetch_files(data_dir, files, resume=True, mock=False, verbose=1):
                                   overwrite=overwrite)
             if 'move' in opts:
                 # XXX: here, move is supposed to be a dir, it can be a name
-                dl_file = _move_dataset_files(dl_file, opts, temp_dir)
+                dl_file = _move_dataset_files(dl_file, temp_dir, opts['move'])
             if 'uncompress' in opts:
-                abort = _uncompress_dataset_files(abort, dl_file, mock,
+                abort = _uncompress_dataset_files(dl_file, mock, abort,
                                                   verbose)
-        file_does_not_exist = _file_does_not_exist(target_file,
-                                                   temp_target_file,
-                                                   )
+        file_does_not_exist = _check_files_existence(target_file,
+                                                     temp_target_file,
+                                                     )
         if not abort and file_does_not_exist:
-            abort = _download_or_mock_file(abort,
-                                           dl_file,
-                                           file_,
-                                           mock,
-                                           target_file,
-                                           temp_target_file,
-                                           url,
-                                           )
+            abort = _message_or_mock_missing_dataset_file(file_,
+                                                          mock,
+                                                          abort,
+                                                          dl_file,
+                                                          target_file,
+                                                          temp_target_file,
+                                                          url,
+                                                          )
         if abort:
             if os.path.exists(temp_dir):
                 shutil.rmtree(temp_dir)
@@ -765,8 +765,15 @@ def _fetch_files(data_dir, files, resume=True, mock=False, verbose=1):
     return files_
 
 
-def _download_or_mock_file(abort, dl_file, file_, mock, target_file,
-                           temp_target_file, url):
+def _message_or_mock_missing_dataset_file(file_, mock, abort, dl_file, target_file,
+                                          temp_target_file, url):
+    """ Warns & returns an abort message if the downloaded dataset does not have the intended file.
+    If mock==True (intended for testing), creates a mock file instead.
+    Returns
+    -------
+    abort: None or String
+    """
+    
     if mock:
         if not os.path.exists(os.path.dirname(temp_target_file)):
             os.makedirs(os.path.dirname(temp_target_file))
@@ -780,32 +787,61 @@ def _download_or_mock_file(abort, dl_file, file_, mock, target_file,
     return abort
 
 
-def _file_does_not_exist(file_1, file_2):
+def _check_files_existence(file_1, file_2):
+    """ Returns True if both the provided files exist.
+    """
     target_file_does_not_exist = not os.path.exists(file_1)
     temp_target_file_does_not_exist = not os.path.exists(file_2)
     file_does_not_exist = target_file_does_not_exist and temp_target_file_does_not_exist
     return file_does_not_exist
     
 
-def _uncompress_dataset_files(abort, dl_file, mock, verbose):
+def _uncompress_dataset_files(file_, mock, abort, verbose):
+    """ Uncompresses a file. Removes it if its size is zero or mock=True
+    
+    Returns
+    -------
+    
+    None or String(exception)
+    """
     try:
-        if not mock or os.path.getsize(dl_file) != 0:
-            _uncompress_file(dl_file, verbose=verbose)
+        if not mock or os.path.getsize(file_) != 0:
+            _uncompress_file(file_, verbose=verbose)
         else:
-            os.remove(dl_file)
+            os.remove(file_)
     except Exception as e:
         abort = str(e)
     return abort
 
 
-def _move_dataset_files(dl_file, opts, temp_dir):
-    move = os.path.join(temp_dir, opts['move'])
-    move_dir = os.path.dirname(move)
-    if not os.path.exists(move_dir):
-        os.makedirs(move_dir)
-    shutil.move(dl_file, move)
-    dl_file = move
-    return dl_file
+def _move_dataset_files(src_filepath, dst_root_dir, dst_sub_dir):
+    """ Creates a subdirectory, if necessary,
+    into the destination root directory
+    and moves the source file into that subdirectory.
+    
+    Parameters
+    ----------
+    
+    src_filepath: string
+        path to the source file.
+        
+    dst_root_dir: string
+        path to the destination root directory
+        
+    dst_sub_dir: string
+        Name or path for the subdirectory within the destination root directory
+        
+    Returns
+    -------
+    dst_filepath: string
+        Path to the moved file.
+    """
+    dst_filepath = os.path.join(dst_root_dir, dst_sub_dir)
+    dst_dir_path = os.path.dirname(dst_filepath)
+    if not os.path.exists(dst_dir_path):
+        os.makedirs(dst_dir_path)
+    shutil.move(src_filepath, dst_filepath)
+    return dst_filepath
 
 
 def _tree(path, pattern=None, dictionary=False):
