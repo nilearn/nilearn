@@ -103,4 +103,27 @@ def test_get_vmin_vmax():
         vmin, vmax = html_stat_map._get_vmin_vmax(data, vmin=3, vmax=0.7)
     except ValueError:
         pass
-    
+
+
+def _test_threshold_data():
+
+    data = np.arange(-3,4)
+
+    # Check that an 'auto' threshold leaves at least one element
+    data_t, thresh = html_stat_map._threshold_data(data, threshold='auto')
+    gtruth = np.array([False, True, True, True, True, True, False])
+    assert((data_t.mask == gtruth).all())
+
+    # Check that threshold=None keeps everything
+    data_t, thresh = html_stat_map._threshold_data(data, threshold=None)
+    assert(~np.ma.is_masked(data_t))
+
+    # Check positive threshold works
+    data_t, thresh = html_stat_map._threshold_data(data, threshold=1)
+    gtruth = np.array([False, False, True, True, True, False, False])
+    assert((data_t.mask == gtruth).all())
+
+    # Check 0 threshold works
+    data_t, thresh = html_stat_map._threshold_data(data, threshold=0)
+    gtruth = np.array([False, False, False, True, False, False, False])
+    assert((data_t.mask == gtruth).all())
