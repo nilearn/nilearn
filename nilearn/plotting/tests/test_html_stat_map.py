@@ -85,25 +85,15 @@ def test_get_vmin_vmax():
     vmin, vmax = html_stat_map._get_vmin_vmax(data, vmin=.5, vmax=.7)
     assert (vmin == .5) and (vmax == .7)
 
-    # Try to use NaN for vmax
-    with warnings.catch_warnings(record=True) as w:
-        vmin, vmax = html_stat_map._get_vmin_vmax(data, vmin=.5, vmax=np.nan)
-    warning_categories = set(warning_.category for warning_ in w)
-    expected_categories = set([UserWarning])
-    assert(expected_categories.issubset(warning_categories))
+    # a warning should be issued if vmax or vmin is NaN
+    assert_warns(UserWarning, html_stat_map._get_vmin_vmax,
+                 data, vmin=.5, vmax=np.nan)
+    assert_warns(UserWarning, html_stat_map._get_vmin_vmax,
+                 data, vmin=np.nan, vmax=0.7)
 
-    # Try to use NaN for vmin
-    with warnings.catch_warnings(record=True) as w:
-        vmin, vmax = html_stat_map._get_vmin_vmax(data, vmin=np.nan, vmax=0.7)
-    warning_categories = set(warning_.category for warning_ in w)
-    expected_categories = set([UserWarning])
-    assert(expected_categories.issubset(warning_categories))
-
-    # Try to feed vmax smaller than vmin
-    try:
-        vmin, vmax = html_stat_map._get_vmin_vmax(data, vmin=3, vmax=0.7)
-    except ValueError:
-        pass
+    # an error should be raised if vmax is smaller than vmin
+    assert_raises(ValueError, html_stat_map._get_vmin_vmax,
+                  data, vmin=3, vmax=0.7)
 
 
 def test_threshold_data():
