@@ -800,7 +800,7 @@ def math_img(formula, **imgs):
 
 
 def clean_img(imgs, sessions=None, detrend=True, standardize=True,
-              confounds=None, low_pass=None, high_pass=None, t_r=2.5,
+              confounds=None, low_pass=None, high_pass=None, t_r=None,
               ensure_finite=False):
     """Improve SNR on masked fMRI signals.
 
@@ -852,7 +852,8 @@ def clean_img(imgs, sessions=None, detrend=True, standardize=True,
         Respectively low and high cutoff frequencies, in Hertz.
 
     t_r: float, optional
-        Repetition time, in second (sampling period).
+        Repetition time, in second (sampling period). Set to None if not
+        specified. Mandatory if used together with low_pass or high_pass.
 
     ensure_finite: bool, optional
         If True, the non-finite values (NaNs and infs) found in the images
@@ -880,6 +881,18 @@ def clean_img(imgs, sessions=None, detrend=True, standardize=True,
     from .image import new_img_like
 
     imgs_ = check_niimg_4d(imgs)
+
+    # Check if t_r is set, otherwise propose t_r from imgs header
+    if low_pass is not None or high_pass is not None:
+        if t_r is None:
+
+            # We raise an error, instead of using the header's t_r as this
+            # value is considered to be non-reliable
+            raise ValueError(
+                "Repetition time (t_r) must be specified for filtering. You "
+                "specified None. imgs header suggest it to be {0}".format(
+                    imgs.header.get_zooms()[3]))
+
     data = signal.clean(
         imgs_.get_data().reshape(-1, imgs_.shape[-1]).T, sessions=sessions,
         detrend=detrend, standardize=standardize, confounds=confounds,
