@@ -2,6 +2,7 @@ import warnings
 
 import numpy as np
 from numpy.testing import assert_warns, assert_raises
+from nibabel import Nifti1Image
 from nilearn import datasets, image
 from nilearn.plotting import html_stat_map
 
@@ -118,3 +119,33 @@ def test_threshold_data():
     data_t, thresh = html_stat_map._threshold_data(data, threshold=0)
     gtruth = np.array([False, False, False, True, False, False, False])
     assert((data_t.mask == gtruth).all())
+
+
+def test_get_cut_slices():
+
+    # Generate simple simulated data with one "spot"
+    data = np.zeros([8, 8, 8])
+    data[4, 4, 4] = 1
+    affine = np.eye(4)
+    img = Nifti1Image(data, affine)
+
+    # Use automatic selection of coordinates
+    cut_slices = html_stat_map._get_cut_slices(img, cut_coords=None,
+                                               threshold=None)
+    assert((cut_slices == [4, 4, 4]).all())
+
+    # Check that using a single number for cut_coords raises an error
+    assert_raises(ValueError, html_stat_map._get_cut_slices,
+                  img, cut_coords=4, threshold=None)
+
+    # Check that it is possible to manually specify coordinates
+    cut_slices = html_stat_map._get_cut_slices(img, cut_coords=[2, 2, 2],
+                                               threshold=None)
+    assert((cut_slices == [2, 2, 2]).all())
+
+    # Check that the affine does not change where the cut is done
+    affine = 2 * np.eye(4)
+    img = Nifti1Image(data, affine)
+    cut_slices = html_stat_map._get_cut_slices(img, cut_coords=None,
+                                               threshold=None)
+    assert((cut_slices == [4, 4, 4]).all())
