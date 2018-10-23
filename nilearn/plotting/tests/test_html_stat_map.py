@@ -20,6 +20,7 @@ def _assert_warnings_in(set1, set2):
     assert set1.issubset(set2), ("the following warnings were not "
                                  "expected: {}").format(set1.difference(set2))
 
+
 def test_view_stat_map():
     mni = datasets.load_mni152_template()
     with warnings.catch_warnings(record=True) as w:
@@ -49,22 +50,22 @@ def test_view_stat_map():
 def test_data2sprite():
 
     # Generate a simulated volume with a square inside
-    data = np.zeros([8,8,8])
-    data[2:6,2:6,2:6] = 1
+    data = np.zeros([8, 8, 8])
+    data[2:6, 2:6, 2:6] = 1
 
     # turn that into a sprite and check it has the right shape
     sprite = html_stat_map._data2sprite(data)
     assert sprite.shape == (24, 24)
 
     # Generate ground truth for the sprite
-    Z = np.zeros([8,8])
-    Zr = np.zeros([2,8])
-    Or = np.tile(np.array([[0, 0, 1, 1, 1, 1, 0, 0]]),[4,1])
-    O = np.concatenate((Zr,Or,Zr),axis=0)
-    gtruth = np.concatenate((np.concatenate((Z,Z,O), axis=1),
-                             np.concatenate((O,O,O), axis=1),
-                             np.concatenate((Z,Z,Z), axis=1)),
-                             axis=0)
+    Z = np.zeros([8, 8])
+    Zr = np.zeros([2, 8])
+    Cr = np.tile(np.array([[0, 0, 1, 1, 1, 1, 0, 0]]), [4, 1])
+    C = np.concatenate((Zr, Cr, Zr), axis=0)
+    gtruth = np.concatenate((np.concatenate((Z, Z, C), axis=1),
+                             np.concatenate((C, C, C), axis=1),
+                             np.concatenate((Z, Z, Z), axis=1)),
+                            axis=0)
 
     # Check that the sprite matches ground truth
     assert (sprite == gtruth).all()
@@ -73,8 +74,8 @@ def test_data2sprite():
 def test_get_vmin_vmax():
 
     # Generate a simulated volume with a square inside
-    data = np.zeros([8,8,8])
-    data[2:6,2:6,2:6] = 1
+    data = np.zeros([8, 8, 8])
+    data[2:6, 2:6, 2:6] = 1
 
     # Check default vmin, vmax
     vmin, vmax = html_stat_map._get_vmin_vmax(data)
@@ -105,9 +106,9 @@ def test_get_vmin_vmax():
         pass
 
 
-def _test_threshold_data():
+def test_threshold_data():
 
-    data = np.arange(-3,4)
+    data = np.arange(-3, 4)
 
     # Check that an 'auto' threshold leaves at least one element
     data_t, thresh = html_stat_map._threshold_data(data, threshold='auto')
