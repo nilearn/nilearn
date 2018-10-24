@@ -8,11 +8,19 @@ from tempfile import mkdtemp
 import json
 import shutil
 
+from collections import OrderedDict
+
 import nibabel as nb
 import numpy as np
 from sklearn.datasets.base import Bunch
 
-from .utils import _get_dataset_dir, _fetch_files, _get_dataset_descr
+from .utils import (get_data_dirs,
+                    _get_dataset_dir,
+                    _get_dataset_descr,
+                    _fetch_file,
+                    _fetch_files,
+                    _uncompress_file,
+                    )
 from .._utils import check_niimg
 from .._utils.compat import _basestring
 from ..image import new_img_like
@@ -808,7 +816,8 @@ def fetch_coords_dosenbach_2010(ordered_regions=True):
     return Bunch(**params)
 
 
-def fetch_atlas_allen_2011(data_dir=None, url=None, resume=True, verbose=1):
+def fetch_atlas_allen_2011(data_dir=None, url=None, resume=True,
+                               verbose=1):
     """Download and return file names for the Allen and MIALAB ICA atlas
     (dated 2011).
 
@@ -820,8 +829,8 @@ def fetch_atlas_allen_2011(data_dir=None, url=None, resume=True, verbose=1):
         directory where data should be downloaded and unpacked.
     url: str, optional
         url of file to download.
-    resume: bool
-        whether to resumed download of a partly-downloaded file.
+    resume: None
+        Non-functional parameter, kept for backwards compatibility.
     verbose: int
         verbosity level (0 means no message).
 
@@ -850,43 +859,53 @@ def fetch_atlas_allen_2011(data_dir=None, url=None, resume=True, verbose=1):
     See http://mialab.mrn.org/data/index.html for more information
     on this dataset.
     """
-    if url is None:
-        url = "http://mialab.mrn.org/data/hcp/"
-
+    url = url if url else 'https://osf.io/hrcku/download'
     dataset_name = "allen_rsn_2011"
-    keys = ("maps",
-            "rsn28",
-            "comps")
-
-    opts = {}
-    files = ["ALL_HC_unthresholded_tmaps.nii",
-             "RSN_HC_unthresholded_tmaps.nii",
-             "rest_hcp_agg__component_ica_.nii"]
-
+    data_dir = get_data_dirs(data_dir=data_dir)[0]
+    dataset_components_filenames = OrderedDict(
+            {'maps': 'ALL_HC_unthresholded_tmaps.nii.gz',
+             'rsn28': 'RSN_HC_unthresholded_tmaps.nii.gz',
+             'comps': 'rest_hcp_agg__component_ica_.nii.gz',
+             }
+            )
+    expected_files = OrderedDict(
+            {component: os.path.join(data_dir, dataset_name, file_)
+             for component, file_
+             in dataset_components_filenames.items()
+             }
+            )
+    expected_files_present = all([os.path.isfile(filepath)
+                                  for filepath in expected_files.values()
+                                  ])
+    
+    dataset_dir = os.path.join(data_dir, dataset_name)
+    if not expected_files_present:
+        if verbose:
+            print('Downloading dataset Allen and MIALAB ICA atlas '
+                  'from {} to {} ...'.format(url, dataset_dir)
+                  )
+        downloaded_filepath = _fetch_file(url, data_dir, verbose=verbose)
+        _uncompress_file(downloaded_filepath, verbose=verbose)
+    else:
+        if verbose:
+            print('Allen and MIALAB ICA atlas files '
+                  'found at {}'.format(dataset_dir)
+                  )
+    
     labels = [('Basal Ganglia', [21]),
               ('Auditory', [17]),
               ('Sensorimotor', [7, 23, 24, 38, 56, 29]),
               ('Visual', [46, 64, 67, 48, 39, 59]),
               ('Default-Mode', [50, 53, 25, 68]),
               ('Attentional', [34, 60, 52, 72, 71, 55]),
-              ('Frontal', [42, 20, 47, 49])]
-
+              ('Frontal', [42, 20, 47, 49]),
+              ]
     networks = [[name] * len(idxs) for name, idxs in labels]
-
-    filenames = [(f, url + f, opts) for f in files]
-
-    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
-                                verbose=verbose)
-    sub_files = _fetch_files(data_dir, filenames, resume=resume,
-                             verbose=verbose)
-
-    fdescr = _get_dataset_descr(dataset_name)
-
-    params = [('description', fdescr),
+    dataset_description = _get_dataset_descr(dataset_name)
+    params = [('description', dataset_description),
               ('rsn_indices', labels),
               ('networks', networks)]
-    params.extend(list(zip(keys, sub_files)))
-
+    params.extend(tuple(expected_files.items()))
     return Bunch(**dict(params))
 
 
