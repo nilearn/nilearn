@@ -1,4 +1,6 @@
 import warnings
+from io import BytesIO
+from base64 import b64decode
 
 import numpy as np
 from numpy.testing import assert_warns, assert_raises
@@ -119,6 +121,48 @@ def test_threshold_data():
     data_t, thresh = html_stat_map._threshold_data(data, threshold=0)
     gtruth = np.array([False, False, False, True, False, False, False])
     assert((data_t.mask == gtruth).all())
+
+
+def test_save_sprite():
+    """This test covers _save_sprite as well as _bytesIO_to_base64
+    """
+
+    # Generate a simulated volume with a square inside
+    data = np.zeros([2, 1, 1])
+    data[0, 0, 0] = 1
+    mask = data > 0
+
+    # Save the sprite using BytesIO
+    sprite_io = BytesIO()
+    html_stat_map._save_sprite(data, sprite_io, vmin=0, vmax=1,
+                               mask=mask, format='raw')
+
+    # Load the sprite back in base64
+    sprite_base64 = html_stat_map._bytesIO_to_base64(sprite_io)
+
+    # Now decode the base64
+    sprite_raw = b64decode(sprite_base64)
+
+    # Check the sprite is correct
+    assert(sprite_raw.hex() == 'ffffff00ffffffff')
+
+
+def test_save_cmap():
+    """This test covers _save_cmap as well as _bytesIO_to_base64
+    """
+
+    # Save the cmap using BytesIO
+    cmap_io = BytesIO()
+    html_stat_map._save_cm(cmap_io, 'gray', format='raw', n_colors=3)
+
+    # Load the sprite back in base64
+    cmap_base64 = html_stat_map._bytesIO_to_base64(cmap_io)
+
+    # Now decode the base64
+    cmap_raw = b64decode(cmap_base64)
+
+    # Check the sprite is correct
+    assert(cmap_raw.hex() == '000000ff808080ffffffffff')
 
 
 def test_get_cut_slices():
