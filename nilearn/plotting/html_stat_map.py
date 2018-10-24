@@ -143,12 +143,9 @@ def _bytesIO_to_base64(bytesio_png):
     return data
 
 
-def _save_cm(output_cmap, cmap, format='png'):
+def _save_cm(output_cmap, cmap, format='png', n_colors=256):
     """ Save the colormap of an image as a png file.
     """
-
-    # Hard-coded number of colors
-    n_colors = 256
 
     # save the colormap
     data = np.arange(0, n_colors) / (n_colors - 1)
