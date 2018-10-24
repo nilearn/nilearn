@@ -8,8 +8,6 @@ from tempfile import mkdtemp
 import json
 import shutil
 
-from collections import OrderedDict
-
 import nibabel as nb
 import numpy as np
 from sklearn.datasets.base import Bunch
@@ -862,18 +860,14 @@ def fetch_atlas_allen_2011(data_dir=None, url=None, resume=True,
     url = url if url else 'https://osf.io/hrcku/download'
     dataset_name = "allen_rsn_2011"
     data_dir = get_data_dirs(data_dir=data_dir)[0]
-    dataset_components_filenames = OrderedDict(
-            {'maps': 'ALL_HC_unthresholded_tmaps.nii.gz',
-             'rsn28': 'RSN_HC_unthresholded_tmaps.nii.gz',
-             'comps': 'rest_hcp_agg__component_ica_.nii.gz',
-             }
-            )
-    expected_files = OrderedDict(
-            {component: os.path.join(data_dir, dataset_name, file_)
-             for component, file_
-             in dataset_components_filenames.items()
-             }
-            )
+    dataset_components_filenames = {'maps': 'ALL_HC_unthresholded_tmaps.nii.gz',
+                                    'rsn28': 'RSN_HC_unthresholded_tmaps.nii.gz',
+                                    'comps': 'rest_hcp_agg__component_ica_.nii.gz',
+                                    }
+    expected_files = {component: os.path.join(data_dir, dataset_name, file_)
+                      for component, file_
+                      in dataset_components_filenames.items()
+                      }
     expected_files_present = all([os.path.isfile(filepath)
                                   for filepath in expected_files.values()
                                   ])
