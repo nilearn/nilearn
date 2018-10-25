@@ -13,6 +13,8 @@ Changes
   orthogonality between temporal filter and confound removal, an additional
   temporal filter will be applied on the confounds before removing them. This
   is according to Lindquist et al. (2018).
+- image.clean_img now accepts a mask to restrict the cleaning of the image.
+  This approach can help to reduce the memory load.
 
 
 Contributors
