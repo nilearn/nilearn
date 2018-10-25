@@ -3,7 +3,9 @@ from io import BytesIO
 
 import numpy as np
 from numpy.testing import assert_warns, assert_raises
+
 from nibabel import Nifti1Image
+
 from nilearn import datasets, image
 from nilearn.plotting import html_stat_map
 
@@ -23,14 +25,24 @@ def _assert_warnings_in(set1, set2):
                                  "expected: {}").format(set1.difference(set2))
 
 
-def _simu_img():
+def _simu_img(affine=np.eye(4)):
 
     # Generate simple simulated data with one "spot"
     data = np.zeros([8, 8, 8])
     data[4, 4, 4] = 1
-    affine = np.eye(4)
     img = Nifti1Image(data, affine)
     return img, data
+
+
+def _check_affine(affine):
+    # Check positive and isotropic diagonal
+    assert(affine[0, 0] == affine[1, 1])
+    assert(affine[2, 2] == affine[1, 1])
+    assert(affine[0, 0] > 0)
+
+    # Check near-diagonal affine
+    A, b = image.resampling.to_matrix_vector(affine)
+    assert(np.all((np.abs(A) > 0.001).sum(axis=0) == 1))
 
 
 def test_view_stat_map():
@@ -192,10 +204,31 @@ def test_mask_stat_map():
                                                                threshold=None)
     assert(np.max(mask_img.get_data()) == 0)
 
-    # Now threshold the zero
+    # Now threshold at zero
     mask_img, img, data_t, thre = html_stat_map._mask_stat_map(img,
                                                                threshold=0)
     assert(np.min((data == 0) == mask_img.get_data()))
+
+
+def test_load_bg_img():
+
+    # Generate simple simulated data with non-diagonal affine
+    affine = np.eye(4)
+    affine[0, 0] = -1
+    affine[0, 1] = 0.1
+    img, data = _simu_img(affine)
+
+    # use empty bg_img
+    bg_img, bg_min, bg_max, black_bg = html_stat_map._load_bg_img(img,
+                                                                  bg_img=None)
+    # Check positive isotropic, near-diagonal affine
+    _check_affine(bg_img.affine)
+
+    # Try to load the default background
+    bg_img, bg_min, bg_max, black_bg = html_stat_map._load_bg_img(img)
+
+    # Check positive isotropic, near-diagonal affine
+    _check_affine(bg_img.affine)
 
 
 def test_get_cut_slices():
