@@ -158,6 +158,20 @@ def test_save_cmap():
     assert(cmap_base64 == '//////////8=\n')
 
 
+def test_sanitize_cm():
+    # Build a cold_hot colormap
+    n_colors = 4
+    cmap = html_stat_map._sanitize_cm('cold_hot', n_colors=n_colors)
+
+    # Check that it has the right number of colors
+    assert(cmap.N == n_colors)
+
+    # Check that there are no duplicated colors
+    cmaplist = [cmap(i) for i in range(cmap.N)]
+    mask = [cmaplist.count(cmap(i)) == 1 for i in range(cmap.N)]
+    assert(np.min(mask))
+
+
 def test_get_cut_slices():
 
     # Generate simple simulated data with one "spot"
