@@ -7,6 +7,8 @@ import xml.etree.ElementTree
 from tempfile import mkdtemp
 import json
 import shutil
+import urllib2
+
 
 import nibabel as nb
 import numpy as np
@@ -814,7 +816,7 @@ def fetch_coords_dosenbach_2010(ordered_regions=True):
     return Bunch(**params)
 
 
-def fetch_atlas_allen_2011(data_dir=None, url=None, resume=True,
+def fetch_atlas_allen_2011(data_dir=None,
                                verbose=1):
     """Download and return file names for the Allen and MIALAB ICA atlas
     (dated 2011).
@@ -825,10 +827,6 @@ def fetch_atlas_allen_2011(data_dir=None, url=None, resume=True,
     ----------
     data_dir: str, optional
         directory where data should be downloaded and unpacked.
-    url: str, optional
-        url of file to download.
-    resume: None
-        Non-functional parameter, kept for backwards compatibility.
     verbose: int
         verbosity level (0 means no message).
 
@@ -857,9 +855,10 @@ def fetch_atlas_allen_2011(data_dir=None, url=None, resume=True,
     See http://mialab.mrn.org/data/index.html for more information
     on this dataset.
     """
-    url = url if url else 'https://osf.io/hrcku/download'
+    url = 'https://osf.io/hrcku/download'
     dataset_name = "allen_rsn_2011"
     data_dir = get_data_dirs(data_dir=data_dir)[0]
+    
     dataset_components_filenames = {'maps': 'ALL_HC_unthresholded_tmaps.nii.gz',
                                     'rsn28': 'RSN_HC_unthresholded_tmaps.nii.gz',
                                     'comps': 'rest_hcp_agg__component_ica_.nii.gz',
@@ -868,24 +867,56 @@ def fetch_atlas_allen_2011(data_dir=None, url=None, resume=True,
                       for component, file_
                       in dataset_components_filenames.items()
                       }
+    _download_allen_2011(expected_files, data_dir, dataset_name, url, verbose)
+
+    params = _prep_params_allen_2011(expected_files, dataset_name)
+    return Bunch(**dict(params))
+
+
+def _download_allen_2011(expected_files, data_dir, dataset_name, url, verbose):
+    """ Checks for existing Allen 2011 dataset files & downloads them if absent.
+    """
+    dataset_dir = os.path.join(data_dir, dataset_name)
     expected_files_present = all([os.path.isfile(filepath)
                                   for filepath in expected_files.values()
                                   ])
-    
-    dataset_dir = os.path.join(data_dir, dataset_name)
     if not expected_files_present:
         if verbose:
             print('Downloading dataset Allen and MIALAB ICA atlas '
                   'from {} to {} ...'.format(url, dataset_dir)
                   )
-        downloaded_filepath = _fetch_file(url, data_dir, verbose=verbose)
+        try:
+            downloaded_filepath = _fetch_file(url, data_dir, verbose=verbose)
+        except urllib2.URLError as excep:
+            err_msg = ('\nERROR: There was a problem downloading the file '
+                       '"allen_rsn_2011.zip". \nPlease verify you have '
+                       'a working internet connection and '
+                       'the file is still present at {}'.format(url))
+            print(err_msg)
+            raise excep
+        except (OSError, IOError) as os_excep:
+            if os_excep.strerror == 'Permission denied':
+                error_msg = ('\nERROR: You do not have permission '
+                             'to create and/or modify files in "{}".\n'
+                             'Choose a different download directory '
+                             'or talk to your system administrator.\n'
+                             'Download aborted.'.format(data_dir)
+                             )
+                print(error_msg)
+                raise
+            else:
+                raise os_excep
         _uncompress_file(downloaded_filepath, verbose=verbose)
     else:
         if verbose:
             print('Allen and MIALAB ICA atlas files '
                   'found at {}'.format(dataset_dir)
                   )
-    
+
+
+def _prep_params_allen_2011(expected_files, dataset_name):
+    """ Creates & returns the descriptors for Allen 2011 dataset.
+    """
     labels = [('Basal Ganglia', [21]),
               ('Auditory', [17]),
               ('Sensorimotor', [7, 23, 24, 38, 56, 29]),
@@ -900,7 +931,7 @@ def fetch_atlas_allen_2011(data_dir=None, url=None, resume=True,
               ('rsn_indices', labels),
               ('networks', networks)]
     params.extend(tuple(expected_files.items()))
-    return Bunch(**dict(params))
+    return params
 
 
 def fetch_atlas_surf_destrieux(data_dir=None, url=None,
