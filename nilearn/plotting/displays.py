@@ -365,7 +365,7 @@ class GlassBrainAxes(BaseAxes):
 
             # take the values where the absolute value of the projection
             # is the highest
-            maximum_intensity_data = data_selection[inds]
+            maximum_intensity_data = data_selection[tuple(inds)]
         else:
             maximum_intensity_data = np.abs(data_selection).max(axis=max_axis)
 
