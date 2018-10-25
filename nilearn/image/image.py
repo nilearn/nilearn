@@ -863,7 +863,7 @@ def clean_img(imgs, sessions=None, detrend=True, standardize=True,
         If True, the non-finite values (NaNs and infs) found in the images
         will be replaced by zeros.
 
-    mask_img: Niimg-like object
+    mask_img: Niimg-like object, optional
         See http://nilearn.github.io/manipulating_images/input_output.html
         If provided, signal is only cleaned from voxels inside the mask.
         If not provided, all voxels are used.
