@@ -16,6 +16,7 @@ from string import Template
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.image import imsave
+from matplotlib.colors import LinearSegmentedColormap
 
 from nibabel.affines import apply_affine
 
@@ -151,6 +152,24 @@ def _save_cm(output_cmap, cmap, format='png', n_colors=256):
     data = np.arange(0, n_colors) / (n_colors - 1)
     data = data.reshape([1, n_colors])
     imsave(output_cmap, data, cmap=cmap, format=format)
+
+
+def _sanitize_cm(cmap):
+    """Make sure that the colormap has no duplicated colors.
+    """
+    # Extract a list of colors
+    cmap = plt.cm.get_cmap(cmap)
+    cmaplist = [cmap(i) for i in range(cmap.N)]
+
+    # Filter out any duplicated colors
+    mask = [cmaplist.count(cmap(i)) == 1 for i in range(cmap.N)]
+    if mask.count(True) < 2:
+        raise ValueError('The selected colormap has too many '
+                         'duplicated colors')
+    cmaplist = np.array(cmaplist)[np.array(mask)]
+
+    # Return a matplotlib colormap with the original number of colors
+    return LinearSegmentedColormap.from_list('Custom cmap', cmaplist, cmap.N)
 
 
 class StatMapView(HTMLDocument):
@@ -406,7 +425,8 @@ def view_stat_map(stat_map_img, bg_img='MNI152', cut_coords=None,
         Jupyter notebook.
     """
 
-    cmap = plt.cm.get_cmap(cmap)
+    # Start by fixing the cmap for duplicated colors
+    cmap = _sanitize_cm(cmap)
 
     # Mask stat map
     mask_img, stat_map_img, data, threshold = _mask_stat_map(
