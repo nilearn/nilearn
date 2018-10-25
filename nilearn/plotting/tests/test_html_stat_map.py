@@ -1,6 +1,5 @@
 import warnings
 from io import BytesIO
-from base64 import b64decode
 
 import numpy as np
 from numpy.testing import assert_warns, assert_raises
@@ -140,11 +139,8 @@ def test_save_sprite():
     # Load the sprite back in base64
     sprite_base64 = html_stat_map._bytesIO_to_base64(sprite_io)
 
-    # Now decode the base64
-    sprite_raw = b64decode(sprite_base64)
-
     # Check the sprite is correct
-    assert(sprite_raw.hex() == 'ffffff00ffffffff')
+    assert(sprite_base64 == '////AP////8=\n')
 
 
 def test_save_cmap():
@@ -153,16 +149,13 @@ def test_save_cmap():
 
     # Save the cmap using BytesIO
     cmap_io = BytesIO()
-    html_stat_map._save_cm(cmap_io, 'gray', format='raw', n_colors=3)
+    html_stat_map._save_cm(cmap_io, 'cold_hot', format='raw', n_colors=2)
 
-    # Load the sprite back in base64
+    # Load the colormap back in base64
     cmap_base64 = html_stat_map._bytesIO_to_base64(cmap_io)
 
-    # Now decode the base64
-    cmap_raw = b64decode(cmap_base64)
-
-    # Check the sprite is correct
-    assert(cmap_raw.hex() == '000000ff808080ffffffffff')
+    # Check the colormap is correct
+    assert(cmap_base64 == '//////////8=\n')
 
 
 def test_get_cut_slices():
