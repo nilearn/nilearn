@@ -915,10 +915,9 @@ def clean_img(imgs, sessions=None, detrend=True, standardize=True,
         't_r': t_r, 'ensure_finite': ensure_finite}
 
     if mask_img is not None:
-        mask_img_ = check_niimg_3d(mask_img)
-        sigs = masking.apply_mask(imgs_, mask_img_)
+        sigs = masking.apply_mask(imgs_, mask_img)
         sigs_clean = signal.clean(sigs, **clean_paramters)
-        data = masking.unmask(sigs_clean, mask_img_).get_data()
+        data = masking.unmask(sigs_clean, mask_img).get_data()
     else:
         sigs = imgs_.get_data().reshape(-1, imgs_.shape[-1]).T
         data = signal.clean(sigs, **clean_paramters).T.reshape(imgs_.shape)
