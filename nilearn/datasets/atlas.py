@@ -7,7 +7,12 @@ import xml.etree.ElementTree
 from tempfile import mkdtemp
 import json
 import shutil
-import urllib2
+
+try:
+    from urllib.request import URLError, HTTPError  # py3
+except ImportError:
+    from urllib2 import URLError  # py2; HTTPError unavailable
+    HTTPError = URLError
 
 
 import nibabel as nb
@@ -855,7 +860,7 @@ def fetch_atlas_allen_2011(data_dir=None,
     See http://mialab.mrn.org/data/index.html for more information
     on this dataset.
     """
-    url = 'https://osf.io/hrcku/download'
+    url = 'https://osf.io/hrcku/downloa'
     dataset_name = "allen_rsn_2011"
     data_dir = get_data_dirs(data_dir=data_dir)[0]
     
@@ -887,13 +892,13 @@ def _download_allen_2011(expected_files, data_dir, dataset_name, url, verbose):
                   )
         try:
             downloaded_filepath = _fetch_file(url, data_dir, verbose=verbose)
-        except urllib2.URLError as excep:
+        except (URLError, HTTPError) as url_excep:
             err_msg = ('\nERROR: There was a problem downloading the file '
                        '"allen_rsn_2011.zip". \nPlease verify you have '
                        'a working internet connection and '
                        'the file is still present at {}'.format(url))
             print(err_msg)
-            raise excep
+            raise url_excep
         except (OSError, IOError) as os_excep:
             if os_excep.strerror == 'Permission denied':
                 error_msg = ('\nERROR: You do not have permission '
