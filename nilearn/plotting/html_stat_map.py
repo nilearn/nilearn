@@ -154,11 +154,12 @@ def _save_cm(output_cmap, cmap, format='png', n_colors=256):
     imsave(output_cmap, data, cmap=cmap, format=format)
 
 
-def _sanitize_cm(cmap):
+def _sanitize_cm(cmap, n_colors=256):
     """Make sure that the colormap has no duplicated colors.
     """
     # Extract a list of colors
     cmap = plt.cm.get_cmap(cmap)
+    cmap.N = n_colors
     cmaplist = [cmap(i) for i in range(cmap.N)]
 
     # Filter out any duplicated colors
