@@ -23,6 +23,16 @@ def _assert_warnings_in(set1, set2):
                                  "expected: {}").format(set1.difference(set2))
 
 
+def _simu_img():
+
+    # Generate simple simulated data with one "spot"
+    data = np.zeros([8, 8, 8])
+    data[4, 4, 4] = 1
+    affine = np.eye(4)
+    img = Nifti1Image(data, affine)
+    return img, data
+
+
 def test_view_stat_map():
     mni = datasets.load_mni152_template()
     with warnings.catch_warnings(record=True) as w:
@@ -172,13 +182,26 @@ def test_sanitize_cm():
     assert(np.min(mask))
 
 
+def test_mask_stat_map():
+
+    # Generate simple simulated data with one "spot"
+    img, data = _simu_img()
+
+    # Try not to threshold anything
+    mask_img, img, data_t, thre = html_stat_map._mask_stat_map(img,
+                                                               threshold=None)
+    assert(np.max(mask_img.get_data()) == 0)
+
+    # Now threshold the zero
+    mask_img, img, data_t, thre = html_stat_map._mask_stat_map(img,
+                                                               threshold=0)
+    assert(np.min((data == 0) == mask_img.get_data()))
+
+
 def test_get_cut_slices():
 
     # Generate simple simulated data with one "spot"
-    data = np.zeros([8, 8, 8])
-    data[4, 4, 4] = 1
-    affine = np.eye(4)
-    img = Nifti1Image(data, affine)
+    img, data = _simu_img()
 
     # Use automatic selection of coordinates
     cut_slices = html_stat_map._get_cut_slices(img, cut_coords=None,
