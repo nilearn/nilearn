@@ -303,13 +303,14 @@ def test_html_brainsprite():
 
     # Add meta-data to the sprite object
     sprite['params'] = html_stat_map._json_sprite(
-        data.shape, np.eye(4), vmin=0, vmax=1, cut_slices=[1,1,1],
+        data.shape, np.eye(4), vmin=0, vmax=1, cut_slices=[1, 1, 1],
         black_bg=True, opacity=1, draw_cross=True, annotate=False,
         title="test", colorbar=True)
 
     # Create a viewer
     html = html_stat_map._html_brainsprite(sprite)
     _check_html(html)
+
 
 def test_get_cut_slices():
 
