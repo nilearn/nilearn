@@ -11,9 +11,9 @@ import warnings
 import subprocess
 import weakref
 try:
-    from html import escape
-except ImportError:
-    from cgi import escape
+    from html import escape  # Unavailable in Py2
+except ImportError:  # Can be removed once we EOL Py2 support for NiLearn
+    from cgi import escape  # Deprecated in Py3, necessary for Py2
 
 import matplotlib as mpl
 import numpy as np
