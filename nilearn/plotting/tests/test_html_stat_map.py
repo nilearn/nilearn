@@ -1,5 +1,6 @@
 import warnings
 from io import BytesIO
+import sys
 
 import numpy as np
 from numpy.testing import assert_warns, assert_raises
@@ -9,6 +10,7 @@ from nibabel import Nifti1Image
 from nilearn import datasets, image
 from nilearn.plotting import html_stat_map
 from nilearn.image import new_img_like
+from ..js_plotting_utils import colorscale
 
 
 def _check_html(html):
@@ -253,6 +255,7 @@ def test_get_size_sprite():
     width, height = html_stat_map._get_size_sprite(sprite_params)
 
     # Here is a simple case: height is 4 pixels, width 3 x 4 = 12 pixels
+    # there is an additional 120% factor for annotations and margins
     ratio = 1.2 * 4 / 12
 
     # check we received the expected width and height
@@ -260,6 +263,35 @@ def test_get_size_sprite():
     height_expected = np.ceil(ratio * 600)
     assert(width == width_expected)
     assert(height == height_expected)
+
+
+def test_build_sprite_data():
+
+    # simple simulated data for stat_img and background
+    bg_img, data = _simu_img()
+    stat_map_img, data = _simu_img()
+
+    # make a mask
+    mask_img = new_img_like(stat_map_img, data > 0, stat_map_img.affine)
+
+    # Get color bar and data ranges
+    colors = colorscale('cold_hot', data.ravel(), threshold=0,
+                        symmetric_cmap=True, vmax=1)
+
+    # Build a sprite
+    sprite = html_stat_map._build_sprite_data(
+        bg_img, stat_map_img, mask_img, bg_min=0, bg_max=1, colors=colors,
+        cmap='cold_hot', colorbar=True)
+
+    # Check the presence of critical fields
+    if (sys.version_info > (3, 0)):
+        assert(isinstance(sprite['bg_base64'], str))
+        assert(isinstance(sprite['stat_map_base64'], str))
+        assert(isinstance(sprite['cm_base64'], str))
+    else:
+        assert(isinstance(sprite['bg_base64'], basestring))
+        assert(isinstance(sprite['stat_map_base64'], basestring))
+        assert(isinstance(sprite['cm_base64'], basestring))
 
 
 def test_get_cut_slices():
