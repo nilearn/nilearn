@@ -333,6 +333,12 @@ div.related ul li#navbar-ecosystem {
     margin-right: 0.5em;
 }
 
+@media (max-width: 800px) {
+    div.related ul li#navbar-ecosystem {
+	display: none;
+    }
+}
+
 @media (min-width: 800px) {
     div.related ul li#navbar-about {
         display: none;
@@ -382,7 +388,7 @@ div.related-wrapper {
 
 div.body {
     margin: 0 auto 0 auto;
-    padding: 1em 20px 30px 20px;
+    padding: 1.5em 20px 30px 20px;
     max-width: 62em;
 }
 
@@ -415,7 +421,7 @@ div.body p.sphx-glr-script-out {
 }
 
 div.bodywrapper {
-    margin: 1em 246px 0 auto;
+    margin: 0 246px 0 auto;
     /*border-right: 1px solid #EEE;*/
 }
 
@@ -520,7 +526,7 @@ div.bodywrapper h1 {
 
 div.sphinxsidebar {
     margin: 0;
-    padding: 0.5em 15px 15px 0;
+    padding: 0 15px 15px 0;
     min-width: 226px;
     width: 17%;
     float: right;
@@ -677,6 +683,7 @@ div.sphinxsidebar ul ul li {
 
 div.sphinxsidebarwrapper {
     width: 227px;
+    padding-top: .5em;
 }
 
 div.sphinxsidebarwrapper ul li p {

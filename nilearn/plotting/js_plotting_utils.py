@@ -5,12 +5,15 @@ html_connectome.
 
 import os
 import base64
-import cgi
 import webbrowser
 import tempfile
 import warnings
 import subprocess
 import weakref
+try:
+    from html import escape  # Unavailable in Py2
+except ImportError:  # Can be removed once we EOL Py2 support for NiLearn
+    from cgi import escape  # Deprecated in Py3, necessary for Py2
 
 import matplotlib as mpl
 import numpy as np
@@ -116,9 +119,7 @@ class HTMLDocument(object):
             width = self.width
         if height is None:
             height = self.height
-        escaped = cgi.escape(self.html, quote=True)
-        wrapped = ('<iframe srcdoc="{}" width={} height={} '
-                   'frameBorder="0"></iframe>').format(escaped, width, height)
+        wrapped = '<iframe srcdoc="{}" width={} height={}></iframe>'.format(
         return wrapped
 
     def get_standalone(self):
