@@ -159,7 +159,6 @@ def _sanitize_cm(cmap, n_colors=256):
     """
     # Extract a list of colors
     cmap = plt.cm.get_cmap(cmap)
-    cmap.N = n_colors
     cmaplist = [cmap(i) for i in range(cmap.N)]
 
     # Filter out any duplicated colors
@@ -170,7 +169,7 @@ def _sanitize_cm(cmap, n_colors=256):
     cmaplist = np.array(cmaplist)[np.array(mask)]
 
     # Return a matplotlib colormap with the original number of colors
-    return LinearSegmentedColormap.from_list('Custom cmap', cmaplist, cmap.N)
+    return LinearSegmentedColormap.from_list('Custom cmap', cmaplist, n_colors)
 
 
 class StatMapView(HTMLDocument):
