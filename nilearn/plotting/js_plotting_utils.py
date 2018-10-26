@@ -119,7 +119,9 @@ class HTMLDocument(object):
             width = self.width
         if height is None:
             height = self.height
-        wrapped = '<iframe srcdoc="{}" width={} height={}></iframe>'.format(
+        escaped = escape(self.html, quote=True)
+        wrapped = ('<iframe srcdoc="{}" width={} height={} '
+                   'frameBorder="0"></iframe>').format(escaped, width, height)
         return wrapped
 
     def get_standalone(self):
