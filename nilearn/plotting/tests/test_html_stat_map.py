@@ -272,6 +272,22 @@ def test_json_sprite():
     assert(sprite_params['overlay']['opacity'] == 0.5)
 
 
+def test_get_size_sprite():
+
+    # Build some minimal sprite Parameters
+    sprite_params = {'nbSlice': {'X': 4, 'Y': 4, 'Z': 4}}
+    width, height = html_stat_map._get_size_sprite(sprite_params)
+
+    # Here is a simple case: height is 4 pixels, width 3 x 4 = 12 pixels
+    ratio = 1.2 * 4 / 12
+
+    # check we received the expected width and height
+    width_expected = 600
+    height_expected = np.ceil(ratio * 600)
+    assert(width == width_expected)
+    assert(height == height_expected)
+
+
 def test_get_cut_slices():
 
     # Generate simple simulated data with one "spot"
