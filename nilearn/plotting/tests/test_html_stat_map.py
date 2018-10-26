@@ -259,6 +259,19 @@ def test_resample_stat_map():
     assert(mask_img.affine[0, 0] == bg_img.affine[0, 0])
 
 
+def test_json_sprite():
+
+    # Try to generate some sprite parameters
+    sprite_params = html_stat_map._json_sprite(
+        shape=[4, 4, 4], affine=np.eye(4), vmin=0, vmax=1,
+        cut_slices=[1, 1, 1], black_bg=True, opacity=0.5, draw_cross=False,
+        annotate=True, title="A test", colorbar=True)
+
+    # Just check that a structure was generated,
+    # and test a single parameter
+    assert(sprite_params['overlay']['opacity'] == 0.5)
+
+
 def test_get_cut_slices():
 
     # Generate simple simulated data with one "spot"
