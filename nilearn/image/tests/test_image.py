@@ -588,7 +588,8 @@ def test_clean_img():
 
     # Checks that output with full mask and without is equal
     data_img_ = image.clean_img(img)
-    np.testing.assert_equal(data_img_.get_data(), data_img_mask_.get_data())
+    np.testing.assert_almost_equal(data_img_.get_data(),
+                                   data_img_mask_.get_data())
 
 
 def test_largest_cc_img():
