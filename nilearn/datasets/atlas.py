@@ -860,7 +860,7 @@ def fetch_atlas_allen_2011(data_dir=None,
     See http://mialab.mrn.org/data/index.html for more information
     on this dataset.
     """
-    url = 'https://osf.io/hrcku/downloa'
+    url = 'https://osf.io/hrcku/download'
     dataset_name = "allen_rsn_2011"
     data_dir = get_data_dirs(data_dir=data_dir)[0]
     
