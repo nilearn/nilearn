@@ -46,32 +46,6 @@ def _check_affine(affine):
     assert(np.all((np.abs(A) > 0.001).sum(axis=0) == 1))
 
 
-def test_view_stat_map():
-    mni = datasets.load_mni152_template()
-    with warnings.catch_warnings(record=True) as w:
-        # Create a fake functional image by resample the template
-        img = image.resample_img(mni, target_affine=3 * np.eye(3))
-        html = html_stat_map.view_stat_map(img)
-        _check_html(html)
-        html = html_stat_map.view_stat_map(img, threshold='95%')
-        _check_html(html)
-        html = html_stat_map.view_stat_map(img, bg_img=mni)
-        _check_html(html)
-        html = html_stat_map.view_stat_map(img, bg_img=None)
-        _check_html(html)
-        html = html_stat_map.view_stat_map(img, threshold=2., vmax=4.)
-        _check_html(html)
-        html = html_stat_map.view_stat_map(img, symmetric_cmap=False)
-        img_4d = image.new_img_like(img, img.get_data()[:, :, :, np.newaxis])
-        assert len(img_4d.shape) == 4
-        html = html_stat_map.view_stat_map(img_4d, threshold=2., vmax=4.)
-        _check_html(html)
-    warning_categories = set(warning_.category for warning_ in w)
-    expected_categories = set([FutureWarning, UserWarning,
-                               DeprecationWarning])
-    _assert_warnings_in(warning_categories, expected_categories)
-
-
 def test_data2sprite():
 
     # Generate a simulated volume with a square inside
@@ -313,3 +287,29 @@ def test_get_cut_slices():
     cut_slices = html_stat_map._get_cut_slices(img, cut_coords=None,
                                                threshold=None)
     assert((cut_slices == [4, 4, 4]).all())
+
+
+def test_view_stat_map():
+    mni = datasets.load_mni152_template()
+    with warnings.catch_warnings(record=True) as w:
+        # Create a fake functional image by resample the template
+        img = image.resample_img(mni, target_affine=3 * np.eye(3))
+        html = html_stat_map.view_stat_map(img)
+        _check_html(html)
+        html = html_stat_map.view_stat_map(img, threshold='95%')
+        _check_html(html)
+        html = html_stat_map.view_stat_map(img, bg_img=mni)
+        _check_html(html)
+        html = html_stat_map.view_stat_map(img, bg_img=None)
+        _check_html(html)
+        html = html_stat_map.view_stat_map(img, threshold=2., vmax=4.)
+        _check_html(html)
+        html = html_stat_map.view_stat_map(img, symmetric_cmap=False)
+        img_4d = image.new_img_like(img, img.get_data()[:, :, :, np.newaxis])
+        assert len(img_4d.shape) == 4
+        html = html_stat_map.view_stat_map(img_4d, threshold=2., vmax=4.)
+        _check_html(html)
+    warning_categories = set(warning_.category for warning_ in w)
+    expected_categories = set([FutureWarning, UserWarning,
+                               DeprecationWarning])
+    _assert_warnings_in(warning_categories, expected_categories)
