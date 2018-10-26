@@ -8,6 +8,7 @@ from nibabel import Nifti1Image
 
 from nilearn import datasets, image
 from nilearn.plotting import html_stat_map
+from nilearn.image import new_img_like
 
 
 def _check_html(html):
@@ -229,6 +230,33 @@ def test_load_bg_img():
 
     # Check positive isotropic, near-diagonal affine
     _check_affine(bg_img.affine)
+
+
+def test_resample_stat_map():
+
+    # Start with simple simulated data
+    bg_img, data = _simu_img()
+
+    # Now double the voxel size and mess with the affine
+    affine = 2 * np.eye(4)
+    affine[3, 3] = 1
+    affine[0, 1] = 0.1
+    stat_map_img = Nifti1Image(data, affine)
+
+    # Make a mask for the stat image
+    mask_img = new_img_like(stat_map_img, data > 0, stat_map_img.affine)
+
+    # Now run the resampling
+    stat_map_img, mask_img = html_stat_map._resample_stat_map(
+        stat_map_img, bg_img, mask_img, resampling_interpolation='nearest')
+
+    # Check positive isotropic, near-diagonal affine
+    _check_affine(stat_map_img.affine)
+    _check_affine(mask_img.affine)
+
+    # Check voxel size matches bg_img
+    assert(stat_map_img.affine[0, 0] == bg_img.affine[0, 0])
+    assert(mask_img.affine[0, 0] == bg_img.affine[0, 0])
 
 
 def test_get_cut_slices():
