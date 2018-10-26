@@ -908,21 +908,26 @@ def clean_img(imgs, sessions=None, detrend=True, standardize=True,
                 "specified None. imgs header suggest it to be {0}".format(
                     imgs.header.get_zooms()[3]))
 
-    # Store function parameters in dictionary for easy access
-    clean_paramters = {
-        'sessions': sessions, 'detrend': detrend, 'standardize': standardize,
-        'confounds': confounds, 'low_pass': low_pass, 'high_pass': high_pass,
-        't_r': t_r, 'ensure_finite': ensure_finite}
-
+    # Prepare signal for cleaning
     if mask_img is not None:
-        sigs = masking.apply_mask(imgs_, mask_img)
-        sigs_clean = signal.clean(sigs, **clean_paramters)
-        data = masking.unmask(sigs_clean, mask_img).get_data()
+        signals = masking.apply_mask(imgs_, mask_img)
     else:
-        sigs = imgs_.get_data().reshape(-1, imgs_.shape[-1]).T
-        data = signal.clean(sigs, **clean_paramters).T.reshape(imgs_.shape)
+        signals = imgs_.get_data().reshape(-1, imgs_.shape[-1]).T
 
-    return new_img_like(imgs_, data, copy_header=True)
+    # Clean signal
+    data = signal.clean(
+        signals, sessions=sessions, detrend=detrend, standardize=standardize,
+        confounds=confounds, low_pass=low_pass, high_pass=high_pass, t_r=t_r,
+        ensure_finite=ensure_finite)
+
+    # Put results back into Niimg-like object
+    if mask_img is not None:
+        imgs_ = masking.unmask(data, mask_img)
+    else:
+        imgs_ = new_img_like(
+            imgs_, data.T.reshape(imgs_.shape), copy_header=True)
+
+    return imgs_
 
 
 def load_img(img, wildcards=True, dtype=None):
