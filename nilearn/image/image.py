@@ -865,7 +865,8 @@ def clean_img(imgs, sessions=None, detrend=True, standardize=True,
 
     mask_img: Niimg-like object, optional
         See http://nilearn.github.io/manipulating_images/input_output.html
-        If provided, signal is only cleaned from voxels inside the mask.
+        If provided, signal is only cleaned from voxels inside the mask. If
+        mask is provided, it should have same shape and affine as imgs.
         If not provided, all voxels are used.
 
     Returns
