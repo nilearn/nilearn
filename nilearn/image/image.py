@@ -311,7 +311,7 @@ def _crop_img_to(img, slices, copy=True):
     data = img.get_data()
     affine = img.affine
 
-    cropped_data = data[slices]
+    cropped_data = data[tuple(slices)]
     if copy:
         cropped_data = cropped_data.copy()
 
