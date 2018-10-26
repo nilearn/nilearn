@@ -293,6 +293,23 @@ def test_build_sprite_data():
         assert(isinstance(sprite['stat_map_base64'], basestring))
         assert(isinstance(sprite['cm_base64'], basestring))
 
+    return sprite, data
+
+
+def test_html_brainsprite():
+
+    # Re use the data simulated in another test
+    sprite, data = test_build_sprite_data()
+
+    # Add meta-data to the sprite object
+    sprite['params'] = html_stat_map._json_sprite(
+        data.shape, np.eye(4), vmin=0, vmax=1, cut_slices=[1,1,1],
+        black_bg=True, opacity=1, draw_cross=True, annotate=False,
+        title="test", colorbar=True)
+
+    # Create a viewer
+    html = html_stat_map._html_brainsprite(sprite)
+    _check_html(html)
 
 def test_get_cut_slices():
 
