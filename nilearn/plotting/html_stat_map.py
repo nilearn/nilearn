@@ -220,7 +220,7 @@ def _load_bg_img(stat_map_img, bg_img='MNI152', black_bg='auto', dim='auto'):
 
 def _resample_stat_map(stat_map_img, bg_img, mask_img,
                        resampling_interpolation='continuous'):
-    """ Safely load the stat map ande resample to background.
+    """ Safely load the stat map and resample to background.
         Thresholding of the stat map is done in the original space, and the
         mask is resampled to the final resolution/space with nearest
         interpolation.
@@ -346,6 +346,38 @@ def _get_cut_slices(stat_map_img, cut_coords=None, threshold=None):
     return cut_slices
 
 
+def _build_sprite_data(bg_img, stat_map_img, mask_img, bg_min, bg_max,
+                       colors, cmap, colorbar):
+
+    # Initialise brainsprite data structure
+    sprite = dict.fromkeys(['bg_base64', 'stat_map_base64', 'cm_base64',
+                            'params', 'js_jquery', 'js_brainsprite'])
+
+    # Create a base64 sprite for the background
+    bg_sprite = BytesIO()
+    bg_data = _safe_get_data(bg_img, ensure_finite=True)
+    _save_sprite(bg_data, bg_sprite, bg_max, bg_min, None, 'gray', 'png')
+    sprite['bg_base64'] = _bytesIO_to_base64(bg_sprite)
+
+    # Create a base64 sprite for the stat map
+    stat_map_sprite = BytesIO()
+    data = _safe_get_data(stat_map_img, ensure_finite=True)
+    mask = _safe_get_data(mask_img, ensure_finite=True)
+    _save_sprite(data, stat_map_sprite, colors['vmax'], colors['vmin'],
+                 mask, cmap, 'png')
+    sprite['stat_map_base64'] = _bytesIO_to_base64(stat_map_sprite)
+
+    # Create a base64 colormap
+    if colorbar:
+        stat_map_cm = BytesIO()
+        _save_cm(stat_map_cm, colors['cmap'], 'png')
+        sprite['cm_base64'] = _bytesIO_to_base64(stat_map_cm)
+    else:
+        sprite['cm_base64'] = ''
+
+    return sprite
+
+
 def view_stat_map(stat_map_img, bg_img='MNI152', cut_coords=None,
                   colorbar=True, title=None, threshold=1e-6, annotate=True,
                   draw_cross=True, black_bg='auto', cmap=cm.cold_hot,
@@ -448,33 +480,11 @@ def view_stat_map(stat_map_img, bg_img='MNI152', cut_coords=None,
     # Get the slices for the cut
     cut_slices = _get_cut_slices(stat_map_img, cut_coords, threshold)
 
-    # Initialise brainsprite data structure
-    sprite = dict.fromkeys(['bg_base64', 'stat_map_base64', 'cm_base64',
-                            'params', 'js_jquery', 'js_brainsprite'])
+    # Now that we preped the data, encode the data in a sprite object
+    sprite = _build_sprite_data(bg_img, stat_map_img, mask_img, bg_min, bg_max,
+                                colors, cmap, colorbar)
 
-    # Create a base64 sprite for the background
-    bg_sprite = BytesIO()
-    bg_data = _safe_get_data(bg_img, ensure_finite=True)
-    _save_sprite(bg_data, bg_sprite, bg_max, bg_min, None, 'gray', 'png')
-    sprite['bg_base64'] = _bytesIO_to_base64(bg_sprite)
-
-    # Create a base64 sprite for the stat map
-    stat_map_sprite = BytesIO()
-    data = _safe_get_data(stat_map_img, ensure_finite=True)
-    mask = _safe_get_data(mask_img, ensure_finite=True)
-    _save_sprite(data, stat_map_sprite, colors['vmax'], colors['vmin'],
-                 mask, cmap, 'png')
-    sprite['stat_map_base64'] = _bytesIO_to_base64(stat_map_sprite)
-
-    # Create a base64 colormap
-    if colorbar:
-        stat_map_cm = BytesIO()
-        _save_cm(stat_map_cm, colors['cmap'], 'png')
-        sprite['cm_base64'] = _bytesIO_to_base64(stat_map_cm)
-    else:
-        sprite['cm_base64'] = ''
-
-    # Build a json-like structure with all parameters for brainsprite
+    # Add meta-data to the sprite object
     sprite['params'] = _json_sprite(stat_map_img.shape, stat_map_img.affine,
                                     colors['vmin'], colors['vmax'], cut_slices,
                                     black_bg, opacity, draw_cross, annotate,
