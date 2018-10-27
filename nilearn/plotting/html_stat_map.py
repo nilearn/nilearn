@@ -134,22 +134,22 @@ def _save_sprite(data, output_sprite, vmax, vmin, mask=None, cmap='Greys',
     return sprite
 
 
-def _bytesIO_to_base64(bytesio_png):
-    """ Encode the content of a bytesIO virtual png file as base64.
+def _bytesIO_to_base64(handle_io):
+    """ Encode the content of a bytesIO virtual file as base64.
         Also closes the file.
     """
-    bytesio_png.seek(0)
-    data = encodebytes(bytesio_png.read()).decode('utf-8')
-    bytesio_png.close()
+    handle_io.seek(0)
+    data = encodebytes(handle_io.read()).decode('utf-8')
+    handle_io.close()
     return data
 
 
 def _save_cm(output_cmap, cmap, format='png', n_colors=256):
-    """ Save the colormap of an image as a png file.
+    """ Save the colormap of an image as an image file.
     """
 
     # save the colormap
-    data = np.arange(0, n_colors) / (n_colors - 1)
+    data = np.arange(0., n_colors) / (n_colors - 1.)
     data = data.reshape([1, n_colors])
     imsave(output_cmap, data, cmap=cmap, format=format)
 
