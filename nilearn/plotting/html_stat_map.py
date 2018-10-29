@@ -452,9 +452,11 @@ def view_stat_map(stat_map_img, bg_img='MNI152', cut_coords=None,
 
     Returns
     -------
-    view : the viewer object.
-        It can be saved as an html page or rendered (transparently) by the
-        Jupyter notebook.
+    html : the html viewer object.
+        It can be saved as an html page `html.save_as_html('test.html')`,
+        or opened in a browser `html.open_in_browser()`.
+        If the output is not requested and the current environment is a Jupyter
+        notebook, the viewer will be inserted in the notebook.
     """
 
     # Start by fixing the cmap for duplicated colors
