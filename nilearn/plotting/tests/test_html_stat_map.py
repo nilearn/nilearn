@@ -45,7 +45,8 @@ def _check_affine(affine):
 
     # Check near-diagonal affine
     A, b = image.resampling.to_matrix_vector(affine)
-    assert(np.all((np.abs(A) > 0.001).sum(axis=0) == 1))
+    assert np.all((np.abs(A) > 0.001).sum(axis=0) == 1), (
+        "the affine transform was not near-diagonal")
 
 
 def test_data2sprite():
@@ -104,21 +105,21 @@ def test_threshold_data():
     # Check that an 'auto' threshold leaves at least one element
     data_t, thresh = html_stat_map._threshold_data(data, threshold='auto')
     gtruth = np.array([False, True, True, True, True, True, False])
-    assert((data_t.mask == gtruth).all())
+    assert (data_t.mask == gtruth).all()
 
     # Check that threshold=None keeps everything
     data_t, thresh = html_stat_map._threshold_data(data, threshold=None)
-    assert(~np.ma.is_masked(data_t))
+    assert ~np.ma.is_masked(data_t)
 
     # Check positive threshold works
     data_t, thresh = html_stat_map._threshold_data(data, threshold=1)
     gtruth = np.array([False, False, True, True, True, False, False])
-    assert((data_t.mask == gtruth).all())
+    assert (data_t.mask == gtruth).all()
 
     # Check 0 threshold works
     data_t, thresh = html_stat_map._threshold_data(data, threshold=0)
     gtruth = np.array([False, False, False, True, False, False, False])
-    assert((data_t.mask == gtruth).all())
+    assert (data_t.mask == gtruth).all()
 
 
 def test_save_sprite():
@@ -139,7 +140,7 @@ def test_save_sprite():
     sprite_base64 = html_stat_map._bytesIO_to_base64(sprite_io)
 
     # Check the sprite is correct
-    assert(sprite_base64 == '////AP////8=\n')
+    assert sprite_base64 == '////AP////8=\n'
 
 
 def test_save_cmap():
@@ -154,7 +155,7 @@ def test_save_cmap():
     cmap_base64 = html_stat_map._bytesIO_to_base64(cmap_io)
 
     # Check the colormap is correct
-    assert(cmap_base64 == '//////////8=\n')
+    assert cmap_base64 == '//////////8=\n'
 
 
 def test_sanitize_cm():
@@ -163,12 +164,12 @@ def test_sanitize_cm():
     cmap = html_stat_map._sanitize_cm('cold_hot', n_colors=n_colors)
 
     # Check that it has the right number of colors
-    assert(cmap.N == n_colors)
+    assert cmap.N == n_colors
 
     # Check that there are no duplicated colors
     cmaplist = [cmap(i) for i in range(cmap.N)]
     mask = [cmaplist.count(cmap(i)) == 1 for i in range(cmap.N)]
-    assert(np.min(mask))
+    assert np.min(mask)
 
 
 def test_mask_stat_map():
@@ -179,12 +180,12 @@ def test_mask_stat_map():
     # Try not to threshold anything
     mask_img, img, data_t, thre = html_stat_map._mask_stat_map(img,
                                                                threshold=None)
-    assert(np.max(mask_img.get_data()) == 0)
+    assert np.max(mask_img.get_data()) == 0
 
     # Now threshold at zero
     mask_img, img, data_t, thre = html_stat_map._mask_stat_map(img,
                                                                threshold=0)
-    assert(np.min((data == 0) == mask_img.get_data()))
+    assert np.min((data == 0) == mask_img.get_data())
 
 
 def test_load_bg_img():
@@ -231,8 +232,10 @@ def test_resample_stat_map():
     _check_affine(mask_img.affine)
 
     # Check voxel size matches bg_img
-    assert(stat_map_img.affine[0, 0] == bg_img.affine[0, 0])
-    assert(mask_img.affine[0, 0] == bg_img.affine[0, 0])
+    assert stat_map_img.affine[0, 0] == bg_img.affine[0, 0], (
+        "stat_map_img was not resampled at the resolution of background")
+    assert mask_img.affine[0, 0] == bg_img.affine[0, 0], (
+        "mask_img was not resampled at the resolution of background")
 
 
 def test_json_sprite():
@@ -245,7 +248,7 @@ def test_json_sprite():
 
     # Just check that a structure was generated,
     # and test a single parameter
-    assert(sprite_params['overlay']['opacity'] == 0.5)
+    assert sprite_params['overlay']['opacity'] == 0.5
 
 
 def test_get_size_sprite():
@@ -259,10 +262,10 @@ def test_get_size_sprite():
     ratio = 1.2 * 4 / 12
 
     # check we received the expected width and height
-    width_expected = 600
-    height_expected = np.ceil(ratio * 600)
-    assert(width == width_expected)
-    assert(height == height_expected)
+    width_exp = 600
+    height_exp = np.ceil(ratio * 600)
+    assert width == width_exp, "html viewer does not have expected width"
+    assert height == height_exp, "html viewer does not have expected height"
 
 
 def test_build_sprite_data():
@@ -285,13 +288,13 @@ def test_build_sprite_data():
 
     # Check the presence of critical fields
     if (sys.version_info > (3, 0)):
-        assert(isinstance(sprite['bg_base64'], str))
-        assert(isinstance(sprite['stat_map_base64'], str))
-        assert(isinstance(sprite['cm_base64'], str))
+        assert isinstance(sprite['bg_base64'], str)
+        assert isinstance(sprite['stat_map_base64'], str)
+        assert isinstance(sprite['cm_base64'], str)
     else:
-        assert(isinstance(sprite['bg_base64'], basestring))
-        assert(isinstance(sprite['stat_map_base64'], basestring))
-        assert(isinstance(sprite['cm_base64'], basestring))
+        assert isinstance(sprite['bg_base64'], basestring)
+        assert isinstance(sprite['stat_map_base64'], basestring)
+        assert isinstance(sprite['cm_base64'], basestring)
 
     return sprite, data
 
@@ -320,7 +323,7 @@ def test_get_cut_slices():
     # Use automatic selection of coordinates
     cut_slices = html_stat_map._get_cut_slices(img, cut_coords=None,
                                                threshold=None)
-    assert((cut_slices == [4, 4, 4]).all())
+    assert (cut_slices == [4, 4, 4]).all()
 
     # Check that using a single number for cut_coords raises an error
     assert_raises(ValueError, html_stat_map._get_cut_slices,
@@ -329,14 +332,14 @@ def test_get_cut_slices():
     # Check that it is possible to manually specify coordinates
     cut_slices = html_stat_map._get_cut_slices(img, cut_coords=[2, 2, 2],
                                                threshold=None)
-    assert((cut_slices == [2, 2, 2]).all())
+    assert (cut_slices == [2, 2, 2]).all()
 
     # Check that the affine does not change where the cut is done
     affine = 2 * np.eye(4)
     img = Nifti1Image(data, affine)
     cut_slices = html_stat_map._get_cut_slices(img, cut_coords=None,
                                                threshold=None)
-    assert((cut_slices == [4, 4, 4]).all())
+    assert (cut_slices == [4, 4, 4]).all()
 
 
 def test_view_stat_map():
