@@ -97,6 +97,11 @@ def test_get_vmin_vmax():
     assert_raises(ValueError, html_stat_map._get_vmin_vmax,
                   data, vmin=3, vmax=0.7)
 
+    # Check that the correct defaults are returned with NaN in the data
+    data[0, 0, 0] = np.nan
+    vmin, vmax = html_stat_map._get_vmin_vmax(data)
+    assert (vmin == 0) and (vmax == 1)
+
 
 def test_threshold_data():
 
