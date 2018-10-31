@@ -4,6 +4,7 @@ import sys
 
 import numpy as np
 from numpy.testing import assert_warns, assert_raises
+from matplotlib.colors import LinearSegmentedColormap
 
 from nibabel import Nifti1Image
 
@@ -13,24 +14,18 @@ from nilearn.image import new_img_like
 from ..js_plotting_utils import colorscale
 
 
-def _check_html(html):
-    """ Check the presence of some expected code in the html
+def _check_html(html_view):
+    """ Check the presence of some expected code in the html viewer
     """
-    assert isinstance(html, html_stat_map.StatMapView)
-    assert "var brain =" in str(html)
-    assert "overlayImg" in str(html)
+    assert isinstance(html_view, html_stat_map.StatMapView)
+    assert "var brain =" in str(html_view)
+    assert "overlayImg" in str(html_view)
 
 
-def _assert_warnings_in(set1, set2):
-    """ Check that warnings are inside a list
+def _simulate_img(affine=np.eye(4)):
+    """ Simulate data with one "spot"
+        Returns: img, data
     """
-    assert set1.issubset(set2), ("the following warnings were not "
-                                 "expected: {}").format(set1.difference(set2))
-
-
-def _simu_img(affine=np.eye(4)):
-
-    # Generate simple simulated data with one "spot"
     data = np.zeros([8, 8, 8])
     data[4, 4, 4] = 1
     img = Nifti1Image(data, affine)
@@ -38,26 +33,23 @@ def _simu_img(affine=np.eye(4)):
 
 
 def _check_affine(affine):
-    # Check positive and isotropic diagonal
+    """ Check positive, isotropic, near-diagonal affine.
+    """
     assert(affine[0, 0] == affine[1, 1])
     assert(affine[2, 2] == affine[1, 1])
     assert(affine[0, 0] > 0)
 
-    # Check near-diagonal affine
     A, b = image.resampling.to_matrix_vector(affine)
     assert np.all((np.abs(A) > 0.001).sum(axis=0) == 1), (
         "the affine transform was not near-diagonal")
 
 
-def test_data2sprite():
+def test_data_to_sprite():
 
-    # Generate a simulated volume with a square inside
+    # Simulate data and turn into sprite
     data = np.zeros([8, 8, 8])
     data[2:6, 2:6, 2:6] = 1
-
-    # turn that into a sprite and check it has the right shape
-    sprite = html_stat_map._data2sprite(data)
-    assert sprite.shape == (24, 24)
+    sprite = html_stat_map._data_to_sprite(data)
 
     # Generate ground truth for the sprite
     Z = np.zeros([8, 8])
@@ -69,13 +61,13 @@ def test_data2sprite():
                              np.concatenate((Z, Z, Z), axis=1)),
                             axis=0)
 
-    # Check that the sprite matches ground truth
-    assert (sprite == gtruth).all()
+    assert sprite.shape == gtruth.shape, "shape of sprite not as expected"
+    assert (sprite == gtruth).all(), "simulated sprite not as expected"
 
 
 def test_get_vmin_vmax():
 
-    # Generate a simulated volume with a square inside
+    # simulate data with a square inside
     data = np.zeros([8, 8, 8])
     data[2:6, 2:6, 2:6] = 1
 
@@ -97,7 +89,7 @@ def test_get_vmin_vmax():
     assert_raises(ValueError, html_stat_map._get_vmin_vmax,
                   data, vmin=3, vmax=0.7)
 
-    # Check that the correct defaults are returned with NaN in the data
+    # correct defaults should be generated even with NaN in the data
     data[0, 0, 0] = np.nan
     vmin, vmax = html_stat_map._get_vmin_vmax(data)
     assert (vmin == 0) and (vmax == 1)
@@ -163,24 +155,38 @@ def test_save_cmap():
     assert cmap_base64 == '//////////8=\n'
 
 
-def test_sanitize_cm():
+def test_deduplicate_cmap():
     # Build a cold_hot colormap
     n_colors = 4
-    cmap = html_stat_map._sanitize_cm('cold_hot', n_colors=n_colors)
+    cmap, value = html_stat_map._deduplicate_cmap(
+        'cold_hot', n_colors=n_colors, annotate=True)
 
-    # Check that it has the right number of colors
     assert cmap.N == n_colors
+    assert value
 
     # Check that there are no duplicated colors
     cmaplist = [cmap(i) for i in range(cmap.N)]
     mask = [cmaplist.count(cmap(i)) == 1 for i in range(cmap.N)]
     assert np.min(mask)
 
+    # Build a custom colormap with only repeated colors
+    n_colors = 2
+    cmap_custom = LinearSegmentedColormap.from_list(
+        'Custom cmap', [[0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1]], 4)
+    cmap, value = html_stat_map._deduplicate_cmap(
+        cmap_custom, n_colors=n_colors, annotate=True)
+
+    assert cmap.N == cmap_custom.N
+
+    # Check that annotation were automatically turned off because it is not
+    # possible to deduplicate this map
+    assert value is False
+
 
 def test_mask_stat_map():
 
     # Generate simple simulated data with one "spot"
-    img, data = _simu_img()
+    img, data = _simulate_img()
 
     # Try not to threshold anything
     mask_img, img, data_t, thre = html_stat_map._mask_stat_map(img,
@@ -199,7 +205,7 @@ def test_load_bg_img():
     affine = np.eye(4)
     affine[0, 0] = -1
     affine[0, 1] = 0.1
-    img, data = _simu_img(affine)
+    img, data = _simulate_img(affine)
 
     # use empty bg_img
     bg_img, bg_min, bg_max, black_bg = html_stat_map._load_bg_img(img,
@@ -217,7 +223,7 @@ def test_load_bg_img():
 def test_resample_stat_map():
 
     # Start with simple simulated data
-    bg_img, data = _simu_img()
+    bg_img, data = _simulate_img()
 
     # Now double the voxel size and mess with the affine
     affine = 2 * np.eye(4)
@@ -243,27 +249,27 @@ def test_resample_stat_map():
         "mask_img was not resampled at the resolution of background")
 
 
-def test_json_sprite():
+def test_json_view_params():
 
     # Try to generate some sprite parameters
-    sprite_params = html_stat_map._json_sprite(
+    params = html_stat_map._json_view_params(
         shape=[4, 4, 4], affine=np.eye(4), vmin=0, vmax=1,
         cut_slices=[1, 1, 1], black_bg=True, opacity=0.5, draw_cross=False,
-        annotate=True, title="A test", colorbar=True)
+        annotate=True, title="A test", colorbar=True, value=True)
 
     # Just check that a structure was generated,
     # and test a single parameter
-    assert sprite_params['overlay']['opacity'] == 0.5
+    assert params['overlay']['opacity'] == 0.5
 
 
-def test_get_size_sprite():
+def test_json_view_size():
 
     # Build some minimal sprite Parameters
     sprite_params = {'nbSlice': {'X': 4, 'Y': 4, 'Z': 4}}
-    width, height = html_stat_map._get_size_sprite(sprite_params)
+    width, height = html_stat_map._json_view_size(sprite_params)
 
-    # Here is a simple case: height is 4 pixels, width 3 x 4 = 12 pixels
-    # there is an additional 120% factor for annotations and margins
+    # This is a simple case: height is 4 pixels, width 3 x 4 = 12 pixels
+    # with an additional 120% height factor for annotations and margins
     ratio = 1.2 * 4 / 12
 
     # check we received the expected width and height
@@ -273,11 +279,11 @@ def test_get_size_sprite():
     assert height == height_exp, "html viewer does not have expected height"
 
 
-def test_build_sprite_data():
+def test_json_view_data():
 
     # simple simulated data for stat_img and background
-    bg_img, data = _simu_img()
-    stat_map_img, data = _simu_img()
+    bg_img, data = _simulate_img()
+    stat_map_img, data = _simulate_img()
 
     # make a mask
     mask_img = new_img_like(stat_map_img, data > 0, stat_map_img.affine)
@@ -287,43 +293,41 @@ def test_build_sprite_data():
                         symmetric_cmap=True, vmax=1)
 
     # Build a sprite
-    sprite = html_stat_map._build_sprite_data(
+    json_view = html_stat_map._json_view_data(
         bg_img, stat_map_img, mask_img, bg_min=0, bg_max=1, colors=colors,
         cmap='cold_hot', colorbar=True)
 
     # Check the presence of critical fields
     if (sys.version_info > (3, 0)):
-        assert isinstance(sprite['bg_base64'], str)
-        assert isinstance(sprite['stat_map_base64'], str)
-        assert isinstance(sprite['cm_base64'], str)
+        assert isinstance(json_view['bg_base64'], str)
+        assert isinstance(json_view['stat_map_base64'], str)
+        assert isinstance(json_view['cm_base64'], str)
     else:
-        assert isinstance(sprite['bg_base64'], basestring)
-        assert isinstance(sprite['stat_map_base64'], basestring)
-        assert isinstance(sprite['cm_base64'], basestring)
+        assert isinstance(json_view['bg_base64'], basestring)
+        assert isinstance(json_view['stat_map_base64'], basestring)
+        assert isinstance(json_view['cm_base64'], basestring)
 
-    return sprite, data
+    return json_view, data
 
 
-def test_html_brainsprite():
+def test_json_view_to_html():
 
     # Re use the data simulated in another test
-    sprite, data = test_build_sprite_data()
-
-    # Add meta-data to the sprite object
-    sprite['params'] = html_stat_map._json_sprite(
+    json_view, data = test_json_view_data()
+    json_view['params'] = html_stat_map._json_view_params(
         data.shape, np.eye(4), vmin=0, vmax=1, cut_slices=[1, 1, 1],
         black_bg=True, opacity=1, draw_cross=True, annotate=False,
         title="test", colorbar=True)
 
     # Create a viewer
-    html = html_stat_map._html_brainsprite(sprite)
-    _check_html(html)
+    html_view = html_stat_map._json_view_to_html(json_view)
+    _check_html(html_view)
 
 
 def test_get_cut_slices():
 
     # Generate simple simulated data with one "spot"
-    img, data = _simu_img()
+    img, data = _simulate_img()
 
     # Use automatic selection of coordinates
     cut_slices = html_stat_map._get_cut_slices(img, cut_coords=None,
@@ -352,22 +356,26 @@ def test_view_stat_map():
     with warnings.catch_warnings(record=True) as w:
         # Create a fake functional image by resample the template
         img = image.resample_img(mni, target_affine=3 * np.eye(3))
-        html = html_stat_map.view_stat_map(img)
-        _check_html(html)
-        html = html_stat_map.view_stat_map(img, threshold='95%')
-        _check_html(html)
-        html = html_stat_map.view_stat_map(img, bg_img=mni)
-        _check_html(html)
-        html = html_stat_map.view_stat_map(img, bg_img=None)
-        _check_html(html)
-        html = html_stat_map.view_stat_map(img, threshold=2., vmax=4.)
-        _check_html(html)
-        html = html_stat_map.view_stat_map(img, symmetric_cmap=False)
+        html_view = html_stat_map.view_stat_map(img)
+        _check_html(html_view)
+        html_view = html_stat_map.view_stat_map(img, threshold='95%')
+        _check_html(html_view)
+        html_view = html_stat_map.view_stat_map(img, bg_img=mni)
+        _check_html(html_view)
+        html_view = html_stat_map.view_stat_map(img, bg_img=None)
+        _check_html(html_view)
+        html_view = html_stat_map.view_stat_map(img, threshold=2., vmax=4.)
+        _check_html(html_view)
+        html_view = html_stat_map.view_stat_map(img, symmetric_cmap=False)
         img_4d = image.new_img_like(img, img.get_data()[:, :, :, np.newaxis])
         assert len(img_4d.shape) == 4
-        html = html_stat_map.view_stat_map(img_4d, threshold=2., vmax=4.)
-        _check_html(html)
-    warning_categories = set(warning_.category for warning_ in w)
-    expected_categories = set([FutureWarning, UserWarning,
-                               DeprecationWarning])
-    _assert_warnings_in(warning_categories, expected_categories)
+        html_view = html_stat_map.view_stat_map(img_4d, threshold=2., vmax=4.)
+        _check_html(html_view)
+
+    # Check that all warnings were expected
+    warnings_set = set(warning_.category for warning_ in w)
+    expected_set = set([FutureWarning, UserWarning,
+                       DeprecationWarning])
+    assert warnings_set.issubset(expected_set), (
+        "the following warnings were not expected: {}").format(
+        warnings_set.difference(expected_set))

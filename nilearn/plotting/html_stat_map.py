@@ -10,7 +10,6 @@ try:
 except ImportError:
     # Retro compatibility with python2
     from base64 import encodestring as encodebytes
-import numbers
 from string import Template
 
 import numpy as np
@@ -32,14 +31,13 @@ from .._utils.niimg import _safe_get_data
 from ..datasets import load_mni152_template
 
 
-def _data2sprite(data):
+def _data_to_sprite(data):
     """ Convert a 3D array into a sprite of sagittal slices.
-        Each sagital slice is nz (height) x ny (width) pixels.
-        The sprite is (M x nz) x (N x ny)
-        where M and N are computed to be roughly equal, and such that
-        M x N is larger than the number of sagital slices (nx)
-        All slices are pasted together, starting top left, and moving left to
-        right, one row at a time. The last row is padded with empty slices.
+        Returns: sprite
+        If each sagital slice is nz (height) x ny (width) pixels, the sprite
+        size is (M x nz) x (N x ny), where M and N are computed to be roughly
+        equal. All slices are pasted together row by row, from top left to
+        bottom right. The last row is completed with empty slices.
     """
 
     nx, ny, nz = data.shape
@@ -59,6 +57,7 @@ def _data2sprite(data):
 
 def _get_vmin_vmax(data, vmin=None, vmax=None):
     """ Detect vmin and vmax in a data array.
+        Returns: vmin, vmax
     """
 
     # Get vmin vmax
@@ -90,6 +89,7 @@ def _get_vmin_vmax(data, vmin=None, vmax=None):
 
 def _threshold_data(data, threshold=None):
     """ Threshold a data array.
+        Returns: data (masked array), threshold (updated)
     """
     # If threshold is None, do nothing
     if threshold is None:
@@ -117,14 +117,15 @@ def _threshold_data(data, threshold=None):
 def _save_sprite(data, output_sprite, vmax, vmin, mask=None, cmap='Greys',
                  format='png'):
     """ Generate a sprite from a 3D Niimg-like object.
+        Returns: sprite
     """
 
     # Create sprite
-    sprite = _data2sprite(data)
+    sprite = _data_to_sprite(data)
 
     # Mask the sprite
     if mask is not None:
-        mask = _data2sprite(mask)
+        mask = _data_to_sprite(mask)
         sprite = np.ma.array(sprite, mask=mask)
 
     # Save the sprite
@@ -137,6 +138,7 @@ def _save_sprite(data, output_sprite, vmax, vmin, mask=None, cmap='Greys',
 def _bytesIO_to_base64(handle_io):
     """ Encode the content of a bytesIO virtual file as base64.
         Also closes the file.
+        Returns: data
     """
     handle_io.seek(0)
     data = encodebytes(handle_io.read()).decode('utf-8')
@@ -154,8 +156,9 @@ def _save_cm(output_cmap, cmap, format='png', n_colors=256):
     imsave(output_cmap, data, cmap=cmap, format=format)
 
 
-def _sanitize_cm(cmap, n_colors=256):
+def _deduplicate_cmap(cmap, annotate, n_colors=256):
     """Make sure that the colormap has no duplicated colors.
+       Returns: cmap_no_duplicate, value
     """
     # Extract a list of colors
     cmap = plt.cm.get_cmap(cmap)
@@ -163,13 +166,16 @@ def _sanitize_cm(cmap, n_colors=256):
 
     # Filter out any duplicated colors
     mask = [cmaplist.count(cmap(i)) == 1 for i in range(cmap.N)]
-    if mask.count(True) < 2:
-        raise ValueError('The selected colormap has too many '
-                         'duplicated colors')
-    cmaplist = np.array(cmaplist)[np.array(mask)]
-
-    # Return a matplotlib colormap with the original number of colors
-    return LinearSegmentedColormap.from_list('Custom cmap', cmaplist, n_colors)
+    if mask.count(True) > 1:
+        cmaplist = np.array(cmaplist)[np.array(mask)]
+        value = annotate
+        cmap_no_duplicate = LinearSegmentedColormap.from_list(
+            'Custom cmap', cmaplist, n_colors)
+    else:
+        # A single color survives, do not change cmap and do not show value
+        cmap_no_duplicate = cmap
+        value = False
+    return cmap_no_duplicate, value
 
 
 class StatMapView(HTMLDocument):
@@ -178,11 +184,10 @@ class StatMapView(HTMLDocument):
 
 def _mask_stat_map(stat_map_img, threshold=None):
     """ Load a stat map and apply a threshold.
+        Returns: mask_img, stat_map_img, data, threshold
     """
     # Load stat map
     stat_map_img = check_niimg_3d(stat_map_img, dtype='auto')
-
-    # Get data
     data = _safe_get_data(stat_map_img, ensure_finite=True)
 
     # threshold the stat_map
@@ -196,10 +201,10 @@ def _mask_stat_map(stat_map_img, threshold=None):
 
 
 def _load_bg_img(stat_map_img, bg_img='MNI152', black_bg='auto', dim='auto'):
-    """ Resample bg_img in an isotropic resolution,
+    """ Load and resample bg_img in an isotropic resolution,
         with a positive diagonal affine matrix.
+        Returns: bg_img, bg_min, bg_max, black_bg
     """
-    # If no background is used, switch to the white background color style
     if (bg_img is None or bg_img is False) and black_bg == 'auto':
         black_bg = False
 
@@ -219,12 +224,9 @@ def _load_bg_img(stat_map_img, bg_img='MNI152', black_bg='auto', dim='auto'):
 
 def _resample_stat_map(stat_map_img, bg_img, mask_img,
                        resampling_interpolation='continuous'):
-    """ Safely load the stat map and resample to background.
-        Thresholding of the stat map is done in the original space, and the
-        mask is resampled to the final resolution/space with nearest
-        interpolation.
+    """ Resample the stat map and mask to the background.
+        Returns: stat_map_img, mask_img
     """
-    # resample stat map
     stat_map_img = resample_to_img(stat_map_img, bg_img,
                                    interpolation=resampling_interpolation)
     mask_img = resample_to_img(mask_img, bg_img, fill_value=1,
@@ -233,10 +235,11 @@ def _resample_stat_map(stat_map_img, bg_img, mask_img,
     return stat_map_img, mask_img
 
 
-def _json_sprite(shape, affine, vmin, vmax, cut_slices, black_bg=False,
-                 opacity=1, draw_cross=True, annotate=True, title=None,
-                 colorbar=True):
-    """ Create a json-like structure, with all the brainsprite parameters.
+def _json_view_params(shape, affine, vmin, vmax, cut_slices, black_bg=False,
+                      opacity=1, draw_cross=True, annotate=True, title=None,
+                      colorbar=True, value=True):
+    """ Create a dictionary with all the brainsprite parameters.
+        Returns: params
     """
 
     # Set color parameters
@@ -253,66 +256,69 @@ def _json_sprite(shape, affine, vmin, vmax, cut_slices, black_bg=False,
     if type(vmax).__module__ == 'numpy':
         vmax = vmax.tolist()  # json does not deal with numpy array
 
-    sprite_params = {'canvas': '3Dviewer',
-                     'sprite': 'spriteImg',
-                     'nbSlice': {'X': shape[0],
-                                 'Y': shape[1],
-                                 'Z': shape[2]},
-                     'overlay': {'sprite': 'overlayImg',
-                                 'nbSlice': {'X': shape[0],
-                                             'Y': shape[1],
-                                             'Z': shape[2]},
-                                 'opacity': opacity},
-                     'colorBackground': cbg,
-                     'colorFont': cfont,
-                     'crosshair': draw_cross,
-                     'affine': affine.tolist(),
-                     'flagCoordinates': annotate,
-                     'title': title,
-                     'flagValue': annotate,
-                     'numSlice': {'X': cut_slices[0] - 1,
-                                  'Y': cut_slices[1] - 1,
-                                  'Z': cut_slices[2] - 1}}
+    params = {'canvas': '3Dviewer',
+              'sprite': 'spriteImg',
+              'nbSlice': {'X': shape[0],
+                          'Y': shape[1],
+                          'Z': shape[2]},
+              'overlay': {'sprite': 'overlayImg',
+                          'nbSlice': {'X': shape[0],
+                                      'Y': shape[1],
+                                      'Z': shape[2]},
+                          'opacity': opacity},
+              'colorBackground': cbg,
+              'colorFont': cfont,
+              'crosshair': draw_cross,
+              'affine': affine.tolist(),
+              'flagCoordinates': annotate,
+              'title': title,
+              'flagValue': value,
+              'numSlice': {'X': cut_slices[0] - 1,
+                           'Y': cut_slices[1] - 1,
+                           'Z': cut_slices[2] - 1}}
 
     if colorbar:
-        sprite_params['colorMap'] = {'img': 'colorMap',
-                                     'min': vmin,
-                                     'max': vmax}
-    return sprite_params
+        params['colorMap'] = {'img': 'colorMap',
+                              'min': vmin,
+                              'max': vmax}
+    return params
 
 
-def _get_size_sprite(sprite_params):
-    """ Define the width and height of the viewer.
+def _json_view_size(params):
+    """ Define the size of the viewer.
+        Returns: width_view, height_view
     """
-    # get the dimensions of voxel space
-    nx = sprite_params['nbSlice']['X']
-    ny = sprite_params['nbSlice']['Y']
-    nz = sprite_params['nbSlice']['Z']
-    # width sagittal = ny, coronal = nx, axial = nx
-    w_sprite = ny + 2 * nx
-    # height of the slices is the max height of one of the slices
-    # height sagittal = nz, coronal = nz, axial = ny
-    h_sprite = np.max([ny, nz])
-    # there is a 10% extra height for the fonts
-    # adding another 10% breathing room
-    ratio = 1.20 * h_sprite / w_sprite
-    width = 600
-    height = np.ceil(ratio * width)
-    return width, height
+    # slices_width = sagittal_width (y) + coronal_width (x) + axial_width (x)
+    slices_width = params['nbSlice']['Y'] + 2 * params['nbSlice']['X']
+
+    # slices_height = max of sagittal_height (z), coronal_height (z), and
+    # axial_height (y).
+    # Also add 20% extra height for annotation and margin
+    slices_height = np.max([params['nbSlice']['Y'], params['nbSlice']['Z']])
+    slices_height = 1.20 * slices_height
+
+    # Get the final size of the viewer
+    width_view = 600
+    ratio = slices_height / slices_width
+    height_view = np.ceil(ratio * width_view)
+
+    return width_view, height_view
 
 
-def _build_sprite_data(bg_img, stat_map_img, mask_img, bg_min, bg_max,
-                       colors, cmap, colorbar):
-
+def _json_view_data(bg_img, stat_map_img, mask_img, bg_min, bg_max, colors,
+                    cmap, colorbar):
+    """ Create a json-like viewer object, and populate with base64 data.
+        Returns: json_view
+    """
     # Initialise brainsprite data structure
-    sprite = dict.fromkeys(['bg_base64', 'stat_map_base64', 'cm_base64',
-                            'params', 'js_jquery', 'js_brainsprite'])
+    json_view = dict.fromkeys(['bg_base64', 'stat_map_base64', 'cm_base64',
+                              'params', 'js_jquery', 'js_brainsprite'])
 
     # Create a base64 sprite for the background
     bg_sprite = BytesIO()
     bg_data = _safe_get_data(bg_img, ensure_finite=True)
     _save_sprite(bg_data, bg_sprite, bg_max, bg_min, None, 'gray', 'png')
-    sprite['bg_base64'] = _bytesIO_to_base64(bg_sprite)
+    json_view['bg_base64'] = _bytesIO_to_base64(bg_sprite)
 
     # Create a base64 sprite for the stat map
     stat_map_sprite = BytesIO()
@@ -320,41 +326,40 @@ def _build_sprite_data(bg_img, stat_map_img, mask_img, bg_min, bg_max,
     mask = _safe_get_data(mask_img, ensure_finite=True)
     _save_sprite(data, stat_map_sprite, colors['vmax'], colors['vmin'],
                  mask, cmap, 'png')
-    sprite['stat_map_base64'] = _bytesIO_to_base64(stat_map_sprite)
+    json_view['stat_map_base64'] = _bytesIO_to_base64(stat_map_sprite)
 
     # Create a base64 colormap
     if colorbar:
         stat_map_cm = BytesIO()
         _save_cm(stat_map_cm, colors['cmap'], 'png')
-        sprite['cm_base64'] = _bytesIO_to_base64(stat_map_cm)
+        json_view['cm_base64'] = _bytesIO_to_base64(stat_map_cm)
     else:
-        sprite['cm_base64'] = ''
+        json_view['cm_base64'] = ''
 
-    return sprite
+    return json_view
 
 
-def _html_brainsprite(sprite):
+def _json_view_to_html(json_view):
     """ Fill a brainsprite html template with relevant parameters and data.
+        Returns: html_view
     """
 
     # Fix the size of the viewer
-    width, height = _get_size_sprite(sprite['params'])
+    width, height = _json_view_size(json_view['params'])
 
-    # convert params into json
-    sprite['params'] = json.dumps(sprite['params'])
-
-    # Load javascript libraries
+    # Populate all missing keys with html-ready data
+    json_view['params'] = json.dumps(json_view['params'])
     js_dir = os.path.join(os.path.dirname(__file__), 'data', 'js')
     with open(os.path.join(js_dir, 'jquery.min.js')) as f:
-        sprite['js_jquery'] = f.read()
+        json_view['js_jquery'] = f.read()
     with open(os.path.join(js_dir, 'brainsprite.min.js')) as f:
-        sprite['js_brainsprite'] = f.read()
+        json_view['js_brainsprite'] = f.read()
 
     # Load the html template, and plug in all the data
-    html = get_html_template('stat_map_template.html')
-    html = Template(html).safe_substitute(sprite)
+    html_view = get_html_template('stat_map_template.html')
+    html_view = Template(html_view).safe_substitute(json_view)
 
-    return StatMapView(html, width=width, height=height)
+    return StatMapView(html_view, width=width, height=height)
 
 
 def _get_cut_slices(stat_map_img, cut_coords=None, threshold=None):
@@ -363,17 +368,20 @@ def _get_cut_slices(stat_map_img, cut_coords=None, threshold=None):
         Based on find_xyz_cut_coords
     """
     # Select coordinates for the cut
-    if isinstance(cut_coords, numbers.Number):
+    if cut_coords is None:
+        cut_coords = find_xyz_cut_coords(
+            stat_map_img, activation_threshold=threshold)
+
+    # Convert cut coordinates into cut slices
+    try:
+        cut_slices = apply_affine(np.linalg.inv(stat_map_img.affine),
+                                  cut_coords)
+    except IndexError:
         raise ValueError(
             "The input given for display_mode='ortho' needs to be "
             "a list of 3d world coordinates in (x, y, z). "
             "You provided single cut, cut_coords={0}".format(cut_coords))
-    if cut_coords is None:
-        cut_coords = find_xyz_cut_coords(stat_map_img,
-                                         activation_threshold=threshold)
 
-    # Convert cut coordinates into cut slices
-    cut_slices = apply_affine(np.linalg.inv(stat_map_img.affine), cut_coords)
     return cut_slices
 
 
@@ -383,7 +391,7 @@ def view_stat_map(stat_map_img, bg_img='MNI152', cut_coords=None,
                   symmetric_cmap=True, dim='auto', vmax=None,
                   resampling_interpolation='continuous', opacity=1, **kwargs):
     """
-    Intarctive viewer of a statistical map, with optional background
+    Interactive html viewer of a statistical map, with optional background
 
     Parameters
     ----------
@@ -395,16 +403,14 @@ def view_stat_map(stat_map_img, bg_img='MNI152', cut_coords=None,
         The background image that the stat map will be plotted on top of.
         If nothing is specified, the MNI152 template will be used.
         To turn off background image, just pass "bg_img=False".
-    cut_coords : None, a tuple of floats, or an integer (default None)
+    cut_coords : None, or a tuple of floats (default None)
         The MNI coordinates of the point where the cut is performed
-        as a 3-tuple: (x, y, z). If None is given, the cuts is calculated
+        as a 3-tuple: (x, y, z). If None is given, the cuts are calculated
         automaticaly.
-        This parameter is not currently supported.
     colorbar : boolean, optional (default True)
         If True, display a colorbar next to the plots.
     title : string or None (default=None)
         The title displayed on the figure (or None: no title).
-        This parameter is not currently supported.
     threshold : str, number or None  (default=1e-6)
         If None is given, the image is not thresholded.
         If a string of the form "90%" is given, use the 90-th percentile of
@@ -412,21 +418,20 @@ def view_stat_map(stat_map_img, bg_img='MNI152', cut_coords=None,
         If a number is given, it is used to threshold the image:
         values below the threshold (in absolute value) are plotted
         as transparent. If auto is given, the threshold is determined
-        magically by analysis of the image.
+        automatically.
     annotate : boolean (default=True)
-        If annotate is True, positions and left/right annotation
-        are added to the plot.
+        If annotate is True, current cuts and value of the map are added to the
+        viewer.
     draw_cross : boolean (default=True)
         If draw_cross is True, a cross is drawn on the plot to
-        indicate the cut plosition.
+        indicate the cuts.
     black_bg : boolean (default='auto')
         If True, the background of the image is set to be black.
         Otherwise, a white background is used.
         If set to auto, an educated guess is made to find if the background
         is white or black.
     cmap : matplotlib colormap, optional
-        The colormap for specified image. The colormap *must* be
-        symmetrical.
+        The colormap for specified image.
     symmetric_cmap : bool, optional (default=True)
         True: make colormap symmetric (ranging from -vmax to vmax).
         False: the colormap will go from the minimum of the volume to vmax.
@@ -452,45 +457,32 @@ def view_stat_map(stat_map_img, bg_img='MNI152', cut_coords=None,
 
     Returns
     -------
-    html : the html viewer object.
-        It can be saved as an html page `html.save_as_html('test.html')`,
-        or opened in a browser `html.open_in_browser()`.
+    html_view : the html viewer object.
+        It can be saved as an html page `html_view.save_as_html('test.html')`,
+        or opened in a browser `html_view.open_in_browser()`.
         If the output is not requested and the current environment is a Jupyter
         notebook, the viewer will be inserted in the notebook.
     """
 
-    # Start by fixing the cmap for duplicated colors
-    cmap = _sanitize_cm(cmap)
-
-    # Mask stat map
+    # Prepare the data
+    cmap, value = _deduplicate_cmap(cmap, annotate)
     mask_img, stat_map_img, data, threshold = _mask_stat_map(
         stat_map_img, threshold)
-
-    # Get color bar and data ranges
     colors = colorscale(cmap, data.ravel(), threshold=threshold,
                         symmetric_cmap=symmetric_cmap, vmax=vmax)
-
-    # Load background image
     bg_img, bg_min, bg_max, black_bg = _load_bg_img(stat_map_img, bg_img,
                                                     black_bg, dim)
-
-    # Resample stat map
     stat_map_img, mask_img = _resample_stat_map(stat_map_img, bg_img, mask_img,
                                                 resampling_interpolation)
-
-    # Get the slices for the cut
     cut_slices = _get_cut_slices(stat_map_img, cut_coords, threshold)
 
-    # Now that we preped the data, encode the data in a sprite object
-    sprite = _build_sprite_data(bg_img, stat_map_img, mask_img, bg_min, bg_max,
+    # Now create a json-like object for the viewer, and converts in html
+    json_view = _json_view_data(bg_img, stat_map_img, mask_img, bg_min, bg_max,
                                 colors, cmap, colorbar)
+    json_view['params'] = _json_view_params(
+        stat_map_img.shape, stat_map_img.affine, colors['vmin'],
+        colors['vmax'], cut_slices, black_bg, opacity, draw_cross, annotate,
+        title, colorbar, value)
+    html_view = _json_view_to_html(json_view)
 
-    # Add meta-data to the sprite object
-    sprite['params'] = _json_sprite(stat_map_img.shape, stat_map_img.affine,
-                                    colors['vmin'], colors['vmax'], cut_slices,
-                                    black_bg, opacity, draw_cross, annotate,
-                                    title, colorbar)
-
-    # Generate the viewer
-    view = _html_brainsprite(sprite)
-    return view
+    return html_view
