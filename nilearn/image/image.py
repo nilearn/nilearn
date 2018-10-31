@@ -801,7 +801,7 @@ def math_img(formula, **imgs):
 
 def clean_img(imgs, sessions=None, detrend=True, standardize=True,
               confounds=None, low_pass=None, high_pass=None, t_r=None,
-              ensure_finite=False):
+              ensure_finite=False, mask_img=None):
     """Improve SNR on masked fMRI signals.
 
     This function can do several things on the input signals, in
@@ -863,6 +863,12 @@ def clean_img(imgs, sessions=None, detrend=True, standardize=True,
         If True, the non-finite values (NaNs and infs) found in the images
         will be replaced by zeros.
 
+    mask_img: Niimg-like object, optional
+        See http://nilearn.github.io/manipulating_images/input_output.html
+        If provided, signal is only cleaned from voxels inside the mask. If
+        mask is provided, it should have same shape and affine as imgs.
+        If not provided, all voxels are used.
+
     Returns
     -------
     cleaned_img: Niimg-like object
@@ -888,6 +894,7 @@ def clean_img(imgs, sessions=None, detrend=True, standardize=True,
     """
     # Avoid circular import
     from .image import new_img_like
+    from .. import masking
 
     imgs_ = check_niimg_4d(imgs)
 
@@ -902,12 +909,26 @@ def clean_img(imgs, sessions=None, detrend=True, standardize=True,
                 "specified None. imgs header suggest it to be {0}".format(
                     imgs.header.get_zooms()[3]))
 
+    # Prepare signal for cleaning
+    if mask_img is not None:
+        signals = masking.apply_mask(imgs_, mask_img)
+    else:
+        signals = imgs_.get_data().reshape(-1, imgs_.shape[-1]).T
+
+    # Clean signal
     data = signal.clean(
-        imgs_.get_data().reshape(-1, imgs_.shape[-1]).T, sessions=sessions,
-        detrend=detrend, standardize=standardize, confounds=confounds,
-        low_pass=low_pass, high_pass=high_pass, t_r=t_r,
-        ensure_finite=ensure_finite).T.reshape(imgs_.shape)
-    return new_img_like(imgs, data, copy_header=True)
+        signals, sessions=sessions, detrend=detrend, standardize=standardize,
+        confounds=confounds, low_pass=low_pass, high_pass=high_pass, t_r=t_r,
+        ensure_finite=ensure_finite)
+
+    # Put results back into Niimg-like object
+    if mask_img is not None:
+        imgs_ = masking.unmask(data, mask_img)
+    else:
+        imgs_ = new_img_like(
+            imgs_, data.T.reshape(imgs_.shape), copy_header=True)
+
+    return imgs_
 
 
 def load_img(img, wildcards=True, dtype=None):
