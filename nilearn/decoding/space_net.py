@@ -760,7 +760,7 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
                          multi_output=True, y_numeric=not self.is_classif)
 
         if not self.is_classif and np.all(np.diff(y) == 0.):
-            raise ValueError("The given input 'y' must have atleast 3 targets"
+            raise ValueError("The given input y must have atleast 2 targets"
                              " to do regression analysis. You provided only"
                              " one target {0}".format(np.unique(y)))
 

@@ -378,5 +378,5 @@ def test_targets_in_y_space_net_regressor():
     imgs, mask = to_niimgs(X, (2, 2, 2))
     regressor = SpaceNetRegressor(mask=mask)
     assert_raises_regex(ValueError,
-                        "The given input 'y' must have atleast 3 targets",
+                        "The given input y must have atleast 2 targets",
                         regressor.fit, imgs, y)
