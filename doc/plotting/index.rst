@@ -501,17 +501,20 @@ Or you can save it to an html file::
 Interactive visualization of statistical map slices
 ---------------------------------------------------
 
-:func:`view_stat_map`: open stat map in a Papaya viewer (https://github.com/rii-mango/Papaya)::
+:func:`view_stat_map`: open stat map in a Brainsprite viewer (https://github.com/simexp/brainsprite.js)::
 
     >>> from nilearn import plotting, datasets     # doctest: +SKIP
-    >>> img = datasets.fetch_localizer_button_task()['tmaps'][0]     # doctest: +SKIP
-    >>> view = plotting.view_stat_map(img, threshold=2, vmax=4)     # doctest: +SKIP
+    >>> img = datasets.fetch_localizer_button_task()['tmap']     # doctest: +SKIP
+    >>> html_view = plotting.view_stat_map(img, threshold=2, vmax=4, cut_coords=[-42, -16, 52], title="Motor contrast")     # doctest: +SKIP
 
-in a Jupyter notebook, you can view the image like this:
+in a Jupyter notebook, if `html_view` is not requested, the viewer will be inserted in the notebook:
 
-.. image:: ../images/papaya_stat_map_plot_screenshot_notebook.png
+.. image:: ../images/view_stat_map_screenshot_notebook.png
 
-Or you can open a viewer in your web browser if you are not in the
-notebook::
+Or you can open a viewer in your web browser if you are not in a notebook::
 
-    >>> view.open_in_browser()   # doctest: +SKIP
+    >>> html_view.open_in_browser()   # doctest: +SKIP
+
+Finally, you can save the viewer as a stand-alone html file::
+
+    >>> html_view.save_as_html('viewer.html')
