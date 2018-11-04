@@ -515,6 +515,6 @@ Or you can open a viewer in your web browser if you are not in a notebook::
 
     >>> html_view.open_in_browser()   # doctest: +SKIP
 
-Finally, you can save the viewer as a stand-alone html file::
+Finally, you can also save the viewer as a stand-alone html file::
 
-    >>> html_view.save_as_html('viewer.html')
+    >>> html_view.save_as_html('viewer.html') # doctest: +SKIP
