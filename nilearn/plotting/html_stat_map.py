@@ -393,7 +393,8 @@ def view_stat_map(stat_map_img, bg_img='MNI152', cut_coords=None,
     ----------
     stat_map_img : Niimg-like object
         See http://nilearn.github.io/manipulating_images/input_output.html
-        The statistical map image.
+        The statistical map image. Can be either a 3D volume or a 4D volume with
+        exactly one time point.
     bg_img : Niimg-like object (default='MNI152')
         See http://nilearn.github.io/manipulating_images/input_output.html
         The background image that the stat map will be plotted on top of.
@@ -473,12 +474,14 @@ def view_stat_map(stat_map_img, bg_img='MNI152', cut_coords=None,
         surface.
     """
 
-    # Prepare the data
+    # Prepare the color map, including thresholding
     cmap, value = _deduplicate_cmap(cmap, annotate)
     mask_img, stat_map_img, data, threshold = _mask_stat_map(
         stat_map_img, threshold)
     colors = colorscale(cmap, data.ravel(), threshold=threshold,
                         symmetric_cmap=symmetric_cmap, vmax=vmax)
+
+    # Prepare the data for the cuts
     bg_img, bg_min, bg_max, black_bg = _load_bg_img(stat_map_img, bg_img,
                                                     black_bg, dim)
     stat_map_img, mask_img = _resample_stat_map(stat_map_img, bg_img, mask_img,
