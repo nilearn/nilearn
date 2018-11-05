@@ -2,7 +2,7 @@ import warnings
 from io import BytesIO
 
 import numpy as np
-from numpy.testing import assert_warns, assert_raises
+from numpy.testing import assert_raises
 from matplotlib.colors import LinearSegmentedColormap
 
 from nibabel import Nifti1Image
@@ -63,36 +63,6 @@ def test_data_to_sprite():
 
     assert sprite.shape == gtruth.shape, "shape of sprite not as expected"
     assert (sprite == gtruth).all(), "simulated sprite not as expected"
-
-
-def test_get_vmin_vmax():
-
-    # simulate data with a square inside
-    data = np.zeros([8, 8, 8])
-    data[2:6, 2:6, 2:6] = 1
-
-    # Check default vmin, vmax
-    vmin, vmax = html_stat_map._get_vmin_vmax(data)
-    assert (vmin == 0) and (vmax == 1)
-
-    # Force vmin and vmax
-    vmin, vmax = html_stat_map._get_vmin_vmax(data, vmin=.5, vmax=.7)
-    assert (vmin == .5) and (vmax == .7)
-
-    # a warning should be issued if vmax or vmin is NaN
-    assert_warns(UserWarning, html_stat_map._get_vmin_vmax,
-                 data, vmin=.5, vmax=np.nan)
-    assert_warns(UserWarning, html_stat_map._get_vmin_vmax,
-                 data, vmin=np.nan, vmax=0.7)
-
-    # an error should be raised if vmax is smaller than vmin
-    assert_raises(ValueError, html_stat_map._get_vmin_vmax,
-                  data, vmin=3, vmax=0.7)
-
-    # correct defaults should be generated even with NaN in the data
-    data[0, 0, 0] = np.nan
-    vmin, vmax = html_stat_map._get_vmin_vmax(data)
-    assert (vmin == 0) and (vmax == 1)
 
 
 def test_threshold_data():

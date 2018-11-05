@@ -1,7 +1,6 @@
 """
 Visualizing 3D stat maps in a Brainsprite viewer
 """
-import warnings
 import os
 import json
 from io import BytesIO
@@ -49,38 +48,6 @@ def _data_to_sprite(data):
                ((indcol[xx] + 1) * ny)] = data[xx, :, ::-1].transpose()
 
     return sprite
-
-
-def _get_vmin_vmax(data, vmin=None, vmax=None):
-    """ Detect vmin and vmax in a data array.
-        Returns: vmin, vmax
-    """
-
-    # Get vmin vmax
-    show_nan_msg = False
-    if vmax is not None and np.isnan(vmax):
-        vmax = None
-        show_nan_msg = True
-    if vmin is not None and np.isnan(vmin):
-        vmin = None
-        show_nan_msg = True
-    if show_nan_msg:
-        nan_msg = ('NaN is not permitted for the vmax and vmin arguments.\n'
-                   'Tip: Use np.nanmax() instead of np.max().')
-        warnings.warn(nan_msg)
-
-    # Extract defaults if needed
-    if vmax is None:
-        vmax = np.nanmax(data)
-    if vmin is None:
-        vmin = np.nanmin(data)
-
-    # Check that vmin and vmax make sense
-    if vmax <= vmin:
-        raise ValueError("vmax needs to be greater than vmin."
-                         " Maybe an empty image?")
-
-    return vmin, vmax
 
 
 def _threshold_data(data, threshold=None):
@@ -154,6 +121,7 @@ def _save_cm(output_cmap, cmap, format='png', n_colors=256):
 
 def _deduplicate_cmap(cmap, annotate, n_colors=256):
     """Make sure that the colormap has no duplicated colors.
+       If a color is used more than once, it will be removed.
        Returns: cmap_no_duplicate, value
     """
     # Extract a list of colors
@@ -393,8 +361,8 @@ def view_stat_map(stat_map_img, bg_img='MNI152', cut_coords=None,
     ----------
     stat_map_img : Niimg-like object
         See http://nilearn.github.io/manipulating_images/input_output.html
-        The statistical map image. Can be either a 3D volume or a 4D volume with
-        exactly one time point.
+        The statistical map image. Can be either a 3D volume or a 4D volume
+        with exactly one time point.
     bg_img : Niimg-like object (default='MNI152')
         See http://nilearn.github.io/manipulating_images/input_output.html
         The background image that the stat map will be plotted on top of.
