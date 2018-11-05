@@ -33,8 +33,8 @@ from ..datasets import load_mni152_template
 
 def _data_to_sprite(data):
     """ Convert a 3D array into a sprite of sagittal slices.
-        Returns: sprite
-        If each sagital slice is nz (height) x ny (width) pixels, the sprite
+        Returns: sprite (2D numpy array)
+        If each sagittal slice is nz (height) x ny (width) pixels, the sprite
         size is (M x nz) x (N x ny), where M and N are computed to be roughly
         equal. All slices are pasted together row by row, from top left to
         bottom right. The last row is completed with empty slices.
@@ -408,10 +408,10 @@ def view_stat_map(stat_map_img, bg_img='MNI152', cut_coords=None,
         as a 3-tuple: (x, y, z). If None is given, the cuts are calculated
         automaticaly.
     colorbar : boolean, optional (default True)
-        If True, display a colorbar next to the plots.
+        If True, display a colorbar on top of the plots.
     title : string or None (default=None)
         The title displayed on the figure (or None: no title).
-    threshold : str, number or None  (default=1e-6)
+    threshold : string, number or None  (default=1e-6)
         If None is given, the image is not thresholded.
         If a string of the form "90%" is given, use the 90-th percentile of
         the absolute value in the image.
@@ -449,8 +449,9 @@ def view_stat_map(stat_map_img, bg_img='MNI152', cut_coords=None,
         absolute value of the volume.
         If vmax is None and symmetric_cmap is False, vmax is the max
         value of the volume.
-    resampling_interpolation : string, optional (default nearest)
-        The interpolation method for resampling
+    resampling_interpolation : string, optional (default continuous)
+        The interpolation method for resampling.
+        Can be 'continuous', 'linear', or 'nearest'.
         See nilearn.image.resample_img
     opacity : float in [0,1] (default 1)
         The level of opacity of the overlay (0: transparent, 1: opaque)
