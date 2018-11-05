@@ -582,6 +582,15 @@ def test_clean_img():
     data_img_nifti2_ = image.clean_img(
         data_img_nifti2, detrend=True, standardize=False, low_pass=0.1, t_r=1.0)
 
+    # if mask_img
+    img, mask_img = data_gen.generate_fake_fmri(shape=(10, 10, 10), length=10)
+    data_img_mask_ = image.clean_img(img, mask_img=mask_img)
+
+    # Checks that output with full mask and without is equal
+    data_img_ = image.clean_img(img)
+    np.testing.assert_almost_equal(data_img_.get_data(),
+                                   data_img_mask_.get_data())
+
 
 def test_largest_cc_img():
     """ Check the extraction of the largest connected component, for niftis
