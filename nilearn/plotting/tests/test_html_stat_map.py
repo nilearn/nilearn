@@ -1,6 +1,5 @@
 import warnings
 from io import BytesIO
-import sys
 
 import numpy as np
 from numpy.testing import assert_warns, assert_raises
@@ -12,6 +11,7 @@ from nilearn import datasets, image
 from nilearn.plotting import html_stat_map
 from nilearn.image import new_img_like
 from ..js_plotting_utils import colorscale
+from ..._utils.compat import _basestring
 
 
 def _check_html(html_view):
@@ -298,14 +298,9 @@ def test_json_view_data():
         cmap='cold_hot', colorbar=True)
 
     # Check the presence of critical fields
-    if (sys.version_info > (3, 0)):
-        assert isinstance(json_view['bg_base64'], str)
-        assert isinstance(json_view['stat_map_base64'], str)
-        assert isinstance(json_view['cm_base64'], str)
-    else:
-        assert isinstance(json_view['bg_base64'], basestring)
-        assert isinstance(json_view['stat_map_base64'], basestring)
-        assert isinstance(json_view['cm_base64'], basestring)
+    assert isinstance(json_view['bg_base64'], _basestring)
+    assert isinstance(json_view['stat_map_base64'], _basestring)
+    assert isinstance(json_view['cm_base64'], _basestring)
 
     return json_view, data
 
