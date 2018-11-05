@@ -5,11 +5,6 @@ import warnings
 import os
 import json
 from io import BytesIO
-try:
-    from base64 import encodebytes
-except ImportError:
-    # Retro compatibility with python2
-    from base64 import encodestring as encodebytes
 from string import Template
 
 import numpy as np
@@ -28,6 +23,7 @@ from .._utils.niimg_conversions import check_niimg_3d
 from .._utils.param_validation import check_threshold
 from .._utils.extmath import fast_abs_percentile
 from .._utils.niimg import _safe_get_data
+from .._utils.compat import _encodebytes
 from ..datasets import load_mni152_template
 
 
@@ -141,7 +137,7 @@ def _bytesIO_to_base64(handle_io):
         Returns: data
     """
     handle_io.seek(0)
-    data = encodebytes(handle_io.read()).decode('utf-8')
+    data = _encodebytes(handle_io.read()).decode('utf-8')
     handle_io.close()
     return data
 
