@@ -449,6 +449,7 @@ def view_stat_map(stat_map_img, bg_img='MNI152', cut_coords=None,
 
     # Prepare the color map, including thresholding
     cmap, value = _deduplicate_cmap(cmap, annotate)
+    value = value and colorbar
     mask_img, stat_map_img, data, threshold = _mask_stat_map(
         stat_map_img, threshold)
     colors = colorscale(cmap, data.ravel(), threshold=threshold,
