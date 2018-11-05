@@ -459,6 +459,18 @@ def view_stat_map(stat_map_img, bg_img='MNI152', cut_coords=None,
         or opened in a browser `html_view.open_in_browser()`.
         If the output is not requested and the current environment is a Jupyter
         notebook, the viewer will be inserted in the notebook.
+
+    See Also
+    --------
+    nilearn.plotting.plot_stat_map:
+        static plot of brain volume, on a single or multiple planes.
+    nilearn.plotting.view_connectome:
+        interactive 3d view of a connectome.
+    nilearn.plotting.view_markers:
+        interactive plot of colored markers.
+    nilearn.plotting.view_surf, nilearn.plotting.view_img_on_surf:
+        interactive view of statistical maps or surface atlases on the cortical
+        surface.
     """
 
     # Prepare the data
