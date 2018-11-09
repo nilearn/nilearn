@@ -851,17 +851,17 @@ def fetch_atlas_allen_2011(data_dir=None, url=None, resume=True, verbose=1):
     on this dataset.
     """
     if url is None:
-        url = "http://mialab.mrn.org/data/hcp/"
+        url = "https://osf.io/hrcku/download"
 
     dataset_name = "allen_rsn_2011"
     keys = ("maps",
             "rsn28",
             "comps")
 
-    opts = {}
-    files = ["ALL_HC_unthresholded_tmaps.nii",
-             "RSN_HC_unthresholded_tmaps.nii",
-             "rest_hcp_agg__component_ica_.nii"]
+    opts = {'uncompress': True}
+    files = ["ALL_HC_unthresholded_tmaps.nii.gz",
+             "RSN_HC_unthresholded_tmaps.nii.gz",
+             "rest_hcp_agg__component_ica_.nii.gz"]
 
     labels = [('Basal Ganglia', [21]),
               ('Auditory', [17]),
@@ -873,7 +873,7 @@ def fetch_atlas_allen_2011(data_dir=None, url=None, resume=True, verbose=1):
 
     networks = [[name] * len(idxs) for name, idxs in labels]
 
-    filenames = [(f, url + f, opts) for f in files]
+    filenames = [(os.path.join('allen_rsn_2011', f), url, opts) for f in files]
 
     data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
                                 verbose=verbose)

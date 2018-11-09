@@ -5,14 +5,17 @@
 Changes
 -------
 
-- Default value of t_r in signal.clean and clean_img is changed from 2.5 to
-  None. If low_pass or high_pass is specified, then t_r needs to be specified
-  as well otherwise it will raise an error.
-- Order of filters in signal.clean and clean_img has changed to detrend, low-
-  and high-pass filter, remove confounds and standardize. To ensure
-  orthogonality between temporal filter and confound removal, an additional
-  temporal filter will be applied on the confounds before removing them. This
-  is according to Lindquist et al. (2018).
+- Default value of `t_r` in :func:`nilearn.signal.clean` and
+  :func:`nilearn.image.clean_img` is changed from 2.5 to None. If `low_pass` or
+  `high_pass` is specified, then `t_r` needs to be specified as well otherwise
+  it will raise an error.
+- Order of filters in :func:`nilearn.signal.clean` and :func:`nilearn.image.clean_img`
+  has changed to detrend, low- and high-pass filter, remove confounds and
+  standardize. To ensure orthogonality between temporal filter and confound
+  removal, an additional temporal filter will be applied on the confounds before
+  removing them. This is according to Lindquist et al. (2018).
+- :func:`nilearn.image.clean_img` now accepts a mask to restrict the cleaning of
+  the image. This approach can help to reduce the memory load and computation time.
 
 
 Contributors
