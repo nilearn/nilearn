@@ -428,7 +428,7 @@ use :func:`view_markers`.
 :func:`view_img_on_surf`: Surface plot using a 3D statistical map::
 
     >>> from nilearn import plotting, datasets     # doctest: +SKIP
-    >>> img = datasets.fetch_localizer_button_task()['tmaps'][0]     # doctest: +SKIP
+    >>> img = datasets.fetch_localizer_button_task()['tmaps']     # doctest: +SKIP
     >>> view = plotting.view_img_on_surf(img, threshold='90%', surf_mesh='fsaverage')     # doctest: +SKIP
 
 If you are running a notebook, displaying ``view`` will embed an interactive
