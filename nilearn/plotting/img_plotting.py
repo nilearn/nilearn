@@ -704,7 +704,7 @@ def plot_prob_atlas(maps_img, bg_img=MNI152TEMPLATE, view_type='auto',
                     draw_cross=True, black_bg='auto', dim='auto',
                     colorbar=False,
                     cmap=plt.cm.gist_rainbow, vmin=None, vmax=None,
-                    alpha=0.7, anat_img=None, **kwargs):
+                    alpha=0.7, **kwargs):
     """ Plot the probabilistic atlases onto the anatomical image
         by default MNI template
 
@@ -719,13 +719,6 @@ def plot_prob_atlas(maps_img, bg_img=MNI152TEMPLATE, view_type='auto',
             To turn off background image, just pass "bg_img=False".
 
             .. versionadded:: 0.4.0
-
-        anat_img : Niimg-like object
-            See `bg_img` for complete description.
-            Note : anat_img is deprecated and will be removed in 0.5.
-            Use `bg_img` instead.
-
-            .. deprecated:: 0.4.0
 
         view_type : {'auto', 'contours', 'filled_contours', 'continuous'}, optional
             By default view_type == 'auto', means maps will be displayed
@@ -817,11 +810,6 @@ def plot_prob_atlas(maps_img, bg_img=MNI152TEMPLATE, view_type='auto',
         nilearn.plotting.plot_roi : To simply plot max-prob atlases (3D images)
 
     """
-    if anat_img is not None:
-        bg_img = anat_img
-        warn_str = ("anat_img is deprecated and will be removed in 0.5. "
-                    "Use `bg_img` instead.")
-        warnings.warn(warn_str, VisibleDeprecationWarning, stacklevel=2)
 
     display = plot_anat(bg_img, cut_coords=cut_coords,
                         display_mode=display_mode,
