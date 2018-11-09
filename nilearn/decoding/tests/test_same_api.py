@@ -102,8 +102,9 @@ def test_graph_net_and_tvl1_same_for_pure_l1(max_iter=100, decimal=2):
     # when l1_ratio = 1.
     ###############################################################
 
-    X, y, _, mask = _make_data()
-    alpha = .1
+    X, y, _, mask = _make_data(dim=(3, 3, 3))
+    y = np.round(y)
+    alpha = 0.01
     unmasked_X = np.rollaxis(X, -1, start=0)
     unmasked_X = np.array([x[mask] for x in unmasked_X])
 
