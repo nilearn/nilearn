@@ -321,20 +321,20 @@ def test_view_stat_map():
     with warnings.catch_warnings(record=True) as w:
         # Create a fake functional image by resample the template
         img = image.resample_img(mni, target_affine=3 * np.eye(3))
-        html_view = html_stat_map.view_stat_map(img)
+        html_view = html_stat_map.view_img(img)
         _check_html(html_view)
-        html_view = html_stat_map.view_stat_map(img, threshold='95%')
+        html_view = html_stat_map.view_img(img, threshold='95%')
         _check_html(html_view)
-        html_view = html_stat_map.view_stat_map(img, bg_img=mni)
+        html_view = html_stat_map.view_img(img, bg_img=mni)
         _check_html(html_view)
-        html_view = html_stat_map.view_stat_map(img, bg_img=None)
+        html_view = html_stat_map.view_img(img, bg_img=None)
         _check_html(html_view)
-        html_view = html_stat_map.view_stat_map(img, threshold=2., vmax=4.)
+        html_view = html_stat_map.view_img(img, threshold=2., vmax=4.)
         _check_html(html_view)
-        html_view = html_stat_map.view_stat_map(img, symmetric_cmap=False)
+        html_view = html_stat_map.view_img(img, symmetric_cmap=False)
         img_4d = image.new_img_like(img, img.get_data()[:, :, :, np.newaxis])
         assert len(img_4d.shape) == 4
-        html_view = html_stat_map.view_stat_map(img_4d, threshold=2., vmax=4.)
+        html_view = html_stat_map.view_img(img_4d, threshold=2., vmax=4.)
         _check_html(html_view)
 
     # Check that all warnings were expected

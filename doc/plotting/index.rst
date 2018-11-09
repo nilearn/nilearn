@@ -501,11 +501,11 @@ Or you can save it to an html file::
 Interactive visualization of statistical map slices
 ---------------------------------------------------
 
-:func:`view_stat_map`: open stat map in a Brainsprite viewer (https://github.com/simexp/brainsprite.js)::
+:func:`view_img`: open stat map in a Brainsprite viewer (https://github.com/simexp/brainsprite.js)::
 
     >>> from nilearn import plotting, datasets     # doctest: +SKIP
     >>> img = datasets.fetch_localizer_button_task()['tmap']     # doctest: +SKIP
-    >>> html_view = plotting.view_stat_map(img, threshold=2, vmax=4, cut_coords=[-42, -16, 52],
+    >>> html_view = plotting.view_img(img, threshold=2, vmax=4, cut_coords=[-42, -16, 52],
     ...                                     title="Motor contrast")     # doctest: +SKIP
 
 in a Jupyter notebook, if `html_view` is not requested, the viewer will be inserted in the notebook:
