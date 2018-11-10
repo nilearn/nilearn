@@ -7,7 +7,7 @@
       :ref:`interactive plotting functions <interactive-plotting>`,
       eg for use in a notebook.
 
-    **IMPROVED**
+    **ENHANCEMENTS**
      :func:`nilearn.image.clean_img` now accepts a mask to restrict
      the cleaning of the image, reducing memory load and computation time.
 
@@ -22,7 +22,20 @@
       Users with a Python2 environment will be warned
       at their first Nilearn import.
 
-    A cleaner layout for nilearn.github.io
+
+    **IMPROVEMENTS**
+
+     - Lots of other fixes in documentation and examples.
+     - A cleaner layout and improved navigation for the website, with a better introduction.
+     - Dataset fetchers are now  more reliable, less verbose.
+     - Searchlight().fit() now accepts 4D niimgs.
+     - Anaconda link in the installation documentation updated.
+     - Scipy is listed as a dependency for Nilearn installation.
+
+    **Notable Changes**
+     - Default value of `t_r` in :func:`nilearn.signal.clean` and
+       :func:`nilearn.image.clean_img` is now 2.5
+       and cannot be None if `low_pass` or `high_pass` is specified.
 
     LOTS of changes and improvements. Detailed change list follows.
 
