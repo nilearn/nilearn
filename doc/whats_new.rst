@@ -3,23 +3,26 @@
 
     **Released November 2018**
 
-    - **NEW**
-        :ref:`interactive plotting functions <interactive-plotting>`,
-        eg for use in a notebook.
+    **NEW**
+      :ref:`interactive plotting functions <interactive-plotting>`,
+      eg for use in a notebook.
 
-    - **Minimum supported versions of packages have been bumped up.**
-        - scikit-learn -- v0.18
-        - scipy -- v0.17
-        - pandas -- v0.18
-        - numpy -- v1.11
-        - matplotlib -- v1.5.1
+    **IMPROVED**
+     :func:`nilearn.image.clean_img` now accepts a mask to restrict
+     the cleaning of the image, reducing memory load and computation time.
 
-    - **Nilearn Python2 support is being removed in the near future.**
-        Users with a Python2 environment will be warned
-        at their first Nilearn import.
+    **Minimum supported versions of packages have been bumped up.**
+      - scikit-learn -- v0.18
+      - scipy -- v0.17
+      - pandas -- v0.18
+      - numpy -- v1.11
+      - matplotlib -- v1.5.1
 
-    - :func:`nilearn.image.clean_img` now accepts a mask to restrict
-        the cleaning of the image, reducing memory load and computation time.
+    **Nilearn Python2 support is being removed in the near future.**
+      Users with a Python2 environment will be warned
+      at their first Nilearn import.
+
+    A cleaner layout for nilearn.github.io
 
     LOTS of changes and improvements. Detailed change list follows.
 
