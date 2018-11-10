@@ -13,7 +13,9 @@ if sys.version_info[0] == 3:
     import pickle
     import io
     import urllib
+    from base64 import encodebytes
 
+    _encodebytes = encodebytes
     _basestring = str
     cPickle = pickle
     StringIO = io.StringIO
@@ -33,7 +35,9 @@ else:
     import urlparse
     import types
     import itertools
+    from base64 import encodestring
 
+    _encodebytes = encodestring
     _basestring = basestring
     cPickle = cPickle
     StringIO = BytesIO = StringIO.StringIO
@@ -62,4 +66,3 @@ else:
         m = hashlib.md5()
         m.update(string)
         return m.hexdigest()
-
