@@ -366,3 +366,17 @@ def test_checking_inputs_length():
                                         alphas=1. / .01 / X.shape[0],
                                         l1_ratios=1., tol=1e-10,
                                         screening_percentile=100.).fit, X_, y)
+
+
+def test_targets_in_y_space_net_regressor():
+    # This tests whether raises an error when unique targets given in y
+    # are single.
+    iris = load_iris()
+    X, _ = iris.data, iris.target
+    y = np.ones((iris.target.shape))
+
+    imgs, mask = to_niimgs(X, (2, 2, 2))
+    regressor = SpaceNetRegressor(mask=mask)
+    assert_raises_regex(ValueError,
+                        "The given input y must have atleast 2 targets",
+                        regressor.fit, imgs, y)
