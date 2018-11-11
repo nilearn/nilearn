@@ -7,6 +7,8 @@
       :ref:`interactive plotting functions <interactive-plotting>`,
       eg for use in a notebook.
 
+    :Note: :func:`nilearn.plotting.view_img` was `nilearn.plotting.view_stat_map` in preview builds.
+
     **ENHANCEMENTS**
      :func:`nilearn.image.clean_img` now accepts a mask to restrict
      the cleaning of the image, reducing memory load and computation time.
@@ -65,7 +67,7 @@ Enhancements
   `plot_stat_map` are now supported in `view_img`.
 - :func:`nilearn.image.clean_img` now accepts a mask to restrict the cleaning of
   the image. This approach can help to reduce the memory load and computation time.
-- :func:`SpaceNetRegressor.fit()` raises a meaningful error in regression tasks
+- :func:`nilearn.decoding.SpaceNetRegressor.fit` raises a meaningful error in regression tasks
   if the target Y contains all 1s.
 
 Changes
@@ -94,12 +96,18 @@ Contributors
 
 The following people contributed to this release::
 
-  2  Michael Notter
-
+  15 Gael Varoquaux
+  112 Pierre Bellec
+  28 miykael
+  19 kchawla-pi
+  4 Kamalakar Daddy
+  4 himanshupathak21061998
+  2 Michael Notter
+  1 Horea Christian
+  1 Jerome Dockes
 
 0.5.0 beta
 ==========
-
 
 Highlights
 ----------

@@ -510,7 +510,7 @@ Interactive visualization of statistical map slices
 
 in a Jupyter notebook, if `html_view` is not requested, the viewer will be inserted in the notebook:
 
-.. image:: ../images/view_stat_map_screenshot_notebook.png
+.. image:: ../images/view_img_screenshot_notebook.png
 
 Or you can open a viewer in your web browser if you are not in a notebook::
 
