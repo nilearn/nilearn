@@ -3,58 +3,81 @@
 
     **Released November 2018**
 
-    **NEW**
-      :ref:`interactive plotting functions <interactive-plotting>`,
-      eg for use in a notebook.
+NEW
+---
 
-    - New functions :func:`nilearn.plotting.view_surf` and
-      :func:`nilearn.plotting.view_surf` and
-      :func:`nilearn.plotting.view_img_on_surf` for interactive visualization of
-      maps on the cortical surface in a web browser.
+  :ref:`interactive plotting functions <interactive-plotting>`,
+  eg for use in a notebook.
 
-    - New functions :func:`nilearn.plotting.view_connectome` and
-      :func:`nilearn.plotting.view_markers` to visualize connectomes and
-      seed locations in 3D
+- New functions :func:`nilearn.plotting.view_surf` and
+  :func:`nilearn.plotting.view_surf` and
+  :func:`nilearn.plotting.view_img_on_surf` for interactive visualization of
+  maps on the cortical surface in a web browser.
 
-    - New function `nilearn.plotting.view_stat_map` (renamed to
-      :func:`nilearn.plotting.view_img` in stable release) for interactive
-      visualization of volumes with 3 orthogonal cuts.
+- New functions :func:`nilearn.plotting.view_connectome` and
+  :func:`nilearn.plotting.view_markers` to visualize connectomes and
+  seed locations in 3D
 
-    :Note: :func:`nilearn.plotting.view_img` was `nilearn.plotting.view_stat_map` in preview builds.
+- New function :func:`nilearn.plotting.view_img` for interactive
+  visualization of volumes with 3 orthogonal cuts.
 
-    Additional dataset downloaders for examples and tutorials.
+:Note: :func:`nilearn.plotting.view_img` was `nilearn.plotting.view_stat_map` in preview builds.
 
-    **ENHANCEMENTS**
-     :func:`nilearn.image.clean_img` now accepts a mask to restrict
-     the cleaning of the image, reducing memory load and computation time.
+- :func:`nilearn.plotting.find_parcellation_cut_coords` for
+  extraction of coordinates on brain parcellations denoted as labels.
 
-    **Minimum supported versions of packages have been bumped up.**
-      - scikit-learn -- v0.18
-      - scipy -- v0.17
-      - pandas -- v0.18
-      - numpy -- v1.11
-      - matplotlib -- v1.5.1
-
-    **Nilearn Python2 support is being removed in the near future.**
-      Users with a Python2 environment will be warned
-      at their first Nilearn import.
+- Added :func:`nilearn.plotting.find_probabilistic_atlas_cut_coords` for
+  extraction of coordinates on brain probabilistic maps.
 
 
-    **IMPROVEMENTS**
+**Minimum supported versions of packages have been bumped up.**
+  - scikit-learn -- v0.18
+  - scipy -- v0.17
+  - pandas -- v0.18
+  - numpy -- v1.11
+  - matplotlib -- v1.5.1
 
-     - Lots of other fixes in documentation and examples.
-     - A cleaner layout and improved navigation for the website, with a better introduction.
-     - Dataset fetchers are now  more reliable, less verbose.
-     - Searchlight().fit() now accepts 4D niimgs.
-     - Anaconda link in the installation documentation updated.
-     - Scipy is listed as a dependency for Nilearn installation.
+**Nilearn Python2 support is being removed in the near future.**
+  Users with a Python2 environment will be warned
+  at their first Nilearn import.
 
-    **Notable Changes**
-     - Default value of `t_r` in :func:`nilearn.signal.clean` and
-       :func:`nilearn.image.clean_img` is now 2.5
-       and cannot be None if `low_pass` or `high_pass` is specified.
+**Additional dataset downloaders for examples and tutorials.**
 
-    LOTS of changes and improvements. Detailed change list follows.
+- :func:`nilearn.datasets.fetch_surf_fsaverage`
+- :func:`nilearn.datasets.fetch_atlas_pauli_2017`
+- :func:`nilearn.datasets.fetch_neurovault_auditory_computation_task`
+- :func:`nilearn.datasets.fetch_neurovault_motor_task`
+
+
+ENHANCEMENTS
+------------
+
+ :func:`nilearn.image.clean_img` now accepts a mask to restrict
+ the cleaning of the image, reducing memory load and computation time.
+
+ NiftiMaskers now have a `dtype` parameter, by default keeping the same data type as the input data.
+
+ Displays by plotting functions can now add a scale bar (see :ref:`plotting`)
+
+
+IMPROVEMENTS
+------------
+
+ - Lots of other fixes in documentation and examples.
+ - A cleaner layout and improved navigation for the website, with a better introduction.
+ - Dataset fetchers are now  more reliable, less verbose.
+ - Searchlight().fit() now accepts 4D niimgs.
+ - Anaconda link in the installation documentation updated.
+ - Scipy is listed as a dependency for Nilearn installation.
+
+Notable Changes
+---------------
+
+ Default value of `t_r` in :func:`nilearn.signal.clean` and
+ :func:`nilearn.image.clean_img` is now 2.5
+ and cannot be None if `low_pass` or `high_pass` is specified.
+
+**LOTS of changes and improvements. Detailed change list follows.**
 
 0.5.0 rc
 ========
@@ -152,7 +175,7 @@ Fixes
 -----
 
 - Searchlight().fit() now accepts 4D niimgs. Contributed by Dan Gale (danjgale).
-- plotting.view_markers.open_in_browser() in js plotting utils fixed
+- plotting.view_markers.open_in_browser() in js_plotting_utils fixed
 - Brainomics dataset has been replaced in several examples.
 - Lots of other fixes in documentation and examples.
 
