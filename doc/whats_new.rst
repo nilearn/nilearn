@@ -7,7 +7,22 @@
       :ref:`interactive plotting functions <interactive-plotting>`,
       eg for use in a notebook.
 
+    - New functions :func:`nilearn.plotting.view_surf` and
+      :func:`nilearn.plotting.view_surf` and
+      :func:`nilearn.plotting.view_img_on_surf` for interactive visualization of
+      maps on the cortical surface in a web browser.
+
+    - New functions :func:`nilearn.plotting.view_connectome` and
+      :func:`nilearn.plotting.view_markers` to visualize connectomes and
+      seed locations in 3D
+
+    - New function `nilearn.plotting.view_stat_map` (renamed to
+      :func:`nilearn.plotting.view_img` in stable release) for interactive
+      visualization of volumes with 3 orthogonal cuts.
+
     :Note: :func:`nilearn.plotting.view_img` was `nilearn.plotting.view_stat_map` in preview builds.
+
+    Additional dataset downloaders for examples and tutorials.
 
     **ENHANCEMENTS**
      :func:`nilearn.image.clean_img` now accepts a mask to restrict
@@ -98,11 +113,10 @@ The following people contributed to this release::
 
   15 Gael Varoquaux
   112 Pierre Bellec
-  28 miykael
-  19 kchawla-pi
+  30 Michael Notter
+  21 kchawla-pi
   4 Kamalakar Daddy
   4 himanshupathak21061998
-  2 Michael Notter
   1 Horea Christian
   1 Jerome Dockes
 
@@ -235,7 +249,8 @@ Enhancements
       :func:`nilearn.plotting.view_markers` to visualize connectomes and
       seed locations in 3D
 
-    - New function :func:`nilearn.plotting.view_stat_map` for interactive
+    - New function `nilearn.plotting.view_stat_map` (renamed to
+      :func:`nilearn.plotting.view_img` in stable release) for interactive
       visualization of volumes with 3 orthogonal cuts.
 
     - Add :func:`nilearn.datasets.fetch_surf_fsaverage` to download either
