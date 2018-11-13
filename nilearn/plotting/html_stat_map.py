@@ -7,9 +7,7 @@ from io import BytesIO
 from string import Template
 
 import numpy as np
-import matplotlib.pyplot as plt
 from matplotlib.image import imsave
-from matplotlib.colors import LinearSegmentedColormap
 
 from nibabel.affines import apply_affine
 
@@ -117,29 +115,6 @@ def _save_cm(output_cmap, cmap, format='png', n_colors=256):
     data = np.arange(0., n_colors) / (n_colors - 1.)
     data = data.reshape([1, n_colors])
     imsave(output_cmap, data, cmap=cmap, format=format)
-
-
-def _deduplicate_cmap(cmap, annotate, n_colors=256):
-    """Make sure that the colormap has no duplicated colors.
-       If a color is used more than once, it will be removed.
-       Returns: cmap_no_duplicate, value
-    """
-    # Extract a list of colors
-    cmap = plt.cm.get_cmap(cmap)
-    cmaplist = [cmap(i) for i in range(cmap.N)]
-
-    # Filter out any duplicated colors
-    mask = [cmaplist.count(cmap(i)) == 1 for i in range(cmap.N)]
-    if mask.count(True) > 1:
-        cmaplist = np.array(cmaplist)[np.array(mask)]
-        value = annotate
-        cmap_no_duplicate = LinearSegmentedColormap.from_list(
-            'Custom cmap', cmaplist, n_colors)
-    else:
-        # A single color survives, do not change cmap and do not show value
-        cmap_no_duplicate = cmap
-        value = False
-    return cmap_no_duplicate, value
 
 
 class StatMapView(HTMLDocument):
@@ -447,9 +422,7 @@ def view_stat_map(stat_map_img, bg_img='MNI152', cut_coords=None,
         surface.
     """
 
-    # Prepare the color map, including thresholding
-    cmap, value = _deduplicate_cmap(cmap, annotate)
-    value = value and colorbar
+    # Prepare the color map and thresholding
     mask_img, stat_map_img, data, threshold = _mask_stat_map(
         stat_map_img, threshold)
     colors = colorscale(cmap, data.ravel(), threshold=threshold,
@@ -468,7 +441,7 @@ def view_stat_map(stat_map_img, bg_img='MNI152', cut_coords=None,
     json_view['params'] = _json_view_params(
         stat_map_img.shape, stat_map_img.affine, colors['vmin'],
         colors['vmax'], cut_slices, black_bg, opacity, draw_cross, annotate,
-        title, colorbar, value)
+        title, colorbar, value=False)
     html_view = _json_view_to_html(json_view)
 
     return html_view
