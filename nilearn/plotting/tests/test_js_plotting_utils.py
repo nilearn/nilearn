@@ -140,10 +140,16 @@ def test_colorscale_asymmetric_cmap():
     assert (colors['norm'].vmax, colors['norm'].vmin) == (17, 3)
 
 
-def test_colorscale_vmax():
+def test_colorscale_vmin_vmax():
     cmap = 'jet'
     values = np.arange(15)
     colors = js_plotting_utils.colorscale(cmap, values, vmax=7)
+    assert (colors['vmin'], colors['vmax']) == (-7, 7)
+    assert colors['cmap'].N == 256
+    assert (colors['norm'].vmax, colors['norm'].vmin) == (7, -7)
+    assert colors['symmetric_cmap']
+    colors = js_plotting_utils.colorscale(
+        cmap, values, vmax=7, vmin=-5)
     assert (colors['vmin'], colors['vmax']) == (-7, 7)
     assert colors['cmap'].N == 256
     assert (colors['norm'].vmax, colors['norm'].vmin) == (7, -7)
@@ -164,6 +170,10 @@ def test_colorscale_asymmetric_cmap_vmax():
                                           symmetric_cmap=False)
     assert (colors['vmin'], colors['vmax']) == (3, 7)
     assert (colors['norm'].vmax, colors['norm'].vmin) == (7, 3)
+    colors = js_plotting_utils.colorscale(
+        cmap, values, vmax=7, symmetric_cmap=False, vmin=1)
+    assert (colors['vmin'], colors['vmax']) == (1, 7)
+    assert (colors['norm'].vmax, colors['norm'].vmin) == (7, 1)
 
 
 def test_colorscale_asymmetric_cmap_negative_values():
