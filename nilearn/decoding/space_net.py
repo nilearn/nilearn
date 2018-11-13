@@ -759,6 +759,11 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
         X, y = check_X_y(X, y, ['csr', 'csc', 'coo'], dtype=np.float,
                          multi_output=True, y_numeric=not self.is_classif)
 
+        if not self.is_classif and np.all(np.diff(y) == 0.):
+            raise ValueError("The given input y must have atleast 2 targets"
+                             " to do regression analysis. You provided only"
+                             " one target {0}".format(np.unique(y)))
+
         # misc
         self.Xmean_ = X.mean(axis=0)
         self.Xstd_ = X.std(axis=0)
