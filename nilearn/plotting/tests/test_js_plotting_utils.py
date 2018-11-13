@@ -174,6 +174,14 @@ def test_colorscale_asymmetric_cmap_vmax():
         cmap, values, vmax=7, symmetric_cmap=False, vmin=1)
     assert (colors['vmin'], colors['vmax']) == (1, 7)
     assert (colors['norm'].vmax, colors['norm'].vmin) == (7, 1)
+    colors = js_plotting_utils.colorscale(
+        cmap, values, vmax=10, symmetric_cmap=False, vmin=6, threshold=5)
+    assert (colors['vmin'], colors['vmax']) == (0, 10)
+    assert (colors['norm'].vmax, colors['norm'].vmin) == (10, 0)
+    colors = js_plotting_utils.colorscale(
+        cmap, values, vmax=10, symmetric_cmap=False, vmin=None, threshold=5)
+    assert (colors['vmin'], colors['vmax']) == (0, 10)
+    assert (colors['norm'].vmax, colors['norm'].vmin) == (10, 0)
 
 
 def test_colorscale_asymmetric_cmap_negative_values():

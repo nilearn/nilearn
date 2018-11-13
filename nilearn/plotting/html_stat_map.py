@@ -424,7 +424,7 @@ def view_stat_map(stat_map_img, bg_img='MNI152', cut_coords=None,
         If `symmetric_cmap` is `True`, `vmin` is always equal to `-vmax` and
         cannot be chosen.
         If `symmetric_cmap` is `False`, `vmin` defaults to the min of the
-        image.
+        image, or 0 when a threshold is used.
     resampling_interpolation : string, optional (default continuous)
         The interpolation method for resampling.
         Can be 'continuous', 'linear', or 'nearest'.
