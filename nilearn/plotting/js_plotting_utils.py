@@ -204,7 +204,8 @@ def colorscale(cmap, values, threshold=None, symmetric_cmap=True,
         vmin = None
     if threshold is not None:
         if vmin is not None:
-            warnings.warn('setting both vmin and a threshold is not allowed')
+            warnings.warn('choosing both vmin and a threshold is not allowed; '
+                          'setting vmin to 0')
         vmin = 0
     if vmax is None:
         vmax = abs_values.max()
