@@ -1,5 +1,5 @@
 =====================================
-Introduction: nistats in a nutshell
+Introduction: NiStats in a nutshell
 =====================================
 
 .. contents:: **Contents**
@@ -7,18 +7,18 @@ Introduction: nistats in a nutshell
     :depth: 1
 
 
-What is nistats?
+What is NiStats?
 ===========================================================================
 
-.. topic:: **What is nistats?**
+.. topic:: **What is NiStats?**
 
-   Nistats is a Python module to perform voxel-wise analyses of functional magnetic resonance images (fMRI) using linear models. It provides functions to create design matrices, at the subject and group levels, to estimate them from images series and to compute statistical maps (contrasts). It allows to perform the same statistical analyses as `SPM`_ or `FSL`_ (but it does not provide tools for preprocessing stages (realignment, spatial normalization, etc.); for this, see `nipype`_.
+   Nistats is a Python module to perform voxel-wise analyses of functional magnetic resonance images (fMRI) using linear models. It provides functions to create design matrices, at the subject and group levels, to estimate them from images series and to compute statistical maps (contrasts). It allows to perform the same statistical analyses as `SPM`_ or `FSL`_ (but it does not provide tools for preprocessing stages (realignment, spatial normalization, etc.); for this, see `NiPype`_.
 
 .. _SPM: https://www.fil.ion.ucl.ac.uk/spm/
 
 .. _FSL: https://www.fmrib.ox.ac.uk/fsl
 
-.. _nipype: https://nipype.readthedocs.io/en/latest/
+.. _NiPype: https://nipype.readthedocs.io/en/latest/
 
 
 
@@ -65,7 +65,7 @@ From the knowledge of the impulse haemodynamic response, we can build a predicte
 Correlations are computed separately at each voxel and a correlation map can be produced displaying  the values of correlations (real numbers between -1 and +1) at each voxel. Generally, however, the maps presented in the papers report the significance of the correlations at each voxel, in forms of T, Z or p values for the null hypothesis test of no correlation (see below). For example, the following figure displays a Z-map showing voxels responding to auditory events. Large (positive or negative) Z values are unlikely to be due to chance alone. The map is tresholded so that only voxels with a p-value less than 1/1000 are coloured. 
 
 .. note::
-    In this approach, hypothesis tests are conducted in parallel at many voxels, increasing the liklelihood of False Positives. This is known as the problem of multiple comparisons. It is beyond the scope of this short notice to explain ways in which this problem can be approached. Let us just mention that this issue can be addressed in nistats by using random permutations tests.
+    In this approach, hypothesis tests are conducted in parallel at many voxels, increasing the liklelihood of False Positives. This is known as the Problem of `Multiple Comparisons`_. Some common strategies for dealing with this are discussed later in this page. This issue can also be addressed in NiStats by using random permutations tests.
 
 .. figure:: images/example-spmZ_map.png
 
@@ -104,7 +104,7 @@ With this we can do statistical inference: Given a pre-defined error rate :math:
           
 .. note:: It is cumbersome to work with Student distributions, since those always require to specify the number `dof` of degrees of freedom. To avoid this, we can transform `t` to another variable `z` such that comparing `t` to the Student distribution with `dof` degrees of freedom is equivalent to comparing `z` to a standard normal distribution. We call this a z-transform of `t`. We call the :math:`(1-\alpha)` quantile of the normal distribution the *threshold*, since we use this value to declare voxels active or not.
           
-Multiple comparisons
+Multiple Comparisons
 --------------------
 
 A well-known issue that arrives then is that of multiple comparisons:
@@ -128,7 +128,7 @@ Tutorials
 
 .. _installation:
 
-Installing nistats
+Installing NiStats
 ====================
 
 .. raw:: html
