@@ -191,7 +191,7 @@ class HTMLDocument(object):
 
 def colorscale(cmap, values, threshold=None, symmetric_cmap=True,
                vmax=None, vmin=None):
-    """Normalize a cmap, put it in plotly format, get threshold and range"""
+    """Normalize a cmap, put it in plotly format, get threshold and range."""
     cmap = mpl_cm.get_cmap(cmap)
     abs_values = np.abs(values)
     if not symmetric_cmap and (values.min() < 0):
