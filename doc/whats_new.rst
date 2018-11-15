@@ -135,13 +135,13 @@ Contributors
 The following people contributed to this release::
 
   15 Gael Varoquaux
-  112 Pierre Bellec
+  114 Pierre Bellec
   30 Michael Notter
-  21 Kshitij Chawla (kchawla-pi)
+  22 Kshitij Chawla (kchawla-pi)
   4 Kamalakar Daddy
   4 himanshupathak21061998
   1 Horea Christian
-  1 Jerome Dockes
+  7 Jerome Dockes
 
 0.5.0 beta
 ==========
