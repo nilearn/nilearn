@@ -7,9 +7,7 @@ from io import BytesIO
 from string import Template
 
 import numpy as np
-import matplotlib.pyplot as plt
 from matplotlib.image import imsave
-from matplotlib.colors import LinearSegmentedColormap
 
 from nibabel.affines import apply_affine
 
@@ -117,29 +115,6 @@ def _save_cm(output_cmap, cmap, format='png', n_colors=256):
     data = np.arange(0., n_colors) / (n_colors - 1.)
     data = data.reshape([1, n_colors])
     imsave(output_cmap, data, cmap=cmap, format=format)
-
-
-def _deduplicate_cmap(cmap, annotate, n_colors=256):
-    """Make sure that the colormap has no duplicated colors.
-       If a color is used more than once, it will be removed.
-       Returns: cmap_no_duplicate, value
-    """
-    # Extract a list of colors
-    cmap = plt.cm.get_cmap(cmap)
-    cmaplist = [cmap(i) for i in range(cmap.N)]
-
-    # Filter out any duplicated colors
-    mask = [cmaplist.count(cmap(i)) == 1 for i in range(cmap.N)]
-    if mask.count(True) > 1:
-        cmaplist = np.array(cmaplist)[np.array(mask)]
-        value = annotate
-        cmap_no_duplicate = LinearSegmentedColormap.from_list(
-            'Custom cmap', cmaplist, n_colors)
-    else:
-        # A single color survives, do not change cmap and do not show value
-        cmap_no_duplicate = cmap
-        value = False
-    return cmap_no_duplicate, value
 
 
 class StatMapView(HTMLDocument):
@@ -355,10 +330,10 @@ def _get_cut_slices(stat_map_img, cut_coords=None, threshold=None):
 
 
 def view_img(stat_map_img, bg_img='MNI152', cut_coords=None,
-             colorbar=True, title=None, threshold=1e-6, annotate=True,
-             draw_cross=True, black_bg='auto', cmap=cm.cold_hot,
-             symmetric_cmap=True, dim='auto', vmax=None,
-             resampling_interpolation='continuous', opacity=1, **kwargs):
+                  colorbar=True, title=None, threshold=1e-6, annotate=True,
+                  draw_cross=True, black_bg='auto', cmap=cm.cold_hot,
+                  symmetric_cmap=True, dim='auto', vmax=None, vmin=None,
+                  resampling_interpolation='continuous', opacity=1, **kwargs):
     """
     Interactive html viewer of a statistical map, with optional background
 
@@ -419,6 +394,12 @@ def view_img(stat_map_img, bg_img='MNI152', cut_coords=None,
         absolute value of the volume.
         If vmax is None and symmetric_cmap is False, vmax is the max
         value of the volume.
+    vmin : float, or None (default=None)
+        min value for mapping colors.
+        If `symmetric_cmap` is `True`, `vmin` is always equal to `-vmax` and
+        cannot be chosen.
+        If `symmetric_cmap` is `False`, `vmin` defaults to the min of the
+        image, or 0 when a threshold is used.
     resampling_interpolation : string, optional (default continuous)
         The interpolation method for resampling.
         Can be 'continuous', 'linear', or 'nearest'.
@@ -447,13 +428,12 @@ def view_img(stat_map_img, bg_img='MNI152', cut_coords=None,
         surface.
     """
 
-    # Prepare the color map, including thresholding
-    cmap, value = _deduplicate_cmap(cmap, annotate)
-    value = value and colorbar
+    # Prepare the color map and thresholding
     mask_img, stat_map_img, data, threshold = _mask_stat_map(
         stat_map_img, threshold)
     colors = colorscale(cmap, data.ravel(), threshold=threshold,
-                        symmetric_cmap=symmetric_cmap, vmax=vmax)
+                        symmetric_cmap=symmetric_cmap, vmax=vmax,
+                        vmin=vmin)
 
     # Prepare the data for the cuts
     bg_img, bg_min, bg_max, black_bg = _load_bg_img(stat_map_img, bg_img,
@@ -468,7 +448,7 @@ def view_img(stat_map_img, bg_img='MNI152', cut_coords=None,
     json_view['params'] = _json_view_params(
         stat_map_img.shape, stat_map_img.affine, colors['vmin'],
         colors['vmax'], cut_slices, black_bg, opacity, draw_cross, annotate,
-        title, colorbar, value)
+        title, colorbar, value=False)
     html_view = _json_view_to_html(json_view)
 
     return html_view
