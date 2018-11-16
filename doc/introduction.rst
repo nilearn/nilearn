@@ -1,5 +1,5 @@
 =====================================
-Introduction: NiStats in a nutshell
+Introduction: Nistats in a nutshell
 =====================================
 
 .. contents:: **Contents**
@@ -7,10 +7,10 @@ Introduction: NiStats in a nutshell
     :depth: 1
 
 
-What is NiStats?
-===========================================================================
+What is Nistats?
+================
 
-.. topic:: **What is NiStats?**
+.. topic:: **What is Nistats?**
 
    Nistats is a Python module to perform voxel-wise analyses of functional magnetic resonance images (fMRI) using linear models. It provides functions to create design matrices, at the subject and group levels, to estimate them from images series and to compute statistical maps (contrasts). It allows to perform the same statistical analyses as `SPM`_ or `FSL`_ (but it does not provide tools for preprocessing stages (realignment, spatial normalization, etc.); for this, see `NiPype`_.
 
@@ -36,7 +36,7 @@ A cerebral MR image provides a 3D image of the brain that can be decomposed into
 
 .. _voxels: https://en.wikipedia.org/wiki/Voxel
 
-.. note:: Before fMRI images can be used to do meaningful comparisons, they must be processed to ensure that the voxels that are being compared represent the same brain regions, irrespective of the variability in size and shape of the brain and its microarchitecture across different subjects in the experiment. The process is called spatial registration or spatial normalization. During this procedure, the voxels of all the brain images are 'registered' to correspond to the same region of the brain. Usually, the images (their voxels) are registered to a standard 'template' brain image (its voxels). One often used standard template is the MNI152 template from the Montreal Neurological Institute. Once this is done, the coordinates of a voxel are in the same space as the template and can be used to estimate its brain location using brain atlases based on that same template. As already mentioned, the NiStats package is not meant to perform spatial preprocessing, but only statistical analyses on the voxel times series, regardless of the coordinate system.
+.. note:: Before fMRI images can be used to do meaningful comparisons, they must be processed to ensure that the voxels that are being compared represent the same brain regions, irrespective of the variability in size and shape of the brain and its microarchitecture across different subjects in the experiment. The process is called spatial registration or spatial normalization. During this procedure, the voxels of all the brain images are 'registered' to correspond to the same region of the brain. Usually, the images (their voxels) are registered to a standard 'template' brain image (its voxels). One often used standard template is the MNI152 template from the Montreal Neurological Institute. Once this is done, the coordinates of a voxel are in the same space as the template and can be used to estimate its brain location using brain atlases based on that same template. As already mentioned, the Nistats package is not meant to perform spatial preprocessing, but only statistical analyses on the voxel times series, regardless of the coordinate system.
 
 fMRI data modelling
 -------------------
@@ -65,7 +65,7 @@ From the knowledge of the impulse haemodynamic response, we can build a predicte
 Correlations are computed separately at each voxel and a correlation map can be produced displaying  the values of correlations (real numbers between -1 and +1) at each voxel. Generally, however, the maps presented in the papers report the significance of the correlations at each voxel, in forms of T, Z or p values for the null hypothesis test of no correlation (see below). For example, the following figure displays a Z-map showing voxels responding to auditory events. Large (positive or negative) Z values are unlikely to be due to chance alone. The map is tresholded so that only voxels with a p-value less than 1/1000 are coloured. 
 
 .. note::
-    In this approach, hypothesis tests are conducted in parallel at many voxels, increasing the liklelihood of False Positives. This is known as the Problem of `Multiple Comparisons`_. Some common strategies for dealing with this are discussed later in this page. This issue can also be addressed in NiStats by using random permutations tests.
+    In this approach, hypothesis tests are conducted in parallel at many voxels, increasing the liklelihood of False Positives. This is known as the Problem of `Multiple Comparisons`_. Some common strategies for dealing with this are discussed later in this page. This issue can also be addressed in Nistats by using random permutations tests.
 
 .. figure:: images/example-spmZ_map.png
 
@@ -128,8 +128,8 @@ Tutorials
 
 .. _installation:
 
-Installing NiStats
-====================
+Installing Nistats
+==================
 
 .. raw:: html
    :file: install_doc_component.html
