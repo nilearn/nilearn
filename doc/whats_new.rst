@@ -76,7 +76,7 @@ Notable Changes
  :func:`nilearn.image.clean_img` is None
  and cannot be None if `low_pass` or `high_pass` is specified.
 
-**LOTS of changes and improvements. Detailed change list follows.**
+Lots of changes and improvements. Detailed change list for each release follows.
 
 0.5.0 rc
 ========
@@ -136,7 +136,7 @@ The following people contributed to this release::
   15 Gael Varoquaux
   114 Pierre Bellec
   30 Michael Notter
-  27 Kshitij Chawla (kchawla-pi)
+  28 Kshitij Chawla (kchawla-pi)
   4 Kamalakar Daddy
   4 himanshupathak21061998
   1 Horea Christian
