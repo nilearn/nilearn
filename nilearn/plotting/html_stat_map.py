@@ -329,11 +329,23 @@ def _get_cut_slices(stat_map_img, cut_coords=None, threshold=None):
     return cut_slices
 
 
-def view_stat_map(stat_map_img, bg_img='MNI152', cut_coords=None,
-                  colorbar=True, title=None, threshold=1e-6, annotate=True,
-                  draw_cross=True, black_bg='auto', cmap=cm.cold_hot,
-                  symmetric_cmap=True, dim='auto', vmax=None, vmin=None,
-                  resampling_interpolation='continuous', opacity=1, **kwargs):
+def view_img(stat_map_img, bg_img='MNI152',
+             cut_coords=None,
+             colorbar=True,
+             title=None,
+             threshold=1e-6,
+             annotate=True,
+             draw_cross=True,
+             black_bg='auto',
+             cmap=cm.cold_hot,
+             symmetric_cmap=True,
+             dim='auto',
+             vmax=None,
+             vmin=None,
+             resampling_interpolation='continuous',
+             opacity=1,
+             **kwargs
+             ):
     """
     Interactive html viewer of a statistical map, with optional background
 
