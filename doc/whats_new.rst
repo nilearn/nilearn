@@ -136,7 +136,7 @@ The following people contributed to this release::
   15 Gael Varoquaux
   114 Pierre Bellec
   30 Michael Notter
-  22 Kshitij Chawla (kchawla-pi)
+  27 Kshitij Chawla (kchawla-pi)
   4 Kamalakar Daddy
   4 himanshupathak21061998
   1 Horea Christian
