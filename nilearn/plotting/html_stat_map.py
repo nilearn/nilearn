@@ -344,7 +344,7 @@ def view_img(stat_map_img, bg_img='MNI152',
              vmin=None,
              resampling_interpolation='continuous',
              opacity=1,
-             **kwargs,
+             **kwargs
              ):
     """
     Interactive html viewer of a statistical map, with optional background
