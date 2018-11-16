@@ -10,18 +10,17 @@ NEW
   eg for use in a notebook.
 
 - New functions :func:`nilearn.plotting.view_surf` and
-  :func:`nilearn.plotting.view_surf` and
   :func:`nilearn.plotting.view_img_on_surf` for interactive visualization of
   maps on the cortical surface in a web browser.
 
 - New functions :func:`nilearn.plotting.view_connectome` and
-  :func:`nilearn.plotting.view_markers` to visualize connectomes and
-  seed locations in 3D
+  :func:`nilearn.plotting.view_markers` for interactive visualization of
+  connectomes and seed locations in 3D
 
 - New function :func:`nilearn.plotting.view_img` for interactive
   visualization of volumes with 3 orthogonal cuts.
 
-:Note: :func:`nilearn.plotting.view_img` was `nilearn.plotting.view_stat_map` in preview builds.
+:Note: :func:`nilearn.plotting.view_img` was `nilearn.plotting.view_stat_map` in alpha and beta releases.
 
 - :func:`nilearn.plotting.find_parcellation_cut_coords` for
   extraction of coordinates on brain parcellations denoted as labels.
@@ -74,7 +73,7 @@ Notable Changes
 ---------------
 
  Default value of `t_r` in :func:`nilearn.signal.clean` and
- :func:`nilearn.image.clean_img` is now 2.5
+ :func:`nilearn.image.clean_img` is None
  and cannot be None if `low_pass` or `high_pass` is specified.
 
 **LOTS of changes and improvements. Detailed change list follows.**
@@ -86,8 +85,8 @@ Highlights
 ----------
 
 :func:`nilearn.plotting.view_img` (formerly `nilearn.plotting.view_stat_map` in
-NiLearn 0.5.0 pre-release versions) generates significantly smaller notebooks
-and HTML pages while getting a more consistent look and feel with NiLearn's
+Nilearn 0.5.0 pre-release versions) generates significantly smaller notebooks
+and HTML pages while getting a more consistent look and feel with Nilearn's
 plotting functions. Huge shout out to Pierre Bellec (pbellec) for
 making a great feature awesome and for sportingly accommodating all our feedback.
 
