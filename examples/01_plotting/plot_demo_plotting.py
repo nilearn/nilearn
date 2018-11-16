@@ -46,14 +46,14 @@ plotting.plot_stat_map(stat_img,
                        cut_coords=[36, -27, 66])
 
 ###############################################################################
-# Making interactive plots with function `view_stat_map`
-# ------------------------------------------------------
+# Making interactive visualizations with function `view_img`
+# ----------------------------------------------------------
 # An alternative to :func:`nilearn.plotting.plot_stat_map` is to use
-# :func:`nilearn.plotting.view_stat_map` that gives more interactive
+# :func:`nilearn.plotting.view_img` that gives more interactive
 # visualizations in a web browser. See :ref:`interactive-stat-map-plotting`
 # for more details.
 
-view = plotting.view_stat_map(stat_img, threshold=3)
+view = plotting.view_img(stat_img, threshold=3)
 
 # uncomment this to open the plot in a web browser:
 # view.open_in_browser()
