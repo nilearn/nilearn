@@ -394,13 +394,14 @@ def parse_bids_filename(img_path):
         'file_tag', 'file_type' and 'file_fields'.
 
         The 'file_tag' field refers to the last part of the file under the
-        BIDS convention that is of the form *_tag.type. Contrary to the rest
+        BIDS convention that is of the form \*_tag.type. Contrary to the rest
         of the file name it is not a key-value pair. This notion should be
         revised in the case we are handling derivatives since so far the
         convention will keep the tag prepended to any fields added in the
         case of preprocessed files that also end with another tag. This parser
         will consider any tag in the middle of the file name as a key with no
         value and will be included in the 'file_fields' key.
+
     """
     reference = {}
     reference['file_path'] = img_path

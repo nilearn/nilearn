@@ -300,10 +300,12 @@ class LikelihoodModelResults(object):
 
         Notes
         -----
+        
         Confidence intervals are two-tailed.
-        TODO:
+        
         tails : string, optional
-            `tails` can be "two", "upper", or "lower"
+            Possible values: 'two' | 'upper' | 'lower'
+
         '''
         if cols is None:
             lower = self.theta - inv_t_cdf(1 - alpha / 2, self.df_resid) *\

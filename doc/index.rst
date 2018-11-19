@@ -19,7 +19,7 @@
 .. |design_matrix| image:: auto_examples/04_low_level_functions/images/thumb/sphx_glr_plot_design_matrix_thumb.png
      :target: auto_examples/04_low_level_functions/plot_design_matrix.html
 
-.. |first_level| image:: auto_examples/02_first_level_models/images/thumb/sphx_glr_plot_localizer_analysis_thumb.png
+.. |first_level| image:: auto_examples/02_first_level_models/images/thumb/sphx_glr_plot_localizer_surface_analysis_thumb.png
      :target: auto_examples/02_first_level_models/plot_localizer_analysis.html
 
 .. |second_level| image:: auto_examples/03_second_level_models/images/thumb/sphx_glr_plot_thresholding_thumb.png
