@@ -84,11 +84,11 @@ print(models_events[0][0]['trial_type'].value_counts())
 # ----------------------------
 # Now we simply fit each first level model and plot for each subject the
 # contrast that reveals the language network (language - string). Notice that
-# we can define a contrast using the names of the conditions especified in the
+# we can define a contrast using the names of the conditions specified in the
 # events dataframe. Sum, substraction and scalar multiplication are allowed.
 
 ############################################################################
-# set the threshold as the z-variate with an uncorrected p-value of 0.001 
+# Set the threshold as the z-variate with an uncorrected p-value of 0.001
 from scipy.stats import norm
 p001_unc = norm.isf(0.001)
 
@@ -141,3 +141,4 @@ plotting.plot_glass_brain(zmap, colorbar=True, threshold=p001_unc,
                           title='Group language network (unc p<0.001)',
                           plot_abs=False, display_mode='x')
 plotting.show()
+
