@@ -25,8 +25,8 @@
 .. |second_level| image:: auto_examples/03_second_level_models/images/thumb/sphx_glr_plot_thresholding_thumb.png
      :target: auto_examples/03_second_level_models/plot_thresholding.html
 
-.. |bids| image:: auto_examples/01_tutorials/images/thumb/sphx_glr_plot_bids_analysis_thumb.png
-     :target: auto_examples/01_tutorials/plot_bids_analysis.html
+.. |bids| image:: auto_examples/05_complete_examples/images/thumb/sphx_glr_plot_bids_analysis_thumb.png
+     :target: auto_examples/05_complete_examples/plot_bids_analysis.html
 
 
 .. raw:: html
