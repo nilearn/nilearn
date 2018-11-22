@@ -958,3 +958,20 @@ def test_add_markers_using_plot_glass_brain():
     coords = [(-34, -39, -9)]
     fig.add_markers(coords)
     fig.close()
+
+
+def test_plotting_functions_with_TiledSlicer():
+    img = _generate_img()
+    plot_stat_map(img,display_mode='tiled')
+    plot_anat(display_mode='tiled')
+    plot_img(img,display_mode='tiled')
+    plt.close()
+
+
+def test_display_methods_TiledSlicer():
+    img = _generate_img()
+    display = plot_img(img,display_mode='tiled')
+    display.add_overlay(img,threshold=0)
+    display.add_edges(img,color='c')
+    display.add_contours(img,contours=2,linewidth=4,
+            colors=['limegreen', 'yellow'])
