@@ -125,6 +125,16 @@ plotting.plot_stat_map(stat_img, display_mode='yz',
                        cut_coords=[-27, 60],
                        title="display_mode='yz', cut_coords=[-27, 60]")
 
+########################################
+# Visualizing in - three views 'sagittal', 'coronal' and 'axial' and arranging
+# views in a 2x2 fashion
+# -------------------------------------------------------------------------
+# display_mode='tiled' for saggital, coronal and axial view with plots
+# arranged in a 2x2 matrix
+
+plotting.plot_stat_map(stat_img, display_mode='tiled',
+                       title="display_mode='tiled'")
+
 ###############################################################################
 # Demonstrating various display features
 # ---------------------------------------
