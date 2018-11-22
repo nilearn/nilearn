@@ -1,4 +1,4 @@
 Complete examples
 -----------------
 
-These are examples focused on showcasing complete step-by-step examples, including FIrst and Second Level Models.
+Complete step-by-step examples, including First and Second Level Models.
