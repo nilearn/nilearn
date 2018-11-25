@@ -277,6 +277,24 @@ def test_first_level_model_glm_computation():
         # assert_equal(len(results1), len(results2)) ####FIX
 
 
+def test_first_level_glm_computation_with_memory_caching():
+    with InTemporaryDirectory():
+        shapes = ((7, 8, 9, 10),)
+        mask, FUNCFILE, _ = write_fake_fmri_data(shapes)
+        FUNCFILE = FUNCFILE[0]
+        func_img = load(FUNCFILE)
+        # initialize FirstLevelModel with memory option enabled
+        t_r = 10.0
+        slice_time_ref = 0.
+        events = basic_paradigm()
+        # ols case
+        model = FirstLevelModel(t_r, slice_time_ref, mask=mask,
+                                drift_model='polynomial', drift_order=3,
+                                memory='nilearn_cache', memory_level=1,
+                                minimize_memory=False)
+        model.fit(func_img, events)
+
+
 def test_first_level_model_contrast_computation():
     with InTemporaryDirectory():
         shapes = ((7, 8, 9, 10),)
