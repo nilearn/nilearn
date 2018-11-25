@@ -207,7 +207,7 @@ def test_second_level_model_contrast_computation():
         assert_raises(ValueError, model.compute_contrast, None)
 
 
-def test_second_level_model_contrast_computation_with_mem():
+def test_second_level_model_contrast_computation_with_memory_caching():
     with InTemporaryDirectory():
         shapes = ((7, 8, 9, 1),)
         mask, FUNCFILE, _ = write_fake_fmri_data(shapes)
