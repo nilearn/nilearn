@@ -140,7 +140,7 @@ workflows:
             branches:
               ignore:
                 - master
-                - test-circleci
+                - test-circleci  # test branch to check if merges occur on master as expected.
 
       - full-build:
           filters:
