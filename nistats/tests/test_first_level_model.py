@@ -142,7 +142,7 @@ def test_run_glm():
     n, p, q = 100, 80, 10
     X, Y = np.random.randn(p, q), np.random.randn(p, n)
 
-    # ols case
+    # Ordinary Least Squares case
     labels, results = run_glm(Y, X, 'ols')
     assert_array_equal(labels, np.zeros(n))
     assert_equal(list(results.keys()), [0.0])
@@ -262,7 +262,7 @@ def test_first_level_model_glm_computation():
         t_r = 10.0
         slice_time_ref = 0.
         events = basic_paradigm()
-        # ols case
+        # Ordinary Least Squares case
         model = FirstLevelModel(t_r, slice_time_ref, mask=mask,
                                 drift_model='polynomial', drift_order=3,
                                 minimize_memory=False)
@@ -287,7 +287,7 @@ def test_first_level_glm_computation_with_memory_caching():
         t_r = 10.0
         slice_time_ref = 0.
         events = basic_paradigm()
-        # ols case
+        # Ordinary Least Squares case
         model = FirstLevelModel(t_r, slice_time_ref, mask=mask,
                                 drift_model='polynomial', drift_order=3,
                                 memory='nilearn_cache', memory_level=1,
@@ -305,7 +305,7 @@ def test_first_level_model_contrast_computation():
         t_r = 10.0
         slice_time_ref = 0.
         events = basic_paradigm()
-        # ols case
+        # Ordinary Least Squares case
         model = FirstLevelModel(t_r, slice_time_ref, mask=mask,
                                 drift_model='polynomial', drift_order=3,
                                 minimize_memory=False)

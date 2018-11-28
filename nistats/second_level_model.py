@@ -407,7 +407,7 @@ class SecondLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
                 '%i rows in design matrix do not match with %i maps' %
                 (self.design_matrix_.shape[0], len(effect_maps)))
 
-        # Fit an OLS regression for parametric statistics
+        # Fit an Ordinary Least Squares regression for parametric statistics
         Y = self.masker_.transform(effect_maps)
         if self.memory:
             mem_glm = self.memory.cache(run_glm, ignore=['n_jobs'])
