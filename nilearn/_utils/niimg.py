@@ -118,6 +118,8 @@ def load_niimg(niimg, dtype=None):
     if dtype is not None:
         niimg = new_img_like(niimg, niimg.get_data().astype(dtype),
                              niimg.affine,copy_header=True)
+        niimg.header.set_data_dtype(dtype)
+
     return niimg
 
 
