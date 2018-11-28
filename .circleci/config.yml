@@ -144,4 +144,4 @@ workflows:
             branches:
               only:
                 - master
-                - test-circleci
+                - test-circleci  # test branch to check if merges occur on master as expected.
