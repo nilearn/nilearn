@@ -1,5 +1,5 @@
 """Studying first-level-model details in a trials-and-error fashion
-================================================================
+===================================================================
 
 In this tutorial, we study the parametrization of the first-level
 model used for fMRI data analysis and clarify their impact on the
@@ -10,7 +10,8 @@ new features in the analysis and look at the outcome, i.e. the
 resulting brain maps.
 
 Readers without prior experience in fMRI data analysis should first
-run the :ref:`plot_single_subject_single_run` tutorial to get a bit more
+run the `Analysis of a single session, single subject fMRI dataset`_
+tutorial to get a bit more
 familiar with the base concepts, and only then run this tutorial example.
 
 To run this example, you must launch IPython via ``ipython
@@ -19,6 +20,8 @@ To run this example, you must launch IPython via ``ipython
 .. contents:: **Contents**
     :local:
     :depth: 1
+
+.. _Analysis of a single session, single subject fMRI dataset: plot_single_subject_single_run.html
 
 """
 
@@ -357,9 +360,10 @@ plt.show()
 # is to estimate confounding effects from the data themselves, using
 # the compcorr approach, and take those into account in the model.
 #
-# For this we rely on the so-called :ref:`high_variance_confounds
-# <https://nilearn.github.io/modules/generated/nilearn.image.high_variance_confounds.html>`
+# For this we rely on the so-called `high_variance_confounds`_
 # routine of Nilearn.
+#
+# .. _high_variance_confounds: https://nilearn.github.io/modules/generated/nilearn.image.high_variance_confounds.html
 
 
 from nilearn.image import high_variance_confounds

@@ -42,7 +42,7 @@ jobs:
           command: |
             source activate testenv
             pip install -e .
-            set -o pipefail && cd doc && make html 2>&1 | tee ~/log.txt
+            set -o pipefail && cd doc && make html-strict 2>&1 | tee ~/log.txt
           no_output_timeout: 5h
       - save_cache:
           key: v1-packages+datasets-{{ .Branch }}

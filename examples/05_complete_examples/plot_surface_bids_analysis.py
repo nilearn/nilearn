@@ -8,8 +8,7 @@ analysis) in a 10-subjects dataset and visualizing the results.
 More specifically:
 
 1. Download an fMRI BIDS dataset with two language conditions to contrast.
-2. Project the data to a standard mesh, fsaverage5, aka the Freesurfer
-template mesh downsampled to about 10k nodes per hemisphere.
+2. Project the data to a standard mesh, fsaverage5, aka the Freesurfer template mesh downsampled to about 10k nodes per hemisphere.
 3. Run the first level model objects
 4. Fit a second level model on the fitted first level models. 
 
