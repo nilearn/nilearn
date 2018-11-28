@@ -13,14 +13,15 @@ Design matrices contain three different types of regressors:
 1. Task-related regressors, that result from the convolution
    of the experimental paradigm regressors with hemodynamic models
    A hemodynamic model is one of:
-        'spm' : linear filter used in the SPM software
-        'glover' : linear filter estimated by G.Glover
-        'spm + derivative', 'glover + derivative': the same linear models,
+   
+         - 'spm' : linear filter used in the SPM software
+         - 'glover' : linear filter estimated by G.Glover
+         - 'spm + derivative', 'glover + derivative': the same linear models,
             plus their time derivative (2 regressors per condition)
-        'spm + derivative + dispersion', 'glover + derivative + dispersion':
+         - 'spm + derivative + dispersion', 'glover + derivative + dispersion':
             idem plus the derivative wrt the dispersion parameter of the hrf
             (3 regressors per condition)
-        'fir' : finite impulse response model, generic linear filter
+         - 'fir' : finite impulse response model, generic linear filter
 
 2. User-specified regressors, that represent information available on
    the data, e.g. motion parameters, physiological data resampled at
@@ -32,6 +33,7 @@ Design matrices contain three different types of regressors:
    estimates.
 
 Author: Bertrand Thirion, 2009-2015
+
 """
 from __future__ import with_statement
 from warnings import warn
@@ -291,7 +293,7 @@ def make_first_level_design_matrix(
 
     events : DataFrame instance, optional
         Events data that describes the experimental paradigm.
-        The DataFrame instance might have these keys:
+         The DataFrame instance might have these keys:
             'onset': column to specify the start time of each events in
                      seconds. An error is raised if this key is missing.
             'trial_type': column to specify per-event experimental conditions
@@ -303,6 +305,7 @@ def make_first_level_design_matrix(
             'modulation': column to specify the amplitude of each
                           events. If missing the default is set to
                           ones(n_events).
+        
         An experimental paradigm is valid if it has an 'onset' key
         and a 'duration' key.
         If these keys are missing an error will be raised.

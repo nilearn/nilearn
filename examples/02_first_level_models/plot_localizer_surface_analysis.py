@@ -7,11 +7,9 @@ sampled on the cortical surface and visualizing the results.
 More specifically:
 
 1. A sequence of fMRI volumes are loaded
-2. fMRI data are projected onto a reference cortical surface (the
-freesurfer template, fsaverage)
+2. fMRI data are projected onto a reference cortical surface (the freesurfer template, fsaverage)
 3. A design matrix describing all the effects related to the data is computed
-4. A GLM is applied to the dataset (effect/covariance,
-   then contrast estimation)
+4. A GLM is applied to the dataset (effect/covariance, then contrast estimation)
 
 The result of the analysis are statistical maps that are defined on
 the brain mesh. We display them using Nilearn capabilities.
@@ -19,11 +17,9 @@ the brain mesh. We display them using Nilearn capabilities.
 The projection of fMRI data onto a given brain mesh requires that both
 are initially defined in the same space.
 
-* The functional data should be coregistered to the anatomy from which
-  the mesh was obtained.
+* The functional data should be coregistered to the anatomy from which the mesh was obtained.
 
-* Another possibility, used here, is to project the normalized fMRI
-  data to an MNI-coregistered mesh, such as fsaverage.
+* Another possibility, used here, is to project the normalized fMRI data to an MNI-coregistered mesh, such as fsaverage.
 
 The advantage of this second approach is that it makes it easy to run
 second-level analyses on the surface. On the other hand, it is

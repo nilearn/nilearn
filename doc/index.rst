@@ -11,7 +11,7 @@
     scientific stack like Scipy, Numpy and Pandas.
 
 
-.. Here we are building the carrousel
+.. Here we are building the carousel
 
 .. |hrf| image:: auto_examples/04_low_level_functions/images/thumb/sphx_glr_plot_hrf_thumb.png
    :target: auto_examples/04_low_level_functions/plot_hrf.html
@@ -19,14 +19,14 @@
 .. |design_matrix| image:: auto_examples/04_low_level_functions/images/thumb/sphx_glr_plot_design_matrix_thumb.png
      :target: auto_examples/04_low_level_functions/plot_design_matrix.html
 
-.. |first_level| image:: auto_examples/02_first_level_models/images/thumb/sphx_glr_plot_localizer_analysis_thumb.png
+.. |first_level| image:: auto_examples/02_first_level_models/images/thumb/sphx_glr_plot_localizer_surface_analysis_thumb.png
      :target: auto_examples/02_first_level_models/plot_localizer_analysis.html
 
 .. |second_level| image:: auto_examples/03_second_level_models/images/thumb/sphx_glr_plot_thresholding_thumb.png
      :target: auto_examples/03_second_level_models/plot_thresholding.html
 
-.. |bids| image:: auto_examples/01_tutorials/images/thumb/sphx_glr_plot_bids_analysis_thumb.png
-     :target: auto_examples/01_tutorials/plot_bids_analysis.html
+.. |bids| image:: auto_examples/05_complete_examples/images/thumb/sphx_glr_plot_bids_analysis_thumb.png
+     :target: auto_examples/05_complete_examples/plot_bids_analysis.html
 
 
 .. raw:: html

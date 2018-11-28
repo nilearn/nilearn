@@ -6,12 +6,14 @@ that includes an 'onset' field.
 
 This yields the onset time of the events in the experimental paradigm.
 It can also contain:
+
     * a 'trial_type' field that yields the condition identifier.
     * a 'duration' field that yields event duration (for so-called block
         paradigms).
     * a 'modulation' field that associated a scalar value to each event.
 
 Author: Bertrand Thirion, 2015
+
 """
 from __future__ import with_statement
 import numpy as np

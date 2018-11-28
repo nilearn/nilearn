@@ -472,16 +472,17 @@ def compute_regressor(exp_condition, hrf_model, frame_times, con_id='cond',
     Notes
     -----
     The different hemodynamic models can be understood as follows:
-    'spm': this is the hrf model used in SPM
-    'spm + derivative': SPM model plus its time derivative (2 regressors)
-    'spm + time + dispersion': idem, plus dispersion derivative (3 regressors)
-    'glover': this one corresponds to the Glover hrf
-    'glover + derivative': the Glover hrf + time derivative (2 regressors)
-    'glover + derivative + dispersion': idem + dispersion derivative
+     - 'spm': this is the hrf model used in SPM
+     - 'spm + derivative': SPM model plus its time derivative (2 regressors)
+     - 'spm + time + dispersion': idem, plus dispersion derivative (3 regressors)
+     - 'glover': this one corresponds to the Glover hrf
+     - 'glover + derivative': the Glover hrf + time derivative (2 regressors)
+     - 'glover + derivative + dispersion': idem + dispersion derivative
                                         (3 regressors)
     'fir': finite impulse response basis, a set of delayed dirac models
            with arbitrary length. This one currently assumes regularly spaced
            frame times (i.e. fixed time of repetition).
+    
     It is expected that spm standard and Glover model would not yield
     large differences in most cases.
 
