@@ -3,7 +3,7 @@ Extracting brain signal from spheres
 ====================================
 
 This example extract brain signals from spheres described by the coordinates
-of their center in MNI space and a given radius in millimeters. In particular,
+of their center in MNI space JUNK FOR TESTING TO BE REMOVED and a given radius in millimeters. In particular,
 this example extracts signals from Default Mode Network regions and compute a
 connectome from them.
 
