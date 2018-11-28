@@ -15,7 +15,7 @@ matrix:
   # setting the status
   fast_finish: true
   allow_failures:
-    # allow_failures seems to be keyed on the python version
+    # allow_failures seems to be keyed on the python version.
     - python: 2.7
   include:
     - env: DISTRIB="conda" PYTHON_VERSION="2.7"
