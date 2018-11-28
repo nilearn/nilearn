@@ -400,7 +400,7 @@ class SecondLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         # Get effect_maps appropriate for chosen contrast
         effect_maps = _infer_effect_maps(self.second_level_input_,
                                          first_level_contrast)
-        # check design matrix X and effect maps Y agree on number of rows
+        # Check design matrix X and effect maps Y agree on number of rows
         if len(effect_maps) != self.design_matrix_.shape[0]:
             raise ValueError(
                 'design_matrix does not match the number of maps considered. '
