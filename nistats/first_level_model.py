@@ -567,7 +567,7 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
 
 
 def first_level_models_from_bids(
-        dataset_path, task_label, space_label, img_filters=[],
+        dataset_path, task_label, space_label, img_filters=None,
         t_r=None, slice_time_ref=0., hrf_model='glover', drift_model='cosine',
         period_cut=128, drift_order=1, fir_delays=[0], min_onset=-24,
         mask=None, target_affine=None, target_shape=None, smoothing_fwhm=None,
@@ -593,7 +593,7 @@ def first_level_models_from_bids(
         Specifies the space label of the preproc.nii images.
         As they are specified in the file names like _space-<space_label>_.
 
-    img_filters: list of tuples (str, str), optional (default: [])
+    img_filters: list of tuples (str, str), optional (default: None)
         Filters are of the form (field, label). Only one filter per field
         allowed. A file that does not match a filter will be discarded.
         Possible filters are 'acq', 'rec', 'run', 'res' and 'variant'.
@@ -625,6 +625,7 @@ def first_level_models_from_bids(
         Items for the FirstLevelModel fit function of their respective model.
     """
     # check arguments
+    img_filters = img_filters if img_filters else []
     if not isinstance(dataset_path, str):
         raise TypeError('dataset_path must be a string, instead %s was given' %
                         type(task_label))
