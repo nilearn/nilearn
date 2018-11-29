@@ -46,7 +46,7 @@ def test_high_level_glm_with_paths():
         mask, FUNCFILE, _ = write_fake_fmri_data(shapes)
         FUNCFILE = FUNCFILE[0]
         func_img = load(FUNCFILE)
-        # ols case
+        # Ordinary Least Squares case
         model = SecondLevelModel(mask=mask)
         # asking for contrast before model fit gives error
         assert_raises(ValueError, model.compute_contrast, [])
@@ -150,7 +150,7 @@ def test_second_level_model_glm_computation():
         mask, FUNCFILE, _ = write_fake_fmri_data(shapes)
         FUNCFILE = FUNCFILE[0]
         func_img = load(FUNCFILE)
-        # ols case
+        # Ordinary Least Squares case
         model = SecondLevelModel(mask=mask)
         Y = [func_img] * 4
         X = pd.DataFrame([[1]] * 4, columns=['intercept'])
@@ -172,7 +172,7 @@ def test_second_level_model_contrast_computation():
         mask, FUNCFILE, _ = write_fake_fmri_data(shapes)
         FUNCFILE = FUNCFILE[0]
         func_img = load(FUNCFILE)
-        # ols case
+        # Ordinary Least Squares case
         model = SecondLevelModel(mask=mask)
         # asking for contrast before model fit gives error
         assert_raises(ValueError, model.compute_contrast, 'intercept')
@@ -205,3 +205,23 @@ def test_second_level_model_contrast_computation():
         X = pd.DataFrame(np.random.rand(4, 2), columns=['r1', 'r2'])
         model = model.fit(Y, design_matrix=X)
         assert_raises(ValueError, model.compute_contrast, None)
+
+
+def test_second_level_model_contrast_computation_with_memory_caching():
+    with InTemporaryDirectory():
+        shapes = ((7, 8, 9, 1),)
+        mask, FUNCFILE, _ = write_fake_fmri_data(shapes)
+        FUNCFILE = FUNCFILE[0]
+        func_img = load(FUNCFILE)
+        # Ordinary Least Squares case
+        model = SecondLevelModel(mask=mask, memory='nilearn_cache')
+        # fit model
+        Y = [func_img] * 4
+        X = pd.DataFrame([[1]] * 4, columns=['intercept'])
+        model = model.fit(Y, design_matrix=X)
+        ncol = len(model.design_matrix_.columns)
+        c1 = np.eye(ncol)[0, :]
+        # test memory caching for compute_contrast
+        model.compute_contrast(c1, output_type='z_score')
+        # or simply pass nothing
+        model.compute_contrast()

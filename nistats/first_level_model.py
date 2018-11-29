@@ -20,7 +20,7 @@ import json
 
 import numpy as np
 import pandas as pd
-from nibabel import Nifti1Image, AnalyzeImage
+from nibabel import Nifti1Image
 
 from sklearn.base import BaseEstimator, TransformerMixin, clone
 from sklearn.externals.joblib import Memory
@@ -454,11 +454,11 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
 
             if self.verbose > 1:
                 t_masking = time.time() - t_masking
-                sys.stderr.write('Masker took %d seconds          \n' % t_masking)
+                sys.stderr.write('Masker took %d seconds       \n' % t_masking)
 
             if self.signal_scaling:
                 Y, _ = mean_scaling(Y, self.scaling_axis)
-            if self.memory is not None:
+            if self.memory:
                 mem_glm = self.memory.cache(run_glm, ignore=['n_jobs'])
             else:
                 mem_glm = run_glm

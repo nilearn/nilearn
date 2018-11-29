@@ -16,6 +16,7 @@ import numpy as np
 from nibabel import Nifti1Image
 
 from sklearn.base import BaseEstimator, TransformerMixin, clone
+from sklearn.externals.joblib import Memory
 from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._utils import CacheMixin
 from nilearn.input_data import NiftiMasker
@@ -101,11 +102,14 @@ class SecondLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
 
     """
     def __init__(self, mask=None, smoothing_fwhm=None,
-                 memory=None, memory_level=1, verbose=0,
+                 memory=Memory(None), memory_level=1, verbose=0,
                  n_jobs=1, minimize_memory=True):
         self.mask = mask
         self.smoothing_fwhm = smoothing_fwhm
-        self.memory = memory
+        if isinstance(memory, _basestring):
+            self.memory = Memory(memory)
+        else:
+            self.memory = memory
         self.memory_level = memory_level
         self.verbose = verbose
         self.n_jobs = n_jobs
@@ -399,18 +403,17 @@ class SecondLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         # Get effect_maps appropriate for chosen contrast
         effect_maps = _infer_effect_maps(self.second_level_input_,
                                          first_level_contrast)
-        # check design matrix X and effect maps Y agree on number of rows
+        # Check design matrix X and effect maps Y agree on number of rows
         if len(effect_maps) != self.design_matrix_.shape[0]:
             raise ValueError(
                 'design_matrix does not match the number of maps considered. '
                 '%i rows in design matrix do not match with %i maps' %
                 (self.design_matrix_.shape[0], len(effect_maps)))
 
-        # Fit an OLS regression for parametric statistics
+        # Fit an Ordinary Least Squares regression for parametric statistics
         Y = self.masker_.transform(effect_maps)
-        if self.memory is not None:
-            arg_ignore = ['n_jobs']
-            mem_glm = self.memory.cache(run_glm, ignore=arg_ignore)
+        if self.memory:
+            mem_glm = self.memory.cache(run_glm, ignore=['n_jobs'])
         else:
             mem_glm = run_glm
         labels, results = mem_glm(Y, self.design_matrix_.values,
@@ -423,7 +426,7 @@ class SecondLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         self.results_ = results
 
         # We compute contrast object
-        if self.memory is not None:
+        if self.memory:
             mem_contrast = self.memory.cache(compute_contrast)
         else:
             mem_contrast = compute_contrast
