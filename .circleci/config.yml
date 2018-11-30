@@ -115,7 +115,7 @@ jobs:
       - run:
           name: Install packages in conda env
           command: |
-            conda install -n testenv python=3.6 numpy scipy scikit-learn matplotlib pandas \
+            conda create -n testenv python=3.6 numpy scipy scikit-learn matplotlib pandas \
             lxml mkl sphinx pillow pandas -yq
             conda install -n testenv nibabel -c conda-forge -yq
       - run:
