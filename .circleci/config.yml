@@ -50,9 +50,15 @@ jobs:
           command: |
             echo 'export PATH="$HOME/miniconda3/bin:$PATH"'  >> $BASH_ENV
       - run:
-          name: Create new conda env  # Separate command so if it fails (when using cache) the entire build will not.
+          name: Create new conda env
           command: |
-            if conda env list | grep testenv ; then echo "Conda env testenv already exists courtesy of the cache."; else conda create -n testenv -yq; fi
+            if
+              conda env list | grep testenv
+            then
+              echo "Conda env testenv already exists courtesy of the cache."
+            else
+              conda create -n testenv -yq
+            fi
       - run:
           name: Install packages in conda env
           command: |
