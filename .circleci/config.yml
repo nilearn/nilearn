@@ -128,13 +128,6 @@ jobs:
             set -o pipefail && cd doc && make html 2>&1 | tee ~/log.txt
           no_output_timeout: 5h
 
-      - save_cache:
-          key: v5-packages+datasets-{{ .Branch }}-{{ checksum "today" }}-{{ checksum ".circleci/manual-cache-timestamp.txt" }}
-          paths:
-          - ../nilearn_data
-          - ../miniconda3
-          - doc
-
       - store_artifacts:
           path: doc/_build/html
       - store_artifacts:
