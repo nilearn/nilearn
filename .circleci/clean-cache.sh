@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
 
-date > manual-cache-timestamp.txt
+date +%F+%T+%:::z > manual-cache-timestamp.txt
