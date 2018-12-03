@@ -33,7 +33,7 @@ jobs:
           command: |
             date +%F > today
       - restore_cache:
-          key: v5-packages+datasets-{{ .Branch }}-{{ checksum "today" }}-{{ checksum ".circleci/manual-cache-timestamp.txt" }}
+          key: v5-packages+datasets-{{ .Branch }}-{{ checksum "today" }}-{{ checksum ".circleci/manual-cache-timestamp" }}
       - run:
           name: Download & install conda if absent
           command: |
@@ -73,7 +73,7 @@ jobs:
             set -o pipefail && cd doc && make html-strict 2>&1 | tee ~/log.txt
           no_output_timeout: 5h
       - save_cache:
-          key: v5-packages+datasets-{{ .Branch }}-{{ checksum "today" }}-{{ checksum ".circleci/manual-cache-timestamp.txt" }}
+          key: v5-packages+datasets-{{ .Branch }}-{{ checksum "today" }}-{{ checksum ".circleci/manual-cache-timestamp" }}
           paths:
           - ../nilearn_data
           - ../miniconda3
