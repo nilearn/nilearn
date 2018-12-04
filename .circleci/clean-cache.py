@@ -4,6 +4,13 @@ import os
 from datetime import datetime as dt
 
 def update_cache_timestamp():
+    """ Updates the contents of the manual-cache-timestamp file
+    with current timestamp.
+
+    Returns
+    -------
+    None
+    """
     timestamp_dirpath = os.path.dirname(__file__)
     timestamp_filename = 'manual-cache-timestamp'
     timestamp_filepath = os.path.join(timestamp_dirpath, timestamp_filename)
