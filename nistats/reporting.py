@@ -15,7 +15,6 @@ from scipy import stats
 from scipy import ndimage
 import nilearn.plotting  # overrides the backend on headless servers
 from nilearn.image.resampling import coord_transform
-import matplotlib
 import matplotlib.pyplot as plt
 from patsy import DesignInfo
 
@@ -31,15 +30,15 @@ def _local_max(data, affine, min_distance):
     data : array_like
         3D array of with masked values for cluster.
 
-    min_distance : :obj:`int`
+    min_distance : `int`
         Minimum distance between local maxima in ``data``, in terms of mm.
 
     Returns
     -------
-    ijk : :obj:`numpy.ndarray`
+    ijk : `numpy.ndarray`
         (n_foci, 3) array of local maxima indices for cluster.
 
-    vals : :obj:`numpy.ndarray`
+    vals : `numpy.ndarray`
         (n_foci,) array of values from data at ijk.
     """
     # Initial identification of subpeaks with minimal minimum distance
@@ -91,19 +90,19 @@ def get_clusters_table(stat_img, stat_threshold, cluster_threshold=None,
     stat_img : Niimg-like object,
        Statistical image (presumably in z- or p-scale).
 
-    stat_threshold: :obj:`float`
+    stat_threshold: `float`
         Cluster forming threshold in same scale as `stat_img` (either a
         p-value or z-scale value).
 
-    cluster_threshold : :obj:`int` or :obj:`None`, optional
+    cluster_threshold : `int` or `None`, optional
         Cluster size threshold, in voxels.
 
-    min_distance: :obj:`float`, optional
+    min_distance: `float`, optional
         Minimum distance between subpeaks in mm. Default is 8 mm.
 
     Returns
     -------
-    df : :obj:`pandas.DataFrame`
+    df : `pandas.DataFrame`
         Table with peaks and subpeaks from thresholded `stat_img`. For binary
         clusters (clusters with >1 voxel containing only one value), the table
         reports the center of mass of the cluster, rather than any peaks/subpeaks.
@@ -268,7 +267,7 @@ def compare_niimgs(ref_imgs, src_imgs, masker, plot_hist=True, log=True,
     return corrs
 
 
-def plot_design_matrix(design_matrix, rescale=True, ax=None):
+def plot_design_matrix(design_matrix, rescale=True, ax=None, output_file=None):
     """Plot a design matrix provided as a DataFrame
 
     Parameters
@@ -282,6 +281,11 @@ def plot_design_matrix(design_matrix, rescale=True, ax=None):
     ax : axis handle, optional
         Handle to axis onto which we will draw design matrix.
 
+    output_file: string or None, optional,
+        The name of an image file to export the plot to. Valid extensions
+        are .png, .pdf, .svg. If output_file is not None, the plot
+        is saved to a file, and the display is closed.
+   
     Returns
     -------
     ax: axis handle
@@ -292,7 +296,6 @@ def plot_design_matrix(design_matrix, rescale=True, ax=None):
     from nilearn.plotting import _set_mpl_backend
     # avoid unhappy pyflakes
     _set_mpl_backend
-    import matplotlib.pyplot as plt
 
     # normalize the values per column for better visualization
     _, X, names = check_design_matrix(design_matrix)
@@ -310,24 +313,29 @@ def plot_design_matrix(design_matrix, rescale=True, ax=None):
     ax.set_xticklabels(names, rotation=60, ha='right')
 
     plt.tight_layout()
-
+    if output_file is not None:
+        plt.savefig(output_file)
+        plt.close()
+        ax = None
     return ax
 
 
-def plot_contrast_matrix(contrast_def, design_matrix, colorbar=False, ax=None):
+def plot_contrast_matrix(contrast_def, design_matrix, colorbar=False, ax=None,
+                         output_file=None):
     """Creates plot for contrast definition.
 
     Parameters
     ----------
     contrast_def : str or array of shape (n_col) or list of (string or
                    array of shape (n_col))
+                   
         where ``n_col`` is the number of columns of the design matrix,
         (one array per run). If only one array is provided when there
         are several runs, it will be assumed that the same contrast is
         desired for all runs. The string can be a formula compatible with
         the linear constraint of the Patsy library. Basically one can use
         the name of the conditions as they appear in the design matrix of
-        the fitted model combined with operators /*+- and numbers.
+        the fitted model combined with operators /\*+- and numbers.
         Please checks the patsy documentation for formula examples:
         http://patsy.readthedocs.io/en/latest/API-reference.html#patsy.DesignInfo.linear_constraint
 
@@ -338,39 +346,50 @@ def plot_contrast_matrix(contrast_def, design_matrix, colorbar=False, ax=None):
 
     ax: matplotlib Axes object, optional (default None)
         Directory where plotted figures will be stored.
+    
+    output_file: string or None, optional,
+        The name of an image file to export the plot to. Valid extensions
+        are .png, .pdf, .svg. If output_file is not None, the plot
+        is saved to a file, and the display is closed.
+
 
     Returns
     -------
     Plot Axes object
+    
     """
 
     design_column_names = design_matrix.columns.tolist()
     if isinstance(contrast_def, str):
-        di = DesignInfo(design_column_names)
-        contrast_def = di.linear_constraint(contrast_def).coefs
+        design_info = DesignInfo(design_column_names)
+        contrast_def = design_info.linear_constraint(contrast_def).coefs
+
+    maxval = np.max(np.abs(contrast_def))
+    con_matrix = np.asmatrix(contrast_def)
 
     if ax is None:
         plt.figure(figsize=(8, 4))
         ax = plt.gca()
 
-    maxval = np.max(np.abs(contrast_def))
+    mat = ax.matshow(con_matrix, aspect='equal',
+                     extent=[0, con_matrix.shape[1], 0, con_matrix.shape[0]],
+                     cmap='gray', vmin=-maxval, vmax=maxval)
 
-    con_mx = np.asmatrix(contrast_def)
-    mat = ax.matshow(con_mx, aspect='equal', extent=[0, con_mx.shape[1],
-                     0, con_mx.shape[0]], cmap='gray', vmin=-maxval,
-                     vmax=maxval)
     ax.set_label('conditions')
     ax.set_ylabel('')
     ax.set_yticklabels(['' for x in ax.get_yticklabels()])
 
     # Shift ticks to be at 0.5, 1.5, etc
-    ax.xaxis.set(ticks=np.arange(1.0, len(design_column_names) + 1.0),
-                 ticklabels=design_column_names)
-    ax.set_xticklabels(design_column_names, rotation=90, ha='right')
+    ax.xaxis.set(ticks=np.arange(len(design_column_names)))
+    ax.set_xticklabels(design_column_names, rotation=60, ha='left')
 
     if colorbar:
         plt.colorbar(mat, fraction=0.025, pad=0.04)
 
     plt.tight_layout()
+    if output_file is not None:
+        plt.savefig(output_file)
+        plt.close()
+        ax = None
 
     return ax

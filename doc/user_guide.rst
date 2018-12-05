@@ -19,5 +19,5 @@ User guide: table of contents
    :numbered:
 
    introduction.rst
-   modules/reference.rst
    auto_examples/index.rst
+   modules/reference.rst

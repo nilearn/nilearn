@@ -78,9 +78,9 @@ uses.
    :toctree: generated/
    :template: function.rst
 
-   make_design_matrix
+   make_first_level_design_matrix
    check_design_matrix
-   create_second_level_design
+   make_second_level_design_matrix
 
 .. _experimental_paradigm_ref:
 
@@ -99,8 +99,7 @@ uses.
    :toctree: generated/
    :template: function.rst
 
-   check_paradigm
-   paradigm_from_csv
+   check_events
 
 .. _model_ref:
 
@@ -284,9 +283,9 @@ uses.
    :template: function.rst
 
    z_score
-   multiple_fast_inv
+   multiple_fast_inverse
    multiple_mahalanobis
    full_rank
-   pos_recipr
+   positive_reciprocal
    get_bids_files
    parse_bids_filename

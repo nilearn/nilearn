@@ -2,7 +2,7 @@
 """
 import numpy as np
 from scipy.stats import norm
-from nose.tools import assert_true
+from nose.tools import assert_true, assert_raises
 from numpy.testing import assert_almost_equal, assert_equal
 import nibabel as nib
 from nistats.thresholding import fdr_threshold, map_threshold
@@ -16,20 +16,22 @@ def test_fdr():
     np.random.shuffle(x)
     assert_almost_equal(fdr_threshold(x, .1), norm.isf(.0005))
     assert_true(fdr_threshold(x, .001) == np.infty)
+    assert_raises(ValueError, fdr_threshold, x, -.1)
+    assert_raises(ValueError, fdr_threshold, x, 1.5)
 
 
 def test_map_threshold():
     shape = (9, 10, 11)
     p = np.prod(shape)
     data = norm.isf(np.linspace(1. / p, 1. - 1. / p, p)).reshape(shape)
-    threshold = .001
+    alpha = .001
     data[2:4, 5:7, 6:8] = 5.
     stat_img = nib.Nifti1Image(data, np.eye(4))
     mask_img = nib.Nifti1Image(np.ones(shape), np.eye(4))
 
     # test 1
     th_map, _ = map_threshold(
-        stat_img, mask_img, threshold, height_control='fpr',
+        stat_img, mask_img, alpha, height_control='fpr',
         cluster_threshold=0)
     vals = th_map.get_data()
     assert_equal(np.sum(vals > 0), 8)
@@ -43,7 +45,7 @@ def test_map_threshold():
 
     # test 3:excessive size threshold
     th_map, z_th = map_threshold(
-        stat_img, mask_img, threshold, height_control='fpr',
+        stat_img, mask_img, alpha, height_control='fpr',
         cluster_threshold=10)
     vals = th_map.get_data()
     assert_true(np.sum(vals > 0) == 0)
@@ -70,3 +72,26 @@ def test_map_threshold():
         cluster_threshold=0)
     vals = th_map.get_data()
     assert_equal(np.sum(vals > 0), 8)
+
+    # test 7 without a map
+    th_map, threshold = map_threshold(
+        None, None, 3.0, height_control=None,
+        cluster_threshold=0)
+    assert_equal(threshold, 3.0)
+    assert_equal(th_map, None)
+
+    th_map, threshold = map_threshold(
+        None, None, level=0.05, height_control='fpr',
+        cluster_threshold=0)
+    assert (threshold > 1.64)
+    assert_equal(th_map, None)
+
+    assert_raises(ValueError, map_threshold, None, None, level=0.05,
+                  height_control='fdr')
+    assert_raises(ValueError, map_threshold, None, None, level=0.05,
+                  height_control='bonferroni')
+
+    # test 8 wrong procedure
+    assert_raises(ValueError, map_threshold, None, None, level=0.05,
+              height_control='plop')
+    

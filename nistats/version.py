@@ -21,7 +21,7 @@ nistats version, required package versions, and utilities for checking
 # Dev branch marker is: 'X.Y.dev' or 'X.Y.devN' where N is an integer.
 # 'X.Y.dev0' is the canonical version of 'X.Y.dev'
 #
-__version__ = '0.0.1a'
+__version__ = '0.0.1b'
 
 _NISTATS_INSTALL_MSG = 'See %s for installation information.' % (
     'http://nistats.github.io/introduction.html#installation')
@@ -30,32 +30,32 @@ _NISTATS_INSTALL_MSG = 'See %s for installation information.' % (
 #   in some meaningful order (more => less 'core').
 REQUIRED_MODULE_METADATA = (
     ('numpy', {
-        'min_version': '1.8.2',
+        'min_version': '1.11',
         'install_info': _NISTATS_INSTALL_MSG}),
     ('scipy', {
-        'min_version': '0.14',
+        'min_version': '0.17',
         'install_info': _NISTATS_INSTALL_MSG}),
     ('sklearn', {
         'pypi_name': 'scikit-learn',
-        'min_version': '0.15.0',
+        'min_version': '0.18',
         'install_info': _NISTATS_INSTALL_MSG}),
     ('nibabel', {
         'min_version': '2.0.2',
         'required_at_installation': True,
         'install_info': _NISTATS_INSTALL_MSG}),
     ('nilearn', {
-        'min_version': '0.2.0',
+        'min_version': '0.4',
         'install_info': _NISTATS_INSTALL_MSG}),
     ('pandas', {
-        'min_version': '0.13.0',
+        'min_version': '0.18.0',
         'install_info': _NISTATS_INSTALL_MSG}),
     ('patsy', {
-        'min_version': '0.2.0',
+        'min_version': '0.4.1',
         'install_info': _NISTATS_INSTALL_MSG}),
 )
 
-OPTIONAL_MATPLOTLIB_MIN_VERSION = '1.3.1'
-OPTIONAL_BOTO3_MIN_VERSION = '1.0.0'
+OPTIONAL_MATPLOTLIB_MIN_VERSION = '1.5.1'
+OPTIONAL_BOTO3_MIN_VERSION = '1.4.0'
 
 
 def _import_module_with_version_check(

@@ -1,6 +1,13 @@
-"""
-Example of second level design matrix
+"""Example of second level design matrix
 =====================================
+
+The shows how a second-level design matrix is specified: assuming that
+the data refer to a group of individuals, with one image per subject,
+the design matrix typically holds the characteristics of each
+individual.
+
+This is used in a second-level analysis to assess the impact of these
+characteristics on brain signals.
 
 Requires matplotlib.
 
@@ -10,10 +17,6 @@ try:
     import matplotlib.pyplot as plt
 except ImportError:
     raise RuntimeError("This script needs the matplotlib library")
-
-from nistats.design_matrix import create_second_level_design
-from nistats.reporting import plot_design_matrix
-import pandas as pd
 
 #########################################################################
 # Create a simple experimental paradigm
@@ -25,18 +28,20 @@ subjects_label = ['sub-%02d' % i for i in range(1, n_subjects + 1)]
 ##############################################################################
 # Specify extra information about the subjects to create confounders
 # Without confounders the design matrix would correspond to a one sample test
+import pandas as pd
 extra_info_subjects = pd.DataFrame({'subject_label': subjects_label,
                                     'age': range(15, 15 + n_subjects),
                                     'sex': [0, 1] * int(n_subjects / 2)})
 
-
 #########################################################################
 # Create a second level design matrix
 # -----------------------------------
+from nistats.design_matrix import make_second_level_design_matrix
+design_matrix = make_second_level_design_matrix(subjects_label, extra_info_subjects)
 
-design_matrix = create_second_level_design(subjects_label, extra_info_subjects)
-
+#########################################################################
 # plot the results
+from nistats.reporting import plot_design_matrix
 ax = plot_design_matrix(design_matrix)
 ax.set_title('Second level design matrix', fontsize=12)
 ax.set_ylabel('maps')

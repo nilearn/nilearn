@@ -9,9 +9,8 @@ More specifically:
 
 1. A sequence of fMRI volumes are loaded
 2. A design matrix with the Posterior Cingulate Cortex seed is defined
-4. A GLM is applied to the dataset (effect/covariance,
-   then contrast estimation)
-5. The Default Mode Network is displayed
+3. A GLM is applied to the dataset (effect/covariance, then contrast estimation)
+4. The Default Mode Network is displayed
 
 """
 import numpy as np
@@ -20,7 +19,7 @@ from nilearn import datasets, plotting
 from nilearn.input_data import NiftiSpheresMasker
 
 from nistats.first_level_model import FirstLevelModel
-from nistats.design_matrix import make_design_matrix
+from nistats.design_matrix import make_first_level_design_matrix
 
 #########################################################################
 # Prepare data and analysis parameters
@@ -47,9 +46,9 @@ seed_masker = NiftiSpheresMasker([pcc_coords], radius=10, detrend=True,
                                  memory_level=1, verbose=0)
 seed_time_series = seed_masker.fit_transform(adhd_dataset.func[0])
 frametimes = np.linspace(0, (n_scans - 1) * t_r, n_scans)
-design_matrix = make_design_matrix(frametimes, hrf_model='spm',
-                                   add_regs=seed_time_series,
-                                   add_reg_names=["pcc_seed"])
+design_matrix = make_first_level_design_matrix(frametimes, hrf_model='spm',
+                                               add_regs=seed_time_series,
+                                               add_reg_names=["pcc_seed"])
 dmn_contrast = np.array([1] + [0]*(design_matrix.shape[1]-1))
 contrasts = {'seed_based_glm': dmn_contrast}
 

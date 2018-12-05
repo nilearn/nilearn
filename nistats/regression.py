@@ -29,7 +29,7 @@ from numpy.linalg import matrix_rank
 
 from nibabel.onetime import setattr_on_read
 
-from .utils import pos_recipr
+from .utils import positive_reciprocal
 
 from .model import LikelihoodModelResults
 
@@ -308,7 +308,7 @@ class RegressionResults(LikelihoodModelResults):
         See: Montgomery and Peck 3.2.1 p. 68
              Davidson and MacKinnon 15.2 p 662
         """
-        return self.resid * pos_recipr(np.sqrt(self.dispersion))
+        return self.resid * positive_reciprocal(np.sqrt(self.dispersion))
 
     @setattr_on_read
     def predicted(self):
@@ -382,7 +382,7 @@ class SimpleRegressionResults(LikelihoodModelResults):
         See: Montgomery and Peck 3.2.1 p. 68
              Davidson and MacKinnon 15.2 p 662
         """
-        return self.resid(Y) * pos_recipr(np.sqrt(self.dispersion))
+        return self.resid(Y) * positive_reciprocal(np.sqrt(self.dispersion))
 
     def predicted(self):
         """ Return linear predictor values from a design matrix.

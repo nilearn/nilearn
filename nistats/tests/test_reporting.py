@@ -1,10 +1,13 @@
-from nistats.design_matrix import make_design_matrix
-from nistats.reporting import (plot_design_matrix, get_clusters_table,
-                               _local_max)
+import os
 import nibabel as nib
 import numpy as np
 from numpy.testing import dec
 from nose.tools import assert_true
+from nibabel.tmpdirs import InTemporaryDirectory
+
+from nistats.design_matrix import make_first_level_design_matrix
+from nistats.reporting import (plot_design_matrix, get_clusters_table,
+                               _local_max, plot_contrast_matrix)
 
 # Set the backend to avoid having DISPLAY problems
 from nilearn.plotting import _set_mpl_backend
@@ -24,11 +27,33 @@ else:
 def test_show_design_matrix():
     # test that the show code indeed (formally) runs
     frame_times = np.linspace(0, 127 * 1., 128)
-    DM = make_design_matrix(
+    dmtx = make_first_level_design_matrix(
         frame_times, drift_model='polynomial', drift_order=3)
-    ax = plot_design_matrix(DM)
+    ax = plot_design_matrix(dmtx)
     assert (ax is not None)
+    with InTemporaryDirectory():
+        ax = plot_design_matrix(dmtx, output_file='dmtx.png')
+        assert os.path.exists('dmtx.png')
+        assert (ax is None)
+        plot_design_matrix(dmtx, output_file='dmtx.pdf')
+        assert os.path.exists('dmtx.pdf')
 
+@dec.skipif(not have_mpl)
+def test_show_contrast_matrix():
+    # test that the show code indeed (formally) runs
+    frame_times = np.linspace(0, 127 * 1., 128)
+    dmtx = make_first_level_design_matrix(
+        frame_times, drift_model='polynomial', drift_order=3)
+    contrast = np.ones(4)
+    ax = plot_contrast_matrix(contrast, dmtx)
+    assert (ax is not None)
+    with InTemporaryDirectory():
+        ax = plot_contrast_matrix(contrast, dmtx, output_file='contrast.png')
+        assert os.path.exists('contrast.png')
+        assert (ax is None)
+        plot_contrast_matrix(contrast, dmtx, output_file='contrast.pdf')
+        assert os.path.exists('contrast.pdf')
+        
 
 def test_local_max():
     shape = (9, 10, 11)

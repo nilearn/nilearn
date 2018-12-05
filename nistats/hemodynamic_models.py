@@ -3,7 +3,7 @@ This module is for hemodynamic reponse function (hrf) specification.
 Here we provide for SPM, Glover hrfs and finite timpulse response (FIR) models.
 This module closely follows SPM implementation
 
-Author: Bertrand Thirion, 2011--2015
+Author: Bertrand Thirion, 2011--2018
 """
 
 import warnings
@@ -11,7 +11,7 @@ import numpy as np
 from scipy.stats import gamma
 
 
-def _gamma_difference_hrf(tr, oversampling=16, time_length=32., onset=0.,
+def _gamma_difference_hrf(tr, oversampling=50, time_length=32., onset=0.,
                           delay=6, undershoot=16., dispersion=1.,
                           u_dispersion=1., ratio=0.167):
     """ Compute an hrf as the difference of two gamma functions
@@ -22,7 +22,7 @@ def _gamma_difference_hrf(tr, oversampling=16, time_length=32., onset=0.,
     tr : float
         scan repeat time, in seconds
 
-    oversampling : int, optional (default=16)
+    oversampling : int, optional (default=50)
         temporal oversampling factor
 
     time_length : float, optional (default=32)
@@ -52,7 +52,7 @@ def _gamma_difference_hrf(tr, oversampling=16, time_length=32., onset=0.,
          hrf sampling on the oversampled time grid
     """
     dt = tr / oversampling
-    time_stamps = np.linspace(0, time_length, float(time_length) / dt)
+    time_stamps = np.linspace(0, time_length, np.rint(float(time_length) / dt).astype(np.int))
     time_stamps -= onset
     hrf = gamma.pdf(time_stamps, delay / dispersion, dt / dispersion) -\
         ratio * gamma.pdf(
@@ -61,7 +61,7 @@ def _gamma_difference_hrf(tr, oversampling=16, time_length=32., onset=0.,
     return hrf
 
 
-def spm_hrf(tr, oversampling=16, time_length=32., onset=0.):
+def spm_hrf(tr, oversampling=50, time_length=32., onset=0.):
     """ Implementation of the SPM hrf model
 
     Parameters
@@ -86,7 +86,7 @@ def spm_hrf(tr, oversampling=16, time_length=32., onset=0.):
     return _gamma_difference_hrf(tr, oversampling, time_length, onset)
 
 
-def glover_hrf(tr, oversampling=16, time_length=32., onset=0.):
+def glover_hrf(tr, oversampling=50, time_length=32., onset=0.):
     """ Implementation of the Glover hrf model
 
     Parameters
@@ -113,7 +113,7 @@ def glover_hrf(tr, oversampling=16, time_length=32., onset=0.):
                                 u_dispersion=.9, ratio=.35)
 
 
-def spm_time_derivative(tr, oversampling=16, time_length=32., onset=0.):
+def spm_time_derivative(tr, oversampling=50, time_length=32., onset=0.):
     """Implementation of the SPM time derivative hrf (dhrf) model
 
     Parameters
@@ -141,7 +141,7 @@ def spm_time_derivative(tr, oversampling=16, time_length=32., onset=0.):
     return dhrf
 
 
-def glover_time_derivative(tr, oversampling=16, time_length=32., onset=0.):
+def glover_time_derivative(tr, oversampling=50, time_length=32., onset=0.):
     """Implementation of the Glover time derivative hrf (dhrf) model
 
     Parameters
@@ -166,7 +166,7 @@ def glover_time_derivative(tr, oversampling=16, time_length=32., onset=0.):
     return dhrf
 
 
-def spm_dispersion_derivative(tr, oversampling=16, time_length=32., onset=0.):
+def spm_dispersion_derivative(tr, oversampling=50, time_length=32., onset=0.):
     """Implementation of the SPM dispersion derivative hrf model
 
     Parameters
@@ -196,7 +196,7 @@ def spm_dispersion_derivative(tr, oversampling=16, time_length=32., onset=0.):
     return dhrf
 
 
-def glover_dispersion_derivative(tr, oversampling=16, time_length=32.,
+def glover_dispersion_derivative(tr, oversampling=50, time_length=32.,
                                  onset=0.):
     """Implementation of the Glover dispersion derivative hrf model
 
@@ -230,7 +230,7 @@ def glover_dispersion_derivative(tr, oversampling=16, time_length=32.,
     return dhrf
 
 
-def _sample_condition(exp_condition, frame_times, oversampling=16,
+def _sample_condition(exp_condition, frame_times, oversampling=50,
                      min_onset=-24):
     """Make a possibly oversampled event regressor from condition information.
 
@@ -265,12 +265,13 @@ def _sample_condition(exp_condition, frame_times, oversampling=16,
              min_onset) * oversampling) + 1
 
     hr_frame_times = np.linspace(frame_times.min() + min_onset,
-                                 frame_times.max() * (1 + 1. / (n - 1)), n_hr)
+                                 frame_times.max() * (1 + 1. / (n - 1)),
+                                 np.rint(n_hr).astype(np.int))
 
     # Get the condition information
     onsets, durations, values = tuple(map(np.asanyarray, exp_condition))
     if (onsets < frame_times[0] + min_onset).any():
-        warnings.warn(('Some stimulus onsets are earlier than %d in the' +
+        warnings.warn(('Some stimulus onsets are earlier than %s in the'
                        ' experiment and are thus not considered in the model'
                 % (frame_times[0] + min_onset)), UserWarning)
 
@@ -374,7 +375,7 @@ def _regressor_names(con_name, hrf_model, fir_delays=None):
         return [con_name + "_delay_%d" % i for i in fir_delays]
 
 
-def _hrf_kernel(hrf_model, tr, oversampling=16, fir_delays=None):
+def _hrf_kernel(hrf_model, tr, oversampling=50, fir_delays=None):
     """ Given the specification of the hemodynamic model and time parameters,
     return the list of matching kernels
 
@@ -432,7 +433,7 @@ def _hrf_kernel(hrf_model, tr, oversampling=16, fir_delays=None):
 
 
 def compute_regressor(exp_condition, hrf_model, frame_times, con_id='cond',
-                      oversampling=16, fir_delays=None, min_onset=-24):
+                      oversampling=50, fir_delays=None, min_onset=-24):
     """ This is the main function to convolve regressors with hrf model
 
     Parameters
@@ -472,16 +473,17 @@ def compute_regressor(exp_condition, hrf_model, frame_times, con_id='cond',
     Notes
     -----
     The different hemodynamic models can be understood as follows:
-    'spm': this is the hrf model used in SPM
-    'spm + derivative': SPM model plus its time derivative (2 regressors)
-    'spm + time + dispersion': idem, plus dispersion derivative (3 regressors)
-    'glover': this one corresponds to the Glover hrf
-    'glover + derivative': the Glover hrf + time derivative (2 regressors)
-    'glover + derivative + dispersion': idem + dispersion derivative
+     - 'spm': this is the hrf model used in SPM
+     - 'spm + derivative': SPM model plus its time derivative (2 regressors)
+     - 'spm + time + dispersion': idem, plus dispersion derivative (3 regressors)
+     - 'glover': this one corresponds to the Glover hrf
+     - 'glover + derivative': the Glover hrf + time derivative (2 regressors)
+     - 'glover + derivative + dispersion': idem + dispersion derivative
                                         (3 regressors)
     'fir': finite impulse response basis, a set of delayed dirac models
            with arbitrary length. This one currently assumes regularly spaced
            frame times (i.e. fixed time of repetition).
+    
     It is expected that spm standard and Glover model would not yield
     large differences in most cases.
 

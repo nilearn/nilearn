@@ -26,9 +26,24 @@ utils                   --- Miscelaneous utilities
 """
 
 import gzip
+import six
+import warnings
 
 from .version import _check_module_dependencies, __version__
 
+
+def py2_deprecation_warning():
+    warnings.simplefilter('once')
+    py2_warning = ('Python2 support is deprecated and will be removed in '
+                   'a future release. Consider switching to Python3.')
+    if six.PY2:
+        warnings.warn(message=py2_warning,
+                      category=DeprecationWarning,
+                      stacklevel=4,
+                      )
+
 _check_module_dependencies()
 
+
 __all__ = ['__version__', 'datasets', 'design_matrix']
+py2_deprecation_warning()

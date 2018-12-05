@@ -1,41 +1,45 @@
 """
-Example of simple second level analysis
-=======================================
+Statistical testing of a second-level analysis
+==============================================
 
-Perform a one-sample t-test on a bunch of images
-(a.k.a. second-level analyis in fMRI) and threshold a statistical image.
-This is based on the so-called localizer dataset.
+Perform a one-sample t-test on a bunch of images (a.k.a. second-level analyis in fMRI) and threshold the resulting statistical map.
+
+This example is based on the so-called localizer dataset.
 It shows activation related to a mental computation task,
 as opposed to narrative sentence reading/listening.
 
 """
-from nilearn import datasets
-from nilearn.input_data import NiftiMasker
 
 #########################################################################
 # Prepare some images for a simple t test
 # ----------------------------------------
 # This is a simple manually performed second level analysis
+from nilearn import datasets
 n_samples = 20
 localizer_dataset = datasets.fetch_localizer_calculation_task(
     n_subjects=n_samples)
 
-# mask data
-nifti_masker = NiftiMasker(
-    smoothing_fwhm=5,
-    memory='nilearn_cache', memory_level=1)  # cache options
+#########################################################################
+# Get the set of individual statstical maps (contrast estimates)
 cmap_filenames = localizer_dataset.cmaps
 
 #########################################################################
 # Perform the second level analysis
 # ----------------------------------
-# perform a one-sample test on these values
+#
+# First define a design matrix for the model. As the model is trivial (one-sample test), the design matrix is just one column with ones.
 import pandas as pd
 design_matrix = pd.DataFrame([1] * n_samples, columns=['intercept'])
 
+#########################################################################
+# Specify and estimate the model
 from nistats.second_level_model import SecondLevelModel
 second_level_model = SecondLevelModel().fit(
     cmap_filenames, design_matrix=design_matrix)
+
+#########################################################################
+# Compute the only possible contrast: the one-sample test. Since there
+# is only one possible contrast, we don't need to specify it in detail
 z_map = second_level_model.compute_contrast(output_type='z_score')
 
 #########################################################################
@@ -43,22 +47,54 @@ z_map = second_level_model.compute_contrast(output_type='z_score')
 # false positive rate < .001, cluster size > 10 voxels
 from nistats.thresholding import map_threshold
 thresholded_map1, threshold1 = map_threshold(
-    z_map, threshold=.001, height_control='fpr', cluster_threshold=10)
+    z_map, level=.001, height_control='fpr', cluster_threshold=10)
 
 #########################################################################
-# Now use FDR <.05, no cluster-level threshold
+# Now use FDR <.05, (False Discovery Rate) no cluster-level threshold
 thresholded_map2, threshold2 = map_threshold(
-    z_map, threshold=.05, height_control='fdr')
+    z_map, level=.05, height_control='fdr')
+print('The FDR=.05 threshold is %.3g' % threshold2)
+
+#########################################################################
+# Now use FWER <.05, (Familywise Error Rate) no cluster-level
+# threshold.  As the data have not been intensively smoothed, we can
+# use a simple Bonferroni correction
+thresholded_map3, threshold3 = map_threshold(
+    z_map, level=.05, height_control='bonferroni')
+print('The p<.05 Bonferroni-corrected threshold is %.3g' % threshold3)
 
 #########################################################################
 # Visualize the results
+# ---------------------
+#
+# First the unthresholded map
 from nilearn import plotting
 display = plotting.plot_stat_map(z_map, title='Raw z map')
+
+#########################################################################
+# Second the p<.001 uncorrected-thresholded map (with only clusters > 10 voxels)
 plotting.plot_stat_map(
     thresholded_map1, cut_coords=display.cut_coords, threshold=threshold1,
     title='Thresholded z map, fpr <.001, clusters > 10 voxels')
+
+#########################################################################
+# Third the fdr-thresholded map
 plotting.plot_stat_map(thresholded_map2, cut_coords=display.cut_coords,
                        title='Thresholded z map, expected fdr = .05',
                        threshold=threshold2)
+
+#########################################################################
+# Fourth the Bonferroni-thresholded map
+plotting.plot_stat_map(thresholded_map3, cut_coords=display.cut_coords,
+                       title='Thresholded z map, expected fwer < .05',
+                       threshold=threshold3)
+
+#########################################################################
+# These different thresholds correspond to different statistical
+# guarantees: in the FWER corrected image there is only a
+# probability<.05 of observing any false positive voxel. In the
+# FDR-corrected image, 5% of the voxels found are likely to be false
+# positive. In the uncorrected image, one expects a few tens of false
+# positive voxels.
 
 plotting.show()

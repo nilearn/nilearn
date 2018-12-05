@@ -16,9 +16,11 @@ import numpy as np
 from nibabel import Nifti1Image
 
 from sklearn.base import BaseEstimator, TransformerMixin, clone
+from sklearn.externals.joblib import Memory
 from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._utils import CacheMixin
 from nilearn.input_data import NiftiMasker
+from nilearn.image import mean_img
 from patsy import DesignInfo
 
 from .first_level_model import FirstLevelModel
@@ -26,7 +28,7 @@ from .first_level_model import run_glm
 from .regression import SimpleRegressionResults
 from .contrasts import compute_contrast
 from .utils import _basestring
-from .design_matrix import create_second_level_design
+from .design_matrix import make_second_level_design_matrix
 
 
 def _infer_effect_maps(second_level_input, contrast_def):
@@ -100,11 +102,14 @@ class SecondLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
 
     """
     def __init__(self, mask=None, smoothing_fwhm=None,
-                 memory=None, memory_level=1, verbose=0,
+                 memory=Memory(None), memory_level=1, verbose=0,
                  n_jobs=1, minimize_memory=True):
         self.mask = mask
         self.smoothing_fwhm = smoothing_fwhm
-        self.memory = memory
+        if isinstance(memory, _basestring):
+            self.memory = Memory(memory)
+        else:
+            self.memory = memory
         self.memory_level = memory_level
         self.verbose = verbose
         self.n_jobs = n_jobs
@@ -123,6 +128,7 @@ class SecondLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         ----------
         second_level_input: list of `FirstLevelModel` objects or pandas
                             DataFrame or list of Niimg-like objects.
+
             Giving FirstLevelModel objects will allow to easily compute
             the second level contast of arbitrary first level contrasts thanks
             to the first_level_contrast argument of the compute_contrast
@@ -155,7 +161,7 @@ class SecondLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
             from second_level_input.
             Ensure that the order of maps given by a second_level_input
             list of Niimgs matches the order of the rows in the design matrix.
-            Must contain a column of 1s with column name 'intercept'.
+
         """
         # Check parameters
         # check first level input
@@ -210,6 +216,12 @@ class SecondLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
             if not isinstance(labels_dtype, np.object):
                 raise ValueError('subject_label column must be of dtype '
                                  'object instead of dtype %s' % labels_dtype)
+        elif isinstance(second_level_input, (str, Nifti1Image)):
+            if design_matrix is None:
+                raise ValueError('List of niimgs as second_level_input'
+                                 ' require a design matrix to be provided')
+            second_level_input = check_niimg(niimg=second_level_input,
+                                             ensure_ndim=4) 
         else:
             raise ValueError('second_level_input must be a list of'
                              ' `FirstLevelModel` objects, a pandas DataFrame'
@@ -238,18 +250,14 @@ class SecondLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         if design_matrix is not None:
             if not isinstance(design_matrix, pd.DataFrame):
                 raise ValueError('design matrix must be a pandas DataFrame')
-            if 'intercept' not in design_matrix.columns:
-                raise ValueError('design matrix must contain "intercept"')
 
         # sort a pandas dataframe by subject_label to avoid inconsistencies
         # with the design matrix row order when automatically extracting maps
         if isinstance(second_level_input, pd.DataFrame):
-            # Avoid pandas df.sort_value to keep compatibility with numpy 1.8
-            # also pandas df.sort since it is completely deprecated.
             columns = second_level_input.columns.tolist()
             column_index = columns.index('subject_label')
             sorted_matrix = sorted(
-                second_level_input.as_matrix(), key=lambda x: x[column_index])
+                second_level_input.values, key=lambda x: x[column_index])
             sorted_input = pd.DataFrame(sorted_matrix, columns=columns)
             second_level_input = sorted_input
 
@@ -267,6 +275,8 @@ class SecondLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
             sample_map = second_level_input['effects_map_path'][0]
             labels = second_level_input['subject_label']
             subjects_label = labels.values.tolist()
+        elif isinstance(second_level_input, Nifti1Image):
+            sample_map = mean_img(second_level_input)
         elif isinstance(second_level_input[0], FirstLevelModel):
             sample_model = second_level_input[0]
             sample_condition = sample_model.design_matrices_[0].columns[0]
@@ -276,12 +286,12 @@ class SecondLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
             subjects_label = labels
         else:
             # In this case design matrix had to be provided
-            sample_map = second_level_input[0]
+            sample_map = mean_img(second_level_input)
 
         # Create and set design matrix, if not given
         if design_matrix is None:
-            design_matrix = create_second_level_design(subjects_label,
-                                                       confounds)
+            design_matrix = make_second_level_design_matrix(subjects_label,
+                                                            confounds)
         self.design_matrix_ = design_matrix
 
         # Learn the mask. Assume the first level imgs have been masked.
@@ -309,7 +319,7 @@ class SecondLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         return self
 
     def compute_contrast(
-            self, second_level_contrast='intercept', first_level_contrast=None,
+            self, second_level_contrast=None, first_level_contrast=None,
             second_level_stat_type=None, output_type='z_score'):
         """Generate different outputs corresponding to
         the contrasts provided e.g. z_map, t_map, effects and variance.
@@ -321,17 +331,17 @@ class SecondLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
             The string can be a formula compatible with the linear constraint
             of the Patsy library. Basically one can use the name of the
             conditions as they appear in the design matrix of
-            the fitted model combined with operators /*+- and numbers.
+            the fitted model combined with operators /\*+- and numbers.
             Please check the patsy documentation for formula examples:
             http://patsy.readthedocs.io/en/latest/API-reference.html#patsy.DesignInfo.linear_constraint
-
-            VERY IMPORTANT: The 'intercept' corresponds to the second level
-            effect after taking confounders in consideration. If there are
-            no confounders then this will be equivalent to a simple t test.
-            By default we compute the 'intercept' second level contrast.
+            The default (None) is accepted if the design matrix has a single
+            column, in which case the only possible contrast array([1]) is
+            applied; when the design matrix has multiple columns, an error is
+            raised.
 
         first_level_contrast: str or array of shape (n_col) with respect to
                               FirstLevelModel, optional
+                              
             In case a list of FirstLevelModel was provided as
             second_level_input, we have to provide a contrast to apply to
             the first level models to get the corresponding list of images
@@ -366,6 +376,11 @@ class SecondLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
                                  'compute_contrast method of FirstLevelModel')
 
         # check contrast definition
+        if second_level_contrast is None:
+            if self.design_matrix_.shape[1] == 1:
+                second_level_contrast = np.ones([1])
+            else:
+                raise ValueError('No second-level contrast is specified.')
         if isinstance(second_level_contrast, np.ndarray):
             con_val = second_level_contrast
             if np.all(con_val == 0):
@@ -388,21 +403,20 @@ class SecondLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         # Get effect_maps appropriate for chosen contrast
         effect_maps = _infer_effect_maps(self.second_level_input_,
                                          first_level_contrast)
-        # check design matrix X and effect maps Y agree on number of rows
+        # Check design matrix X and effect maps Y agree on number of rows
         if len(effect_maps) != self.design_matrix_.shape[0]:
             raise ValueError(
                 'design_matrix does not match the number of maps considered. '
                 '%i rows in design matrix do not match with %i maps' %
                 (self.design_matrix_.shape[0], len(effect_maps)))
 
-        # Fit an OLS regression for parametric statistics
+        # Fit an Ordinary Least Squares regression for parametric statistics
         Y = self.masker_.transform(effect_maps)
-        if self.memory is not None:
-            arg_ignore = ['n_jobs']
-            mem_glm = self.memory.cache(run_glm, ignore=arg_ignore)
+        if self.memory:
+            mem_glm = self.memory.cache(run_glm, ignore=['n_jobs'])
         else:
             mem_glm = run_glm
-        labels, results = mem_glm(Y, self.design_matrix_.as_matrix(),
+        labels, results = mem_glm(Y, self.design_matrix_.values,
                                   n_jobs=self.n_jobs, noise_model='ols')
         # We save memory if inspecting model details is not necessary
         if self.minimize_memory:
@@ -412,7 +426,7 @@ class SecondLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         self.results_ = results
 
         # We compute contrast object
-        if self.memory is not None:
+        if self.memory:
             mem_contrast = self.memory.cache(compute_contrast)
         else:
             mem_contrast = compute_contrast

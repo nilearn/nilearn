@@ -11,8 +11,8 @@ from nibabel import load, Nifti1Image
 from nibabel.tmpdirs import InTemporaryDirectory
 from nose import with_setup
 
-from nistats.utils import (multiple_mahalanobis, z_score, multiple_fast_inv,
-                           pos_recipr, full_rank, _check_run_tables,
+from nistats.utils import (multiple_mahalanobis, z_score, multiple_fast_inverse,
+                           positive_reciprocal, full_rank, _check_run_tables,
                            _check_and_load_tables, _check_list_length_match,
                            get_bids_files, parse_bids_filename,
                            get_design_from_fslmat)
@@ -69,26 +69,26 @@ def test_multiple_fast_inv():
     for i in range(shape[0]):
         X[i] = np.dot(X[i], X[i].T)
         X_inv_ref[i] = spl.inv(X[i])
-    X_inv = multiple_fast_inv(X)
+    X_inv = multiple_fast_inverse(X)
     assert_almost_equal(X_inv_ref, X_inv)
 
 
 def test_pos_recipr():
     X = np.array([2, 1, -1, 0], dtype=np.int8)
     eX = np.array([0.5, 1, 0, 0])
-    Y = pos_recipr(X)
+    Y = positive_reciprocal(X)
     yield assert_array_almost_equal, Y, eX
     yield assert_equal, Y.dtype.type, np.float64
     X2 = X.reshape((2, 2))
-    Y2 = pos_recipr(X2)
+    Y2 = positive_reciprocal(X2)
     yield assert_array_almost_equal, Y2, eX.reshape((2, 2))
     # check that lists have arrived
     XL = [0, 1, -1]
-    yield assert_array_almost_equal, pos_recipr(XL), [0, 1, 0]
+    yield assert_array_almost_equal, positive_reciprocal(XL), [0, 1, 0]
     # scalars
-    yield assert_equal, pos_recipr(-1), 0
-    yield assert_equal, pos_recipr(0), 0
-    yield assert_equal, pos_recipr(2), 0.5
+    yield assert_equal, positive_reciprocal(-1), 0
+    yield assert_equal, positive_reciprocal(0), 0
+    yield assert_equal, positive_reciprocal(2), 0.5
 
 
 def test_img_table_checks():
@@ -119,9 +119,9 @@ def write_fake_bold_img(file_path, shape, rk=3, affine=np.eye(4)):
 def basic_paradigm():
     conditions = ['c0', 'c0', 'c0', 'c1', 'c1', 'c1', 'c2', 'c2', 'c2']
     onsets = [30, 70, 100, 10, 30, 90, 30, 40, 60]
-    paradigm = pd.DataFrame({'trial_type': conditions,
+    events = pd.DataFrame({'trial_type': conditions,
                              'onset': onsets})
-    return paradigm
+    return events
 
 
 def basic_confounds(length):

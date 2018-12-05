@@ -5,7 +5,7 @@ This module implements fMRI Design Matrix creation.
 
 Design matrices are represented by Pandas DataFrames
 Computations of the different parts of the design matrix are confined
-to the make_design_matrix function, that create a DataFrame
+to the make_first_level_design_matrix function, that create a DataFrame
 All the others are ancillary functions.
 
 Design matrices contain three different types of regressors:
@@ -13,14 +13,15 @@ Design matrices contain three different types of regressors:
 1. Task-related regressors, that result from the convolution
    of the experimental paradigm regressors with hemodynamic models
    A hemodynamic model is one of:
-        'spm' : linear filter used in the SPM software
-        'glover' : linear filter estimated by G.Glover
-        'spm + derivative', 'glover + derivative': the same linear models,
+   
+         - 'spm' : linear filter used in the SPM software
+         - 'glover' : linear filter estimated by G.Glover
+         - 'spm + derivative', 'glover + derivative': the same linear models,
             plus their time derivative (2 regressors per condition)
-        'spm + derivative + dispersion', 'glover + derivative + dispersion':
+         - 'spm + derivative + dispersion', 'glover + derivative + dispersion':
             idem plus the derivative wrt the dispersion parameter of the hrf
             (3 regressors per condition)
-        'fir' : finite impulse response model, generic linear filter
+         - 'fir' : finite impulse response model, generic linear filter
 
 2. User-specified regressors, that represent information available on
    the data, e.g. motion parameters, physiological data resampled at
@@ -32,6 +33,7 @@ Design matrices contain three different types of regressors:
    estimates.
 
 Author: Bertrand Thirion, 2009-2015
+
 """
 from __future__ import with_statement
 from warnings import warn
@@ -41,7 +43,7 @@ from scipy import linalg
 import pandas as pd
 
 from .hemodynamic_models import compute_regressor, _orthogonalize
-from .experimental_paradigm import check_paradigm
+from .experimental_paradigm import check_events
 from .utils import full_rank, _basestring
 
 ######################################################################
@@ -163,15 +165,15 @@ def _make_drift(drift_model, frame_times, order=1, period_cut=128.):
     return drift, names
 
 
-def _convolve_regressors(paradigm, hrf_model, frame_times, fir_delays=[0],
-                         min_onset=-24):
+def _convolve_regressors(events, hrf_model, frame_times, fir_delays=[0],
+                         min_onset=-24, oversampling=50):
     """ Creation of  a matrix that comprises
     the convolution of the conditions onset with a certain hrf model
 
     Parameters
     ----------
-    paradigm : DataFrame instance,
-        Descriptor of an experimental paradigm
+    events : DataFrame instance,
+        Events data describing the experimental paradigm
         see nistats.experimental_paradigm to check the specification
         for these to be valid paradigm descriptors
 
@@ -190,6 +192,10 @@ def _convolve_regressors(paradigm, hrf_model, frame_times, fir_delays=[0],
     min_onset : float, optional (default: -24),
         Minimal onset relative to frame_times[0] (in seconds) events
         that start before frame_times[0] + min_onset are not considered.
+
+    oversampling: int or None, optional, default:50,
+        Oversampling factor used in temporal convolutions.
+        Should be 1 whenever hrf_model is 'fir'.
 
     Returns
     -------
@@ -210,11 +216,14 @@ def _convolve_regressors(paradigm, hrf_model, frame_times, fir_delays=[0],
     regressor_names = []
     regressor_matrix = None
     if hrf_model == 'fir':
+        if oversampling not in [1, None]:
+            warn('Forcing oversampling factor to 1 for a finite'
+                 'impulse response hrf model')
         oversampling = 1
-    else:
-        oversampling = 16
+    elif oversampling is None:
+        oversampling = 50
 
-    trial_type, onset, duration, modulation = check_paradigm(paradigm)
+    trial_type, onset, duration, modulation = check_events(events)
     for condition in np.unique(trial_type):
         condition_mask = (trial_type == condition)
         exp_condition = (onset[condition_mask],
@@ -271,10 +280,10 @@ def _full_rank(X, cmax=1e15):
 ######################################################################
 
 
-def make_design_matrix(
-    frame_times, paradigm=None, hrf_model='glover',
+def make_first_level_design_matrix(
+    frame_times, events=None, hrf_model='glover',
     drift_model='cosine', period_cut=128, drift_order=1, fir_delays=[0],
-    add_regs=None, add_reg_names=None, min_onset=-24):
+        add_regs=None, add_reg_names=None, min_onset=-24, oversampling=50):
     """Generate a design matrix from the input parameters
 
     Parameters
@@ -282,11 +291,11 @@ def make_design_matrix(
     frame_times : array of shape (n_frames,)
         The timing of acquisition of the scans in seconds.
 
-    paradigm : DataFrame instance, optional
-        Description of the experimental paradigm. The DataFrame instance might
-        have those keys:
+    events : DataFrame instance, optional
+        Events data that describes the experimental paradigm.
+         The DataFrame instance might have these keys:
             'onset': column to specify the start time of each events in
-                     seconds. An exception is raised if this key is missing.
+                     seconds. An error is raised if this key is missing.
             'trial_type': column to specify per-event experimental conditions
                           identifier. If missing each event are labelled
                           'dummy' and considered to form a unique condition.
@@ -296,11 +305,13 @@ def make_design_matrix(
             'modulation': column to specify the amplitude of each
                           events. If missing the default is set to
                           ones(n_events).
-        A paradigm is considered as valid whenever it has an 'onset' key, if
-        this key is missing an exception will be thrown. For the others keys
-        only a simple warning will be displayed. A particular attention should
-        be given to the 'trial_type' key which defines the different conditions
-        in the paradigm.
+        
+        An experimental paradigm is valid if it has an 'onset' key
+        and a 'duration' key.
+        If these keys are missing an error will be raised.
+        For the others keys a warning will be displayed.
+        Particular attention should be given to the 'trial_type' key
+        which defines the different conditions in the experimental paradigm.
 
     hrf_model : {'spm', 'spm + derivative', 'spm + derivative + dispersion',
         'glover', 'glover + derivative', 'glover + derivative + dispersion',
@@ -331,6 +342,10 @@ def make_design_matrix(
     min_onset : float, optional
         Minimal onset relative to frame_times[0] (in seconds)
         events that start before frame_times[0] + min_onset are not considered.
+
+    oversampling: int or None, optional,
+        Oversampling factor used in temporal convolutions.
+        Should be 1 whenever hrf_model is 'fir'.
 
     Returns
     -------
@@ -363,13 +378,14 @@ def make_design_matrix(
     names = []
     matrix = None
 
-    # step 1: paradigm-related regressors
-    if paradigm is not None:
+    # step 1: events-related regressors
+    if events is not None:
         # create the condition-related regressors
         if isinstance(hrf_model, _basestring):
             hrf_model = hrf_model.lower()
         matrix, names = _convolve_regressors(
-            paradigm, hrf_model, frame_times, fir_delays, min_onset)
+            events, hrf_model, frame_times, fir_delays, min_onset,
+            oversampling)
 
     # step 2: additional regressors
     if add_regs is not None:
@@ -428,7 +444,7 @@ def check_design_matrix(design_matrix):
     return frame_times, matrix, names
 
 
-def create_second_level_design(subjects_label, confounds=None):
+def make_second_level_design_matrix(subjects_label, confounds=None):
     """Sets up a second level design.
 
     Construct a design matrix with an intercept and subject specific confounds.
@@ -478,7 +494,7 @@ def create_second_level_design(subjects_label, confounds=None):
 
     # check design matrix is not singular
     epsilon = sys.float_info.epsilon
-    if np.linalg.cond(design_matrix.as_matrix()) > design_matrix.size:
+    if np.linalg.cond(design_matrix.values) > design_matrix.size:
         warn('Attention: Design matrix is singular. Aberrant estimates '
              'are expected.')
     return design_matrix

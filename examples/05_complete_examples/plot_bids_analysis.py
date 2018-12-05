@@ -15,8 +15,6 @@ More specifically:
    in this case the preprocessed bold images were already normalized to the
    same MNI space.
 
-
-
 To run this example, you must launch IPython via ``ipython
 --matplotlib`` in a terminal, or use the Jupyter notebook.
 
@@ -36,6 +34,10 @@ To run this example, you must launch IPython via ``ipython
 # confounds.tsv files.
 from nistats.datasets import fetch_bids_langloc_dataset
 data_dir, _ = fetch_bids_langloc_dataset()
+
+##############################################################################
+# Here is the location of the dataset on disk
+print(data_dir)
 
 ##############################################################################
 # Obtain automatically FirstLevelModel objects and fit arguments
@@ -82,23 +84,32 @@ print(models_events[0][0]['trial_type'].value_counts())
 # ----------------------------
 # Now we simply fit each first level model and plot for each subject the
 # contrast that reveals the language network (language - string). Notice that
-# we can define a contrast using the names of the conditions especified in the
+# we can define a contrast using the names of the conditions specified in the
 # events dataframe. Sum, substraction and scalar multiplication are allowed.
+
+############################################################################
+# Set the threshold as the z-variate with an uncorrected p-value of 0.001
+from scipy.stats import norm
+p001_unc = norm.isf(0.001)
+
+############################################################################
+# Prepare figure for concurrent plot of individual maps
 from nilearn import plotting
 import matplotlib.pyplot as plt
-from scipy.stats import norm
 
-fig, axes = plt.subplots(nrows=2, ncols=5)
+fig, axes = plt.subplots(nrows=2, ncols=5, figsize=(8, 4.5))
 model_and_args = zip(models, models_run_imgs, models_events, models_confounds)
 for midx, (model, imgs, events, confounds) in enumerate(model_and_args):
+    # fit the GLM
     model.fit(imgs, events, confounds)
+    # compute the contrast of interest
     zmap = model.compute_contrast('language-string')
-    plotting.plot_glass_brain(zmap, colorbar=False, threshold=norm.isf(0.001),
+    plotting.plot_glass_brain(zmap, colorbar=False, threshold=p001_unc,
                               title=('sub-' + model.subject_label),
                               axes=axes[int(midx / 5), int(midx % 5)],
                               plot_abs=False, display_mode='x')
 fig.suptitle('subjects z_map language network (unc p<0.001)')
-plt.show()
+plotting.show()
 
 #########################################################################
 # Second level model estimation
@@ -109,6 +120,9 @@ plt.show()
 # column names)
 from nistats.second_level_model import SecondLevelModel
 second_level_input = models
+
+#########################################################################
+# Note that we apply a smoothing of 8mm.
 second_level_model = SecondLevelModel(smoothing_fwhm=8.0)
 second_level_model = second_level_model.fit(second_level_input)
 
@@ -117,12 +131,14 @@ second_level_model = second_level_model.fit(second_level_input)
 # Since we are not providing confounders we are performing an one-sample test
 # at the second level with the images determined by the specified first level
 # contrast.
-zmap = second_level_model.compute_contrast(first_level_contrast='language-string')
+zmap = second_level_model.compute_contrast(
+    first_level_contrast='language-string')
 
 #########################################################################
 # The group level contrast reveals a left lateralized fronto-temporal
 # language network
-plotting.plot_glass_brain(zmap, colorbar=True, threshold=norm.isf(0.001),
+plotting.plot_glass_brain(zmap, colorbar=True, threshold=p001_unc,
                           title='Group language network (unc p<0.001)',
                           plot_abs=False, display_mode='x')
 plotting.show()
+

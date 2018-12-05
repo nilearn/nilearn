@@ -20,7 +20,7 @@ import json
 
 import numpy as np
 import pandas as pd
-from nibabel import Nifti1Image, AnalyzeImage
+from nibabel import Nifti1Image
 
 from sklearn.base import BaseEstimator, TransformerMixin, clone
 from sklearn.externals.joblib import Memory
@@ -31,10 +31,11 @@ from sklearn.externals.joblib import Parallel, delayed
 from patsy import DesignInfo
 
 from .regression import OLSModel, ARModel, SimpleRegressionResults
-from .design_matrix import make_design_matrix
+from .design_matrix import make_first_level_design_matrix
 from .contrasts import _fixed_effect_contrast
-from .utils import (_basestring, _check_run_tables, get_bids_files,
-                    parse_bids_filename)
+from .utils import (_basestring, _check_run_tables,
+                    _verify_events_file_uses_tab_separators,
+                    get_bids_files, parse_bids_filename)
 
 
 def mean_scaling(Y, axis=0):
@@ -161,10 +162,10 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         expressed as a percentage of the t_r (time repetition), so it can have
         values between 0. and 1.
 
-    hrf_model : string, optional
-        This parameter specifies the hemodynamic response function (HRF) for
-        the design matrices. It can be 'canonical', 'canonical with derivative'
-        or 'fir'.
+    hrf_model : {'spm', 'spm + derivative', 'spm + derivative + dispersion',
+        'glover', 'glover + derivative', 'glover + derivative + dispersion',
+        'fir', None}
+        String that specifies the hemodynamic response function. Defaults to 'glover'.
 
     drift_model : string, optional
         This parameter specifies the desired drift model for the design
@@ -316,18 +317,20 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         Parameters
         ----------
         run_imgs: Niimg-like object or list of Niimg-like objects,
-            See http://nilearn.github.io/building_blocks/manipulating_mr_images.html#niimg.
+            See http://nilearn.github.io/manipulating_images/input_output.html#inputing-data-file-names-or-image-objects
             Data on which the GLM will be fitted. If this is a list,
             the affine is considered the same for all.
 
         events: pandas Dataframe or string or list of pandas DataFrames or
-                   strings,
+                   strings
+                   
             fMRI events used to build design matrices. One events object
             expected per run_img. Ignored in case designs is not None.
             If string, then a path to a csv file is expected.
 
         confounds: pandas Dataframe or string or list of pandas DataFrames or
-                   strings,
+                   strings
+                   
             Each column in a DataFrame corresponds to a confound variable
             to be included in the regression model of the respective run_img.
             The number of rows must match the number of volumes in the
@@ -341,6 +344,9 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         """
         # Check arguments
         # Check imgs type
+        if events is not None:
+            _verify_events_file_uses_tab_separators(
+                events_files=events)
         if not isinstance(run_imgs, (list, tuple)):
             run_imgs = [run_imgs]
         if design_matrices is None:
@@ -356,7 +362,6 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         # Also check that events and confound files can be loaded as DataFrame
         if events is not None:
             events = _check_run_tables(run_imgs, events, 'events')
-
         if confounds is not None:
             confounds = _check_run_tables(run_imgs, confounds, 'confounds')
 
@@ -431,11 +436,11 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
                 start_time = self.slice_time_ref * self.t_r
                 end_time = (n_scans - 1 + self.slice_time_ref) * self.t_r
                 frame_times = np.linspace(start_time, end_time, n_scans)
-                design = make_design_matrix(frame_times, events[run_idx],
-                                            self.hrf_model, self.drift_model,
-                                            self.period_cut, self.drift_order,
-                                            self.fir_delays, confounds_matrix,
-                                            confounds_names, self.min_onset)
+                design = make_first_level_design_matrix(frame_times, events[run_idx],
+                                                        self.hrf_model, self.drift_model,
+                                                        self.period_cut, self.drift_order,
+                                                        self.fir_delays, confounds_matrix,
+                                                        confounds_names, self.min_onset)
             else:
                 design = design_matrices[run_idx]
             self.design_matrices_.append(design)
@@ -449,11 +454,11 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
 
             if self.verbose > 1:
                 t_masking = time.time() - t_masking
-                sys.stderr.write('Masker took %d seconds          \n' % t_masking)
+                sys.stderr.write('Masker took %d seconds       \n' % t_masking)
 
             if self.signal_scaling:
                 Y, _ = mean_scaling(Y, self.scaling_axis)
-            if self.memory is not None:
+            if self.memory:
                 mem_glm = self.memory.cache(run_glm, ignore=['n_jobs'])
             else:
                 mem_glm = run_glm
@@ -462,7 +467,7 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
             if self.verbose > 1:
                 t_glm = time.time()
                 sys.stderr.write('Performing GLM computation\r')
-            labels, results = mem_glm(Y, design.as_matrix(),
+            labels, results = mem_glm(Y, design.values,
                                       noise_model=self.noise_model,
                                       bins=100, n_jobs=self.n_jobs)
             if self.verbose > 1:
@@ -494,13 +499,14 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         ----------
         contrast_def : str or array of shape (n_col) or list of (string or
                        array of shape (n_col))
+                       
             where ``n_col`` is the number of columns of the design matrix,
             (one array per run). If only one array is provided when there
             are several runs, it will be assumed that the same contrast is
             desired for all runs. The string can be a formula compatible with
             the linear constraint of the Patsy library. Basically one can use
             the name of the conditions as they appear in the design matrix of
-            the fitted model combined with operators /*+- and numbers.
+            the fitted model combined with operators /\*+- and numbers.
             Please checks the patsy documentation for formula examples:
             http://patsy.readthedocs.io/en/latest/API-reference.html#patsy.DesignInfo.linear_constraint
 
@@ -566,7 +572,7 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
 
 
 def first_level_models_from_bids(
-        dataset_path, task_label, space_label, img_filters=[],
+        dataset_path, task_label, space_label, img_filters=None,
         t_r=None, slice_time_ref=0., hrf_model='glover', drift_model='cosine',
         period_cut=128, drift_order=1, fir_delays=[0], min_onset=-24,
         mask=None, target_affine=None, target_shape=None, smoothing_fwhm=None,
@@ -592,7 +598,7 @@ def first_level_models_from_bids(
         Specifies the space label of the preproc.nii images.
         As they are specified in the file names like _space-<space_label>_.
 
-    img_filters: list of tuples (str, str), optional (default: [])
+    img_filters: list of tuples (str, str), optional (default: None)
         Filters are of the form (field, label). Only one filter per field
         allowed. A file that does not match a filter will be discarded.
         Possible filters are 'acq', 'rec', 'run', 'res' and 'variant'.
@@ -624,6 +630,7 @@ def first_level_models_from_bids(
         Items for the FirstLevelModel fit function of their respective model.
     """
     # check arguments
+    img_filters = img_filters if img_filters else []
     if not isinstance(dataset_path, str):
         raise TypeError('dataset_path must be a string, instead %s was given' %
                         type(task_label))

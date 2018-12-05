@@ -12,7 +12,7 @@ from scipy.stats import t as t_distribution
 
 from nibabel.onetime import setattr_on_read
 
-from .utils import pos_recipr
+from .utils import positive_reciprocal
 
 # Inverse t cumulative distribution
 inv_t_cdf = t_distribution.ppf
@@ -75,7 +75,7 @@ class LikelihoodModelResults(object):
         self.df_model = model.df_model
         # put this as a parameter of LikelihoodModel
         self.df_resid = self.df_total - self.df_model
-
+        
     @setattr_on_read
     def logL(self):
         """
@@ -98,7 +98,7 @@ class LikelihoodModelResults(object):
         _cov = self.vcov(column=column)
         if _cov.ndim == 2:
             _cov = np.diag(_cov)
-        _t = _theta * pos_recipr(np.sqrt(_cov))
+        _t = _theta * positive_reciprocal(np.sqrt(_cov))
         return _t
 
     def vcov(self, matrix=None, column=None, dispersion=None, other=None):
@@ -200,7 +200,7 @@ class LikelihoodModelResults(object):
             if 'sd' in store:
                 st_sd = np.squeeze(sd)
         if 't' in store:
-            st_t = np.squeeze(effect * pos_recipr(sd))
+            st_t = np.squeeze(effect * positive_reciprocal(sd))
         return TContrastResults(effect=st_effect, t=st_t, sd=st_sd,
                                 df_den=self.df_resid)
 
@@ -258,8 +258,8 @@ class LikelihoodModelResults(object):
         q = matrix.shape[0]
         if invcov is None:
             invcov = inv(self.vcov(matrix=matrix, dispersion=1.0))
-        F = np.add.reduce(np.dot(invcov, ctheta) * ctheta, 0) *\
-            pos_recipr((q * dispersion))
+        F = np.add.reduce(np.dot(invcov, ctheta) * ctheta, 0) * \
+            positive_reciprocal((q * dispersion))
         F = np.squeeze(F)
         return FContrastResults(
             effect=ctheta, covariance=self.vcov(
@@ -300,10 +300,12 @@ class LikelihoodModelResults(object):
 
         Notes
         -----
+        
         Confidence intervals are two-tailed.
-        TODO:
+        
         tails : string, optional
-            `tails` can be "two", "upper", or "lower"
+            Possible values: 'two' | 'upper' | 'lower'
+
         '''
         if cols is None:
             lower = self.theta - inv_t_cdf(1 - alpha / 2, self.df_resid) *\

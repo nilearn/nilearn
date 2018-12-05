@@ -281,11 +281,12 @@ extlinks = {
 
 sphinx_gallery_conf = {
     'doc_module'        : 'nistats',
+    'backreferences_dir': os.path.join('modules', 'generated'),
     'reference_url'     : {
         'nilearn': 'http://nilearn.github.io',
         'matplotlib': 'http://matplotlib.org',
-        'numpy': 'http://docs.scipy.org/doc/numpy-1.6.0',
-        'scipy': 'http://docs.scipy.org/doc/scipy-0.11.0/reference',
+        'numpy': 'http://docs.scipy.org/doc/numpy-1.11.0',
+        'scipy': 'http://docs.scipy.org/doc/scipy-0.17.0/reference',
         'nibabel': 'http://nipy.org/nibabel',
         'sklearn': 'http://scikit-learn.org/stable',
         'patsy': 'http://patsy.readthedocs.io/en/latest/',

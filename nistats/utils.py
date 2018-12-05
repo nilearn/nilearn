@@ -2,6 +2,7 @@
 
 Authors: Bertrand Thirion, Matthew Brett, 2015
 """
+import csv
 import sys
 import scipy.linalg as spl
 import numpy as np
@@ -22,15 +23,39 @@ def _check_list_length_match(list_1, list_2, var_name_1, var_name_2):
             % (str(var_name_1), len(list_1), str(var_name_2), len(list_2)))
 
 
+def _read_events_table(table):
+    """
+    Accepts the path to en event.tsv file and loads it as a Pandas Dataframe.
+    Raises an error if loading fails.
+    Parameters
+    ----------
+    table: string
+        Accepts the path to an events file
+    
+    Returns
+    -------
+    loaded: pandas.Dataframe object
+        Pandas Dataframe witht e events data.
+    """
+    try:
+        # kept for historical reasons, a lot of tests use csv with index column
+        loaded = pd.read_csv(table, index_col=0)
+    except:
+        raise ValueError('table path %s could not be loaded' % table)
+    if loaded.empty:
+        try:
+            loaded = pd.read_table(table)
+        except:
+            raise ValueError('table path %s could not be loaded' % table)
+    return loaded
+
+
 def _check_and_load_tables(tables_, var_name):
     """Check tables can be loaded in DataFrame to raise error if necessary"""
     tables = []
     for table_idx, table in enumerate(tables_):
         if isinstance(table, _basestring):
-            try:
-                loaded = pd.read_csv(table, index_col=0)
-            except:
-                raise ValueError('table path %s could not be loaded' % table)
+            loaded = _read_events_table(table)
             tables.append(loaded)
         elif isinstance(table, pd.DataFrame):
             tables.append(table)
@@ -40,6 +65,61 @@ def _check_and_load_tables(tables_, var_name):
                             (var_name, type(table), table_idx))
     return tables
 
+ 
+def _verify_events_file_uses_tab_separators(events_files):
+    """
+    Raises a ValueError if provided list of text based data files
+    (.csv, .tsv, etc) do not enforce the BIDS convention of using Tabs
+    as separators.
+    
+    Only scans their first row.
+    Does nothing if:
+        If the separator used is BIDS compliant.
+        Paths are invalid.
+        File(s) are not text files.
+
+    Does not flag comma-separated-values-files for compatibility reasons;
+    this may change in future as commas are not BIDS compliant.
+    
+    parameters
+    ----------
+    events_files: str, List/Tuple[str]
+        A single file's path or a collection of filepaths.
+        Files are expected to be text files.
+        Non-text files will raise ValueError.
+    
+    Returns
+    -------
+    None
+    
+    Raises
+    ------
+    ValueError:
+        If value separators are not Tabs (or commas)
+    """
+    valid_separators = [',', '\t']
+    events_files = [events_files] if not isinstance(events_files, (list, tuple)) else events_files
+    for events_file_ in events_files:
+        try:
+            with open(events_file_, 'r') as events_file_obj:
+                events_file_sample = events_file_obj.readline()
+        except TypeError as type_err:  # events is Pandas dataframe.
+            pass
+        except UnicodeDecodeError as unicode_err:  # py3:if binary file
+            pass
+        except IOError as io_err:  # if invalid filepath.
+            pass
+        else:
+            try:
+                csv.Sniffer().sniff(sample=events_file_sample,
+                                    delimiters=valid_separators,
+                                    )
+            except csv.Error:
+                raise ValueError(
+                    'The values in the events file are not separated by tabs; '
+                    'please enforce BIDS conventions',
+                    events_file_)
+    
 
 def _check_run_tables(run_imgs, tables_, tables_name):
     """Check fMRI runs and corresponding tables to raise error if necessary"""
@@ -57,7 +137,7 @@ def z_score(pvalue):
     return norm.isf(pvalue)
 
 
-def multiple_fast_inv(a):
+def multiple_fast_inverse(a):
     """Compute the inverse of a set of arrays.
 
     Parameters
@@ -146,7 +226,7 @@ def multiple_mahalanobis(effect, covariance):
     Xt, Kt = np.ascontiguousarray(effect.T), np.ascontiguousarray(covariance.T)
 
     # compute the inverse of the covariances
-    Kt = multiple_fast_inv(Kt)
+    Kt = multiple_fast_inverse(Kt)
 
     # derive the squared Mahalanobis distances
     sqd = np.sum(np.sum(Xt[:, :, np.newaxis] * Xt[:, np.newaxis] * Kt, 1), 1)
@@ -185,7 +265,7 @@ def full_rank(X, cmax=1e15):
     return X, cmax
 
 
-def pos_recipr(X):
+def positive_reciprocal(X):
     """ Return element-wise reciprocal of array, setting `X`>=0 to 0
 
     Return the reciprocal of an array, setting all entries less than or
@@ -314,13 +394,14 @@ def parse_bids_filename(img_path):
         'file_tag', 'file_type' and 'file_fields'.
 
         The 'file_tag' field refers to the last part of the file under the
-        BIDS convention that is of the form *_tag.type. Contrary to the rest
+        BIDS convention that is of the form \*_tag.type. Contrary to the rest
         of the file name it is not a key-value pair. This notion should be
         revised in the case we are handling derivatives since so far the
         convention will keep the tag prepended to any fields added in the
         case of preprocessed files that also end with another tag. This parser
         will consider any tag in the middle of the file name as a key with no
         value and will be included in the 'file_fields' key.
+
     """
     reference = {}
     reference['file_path'] = img_path

@@ -18,7 +18,7 @@ from nose.tools import assert_true, assert_equal, assert_raises
 from numpy.testing import (assert_almost_equal, assert_array_equal)
 from nibabel.tmpdirs import InTemporaryDirectory
 import pandas as pd
-
+from nilearn.image import concat_imgs
 
 # This directory path
 BASEDIR = os.path.dirname(os.path.abspath(__file__))
@@ -46,7 +46,7 @@ def test_high_level_glm_with_paths():
         mask, FUNCFILE, _ = write_fake_fmri_data(shapes)
         FUNCFILE = FUNCFILE[0]
         func_img = load(FUNCFILE)
-        # ols case
+        # Ordinary Least Squares case
         model = SecondLevelModel(mask=mask)
         # asking for contrast before model fit gives error
         assert_raises(ValueError, model.compute_contrast, [])
@@ -92,6 +92,7 @@ def test_fmri_inputs():
                   ['03', 'a', FUNCFILE]]
         niidf = pd.DataFrame(dfrows, columns=dfcols)
         niimgs = [FUNCFILE, FUNCFILE, FUNCFILE]
+        niimg_4d = concat_imgs(niimgs)
         confounds = pd.DataFrame([['01', 1], ['02', 2], ['03', 3]],
                                  columns=['subject_label', 'conf1'])
         sdes = pd.DataFrame(X[:3, :3], columns=['intercept', 'b', 'c'])
@@ -110,6 +111,9 @@ def test_fmri_inputs():
         SecondLevelModel().fit(niidf, None, sdes)
         # niimgs as input
         SecondLevelModel().fit(niimgs, None, sdes)
+        # 4d niimg as input
+        SecondLevelModel().fit(niimg_4d, None, sdes)
+
         # test wrong input errors
         # test first level model requirements
         assert_raises(ValueError, SecondLevelModel().fit, flm)
@@ -146,7 +150,7 @@ def test_second_level_model_glm_computation():
         mask, FUNCFILE, _ = write_fake_fmri_data(shapes)
         FUNCFILE = FUNCFILE[0]
         func_img = load(FUNCFILE)
-        # ols case
+        # Ordinary Least Squares case
         model = SecondLevelModel(mask=mask)
         Y = [func_img] * 4
         X = pd.DataFrame([[1]] * 4, columns=['intercept'])
@@ -157,7 +161,7 @@ def test_second_level_model_glm_computation():
         results1 = model.results_
 
         labels2, results2 = run_glm(
-            model.masker_.transform(Y), X.as_matrix(), 'ols')
+            model.masker_.transform(Y), X.values, 'ols')
         assert_almost_equal(labels1, labels2, decimal=1)
         assert_equal(len(results1), len(results2))
 
@@ -168,7 +172,7 @@ def test_second_level_model_contrast_computation():
         mask, FUNCFILE, _ = write_fake_fmri_data(shapes)
         FUNCFILE = FUNCFILE[0]
         func_img = load(FUNCFILE)
-        # ols case
+        # Ordinary Least Squares case
         model = SecondLevelModel(mask=mask)
         # asking for contrast before model fit gives error
         assert_raises(ValueError, model.compute_contrast, 'intercept')
@@ -196,3 +200,28 @@ def test_second_level_model_contrast_computation():
         assert_raises(ValueError, model.compute_contrast, c1, None, '')
         assert_raises(ValueError, model.compute_contrast, c1, None, [])
         assert_raises(ValueError, model.compute_contrast, c1, None, None, '')
+        # check that passing no explicit contrast when the dsign
+        # matrix has morr than one columns raises an error
+        X = pd.DataFrame(np.random.rand(4, 2), columns=['r1', 'r2'])
+        model = model.fit(Y, design_matrix=X)
+        assert_raises(ValueError, model.compute_contrast, None)
+
+
+def test_second_level_model_contrast_computation_with_memory_caching():
+    with InTemporaryDirectory():
+        shapes = ((7, 8, 9, 1),)
+        mask, FUNCFILE, _ = write_fake_fmri_data(shapes)
+        FUNCFILE = FUNCFILE[0]
+        func_img = load(FUNCFILE)
+        # Ordinary Least Squares case
+        model = SecondLevelModel(mask=mask, memory='nilearn_cache')
+        # fit model
+        Y = [func_img] * 4
+        X = pd.DataFrame([[1]] * 4, columns=['intercept'])
+        model = model.fit(Y, design_matrix=X)
+        ncol = len(model.design_matrix_.columns)
+        c1 = np.eye(ncol)[0, :]
+        # test memory caching for compute_contrast
+        model.compute_contrast(c1, output_type='z_score')
+        # or simply pass nothing
+        model.compute_contrast()

@@ -30,29 +30,27 @@ The required dependencies to use the software are:
 
 * Python >= 2.7
 * setuptools
-* Numpy >= 1.8.2
-* SciPy >= 0.14
+* Numpy >= 1.11
+* SciPy >= 0.17
 * Nibabel >= 2.0.2
-* Nilearn >= 0.2.0
-* Pandas >= 0.13.0
-* Sklearn >= 0.15.0
-* Patsy >= 0.2.0
+* Nilearn >= 0.4.0
+* Pandas >= 0.18.0
+* Sklearn >= 0.18.0
+* Patsy >= 0.4.1
 
 If you are using nilearn plotting functionalities or running the
-examples, matplotlib >= 1.3.1 is required.
+examples, matplotlib >= 1.5.1 is required.
 
-If you want to run the tests, you need nose >= 1.2.1 and coverage >= 3.6.
+If you want to run the tests, you need nose >= 1.2.1 and coverage >= 3.7.
 
-If you want to download openneuro datasets Boto3 >= 1.0.0 is required
+If you want to download openneuro datasets Boto3 >= 1.2 is required
 
 
 Install
 =======
 
-In order to perform the installation, run the following command from the nistats directory::
-
-    python setup.py install --user
-
+The installation instructions are found on the webpage:
+https://nistats.github.io/
 
 Development
 ===========

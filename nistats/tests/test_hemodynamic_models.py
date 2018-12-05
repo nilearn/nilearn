@@ -17,7 +17,7 @@ def test_spm_hrf():
     """
     h = spm_hrf(2.0)
     assert_almost_equal(h.sum(), 1)
-    assert_equal(len(h), 256)
+    assert_equal(len(h), 800)
 
 
 def test_spm_hrf_derivative():
@@ -25,10 +25,10 @@ def test_spm_hrf_derivative():
     """
     h = spm_time_derivative(2.0)
     assert_almost_equal(h.sum(), 0)
-    assert_equal(len(h), 256)
+    assert_equal(len(h), 800)
     h = spm_dispersion_derivative(2.0)
     assert_almost_equal(h.sum(), 0)
-    assert_equal(len(h), 256)
+    assert_equal(len(h), 800)
 
 
 def test_glover_hrf():
@@ -36,10 +36,10 @@ def test_glover_hrf():
     """
     h = glover_hrf(2.0)
     assert_almost_equal(h.sum(), 1)
-    assert_equal(len(h), 256)
+    assert_equal(len(h), 800)
     h = glover_dispersion_derivative(2.0)
     assert_almost_equal(h.sum(), 0)
-    assert_equal(len(h), 256)
+    assert_equal(len(h), 800)
 
 
 
@@ -48,7 +48,7 @@ def test_glover_time_derivative():
     """
     h = glover_time_derivative(2.0)
     assert_almost_equal(h.sum(), 0)
-    assert_equal(len(h), 256)
+    assert_equal(len(h), 800)
 
 
 def test_resample_regressor():
@@ -195,11 +195,11 @@ def test_hkernel():
     h = _hrf_kernel('fir', tr, fir_delays=np.arange(4))
     assert_equal(len(h), 4)
     for dh in h:
-        assert_equal(dh.sum(), 16.)
+        assert_equal(dh.sum(), 50.)
     # 
     h = _hrf_kernel(None, tr)
     assert_equal(len(h), 1)
-    assert_almost_equal(h[0], np.hstack((1, np.zeros(15))))
+    assert_almost_equal(h[0], np.hstack((1, np.zeros(49))))
 
 
 def test_make_regressor_1():
@@ -221,7 +221,7 @@ def test_make_regressor_2():
     frame_times = np.linspace(0, 69, 70)
     hrf_model = 'spm'
     reg, reg_names = compute_regressor(condition, hrf_model, frame_times)
-    assert_almost_equal(reg.sum() * 16, 3, 1)
+    assert_almost_equal(reg.sum() * 50, 3, 1)
     assert_equal(reg_names[0], 'cond')
 
 
