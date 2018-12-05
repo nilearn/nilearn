@@ -545,28 +545,26 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
             warn('One contrast given, assuming it for all %d runs' % n_runs)
             con_vals = con_vals * n_runs
 
+        # 'all' is assumed to be the final entry; if adding more, place before 'all'
         valid_types = ['z_score', 'stat', 'p_value', 'effect_size',
-                       'effect_variance']
-        if not (isinstance(output_type, _basestring) and
-                output_type in valid_types + ['all']):
-            raise ValueError('output_type must be one of "z_score", "stat", '
-                             '"p_value", "effect_size", "effect_variance" or '
-                             '"all"')
+                       'effect_variance', 'all']
+        if output_type not in valid_types:
+            raise ValueError('output_type must be one of {}'.format(valid_types))
 
         contrast = _fixed_effect_contrast(self.labels_, self.results_,
                                           con_vals, stat_type)
 
-        output_types = valid_types if output_type == 'all' else [output_type]
+        output_types = valid_types[:-1] if output_type == 'all' else [output_type]
 
         outputs = {}
-        for otype in output_types:
-            estimate_ = getattr(contrast, otype)()
+        for output_type_ in output_types:
+            estimate_ = getattr(contrast, output_type_)()
             # Prepare the returned images
             output = self.masker_.inverse_transform(estimate_)
             contrast_name = str(con_vals)
             output.header['descrip'] = (
-                '%s of contrast %s' % (otype, contrast_name))
-            outputs[otype] = output
+                '%s of contrast %s' % (output_type_, contrast_name))
+            outputs[output_type_] = output
 
         return outputs if output_type == 'all' else output
 
