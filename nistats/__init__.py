@@ -26,7 +26,7 @@ utils                   --- Miscelaneous utilities
 """
 
 import gzip
-import six
+import sys
 import warnings
 
 from .version import _check_module_dependencies, __version__
@@ -36,10 +36,22 @@ def py2_deprecation_warning():
     warnings.simplefilter('once')
     py2_warning = ('Python2 support is deprecated and will be removed in '
                    'a future release. Consider switching to Python3.')
-    if six.PY2:
+    if sys.version_info.major == 2:
         warnings.warn(message=py2_warning,
                       category=DeprecationWarning,
                       stacklevel=4,
+                      )
+
+
+def _py34_deprecation_warning():
+    warnings.simplefilter('once')
+    py34_warning = ('Python 3.4 support is deprecated and will be removed in '
+                   'a future release. Consider switching to Python 3.6 or 3.7.'
+                   )
+    if sys.version_info.major == 3 and sys.version_info.minor == 4:
+        warnings.warn(message=py34_warning,
+                      category=DeprecationWarning,
+                      stacklevel=3,
                       )
 
 _check_module_dependencies()
