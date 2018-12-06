@@ -36,7 +36,7 @@ jobs:
       - restore_cache:
           key:
             - v1-packages+datasets-{{ .Branch }}-{{ checksum "week_num" }}
-            - v5-packages+datasets-{{ .Branch }}-{{ checksum "today" }}-{{ checksum ".circleci/manual-cache-timestamp" }}
+            - v1-docs-{{ .Branch }}-{{ checksum "today" }}-{{ checksum ".circleci/manual-cache-timestamp" }}
 
       - run:
           name: Download & install conda if absent
@@ -82,7 +82,7 @@ jobs:
             - ../nilearn_data
             - ../miniconda3
       - save_cache:
-          key: v1-packages+datasets-{{ .Branch }}-{{ checksum "today" }}-{{ checksum ".circleci/manual-cache-timestamp" }}
+          key: v1-docs-{{ .Branch }}-{{ checksum "today" }}-{{ checksum ".circleci/manual-cache-timestamp" }}
           path:
             - doc
 
