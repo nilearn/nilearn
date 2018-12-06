@@ -520,7 +520,8 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         Returns
         -------
         output : Nifti1Image or dict
-            The desired output image or dictionary of output images
+            The desired output image(s). If ``output_type == 'all'``, then
+            the output is a dictionary of images, keyed by the type of image.
 
         """
         if self.labels_ is None or self.results_ is None:
