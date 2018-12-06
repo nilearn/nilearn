@@ -32,8 +32,12 @@ jobs:
           name: Generating today's date and writing to file to generate daily new cache key
           command: |
             date +%F > today
+            date +%U > week_num
       - restore_cache:
-          key: v5-packages+datasets-{{ .Branch }}-{{ checksum "today" }}-{{ checksum ".circleci/manual-cache-timestamp" }}
+          key:
+            - v1-packages+datasets-{{ .Branch }}-{{ checksum "week_num" }}
+            - v5-packages+datasets-{{ .Branch }}-{{ checksum "today" }}-{{ checksum ".circleci/manual-cache-timestamp" }}
+
       - run:
           name: Download & install conda if absent
           command: |
@@ -73,11 +77,14 @@ jobs:
             set -o pipefail && cd doc && make html-strict 2>&1 | tee ~/log.txt
           no_output_timeout: 5h
       - save_cache:
-          key: v5-packages+datasets-{{ .Branch }}-{{ checksum "today" }}-{{ checksum ".circleci/manual-cache-timestamp" }}
+          key: v1-packages+datasets-{{ .Branch }}-{{ checksum "week_num" }}
           paths:
-          - ../nilearn_data
-          - ../miniconda3
-          - doc
+            - ../nilearn_data
+            - ../miniconda3
+      - save_cache:
+          key: v1-packages+datasets-{{ .Branch }}-{{ checksum "today" }}-{{ checksum ".circleci/manual-cache-timestamp" }}
+          path:
+            - doc
 
       - store_artifacts:
           path: doc/_build/html
