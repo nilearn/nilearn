@@ -32,7 +32,7 @@ import warnings
 from .version import _check_module_dependencies, __version__
 
 
-def py2_deprecation_warning():
+def _py2_deprecation_warning():
     warnings.simplefilter('once')
     py2_warning = ('Python2 support is deprecated and will be removed in '
                    'a future release. Consider switching to Python3.')
@@ -58,4 +58,4 @@ _check_module_dependencies()
 
 
 __all__ = ['__version__', 'datasets', 'design_matrix']
-py2_deprecation_warning()
+_py2_deprecation_warning()
