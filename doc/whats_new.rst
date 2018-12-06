@@ -22,6 +22,9 @@ Changelog
       to 50 and exposed this parameter.
     * changed the term ``paradigm`` to ``events`` and made it
       BIDS-compliant. Set the event file to be tab-separated
+    * ``FirstLevelModel.compute_contrasts`` parameter ``output_type`` can
+      take the value ``'all'``, returning a dictionary of images for each
+      output type
 
 * Certain functions and methods have been renamed for clarity
     * ``nistats.design_matrix``
