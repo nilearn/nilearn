@@ -103,6 +103,15 @@ def test_high_level_glm_with_data():
         assert_true(
             (variance_image.get_data()[load(mask).get_data() > 0] > .001).all())
 
+    all_images = multi_session_model.compute_contrast(
+        np.eye(rk)[:2], output_type='all')
+
+    assert_array_equal(all_images['z_score'].get_data(), z_image.get_data())
+    assert_array_equal(all_images['p_value'].get_data(), p_value.get_data())
+    assert_array_equal(all_images['stat'].get_data(), stat_image.get_data())
+    assert_array_equal(all_images['effect_size'].get_data(), effect_image.get_data())
+    assert_array_equal(all_images['effect_variance'].get_data(), variance_image.get_data())
+
 
 def test_high_level_glm_with_paths():
     # New API
