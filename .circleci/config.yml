@@ -83,7 +83,7 @@ jobs:
             - ../miniconda3
       - save_cache:
           key: v1-docs-{{ .Branch }}-{{ checksum "today" }}-{{ checksum ".circleci/manual-cache-timestamp" }}
-          path:
+          paths:
             - doc
 
       - store_artifacts:
