@@ -92,6 +92,7 @@ jobs:
           path: coverage
       - store_artifacts:
           path: log.txt
+          destination: log
 
 
   full-build:
@@ -138,7 +139,7 @@ jobs:
       - store_artifacts:
           path: coverage
       - store_artifacts:
-          path: $HOME/log.txt
+          path: log.txt
           destination: log
 
 
