@@ -8,7 +8,7 @@ version: 2
 jobs:
   quick-build:
     docker:
-      - image: circleci/python:3.6
+      - image: circleci/python@sha256:b568e83138255d4f0b89610ac18af53d4e2bd13c2e1b5538607ec3dc729e7eb4  # Pinning CircleCI image to the one used when build times were usual (Consulted with CircleCI support).
     environment:
       DISTRIB: "conda"
       PYTHON_VERSION: "3.6"
