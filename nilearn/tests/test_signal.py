@@ -544,13 +544,14 @@ def test_clean_psc():
     means = rng.randn(1, n_features)
     signals += means
 
-    cleaned_signals = clean(signals, standardize_strategy='psc')
+    cleaned_signals = clean(signals, standardize='psc')
     np.testing.assert_almost_equal(cleaned_signals.mean(0), 0)
 
     std = cleaned_signals.std(axis=0)
     np.testing.assert_almost_equal(cleaned_signals.mean(0), 0)
     np.testing.assert_almost_equal(cleaned_signals,
-                                   signals / signals.mean(0) *100 - 100)
+                                   signals / signals.mean(0) * 100 - 100)
+
 
 def test_clean_zscore():
     rng = np.random.RandomState(0)
@@ -561,6 +562,6 @@ def test_clean_zscore():
                                      length=n_samples)
 
     signals += rng.randn(1, n_features)
-    cleaned_signals = clean(signals, standardize_strategy='zscore')
+    cleaned_signals = clean(signals, standardize='zscore')
     np.testing.assert_almost_equal(cleaned_signals.mean(0), 0)
     np.testing.assert_almost_equal(cleaned_signals.std(0), 1)

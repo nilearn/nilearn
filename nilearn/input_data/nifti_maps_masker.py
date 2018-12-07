@@ -69,6 +69,10 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
         'psc':  timeseries are shifted to zero mean value and scaled
         to percent signal change (as compared to original mean signal).
 
+    standardize_strategy : str, optional
+        This parameter sets how the signal gets normalized by signal.clean()
+        (z-scored or percent signal change).
+
     detrend: boolean, optional
         This parameter is passed to signal.clean. Please see the related
         documentation for details
@@ -127,8 +131,7 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
                  smoothing_fwhm=None, standardize=False,
                  standardize_strategy='zscore', detrend=False,
                  low_pass=None, high_pass=None, t_r=None,
-                 dtype=None,
-                 resampling_target="data",
+                 dtype=None, resampling_target="data",
                  memory=Memory(cachedir=None, verbose=0), memory_level=0,
                  verbose=0):
         self.maps_img = maps_img
