@@ -138,7 +138,7 @@ jobs:
       - store_artifacts:
           path: coverage
       - store_artifacts:
-          path: log.txt
+          path: doc/log.txt
 
 
 workflows:
