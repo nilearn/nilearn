@@ -267,6 +267,8 @@ def test_nifti_labels_masker_resampling():
         compressed_img2 = masker.inverse_transform(transformed2)
         np.testing.assert_array_equal(compressed_img.get_data(),
                                       compressed_img2.get_data())
+
+
 def test_standardization():
     data_shape = (9, 9, 5)
     n_samples = 500
@@ -289,11 +291,12 @@ def test_standardization():
     np.testing.assert_almost_equal(trans_signals.mean(0), 0)
     np.testing.assert_almost_equal(trans_signals.std(0), 1)
 
-    ## psc
+    # psc
     masker = NiftiLabelsMasker(labels, standardize='psc')
     trans_signals = masker.fit_transform(img)
 
     np.testing.assert_almost_equal(trans_signals.mean(0), 0)
     np.testing.assert_almost_equal(trans_signals,
-                                   (unstandarized_label_signals / unstandarized_label_signals.mean(0) *
+                                   (unstandarized_label_signals /
+                                    unstandarized_label_signals.mean(0) *
                                     100 - 100))

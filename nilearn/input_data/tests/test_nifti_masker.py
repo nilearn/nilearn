@@ -212,7 +212,7 @@ def test_5d():
         DimensionError,
         "Input data has incompatible dimensionality: "
         "Expected dimension is 4D and you provided "
-        "a list of 4D images \(5D\).",
+        "a list of 4D images (5D).",
         masker.transform, data_5d)
 
 
@@ -390,6 +390,7 @@ def test_dtype():
     masker_2 = NiftiMasker(dtype='float64')
     assert(masker_2.fit_transform(img_32).dtype == np.float64)
     assert(masker_2.fit_transform(img_64).dtype == np.float64)
+
 
 def test_standardization():
     data_shape = (9, 9, 5)

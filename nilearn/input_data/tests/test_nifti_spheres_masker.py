@@ -127,6 +127,7 @@ def test_small_radius():
                                 mask_img=nibabel.Nifti1Image(mask, affine))
     masker.fit_transform(nibabel.Nifti1Image(data, affine))
 
+
 def test_standardization():
     data = np.random.random((3, 3, 3, 5))
     img = nibabel.Nifti1Image(data, np.eye(4))
@@ -145,4 +146,5 @@ def test_standardization():
     s = masker.fit_transform(img)
 
     np.testing.assert_almost_equal(s.mean(), 0)
-    np.testing.assert_almost_equal(s.ravel(), data[1,1,1] / data[1,1,1].mean() * 100 - 100)
+    np.testing.assert_almost_equal(s.ravel(), data[1, 1, 1] /
+                                   data[1, 1, 1].mean() * 100 - 100)
