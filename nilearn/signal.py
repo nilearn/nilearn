@@ -20,8 +20,9 @@ from ._utils.numpy_conversions import csv_to_array, as_ndarray
 NP_VERSION = distutils.version.LooseVersion(np.version.short_version).version
 
 
-def _standardize(signals, detrend=False, normalize=True):
-    """ Center and norm a given signal (time is along first axis)
+def _standardize(signals, detrend=False, standardize=True,
+                 standardize_strategy='zscore'):
+    """ Center and standardize a given signal (time is along first axis)
 
     Parameters
     ----------
@@ -31,36 +32,61 @@ def _standardize(signals, detrend=False, normalize=True):
     detrend: bool
         if detrending of timeseries is requested
 
-    normalize: bool
-        if True, shift timeseries to zero mean value and scale
-        to unit energy (sum of squares).
+    standardize: {bool}
+        if True, signal gets standardized
+
+    standardize_strategy: {'zscore', 'psc'}, default is 'zscore'
+        Strategy to standardize the signal.
+        'zscore': the signal is z-scored. Timeseries are shifted
+        to zero mean and scaled to unit variance.
+        'psc':  Timeseries are shifted to zero mean value and scaled
+        to percent signal change (as compared to original mean signal).
 
     Returns
     -------
     std_signals: numpy.ndarray
-        copy of signals, normalized.
+        copy of signals, standardized.
     """
+
+    if standardize_strategy not in ['psc', 'zscore']:
+        raise ValueError('{} is no valid standardize strategy.'
+                        .format(standardize_strategy))
 
     if detrend:
         signals = _detrend(signals, inplace=False)
     else:
         signals = signals.copy()
 
-    if normalize:
+    if standardize:
         if signals.shape[0] == 1:
-            warnings.warn('Standardization of 3D signal has been requested but '
-                'would lead to zero values. Skipping.')
+            warnings.warn('Standardization of 3D signal has been requested but'
+                ' would lead to zero values. Skipping.')
             return signals
 
-        if not detrend:
-            # remove mean if not already detrended
-            signals = signals - signals.mean(axis=0)
+        elif standardize_strategy == 'zscore':
+            if not detrend:
+                # remove mean if not already detrended
+                signals = signals - signals.mean(axis=0)
 
-        std = np.sqrt((signals ** 2).sum(axis=0))
-        std[std < np.finfo(np.float).eps] = 1.  # avoid numerical problems
-        signals /= std
+            std = signals.std(axis=0)
+            std[std < np.finfo(np.float).eps] = 1.  # avoid numerical problems
+            signals /= std
+
+        elif standardize_strategy == 'psc':
+            mean_signal = signals.mean(axis=0)
+            invalid_ix = mean_signal < np.finfo(np.float).eps
+
+            signals = (signals / mean_signal) * 100
+            signals -= 100
+
+            if np.any(invalid_ix):
+                warnings.warn('psc standardization strategy is meaningless '
+                              'for features that have a mean of 0 or '
+                              'less. These time series are set to 0.')
+                signals[:, invalid_ix] = 0
+
+
     return signals
-
 
 def _mean_of_squares(signals, n_batches=20):
     """Compute mean of squares for each signal.
@@ -355,16 +381,16 @@ def _ensure_float(data):
 
 
 def clean(signals, sessions=None, detrend=True, standardize=True,
-          confounds=None, low_pass=None, high_pass=None, t_r=None,
-          ensure_finite=False):
+          standardize_strategy='zscore', confounds=None, low_pass=None,
+          high_pass=None, t_r=2.5, ensure_finite=False):
     """Improve SNR on masked fMRI signals.
 
     This function can do several things on the input signals, in
     the following order:
 
     - detrend
-    - low- and high-pass filter
     - remove confounds
+    - low- and high-pass filter
     - standardize
 
     Low-pass filtering improves specificity.
@@ -373,10 +399,6 @@ def clean(signals, sessions=None, detrend=True, standardize=True,
     sensitivity.
 
     Filtering is only meaningful on evenly-sampled signals.
-
-    According to Lindquist et al. (2018), removal of confounds will be done
-    orthogonally to temporal filters (low- and/or high-pass filters), if both
-    are specified.
 
     Parameters
     ----------
@@ -399,8 +421,7 @@ def clean(signals, sessions=None, detrend=True, standardize=True,
         signal, as if all were in the same array.
 
     t_r: float
-        Repetition time, in second (sampling period). Set to None if not
-        specified. Mandatory if used together with low_pass or high_pass.
+        Repetition time, in second (sampling period).
 
     low_pass, high_pass: float
         Respectively low and high cutoff frequencies, in Hertz.
@@ -410,7 +431,14 @@ def clean(signals, sessions=None, detrend=True, standardize=True,
         confound removal)
 
     standardize: bool
-        If True, returned signals are set to unit variance.
+        If True, returned signals are standardized.
+
+    standardize_strategy: {'zscore', 'psc'}, default is 'zscore'
+        Strategy to standardize the signal.
+        'zscore': the signal is z-scored. Timeseries are shifted
+        to zero mean and scaled to unit variance.
+        'psc':  Timeseries are shifted to zero mean value and scaled
+        to percent signal change (as compared to original mean signal).
 
     ensure_finite: bool
         If True, the non-finite values (NANs and infs) found in the data
@@ -429,11 +457,6 @@ def clean(signals, sessions=None, detrend=True, standardize=True,
     "Statistical Parametric Maps in Functional Imaging: A General
     Linear Approach". Human Brain Mapping 2, no 4 (1994): 189-210.
     <http://dx.doi.org/10.1002/hbm.460020402>`_
-
-    Orthogonalization between temporal filters and confound removal is based on
-    suggestions in `Lindquist, M., Geuter, S., Wager, T., & Caffo, B. (2018).
-    Modular preprocessing pipelines can reintroduce artifacts into fMRI data.
-    bioRxiv, 407676. <http://dx.doi.org/10.1101/407676>`_
 
     See Also
     --------
@@ -511,36 +534,23 @@ def clean(signals, sessions=None, detrend=True, standardize=True,
             signals[sessions == s, :] = \
                 clean(signals[sessions == s],
                       detrend=detrend, standardize=standardize,
+                      standardize_strategy=standardize_strategy,
                       confounds=session_confounds, low_pass=low_pass,
                       high_pass=high_pass, t_r=t_r)
 
+
     # detrend
     signals = _ensure_float(signals)
-    signals = _standardize(signals, normalize=False, detrend=detrend)
 
-    # Apply low- and high-pass filters
-    if low_pass is not None or high_pass is not None:
-        if t_r is None:
-            raise ValueError("Repetition time (t_r) must be specified for "
-                             "filtering. You specified None.")
-
-        signals = butterworth(signals, sampling_rate=1. / t_r,
-                              low_pass=low_pass, high_pass=high_pass)
+    if detrend:
+        mean_signals = signals.mean(axis=0)
+        signals = _standardize(signals, standardize=False, detrend=detrend)
 
     # Remove confounds
     if confounds is not None:
         confounds = _ensure_float(confounds)
-
-        # Apply low- and high-pass filters to keep filters orthogonal
-        # (according to Lindquist et al. (2018))
-        if low_pass is not None or high_pass is not None:
-
-            confounds = butterworth(confounds, sampling_rate=1. / t_r,
-                                    low_pass=low_pass, high_pass=high_pass)
-
-        confounds = _standardize(confounds, normalize=standardize,
+        confounds = _standardize(confounds, standardize=standardize,
                                  detrend=detrend)
-
         if not standardize:
             # Improve numerical stability by controlling the range of
             # confounds. We don't rely on _standardize as it removes any
@@ -554,8 +564,25 @@ def clean(signals, sessions=None, detrend=True, standardize=True,
         Q = Q[:, np.abs(np.diag(R)) > np.finfo(np.float).eps * 100.]
         signals -= Q.dot(Q.T).dot(signals)
 
-    if standardize:
-        signals = _standardize(signals, normalize=True, detrend=False)
-        signals *= np.sqrt(signals.shape[0])  # for unit variance
+    if low_pass is not None or high_pass is not None:
+        if t_r is None:
+            raise ValueError("Repetition time (t_r) must be specified for "
+                             "filtering")
+
+        signals = butterworth(signals, sampling_rate=1. / t_r,
+                              low_pass=low_pass, high_pass=high_pass)
+
+    # Standardize
+    if detrend and (standardize_strategy == 'psc'):
+        # If the signal is detrended, we have to know the original mean
+        # signal to calculate the psc.
+        signals = _standardize(signals + mean_signals, standardize=standardize,
+                               detrend=False,
+                               standardize_strategy=standardize_strategy)
+    else:
+        signals = _standardize(signals, standardize=standardize,
+                               detrend=False,
+                               standardize_strategy=standardize_strategy)
 
     return signals
+

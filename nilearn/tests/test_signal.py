@@ -189,20 +189,20 @@ def test_standardize():
 
     # transpose array to fit _standardize input.
     # Without trend removal
-    b = nisignal._standardize(a, normalize=True)
-    energies = (b ** 2).sum(axis=0)
-    np.testing.assert_almost_equal(energies, np.ones(n_features))
+    b = nisignal._standardize(a, standardize=True)
+    stds = np.std(b)
+    np.testing.assert_almost_equal(stds, np.ones(n_features))
     np.testing.assert_almost_equal(b.sum(axis=0), np.zeros(n_features))
 
     # With trend removal
     a = np.atleast_2d(np.linspace(0, 2., n_features)).T
-    b = nisignal._standardize(a, detrend=True, normalize=False)
+    b = nisignal._standardize(a, detrend=True, standardize=False)
     np.testing.assert_almost_equal(b, np.zeros(b.shape))
 
     length_1_signal = np.atleast_2d(np.linspace(0, 2., n_features))
     np.testing.assert_array_equal(length_1_signal,
                                   nisignal._standardize(length_1_signal,
-                                                        normalize=True))
+                                                        standardize=True))
 
 
 def test_detrend():
@@ -533,3 +533,17 @@ def test_high_variance_confounds():
     np.testing.assert_almost_equal(
         np.min(np.abs(np.dstack([outG - outGt, outG + outGt])), axis=2),
         np.zeros(outG.shape))
+
+
+
+def test_clean_psc():
+    rng = np.random.RandomState(0)
+    n_samples = 500
+    n_features = 5
+
+    signals, _, _ = generate_signals(n_features=n_features,
+                                     length=n_samples)
+
+    signals += rng.randn(1, n_features)
+    cleaned_signals = clean(signals, standardize_strategy='psc')
+    np.testing.assert_almost_equal(cleaned_signals.mean(), 0)
