@@ -139,7 +139,7 @@ jobs:
           path: coverage
       - store_artifacts:
           path: $HOME/log.txt
-          destination: log.txt
+          destination: log
 
 
 workflows:
