@@ -535,8 +535,25 @@ def test_high_variance_confounds():
         np.zeros(outG.shape))
 
 
-
 def test_clean_psc():
+    rng = np.random.RandomState(0)
+    n_samples = 500
+    n_features = 5
+
+    signals, _, _ = generate_signals(n_features=n_features,
+                                     length=n_samples)
+    means = rng.randn(1, n_features)
+    signals += means
+
+    cleaned_signals = clean(signals, standardize_strategy='psc')
+    np.testing.assert_almost_equal(cleaned_signals.mean(0), 0)
+
+    std = cleaned_signals.std(axis=0)
+    np.testing.assert_almost_equal(cleaned_signals.mean(0), 0)
+    np.testing.assert_almost_equal(cleaned_signals,
+                                   signals / signals.mean(0) *100 - 100)
+
+def test_clean_zscore():
     rng = np.random.RandomState(0)
     n_samples = 500
     n_features = 5
@@ -545,5 +562,6 @@ def test_clean_psc():
                                      length=n_samples)
 
     signals += rng.randn(1, n_features)
-    cleaned_signals = clean(signals, standardize_strategy='psc')
-    np.testing.assert_almost_equal(cleaned_signals.mean(), 0)
+    cleaned_signals = clean(signals, standardize_strategy='zscore')
+    np.testing.assert_almost_equal(cleaned_signals.mean(0), 0)
+    np.testing.assert_almost_equal(cleaned_signals.std(0), 1)

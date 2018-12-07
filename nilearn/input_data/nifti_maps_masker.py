@@ -59,8 +59,15 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
         millimeters of the spatial smoothing to apply to the signal.
 
     standardize: boolean, optional
-        If standardize is True, the time-series are centered and normed:
-        their mean is put to 0 and their variance to 1 in the time dimension.
+        If standardize is True, the time-series are normalized using
+        signal.clean(). Also see standardize_strategy.
+
+    standardize_strategy: {'zscore', 'psc'}, default is 'zscore'
+        strategy to standardize the signal.
+        'zscore': the signal is z-scored. timeseries are shifted
+        to zero mean and scaled to unit variance.
+        'psc':  timeseries are shifted to zero mean value and scaled
+        to percent signal change (as compared to original mean signal).
 
     standardize_strategy : str, optional
         This parameter sets how the signal gets normalized by signal.clean()
@@ -120,11 +127,10 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
     # memory and memory_level are used by CacheMixin.
 
     def __init__(self, maps_img, mask_img=None,
-                 allow_overlap=True,
-                 smoothing_fwhm=None, standardize=False,
+                 allow_overlap=True, smoothing_fwhm=None, standardize=False,
                  standardize_strategy='zscore', detrend=False,
-                 low_pass=None, high_pass=None, t_r=None,
-                 dtype=None, resampling_target="data",
+                 low_pass=None, high_pass=None, t_r=None, dtype=None,
+                 resampling_target="data",
                  memory=Memory(cachedir=None, verbose=0), memory_level=0,
                  verbose=0):
         self.maps_img = maps_img

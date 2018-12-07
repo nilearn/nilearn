@@ -57,8 +57,15 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
         millimeters of the spatial smoothing to apply to the signal.
 
     standardize: boolean, optional
-        If standardize is True, the time-series are centered and normed:
-        their mean is put to 0 and their variance to 1 in the time dimension.
+        If standardize is True, the time-series are normalized using
+        signal.clean(). Also see standardize_strategy.
+
+    standardize_strategy: {'zscore', 'psc'}, default is 'zscore'
+        Strategy to standardize the signal.
+        'zscore': the signal is z-scored. Timeseries are shifted
+        to zero mean and scaled to unit variance.
+        'psc':  Timeseries are shifted to zero mean value and scaled
+        to percent signal change (as compared to original mean signal).
 
     standardize_strategy : str, optional
         This parameter sets how the signal gets normalized by signal.clean()
@@ -112,9 +119,10 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
     # memory and memory_level are used by CacheMixin.
 
     def __init__(self, labels_img, background_label=0, mask_img=None,
-                 smoothing_fwhm=None, standardize=False, 
-                 standardize_strategy='zscore', detrend=False, low_pass=None, 
-                 high_pass=None, t_r=None, dtype=None, resampling_target="data",
+                 smoothing_fwhm=None, standardize=False,
+                 standardize_strategy='zscore', detrend=False, low_pass=None,
+                 high_pass=None, t_r=None, dtype=None,
+                 resampling_target="data",
                  memory=Memory(cachedir=None, verbose=0), memory_level=1,
                  verbose=0):
         self.labels_img = labels_img
@@ -130,6 +138,7 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
         self.low_pass = low_pass
         self.high_pass = high_pass
         self.t_r = t_r
+        self.standardize_strategy = standardize_strategy
         self.dtype = dtype
         self.standardize_strategy = standardize_strategy
 

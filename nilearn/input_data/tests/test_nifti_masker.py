@@ -390,3 +390,30 @@ def test_dtype():
     masker_2 = NiftiMasker(dtype='float64')
     assert(masker_2.fit_transform(img_32).dtype == np.float64)
     assert(masker_2.fit_transform(img_64).dtype == np.float64)
+
+def test_standardization():
+    data_shape = (9, 9, 5)
+    n_samples = 500
+
+    signals = np.random.randn(np.prod(data_shape), n_samples)
+    means = np.random.randn(np.prod(data_shape), 1) * 50 + 1000
+    signals += means
+    img = Nifti1Image(signals.reshape(data_shape + (n_samples,)), np.eye(4))
+
+    mask = Nifti1Image(np.ones(data_shape), np.eye(4))
+
+    # z-score
+    masker = NiftiMasker(mask, standardize=True, standardize_strategy='zscore')
+    trans_signals = masker.fit_transform(img)
+
+    np.testing.assert_almost_equal(trans_signals.mean(0), 0)
+    np.testing.assert_almost_equal(trans_signals.std(0), 1)
+
+    # psc
+    masker = NiftiMasker(mask, standardize=True, standardize_strategy='psc')
+    trans_signals = masker.fit_transform(img)
+
+    np.testing.assert_almost_equal(trans_signals.mean(0), 0)
+    np.testing.assert_almost_equal(trans_signals,
+                                   (signals / signals.mean(1)[:, np.newaxis] *
+                                    100 - 100).T)
