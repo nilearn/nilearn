@@ -328,7 +328,8 @@ def test_clean_t_r():
                        'n_samples={}, n_features={}'.format(
                            tr1, tr2, low_cutoff, high_cutoff,
                            n_samples, n_features))
-                np.testing.assert_(np.any(np.not_equal(det_one_tr, det_diff_tr)),
+                np.testing.assert_(np.any(np.not_equal(det_one_tr,
+                                                       det_diff_tr)),
                                    msg)
                 del det_one_tr, det_diff_tr
 
@@ -442,8 +443,6 @@ def test_clean_confounds():
                                    np.zeros((20, 2)))
 
 
-
-
 def test_clean_frequencies():
 
     # Create signal
@@ -463,7 +462,7 @@ def test_clean_frequencies():
     res_low = clean(sx, detrend=False, standardize=False, low_pass=low_pass,
                     high_pass=None, t_r=t_r)
     res_high = clean(sx, detrend=False, standardize=False, low_pass=None,
-                    high_pass=high_pass, t_r=t_r)
+                     high_pass=high_pass, t_r=t_r)
 
     # Compute power spectrum density for both test
     f, Pxx_den_low = scipy.signal.welch(np.mean(res_low.T, axis=0), fs=t_r)

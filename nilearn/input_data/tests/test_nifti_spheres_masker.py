@@ -169,4 +169,5 @@ def test_standardization():
     s = masker.fit_transform(img)
 
     np.testing.assert_almost_equal(s.mean(), 0)
-    np.testing.assert_almost_equal(s.ravel(), data[1,1,1] / data[1,1,1].mean() * 100 - 100)
+    np.testing.assert_almost_equal(s.ravel(), data[1, 1, 1] /
+                                   data[1, 1, 1].mean() * 100 - 100)

@@ -1,8 +1,9 @@
 """Test the nifti_region module
 
 Functions in this file only test features added by the NiftiLabelsMasker class,
-non_overlappingt the underlying functions (clean(), img_to_signals_labels(), etc.). See
-test_masking.py and test_signal.py for details.
+non_overlappingt the underlying functions (clean(), img_to_signals_labels(),
+etc.).
+See test_masking.py and test_signal.py for details.
 """
 
 from nose.tools import assert_raises, assert_equal, assert_true
@@ -325,7 +326,7 @@ def test_standardization():
     np.testing.assert_almost_equal(trans_signals.mean(0), 0)
     np.testing.assert_almost_equal(trans_signals.std(0), 1)
 
-    ## psc
+    # psc
     masker = NiftiMapsMasker(maps, standardize='psc')
     trans_signals = masker.fit_transform(img)
 
