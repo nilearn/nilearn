@@ -77,7 +77,7 @@ jobs:
             set -o pipefail && cd doc && make html-strict 2>&1 | tee ~/log.txt
           no_output_timeout: 5h
       - save_cache:
-          key: v1-packages+datasets-{{ .Branch }}-{{ checksum "week_num" }}
+          key: v1-packages+datasets-{{ checksum "week_num" }}
           paths:
             - ../nilearn_data
             - ../miniconda3
