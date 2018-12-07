@@ -189,7 +189,7 @@ def test_standardize():
 
     # transpose array to fit _standardize input.
     # Without trend removal
-    b = nisignal._standardize(a, standardize=True)
+    b = nisignal._standardize(a, standardize='zscore')
     stds = np.std(b)
     np.testing.assert_almost_equal(stds, np.ones(n_features))
     np.testing.assert_almost_equal(b.sum(axis=0), np.zeros(n_features))
@@ -202,7 +202,7 @@ def test_standardize():
     length_1_signal = np.atleast_2d(np.linspace(0, 2., n_features))
     np.testing.assert_array_equal(length_1_signal,
                                   nisignal._standardize(length_1_signal,
-                                                        standardize=True))
+                                                        standardize='zscore'))
 
 
 def test_detrend():
@@ -545,7 +545,7 @@ def test_clean_psc():
     means = rng.randn(1, n_features)
     signals += means
 
-    cleaned_signals = clean(signals, standardize_strategy='psc')
+    cleaned_signals = clean(signals, standardize='psc')
     np.testing.assert_almost_equal(cleaned_signals.mean(0), 0)
 
     std = cleaned_signals.std(axis=0)
@@ -562,6 +562,6 @@ def test_clean_zscore():
                                      length=n_samples)
 
     signals += rng.randn(1, n_features)
-    cleaned_signals = clean(signals, standardize_strategy='zscore')
+    cleaned_signals = clean(signals, standardize='zscore')
     np.testing.assert_almost_equal(cleaned_signals.mean(0), 0)
     np.testing.assert_almost_equal(cleaned_signals.std(0), 1)

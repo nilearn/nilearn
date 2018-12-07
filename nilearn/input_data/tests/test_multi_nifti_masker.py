@@ -213,7 +213,7 @@ def test_standardization():
     mask = Nifti1Image(np.ones(data_shape), np.eye(4))
 
     # z-score
-    masker = MultiNiftiMasker(mask, standardize=True, standardize_strategy='zscore')
+    masker = MultiNiftiMasker(mask, standardize='zscore')
     trans_signals = masker.fit_transform([img1, img2])
 
     for ts in trans_signals:
@@ -221,11 +221,10 @@ def test_standardization():
         np.testing.assert_almost_equal(ts.std(0), 1)
 
     # psc
-    masker = MultiNiftiMasker(mask, standardize=True, standardize_strategy='psc')
+    masker = MultiNiftiMasker(mask, standardize='psc')
     trans_signals = masker.fit_transform([img1, img2])
 
     for ts, s in zip(trans_signals, signals):
         np.testing.assert_almost_equal(ts.mean(0), 0)
         np.testing.assert_almost_equal(ts,
-                                       (s / s.mean(1)[:, np.newaxis] *
-                                        100 - 100).T)
+                                       (s / s.mean(1)[:, np.newaxis] * 100 - 100).T)

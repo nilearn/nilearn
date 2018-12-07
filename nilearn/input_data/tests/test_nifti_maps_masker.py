@@ -311,7 +311,7 @@ def test_standardization():
     img = Nifti1Image(signals.reshape(data_shape + (n_samples,)),
                       np.eye(4))
 
-    maps, _ = testing.generate_maps((9, 9, 5), 10)
+    maps, _ = data_gen.generate_maps((9, 9, 5), 10)
 
     # Unstandarized
     masker = NiftiMapsMasker(maps, standardize=False)
@@ -319,16 +319,14 @@ def test_standardization():
 
     # z-score
     masker = NiftiMapsMasker(maps,
-                             standardize=True,
-                             standardize_strategy='zscore')
+                             standardize='zscore')
     trans_signals = masker.fit_transform(img)
 
     np.testing.assert_almost_equal(trans_signals.mean(0), 0)
     np.testing.assert_almost_equal(trans_signals.std(0), 1)
 
     ## psc
-    masker = NiftiMapsMasker(maps, standardize=True,
-                             standardize_strategy='psc')
+    masker = NiftiMapsMasker(maps, standardize='psc')
     trans_signals = masker.fit_transform(img)
 
     np.testing.assert_almost_equal(trans_signals.mean(0), 0)
