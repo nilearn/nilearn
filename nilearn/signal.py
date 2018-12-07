@@ -20,8 +20,7 @@ from ._utils.numpy_conversions import csv_to_array, as_ndarray
 NP_VERSION = distutils.version.LooseVersion(np.version.short_version).version
 
 
-def _standardize(signals, detrend=False, standardize=True,
-                 standardize_strategy='zscore'):
+def _standardize(signals, detrend=False, standardize='zscore'):
     """ Center and standardize a given signal (time is along first axis)
 
     Parameters
@@ -32,15 +31,15 @@ def _standardize(signals, detrend=False, standardize=True,
     detrend: bool
         if detrending of timeseries is requested
 
-    standardize: {bool}
-        if True, signal gets standardized
-
-    standardize_strategy: {'zscore', 'psc'}, default is 'zscore'
+    standardize: {'zscore', 'psc', True, False}, default is 'zscore'
         Strategy to standardize the signal.
         'zscore': the signal is z-scored. Timeseries are shifted
         to zero mean and scaled to unit variance.
         'psc':  Timeseries are shifted to zero mean value and scaled
         to percent signal change (as compared to original mean signal).
+        True : the signal is z-scored. Timeseries are shifted
+        to zero mean and scaled to unit variance.
+        False : Do not standardize the data.
 
     Returns
     -------
@@ -48,9 +47,9 @@ def _standardize(signals, detrend=False, standardize=True,
         copy of signals, standardized.
     """
 
-    if standardize_strategy not in ['psc', 'zscore']:
+    if standardize not in [True, False, 'psc', 'zscore']:
         raise ValueError('{} is no valid standardize strategy.'
-                        .format(standardize_strategy))
+                        .format(standardize))
 
     if detrend:
         signals = _detrend(signals, inplace=False)
@@ -63,7 +62,7 @@ def _standardize(signals, detrend=False, standardize=True,
                 ' would lead to zero values. Skipping.')
             return signals
 
-        elif standardize_strategy == 'zscore':
+        elif (standardize == 'zscore') or (standardize is True):
             if not detrend:
                 # remove mean if not already detrended
                 signals = signals - signals.mean(axis=0)
@@ -72,7 +71,7 @@ def _standardize(signals, detrend=False, standardize=True,
             std[std < np.finfo(np.float).eps] = 1.  # avoid numerical problems
             signals /= std
 
-        elif standardize_strategy == 'psc':
+        elif standardize == 'psc':
             mean_signal = signals.mean(axis=0)
             invalid_ix = mean_signal < np.finfo(np.float).eps
             signals = (signals / mean_signal) * 100
@@ -379,9 +378,9 @@ def _ensure_float(data):
     return data
 
 
-def clean(signals, sessions=None, detrend=True, standardize=True,
-          standardize_strategy='zscore', confounds=None, low_pass=None,
-          high_pass=None, t_r=None, ensure_finite=False):
+def clean(signals, sessions=None, detrend=True, standardize='zscore',
+          confounds=None, low_pass=None,
+          high_pass=None, t_r=2.5, ensure_finite=False):
     """Improve SNR on masked fMRI signals.
 
     This function can do several things on the input signals, in
@@ -429,15 +428,13 @@ def clean(signals, sessions=None, detrend=True, standardize=True,
         If detrending should be applied on timeseries (before
         confound removal)
 
-    standardize: bool
-        If True, returned signals are standardized.
-
-    standardize_strategy: {'zscore', 'psc'}, default is 'zscore'
+    standardize: {'zscore', 'psc', False}, default is 'zscore'
         Strategy to standardize the signal.
         'zscore': the signal is z-scored. Timeseries are shifted
         to zero mean and scaled to unit variance.
         'psc':  Timeseries are shifted to zero mean value and scaled
         to percent signal change (as compared to original mean signal).
+        False : Do not standardize the data.
 
     ensure_finite: bool
         If True, the non-finite values (NANs and infs) found in the data
@@ -533,12 +530,10 @@ def clean(signals, sessions=None, detrend=True, standardize=True,
             signals[sessions == s, :] = \
                 clean(signals[sessions == s],
                       detrend=detrend, standardize=standardize,
-                      standardize_strategy=standardize_strategy,
                       confounds=session_confounds, low_pass=low_pass,
                       high_pass=high_pass, t_r=t_r)
 
 
-    # detrend
     signals = _ensure_float(signals)
 
     # Apply low- and high-pass filters
@@ -582,16 +577,14 @@ def clean(signals, sessions=None, detrend=True, standardize=True,
                               low_pass=low_pass, high_pass=high_pass)
 
     # Standardize
-    if detrend and (standardize_strategy == 'psc'):
+    if detrend and (standardize == 'psc'):
         # If the signal is detrended, we have to know the original mean
         # signal to calculate the psc.
         signals = _standardize(signals + mean_signals, standardize=standardize,
-                               detrend=False,
-                               standardize_strategy=standardize_strategy)
+                               detrend=False)
     else:
         signals = _standardize(signals, standardize=standardize,
-                               detrend=False,
-                               standardize_strategy=standardize_strategy)
+                               detrend=False)
 
     return signals
 

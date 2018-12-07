@@ -117,7 +117,6 @@ def filter_and_extract(imgs, extraction_function,
             t_r=parameters['t_r'],
             low_pass=parameters['low_pass'],
             high_pass=parameters['high_pass'],
-            standardize_strategy=parameters['standardize_strategy'],
             confounds=confounds,
             sessions=sessions)
 

@@ -56,20 +56,15 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
         If smoothing_fwhm is not None, it gives the full-width half maximum in
         millimeters of the spatial smoothing to apply to the signal.
 
-    standardize: boolean, optional
-        If standardize is True, the time-series are normalized using
-        signal.clean(). Also see standardize_strategy.
-
-    standardize_strategy: {'zscore', 'psc'}, default is 'zscore'
+    standardize: {'zscore', 'psc', True, False}, default is 'zscore'
         Strategy to standardize the signal.
         'zscore': the signal is z-scored. Timeseries are shifted
         to zero mean and scaled to unit variance.
         'psc':  Timeseries are shifted to zero mean value and scaled
         to percent signal change (as compared to original mean signal).
-
-    standardize_strategy : str, optional
-        This parameter sets how the signal gets normalized by signal.clean()
-        (z-scored or percent signal change).
+        True : the signal is z-scored. Timeseries are shifted
+        to zero mean and scaled to unit variance.
+        False : Do not standardize the data.
 
     detrend: boolean, optional
         This parameter is passed to signal.clean. Please see the related
@@ -138,7 +133,6 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
         self.high_pass = high_pass
         self.t_r = t_r
         self.dtype = dtype
-        self.standardize_strategy = standardize_strategy
 
         # Parameters for resampling
         self.resampling_target = resampling_target

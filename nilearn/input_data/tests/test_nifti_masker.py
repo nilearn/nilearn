@@ -403,14 +403,14 @@ def test_standardization():
     mask = Nifti1Image(np.ones(data_shape), np.eye(4))
 
     # z-score
-    masker = NiftiMasker(mask, standardize=True, standardize_strategy='zscore')
+    masker = NiftiMasker(mask, standardize='zscore')
     trans_signals = masker.fit_transform(img)
 
     np.testing.assert_almost_equal(trans_signals.mean(0), 0)
     np.testing.assert_almost_equal(trans_signals.std(0), 1)
 
     # psc
-    masker = NiftiMasker(mask, standardize=True, standardize_strategy='psc')
+    masker = NiftiMasker(mask, standardize='psc')
     trans_signals = masker.fit_transform(img)
 
     np.testing.assert_almost_equal(trans_signals.mean(0), 0)

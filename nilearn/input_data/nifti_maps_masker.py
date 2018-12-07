@@ -62,16 +62,15 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
         If standardize is True, the time-series are normalized using
         signal.clean(). Also see standardize_strategy.
 
-    standardize_strategy: {'zscore', 'psc'}, default is 'zscore'
-        strategy to standardize the signal.
-        'zscore': the signal is z-scored. timeseries are shifted
+    standardize: {'zscore', 'psc', True, False}, default is 'zscore'
+        Strategy to standardize the signal.
+        'zscore': the signal is z-scored. Timeseries are shifted
         to zero mean and scaled to unit variance.
-        'psc':  timeseries are shifted to zero mean value and scaled
+        'psc':  Timeseries are shifted to zero mean value and scaled
         to percent signal change (as compared to original mean signal).
-
-    standardize_strategy : str, optional
-        This parameter sets how the signal gets normalized by signal.clean()
-        (z-scored or percent signal change).
+        True : the signal is z-scored. Timeseries are shifted
+        to zero mean and scaled to unit variance.
+        False : Do not standardize the data.
 
     detrend: boolean, optional
         This parameter is passed to signal.clean. Please see the related

@@ -189,9 +189,9 @@ def test_standardize():
 
     # transpose array to fit _standardize input.
     # Without trend removal
-    b = nisignal._standardize(a, standardize=True)
-    std = b.std(axis=0)
-    np.testing.assert_almost_equal(std, np.ones(n_features))
+    b = nisignal._standardize(a, standardize='zscore')
+    stds = np.std(b)
+    np.testing.assert_almost_equal(stds, np.ones(n_features))
     np.testing.assert_almost_equal(b.sum(axis=0), np.zeros(n_features))
 
     # With trend removal
@@ -202,7 +202,7 @@ def test_standardize():
     length_1_signal = np.atleast_2d(np.linspace(0, 2., n_features))
     np.testing.assert_array_equal(length_1_signal,
                                   nisignal._standardize(length_1_signal,
-                                                        standardize=True))
+                                                        standardize='zscore'))
 
 
 def test_detrend():
