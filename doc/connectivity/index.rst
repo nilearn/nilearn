@@ -22,6 +22,6 @@ and networks, via resting-state networks or parcellations.
    functional_connectomes.rst
    connectome_extraction.rst
    resting_state_networks.rst
-   parcellating.rst
    region_extraction.rst
+   parcellating.rst
 

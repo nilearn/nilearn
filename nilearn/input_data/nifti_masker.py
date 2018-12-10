@@ -5,34 +5,35 @@ Transformer used to apply basic transformations on MRI data.
 # License: simplified BSD
 
 from copy import copy as copy_object
+
 from sklearn.externals.joblib import Memory
 
-from .. import masking
-from .. import image
+from .base_masker import BaseMasker, filter_and_extract
 from .. import _utils
+from .. import image
+from .. import masking
 from .._utils import CacheMixin
 from .._utils.class_inspect import get_params
-from .base_masker import BaseMasker, filter_and_extract
-from nilearn._utils.niimg_conversions import _check_same_fov
+from .._utils.niimg_conversions import _check_same_fov
 
 
 class _ExtractionFunctor(object):
-
     func_name = 'nifti_masker_extractor'
 
     def __init__(self, mask_img_):
         self.mask_img_ = mask_img_
 
     def __call__(self, imgs):
-        return masking.apply_mask(imgs, self.mask_img_), imgs.get_affine()
+        return(masking.apply_mask(imgs, self.mask_img_,
+                                  dtype=imgs.get_data_dtype()), imgs.affine)
 
 
 def filter_and_mask(imgs, mask_img_, parameters,
                     memory_level=0, memory=Memory(cachedir=None),
                     verbose=0,
                     confounds=None,
-                    copy=True):
-
+                    copy=True,
+                    dtype=None):
     imgs = _utils.check_niimg(imgs, atleast_4d=True, ensure_ndim=4)
 
     # Check whether resampling is truly necessary. If so, crop mask
@@ -43,26 +44,26 @@ def filter_and_mask(imgs, mask_img_, parameters,
         # now we can crop
         mask_img_ = image.crop_img(mask_img_, copy=False)
         parameters['target_shape'] = mask_img_.shape
-        parameters['target_affine'] = mask_img_.get_affine()
+        parameters['target_affine'] = mask_img_.affine
 
     data, affine = filter_and_extract(imgs, _ExtractionFunctor(mask_img_),
                                       parameters,
                                       memory_level=memory_level,
                                       memory=memory,
                                       verbose=verbose,
-                                      confounds=confounds, copy=copy)
+                                      confounds=confounds, copy=copy,
+                                      dtype=dtype)
 
     # For _later_: missing value removal or imputing of missing data
     # (i.e. we want to get rid of NaNs, if smoothing must be done
     # earlier)
     # Optionally: 'doctor_nan', remove voxels with NaNs, other option
     # for later: some form of imputation
-
-    return data, affine
+    return data
 
 
 class NiftiMasker(BaseMasker, CacheMixin):
-    """Class for masking of Niimg-like objects.
+    """Applying a mask to extract time-series from Niimg-like objects.
 
     NiftiMasker is useful when preprocessing (detrending, standardization,
     resampling, etc.) of in-mask voxels is necessary. Use case: working with
@@ -71,7 +72,7 @@ class NiftiMasker(BaseMasker, CacheMixin):
     Parameters
     ----------
     mask_img : Niimg-like object, optional
-        See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
+        See http://nilearn.github.io/manipulating_images/input_output.html
         Mask for the data. If not given, a mask is computed in the fit step.
         Optional parameters (mask_args and mask_strategy) can be set to
         fine tune the mask extraction.
@@ -92,11 +93,11 @@ class NiftiMasker(BaseMasker, CacheMixin):
         This parameter is passed to signal.clean. Please see the related
         documentation for details
 
-    low_pass : False or float, optional
+    low_pass: None or float, optional
         This parameter is passed to signal.clean. Please see the related
         documentation for details
 
-    high_pass : False or float, optional
+    high_pass: None or float, optional
         This parameter is passed to signal.clean. Please see the related
         documentation for details
 
@@ -112,12 +113,15 @@ class NiftiMasker(BaseMasker, CacheMixin):
         This parameter is passed to image.resample_img. Please see the
         related documentation for details.
 
-    mask_strategy: {'background' or 'epi'}, optional
+    mask_strategy: {'background', 'epi' or 'template'}, optional
         The strategy used to compute the mask: use 'background' if your
-        images present a clear homogeneous background, and 'epi' if they
-        are raw EPI images. Depending on this value, the mask will be
-        computed from masking.compute_background_mask or
-        masking.compute_epi_mask. Default is 'background'.
+        images present a clear homogeneous background, 'epi' if they
+        are raw EPI images, or you could use 'template' which will
+        extract the gray matter part of your data by resampling the MNI152
+        brain mask for your data's field of view.
+        Depending on this value, the mask will be computed from
+        masking.compute_background_mask, masking.compute_epi_mask or
+        masking.compute_gray_matter_mask. Default is 'background'.
 
     mask_args : dict, optional
         If mask is None, these are additional parameters passed to
@@ -131,6 +135,11 @@ class NiftiMasker(BaseMasker, CacheMixin):
         before data preprocessing at the beginning of NiftiMasker.transform.
         This is useful to perform data subselection as part of a scikit-learn
         pipeline.
+
+    `dtype: {dtype, "auto"}
+        Data type toward which the data should be converted. If "auto", the
+        data will be converted to int32 if dtype is discrete and float32 if it
+        is continuous.
 
     memory : instance of joblib.Memory or string
         Used to cache the masking process.
@@ -160,12 +169,13 @@ class NiftiMasker(BaseMasker, CacheMixin):
     nilearn.masking.apply_mask
     nilearn.signal.clean
     """
+
     def __init__(self, mask_img=None, sessions=None, smoothing_fwhm=None,
                  standardize=False, detrend=False,
                  low_pass=None, high_pass=None, t_r=None,
                  target_affine=None, target_shape=None,
                  mask_strategy='background',
-                 mask_args=None, sample_mask=None,
+                 mask_args=None, sample_mask=None, dtype=None,
                  memory_level=1, memory=Memory(cachedir=None),
                  verbose=0
                  ):
@@ -184,10 +194,13 @@ class NiftiMasker(BaseMasker, CacheMixin):
         self.mask_strategy = mask_strategy
         self.mask_args = mask_args
         self.sample_mask = sample_mask
+        self.dtype = dtype
 
         self.memory = memory
         self.memory_level = memory_level
         self.verbose = verbose
+
+        self._shelving = False
 
     def _check_fitted(self):
         if not hasattr(self, 'mask_img_'):
@@ -201,7 +214,7 @@ class NiftiMasker(BaseMasker, CacheMixin):
         Parameters
         ----------
         imgs: list of Niimg-like objects
-            See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
+            See http://nilearn.github.io/manipulating_images/input_output.html
             Data on which the mask must be calculated. If this is a list,
             the affine is considered the same for all.
         """
@@ -210,8 +223,8 @@ class NiftiMasker(BaseMasker, CacheMixin):
         # Load data (if filenames are given, load them)
         if self.verbose > 0:
             print("[%s.fit] Loading data from %s" % (
-                            self.__class__.__name__,
-                            _utils._repr_niimgs(imgs)[:200]))
+                self.__class__.__name__,
+                _utils._repr_niimgs(imgs)[:200]))
 
         # Compute the mask if not given by the user
         if self.mask_img is None:
@@ -221,10 +234,12 @@ class NiftiMasker(BaseMasker, CacheMixin):
                 compute_mask = masking.compute_background_mask
             elif self.mask_strategy == 'epi':
                 compute_mask = masking.compute_epi_mask
+            elif self.mask_strategy == 'template':
+                compute_mask = masking.compute_gray_matter_mask
             else:
                 raise ValueError("Unknown value of mask_strategy '%s'. "
-                                 "Acceptable values are 'background' and "
-                                 "'epi'." % self.mask_strategy)
+                                 "Acceptable values are 'background', "
+                                 "'epi' and 'template'." % self.mask_strategy)
             if self.verbose > 0:
                 print("[%s.fit] Computing the mask" % self.__class__.__name__)
             self.mask_img_ = self._cache(compute_mask, ignore=['verbose'])(
@@ -240,11 +255,11 @@ class NiftiMasker(BaseMasker, CacheMixin):
             self.mask_img_,
             target_affine=self.target_affine,
             target_shape=self.target_shape,
-            copy=False)
+            copy=False, interpolation='nearest')
         if self.target_affine is not None:
             self.affine_ = self.target_affine
         else:
-            self.affine_ = self.mask_img_.get_affine()
+            self.affine_ = self.mask_img_.affine
         # Load data in memory
         self.mask_img_.get_data()
         if self.verbose > 10:
@@ -257,7 +272,7 @@ class NiftiMasker(BaseMasker, CacheMixin):
         Parameters
         ----------
         imgs: 3D/4D Niimg-like object
-            See http://nilearn.github.io/manipulating_visualizing/manipulating_images.html#niimg.
+            See http://nilearn.github.io/manipulating_images/input_output.html
             Images to process. It must boil down to a 4D image with scans
             number as last dimension.
 
@@ -279,13 +294,17 @@ class NiftiMasker(BaseMasker, CacheMixin):
         params = get_params(self.__class__, self,
                             ignore=['mask_img', 'mask_args', 'mask_strategy'])
 
-        data, _ = self._cache(filter_and_mask,
-                              ignore=['verbose', 'memory', 'memory_level', 'copy'])(
-                                    imgs, self.mask_img_, params,
-                                    memory_level=self.memory_level,
-                                    memory=self.memory,
-                                    verbose=self.verbose,
-                                    confounds=confounds,
-                                    copy=copy
+        data = self._cache(filter_and_mask,
+                           ignore=['verbose', 'memory', 'memory_level',
+                                   'copy'],
+                           shelve=self._shelving)(
+            imgs, self.mask_img_, params,
+            memory_level=self.memory_level,
+            memory=self.memory,
+            verbose=self.verbose,
+            confounds=confounds,
+            copy=copy,
+            dtype=self.dtype
         )
+
         return data

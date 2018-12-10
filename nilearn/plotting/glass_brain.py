@@ -5,6 +5,9 @@ Brain schematics plotting for glass brain functionality
 import json
 import os
 
+from distutils.version import LooseVersion
+
+import matplotlib
 from matplotlib.path import Path
 from matplotlib import patches
 from matplotlib import colors
@@ -86,13 +89,17 @@ def _get_json_and_transform(direction):
     been tweaked by hand to fit the MNI template
     """
     direction_to_view_name = {'x': 'side',
-                              'y': 'front',
-                              'z': 'top'}
+                              'y': 'back',
+                              'z': 'top',
+                              'l': 'side',
+                              'r': 'side'}
 
     direction_to_transform_params = {
         'x': [0.38, 0, 0, 0.38, -108, -70],
-        'y': [0.39, 0, 0, 0.39, -72, -73],
-        'z': [0.36, 0, 0, 0.37, -71, -107]}
+        'y': [0.39, 0, 0, 0.39, -73, -73],
+        'z': [0.36, 0, 0, 0.37, -71, -107],
+        'l': [0.38, 0, 0, 0.38, -108, -70],
+        'r': [0.38, 0, 0, 0.38, -108, -70]}
 
     dirname = os.path.dirname(os.path.abspath(__file__))
     dirname = os.path.join(dirname, 'glass_brain_files')
@@ -146,7 +153,7 @@ def plot_brain_schematics(ax, direction, **kwargs):
        ----------
            ax: a MPL axes instance
                 The axes in which the plots will be drawn
-            direction: {'x', 'y', 'z'}
+            direction: {'x', 'y', 'z', 'l', 'r'}
                 The directions of the view
             **kwargs:
                 Passed to the matplotlib patches constructor
@@ -157,7 +164,13 @@ def plot_brain_schematics(ax, direction, **kwargs):
            Useful for the caller to be able to set axes limits
 
     """
-    black_bg = ax.get_axis_bgcolor() == 'k'
+    if LooseVersion(matplotlib.__version__) >= LooseVersion("2.0"):
+        get_axis_bg_color = ax.get_facecolor()
+    else:
+        get_axis_bg_color = ax.get_axis_bgcolor()
+
+    black_bg = colors.colorConverter.to_rgba(get_axis_bg_color) \
+                    == colors.colorConverter.to_rgba('k')
 
     json_filename, transform = _get_json_and_transform(direction)
     with open(json_filename) as json_file:

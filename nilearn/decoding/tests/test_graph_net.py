@@ -29,7 +29,7 @@ def _make_data(task="regression", size=4):
         task=task)
     X_, _ = to_niimgs(X, [size] * 3)
     mask_ = nibabel.Nifti1Image(mask.astype(np.float),
-                                X_.get_affine())
+                                X_.affine)
     return X, y, w, mask, mask_, X_
 
 X, y, w, mask, mask_, X_ = _make_data()

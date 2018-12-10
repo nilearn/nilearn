@@ -90,7 +90,7 @@ img_3d_affine = resample_img(img, target_affine=target_affine_3x3)
 img_4d_affine = resample_img(img, target_affine=target_affine_4x4)
 target_affine_mm_space_offset_changed = np.eye(4)
 target_affine_mm_space_offset_changed[:3, 3] = \
-    img_3d_affine.get_affine()[:3, 3]
+    img_3d_affine.affine[:3, 3]
 
 img_3d_affine_in_mm_space = resample_img(
     img_3d_affine,
@@ -105,6 +105,7 @@ img_4d_affine_in_mm_space = resample_img(
 #############################################################################
 # Finally, visualize
 import matplotlib.pyplot as plt
+from nilearn.plotting import show
 plt.figure()
 plt.imshow(image, interpolation="nearest", vmin=0, vmax=vmax)
 plt.title("The original data in voxel space")
@@ -125,4 +126,4 @@ plt.imshow(img_4d_affine_in_mm_space.get_data()[:, :, 0],
 plt.title("Transformed using a 4x4 affine -\n Uses affine anchor "
           "and estimates bounding box size")
 
-plt.show()
+show()

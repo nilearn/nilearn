@@ -37,8 +37,8 @@ VS Fonov, AC Evans, RC McKinstry, CR Almli and DL Collins,
 to adulthood", NeuroImage, Volume 47, Supplement 1, July 2009, Page S102
 Organization for Human Brain Mapping 2009 Annual Meeting.
 
-DL Collins, AP Zijdenbos, WFC Baaré and AC Evans,
+DL Collins, AP Zijdenbos, WFC Baare and AC Evans,
 "ANIMAL+INSECT: Improved Cortical Structure Segmentation",
-IPMI Lecture Notes in Computer Science, 1999, Volume 1613/1999, 210–223
+IPMI Lecture Notes in Computer Science, 1999, Volume 1613/1999, 210-223
 
 Licence: unknown.

@@ -16,7 +16,7 @@ def get_params(cls, instance, ignore=None):
     class), it is useful to forward parameters from one instance to another.
 
     Parameters
-    ==========
+    ----------
     cls: class
         The class that gives us the list of parameters we are interested
         in
@@ -28,7 +28,7 @@ def get_params(cls, instance, ignore=None):
         Names of the parameters that are not returned.
 
     Returns
-    =======
+    -------
     params: dict
         The dict of parameters
     """
@@ -57,7 +57,7 @@ def enclosing_scope_name(ensure_estimator=True, stack_level=2):
     for debug print purpose.
 
     Parameters
-    ==========
+    ----------
     ensure_estimator: boolean, default: True
         If true, find the enclosing object deriving from 'BaseEstimator'
     stack_level: integer, default 2

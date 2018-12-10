@@ -5,10 +5,13 @@ Test the signals module
 # License: simplified BSD
 
 import os.path
+import warnings
+from distutils.version import LooseVersion
 
 import numpy as np
 from nose.tools import assert_true, assert_false, assert_raises
 from sklearn.utils.testing import assert_less
+import nibabel
 
 # Use nisignal here to avoid name collisions (using nilearn.signal is
 # not possible)
@@ -24,7 +27,7 @@ def generate_signals(n_features=17, n_confounds=5, length=41,
     All returned signals have no trends at all (to machine precision).
 
     Parameters
-    ==========
+    ----------
     n_features, n_confounds : int, optional
         respectively number of features to generate, and number of confounds
         to use for generating noise signals.
@@ -40,7 +43,7 @@ def generate_signals(n_features=17, n_confounds=5, length=41,
         gives the contiguousness of the output arrays.
 
     Returns
-    =======
+    -------
     signals : numpy.ndarray, shape (length, n_features)
         unperturbed signals.
 
@@ -84,12 +87,12 @@ def generate_trends(n_features=17, length=41):
     """Generate linearly-varying signals, with zero mean.
 
     Parameters
-    ==========
+    ----------
     n_features, length : int
         respectively number of signals and number of samples to generate.
 
     Returns
-    =======
+    -------
     trends : numpy.ndarray, shape (length, n_features)
         output signals, one per column.
     """
@@ -98,6 +101,15 @@ def generate_trends(n_features=17, length=41):
     trends = np.repeat(np.atleast_2d(trends).T, n_features, axis=1)
     factors = rand_gen.randn(n_features)
     return trends * factors
+
+
+def generate_signals_plus_trends(n_features=17, n_samples=41):
+
+    signals, _, _ = generate_signals(n_features=n_features,
+                                     length=n_samples)
+    trends = generate_trends(n_features=n_features,
+                             length=n_samples)
+    return signals + trends
 
 
 def test_butterworth():
@@ -113,15 +125,29 @@ def test_butterworth():
     # single timeseries
     data = rand_gen.randn(n_samples)
     data_original = data.copy()
-
+    '''
+    May be only on py3.5:
+    Bug in scipy 1.1.0 generates an unavoidable FutureWarning.
+    (More info: https://github.com/scipy/scipy/issues/9086)
+    The number of warnings generated is overwhelming TravisCI's log limit,
+     causing it to fail tests.
+     This hack prevents that and will be removed in future.
+    '''
+    buggy_scipy = (LooseVersion(scipy.__version__) < LooseVersion('1.2')
+                   and LooseVersion(scipy.__version__) > LooseVersion('1.0')
+                   )
+    if buggy_scipy:
+        warnings.simplefilter('ignore')
+    ''' END HACK '''
     out_single = nisignal.butterworth(data, sampling,
                                       low_pass=low_pass, high_pass=high_pass,
                                       copy=True)
     np.testing.assert_almost_equal(data, data_original)
     nisignal.butterworth(data, sampling,
                          low_pass=low_pass, high_pass=high_pass,
-                         copy=False, save_memory=True)
+                         copy=False)
     np.testing.assert_almost_equal(out_single, data)
+    np.testing.assert_(id(out_single) != id(data))
 
     # multiple timeseries
     data = rand_gen.randn(n_samples, n_features)
@@ -132,6 +158,8 @@ def test_butterworth():
                                 low_pass=low_pass, high_pass=high_pass,
                                 copy=True)
     np.testing.assert_almost_equal(data, data_original)
+    np.testing.assert_(id(out1) != id(data_original))
+
     # check that multiple- and single-timeseries filtering do the same thing.
     np.testing.assert_almost_equal(out1[:, 0], out_single)
     nisignal.butterworth(data, sampling,
@@ -147,6 +175,7 @@ def test_butterworth():
                                 low_pass=80.,  # Greater than nyq frequency
                                 copy=True)
     np.testing.assert_almost_equal(out1, out2)
+    np.testing.assert_(id(out1) != id(out2))
 
 
 def test_standardize():
@@ -222,6 +251,7 @@ def test_detrend():
     assert_less(abs(detrended.mean(axis=0)).max(),
                 20. * np.finfo(np.float).eps)
 
+
 def test_mean_of_squares():
     """Test _mean_of_squares."""
     n_samples = 11
@@ -249,6 +279,18 @@ def test_clean_detrending():
                              length=n_samples)
     x = signals + trends
 
+    # if NANs, data out should be False with ensure_finite=True
+    y = signals + trends
+    y[20, 150] = np.nan
+    y[5, 500] = np.nan
+    y[15, 14] = np.inf
+    y = nisignal.clean(y, ensure_finite=True)
+    assert_true(np.any(np.isfinite(y)), True)
+
+    # test boolean is not given to signal.clean
+    assert_raises(TypeError, nisignal.clean, x, low_pass=False)
+    assert_raises(TypeError, nisignal.clean, x, high_pass=False)
+
     # This should remove trends
     x_detrended = nisignal.clean(x, standardize=False, detrend=True,
                                  low_pass=None, high_pass=None)
@@ -260,16 +302,48 @@ def test_clean_detrending():
     assert_false(abs(x_undetrended - signals).max() < 0.06)
 
 
+def test_clean_t_r():
+    """Different TRs must produce different results after filtering"""
+    rng = np.random.RandomState(0)
+    n_samples = 34
+    # n_features  Must be higher than 500
+    n_features = 501
+    x_orig = generate_signals_plus_trends(n_features=n_features,
+                                          n_samples=n_samples)
+    random_tr_list1 = np.round(rng.rand(3) * 10, decimals=2)
+    random_tr_list2 = np.round(rng.rand(3) * 10, decimals=2)
+    for tr1, tr2 in zip(random_tr_list1, random_tr_list2):
+        low_pass_freq_list = tr1 * np.array([1.0 / 100, 1.0 / 110])
+        high_pass_freq_list = tr1 * np.array([1.0 / 210, 1.0 / 190])
+        for low_cutoff, high_cutoff in zip(low_pass_freq_list,
+                                           high_pass_freq_list):
+            det_one_tr = nisignal.clean(x_orig, t_r=tr1, low_pass=low_cutoff,
+                                        high_pass=high_cutoff)
+            det_diff_tr = nisignal.clean(x_orig, t_r=tr2, low_pass=low_cutoff,
+                                         high_pass=high_cutoff)
+
+            if not np.isclose(tr1, tr2, atol=0.3):
+                msg = ('results do not differ for different TRs: {} and {} '
+                       'at cutoffs: low_pass={}, high_pass={} '
+                       'n_samples={}, n_features={}'.format(
+                           tr1, tr2, low_cutoff, high_cutoff,
+                           n_samples, n_features))
+                np.testing.assert_(np.any(np.not_equal(det_one_tr, det_diff_tr)),
+                                   msg)
+                del det_one_tr, det_diff_tr
+
+
 def test_clean_frequencies():
     sx1 = np.sin(np.linspace(0, 100, 2000))
     sx2 = np.sin(np.linspace(0, 100, 2000))
     sx = np.vstack((sx1, sx2)).T
-    assert_true(clean(sx, standardize=False, high_pass=0.002, low_pass=None)
-                .max() > 0.1)
-    assert_true(clean(sx, standardize=False, high_pass=0.2, low_pass=None)
-                .max() < 0.01)
-    assert_true(clean(sx, standardize=False, low_pass=0.01).max() > 0.9)
-    assert_raises(ValueError, clean, sx, low_pass=0.4, high_pass=0.5)
+    assert_true(clean(sx, standardize=False, high_pass=0.002, low_pass=None,
+                      t_r=2.5).max() > 0.1)
+    assert_true(clean(sx, standardize=False, high_pass=0.2, low_pass=None,
+                      t_r=2.5) .max() < 0.01)
+    assert_true(
+        clean(sx, standardize=False, low_pass=0.01, t_r=2.5).max() > 0.9)
+    assert_raises(ValueError, clean, sx, low_pass=0.4, high_pass=0.5, t_r=2.5)
 
 
 def test_clean_confounds():
@@ -355,6 +429,8 @@ def test_clean_confounds():
                   confounds=filename1)
     assert_raises(TypeError, nisignal.clean, signals,
                   confounds=[None])
+    assert_raises(ValueError, nisignal.clean, signals, t_r=None,
+                  low_pass=.01)
 
     # Test without standardizing that constant parts of confounds are
     # accounted for
@@ -366,7 +442,40 @@ def test_clean_confounds():
                                    np.zeros((20, 2)))
 
 
+
+
+def test_clean_frequencies():
+
+    # Create signal
+    sx = np.array([np.sin(np.linspace(0, 100, 100) * 1.5),
+                   np.sin(np.linspace(0, 100, 100) * 3.),
+                   np.sin(np.linspace(0, 100, 100) / 8.),
+                   ]).T
+
+    # Create confound
+    _, _, confounds = generate_signals(
+        n_features=10, n_confounds=10, length=100)
+
+    # Apply low- and high-pass filter (separately)
+    t_r = 1.0
+    low_pass = 0.1
+    high_pass = 0.4
+    res_low = clean(sx, detrend=False, standardize=False, low_pass=low_pass,
+                    high_pass=None, t_r=t_r)
+    res_high = clean(sx, detrend=False, standardize=False, low_pass=None,
+                    high_pass=high_pass, t_r=t_r)
+
+    # Compute power spectrum density for both test
+    f, Pxx_den_low = scipy.signal.welch(np.mean(res_low.T, axis=0), fs=t_r)
+    f, Pxx_den_high = scipy.signal.welch(np.mean(res_high.T, axis=0), fs=t_r)
+
+    # Verify that the filtered frequencies are removed
+    assert_true(np.sum(Pxx_den_low[f >= low_pass * 2.]) <= 1e-4)
+    assert_true(np.sum(Pxx_den_high[f <= high_pass / 2.]) <= 1e-4)
+
+
 def test_high_variance_confounds():
+
     # C and F order might take different paths in the function. Check that the
     # result is identical.
     n_features = 1001

@@ -56,7 +56,7 @@ def as_ndarray(arr, copy=False, dtype=None, order='K'):
     array is recovered.
 
     Parameters
-    ==========
+    ----------
     arr: array-like
         input array. Any value accepted by numpy.asarray is valid.
 
@@ -73,7 +73,7 @@ def as_ndarray(arr, copy=False, dtype=None, order='K'):
         default is "K". See ndarray.copy() for more information.
 
     Returns
-    =======
+    -------
     ret: numpy.ndarray
         Numpy array containing the same data as arr, always of class
         numpy.ndarray, and with no link to any underlying file.

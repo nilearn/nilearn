@@ -28,9 +28,9 @@ class CanICA(MultiPCA):
         parameters.
 
     n_components: int
-        Number of components to extract
+        Number of components to extract. By default n_components=20.
 
-    smoothing_fwhm: float, optional
+    smoothing_fwhm: float, optional, default 6mm
         If smoothing_fwhm is not None, it gives the size in millimeters of the
         spatial smoothing to apply to the signal.
 
@@ -38,9 +38,13 @@ class CanICA(MultiPCA):
         Indicate if a Canonical Correlation Analysis must be run after the
         PCA.
 
-    standardize: boolean, optional
+    standardize: boolean, optional, default True
         If standardize is True, the time-series are centered and normed:
         their variance is put to 1 in the time dimension.
+
+    detrend : boolean, optional, default True
+        If detrend is True, the time-series will be detrended before
+        components extraction.
 
     threshold: None, 'auto' or float
         If None, no thresholding is applied. If 'auto',
@@ -48,7 +52,8 @@ class CanICA(MultiPCA):
         more intense voxels across all the maps, n_voxels being the number
         of voxels in a brain volume. A float value indicates the
         ratio of voxels to keep (2. means that the maps will together
-        have 2 x n_voxels non-zero voxels ).
+        have 2 x n_voxels non-zero voxels ). The float value
+        must be bounded by [0. and n_components].
 
     n_init: int, optional
         The number of times the fastICA algorithm is restarted
@@ -76,6 +81,22 @@ class CanICA(MultiPCA):
         This parameter is passed to signal.clean. Please see the related
         documentation for details
 
+    mask_strategy: {'background', 'epi' or 'template'}, optional
+        The strategy used to compute the mask: use 'background' if your
+        images present a clear homogeneous background, 'epi' if they
+        are raw EPI images, or you could use 'template' which will
+        extract the gray matter part of your data by resampling the MNI152
+        brain mask for your data's field of view.
+        Depending on this value, the mask will be computed from
+        masking.compute_background_mask, masking.compute_epi_mask or
+        masking.compute_gray_matter_mask. Default is 'epi'.
+
+    mask_args: dict, optional
+        If mask is None, these are additional parameters passed to
+        masking.compute_background_mask or masking.compute_epi_mask
+        to fine-tune mask computation. Please see the related documentation
+        for details.
+
     memory: instance of joblib.Memory or string
         Used to cache the masking process.
         By default, no caching is done. If a string is given, it is the
@@ -91,6 +112,31 @@ class CanICA(MultiPCA):
 
     verbose: integer, optional
         Indicate the level of verbosity. By default, nothing is printed
+
+    Attributes
+    ----------
+    `components_` : 2D numpy array (n_components x n-voxels)
+        Masked ICA components extracted from the input images. They can be
+        unmasked thanks to the `masker_` attribute.
+
+        Deprecated since version 0.4.1. Use `components_img_` instead.
+
+    `components_img_` : 4D Nifti image
+        4D image giving the extracted ICA components. Each 3D image is a
+        component.
+
+        New in version 0.4.1.
+
+    `masker_` : instance of MultiNiftiMasker
+        Masker used to filter and mask data as first step. If an instance of
+        MultiNiftiMasker is given in `mask` parameter,
+        this is a copy of it. Otherwise, a masker is created using the value
+        of `mask` and other NiftiMasker related parameters as initialization.
+
+    `mask_img_` : Niimg-like object
+        See http://nilearn.github.io/manipulating_images/input_output.html
+        The mask of the data. If no mask was given at masker creation, contains
+        the automatically computed mask.
 
     References
     ----------
@@ -127,19 +173,26 @@ class CanICA(MultiPCA):
             mask_strategy=mask_strategy, mask_args=mask_args,
             memory=memory, memory_level=memory_level,
             n_jobs=n_jobs, verbose=verbose)
+
+        if isinstance(threshold, float) and threshold > n_components:
+            raise ValueError("Threshold must not be higher than number "
+                             "of maps. "
+                             "Number of maps is %s and you provided "
+                             "threshold=%s" %
+                             (str(n_components), str(threshold)))
         self.threshold = threshold
         self.n_init = n_init
 
-    def _unmix_components(self):
+    def _unmix_components(self, components):
         """Core function of CanICA than rotate components_ to maximize
         independance"""
-
         random_state = check_random_state(self.random_state)
 
         seeds = random_state.randint(np.iinfo(np.int32).max, size=self.n_init)
+        # Note: fastICA is very unstable, hence we use 64bit on it
         results = Parallel(n_jobs=self.n_jobs, verbose=self.verbose)(
             delayed(self._cache(fastica, func_memory_level=2))
-            (self.components_.T, whiten=True, fun='cube',
+            (components.astype(np.float64), whiten=True, fun='cube',
              random_state=seed)
             for seed in seeds)
 
@@ -165,16 +218,19 @@ class CanICA(MultiPCA):
                 abs_ica_maps,
                 100. - (100. / len(ica_maps)) * ratio)
             ica_maps[abs_ica_maps < threshold] = 0.
-        self.components_ = ica_maps
+        # We make sure that we keep the dtype of components
+        self.components_ = ica_maps.astype(self.components_.dtype)
 
         # flip signs in each component so that peak is +ve
         for component in self.components_:
             if component.max() < -component.min():
                 component *= -1
+        if hasattr(self, "masker_"):
+            self.components_img_ = self.masker_.inverse_transform(self.components_)
 
     # Overriding MultiPCA._raw_fit overrides MultiPCA.fit behavior
     def _raw_fit(self, data):
-        """Helper function that direcly process unmasked data.
+        """Helper function that directly process unmasked data.
 
         Useful when called by another estimator that has already
         unmasked data.
@@ -185,6 +241,6 @@ class CanICA(MultiPCA):
             Unmasked data to process
 
         """
-        MultiPCA._raw_fit(self, data)
-        self._unmix_components()
+        components = MultiPCA._raw_fit(self, data)
+        self._unmix_components(components)
         return self

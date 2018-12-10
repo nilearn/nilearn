@@ -30,7 +30,21 @@ def test_copy_img_side_effect():
 def test_new_img_like_side_effect():
     img1 = Nifti1Image(np.ones((2, 2, 2, 2)), affine=np.eye(4))
     hash1 = joblib.hash(img1)
-    new_img_like(img1, np.ones((2, 2, 2, 2)), img1.get_affine().copy(),
+    new_img_like(img1, np.ones((2, 2, 2, 2)), img1.affine.copy(),
                  copy_header=True)
     hash2 = joblib.hash(img1)
     assert_equal(hash1, hash2)
+
+
+def test_get_target_dtype():
+    img = Nifti1Image(np.ones((2, 2, 2), dtype=np.float64), affine=np.eye(4))
+    assert_equal(img.get_data().dtype.kind, 'f')
+    dtype_kind_float = niimg._get_target_dtype(img.get_data().dtype,
+                                               target_dtype='auto')
+    assert_equal(dtype_kind_float, np.float32)
+
+    img2 = Nifti1Image(np.ones((2, 2, 2), dtype=np.int64), affine=np.eye(4))
+    assert_equal(img2.get_data().dtype.kind, 'i')
+    dtype_kind_int = niimg._get_target_dtype(img2.get_data().dtype,
+                                             target_dtype='auto')
+    assert_equal(dtype_kind_int, np.int32)

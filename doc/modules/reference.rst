@@ -41,7 +41,11 @@ uses.
    :template: function.rst
 
    sym_to_vec
+   sym_matrix_to_vec
+   vec_to_sym_matrix
    group_sparse_covariance
+   cov_to_corr
+   prec_to_partial
 
 .. _datasets_ref:
 
@@ -71,20 +75,33 @@ uses.
    fetch_atlas_yeo_2011
    fetch_atlas_aal
    fetch_atlas_basc_multiscale_2015
+   fetch_atlas_allen_2011
+   fetch_atlas_pauli_2017
    fetch_coords_dosenbach_2010
    fetch_abide_pcp
    fetch_adhd
    fetch_haxby
-   fetch_haxby_simple
    fetch_icbm152_2009
+   fetch_icbm152_brain_gm_mask
+   fetch_localizer_button_task
    fetch_localizer_contrasts
    fetch_localizer_calculation_task
    fetch_miyawaki2008
    fetch_nyu_rest
+   fetch_surf_nki_enhanced
+   fetch_surf_fsaverage
+   fetch_atlas_surf_destrieux
+   fetch_atlas_talairach
    fetch_oasis_vbm
    fetch_megatrawls_netmats
    fetch_cobre
+   fetch_neurovault
+   fetch_neurovault_ids
+   fetch_neurovault_auditory_computation_task
+   fetch_neurovault_motor_task
+   get_data_dirs
    load_mni152_template
+   load_mni152_brain_mask
 
 .. _decoding_ref:
 
@@ -144,14 +161,18 @@ uses.
    :toctree: generated/
    :template: function.rst
 
-   crop_img
+   clean_img
    concat_imgs
+   coord_transform
    copy_img
+   crop_img
+   high_variance_confounds
    index_img
    iter_img
-   high_variance_confounds
-   mean_img
+   largest_connected_component_img
+   load_img
    math_img
+   mean_img
    new_img_like
    resample_img
    resample_to_img
@@ -206,6 +227,8 @@ uses.
 
    compute_epi_mask
    compute_multi_epi_mask
+   compute_gray_matter_mask
+   compute_multi_gray_matter_mask
    compute_background_mask
    compute_multi_background_mask
    intersect_masks
@@ -228,6 +251,7 @@ uses.
    :template: function.rst
 
    connected_regions
+   connected_label_regions
    img_to_signals_labels
    signals_to_img_labels
    img_to_signals_maps
@@ -242,6 +266,7 @@ uses.
    :template: class.rst
 
    RegionExtractor
+   Parcellations
 
 
 :mod:`nilearn.mass_univariate`: Mass-univariate analysis
@@ -265,6 +290,7 @@ uses.
 
 .. _plotting_ref:
 
+
 :mod:`nilearn.plotting`: Plotting brain data
 ================================================
 
@@ -284,14 +310,25 @@ uses.
 
    find_cut_slices
    find_xyz_cut_coords
+   find_parcellation_cut_coords
+   find_probabilistic_atlas_cut_coords
    plot_anat
    plot_img
    plot_epi
+   plot_matrix
    plot_roi
    plot_stat_map
    plot_glass_brain
    plot_connectome
    plot_prob_atlas
+   plot_surf
+   plot_surf_roi
+   plot_surf_stat_map
+   view_surf
+   view_img_on_surf
+   view_connectome
+   view_markers
+   view_img
    show
 
 **Classes**:
@@ -326,3 +363,25 @@ uses.
 
    clean
    high_variance_confounds
+
+
+:mod:`nilearn.surface`: Manipulating surface data
+===================================================
+
+.. automodule:: nilearn.surface
+   :no-members:
+   :no-inherited-members:
+
+.. No relevant user manual section yet.
+
+**Functions**:
+
+.. currentmodule:: nilearn.surface
+
+.. autosummary::
+   :toctree: generated/
+   :template: function.rst
+
+   load_surf_data
+   load_surf_mesh
+   vol_to_surf

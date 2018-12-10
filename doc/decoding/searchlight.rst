@@ -37,7 +37,7 @@ For this example we need:
 - to put X in the form *n_samples* x *n_features*
 - compute a mean image for visualization background
 - limit our analysis to the `face` and `house` conditions
-  (like in the :ref:`decoding tutorial <decoding_tutorial>`)
+  (like in the :ref:`introduction to decoding <decoding_intro>`)
 
 .. literalinclude:: ../../examples/02_decoding/plot_haxby_searchlight.py
     :start-after: # Restrict to faces and houses
@@ -109,11 +109,11 @@ Running Searchlight
 Running :class:`SearchLight` is straightforward now that everything is set.
 The only
 parameter left is the radius of the ball that will run through the data.
-Kriegskorte et al. use a 4mm radius because it yielded the best detection
+Kriegskorte et al. use a 5.6mm radius because it yielded the best detection
 performance in their simulation.
 
 .. literalinclude:: ../../examples/02_decoding/plot_haxby_searchlight.py
-    :start-after: import nilearn.decoding
+    :start-after: cv = KFold(n_splits=4)
     :end-before: # F-scores computation
 	
 Visualization
@@ -227,7 +227,7 @@ on the original (non-permuted) data. Thus, we can perform two one-sided tests
 (a given contrast and its opposite) for the price of one single run.
 The example results can be interpreted as follows: viewing faces significantly
 activates the Fusiform Face Area as compared to viewing houses, while viewing
-houses does not reveals significant supplementary activations as compared to
+houses does not reveal significant supplementary activations as compared to
 viewing faces.
 
 

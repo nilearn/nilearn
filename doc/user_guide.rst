@@ -4,6 +4,10 @@
 User guide: table of contents
 ==============================
 
+.. sidebar:: **Download for offline viewing**
+
+   Download the `user guide and examples
+   <https://github.com/nilearn/nilearn.github.io/archive/master.zip>`_.
 
 .. include:: includes/big_toc_css.rst
 
@@ -21,4 +25,4 @@ User guide: table of contents
    manipulating_images/index.rst
    building_blocks/index.rst
    modules/reference.rst
-
+   auto_examples/index.rst

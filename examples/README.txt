@@ -1,3 +1,6 @@
+Nilearn usage examples
+======================
+
 .. warning::
 
     If you want to run the examples, make sure you execute them in a directory
@@ -5,17 +8,14 @@
     directory. If you install nilearn manually, make sure you have followed
     :ref:`the instructions <installation>`.
 
-.. note::
-
-    A few examples may not run with scikit-learn versions older than
-    0.14.1.
-
 
 .. contents:: **Contents**
     :local:
     :depth: 1
 
-General examples
-----------------
+.. _tutorial_examples:
 
-General-purpose and introductory examples for nilearn.
+Tutorial examples
+------------------
+
+Introductory examples that teach how to use nilearn.

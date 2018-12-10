@@ -6,20 +6,25 @@ Test the datasets module
 
 import os
 import shutil
-import csv
+import itertools
+
 import numpy as np
 
 import nibabel
 
-from nose import with_setup
-from nose.tools import assert_true, assert_equal, assert_not_equal
+from distutils.version import LooseVersion
+
+from nose import with_setup, SkipTest
+from nose.tools import (assert_true, assert_equal, assert_raises,
+                        assert_not_equal)
+from numpy.testing import assert_array_equal
 
 from nilearn._utils.testing import assert_raises_regex
 from . import test_utils as tst
 
-from nilearn._utils.compat import _basestring
+from nilearn._utils.compat import _basestring, _urllib
 
-from nilearn.datasets import utils, atlas, struct
+from nilearn.datasets import utils, atlas
 
 
 def setup_mock():
@@ -93,6 +98,64 @@ def test_get_dataset_dir():
 
 
 @with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
+def test_downloader():
+
+    # Sandboxing test
+    # ===============
+
+    # When nilearn downloads a file, everything is first downloaded in a
+    # temporary directory (sandbox) and moved to the "real" data directory if
+    # all files are present. In case of error, the sandbox is deleted.
+
+    # To test this feature, we do as follow:
+    # - create the data dir with a file that has a specific content
+    # - try to download the dataset but make it fail on purpose (by requesting a
+    #   file that is not in the archive)
+    # - check that the previously created file is untouched :
+    #   - if sandboxing is faulty, the file would be replaced by the file of the
+    #     archive
+    #   - if sandboxing works, the file must be untouched.
+
+    local_url = "file:" + _urllib.request.pathname2url(
+        os.path.join(tst.datadir, "craddock_2011_parcellations.tar.gz"))
+    datasetdir = os.path.join(tst.tmpdir, 'craddock_2012')
+    os.makedirs(datasetdir)
+
+    # Create a dummy file. If sandboxing is successful, it won't be overwritten
+    dummy = open(os.path.join(datasetdir, 'random_all.nii.gz'), 'w')
+    dummy.write('stuff')
+    dummy.close()
+
+    opts = {'uncompress': True}
+    files = [
+        ('random_all.nii.gz', local_url, opts),
+        # The following file does not exists. It will cause an abortion of
+        # the fetching procedure
+        ('bald.nii.gz', local_url, opts)
+    ]
+
+    assert_raises(IOError, utils._fetch_files,
+                  os.path.join(tst.tmpdir, 'craddock_2012'), files,
+                  verbose=0)
+    dummy = open(os.path.join(datasetdir, 'random_all.nii.gz'), 'r')
+    stuff = dummy.read(5)
+    dummy.close()
+    assert_equal(stuff, 'stuff')
+
+    # Downloading test
+    # ================
+
+    # Now, we use the regular downloading feature. This will override the dummy
+    # file created before.
+
+    atlas.fetch_atlas_craddock_2012(data_dir=tst.tmpdir, url=local_url)
+    dummy = open(os.path.join(datasetdir, 'random_all.nii.gz'), 'r')
+    stuff = dummy.read()
+    dummy.close()
+    assert_equal(stuff, '')
+
+
+@with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
 def test_fail_fetch_atlas_harvard_oxford():
     # specify non-existing atlas item
     assert_raises_regex(ValueError, 'Invalid atlas name',
@@ -135,18 +198,64 @@ def test_fail_fetch_atlas_harvard_oxford():
                 "</data>")
     dummy.close()
 
+    # when symmetric_split=False (by default), then atlas fetcher should
+    # have maps as string and n_labels=4 with background. Since, we relay on xml
+    # file to retrieve labels.
+    ho_wo_symm = atlas.fetch_atlas_harvard_oxford(target_atlas,
+                                                  data_dir=tst.tmpdir)
+    assert_true(isinstance(ho_wo_symm.maps, _basestring))
+    assert_true(isinstance(ho_wo_symm.labels, list))
+    assert_equal(ho_wo_symm.labels[0], "Background")
+    assert_equal(ho_wo_symm.labels[1], "R1")
+    assert_equal(ho_wo_symm.labels[2], "R2")
+    assert_equal(ho_wo_symm.labels[3], "R3")
+
+    # This section tests with lateralized version. In other words,
+    # symmetric_split=True
+
+    # Dummy xml file for lateralized control of cortical atlas images
+    # shipped with FSL 5.0. Atlases are already lateralized in this version
+    # for cortical type atlases denoted with maxprob but not full prob and but
+    # not also with subcortical.
+
+    # So, we test the fetcher with symmetric_split=True by creating a new
+    # dummy local file and fetch them and test the output variables
+    # accordingly.
+    dummy2 = open(os.path.join(ho_dir, 'HarvardOxford-Cortical-Lateralized.xml'), 'w')
+    dummy2.write("<?xml version='1.0' encoding='us-ascii'?>\n"
+                 "<data>\n"
+                 '<label index="0" x="63" y="86" z="49">Left R1</label>\n'
+                 '<label index="1" x="21" y="86" z="33">Right R1</label>\n'
+                 '<label index="2" x="64" y="69" z="32">Left R2</label>\n'
+                 '<label index="3" x="26" y="70" z="32">Right R2</label>\n'
+                 '<label index="4" x="47" y="75" z="66">Left R3</label>\n'
+                 '<label index="5" x="43" y="80" z="61">Right R3</label>\n'
+                 "</data>")
+    dummy2.close()
+
+    # Here, with symmetric_split=True, atlas maps are returned as nibabel Nifti
+    # image but not string. Now, with symmetric split number of labels should be
+    # more than without split and contain Left and Right tags in the labels.
+
+    # Create dummy image files too with cortl specified for symmetric split.
+    split_atlas_fname = 'HarvardOxford-' + 'cortl-maxprob-thr0-1mm' + '.nii.gz'
+    nifti_target_split = os.path.join(nifti_dir, split_atlas_fname)
+    nibabel.Nifti1Image(atlas_data, np.eye(4) * 3).to_filename(
+        nifti_target_split)
     ho = atlas.fetch_atlas_harvard_oxford(target_atlas,
                                           data_dir=tst.tmpdir,
                                           symmetric_split=True)
 
     assert_true(isinstance(ho.maps, nibabel.Nifti1Image))
     assert_true(isinstance(ho.labels, list))
-    assert_equal(len(ho.labels), 5)
+    assert_equal(len(ho.labels), 7)
     assert_equal(ho.labels[0], "Background")
-    assert_equal(ho.labels[1], "R1, left part")
-    assert_equal(ho.labels[2], "R1, right part")
-    assert_equal(ho.labels[3], "R2")
-    assert_equal(ho.labels[4], "R3")
+    assert_equal(ho.labels[1], "Left R1")
+    assert_equal(ho.labels[2], "Right R1")
+    assert_equal(ho.labels[3], "Left R2")
+    assert_equal(ho.labels[4], "Right R2")
+    assert_equal(ho.labels[5], "Left R3")
+    assert_equal(ho.labels[6], "Right R3")
 
 
 @with_setup(setup_mock, teardown_mock)
@@ -336,3 +445,102 @@ def test_fetch_coords_dosenbach_2010():
     assert_equal(len(bunch.labels), 160)
     assert_equal(len(np.unique(bunch.networks)), 6)
     assert_not_equal(bunch.description, '')
+    np.testing.assert_array_equal(bunch.networks, np.sort(bunch.networks))
+
+    bunch = atlas.fetch_coords_dosenbach_2010(ordered_regions=False)
+    assert_true(np.any(bunch.networks != np.sort(bunch.networks)))
+
+
+@with_setup(setup_mock, teardown_mock)
+@with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
+def test_fetch_atlas_allen_2011():
+    bunch = atlas.fetch_atlas_allen_2011(data_dir=tst.tmpdir, verbose=0)
+    keys = ("maps",
+            "rsn28",
+            "comps")
+
+    filenames = ["ALL_HC_unthresholded_tmaps.nii.gz",
+                 "RSN_HC_unthresholded_tmaps.nii.gz",
+                 "rest_hcp_agg__component_ica_.nii.gz"]
+
+    assert_equal(len(tst.mock_url_request.urls), 1)
+    for key, fn in zip(keys, filenames):
+        assert_equal(bunch[key], os.path.join(tst.tmpdir, 'allen_rsn_2011',
+                                              'allen_rsn_2011', fn))
+
+    assert_not_equal(bunch.description, '')
+
+
+@with_setup(setup_mock, teardown_mock)
+@with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
+def test_fetch_atlas_surf_destrieux(data_dir=tst.tmpdir, verbose=0):
+
+    # Old nibabel versions does not support 'write_annot'
+    if LooseVersion(nibabel.__version__) <= LooseVersion('1.2.0'):
+        raise SkipTest
+
+    data_dir = os.path.join(tst.tmpdir, 'destrieux_surface')
+    os.mkdir(data_dir)
+    # Create mock annots
+    for hemi in ('left', 'right'):
+        nibabel.freesurfer.write_annot(
+                os.path.join(data_dir,
+                             '%s.aparc.a2009s.annot' % hemi),
+                np.arange(4), np.zeros((4, 5)), 5 * ['a'],
+                )
+
+    bunch = atlas.fetch_atlas_surf_destrieux(data_dir=tst.tmpdir, verbose=0)
+    # Our mock annots have 4 labels
+    assert_equal(len(bunch.labels), 4)
+    assert_equal(bunch.map_left.shape, (4, ))
+    assert_equal(bunch.map_right.shape, (4, ))
+    assert_not_equal(bunch.description, '')
+
+
+def _get_small_fake_talairach():
+    labels = ['*', 'b', 'a']
+    all_labels = itertools.product(*(labels,) * 5)
+    labels_txt = '\n'.join(map('.'.join, all_labels))
+    extensions = nibabel.nifti1.Nifti1Extensions([
+        nibabel.nifti1.Nifti1Extension(
+            'afni', labels_txt.encode('utf-8'))
+    ])
+    img = nibabel.Nifti1Image(
+        np.arange(243).reshape((3, 9, 9)),
+        np.eye(4), nibabel.Nifti1Header(extensions=extensions))
+    return img, all_labels
+
+
+def _mock_talairach_fetch_files(data_dir, *args, **kwargs):
+    img, all_labels = _get_small_fake_talairach()
+    file_name = os.path.join(data_dir, 'talairach.nii')
+    img.to_filename(file_name)
+    return [file_name]
+
+
+@with_setup(setup_mock, teardown_mock)
+@with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
+def test_fetch_atlas_talairach(data_dir=tst.tmpdir):
+    atlas._fetch_files = _mock_talairach_fetch_files
+    level_values = np.ones((81, 3)) * [0, 1, 2]
+    talairach = atlas.fetch_atlas_talairach('hemisphere', data_dir=tst.tmpdir)
+    assert_array_equal(talairach.maps.get_data().ravel(),
+                       level_values.T.ravel())
+    assert_array_equal(talairach.labels, ['Background', 'b', 'a'])
+    talairach = atlas.fetch_atlas_talairach('ba', data_dir=tst.tmpdir)
+    assert_array_equal(talairach.maps.get_data().ravel(),
+                       level_values.ravel())
+    assert_raises(ValueError, atlas.fetch_atlas_talairach, 'bad_level')
+
+@with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
+def test_fetch_atlas_pauli_2017():
+    data_dir = os.path.join(tst.tmpdir, 'pauli_2017')
+
+    data = atlas.fetch_atlas_pauli_2017('labels', data_dir)
+    assert_equal(len(data.labels), 16)
+
+    values = nibabel.load(data.maps).get_data()
+    assert_equal(len(np.unique(values)), 17)
+
+    data = atlas.fetch_atlas_pauli_2017('prob', data_dir)
+    assert_equal(nibabel.load(data.maps).shape[-1], 16)

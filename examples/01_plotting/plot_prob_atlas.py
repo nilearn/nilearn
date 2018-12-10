@@ -13,6 +13,8 @@ There are 3 different display types:
 
 3. "continuous", maps are shown as just color overlays.
 
+A colorbar can optionally be added.
+
 The :func:`nilearn.plotting.plot_prob_atlas` function displays each map
 with each different color which are picked randomly from the colormap
 which is already defined.
@@ -22,7 +24,7 @@ See :ref:`plotting` for more information to know how to tune the parameters.
 # Load 4D probabilistic atlases
 from nilearn import datasets
 
-# Harvard Oxford Atlas
+# Harvard Oxford Atlasf
 harvard_oxford = datasets.fetch_atlas_harvard_oxford('cort-prob-2mm')
 harvard_oxford_sub = datasets.fetch_atlas_harvard_oxford('sub-prob-2mm')
 
@@ -35,6 +37,12 @@ smith = datasets.fetch_atlas_smith_2009()
 # ICBM tissue probability
 icbm = datasets.fetch_icbm152_2009()
 
+# Allen RSN networks
+allen = datasets.fetch_atlas_allen_2011()
+
+# Pauli subcortical atlas
+subcortex = datasets.fetch_atlas_pauli_2017()
+
 # Visualization
 from nilearn import plotting
 
@@ -43,12 +51,19 @@ atlas_types = {'Harvard_Oxford': harvard_oxford.maps,
                'MSDL': msdl.maps, 'Smith 2009 10 RSNs': smith.rsn10,
                'Smith2009 20 RSNs': smith.rsn20,
                'Smith2009 70 RSNs': smith.rsn70,
-               'Smith2009 10 Brainmap': smith.bm10,
                'Smith2009 20 Brainmap': smith.bm20,
                'Smith2009 70 Brainmap': smith.bm70,
-               'ICBM tissues': (icbm['wm'], icbm['gm'], icbm['csf'])}
+               'ICBM tissues': (icbm['wm'], icbm['gm'], icbm['csf']),
+               'Allen2011': allen.rsn28,
+               'Pauli2017 Subcortical Atlas': subcortex.maps,
+               }
 
 for name, atlas in sorted(atlas_types.items()):
     plotting.plot_prob_atlas(atlas, title=name)
 
+# An optional colorbar can be set
+plotting.plot_prob_atlas(smith.bm10, title='Smith2009 10 Brainmap (with'
+                                           ' colorbar)',
+                         colorbar=True)
+print('ready')
 plotting.show()

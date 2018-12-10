@@ -10,11 +10,10 @@ The mask is computed and visualized.
 # Retrieve the NYU test-retest dataset
 
 from nilearn import datasets
-nyu_dataset = datasets.fetch_nyu_rest(n_subjects=1)
-func_filename = nyu_dataset.func[0]
+dataset = datasets.fetch_adhd(n_subjects=1)
+func_filename = dataset.func[0]
 
 # print basic information on the dataset
-print('First anatomical nifti image (3D) is at: %s' % nyu_dataset.anat_anon[0])
 print('First functional nifti image (4D) is at: %s' % func_filename)
 
 ###########################################################################
@@ -23,8 +22,9 @@ from nilearn.input_data import NiftiMasker
 
 # As this is raw resting-state EPI, the background is noisy and we cannot
 # rely on the 'background' masking strategy. We need to use the 'epi' one
-nifti_masker = NiftiMasker(standardize=False, mask_strategy='epi',
-                           memory="nilearn_cache", memory_level=2)
+nifti_masker = NiftiMasker(standardize=True, mask_strategy='epi',
+                           memory="nilearn_cache", memory_level=2,
+                           smoothing_fwhm=8)
 nifti_masker.fit(func_filename)
 mask_img = nifti_masker.mask_img_
 
@@ -48,7 +48,7 @@ fmri_masked = nifti_masker.transform(func_filename)
 ###########################################################################
 # Run an algorithm
 from sklearn.decomposition import FastICA
-n_components = 20
+n_components = 10
 ica = FastICA(n_components=n_components, random_state=42)
 components_masked = ica.fit_transform(fmri_masked.T).T
 

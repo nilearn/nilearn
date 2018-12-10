@@ -156,9 +156,9 @@ def _chunk_read_(response, local_file, chunk_size=8192, report_hook=None,
         bytes_so_far += len(chunk)
         time_last_read = time.time()
         if (report_hook and
-                # Refresh report every half second or when download is
+                # Refresh report every second or when download is
                 # finished.
-                (time_last_read > time_last_display + 0.5 or not chunk)):
+                (time_last_read > time_last_display + 1. or not chunk)):
             _chunk_report_(bytes_so_far,
                            total_size, initial_size, t0)
             time_last_display = time_last_read
@@ -168,6 +168,56 @@ def _chunk_read_(response, local_file, chunk_size=8192, report_hook=None,
             break
 
     return
+
+
+def get_data_dirs(data_dir=None):
+    """ Returns the directories in which nilearn looks for data.
+
+    This is typically useful for the end-user to check where the data is
+    downloaded and stored.
+
+    Parameters
+    ----------
+    data_dir: string, optional
+        Path of the data directory. Used to force data storage in a specified
+        location. Default: None
+
+    Returns
+    -------
+    paths: list of strings
+        Paths of the dataset directories.
+
+    Notes
+    -----
+    This function retrieves the datasets directories using the following
+    priority :
+    1. defaults system paths
+    2. the keyword argument data_dir
+    3. the global environment variable NILEARN_SHARED_DATA
+    4. the user environment variable NILEARN_DATA
+    5. nilearn_data in the user home folder
+    """
+    # We build an array of successive paths by priority
+    # The boolean indicates if it is a pre_dir: in that case, we won't add the
+    # dataset name to the path.
+    paths = []
+
+    # Check data_dir which force storage in a specific location
+    if data_dir is not None:
+        paths.extend(data_dir.split(os.pathsep))
+
+    # If data_dir has not been specified, then we crawl default locations
+    if data_dir is None:
+        global_data = os.getenv('NILEARN_SHARED_DATA')
+        if global_data is not None:
+            paths.extend(global_data.split(os.pathsep))
+
+        local_data = os.getenv('NILEARN_DATA')
+        if local_data is not None:
+            paths.extend(local_data.split(os.pathsep))
+
+        paths.append(os.path.expanduser('~/nilearn_data'))
+    return paths
 
 
 def _get_dataset_dir(dataset_name, data_dir=None, default_paths=None,
@@ -205,31 +255,13 @@ def _get_dataset_dir(dataset_name, data_dir=None, default_paths=None,
     4. the user environment variable NILEARN_DATA
     5. nilearn_data in the user home folder
     """
-    # We build an array of successive paths by priority
-    # The boolean indicates if it is a pre_dir: in that case, we won't add the
-    # dataset name to the path.
     paths = []
-
-    # Check data_dir which force storage in a specific location
-    if data_dir is not None:
-        paths.extend([(d, False) for d in data_dir.split(os.pathsep)])
-
-    # Search possible system paths
+    # Search possible data-specific system paths
     if default_paths is not None:
         for default_path in default_paths:
             paths.extend([(d, True) for d in default_path.split(os.pathsep)])
 
-    # If data_dir has not been specified, then we crawl default locations
-    if data_dir is None:
-        global_data = os.getenv('NILEARN_SHARED_DATA')
-        if global_data is not None:
-            paths.extend([(d, False) for d in global_data.split(os.pathsep)])
-
-        local_data = os.getenv('NILEARN_DATA')
-        if local_data is not None:
-            paths.extend([(d, False) for d in local_data.split(os.pathsep)])
-
-        paths.append((os.path.expanduser('~/nilearn_data'), False))
+    paths.extend([(d, False) for d in get_data_dirs(data_dir=data_dir)])
 
     if verbose > 2:
         print('Dataset search paths: %s' % paths)
@@ -296,8 +328,11 @@ def _uncompress_file(file_, delete_archive=True, verbose=1):
         processed = False
         if zipfile.is_zipfile(file_):
             z = zipfile.ZipFile(file_)
-            z.extractall(data_dir)
+            z.extractall(path=data_dir)
             z.close()
+            if delete_archive:
+                os.remove(file_)
+            file_ = filename
             processed = True
         elif ext == '.gz' or header.startswith(b'\x1f\x8b'):
             import gzip
@@ -312,17 +347,17 @@ def _uncompress_file(file_, delete_archive=True, verbose=1):
             if delete_archive:
                 os.remove(file_)
             file_ = filename
-            filename, ext = os.path.splitext(file_)
             processed = True
-        if tarfile.is_tarfile(file_):
+        if os.path.isfile(file_) and tarfile.is_tarfile(file_):
             with contextlib.closing(tarfile.open(file_, "r")) as tar:
                 tar.extractall(path=data_dir)
+            if delete_archive:
+                os.remove(file_)
             processed = True
         if not processed:
             raise IOError(
                     "[Uncompress] unknown archive file format: %s" % file_)
-        if delete_archive:
-            os.remove(file_)
+
         if verbose > 0:
             sys.stderr.write('.. done.\n')
     except Exception as e:
@@ -359,7 +394,6 @@ def _filter_column(array, col, criteria):
         not isinstance(criteria, bytes) and
         not isinstance(criteria, tuple) and
             isinstance(criteria, collections.Iterable)):
-
         filter = np.zeros(array.shape[0], dtype=np.bool)
         for criterion in criteria:
             filter = np.logical_or(filter,
@@ -375,6 +409,10 @@ def _filter_column(array, col, criteria):
             return array[col] >= criteria[0]
         filter = array[col] <= criteria[1]
         return np.logical_and(filter, array[col] >= criteria[0])
+
+    # Handle strings with different encodings
+    if isinstance(criteria, (_basestring, bytes)):
+        criteria = np.array(criteria).astype(array[col].dtype)
 
     return array[col] == criteria
 
@@ -537,14 +575,9 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False,
             # Complete the reporting hook
             sys.stderr.write(' ...done. ({0:.0f} seconds, {1:.0f} min)\n'
                              .format(dt, dt // 60))
-    except (_urllib.error.HTTPError, _urllib.error.URLError) as e:
-        if 'Error while fetching' not in str(e):
-            # For some odd reason, the error message gets doubled up
-            #   (possibly from the re-raise), so only add extra info
-            #   if it's not already there.
-            e.reason = ("%s| Error while fetching file %s; "
-                          "dataset fetching aborted." % (
-                            str(e.reason), file_name))
+    except (_urllib.error.HTTPError, _urllib.error.URLError):
+        sys.stderr.write("Error while fetching file %s; dataset "
+                         "fetching aborted." % (file_name))
         raise
     finally:
         if local_file is not None:
@@ -563,8 +596,8 @@ def _get_dataset_descr(ds_name):
     fname = ds_name
 
     try:
-        with open(os.path.join(module_path, 'description', fname + '.rst'))\
-                as rst_file:
+        with open(os.path.join(module_path, 'description', fname + '.rst'),
+                  'rb') as rst_file:
             descr = rst_file.read()
     except IOError:
         descr = ''

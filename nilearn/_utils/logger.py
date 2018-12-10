@@ -40,7 +40,7 @@ def log(msg, verbose=1, object_classes=(BaseEstimator, ),
         user. Most of the time this parameter can be left unchanged.
 
     Notes
-    =====
+    -----
     This function does tricky things to ensure that the proper object is
     referenced in the message. If it is called e.g. inside a function that is
     called by a method of an object inheriting from any class in
@@ -82,19 +82,19 @@ def _compose_err_msg(msg, **kwargs):
     """Append key-value pairs to msg, for display.
 
     Parameters
-    ==========
+    ----------
     msg: string
         arbitrary message
     kwargs: dict
         arbitrary dictionary
 
     Returns
-    =======
+    -------
     updated_msg: string
         msg, with "key: value" appended. Only string values are appended.
 
     Example
-    =======
+    -------
     >>> _compose_err_msg('Error message with arguments...', arg_num=123, \
         arg_str='filename.nii', arg_bool=True)
     'Error message with arguments...\\narg_str: filename.nii'

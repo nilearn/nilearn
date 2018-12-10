@@ -31,3 +31,7 @@ tags
 *.nt.bz2
 *.tar.gz
 *.tgz
+
+.idea/
+
+doc/themes/nilearn/static/jquery.js

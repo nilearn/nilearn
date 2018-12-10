@@ -2,7 +2,7 @@
 """
 nilearn version, required package versions, and utilities for checking
 """
-# Author: Loïc Estève, Ben Cipollini
+# Author: Loic Esteve, Ben Cipollini
 # License: simplified BSD
 
 # PEP0440 compatible formatted version, see:
@@ -21,32 +21,31 @@ nilearn version, required package versions, and utilities for checking
 # Dev branch marker is: 'X.Y.dev' or 'X.Y.devN' where N is an integer.
 # 'X.Y.dev0' is the canonical version of 'X.Y.dev'
 #
-__version__ = '0.2.4'
+__version__ = '0.5.0'
 
 _NILEARN_INSTALL_MSG = 'See %s for installation information.' % (
     'http://nilearn.github.io/introduction.html#installation')
 
 # This is a tuple to preserve order, so that dependencies are checked
-#   in some meaningful order (more => less 'core').  We avoid using
-#   collections.OrderedDict to preserve Python 2.6 compatibility.
+#   in some meaningful order (more => less 'core').
 REQUIRED_MODULE_METADATA = (
     ('numpy', {
-        'min_version': '1.6.1',
+        'min_version': '1.11',
         'required_at_installation': True,
         'install_info': _NILEARN_INSTALL_MSG}),
     ('scipy', {
-        'min_version': '0.9.0',
+        'min_version': '0.17',
         'required_at_installation': True,
         'install_info': _NILEARN_INSTALL_MSG}),
     ('sklearn', {
-        'min_version': '0.13',
+        'min_version': '0.18',
         'required_at_installation': True,
         'install_info': _NILEARN_INSTALL_MSG}),
     ('nibabel', {
-        'min_version': '1.1.0',
+        'min_version': '2.0.2',
         'required_at_installation': False}))
 
-OPTIONAL_MATPLOTLIB_MIN_VERSION = '1.1.1'
+OPTIONAL_MATPLOTLIB_MIN_VERSION = '1.5.1'
 
 
 def _import_module_with_version_check(
@@ -64,6 +63,10 @@ def _import_module_with_version_check(
             module_name,
             install_info or 'Please install it properly to use nilearn.')
         exc.args += (user_friendly_info,)
+        # Necessary for Python 3 because the repr/str of ImportError
+        # objects was changed in Python 3
+        if hasattr(exc, 'msg'):
+            exc.msg += '. ' + user_friendly_info
         raise
 
     # Avoid choking on modules with no __version__ attribute

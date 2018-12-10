@@ -51,8 +51,15 @@ and then fit it on the data.
     :start-after: # Here we apply CanICA on the data
     :end-before: ####################################################################
 
-The components estimated are found as the `components_` attribute of the
-object.
+The components estimated are found as the `components_img_` attribute
+of the object. A 4D Nifti image.
+
+.. note::
+    The `components_img_` attribute is implemented from version 0.4.1 which
+    is easy for visualization without any additional step to unmask to image.
+    For users who have older versions, components image can be done by
+    unmasking attribute `components_`. See :ref:`section Inverse transform:
+    unmasking data <unmasking_step>`.
 
 Visualizing the results
 -----------------------
@@ -106,9 +113,8 @@ good extracted maps.
 
 .. topic:: **References**
 
-   * Gael Varoquaux et al. `Multi-subject dictionary learning to segment an atlas of brain spontaneous activity <http://hal.inria.fr/inria-00588898/en/>`_,
-     IPMI 2011, pp. 562-573, Lecture
-     Notes in Computer Science
+   * Arthur Mensch et al. `Compressed online dictionary learning for fast resting-state fMRI decomposition <https://hal.archives-ouvertes.fr/hal-01271033/>`_,
+     ISBI 2016, Lecture Notes in Computer Science
 
 Applying DictLearning
 ---------------------

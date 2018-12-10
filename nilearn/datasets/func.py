@@ -6,16 +6,22 @@ import os
 import re
 import json
 import numpy as np
+import numbers
+
 import nibabel
 from sklearn.datasets.base import Bunch
+from sklearn.utils import deprecated
 
 from .utils import (_get_dataset_dir, _fetch_files, _get_dataset_descr,
                     _read_md5_sum_file, _tree, _filter_columns)
 from .._utils import check_niimg
 from .._utils.compat import BytesIO, _basestring, _urllib
 from .._utils.numpy_conversions import csv_to_array
+from .._utils.exceptions import VisibleDeprecationWarning
 
 
+@deprecated("fetch_haxby_simple will be removed in future releases. "
+            "Use 'fetch_haxby' instead.")
 def fetch_haxby_simple(data_dir=None, url=None, resume=True, verbose=1):
     """Download and load a simple example haxby dataset.
 
@@ -34,7 +40,7 @@ def fetch_haxby_simple(data_dir=None, url=None, resume=True, verbose=1):
         target data.
         'mask': string. Path to nifti mask file.
         'session': list of string. Path to text file containing labels
-        (can be used for LeaveOneLabelOut cross validation for example).
+        (can be used for LeaveOneGroupOut cross validation for example).
 
     References
     ----------
@@ -80,8 +86,8 @@ def fetch_haxby_simple(data_dir=None, url=None, resume=True, verbose=1):
                  conditions_target=[files[3]], description=fdescr)
 
 
-def fetch_haxby(data_dir=None, n_subjects=1, fetch_stimuli=False,
-                url=None, resume=True, verbose=1):
+def fetch_haxby(data_dir=None, n_subjects=None, subjects=(2,),
+                fetch_stimuli=False, url=None, resume=True, verbose=1):
     """Download and loads complete haxby dataset
 
     Parameters
@@ -93,9 +99,17 @@ def fetch_haxby(data_dir=None, n_subjects=1, fetch_stimuli=False,
     n_subjects: int, optional
         Number of subjects, from 1 to 6.
 
+        NOTE: n_subjects is deprecated from 0.2.6 and will be removed in next
+        release. Use `subjects` instead.
+
+    subjects : list or int, optional
+        Either a list of subjects or the number of subjects to load, from 1 to
+        6. By default, 2nd subject will be loaded. Empty list returns no subject
+        data.
+
     fetch_stimuli: boolean, optional
         Indicate if stimuli images must be downloaded. They will be presented
-        as a dictionnary of categories.
+        as a dictionary of categories.
 
     Returns
     -------
@@ -134,10 +148,23 @@ def fetch_haxby(data_dir=None, n_subjects=1, fetch_stimuli=False,
     Run 8 in subject 5 does not contain any task labels.
     The anatomical image for subject 6 is unavailable.
     """
+    if n_subjects is not None:
+        warn_str = ("The parameter 'n_subjects' is deprecated from 0.2.6 and "
+                    "will be removed in nilearn next release. Use parameter "
+                    "'subjects' instead.")
+        warnings.warn(warn_str, VisibleDeprecationWarning, stacklevel=2)
+        subjects = n_subjects
 
-    if n_subjects > 6:
-        warnings.warn('Warning: there are only 6 subjects')
-        n_subjects = 6
+    if isinstance(subjects, numbers.Number) and subjects > 6:
+        subjects = 6
+
+    if subjects is not None and (isinstance(subjects, list) or
+                                 isinstance(subjects, tuple)):
+        for sub_id in subjects:
+            if sub_id not in [1, 2, 3, 4, 5, 6]:
+                raise ValueError("You provided invalid subject id {0} in a "
+                                 "list. Subjects must be selected in "
+                                 "[1, 2, 3, 4, 5, 6]".format(sub_id))
 
     dataset_name = 'haxby2001'
     data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
@@ -162,19 +189,28 @@ def fetch_haxby(data_dir=None, n_subjects=1, fetch_stimuli=False,
                  'mask8_house_vt.nii.gz', 'anat.nii.gz']
     n_files = len(sub_files)
 
+    if subjects is None:
+        subjects = []
+
+    if isinstance(subjects, numbers.Number):
+        subject_mask = np.arange(1, subjects + 1)
+    else:
+        subject_mask = np.array(subjects)
+
     files = [
             (os.path.join('subj%d' % i, sub_file),
              url + 'subj%d-2010.01.14.tar.gz' % i,
              {'uncompress': True,
               'md5sum': md5sums.get('subj%d-2010.01.14.tar.gz' % i, None)})
-            for i in range(1, n_subjects + 1)
+            for i in subject_mask
             for sub_file in sub_files
             if not (sub_file == 'anat.nii.gz' and i == 6)  # no anat for sub. 6
     ]
 
     files = _fetch_files(data_dir, files, resume=resume, verbose=verbose)
 
-    if n_subjects == 6:
+    if ((isinstance(subjects, numbers.Number) and subjects == 6) or
+            np.any(subject_mask == 6)):
         files.append(None)  # None value because subject 6 has no anat
 
     kwargs = {}
@@ -721,8 +757,8 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
             "visual click vs visual sentences",
             "auditory&visual motor vs cognitive processing"}
 
-    n_subjects: int, optional
-        The number of subjects to load. If None is given,
+    n_subjects: int or list, optional
+        The number or list of subjects to load. If None is given,
         all 94 subjects are used.
 
     get_tmaps: boolean
@@ -769,13 +805,19 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
     individual functional cognitive networks."
     BMC neuroscience 8.1 (2007): 91.
 
+    See Also
+    ---------
+    nilearn.datasets.fetch_localizer_calculation_task
+    nilearn.datasets.fetch_localizer_button_task
+
     """
     if isinstance(contrasts, _basestring):
         raise ValueError('Contrasts should be a list of strings, but '
                          'a single string was given: "%s"' % contrasts)
     if n_subjects is None:
         n_subjects = 94  # 94 subjects available
-    if (n_subjects > 94) or (n_subjects < 1):
+    if (isinstance(n_subjects, numbers.Number) and
+                    ((n_subjects > 94) or (n_subjects < 1))):
         warnings.warn("Wrong value for \'n_subjects\' (%d). The maximum "
                       "value will be used instead (\'n_subjects=94\')")
         n_subjects = 94  # 94 subjects available
@@ -858,8 +900,15 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
     #   is generated on the remote server)
     # - Local (cached) version of the files can be checked for each contrast
     opts = {'uncompress': True}
-    subject_ids = ["S%02d" % s for s in range(1, n_subjects + 1)]
-    subject_id_max = subject_ids[-1]
+
+    if isinstance(n_subjects, numbers.Number):
+        subject_mask = np.arange(1, n_subjects + 1)
+        subject_id_max = "S%02d" % n_subjects
+    else:
+        subject_mask = np.array(n_subjects)
+        subject_id_max = "S%02d" % np.max(n_subjects)
+        n_subjects = len(n_subjects)
+    subject_ids = ["S%02d" % s for s in subject_mask]
     data_types = ["c map"]
     if get_tmaps:
         data_types.append("t map")
@@ -949,7 +998,7 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
     files = files[:-1]
     # join_by sorts the output along the key
     csv_data = join_by('subject_id', csv_data, csv_data2,
-                       usemask=False, asrecarray=True)[:n_subjects]
+                       usemask=False, asrecarray=True)[subject_mask - 1]
     if get_anats:
         anats = files[-n_subjects:]
         files = files[:-n_subjects]
@@ -963,13 +1012,9 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
                  ext_vars=csv_data, description=fdescr)
 
 
-def fetch_localizer_calculation_task(n_subjects=None, data_dir=None, url=None,
+def fetch_localizer_calculation_task(n_subjects=1, data_dir=None, url=None,
                                      verbose=1):
     """Fetch calculation task contrast maps from the localizer.
-
-    This function is only a caller for the fetch_localizer_contrasts in order
-    to simplify examples reading and understanding.
-    The 'calculation (auditory and visual cue)' contrast is used.
 
     Parameters
     ----------
@@ -994,6 +1039,18 @@ def fetch_localizer_calculation_task(n_subjects=None, data_dir=None, url=None,
         Dictionary-like object, the interest attributes are :
         'cmaps': string list, giving paths to nifti contrast maps
 
+    Notes
+    ------
+
+    This function is only a caller for the fetch_localizer_contrasts in order
+    to simplify examples reading and understanding.
+    The 'calculation (auditory and visual cue)' contrast is used.
+
+    See Also
+    ---------
+    nilearn.datasets.fetch_localizer_button_task
+    nilearn.datasets.fetch_localizer_contrasts
+
     """
     data = fetch_localizer_contrasts(["calculation (auditory and visual cue)"],
                                      n_subjects=n_subjects,
@@ -1004,6 +1061,71 @@ def fetch_localizer_calculation_task(n_subjects=None, data_dir=None, url=None,
     data.pop('masks')
     data.pop('anats')
     return data
+
+
+def fetch_localizer_button_task(data_dir=None, url=None, verbose=1):
+    """Fetch left vs right button press contrast maps from the localizer.
+
+    This function ships only 2nd subject (S02) specific tmap and
+    its normalized T1 image.
+
+    Parameters
+    ----------
+    data_dir: string, optional
+        Path of the data directory. Used to force data storage in a specified
+        location.
+
+    url: string, optional
+        Override download URL. Used for test only (or if you setup a mirror of
+        the data).
+
+    verbose: int, optional
+        verbosity level (0 means no message).
+
+    Returns
+    -------
+    data: Bunch
+        Dictionary-like object, the interest attributes are :
+        'tmap': string, giving paths to nifti contrast maps
+        'anat': string, giving paths to normalized anatomical image
+
+    Notes
+    ------
+
+    This function is only a caller for the fetch_localizer_contrasts in order
+    to simplify examples reading and understanding.
+    The 'left vs right button press' contrast is used.
+
+    See Also
+    ---------
+    nilearn.datasets.fetch_localizer_calculation_task
+    nilearn.datasets.fetch_localizer_contrasts
+
+    """
+    # The URL can be retrieved from the nilearn account on OSF (Open
+    # Science Framework). Uploaded files specific to S02 from
+    # fetch_localizer_contrasts ['left vs right button press']
+    if url is None:
+        url = 'https://osf.io/dx9jn/download'
+
+    tmap = "t_map_left_auditory_&_visual_click_vs_right_auditory&visual_click.nii.gz"
+    anat = "normalized_T1_anat_defaced.nii.gz"
+
+    opts = {'uncompress': True}
+
+    options = ('tmap', 'anat')
+    filenames = [(os.path.join('localizer_button_task', name), url, opts)
+                 for name in (tmap, anat)]
+
+    dataset_name = 'brainomics'
+    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
+                                verbose=verbose)
+    files = _fetch_files(data_dir, filenames, verbose=verbose)
+
+    fdescr = _get_dataset_descr('brainomics_localizer')
+
+    params = dict([('description', fdescr)] + list(zip(options, files)))
+    return Bunch(**params)
 
 
 def fetch_abide_pcp(data_dir=None, n_subjects=None, pipeline='cpac',
@@ -1025,7 +1147,8 @@ def fetch_abide_pcp(data_dir=None, n_subjects=None, pipeline='cpac',
 
     n_subjects: int, optional
         The number of subjects to load. If None is given,
-        all 94 subjects are used.
+        all available subjects are used (this number depends on the
+        preprocessing pipeline used).
 
     pipeline: string, optional
         Possible pipelines are "ccs", "cpac", "dparsf" and "niak"
@@ -1170,10 +1293,14 @@ def fetch_abide_pcp(data_dir=None, n_subjects=None, pipeline='cpac',
     results['phenotypic'] = pheno
     for derivative in derivatives:
         ext = '.1D' if derivative.startswith('rois') else '.nii.gz'
-        files = [(file_id + '_' + derivative + ext,
-                  '/'.join([url, derivative, file_id + '_' + derivative + ext]),
-                  {}) for file_id in file_ids]
-        files = _fetch_files(data_dir, files, verbose=verbose)
+        files = []
+        for file_id in file_ids:
+            file_ = [(
+                file_id + '_' + derivative + ext,
+                '/'.join([url, derivative, file_id + '_' + derivative + ext]),
+                {}
+            )]
+            files.append(_fetch_files(data_dir, file_, verbose=verbose)[0])
         # Load derivatives if needed
         if ext == '.1D':
             files = [np.loadtxt(f) for f in files]
@@ -1192,7 +1319,7 @@ def _load_mixed_gambles(zmap_imgs):
     for zmap_img in zmap_imgs:
         # load subject data
         this_X = zmap_img.get_data()
-        affine = zmap_img.get_affine()
+        affine = zmap_img.affine
         finite_mask = np.all(np.isfinite(this_X), axis=-1)
         this_mask = np.logical_and(np.all(this_X != 0, axis=-1),
                                    finite_mask)
@@ -1426,24 +1553,31 @@ def fetch_megatrawls_netmats(dimensionality=100, timeseries='eigen_regression',
 
 
 def fetch_cobre(n_subjects=10, data_dir=None, url=None, verbose=1):
-    """Fetch COBRE datasets preprocessed using NIAK 0.12.4 pipeline.
+    """Fetch COBRE datasets preprocessed using NIAK 0.17 under CentOS
+    version 6.3 with Octave version 4.0.2 and the Minc toolkit version 0.3.18.
 
-    Downloads and returns preprocessed resting state fMRI datasets and
-    phenotypic information such as demographic, clinical variables,
-    measure of frame displacement FD (an average FD for all the time
+    Downloads and returns COBRE preprocessed resting state fMRI datasets,
+    covariates and phenotypic information such as demographic, clinical
+    variables, measure of frame displacement FD (an average FD for all the time
     frames left after censoring).
 
-    For each subject, this function also returns .mat files which contains
-    all the covariates that have been regressed out of the functional data.
-    The covariates such as motion parameters, mean CSF signal, etc. It also
-    contains a list of time frames that have been removed from the time series
-    by censoring for high motion.
+    Each subject `fmri_XXXXXXX.nii.gz` is a 3D+t nifti volume (150 volumes).
+    WARNING: no confounds were actually regressed from the data, so it can be
+    done interactively by the user who will be able to explore different
+    analytical paths easily.
 
-    NOTE: The number of time samples vary, as some samples have been removed
-    if tagged with excessive motion. This means that data is already time
-    filtered. See output variable 'description' for more details.
+    For each subject, there is `fmri_XXXXXXX.tsv` files which contains the
+    covariates such as motion parameters, mean CSF signal that should to be
+    regressed out of the functional data.
 
-    .. versionadded 0.2.3
+    `keys_confounds.json`: a json file, that describes each variable mentioned
+    in the files `fmri_XXXXXXX.tsv.gz`. It also contains a list of time frames
+    that have been removed from the time series by censoring for high motion.
+
+    `phenotypic_data.tsv` contains the data of clinical variables that
+    explained in `keys_phenotypic_data.json`
+
+    .. versionadded:: 0.3
 
     Parameters
     ----------
@@ -1470,31 +1604,36 @@ def fetch_cobre(n_subjects=10, data_dir=None, url=None, verbose=1):
 
         - 'func': string list
             Paths to Nifti images.
-        - 'mat_files': string list
-            Paths to .mat files of each subject.
-        - 'phenotypic': ndarray
+        - 'confounds': string list
+            Paths to .tsv files of each subject, confounds.
+        - 'phenotypic': numpy.recarray
             Contains data of clinical variables, sex, age, FD.
         - 'description': data description of the release and references.
+        - 'desc_con': str
+            description of the confounds variables
+        - 'desc_phenotypic': str
+            description of the phenotypic variables.
 
     Notes
     -----
-    More information about datasets structure, See:
-    https://figshare.com/articles/COBRE_preprocessed_with_NIAK_0_12_4/1160600
+    See `more information about datasets structure
+    <https://figshare.com/articles/COBRE_preprocessed_with_NIAK_0_17_-_lightweight_release/4197885>`_
     """
+
     if url is None:
         # Here we use the file that provides URL for all others
-        url = "https://figshare.com/api/articles/1160600/15/files"
-
+        url = 'https://api.figshare.com/v2/articles/4197885'
     dataset_name = 'cobre'
     data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
                                 verbose=verbose)
     fdescr = _get_dataset_descr(dataset_name)
 
     # First, fetch the file that references all individual URLs
-    files = _fetch_files(data_dir,
-                         [("files", url + "?offset=0&limit=300", {})],
+    files = _fetch_files(data_dir, [("4197885", url, {})],
                          verbose=verbose)[0]
+
     files = json.load(open(files, 'r'))
+    files = files['files']
     # Index files by name
     files_ = {}
     for f in files:
@@ -1502,27 +1641,24 @@ def fetch_cobre(n_subjects=10, data_dir=None, url=None, verbose=1):
     files = files_
 
     # Fetch the phenotypic file and load it
-    csv_name = 'cobre_model_group.csv'
-    csv_file = _fetch_files(
-        data_dir, [(csv_name, files[csv_name]['downloadUrl'],
-                    {'md5': files[csv_name].get('md5', None),
-                     'move': csv_name})],
+    csv_name_gz = 'phenotypic_data.tsv.gz'
+    csv_name = os.path.splitext(csv_name_gz)[0]
+    csv_file_phen = _fetch_files(
+        data_dir, [(csv_name, files[csv_name_gz]['download_url'],
+                    {'md5': files[csv_name_gz].get('md5', None),
+                     'move': csv_name_gz,
+                     'uncompress': True})],
         verbose=verbose)[0]
 
     # Load file in filename to numpy arrays
-    names = ['id', 'sz', 'age', 'sex', 'fd']
-    csv_array = np.recfromcsv(csv_file, names=names, skip_header=True)
-    # Change dtype of id and condition column
-    csv_array = csv_array.astype(
-        [('id', '|U17'),
-         ('sz', '<i8'),
-         ('age', '<f8'),
-         ('sex', '<i8'),
-         ('fd', '<f8')])
-    csv_array['id'] = np.char.strip(csv_array['id'], '" ')
+    names = ['ID', 'Current Age', 'Gender', 'Handedness', 'Subject Type',
+             'Diagnosis', 'Frames OK', 'FD', 'FD Scrubbed']
+
+    csv_array_phen = np.recfromcsv(csv_file_phen, names=names,
+                                   skip_header=True, delimiter='\t')
 
     # Check number of subjects
-    max_subjects = len(csv_array)
+    max_subjects = len(csv_array_phen)
     if n_subjects is None:
         n_subjects = max_subjects
 
@@ -1530,32 +1666,198 @@ def fetch_cobre(n_subjects=10, data_dir=None, url=None, verbose=1):
         warnings.warn('Warning: there are only %d subjects' % max_subjects)
         n_subjects = max_subjects
 
-    n_sz = np.ceil(float(n_subjects) / max_subjects * csv_array['sz'].sum())
-    n_ct = np.floor(float(n_subjects) / max_subjects *
-                    np.logical_not(csv_array['sz']).sum())
+    sz_count = list(csv_array_phen['subject_type']).count(b'Patient')
+    ct_count = list(csv_array_phen['subject_type']).count(b'Control')
+
+    n_sz = np.round(float(n_subjects) / max_subjects * sz_count).astype(int)
+    n_ct = np.round(float(n_subjects) / max_subjects * ct_count).astype(int)
 
     # First, restrict the csv files to the adequate number of subjects
-    sz_ids = csv_array[csv_array['sz'] == 1.]['id'][:n_sz]
-    ct_ids = csv_array[csv_array['sz'] == 0.]['id'][:n_ct]
+    sz_ids = csv_array_phen[csv_array_phen['subject_type'] ==
+                            b'Patient']['id'][:n_sz]
+    ct_ids = csv_array_phen[csv_array_phen['subject_type'] ==
+                            b'Control']['id'][:n_ct]
     ids = np.hstack([sz_ids, ct_ids])
-    csv_array = csv_array[np.in1d(csv_array['id'], ids)]
+    csv_array_phen = csv_array_phen[np.in1d(csv_array_phen['id'], ids)]
 
     # Call fetch_files once per subject.
+
     func = []
-    mat = []
+    con = []
     for i in ids:
-        f = 'fmri_' + i + '_session1_run1.nii.gz'
-        m = 'fmri_' + i + '_session1_run1_extra.mat'
-        f, m = _fetch_files(
+        f = 'fmri_00' + str(i) + '.nii.gz'
+        c_gz = 'fmri_00' + str(i) + '.tsv.gz'
+        c = os.path.splitext(c_gz)[0]
+
+        f, c = _fetch_files(
             data_dir,
-            [(f, files[f]['downloadUrl'], {'md5': files[f].get('md5', None),
-                                           'move': f}),
-             (m, files[m]['downloadUrl'], {'md5': files[m].get('md5', None),
-                                           'move': m})
+            [(f, files[f]['download_url'], {'md5': files[f].get('md5', None),
+                                            'move': f}),
+             (c, files[c_gz]['download_url'],
+              {'md5': files[c_gz].get('md5', None),
+               'move': c_gz, 'uncompress': True})
              ],
             verbose=verbose)
         func.append(f)
-        mat.append(m)
+        con.append(c)
 
-    return Bunch(func=func, mat_files=mat, phenotypic=csv_array,
+    # Fetch the the complementary files
+    keys_con = "keys_confounds.json"
+    keys_phen = "keys_phenotypic_data.json"
+
+    csv_keys_con, csv_keys_phen = _fetch_files(
+        data_dir,
+        [(keys_con, files[keys_con]['download_url'],
+          {'md5': files[keys_con].get('md5', None), 'move': keys_con}),
+         (keys_phen, files[keys_phen]['download_url'],
+         {'md5': files[keys_phen].get('md5', None), 'move': keys_phen})
+         ],
+        verbose=verbose)
+
+    files_keys_con = open(csv_keys_con, 'r').read()
+    files_keys_phen = open(csv_keys_phen, 'r').read()
+
+    return Bunch(func=func, confounds=con, phenotypic=csv_array_phen,
+                 description=fdescr, desc_con=files_keys_con,
+                 desc_phenotypic=files_keys_phen)
+
+
+def fetch_surf_nki_enhanced(n_subjects=10, data_dir=None,
+                            url=None, resume=True, verbose=1):
+    """Download and load the NKI enhanced resting-state dataset,
+       preprocessed and projected to the fsaverage5 space surface.
+
+    .. versionadded:: 0.3
+
+    Parameters
+    ----------
+    n_subjects: int, optional
+        The number of subjects to load from maximum of 102 subjects.
+        By default, 10 subjects will be loaded. If None is given,
+        all 102 subjects will be loaded.
+
+    data_dir: str, optional
+        Path of the data directory. Used to force data storage in a specified
+        location. Default: None
+
+    url: str, optional
+        Override download URL. Used for test only (or if you setup a mirror of
+        the data). Default: None
+
+    resume: bool, optional (default True)
+        If True, try resuming download if possible.
+
+    verbose: int, optional (default 1)
+        Defines the level of verbosity of the output.
+
+    Returns
+    -------
+    data: sklearn.datasets.base.Bunch
+        Dictionary-like object, the interest attributes are :
+         - 'func_left': Paths to Gifti files containing resting state
+                        time series left hemisphere
+         - 'func_right': Paths to Gifti files containing resting state
+                         time series right hemisphere
+         - 'phenotypic': array containing tuple with subject ID, age,
+                         dominant hand and sex for each subject.
+         - 'description': data description of the release and references.
+
+    References
+    ----------
+    :Download: http://fcon_1000.projects.nitrc.org/indi/enhanced/
+
+    Nooner et al, (2012). The NKI-Rockland Sample: A model for accelerating the
+    pace of discovery science in psychiatry. Frontiers in neuroscience 6, 152.
+    URL http://dx.doi.org/10.3389/fnins.2012.00152
+
+    """
+
+    if url is None:
+        url = 'https://www.nitrc.org/frs/download.php/'
+
+    # Preliminary checks and declarations
+    dataset_name = 'nki_enhanced_surface'
+    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
+                                verbose=verbose)
+    ids = ['A00028185', 'A00033747', 'A00035072', 'A00035827', 'A00035840',
+           'A00037112', 'A00037511', 'A00038998', 'A00039391', 'A00039431',
+           'A00039488', 'A00040524', 'A00040623', 'A00040944', 'A00043299',
+           'A00043520', 'A00043677', 'A00043722', 'A00045589', 'A00050998',
+           'A00051063', 'A00051064', 'A00051456', 'A00051457', 'A00051477',
+           'A00051513', 'A00051514', 'A00051517', 'A00051528', 'A00051529',
+           'A00051539', 'A00051604', 'A00051638', 'A00051658', 'A00051676',
+           'A00051678', 'A00051679', 'A00051726', 'A00051774', 'A00051796',
+           'A00051835', 'A00051882', 'A00051925', 'A00051927', 'A00052070',
+           'A00052117', 'A00052118', 'A00052126', 'A00052180', 'A00052197',
+           'A00052214', 'A00052234', 'A00052307', 'A00052319', 'A00052499',
+           'A00052502', 'A00052577', 'A00052612', 'A00052639', 'A00053202',
+           'A00053369', 'A00053456', 'A00053474', 'A00053546', 'A00053576',
+           'A00053577', 'A00053578', 'A00053625', 'A00053626', 'A00053627',
+           'A00053874', 'A00053901', 'A00053927', 'A00053949', 'A00054038',
+           'A00054153', 'A00054173', 'A00054358', 'A00054482', 'A00054532',
+           'A00054533', 'A00054534', 'A00054621', 'A00054895', 'A00054897',
+           'A00054913', 'A00054929', 'A00055061', 'A00055215', 'A00055352',
+           'A00055353', 'A00055542', 'A00055738', 'A00055763', 'A00055806',
+           'A00056097', 'A00056098', 'A00056164', 'A00056372', 'A00056452',
+           'A00056489', 'A00056949']
+
+    nitrc_ids = range(8260, 8470)
+    max_subjects = len(ids)
+    if n_subjects is None:
+        n_subjects = max_subjects
+    if n_subjects > max_subjects:
+        warnings.warn('Warning: there are only %d subjects' % max_subjects)
+        n_subjects = max_subjects
+    ids = ids[:n_subjects]
+    nitrc_ids = nitrc_ids[:n_subjects]
+
+    # Dataset description
+    fdescr = _get_dataset_descr(dataset_name)
+
+    # First, get the metadata
+    phenotypic_file = 'NKI_enhanced_surface_phenotypics.csv'
+    phenotypic = (phenotypic_file, url + '8470/pheno_nki_nilearn.csv',
+                  {'move': phenotypic_file})
+
+    phenotypic = _fetch_files(data_dir, [phenotypic], resume=resume,
+                              verbose=verbose)[0]
+
+    # Load the csv file
+    phenotypic = np.genfromtxt(phenotypic, skip_header=True,
+                               names=['Subject', 'Age',
+                                      'Dominant Hand', 'Sex'],
+                               delimiter=',', dtype=['U9', '<f8',
+                                                     'U1', 'U1'])
+
+    # Keep phenotypic information for selected subjects
+    int_ids = np.asarray(ids)
+    phenotypic = phenotypic[[np.where(phenotypic['Subject'] == i)[0][0]
+                             for i in int_ids]]
+
+    # Download subjects' datasets
+    func_right = []
+    func_left = []
+    for i in range(len(ids)):
+
+        archive = url + '%i/%s_%s_preprocessed_fsaverage5_fwhm6.gii'
+        func = os.path.join('%s', '%s_%s_preprocessed_fwhm6.gii')
+        rh = _fetch_files(data_dir,
+                          [(func % (ids[i], ids[i], 'right'),
+                           archive % (nitrc_ids[i], ids[i], 'rh'),
+                           {'move': func % (ids[i], ids[i], 'right')}
+                            )],
+                          resume=resume, verbose=verbose)
+        lh = _fetch_files(data_dir,
+                          [(func % (ids[i], ids[i], 'left'),
+                           archive % (nitrc_ids[i], ids[i], 'lh'),
+                           {'move': func % (ids[i], ids[i], 'left')}
+                            )],
+                          resume=resume, verbose=verbose)
+
+        func_right.append(rh[0])
+        func_left.append(lh[0])
+
+    return Bunch(func_left=func_left, func_right=func_right,
+                 phenotypic=phenotypic,
                  description=fdescr)
+

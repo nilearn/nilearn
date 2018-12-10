@@ -1,3 +1,6 @@
+sudo: required
+dist: xenial
+
 language: python
 
 virtualenv:
@@ -12,34 +15,35 @@ matrix:
   # setting the status
   fast_finish: true
   allow_failures:
-    # allow_failures seems to be keyed on the python version
+    # allow_failures seems to be keyed on the python version.
     - python: 2.7
   include:
-    # Ubuntu 14.04 versions
     - env: DISTRIB="conda" PYTHON_VERSION="2.7"
-           NUMPY_VERSION="1.8.2" SCIPY_VERSION="0.13.3"
-           SCIKIT_LEARN_VERSION="0.14.1" MATPLOTLIB_VERSION="1.3.1"
-    # Ubuntu 14.04 versions without matplotlib
+           NUMPY_VERSION="1.11.2" SCIPY_VERSION="0.17"
+           SCIKIT_LEARN_VERSION="0.18" MATPLOTLIB_VERSION="1.5.1"
+           PANDAS_VERSION="0.18.0" NIBABEL_VERSION="2.0.2" COVERAGE="true"
+    # Oldest supported versions without matplotlib
     - env: DISTRIB="conda" PYTHON_VERSION="2.7"
-           NUMPY_VERSION="1.8.2" SCIPY_VERSION="0.13.3"
-           SCIKIT_LEARN_VERSION="0.14.1"
-    # Neurodebian
-    - env: DISTRIB="neurodebian" PYTHON_VERSION="2.7"
-      # Trying to get as close to the minimum required versions while
-      # still having the package version available through conda
-    - env: DISTRIB="conda" PYTHON_VERSION="2.6"
-           NUMPY_VERSION="1.6.2" SCIPY_VERSION="0.11.0"
-           SCIKIT_LEARN_VERSION="0.13" MATPLOTLIB_VERSION="1.1.1"
-           NIBABEL_VERSION="1.1.0"
-    # Python 3.4 with intermediary versions
+           NUMPY_VERSION="1.11.2" SCIPY_VERSION="0.17"
+           SCIKIT_LEARN_VERSION="0.18"
     - env: DISTRIB="conda" PYTHON_VERSION="3.4"
-           NUMPY_VERSION="1.8" SCIPY_VERSION="0.14"
-           SCIKIT_LEARN_VERSION="0.15" MATPLOTLIB_VERSION="1.4"
+           NUMPY_VERSION="1.11.2" SCIPY_VERSION="0.17"
+           SCIKIT_LEARN_VERSION="0.18" MATPLOTLIB_VERSION="1.5.1"
     # Most recent versions
     - env: DISTRIB="conda" PYTHON_VERSION="3.5"
-           NUMPY_VERSION="*" SCIPY_VERSION="*"
+           NUMPY_VERSION="*" SCIPY_VERSION="*" PANDAS_VERSION="*"
            SCIKIT_LEARN_VERSION="*" MATPLOTLIB_VERSION="*" COVERAGE="true"
-    # FLAKE8 linting on diff wrt common ancestor with upstream/master
+           LXML_VERSION="*"
+    - env: DISTRIB="conda" PYTHON_VERSION="3.6"
+           NUMPY_VERSION="*" SCIPY_VERSION="*" PANDAS_VERSION="*"
+           SCIKIT_LEARN_VERSION="*" MATPLOTLIB_VERSION="*" COVERAGE="true"
+           LXML_VERSION="*"
+    - env: DISTRIB="conda" PYTHON_VERSION="3.7"
+           NUMPY_VERSION="*" SCIPY_VERSION="*" PANDAS_VERSION="*"
+           SCIKIT_LEARN_VERSION="*" MATPLOTLIB_VERSION="*" COVERAGE="true"
+           LXML_VERSION="*"
+
+  # FLAKE8 linting on diff wrt common ancestor with upstream/master
     # Note: the python value is only there to trigger allow_failures
     - python: 2.7
       env: DISTRIB="conda" PYTHON_VERSION="2.7" FLAKE8_VERSION="*" SKIP_TESTS="true"
@@ -50,4 +54,4 @@ before_script: make clean
 
 script: source continuous_integration/test_script.sh
 
-after_success: source continuous_integration/after_success.sh  
+after_success: source continuous_integration/after_success.sh

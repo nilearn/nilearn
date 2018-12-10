@@ -44,14 +44,14 @@ plotting.plot_prob_atlas(regions_img, display_mode='z', cut_coords=1,
 import numpy as np
 
 DMN_network = index_img(atlas_networks, 3)
-plotting.plot_roi(DMN_network, display_mode='z', cut_coords=1,
-                  title='Network 3')
+plotting.plot_stat_map(DMN_network, display_mode='z', cut_coords=1,
+                       title='Network 3', colorbar=False)
 
 regions_indices_network3 = np.where(np.array(extraction.index_) == 3)
 for index in regions_indices_network3[0]:
     cur_img = index_img(extraction.regions_img_, index)
     coords = find_xyz_cut_coords(cur_img)
-    plotting.plot_roi(cur_img, display_mode='z', cut_coords=coords[2:3],
-                      title="Blob of network3")
+    plotting.plot_stat_map(cur_img, display_mode='z', cut_coords=coords[2:3],
+                           title="Blob of network3", colorbar=False)
 
 plotting.show()

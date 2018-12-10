@@ -32,7 +32,7 @@ References
 ##############################################################################
 # Load Haxby dataset
 from nilearn import datasets
-haxby_dataset = datasets.fetch_haxby_simple()
+haxby_dataset = datasets.fetch_haxby(subjects=[2])
 
 # print basic information on the dataset
 print('Mask nifti image (3D) is located at: %s' % haxby_dataset.mask)
@@ -43,6 +43,7 @@ print('Functional nifti image (4D) is located at: %s' % haxby_dataset.func[0])
 mask_filename = haxby_dataset.mask
 from nilearn.input_data import NiftiMasker
 nifti_masker = NiftiMasker(
+    smoothing_fwhm=8,
     mask_img=mask_filename,
     memory='nilearn_cache', memory_level=1)  # cache options
 func_filename = haxby_dataset.func[0]
@@ -51,10 +52,15 @@ fmri_masked = nifti_masker.fit_transform(func_filename)
 ##############################################################################
 # Restrict to faces and houses
 import numpy as np
-conditions_encoded, sessions = np.loadtxt(
-    haxby_dataset.session_target[0]).astype("int").T
-conditions = np.recfromtxt(haxby_dataset.conditions_target[0])['f0']
-condition_mask = np.logical_or(conditions == b'face', conditions == b'house')
+import pandas as pd
+labels = pd.read_csv(haxby_dataset.session_target[0], sep=" ")
+conditions = labels['labels']
+categories = conditions.unique()
+conditions_encoded = np.zeros_like(conditions)
+for c, category in enumerate(categories):
+    conditions_encoded[conditions == category] = c
+sessions = labels['chunks']
+condition_mask = conditions.isin(['face', 'house'])
 conditions_encoded = conditions_encoded[condition_mask]
 fmri_masked = fmri_masked[condition_mask]
 
@@ -69,9 +75,9 @@ grouped_conditions_encoded = np.empty((2 * n_sessions, 1))
 for s in range(n_sessions):
     session_mask = sessions[condition_mask] == s
     session_house_mask = np.logical_and(session_mask,
-                                        conditions[condition_mask] == b'house')
+                                        conditions[condition_mask] == 'house')
     session_face_mask = np.logical_and(session_mask,
-                                       conditions[condition_mask] == b'face')
+                                       conditions[condition_mask] == 'face')
     grouped_fmri_masked[2 * s] = fmri_masked[session_house_mask].mean(0)
     grouped_fmri_masked[2 * s + 1] = fmri_masked[session_face_mask].mean(0)
     grouped_conditions_encoded[2 * s] = conditions_encoded[
@@ -98,7 +104,7 @@ signed_neg_log_pvals_unmasked = nifti_masker.inverse_transform(
 # scikit-learn F-scores for comparison
 #
 # F-test does not allow to observe the effect sign (pure two-sided test)
-from nilearn._utils.fixes import f_regression
+from sklearn.feature_selection import f_regression
 _, pvals_bonferroni = f_regression(
     grouped_fmri_masked,
     grouped_conditions_encoded)  # f_regression implicitly adds intercept
@@ -118,32 +124,19 @@ from nilearn.plotting import plot_stat_map, show
 from nilearn import image
 mean_fmri_img = image.mean_img(func_filename)
 
-# Various plotting parameters
-z_slice = -17  # plotted slice
-from nilearn.image.resampling import coord_transform
-affine = signed_neg_log_pvals_unmasked.get_affine()
-from scipy import linalg
-_, _, k_slice = coord_transform(0, 0, z_slice,
-                                linalg.inv(affine))
-k_slice = np.round(k_slice)
-
 threshold = -np.log10(0.1)  # 10% corrected
 
 vmax = min(signed_neg_log_pvals.max(),
            neg_log_pvals_bonferroni.max())
 
 # Plot thresholded p-values map corresponding to F-scores
-fig = plt.figure(figsize=(4, 5.5), facecolor='k')
-
 display = plot_stat_map(neg_log_pvals_bonferroni_unmasked, mean_fmri_img,
                         threshold=threshold, cmap=plt.cm.RdBu_r,
-                        display_mode='z', cut_coords=[z_slice],
-                        figure=fig, vmax=vmax)
+                        display_mode='z', cut_coords=[-1, ],
+                        vmax=vmax)
 
 neg_log_pvals_bonferroni_data = neg_log_pvals_bonferroni_unmasked.get_data()
-neg_log_pvals_bonferroni_slice_data = \
-    neg_log_pvals_bonferroni_data[..., k_slice]
-n_detections = (neg_log_pvals_bonferroni_slice_data > threshold).sum()
+n_detections = (neg_log_pvals_bonferroni_data > threshold).sum()
 title = ('Negative $\log_{10}$ p-values'
          '\n(Parametric two-sided F-test'
          '\n+ Bonferroni correction)'
@@ -152,17 +145,12 @@ title = ('Negative $\log_{10}$ p-values'
 display.title(title, y=1.1)
 
 # Plot permutation p-values map
-fig = plt.figure(figsize=(4, 5.5), facecolor='k')
-
 display = plot_stat_map(signed_neg_log_pvals_unmasked, mean_fmri_img,
                         threshold=threshold, cmap=plt.cm.RdBu_r,
-                        display_mode='z', cut_coords=[z_slice],
-                        figure=fig, vmax=vmax)
+                        display_mode='z', cut_coords=[-1, ],
+                        vmax=vmax)
 
-signed_neg_log_pvals_data = signed_neg_log_pvals_unmasked.get_data()
-signed_neg_log_pvals_slice_data = \
-    signed_neg_log_pvals_data[..., k_slice, 0]
-n_detections = (np.abs(signed_neg_log_pvals_slice_data) > threshold).sum()
+n_detections = (np.abs(signed_neg_log_pvals) > threshold).sum()
 title = ('Negative $\log_{10}$ p-values'
          '\n(Non-parametric two-sided test'
          '\n+ max-type correction)'

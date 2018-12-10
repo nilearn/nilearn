@@ -17,6 +17,16 @@
 
 {% set title = 'Nilearn: Machine learning for NeuroImaging in Python' %}
 
+{# Disable navigation bar at the bottom of the page #}
+{% block relbar2 %}
+{% endblock %}
+
+{% block relbar1 %}
+<div class=related-wrapper>
+    {{relbar()}}
+</div>
+{% endblock %}
+
 {% block rootrellink %}
 <li><a href="{{pathto('index')}}">Nilearn Home</a> |&nbsp;</li>
 <li><a href="{{pathto('user_guide')}}">User Guide</a> |&nbsp;</li>
@@ -31,6 +41,43 @@
 <meta content="True" name="HandheldFriendly">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
 <meta name="keywords" content="nilearn, neuroimaging, python, neuroscience, machinelearning">
+
+{# Stick the navigation bar to the top of the window when scrolling #}
+<script type="text/javascript">
+function updateTopMenuPosition(height, width) {
+    if($(window).scrollTop() > height && $(window).outerWidth() > 1024) {
+        //begin to scroll
+        $('.related-wrapper').css("z-index", 1000)
+        $('.related-wrapper').css("position", "sticky")
+        $('.related-wrapper').css("top", 0)
+        $('.related-wrapper').css("width", width)
+    } else {
+        //lock it back into place
+        $('.related-wrapper').css("position", "relative")
+        $('.related-wrapper').css("top", 0)
+    }
+}
+
+$(function() {
+    var banner_height = $('#logo-banner').outerHeight()
+    var banner_width = $('#logo-banner').outerWidth()
+    var width = $('.related-wrapper').css("height", $('.related').outerHeight())
+
+    updateTopMenuPosition(banner_height, width)
+
+    $(window).scroll(function(event) {
+        updateTopMenuPosition(banner_height, width)
+    });
+
+    $(window).resize(function(event) {
+        var banner_width = $('#logo-banner').outerWidth()
+        var menu_height = $('.related').outerHeight()
+        $('.related').css("width", banner_width)
+        $('.related-wrapper').css("height", menu_height)
+        updateTopMenuPosition(banner_height, width)
+    })
+});
+</script>
 
 {%- if (pagename == 'index') %}
 <script type="text/javascript" src="_static/jquery.jcarousel.min.js"></script>
@@ -73,46 +120,65 @@
 </script>
 {% else %}
 <script type="text/javascript">
+function updateSideBarPosition(top, offset, sections) {
+    var pos = $(window).scrollTop()
+    // Lock the table of content to a fixed position once we scroll enough
+    var topShift = 2 * offset
+    if(pos > top + topShift + 1) {
+        // begin to scroll with sticky menu bar
+        var topShift = -topShift + 1
+        if ($(window).outerWidth() < 1024) {
+            // compensate top menu that disappears
+            topShift -= offset + 1
+        }
+        $('.sphinxsidebarwrapper').css("position", "fixed")
+        $('.sphinxsidebarwrapper').css("top", topShift)
+    }
+    else {
+        //lock it back into place
+        $('.sphinxsidebarwrapper').css("position", "relative")
+        $('.sphinxsidebarwrapper').css("top",0)
+    }
+
+    // Highlight the current section
+    i = 0
+    current_section = 0
+    $('a.internal').removeClass('active')
+    for(i in sections) {
+        if(sections[i] > pos) {
+            break
+        };
+        if($('a.internal[href$="' + i + '"]').is(':visible')){
+            current_section = i
+        };
+    }
+    $('a.internal[href$="' + current_section + '"]').addClass('active')
+    $('a.internal[href$="' + current_section + '"]').parent().addClass('active')
+}
+
 $(function () {
     // Lock the table of content to a fixed position once we scroll enough
-    var top = 105 + $('.sphinxsidebarwrapper').offset().top - parseFloat($('.sphinxsidebarwrapper').css('margin-top').replace(/auto/, 0)),
-        sections = {},
-        i        = 0,
-	url	 = document.URL.replace(/#.*$/, ""),
-	current_section = 0;
+    var tocOffset = $('.related-wrapper').outerHeight()
+    var marginTop = parseFloat($('.sphinxsidebarwrapper').css('margin-top').replace(/auto/, 0))
+    var top = $('.sphinxsidebarwrapper').offset().top - marginTop
+    sections = {}
+    url = document.URL.replace(/#.*$/, "")
 
     // Grab positions of our sections
     $('.headerlink').each(function(){
-        sections[this.href.replace(url, '')] = $(this).offset().top - 50;
+        sections[this.href.replace(url, '')] = $(this).offset().top - 50
     });
+
+    updateSideBarPosition(top, tocOffset, sections)
 
     $(window).scroll(function(event) {
-	var pos   = $(window).scrollTop();
-	// Lock the table of content to a fixed position once we scroll enough
-	if(pos > top){
-	    //begin to scroll
-	    $('.sphinxsidebarwrapper').css("position", "fixed");
-	    $('.sphinxsidebarwrapper').css("top", -105);
-	}
-	else{
-	    //lock it back into place
-	    $('.sphinxsidebarwrapper').css("position", "relative");
-	    $('.sphinxsidebarwrapper').css("top",0);
-	}
-
-	// Highlight the current section
-	$('a.internal').removeClass('active');
-        for(i in sections){
-            if(sections[i] > pos){
-		break;
-            };
-	    if($('a.internal[href$="' + i + '"]').is(':visible')){
-		current_section = i;
-	    };
-        }
-	$('a.internal[href$="' + current_section + '"]').addClass('active');
+        updateSideBarPosition(top, tocOffset, sections)
     });
 
+    $(window).resize(function(event) {
+        tocOffset = $('.related-wrapper').outerHeight()
+        updateSideBarPosition(top, tocOffset, sections)
+    });
 });
 </script>
 {% endif %}
@@ -156,7 +222,7 @@ $(function () {
       <big><a href="{{pathto('connectivity/resting_state_networks')}}">ICA</a></big>
     </li>
     <li>
-      <a href="{{pathto('manipulating_visualizing/data_preparation')}}">Nifti IO</a>
+      <a href="{{pathto('manipulating_images/data_preparation')}}">Nifti IO</a>
     </li>
     <li>
       <a href="{{pathto('modules/reference')}}#module-nilearn.datasets">Datasets</a>
@@ -169,17 +235,17 @@ $(function () {
     <h2>Machine learning for Neuro-Imaging in Python</h2>
   </div>
   <div class="search_form">
-    <div id="cse" style="width: 100%;"></div>
-    <script src="http://www.google.com/jsapi" type="text/javascript"></script>
-    <script type="text/javascript">
-      google.load('search', '1', {language : 'en'});
-      google.setOnLoadCallback(function() {
-      var customSearchControl = new google.search.CustomSearchControl('014136483057745874622:r-npolb1uki');
-      customSearchControl.setResultSetSize(google.search.Search.FILTERED_CSE_RESULTSET);
-      var options = new google.search.DrawOptions();
-      options.setAutoComplete(true);
-      customSearchControl.draw('cse', options);
-      }, true);
+    <div class="gcse-search" id="cse" style="width: 100%;"></div>
+    <script>
+      (function() {
+        var cx = '017289614950330089114:elrt9qoutrq';
+        var gcse = document.createElement('script');
+        gcse.type = 'text/javascript';
+        gcse.async = true;
+        gcse.src = 'https://cse.google.com/cse.js?cx=' + cx;
+        var s = document.getElementsByTagName('script')[0];
+        s.parentNode.insertBefore(gcse, s);
+      })();
     </script>
   </div>
 </div>
@@ -195,20 +261,17 @@ $(function () {
 
 <h4> News </h4>
   <ul>
-      <li><p> <strong>Apr 7th 2016</strong>: Nilearn 0.2.4 released
+      <li><p> <strong>October 18th 2018</strong>: Nilearn 0.5.0b released
       </p></li>
-      <li><p> <strong>Feb 19th 2016</strong>: Nilearn 0.2.3 released
+      <li><p> <strong>August 4th 2018</strong>: Nilearn 0.5.0a released
       </p></li>
-      <li><p> <strong>July 13th 2015</strong>: Nilearn 0.1.4 released
+      <li><p> <strong>June 14th 2018</strong>: Nilearn 0.4.2 released
       </p></li>
-      <li><p> <strong>March 2014</strong>: <a
-          href="http://journal.frontiersin.org/Journal/10.3389/fninf.2014.00014/abstract"
-          />Paper</a> describing the concepts at the root of
-      nilearn published in <em> Frontiers in Neuroinformatics</em>.
+      <li><p> <strong>March 12th 2018</strong>: Nilearn 0.4.1 released
       </p></li>
   </ul>
   <ul>
-      <li><p> <strong>Ongoing development</strong>:
+      <li><p> <strong>Ongoing</strong>:
           <a href="whats_new.html"</a>What's new</em>.
       </p></li>
   </ul>
@@ -239,13 +302,16 @@ $(function () {
   </ul>
 {% endblock %}
 
+{% block sidebartoc %}
+    {%- if (pathto('index') != '#') %}
+	   <div class="sidebartoc">{{ super() }}</div>
+    {%- endif %}
+{% endblock %}
+
 {# I had to copy the whole search block just to change the rendered text,
    so it doesn't mention modules or classes #}
 {%- block sidebarsearch %}
 {%- if pagename != "search" %}
-
-<div class="navbar">
-</div> <!-- end navbar -->
 
 <script type="text/javascript">$('#searchbox-ml').show(0);</script>
 <script type="text/javascript">$('#searchbox-site').show(0);</script>

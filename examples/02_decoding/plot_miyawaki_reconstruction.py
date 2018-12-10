@@ -15,6 +15,10 @@ are used as training set and structured images are used for reconstruction.
 
 The code is a bit elaborate as the example uses, as the original article,
 a multiscale prediction on the images seen by the subject.
+
+See also
+:ref:`sphx_glr_auto_examples_02_decoding_plot_miyawaki_encoding.py` for a
+encoding approach for the same dataset.
 """
 
 # Some basic imports
@@ -23,6 +27,7 @@ import sys
 
 ############################################################################
 # First we load the Miyawaki dataset
+# -----------------------------------
 from nilearn import datasets
 sys.stderr.write("Fetching dataset...")
 t0 = time.time()
@@ -43,6 +48,7 @@ sys.stderr.write(" Done (%.2fs).\n" % (time.time() - t0))
 
 ############################################################################
 # Then we prepare and mask the data
+# ----------------------------------
 import numpy as np
 from nilearn.input_data import MultiNiftiMasker
 
@@ -129,7 +135,7 @@ sys.stderr.write(" Done (%.2fs).\n" % (time.time() - t0))
 
 ############################################################################
 # We define our prediction function
-
+# -----------------------------------
 sys.stderr.write("Training classifiers... \r")
 t0 = time.time()
 
@@ -154,6 +160,7 @@ sys.stderr.write("Training classifiers %03d/%d... Done (%.2fs).\n" % (
 
 ############################################################################
 # Here we run the prediction: the decoding itself
+# ------------------------------------------------
 sys.stderr.write("Calculating scores and outputs...")
 t0 = time.time()
 
@@ -224,6 +231,7 @@ sys.stderr.write(" Done (%.2fs).\n" % (time.time() - t0))
 
 ############################################################################
 # Let us quantify our prediction error
+# -------------------------------------
 from sklearn.metrics import (accuracy_score, precision_score, recall_score,
                              f1_score)
 
@@ -244,7 +252,7 @@ print("  - F1-score: %f" % np.mean([
 # ground truth
 
 from matplotlib import pyplot as plt
-
+from nilearn.plotting import show
 
 for i in range(6):
     j = 10 * i
@@ -266,4 +274,4 @@ for i in range(6):
                interpolation='nearest')
     plt.savefig('miyawaki2008_reconstruction_%d' % i)
 
-plt.show()
+show()

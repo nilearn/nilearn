@@ -1,6 +1,6 @@
 """
-The Haxby dataset: face vs house in object recognition
-=======================================================
+Decoding with ANOVA + SVM: face vs house in the Haxby dataset
+===============================================================
 
 This example does a simple but efficient decoding on the Haxby dataset:
 using a feature selection, followed by an SVM.
@@ -9,9 +9,11 @@ using a feature selection, followed by an SVM.
 
 #############################################################################
 # Retrieve the files of the Haxby dataset
+# ----------------------------------------
 from nilearn import datasets
 
-haxby_dataset = datasets.fetch_haxby_simple()
+# By default 2nd subject will be fetched
+haxby_dataset = datasets.fetch_haxby()
 
 # print basic information on the dataset
 print('Mask nifti image (3D) is located at: %s' % haxby_dataset.mask)
@@ -20,36 +22,44 @@ print('Functional nifti image (4D) is located at: %s' %
 
 #############################################################################
 # Load the behavioral data
-import numpy as np
-y, session = np.loadtxt(haxby_dataset.session_target[0]).astype("int").T
-conditions = np.recfromtxt(haxby_dataset.conditions_target[0])['f0']
+# -------------------------
+import pandas as pd
 
-# Restrict to faces and houses
-condition_mask = np.logical_or(conditions == b'face', conditions == b'house')
-y = y[condition_mask]
+# Load target information as string and give a numerical identifier to each
+behavioral = pd.read_csv(haxby_dataset.session_target[0], sep=" ")
+conditions = behavioral['labels']
+
+# Restrict the analysis to faces and places
+condition_mask = behavioral['labels'].isin(['face', 'house'])
 conditions = conditions[condition_mask]
 
-# We have 2 conditions
-n_conditions = np.size(np.unique(y))
+# Confirm that we now have 2 conditions
+print(conditions.unique())
+
+# Record these as an array of sessions, with fields
+# for condition (face or house) and run
+session = behavioral[condition_mask].to_records(index=False)
+print(session.dtype.names)
 
 #############################################################################
-# Prepare the fMRI data
+# Prepare the fMRI data: smooth and apply the mask
+# -------------------------------------------------
 from nilearn.input_data import NiftiMasker
 
 mask_filename = haxby_dataset.mask
+
 # For decoding, standardizing is often very important
-nifti_masker = NiftiMasker(mask_img=mask_filename, sessions=session,
-                           smoothing_fwhm=4, standardize=True,
-                           memory="nilearn_cache", memory_level=1)
+# note that we are also smoothing the data
+masker = NiftiMasker(mask_img=mask_filename, smoothing_fwhm=4,
+                     standardize=True, memory="nilearn_cache", memory_level=1)
 func_filename = haxby_dataset.func[0]
-X = nifti_masker.fit_transform(func_filename)
+X = masker.fit_transform(func_filename)
 # Apply our condition_mask
 X = X[condition_mask]
-session = session[condition_mask]
 
 #############################################################################
 # Build the decoder
-
+# ------------------
 # Define the prediction function to be used.
 # Here we use a Support Vector Classification, with a linear kernel
 from sklearn.svm import SVC
@@ -57,11 +67,13 @@ svc = SVC(kernel='linear')
 
 # Define the dimension reduction to be used.
 # Here we use a classical univariate feature selection based on F-test,
-# namely Anova. We set the number of features to be selected to 500
-from sklearn.feature_selection import SelectKBest, f_classif
-feature_selection = SelectKBest(f_classif, k=500)
+# namely Anova. When doing full-brain analysis, it is better to use
+# SelectPercentile, keeping 5% of voxels
+# (because it is independent of the resolution of the data).
+from sklearn.feature_selection import SelectPercentile, f_classif
+feature_selection = SelectPercentile(f_classif, percentile=5)
 
-# We have our classifier (SVC), our feature selection (SelectKBest), and now,
+# We have our classifier (SVC), our feature selection (SelectPercentile),and now,
 # we can plug them together in a *pipeline* that performs the two operations
 # successively:
 from sklearn.pipeline import Pipeline
@@ -69,56 +81,53 @@ anova_svc = Pipeline([('anova', feature_selection), ('svc', svc)])
 
 #############################################################################
 # Fit the decoder and predict
-
-anova_svc.fit(X, y)
+# ----------------------------
+anova_svc.fit(X, conditions)
 y_pred = anova_svc.predict(X)
 
 #############################################################################
-# Visualize the results
+# Obtain prediction scores via cross validation
+# -----------------------------------------------
+from sklearn.model_selection import LeaveOneGroupOut, cross_val_score
 
+# Define the cross-validation scheme used for validation.
+# Here we use a LeaveOneGroupOut cross-validation on the session group
+# which corresponds to a leave-one-session-out
+cv = LeaveOneGroupOut()
+
+# Compute the prediction accuracy for the different folds (i.e. session)
+cv_scores = cross_val_score(anova_svc, X, conditions, cv=cv, groups=session)
+
+# Return the corresponding mean prediction accuracy
+classification_accuracy = cv_scores.mean()
+
+# Print the results
+print("Classification accuracy: %.4f / Chance level: %f" %
+      (classification_accuracy, 1. / len(conditions.unique())))
+# Classification accuracy:  0.70370 / Chance level: 0.5000
+
+
+#############################################################################
+# Visualize the results
+# ----------------------
 # Look at the SVC's discriminating weights
 coef = svc.coef_
 # reverse feature selection
 coef = feature_selection.inverse_transform(coef)
 # reverse masking
-weight_img = nifti_masker.inverse_transform(coef)
+weight_img = masker.inverse_transform(coef)
 
 
-# Create the figure
+# Use the mean image as a background to avoid relying on anatomical data
 from nilearn import image
-from nilearn.plotting import plot_stat_map, show
-
-# Plot the mean image because we have no anatomic data
 mean_img = image.mean_img(func_filename)
 
+# Create the figure
+from nilearn.plotting import plot_stat_map, show
 plot_stat_map(weight_img, mean_img, title='SVM weights')
 
 # Saving the results as a Nifti file may also be important
 weight_img.to_filename('haxby_face_vs_house.nii')
 
-#############################################################################
-# Obtain prediction scores via cross validation
-
-from sklearn.cross_validation import LeaveOneLabelOut
-
-# Define the cross-validation scheme used for validation.
-# Here we use a LeaveOneLabelOut cross-validation on the session label
-# divided by 2, which corresponds to a leave-two-session-out
-cv = LeaveOneLabelOut(session // 2)
-
-# Compute the prediction accuracy for the different folds (i.e. session)
-cv_scores = []
-for train, test in cv:
-    anova_svc.fit(X[train], y[train])
-    y_pred = anova_svc.predict(X[test])
-    cv_scores.append(np.sum(y_pred == y[test]) / float(np.size(y[test])))
-
-# Return the corresponding mean prediction accuracy
-classification_accuracy = np.mean(cv_scores)
-
-# Print the results
-print("Classification accuracy: %.4f / Chance level: %f" %
-      (classification_accuracy, 1. / n_conditions))
-# Classification accuracy: 0.9861 / Chance level: 0.5000
 
 show()

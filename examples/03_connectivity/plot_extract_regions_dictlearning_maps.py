@@ -15,11 +15,21 @@ ICA decomposition using :class:`nilearn.decomposition.CanICA`
 
 Please see the related documentation of :class:`nilearn.regions.RegionExtractor`
 for more details.
+
+.. note::
+
+    The use of the attribute `components_img_` from dictionary learning
+    estimator is implemented from version 0.4.1. For older versions,
+    unmask the deprecated attribute `components_` to get the components
+    image using attribute `masker_` embedded in estimator.
+    See the :ref:`section Inverse transform: unmasking data <unmasking_step>`.
 """
 
 ################################################################################
-# Fetching ADHD resting state functional datasets by loading from datasets
-# utilities
+# Fetch ADHD resting state functional datasets
+# ---------------------------------------------
+#
+# We use nilearn's datasets downloading utilities
 from nilearn import datasets
 
 adhd_dataset = datasets.fetch_adhd(n_subjects=20)
@@ -27,7 +37,8 @@ func_filenames = adhd_dataset.func
 confounds = adhd_dataset.confounds
 
 ################################################################################
-# Extracting resting-state networks with DictionaryLearning
+# Extract resting-state networks with DictionaryLearning
+# -------------------------------------------------------
 
 # Import dictionary learning algorithm from decomposition module and call the
 # object and fit the model to the functional datasets
@@ -39,8 +50,10 @@ dict_learn = DictLearning(n_components=5, smoothing_fwhm=6.,
                           random_state=0)
 # Fit to the data
 dict_learn.fit(func_filenames)
-# Resting state networks/maps
-components_img = dict_learn.masker_.inverse_transform(dict_learn.components_)
+# Resting state networks/maps in attribute `components_img_`
+# Note that this attribute is implemented from version 0.4.1.
+# For older versions, see the note section above for details.
+components_img = dict_learn.components_img_
 
 # Visualization of resting state networks
 # Show networks using plotting utilities
@@ -50,7 +63,8 @@ plotting.plot_prob_atlas(components_img, view_type='filled_contours',
                          title='Dictionary Learning maps')
 
 ################################################################################
-# Extracting regions from networks
+# Extract regions from networks
+# ------------------------------
 
 # Import Region Extractor algorithm from regions module
 # threshold=0.5 indicates that we keep nominal of amount nonzero voxels across all
@@ -78,7 +92,8 @@ plotting.plot_prob_atlas(regions_extracted_img, view_type='filled_contours',
                          title=title)
 
 ################################################################################
-# Computing correlation coefficients and plotting a connectome
+# Compute correlation coefficients
+# ---------------------------------
 
 # First we need to do subjects timeseries signals extraction and then estimating
 # correlation matrices on those signals.
@@ -100,35 +115,39 @@ for filename, confound in zip(func_filenames, confounds):
 
 # Mean of all correlations
 import numpy as np
-
 mean_correlations = np.mean(correlations, axis=0).reshape(n_regions_extracted,
                                                           n_regions_extracted)
 
-# Visualization
-# Plotting connectome results
-import matplotlib.pyplot as plt
-from nilearn import image
+###############################################################################
+# Plot resulting connectomes
+# ----------------------------
 
-regions_imgs = image.iter_img(regions_extracted_img)
-coords_connectome = [plotting.find_xyz_cut_coords(img) for img in regions_imgs]
-title = 'Correlation interactions between %d regions' % n_regions_extracted
-plt.figure()
-plt.imshow(mean_correlations, interpolation="nearest",
-           vmax=1, vmin=-1, cmap=plt.cm.bwr)
-plt.colorbar()
-plt.title(title)
+title = 'Correlation between %d regions' % n_regions_extracted
+
+# First plot the matrix
+display = plotting.plot_matrix(mean_correlations, vmax=1, vmin=-1,
+                               colorbar=True, title=title)
+
+# Then find the center of the regions and plot a connectome
+regions_img = regions_extracted_img
+coords_connectome = plotting.find_probabilistic_atlas_cut_coords(regions_img)
+
 plotting.plot_connectome(mean_correlations, coords_connectome,
                          edge_threshold='90%', title=title)
 
 ################################################################################
-# Plotting regions extracted for only one specific network
+# Plot regions extracted for only one specific network
+# ----------------------------------------------------
 
 # First, we plot a network of index=4 without region extraction (left plot)
+from nilearn import image
+
 img = image.index_img(components_img, 4)
 coords = plotting.find_xyz_cut_coords(img)
-display = plotting.plot_stat_map(img, cut_coords=coords,
-                                 colorbar=False, title='Showing one specific network')
+display = plotting.plot_stat_map(img, cut_coords=coords, colorbar=False,
+                                 title='Showing one specific network')
 
+################################################################################
 # Now, we plot (right side) same network after region extraction to show that
 # connected regions are nicely seperated.
 # Each brain extracted region is identified as separate color.
@@ -138,16 +157,11 @@ display = plotting.plot_stat_map(img, cut_coords=coords,
 regions_indices_of_map3 = np.where(np.array(regions_index) == 4)
 
 display = plotting.plot_anat(cut_coords=coords,
-                             title='Extracted regions in one specific network')
+                             title='Regions from this network')
 
-# Now add as an overlay by looping over all the regions of index 4
-# color list is random (you can choose your own color)
-color_list = [[0., 1., 0.29, 1.], [0., 1., 0.54, 1.],
-              [0., 1., 0.78, 1.], [0., 0.96, 1., 1.],
-              [0., 0.73, 1., 1.], [0., 0.47, 1., 1.],
-              [0., 0.22, 1., 1.], [0.01, 0., 1., 1.],
-              [0.26, 0., 1., 1.]]
-for each_index_of_map3, color in zip(regions_indices_of_map3[0], color_list):
+# Add as an overlay all the regions of index 4
+colors = 'rgbcmyk'
+for each_index_of_map3, color in zip(regions_indices_of_map3[0], colors):
     display.add_overlay(image.index_img(regions_extracted_img, each_index_of_map3),
                         cmap=plotting.cm.alpha_cmap(color))
 
