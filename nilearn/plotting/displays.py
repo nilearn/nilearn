@@ -1242,37 +1242,45 @@ class TiledSlicer(BaseSlicer):
                           for c in sorted(self._cut_displayed)]
         return cut_coords
 
+    def _find_inital_axes_coord(self,index):
+        "find coordinates for inital axes placement for xyz cuts"
+
+        rect_x0, rect_y0, rect_x1, rect_y1 = self.rect
+
+        if (index == 0):
+                coord1 = rect_x1 - rect_x0
+                coord2 = 0.5 * (rect_y1-rect_y0) + rect_y0
+                coord3 = 0.5 * (rect_x1 - rect_x0) + rect_x0
+                coord4 = rect_y1-rect_y0
+
+        if (index == 1):
+                coord1 = 0.5 * (rect_x1 - rect_x0) + rect_x0
+                coord2 = 0.5 * (rect_y1-rect_y0) + rect_y0
+                coord3 = rect_x1 -rect_x0
+                coord4 = rect_y1-rect_y0
+        if (index == 2):
+                coord1 = rect_x1 - rect_x0
+                coord2 = rect_y1 -rect_y0
+                coord3 = 0.5 * (rect_x1 - rect_x0) + rect_x0
+                coord4 = 0.5 * (rect_y1-rect_y0) + rect_y0
+ 
+        return([coord1,coord2,coord3,coord4])
+
     def _init_axes(self, **kwargs):
+
         cut_coords = self.cut_coords
         if len(cut_coords) != len(self._cut_displayed):
             raise ValueError('The number cut_coords passed does not'
                              ' match the display_mode')
-        x0, y0, x1, y1 = self.rect
+
         facecolor = 'k' if self._black_bg else 'w'
+        
         # Create our axes:
         self.axes = dict()
         for index, direction in enumerate(self._cut_displayed):
-            fh = self.frame_axes.get_figure()           
-            if (index == 0):
-                coord1 = x1 - x0
-                coord2 = 0.5 * (y1-y0) + y0
-                coord3 = 0.5 * (x1 - x0) + x0
-                coord4 = y1-y0
-
-            if (index == 1):
-                coord1 = 0.5 * (x1 - x0) + x0
-                coord2 = 0.5 * (y1-y0) + y0
-                coord3 = x1 -x0
-                coord4 = y1-y0
-
-            if (index == 2):
-                coord1 = x1 - x0
-                coord2 = y1 -y0
-                coord3 = 0.5 * (x1 - x0) + x0
-                coord4 = 0.5 * (y1-y0) + y0
-
-            
-            ax = fh.add_axes([coord1,coord2,coord3,coord4], aspect='equal')
+            fh = self.frame_axes.get_figure()
+            axes_coords = self._find_inital_axes_coord(index)
+            ax = fh.add_axes(axes_coords, aspect='equal')
 
             if LooseVersion(matplotlib.__version__) >= LooseVersion("1.6"):
                 ax.set_facecolor(facecolor)
@@ -1285,28 +1293,84 @@ class TiledSlicer(BaseSlicer):
             display_ax = self._axes_class(ax, direction, coord, **kwargs)
             self.axes[direction] = display_ax
             ax.set_axes_locator(self._locator)
+
+    def _adjust_width_height(self,width_dict,height_dict,rect_x0, rect_y0, rect_x1, rect_y1):
+        "adjusts absolute image width and height to ratios" 
+          
+        unique_width = {}
+
+        for key,value in width_dict.items():
+            if value not in unique_width.values():
+                unique_width[key] = value
+
+        unique_height = {}
+
+        for key,value in height_dict.items():
+            if value not in unique_height.values():
+                unique_height[key] = value
+
+        total_height = float(sum(unique_height.values()))
+        total_width = float(sum(unique_width.values()))
+
+        for ax, width in width_dict.items():
+            width_dict[ax] = width / total_width * (rect_x1 - rect_x0)
         
-        if self._black_bg:
-            for ax in self.axes.values():
-                ax.ax.imshow(np.zeros((2, 2, 3)),
-                             extent=[-5000, 5000, -5000, 5000],
-                             zorder=-500, aspect='equal')
+        for ax, height in height_dict.items():
+            height_dict[ax] = height / total_height * (rect_y1 - rect_y0)
 
-            # To have a black background in PDF, we need to create a
-            # patch in black for the background
-            self.frame_axes.imshow(np.zeros((2, 2, 3)),
-                                   extent=[-5000, 5000, -5000, 5000],
-                                   zorder=-500, aspect='auto')
-            self.frame_axes.set_zorder(-1000)
+        return (width_dict,height_dict)
 
+    def _find_axes_coord(self,rel_width_dict,rel_height_dict,rect_x0, rect_y0, rect_x1, rect_y1):
+        "determines optimal coordinates for positioning slice axes based on image size ratio"
+
+        coord1 = dict()
+        coord2 = dict()
+        coord3 = dict()
+        coord4 = dict()
+
+        try:
+            ax = self.axes['y'].ax
+        except KeyError:
+            pass
+        else:
+            coord1[ax] = rect_x0
+            coord2[ax] = (rect_y1) - rel_height_dict[ax]
+            coord3[ax] = rect_x0 + rel_width_dict[ax]
+            coord4[ax] = rect_y1
+
+        try:
+            ax = self.axes['x'].ax
+        except KeyError:
+            pass
+        else:
+            coord1[ax] = (rect_x1) - rel_width_dict[ax]
+            coord2[ax] = (rect_y1) - rel_height_dict[ax]
+            coord3[ax] = rect_x1
+            coord4[ax] = rect_y1
+
+        try:
+            ax = self.axes['z'].ax
+        except KeyError:
+            pass
+        else:
+            coord1[ax] = rect_x0
+            coord2[ax] = rect_y0
+            coord3[ax] = rect_x0 + rel_width_dict[ax]
+            coord4[ax] = rect_y0 + rel_height_dict[ax]
+
+        return(coord1,coord2,coord3,coord4)
+          
     def _locator(self, axes, renderer):
         """ The locator function used by matplotlib to position axes.
             Here we put the logic used to adjust the size of the axes.
         """
 
-        x0, y0, x1, y1 = self.rect
+        rect_x0, rect_y0, rect_x1, rect_y1 = self.rect
+
+        #image width and height
         width_dict = dict()
         height_dict = dict()
+
         # A dummy axes, for the situation in which we are not plotting
         # all three (x, y, z) cuts
         dummy_ax = self._axes_class(None, None, None)
@@ -1318,7 +1382,7 @@ class TiledSlicer(BaseSlicer):
             adjusted_width = self._colorbar_width / len(self.axes)
             right_margin = self._colorbar_margin['right'] / len(self.axes)
             ticks_margin = self._colorbar_margin['left'] / len(self.axes)
-            x1 = x1 - (adjusted_width + ticks_margin + right_margin)
+            rect_x1 = rect_x1 - (adjusted_width + ticks_margin + right_margin)
 
         for display_ax in display_ax_dict.values():
             bounds = display_ax.get_object_bounds()
@@ -1332,61 +1396,17 @@ class TiledSlicer(BaseSlicer):
             width_dict[display_ax.ax] = (xmax - xmin)
             height_dict[display_ax.ax] = (ymax - ymin)
 
-        #
-        unique_width_dict = {}
-
-        for key,value in width_dict.items():
-            if value not in unique_width_dict.values():
-                unique_width_dict[key] = value
-
-        unique_height_dict = {}
-
-        for key,value in height_dict.items():
-            if value not in unique_height_dict.values():
-                unique_height_dict[key] = value
+        #relative image height and width
+        rel_width_dict,rel_height_dict = self._adjust_width_height(width_dict,height_dict,rect_x0, rect_y0, rect_x1, rect_y1)
     
-        total_width = float(sum(unique_width_dict.values()))  
-
-        for ax, width in width_dict.items():
-            width_dict[ax] = width / total_width * (x1 - x0)
-
-        total_height = float(sum(unique_height_dict.values()))
-
-        for ax, height in height_dict.items():
-            height_dict[ax] = height / total_height * (y1 - y0)
-
         direction_ax = []
         for d in self._cut_displayed:
             direction_ax.append(display_ax_dict.get(d, dummy_ax).ax)
 
-        coord1_dict = dict()
-        coord2_dict = dict()
-        coord3_dict = dict()
-        coord4_dict = dict()
+        coord1,coord2,coord3,coord4 = self._find_axes_coord(rel_width_dict,rel_height_dict,rect_x0, rect_y0, rect_x1, rect_y1)
 
-        if 'y' in self.axes:
-            ax = self.axes['y'].ax
-            coord1_dict[ax] = x0
-            coord2_dict[ax] = (y1) - height_dict[ax]
-            coord3_dict[ax] = x0 + width_dict[ax]
-            coord4_dict[ax] = y1
-
-        if 'x' in self.axes:
-            ax = self.axes['x'].ax
-            coord1_dict[ax] = (x1) - width_dict[ax]
-            coord2_dict[ax] = (y1) - height_dict[ax]
-            coord3_dict[ax] = x1
-            coord4_dict[ax] = y1
-
-        if 'z' in self.axes:
-            ax = self.axes['z'].ax
-            coord1_dict[ax] = x0
-            coord2_dict[ax] = y0
-            coord3_dict[ax] = x0 + width_dict[ax]
-            coord4_dict[ax] = y0 + height_dict[ax]
-
-        return transforms.Bbox([[coord1_dict[axes], coord2_dict[axes]],
-                               [coord3_dict[axes],coord4_dict[axes]]])
+        return transforms.Bbox([[coord1[axes], coord2[axes]],
+                               [coord3[axes],coord4[axes]]])
 
     def draw_cross(self, cut_coords=None, **kwargs):
         """ Draw a crossbar on the plot to show where the cut is
@@ -1404,36 +1424,45 @@ class TiledSlicer(BaseSlicer):
             cut_coords = self.cut_coords
         coords = dict()
         for direction in 'xyz':
-            coord = None
+            coord_ = None
             if direction in self._cut_displayed:
-                coord = cut_coords[
+                coord_ = cut_coords[
                     sorted(self._cut_displayed).index(direction)]
-            coords[direction] = coord
+            coords[direction] = coord_
         x, y, z = coords['x'], coords['y'], coords['z']
 
         kwargs = kwargs.copy()
         if 'color' not in kwargs:
-            if self._black_bg:
-                kwargs['color'] = '.8'
-            else:
-                kwargs['color'] = 'k'
-
-        if 'y' in self.axes:
+            try:
+                kwargs['color'] = '.8' if self._black_bg else 'k'
+            except KeyError:
+                pass
+            
+        try:
             ax = self.axes['y'].ax
+        except KeyError:
+            pass
+        else:
             if x is not None:
                 ax.axvline(x, **kwargs)
             if z is not None:
                 ax.axhline(z, **kwargs)
 
-        if 'x' in self.axes:
+        try:
             ax = self.axes['x'].ax
+        except KeyError:
+            pass
+        else:
             if y is not None:
                 ax.axvline(y,  **kwargs)
             if z is not None:
                 ax.axhline(z,  **kwargs)
 
-        if 'z' in self.axes:
+        try:
             ax = self.axes['z'].ax
+        except KeyError:
+            pass
+        else:
             if x is not None:
                 ax.axvline(x,  **kwargs)
             if y is not None:
