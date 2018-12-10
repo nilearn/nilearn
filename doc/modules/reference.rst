@@ -328,7 +328,7 @@ uses.
    view_img_on_surf
    view_connectome
    view_markers
-   view_stat_map
+   view_img
    show
 
 **Classes**:

@@ -120,8 +120,8 @@ class HTMLDocument(object):
         if height is None:
             height = self.height
         escaped = escape(self.html, quote=True)
-        wrapped = '<iframe srcdoc="{}" width={} height={}></iframe>'.format(
-            escaped, width, height)
+        wrapped = ('<iframe srcdoc="{}" width={} height={} '
+                   'frameBorder="0"></iframe>').format(escaped, width, height)
         return wrapped
 
     def get_standalone(self):
@@ -189,23 +189,30 @@ class HTMLDocument(object):
         self._temp_file = None
 
 
-def colorscale(cmap, values, threshold=None, symmetric_cmap=True, vmax=None):
-    """Normalize a cmap, put it in plotly format, get threshold and range"""
+def colorscale(cmap, values, threshold=None, symmetric_cmap=True,
+               vmax=None, vmin=None):
+    """Normalize a cmap, put it in plotly format, get threshold and range."""
     cmap = mpl_cm.get_cmap(cmap)
     abs_values = np.abs(values)
     if not symmetric_cmap and (values.min() < 0):
-        warnings.warn('you have specified symmetric_cmap=False'
+        warnings.warn('you have specified symmetric_cmap=False '
                       'but the map contains negative values; '
                       'setting symmetric_cmap to True')
         symmetric_cmap = True
+    if symmetric_cmap and vmin is not None:
+        warnings.warn('vmin cannot be chosen when cmap is symmetric')
+        vmin = None
+    if threshold is not None:
+        if vmin is not None:
+            warnings.warn('choosing both vmin and a threshold is not allowed; '
+                          'setting vmin to 0')
+        vmin = 0
     if vmax is None:
-        if symmetric_cmap:
-            vmax = abs_values.max()
-            vmin = - vmax
-        else:
-            vmin, vmax = values.min(), values.max()
-    else:
-        vmin = -vmax if symmetric_cmap else 0
+        vmax = abs_values.max()
+    if symmetric_cmap:
+        vmin = - vmax
+    if vmin is None:
+        vmin = values.min()
     norm = mpl.colors.Normalize(vmin=vmin, vmax=vmax)
     cmaplist = [cmap(i) for i in range(cmap.N)]
     abs_threshold = None
