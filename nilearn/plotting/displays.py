@@ -1227,11 +1227,30 @@ class TiledSlicer(BaseSlicer):
     """
     _cut_displayed = 'yxz'
     _axes_class = CutAxes
-    _default_figsize = [2.0,6.0]
+    _default_figsize = [2.0, 6.0]
 
     @classmethod
     def find_cut_coords(self, img=None, threshold=None, cut_coords=None):
-        "Instantiate the slicer and find cut coordinates"
+        """Instantiate the slicer and find cut coordinates.
+
+        Parameters
+        ----------
+        img: 3D Nifti1Image
+            The brain map.
+        threshold: float, optional
+            The lower threshold to the positive activation. If None, the
+            activation threshold is computed using the 80% percentile of
+            the absolute value of the map.
+
+        cut_coords: list of float, optional
+            xyz world coordinates of cuts.
+
+        Returns
+        ----------
+        cut_coords: list of float
+            xyz world coordinates of cuts.
+
+        """
         if cut_coords is None:
             if img is None or img is False:
                 cut_coords = (0, 0, 0)
@@ -1240,33 +1259,52 @@ class TiledSlicer(BaseSlicer):
                     img, activation_threshold=threshold)
             cut_coords = [cut_coords['xyz'.find(c)]
                           for c in sorted(self._cut_displayed)]
+
         return cut_coords
 
-    def _find_inital_axes_coord(self,index):
-        "find coordinates for inital axes placement for xyz cuts"
+    def _find_inital_axes_coord(self, index):
+        """"Find coordinates for initial axes placement for xyz cuts.
+
+        Parameters
+        ----------
+        index: int
+            Index corresponding to current cut 'x', 'y' or 'z'.
+
+        Returns
+        ----------
+        [coord1, coord2, coord3, coord4]: list of int
+            x0, y0, x1, y1 coordinates used by matplotlib to position axes in figure.
+
+        """
 
         rect_x0, rect_y0, rect_x1, rect_y1 = self.rect
 
-        if (index == 0):
+        if index == 0:
                 coord1 = rect_x1 - rect_x0
-                coord2 = 0.5 * (rect_y1-rect_y0) + rect_y0
+                coord2 = 0.5 * (rect_y1 - rect_y0) + rect_y0
                 coord3 = 0.5 * (rect_x1 - rect_x0) + rect_x0
-                coord4 = rect_y1-rect_y0
-
-        if (index == 1):
+                coord4 = rect_y1 - rect_y0
+        elif index == 1:
                 coord1 = 0.5 * (rect_x1 - rect_x0) + rect_x0
-                coord2 = 0.5 * (rect_y1-rect_y0) + rect_y0
+                coord2 = 0.5 * (rect_y1 - rect_y0) + rect_y0
                 coord3 = rect_x1 -rect_x0
-                coord4 = rect_y1-rect_y0
-        if (index == 2):
+                coord4 = rect_y1 - rect_y0
+        elif index == 2:
                 coord1 = rect_x1 - rect_x0
-                coord2 = rect_y1 -rect_y0
+                coord2 = rect_y1 - rect_y0
                 coord3 = 0.5 * (rect_x1 - rect_x0) + rect_x0
-                coord4 = 0.5 * (rect_y1-rect_y0) + rect_y0
- 
-        return([coord1,coord2,coord3,coord4])
+                coord4 = 0.5 * (rect_y1 - rect_y0) + rect_y0
+        return [coord1, coord2, coord3, coord4]
 
     def _init_axes(self, **kwargs):
+        """Initializes and places axes for display of 'xyz' cuts.
+
+        Parameters
+        ----------
+        kwargs:
+            additional arguments to pass to self._axes_class
+
+        """
 
         cut_coords = self.cut_coords
         if len(cut_coords) != len(self._cut_displayed):
@@ -1274,8 +1312,7 @@ class TiledSlicer(BaseSlicer):
                              ' match the display_mode')
 
         facecolor = 'k' if self._black_bg else 'w'
-        
-        # Create our axes:
+
         self.axes = dict()
         for index, direction in enumerate(self._cut_displayed):
             fh = self.frame_axes.get_figure()
@@ -1294,18 +1331,36 @@ class TiledSlicer(BaseSlicer):
             self.axes[direction] = display_ax
             ax.set_axes_locator(self._locator)
 
-    def _adjust_width_height(self,width_dict,height_dict,rect_x0, rect_y0, rect_x1, rect_y1):
-        "adjusts absolute image width and height to ratios" 
-          
+    def _adjust_width_height(self, width_dict, height_dict, rect_x0, rect_y0, rect_x1, rect_y1):
+        """ Adjusts absolute image width and height to ratios.
+
+        Parameters
+        ----------
+        width_dict: dict
+            Width of image cuts displayed in axes.
+        height_dict: dict
+            Height of image cuts displayed in axes.
+        rect_x0, rect_y0, rect_x1, rect_y1: float
+            Matplotlib figure boundaries.
+
+        Returns
+        ----------
+        width_dict: dict
+            Width ratios of image cuts for optimal positioning of axes.
+        height_dict: dict
+            Height ratios of image cuts for optimal positioning of axes.
+
+        """
+
         unique_width = {}
 
-        for key,value in width_dict.items():
+        for key, value in width_dict.items():
             if value not in unique_width.values():
                 unique_width[key] = value
 
         unique_height = {}
 
-        for key,value in height_dict.items():
+        for key, value in height_dict.items():
             if value not in unique_height.values():
                 unique_height[key] = value
 
@@ -1318,10 +1373,26 @@ class TiledSlicer(BaseSlicer):
         for ax, height in height_dict.items():
             height_dict[ax] = height / total_height * (rect_y1 - rect_y0)
 
-        return (width_dict,height_dict)
+        return (width_dict, height_dict)
 
-    def _find_axes_coord(self,rel_width_dict,rel_height_dict,rect_x0, rect_y0, rect_x1, rect_y1):
-        "determines optimal coordinates for positioning slice axes based on image size ratio"
+    def _find_axes_coord(self, rel_width_dict, rel_height_dict, rect_x0, rect_y0, rect_x1, rect_y1):
+        """"find coordinates for inital axes placement for xyz cuts.
+
+        Parameters
+        ----------
+        rel_width_dict: dict
+            Width ratios of image cuts for optimal positioning of axes.
+        rel_height_dict: dict
+            Height ratios of image cuts for optimal positioning of axes.
+        rect_x0, rect_y0, rect_x1, rect_y1: float
+            Matplotlib figure boundaries.
+
+        Returns
+        ----------
+        coord1, coord2, coord3, coord4: dict of {matplotlib.axes._axes.Axes: float}
+            x0, y0, x1, y1 coordinates per axes used by matplotlib to position axes in figure.
+
+        """
 
         coord1 = dict()
         coord2 = dict()
@@ -1337,7 +1408,6 @@ class TiledSlicer(BaseSlicer):
             coord2[ax] = (rect_y1) - rel_height_dict[ax]
             coord3[ax] = rect_x0 + rel_width_dict[ax]
             coord4[ax] = rect_y1
-
         try:
             ax = self.axes['x'].ax
         except KeyError:
@@ -1347,7 +1417,6 @@ class TiledSlicer(BaseSlicer):
             coord2[ax] = (rect_y1) - rel_height_dict[ax]
             coord3[ax] = rect_x1
             coord4[ax] = rect_y1
-
         try:
             ax = self.axes['z'].ax
         except KeyError:
@@ -1358,7 +1427,7 @@ class TiledSlicer(BaseSlicer):
             coord3[ax] = rect_x0 + rel_width_dict[ax]
             coord4[ax] = rect_y0 + rel_height_dict[ax]
 
-        return(coord1,coord2,coord3,coord4)
+        return(coord1, coord2, coord3, coord4)
           
     def _locator(self, axes, renderer):
         """ The locator function used by matplotlib to position axes.
@@ -1397,20 +1466,19 @@ class TiledSlicer(BaseSlicer):
             height_dict[display_ax.ax] = (ymax - ymin)
 
         #relative image height and width
-        rel_width_dict,rel_height_dict = self._adjust_width_height(width_dict,height_dict,rect_x0, rect_y0, rect_x1, rect_y1)
+        rel_width_dict, rel_height_dict = self._adjust_width_height(width_dict, height_dict, rect_x0, rect_y0, rect_x1, rect_y1)
     
         direction_ax = []
         for d in self._cut_displayed:
             direction_ax.append(display_ax_dict.get(d, dummy_ax).ax)
 
-        coord1,coord2,coord3,coord4 = self._find_axes_coord(rel_width_dict,rel_height_dict,rect_x0, rect_y0, rect_x1, rect_y1)
+        coord1, coord2, coord3, coord4 = self._find_axes_coord(rel_width_dict, rel_height_dict, rect_x0, rect_y0, rect_x1, rect_y1)
 
         return transforms.Bbox([[coord1[axes], coord2[axes]],
-                               [coord3[axes],coord4[axes]]])
+                               [coord3[axes], coord4[axes]]])
 
     def draw_cross(self, cut_coords=None, **kwargs):
-        """ Draw a crossbar on the plot to show where the cut is
-        performed.
+        """ Draw a crossbar on the plot to show where the cut is performed.
 
         Parameters
         ----------
@@ -1426,8 +1494,9 @@ class TiledSlicer(BaseSlicer):
         for direction in 'xyz':
             coord_ = None
             if direction in self._cut_displayed:
-                coord_ = cut_coords[
-                    sorted(self._cut_displayed).index(direction)]
+                sorted_cuts = sorted(self._cut_displayed)
+                index = sorted_cuts.index(direction)
+                coord_ = cut_coords[index]
             coords[direction] = coord_
         x, y, z = coords['x'], coords['y'], coords['z']
 
