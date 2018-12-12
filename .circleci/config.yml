@@ -33,7 +33,7 @@ jobs:
           command: |
             date +%F > today
       - restore_cache:
-          key: v5-packages+datasets-{{ .Branch }}-{{ checksum "today" }}
+          key: v5-packages+datasets-{{ .Branch }}-{{ checksum "today" }}-{{ checksum ".circleci/manual-cache-timestamp" }}
       - run:
           name: Download & install conda if absent
           command: |
@@ -71,9 +71,9 @@ jobs:
             source activate testenv
             pip install -e .
             set -o pipefail && cd doc && make html-strict 2>&1 | tee ~/log.txt
-          no_output_timeout: 5h
+          no_output_timeout: 7h
       - save_cache:
-          key: v5-packages+datasets-{{ .Branch }}-{{ checksum "today" }}
+          key: v5-packages+datasets-{{ .Branch }}-{{ checksum "today" }}-{{ checksum ".circleci/manual-cache-timestamp" }}
           paths:
           - ../nilearn_data
           - ../miniconda3
@@ -124,15 +124,14 @@ jobs:
             source activate testenv
             pip install -e .
             set -o pipefail && cd doc && make html-strict 2>&1 | tee ~/log.txt
-          no_output_timeout: 5h
+          no_output_timeout: 7h
 
       - store_artifacts:
           path: doc/_build/html
       - store_artifacts:
           path: coverage
       - store_artifacts:
-          path: $HOME/log.txt
-          destination: log.txt
+          path: log.txt
 
 
 workflows:
