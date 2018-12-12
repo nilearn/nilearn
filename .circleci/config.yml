@@ -158,3 +158,14 @@ workflows:
               only:
                 - master
                 - test-circleci
+
+  nightly:
+    triggers:
+      - schedule:
+          cron: "0 6 * * *"
+          filters:
+            branches:
+              only:
+                - master
+    jobs:
+      - full-build
