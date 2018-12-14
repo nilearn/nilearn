@@ -1351,21 +1351,28 @@ class TiledSlicer(BaseSlicer):
             Height ratios of image cuts for optimal positioning of axes.
 
         """
+        total_height = 0
+        total_width = 0
 
-        unique_width = {}
-
-        for key, value in width_dict.items():
-            if value not in unique_width.values():
-                unique_width[key] = value
-
-        unique_height = {}
-
-        for key, value in height_dict.items():
-            if value not in unique_height.values():
-                unique_height[key] = value
-
-        total_height = float(sum(unique_height.values()))
-        total_width = float(sum(unique_width.values()))
+        try:
+            ax = self.axes['y'].ax
+        except KeyError:
+            pass
+        else:
+            total_height = total_height + height_dict[ax]
+            total_width = total_width + width_dict[ax]
+        try:
+            ax = self.axes['x'].ax
+        except KeyError:
+            pass
+        else:
+            total_width = total_width + width_dict[ax]
+        try:
+            ax = self.axes['z'].ax
+        except KeyError:
+            pass
+        else:
+            total_height = total_height + height_dict[ax]
 
         for ax, width in width_dict.items():
             width_dict[ax] = width / total_width * (rect_x1 - rect_x0)
