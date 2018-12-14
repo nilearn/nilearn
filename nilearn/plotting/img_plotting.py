@@ -249,10 +249,10 @@ def plot_img(img, cut_coords=None, output_file=None, display_mode='ortho',
             The name of an image file to export the plot to. Valid extensions
             are .png, .pdf, .svg. If output_file is not None, the plot
             is saved to a file, and the display is closed.
-        display_mode : {'ortho', 'x', 'y', 'z', 'xy', 'xz', 'yz'}
+        display_mode : {'ortho', 'tiled', 'x', 'y', 'z', 'xy', 'xz', 'yz'}
             Choose the direction of the cuts: 'x' - sagittal, 'y' - coronal,
             'z' - axial, 'ortho' - three cuts are performed in orthogonal
-            directions.
+            directions, 'tiled' - three cuts are performed and arranged in a 2x2 grid.
         figure : integer or matplotlib figure, optional
             Matplotlib figure used or its number. If None is given, a
             new figure is created.
@@ -449,10 +449,10 @@ def plot_anat(anat_img=MNI152TEMPLATE, cut_coords=None,
             The name of an image file to export the plot to. Valid extensions
             are .png, .pdf, .svg. If output_file is not None, the plot
             is saved to a file, and the display is closed.
-        display_mode : {'ortho', 'x', 'y', 'z', 'yx', 'xz', 'yz'}
+        display_mode : {'ortho', 'tiled', 'x', 'y', 'z', 'xy', 'xz', 'yz'}
             Choose the direction of the cuts: 'x' - sagittal, 'y' - coronal,
             'z' - axial, 'ortho' - three cuts are performed in orthogonal
-            directions.
+            directions, 'tiled' - three cuts are performed and arranged in a 2x2 grid.
         figure : integer or matplotlib figure, optional
             Matplotlib figure used or its number. If None is given, a
             new figure is created.
@@ -542,10 +542,10 @@ def plot_epi(epi_img=None, cut_coords=None, output_file=None,
             The name of an image file to export the plot to. Valid extensions
             are .png, .pdf, .svg. If output_file is not None, the plot
             is saved to a file, and the display is closed.
-        display_mode : {'ortho', 'x', 'y', 'z', 'yx', 'xz', 'yz'}
+        display_mode : {'ortho', 'tiled', 'x', 'y', 'z', 'xy', 'xz', 'yz'}
             Choose the direction of the cuts: 'x' - sagittal, 'y' - coronal,
             'z' - axial, 'ortho' - three cuts are performed in orthogonal
-            directions.
+            directions, 'tiled' - three cuts are performed and arranged in a 2x2 grid.
         figure : integer or matplotlib figure, optional
             Matplotlib figure used or its number. If None is given, a
             new figure is created.
@@ -624,10 +624,10 @@ def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None,
             The name of an image file to export the plot to. Valid extensions
             are .png, .pdf, .svg. If output_file is not None, the plot
             is saved to a file, and the display is closed.
-        display_mode : {'ortho', 'x', 'y', 'z', 'yx', 'xz', 'yz'}
+        display_mode : {'ortho', 'tiled', 'x', 'y', 'z', 'xy', 'xz', 'yz'}
             Choose the direction of the cuts: 'x' - sagittal, 'y' - coronal,
             'z' - axial, 'ortho' - three cuts are performed in orthogonal
-            directions.
+            directions, 'tiled' - three cuts are performed and arranged in a 2x2 grid.
         figure : integer or matplotlib figure, optional
             Matplotlib figure used or its number. If None is given, a
             new figure is created.
@@ -763,10 +763,10 @@ def plot_prob_atlas(maps_img, bg_img=MNI152TEMPLATE, view_type='auto',
             The name of an image file to export the plot to. Valid extensions
             are .png, .pdf, .svg. If output_file is not None, the plot
             is saved to a file, and the display is closed.
-        display_mode : {'ortho', 'x', 'y', 'z', 'yx', 'xz', 'yz'}
+        display_mode : {'ortho', 'tiled', 'x', 'y', 'z', 'xy', 'xz', 'yz'}
             Choose the direction of the cuts: 'x' - sagittal, 'y' - coronal,
             'z' - axial, 'ortho' - three cuts are performed in orthogonal
-            directions.
+            directions, 'tiled' - three cuts are performed and arranged in a 2x2 grid.
         figure : integer or matplotlib figure, optional
             Matplotlib figure used or its number. If None is given, a
             new figure is created.
@@ -940,10 +940,10 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
             The name of an image file to export the plot to. Valid extensions
             are .png, .pdf, .svg. If output_file is not None, the plot
             is saved to a file, and the display is closed.
-        display_mode : {'ortho', 'x', 'y', 'z', 'yx', 'xz', 'yz'}
+        display_mode : {'ortho', 'tiled', 'x', 'y', 'z', 'xy', 'xz', 'yz'}
             Choose the direction of the cuts: 'x' - sagittal, 'y' - coronal,
             'z' - axial, 'ortho' - three cuts are performed in orthogonal
-            directions.
+            directions, 'tiled' - three cuts are performed and arranged in a 2x2 grid.
         colorbar : boolean, optional
             If True, display a colorbar on the right of the plots.
         figure : integer or matplotlib figure, optional
