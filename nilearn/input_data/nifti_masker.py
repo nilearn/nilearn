@@ -24,14 +24,16 @@ class _ExtractionFunctor(object):
         self.mask_img_ = mask_img_
 
     def __call__(self, imgs):
-        return masking.apply_mask(imgs, self.mask_img_), imgs.affine
+        return(masking.apply_mask(imgs, self.mask_img_,
+                                  dtype=imgs.get_data_dtype()), imgs.affine)
 
 
 def filter_and_mask(imgs, mask_img_, parameters,
                     memory_level=0, memory=Memory(cachedir=None),
                     verbose=0,
                     confounds=None,
-                    copy=True):
+                    copy=True,
+                    dtype=None):
     imgs = _utils.check_niimg(imgs, atleast_4d=True, ensure_ndim=4)
 
     # Check whether resampling is truly necessary. If so, crop mask
@@ -49,7 +51,8 @@ def filter_and_mask(imgs, mask_img_, parameters,
                                       memory_level=memory_level,
                                       memory=memory,
                                       verbose=verbose,
-                                      confounds=confounds, copy=copy)
+                                      confounds=confounds, copy=copy,
+                                      dtype=dtype)
 
     # For _later_: missing value removal or imputing of missing data
     # (i.e. we want to get rid of NaNs, if smoothing must be done
@@ -110,12 +113,15 @@ class NiftiMasker(BaseMasker, CacheMixin):
         This parameter is passed to image.resample_img. Please see the
         related documentation for details.
 
-    mask_strategy: {'background' or 'epi'}, optional
+    mask_strategy: {'background', 'epi' or 'template'}, optional
         The strategy used to compute the mask: use 'background' if your
-        images present a clear homogeneous background, and 'epi' if they
-        are raw EPI images. Depending on this value, the mask will be
-        computed from masking.compute_background_mask or
-        masking.compute_epi_mask. Default is 'background'.
+        images present a clear homogeneous background, 'epi' if they
+        are raw EPI images, or you could use 'template' which will
+        extract the gray matter part of your data by resampling the MNI152
+        brain mask for your data's field of view.
+        Depending on this value, the mask will be computed from
+        masking.compute_background_mask, masking.compute_epi_mask or
+        masking.compute_gray_matter_mask. Default is 'background'.
 
     mask_args : dict, optional
         If mask is None, these are additional parameters passed to
@@ -129,6 +135,11 @@ class NiftiMasker(BaseMasker, CacheMixin):
         before data preprocessing at the beginning of NiftiMasker.transform.
         This is useful to perform data subselection as part of a scikit-learn
         pipeline.
+
+    `dtype: {dtype, "auto"}
+        Data type toward which the data should be converted. If "auto", the
+        data will be converted to int32 if dtype is discrete and float32 if it
+        is continuous.
 
     memory : instance of joblib.Memory or string
         Used to cache the masking process.
@@ -164,7 +175,7 @@ class NiftiMasker(BaseMasker, CacheMixin):
                  low_pass=None, high_pass=None, t_r=None,
                  target_affine=None, target_shape=None,
                  mask_strategy='background',
-                 mask_args=None, sample_mask=None,
+                 mask_args=None, sample_mask=None, dtype=None,
                  memory_level=1, memory=Memory(cachedir=None),
                  verbose=0
                  ):
@@ -183,6 +194,7 @@ class NiftiMasker(BaseMasker, CacheMixin):
         self.mask_strategy = mask_strategy
         self.mask_args = mask_args
         self.sample_mask = sample_mask
+        self.dtype = dtype
 
         self.memory = memory
         self.memory_level = memory_level
@@ -222,10 +234,12 @@ class NiftiMasker(BaseMasker, CacheMixin):
                 compute_mask = masking.compute_background_mask
             elif self.mask_strategy == 'epi':
                 compute_mask = masking.compute_epi_mask
+            elif self.mask_strategy == 'template':
+                compute_mask = masking.compute_gray_matter_mask
             else:
                 raise ValueError("Unknown value of mask_strategy '%s'. "
-                                 "Acceptable values are 'background' and "
-                                 "'epi'." % self.mask_strategy)
+                                 "Acceptable values are 'background', "
+                                 "'epi' and 'template'." % self.mask_strategy)
             if self.verbose > 0:
                 print("[%s.fit] Computing the mask" % self.__class__.__name__)
             self.mask_img_ = self._cache(compute_mask, ignore=['verbose'])(
@@ -241,7 +255,7 @@ class NiftiMasker(BaseMasker, CacheMixin):
             self.mask_img_,
             target_affine=self.target_affine,
             target_shape=self.target_shape,
-            copy=False)
+            copy=False, interpolation='nearest')
         if self.target_affine is not None:
             self.affine_ = self.target_affine
         else:
@@ -289,7 +303,8 @@ class NiftiMasker(BaseMasker, CacheMixin):
             memory=self.memory,
             verbose=self.verbose,
             confounds=confounds,
-            copy=copy
+            copy=copy,
+            dtype=self.dtype
         )
 
         return data

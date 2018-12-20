@@ -97,8 +97,7 @@ anova_svc = Pipeline([('anova', feature_selection), ('svc', svc)])
 anova_svc.fit(X, y)
 y_pred = anova_svc.predict(X)
 
-from sklearn.cross_validation import LeaveOneLabelOut, cross_val_score
-cv = LeaveOneLabelOut(session[session < 10])
+from sklearn.model_selection import cross_val_score
 
 k_range = [10, 15, 30, 50, 150, 300, 500, 1000, 1500, 3000, 5000]
 cv_scores = []
@@ -107,7 +106,7 @@ scores_validation = []
 for k in k_range:
     feature_selection.k = k
     cv_scores.append(np.mean(
-        cross_val_score(anova_svc, X[session < 10], y[session < 10])))
+        cross_val_score(anova_svc, X[session < 10], y[session < 10], cv=3)))
     print("CV score: %.4f" % cv_scores[-1])
 
     anova_svc.fit(X[session < 10], y[session < 10])
@@ -118,14 +117,15 @@ for k in k_range:
 ###########################################################################
 # Nested cross-validation
 # -------------------------
-from sklearn.grid_search import GridSearchCV
+from sklearn.model_selection import GridSearchCV
 # We are going to tune the parameter 'k' of the step called 'anova' in
 # the pipeline. Thus we need to address it as 'anova__k'.
 
 # Note that GridSearchCV takes an n_jobs argument that can make it go
 # much faster
-grid = GridSearchCV(anova_svc, param_grid={'anova__k': k_range}, verbose=1)
-nested_cv_scores = cross_val_score(grid, X, y)
+grid = GridSearchCV(anova_svc, param_grid={'anova__k': k_range}, verbose=1,
+                    cv=3)
+nested_cv_scores = cross_val_score(grid, X, y, cv=3)
 
 print("Nested CV score: %.4f" % np.mean(nested_cv_scores))
 
@@ -133,6 +133,8 @@ print("Nested CV score: %.4f" % np.mean(nested_cv_scores))
 # Plot the prediction scores using matplotlib
 # ---------------------------------------------
 from matplotlib import pyplot as plt
+from nilearn.plotting import show
+
 plt.figure(figsize=(6, 4))
 plt.plot(cv_scores, label='Cross validation scores')
 plt.plot(scores_validation, label='Left-out validation data scores')
@@ -145,4 +147,4 @@ plt.axhline(np.mean(nested_cv_scores),
             color='r')
 
 plt.legend(loc='best', frameon=False)
-plt.show()
+show()

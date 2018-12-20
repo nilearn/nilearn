@@ -216,8 +216,12 @@ def test_log_reg_vs_graph_net_two_classes_iris(C=.01, tol=1e-10,
         mask=mask, alphas=1. / C / X.shape[0], l1_ratios=1., tol=tol,
         verbose=0, max_iter=1000, penalty="tv-l1", standardize=False,
         screening_percentile=100.).fit(X_, y)
-    sklogreg = LogisticRegression(penalty="l1", fit_intercept=True,
-                                  tol=tol, C=C).fit(X, y)
+    sklogreg = LogisticRegression(penalty="l1",
+                                  fit_intercept=True,
+                                  solver='liblinear',
+                                  tol=tol,
+                                  C=C,
+                                  ).fit(X, y)
 
     # compare supports
     np.testing.assert_array_equal((np.abs(tvl1.coef_) < zero_thr),
@@ -362,3 +366,17 @@ def test_checking_inputs_length():
                                         alphas=1. / .01 / X.shape[0],
                                         l1_ratios=1., tol=1e-10,
                                         screening_percentile=100.).fit, X_, y)
+
+
+def test_targets_in_y_space_net_regressor():
+    # This tests whether raises an error when unique targets given in y
+    # are single.
+    iris = load_iris()
+    X, _ = iris.data, iris.target
+    y = np.ones((iris.target.shape))
+
+    imgs, mask = to_niimgs(X, (2, 2, 2))
+    regressor = SpaceNetRegressor(mask=mask)
+    assert_raises_regex(ValueError,
+                        "The given input y must have atleast 2 targets",
+                        regressor.fit, imgs, y)

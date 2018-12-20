@@ -146,6 +146,8 @@ Computing and applying spatial masks
 Relevant functions:
 
 * compute a mask from EPI images: :func:`nilearn.masking.compute_epi_mask`
+* compute a grey-matter mask using the MNI template:
+  :func:`nilearn.masking.compute_gray_matter_mask`.
 * compute a mask from images with a flat background:
   :func:`nilearn.masking.compute_background_mask`
 * compute for multiple sessions/subjects:
@@ -166,15 +168,17 @@ can be computed from the data:
   the brain stands out of a constant background. This is typically the
   case when working on statistic maps output after a brain extraction
 - :func:`nilearn.masking.compute_epi_mask` for EPI images
+- :func:`nilearn.masking.compute_gray_matter_mask` to compute a
+  gray-matter mask using the MNI template.
+
+
+.. literalinclude:: ../../examples/01_plotting/plot_visualization.py
+     :start-after: # Simple computation of a mask from the fMRI data
+     :end-before: # Applying the mask to extract the corresponding time series
 
 .. figure:: ../auto_examples/01_plotting/images/sphx_glr_plot_visualization_002.png
     :target: ../auto_examples/01_plotting/plot_visualization.html
-    :align: right
     :scale: 50%
-
-.. literalinclude:: ../../examples/01_plotting/plot_visualization.py
-     :start-after: # Extracting a brain mask
-     :end-before: # Applying the mask to extract the corresponding time series
 
 
 .. _mask_4d_2_3d:

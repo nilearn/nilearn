@@ -129,9 +129,8 @@ display = plotting.plot_matrix(mean_correlations, vmax=1, vmin=-1,
                                colorbar=True, title=title)
 
 # Then find the center of the regions and plot a connectome
-from nilearn import image
-regions_imgs = image.iter_img(regions_extracted_img)
-coords_connectome = [plotting.find_xyz_cut_coords(img) for img in regions_imgs]
+regions_img = regions_extracted_img
+coords_connectome = plotting.find_probabilistic_atlas_cut_coords(regions_img)
 
 plotting.plot_connectome(mean_correlations, coords_connectome,
                          edge_threshold='90%', title=title)
@@ -141,6 +140,8 @@ plotting.plot_connectome(mean_correlations, coords_connectome,
 # ----------------------------------------------------
 
 # First, we plot a network of index=4 without region extraction (left plot)
+from nilearn import image
+
 img = image.index_img(components_img, 4)
 coords = plotting.find_xyz_cut_coords(img)
 display = plotting.plot_stat_map(img, cut_coords=coords, colorbar=False,

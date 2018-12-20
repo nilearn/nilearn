@@ -28,7 +28,7 @@ def fit_axes(ax):
 
 def plot_matrix(mat, title=None, labels=None, figure=None, axes=None,
                 colorbar=True, cmap=plt.cm.RdBu_r, tri='full',
-                auto_fit=True, grid=False, **kwargs):
+                auto_fit=True, grid=False, reorder=False, **kwargs):
     """ Plot the given matrix.
 
         Parameters
@@ -62,11 +62,50 @@ def plot_matrix(mat, title=None, labels=None, figure=None, axes=None,
         grid : color or False, optional
             If not False, a grid is plotted to separate rows and columns
             using the given color.
+        reorder : boolean or {'single', 'complete', 'average'}, optional
+            If not False, reorders the matrix into blocks of clusters.
+            Accepted linkage options for the clustering are 'single',
+            'complete', and 'average'. True defaults to average linkage.
+
+            .. note::
+                This option is only available with SciPy >= 1.0.0.
+
+            .. versionadded:: 0.4.1
+
         kwargs : extra keyword arguments
             Extra keyword arguments are sent to pylab.imshow
 
-        Returns Matplotlib AxesImage instance
+        Returns
+        -------
+        display : instance of matplotlib
+            Axes image.
     """
+    if reorder:
+        if labels is None or labels is False:
+            raise ValueError("Labels are needed to show the reordering.")
+        try:
+            from scipy.cluster.hierarchy import (linkage, optimal_leaf_ordering,
+                                                 leaves_list)
+        except ImportError:
+            raise ImportError("A scipy version of at least 1.0 is needed "
+                              "for ordering the matrix with "
+                              "optimal_leaf_ordering.")
+        valid_reorder_args = [True, 'single', 'complete', 'average']
+        if reorder not in valid_reorder_args:
+            raise ValueError("Parameter reorder needs to be "
+                             "one of {}.".format(valid_reorder_args))
+        if reorder is True:
+            reorder = 'average'
+        linkage_matrix = linkage(mat, method=reorder)
+        ordered_linkage = optimal_leaf_ordering(linkage_matrix, mat)
+        index = leaves_list(ordered_linkage)
+        # make sure labels is an ndarray and copy it
+        labels = np.array(labels).copy()
+        mat = mat.copy()
+        # and reorder labels and matrix
+        labels = labels[index]
+        mat = mat[index, :][:, index]
+
     if tri == 'lower':
         mask = np.tri(mat.shape[0], k=-1, dtype=np.bool) ^ True
         mat = np.ma.masked_array(mat, mask)

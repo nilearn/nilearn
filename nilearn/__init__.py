@@ -28,14 +28,28 @@ mass_univariate         --- Defines a Massively Univariate Linear Model
                             estimated with OLS and permutation test
 plotting                --- Plotting code for nilearn
 region                  --- Set of functions for extracting region-defined
-                            signals
+                            signals, clustering methods, connected regions extraction
 signal                  --- Set of preprocessing functions for time series
 """
 
 import gzip
+import sys
+import warnings
+
 from distutils.version import LooseVersion
 
 from .version import _check_module_dependencies, __version__
+
+
+def _py2_deprecation_warning():
+    warnings.simplefilter('once')
+    py2_warning = ('Python2 support is deprecated and will be removed in '
+                   'a future release. Consider switching to Python3.')
+    if sys.version_info.major == 2:
+        warnings.warn(message=py2_warning,
+                      category=DeprecationWarning,
+                      stacklevel=3,
+                      )
 
 _check_module_dependencies()
 
@@ -44,9 +58,13 @@ _check_module_dependencies()
 # of numpy arrays. Hence we print the options to old versions.
 import numpy as np
 if LooseVersion(np.__version__) >= LooseVersion("1.14"):
-    from ._utils.testing import is_nose_running
-    if is_nose_running():
-        np.set_printoptions(legacy='1.13')
+    # See issue #1600 in nilearn for reason to add try and except
+    try:
+        from ._utils.testing import is_nose_running
+        if is_nose_running():
+            np.set_printoptions(legacy='1.13')
+    except ImportError:
+        pass
 
 # Monkey-patch gzip to have faster reads on large gzip files
 if hasattr(gzip.GzipFile, 'max_read_chunk'):
@@ -68,4 +86,7 @@ CHECK_CACHE_VERSION = True
 # list all submodules available in nilearn and version
 __all__ = ['datasets', 'decoding', 'decomposition', 'connectome',
            'image', 'input_data', 'masking', 'mass_univariate', 'plotting',
-           'region', 'signal', 'surface', '__version__']
+           'region', 'signal', 'surface', 'parcellations', '__version__']
+
+
+_py2_deprecation_warning()

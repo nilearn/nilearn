@@ -14,8 +14,22 @@
 
 import sys
 import os
+import shutil
 import sphinx
 from distutils.version import LooseVersion
+
+# jquery is included in plotting package data because it is needed for
+# interactive plots. It is also needed by the documentation, so we copy
+# it to the themes/nilearn/static folder.
+shutil.copy(
+    os.path.join(os.path.dirname(os.path.dirname(__file__)),
+                 'nilearn', 'plotting', 'data', 'js', 'jquery.min.js'),
+    os.path.join(os.path.dirname(__file__), 'themes', 'nilearn', 'static',
+                 'jquery.js'))
+
+
+# ----------------------------------------------------------------------------
+
 
 # If extensions (or modules to document with autodoc) are in another
 # directory, add these directories to sys.path here. If the directory
@@ -294,10 +308,10 @@ sphinx_gallery_conf = {
     'reference_url'     : {
         'nilearn': None,
         'matplotlib': 'http://matplotlib.org',
-        'numpy': 'http://docs.scipy.org/doc/numpy-1.6.0',
-        'scipy': 'http://docs.scipy.org/doc/scipy-0.11.0/reference',
+        'numpy': 'http://docs.scipy.org/doc/numpy-1.11.0',
+        'scipy': 'http://docs.scipy.org/doc/scipy-0.17.0/reference',
         'nibabel': 'http://nipy.org/nibabel',
-        'sklearn': 'http://scikit-learn.org/0.17/',
+        'sklearn': 'http://scikit-learn.org/0.18/',
         'pandas': 'http://pandas.pydata.org'}
     }
 
@@ -319,6 +333,8 @@ def touch_example_backreferences(app, what, name, obj, options, lines):
 
 # Add the 'copybutton' javascript, to hide/show the prompt in code
 # examples
+
+
 def setup(app):
     app.add_javascript('copybutton.js')
     app.connect('autodoc-process-docstring', touch_example_backreferences)

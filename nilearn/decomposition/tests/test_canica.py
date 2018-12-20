@@ -5,11 +5,12 @@ from numpy.testing import assert_array_almost_equal
 from nose.tools import assert_true, assert_raises
 import nibabel
 
-from nilearn._utils.testing import (assert_less_equal,
+from nilearn._utils.testing import (assert_less_equal, write_tmp_imgs,
                                     assert_raises_regex)
 from nilearn.decomposition.canica import CanICA
 from nilearn.input_data import MultiNiftiMasker
 from nilearn.image import iter_img
+from nilearn.decomposition.tests.test_multi_pca import _tmp_dir
 
 
 def _make_data_from_components(components, affine, shape, rng=None,
@@ -184,3 +185,34 @@ def test_components_img():
     assert_true(isinstance(components_img, nibabel.Nifti1Image))
     check_shape = data[0].shape[:3] + (n_components,)
     assert_true(components_img.shape, check_shape)
+
+
+def test_with_globbing_patterns_with_single_subject():
+    # single subject
+    data, mask_img, _, _ = _make_canica_test_data(n_subjects=1)
+    n_components = 3
+    canica = CanICA(n_components=n_components, mask=mask_img)
+    with write_tmp_imgs(data[0], create_files=True, use_wildcards=True) as img:
+        input_image = _tmp_dir() + img
+        canica.fit(input_image)
+        components_img = canica.components_img_
+        assert_true(isinstance(components_img, nibabel.Nifti1Image))
+        # n_components = 3
+        check_shape = data[0].shape[:3] + (3,)
+        assert_true(components_img.shape, check_shape)
+
+
+def test_with_globbing_patterns_with_multi_subjects():
+    # Multi subjects
+    data, mask_img, _, _ = _make_canica_test_data(n_subjects=3)
+    n_components = 3
+    canica = CanICA(n_components=n_components, mask=mask_img)
+    with write_tmp_imgs(data[0], data[1], data[2], create_files=True,
+                        use_wildcards=True) as img:
+        input_image = _tmp_dir() + img
+        canica.fit(input_image)
+        components_img = canica.components_img_
+        assert_true(isinstance(components_img, nibabel.Nifti1Image))
+        # n_components = 3
+        check_shape = data[0].shape[:3] + (3,)
+        assert_true(components_img.shape, check_shape)

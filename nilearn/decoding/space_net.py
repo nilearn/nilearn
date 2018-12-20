@@ -22,10 +22,7 @@ import numpy as np
 from scipy import stats, ndimage
 from sklearn.base import RegressorMixin
 from sklearn.utils.extmath import safe_sparse_dot
-try:
-    from sklearn.utils import atleast2d_or_csr
-except ImportError: # sklearn 0.15
-    from sklearn.utils import check_array as atleast2d_or_csr
+from sklearn.utils import check_array
 from sklearn.linear_model.base import LinearModel
 from sklearn.feature_selection import (SelectPercentile, f_regression,
                                        f_classif)
@@ -34,8 +31,9 @@ from sklearn.preprocessing import LabelBinarizer
 from sklearn.metrics import accuracy_score
 from ..input_data.masker_validation import check_embedded_nifti_masker
 from .._utils.param_validation import _adjust_screening_percentile
-from .._utils.fixes import check_X_y
-from .._utils.fixes import check_cv, center_data
+from sklearn.utils import check_X_y
+from sklearn.model_selection import check_cv
+from sklearn.linear_model.base import _preprocess_data as center_data
 from .._utils.compat import _basestring
 from .._utils.cache_mixin import CacheMixin
 from .objective_functions import _unmask
@@ -761,6 +759,11 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
         X, y = check_X_y(X, y, ['csr', 'csc', 'coo'], dtype=np.float,
                          multi_output=True, y_numeric=not self.is_classif)
 
+        if not self.is_classif and np.all(np.diff(y) == 0.):
+            raise ValueError("The given input y must have atleast 2 targets"
+                             " to do regression analysis. You provided only"
+                             " one target {0}".format(np.unique(y)))
+
         # misc
         self.Xmean_ = X.mean(axis=0)
         self.Xstd_ = X.std(axis=0)
@@ -798,14 +801,8 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
         case1 = (None in [alphas, l1_ratios]) and self.n_alphas > 1
         case2 = (alphas is not None) and min(len(l1_ratios), len(alphas)) > 1
         if case1 or case2:
-            if LooseVersion(sklearn.__version__) >= LooseVersion('0.18'):
-                # scikit-learn >= 0.18
-                self.cv_ = list(check_cv(
-                    self.cv, y=y, classifier=self.is_classif).split(X, y))
-            else:
-                # scikit-learn < 0.18
-                self.cv_ = list(check_cv(self.cv, X=X, y=y,
-                                         classifier=self.is_classif))
+            self.cv_ = list(check_cv(
+                self.cv, y=y, classifier=self.is_classif).split(X, y))
         else:
             # no cross-validation needed, user supplied all params
             self.cv_ = [(np.arange(n_samples), [])]
@@ -907,7 +904,7 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
         if not self.is_classif:
             return LinearModel.decision_function(self, X)
 
-        X = atleast2d_or_csr(X)
+        X = check_array(X)
         n_features = self.coef_.shape[1]
         if X.shape[1] != n_features:
             raise ValueError("X has %d features per sample; expecting %d"

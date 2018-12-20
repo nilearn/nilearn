@@ -67,18 +67,26 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
         This parameter is passed to image.resample_img. Please see the
         related documentation for details.
 
-    mask_strategy: {'background' or 'epi'}, optional
+    mask_strategy: {'background', 'epi' or 'template'}, optional
         The strategy used to compute the mask: use 'background' if your
-        images present a clear homogeneous background, and 'epi' if they
-        are raw EPI images. Depending on this value, the mask will be
-        computed from masking.compute_background_mask or
-        masking.compute_epi_mask. Default is 'background'.
+        images present a clear homogeneous background, 'epi' if they
+        are raw EPI images, or you could use 'template' which will
+        extract the gray matter part of your data by resampling the MNI152
+        brain mask for your data's field of view.
+        Depending on this value, the mask will be computed from
+        masking.compute_background_mask, masking.compute_epi_mask or
+        masking.compute_gray_matter_mask. Default is 'background'.
 
     mask_args : dict, optional
         If mask is None, these are additional parameters passed to
         masking.compute_background_mask or masking.compute_epi_mask
         to fine-tune mask computation. Please see the related documentation
         for details.
+
+    dtype: {dtype, "auto"}
+        Data type toward which the data should be converted. If "auto", the
+        data will be converted to int32 if dtype is discrete and float32 if it
+        is continuous.
 
     memory: instance of joblib.Memory or string
         Used to cache the masking process.
@@ -116,7 +124,7 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
                  standardize=False, detrend=False,
                  low_pass=None, high_pass=None, t_r=None,
                  target_affine=None, target_shape=None,
-                 mask_strategy='background', mask_args=None,
+                 mask_strategy='background', mask_args=None, dtype=None,
                  memory=Memory(cachedir=None), memory_level=0,
                  n_jobs=1, verbose=0
                  ):
@@ -133,6 +141,7 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
         self.target_shape = target_shape
         self.mask_strategy = mask_strategy
         self.mask_args = mask_args
+        self.dtype = dtype
 
         self.memory = memory
         self.memory_level = memory_level
@@ -176,9 +185,12 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
                 compute_mask = masking.compute_multi_background_mask
             elif self.mask_strategy == 'epi':
                 compute_mask = masking.compute_multi_epi_mask
+            elif self.mask_strategy == 'template':
+                compute_mask = masking.compute_multi_gray_matter_mask
             else:
                 raise ValueError("Unknown value of mask_strategy '%s'. "
-                                 "Acceptable values are 'background' and 'epi'.")
+                                 "Acceptable values are 'background', 'epi' "
+                                 "and 'template'.")
 
             self.mask_img_ = self._cache(
                 compute_mask, ignore=['n_jobs', 'verbose', 'memory'])(
@@ -280,6 +292,7 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
                           verbose=self.verbose,
                           confounds=cfs,
                           copy=copy,
+                          dtype=self.dtype
                           )
             for imgs, cfs in izip(niimg_iter, confounds))
         return data

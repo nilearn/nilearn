@@ -38,12 +38,15 @@ class MultiPCA(BaseDecomposition):
         it will be computed automatically by a MultiNiftiMasker with default
         parameters.
 
-    mask_strategy: {'background', 'epi'}, optional
+    mask_strategy: {'background', 'epi' or 'template'}, optional
         The strategy used to compute the mask: use 'background' if your
-        images present a clear homogeneous background, and 'epi' if they
-        are raw EPI images. Depending on this value, the mask will be
-        computed from masking.compute_background_mask or
-        masking.compute_epi_mask. Default is 'epi'.
+        images present a clear homogeneous background, 'epi' if they
+        are raw EPI images, or you could use 'template' which will
+        extract the gray matter part of your data by resampling the MNI152
+        brain mask for your data's field of view.
+        Depending on this value, the mask will be computed from
+        masking.compute_background_mask, masking.compute_epi_mask or
+        masking.compute_gray_matter_mask. Default is 'epi'.
 
     mask_args: dict, optional
         If mask is None, these are additional parameters passed to
@@ -164,13 +167,15 @@ class MultiPCA(BaseDecomposition):
             S = np.sqrt(np.sum(data ** 2, axis=1))
             S[S == 0] = 1
             data /= S[:, np.newaxis]
-        self.components_, self.variance_, _ = self._cache(
+        components_, self.variance_, _ = self._cache(
             randomized_svd, func_memory_level=2)(
             data.T, n_components=self.n_components,
             transpose=True,
             random_state=self.random_state, n_iter=3)
         if self.do_cca:
             data *= S[:, np.newaxis]
-        self.components_ = self.components_.T
+        self.components_ = components_.T
         if hasattr(self, "masker_"):
-            self.components_img_ = self.masker_.inverse_transform(self.components_)
+            self.components_img_ = self.masker_.inverse_transform(
+                components_.T)
+        return components_

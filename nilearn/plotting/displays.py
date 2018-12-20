@@ -13,12 +13,16 @@ import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib import cm as mpl_cm
-from matplotlib import lines
-from matplotlib import transforms, colors
+from matplotlib import (colors,
+                        lines,
+                        transforms,
+                        )
 from matplotlib.colorbar import ColorbarBase
+from matplotlib.font_manager import FontProperties
+from mpl_toolkits.axes_grid1.anchored_artists import AnchoredSizeBar
 from scipy import sparse, stats
 
-from . import glass_brain, cm
+from . import cm, glass_brain
 from .edge_detect import _edge_map
 from .find_cuts import find_xyz_cut_coords, find_cut_slices
 from .. import _utils
@@ -52,6 +56,7 @@ class BaseAxes(object):
         self.direction = direction
         self.coord = coord
         self._object_bounds = list()
+        self.shape = None
 
     def transform_to_2d(self, data, affine):
         raise NotImplementedError("'transform_to_2d' needs to be implemented "
@@ -93,6 +98,7 @@ class BaseAxes(object):
                                **kwargs)
 
         self.add_object_bounds((xmin_, xmax_, zmin_, zmax_))
+        self.shape = data_2d.T.shape
 
         # The bounds of the object do not take into account a possible
         # inversion of the axis. As such, we check that the axis is properly
@@ -136,6 +142,79 @@ class BaseAxes(object):
                 size=size,
                 bbox=dict(boxstyle="square,pad=0", ec=bg_color, fc=bg_color),
                 **kwargs)
+
+    def draw_scale_bar(self, bg_color, size=5.0, units='cm',
+                       fontproperties=None, frameon=False, loc=4, pad=.1,
+                       borderpad=.5, sep=5, size_vertical=0, label_top=False,
+                       color='black', fontsize=None, **kwargs):
+        """ Adds a scale bar annotation to the display
+
+        Parameters
+        ----------
+
+        bgcolor: matplotlib color: str or (r, g, b) value
+            The background color of the scale bar annotation.
+        size: float
+            Horizontal length of the scale bar, given in `units`.
+        units: str
+            Physical units of the scale bar (`'cm'` or `'mm'`).
+        fontproperties: ``matplotlib.font_manager.FontProperties`` or dict
+            Font properties for the label text.
+        frameon: (boolean, whether the scale bar is plotted with
+            a border);
+        loc: int
+            Location of this scale bar. Valid location codes are documented
+            `here <https://matplotlib.org/mpl_toolkits/axes_grid/\
+            api/anchored_artists_api.html#mpl_toolkits.axes_grid1.\
+            anchored_artists.AnchoredSizeBar>`__.
+        pad: int of float
+            Padding around the label and scale bar, in fraction of the font
+            size.
+        borderpad: int or float
+            Border padding, in fraction of the font size.
+        sep: in or float,
+            Separation between the label and the scale bar, in points.
+        size_vertical: int or float
+            Vertical length of the size bar, given in `units`.
+        label_top: bool
+            If True, the label will be over the scale bar.
+        color: str
+            Color for the scale bar and label.
+        fontsize: int
+            Label font size (overwrites the size passed in through the
+            ``fontproperties`` argument).
+        **kwargs:
+            Keyworded arguments to pass to
+            ``matplotlib.offsetbox.AnchoredOffsetbox``.
+        """
+
+        axis = self.ax
+        fontproperties = fontproperties or FontProperties()
+        if fontsize:
+            fontproperties.set_size(fontsize)
+        width_mm = size
+        if units == 'cm':
+            width_mm *= 10
+
+        anchor_size_bar = AnchoredSizeBar(
+            axis.transData,
+            width_mm,
+            '%g%s' % (size, units),
+            fontproperties=fontproperties,
+            frameon=frameon,
+            loc=loc,
+            pad=pad,
+            borderpad=borderpad,
+            sep=sep,
+            size_vertical=size_vertical,
+            label_top=label_top,
+            color=color,
+            **kwargs)
+
+        if frameon:
+            anchor_size_bar.patch.set_facecolor(bg_color)
+            anchor_size_bar.patch.set_edgecolor('none')
+        axis.add_artist(anchor_size_bar)
 
     def draw_position(self, size, bg_color, **kwargs):
         raise NotImplementedError("'draw_position' should be implemented "
@@ -286,7 +365,7 @@ class GlassBrainAxes(BaseAxes):
 
             # take the values where the absolute value of the projection
             # is the highest
-            maximum_intensity_data = data_selection[inds]
+            maximum_intensity_data = data_selection[tuple(inds)]
         else:
             maximum_intensity_data = np.abs(data_selection).max(axis=max_axis)
 
@@ -308,6 +387,9 @@ class GlassBrainAxes(BaseAxes):
 
         # Allow markers only in their respective hemisphere when appropriate
         if self.direction in 'lr':
+            if not isinstance(marker_color, _utils.compat._basestring) and \
+                    not isinstance(marker_color, np.ndarray):
+                marker_color = np.asarray(marker_color)
             relevant_coords = []
             xcoords, ycoords, zcoords = marker_coords.T
             for cidx, xc in enumerate(xcoords):
@@ -317,7 +399,14 @@ class GlassBrainAxes(BaseAxes):
                         relevant_coords.append(cidx)
             xdata = xdata[relevant_coords]
             ydata = ydata[relevant_coords]
-            marker_color = marker_color[relevant_coords]
+            # if marker_color is string for example 'red' or 'blue', then
+            # we pass marker_color as it is to matplotlib scatter without
+            # making any selection in 'l' or 'r' color.
+            # More likely that user wants to display all nodes to be in
+            # same color.
+            if not isinstance(marker_color, _utils.compat._basestring) and \
+                    len(marker_color) != 1:
+                marker_color = marker_color[relevant_coords]
 
         defaults = {'marker': 'o',
                     'zorder': 1000}
@@ -425,7 +514,8 @@ class BaseSlicer(object):
     _default_figsize = [2.2, 2.6]
     _axes_class = CutAxes
 
-    def __init__(self, cut_coords, axes=None, black_bg=False, **kwargs):
+    def __init__(self, cut_coords, axes=None, black_bg=False,
+                 brain_color=(0.5, 0.5, 0.5), **kwargs):
         """ Create 3 linked axes for plotting orthogonal cuts.
 
         Parameters
@@ -439,7 +529,9 @@ class BaseSlicer(object):
             black. If you wish to save figures with a black background,
             you will need to pass "facecolor='k', edgecolor='k'"
             to matplotlib.pyplot.savefig.
-
+        brain_color : tuple
+            The brain color to use as the background color (e.g., for
+            transparent colorbars).
         """
         self.cut_coords = cut_coords
         if axes is None:
@@ -450,6 +542,7 @@ class BaseSlicer(object):
         bb = axes.get_position()
         self.rect = (bb.x0, bb.y0, bb.x1, bb.y1)
         self._black_bg = black_bg
+        self._brain_color = brain_color
         self._colorbar = False
         self._colorbar_width = 0.05 * bb.width
         self._colorbar_margin = dict(left=0.25 * bb.width,
@@ -468,7 +561,7 @@ class BaseSlicer(object):
     def init_with_figure(cls, img, threshold=None,
                          cut_coords=None, figure=None, axes=None,
                          black_bg=False, leave_space=False, colorbar=False,
-                         **kwargs):
+                         brain_color=(0.5, 0.5, 0.5), **kwargs):
         "Initialize the slicer with an image"
         # deal with "fake" 4D images
         if img is not None and img is not False:
@@ -509,7 +602,7 @@ class BaseSlicer(object):
         # People forget to turn their axis off, or to set the zorder, and
         # then they cannot see their slicer
         axes.axis('off')
-        return cls(cut_coords, axes, black_bg, **kwargs)
+        return cls(cut_coords, axes, black_bg, brain_color, **kwargs)
 
     def title(self, text, x=0.01, y=0.99, size=15, color=None, bgcolor=None,
               alpha=1, **kwargs):
@@ -751,10 +844,10 @@ class BaseSlicer(object):
 
         # some colormap hacking
         cmaplist = [our_cmap(i) for i in range(our_cmap.N)]
-        istart = int(norm(-offset, clip=True) * (our_cmap.N - 1))
-        istop = int(norm(offset, clip=True) * (our_cmap.N - 1))
-        for i in range(istart, istop):
-            cmaplist[i] = (0.5, 0.5, 0.5, 1.)  # just an average gray color
+        transparent_start = int(norm(-offset, clip=True) * (our_cmap.N - 1))
+        transparent_stop = int(norm(offset, clip=True) * (our_cmap.N - 1))
+        for i in range(transparent_start, transparent_stop):
+            cmaplist[i] = self._brain_color + (0.,)  # transparent
         if norm.vmin == norm.vmax:  # len(np.unique(data)) == 1 ?
             return
         else:
@@ -765,6 +858,7 @@ class BaseSlicer(object):
             self._colorbar_ax, ticks=ticks, norm=norm,
             orientation='vertical', cmap=our_cmap, boundaries=bounds,
             spacing='proportional', format='%.2g')
+        self._cbar.patch.set_facecolor(self._brain_color)
 
         self._colorbar_ax.yaxis.tick_left()
         tick_color = 'w' if self._black_bg else 'k'
@@ -844,7 +938,9 @@ class BaseSlicer(object):
             display_ax.ax.scatter(xdata, ydata, s=marker_size,
                                   c=marker_color, **kwargs)
 
-    def annotate(self, left_right=True, positions=True, size=12, **kwargs):
+    def annotate(self, left_right=True, positions=True, scalebar=False,
+                 size=12, scale_size=5.0, scale_units='cm', scale_loc=4,
+                 **kwargs):
         """ Add annotations to the plot.
 
         Parameters
@@ -855,8 +951,29 @@ class BaseSlicer(object):
         positions: boolean, optional
             If positions is True, annotations indicating the
             positions of the cuts are drawn.
+        scalebar: boolean, optional
+            If ``True``, cuts are annotated with a reference scale bar.
+            For finer control of the scale bar, please check out
+            the draw_scale_bar method on the axes in "axes" attribute of
+            this object.
         size: integer, optional
             The size of the text used.
+        scale_size: number, optional
+            The length of the scalebar, in units of scale_units
+        scale_units: {'mm', 'cm'}
+            The units for the scalebar
+        scale_loc: integer
+            The positioning for the scalebar, valid location codes are::
+                    'upper right'  : 1,
+                    'upper left'   : 2,
+                    'lower left'   : 3,
+                    'lower right'  : 4,
+                    'right'        : 5,
+                    'center left'  : 6,
+                    'center right' : 7,
+                    'lower center' : 8,
+                    'upper center' : 9,
+                    'center'       : 10
         kwargs:
             Extra keyword arguments are passed to matplotlib's text
             function.
@@ -869,15 +986,26 @@ class BaseSlicer(object):
                 kwargs['color'] = 'k'
 
         bg_color = ('k' if self._black_bg else 'w')
+
         if left_right:
-            for display_ax in self.axes.values():
-                display_ax.draw_left_right(size=size, bg_color=bg_color,
-                                           **kwargs)
+            for display_axis in self.axes.values():
+                display_axis.draw_left_right(size=size, bg_color=bg_color,
+                                             **kwargs)
 
         if positions:
-            for display_ax in self.axes.values():
-                display_ax.draw_position(size=size, bg_color=bg_color,
-                                         **kwargs)
+            for display_axis in self.axes.values():
+                display_axis.draw_position(size=size, bg_color=bg_color,
+                                           **kwargs)
+
+        if scalebar:
+            axes = self.axes.values()
+            for display_axis in axes:
+                display_axis.draw_scale_bar(bg_color=bg_color,
+                                            fontsize=size,
+                                            size=scale_size,
+                                            units=scale_units,
+                                            loc=scale_loc,
+                                            **kwargs)
 
     def close(self):
         """ Close the figure. This is necessary to avoid leaking memory.
@@ -913,7 +1041,7 @@ class OrthoSlicer(BaseSlicer):
     Attributes
     ----------
 
-    axes: dictionnary of axes
+    axes: dictionary of axes
         The 3 axes used to plot each view.
     frame_axes: axes
         The axes framing the whole set of views.
@@ -929,7 +1057,7 @@ class OrthoSlicer(BaseSlicer):
 
     @classmethod
     def find_cut_coords(self, img=None, threshold=None, cut_coords=None):
-        "Instanciate the slicer and find cut coordinates"
+        "Instantiate the slicer and find cut coordinates"
         if cut_coords is None:
             if img is None or img is False:
                 cut_coords = (0, 0, 0)
@@ -1086,7 +1214,7 @@ class BaseStackedSlicer(BaseSlicer):
     Attributes
     ----------
 
-    axes: dictionnary of axes
+    axes: dictionary of axes
         The axes used to plot each view.
     frame_axes: axes
         The axes framing the whole set of views.
@@ -1099,7 +1227,7 @@ class BaseStackedSlicer(BaseSlicer):
     """
     @classmethod
     def find_cut_coords(cls, img=None, threshold=None, cut_coords=None):
-        "Instanciate the slicer and find cut coordinates"
+        "Instantiate the slicer and find cut coordinates"
         if cut_coords is None:
             cut_coords = 7
 
@@ -1163,7 +1291,7 @@ class BaseStackedSlicer(BaseSlicer):
             bounds = display_ax.get_object_bounds()
             if not bounds:
                 # This happens if the call to _map_show was not
-                # succesful. As it happens asyncroniously (during a
+                # successful. As it happens asynchronously (during a
                 # refresh of the figure) we capture the problem and
                 # ignore it: it only adds a non informative traceback
                 bounds = [0, 1, 0, 1]

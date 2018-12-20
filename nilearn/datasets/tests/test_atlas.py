@@ -459,13 +459,14 @@ def test_fetch_atlas_allen_2011():
             "rsn28",
             "comps")
 
-    filenames = ["ALL_HC_unthresholded_tmaps.nii",
-                 "RSN_HC_unthresholded_tmaps.nii",
-                 "rest_hcp_agg__component_ica_.nii"]
+    filenames = ["ALL_HC_unthresholded_tmaps.nii.gz",
+                 "RSN_HC_unthresholded_tmaps.nii.gz",
+                 "rest_hcp_agg__component_ica_.nii.gz"]
 
-    assert_equal(len(tst.mock_url_request.urls), 3)
+    assert_equal(len(tst.mock_url_request.urls), 1)
     for key, fn in zip(keys, filenames):
-        assert_equal(bunch[key], os.path.join(tst.tmpdir, 'allen_rsn_2011', fn))
+        assert_equal(bunch[key], os.path.join(tst.tmpdir, 'allen_rsn_2011',
+                                              'allen_rsn_2011', fn))
 
     assert_not_equal(bunch.description, '')
 
@@ -530,3 +531,16 @@ def test_fetch_atlas_talairach(data_dir=tst.tmpdir):
     assert_array_equal(talairach.maps.get_data().ravel(),
                        level_values.ravel())
     assert_raises(ValueError, atlas.fetch_atlas_talairach, 'bad_level')
+
+@with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
+def test_fetch_atlas_pauli_2017():
+    data_dir = os.path.join(tst.tmpdir, 'pauli_2017')
+
+    data = atlas.fetch_atlas_pauli_2017('labels', data_dir)
+    assert_equal(len(data.labels), 16)
+
+    values = nibabel.load(data.maps).get_data()
+    assert_equal(len(np.unique(values)), 17)
+
+    data = atlas.fetch_atlas_pauli_2017('prob', data_dir)
+    assert_equal(nibabel.load(data.maps).shape[-1], 16)

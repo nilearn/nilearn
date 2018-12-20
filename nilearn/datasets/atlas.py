@@ -663,8 +663,8 @@ def fetch_atlas_yeo_2011(data_dir=None, url=None, resume=True, verbose=1):
     Licence: unknown.
     """
     if url is None:
-        url = "ftp://surfer.nmr.mgh.harvard.edu/" \
-              "pub/data/Yeo_JNeurophysiol11_MNI152.zip"
+        url = ('ftp://surfer.nmr.mgh.harvard.edu/pub/data/'
+               'Yeo_JNeurophysiol11_MNI152.zip')
     opts = {'uncompress': True}
 
     dataset_name = "yeo_2011"
@@ -977,17 +977,17 @@ def fetch_atlas_allen_2011(data_dir=None, url=None, resume=True, verbose=1):
     on this dataset.
     """
     if url is None:
-        url = "http://mialab.mrn.org/data/hcp/"
+        url = "https://osf.io/hrcku/download"
 
     dataset_name = "allen_rsn_2011"
     keys = ("maps",
             "rsn28",
             "comps")
 
-    opts = {}
-    files = ["ALL_HC_unthresholded_tmaps.nii",
-             "RSN_HC_unthresholded_tmaps.nii",
-             "rest_hcp_agg__component_ica_.nii"]
+    opts = {'uncompress': True}
+    files = ["ALL_HC_unthresholded_tmaps.nii.gz",
+             "RSN_HC_unthresholded_tmaps.nii.gz",
+             "rest_hcp_agg__component_ica_.nii.gz"]
 
     labels = [('Basal Ganglia', [21]),
               ('Auditory', [17]),
@@ -999,7 +999,7 @@ def fetch_atlas_allen_2011(data_dir=None, url=None, resume=True, verbose=1):
 
     networks = [[name] * len(idxs) for name, idxs in labels]
 
-    filenames = [(f, url + f, opts) for f in files]
+    filenames = [(os.path.join('allen_rsn_2011', f), url, opts) for f in files]
 
     data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
                                 verbose=verbose)
@@ -1242,3 +1242,72 @@ def fetch_atlas_talairach(level_name, data_dir=None, verbose=1):
     description = _get_dataset_descr(
         'talairach_atlas').decode('utf-8').format(level_name)
     return Bunch(maps=atlas_img, labels=labels, description=description)
+
+
+def fetch_atlas_pauli_2017(version='prob', data_dir=None, verbose=1):
+    """Download the Pauli et al. (2017) atlas with in total
+    12 subcortical nodes.
+
+    Parameters
+    ----------
+
+    version: str, optional (default='prob')
+        Which version of the atlas should be download. This can be 'prob'
+        for the probabilistic atlas or 'det' for the deterministic atlas.
+
+    data_dir : str, optional (default=None)
+        Path of the data directory. Used to force data storage in a specified
+        location.
+
+    verbose : int
+        verbosity level (0 means no message).
+
+    Returns
+    -------
+    sklearn.datasets.base.Bunch
+        Dictionary-like object, contains:
+
+        - maps: 3D Nifti image, values are indices in the list of labels.
+        - labels: list of strings. Starts with 'Background'.
+        - description: a short description of the atlas and some references.
+
+    References
+    ----------
+    https://osf.io/r2hvk/
+
+    `Pauli, W. M., Nili, A. N., & Tyszka, J. M. (2018). A high-resolution
+    probabilistic in vivo atlas of human subcortical brain nuclei.
+    Scientific Data, 5, 180063-13. http://doi.org/10.1038/sdata.2018.63``
+    """
+
+    if version == 'prob':
+        url_maps = 'https://osf.io/w8zq2/download'
+        filename = 'pauli_2017_labels.nii.gz'
+    elif version == 'labels':
+        url_maps = 'https://osf.io/5mqfx/download'
+        filename = 'pauli_2017_prob.nii.gz'
+    else:
+        raise NotImplementedError('{} is no valid version for '.format(version) + \
+                                  'the Pauli atlas')
+
+    url_labels = 'https://osf.io/6qrcb/download'
+    dataset_name = 'pauli_2017'
+
+    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
+                                verbose=verbose)
+
+    files = [(filename,
+              url_maps,
+              {'move':filename}),
+             ('labels.txt',
+              url_labels,
+              {'move':'labels.txt'})]
+    atlas_file, labels = _fetch_files(data_dir, files)
+
+    labels = np.loadtxt(labels, dtype=str)[:, 1].tolist()
+
+    fdescr = _get_dataset_descr(dataset_name)
+
+    return Bunch(maps=atlas_file,
+                 labels=labels,
+                 description=fdescr)

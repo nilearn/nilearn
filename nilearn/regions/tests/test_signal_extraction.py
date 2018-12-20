@@ -10,10 +10,10 @@ from nose.tools import assert_raises, assert_true
 import nibabel
 
 from nilearn.regions import signal_extraction
-from nilearn._utils.testing import generate_timeseries, generate_regions_ts
-from nilearn._utils.testing import generate_labeled_regions, generate_maps
-from nilearn._utils.testing import generate_fake_fmri
 from nilearn._utils.testing import write_tmp_imgs, assert_raises_regex
+from nilearn._utils.data_gen import generate_timeseries, generate_regions_ts
+from nilearn._utils.data_gen import generate_labeled_regions, generate_maps
+from nilearn._utils.data_gen import generate_fake_fmri
 from nilearn._utils.exceptions import DimensionError
 
 _TEST_DIM_ERROR_MSG = ("Input data has incompatible dimensionality: "

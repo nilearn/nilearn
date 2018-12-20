@@ -36,7 +36,7 @@ from .utils import _fetch_file, _get_dataset_dir, _get_dataset_descr
 _NEUROVAULT_BASE_URL = 'http://neurovault.org/api/'
 _NEUROVAULT_COLLECTIONS_URL = urljoin(_NEUROVAULT_BASE_URL, 'collections/')
 _NEUROVAULT_IMAGES_URL = urljoin(_NEUROVAULT_BASE_URL, 'images/')
-_NEUROSYNTH_FETCH_WORDS_URL = 'http://neurosynth.org/api/v2/decode/'
+_NEUROSYNTH_FETCH_WORDS_URL = 'http://neurosynth.org/api/decode/'
 
 _COL_FILTERS_AVAILABLE_ON_SERVER = ('DOI', 'name', 'owner', 'id')
 _IM_FILTERS_AVAILABLE_ON_SERVER = tuple()
@@ -2600,3 +2600,90 @@ def fetch_neurovault_ids(
         data_dir=data_dir,
         fetch_neurosynth_words=fetch_neurosynth_words,
         vectorize_words=vectorize_words, verbose=verbose)
+
+
+def fetch_neurovault_motor_task(data_dir=None, verbose=1):
+    """Fetch left vs right button press group contrast map from NeuroVault.
+
+    Parameters
+    ----------
+    data_dir: string, optional
+        Path of the data directory. Used to force data storage in a specified
+        location.
+
+    verbose: int, optional
+        verbosity level (0 means no message).
+
+    Returns
+    -------
+    data: Bunch
+        A dict-like object which exposes its items as attributes. It contains:
+            - 'images', the paths to downloaded files.
+            - 'images_meta', the metadata for the images in a list of
+              dictionaries.
+            - 'collections_meta', the metadata for the
+              collections.
+            - 'description', a short description of the Neurovault dataset.
+
+    Notes
+    ------
+
+    This function is only a caller for the fetch_localizer_contrasts in order
+    to simplify examples reading and understanding.
+    The 'left vs right button press' contrast is used:
+    https://neurovault.org/images/10426/
+
+    See Also
+    ---------
+    nilearn.datasets.fetch_neurovault_ids
+    nilearn.datasets.fetch_neurovault
+    nilearn.datasets.fetch_neurovault_auditory_computation_task
+
+    """
+    data = fetch_neurovault_ids(image_ids=[10426], data_dir=data_dir,
+                                verbose=verbose)
+    return data
+
+
+def fetch_neurovault_auditory_computation_task(data_dir=None, verbose=1):
+    """Fetch a contrast map from NeuroVault showing
+    the effect of mental subtraction upon auditory instructions
+
+    Parameters
+    ----------
+    data_dir: string, optional
+        Path of the data directory. Used to force data storage in a specified
+        location.
+
+    verbose: int, optional
+        verbosity level (0 means no message).
+
+    Returns
+    -------
+    data: Bunch
+        A dict-like object which exposes its items as attributes. It contains:
+            - 'images', the paths to downloaded files.
+            - 'images_meta', the metadata for the images in a list of
+              dictionaries.
+            - 'collections_meta', the metadata for the
+              collections.
+            - 'description', a short description of the Neurovault dataset.
+
+    Notes
+    ------
+
+    This function is only a caller for the fetch_localizer_contrasts in order
+    to simplify examples reading and understanding.
+    The 'auditory_calculation_vs_baseline' contrast is used:
+    https://neurovault.org/images/32980/
+
+    See Also
+    ---------
+    nilearn.datasets.fetch_neurovault_ids
+    nilearn.datasets.fetch_neurovault
+    nilearn.datasets.fetch_neurovault_motor_task
+
+    """
+    data = fetch_neurovault_ids(image_ids=[32980], data_dir=data_dir,
+                                verbose=verbose)
+    return data

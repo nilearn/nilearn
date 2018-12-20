@@ -11,10 +11,8 @@ import distutils.version
 import warnings
 
 import numpy as np
-import scipy
-from scipy import signal, stats, linalg
+from scipy import stats, linalg, signal as sp_signal
 from sklearn.utils import gen_even_slices, as_float_array
-from distutils.version import LooseVersion
 
 from ._utils.compat import _basestring
 from ._utils.numpy_conversions import csv_to_array, as_ndarray
@@ -168,11 +166,6 @@ def _detrend(signals, inplace=False, type="linear", n_batches=10):
 def _check_wn(btype, freq, nyq):
     wn = freq / float(nyq)
     if wn >= 1.:
-        warnings.warn(
-            'The frequency specified for the %s pass filter is '
-            'too high to be handled by a digital filter (superior to '
-            'nyquist frequency). It has been lowered to %.2f (nyquist '
-            'frequency).' % (btype, nyq))
         # results looked unstable when the critical frequencies are
         # exactly at the Nyquist frequency. See issue at SciPy
         # https://github.com/scipy/scipy/issues/6265. Before, SciPy 1.0.0 ("wn
@@ -180,11 +173,24 @@ def _check_wn(btype, freq, nyq):
         # results as pointed in the issue above. Hence, we forced the
         # critical frequencies to be slightly less than 1. but not 1.
         wn = 1 - 10 * np.finfo(1.).eps
+        warnings.warn(
+            'The frequency specified for the %s pass filter is '
+            'too high to be handled by a digital filter (superior to '
+            'nyquist frequency). It has been lowered to %.2f (nyquist '
+            'frequency).' % (btype, wn))
+
+    if wn < 0.0: # equal to 0.0 is okay
+        wn = np.finfo(1.).eps
+        warnings.warn(
+            'The frequency specified for the %s pass filter is '
+            'too low to be handled by a digital filter (must be non-negative).'
+            ' It has been set to eps: %.5e' % (btype, wn))
+
     return wn
 
 
 def butterworth(signals, sampling_rate, low_pass=None, high_pass=None,
-                order=5, copy=False, save_memory=False):
+                order=5, copy=False):
     """ Apply a low-pass, high-pass or band-pass Butterworth filter
 
     Apply a filter to remove signal below the `low` frequency and above the
@@ -224,9 +230,9 @@ def butterworth(signals, sampling_rate, low_pass=None, high_pass=None,
     """
     if low_pass is None and high_pass is None:
         if copy:
-            return signal.copy()
+            return signals.copy()
         else:
-            return signal
+            return signals
 
     if low_pass is not None and high_pass is not None \
             and high_pass >= low_pass:
@@ -252,10 +258,10 @@ def butterworth(signals, sampling_rate, low_pass=None, high_pass=None,
     else:
         critical_freq = critical_freq[0]
 
-    b, a = signal.butter(order, critical_freq, btype=btype)
+    b, a = sp_signal.butter(order, critical_freq, btype=btype, output='ba')
     if signals.ndim == 1:
         # 1D case
-        output = signal.filtfilt(b, a, signals)
+        output = sp_signal.filtfilt(b, a, signals)
         if copy:  # filtfilt does a copy in all cases.
             signals = output
         else:
@@ -264,11 +270,14 @@ def butterworth(signals, sampling_rate, low_pass=None, high_pass=None,
         if copy:
             # No way to save memory when a copy has been requested,
             # because filtfilt does out-of-place processing
-            signals = signal.filtfilt(b, a, signals, axis=0)
+            signals = sp_signal.filtfilt(b, a, signals, axis=0)
         else:
             # Lesser memory consumption, slower.
             for timeseries in signals.T:
-                timeseries[:] = signal.filtfilt(b, a, timeseries)
+                timeseries[:] = sp_signal.filtfilt(b, a, timeseries)
+
+            # results returned in-place
+
     return signals
 
 
@@ -346,7 +355,7 @@ def _ensure_float(data):
 
 
 def clean(signals, sessions=None, detrend=True, standardize=True,
-          confounds=None, low_pass=None, high_pass=None, t_r=2.5,
+          confounds=None, low_pass=None, high_pass=None, t_r=None,
           ensure_finite=False):
     """Improve SNR on masked fMRI signals.
 
@@ -354,9 +363,9 @@ def clean(signals, sessions=None, detrend=True, standardize=True,
     the following order:
 
     - detrend
-    - standardize
-    - remove confounds
     - low- and high-pass filter
+    - remove confounds
+    - standardize
 
     Low-pass filtering improves specificity.
 
@@ -364,6 +373,10 @@ def clean(signals, sessions=None, detrend=True, standardize=True,
     sensitivity.
 
     Filtering is only meaningful on evenly-sampled signals.
+
+    According to Lindquist et al. (2018), removal of confounds will be done
+    orthogonally to temporal filters (low- and/or high-pass filters), if both
+    are specified.
 
     Parameters
     ----------
@@ -386,7 +399,8 @@ def clean(signals, sessions=None, detrend=True, standardize=True,
         signal, as if all were in the same array.
 
     t_r: float
-        Repetition time, in second (sampling period).
+        Repetition time, in second (sampling period). Set to None if not
+        specified. Mandatory if used together with low_pass or high_pass.
 
     low_pass, high_pass: float
         Respectively low and high cutoff frequencies, in Hertz.
@@ -415,6 +429,11 @@ def clean(signals, sessions=None, detrend=True, standardize=True,
     "Statistical Parametric Maps in Functional Imaging: A General
     Linear Approach". Human Brain Mapping 2, no 4 (1994): 189-210.
     <http://dx.doi.org/10.1002/hbm.460020402>`_
+
+    Orthogonalization between temporal filters and confound removal is based on
+    suggestions in `Lindquist, M., Geuter, S., Wager, T., & Caffo, B. (2018).
+    Modular preprocessing pipelines can reintroduce artifacts into fMRI data.
+    bioRxiv, 407676. <http://dx.doi.org/10.1101/407676>`_
 
     See Also
     --------
@@ -493,17 +512,35 @@ def clean(signals, sessions=None, detrend=True, standardize=True,
                 clean(signals[sessions == s],
                       detrend=detrend, standardize=standardize,
                       confounds=session_confounds, low_pass=low_pass,
-                      high_pass=high_pass, t_r=2.5)
+                      high_pass=high_pass, t_r=t_r)
 
     # detrend
     signals = _ensure_float(signals)
     signals = _standardize(signals, normalize=False, detrend=detrend)
 
+    # Apply low- and high-pass filters
+    if low_pass is not None or high_pass is not None:
+        if t_r is None:
+            raise ValueError("Repetition time (t_r) must be specified for "
+                             "filtering. You specified None.")
+
+        signals = butterworth(signals, sampling_rate=1. / t_r,
+                              low_pass=low_pass, high_pass=high_pass)
+
     # Remove confounds
     if confounds is not None:
         confounds = _ensure_float(confounds)
+
+        # Apply low- and high-pass filters to keep filters orthogonal
+        # (according to Lindquist et al. (2018))
+        if low_pass is not None or high_pass is not None:
+
+            confounds = butterworth(confounds, sampling_rate=1. / t_r,
+                                    low_pass=low_pass, high_pass=high_pass)
+
         confounds = _standardize(confounds, normalize=standardize,
                                  detrend=detrend)
+
         if not standardize:
             # Improve numerical stability by controlling the range of
             # confounds. We don't rely on _standardize as it removes any
@@ -517,18 +554,8 @@ def clean(signals, sessions=None, detrend=True, standardize=True,
         Q = Q[:, np.abs(np.diag(R)) > np.finfo(np.float).eps * 100.]
         signals -= Q.dot(Q.T).dot(signals)
 
-    if low_pass is not None or high_pass is not None:
-        if t_r is None:
-            raise ValueError("Repetition time (t_r) must be specified for "
-                             "filtering")
-
-        signals = butterworth(signals, sampling_rate=1. / t_r,
-                              low_pass=low_pass, high_pass=high_pass)
-
     if standardize:
         signals = _standardize(signals, normalize=True, detrend=False)
         signals *= np.sqrt(signals.shape[0])  # for unit variance
 
     return signals
-
-

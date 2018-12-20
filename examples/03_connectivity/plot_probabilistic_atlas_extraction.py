@@ -76,3 +76,23 @@ plotting.plot_connectome(correlation_matrix, coords,
                          edge_threshold="80%", colorbar=True)
 
 plotting.show()
+
+##############################################################################
+# 3D visualization in a web browser
+# ---------------------------------
+# An alternative to :func:`nilearn.plotting.plot_connectome` is to use
+# :func:`nilearn.plotting.view_connectome` that gives more interactive
+# visualizations in a web browser. See :ref:`interactive-connectome-plotting`
+# for more details.
+
+
+view = plotting.view_connectome(correlation_matrix, coords, threshold='80%')
+
+# uncomment this to open the plot in a web browser:
+# view.open_in_browser()
+
+##############################################################################
+# In a Jupyter notebook, if ``view`` is the output of a cell, it will
+# be displayed below the cell
+
+view

@@ -79,8 +79,8 @@ def _map_eigenvalues(function, symmetric):
         The new symmetric matrix obtained after transforming the eigenvalues,
         while keeping the same eigenvectors.
 
-    Note
-    ----
+    Notes
+    -----
     If input matrix is not real symmetric, no error is reported but result will
     be wrong.
     """
@@ -290,8 +290,8 @@ def vec_to_sym_matrix(vec, diagonal=None):
     sym : numpy.ndarray, shape (..., n_columns, n_columns).
         The output symmetric matrix.
 
-    Note
-    ----
+    Notes
+    -----
     This function is meant to be the inverse of sym_matrix_to_vec. If you have
     discarded the diagonal in sym_matrix_to_vec, you need to provide it
     separately to reconstruct the symmetric matrix. For instance this can be

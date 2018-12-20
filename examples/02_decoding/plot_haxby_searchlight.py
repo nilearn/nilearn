@@ -69,8 +69,8 @@ n_jobs = 1
 # Here we use a KFold cross-validation on the session, which corresponds to
 # splitting the samples in 4 folds and make 4 runs using each fold as a test
 # set once and the others as learning sets
-from sklearn.cross_validation import KFold
-cv = KFold(y.size, n_folds=4)
+from sklearn.model_selection import KFold
+cv = KFold(n_splits=4)
 
 import nilearn.decoding
 # The radius is the one of the Searchlight sphere that will scan the volume

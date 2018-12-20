@@ -81,12 +81,15 @@ class CanICA(MultiPCA):
         This parameter is passed to signal.clean. Please see the related
         documentation for details
 
-    mask_strategy: {'background', 'epi'}, optional
+    mask_strategy: {'background', 'epi' or 'template'}, optional
         The strategy used to compute the mask: use 'background' if your
-        images present a clear homogeneous background, and 'epi' if they
-        are raw EPI images. Depending on this value, the mask will be
-        computed from masking.compute_background_mask or
-        masking.compute_epi_mask. Default is 'epi'.
+        images present a clear homogeneous background, 'epi' if they
+        are raw EPI images, or you could use 'template' which will
+        extract the gray matter part of your data by resampling the MNI152
+        brain mask for your data's field of view.
+        Depending on this value, the mask will be computed from
+        masking.compute_background_mask, masking.compute_epi_mask or
+        masking.compute_gray_matter_mask. Default is 'epi'.
 
     mask_args: dict, optional
         If mask is None, these are additional parameters passed to
@@ -180,15 +183,16 @@ class CanICA(MultiPCA):
         self.threshold = threshold
         self.n_init = n_init
 
-    def _unmix_components(self):
+    def _unmix_components(self, components):
         """Core function of CanICA than rotate components_ to maximize
         independance"""
         random_state = check_random_state(self.random_state)
 
         seeds = random_state.randint(np.iinfo(np.int32).max, size=self.n_init)
+        # Note: fastICA is very unstable, hence we use 64bit on it
         results = Parallel(n_jobs=self.n_jobs, verbose=self.verbose)(
             delayed(self._cache(fastica, func_memory_level=2))
-            (self.components_.T, whiten=True, fun='cube',
+            (components.astype(np.float64), whiten=True, fun='cube',
              random_state=seed)
             for seed in seeds)
 
@@ -214,7 +218,8 @@ class CanICA(MultiPCA):
                 abs_ica_maps,
                 100. - (100. / len(ica_maps)) * ratio)
             ica_maps[abs_ica_maps < threshold] = 0.
-        self.components_ = ica_maps
+        # We make sure that we keep the dtype of components
+        self.components_ = ica_maps.astype(self.components_.dtype)
 
         # flip signs in each component so that peak is +ve
         for component in self.components_:
@@ -236,6 +241,6 @@ class CanICA(MultiPCA):
             Unmasked data to process
 
         """
-        MultiPCA._raw_fit(self, data)
-        self._unmix_components()
+        components = MultiPCA._raw_fit(self, data)
+        self._unmix_components(components)
         return self

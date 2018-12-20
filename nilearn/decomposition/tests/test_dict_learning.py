@@ -2,11 +2,13 @@ import numpy as np
 import nibabel
 
 from nose.tools import assert_true
-from nilearn._utils.testing import assert_less_equal, assert_raises_regex
+from nilearn._utils.testing import (assert_less_equal, assert_raises_regex,
+                                    write_tmp_imgs)
 from nilearn.decomposition.dict_learning import DictLearning
 from nilearn.decomposition.tests.test_canica import _make_canica_test_data
 from nilearn.image import iter_img
 from nilearn.input_data import NiftiMasker
+from nilearn.decomposition.tests.test_multi_pca import _tmp_dir
 
 
 def test_dict_learning():
@@ -116,3 +118,34 @@ def test_components_img():
     assert_true(isinstance(components_img, nibabel.Nifti1Image))
     check_shape = data[0].shape + (n_components,)
     assert_true(components_img.shape, check_shape)
+
+
+def test_with_globbing_patterns_with_single_subject():
+    # single subject
+    data, mask_img, _, _ = _make_canica_test_data(n_subjects=1)
+    n_components = 3
+    dictlearn = DictLearning(n_components=n_components, mask=mask_img)
+    with write_tmp_imgs(data[0], create_files=True, use_wildcards=True) as img:
+        input_image = _tmp_dir() + img
+        dictlearn.fit(input_image)
+        components_img = dictlearn.components_img_
+        assert_true(isinstance(components_img, nibabel.Nifti1Image))
+        # n_components = 3
+        check_shape = data[0].shape[:3] + (3,)
+        assert_true(components_img.shape, check_shape)
+
+
+def test_with_globbing_patterns_with_multi_subjects():
+    # multi subjects
+    data, mask_img, _, _ = _make_canica_test_data(n_subjects=3)
+    n_components = 3
+    dictlearn = DictLearning(n_components=n_components, mask=mask_img)
+    with write_tmp_imgs(data[0], data[1], data[2], create_files=True,
+                        use_wildcards=True) as img:
+        input_image = _tmp_dir() + img
+        dictlearn.fit(input_image)
+        components_img = dictlearn.components_img_
+        assert_true(isinstance(components_img, nibabel.Nifti1Image))
+        # n_components = 3
+        check_shape = data[0].shape[:3] + (3,)
+        assert_true(components_img.shape, check_shape)

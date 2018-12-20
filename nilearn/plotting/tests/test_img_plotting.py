@@ -440,6 +440,9 @@ def test_plot_connectome():
     plt.close()
 
     # NaN matrix support
+    node_color = ['green', 'blue', 'k']
+    # Overriding 'node_color' for 3  elements of size 3.
+    kwargs['node_color'] = node_color
     nan_adjacency_matrix = np.array([[1., np.nan, 0.],
                                      [np.nan, 1., 2.],
                                      [np.nan, 2., 1.]])
@@ -458,6 +461,12 @@ def test_plot_connectome():
 
     # smoke-test with hemispheric saggital cuts
     plot_connectome(*args, display_mode='lzry')
+    plt.close()
+
+    # test node_color as a string with display_mode='lzry'
+    plot_connectome(*args, node_color='red', display_mode='lzry')
+    plt.close()
+    plot_connectome(*args, node_color=['red'], display_mode='lzry')
     plt.close()
 
 
@@ -905,8 +914,6 @@ def test_plot_stat_map_with_nans():
 
 def test_plotting_functions_with_cmaps():
     img = load_mni152_template()
-    # some cmaps such as 'viridis' (the new default in 2.0), 'magma', 'plasma',
-    # and 'inferno' are not supported for older matplotlib version from < 1.5
     cmaps = ['Paired', 'Set1', 'Set2', 'Set3']
     for cmap in cmaps:
         plot_roi(img, cmap=cmap, colorbar=True)
