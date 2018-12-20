@@ -102,14 +102,14 @@ def _cosine_drift(period_cut, frame_times):
     dt = frame_times[1] - frame_times[0]
     order = int(np.floor(2 * n_frames * hfcut * dt))
     # s.t. hfcut = 1 / (2 * dt) yields n_frames
-    cosine_drift = np.zeros((n_frames, order))
+    cosine_drift = np.zeros((n_frames, order + 1))
     normalizer = np.sqrt(2.0 / n_frames)
 
-    for k in range(1, order):
+    for k in range(1, order + 1):
         cosine_drift[:, k - 1] = normalizer * np.cos(
             (np.pi / n_frames) * (n_times + .5) * k)
 
-    cosine_drift[:, order - 1] = 1.
+    cosine_drift[:, -1] = 1.
     return cosine_drift
 
 

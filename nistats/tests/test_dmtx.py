@@ -93,7 +93,7 @@ def test_cosine_drift():
     tim = np.arange(20)
     P = 10  # period is half the time, gives us an order 4
     nistats_drifts = _cosine_drift(P, tim)
-    assert_almost_equal(spm_drifts[:, 1:], nistats_drifts[:, : - 1])
+    assert_almost_equal(spm_drifts[:, 1:], nistats_drifts[:, : -2])
     # nistats_drifts is placing the constant at the end [:, : - 1]
 
 
@@ -175,7 +175,7 @@ def test_design_matrix2():
     hrf_model = 'glover'
     X, names = design_matrix_light(frame_times, events, hrf_model=hrf_model,
                         drift_model='cosine', period_cut=63)
-    assert_equal(len(names), 7)  # was 8 with old cosine
+    assert_equal(len(names), 8)
 
 
 def test_design_matrix3():
@@ -398,7 +398,7 @@ def test_design_matrix20():
         frame_times, events, hrf_model='glover', drift_model='cosine')
 
     # check that the drifts are not constant
-    assert_true(np.all(np.diff(X[:, -2]) != 0))
+    assert_true(np.any(np.diff(X[:, -2]) != 0))
 
 
 def test_design_matrix21():
