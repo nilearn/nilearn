@@ -133,7 +133,7 @@ def fetch_atlas_craddock_2012(atlas_name=None, number_of_regions=None,
         dictionary-like object, keys are:
 
         - 'maps': str, path to 3D nifti file containing atlas.
-        - 'description': details about the atlas.
+        - 'description': bytes or str, details about the atlas.
 
     References
     ----------
@@ -149,13 +149,15 @@ def fetch_atlas_craddock_2012(atlas_name=None, number_of_regions=None,
     on this parcellation.
     """
     if (atlas_name is None) or (number_of_regions is None):
-        warnings.simplefilter("always")
-        warnings.warn("The new parameters 'atlas_name' and 'number_of_regions' "
-                      "are added in current version and will be mandatory "
-                      "in the future releases. The new implementation saves "
-                      "the atlas on your computer and returns the atlas path "
-                      "NOT Nifti.image.",
-                      category=DeprecationWarning)
+        with warnings.catch_warnings():
+            warnings.simplefilter("always")
+            warnings.warn("The new parameters 'atlas_name' and "
+                          "'number_of_regions' are added in current version "
+                          "and will be mandatory in the future releases. The "
+                          "new implementation saves the atlas on your "
+                          "computer and returns the atlas path NOT "
+                          "Nifti.image.",
+                          category=DeprecationWarning)
         return _fetch_atlas_craddock_2012(data_dir=data_dir, url=url,
                                           resume=resume, verbose=verbose)
 
