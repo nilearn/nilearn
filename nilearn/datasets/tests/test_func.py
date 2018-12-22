@@ -640,8 +640,9 @@ def test_fetch_main_participants():
 @with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
 def test_fetch_main_functional():
     csv = _mock_participants_data(n_ids=8)
+    local_url = 'file://' + os.path.join(tst.datadir)
     funcs, confounds = func._fetch_main_functional(csv, data_dir=tst.tmpdir,
-                                                   url=None, verbose=1)
+                                                   url=local_url, verbose=1)
     assert_equal(len(funcs), 8)
     assert_equal(len(confounds), 8)
 
