@@ -1861,3 +1861,225 @@ def fetch_surf_nki_enhanced(n_subjects=10, data_dir=None,
                  phenotypic=phenotypic,
                  description=fdescr)
 
+
+def _fetch_main_participants(data_dir, url, verbose):
+    """Helper function to fetch_main.
+
+    This function helps in downloading and loading participants data from .tsv
+    uploaded on Open Science Framework (OSF).
+
+    The original .tsv file contains many columns but this function picks only
+    those columns that are relevant.
+
+    Parameters
+    ----------
+    data_dir: str
+        Path of the data directory. Used to force data storage in a specified
+        location. If None is given, data is stored in home directory.
+
+    url: str, optional
+        Override download URL. Used for test only (or if you setup a mirror of
+        the data). Default: None
+
+    verbose: int
+        Defines the level of verbosity of the output.
+
+    Returns
+    -------
+    participants : numpy.ndarray
+        Contains data of each subject age, age group, child or adult,
+        gender, handedness.
+
+    """
+    if data_dir is None:
+        data_dir = _get_dataset_dir('main', data_dir=data_dir,
+                                    verbose=verbose)
+
+    if url is None:
+        url = 'https://osf.io/5nuc4/download'
+
+    files = [('participants.tsv', url, {'move': 'participants.tsv'})]
+    path_to_participants = _fetch_files(data_dir, files, verbose=verbose)[0]
+
+    # Load path to participants
+    dtype = [('participant_id', 'U12'), ('Age', '<f8'), ('AgeGroup', 'U6'),
+             ('Child_Adult', 'U5'), ('Gender', 'U4'), ('Handedness', 'U4')]
+    names = ['participant_id', 'Age', 'AgeGroup', 'Child_Adult', 'Gender',
+             'Handedness']
+    participants = csv_to_array(path_to_participants, skip_header=True,
+                                dtype=dtype, names=names)
+    return participants
+
+
+def _fetch_main_functional(participants, data_dir, url, verbose):
+    """Helper function to fetch_main.
+
+    This function helps in downloading functional MRI data in Nifti
+    and its confound corresponding to each subject.
+
+    The files are downloaded from Open Science Framework (OSF).
+
+    Parameters
+    ----------
+    participants : numpy.ndarray
+        Should contain column participant_id which represents subjects id. The
+        number of files are fetched based on ids in this column.
+
+    data_dir: str
+        Path of the data directory. Used to force data storage in a specified
+        location. If None is given, data is stored in home directory.
+
+    url: str, optional
+        Override download URL. Used for test only (or if you setup a mirror of
+        the data). Default: None
+
+    verbose: int
+        Defines the level of verbosity of the output.
+
+    Returns
+    -------
+    func: list of str (Nifti files)
+        Paths to functional MRI data (4D) for each subject.
+
+    regressors: list of str (tsv files)
+        Paths to regressors related to each subject.
+    """
+    if data_dir is None:
+        data_dir = _get_dataset_dir('main', data_dir=data_dir,
+                                    verbose=verbose)
+
+    if url is None:
+        url = 'https://osf.io/{}/download'
+
+    confounds = '{}_task-pixar_run-001_ART_and_CompCor_nuisance_regressors.tsv'
+    func = 'downsampled_derivatives:fmriprep:{0}:{0}_task-pixar_run-001_swrf_bold.nii.gz'
+
+    # The gzip contains unique download keys per Nifti file and confound
+    # pre-extracted from OSF. Required for downloading files.
+    package_directory = os.path.dirname(os.path.abspath(__file__))
+    dtype = [('key_regressor', 'U5'), ('participant_id', 'U12'),
+             ('key_bold', 'U5')]
+    names = ['key_r', 'participant_id', 'key_b']
+    main_osf = csv_to_array(os.path.join(package_directory, "data",
+                                         "MAIN_osf.csv"),
+                            skip_header=True, dtype=dtype, names=names)
+
+    funcs = []
+    regressors = []
+
+    for participant_id in participants['participant_id']:
+        this_osf_id = main_osf[main_osf['participant_id'] == participant_id]
+        # Download regressors
+        confound_url = url.format(this_osf_id['key_r'][0])
+        regressor_file = [(confounds.format(participant_id),
+                           confound_url,
+                           {'move': confounds.format(participant_id)})]
+        path_to_regressor = _fetch_files(data_dir, regressor_file,
+                                         verbose=verbose)[0]
+        regressors.append(path_to_regressor)
+        # Download bold images
+        func_url = url.format(this_osf_id['key_b'][0])
+        func_file = [(func.format(participant_id, participant_id), func_url,
+                      {'move': func.format(participant_id)})]
+        path_to_func = _fetch_files(data_dir, func_file, verbose=verbose)[0]
+        funcs.append(path_to_func)
+    return funcs, regressors
+
+
+def fetch_main(n_subjects=None, data_dir=None, resume=True, verbose=0):
+    """Fetch Montreal Artificial Intelligence and Neuroscience (MAIN) 2018
+       workshop data
+
+    The data is downsampled to 4mm resolution for convenience. The origin of
+    the data is coming from OpenNeuro. See Notes below.
+
+    Parameters
+    ---------
+    n_subjects: int, optional (default None)
+        The number of subjects to load. If None, all the subjects are
+        loaded.
+
+    data_dir: str, optional (default None)
+        Path of the data directory. Used to force data storage in a specified
+        location. If None, data is stored in home directory.
+
+    resume: bool, optional (default True)
+        Whether to resume download of a partly-downloaded file.
+
+    verbose: int, optional (default 0)
+        Defines the level of verbosity of the output.
+
+    Returns
+    -------
+    data: Bunch
+        Dictionary-like object, the interest attributes are :
+
+        - 'func': list of str (Nifti files)
+            Paths to downsampled functional MRI data (4D) for each subject.
+
+        - 'confounds': list of str (tsv files)
+            Paths to confounds related to each subject.
+
+        - 'phenotypic': numpy.ndarray
+            Contains each subject age, age group, child or adult, gender,
+            handedness.
+
+    Notes
+    -----
+    The original data is downloaded from OpenNeuro
+    https://openneuro.org/datasets/ds000228/versions/1.0.0
+
+    This fetcher downloads downsampled data which is uploaded to Open
+    Science Framework (OSF).
+
+    References
+    ----------
+    Richardson, H., Lisandrelli, G., Riobueno-Naylor, A., & Saxe, R. (2018).
+    Development of the social brain from age three to twelve years.
+    Nature communications, 9(1), 1027.
+    https://www.nature.com/articles/s41467-018-03399-2
+    """
+
+    dataset_name = 'main'
+    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
+                                verbose=1)
+
+    # Dataset description
+    fdescr = _get_dataset_descr(dataset_name)
+
+    # Participants data: ids, demographics, etc
+    participants = _fetch_main_participants(data_dir=data_dir, url=None,
+                                            verbose=verbose)
+
+    max_subjects = len(participants)
+    if n_subjects is None:
+        n_subjects = max_subjects
+
+    if (isinstance(n_subjects, numbers.Number) and
+            ((n_subjects > max_subjects) or (n_subjects < 1))):
+        warnings.warn("Wrong value for n_subjects={0}. The maximum "
+                      "value will be used instead n_subjects={1}"
+                      .format(n_subjects, max_subjects))
+        n_subjects = max_subjects
+
+    # Download functional and regressors based on participants
+    child_count = participants['Child_Adult'].tolist().count('child')
+    adult_count = participants['Child_Adult'].tolist().count('adult')
+
+    n_child = np.round(float(n_subjects) / max_subjects * child_count).astype(int)
+    n_adult = np.round(float(n_subjects) / max_subjects * adult_count).astype(int)
+
+    # First, restrict the csv files to the adequate number of subjects
+    child_ids = participants[participants['Child_Adult'] ==
+                             'child']['participant_id'][:n_child]
+    adult_ids = participants[participants['Child_Adult'] ==
+                             'adult']['participant_id'][:n_adult]
+    ids = np.hstack([child_ids, adult_ids])
+    participants = participants[np.in1d(participants['participant_id'],
+                                        ids)]
+
+    funcs, regressors = _fetch_main_functional(participants, data_dir=data_dir,
+                                               url=None, verbose=verbose)
+
+    return Bunch(func=funcs, confounds=regressors, phenotypic=participants,
+                 description=fdescr)

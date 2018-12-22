@@ -599,3 +599,59 @@ def test_fetch_surf_nki_enhanced(data_dir=tst.tmpdir, verbose=0):
     assert_true(isinstance(nki_data.phenotypic, np.ndarray))
     assert_equal(nki_data.phenotypic.shape, (10,))
     assert_not_equal(nki_data.description, '')
+
+
+def _mock_participants_data(n_ids=5):
+    """Maximum 8 ids are allowed to mock
+    """
+    ids = ['sub-pixar052', 'sub-pixar073', 'sub-pixar074', 'sub-pixar110',
+           'sub-pixar042', 'sub-pixar109', 'sub-pixar068', 'sub-pixar007']
+    array_ids = np.asarray(ids[:n_ids], dtype='|U12')
+
+    age = np.ones(len(array_ids), dtype='<f8')
+    age_group = np.asarray(len(array_ids) * ['2yo'], dtype='U3')
+    child_adult = np.asarray(len(array_ids) * ['c'], dtype='U1')
+    gender = np.asarray(len(array_ids) * ['m'], dtype='U1')
+    handedness = np.asarray(len(array_ids) * ['r'], dtype='U1')
+    csv = np.rec.array([array_ids, age, age_group, child_adult, gender,
+                        handedness],
+                       dtype=[('participant_id', '|U12'),
+                              ('Age', '<f8'), ('AgeGroup', 'U3'),
+                              ('Child_Adult', 'U1'), ('Gender', 'U1'),
+                              ('Handedness', 'U1')])
+    return csv
+
+
+@with_setup(setup_mock, teardown_mock)
+@with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
+def test_fetch_main_participants():
+    csv = _mock_participants_data()
+    tst.mock_fetch_files.add_csv('participants.tsv', csv)
+    local_url = 'file://' + os.path.join(tst.datadir)
+
+    participants = func._fetch_main_participants(data_dir=tst.tmpdir,
+                                                 url=local_url,
+                                                 verbose=1)
+    assert_true(isinstance(participants, np.ndarray))
+    assert_equal(participants.shape, (5,))
+
+
+@with_setup(setup_mock, teardown_mock)
+@with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
+def test_fetch_main_functional():
+    csv = _mock_participants_data(n_ids=8)
+    funcs, confounds = func._fetch_main_functional(csv, data_dir=tst.tmpdir,
+                                                   url=None, verbose=1)
+    assert_equal(len(funcs), 8)
+    assert_equal(len(confounds), 8)
+
+
+@with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
+def test_fetch_main():
+    main_data = func.fetch_main(n_subjects=2, data_dir=tst.tmpdir,
+                                verbose=1)
+    assert_equal(len(main_data.func), 2)
+    assert_equal(len(main_data.confounds), 2)
+    assert_true(isinstance(main_data.phenotypic, np.ndarray))
+    assert_equal(main_data.phenotypic.shape, (2,))
+    assert_not_equal(main_data.description, '')
