@@ -1898,9 +1898,9 @@ def _fetch_main_participants(data_dir, url, verbose):
         gender, handedness.
 
     """
-    if data_dir is None:
-        data_dir = _get_dataset_dir('main', data_dir=data_dir,
-                                    verbose=verbose)
+    dataset_name = 'main'
+    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
+                                verbose=verbose)
 
     if url is None:
         url = 'https://osf.io/5nuc4/download'
@@ -1951,9 +1951,9 @@ def _fetch_main_functional(participants, data_dir, url, verbose):
     regressors: list of str (tsv files)
         Paths to regressors related to each subject.
     """
-    if data_dir is None:
-        data_dir = _get_dataset_dir('main', data_dir=data_dir,
-                                    verbose=verbose)
+    dataset_name = 'main'
+    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
+                                verbose=verbose)
 
     if url is None:
         url = 'https://osf.io/{}/download'
