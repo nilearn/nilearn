@@ -32,9 +32,9 @@ for more details.
 # We use nilearn's datasets downloading utilities
 from nilearn import datasets
 
-adhd_dataset = datasets.fetch_adhd(n_subjects=20)
-func_filenames = adhd_dataset.func
-confounds = adhd_dataset.confounds
+main_dataset = datasets.fetch_main(n_subjects=20)
+func_filenames = main_dataset.func
+confounds = main_dataset.confounds
 
 ################################################################################
 # Extract resting-state networks with DictionaryLearning

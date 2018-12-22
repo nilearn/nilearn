@@ -32,7 +32,7 @@ atlas_filename = atlas['maps']
 labels = atlas['labels']
 
 # Loading the functional datasets
-data = datasets.fetch_adhd(n_subjects=1)
+data = datasets.fetch_main(n_subjects=1)
 
 # print basic information on the dataset
 print('First subject functional nifti images (4D) are at: %s' %

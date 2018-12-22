@@ -30,7 +30,7 @@ atlas_filename = atlas['maps']
 labels = atlas['labels']
 
 # Load the functional datasets
-data = datasets.fetch_adhd(n_subjects=1)
+data = datasets.fetch_main(n_subjects=1)
 
 print('First subject resting-state nifti image (4D) is located at: %s' %
       data.func[0])

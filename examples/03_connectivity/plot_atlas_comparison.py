@@ -35,7 +35,7 @@ print('Yeo atlas nifti image (3D) with 17 parcels and liberal mask is located '
 #########################################################################
 # Load functional data
 # --------------------
-data = datasets.fetch_adhd(n_subjects=10)
+data = datasets.fetch_main(n_subjects=10)
 
 print('Functional nifti images (4D, e.g., one subject) are located at : %r'
       % data['func'][0])
