@@ -26,12 +26,12 @@ than ICA
 # -----------------------
 from nilearn import datasets
 
-adhd_dataset = datasets.fetch_adhd(n_subjects=30)
-func_filenames = adhd_dataset.func  # list of 4D nifti files for each subject
+main_dataset = datasets.fetch_main(n_subjects=30)
+func_filenames = main_dataset.func  # list of 4D nifti files for each subject
 
 # print basic information on the dataset
 print('First functional nifti image (4D) is at: %s' %
-      adhd_dataset.func[0])  # 4D data
+      main_dataset.func[0])  # 4D data
 
 ###############################################################################
 # Create two decomposition estimators
@@ -43,7 +43,7 @@ n_components = 40
 ###############################################################################
 # Dictionary learning
 # --------------------
-# 
+#
 # We use as "template" as a strategy to compute the mask, as this leads
 # to slightly faster and more reproducible results. However, the images
 # need to be in MNI template space
@@ -90,7 +90,7 @@ from nilearn.plotting import (plot_prob_atlas, find_xyz_cut_coords, show,
 from nilearn.image import index_img
 
 # Selecting specific maps to display: maps were manually chosen to be similar
-indices = {dict_learning: 25, canica: 33}
+indices = {dict_learning: 24, canica: 32}
 # We select relevant cut coordinates for displaying
 cut_component = index_img(components_imgs[0], indices[dict_learning])
 cut_coords = find_xyz_cut_coords(cut_component)

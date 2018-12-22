@@ -26,7 +26,7 @@ from nilearn import datasets
 # Here we use only 3 subjects to get faster-running code. For better
 # results, simply increase this number
 # XXX: must get the code to run for more than 1 subject
-dataset = datasets.fetch_adhd(n_subjects=1)
+dataset = datasets.fetch_main(n_subjects=1)
 func_filename = dataset.func[0]
 
 # print basic information on the dataset

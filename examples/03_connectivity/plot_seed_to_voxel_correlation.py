@@ -26,9 +26,9 @@ See also :ref:`for a similar example using cortical surface input data
 # subject by indexing with [0]).
 from nilearn import datasets
 
-adhd_dataset = datasets.fetch_adhd(n_subjects=1)
-func_filename = adhd_dataset.func[0]
-confound_filename = adhd_dataset.confounds[0]
+main_dataset = datasets.fetch_main(n_subjects=1)
+func_filename = main_dataset.func[0]
+confound_filename = main_dataset.confounds[0]
 
 ##########################################################################
 # Note that func_filename and confound_filename are strings pointing to
