@@ -793,8 +793,9 @@ class BaseSlicer(object):
                 # If data_2d is completely masked, then there is nothing to
                 # plot. Hence, continued to loop over. This problem came up
                 # with matplotlib 2.1.0. See issue #9280 in matplotlib.
-                if data_2d.min() is np.ma.masked:
-                    continue
+                if LooseVersion(matplotlib.__version__) == LooseVersion("2.1.0"):
+                    if data_2d.min() is np.ma.masked:
+                        continue
                 im = display_ax.draw_2d(data_2d, data_bounds, bounding_box,
                                         type=type, **kwargs)
                 ims.append(im)
