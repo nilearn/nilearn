@@ -21,15 +21,15 @@ using fMRI.", 2010, Science 329, 1358-1361.
 # Load fMRI data and Power atlas
 # ------------------------------
 #
-# We are going to use a single subject from the ADHD dataset.
+# We are going to use a single subject from the MAIN dataset.
 from nilearn import datasets
 
-adhd = datasets.fetch_adhd(n_subjects=1)
+main = datasets.fetch_main(n_subjects=5)
 
 ###############################################################################
 # We store the paths to its functional image and the confounds file.
-fmri_filename = adhd.func[0]
-confounds_filename = adhd.confounds[0]
+fmri_filename = main.func[0]
+confounds_filename = main.confounds[0]
 print('Functional image is {0},\nconfounds are {1}.'.format(fmri_filename,
       confounds_filename))
 
@@ -57,7 +57,7 @@ print('Stacked power coordinates in array of shape {0}.'.format(coords.shape))
 from nilearn import input_data
 
 spheres_masker = input_data.NiftiSpheresMasker(
-    seeds=coords, smoothing_fwhm=4, radius=5.,
+    seeds=coords, smoothing_fwhm=6, radius=5.,
     detrend=True, standardize=True, low_pass=0.1, high_pass=0.01, t_r=2.5)
 
 ###############################################################################
@@ -80,7 +80,7 @@ print('time series has {0} samples'.format(timeseries.shape[0]))
 # estimator captures well the covariance **structure**.
 from sklearn.covariance import GraphLassoCV
 
-covariance_estimator = GraphLassoCV(verbose=1)
+covariance_estimator = GraphLassoCV(cv=3, verbose=1)
 
 ###############################################################################
 # We just fit our regions signals into the `GraphLassoCV` object

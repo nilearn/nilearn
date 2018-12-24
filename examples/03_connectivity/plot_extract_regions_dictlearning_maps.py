@@ -6,7 +6,7 @@ This example shows how to use :class:`nilearn.regions.RegionExtractor`
 to extract spatially constrained brain regions from whole brain maps decomposed
 using dictionary learning and use them to build a functional connectome.
 
-We used 20 resting state ADHD functional datasets from :func:`nilearn.datasets.fetch_adhd`
+We used 20 resting state MAIN functional datasets from :func:`nilearn.datasets.fetch_main`
 and :class:`nilearn.decomposition.DictLearning` for set of brain atlas maps.
 
 This example can also be inspired to apply the same steps to even regions extraction
@@ -45,7 +45,7 @@ confounds = main_dataset.confounds
 from nilearn.decomposition import DictLearning
 
 # Initialize DictLearning object
-dict_learn = DictLearning(n_components=5, smoothing_fwhm=6.,
+dict_learn = DictLearning(n_components=8, smoothing_fwhm=6.,
                           memory="nilearn_cache", memory_level=2,
                           random_state=0)
 # Fit to the data
@@ -87,7 +87,7 @@ n_regions_extracted = regions_extracted_img.shape[-1]
 # Visualization of region extraction results
 title = ('%d regions are extracted from %d components.'
          '\nEach separate color of region indicates extracted region'
-         % (n_regions_extracted, 5))
+         % (n_regions_extracted, 8))
 plotting.plot_prob_atlas(regions_extracted_img, view_type='filled_contours',
                          title=title)
 
