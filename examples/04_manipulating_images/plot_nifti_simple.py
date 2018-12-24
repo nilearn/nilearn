@@ -7,10 +7,10 @@ The mask is computed and visualized.
 """
 
 ###########################################################################
-# Retrieve the NYU test-retest dataset
+# Retrieve the MAIN functional dataset
 
 from nilearn import datasets
-dataset = datasets.fetch_adhd(n_subjects=1)
+dataset = datasets.fetch_main(n_subjects=1)
 func_filename = dataset.func[0]
 
 # print basic information on the dataset

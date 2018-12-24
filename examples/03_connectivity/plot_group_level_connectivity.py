@@ -28,12 +28,12 @@ def plot_matrices(matrices, matrix_kind):
 
 
 ###############################################################################
-# Load ADHD dataset and MSDL atlas
+# Load MAIN dataset and MSDL atlas
 # --------------------------------
-# We study only 20 subjects from the ADHD dataset, to save computation time.
+# We study only 20 subjects from the MAIN dataset, to save computation time.
 from nilearn import datasets
 
-adhd_data = datasets.fetch_adhd(n_subjects=20)
+main_data = datasets.fetch_main(n_subjects=20)
 
 ###############################################################################
 # We use probabilistic regions of interest (ROIs) from the MSDL atlas.
@@ -57,26 +57,24 @@ masker = input_data.NiftiMapsMasker(
 
 ###############################################################################
 # Then we compute region signals and extract useful phenotypic informations.
-adhd_subjects = []
+children = []
 pooled_subjects = []
-site_names = []
-adhd_labels = []  # 1 if ADHD, 0 if control
+groups = []  # child or adult
 for func_file, confound_file, phenotypic in zip(
-        adhd_data.func, adhd_data.confounds, adhd_data.phenotypic):
+        main_data.func, main_data.confounds, main_data.phenotypic):
     time_series = masker.fit_transform(func_file, confounds=confound_file)
     pooled_subjects.append(time_series)
-    is_adhd = phenotypic['adhd']
-    if is_adhd:
-        adhd_subjects.append(time_series)
+    is_child = phenotypic['Child_Adult'] == 'child'
+    if is_child:
+        children.append(time_series)
 
-    site_names.append(phenotypic['site'])
-    adhd_labels.append(is_adhd)
+    groups.append(phenotypic['Child_Adult'])
 
-print('Data has {0} ADHD subjects.'.format(len(adhd_subjects)))
+print('Data has {0} children.'.format(len(children)))
 
 ###############################################################################
-# ROI-to-ROI correlations of ADHD patients
-# ----------------------------------------
+# ROI-to-ROI correlations of children
+# -----------------------------------
 # The simpler and most commonly used kind of connectivity is correlation. It
 # models the full (marginal) connectivity between pairwise ROIs. We can
 # estimate it using :class:`nilearn.connectome.ConnectivityMeasure`.
@@ -85,12 +83,12 @@ from nilearn.connectome import ConnectivityMeasure
 correlation_measure = ConnectivityMeasure(kind='correlation')
 
 ###############################################################################
-# From the list of ROIs time-series for ADHD subjects, the
+# From the list of ROIs time-series for children, the
 # `correlation_measure` computes individual correlation matrices.
-correlation_matrices = correlation_measure.fit_transform(adhd_subjects)
+correlation_matrices = correlation_measure.fit_transform(children)
 
 # All individual coefficients are stacked in a unique 2D matrix.
-print('Correlations of ADHD patients are stacked in an array of shape {0}'
+print('Correlations of children are stacked in an array of shape {0}'
       .format(correlation_matrices.shape))
 
 ###############################################################################
@@ -99,13 +97,13 @@ mean_correlation_matrix = correlation_measure.mean_
 print('Mean correlation has shape {0}.'.format(mean_correlation_matrix.shape))
 
 ###############################################################################
-# We display the connectomes of the first 3 ADHD subjects and the mean
-# correlation matrix over all ADHD patients.
+# We display the connectomes of the first 4 children and the mean
+# correlation matrix over all children.
 from nilearn import plotting
 
 plot_matrices(correlation_matrices[:4], 'correlation')
 plotting.plot_connectome(mean_correlation_matrix, msdl_coords,
-                         title='mean correlation over 13 ADHD subjects')
+                         title='mean correlation over 12 childrens')
 
 ###############################################################################
 # Look at blocks structure, reflecting functional networks.
@@ -120,7 +118,7 @@ partial_correlation_measure = ConnectivityMeasure(kind='partial correlation')
 ###############################################################################
 # and repeat the previous operation.
 partial_correlation_matrices = partial_correlation_measure.fit_transform(
-    adhd_subjects)
+    children)
 
 ###############################################################################
 # Most of direct connections are weaker than full connections, resulting
@@ -128,7 +126,7 @@ partial_correlation_matrices = partial_correlation_measure.fit_transform(
 plot_matrices(partial_correlation_matrices[:4], 'partial')
 plotting.plot_connectome(
     partial_correlation_measure.mean_, msdl_coords,
-    title='mean partial correlation over 13 ADHD subjects')
+    title='mean partial correlation over 12 children')
 
 ###############################################################################
 # Extract subjects variabilities around a robust group connectivity
@@ -139,10 +137,10 @@ plotting.plot_connectome(
 tangent_measure = ConnectivityMeasure(kind='tangent')
 
 ###############################################################################
-# We fit our ADHD group and get the group connectivity matrix stored as
+# We fit our children group and get the group connectivity matrix stored as
 # in `tangent_measure.mean_`, and individual deviation matrices of each subject
 # from it.
-tangent_matrices = tangent_measure.fit_transform(adhd_subjects)
+tangent_matrices = tangent_measure.fit_transform(children)
 
 ###############################################################################
 # `tangent_matrices` model individual connectivities as
@@ -153,7 +151,7 @@ tangent_matrices = tangent_measure.fit_transform(adhd_subjects)
 plot_matrices(tangent_matrices[:4], 'tangent variability')
 plotting.plot_connectome(
     tangent_measure.mean_, msdl_coords,
-    title='mean tangent connectivity over 13 ADHD subjects')
+    title='mean tangent connectivity over 12 children')
 
 ###############################################################################
 # The mean connectome graph is not as sparse as partial correlations graph,
@@ -184,8 +182,7 @@ print('{0} correlation biomarkers for each subject.'.format(
 # proportion of each class as in the whole cohort
 from sklearn.model_selection import StratifiedKFold
 
-classes = ['{0}{1}'.format(site_name, adhd_label)
-           for site_name, adhd_label in zip(site_names, adhd_labels)]
+_, classes = np.unique(groups, return_inverse=True)
 cv = StratifiedKFold(n_splits=3)
 ###############################################################################
 # and use the connectivity coefficients to classify ADHD patients vs controls.
@@ -202,9 +199,9 @@ for kind in kinds:
     svc = LinearSVC(random_state=0)
     cv_scores = cross_val_score(svc,
                                 connectivity_biomarkers[kind],
-                                y=adhd_labels,
+                                y=classes,
                                 cv=cv,
-                                groups=adhd_labels,
+                                groups=groups,
                                 scoring='accuracy',
                                 )
     mean_scores.append(cv_scores.mean())
