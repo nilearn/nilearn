@@ -2000,8 +2000,10 @@ def fetch_main(n_subjects=None, data_dir=None, resume=True, verbose=0):
     The data is downsampled to 4mm resolution for convenience. The origin of
     the data is coming from OpenNeuro. See Notes below.
 
+    .. versionadded:: 0.5.1
+
     Parameters
-    ---------
+    ----------
     n_subjects: int, optional (default None)
         The number of subjects to load. If None, all the subjects are
         loaded.
