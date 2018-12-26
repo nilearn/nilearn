@@ -101,7 +101,7 @@ slice and create a :ref:`Niimg <niimg>` in memory:
 
 
 .. literalinclude:: ../../examples/04_manipulating_images/plot_mask_computation.py
-    :start-after: Load ADHD resting-state dataset
+    :start-after: Load MAIN resting-state dataset
     :end-before: # To display the background
 
 Controlling how the mask is computed from the data
