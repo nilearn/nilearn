@@ -1,7 +1,7 @@
 """Test CanICA"""
 
 import numpy as np
-from numpy.testing import assert_array_almost_equal
+from numpy.testing import assert_array_almost_equal, assert_equal
 from nose.tools import assert_true, assert_raises
 import nibabel
 
@@ -216,3 +216,21 @@ def test_with_globbing_patterns_with_multi_subjects():
         # n_components = 3
         check_shape = data[0].shape[:3] + (3,)
         assert_true(components_img.shape, check_shape)
+
+
+def test_canica_score():
+    # Multi subjects
+    imgs, mask_img, _, _ = _make_canica_test_data(n_subjects=3)
+    canica = CanICA(n_components=10, mask=mask_img, random_state=0)
+    canica.fit(imgs)
+
+    # One score for all components
+    scores = canica.score(imgs, per_component=False)
+    assert_true(np.all(scores <= 1))
+    assert_true(np.all(0 <= scores))
+
+    # Per component score
+    scores = canica.score(imgs, per_component=True)
+    assert_equal(scores.shape, (10,))
+    assert_true(np.all(scores <= 1))
+    assert_true(np.all(0 <= scores))

@@ -495,7 +495,7 @@ class BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
         return self._cache(explained_variance)(data, self.components_,
                                                per_component=per_component)
 
-    def score(self, imgs, confounds=None):
+    def score(self, imgs, confounds=None, per_component=False):
         """Score function based on explained variance on imgs.
 
         Should only be used by DecompositionEstimator derived classes
@@ -510,6 +510,10 @@ class BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
             This parameter is passed to nilearn.signal.clean. Please see the
             related documentation for details
 
+        per_component: bool, default False
+            Specify whether the explained variance ratio is desired for each
+            map or for the global set of components_
+
         Returns
         -------
         score: float,
@@ -517,9 +521,10 @@ class BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
             if per_component is True. First dimension
             is squeezed if the number of subjects is one
         """
+        self._check_components_()
         data = mask_and_reduce(self.masker_, imgs, confounds,
                                reduction_ratio=1.)
-        return self._raw_score(data, per_component=False)
+        return self._raw_score(data, per_component=per_component)
 
 
 def explained_variance(X, components, per_component=True):
@@ -559,4 +564,4 @@ def explained_variance(X, components, per_component=True):
         res_var = X - lr.coef_.dot(components)
         res_var **= 2
         res_var = np.sum(res_var)
-        return np.maximum(0., 1. - res_var / full_var)
+        return np.maximum(0., 1. - res_var / np.sum(X ** 2))
