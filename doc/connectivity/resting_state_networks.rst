@@ -80,8 +80,8 @@ each component separately.
 
 Finally, we can plot the map for different ICA components separately:
 
-.. literalinclude:: ../../examples/03_connectivity/plot_canica_analysis.py
-    :start-after: # Finally, we plot the map for each ICA component separately
+.. literalinclude:: ../../examples/03_connectivity/plot_canica_resting_state.py
+    :start-after: # We plot the map for each ICA component separately
 
 .. |left_img| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_canica_analysis_003.png
    :width: 23%

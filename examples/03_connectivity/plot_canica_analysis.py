@@ -65,7 +65,8 @@ components_img = canica.components_img_
 # the following line:
 components_img.to_filename('canica_resting_state.nii.gz')
 
-
+# Calculate explained variance score per component
+score_per_component = canica.score(func_filenames, per_component=True)
 ####################################################################
 # To visualize we plot the outline of all components on one figure
 # -----------------------------------------------------------------
@@ -76,13 +77,26 @@ plot_prob_atlas(components_img, title='All ICA components')
 
 
 ####################################################################
-# Finally, we plot the map for each ICA component separately
-# -----------------------------------------------------------
+# We plot the map for each ICA component separately
+# -------------------------------------------------
 from nilearn.image import iter_img
 from nilearn.plotting import plot_stat_map, show
 
 for i, cur_img in enumerate(iter_img(components_img)):
     plot_stat_map(cur_img, display_mode="z", title="IC %d" % i,
                   cut_coords=1, colorbar=False)
+
+####################################################################
+# Finally, we plot the `score` for each ICA component using matplotlib
+# ---------------------------------------------------------------------
+import numpy as np
+from matplotlib import pyplot as plt
+
+plt.figure(figsize=(6, 4))
+plt.plot(score_per_component, label='Explained variance score per component')
+plt.axis('tight')
+plt.xlabel('Independent Component')
+plt.xticks(np.arange(20))
+plt.legend(loc='best', frameon=False)
 
 show()
