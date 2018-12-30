@@ -143,11 +143,11 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None,
                    'Tip: Use np.nanmax() instead of np.max().')
         warnings.warn(nan_msg)
 
-    if isinstance(cut_coords, numbers.Number) and display_mode == 'ortho':
+    if isinstance(cut_coords, numbers.Number) and (display_mode == 'ortho' or display_mode == 'tiled'):
         raise ValueError(
-            "The input given for display_mode='ortho' needs to be "
+            "The input given for display_mode='{0}' needs to be "
             "a list of 3d world coordinates in (x, y, z). "
-            "You provided single cut, cut_coords={0}".format(cut_coords))
+            "You provided single cut, cut_coords={1}".format(display_mode,cut_coords))
 
     if img is not False and img is not None:
         img = _utils.check_niimg_3d(img, dtype='auto')
@@ -239,7 +239,7 @@ def plot_img(img, cut_coords=None, output_file=None, display_mode='ortho',
             See http://nilearn.github.io/manipulating_images/input_output.html
         cut_coords: None, a tuple of floats, or an integer
             The MNI coordinates of the point where the cut is performed
-            If display_mode is 'ortho', this should be a 3-tuple: (x, y, z)
+            If display_mode is 'ortho' or 'tiled', this should be a 3-tuple: (x, y, z)
             For display_mode == 'x', 'y', or 'z', then these are the
             coordinates of each cut in the corresponding direction.
             If None is given, the cuts is calculated automaticaly.
@@ -249,7 +249,7 @@ def plot_img(img, cut_coords=None, output_file=None, display_mode='ortho',
             The name of an image file to export the plot to. Valid extensions
             are .png, .pdf, .svg. If output_file is not None, the plot
             is saved to a file, and the display is closed.
-        display_mode : {'ortho', 'tiled', 'x', 'y', 'z', 'xy', 'xz', 'yz'}
+        display_mode : {'ortho', 'tiled', 'x', 'y', 'z', 'yx', 'xz', 'yz'}
             Choose the direction of the cuts: 'x' - sagittal, 'y' - coronal,
             'z' - axial, 'ortho' - three cuts are performed in orthogonal
             directions, 'tiled' - three cuts are performed and arranged in a 2x2 grid.
@@ -439,7 +439,7 @@ def plot_anat(anat_img=MNI152TEMPLATE, cut_coords=None,
             given, nilearn tries to find a T1 template.
         cut_coords : None, a tuple of floats, or an integer
             The MNI coordinates of the point where the cut is performed
-            If display_mode is 'ortho', this should be a 3-tuple: (x, y, z)
+            If display_mode is 'ortho' or 'tiled', this should be a 3-tuple: (x, y, z)
             For display_mode == 'x', 'y', or 'z', then these are the
             coordinates of each cut in the corresponding direction.
             If None is given, the cuts is calculated automaticaly.
@@ -449,7 +449,7 @@ def plot_anat(anat_img=MNI152TEMPLATE, cut_coords=None,
             The name of an image file to export the plot to. Valid extensions
             are .png, .pdf, .svg. If output_file is not None, the plot
             is saved to a file, and the display is closed.
-        display_mode : {'ortho', 'tiled', 'x', 'y', 'z', 'xy', 'xz', 'yz'}
+        display_mode : {'ortho', 'tiled', 'x', 'y', 'z', 'yx', 'xz', 'yz'}
             Choose the direction of the cuts: 'x' - sagittal, 'y' - coronal,
             'z' - axial, 'ortho' - three cuts are performed in orthogonal
             directions, 'tiled' - three cuts are performed and arranged in a 2x2 grid.
@@ -532,7 +532,7 @@ def plot_epi(epi_img=None, cut_coords=None, output_file=None,
             The EPI (T2*) image
         cut_coords : None, a tuple of floats, or an integer
             The MNI coordinates of the point where the cut is performed
-            If display_mode is 'ortho', this should be a 3-tuple: (x, y, z)
+            If display_mode is 'ortho' or 'tiled', this should be a 3-tuple: (x, y, z)
             For display_mode == 'x', 'y', or 'z', then these are the
             coordinates of each cut in the corresponding direction.
             If None is given, the cuts is calculated automaticaly.
@@ -542,7 +542,7 @@ def plot_epi(epi_img=None, cut_coords=None, output_file=None,
             The name of an image file to export the plot to. Valid extensions
             are .png, .pdf, .svg. If output_file is not None, the plot
             is saved to a file, and the display is closed.
-        display_mode : {'ortho', 'tiled', 'x', 'y', 'z', 'xy', 'xz', 'yz'}
+        display_mode : {'ortho', 'tiled', 'x', 'y', 'z', 'yx', 'xz', 'yz'}
             Choose the direction of the cuts: 'x' - sagittal, 'y' - coronal,
             'z' - axial, 'ortho' - three cuts are performed in orthogonal
             directions, 'tiled' - three cuts are performed and arranged in a 2x2 grid.
@@ -616,7 +616,7 @@ def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None,
         cut_coords : None, or a tuple of floats
             The MNI coordinates of the point where the cut is performed, in
             MNI coordinates and order.
-            If display_mode is 'ortho', this should be a 3-tuple: (x, y, z)
+            If display_mode is 'ortho' or 'tiled', this should be a 3-tuple: (x, y, z)
             For display_mode == 'x', 'y', or 'z', then these are the
             coordinates of each cut in the corresponding direction.
             If None is given, the cuts is calculated automaticaly.
@@ -624,7 +624,7 @@ def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None,
             The name of an image file to export the plot to. Valid extensions
             are .png, .pdf, .svg. If output_file is not None, the plot
             is saved to a file, and the display is closed.
-        display_mode : {'ortho', 'tiled', 'x', 'y', 'z', 'xy', 'xz', 'yz'}
+        display_mode : {'ortho', 'tiled', 'x', 'y', 'z', 'yx', 'xz', 'yz'}
             Choose the direction of the cuts: 'x' - sagittal, 'y' - coronal,
             'z' - axial, 'ortho' - three cuts are performed in orthogonal
             directions, 'tiled' - three cuts are performed and arranged in a 2x2 grid.
@@ -753,7 +753,7 @@ def plot_prob_atlas(maps_img, bg_img=MNI152TEMPLATE, view_type='auto',
             contours.
         cut_coords : None, a tuple of floats, or an integer
             The MNI coordinates of the point where the cut is performed
-            If display_mode is 'ortho', this should be a 3-tuple: (x, y, z)
+            If display_mode is 'ortho' or 'tiled', this should be a 3-tuple: (x, y, z)
             For display_mode == 'x', 'y', or 'z', then these are the
             coordinates of each cut in the corresponding direction.
             If None is given, the cuts is calculated automaticaly.
@@ -763,7 +763,7 @@ def plot_prob_atlas(maps_img, bg_img=MNI152TEMPLATE, view_type='auto',
             The name of an image file to export the plot to. Valid extensions
             are .png, .pdf, .svg. If output_file is not None, the plot
             is saved to a file, and the display is closed.
-        display_mode : {'ortho', 'tiled', 'x', 'y', 'z', 'xy', 'xz', 'yz'}
+        display_mode : {'ortho', 'tiled', 'x', 'y', 'z', 'yx', 'xz', 'yz'}
             Choose the direction of the cuts: 'x' - sagittal, 'y' - coronal,
             'z' - axial, 'ortho' - three cuts are performed in orthogonal
             directions, 'tiled' - three cuts are performed and arranged in a 2x2 grid.
@@ -930,7 +930,7 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
             To turn off background image, just pass "bg_img=False".
         cut_coords : None, a tuple of floats, or an integer
             The MNI coordinates of the point where the cut is performed
-            If display_mode is 'ortho', this should be a 3-tuple: (x, y, z)
+            If display_mode is 'ortho' or 'tiled', this should be a 3-tuple: (x, y, z)
             For display_mode == 'x', 'y', or 'z', then these are the
             coordinates of each cut in the corresponding direction.
             If None is given, the cuts is calculated automaticaly.
@@ -940,7 +940,7 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
             The name of an image file to export the plot to. Valid extensions
             are .png, .pdf, .svg. If output_file is not None, the plot
             is saved to a file, and the display is closed.
-        display_mode : {'ortho', 'tiled', 'x', 'y', 'z', 'xy', 'xz', 'yz'}
+        display_mode : {'ortho', 'tiled', 'x', 'y', 'z', 'yx', 'xz', 'yz'}
             Choose the direction of the cuts: 'x' - sagittal, 'y' - coronal,
             'z' - axial, 'ortho' - three cuts are performed in orthogonal
             directions, 'tiled' - three cuts are performed and arranged in a 2x2 grid.

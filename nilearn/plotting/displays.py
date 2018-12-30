@@ -1263,7 +1263,7 @@ class TiledSlicer(BaseSlicer):
         return cut_coords
 
     def _find_inital_axes_coord(self, index):
-        """"Find coordinates for initial axes placement for xyz cuts.
+        """Find coordinates for initial axes placement for xyz cuts.
 
         Parameters
         ----------
@@ -1287,7 +1287,7 @@ class TiledSlicer(BaseSlicer):
         elif index == 1:
                 coord1 = 0.5 * (rect_x1 - rect_x0) + rect_x0
                 coord2 = 0.5 * (rect_y1 - rect_y0) + rect_y0
-                coord3 = rect_x1 -rect_x0
+                coord3 = rect_x1 - rect_x0
                 coord4 = rect_y1 - rect_y0
         elif index == 2:
                 coord1 = rect_x1 - rect_x0
@@ -1331,7 +1331,8 @@ class TiledSlicer(BaseSlicer):
             self.axes[direction] = display_ax
             ax.set_axes_locator(self._locator)
 
-    def _adjust_width_height(self, width_dict, height_dict, rect_x0, rect_y0, rect_x1, rect_y1):
+    def _adjust_width_height(self, width_dict, height_dict,
+                            rect_x0, rect_y0, rect_x1, rect_y1):
         """ Adjusts absolute image width and height to ratios.
 
         Parameters

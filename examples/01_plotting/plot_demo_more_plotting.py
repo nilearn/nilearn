@@ -15,7 +15,7 @@ The display features shown here are inherited from the
 
 The parameter `display_mode` is used to draw brain slices along given
 specific directions, where directions can be one of 'ortho',
-'x', 'y', 'z', 'xy', 'xz', 'yz'. whereas parameter `cut_coords`
+'tiled','x', 'y', 'z', 'yx', 'xz', 'yz'. whereas parameter `cut_coords`
 is used to specify a limited number of slices to visualize along given
 specific slice direction. The parameter `cut_coords` can also be used
 to draw the specific cuts in the slices by giving its particular
@@ -111,7 +111,7 @@ plotting.plot_stat_map(stat_img, display_mode='xz',
 ########################################
 # Changing the views to 'coronal', 'sagittal' views with coordinates
 # -------------------------------------------------------------------
-# display_mode='yx' for coronal and saggital view and coordinates will be
+# display_mode='yx' for coronal and sagittal view and coordinates will be
 # assigned in the order of direction as [x, y, z]
 plotting.plot_stat_map(stat_img, display_mode='yx',
                        cut_coords=[-27, 36],
@@ -126,13 +126,12 @@ plotting.plot_stat_map(stat_img, display_mode='yz',
                        title="display_mode='yz', cut_coords=[-27, 60]")
 
 ########################################
-# Visualizing in - three views 'sagittal', 'coronal' and 'axial' and arranging
-# views in a 2x2 fashion
+# Visualizing three views in 2x2 fashion
 # -------------------------------------------------------------------------
-# display_mode='tiled' for saggital, coronal and axial view with plots
-# arranged in a 2x2 matrix
+# display_mode='tiled' for sagittal, coronal and axial view
 
 plotting.plot_stat_map(stat_img, display_mode='tiled',
+                       cut_coords=[36,-27,60],
                        title="display_mode='tiled'")
 
 ###############################################################################
