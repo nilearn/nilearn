@@ -512,7 +512,7 @@ class BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
 
         per_component: bool, default False
             Specify whether the explained variance ratio is desired for each
-            map or for the global set of components_
+            map or for the global set of components
 
         Returns
         -------
