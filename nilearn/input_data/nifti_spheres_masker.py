@@ -5,6 +5,7 @@ Transformer for computing seeds signals
 Mask nifti images by spherical volumes for seed-region analyses
 """
 import numpy as np
+import warnings
 import sklearn
 from sklearn import neighbors
 from sklearn.externals.joblib import Memory
@@ -272,6 +273,12 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
         return self
 
     def fit_transform(self, imgs, confounds=None):
+        """Checking for imgs should not contains NaN values """
+        check_imgs=np.array(imgs.dataobj)
+        if np.any(np.isnan(check_imgs)):
+            warnings.warn("The imgs you have fedded into fit_transform()" 
+                          "contains NaN values it can give an overall NaN"
+                          "Result")
         """Prepare and perform signal extraction"""
         return self.fit().transform(imgs, confounds=confounds)
 
