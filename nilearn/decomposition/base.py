@@ -514,6 +514,8 @@ class BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
             Specify whether the explained variance ratio is desired for each
             map or for the global set of components
 
+            New in version 0.5.1
+
         Returns
         -------
         score: float,

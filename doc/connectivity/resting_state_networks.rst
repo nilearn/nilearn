@@ -49,7 +49,7 @@ and then fit it on the data.
 
 .. literalinclude:: ../../examples/03_connectivity/plot_canica_resting_state.py
     :start-after: # Here we apply CanICA on the data
-    :end-before: ####################################################################
+    :end-before: # Calculate explained variance score per component
 
 The components estimated are found as the `components_img_` attribute
 of the object. A 4D Nifti image.
@@ -60,6 +60,15 @@ of the object. A 4D Nifti image.
     For users who have older versions, components image can be done by
     unmasking attribute `components_`. See :ref:`section Inverse transform:
     unmasking data <unmasking_step>`.
+
+Calculate explained variance on CanICA components
+-------------------------------------------------
+We can also use `score` method from CanICA object to calculate explained
+variance per component after applying CanICA.
+
+.. literalinclude:: ../../examples/03_connectivity/plot_canica_resting_state.py
+    :start-after: # Calculate explained variance score per component
+    :end-before:  ##############################################################
 
 Visualizing the results
 -----------------------
@@ -76,10 +85,11 @@ each component separately.
    :align: center
    :target: ../auto_examples/03_connectivity/plot_canica_resting_state.html
 
-Finally, we can plot the map for different ICA components separately:
+We can plot the map for different ICA components separately:
 
 .. literalinclude:: ../../examples/03_connectivity/plot_canica_resting_state.py
     :start-after: # We plot the map for each ICA component separately
+    :end-before: ####################################################################
 
 .. |left_img| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_canica_resting_state_003.png
    :width: 23%
@@ -88,6 +98,15 @@ Finally, we can plot the map for different ICA components separately:
    :width: 23%
 
 .. centered:: |left_img| |right_img|
+
+Finally, we plot the explained variance score for each ICA component using matplotlib
+
+.. literalinclude:: ../../examples/03_connectivity/plot_canica_resting_state.py
+    :start-after: # Finally, we plot the `score` for each ICA component using matplotlib
+
+.. figure:: ../auto_examples/03_connectivity/images/sphx_glr_plot_canica_resting_state_022.png
+   :align: center
+   :target: ../auto_examples/03_connectivity/plot_canica_resting_state.html
 
 .. seealso::
 

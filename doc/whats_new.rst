@@ -1,3 +1,18 @@
+0.5.1
+=====
+
+Fixes
+-----
+
+- Fix decomposition estimators returning explained variance score as 0.
+  when asked for all components when per_component=False.
+
+Enhancements
+------------
+
+- The decomposition estimators will now accept argument `per_component`
+  with `score` method to explain the variance for each component.
+
 0.5.0
 =====
 
