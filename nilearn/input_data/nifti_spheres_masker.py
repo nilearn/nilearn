@@ -12,6 +12,7 @@ from distutils.version import LooseVersion
 
 from ..image.resampling import coord_transform
 from .._utils import CacheMixin
+from .._utils.niimg import img_data_dtype
 from .._utils.niimg_conversions import check_niimg_4d, check_niimg_3d
 from .._utils.class_inspect import get_params
 from .. import image
@@ -124,8 +125,7 @@ class _ExtractionFunctor(object):
         n_seeds = len(self.seeds_)
         imgs = check_niimg_4d(imgs, dtype=self.dtype)
 
-        signals = np.empty((imgs.shape[3], n_seeds),
-                           dtype=imgs.get_data_dtype())
+        signals = np.empty((imgs.shape[3], n_seeds), dtype=img_data_dtype(imgs))
         for i, sphere in enumerate(_iter_signals_from_spheres(
                 self.seeds_, imgs, self.radius, self.allow_overlap,
                 mask_img=self.mask_img)):
