@@ -24,6 +24,18 @@ matrix:
            NUMPY_VERSION="*" SCIPY_VERSION="*" PANDAS_VERSION="*"
            SCIKIT_LEARN_VERSION="*" COVERAGE="true"
            LXML_VERSION="*"
+    - env: DISTRIB="conda" PYTHON_VERSION="2.7"
+           NUMPY_VERSION="1.11.2" SCIPY_VERSION="0.17"
+           SCIKIT_LEARN_VERSION="0.18" MATPLOTLIB_VERSION="1.5.1"
+           PANDAS_VERSION="0.18.0" NIBABEL_VERSION="2.0.2" COVERAGE="true"
+    # Oldest supported versions without matplotlib
+    - env: DISTRIB="conda" PYTHON_VERSION="2.7"
+           NUMPY_VERSION="1.11.2" SCIPY_VERSION="0.17"
+           SCIKIT_LEARN_VERSION="0.18" NIBABEL_VERSION="2.3.1"
+    - env: DISTRIB="conda" PYTHON_VERSION="3.4"
+           NUMPY_VERSION="1.11.2" SCIPY_VERSION="0.17"
+           SCIKIT_LEARN_VERSION="0.18" MATPLOTLIB_VERSION="1.5.1"
+    # Most recent versions
     - env: DISTRIB="conda" PYTHON_VERSION="3.5"
            NUMPY_VERSION="*" SCIPY_VERSION="*" PANDAS_VERSION="*"
            SCIKIT_LEARN_VERSION="*" MATPLOTLIB_VERSION="*" COVERAGE="true"
