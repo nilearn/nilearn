@@ -52,7 +52,6 @@ print('First functional nifti image (4D) is at: %s' %
 from nilearn.decomposition import CanICA
 
 canica = CanICA(n_components=20, smoothing_fwhm=6.,
-                memory="nilearn_cache", memory_level=2,
                 threshold=3., verbose=10, random_state=0)
 canica.fit(func_filenames)
 
