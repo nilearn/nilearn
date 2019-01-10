@@ -1,3 +1,12 @@
+0.5.1
+=====
+
+NEW
+---
+
+- New display mode 'tiled' which allows 2x2 plot arrangement when plotting three cuts
+  (see :ref:`plotting`).
+
 0.5.0
 =====
 
