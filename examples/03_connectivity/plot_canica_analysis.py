@@ -38,8 +38,8 @@ Pre-prints for both papers are available on hal
 # ----------------------------------------------
 from nilearn import datasets
 
-dataset = datasets.fetch_development_fmri(n_subjects=30)
-func_filenames = dataset.func  # list of 4D nifti files for each subject
+adhd_dataset = datasets.fetch_adhd(n_subjects=15)
+func_filenames = adhd_dataset.func  # list of 4D nifti files for each subject
 
 # print basic information on the dataset
 print('First functional nifti image (4D) is at: %s' %
@@ -52,6 +52,7 @@ print('First functional nifti image (4D) is at: %s' %
 from nilearn.decomposition import CanICA
 
 canica = CanICA(n_components=20, smoothing_fwhm=6.,
+                memory="nilearn_cache", memory_level=2,
                 threshold=3., verbose=10, random_state=0)
 canica.fit(func_filenames)
 
