@@ -6,7 +6,8 @@ import matplotlib.pyplot as plt
 import nibabel
 import numpy as np
 
-from nilearn.plotting.displays import OrthoSlicer, XSlicer, OrthoProjector, TiledSlicer
+from nilearn.plotting.displays import OrthoSlicer, XSlicer, OrthoProjector
+from nilearn.plotting.displays import TiledSlicer
 from nilearn.plotting.displays import LZRYProjector
 from nilearn.datasets import load_mni152_template
 
@@ -42,7 +43,7 @@ def test_stacked_slicer():
 
 def test_tiled_slicer():
     img = load_mni152_template()
-    slicer = TiledSlicer.init_with_figure(img=img, cut_coords=(0,0,0))
+    slicer = TiledSlicer.init_with_figure(img=img, cut_coords=(0, 0, 0))
     slicer.add_overlay(img, cmap=plt.cm.gray)
     # Forcing a layout here, to test the locator code
     with tempfile.TemporaryFile() as fp:

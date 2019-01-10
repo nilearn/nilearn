@@ -1273,7 +1273,8 @@ class TiledSlicer(BaseSlicer):
         Returns
         ----------
         [coord1, coord2, coord3, coord4]: list of int
-            x0, y0, x1, y1 coordinates used by matplotlib to position axes in figure.
+            x0, y0, x1, y1 coordinates used by matplotlib
+            to position axes in figure.
 
         """
 
@@ -1332,7 +1333,7 @@ class TiledSlicer(BaseSlicer):
             ax.set_axes_locator(self._locator)
 
     def _adjust_width_height(self, width_dict, height_dict,
-                            rect_x0, rect_y0, rect_x1, rect_y1):
+                             rect_x0, rect_y0, rect_x1, rect_y1):
         """ Adjusts absolute image width and height to ratios.
 
         Parameters
@@ -1377,13 +1378,14 @@ class TiledSlicer(BaseSlicer):
 
         for ax, width in width_dict.items():
             width_dict[ax] = width / total_width * (rect_x1 - rect_x0)
-        
+
         for ax, height in height_dict.items():
             height_dict[ax] = height / total_height * (rect_y1 - rect_y0)
 
         return (width_dict, height_dict)
 
-    def _find_axes_coord(self, rel_width_dict, rel_height_dict, rect_x0, rect_y0, rect_x1, rect_y1):
+    def _find_axes_coord(self, rel_width_dict, rel_height_dict,
+                         rect_x0, rect_y0, rect_x1, rect_y1):
         """"find coordinates for inital axes placement for xyz cuts.
 
         Parameters
@@ -1397,8 +1399,9 @@ class TiledSlicer(BaseSlicer):
 
         Returns
         ----------
-        coord1, coord2, coord3, coord4: dict of {matplotlib.axes._axes.Axes: float}
-            x0, y0, x1, y1 coordinates per axes used by matplotlib to position axes in figure.
+        coord1, coord2, coord3, coord4: dict
+            x0, y0, x1, y1 coordinates per axes used by matplotlib
+            to position axes in figure.
 
         """
 
@@ -1436,7 +1439,7 @@ class TiledSlicer(BaseSlicer):
             coord4[ax] = rect_y0 + rel_height_dict[ax]
 
         return(coord1, coord2, coord3, coord4)
-          
+
     def _locator(self, axes, renderer):
         """ The locator function used by matplotlib to position axes.
             Here we put the logic used to adjust the size of the axes.
@@ -1444,7 +1447,7 @@ class TiledSlicer(BaseSlicer):
 
         rect_x0, rect_y0, rect_x1, rect_y1 = self.rect
 
-        #image width and height
+        # image width and height
         width_dict = dict()
         height_dict = dict()
 
@@ -1473,14 +1476,18 @@ class TiledSlicer(BaseSlicer):
             width_dict[display_ax.ax] = (xmax - xmin)
             height_dict[display_ax.ax] = (ymax - ymin)
 
-        #relative image height and width
-        rel_width_dict, rel_height_dict = self._adjust_width_height(width_dict, height_dict, rect_x0, rect_y0, rect_x1, rect_y1)
-    
+        # relative image height and width
+        rel_width_dict, rel_height_dict = self._adjust_width_height(
+                width_dict, height_dict,
+                rect_x0, rect_y0, rect_x1, rect_y1)
+
         direction_ax = []
         for d in self._cut_displayed:
             direction_ax.append(display_ax_dict.get(d, dummy_ax).ax)
 
-        coord1, coord2, coord3, coord4 = self._find_axes_coord(rel_width_dict, rel_height_dict, rect_x0, rect_y0, rect_x1, rect_y1)
+        coord1, coord2, coord3, coord4 = self._find_axes_coord(
+                rel_width_dict, rel_height_dict,
+                rect_x0, rect_y0, rect_x1, rect_y1)
 
         return transforms.Bbox([[coord1[axes], coord2[axes]],
                                [coord3[axes], coord4[axes]]])
@@ -1514,7 +1521,7 @@ class TiledSlicer(BaseSlicer):
                 kwargs['color'] = '.8' if self._black_bg else 'k'
             except KeyError:
                 pass
-            
+
         try:
             ax = self.axes['y'].ax
         except KeyError:
@@ -1531,9 +1538,9 @@ class TiledSlicer(BaseSlicer):
             pass
         else:
             if y is not None:
-                ax.axvline(y,  **kwargs)
+                ax.axvline(y, **kwargs)
             if z is not None:
-                ax.axhline(z,  **kwargs)
+                ax.axhline(z, **kwargs)
 
         try:
             ax = self.axes['z'].ax
@@ -1541,7 +1548,7 @@ class TiledSlicer(BaseSlicer):
             pass
         else:
             if x is not None:
-                ax.axvline(x,  **kwargs)
+                ax.axvline(x, **kwargs)
             if y is not None:
                 ax.axhline(y, **kwargs)
 
@@ -1694,7 +1701,7 @@ class YZSlicer(OrthoSlicer):
 
 
 SLICERS = dict(ortho=OrthoSlicer,
-               tiled= TiledSlicer,
+               tiled=TiledSlicer,
                xz=XZSlicer,
                yz=YZSlicer,
                yx=YXSlicer,

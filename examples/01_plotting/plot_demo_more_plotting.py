@@ -131,7 +131,7 @@ plotting.plot_stat_map(stat_img, display_mode='yz',
 # display_mode='tiled' for sagittal, coronal and axial view
 
 plotting.plot_stat_map(stat_img, display_mode='tiled',
-                       cut_coords=[36,-27,60],
+                       cut_coords=[36, -27, 60],
                        title="display_mode='tiled'")
 
 ###############################################################################
