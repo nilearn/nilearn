@@ -235,15 +235,21 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
 
         self.verbose = verbose
 
-    def _safe_get_data(self, check_imgs):
-        if self.ensure_finite:
-             warnings.warn("The imgs you have fedded into fit_transform()" 
-                          "contains NaN values it can give an overall NaN"
-                          "Result all NaNs are kept to zeroes please use"
-                          "Mask to mak out NaNs")
-             check_imgs[np.isnan(check_imgs)] = 0
-             check_imgs = nibabel.Nifti1Image(check_imgs)
-             return check_imgs
+    def _safe_get_data(self, imgs):
+        """This fuction help us to check whether our imgs contains NaN value
+            
+         or not
+         """
+        check_imgs=np.array(imgs.dataobj)
+        c_affine=np.array(imgs.affine)
+        if np.any(np.isnan(check_imgs)) and self.mask_img == None:
+            self.ensure_finite = True
+            check_imgs[np.isnan(check_imgs)] = 0
+            check_imgs = nibabel.Nifti1Image(dataobj=check_imgs, affine=c_affine)
+            return check_imgs
+        else:
+            self.ensure_finite = False
+            return imgs
         
     def fit(self, X=None, y=None):
         """Prepare signal extraction from regions.
@@ -285,11 +291,12 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
         return self
 
     def fit_transform(self, imgs, confounds=None):
-        """Checking for imgs should not contains NaN values """
-        check_imgs=np.array(imgs.dataobj)
-        if np.any(np.isnan(check_imgs)):
-            self.ensure_finite=True
-            imgs=self._safe_get_data(check_imgs)
+        imgs=self._safe_get_data(imgs)
+        if self.ensure_finite==True:
+            warnings.warn('The imgs you have fedded into fit_transform()' 
+                          'contains NaN values which are converted to zeroes '
+                          'please use mask_imgs to mask out NaNs othewise you '
+                           'should expect some deviation in fit_transform()')
         """Prepare and perform signal extraction"""
         return self.fit().transform(imgs, confounds=confounds)
 
