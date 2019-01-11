@@ -7,6 +7,7 @@ Mask nifti images by spherical volumes for seed-region analyses
 import numpy as np
 import warnings
 import sklearn
+import nibabel
 from sklearn import neighbors
 from sklearn.externals.joblib import Memory
 from distutils.version import LooseVersion
@@ -210,11 +211,12 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
                  smoothing_fwhm=None, standardize=False, detrend=False,
                  low_pass=None, high_pass=None, t_r=None, dtype=None,
                  memory=Memory(cachedir=None, verbose=0), memory_level=1,
-                 verbose=0):
+                 verbose=0, ensure_finite=False):
         self.seeds = seeds
         self.mask_img = mask_img
         self.radius = radius
         self.allow_overlap = allow_overlap
+        self.ensure_finite=ensure_finite
 
         # Parameters for _smooth_array
         self.smoothing_fwhm = smoothing_fwhm
@@ -233,6 +235,16 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
 
         self.verbose = verbose
 
+    def _safe_get_data(self, check_imgs):
+        if self.ensure_finite:
+             warnings.warn("The imgs you have fedded into fit_transform()" 
+                          "contains NaN values it can give an overall NaN"
+                          "Result all NaNs are kept to zeroes please use"
+                          "Mask to mak out NaNs")
+             check_imgs[np.isnan(check_imgs)] = 0
+             check_imgs = nibabel.Nifti1Image(check_imgs)
+             return check_imgs
+        
     def fit(self, X=None, y=None):
         """Prepare signal extraction from regions.
 
@@ -276,9 +288,8 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
         """Checking for imgs should not contains NaN values """
         check_imgs=np.array(imgs.dataobj)
         if np.any(np.isnan(check_imgs)):
-            warnings.warn("The imgs you have fedded into fit_transform()" 
-                          "contains NaN values it can give an overall NaN"
-                          "Result")
+            self.ensure_finite=True
+            imgs=self._safe_get_data(check_imgs)
         """Prepare and perform signal extraction"""
         return self.fit().transform(imgs, confounds=confounds)
 
