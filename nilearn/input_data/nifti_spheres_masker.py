@@ -5,14 +5,14 @@ Transformer for computing seeds signals
 Mask nifti images by spherical volumes for seed-region analyses
 """
 import numpy as np
-import warnings
 import sklearn
-import nibabel
+import warnings
 from sklearn import neighbors
 from sklearn.externals.joblib import Memory
 from distutils.version import LooseVersion
 
 from ..image.resampling import coord_transform
+from .._utils.niimg_conversions import _safe_get_data
 from .._utils import CacheMixin
 from .._utils.niimg_conversions import check_niimg_4d, check_niimg_3d
 from .._utils.class_inspect import get_params
@@ -38,8 +38,17 @@ def _apply_mask_and_get_affinity(seeds, niimg, radius, allow_overlap,
 
         X = masking._apply_mask_fmri(niimg, mask_img)
     else:
-        mask_coords = list(np.ndindex(niimg.shape[:3]))
-        X = niimg.get_data().reshape([-1, niimg.shape[3]]).T
+        #Adding  warning message 
+        if np.isnan(np.sum(_safe_get_data(niimg))):
+            warnings.warn('The imgs you have fedded into fit_transform()' 
+                          'contains NaN values which are converted to zeroes '
+                          'please use mask_imgs to mask out NaNs othewise you '
+                           'should expect some deviation in fit_transform()')
+            mask_coords = list(np.ndindex(niimg.shape[:3]))
+            X = _safe_get_data(niimg,True).reshape([-1, niimg.shape[3]]).T
+        else:
+            mask_coords = list(np.ndindex(niimg.shape[:3]))
+            X = _safe_get_data(niimg).reshape([-1, niimg.shape[3]]).T
 
     # For each seed, get coordinates of nearest voxel
     nearests = []
@@ -211,12 +220,11 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
                  smoothing_fwhm=None, standardize=False, detrend=False,
                  low_pass=None, high_pass=None, t_r=None, dtype=None,
                  memory=Memory(cachedir=None, verbose=0), memory_level=1,
-                 verbose=0, ensure_finite=False):
+                 verbose=0):
         self.seeds = seeds
         self.mask_img = mask_img
         self.radius = radius
         self.allow_overlap = allow_overlap
-        self.ensure_finite = ensure_finite
 
         # Parameters for _smooth_array
         self.smoothing_fwhm = smoothing_fwhm
@@ -234,30 +242,8 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
         self.memory_level = memory_level
 
         self.verbose = verbose
-
-    def _safe_get_data(self, imgs=None):
-        """This fuction help us to check whether our imgs contains NaN value
-            
-         or not
-         """
-        check_imgs = np.array(imgs.dataobj)
-        c_affine = np.array(imgs.affine)
-        if np.any(np.isnan(check_imgs)) and self.mask_img == None:
-            
-            self.ensure_finite = True
-            
-            # Converting all NaN values to 0
-            
-            check_imgs[np.isnan(check_imgs)] = 0
-            check_imgs = nibabel.Nifti1Image(dataobj=check_imgs, affine=c_affine)
-            return check_imgs
         
-        else:
-            
-            # Here nothing is changed beacuse imgs does not contains NaN
-            self.ensure_finite = False
-            return imgs
-        
+    
     def fit(self, X=None, y=None):
         """Prepare signal extraction from regions.
 
@@ -298,15 +284,6 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
         return self
 
     def fit_transform(self, imgs, confounds=None):
-        imgs = self._safe_get_data(imgs)
-        
-        if self.ensure_finite:
-            # Giving warning message
-            
-            warnings.warn('The imgs you have fedded into fit_transform()' 
-                          'contains NaN values which are converted to zeroes '
-                          'please use mask_imgs to mask out NaNs othewise you '
-                           'should expect some deviation in fit_transform()')
         """Prepare and perform signal extraction"""
         return self.fit().transform(imgs, confounds=confounds)
 
