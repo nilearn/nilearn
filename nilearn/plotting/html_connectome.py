@@ -70,8 +70,9 @@ def _make_connectome_html(connectome_info, embed_js=True):
     for hemi in ['pial_left', 'pial_right']:
         plot_info[hemi] = mesh_to_plotly(mesh[hemi])
     as_json = json.dumps(plot_info)
-    as_html = get_html_template('connectome_plot_template.html').replace(
-        'INSERT_CONNECTOME_JSON_HERE', as_json)
+    as_html = get_html_template(
+        'connectome_plot_template.html').safe_substitute(
+            {'INSERT_CONNECTOME_JSON_HERE': as_json})
     as_html = add_js_lib(as_html, embed_js=embed_js)
     return ConnectomeView(as_html)
 

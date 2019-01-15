@@ -4,7 +4,6 @@ Visualizing 3D stat maps in a Brainsprite viewer
 import os
 import json
 from io import BytesIO
-from string import Template
 
 import numpy as np
 from matplotlib.image import imsave
@@ -296,7 +295,7 @@ def _json_view_to_html(json_view):
 
     # Load the html template, and plug in all the data
     html_view = get_html_template('stat_map_template.html')
-    html_view = Template(html_view).safe_substitute(json_view)
+    html_view = html_view.safe_substitute(json_view)
 
     return StatMapView(html_view, width=width, height=height)
 
