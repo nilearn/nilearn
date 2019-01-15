@@ -25,7 +25,7 @@ def _prepare_line(edges, nodes):
 
 
 def _get_connectome(adjacency_matrix, coords, threshold=None,
-                    cmap=cm.cold_hot, symmetric_cmap=True):
+                    marker_size=None, cmap=cm.cold_hot, symmetric_cmap=True):
     connectome = {}
     coords = np.asarray(coords, dtype='<f4')
     adjacency_matrix = adjacency_matrix.copy()
@@ -44,11 +44,19 @@ def _get_connectome(adjacency_matrix, coords, threshold=None,
     path_edges, path_nodes = _prepare_line(edges, nodes)
     connectome["_con_w"] = encode(np.asarray(s.data, dtype='<f4')[path_edges])
     c = coords[path_nodes]
+    if np.ndim(marker_size) > 0:
+        marker_size = np.asarray(marker_size)
+        marker_size = marker_size[path_nodes]
     x, y, z = c.T
     for coord, cname in [(x, "x"), (y, "y"), (z, "z")]:
         connectome["_con_{}".format(cname)] = encode(
             np.asarray(coord, dtype='<f4'))
     connectome["markers_only"] = False
+    try:
+        marker_size = marker_size.tolist()
+    except AttributeError:
+        pass
+    connectome['marker_size'] = marker_size
     return connectome
 
 
@@ -134,9 +142,8 @@ def view_connectome(adjacency_matrix, coords, threshold=None,
     """
     connectome_info = _get_connectome(
         adjacency_matrix, coords, threshold=threshold, cmap=cmap,
-        symmetric_cmap=symmetric_cmap)
+        symmetric_cmap=symmetric_cmap, marker_size=marker_size)
     connectome_info["line_width"] = linewidth
-    connectome_info["marker_size"] = marker_size
     return _make_connectome_html(connectome_info)
 
 
@@ -183,5 +190,9 @@ def view_markers(coords, colors=None, marker_size=5.):
     if colors is None:
         colors = ['black' for i in range(len(coords))]
     connectome_info = _get_markers(coords, colors)
+    try:
+        marker_size = marker_size.tolist()
+    except AttributeError:
+        pass
     connectome_info["marker_size"] = marker_size
     return _make_connectome_html(connectome_info)
