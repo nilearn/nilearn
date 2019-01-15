@@ -114,7 +114,7 @@ def view_connectome(adjacency_matrix, coords, threshold=None,
     linewidth : float, optional (default=6.)
         Width of the lines that show connections.
 
-    marker_size : float, optional (default=3.)
+    marker_size : float or array-like, optional (default=3.)
         Size of the markers showing the seeds.
 
     Returns
@@ -161,7 +161,7 @@ def view_markers(coords, colors=None, marker_size=5.):
         triplets, or rgba triplets (i.e. formats accepted by matplotlib, see
         https://matplotlib.org/users/colors.html#specifying-colors)
 
-    marker_size : float, optional (default=3.)
+    marker_size : float or array-like, optional (default=3.)
         Size of the markers showing the seeds.
 
     Returns
