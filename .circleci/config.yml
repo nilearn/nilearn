@@ -29,11 +29,15 @@ jobs:
       - run: sudo -E apt-get -yq update
       - run: sudo -E apt-get -yq --no-install-suggests --no-install-recommends --force-yes install dvipng texlive-latex-base texlive-latex-extra
       - run:
-          name: Generating today's date and writing to file to generate daily new cache key
+          name: Today & Week  # Saving today's date and current week of the year in files to generate daily & weekly new cache key respectively.
           command: |
             date +%F > today
+            date +%U > week_num
       - restore_cache:
-          key: v5-packages+datasets-{{ .Branch }}-{{ checksum "today" }}
+          key: v1-packages+datasets-{{ checksum "week_num" }}
+      - restore_cache:
+          key: v1-docs-{{ .Branch }}-{{ checksum "today" }}-{{ checksum ".circleci/manual-cache-timestamp" }}
+
       - run:
           name: Download & install conda if absent
           command: |
@@ -70,22 +74,25 @@ jobs:
           command: |
             source activate testenv
             pip install -e .
-            set -o pipefail && cd doc && make html-strict 2>&1 | tee ~/log.txt
-          no_output_timeout: 5h
+            set -o pipefail && cd doc && make html-strict 2>&1 | tee log.txt
+          no_output_timeout: 7h
       - save_cache:
-          key: v5-packages+datasets-{{ .Branch }}-{{ checksum "today" }}
+          key: v1-packages+datasets-{{ checksum "week_num" }}
           paths:
-          - ../nilearn_data
-          - ../miniconda3
-          - doc
+            - ../nilearn_data
+            - ../miniconda3
+      - save_cache:
+          key: v1-docs-{{ .Branch }}-{{ checksum "today" }}-{{ checksum ".circleci/manual-cache-timestamp" }}
+          paths:
+            - doc
 
       - store_artifacts:
           path: doc/_build/html
       - store_artifacts:
           path: coverage
       - store_artifacts:
-          path: $HOME/log.txt
-          destination: log.txt
+          path: doc/log.txt
+
 
   full-build:
     docker:
@@ -123,16 +130,15 @@ jobs:
           command: |
             source activate testenv
             pip install -e .
-            set -o pipefail && cd doc && make html-strict 2>&1 | tee ~/log.txt
-          no_output_timeout: 5h
+            set -o pipefail && cd doc && make html-strict 2>&1 | tee log.txt
+          no_output_timeout: 7h
 
       - store_artifacts:
           path: doc/_build/html
       - store_artifacts:
           path: coverage
       - store_artifacts:
-          path: $HOME/log.txt
-          destination: log.txt
+          path: doc/log.txt
 
 
 workflows:
@@ -152,3 +158,14 @@ workflows:
               only:
                 - master
                 - test-circleci  # test branch to check if merges occur on master as expected.
+
+  nightly:
+    triggers:
+      - schedule:
+          cron: "0 6 * * *"
+          filters:
+            branches:
+              only:
+                - master
+    jobs:
+      - full-build
