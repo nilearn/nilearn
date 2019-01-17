@@ -5,5 +5,5 @@ Post them on Neurostars (http://neurostars.org/). **Add the tag `nilearn`**
 You have come to the right place. Post away!  
 Include the Nilearn version you are using.
 
-Delete the above text and post the bug/feature request
+Delete all this text and post the bug/feature request
 ------------------------------------------------------
