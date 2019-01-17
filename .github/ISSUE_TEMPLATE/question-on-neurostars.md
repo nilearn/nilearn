@@ -6,4 +6,5 @@ You have come to the right place. Post away!
 Include the Nilearn version you are using.
 
 Delete all this text and post the bug/feature request
+
 ------------------------------------------------------
