@@ -13,17 +13,18 @@ import re
 import json
 from glob import glob
 from tempfile import mkdtemp
-from collections import Container
 try:
     # python3
     from urllib.parse import urljoin, urlencode
     from urllib.request import build_opener, Request
     from urllib.error import URLError
+    from collections.abc import Container
 except ImportError:
     # python2
     from urlparse import urljoin
     from urllib import urlencode
     from urllib2 import build_opener, Request, URLError
+    from collections import Container
 
 import numpy as np
 from sklearn.datasets.base import Bunch
