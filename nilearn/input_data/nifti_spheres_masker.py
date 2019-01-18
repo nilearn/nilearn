@@ -41,15 +41,11 @@ def _apply_mask_and_get_affinity(seeds, niimg, radius, allow_overlap,
         #Adding  warning message 
         if np.isnan(np.sum(_safe_get_data(niimg))):
             warnings.warn('The imgs you have fedded into fit_transform()' 
-                          'contains NaN values which are converted to zeroes '
-                          'please use mask_imgs to mask out NaNs othewise you '
-                           'should expect some deviation in fit_transform()')
-            mask_coords = list(np.ndindex(niimg.shape[:3]))
+                          'contains NaN values which are converted to zeroes ')
             X = _safe_get_data(niimg,True).reshape([-1, niimg.shape[3]]).T
         else:
-            mask_coords = list(np.ndindex(niimg.shape[:3]))
             X = _safe_get_data(niimg).reshape([-1, niimg.shape[3]]).T
-
+    mask_coords = list(np.ndindex(niimg.shape[:3]))
     # For each seed, get coordinates of nearest voxel
     nearests = []
     for sx, sy, sz in seeds:
@@ -240,7 +236,6 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
         # Parameters for joblib
         self.memory = memory
         self.memory_level = memory_level
-
         self.verbose = verbose
         
     
