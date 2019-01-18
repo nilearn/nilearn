@@ -44,6 +44,7 @@ from .version import _check_module_dependencies, __version__
 def _py2_deprecation_warning():
     py2_warning = ('Python2 support is deprecated and will be removed in '
                    'a future release. Consider switching to Python3.')
+    warnings.filterwarnings('once', message=py2_warning)
     warnings.warn(message=py2_warning,
                   category=DeprecationWarning,
                   stacklevel=3,
@@ -53,6 +54,7 @@ def _py34_deprecation_warning():
     py34_warning = ('Python 3.4 support is deprecated and will be removed in '
                    'a future release. Consider switching to Python 3.6 or 3.7.'
                    )
+    warnings.filterwarnings('once', message=py34_warning)
     warnings.warn(message=py34_warning,
                   category=DeprecationWarning,
                   stacklevel=3,
@@ -60,7 +62,6 @@ def _py34_deprecation_warning():
 
 
 def _python_deprecation_warnings():
-    warnings.simplefilter('once')
     if sys.version_info.major == 2:
         _py2_deprecation_warning()
     elif sys.version_info.major == 3 and sys.version_info.minor == 4:
@@ -68,6 +69,7 @@ def _python_deprecation_warnings():
 
 
 _check_module_dependencies()
+_python_deprecation_warnings()
 
 # Temporary work around to address formatting issues in doc tests
 # with NumPy 1.14. NumPy had made more consistent str/repr formatting
@@ -104,5 +106,3 @@ __all__ = ['datasets', 'decoding', 'decomposition', 'connectome',
            'image', 'input_data', 'masking', 'mass_univariate', 'plotting',
            'region', 'signal', 'surface', 'parcellations', '__version__']
 
-
-_python_deprecation_warnings()
