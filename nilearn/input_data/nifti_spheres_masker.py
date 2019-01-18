@@ -236,9 +236,9 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
         # Parameters for joblib
         self.memory = memory
         self.memory_level = memory_level
+        
         self.verbose = verbose
         
-    
     def fit(self, X=None, y=None):
         """Prepare signal extraction from regions.
 

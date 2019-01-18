@@ -36,11 +36,3 @@ def test_nifti_spheres_masker_with_mask_img():
     # When mask image is provided, the seed interacts within the brain, so no nans.
     masker = NiftiSpheresMasker(seeds=seed, radius=2., mask_img=mask_img)
     assert not np.isnan(np.sum(masker.fit_transform(img)))
-
-
-    
-
-
-        
-
-
