@@ -12,7 +12,8 @@ from matplotlib.colorbar import make_axes
 from matplotlib.cm import ScalarMappable, get_cmap
 from matplotlib.colors import Normalize, LinearSegmentedColormap
 
-from ..surface import load_surf_data, load_surf_mesh
+from ..datasets import fetch_surf_fsaverage
+from ..surface import load_surf_data, load_surf_mesh, vol_to_surf
 from .._utils.compat import _basestring
 from .img_plotting import _get_colorbar_and_data_ranges, _crop_colorbar
 
@@ -419,6 +420,203 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
         cbar_vmin=cbar_vmin, cbar_vmax=cbar_vmax, **kwargs)
 
     return display
+
+
+def _check_display_mode(display_mode):
+    """Checks whether the display_mode string passed to plot_surf_montage
+    is meaningful.
+
+    display_mode: str
+        Any combination of 'lateral', 'medial', 'dorsal', 'ventral',
+        'anterior', 'posterior', united by a '+'. Ex.: 'dorsal+lateral'
+    """
+
+    available_modes = {'lateral', 'medial',
+                       'dorsal', 'ventral',
+                       'anterior', 'posterior'}
+
+    desired_modes = display_mode.split('+')
+
+    wrong_modes = set(desired_modes).difference(available_modes)
+    if wrong_modes:
+        msg = 'display_mode given: {}, available modes: {}'
+        msg = msg.format(wrong_modes, available_modes)
+        raise ValueError(msg)
+
+    return desired_modes
+
+
+def _check_hemisphere(hemisphere):
+    """Checks whether the hemisphere in plot_surf_montage is correct.
+
+    display_mode: str
+        Any combination of 'left', 'right'
+    """
+    desired_hemispheres = hemisphere.split('+')
+    wrong_hemisphere = set(desired_hemispheres).difference({'left', 'right'})
+    if wrong_hemisphere:
+        raise ValueError('hemisphere only accepts left and right.')
+    if len(desired_hemispheres) > 2:
+        raise ValueError('Currently only supports plotting 2 hemispheres.')
+
+    return desired_hemispheres
+
+
+def plot_surf_montage(stat_map, surf_mesh=None, mask_img=None,
+                      hemisphere='left+right',
+                      inflate=False, display_mode='lateral+medial',
+                      **kwargs):
+    """Convenience function to plot multiple views of plot_surf_stat_map
+    in a single figure. It projects stat_map into meshes and plots views of
+    left and right hemispheres. The display_mode argument defines the views
+    that are shown. This function returns the fig, axes elements from
+    matplotlib unless kwargs sets and output_file, in which case nothing
+    is returned.
+
+    stat_map : str or Niimg-like object, 3d.
+        See http://nilearn.github.io/manipulating_images/input_output.html
+
+    surf_mesh: dictionary, or None, optional (default=None)
+        A dictionary with keys ['infl_left', 'infl_right',
+                                'pial_left', 'pial_right',
+                                'sulc_left', 'sulc_right'], where
+       values are surface mesh geometries as accepted by plot_surf_stat_map.
+       If None, plot_surf_montage will use Freesurfer's fsaverage.
+
+    mask_img : Niimg-like object or None, optional (default=None)
+        The mask is passed to vol_to_surf.
+        Samples falling out of this mask or out of the image are ignored
+        during projection of the volume to the surface.
+        If ``None``, don't apply any mask.
+
+    inflate: bool, optional (default=False)
+        If True, display images in inflated brain.
+        If False, display images in pial surface.
+
+    display_mode: str, optional (default='lateral+medial')
+        A string containing all views to display, separated by '+'.
+        Available views: {'lateral', 'medial',
+                           'dorsal', 'ventral',
+                           'anterior', 'posterior'}
+        The montage will contain as many rows as views specified by
+        display mode. Order is preserved, and left and right hemispheres
+        are shown on the left and right sides of the figure.
+
+    kwargs: keyword arguments passed to plot_surf_stat_map
+
+    See Also
+    --------
+    nilearn.datasets.fetch_surf_fsaverage : For surface data object to be
+        used as the default background map for this plotting function.
+
+    nilearn.surface.vol_to_surf : For info on the generation of surfaces.
+
+    nilearn.plotting.plot_surf_stat_map : For info on kwargs options
+    accepted by plot_surf_montage.
+    """
+    for arg in ('figure', 'axes'):
+        if arg in kwargs:
+            raise ValueError(('plot_surf_montage does not'
+                              ' accept %s as an argument' % arg))
+
+    modes = _check_display_mode(display_mode)
+    hemis = _check_hemisphere(hemisphere)
+
+    # Get kwargs that behave differently in the montage
+    # out of the dict and into the local scope. Do not pass them downstream.
+    output_file = kwargs.pop('output_file', None)
+    title = kwargs.pop('title', None)
+    colorbar = kwargs.pop('colorbar', False)
+    vmax = kwargs.pop('vmax', None)
+    threshold = kwargs.pop('threshold', 0.)
+    symmetric_cbar = kwargs.pop('symmetric_cbar', 'auto')
+
+    if surf_mesh is None:
+        surf_mesh = fetch_surf_fsaverage()
+    else:
+        req_keys = {'infl_left', 'infl_right',
+                    'pial_left', 'pial_right',
+                    'sulc_left', 'sulc_right'}
+        assert all(key in surf_mesh.keys() for key in req_keys), \
+            'MESHES argument requires keys %s.' % req_keys
+
+    surf = {
+        'left': surf_mesh['infl_left'] if inflate else surf_mesh['pial_left'],
+        'right': surf_mesh['infl_right'] if inflate else surf_mesh['pial_right']
+    }
+
+    texture = {
+        'left': vol_to_surf(stat_map, surf_mesh['pial_left'],
+                            mask_img=mask_img),
+        'right': vol_to_surf(stat_map, surf_mesh['pial_right'],
+                             mask_img=mask_img)
+    }
+
+    fig, axes = plt.subplots(nrows=len(modes), ncols=len(hemis),
+                             figsize=plt.figaspect(len(modes) / 2),
+                             subplot_kw={'projection': '3d'})
+
+    axes = np.atleast_2d(axes)
+
+    if len(hemis) == 1:
+        axes = axes.T
+
+    for index_mode, mode in enumerate(modes):
+        for index_hemi, hemi in enumerate(hemis):
+            bg_map = surf_mesh['sulc_%s' % hemi]
+            plot_surf_stat_map(surf[hemi], texture[hemi],
+                               view=mode, hemi=hemi,
+                               bg_map=bg_map,
+                               axes=axes[index_mode, index_hemi],
+                               colorbar=False,
+                               vmax=vmax,
+                               threshold=threshold,
+                               symmetric_cbar=symmetric_cbar,
+                               **kwargs)
+
+    for ax in axes.flatten():
+        # We increase this value to better position the camera of the
+        # 3D projection plot. The default value makes meshes look too small.
+        ax.dist = 6
+
+    # Add colorbar
+    if colorbar:
+
+        cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
+            stat_map.get_data(), vmax, symmetric_cbar, kwargs)
+
+        if 'cmap' in kwargs:
+            cmap = get_cmap([kwargs['cmap']])
+        else:
+            cmap = get_cmap('cold_hot')
+
+        norm = Normalize(vmin=vmin, vmax=vmax)
+        cmaplist = [cmap(i) for i in range(cmap.N)]
+        # set colors to grey for absolute values < threshold
+        istart = int(norm(-threshold, clip=True) * (cmap.N - 1))
+        istop = int(norm(threshold, clip=True) * (cmap.N - 1))
+        for i in range(istart, istop):
+            cmaplist[i] = (0.5, 0.5, 0.5, 1.)
+        our_cmap = LinearSegmentedColormap.from_list('Custom cmap',
+                                                     cmaplist, cmap.N)
+        sm = plt.cm.ScalarMappable(cmap=our_cmap,
+                                   norm=plt.Normalize(vmin=vmin, vmax=vmax))
+        # fake up the array of the scalar mappable.
+        sm._A = []
+        # fig.subplots_adjust(bottom=0.05)
+        cbar_ax = fig.add_subplot(32, 1, 32)
+        fig.colorbar(sm, cax=cbar_ax, orientation='horizontal')
+
+    fig.subplots_adjust(wspace=-0.02, hspace=0.0)
+
+    if title is not None:
+        fig.suptitle(title)
+
+    if output_file is not None:
+        fig.savefig(output_file)
+        plt.close(fig)
+    else:
+        return fig, axes
 
 
 def plot_surf_roi(surf_mesh, roi_map, bg_map=None,

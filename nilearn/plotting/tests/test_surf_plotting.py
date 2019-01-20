@@ -7,11 +7,13 @@ from nose import SkipTest
 from nilearn._utils.testing import assert_raises_regex
 
 import numpy as np
+import nibabel
 import matplotlib
 import matplotlib.pyplot as plt
 
+from nilearn.plotting.img_plotting import MNI152TEMPLATE
 from nilearn.plotting.surf_plotting import (plot_surf, plot_surf_stat_map,
-                                            plot_surf_roi)
+                                            plot_surf_roi, plot_surf_montage)
 from nilearn.surface.tests.test_surface import _generate_surf
 
 
@@ -196,3 +198,19 @@ def test_plot_surf_roi_error():
                         'Invalid input for roi_map',
                         plot_surf_roi, mesh,
                         roi_map={'roi1': roi1, 'roi2': roi2})
+
+
+def test_plot_surf_montage():
+    mni_affine = MNI152TEMPLATE.get_affine()
+    data_positive = np.zeros((7, 7, 3))
+    rng = np.random.RandomState(42)
+    data_rng = rng.rand(7, 7, 3)
+    data_positive[1:-1, 2:-1, 1:] = data_rng[1:-1, 2:-1, 1:]
+    nii = nibabel.Nifti1Image(data_positive, mni_affine)
+
+    # Check that all combinations of 1D or 2D hemis and display_modes work.
+    plot_surf_montage(nii, hemisphere='right', display_mode='lateral',
+                      colorbar=True)
+    plot_surf_montage(nii, hemisphere='left+right', display_mode='lateral')
+    plot_surf_montage(nii, hemisphere='right', display_mode='medial+lateral')
+    plot_surf_montage(nii, hemisphere='left+right', display_mode='medial+lateral')
