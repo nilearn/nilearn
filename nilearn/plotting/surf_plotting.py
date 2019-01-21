@@ -13,7 +13,7 @@ from matplotlib.cm import ScalarMappable, get_cmap
 from matplotlib.colors import Normalize, LinearSegmentedColormap
 
 from ..datasets import fetch_surf_fsaverage
-from ..surface import load_surf_data, load_surf_mesh, vol_to_surf
+from ..surface import load_surf_data, load_surf_mesh, vol_to_surf, check_mesh
 from .._utils.compat import _basestring
 from .img_plotting import _get_colorbar_and_data_ranges, _crop_colorbar
 
@@ -531,14 +531,7 @@ def plot_img_on_surf(stat_map, surf_mesh=None, mask_img=None,
     threshold = kwargs.pop('threshold', 0.)
     symmetric_cbar = kwargs.pop('symmetric_cbar', 'auto')
 
-    if surf_mesh is None:
-        surf_mesh = fetch_surf_fsaverage()
-    else:
-        req_keys = {'infl_left', 'infl_right',
-                    'pial_left', 'pial_right',
-                    'sulc_left', 'sulc_right'}
-        assert all(key in surf_mesh.keys() for key in req_keys), \
-            'MESHES argument requires keys %s.' % req_keys
+    surf_mesh = check_mesh(surf_mesh)
 
     surf = {
         'left':
