@@ -721,6 +721,12 @@ def load_surf_mesh(surf_mesh):
 
 
 def check_mesh(mesh):
+    """Check that mesh data is either a str, or a dict with sufficient
+    entries.
+
+    Used by plotting.surf_plotting.plot_img_on_surf and
+    plotting.html_surface.full_brain_info
+    """
     if isinstance(mesh, str):
         return datasets.fetch_surf_fsaverage(mesh)
     if not isinstance(mesh, collections.Mapping):
