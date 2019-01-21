@@ -83,26 +83,14 @@ plotting.plot_stat_map(
 plotting.show()
 
 ##############################################################################
-filenames = contrast_map_filenames
-tested_var = tested_var
-
-##############################################################################
-# Mask data
-from nilearn.input_data import NiftiMasker
-nifti_masker = NiftiMasker(smoothing_fwhm=5, memory='nilearn_cache',
-                           memory_level=1)
-data_masked = nifti_masker.fit_transform(filenames)
-
-##############################################################################
-# Perform massively univariate analysis with permuted OLS
-from nilearn.mass_univariate import permuted_ols
-neg_log_pvals_permuted_ols, _, _ = permuted_ols(
-    tested_var, data_masked,
-    model_intercept=True,
-    n_perm=1000,
-    n_jobs=1)
-neg_log_pvals_permuted_ols_unmasked = nifti_masker.inverse_transform(
-    np.ravel(neg_log_pvals_permuted_ols))
+from nistats.second_level_model import non_parametric_inference
+neg_log_pvals_permuted_ols_unmasked = \
+    non_parametric_inference(contrast_map_filenames,
+                             design_matrix=design_matrix,
+                             contrast='fluency',
+                             model_intercept=True, n_perm=1000,
+                             two_sided_test=True, mask=None,
+                             smoothing_fwhm=5.0, n_jobs=1)
 
 ###########################################################################
 #Let us plot the second level contrast

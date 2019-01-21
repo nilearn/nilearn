@@ -63,25 +63,13 @@ plotting.plot_stat_map(
 plotting.show()
 
 ###########################################################################
-filenames = cmap_filenames
-tested_var = np.asarray([1] * n_samples)
-
-##############################################################################
-# Mask data
-from nilearn.input_data import NiftiMasker
-nifti_masker = NiftiMasker().fit(z_map)
-data_masked = nifti_masker.fit_transform(filenames)
-
-##############################################################################
-# Perform massively univariate analysis with permuted OLS
-from nilearn.mass_univariate import permuted_ols
-neg_log_pvals_permuted_ols, _, _ = permuted_ols(
-    tested_var, data_masked,
-    model_intercept=True,
-    n_perm=1000,
-    n_jobs=1)
-neg_log_pvals_permuted_ols_unmasked = nifti_masker.inverse_transform(
-    np.ravel(neg_log_pvals_permuted_ols))
+from nistats.second_level_model import non_parametric_inference
+neg_log_pvals_permuted_ols_unmasked = \
+    non_parametric_inference(cmap_filenames,
+                             design_matrix=design_matrix,
+                             model_intercept=True, n_perm=1000,
+                             two_sided_test=True,
+                             n_jobs=1)
 
 ###########################################################################
 #Let us plot the second level contrast at the computed thresholds

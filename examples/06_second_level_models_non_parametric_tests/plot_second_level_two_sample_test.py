@@ -94,25 +94,14 @@ display = plotting.plot_glass_brain(
 plotting.show()
 
 ##############################################################################
-filenames = second_level_input
-tested_var = condition_effect
-
-##############################################################################
-# Mask data
-from nilearn.input_data import NiftiMasker
-nifti_masker = NiftiMasker().fit(z_map)
-data_masked = nifti_masker.fit_transform(contrast_map_filenames)
-
-##############################################################################
-# Perform massively univariate analysis with permuted OLS
-from nilearn.mass_univariate import permuted_ols
-neg_log_pvals_permuted_ols, _, _ = permuted_ols(
-    tested_var, data_masked,
-    model_intercept=True,
-    n_perm=1000,
-    n_jobs=1)
-neg_log_pvals_permuted_ols_unmasked = nifti_masker.inverse_transform(
-    np.ravel(neg_log_pvals_permuted_ols))
+from nistats.second_level_model import non_parametric_inference
+neg_log_pvals_permuted_ols_unmasked = \
+    non_parametric_inference(second_level_input,
+                             design_matrix=design_matrix,
+                             contrast='vertical vs horizontal',
+                             model_intercept=True, n_perm=1000,
+                             two_sided_test=True,
+                             n_jobs=1)
 
 ###########################################################################
 #Let us plot the second level contrast
