@@ -553,7 +553,7 @@ def plot_surf_montage(stat_map, surf_mesh=None, mask_img=None,
     }
 
     fig, axes = plt.subplots(nrows=len(modes), ncols=len(hemis),
-                             figsize=plt.figaspect(len(modes) / 2),
+                             figsize=plt.figaspect(len(modes) / 2.),
                              subplot_kw={'projection': '3d'})
 
     axes = np.atleast_2d(axes)
