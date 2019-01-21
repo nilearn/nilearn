@@ -542,7 +542,7 @@ def plot_img_on_surf(stat_map, surf_mesh=None, mask_img=None,
                                 'sulc_left', 'sulc_right'],
        where values are surface mesh geometries as accepted
        by plot_surf_stat_map.
-       If None, plot_img_on_surf will use Freesurfer's 'fsaverage'.
+       If None, plot_img_on_surf will use Freesurfer's 'fsaverage5'.
 
     mask_img : Niimg-like object or None, optional (default=None)
         The mask is passed to vol_to_surf.
@@ -609,6 +609,9 @@ def plot_img_on_surf(stat_map, surf_mesh=None, mask_img=None,
         if arg in kwargs:
             raise ValueError(('plot_img_on_surf does not'
                               ' accept %s as an argument' % arg))
+
+    if surf_mesh is None:
+        surf_mesh = 'fsaverage5'
 
     modes = _check_display_mode(display_mode)
     hemis = _check_hemisphere(hemisphere)
