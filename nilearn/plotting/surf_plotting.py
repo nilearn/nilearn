@@ -462,6 +462,55 @@ def _check_hemisphere(hemisphere):
     return desired_hemispheres
 
 
+def _colorbar_from_array(array, cmap, vmax,
+                         threshold, symmetric_cbar):
+    """ Generate a custom colorbar for an array.
+
+    Internal function used by plot_img_on_surf
+
+    array: Any 3D array
+
+    cmap: str, the name of a matplotlib or nilearn colormap
+
+    vmax : float, optional (default=None)
+        upper bound for plotting of stat_map values.
+
+    threshold : float, optional (default=None)
+        If None is given, the colorbar is not thresholded.
+        If a number is given, it is used to threshold the colorbar.
+        Absolute values lower than threshold are shown in gray.
+
+    symmetric_cbar : bool or 'auto', optional, default 'auto'
+         Specifies whether the colorbar should range from -vmax to vmax
+         or from vmin to vmax. Setting to 'auto' will select the latter
+         if the range of the whole image is either positive or negative.
+         Note: The colormap will always range from -vmax to vmax.
+    """
+
+    cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
+        array, vmax, symmetric_cbar)
+
+    norm = Normalize(vmin=vmin, vmax=vmax)
+    cmaplist = [cmap(i) for i in range(cmap.N)]
+
+    if threshold is None:
+        threshold = 0.
+
+    # set colors to grey for absolute values < threshold
+    istart = int(norm(-threshold, clip=True) * (cmap.N - 1))
+    istop = int(norm(threshold, clip=True) * (cmap.N - 1))
+    for i in range(istart, istop):
+        cmaplist[i] = (0.5, 0.5, 0.5, 1.)
+    our_cmap = LinearSegmentedColormap.from_list('Custom cmap',
+                                                 cmaplist, cmap.N)
+    sm = plt.cm.ScalarMappable(cmap=our_cmap,
+                               norm=plt.Normalize(vmin=vmin, vmax=vmax))
+    # fake up the array of the scalar mappable.
+    sm._A = []
+
+    return sm
+
+
 def plot_img_on_surf(stat_map, surf_mesh=None, mask_img=None,
                      hemisphere='left+right',
                      inflate=False, display_mode='lateral+medial',
@@ -594,35 +643,15 @@ def plot_img_on_surf(stat_map, surf_mesh=None, mask_img=None,
         # 3D projection plot. The default value makes meshes look too small.
         ax.dist = 6
 
-    # Add colorbar
     if colorbar:
-
-        cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
-            stat_map.get_data(), vmax, symmetric_cbar, kwargs)
-
         if 'cmap' in kwargs:
             cmap = get_cmap([kwargs['cmap']])
         else:
             cmap = get_cmap('cold_hot')
 
-        norm = Normalize(vmin=vmin, vmax=vmax)
-        cmaplist = [cmap(i) for i in range(cmap.N)]
+        sm = _colorbar_from_array(stat_map.get_data(), cmap,
+                                  vmax, threshold, symmetric_cbar)
 
-        if threshold is None:
-            threshold = 0.
-
-        # set colors to grey for absolute values < threshold
-        istart = int(norm(-threshold, clip=True) * (cmap.N - 1))
-        istop = int(norm(threshold, clip=True) * (cmap.N - 1))
-        for i in range(istart, istop):
-            cmaplist[i] = (0.5, 0.5, 0.5, 1.)
-        our_cmap = LinearSegmentedColormap.from_list('Custom cmap',
-                                                     cmaplist, cmap.N)
-        sm = plt.cm.ScalarMappable(cmap=our_cmap,
-                                   norm=plt.Normalize(vmin=vmin, vmax=vmax))
-        # fake up the array of the scalar mappable.
-        sm._A = []
-        # fig.subplots_adjust(bottom=0.05)
         cbar_ax = fig.add_subplot(32, 1, 32)
         fig.colorbar(sm, cax=cbar_ax, orientation='horizontal')
 
