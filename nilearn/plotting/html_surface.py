@@ -1,12 +1,11 @@
 import json
-import collections
 
 import numpy as np
 import matplotlib as mpl
 from matplotlib import cm as mpl_cm
 
 from .._utils.niimg_conversions import check_niimg_3d
-from .. import datasets, surface
+from .. import surface
 from . import cm
 from .js_plotting_utils import (
     HTMLDocument, colorscale, mesh_to_plotly, get_html_template, add_js_lib,
@@ -61,21 +60,6 @@ def one_mesh_info(surf_map, surf_mesh, threshold=None, cmap=cm.cold_hot,
     return info
 
 
-def _check_mesh(mesh):
-    if isinstance(mesh, str):
-        return datasets.fetch_surf_fsaverage(mesh)
-    if not isinstance(mesh, collections.Mapping):
-        raise TypeError("The mesh should be a str or a dictionary, "
-                        "you provided: {}.".format(type(mesh).__name__))
-    missing = {'pial_left', 'pial_right', 'sulc_left', 'sulc_right',
-               'infl_left', 'infl_right'}.difference(mesh.keys())
-    if missing:
-        raise ValueError(
-            "{} {} missing from the provided mesh dictionary".format(
-                missing, ('are' if len(missing) > 1 else 'is')))
-    return mesh
-
-
 def full_brain_info(volume_img, mesh='fsaverage5', threshold=None,
                     cmap=cm.cold_hot, black_bg=False, symmetric_cmap=True,
                     vmax=None, vol_to_surf_kwargs={}):
@@ -89,7 +73,7 @@ def full_brain_info(volume_img, mesh='fsaverage5', threshold=None,
 
     """
     info = {}
-    mesh = _check_mesh(mesh)
+    mesh = surface.check_mesh(mesh)
     surface_maps = {
         h: surface.vol_to_surf(volume_img, mesh['pial_{}'.format(h)],
                                **vol_to_surf_kwargs)

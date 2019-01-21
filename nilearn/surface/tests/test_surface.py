@@ -448,6 +448,16 @@ def _check_vol_to_surf_results(img, mesh):
         assert_array_almost_equal(proj_4d[:, 0], proj_1, 3)
 
 
+def test_check_mesh():
+    mesh = surface.check_mesh('fsaverage5')
+    assert mesh is surface.check_mesh(mesh)
+    assert_raises(ValueError, surface.check_mesh, 'fsaverage3')
+    mesh.pop('pial_left')
+    assert_raises(ValueError, surface.check_mesh, mesh)
+    assert_raises(TypeError, surface.check_mesh,
+                  surface.load_surf_mesh(mesh['pial_right']))
+
+
 def test_check_mesh_and_data():
     mesh = _generate_surf()
     data = mesh[0][:, 0]

@@ -3,8 +3,10 @@ Functions for surface manipulation.
 """
 import os
 import warnings
+import collections
 import gzip
 from distutils.version import LooseVersion
+
 
 import numpy as np
 from scipy import sparse, interpolate
@@ -19,6 +21,7 @@ except ImportError:
 import nibabel
 from nibabel import gifti
 
+from .. import datasets
 from ..image import load_img
 from ..image import resampling
 from .._utils.compat import _basestring
@@ -715,6 +718,21 @@ def load_surf_mesh(surf_mesh):
                          '[vertex coordinates, face indices]')
 
     return [coords, faces]
+
+
+def check_mesh(mesh):
+    if isinstance(mesh, str):
+        return datasets.fetch_surf_fsaverage(mesh)
+    if not isinstance(mesh, collections.Mapping):
+        raise TypeError("The mesh should be a str or a dictionary, "
+                        "you provided: {}.".format(type(mesh).__name__))
+    missing = {'pial_left', 'pial_right', 'sulc_left', 'sulc_right',
+               'infl_left', 'infl_right'}.difference(mesh.keys())
+    if missing:
+        raise ValueError(
+            "{} {} missing from the provided mesh dictionary".format(
+                missing, ('are' if len(missing) > 1 else 'is')))
+    return mesh
 
 
 def check_mesh_and_data(mesh, data):
