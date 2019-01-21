@@ -42,7 +42,7 @@ def _apply_mask_and_get_affinity(seeds, niimg, radius, allow_overlap,
         if np.isnan(np.sum(_safe_get_data(niimg))):
             warnings.warn('The imgs you have fedded into fit_transform()' 
                           'contains NaN values which are converted to zeroes ')
-            X = _safe_get_data(niimg,True).reshape([-1, niimg.shape[3]]).T
+            X = _safe_get_data(niimg, True).reshape([-1, niimg.shape[3]]).T
         else:
             X = _safe_get_data(niimg).reshape([-1, niimg.shape[3]]).T
         mask_coords = list(np.ndindex(niimg.shape[:3]))

@@ -6,7 +6,7 @@ from nilearn.input_data import NiftiSpheresMasker
 def generate_imgs():
     affine = np.eye(4)
 
-    data_with_nans = np.random.random((10, 10, 10))
+    data_with_nans = np.zeros((10, 10, 10), dtype=np.float64)
     data_with_nans[:, :, :] = np.nan
 
     data_without_nans = np.random.random((9, 9, 9))
@@ -20,9 +20,6 @@ def generate_imgs():
 def test_is_nifti_spheres_masker_give_nans():
     seed = [(7, 7, 7)]
     img = generate_imgs()
-    # No interaction of seed with nans
-    masker = NiftiSpheresMasker(seeds=seed, radius=1.)
-    assert not np.isnan(np.sum(masker.fit_transform(img)))
     # Interaction of seed with nans
     masker = NiftiSpheresMasker(seeds=seed, radius=2.)
     assert not np.isnan(np.sum(masker.fit_transform(img)))
