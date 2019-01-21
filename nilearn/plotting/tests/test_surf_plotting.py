@@ -15,7 +15,7 @@ from nilearn.plotting.img_plotting import MNI152TEMPLATE
 from nilearn.plotting.surf_plotting import (plot_surf, plot_surf_stat_map,
                                             plot_surf_roi, plot_img_on_surf)
 from nilearn.surface.tests.test_surface import _generate_surf
-
+from nilearn.datasets import fetch_surf_fsaverage5
 
 def test_plot_surf():
     mesh = _generate_surf()
@@ -200,17 +200,55 @@ def test_plot_surf_roi_error():
                         roi_map={'roi1': roi1, 'roi2': roi2})
 
 
-def test_plot_img_on_surf():
+def _generate_img():
     mni_affine = MNI152TEMPLATE.get_affine()
     data_positive = np.zeros((7, 7, 3))
     rng = np.random.RandomState(42)
     data_rng = rng.rand(7, 7, 3)
     data_positive[1:-1, 2:-1, 1:] = data_rng[1:-1, 2:-1, 1:]
     nii = nibabel.Nifti1Image(data_positive, mni_affine)
+    return nii
 
+
+def test_plot_img_on_surf_hemispheres_and_display_modes():
+    nii = _generate_img()
     # Check that all combinations of 1D or 2D hemis and display_modes work.
-    plot_img_on_surf(nii, hemisphere='right', display_mode='lateral',
-                      colorbar=True)
+    plot_img_on_surf(nii, hemisphere='right', display_mode='lateral')
     plot_img_on_surf(nii, hemisphere='left+right', display_mode='lateral')
     plot_img_on_surf(nii, hemisphere='right', display_mode='medial+lateral')
-    plot_img_on_surf(nii, hemisphere='left+right', display_mode='medial+lateral')
+    plot_img_on_surf(nii, hemisphere='left+right',
+                     display_mode='dorsal+medial')
+
+
+def test_plot_img_on_surf_colorbar():
+    nii = _generate_img()
+    plot_img_on_surf(nii, hemisphere='right', display_mode='lateral',
+                     colorbar=True, vmax=5, threshold=3)
+    plot_img_on_surf(nii, hemisphere='right', display_mode='lateral',
+                     colorbar=False)
+    plot_img_on_surf(nii, hemisphere='right', display_mode='lateral',
+                     colorbar=False, cmap='roy_big_bl')
+    plot_img_on_surf(nii, hemisphere='right', display_mode='lateral',
+                     colorbar=True, cmap='roy_big_bl', vmax=2)
+
+
+def test_plot_img_on_surf_inflate():
+    nii = _generate_img()
+    plot_img_on_surf(nii, hemisphere='right', display_mode='lateral',
+                     inflate=True)
+
+
+def test_plot_img_on_surf_surf_mesh():
+    nii = _generate_img()
+    plot_img_on_surf(nii, hemisphere='right+left', display_mode='lateral',
+                     surf_mesh=None)
+    plot_img_on_surf(nii, hemisphere='right+left', display_mode='lateral',
+                     surf_mesh='fsaverage')
+    plot_img_on_surf(nii, hemisphere='right+left', display_mode='lateral',
+                     surf_mesh='fsaverage5')
+    surf_mesh = fetch_surf_fsaverage5()
+    plot_img_on_surf(nii, hemisphere='right+left', display_mode='lateral',
+                     surf_mesh=surf_mesh)
+
+
+
