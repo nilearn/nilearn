@@ -423,7 +423,7 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
 
 
 def _check_display_mode(display_mode):
-    """Checks whether the display_mode string passed to plot_surf_montage
+    """Checks whether the display_mode string passed to plot_img_on_surf
     is meaningful.
 
     display_mode: str
@@ -447,7 +447,7 @@ def _check_display_mode(display_mode):
 
 
 def _check_hemisphere(hemisphere):
-    """Checks whether the hemisphere in plot_surf_montage is correct.
+    """Checks whether the hemisphere in plot_img_on_surf is correct.
 
     display_mode: str
         Any combination of 'left', 'right'
@@ -462,10 +462,10 @@ def _check_hemisphere(hemisphere):
     return desired_hemispheres
 
 
-def plot_surf_montage(stat_map, surf_mesh=None, mask_img=None,
-                      hemisphere='left+right',
-                      inflate=False, display_mode='lateral+medial',
-                      **kwargs):
+def plot_img_on_surf(stat_map, surf_mesh=None, mask_img=None,
+                     hemisphere='left+right',
+                     inflate=False, display_mode='lateral+medial',
+                     **kwargs):
     """Convenience function to plot multiple views of plot_surf_stat_map
     in a single figure. It projects stat_map into meshes and plots views of
     left and right hemispheres. The display_mode argument defines the views
@@ -481,7 +481,7 @@ def plot_surf_montage(stat_map, surf_mesh=None, mask_img=None,
                                 'pial_left', 'pial_right',
                                 'sulc_left', 'sulc_right'], where
        values are surface mesh geometries as accepted by plot_surf_stat_map.
-       If None, plot_surf_montage will use Freesurfer's fsaverage.
+       If None, plot_img_on_surf will use Freesurfer's fsaverage.
 
     mask_img : Niimg-like object or None, optional (default=None)
         The mask is passed to vol_to_surf.
@@ -512,11 +512,11 @@ def plot_surf_montage(stat_map, surf_mesh=None, mask_img=None,
     nilearn.surface.vol_to_surf : For info on the generation of surfaces.
 
     nilearn.plotting.plot_surf_stat_map : For info on kwargs options
-    accepted by plot_surf_montage.
+    accepted by plot_img_on_surf.
     """
     for arg in ('figure', 'axes'):
         if arg in kwargs:
-            raise ValueError(('plot_surf_montage does not'
+            raise ValueError(('plot_img_on_surf does not'
                               ' accept %s as an argument' % arg))
 
     modes = _check_display_mode(display_mode)
@@ -541,8 +541,10 @@ def plot_surf_montage(stat_map, surf_mesh=None, mask_img=None,
             'MESHES argument requires keys %s.' % req_keys
 
     surf = {
-        'left': surf_mesh['infl_left'] if inflate else surf_mesh['pial_left'],
-        'right': surf_mesh['infl_right'] if inflate else surf_mesh['pial_right']
+        'left':
+        surf_mesh['infl_left'] if inflate else surf_mesh['pial_left'],
+        'right':
+        surf_mesh['infl_right'] if inflate else surf_mesh['pial_right']
     }
 
     texture = {
