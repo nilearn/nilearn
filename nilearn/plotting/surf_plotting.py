@@ -465,6 +465,8 @@ def _check_hemisphere(hemisphere):
 def plot_img_on_surf(stat_map, surf_mesh=None, mask_img=None,
                      hemisphere='left+right',
                      inflate=False, display_mode='lateral+medial',
+                     output_file=None, title=None, colorbar=True,
+                     vmax=None, threshold=None, symmetric_cbar='auto',
                      **kwargs):
     """Convenience function to plot multiple views of plot_surf_stat_map
     in a single figure. It projects stat_map into meshes and plots views of
@@ -502,6 +504,34 @@ def plot_img_on_surf(stat_map, surf_mesh=None, mask_img=None,
         display mode. Order is preserved, and left and right hemispheres
         are shown on the left and right sides of the figure.
 
+    output_file: str, optional (default=None)
+        The name of an image file to export plot to. Valid extensions
+        are .png, .pdf, .svg. If output_file is not None, the plot
+        is saved to a file, and the display is closed.
+        Plot_img_to_surf then returns None.
+
+    title: str, optional (default=None)
+        Place a title on the upper center of the figure.
+
+    colorbar : bool, optional (default=True)
+        If True, a symmetric colorbar of the statistical map is displayed.
+
+    vmax : float, optional (default=None)
+        upper bound for plotting of stat_map values.
+
+    threshold : float, optional (default=None)
+        If None is given, the image is not thresholded.
+        If a number is given, it is used to threshold the image,
+        values below the threshold (in absolute value) are plotted
+        as transparent.
+
+    symmetric_cbar : bool or 'auto', optional, default 'auto'
+         Specifies whether the colorbar should range from -vmax to vmax
+         or from vmin to vmax. Setting to 'auto' will select the latter
+         if the range of the whole image is either positive or negative.
+         Note: The colormap will always range from -vmax to vmax.
+
+
     kwargs: keyword arguments passed to plot_surf_stat_map
 
     See Also
@@ -521,16 +551,6 @@ def plot_img_on_surf(stat_map, surf_mesh=None, mask_img=None,
 
     modes = _check_display_mode(display_mode)
     hemis = _check_hemisphere(hemisphere)
-
-    # Get kwargs that behave differently in the montage
-    # out of the dict and into the local scope. Do not pass them downstream.
-    output_file = kwargs.pop('output_file', None)
-    title = kwargs.pop('title', None)
-    colorbar = kwargs.pop('colorbar', False)
-    vmax = kwargs.pop('vmax', None)
-    threshold = kwargs.pop('threshold', 0.)
-    symmetric_cbar = kwargs.pop('symmetric_cbar', 'auto')
-
     surf_mesh = check_mesh(surf_mesh)
 
     surf = {
@@ -563,7 +583,7 @@ def plot_img_on_surf(stat_map, surf_mesh=None, mask_img=None,
                                view=mode, hemi=hemi,
                                bg_map=bg_map,
                                axes=axes[index_mode, index_hemi],
-                               colorbar=False,
+                               colorbar=False,  # Colorbar created externally.
                                vmax=vmax,
                                threshold=threshold,
                                symmetric_cbar=symmetric_cbar,
@@ -587,6 +607,10 @@ def plot_img_on_surf(stat_map, surf_mesh=None, mask_img=None,
 
         norm = Normalize(vmin=vmin, vmax=vmax)
         cmaplist = [cmap(i) for i in range(cmap.N)]
+
+        if threshold is None:
+            threshold = 0.
+
         # set colors to grey for absolute values < threshold
         istart = int(norm(-threshold, clip=True) * (cmap.N - 1))
         istop = int(norm(threshold, clip=True) * (cmap.N - 1))
