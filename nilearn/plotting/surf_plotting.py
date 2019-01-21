@@ -462,15 +462,15 @@ def _check_hemisphere(hemisphere):
     return desired_hemispheres
 
 
-def _colorbar_from_array(array, cmap, vmax,
-                         threshold, symmetric_cbar):
+def _colorbar_from_array(array, vmax,
+                         threshold, symmetric_cbar,
+                         kwargs,
+                         cmap='cold_hot'):
     """ Generate a custom colorbar for an array.
 
     Internal function used by plot_img_on_surf
 
     array: Any 3D array
-
-    cmap: str, the name of a matplotlib or nilearn colormap
 
     vmax : float, optional (default=None)
         upper bound for plotting of stat_map values.
@@ -485,10 +485,15 @@ def _colorbar_from_array(array, cmap, vmax,
          or from vmin to vmax. Setting to 'auto' will select the latter
          if the range of the whole image is either positive or negative.
          Note: The colormap will always range from -vmax to vmax.
+
+    kwargs: extra arguments passed to _get_colorbar_and_data_ranges
+
+    cmap: str, optional (default='cold_hot')
+        the name of a matplotlib or nilearn colormap.
     """
 
     cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
-        array, vmax, symmetric_cbar)
+        array, vmax, symmetric_cbar, kwargs)
 
     norm = Normalize(vmin=vmin, vmax=vmax)
     cmaplist = [cmap(i) for i in range(cmap.N)]
@@ -516,7 +521,7 @@ def plot_img_on_surf(stat_map, surf_mesh=None, mask_img=None,
                      inflate=False, display_mode='lateral+medial',
                      output_file=None, title=None, colorbar=True,
                      vmax=None, threshold=None, symmetric_cbar='auto',
-                     **kwargs):
+                     cmap=None, **kwargs):
     """Convenience function to plot multiple views of plot_surf_stat_map
     in a single figure. It projects stat_map into meshes and plots views of
     left and right hemispheres. The display_mode argument defines the views
@@ -585,6 +590,8 @@ def plot_img_on_surf(stat_map, surf_mesh=None, mask_img=None,
          if the range of the whole image is either positive or negative.
          Note: The colormap will always range from -vmax to vmax.
 
+    cmap: str, optional (default='cold_hot')
+        the name of a matplotlib or nilearn colormap.
 
     kwargs: keyword arguments passed to plot_surf_stat_map
 
@@ -641,6 +648,7 @@ def plot_img_on_surf(stat_map, surf_mesh=None, mask_img=None,
                                vmax=vmax,
                                threshold=threshold,
                                symmetric_cbar=symmetric_cbar,
+                               cmap=cmap,
                                **kwargs)
 
     for ax in axes.flatten():
@@ -649,13 +657,9 @@ def plot_img_on_surf(stat_map, surf_mesh=None, mask_img=None,
         ax.dist = 6
 
     if colorbar:
-        if 'cmap' in kwargs:
-            cmap = get_cmap([kwargs['cmap']])
-        else:
-            cmap = get_cmap('cold_hot')
-
-        sm = _colorbar_from_array(stat_map.get_data(), cmap,
-                                  vmax, threshold, symmetric_cbar)
+        sm = _colorbar_from_array(stat_map.get_data(),
+                                  vmax, threshold, symmetric_cbar, kwargs,
+                                  get_cmap(cmap))
 
         cbar_ax = fig.add_subplot(32, 1, 32)
         fig.colorbar(sm, cax=cbar_ax, orientation='horizontal')
