@@ -195,9 +195,8 @@ def _convolve_regressors(events, hrf_model, frame_times, fir_delays=[0],
         Minimal onset relative to frame_times[0] (in seconds) events
         that start before frame_times[0] + min_onset are not considered.
 
-    oversampling: int or None, optional, default:50,
+    oversampling: int optional, default:50,
         Oversampling factor used in temporal convolutions.
-        Should be 1 whenever hrf_model is 'fir'.
 
     Returns
     -------
@@ -217,14 +216,6 @@ def _convolve_regressors(events, hrf_model, frame_times, fir_delays=[0],
     """
     regressor_names = []
     regressor_matrix = None
-    if hrf_model == 'fir':
-        if oversampling not in [1, None]:
-            warn('Forcing oversampling factor to 1 for a finite'
-                 'impulse response hrf model')
-        oversampling = 1
-    elif oversampling is None:
-        oversampling = 50
-
     trial_type, onset, duration, modulation = check_events(events)
     for condition in np.unique(trial_type):
         condition_mask = (trial_type == condition)
@@ -346,9 +337,8 @@ def make_first_level_design_matrix(
         Minimal onset relative to frame_times[0] (in seconds)
         events that start before frame_times[0] + min_onset are not considered.
 
-    oversampling: int or None, optional,
+    oversampling: int, optional,
         Oversampling factor used in temporal convolutions.
-        Should be 1 whenever hrf_model is 'fir'.
 
     Returns
     -------

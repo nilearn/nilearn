@@ -52,7 +52,8 @@ def _gamma_difference_hrf(tr, oversampling=50, time_length=32., onset=0.,
          hrf sampling on the oversampled time grid
     """
     dt = tr / oversampling
-    time_stamps = np.linspace(0, time_length, np.rint(float(time_length) / dt).astype(np.int))
+    time_stamps = np.linspace(0, time_length,
+                              np.rint(float(time_length) / dt).astype(np.int))
     time_stamps -= onset
     hrf = gamma.pdf(time_stamps, delay / dispersion, dt / dispersion) -\
         ratio * gamma.pdf(
@@ -422,7 +423,7 @@ def _hrf_kernel(hrf_model, tr, oversampling=50, fir_delays=None):
                    glover_dispersion_derivative(tr, oversampling)]
     elif hrf_model == 'fir':
         hkernel = [np.hstack((np.zeros(f * oversampling),
-                              np.ones(oversampling)))
+                              np.ones(oversampling) * 1. / oversampling))
                    for f in fir_delays]
     elif hrf_model is None:
         hkernel = [np.hstack((1, np.zeros(oversampling - 1)))]
