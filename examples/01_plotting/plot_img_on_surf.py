@@ -13,7 +13,7 @@ from nilearn.plotting import plot_img_on_surf, show
 
 ###########################################################################
 # Get the RSN10 and load the DMN, the RSN4.
-# ----------------
+# -----------------------------------------
 rsn10 = fetch_atlas_smith_2009()['rsn10']
 dmn_index = 3
 dmn = index_img(rsn10, dmn_index)
