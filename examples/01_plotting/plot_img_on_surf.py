@@ -21,7 +21,7 @@ dmn = index_img(rsn10, dmn_index)
 
 ###########################################################################
 # Visualize the DMN in both hemispheres from the lateral and medial sides.
-# ----------------
+# ------------------------------------------------------------------------
 plot_img_on_surf(dmn, display_mode='lateral+medial',
                  hemisphere='left+right',
                  vmax=7, colorbar=True)
