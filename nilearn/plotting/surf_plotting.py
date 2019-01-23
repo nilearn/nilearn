@@ -12,7 +12,6 @@ from matplotlib.colorbar import make_axes
 from matplotlib.cm import ScalarMappable, get_cmap
 from matplotlib.colors import Normalize, LinearSegmentedColormap
 
-from ..datasets import fetch_surf_fsaverage
 from ..surface import load_surf_data, load_surf_mesh, vol_to_surf, check_mesh
 from .._utils.compat import _basestring
 from .img_plotting import _get_colorbar_and_data_ranges, _crop_colorbar
