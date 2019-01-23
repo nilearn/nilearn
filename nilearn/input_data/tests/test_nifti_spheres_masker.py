@@ -141,11 +141,11 @@ def test_is_nifti_spheres_masker_give_nans():
     data_with_nans[indices] = data_without_nans[indices]
     img = nibabel.Nifti1Image(data_with_nans, affine)
     seed = [(7, 7, 7)]
-    
+
     # Interaction of seed with nans
     masker = NiftiSpheresMasker(seeds=seed, radius=2.)
     assert_false(np.isnan(np.sum(masker.fit_transform(img))))
-    
+
     mask = np.ones((9, 9, 9))
     mask_img = nibabel.Nifti1Image(mask, affine)
     # When mask_img is provided, the seed interacts within the brain, so no nan

@@ -40,8 +40,8 @@ def _apply_mask_and_get_affinity(seeds, niimg, radius, allow_overlap,
     else:
         #Adding  warning message 
         if np.isnan(np.sum(_safe_get_data(niimg))):
-            warnings.warn('The imgs you have fedded into fit_transform()' 
-                          'contains NaN values which are converted to zeroes ')
+            warnings.warn('The imgs you have fed into fit_transform() contains '
+                          ' NaN values which will be converted to zeroes ')
             X = _safe_get_data(niimg, True).reshape([-1, niimg.shape[3]]).T
         else:
             X = _safe_get_data(niimg).reshape([-1, niimg.shape[3]]).T
