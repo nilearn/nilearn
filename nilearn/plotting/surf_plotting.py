@@ -13,6 +13,7 @@ from matplotlib.cm import ScalarMappable, get_cmap
 from matplotlib.colors import Normalize, LinearSegmentedColormap
 
 from ..surface import load_surf_data, load_surf_mesh, vol_to_surf, check_mesh
+from .._utils import check_niimg_3d
 from .._utils.compat import _basestring
 from .img_plotting import _get_colorbar_and_data_ranges, _crop_colorbar
 
@@ -612,6 +613,7 @@ def plot_img_on_surf(stat_map, surf_mesh=None, mask_img=None,
     if surf_mesh is None:
         surf_mesh = 'fsaverage5'
 
+    stat_map = check_niimg_3d(stat_map, dtype='auto')
     modes = _check_display_mode(display_mode)
     hemis = _check_hemisphere(hemisphere)
     surf_mesh = check_mesh(surf_mesh)
