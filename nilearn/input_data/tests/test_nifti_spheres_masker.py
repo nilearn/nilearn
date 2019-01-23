@@ -3,7 +3,7 @@ import numpy as np
 from numpy.testing import assert_array_equal
 from nilearn.input_data import NiftiSpheresMasker
 from nilearn._utils.testing import assert_raises_regex
-
+from nose.tool import assert_false
 
 def test_seed_extraction():
     data = np.random.random((3, 3, 3, 5))
@@ -126,3 +126,28 @@ def test_small_radius():
     masker = NiftiSpheresMasker([seed], radius=1.6,
                                 mask_img=nibabel.Nifti1Image(mask, affine))
     masker.fit_transform(nibabel.Nifti1Image(data, affine))
+
+
+def test_is_nifti_spheres_masker_give_nans():
+    affine = np.eye(4)
+
+    data_with_nans = np.zeros((10, 10, 10), dtype=np.float32)
+    data_with_nans[:, :, :] = np.nan
+
+    data_without_nans = np.random.random((9, 9, 9))
+    indices = np.nonzero(data_without_nans)
+
+    # Leaving nans outside of some data
+    data_with_nans[indices] = data_without_nans[indices]
+    img = nibabel.Nifti1Image(data_with_nans, affine)
+    seed = [(7, 7, 7)]
+    
+    # Interaction of seed with nans
+    masker = NiftiSpheresMasker(seeds=seed, radius=2.)
+    assert_false(np.isnan(np.sum(masker.fit_transform(img))))
+    
+    mask = np.ones((9, 9, 9))
+    mask_img = nibabel.Nifti1Image(mask, affine)
+    # When mask_img is provided, the seed interacts within the brain, so no nan
+    masker = NiftiSpheresMasker(seeds=seed, radius=2., mask_img=mask_img)
+    assert_false(np.isnan(np.sum(masker.fit_transform(img))))
