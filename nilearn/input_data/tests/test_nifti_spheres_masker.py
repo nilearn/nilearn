@@ -3,7 +3,7 @@ import numpy as np
 from numpy.testing import assert_array_equal
 from nilearn.input_data import NiftiSpheresMasker
 from nilearn._utils.testing import assert_raises_regex
-from nose.tool import assert_false
+from nose.tools import assert_false
 
 def test_seed_extraction():
     data = np.random.random((3, 3, 3, 5))
