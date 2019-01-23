@@ -71,8 +71,18 @@ plotting.plot_surf_stat_map(big_fsaverage.infl_right,
                             threshold=1., bg_map=big_fsaverage.sulc_right)
 
 
-plotting.show()
+##############################################################################
+# Plot multiple views of the 3D volume on a surface.
+# ---------------------------------------------------
+#
+# `plot_img_on_surf` takes a statistical map and projects it onto a surface. It
+# supports multiple choices of orientations, and can plot either both or any
+# one hemisphere. If no surf_mesh is given, plot_img_on_surf projects the
+# images onto Freesurfer's fsaverage5.
+plotting.plot_img_on_surf(stat_img, display_mode='lateral+medial',
+                          hemisphere='left+right', colorbar=True)
 
+plotting.show()
 
 ##############################################################################
 # 3D visualization in a web browser
