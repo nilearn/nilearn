@@ -872,7 +872,7 @@ def test_invalid_in_display_mode_cut_coords_all_plots():
                             img, display_mode='ortho', cut_coords=2)
 
 
-def test_invalid_in_display_mode_tiled_cut_coords_all_plots():
+def test_invalid_in_display_mode_tiled_cut_coords_single_all_plots():
     img = _generate_img()
 
     for plot_func in [plot_img, plot_anat, plot_roi, plot_epi,
@@ -882,6 +882,18 @@ def test_invalid_in_display_mode_tiled_cut_coords_all_plots():
                             "be a list of 3d world coordinates.",
                             plot_func,
                             img, display_mode='tiled', cut_coords=2)
+
+
+def test_invalid_in_display_mode_tiled_cut_coords_all_plots():
+    img = _generate_img()
+
+    for plot_func in [plot_img, plot_anat, plot_roi, plot_epi,
+                      plot_stat_map,plot_prob_atlas]:
+        assert_raises_regex(ValueError,
+                            "The number cut_coords passed does not "
+                            "match the display_mode",
+                            plot_func,
+                            img, display_mode='tiled', cut_coords=(2,2))
 
 
 def test_outlier_cut_coords():

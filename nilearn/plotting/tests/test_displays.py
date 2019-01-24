@@ -43,7 +43,8 @@ def test_stacked_slicer():
 
 def test_tiled_slicer():
     img = load_mni152_template()
-    slicer = TiledSlicer.init_with_figure(img=img, cut_coords=(0, 0, 0))
+    slicer = TiledSlicer.init_with_figure(img=img, cut_coords=(0, 0, 0),
+                                          colorbar=True)
     slicer.add_overlay(img, cmap=plt.cm.gray)
     # Forcing a layout here, to test the locator code
     with tempfile.TemporaryFile() as fp:
