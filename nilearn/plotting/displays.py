@@ -1356,24 +1356,17 @@ class TiledSlicer(BaseSlicer):
         total_height = 0
         total_width = 0
 
-        try:
+        if 'y' in self.axes:
             ax = self.axes['y'].ax
-        except KeyError:
-            pass
-        else:
             total_height = total_height + height_dict[ax]
             total_width = total_width + width_dict[ax]
-        try:
+
+        if 'x' in self.axes:
             ax = self.axes['x'].ax
-        except KeyError:
-            pass
-        else:
             total_width = total_width + width_dict[ax]
-        try:
+
+        if 'z' in self.axes:
             ax = self.axes['z'].ax
-        except KeyError:
-            pass
-        else:
             total_height = total_height + height_dict[ax]
 
         for ax, width in width_dict.items():
@@ -1410,29 +1403,22 @@ class TiledSlicer(BaseSlicer):
         coord3 = dict()
         coord4 = dict()
 
-        try:
+        if 'y' in self.axes:
             ax = self.axes['y'].ax
-        except KeyError:
-            pass
-        else:
             coord1[ax] = rect_x0
             coord2[ax] = (rect_y1) - rel_height_dict[ax]
             coord3[ax] = rect_x0 + rel_width_dict[ax]
             coord4[ax] = rect_y1
-        try:
+
+        if 'x' in self.axes:
             ax = self.axes['x'].ax
-        except KeyError:
-            pass
-        else:
             coord1[ax] = (rect_x1) - rel_width_dict[ax]
             coord2[ax] = (rect_y1) - rel_height_dict[ax]
             coord3[ax] = rect_x1
             coord4[ax] = rect_y1
-        try:
+
+        if 'z' in self.axes:
             ax = self.axes['z'].ax
-        except KeyError:
-            pass
-        else:
             coord1[ax] = rect_x0
             coord2[ax] = rect_y0
             coord3[ax] = rect_x0 + rel_width_dict[ax]
@@ -1522,31 +1508,22 @@ class TiledSlicer(BaseSlicer):
             except KeyError:
                 pass
 
-        try:
+        if 'y' in self.axes:
             ax = self.axes['y'].ax
-        except KeyError:
-            pass
-        else:
             if x is not None:
                 ax.axvline(x, **kwargs)
             if z is not None:
                 ax.axhline(z, **kwargs)
 
-        try:
+        if 'x' in self.axes:
             ax = self.axes['x'].ax
-        except KeyError:
-            pass
-        else:
             if y is not None:
                 ax.axvline(y, **kwargs)
             if z is not None:
                 ax.axhline(z, **kwargs)
 
-        try:
+        if 'z' in self.axes:
             ax = self.axes['z'].ax
-        except KeyError:
-            pass
-        else:
             if x is not None:
                 ax.axvline(x, **kwargs)
             if y is not None:
