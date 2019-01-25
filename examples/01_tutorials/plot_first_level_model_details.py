@@ -457,7 +457,7 @@ plot_contrast(first_level_model)
 plt.show()
 
 #########################################################################
-# Note that it removed suprious spots in the white matter.
+# Note that it removed spurious spots in the white matter.
 
 #########################################################################
 # Conclusion

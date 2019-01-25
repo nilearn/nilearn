@@ -50,7 +50,7 @@ def compare_niimgs(ref_imgs, src_imgs, masker, plot_hist=True, log=True,
 
     Returns
     -------
-    Pearsonr correlation between the images
+    Pearson correlation between the images
     """
     corrs = []
     for i, (ref_img, src_img) in enumerate(zip(ref_imgs, src_imgs)):
