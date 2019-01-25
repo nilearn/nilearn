@@ -1,21 +1,28 @@
 ---
 name: Bug report
-about: Create a report to help us improve
+about: Something not working as described? Missing/incorrect documentation? This is the place.
 title: ''
-labels: ''
+labels: 'bug'
 assignees: ''
 
 ---
 <!--
-Have Questions about how to use Nilearn or need analysis suggestions & recommendations?
 
-This is NOT the place for it.
-        ===  
-Post them on Neurostars (http://neurostars.org/). 
-Add the tag `nilearn`  
+Hi! 
+If you have: 
+ -1 Questions about how to use Nilearn or 
+ -2 Need analysis suggestions & recommendations?
+
+A bunch of fMRI researchers hang out at Neurostars (http://neurostars.org/). 
+Post those questions there. 
+Add the tag `nilearn`
+
+Posting them here makes life more complicated for the Nilearn developers.  
 -->
 
-<!-- 
+<!--
+
+For the Bug Report, 
 Include this information:
 -------------------------
 What version of Nilearn are you using?
