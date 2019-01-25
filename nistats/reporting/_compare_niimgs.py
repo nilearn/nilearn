@@ -51,11 +51,6 @@ def compare_niimgs(ref_imgs, src_imgs, masker, plot_hist=True, log=True,
     Returns
     -------
     Pearsonr correlation between the images
-
-    Examples
-    --------
-    [1] check_zscores.compare_niimgs(["/home/elvis/Downloads/zstat2.nii.gz"],
-            ["/home/elvis/Downloads/zstat8.nii.gz"], output_dir="/tmp/toto")
     """
     corrs = []
     for i, (ref_img, src_img) in enumerate(zip(ref_imgs, src_imgs)):
