@@ -38,7 +38,6 @@ def _apply_mask_and_get_affinity(seeds, niimg, radius, allow_overlap,
 
         X = masking._apply_mask_fmri(niimg, mask_img)
     else:
-        # Adding warning message
         if np.isnan(np.sum(_safe_get_data(niimg))):
             warnings.warn('The imgs you have fed into fit_transform() contains'
                           ' NaN values which will be converted to zeroes ')
