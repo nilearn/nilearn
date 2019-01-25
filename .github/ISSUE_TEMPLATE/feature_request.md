@@ -14,7 +14,7 @@ If you have:
 
 A bunch of fMRI researchers hang out at Neurostars (http://neurostars.org/). 
 Post those questions there. 
-Add the tag `nilearn`
+Add the tag `nilearn` (we get an email from Neurostars if you do).
 
 Posting them here makes life more complicated for the Nilearn developers.  
 -->
