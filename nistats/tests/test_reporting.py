@@ -7,7 +7,8 @@ from nibabel.tmpdirs import InTemporaryDirectory
 
 from nistats.design_matrix import make_first_level_design_matrix
 from nistats.reporting import (plot_design_matrix, get_clusters_table,
-                               _local_max, plot_contrast_matrix)
+                               plot_contrast_matrix)
+from nistats.reporting._get_clusters_table import _local_max
 
 # Set the backend to avoid having DISPLAY problems
 from nilearn.plotting import _set_mpl_backend
