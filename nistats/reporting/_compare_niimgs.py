@@ -19,23 +19,25 @@ def compare_niimgs(ref_imgs, src_imgs, masker, plot_hist=True, log=True,
                    output_dir=None, axes=None):
     """Creates plots to compare two lists of images and measure correlation.
 
-    The first plot displays linear correlation between voxel values
-    The second plot superimposes histograms to compare values distribution
+    The first plot displays linear correlation between voxel values.
+    The second plot superimposes histograms to compare values distribution.
 
     Parameters
     ----------
     ref_imgs: nifti_like
-        reference images.
+        Reference images.
 
     src_imgs: nifti_like
         Source images.
 
-    log: Boolean, optional (default True)
-        Passed to plt.hist
-
+    masker:
+    
     plot_hist: Boolean, optional (default True)
         If True then histograms of each img in ref_imgs will be plotted
         along-side the histogram of the corresponding image in src_imgs
+
+    log: Boolean, optional (default True)
+        Passed to plt.hist
 
     ref_label: str
         name of reference images

@@ -37,27 +37,39 @@ def _local_max(data, affine, min_distance):
     vals : `numpy.ndarray`
         (n_foci,) array of values from data at ijk.
     """
+    ijk, vals = _identify_subpeaks(data)
+    xyz, ijk, vals = _sort_subpeaks(ijk, vals, affine)
+    ijk, vals = _pare_subpeaks(xyz, ijk, vals, min_distance)
+    return ijk, vals
+    
+    
+def _identify_subpeaks(data):
     # Initial identification of subpeaks with minimal minimum distance
     data_max = ndimage.filters.maximum_filter(data, 3)
     maxima = (data == data_max)
     data_min = ndimage.filters.minimum_filter(data, 3)
     diff = ((data_max - data_min) > 0)
     maxima[diff == 0] = 0
-    
+
     labeled, n_subpeaks = ndimage.label(maxima)
-    ijk = np.array(ndimage.center_of_mass(data, labeled,
-                                          range(1, n_subpeaks + 1)))
+    labels_index = range(1, n_subpeaks + 1)
+    ijk = np.array(ndimage.center_of_mass(data, labeled, labels_index))
     ijk = np.round(ijk).astype(int)
-    
     vals = np.apply_along_axis(arr=ijk, axis=1, func1d=_get_val,
                                input_arr=data)
+    return ijk, vals
     
+    
+def _sort_subpeaks(ijk, vals, affine):
     # Sort subpeaks in cluster in descending order of stat value
     order = (-vals).argsort()
     vals = vals[order]
     ijk = ijk[order, :]
     xyz = nib.affines.apply_affine(affine, ijk)  # Convert to xyz in mm
+    return xyz, ijk, vals
     
+    
+def _pare_subpeaks(xyz, ijk, vals, min_distance):
     # Reduce list of subpeaks based on distance
     keep_idx = np.ones(xyz.shape[0]).astype(bool)
     for i in range(xyz.shape[0]):
