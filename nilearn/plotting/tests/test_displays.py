@@ -45,7 +45,7 @@ def test_tiled_slicer():
     img = load_mni152_template()
     slicer = TiledSlicer.init_with_figure(img=img, cut_coords=(0, 0, 0),
                                           colorbar=True)
-    slicer.add_overlay(img, cmap=plt.cm.gray)
+    slicer.add_overlay(img, cmap=plt.cm.gray,colorbar=True)
     # Forcing a layout here, to test the locator code
     with tempfile.TemporaryFile() as fp:
         slicer.savefig(fp)
