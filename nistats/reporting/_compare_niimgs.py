@@ -9,6 +9,8 @@ import warnings
 
 import numpy as np
 from scipy import stats
+import nilearn.plotting  # overrides headless server backend, preempts
+                         # MatPlotLib import error when it's not installed.
 import matplotlib.pyplot as plt
 
 
@@ -50,7 +52,8 @@ def compare_niimgs(ref_imgs, src_imgs, masker, plot_hist=True, log=True,
 
     Returns
     -------
-    Pearson correlation between the images
+    corrs: numpy.ndarray
+        Pearson correlation between the images
     """
     corrs = []
     for i, (ref_img, src_img) in enumerate(zip(ref_imgs, src_imgs)):

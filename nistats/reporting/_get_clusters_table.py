@@ -22,7 +22,10 @@ def _local_max(data, affine, min_distance):
     ----------
     data : array_like
         3D array of with masked values for cluster.
-
+    
+    affine: np.ndarray
+        Square matrix specifying the position of the image array data in a reference space.
+    
     min_distance : `int`
         Minimum distance between local maxima in ``data``, in terms of mm.
 

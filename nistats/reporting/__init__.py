@@ -15,7 +15,6 @@ except ImportError:
 else:
     # matplotlib backend must be set before importing  any of its functions.
     matplotlib.use('Agg')
-    import nilearn.plotting  # overrides the backend on headless servers
 
 from ._compare_niimgs import compare_niimgs
 from ._get_clusters_table import get_clusters_table
