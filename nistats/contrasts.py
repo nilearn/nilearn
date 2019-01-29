@@ -10,7 +10,7 @@ from warnings import warn
 import numpy as np
 import scipy.stats as sps
 
-from .utils import multiple_mahalanobis, z_score
+from .utils import z_score
 
 
 DEF_TINY = 1e-50

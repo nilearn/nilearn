@@ -6,9 +6,7 @@ import numpy as np
 import pandas as pd
 import scipy.linalg as spl
 
-from nibabel import (load,
-                     Nifti1Image,
-                     )
+from nibabel import Nifti1Image
 from nibabel.tmpdirs import InTemporaryDirectory
 from nilearn.datasets.tests import test_utils as tst
 from nose import with_setup

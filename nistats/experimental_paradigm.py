@@ -20,7 +20,6 @@ from __future__ import with_statement
 import warnings
 
 import numpy as np
-import pandas
 
 
 def check_events(events):

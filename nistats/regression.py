@@ -20,12 +20,10 @@ General reference for regression models:
 
 __docformat__ = 'restructuredtext en'
 
-import warnings
-
 import numpy as np
+
 from nibabel.onetime import setattr_on_read
 from numpy.linalg import matrix_rank
-from scipy import stats
 import scipy.linalg as spl
 
 from .model import LikelihoodModelResults
