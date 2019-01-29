@@ -20,18 +20,14 @@ General reference for regression models:
 
 __docformat__ = 'restructuredtext en'
 
-import warnings
-
 import numpy as np
-import scipy.linalg as spl
-from scipy import stats
-from numpy.linalg import matrix_rank
 
 from nibabel.onetime import setattr_on_read
-
-from .utils import positive_reciprocal
+from numpy.linalg import matrix_rank
+import scipy.linalg as spl
 
 from .model import LikelihoodModelResults
+from .utils import positive_reciprocal
 
 
 class OLSModel(object):

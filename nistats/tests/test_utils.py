@@ -1,22 +1,36 @@
 #!/usr/bin/env python
-import os
 import json
+import os
+
 import numpy as np
 import pandas as pd
-from scipy.stats import norm
 import scipy.linalg as spl
-from numpy.testing import assert_almost_equal, assert_array_almost_equal
-from nose.tools import assert_true, assert_equal, assert_raises
-from nibabel import load, Nifti1Image
-from nibabel.tmpdirs import InTemporaryDirectory
-from nose import with_setup
 
-from nistats.utils import (multiple_mahalanobis, z_score, multiple_fast_inverse,
-                           positive_reciprocal, full_rank, _check_run_tables,
-                           _check_and_load_tables, _check_list_length_match,
-                           get_bids_files, parse_bids_filename,
-                           get_design_from_fslmat)
+from nibabel import Nifti1Image
+from nibabel.tmpdirs import InTemporaryDirectory
 from nilearn.datasets.tests import test_utils as tst
+from nose import with_setup
+from nose.tools import (assert_true,
+                        assert_equal,
+                        assert_raises,
+                        )
+from numpy.testing import (assert_almost_equal,
+                           assert_array_almost_equal,
+                           )
+from scipy.stats import norm
+
+from nistats.utils import (_check_run_tables,
+                           _check_and_load_tables,
+                           _check_list_length_match,
+                           full_rank,
+                           get_bids_files,
+                           get_design_from_fslmat,
+                           multiple_fast_inverse,
+                           multiple_mahalanobis,
+                           parse_bids_filename,
+                           positive_reciprocal,
+                           z_score,
+                           )
 
 
 def test_full_rank():

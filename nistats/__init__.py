@@ -25,7 +25,6 @@ thresholding            --- Utilities for cluster-level statistical results
 utils                   --- Miscelaneous utilities
 """
 
-import gzip
 import sys
 import warnings
 
