@@ -32,43 +32,15 @@ from nistats.first_level_model import (first_level_models_from_bids,
                                        run_glm,
                                        )
 
-
-from nistats.tests.test_utils import create_fake_bids_dataset
-from nistats.utils import get_bids_files
-
+from nistats.utils import (create_fake_bids_dataset,
+                           get_bids_files,
+                           generate_fake_fmri_data,
+                           write_fake_fmri_data,
+                           )
 
 # This directory path
 BASEDIR = os.path.dirname(os.path.abspath(__file__))
 FUNCFILE = os.path.join(BASEDIR, 'functional.nii.gz')
-
-
-def write_fake_fmri_data(shapes, rk=3, affine=np.eye(4)):
-    mask_file, fmri_files, design_files = 'mask.nii', [], []
-    for i, shape in enumerate(shapes):
-        fmri_files.append('fmri_run%d.nii' % i)
-        data = np.random.randn(*shape)
-        data[1:-1, 1:-1, 1:-1] += 100
-        Nifti1Image(data, affine).to_filename(fmri_files[-1])
-        design_files.append('dmtx_%d.csv' % i)
-        pd.DataFrame(np.random.randn(shape[3], rk),
-                     columns=['', '', '']).to_csv(design_files[-1])
-    Nifti1Image((np.random.rand(*shape[:3]) > .5).astype(np.int8),
-                affine).to_filename(mask_file)
-    return mask_file, fmri_files, design_files
-
-
-def generate_fake_fmri_data(shapes, rk=3, affine=np.eye(4)):
-    fmri_data = []
-    design_matrices = []
-    for i, shape in enumerate(shapes):
-        data = np.random.randn(*shape)
-        data[1:-1, 1:-1, 1:-1] += 100
-        fmri_data.append(Nifti1Image(data, affine))
-        design_matrices.append(pd.DataFrame(np.random.randn(shape[3], rk),
-                                            columns=['a', 'b', 'c']))
-    mask = Nifti1Image((np.random.rand(*shape[:3]) > .5).astype(np.int8),
-                       affine)
-    return mask, fmri_data, design_matrices
 
 
 def test_high_level_glm_one_session():
