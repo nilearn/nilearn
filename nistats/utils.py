@@ -477,14 +477,14 @@ def generate_fake_fmri_data(shapes, rk=3, affine=np.eye(4)):
     return mask, fmri_data, design_matrices
 
 
-def write_fake_bold_img(file_path, shape, rk=3, affine=np.eye(4)):
+def _write_fake_bold_img(file_path, shape, rk=3, affine=np.eye(4)):
     data = np.random.randn(*shape)
     data[1:-1, 1:-1, 1:-1] += 100
     Nifti1Image(data, affine).to_filename(file_path)
     return file_path
 
 
-def basic_paradigm():
+def _basic_paradigm():
     conditions = ['c0', 'c0', 'c0', 'c1', 'c1', 'c1', 'c2', 'c2', 'c2']
     onsets = [30, 70, 100, 10, 30, 90, 30, 40, 60]
     events = pd.DataFrame({'trial_type': conditions,
@@ -492,7 +492,7 @@ def basic_paradigm():
     return events
 
 
-def basic_confounds(length):
+def _basic_confounds(length):
     columns = ['RotX', 'RotY', 'RotZ', 'X', 'Y', 'Z']
     data = np.random.rand(length, 6)
     confounds = pd.DataFrame(data, columns=columns)
@@ -539,10 +539,10 @@ def create_fake_bids_dataset(base_dir='', n_sub=10, n_ses=2,
                     if n_run > 1:
                         file_id += '_' + run
                     bold_path = os.path.join(func_path, file_id + '_bold.nii.gz')
-                    write_fake_bold_img(bold_path, [vox, vox, vox, 100])
+                    _write_fake_bold_img(bold_path, [vox, vox, vox, 100])
                     events_path = os.path.join(func_path, file_id +
                                                '_events.tsv')
-                    basic_paradigm().to_csv(events_path, sep='\t', index=None)
+                    _basic_paradigm().to_csv(events_path, sep='\t', index=None)
                     param_path = os.path.join(func_path, file_id +
                                               '_bold.json')
                     with open(param_path, 'w') as param_file:
@@ -567,16 +567,16 @@ def create_fake_bids_dataset(base_dir='', n_sub=10, n_ses=2,
                             file_id += '_' + run
                         preproc = file_id + '_bold_space-MNI_variant-some_preproc.nii.gz'
                         preproc_path = os.path.join(func_path, preproc)
-                        write_fake_bold_img(preproc_path, [vox, vox, vox, 100])
+                        _write_fake_bold_img(preproc_path, [vox, vox, vox, 100])
                         preproc = file_id + '_bold_space-T1w_variant-some_preproc.nii.gz'
                         preproc_path = os.path.join(func_path, preproc)
-                        write_fake_bold_img(preproc_path, [vox, vox, vox, 100])
+                        _write_fake_bold_img(preproc_path, [vox, vox, vox, 100])
                         preproc = file_id + '_bold_space-T1w_variant-other_preproc.nii.gz'
                         preproc_path = os.path.join(func_path, preproc)
-                        write_fake_bold_img(preproc_path, [vox, vox, vox, 100])
+                        _write_fake_bold_img(preproc_path, [vox, vox, vox, 100])
                         if with_confounds:
                             confounds_path = os.path.join(func_path, file_id +
                                                           '_confounds.tsv')
-                            basic_confounds(100).to_csv(confounds_path,
-                                                        sep='\t', index=None)
+                            _basic_confounds(100).to_csv(confounds_path,
+                                                         sep='\t', index=None)
     return 'bids_dataset'
