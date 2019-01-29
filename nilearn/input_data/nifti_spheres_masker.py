@@ -6,13 +6,11 @@ Mask nifti images by spherical volumes for seed-region analyses
 """
 import numpy as np
 import sklearn
-import warnings
 from sklearn import neighbors
 from sklearn.externals.joblib import Memory
 from distutils.version import LooseVersion
 
 from ..image.resampling import coord_transform
-from .._utils.niimg_conversions import _safe_get_data
 from .._utils import CacheMixin
 from .._utils.niimg_conversions import check_niimg_4d, check_niimg_3d
 from .._utils.class_inspect import get_params
@@ -38,13 +36,8 @@ def _apply_mask_and_get_affinity(seeds, niimg, radius, allow_overlap,
 
         X = masking._apply_mask_fmri(niimg, mask_img)
     else:
-        if np.isnan(np.sum(_safe_get_data(niimg))):
-            warnings.warn('The imgs you have fed into fit_transform() contains'
-                          ' NaN values which will be converted to zeroes ')
-            X = _safe_get_data(niimg, True).reshape([-1, niimg.shape[3]]).T
-        else:
-            X = _safe_get_data(niimg).reshape([-1, niimg.shape[3]]).T
         mask_coords = list(np.ndindex(niimg.shape[:3]))
+        X = niimg.get_data().reshape([-1, niimg.shape[3]]).T
 
     # For each seed, get coordinates of nearest voxel
     nearests = []
