@@ -8,14 +8,15 @@ import os
 import warnings
 from string import ascii_lowercase
 
+import nibabel as nib
 import numpy as np
 import pandas as pd
-import nibabel as nib
+
+import nilearn.plotting  # headless server backend override, import before mpl
+import matplotlib.pyplot as plt
+from nilearn.image.resampling import coord_transform
 from scipy import stats
 from scipy import ndimage
-import nilearn.plotting  # overrides the backend on headless servers
-from nilearn.image.resampling import coord_transform
-import matplotlib.pyplot as plt
 from patsy import DesignInfo
 
 from .design_matrix import check_design_matrix

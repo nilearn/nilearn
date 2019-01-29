@@ -6,6 +6,7 @@ Author: Bertrand Thirion, Martin Perez-Guevara, 2016
 """
 
 from warnings import warn
+
 import numpy as np
 import scipy.stats as sps
 

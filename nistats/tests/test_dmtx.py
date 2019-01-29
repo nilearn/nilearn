@@ -7,17 +7,21 @@ not whether it is exact
 
 from __future__ import with_statement
 
-import numpy as np
-import os.path as osp
-import pandas as pd
-from nilearn._utils.testing import assert_raises_regex
+from os import path as osp
 
-from nistats.design_matrix import (
-    _convolve_regressors, make_first_level_design_matrix,
-    _cosine_drift, check_design_matrix,
-    make_second_level_design_matrix)
+import numpy as np
+import pandas as pd
 
 from nibabel.tmpdirs import InTemporaryDirectory
+from nilearn._utils.testing import assert_raises_regex
+
+from nistats.design_matrix import (_convolve_regressors,
+                                   _cosine_drift,
+                                   check_design_matrix,
+                                   make_first_level_design_matrix,
+                                   make_second_level_design_matrix,
+                                   )
+
 
 from nose.tools import assert_true, assert_equal, assert_raises
 from numpy.testing import assert_almost_equal, assert_array_equal

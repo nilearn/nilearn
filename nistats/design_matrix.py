@@ -36,14 +36,16 @@ Author: Bertrand Thirion, 2009-2015
 
 """
 from __future__ import with_statement
-from warnings import warn
-import sys
-import numpy as np
-from scipy import linalg
-import pandas as pd
 
-from .hemodynamic_models import compute_regressor, _orthogonalize
+import sys
+from warnings import warn
+
+import numpy as np
+import pandas as pd
+from scipy import linalg
+
 from .experimental_paradigm import check_events
+from .hemodynamic_models import compute_regressor, _orthogonalize
 from .utils import full_rank, _basestring
 
 ######################################################################

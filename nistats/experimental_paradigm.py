@@ -16,9 +16,11 @@ Author: Bertrand Thirion, 2015
 
 """
 from __future__ import with_statement
+
+import warnings
+
 import numpy as np
 import pandas
-import warnings
 
 
 def check_events(events):

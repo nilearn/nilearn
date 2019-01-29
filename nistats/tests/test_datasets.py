@@ -1,19 +1,24 @@
-import os
 import json
-from tempfile import NamedTemporaryFile
+import os
 import zipfile
+from tempfile import NamedTemporaryFile
 
 import nibabel
+import numpy as np
+import pandas as pd
+
 from nilearn._utils.testing import (mock_request, wrap_chunk_read_,
                                     FetchFilesMock, assert_raises_regex)
+from nilearn._utils.compat import _basestring
 from nilearn.datasets.tests import test_utils as tst
 from nilearn.datasets import utils, func
 from nilearn.datasets.utils import _get_dataset_dir
-from nilearn._utils.compat import _basestring
 from nose import with_setup
-from nose.tools import assert_true, assert_false, assert_equal, assert_raises
-import numpy as np
-import pandas as pd
+from nose.tools import (assert_equal,
+                        assert_false,
+                        assert_raises,
+                        assert_true,
+                        )
 
 from nistats import datasets
 

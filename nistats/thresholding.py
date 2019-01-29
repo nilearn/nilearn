@@ -4,9 +4,10 @@ maps.
 Author: Bertrand Thirion, 2015
 """
 import numpy as np
+
+from nilearn.input_data import NiftiMasker
 from scipy.ndimage import label
 from scipy.stats import norm
-from nilearn.input_data import NiftiMasker
 
 
 def fdr_threshold(z_vals, alpha):

@@ -8,20 +8,21 @@ first level contrasts or directly on fitted first level models
 Author: Martin Perez-Guevara, 2016
 """
 
-from warnings import warn
 import sys
 import time
+from warnings import warn
+
 import pandas as pd
 import numpy as np
-from nibabel import Nifti1Image
 
-from sklearn.base import BaseEstimator, TransformerMixin, clone
-from sklearn.externals.joblib import Memory
+from nibabel import Nifti1Image
 from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._utils import CacheMixin
 from nilearn.input_data import NiftiMasker
 from nilearn.image import mean_img
 from patsy import DesignInfo
+from sklearn.base import BaseEstimator, TransformerMixin, clone
+from sklearn.externals.joblib import Memory
 
 from .first_level_model import FirstLevelModel
 from .first_level_model import run_glm
