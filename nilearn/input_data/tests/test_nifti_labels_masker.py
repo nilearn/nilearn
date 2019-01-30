@@ -9,7 +9,6 @@ from nose.tools import assert_raises, assert_equal, assert_true
 import numpy as np
 
 import nibabel
-from nibabel import Nifti1Image
 
 from nilearn.input_data.nifti_labels_masker import NiftiLabelsMasker
 from nilearn._utils import testing, as_ndarray, data_gen
@@ -276,7 +275,7 @@ def test_standardization():
     signals = np.random.randn(np.prod(data_shape), n_samples)
     means = np.random.randn(np.prod(data_shape), 1) * 50 + 1000
     signals += means
-    img = Nifti1Image(signals.reshape(data_shape + (n_samples,)), np.eye(4))
+    img = nibabel.Nifti1Image(signals.reshape(data_shape + (n_samples,)), np.eye(4))
 
     labels = data_gen.generate_labeled_regions((9, 9, 5), 10)
 
