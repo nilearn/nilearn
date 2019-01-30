@@ -61,6 +61,7 @@ def test_anisotropic_sphere_extraction():
     affine_2 = affine.copy()
     affine_2[0, 0] = 4
     mask_img = nibabel.Nifti1Image(mask_img, affine=affine_2)
+    masker = NiftiSpheresMasker([(2, 1, 2)], radius=1, mask_img=mask_img)
 
     masker.fit()
     s = masker.transform(img)
