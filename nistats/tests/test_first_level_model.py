@@ -32,11 +32,12 @@ from nistats.first_level_model import (first_level_models_from_bids,
                                        run_glm,
                                        )
 
-from nistats.utils import (create_fake_bids_dataset,
-                           get_bids_files,
-                           generate_fake_fmri_data,
-                           write_fake_fmri_data,
+from nistats.utils import (get_bids_files,
                            )
+from nistats._utils.testing import (create_fake_bids_dataset,
+                                    generate_fake_fmri_data,
+                                    write_fake_fmri_data,
+                                    )
 
 # This directory path
 BASEDIR = os.path.dirname(os.path.abspath(__file__))

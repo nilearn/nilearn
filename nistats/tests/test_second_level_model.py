@@ -27,7 +27,7 @@ from nistats.first_level_model import (FirstLevelModel,
                                        run_glm,
                                        )
 from nistats.second_level_model import SecondLevelModel
-from nistats.utils import write_fake_fmri_data
+from nistats._utils.testing import write_fake_fmri_data
 
 # This directory path
 BASEDIR = os.path.dirname(os.path.abspath(__file__))

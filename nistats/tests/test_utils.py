@@ -20,7 +20,6 @@ from scipy.stats import norm
 from nistats.utils import (_check_run_tables,
                            _check_and_load_tables,
                            _check_list_length_match,
-                           create_fake_bids_dataset,
                            full_rank,
                            get_bids_files,
                            get_design_from_fslmat,
@@ -30,6 +29,7 @@ from nistats.utils import (_check_run_tables,
                            positive_reciprocal,
                            z_score,
                            )
+from nistats._utils.testing import create_fake_bids_dataset
 
 
 def test_full_rank():
