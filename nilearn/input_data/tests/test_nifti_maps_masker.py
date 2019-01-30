@@ -1,16 +1,14 @@
 """Test the nifti_region module
 
 Functions in this file only test features added by the NiftiLabelsMasker class,
-non_overlappingt the underlying functions (clean(), img_to_signals_labels(),
-etc.).
-See test_masking.py and test_signal.py for details.
+non_overlappingt the underlying functions (clean(), img_to_signals_labels(), etc.). See
+test_masking.py and test_signal.py for details.
 """
 
 from nose.tools import assert_raises, assert_equal, assert_true
 import numpy as np
 
 import nibabel
-from nibabel import Nifti1Image
 
 from nilearn.input_data.nifti_maps_masker import NiftiMapsMasker
 from nilearn._utils import testing, as_ndarray, data_gen
@@ -309,7 +307,7 @@ def test_standardization():
     signals = np.random.randn(np.prod(data_shape), n_samples)
     means = np.random.randn(np.prod(data_shape), 1) * 50 + 1000
     signals += means
-    img = Nifti1Image(signals.reshape(data_shape + (n_samples,)),
+    img = nibabel.Nifti1Image(signals.reshape(data_shape + (n_samples,)),
                       np.eye(4))
 
     maps, _ = data_gen.generate_maps((9, 9, 5), 10)
