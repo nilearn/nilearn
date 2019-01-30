@@ -387,8 +387,8 @@ def clean(signals, sessions=None, detrend=True, standardize='zscore',
     the following order:
 
     - detrend
-    - remove confounds
     - low- and high-pass filter
+    - remove confounds
     - standardize
 
     Low-pass filtering improves specificity.
@@ -545,6 +545,13 @@ def clean(signals, sessions=None, detrend=True, standardize='zscore',
         mean_signals = signals.mean(axis=0)
         signals = _standardize(signals, standardize=False, detrend=detrend)
 
+    if low_pass is not None or high_pass is not None:
+        if t_r is None:
+            raise ValueError("Repetition time (t_r) must be specified for "
+                             "filtering")
+
+        signals = butterworth(signals, sampling_rate=1. / t_r,
+                              low_pass=low_pass, high_pass=high_pass)
     # Remove confounds
     if confounds is not None:
         confounds = _ensure_float(confounds)
@@ -554,6 +561,9 @@ def clean(signals, sessions=None, detrend=True, standardize='zscore',
 
             confounds = butterworth(confounds, sampling_rate=1. / t_r,
                                     low_pass=low_pass, high_pass=high_pass)
+
+        confounds = _standardize(confounds, standardize=standardize,
+                                 detrend=detrend)
 
         if not standardize:
             # Improve numerical stability by controlling the range of
@@ -568,13 +578,6 @@ def clean(signals, sessions=None, detrend=True, standardize='zscore',
         Q = Q[:, np.abs(np.diag(R)) > np.finfo(np.float).eps * 100.]
         signals -= Q.dot(Q.T).dot(signals)
 
-    if low_pass is not None or high_pass is not None:
-        if t_r is None:
-            raise ValueError("Repetition time (t_r) must be specified for "
-                             "filtering")
-
-        signals = butterworth(signals, sampling_rate=1. / t_r,
-                              low_pass=low_pass, high_pass=high_pass)
 
     # Standardize
     if detrend and (standardize == 'psc'):
