@@ -1,15 +1,26 @@
-import numpy as np
-from nose.tools import raises
-from numpy.testing import (
-    assert_almost_equal, assert_equal, assert_array_equal, assert_warns)
 import warnings
 
-from nistats.hemodynamic_models import (
-    spm_hrf, spm_time_derivative, spm_dispersion_derivative,
-    _resample_regressor, _orthogonalize, _sample_condition,
-    _regressor_names, _hrf_kernel, glover_hrf, glover_dispersion_derivative,
-    glover_time_derivative, compute_regressor)
+import numpy as np
 
+from numpy.testing import (assert_almost_equal,
+                           assert_array_equal,
+                           assert_equal,
+                           assert_warns,
+                           )
+
+from nistats.hemodynamic_models import (_hrf_kernel,
+                                        _orthogonalize,
+                                        _regressor_names,
+                                        _resample_regressor,
+                                        _sample_condition,
+                                        compute_regressor,
+                                        spm_dispersion_derivative,
+                                        spm_hrf,
+                                        spm_time_derivative,
+                                        glover_dispersion_derivative,
+                                        glover_hrf,
+                                        glover_time_derivative,
+                                        )
 
 
 def test_spm_hrf():

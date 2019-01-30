@@ -8,17 +8,26 @@ from __future__ import with_statement
 import os
 
 import numpy as np
+import pandas as pd
 
-from nibabel import load, Nifti1Image
+from nibabel import (load,
+                     Nifti1Image,
+                     )
+from nibabel.tmpdirs import InTemporaryDirectory
+from nilearn.image import concat_imgs
+from nose.tools import (assert_true,
+                        assert_equal,
+                        assert_raises,
+                        )
+from numpy.testing import (assert_almost_equal,
+                           assert_array_equal,
+                           )
 
-from nistats.first_level_model import FirstLevelModel, run_glm
+from nistats.first_level_model import (FirstLevelModel,
+                                       run_glm,
+                                       )
 from nistats.second_level_model import SecondLevelModel
 
-from nose.tools import assert_true, assert_equal, assert_raises
-from numpy.testing import (assert_almost_equal, assert_array_equal)
-from nibabel.tmpdirs import InTemporaryDirectory
-import pandas as pd
-from nilearn.image import concat_imgs
 
 # This directory path
 BASEDIR = os.path.dirname(os.path.abspath(__file__))

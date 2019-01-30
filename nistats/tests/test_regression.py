@@ -4,10 +4,9 @@ Test functions for models.regression
 
 import numpy as np
 
-from nistats.regression import OLSModel, ARModel
+from nose.tools import assert_equal
 
-from nose.tools import assert_equal, assert_true
-from numpy.testing import assert_array_almost_equal, assert_array_equal
+from nistats.regression import OLSModel, ARModel
 
 
 RNG = np.random.RandomState(20110902)

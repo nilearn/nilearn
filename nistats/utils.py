@@ -3,14 +3,17 @@
 Authors: Bertrand Thirion, Matthew Brett, 2015
 """
 import csv
-import sys
-import scipy.linalg as spl
-import numpy as np
-from scipy.stats import norm
-from warnings import warn
-import pandas as pd
-import os
 import glob
+import os
+import sys
+
+from warnings import warn
+
+import numpy as np
+import pandas as pd
+
+import scipy.linalg as spl
+from scipy.stats import norm
 
 py3 = sys.version_info[0] >= 3
 

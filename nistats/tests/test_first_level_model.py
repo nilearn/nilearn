@@ -7,18 +7,31 @@ from __future__ import with_statement
 
 import os
 import shutil
+
 import numpy as np
-
-from nibabel import load, Nifti1Image
-
-from nistats.first_level_model import (mean_scaling, run_glm, FirstLevelModel,
-                                       first_level_models_from_bids)
-from nistats.design_matrix import check_design_matrix, make_first_level_design_matrix
-
-from nose.tools import assert_true, assert_equal, assert_raises
-from numpy.testing import (assert_almost_equal, assert_array_equal)
-from nibabel.tmpdirs import InTemporaryDirectory
 import pandas as pd
+
+from nibabel import (load,
+                     Nifti1Image,
+                     )
+from nose.tools import (assert_equal,
+                        assert_raises,
+                        assert_true,
+                        )
+from numpy.testing import (assert_almost_equal,
+                           assert_array_equal,
+                           )
+from nibabel.tmpdirs import InTemporaryDirectory
+
+from nistats.design_matrix import (check_design_matrix,
+                                   make_first_level_design_matrix,
+                                   )
+from nistats.first_level_model import (first_level_models_from_bids,
+                                       FirstLevelModel,
+                                       mean_scaling,
+                                       run_glm,
+                                       )
+
 
 from nistats.tests.test_utils import create_fake_bids_dataset
 from nistats.utils import get_bids_files
