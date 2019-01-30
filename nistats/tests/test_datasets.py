@@ -4,6 +4,7 @@ from tempfile import NamedTemporaryFile
 import zipfile
 
 import nibabel
+from nibabel.tmpdirs import InTemporaryDirectory
 from nilearn._utils.testing import (mock_request, wrap_chunk_read_,
                                     FetchFilesMock, assert_raises_regex)
 from nilearn.datasets.tests import test_utils as tst
@@ -174,18 +175,15 @@ def test_make_events_file_localizer_first_level():
     def run_test():
         data_for_tests = _input_data_for_test_file()
         expected_data_from_test_file = _expected_output_data_from_test_file()
-        with NamedTemporaryFile(mode='w',
-                                dir=os.getcwd(),
-                                suffix='.csv') as temp_csv_obj:
-            data_for_tests.to_csv(temp_csv_obj.name,
+        temp_tsv_file = 'temp_file.tsv'
+        with InTemporaryDirectory():
+            data_for_tests.to_csv(temp_tsv_file,
                                   index=False,
                                   header=False,
                                   sep=' ',
                                   )
-            datasets._make_events_file_localizer_first_level(
-                    temp_csv_obj.name
-                    )
-            data_from_test_file_post_mod = pd.read_csv(temp_csv_obj.name,
+            datasets._make_events_file_localizer_first_level(temp_tsv_file)
+            data_from_test_file_post_mod = pd.read_csv(temp_tsv_file,
                                                        sep='\t')
             assert_true(all(
                     expected_data_from_test_file == data_from_test_file_post_mod
