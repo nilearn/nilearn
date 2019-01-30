@@ -22,11 +22,11 @@ class _ExtractionFunctor(object):
         self._resampled_mask_img_ = _resampled_mask_img_
 
     def __call__(self, imgs):
-            from ..regions import signal_extraction
+        from ..regions import signal_extraction
 
-            return signal_extraction.img_to_signals_maps(
-                imgs, self._resampled_maps_img_,
-                mask_img=self._resampled_mask_img_)
+        return signal_extraction.img_to_signals_maps(
+            imgs, self._resampled_maps_img_,
+            mask_img=self._resampled_mask_img_)
 
 
 class NiftiMapsMasker(BaseMasker, CacheMixin):
@@ -274,18 +274,18 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
                 if self.verbose > 0:
                     print("Resampling maps")
                 self._resampled_maps_img_ = self._cache(image.resample_img)(
-                        self.maps_img_, interpolation="continuous",
-                        target_shape=ref_img.shape[:3],
-                        target_affine=ref_img.affine)
+                    self.maps_img_, interpolation="continuous",
+                    target_shape=ref_img.shape[:3],
+                    target_affine=ref_img.affine)
 
-            if (self.mask_img_ is not None and
-                    not _check_same_fov(ref_img, self.mask_img_)):
+            if (self.mask_img_ is not None
+                    and not _check_same_fov(ref_img, self.mask_img_)):
                 if self.verbose > 0:
                     print("Resampling mask")
                 self._resampled_mask_img_ = self._cache(image.resample_img)(
-                        self.mask_img_, interpolation="nearest",
-                        target_shape=ref_img.shape[:3],
-                        target_affine=ref_img.affine)
+                    self.mask_img_, interpolation="nearest",
+                    target_shape=ref_img.shape[:3],
+                    target_affine=ref_img.affine)
 
         if not self.allow_overlap:
             # Check if there is an overlap.

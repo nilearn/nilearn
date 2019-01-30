@@ -133,8 +133,8 @@ def test_butterworth():
      causing it to fail tests.
      This hack prevents that and will be removed in future.
     '''
-    buggy_scipy = (LooseVersion(scipy.__version__) < LooseVersion('1.2')
-                   and LooseVersion(scipy.__version__) > LooseVersion('1.0')
+    buggy_scipy = (LooseVersion(scipy.__version__) < LooseVersion('1.2') and
+                   LooseVersion(scipy.__version__) > LooseVersion('1.0')
                    )
     if buggy_scipy:
         warnings.simplefilter('ignore')
@@ -218,8 +218,8 @@ def test_detrend():
 
     # Mean removal only (out-of-place)
     detrended = nisignal._detrend(x, inplace=False, type="constant")
-    assert_true(abs(detrended.mean(axis=0)).max()
-                < 15. * np.finfo(np.float).eps)
+    assert_true(abs(detrended.mean(axis=0)).max() <
+                15. * np.finfo(np.float).eps)
 
     # out-of-place detrending. Use scipy as a reference implementation
     detrended = nisignal._detrend(x, inplace=False)
@@ -227,8 +227,8 @@ def test_detrend():
 
     # "x" must be left untouched
     np.testing.assert_almost_equal(original, x, decimal=14)
-    assert_true(abs(detrended.mean(axis=0)).max() <
-                15. * np.finfo(np.float).eps)
+    assert_true(abs(detrended.mean(axis=0)).max()
+                < 15. * np.finfo(np.float).eps)
     np.testing.assert_almost_equal(detrended_scipy, detrended, decimal=14)
     # for this to work, there must be no trends at all in "signals"
     np.testing.assert_almost_equal(detrended, signals, decimal=14)
@@ -532,6 +532,7 @@ def test_high_variance_confounds():
     np.testing.assert_almost_equal(
         np.min(np.abs(np.dstack([outG - outGt, outG + outGt])), axis=2),
         np.zeros(outG.shape))
+
 
 def test_clean_psc():
     rng = np.random.RandomState(0)

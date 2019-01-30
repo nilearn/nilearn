@@ -308,7 +308,7 @@ def test_standardization():
     means = np.random.randn(np.prod(data_shape), 1) * 50 + 1000
     signals += means
     img = nibabel.Nifti1Image(signals.reshape(data_shape + (n_samples,)),
-                      np.eye(4))
+                              np.eye(4))
 
     maps, _ = data_gen.generate_maps((9, 9, 5), 10)
 
@@ -330,6 +330,6 @@ def test_standardization():
 
     np.testing.assert_almost_equal(trans_signals.mean(0), 0)
     np.testing.assert_almost_equal(trans_signals,
-                                   unstandarized_label_signals /
-                                   unstandarized_label_signals.mean(0) *
-                                   100 - 100)
+                                   unstandarized_label_signals
+                                   / unstandarized_label_signals.mean(0)
+                                   * 100 - 100)

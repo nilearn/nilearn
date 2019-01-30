@@ -578,7 +578,6 @@ def clean(signals, sessions=None, detrend=True, standardize='zscore',
         Q = Q[:, np.abs(np.diag(R)) > np.finfo(np.float).eps * 100.]
         signals -= Q.dot(Q.T).dot(signals)
 
-
     # Standardize
     if detrend and (standardize == 'psc'):
         # If the signal is detrended, we have to know the original mean

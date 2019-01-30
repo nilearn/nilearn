@@ -203,7 +203,7 @@ def test_standardization():
     n_samples = 500
 
     signals = np.random.randn(2, np.prod(data_shape), n_samples)
-    means = np.random.randn(2, np.prod(data_shape), 1)*50 + 1000
+    means = np.random.randn(2, np.prod(data_shape), 1) * 50 + 1000
     signals += means
 
     img1 = Nifti1Image(signals[0].reshape(data_shape + (n_samples,)),
@@ -228,5 +228,5 @@ def test_standardization():
     for ts, s in zip(trans_signals, signals):
         np.testing.assert_almost_equal(ts.mean(0), 0)
         np.testing.assert_almost_equal(ts,
-                                       (s / s.mean(1)[:, np.newaxis]
-                                        * 100 - 100).T)
+                                       (s / s.mean(1)[:, np.newaxis] *
+                                        100 - 100).T)

@@ -190,8 +190,8 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
                     interpolation="nearest",
                     copy=True)
             else:
-                raise ValueError("Invalid value for resampling_target: " +
-                                 str(self.resampling_target))
+                raise ValueError("Invalid value for resampling_target: "
+                                 + str(self.resampling_target))
 
             mask_data, mask_affine = masking._load_mask_img(self.mask_img_)
 
@@ -257,8 +257,8 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
         params['target_affine'] = target_affine
 
         region_signals, labels_ = self._cache(
-                filter_and_extract,
-                ignore=['verbose', 'memory', 'memory_level'])(
+            filter_and_extract,
+            ignore=['verbose', 'memory', 'memory_level'])(
             # Images
             imgs, _ExtractionFunctor(self._resampled_labels_img_,
                                      self.background_label),
