@@ -212,7 +212,7 @@ def test_5d():
         DimensionError,
         "Input data has incompatible dimensionality: "
         "Expected dimension is 4D and you provided "
-        "a list of 4D images (5D).",
+        "a list of 4D images \(5D\).",
         masker.transform, data_5d)
 
 
