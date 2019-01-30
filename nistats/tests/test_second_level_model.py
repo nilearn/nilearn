@@ -59,8 +59,8 @@ def test_high_level_glm_with_paths():
         assert_true(isinstance(z_image, Nifti1Image))
         assert_array_equal(z_image.affine, load(mask).affine)
         # Delete objects attached to files to avoid WindowsError when deleting
-        # temporary directory
-        del z_image, FUNCFILE, func_img, model
+        # temporary directory (in Windows)
+        del Y, FUNCFILE, func_img, model
 
 
 def test_fmri_inputs():
@@ -164,6 +164,10 @@ def test_second_level_model_glm_computation():
             model.masker_.transform(Y), X.values, 'ols')
         assert_almost_equal(labels1, labels2, decimal=1)
         assert_equal(len(results1), len(results2))
+        # Delete objects attached to files to avoid WindowsError when deleting
+        # temporary directory (in Windows)
+        del func_img, FUNCFILE, model, X, Y
+
 
 
 def test_second_level_model_contrast_computation():
@@ -205,6 +209,11 @@ def test_second_level_model_contrast_computation():
         X = pd.DataFrame(np.random.rand(4, 2), columns=['r1', 'r2'])
         model = model.fit(Y, design_matrix=X)
         assert_raises(ValueError, model.compute_contrast, None)
+        # Delete objects attached to files to avoid WindowsError when deleting
+        # temporary directory (in Windows)
+        del func_img, FUNCFILE, model, X, Y
+
+        
 
 
 def test_second_level_model_contrast_computation_with_memory_caching():
@@ -225,3 +234,6 @@ def test_second_level_model_contrast_computation_with_memory_caching():
         model.compute_contrast(c1, output_type='z_score')
         # or simply pass nothing
         model.compute_contrast()
+        # Delete objects attached to files to avoid WindowsError when deleting
+        # temporary directory (in Windows)
+        del func_img, FUNCFILE, model, X, Y
