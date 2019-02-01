@@ -6,6 +6,9 @@ NEW
 
 - New display mode 'tiled' which allows 2x2 plot arrangement when plotting three cuts
   (see :ref:`plotting`).
+- Rework of the standardize-options of :func:`nilearn.signal.clean` and the various Maskers
+  in `nilearn.input_data`. You can now set `standardize` to `zscore` or `psc`. `psc` stands
+  for `Percent Signal Change`, which can be a meaningful metric for BOLD.
 
 0.5.0
 =====
