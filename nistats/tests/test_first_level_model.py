@@ -93,7 +93,7 @@ def test_high_level_glm_with_data():
         shapes, rk = ((7, 8, 7, 15), (7, 8, 7, 16)), 3
         mask, fmri_data, design_matrices = write_fake_fmri_data(shapes, rk)
         multi_session_model = FirstLevelModel(mask=None).fit(
-                fmri_data, design_matrices=design_matrices)
+            fmri_data, design_matrices=design_matrices)
         n_voxels = multi_session_model.masker_.mask_img_.get_data().sum()
         z_image = multi_session_model.compute_contrast(np.eye(rk)[1])
         assert_equal(np.sum(z_image.get_data() != 0), n_voxels)
@@ -101,17 +101,17 @@ def test_high_level_glm_with_data():
         
         # with mask
         multi_session_model = FirstLevelModel(mask=mask).fit(
-                fmri_data, design_matrices=design_matrices)
+            fmri_data, design_matrices=design_matrices)
         z_image = multi_session_model.compute_contrast(
-                np.eye(rk)[:2], output_type='z_score')
+            np.eye(rk)[:2], output_type='z_score')
         p_value = multi_session_model.compute_contrast(
-                np.eye(rk)[:2], output_type='p_value')
+            np.eye(rk)[:2], output_type='p_value')
         stat_image = multi_session_model.compute_contrast(
-                np.eye(rk)[:2], output_type='stat')
+            np.eye(rk)[:2], output_type='stat')
         effect_image = multi_session_model.compute_contrast(
-                np.eye(rk)[:2], output_type='effect_size')
+            np.eye(rk)[:2], output_type='effect_size')
         variance_image = multi_session_model.compute_contrast(
-                np.eye(rk)[:2], output_type='effect_variance')
+            np.eye(rk)[:2], output_type='effect_variance')
         assert_array_equal(z_image.get_data() == 0., load(mask).get_data() == 0.)
         assert_true(
                 (variance_image.get_data()[load(mask).get_data() > 0] > .001).all())
