@@ -44,12 +44,13 @@ function getAxisConfig() {
 
 function getLighting() {
     return {};
-    // return {
-    //     "ambient": 0.5,
-    //     "diffuse": 1,
-    //     "fresnel": .1,
+    // i.e. use plotly defaults:
+    // {
+    //     "ambient": 0.8,
+    //     "diffuse": .8,
+    //     "fresnel": .2,
     //     "specular": .05,
-    //     "roughness": .1,
+    //     "roughness": .5,
     //     "facenormalsepsilon": 1e-6,
     //     "vertexnormalsepsilon": 1e-12
     // };
