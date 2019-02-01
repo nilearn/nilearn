@@ -223,8 +223,6 @@ def test_second_level_model_contrast_computation():
         del func_img, FUNCFILE, model, X, Y
 
         
-
-
 def test_second_level_model_contrast_computation_with_memory_caching():
     with InTemporaryDirectory():
         shapes = ((7, 8, 9, 1),)

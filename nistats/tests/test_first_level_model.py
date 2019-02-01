@@ -388,7 +388,6 @@ def test_first_level_model_contrast_computation():
         del func_img, FUNCFILE, model
 
 
-
 def test_first_level_models_from_bids():
     with InTemporaryDirectory():
         bids_path = create_fake_bids_dataset(n_sub=10, n_ses=2,
