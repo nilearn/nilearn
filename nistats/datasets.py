@@ -305,6 +305,9 @@ def _make_events_file_localizer_first_level(events_file):
     events.drop(labels='session', axis=1, inplace=True)
     # duration is required in BIDS specification
     events['duration'] = np.ones_like(events.onset)
+    # if events_file is open file handle, reset cursor to file beginning.
+    if hasattr(events_file, 'read') or hasattr(events_file, 'write'):
+        events_file.seek(0)
     events.to_csv(events_file, sep='\t', index=False)
 
 
