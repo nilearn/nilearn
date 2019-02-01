@@ -106,12 +106,18 @@ def _verify_events_file_uses_tab_separators(events_files):
         try:
             with open(events_file_, 'r') as events_file_obj:
                 events_file_sample = events_file_obj.readline()
-        except TypeError as type_err:  # events is Pandas dataframe.
+        except (TypeError, UnicodeDecodeError, IOError):
             pass
-        except UnicodeDecodeError as unicode_err:  # py3:if binary file
-            pass
-        except IOError as io_err:  # if invalid filepath.
-            pass
+            '''
+            TypeError: When events is Pandas dataframe.
+            UnicodeDecodeError:  Raised in Py3 if binary file is passed in.
+            IOError: When filepath is invalid or
+                        (in Windows) if file is being accessed elsewhere
+            These errors are not being handled here,
+                as they are handled elsewhere in the calling code.
+            Handling them here will beak the calling code,
+                and refactoring that is not straighforward.
+            '''
         else:
             try:
                 csv.Sniffer().sniff(sample=events_file_sample,
