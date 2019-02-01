@@ -29,7 +29,7 @@ from nistats.utils import (_check_run_tables,
                            positive_reciprocal,
                            z_score,
                            )
-from nistats._utils.testing import create_fake_bids_dataset
+from nistats._utils.testing import _create_fake_bids_dataset
 
 
 def test_full_rank():
@@ -124,7 +124,7 @@ def test_img_table_checks():
 
 def test_get_bids_files():
     with InTemporaryDirectory():
-        bids_path = create_fake_bids_dataset(n_sub=10, n_ses=2,
+        bids_path = _create_fake_bids_dataset(n_sub=10, n_ses=2,
                                              tasks=['localizer', 'main'],
                                              n_runs=[1, 3])
         # For each possible possible option of file selection we check
