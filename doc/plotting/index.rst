@@ -166,6 +166,10 @@ Different display modes
      :target: ../auto_examples/01_plotting/plot_demo_more_plotting.html
      :scale: 50
 
+.. |plot_tiled| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_demo_more_plotting_009.png
+     :target: ../auto_examples/01_plotting/plot_demo_more_plotting.html
+     :scale: 50
+
 .. |plot_lzr| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_demo_glass_brain_extensive_006.png
      :target: ../auto_examples/01_plotting/plot_demo_glass_brain_extensive.html
      :scale: 50
@@ -215,6 +219,11 @@ Different display modes
                    |hack|
                    Cutting in the y and z direction, with cuts manually
                    positionned
+
+|plot_tiled|       `display_mode='tiled', cut_coords=[36, -27, 60]`
+                   |hack|
+                   Tiled slicer: 3 cuts along the x, y, z directions,
+                   arranged in a 2x2 grid
 
 |plot_lzr|         `Glass brain display_mode='lzr'`
                    |hack|
