@@ -31,15 +31,13 @@ from nistats.first_level_model import (first_level_models_from_bids,
                                        mean_scaling,
                                        run_glm,
                                        )
-
-from nistats.utils import (get_bids_files,
-                           )
-from nistats._utils.testing import (create_fake_bids_dataset,
-                                    generate_fake_fmri_data,
-                                    write_fake_fmri_data,
+from nistats.utils import get_bids_files
+from nistats._utils.testing import (_create_fake_bids_dataset,
+                                    _generate_fake_fmri_data,
+                                    _write_fake_fmri_data,
                                     )
 
-# This directory path
+
 BASEDIR = os.path.dirname(os.path.abspath(__file__))
 FUNCFILE = os.path.join(BASEDIR, 'functional.nii.gz')
 
@@ -47,7 +45,7 @@ FUNCFILE = os.path.join(BASEDIR, 'functional.nii.gz')
 def test_high_level_glm_one_session():
     # New API
     shapes, rk = [(7, 8, 9, 15)], 3
-    mask, fmri_data, design_matrices = generate_fake_fmri_data(shapes, rk)
+    mask, fmri_data, design_matrices = _generate_fake_fmri_data(shapes, rk)
 
     single_session_model = FirstLevelModel(mask=None).fit(
         fmri_data[0], design_matrices=design_matrices[0])
@@ -64,7 +62,7 @@ def test_high_level_glm_with_data():
     # New API
     with InTemporaryDirectory():
         shapes, rk = ((7, 8, 7, 15), (7, 8, 7, 16)), 3
-        mask, fmri_data, design_matrices = write_fake_fmri_data(shapes, rk)
+        mask, fmri_data, design_matrices = _write_fake_fmri_data(shapes, rk)
         multi_session_model = FirstLevelModel(mask=None).fit(
             fmri_data, design_matrices=design_matrices)
         n_voxels = multi_session_model.masker_.mask_img_.get_data().sum()
@@ -103,7 +101,7 @@ def test_high_level_glm_with_paths():
     # New API
     shapes, rk = ((7, 8, 7, 15), (7, 8, 7, 14)), 3
     with InTemporaryDirectory():
-        mask_file, fmri_files, design_files = write_fake_fmri_data(shapes, rk)
+        mask_file, fmri_files, design_files = _write_fake_fmri_data(shapes, rk)
         multi_session_model = FirstLevelModel(mask=None).fit(
             fmri_files, design_matrices=design_files)
         z_image = multi_session_model.compute_contrast(np.eye(rk)[1])
@@ -118,7 +116,7 @@ def test_high_level_glm_null_contrasts():
     # test that contrast computation is resilient to 0 values.
     # new API
     shapes, rk = ((7, 8, 7, 15), (7, 8, 7, 19)), 3
-    mask, fmri_data, design_matrices = generate_fake_fmri_data(shapes, rk)
+    mask, fmri_data, design_matrices = _generate_fake_fmri_data(shapes, rk)
 
     multi_session_model = FirstLevelModel(mask=None).fit(
         fmri_data, design_matrices=design_matrices)
@@ -173,7 +171,7 @@ def test_fmri_inputs():
     # Test processing of FMRI inputs
     with InTemporaryDirectory():
         shapes = ((7, 8, 9, 10),)
-        mask, FUNCFILE, _ = write_fake_fmri_data(shapes)
+        mask, FUNCFILE, _ = _write_fake_fmri_data(shapes)
         FUNCFILE = FUNCFILE[0]
         func_img = load(FUNCFILE)
         T = func_img.shape[-1]
@@ -223,7 +221,7 @@ def test_first_level_model_design_creation():
         # Test processing of FMRI inputs
     with InTemporaryDirectory():
         shapes = ((7, 8, 9, 10),)
-        mask, FUNCFILE, _ = write_fake_fmri_data(shapes)
+        mask, FUNCFILE, _ = _write_fake_fmri_data(shapes)
         FUNCFILE = FUNCFILE[0]
         func_img = load(FUNCFILE)
         # basic test based on basic_paradigm and glover hrf
@@ -250,7 +248,7 @@ def test_first_level_model_design_creation():
 def test_first_level_model_glm_computation():
     with InTemporaryDirectory():
         shapes = ((7, 8, 9, 10),)
-        mask, FUNCFILE, _ = write_fake_fmri_data(shapes)
+        mask, FUNCFILE, _ = _write_fake_fmri_data(shapes)
         FUNCFILE = FUNCFILE[0]
         func_img = load(FUNCFILE)
         # basic test based on basic_paradigm and glover hrf
@@ -275,7 +273,7 @@ def test_first_level_model_glm_computation():
 def test_first_level_glm_computation_with_memory_caching():
     with InTemporaryDirectory():
         shapes = ((7, 8, 9, 10),)
-        mask, FUNCFILE, _ = write_fake_fmri_data(shapes)
+        mask, FUNCFILE, _ = _write_fake_fmri_data(shapes)
         FUNCFILE = FUNCFILE[0]
         func_img = load(FUNCFILE)
         # initialize FirstLevelModel with memory option enabled
@@ -293,7 +291,7 @@ def test_first_level_glm_computation_with_memory_caching():
 def test_first_level_model_contrast_computation():
     with InTemporaryDirectory():
         shapes = ((7, 8, 9, 10),)
-        mask, FUNCFILE, _ = write_fake_fmri_data(shapes)
+        mask, FUNCFILE, _ = _write_fake_fmri_data(shapes)
         FUNCFILE = FUNCFILE[0]
         func_img = load(FUNCFILE)
         # basic test based on basic_paradigm and glover hrf
@@ -339,7 +337,7 @@ def test_first_level_model_contrast_computation():
 
 def test_first_level_models_from_bids():
     with InTemporaryDirectory():
-        bids_path = create_fake_bids_dataset(n_sub=10, n_ses=2,
+        bids_path = _create_fake_bids_dataset(n_sub=10, n_ses=2,
                                              tasks=['localizer', 'main'],
                                              n_runs=[1, 3])
         # test arguments are provided correctly
@@ -390,7 +388,7 @@ def test_first_level_models_from_bids():
 
         # check runs are not repeated when ses field is not used
         shutil.rmtree(bids_path)
-        bids_path = create_fake_bids_dataset(n_sub=10, n_ses=1,
+        bids_path = _create_fake_bids_dataset(n_sub=10, n_ses=1,
                                              tasks=['localizer', 'main'],
                                              n_runs=[1, 3], no_session=True)
         # test repeated run tag error when run tag is in filenames and not ses

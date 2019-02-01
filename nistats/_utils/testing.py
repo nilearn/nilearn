@@ -6,7 +6,7 @@ import pandas as pd
 from nibabel import Nifti1Image
 
 
-def write_fake_fmri_data(shapes, rk=3, affine=np.eye(4)):
+def _write_fake_fmri_data(shapes, rk=3, affine=np.eye(4)):
     mask_file, fmri_files, design_files = 'mask.nii', [], []
     for i, shape in enumerate(shapes):
         fmri_files.append('fmri_run%d.nii' % i)
@@ -21,7 +21,7 @@ def write_fake_fmri_data(shapes, rk=3, affine=np.eye(4)):
     return mask_file, fmri_files, design_files
 
 
-def generate_fake_fmri_data(shapes, rk=3, affine=np.eye(4)):
+def _generate_fake_fmri_data(shapes, rk=3, affine=np.eye(4)):
     fmri_data = []
     design_matrices = []
     for i, shape in enumerate(shapes):
@@ -57,18 +57,53 @@ def _basic_confounds(length):
     return confounds
 
 
-def create_fake_bids_dataset(base_dir='', n_sub=10, n_ses=2,
+def _create_fake_bids_dataset(base_dir='', n_sub=10, n_ses=2,
                              tasks=['localizer', 'main'],
                              n_runs=[1, 3], with_derivatives=True,
                              with_confounds=True, no_session=False):
-    """Returns a fake bids dataset directory with dummy files
-
-    In the case derivatives are included, they come with two spaces and
-    variants. Spaces are 'MNI' and 'T1w'. Variants are 'some' and 'other'.
-    Only space 'T1w' include both variants.
-
-    Specifying no_sessions will only produce runs and files without the
-    optional session field. In this case n_ses will be ignored.
+    """Creates a fake bids dataset directory with dummy files.
+    Returns fake dataset directory name.
+    
+    Parameters
+    ----------
+    base_dir: string (Absolute path), optional
+        Absolute directory path in which to create the fake BIDS dataset dir.
+        Default: Current directory.
+        
+    n_sub: int, optional
+        Number of subject to be simulated in the dataset.
+        Default: 10
+        
+    n_ses: int, optional
+        Number of sessions to be simulated in the dataset.
+        Ignored if no_session=True.
+        Default: 2
+        
+    n_runs: List[int], optional
+        Default: [1, 3]
+        
+    with_derivatives: bool, optional
+        In the case derivatives are included, they come with two spaces and
+        variants. Spaces are 'MNI' and 'T1w'. Variants are 'some' and 'other'.
+        Only space 'T1w' include both variants.
+        Default: True
+        
+    with_confounds: bool, optional
+        Default: True
+        
+    no_session: bool, optional
+        Specifying no_sessions will only produce runs and files without the
+        optional session field. In this case n_ses will be ignored.
+        Default: False
+        
+    Returns
+    -------
+    dataset directory name: string
+        'bids_dataset'
+        
+    Creates
+    -------
+        Directory with dummy files
     """
     bids_path = os.path.join(base_dir, 'bids_dataset')
     os.makedirs(bids_path)
