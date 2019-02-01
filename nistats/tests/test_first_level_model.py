@@ -142,8 +142,6 @@ def test_high_level_glm_with_data():
          )
 
 
-
-
 def test_high_level_glm_with_paths():
     # New API
     shapes, rk = ((7, 8, 7, 15), (7, 8, 7, 14)), 3
@@ -155,7 +153,7 @@ def test_high_level_glm_with_paths():
         assert_array_equal(z_image.affine, load(mask_file).affine)
         assert_true(z_image.get_data().std() < 3.)
         # Delete objects attached to files to avoid WindowsError when deleting
-        # temporary directory
+        # temporary directory (in Windows)
         del z_image, fmri_files, multi_session_model
 
 
@@ -252,6 +250,8 @@ def test_fmri_inputs():
             # confounds rows do not match n_scans
             assert_raises(
                 ValueError, FirstLevelModel(mask=None).fit, fi, d, conf)
+        # Delete objects attached to files to avoid WindowsError when deleting
+        # temporary directory (in Windows)
         del fi, func_img, mask, d, des, FUNCFILE, _
 
 
@@ -291,6 +291,8 @@ def test_first_level_model_design_creation():
         assert_array_equal(frame1, frame2)
         assert_array_equal(X1, X2)
         assert_array_equal(names1, names2)
+        # Delete objects attached to files to avoid WindowsError when deleting
+        # temporary directory (in Windows)
         del FUNCFILE, mask, model, func_img
 
 
