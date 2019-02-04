@@ -9,6 +9,7 @@ import webbrowser
 import tempfile
 import warnings
 import subprocess
+from string import Template
 import weakref
 try:
     from html import escape  # Unavailable in Py2
@@ -56,7 +57,9 @@ def add_js_lib(html, embed_js=True):
         {}
         </script>
         """.format(jquery, plotly, js_utils)
-    return html.replace('INSERT_JS_LIBRARIES_HERE', js_lib)
+    if not isinstance(html, Template):
+        html = Template(html)
+    return html.safe_substitute({'INSERT_JS_LIBRARIES_HERE': js_lib})
 
 
 def get_html_template(template_name):
@@ -64,7 +67,7 @@ def get_html_template(template_name):
     template_path = os.path.join(
         os.path.dirname(__file__), 'data', 'html', template_name)
     with open(template_path, 'rb') as f:
-        return f.read().decode('utf-8')
+        return Template(f.read().decode('utf-8'))
 
 
 def _remove_after_n_seconds(file_name, n_seconds):
