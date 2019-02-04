@@ -27,32 +27,17 @@ from nistats.first_level_model import (FirstLevelModel,
                                        run_glm,
                                        )
 from nistats.second_level_model import SecondLevelModel
-
+from nistats._utils.testing import _write_fake_fmri_data
 
 # This directory path
 BASEDIR = os.path.dirname(os.path.abspath(__file__))
 FUNCFILE = os.path.join(BASEDIR, 'functional.nii.gz')
 
 
-def write_fake_fmri_data(shapes, rk=3, affine=np.eye(4)):
-    mask_file, fmri_files, design_files = 'mask.nii', [], []
-    for i, shape in enumerate(shapes):
-        fmri_files.append('fmri_run%d.nii' % i)
-        data = np.random.randn(*shape)
-        data[1:-1, 1:-1, 1:-1] += 100
-        Nifti1Image(data, affine).to_filename(fmri_files[-1])
-        design_files.append('dmtx_%d.csv' % i)
-        pd.DataFrame(np.random.randn(shape[3], rk),
-                     columns=['', '', '']).to_csv(design_files[-1])
-    Nifti1Image((np.random.rand(*shape[:3]) > .5).astype(np.int8),
-                affine).to_filename(mask_file)
-    return mask_file, fmri_files, design_files
-
-
 def test_high_level_glm_with_paths():
     with InTemporaryDirectory():
         shapes = ((7, 8, 9, 1),)
-        mask, FUNCFILE, _ = write_fake_fmri_data(shapes)
+        mask, FUNCFILE, _ = _write_fake_fmri_data(shapes)
         FUNCFILE = FUNCFILE[0]
         func_img = load(FUNCFILE)
         # Ordinary Least Squares case
@@ -79,7 +64,7 @@ def test_fmri_inputs():
         p, q = 80, 10
         X = np.random.randn(p, q)
         shapes = ((7, 8, 9, 10),)
-        mask, FUNCFILE, _ = write_fake_fmri_data(shapes)
+        mask, FUNCFILE, _ = _write_fake_fmri_data(shapes)
         FUNCFILE = FUNCFILE[0]
         func_img = load(FUNCFILE)
         T = func_img.shape[-1]
@@ -93,7 +78,7 @@ def test_fmri_inputs():
         flms = [flm, flm, flm]
         # prepare correct input dataframe and lists
         shapes = ((7, 8, 9, 1),)
-        _, FUNCFILE, _ = write_fake_fmri_data(shapes)
+        _, FUNCFILE, _ = _write_fake_fmri_data(shapes)
         FUNCFILE = FUNCFILE[0]
 
         dfcols = ['subject_label', 'map_name', 'effects_map_path']
@@ -156,7 +141,7 @@ def _first_level_dataframe():
 def test_second_level_model_glm_computation():
     with InTemporaryDirectory():
         shapes = ((7, 8, 9, 1),)
-        mask, FUNCFILE, _ = write_fake_fmri_data(shapes)
+        mask, FUNCFILE, _ = _write_fake_fmri_data(shapes)
         FUNCFILE = FUNCFILE[0]
         func_img = load(FUNCFILE)
         # Ordinary Least Squares case
@@ -178,7 +163,7 @@ def test_second_level_model_glm_computation():
 def test_second_level_model_contrast_computation():
     with InTemporaryDirectory():
         shapes = ((7, 8, 9, 1),)
-        mask, FUNCFILE, _ = write_fake_fmri_data(shapes)
+        mask, FUNCFILE, _ = _write_fake_fmri_data(shapes)
         FUNCFILE = FUNCFILE[0]
         func_img = load(FUNCFILE)
         # Ordinary Least Squares case
@@ -219,7 +204,7 @@ def test_second_level_model_contrast_computation():
 def test_second_level_model_contrast_computation_with_memory_caching():
     with InTemporaryDirectory():
         shapes = ((7, 8, 9, 1),)
-        mask, FUNCFILE, _ = write_fake_fmri_data(shapes)
+        mask, FUNCFILE, _ = _write_fake_fmri_data(shapes)
         FUNCFILE = FUNCFILE[0]
         func_img = load(FUNCFILE)
         # Ordinary Least Squares case
