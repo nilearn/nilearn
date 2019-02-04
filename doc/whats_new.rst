@@ -8,6 +8,12 @@ NEW
 - New display mode 'tiled' which allows 2x2 plot arrangement when plotting three cuts
   (see :ref:`plotting`).
 
+Changes
+-------
+
+- Lighting used for interactive surface plots changed; plots may look a bit
+  different.
+
 0.5.0
 =====
 
