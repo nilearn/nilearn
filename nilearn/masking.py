@@ -14,7 +14,7 @@ from . import _utils
 from .image import new_img_like
 from ._utils.cache_mixin import cache
 from ._utils.ndimage import largest_connected_component, get_border_data
-from ._utils.niimg import _safe_get_data
+from ._utils.niimg import _safe_get_data, img_data_dtype
 
 
 class MaskWarning(UserWarning):
@@ -564,7 +564,7 @@ def compute_gray_matter_mask(target_img, threshold=.5,
 
     from .datasets import load_mni152_brain_mask
     template = load_mni152_brain_mask()
-    dtype = target_img.get_data_dtype()
+    dtype = img_data_dtype(target_img)
     template = new_img_like(template,
                             template.get_data().astype(dtype))
 

@@ -329,11 +329,23 @@ def _get_cut_slices(stat_map_img, cut_coords=None, threshold=None):
     return cut_slices
 
 
-def view_stat_map(stat_map_img, bg_img='MNI152', cut_coords=None,
-                  colorbar=True, title=None, threshold=1e-6, annotate=True,
-                  draw_cross=True, black_bg='auto', cmap=cm.cold_hot,
-                  symmetric_cmap=True, dim='auto', vmax=None,
-                  resampling_interpolation='continuous', opacity=1, **kwargs):
+def view_img(stat_map_img, bg_img='MNI152',
+             cut_coords=None,
+             colorbar=True,
+             title=None,
+             threshold=1e-6,
+             annotate=True,
+             draw_cross=True,
+             black_bg='auto',
+             cmap=cm.cold_hot,
+             symmetric_cmap=True,
+             dim='auto',
+             vmax=None,
+             vmin=None,
+             resampling_interpolation='continuous',
+             opacity=1,
+             **kwargs
+             ):
     """
     Interactive html viewer of a statistical map, with optional background
 
@@ -394,6 +406,12 @@ def view_stat_map(stat_map_img, bg_img='MNI152', cut_coords=None,
         absolute value of the volume.
         If vmax is None and symmetric_cmap is False, vmax is the max
         value of the volume.
+    vmin : float, or None (default=None)
+        min value for mapping colors.
+        If `symmetric_cmap` is `True`, `vmin` is always equal to `-vmax` and
+        cannot be chosen.
+        If `symmetric_cmap` is `False`, `vmin` defaults to the min of the
+        image, or 0 when a threshold is used.
     resampling_interpolation : string, optional (default continuous)
         The interpolation method for resampling.
         Can be 'continuous', 'linear', or 'nearest'.
@@ -426,7 +444,8 @@ def view_stat_map(stat_map_img, bg_img='MNI152', cut_coords=None,
     mask_img, stat_map_img, data, threshold = _mask_stat_map(
         stat_map_img, threshold)
     colors = colorscale(cmap, data.ravel(), threshold=threshold,
-                        symmetric_cmap=symmetric_cmap, vmax=vmax)
+                        symmetric_cmap=symmetric_cmap, vmax=vmax,
+                        vmin=vmin)
 
     # Prepare the data for the cuts
     bg_img, bg_min, bg_max, black_bg = _load_bg_img(stat_map_img, bg_img,
