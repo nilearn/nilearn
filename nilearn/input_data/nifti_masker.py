@@ -14,6 +14,7 @@ from .. import image
 from .. import masking
 from .._utils import CacheMixin
 from .._utils.class_inspect import get_params
+from .._utils.niimg import img_data_dtype
 from .._utils.niimg_conversions import _check_same_fov
 
 
@@ -25,7 +26,7 @@ class _ExtractionFunctor(object):
 
     def __call__(self, imgs):
         return(masking.apply_mask(imgs, self.mask_img_,
-                                  dtype=imgs.get_data_dtype()), imgs.affine)
+                                  dtype=img_data_dtype(imgs)), imgs.affine)
 
 
 def filter_and_mask(imgs, mask_img_, parameters,
