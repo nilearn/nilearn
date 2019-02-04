@@ -52,10 +52,8 @@ def _get_connectome(adjacency_matrix, coords, threshold=None,
         connectome["_con_{}".format(cname)] = encode(
             np.asarray(coord, dtype='<f4'))
     connectome["markers_only"] = False
-    try:
+    if hasattr(marker_size, 'tolist'):
         marker_size = marker_size.tolist()
-    except AttributeError:
-        pass
     connectome['marker_size'] = marker_size
     return connectome
 
@@ -190,9 +188,7 @@ def view_markers(coords, colors=None, marker_size=5.):
     if colors is None:
         colors = ['black' for i in range(len(coords))]
     connectome_info = _get_markers(coords, colors)
-    try:
+    if hasattr(marker_size, 'tolist'):
         marker_size = marker_size.tolist()
-    except AttributeError:
-        pass
     connectome_info["marker_size"] = marker_size
     return _make_connectome_html(connectome_info)

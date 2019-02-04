@@ -81,5 +81,9 @@ def test_view_markers():
     check_html(html, False, 'connectome-plot')
     html = html_connectome.view_markers(coords, marker_size=15)
     check_html(html, False, 'connectome-plot')
-    html = html_connectome.view_markers(coords, marker_size=np.arange(len(coords)))
+    html = html_connectome.view_markers(
+        coords, marker_size=np.arange(len(coords)))
+    check_html(html, False, 'connectome-plot')
+    html = html_connectome.view_markers(
+        coords, marker_size=list(range(len(coords))))
     check_html(html, False, 'connectome-plot')
