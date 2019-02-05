@@ -314,6 +314,7 @@ class _MNI152Template(SpatialImage):
     affine = None
     vmax = None
     _shape = None
+    header = None
 
     def __init__(self, data=None, affine=None, header=None):
         # Comply with spatial image requirements while allowing empty init
