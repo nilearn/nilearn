@@ -80,6 +80,9 @@ def _make_connectome_html(connectome_info, embed_js=True):
 
 
 def _deprecate_params_view_connectome(func):
+    """ Decorator to deprecate spcific parameters in view_connectome()
+     without modifying view_connectome().
+     """
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
         _warn_deprecated_params_view_connectome(kwargs)
@@ -156,6 +159,8 @@ def view_connectome(adjacency_matrix, node_coords, edge_threshold=None,
 
 
 def _warn_deprecated_params_view_connectome(kwargs):
+    """ For view_connectome(), raises warnings about deprecated parameters.
+    """
     all_deprecated_params = {'coords': 'node_coords',
                              'threshold': 'edge_threshold',
                              'cmap': 'edge_cmap',
@@ -171,12 +176,15 @@ def _warn_deprecated_params_view_connectome(kwargs):
                                                             replacement_param,
                                                             )
         )
-        warnings.warn(category=FutureWarning,
+        warnings.warn(category=DeprecationWarning,
                       message=param_deprecation_msg,
                       stacklevel=3)
 
 
 def _transfer_deprecated_param_vals_view_connectome(kwargs):
+    """ For view_connectome(), reassigns new parameters the values passed
+    to their corresponding deprecated parameters.
+    """
     coords = kwargs.setdefault('coords', None)
     threshold = kwargs.setdefault('threshold', None)
     cmap = kwargs.setdefault('cmap', None)
