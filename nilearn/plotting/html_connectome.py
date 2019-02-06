@@ -176,9 +176,10 @@ def _warn_deprecated_params_view_connectome(kwargs):
                                                             replacement_param,
                                                             )
         )
+        warnings.filterwarnings('always', message=param_deprecation_msg)
         warnings.warn(category=DeprecationWarning,
-                      message=param_deprecation_msg,
-                      stacklevel=3)
+                  message=param_deprecation_msg,
+                  stacklevel=3)
 
 
 def _transfer_deprecated_param_vals_view_connectome(kwargs):
