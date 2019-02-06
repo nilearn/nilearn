@@ -238,6 +238,7 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
                         self.labels_img_, interpolation="nearest",
                         target_shape=imgs_.shape[:3],
                         target_affine=imgs_.affine)
+            del imgs_
 
         target_shape = None
         target_affine = None
