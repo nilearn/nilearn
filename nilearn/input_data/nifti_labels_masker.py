@@ -238,6 +238,8 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
                         self.labels_img_, interpolation="nearest",
                         target_shape=imgs_.shape[:3],
                         target_affine=imgs_.affine)
+            # Remove imgs_ from memory before loading the same image
+            # in filter_and_extract.
             del imgs_
 
         target_shape = None
