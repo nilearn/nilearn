@@ -1,11 +1,6 @@
-import csv
-import os
-from tempfile import NamedTemporaryFile
-
 import pandas as pd
 
 from nibabel.tmpdirs import InTemporaryDirectory
-from nose import SkipTest
 from nose.tools import (assert_raises,
                         assert_true,
                         )
@@ -50,7 +45,8 @@ def test_for_invalid_separator():
     data_for_temp_datafile, delimiters = make_data_for_test_runs()
     for delimiter_name, delimiter_char in delimiters.items():
         with InTemporaryDirectory():
-            temp_tsv_file = 'tempfile.{} separated values'.format(delimiter_name)
+            temp_tsv_file = 'tempfile.{} separated values'.format(
+                    delimiter_name)
             _create_test_file(temp_csv=temp_tsv_file ,
                               test_data=data_for_temp_datafile,
                               delimiter=delimiter_char)
@@ -88,17 +84,16 @@ def test_for_pandas_dataframe():
     
 
 def test_binary_opening_an_image():
-    if os.name == 'nt':
-        raise SkipTest  # Always fails on Windows.
     img_data = bytearray(
             b'GIF87a\x01\x00\x01\x00\xe7*\x00\x00\x00\x00\x01\x01\x01\x02\x02'
             b'\x07\x08\x08\x08\t\t\t\n\n\n\x0b\x0b\x0b\x0c\x0c\x0c\r;')
-    with NamedTemporaryFile(mode='wb', suffix='.gif',
-                            dir=os.getcwd()) as temp_img_obj:
-        temp_img_obj.write(img_data)
+    with InTemporaryDirectory():
+        temp_img_file = 'temp_img.gif'
+        with open(temp_img_file, 'wb') as temp_img_obj:
+            temp_img_obj.write(img_data)
         with assert_raises(ValueError):
             _verify_events_file_uses_tab_separators(
-                    events_files=temp_img_obj.name)
+                    events_files=temp_img_file)
 
 
 def test_binary_bytearray_of_ints_data():
@@ -108,7 +103,7 @@ def test_binary_bytearray_of_ints_data():
         with open(temp_bin_file, 'wb') as temp_bin_obj:
             temp_bin_obj.write(temp_data_bytearray_from_ints)
         with assert_raises(ValueError):
-            result = _verify_events_file_uses_tab_separators(
+            _verify_events_file_uses_tab_separators(
                     events_files=temp_bin_file)
 
 

@@ -101,7 +101,8 @@ def _verify_events_file_uses_tab_separators(events_files):
         If value separators are not Tabs (or commas)
     """
     valid_separators = [',', '\t']
-    events_files = [events_files] if not isinstance(events_files, (list, tuple)) else events_files
+    if not isinstance(events_files, (list, tuple)):
+        events_files = [events_files]
     for events_file_ in events_files:
         try:
             with open(events_file_, 'r') as events_file_obj:
@@ -119,10 +120,21 @@ def _verify_events_file_uses_tab_separators(events_files):
                                     )
             except csv.Error:
                 raise ValueError(
-                    'The values in the events file are not separated by tabs; '
-                    'please enforce BIDS conventions',
-                    events_file_)
-    
+                        'The values in the events file '
+                        'are not separated by tabs; '
+                        'please enforce BIDS conventions',
+                        events_file_
+                        )
+            try:
+                csv.Sniffer().has_header(sample=events_file_sample)
+            except Exception as excep:
+                if excep.message == 'line contains NULL byte':
+                    raise ValueError('The file does not seem to be '
+                                     'a valid text file.'
+                                     )
+                else:
+                    raise excep
+            
 
 def _check_run_tables(run_imgs, tables_, tables_name):
     """Check fMRI runs and corresponding tables to raise error if necessary"""
