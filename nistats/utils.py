@@ -110,7 +110,9 @@ def _verify_events_file_uses_tab_separators(events_files):
         except TypeError as type_err:  # events is Pandas dataframe.
             pass
         except UnicodeDecodeError as unicode_err:  # py3:if binary file
-            pass
+            raise ValueError('The file does not seem to be '
+                             'a valid unicode text file.'
+                             )
         except IOError as io_err:  # if invalid filepath.
             pass
         else:
@@ -130,7 +132,7 @@ def _verify_events_file_uses_tab_separators(events_files):
             except Exception as excep:
                 if 'line contains NULL byte' in excep.args:
                     raise ValueError('The file does not seem to be '
-                                     'a valid text file.'
+                                     'a valid unicode text file.'
                                      )
                 else:
                     raise excep
