@@ -7,6 +7,8 @@ NEW
 - Calculate image data dtype from header information
 - New display mode 'tiled' which allows 2x2 plot arrangement when plotting three cuts
   (see :ref:`plotting`).
+- transform_single_imgs now consumes less memory. This is especially noteworthy when
+  applied to large datasets.
 
 Changes
 -------
