@@ -128,7 +128,7 @@ def _verify_events_file_uses_tab_separators(events_files):
             try:
                 csv.Sniffer().has_header(sample=events_file_sample)
             except Exception as excep:
-                if excep.message == 'line contains NULL byte':
+                if 'line contains NULL byte' in excep.args:
                     raise ValueError('The file does not seem to be '
                                      'a valid text file.'
                                      )
