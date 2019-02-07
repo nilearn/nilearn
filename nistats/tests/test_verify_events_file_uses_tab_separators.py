@@ -105,7 +105,7 @@ def test_binary_bytearray_of_ints_data():
     temp_data_bytearray_from_ints = bytearray([0, 1, 0, 11, 10])
     with InTemporaryDirectory():
         temp_bin_file = 'temp_bin.bin'
-        with open(temp_bin_file, 'w') as temp_bin_obj:
+        with open(temp_bin_file, 'wb') as temp_bin_obj:
             temp_bin_obj.write(temp_data_bytearray_from_ints)
         with assert_raises(ValueError):
             result = _verify_events_file_uses_tab_separators(
