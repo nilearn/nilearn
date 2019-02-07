@@ -103,15 +103,14 @@ def test_binary_opening_an_image():
 
 
 def test_binary_bytearray_of_ints_data():
-    if os.name == 'nt':
-        raise SkipTest  # Always fails on Windows.
     temp_data_bytearray_from_ints = bytearray([0, 1, 0, 11, 10])
-    with NamedTemporaryFile(mode='wb', dir=os.getcwd(),
-                            suffix='.bin') as temp_bin_obj:
-        temp_bin_obj.write(temp_data_bytearray_from_ints)
+    with InTemporaryDirectory():
+        temp_bin_file = 'temp_bin.bin'
+        with open(temp_bin_file, 'w') as temp_bin_obj:
+            temp_bin_obj.write(temp_data_bytearray_from_ints)
         with assert_raises(ValueError):
             result = _verify_events_file_uses_tab_separators(
-                    events_files=temp_bin_obj.name)
+                    events_files=temp_bin_file)
 
 
 if __name__ == '__main__':
