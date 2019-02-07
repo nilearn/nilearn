@@ -86,7 +86,7 @@ def test_for_pandas_dataframe():
 def test_binary_opening_an_image():
     img_data = bytearray(
             b'GIF87a\x01\x00\x01\x00\xe7*\x00\x00\x00\x00\x01\x01\x01\x02\x02'
-            b'\x07\x08\x08\x08\t\t\t\n\n\n\x0b\x0b\x0b\x0c\x0c\x0c\r;')
+            b'\x07\x08\x08\x08\x0b\x0b\x0b\x0c\x0c\x0c\r;')
     with InTemporaryDirectory():
         temp_img_file = 'temp_img.gif'
         with open(temp_img_file, 'wb') as temp_img_obj:

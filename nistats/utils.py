@@ -127,15 +127,6 @@ def _verify_events_file_uses_tab_separators(events_files):
                         'please enforce BIDS conventions',
                         events_file_
                         )
-            try:
-                csv.Sniffer().has_header(sample=events_file_sample)
-            except Exception as excep:
-                if 'line contains NULL byte' in excep.args:
-                    raise ValueError('The file does not seem to be '
-                                     'a valid unicode text file.'
-                                     )
-                else:
-                    raise excep
             
 
 def _check_run_tables(run_imgs, tables_, tables_name):
