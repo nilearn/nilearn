@@ -171,7 +171,7 @@ def _warn_deprecated_params_view_connectome(kwargs):
     for deprecated_param_ in used_deprecated_params:
         replacement_param = all_deprecated_params[deprecated_param_]
         param_deprecation_msg = (
-            'The parameter "{}" will be removed in Nilearn version 0.7.0).'
+            'The parameter "{}" will be removed in Nilearn version 0.6.0.'
             ' Please use the parameter "{}" instead.'.format(deprecated_param_,
                                                             replacement_param,
                                                             )

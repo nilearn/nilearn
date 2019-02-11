@@ -13,6 +13,12 @@ Changes
 
 - Lighting used for interactive surface plots changed; plots may look a bit
   different.
+- plotting.view_connectome parameter names are consistent with plot_connectome:
+
+ - coords is now node_coord
+ - marker_size is noe node_size
+ - cmap is now edge_cmap
+ - threshold is now edge_threshold
 
 0.5.0
 =====
