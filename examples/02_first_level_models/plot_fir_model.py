@@ -1,5 +1,5 @@
-""" Analysis of an fMRI dataset with a Finite Impule Response (FIR) model
-=====================================================================
+"""Analysis of an fMRI dataset with a Finite Impule Response (FIR) model
+====================================================================
 
 FIR models are used to estimate the hemodyamic response non-parametrically.
 The example below shows that they're good to do statistical inference
@@ -11,11 +11,11 @@ downloaded, then analysed with a FIR model with 3 lags.
 
 """
 
+#########################################################################
+# Grab localizer data
+
 import pandas as pd
 from nistats import datasets
-from nistats.first_level_model import FirstLevelModel
-from nistats.reporting import plot_design_matrix, plot_contrast_matrix
-import matplotlib.pyplot as plt
 
 data = datasets.fetch_localizer_first_level()
 fmri_img = data.epi_img
@@ -23,8 +23,10 @@ t_r = 2.4
 events_file = data['events']
 events = pd.read_table(events_file)
 
-import numpy as np
+#########################################################################
+# Automate contrast computation
 
+import numpy as np
 
 def make_localizer_contrasts(design_matrix):
     """ returns a dictionary of four contrasts, given the design matrix"""
@@ -63,7 +65,11 @@ def make_localizer_contrasts(design_matrix):
     }
     return contrasts
 
+#########################################################################
+# Result plotting function
+
 from nilearn import plotting
+import matplotlib.pyplot as plt
 
 def plot_contrast(first_level_model):
     """ Given a first model, specify, enstimate and plot the main contrasts"""
@@ -81,24 +87,19 @@ def plot_contrast(first_level_model):
             cut_coords=1)
 
 
-
 #########################################################################
 # Next solution is to try fininte impulse reponse (FIR) models: we just say that the hrf is an arbitrary function that lags behind the stimulus onset.
 # In the present case, given that the numbers of condition is high, we should use a simple FIR model.
 # 
 # Concretely, we set `hrf_model` to 'fir' and `fir_delays` to [3, 5, 7] (s)
-"""
-first_level_model = FirstLevelModel(t_r, hrf_model='spm')
-first_level_model = first_level_model.fit(fmri_img, events=events)
-design_matrix_ = first_level_model.design_matrices_[0]
-"""
+
+from nistats.first_level_model import FirstLevelModel
+from nistats.reporting import plot_design_matrix, plot_contrast_matrix
 
 first_level_model = FirstLevelModel(t_r, hrf_model='fir', fir_delays=[1, 2, 3])
 first_level_model = first_level_model.fit(fmri_img, events=events)
 design_matrix = first_level_model.design_matrices_[0]
 plot_design_matrix(design_matrix)
-
-
 
 #########################################################################
 # We have to change the contrast specification. We characterize the BOLD reposne by the sum across the three time lags. It's a bit hairy, sorry, but this is the price to pay for flexibility... 
