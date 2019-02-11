@@ -1,3 +1,16 @@
+""" Analysis of an fMRI dataset with a Finite Impule Response (FIR) model
+=====================================================================
+
+FIR models are used to estimate the hemodyamic response non-parametrically.
+The example below shows that they're good to do statistical inference
+even on fast event-related fMRI datasets.
+
+Specifically, the so-called 'localizer' dataset proposed by Pinel is
+downloaded, then analysed with a FIR model with 3 lags.
+4 main contrasts are estimated.
+
+"""
+
 import pandas as pd
 from nistats import datasets
 from nistats.first_level_model import FirstLevelModel
