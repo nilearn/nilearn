@@ -66,10 +66,10 @@ def test_params_deprecation_view_connectome():
                          'cmap': 'edge_cmap',
                          'marker_size': 'node_size',
                          }
-    deprecation_msg = ('The parameter "{}" will be removed '
-                       'in Nilearn version 0.7.0).'
-                       'Please use the parameter "{}" instead.'
-                       )
+    deprecation_msg = (
+        'The parameter "{}" will be removed in Nilearn version 0.7.0).'
+        'Please use the parameter "{}" instead.'
+    )
     warning_msgs = {old_: deprecation_msg.format(old_, new_)
                     for old_, new_ in deprecated_params.items()
                     }
