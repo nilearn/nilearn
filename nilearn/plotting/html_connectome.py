@@ -80,7 +80,7 @@ def _make_connectome_html(connectome_info, embed_js=True):
 
 
 def _deprecate_params_view_connectome(func):
-    """ Decorator to deprecate spcific parameters in view_connectome()
+    """ Decorator to deprecate specific parameters in view_connectome()
      without modifying view_connectome().
      """
     @functools.wraps(func)
