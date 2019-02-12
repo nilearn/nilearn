@@ -1,5 +1,5 @@
 """Analysis of an fMRI dataset with a Finite Impule Response (FIR) model
-====================================================================
+=====================================================================
 
 FIR models are used to estimate the hemodyamic response non-parametrically.
 The example below shows that they're good to do statistical inference
