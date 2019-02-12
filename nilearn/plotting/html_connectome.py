@@ -166,8 +166,7 @@ def _warn_deprecated_params_view_connectome(kwargs):
                              'cmap': 'edge_cmap',
                              'marker_size': 'node_size',
                              }
-    used_deprecated_params = set(kwargs.keys()
-                                 ).intersection(all_deprecated_params.keys())
+    used_deprecated_params = set(kwargs).intersection(all_deprecated_params)
     for deprecated_param_ in used_deprecated_params:
         replacement_param = all_deprecated_params[deprecated_param_]
         param_deprecation_msg = (
