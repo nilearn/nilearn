@@ -94,7 +94,7 @@ def _deprecate_params_view_connectome(func):
 
 @_deprecate_params_view_connectome
 def view_connectome(adjacency_matrix, node_coords, edge_threshold=None,
-                    edge_cmap=cm.cyan_orange, symmetric_cmap=True,
+                    edge_cmap=cm.bwr, symmetric_cmap=True,
                     linewidth=6., node_size=3.,
                     **kwargs):
     """
@@ -185,10 +185,10 @@ def _transfer_deprecated_param_vals_view_connectome(kwargs):
     """ For view_connectome(), reassigns new parameters the values passed
     to their corresponding deprecated parameters.
     """
-    coords = kwargs.setdefault('coords', None)
-    threshold = kwargs.setdefault('threshold', None)
-    cmap = kwargs.setdefault('cmap', None)
-    marker_size = kwargs.setdefault('marker_size', None)
+    coords = kwargs.get('coords', None)
+    threshold = kwargs.get('threshold', None)
+    cmap = kwargs.get('cmap', None)
+    marker_size = kwargs.get('marker_size', None)
     
     if coords is not None:
         kwargs['node_coords'] = coords
