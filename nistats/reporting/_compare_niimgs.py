@@ -30,7 +30,8 @@ def compare_niimgs(ref_imgs, src_imgs, masker, plot_hist=True, log=True,
     src_imgs: nifti_like
         Source images.
 
-    masker:
+    masker: NiftiMasker object
+        Mask to be used on data.
     
     plot_hist: Boolean, optional (default True)
         If True then histograms of each img in ref_imgs will be plotted
