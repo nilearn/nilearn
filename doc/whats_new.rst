@@ -13,6 +13,7 @@ Changes
 
 - Lighting used for interactive surface plots changed; plots may look a bit
   different.
+- plotting.view_connectome default colormap is `bwr`, consistent with plot_connectome.
 - plotting.view_connectome parameter names are consistent with plot_connectome:
 
  - coords is now node_coord
