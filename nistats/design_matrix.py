@@ -36,14 +36,16 @@ Author: Bertrand Thirion, 2009-2015
 
 """
 from __future__ import with_statement
-from warnings import warn
-import sys
-import numpy as np
-from scipy import linalg
-import pandas as pd
 
-from .hemodynamic_models import compute_regressor, _orthogonalize
+import sys
+from warnings import warn
+
+import numpy as np
+import pandas as pd
+from scipy import linalg
+
 from .experimental_paradigm import check_events
+from .hemodynamic_models import compute_regressor, _orthogonalize
 from .utils import full_rank, _basestring
 
 ######################################################################
@@ -102,14 +104,14 @@ def _cosine_drift(period_cut, frame_times):
     dt = frame_times[1] - frame_times[0]
     order = int(np.floor(2 * n_frames * hfcut * dt))
     # s.t. hfcut = 1 / (2 * dt) yields n_frames
-    cosine_drift = np.zeros((n_frames, order))
+    cosine_drift = np.zeros((n_frames, order + 1))
     normalizer = np.sqrt(2.0 / n_frames)
 
-    for k in range(1, order):
+    for k in range(1, order + 1):
         cosine_drift[:, k - 1] = normalizer * np.cos(
             (np.pi / n_frames) * (n_times + .5) * k)
 
-    cosine_drift[:, order - 1] = 1.
+    cosine_drift[:, -1] = 1.
     return cosine_drift
 
 

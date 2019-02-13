@@ -1,17 +1,21 @@
 import os
+
 import nibabel as nib
 import numpy as np
-from numpy.testing import dec
-from nose.tools import assert_true
+
 from nibabel.tmpdirs import InTemporaryDirectory
+# Set backend to avoid DISPLAY problems
+from nilearn.plotting import _set_mpl_backend
+from nose.tools import assert_true
+from numpy.testing import dec
 
 from nistats.design_matrix import make_first_level_design_matrix
-from nistats.reporting import (plot_design_matrix, get_clusters_table,
-                               plot_contrast_matrix)
+from nistats.reporting import (get_clusters_table,
+                               plot_contrast_matrix,
+                               plot_design_matrix,
+                               )
 from nistats.reporting._get_clusters_table import _local_max
 
-# Set the backend to avoid having DISPLAY problems
-from nilearn.plotting import _set_mpl_backend
 # Avoid making pyflakes unhappy
 _set_mpl_backend
 try:

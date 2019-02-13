@@ -11,31 +11,42 @@ Author: Bertrand Thirion, Martin Perez-Guevara, 2016
 
 """
 
-from warnings import warn
-import time
-import sys
-import os
 import glob
 import json
+import os
+import sys
+import time
+from warnings import warn
 
 import numpy as np
 import pandas as pd
 from nibabel import Nifti1Image
 
-from sklearn.base import BaseEstimator, TransformerMixin, clone
+from sklearn.base import (BaseEstimator,
+                          clone,
+                          TransformerMixin,
+                          )
 from sklearn.externals.joblib import Memory
-from nilearn._utils.niimg_conversions import check_niimg
-from nilearn._utils import CacheMixin
 from nilearn.input_data import NiftiMasker
-from sklearn.externals.joblib import Parallel, delayed
+from nilearn._utils import CacheMixin
+from nilearn._utils.niimg_conversions import check_niimg
 from patsy import DesignInfo
+from sklearn.externals.joblib import (Parallel,
+                                      delayed,
+                                      )
 
-from .regression import OLSModel, ARModel, SimpleRegressionResults
-from .design_matrix import make_first_level_design_matrix
 from .contrasts import _fixed_effect_contrast
-from .utils import (_basestring, _check_run_tables,
+from .design_matrix import make_first_level_design_matrix
+from .regression import (ARModel,
+                         OLSModel,
+                         SimpleRegressionResults,
+                         )
+from .utils import (_basestring,
+                    _check_run_tables,
                     _verify_events_file_uses_tab_separators,
-                    get_bids_files, parse_bids_filename)
+                    get_bids_files,
+                    parse_bids_filename,
+                    )
 
 
 def mean_scaling(Y, axis=0):

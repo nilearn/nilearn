@@ -121,7 +121,7 @@ else
 fi
 
 if [[ "$COVERAGE" == "true" ]]; then
-    pip install coverage coveralls
+    pip install coverage codecov
 fi
 
 python setup.py install

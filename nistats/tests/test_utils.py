@@ -1,22 +1,35 @@
 #!/usr/bin/env python
 import os
-import json
+
 import numpy as np
 import pandas as pd
-from scipy.stats import norm
 import scipy.linalg as spl
-from numpy.testing import assert_almost_equal, assert_array_almost_equal
-from nose.tools import assert_true, assert_equal, assert_raises
-from nibabel import load, Nifti1Image
-from nibabel.tmpdirs import InTemporaryDirectory
-from nose import with_setup
 
-from nistats.utils import (multiple_mahalanobis, z_score, multiple_fast_inverse,
-                           positive_reciprocal, full_rank, _check_run_tables,
-                           _check_and_load_tables, _check_list_length_match,
-                           get_bids_files, parse_bids_filename,
-                           get_design_from_fslmat)
+from nibabel.tmpdirs import InTemporaryDirectory
 from nilearn.datasets.tests import test_utils as tst
+from nose import with_setup
+from nose.tools import (assert_true,
+                        assert_equal,
+                        assert_raises,
+                        )
+from numpy.testing import (assert_almost_equal,
+                           assert_array_almost_equal,
+                           )
+from scipy.stats import norm
+
+from nistats.utils import (_check_run_tables,
+                           _check_and_load_tables,
+                           _check_list_length_match,
+                           full_rank,
+                           get_bids_files,
+                           get_design_from_fslmat,
+                           multiple_fast_inverse,
+                           multiple_mahalanobis,
+                           parse_bids_filename,
+                           positive_reciprocal,
+                           z_score,
+                           )
+from nistats._utils.testing import _create_fake_bids_dataset
 
 
 def test_full_rank():
@@ -109,114 +122,9 @@ def test_img_table_checks():
                   ['.csv', pd.DataFrame()], "")
 
 
-def write_fake_bold_img(file_path, shape, rk=3, affine=np.eye(4)):
-    data = np.random.randn(*shape)
-    data[1:-1, 1:-1, 1:-1] += 100
-    Nifti1Image(data, affine).to_filename(file_path)
-    return file_path
-
-
-def basic_paradigm():
-    conditions = ['c0', 'c0', 'c0', 'c1', 'c1', 'c1', 'c2', 'c2', 'c2']
-    onsets = [30, 70, 100, 10, 30, 90, 30, 40, 60]
-    events = pd.DataFrame({'trial_type': conditions,
-                             'onset': onsets})
-    return events
-
-
-def basic_confounds(length):
-    columns = ['RotX', 'RotY', 'RotZ', 'X', 'Y', 'Z']
-    data = np.random.rand(length, 6)
-    confounds = pd.DataFrame(data, columns=columns)
-    return confounds
-
-
-def create_fake_bids_dataset(base_dir='', n_sub=10, n_ses=2,
-                             tasks=['localizer', 'main'],
-                             n_runs=[1, 3], with_derivatives=True,
-                             with_confounds=True, no_session=False):
-    """Returns a fake bids dataset directory with dummy files
-
-    In the case derivatives are included, they come with two spaces and
-    variants. Spaces are 'MNI' and 'T1w'. Variants are 'some' and 'other'.
-    Only space 'T1w' include both variants.
-
-    Specifying no_sessions will only produce runs and files without the
-    optional session field. In this case n_ses will be ignored.
-    """
-    bids_path = os.path.join(base_dir, 'bids_dataset')
-    os.makedirs(bids_path)
-    # Create surface bids dataset
-    open(os.path.join(bids_path, 'README.txt'), 'w')
-    vox = 4
-    created_sessions = ['ses-%02d' % label for label in range(1, n_ses + 1)]
-    if no_session:
-        created_sessions = ['']
-    for subject in ['sub-%02d' % label for label in range(1, n_sub + 1)]:
-        for session in created_sessions:
-            subses_dir = os.path.join(bids_path, subject, session)
-            if session == 'ses-01' or session == '':
-                anat_path = os.path.join(subses_dir, 'anat')
-                os.makedirs(anat_path)
-                anat_file = os.path.join(anat_path, subject + '_T1w.nii.gz')
-                open(anat_file, 'w')
-            func_path = os.path.join(subses_dir, 'func')
-            os.makedirs(func_path)
-            for task, n_run in zip(tasks, n_runs):
-                for run in ['run-%02d' % label for label in range(1, n_run + 1)]:
-                    fields = [subject, session, 'task-' + task]
-                    if '' in fields:
-                        fields.remove('')
-                    file_id = '_'.join(fields)
-                    if n_run > 1:
-                        file_id += '_' + run
-                    bold_path = os.path.join(func_path, file_id + '_bold.nii.gz')
-                    write_fake_bold_img(bold_path, [vox, vox, vox, 100])
-                    events_path = os.path.join(func_path, file_id +
-                                               '_events.tsv')
-                    basic_paradigm().to_csv(events_path, sep='\t', index=None)
-                    param_path = os.path.join(func_path, file_id +
-                                              '_bold.json')
-                    with open(param_path, 'w') as param_file:
-                        json.dump({'RepetitionTime': 1.5}, param_file)
-
-    # Create derivatives files
-    if with_derivatives:
-        bids_path = os.path.join(base_dir, 'bids_dataset', 'derivatives')
-        os.makedirs(bids_path)
-        for subject in ['sub-%02d' % label for label in range(1, 11)]:
-            for session in created_sessions:
-                subses_dir = os.path.join(bids_path, subject, session)
-                func_path = os.path.join(subses_dir, 'func')
-                os.makedirs(func_path)
-                for task, n_run in zip(tasks, n_runs):
-                    for run in ['run-%02d' % label for label in range(1, n_run + 1)]:
-                        fields = [subject, session, 'task-' + task]
-                        if '' in fields:
-                            fields.remove('')
-                        file_id = '_'.join(fields)
-                        if n_run > 1:
-                            file_id += '_' + run
-                        preproc = file_id + '_bold_space-MNI_variant-some_preproc.nii.gz'
-                        preproc_path = os.path.join(func_path, preproc)
-                        write_fake_bold_img(preproc_path, [vox, vox, vox, 100])
-                        preproc = file_id + '_bold_space-T1w_variant-some_preproc.nii.gz'
-                        preproc_path = os.path.join(func_path, preproc)
-                        write_fake_bold_img(preproc_path, [vox, vox, vox, 100])
-                        preproc = file_id + '_bold_space-T1w_variant-other_preproc.nii.gz'
-                        preproc_path = os.path.join(func_path, preproc)
-                        write_fake_bold_img(preproc_path, [vox, vox, vox, 100])
-                        if with_confounds:
-                            confounds_path = os.path.join(func_path, file_id +
-                                                          '_confounds.tsv')
-                            basic_confounds(100).to_csv(confounds_path,
-                                                        sep='\t', index=None)
-    return 'bids_dataset'
-
-
 def test_get_bids_files():
     with InTemporaryDirectory():
-        bids_path = create_fake_bids_dataset(n_sub=10, n_ses=2,
+        bids_path = _create_fake_bids_dataset(n_sub=10, n_ses=2,
                                              tasks=['localizer', 'main'],
                                              n_runs=[1, 3])
         # For each possible possible option of file selection we check

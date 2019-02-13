@@ -7,10 +7,10 @@ Author: Bertrand Thirion, 2011--2015
 """
 
 import numpy as np
-from scipy.linalg import inv
-from scipy.stats import t as t_distribution
 
 from nibabel.onetime import setattr_on_read
+from scipy.linalg import inv
+from scipy.stats import t as t_distribution
 
 from .utils import positive_reciprocal
 

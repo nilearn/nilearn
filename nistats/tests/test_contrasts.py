@@ -2,10 +2,13 @@ from __future__ import with_statement
 
 import numpy as np
 
-from nistats.first_level_model import run_glm
-from nistats.contrasts import compute_contrast, _fixed_effect_contrast
-
 from numpy.testing import assert_almost_equal
+
+from nistats.first_level_model import run_glm
+from nistats.contrasts import (_fixed_effect_contrast,
+                               compute_contrast,
+                               )
+
 
 
 def test_Tcontrast():

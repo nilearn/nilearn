@@ -7,17 +7,21 @@ not whether it is exact
 
 from __future__ import with_statement
 
-import numpy as np
-import os.path as osp
-import pandas as pd
-from nilearn._utils.testing import assert_raises_regex
+from os import path as osp
 
-from nistats.design_matrix import (
-    _convolve_regressors, make_first_level_design_matrix,
-    _cosine_drift, check_design_matrix,
-    make_second_level_design_matrix)
+import numpy as np
+import pandas as pd
 
 from nibabel.tmpdirs import InTemporaryDirectory
+from nilearn._utils.testing import assert_raises_regex
+
+from nistats.design_matrix import (_convolve_regressors,
+                                   _cosine_drift,
+                                   check_design_matrix,
+                                   make_first_level_design_matrix,
+                                   make_second_level_design_matrix,
+                                   )
+
 
 from nose.tools import assert_true, assert_equal, assert_raises
 from numpy.testing import assert_almost_equal, assert_array_equal
@@ -93,7 +97,7 @@ def test_cosine_drift():
     tim = np.arange(20)
     P = 10  # period is half the time, gives us an order 4
     nistats_drifts = _cosine_drift(P, tim)
-    assert_almost_equal(spm_drifts[:, 1:], nistats_drifts[:, : - 1])
+    assert_almost_equal(spm_drifts[:, 1:], nistats_drifts[:, : -2])
     # nistats_drifts is placing the constant at the end [:, : - 1]
 
 
@@ -175,7 +179,7 @@ def test_design_matrix2():
     hrf_model = 'glover'
     X, names = design_matrix_light(frame_times, events, hrf_model=hrf_model,
                         drift_model='cosine', period_cut=63)
-    assert_equal(len(names), 7)  # was 8 with old cosine
+    assert_equal(len(names), 8)
 
 
 def test_design_matrix3():
@@ -398,7 +402,7 @@ def test_design_matrix20():
         frame_times, events, hrf_model='glover', drift_model='cosine')
 
     # check that the drifts are not constant
-    assert_true(np.all(np.diff(X[:, -2]) != 0))
+    assert_true(np.any(np.diff(X[:, -2]) != 0))
 
 
 def test_design_matrix21():

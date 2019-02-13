@@ -5,8 +5,9 @@ Note that the tests just look whether the data produced has correct dimension,
 not whether it is exact.
 """
 
-import numpy as np
 import os
+
+import numpy as np
 import pandas as pd
 
 from nose.tools import assert_true
