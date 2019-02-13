@@ -4,10 +4,10 @@ import warnings
 
 import numpy as np
 from scipy import sparse
-from .. import datasets
-from . import cm
+from nilearn import datasets
+from nilearn.plotting import cm
 
-from .js_plotting_utils import (add_js_lib, HTMLDocument, mesh_to_plotly,
+from nilearn.plotting.js_plotting_utils import (add_js_lib, HTMLDocument, mesh_to_plotly,
                                 encode, colorscale, get_html_template,
                                 to_color_strings)
 
@@ -144,7 +144,7 @@ def view_connectome(adjacency_matrix, coords, threshold=None,
 
 
 def _deprecate_params_view_markers(func):
-    """ Decorator to deprecate spcific parameters in view_markers()
+    """ Decorator to deprecate specific parameters in view_markers()
      without modifying view_markers().
      """
 
@@ -152,10 +152,11 @@ def _deprecate_params_view_markers(func):
     def wrapper(*args, **kwargs):
         _warn_deprecated_params_view_markers(kwargs)
         kwargs = _transfer_deprecated_param_vals_view_markers(kwargs)
-        func(*args, **kwargs)
+        return func(*args, **kwargs)
     return wrapper
 
-        
+
+@_deprecate_params_view_markers
 def view_markers(marker_coords, marker_color=None, marker_size=5., **kwargs):
     """
     Insert a 3d plot of markers in a brain into an HTML page.
@@ -230,8 +231,8 @@ def _transfer_deprecated_param_vals_view_markers(kwargs):
     """ For view_markers(), reassigns new parameters the values passed
     to their corresponding deprecated parameters.
     """
-    coords = kwargs.setdefault('coords', None)
-    colors = kwargs.setdefault('colors', None)
+    coords = kwargs.get('coords', None)
+    colors = kwargs.get('colors', None)
     
     if coords is not None:
         kwargs['marker_coords'] = coords
