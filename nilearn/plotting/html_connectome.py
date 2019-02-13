@@ -198,7 +198,7 @@ def view_markers(marker_coords, marker_color=None, marker_size=5., **kwargs):
 
     """
     if marker_color is None:
-        marker_color = ['black' for i in range(len(marker_coords))]
+        marker_color = ['red' for i in range(len(marker_coords))]
     connectome_info = _get_markers(marker_coords, marker_color)
     connectome_info["marker_size"] = marker_size
     return _make_connectome_html(connectome_info)
