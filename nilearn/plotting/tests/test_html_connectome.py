@@ -150,3 +150,39 @@ def test_view_markers():
     check_html(html, False, 'connectome-plot')
     html = html_connectome.view_markers(coords, marker_size=15)
     check_html(html, False, 'connectome-plot')
+
+
+def test_params_deprecation_view_markers():
+    """ Tests whether use of deprecated keyword parameters of view_markers
+    raise corrrect warnings.
+    """
+    deprecated_params = {'coords': 'marker_coords',
+                         'colors': 'marker_color',
+                         }
+    deprecation_msg = (
+        'The parameter "{}" will be removed in Nilearn version 0.6.0. '
+        'Please use the parameter "{}" instead.'
+    )
+    warning_msgs = {old_: deprecation_msg.format(old_, new_)
+                    for old_, new_ in deprecated_params.items()
+                    }
+    coords = np.arange(12).reshape((4, 3))
+    colors = ['r', 'g', 'black', 'white']
+    with warnings.catch_warnings(record=True) as raised_warnings:
+        html_connectome.view_markers(coords=coords,
+                                     marker_color=colors,
+                                     )
+        html_connectome.view_markers(marker_coords=coords,
+                                     colors=colors,
+                                     )
+        html_connectome.view_markers(marker_coords=coords,
+                                     marker_color=colors,
+                                     )
+        html_connectome.view_markers(coords,
+                                     colors,
+                                     )
+    old_params = ['coords', 'colors']
+    assert len(raised_warnings) == 2
+    for old_param_, raised_warning_ in zip(old_params, raised_warnings):
+        assert warning_msgs[old_param_] == str(raised_warning_.message)
+        assert raised_warning_.category is DeprecationWarning
