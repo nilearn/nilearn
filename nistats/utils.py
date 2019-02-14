@@ -69,7 +69,7 @@ def _check_and_load_tables(tables_, var_name):
     return tables
 
  
-def _verify_events_file_uses_tab_separators(events_files):
+def _check_events_file_uses_tab_separators(events_files):
     """
     Raises a ValueError if provided list of text based data files
     (.csv, .tsv, etc) do not enforce the BIDS convention of using Tabs
@@ -107,6 +107,12 @@ def _verify_events_file_uses_tab_separators(events_files):
         try:
             with open(events_file_, 'r') as events_file_obj:
                 events_file_sample = events_file_obj.readline()
+            '''
+            The following errors are not being handled here,
+            as they are handled elsewhere in the calling code.
+            Handling them here will beak the calling code,
+            and refactoring that is not straighforward.
+            '''
         except TypeError as type_err:  # events is Pandas dataframe.
             pass
         except UnicodeDecodeError as unicode_err:  # py3:if binary file

@@ -5,7 +5,7 @@ from nose.tools import (assert_raises,
                         assert_true,
                         )
 
-from nistats.utils import _verify_events_file_uses_tab_separators
+from nistats.utils import _check_events_file_uses_tab_separators
 
 
 def make_data_for_test_runs():
@@ -35,9 +35,9 @@ def _create_test_file(temp_csv, test_data, delimiter):
 def _run_test_for_invalid_separator(filepath, delimiter_name):
     if delimiter_name not in ('tab', 'comma'):
         with assert_raises(ValueError):
-            _verify_events_file_uses_tab_separators(events_files=filepath)
+            _check_events_file_uses_tab_separators(events_files=filepath)
     else:
-        result = _verify_events_file_uses_tab_separators(events_files=filepath)
+        result = _check_events_file_uses_tab_separators(events_files=filepath)
         assert_true(result is None)
 
 
@@ -57,7 +57,7 @@ def test_for_invalid_separator():
 def test_with_2D_dataframe():
     data_for_pandas_dataframe, _ = make_data_for_test_runs()
     events_pandas_dataframe = pd.DataFrame(data_for_pandas_dataframe)
-    result = _verify_events_file_uses_tab_separators(
+    result = _check_events_file_uses_tab_separators(
             events_files=events_pandas_dataframe)
     assert_true(result is None)
 
@@ -66,19 +66,19 @@ def test_with_1D_dataframe():
     data_for_pandas_dataframe, _ = make_data_for_test_runs()
     for dataframe_ in data_for_pandas_dataframe:
         events_pandas_dataframe = pd.DataFrame(dataframe_)
-        result = _verify_events_file_uses_tab_separators(
+        result = _check_events_file_uses_tab_separators(
                 events_files=events_pandas_dataframe)
         assert_true(result is None)
 
 def test_for_invalid_filepath():
     filepath = 'junk_file_path.csv'
-    result = _verify_events_file_uses_tab_separators(events_files=filepath)
+    result = _check_events_file_uses_tab_separators(events_files=filepath)
     assert_true(result is None)
 
 
 def test_for_pandas_dataframe():
     events_pandas_dataframe = pd.DataFrame([['a', 'b', 'c'], [0, 1, 2]])
-    result = _verify_events_file_uses_tab_separators(
+    result = _check_events_file_uses_tab_separators(
             events_files=events_pandas_dataframe)
     assert_true(result is None)
     
@@ -92,7 +92,7 @@ def test_binary_opening_an_image():
         with open(temp_img_file, 'wb') as temp_img_obj:
             temp_img_obj.write(img_data)
         with assert_raises(ValueError):
-            _verify_events_file_uses_tab_separators(
+            _check_events_file_uses_tab_separators(
                     events_files=temp_img_file)
 
 
@@ -103,7 +103,7 @@ def test_binary_bytearray_of_ints_data():
         with open(temp_bin_file, 'wb') as temp_bin_obj:
             temp_bin_obj.write(temp_data_bytearray_from_ints)
         with assert_raises(ValueError):
-            _verify_events_file_uses_tab_separators(
+            _check_events_file_uses_tab_separators(
                     events_files=temp_bin_file)
 
 
