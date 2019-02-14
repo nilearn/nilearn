@@ -104,6 +104,9 @@ def test_params_deprecation_view_markers():
         html_connectome.view_markers(marker_coords=coords,
                                      colors=colors,
                                      )
+        html_connectome.view_markers(marker_coords=coords,
+                                     marker_color=colors,
+                                     )
         html_connectome.view_markers(coords,
                                      colors,
                                      )
