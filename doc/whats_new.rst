@@ -7,6 +7,21 @@ NEW
 - Calculate image data dtype from header information
 - New display mode 'tiled' which allows 2x2 plot arrangement when plotting three cuts
   (see :ref:`plotting`).
+- NiftiLabelsMasker now consumes less memory when extracting the signal from a 3D/4D
+  image. This is especially noteworthy when extracting signals from large 4D images.
+
+Changes
+-------
+
+- Lighting used for interactive surface plots changed; plots may look a bit
+  different.
+- plotting.view_connectome default colormap is `bwr`, consistent with plot_connectome.
+- plotting.view_connectome parameter names are consistent with plot_connectome:
+
+ - coords is now node_coord
+ - marker_size is noe node_size
+ - cmap is now edge_cmap
+ - threshold is now edge_threshold
 
 0.5.0
 =====

@@ -1,5 +1,8 @@
+import warnings
+
 import numpy as np
 
+from nilearn.plotting import cm
 from nilearn.plotting.js_plotting_utils import decode
 from nilearn.plotting import html_connectome
 
@@ -53,13 +56,83 @@ def test_view_connectome():
     html = html_connectome.view_connectome(adj, coord, '85.3%')
     check_html(html, False, 'connectome-plot')
     html = html_connectome.view_connectome(adj, coord, '85.3%',
-                                           linewidth=8.5, marker_size=4.2)
+                                           linewidth=8.5, node_size=4.2)
     check_html(html, False, 'connectome-plot')
     html = html_connectome.view_connectome(
         adj, coord, '85.3%', linewidth=8.5, marker_size=np.arange(len(coord)))
     check_html(html, False, 'connectome-plot')
 
 
+
+def test_params_deprecation_view_connectome():
+    deprecated_params = {'coords': 'node_coords',
+                         'threshold': 'edge_threshold',
+                         'cmap': 'edge_cmap',
+                         'marker_size': 'node_size',
+                         }
+    deprecation_msg = (
+        'The parameter "{}" will be removed in Nilearn version 0.6.0. '
+        'Please use the parameter "{}" instead.'
+    )
+    warning_msgs = {old_: deprecation_msg.format(old_, new_)
+                    for old_, new_ in deprecated_params.items()
+                    }
+    
+    adj, coord = _make_connectome()
+    with warnings.catch_warnings(record=True) as raised_warnings:
+        html_connectome.view_connectome(adjacency_matrix=adj,
+                                        coords=coord,
+                                        edge_threshold='85.3%',
+                                        edge_cmap=cm.cyan_orange,
+                                        linewidth=8.5, node_size=4.2,
+                                        )
+
+        html_connectome.view_connectome(adjacency_matrix=adj,
+                                        node_coords=coord,
+                                        threshold='85.3%',
+                                        edge_cmap=cm.cyan_orange,
+                                        linewidth=8.5,
+                                        node_size=4.2,
+                                        )
+
+        html_connectome.view_connectome(adjacency_matrix=adj,
+                                        node_coords=coord,
+                                        edge_threshold='85.3%',
+                                        cmap=cm.cyan_orange,
+                                        linewidth=8.5,
+                                        node_size=4.2,
+                                        )
+
+        html_connectome.view_connectome(adjacency_matrix=adj,
+                                        node_coords=coord,
+                                        edge_threshold='85.3%',
+                                        edge_cmap=cm.cyan_orange,
+                                        linewidth=8.5,
+                                        marker_size=4.2,
+                                        )
+
+        html_connectome.view_connectome(adjacency_matrix=adj,
+                                        node_coords=coord,
+                                        edge_threshold='85.3%',
+                                        edge_cmap=cm.cyan_orange,
+                                        linewidth=8.5,
+                                        node_size=4.2,
+                                        )
+
+        html_connectome.view_connectome(adj,
+                                        coord,
+                                        '85.3%',
+                                        cm.cyan_orange,
+                                        8.5,
+                                        4.2,
+                                        )
+    old_params = ['coords', 'threshold', 'cmap', 'marker_size']
+    
+    assert len(raised_warnings) == 4
+    for old_param_, raised_warning_ in zip(old_params, raised_warnings):
+        assert warning_msgs[old_param_] == str(raised_warning_.message)
+        assert raised_warning_.category is DeprecationWarning
+        
 
 def test_get_markers():
     coords = np.arange(12).reshape((4, 3))

@@ -239,8 +239,8 @@ def check_html(html, check_selects=True, plot_div_id='surface-plot'):
     resized = html.resize(3, 17)
     assert resized is html
     assert (html.width, html.height) == (3, 17)
-    assert "width=3 height=17" in html.get_iframe()
-    assert "width=33 height=37" in html.get_iframe(33, 37)
+    assert 'width="3" height="17"' in html.get_iframe()
+    assert 'width="33" height="37"' in html.get_iframe(33, 37)
     if not LXML_INSTALLED:
         return
     root = etree.HTML(html.html.encode('utf-8'),
