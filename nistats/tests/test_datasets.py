@@ -149,46 +149,63 @@ def test_fetch_openneuro_dataset():
     assert_true(len(dl_files) == 9)
 
 
-def test_make_events_file_localizer_first_level():
-    def _input_data_for_test_file():
-        file_data = [
-            [0, 'calculvideo', 0.0],
-            [0, 'calculvideo', 2.400000095],
-            [0, 'damier_H', 8.699999809],
-            [0, 'clicDaudio', 11.39999961],
-            ]
-        return pd.DataFrame(file_data)
-    
-    def _expected_output_data_from_test_file():
-        file_data = [
-            ['calculvideo', 0.0, 1.0],
-            ['calculvideo', 2.400000095, 1.0],
-            ['damier_H', 8.699999809, 1.0],
-            ['clicDaudio', 11.39999961, 1.0],
-            ]
-        file_data = pd.DataFrame(file_data)
-        file_data.columns = ['trial_type', 'onset', 'duration']
-        return file_data
-    
-    def run_test():
-        data_for_tests = _input_data_for_test_file()
-        expected_data_from_test_file = _expected_output_data_from_test_file()
-        temp_tsv_file = 'temp_file.tsv'
-        with InTemporaryDirectory():
-            data_for_tests.to_csv(temp_tsv_file,
-                                  index=False,
-                                  header=False,
-                                  sep=' ',
-                                  )
-            datasets._make_events_file_localizer_first_level(temp_tsv_file)
-            data_from_test_file_post_mod = pd.read_csv(temp_tsv_file,
-                                                       sep='\t')
-            assert_true(all(
-                    expected_data_from_test_file == data_from_test_file_post_mod
-                    )
-                    )
-    
-    run_test()
+def _mock_original_localizer_first_level_events_file():
+    file_data = [
+        [0, 'calculvideo', 0.0],
+        [0, 'calculvideo', 2.400000095],
+        [0, 'damier_H', 8.699999809],
+        [0, 'clicDaudio', 11.39999961],
+        ]
+    return pd.DataFrame(file_data)
+
+
+def _mock_bids_compliant_localizer_first_level_events_file():
+    file_data = [
+        ['calculvideo', 0.0, 1.0],
+        ['calculvideo', 2.400000095, 1.0],
+        ['damier_H', 8.699999809, 1.0],
+        ['clicDaudio', 11.39999961, 1.0],
+        ]
+    file_data = pd.DataFrame(file_data)
+    file_data.columns = ['trial_type', 'onset', 'duration']
+    return file_data
+
+
+def test_make_events_file_localizer_first_level_with_file_handle():
+    data_for_tests = _mock_original_localizer_first_level_events_file()
+    expected_data_from_test_file = _mock_bids_compliant_localizer_first_level_events_file()
+    temp_tsv_file = 'temp_file.tsv'
+    with InTemporaryDirectory():
+        data_for_tests.to_csv(temp_tsv_file,
+                              index=False,
+                              header=False,
+                              sep=' ',
+                              )
+        datasets._make_events_file_localizer_first_level(temp_tsv_file)
+        data_from_test_file_post_mod = pd.read_csv(temp_tsv_file,
+                                                   sep='\t')
+        assert_true(all(
+                expected_data_from_test_file == data_from_test_file_post_mod
+                )
+                )
+
+
+def test_make_events_file_localizer_first_level_with_file_path():
+    data_for_tests = _mock_original_localizer_first_level_events_file()
+    expected_data_from_test_file = _mock_bids_compliant_localizer_first_level_events_file()
+    with InTemporaryDirectory():
+        temp_tsv_file = 'tempfile.tsv'
+        data_for_tests.to_csv(temp_tsv_file,
+                              index=False,
+                              header=False,
+                              sep=' ',
+                              )
+        datasets._make_events_file_localizer_first_level(temp_tsv_file)
+        data_from_test_file_post_mod = pd.read_csv(temp_tsv_file, sep='\t')
+        assert_true(all(
+                expected_data_from_test_file == data_from_test_file_post_mod
+                )
+                )
 
 
 @with_setup(setup_mock, teardown_mock)
@@ -198,38 +215,37 @@ def test_fetch_localizer():
     assert_true(isinstance(dataset.epi_img, _basestring))
 
 
+def _mock_original_spm_auditory_events_file():
+    expected_events_data = {
+        'onset': [factor * 42.0 for factor in range(0, 16)],
+        'duration': [42.0] * 16,
+        'trial_type': ['rest', 'active'] * 8,
+        }
+    expected_events_data = pd.DataFrame(expected_events_data)
+    expected_events_data_string = expected_events_data.to_csv(
+            sep='\t',
+            index=0,
+            columns=['onset', 'duration', 'trial_type'],
+            )
+    return expected_events_data_string
+
+
+def _mock_bids_compliant_spm_auditory_events_file():
+    events_filepath = os.path.join(os.getcwd(), 'tests_events.tsv')
+    datasets._make_events_file_spm_auditory_data(
+        events_filepath=events_filepath)
+    with open(events_filepath, 'r') as actual_events_file_obj:
+        actual_events_data_string = actual_events_file_obj.read()
+    return actual_events_data_string, events_filepath
+
+
 def test_make_spm_auditory_events_file():
-    def create_expected_data():
-        expected_events_data = {
-            'onset': [factor * 42.0 for factor in range(0, 16)],
-            'duration': [42.0] * 16,
-            'trial_type': ['rest', 'active'] * 8,
-            }
-        expected_events_data = pd.DataFrame(expected_events_data)
-        expected_events_data_string = expected_events_data.to_csv(
-                sep='\t',
-                index=0,
-                columns=['onset', 'duration', 'trial_type'],
-                )
-        return expected_events_data_string
-    
-    def create_actual_data():
-        events_filepath = os.path.join(os.getcwd(), 'tests_events.tsv')
-        datasets._make_events_file_spm_auditory_data(
-            events_filepath=events_filepath)
-        with open(events_filepath, 'r') as actual_events_file_obj:
-            actual_events_data_string = actual_events_file_obj.read()
-        return actual_events_data_string, events_filepath
-    
-    def run_test():
         try:
-            actual_events_data_string, events_filepath = create_actual_data()
+            actual_events_data_string, events_filepath = _mock_bids_compliant_spm_auditory_events_file()
         finally:
             os.remove(events_filepath)
-        expected_events_data_string = create_expected_data()
+        expected_events_data_string = _mock_original_spm_auditory_events_file()
         assert_equal(actual_events_data_string, expected_events_data_string)
-    
-    run_test()
 
 
 @with_setup(setup_mock, teardown_mock)

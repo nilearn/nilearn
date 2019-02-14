@@ -22,7 +22,7 @@ from scipy.io import loadmat
 from scipy.io.matlab.miobase import MatReadError
 from sklearn.datasets.base import Bunch
 
-from nistats.utils import _verify_events_file_uses_tab_separators
+from nistats.utils import _check_events_file_uses_tab_separators
 
 
 SPM_AUDITORY_DATA_FILES = ["fM00223/fM00223_%03i.img" % index
@@ -305,6 +305,9 @@ def _make_events_file_localizer_first_level(events_file):
     events.drop(labels='session', axis=1, inplace=True)
     # duration is required in BIDS specification
     events['duration'] = np.ones_like(events.onset)
+    # if events_file is open file handle, reset cursor to file beginning.
+    if hasattr(events_file, 'read') or hasattr(events_file, 'write'):
+        events_file.seek(0)
     events.to_csv(events_file, sep='\t', index=False)
 
 
@@ -339,7 +342,7 @@ def fetch_localizer_first_level(data_dir=None, verbose=1):
 
     params = dict(zip(sorted(files.keys()), sub_files))
     try:
-        _verify_events_file_uses_tab_separators(params['events'])
+        _check_events_file_uses_tab_separators(params['events'])
     except ValueError:
         _make_events_file_localizer_first_level(events_file=
                                                              params['events']
