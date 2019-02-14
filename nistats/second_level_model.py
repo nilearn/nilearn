@@ -34,6 +34,98 @@ from .design_matrix import make_second_level_design_matrix
 from nistats._utils.helpers import replace_parameters
 
 
+def _check_second_level_input(second_level_input, design_matrix):
+    """Checking second_level_input type"""
+    if isinstance(second_level_input, list):
+        if len(second_level_input) < 2:
+            raise ValueError('A second level model requires a list with at'
+                             'least two first level models or niimgs')
+        elif isinstance(second_level_input[0], (str, Nifti1Image)):
+            if design_matrix is None:
+                raise ValueError('List of niimgs as second_level_input'
+                                 ' require a design matrix to be provided')
+            for model_idx, niimg in enumerate(second_level_input):
+                if not isinstance(niimg, (str, Nifti1Image)):
+                    raise ValueError(' object at idx %d is %s instead of'
+                                     ' Niimg-like object' %
+                                     (model_idx, type(niimg)))
+    elif isinstance(second_level_input, (str, Nifti1Image)):
+        if design_matrix is None:
+            raise ValueError('List of niimgs as second_level_input'
+                             ' require a design matrix to be provided')
+        second_level_input = check_niimg(niimg=second_level_input,
+                                         ensure_ndim=4)
+    else:
+        raise ValueError('second_level_input must be'
+                         ' a list Niimg-like objects. Instead %s '
+                         'was provided' % type(second_level_input))
+
+
+def _check_confounds(confounds):
+    """Checking confounds type"""
+    if confounds is not None:
+        if not isinstance(confounds, pd.DataFrame):
+            raise ValueError('confounds must be a pandas DataFrame')
+        if 'subject_label' not in confounds.columns:
+            raise ValueError('confounds DataFrame must contain column'
+                             '"subject_label"')
+        if len(confounds.columns) < 2:
+            raise ValueError('confounds should contain at least 2 columns'
+                             'one called "subject_label" and the other'
+                             'with a given confound')
+        # Make sure subject_label contain strings
+        labels_index = confounds.columns.tolist().index('subject_label')
+        labels_dtype = confounds.dtypes[labels_index]
+        if not isinstance(labels_dtype, np.object):
+            raise ValueError('subject_label column must be of dtype '
+                             'object instead of dtype %s' % labels_dtype)
+
+
+def _check_design_matrix(design_matrix):
+    """Checking design_matrix type"""
+    if not isinstance(design_matrix, pd.DataFrame):
+            raise ValueError('design matrix must be a pandas DataFrame')
+
+
+def _check_effect_maps(effect_maps, design_matrix):
+    if len(effect_maps) != design_matrix.shape[0]:
+        raise ValueError(
+            'design_matrix does not match the number of maps considered. '
+            '%i rows in design matrix do not match with %i maps' %
+            (design_matrix.shape[0], len(effect_maps)))
+
+
+def _get_contrast(second_level_contrast, design_matrix):
+    # Check and return the contrast
+    if isinstance(second_level_contrast, str):
+        if second_level_contrast in design_matrix.columns.tolist():
+            contrast = second_level_contrast
+        else:
+            raise ValueError('"' + second_level_contrast + '" is not a valid' +
+                             ' contrast name')
+    else:
+        # Check contrast definition
+        if second_level_contrast is None:
+            if design_matrix.shape[1] == 1:
+                second_level_contrast = np.ones([1])
+            else:
+                raise ValueError('No second-level contrast is specified.')
+        elif (np.nonzero(second_level_contrast)[0]).size != 1:
+            raise ValueError('second_level_contrast must be a list of 0s'
+                             'and 1 where 1 appears one time')
+        elif sum(second_level_contrast) != 1:
+            raise ValueError('second_level_contrast must be a list of 0s'
+                             'and 1 where 1 appears one time')
+        if isinstance(second_level_contrast, np.ndarray):
+            con_val = np.asarray(second_level_contrast, dtype=bool)
+        else:
+            design_info = DesignInfo(design_matrix.columns.tolist())
+            constraint = design_info.linear_constraint(second_level_contrast)
+            con_val = np.asarray(constraint.coefs, dtype=bool).ravel()
+        contrast = np.asarray(design_matrix.columns.tolist())[con_val][0]
+    return contrast
+
+
 def _infer_effect_maps(second_level_input, contrast_def):
     """Deals with the different possibilities of second_level_input"""
     # Build the design matrix X and list of imgs Y for GLM fit
@@ -453,64 +545,104 @@ class SecondLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
 
 def non_parametric_inference(
         second_level_input, confounds=None, design_matrix=None,
-        contrast=None, second_level_contrast=None,
-        model_intercept=True, n_perm=10000, two_sided_test=True,
-        second_level_stat_type=None, output_type='p_value', mask=None,
-        smoothing_fwhm=None, random_state=None, n_jobs=1, verbose=0,
-        memory=Memory(None), memory_level=1, minimize_memory=True):
+        second_level_contrast=None, mask=None, smoothing_fwhm=None,
+        model_intercept=True, n_perm=10000, two_sided_test=False,
+        random_state=None, n_jobs=1, verbose=0):
+    """Generate different p-values corresponding to the contrasts provided
+    based on permutation testing. This fuction reuse the 'permuted_ols'
+    function Nilearn.
 
-    # Check second_level_input
-    if isinstance(second_level_input, list):
-        if len(second_level_input) < 2:
-            raise ValueError('A second level model requires a list with at'
-                             'least two first level models or niimgs')
-        elif isinstance(second_level_input[0], (str, Nifti1Image)):
-            if design_matrix is None:
-                raise ValueError('List of niimgs as second_level_input'
-                                 ' require a design matrix to be provided')
-            for model_idx, niimg in enumerate(second_level_input):
-                if not isinstance(niimg, (str, Nifti1Image)):
-                    raise ValueError(' object at idx %d is %s instead of'
-                                     ' Niimg-like object' %
-                                     (model_idx, type(niimg)))
-    elif isinstance(second_level_input, (str, Nifti1Image)):
-        if design_matrix is None:
-            raise ValueError('List of niimgs as second_level_input'
-                             ' require a design matrix to be provided')
-        second_level_input = check_niimg(niimg=second_level_input,
-                                         ensure_ndim=4)
-    else:
-        raise ValueError('second_level_input must be'
-                         ' a list Niimg-like objects. Instead %s '
-                         'was provided' % type(second_level_input))
+    Parameters
+    ----------
+    second_level_input: pandas DataFrame or list of Niimg-like objects.
 
-    # Check confounds
-    if confounds is not None:
-        if not isinstance(confounds, pd.DataFrame):
-            raise ValueError('confounds must be a pandas DataFrame')
-        if 'subject_label' not in confounds.columns:
-            raise ValueError('confounds DataFrame must contain column'
-                             '"subject_label"')
-        if len(confounds.columns) < 2:
-            raise ValueError('confounds should contain at least 2 columns'
-                             'one called "subject_label" and the other'
-                             'with a given confound')
-        # Make sure subject_label contain strings
-        labels_index = confounds.columns.tolist().index('subject_label')
-        labels_dtype = confounds.dtypes[labels_index]
-        if not isinstance(labels_dtype, np.object):
-            raise ValueError('subject_label column must be of dtype '
-                             'object instead of dtype %s' % labels_dtype)
+        If a pandas DataFrame, then they have to contain subject_label,
+        map_name and effects_map_path. It can contain multiple maps that
+        would be selected during contrast estimation with the argument
+        first_level_contrast of the compute_contrast function. The
+        DataFrame will be sorted based on the subject_label column to avoid
+        order inconsistencies when extracting the maps. So the rows of the
+        automatically computed design matrix, if not provided, will
+        correspond to the sorted subject_label column.
 
-    # Check design matrix
-    if not isinstance(design_matrix, pd.DataFrame):
-            raise ValueError('design matrix must be a pandas DataFrame')
+        If list of Niimg-like objects then this is taken literally as Y
+        for the model fit and design_matrix must be provided.
+
+    confounds: pandas DataFrame, optional
+        Must contain a subject_label column. All other columns are
+        considered as confounds and included in the model. If
+        design_matrix is provided then this argument is ignored.
+        The resulting second level design matrix uses the same column
+        names as in the given DataFrame for confounds. At least two columns
+        are expected, "subject_label" and at least one confound.
+
+    design_matrix: pandas DataFrame, optional
+        Design matrix to fit the GLM. The number of rows
+        in the design matrix must agree with the number of maps derived
+        from second_level_input.
+        Ensure that the order of maps given by a second_level_input
+        list of Niimgs matches the order of the rows in the design matrix.
+
+    second_level_contrast: str or array of shape (n_col), optional
+        Where ``n_col`` is the number of columns of the design matrix.
+        The default (None) is accepted if the design matrix has a single
+        column, in which case the only possible contrast array([1]) is
+        applied; when the design matrix has multiple columns, an error is
+        raised.
+
+    mask: Niimg-like, NiftiMasker or MultiNiftiMasker object, optional,
+        Mask to be used on data. If an instance of masker is passed,
+        then its mask will be used. If no mask is given,
+        it will be computed automatically by a MultiNiftiMasker with default
+        parameters. Automatic mask computation assumes first level imgs have
+        already been masked.
+
+    smoothing_fwhm: float, optional
+        If smoothing_fwhm is not None, it gives the size in millimeters of the
+        spatial smoothing to apply to the signal.
+
+    model_intercept : bool,
+      If True, a constant column is added to the confounding variates
+      unless the tested variate is already the intercept.
+
+    n_perm : int,
+      Number of permutations to perform.
+      Permutations are costly but the more are performed, the more precision
+      one gets in the p-values estimation.
+
+    two_sided_test : boolean,
+      If True, performs an unsigned t-test. Both positive and negative
+      effects are considered; the null hypothesis is that the effect is zero.
+      If False, only positive effects are considered as relevant. The null
+      hypothesis is that the effect is zero or negative.
+
+    random_state : int or None,
+      Seed for random number generator, to have the same permutations
+      in each computing units.
+
+    n_jobs : int,
+      Number of parallel workers.
+      If 0 is provided, all CPUs are used.
+      A negative number indicates that all the CPUs except (abs(n_jobs) - 1)
+      ones will be used.
+
+    verbose: int, optional
+        verbosity level (0 means no message).
+
+    Returns
+    -------
+    neg_log_pvals_permuted_ols_image: Nifti1Image
+        The desired output image
+    """
+
+    _check_second_level_input(second_level_input, design_matrix)
+    _check_confounds(confounds)
+    _check_design_matrix(design_matrix)
 
     # Report progress
     t0 = time.time()
     if verbose > 0:
-        sys.stderr.write("Fitting second level model. "
-                         "Take a deep breath\r")
+        sys.stderr.write("Fitting second level model...")
 
     # Select sample map for masker fit and get subjects_label for design
     sample_map = mean_img(second_level_input)
@@ -519,8 +651,8 @@ def non_parametric_inference(
     if not isinstance(mask, NiftiMasker):
         masker = NiftiMasker(
             mask_img=mask, smoothing_fwhm=smoothing_fwhm,
-            memory=memory, verbose=max(0, verbose - 1),
-            memory_level=memory_level)
+            memory=Memory(None), verbose=max(0, verbose - 1),
+            memory_level=1)
     else:
         masker = clone(mask)
         # TODO: manage changing mask parameters
@@ -532,38 +664,13 @@ def non_parametric_inference(
                          "%i seconds\n" % (time.time() - t0))
 
     # Check or obtain the contrast
-    if contrast in design_matrix.columns.tolist():
-        pass
-    else:
-        # Check contrast definition
-        if second_level_contrast is None:
-            if design_matrix.shape[1] == 1:
-                second_level_contrast = np.ones([1])
-            else:
-                raise ValueError('No second-level contrast is specified.')
-        elif (np.nonzero(second_level_contrast)[0]).size != 1:
-            raise ValueError('second_level_contrast must be a list of 0s'
-                             'and 1 where 1 appears one time')
-        elif sum(second_level_contrast) != 1:
-            raise ValueError('second_level_contrast must be a list of 0s'
-                             'and 1 where 1 appears one time')
-        if isinstance(second_level_contrast, np.ndarray):
-            con_val = np.asarray(second_level_contrast, dtype=bool)
-        else:
-            design_info = DesignInfo(design_matrix.columns.tolist())
-            constraint = design_info.linear_constraint(second_level_contrast)
-            con_val = np.asarray(constraint.coefs, dtype=bool).ravel()
-        contrast = np.asarray(design_matrix.columns.tolist())[con_val][0]
+    contrast = _get_contrast(second_level_contrast, design_matrix)
 
     # Get effect_maps
     effect_maps = _infer_effect_maps(second_level_input, None)
 
     # Check design matrix and effect maps agree on number of rows
-    if len(effect_maps) != design_matrix.shape[0]:
-        raise ValueError(
-            'design_matrix does not match the number of maps considered. '
-            '%i rows in design matrix do not match with %i maps' %
-            (design_matrix.shape[0], len(effect_maps)))
+    _check_effect_maps(effect_maps, design_matrix)
 
     # Obtain tested_var
     if contrast in design_matrix.columns.tolist():
@@ -575,8 +682,8 @@ def non_parametric_inference(
     # Perform massively univariate analysis with permuted OLS
     neg_log_pvals_permuted_ols, _, _ = permuted_ols(
         tested_var, target_vars, model_intercept=True, n_perm=n_perm,
-        n_jobs=n_jobs)
-    neg_log_pvals_permuted_ols_unmasked = masker.inverse_transform(
+        two_sided_test=two_sided_test, n_jobs=n_jobs)
+    neg_log_pvals_permuted_ols_image = masker.inverse_transform(
         np.ravel(neg_log_pvals_permuted_ols))
 
-    return neg_log_pvals_permuted_ols_unmasked
+    return neg_log_pvals_permuted_ols_image
