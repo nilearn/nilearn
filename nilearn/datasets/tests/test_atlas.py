@@ -565,9 +565,9 @@ def test_fetch_atlas_schaefer_2018():
                                                verbose=0)
         assert_not_equal(data.description, '')
         assert_true(isinstance(data.maps, _basestring))
-        assert_true(isinstance(data.labels, list))
+        assert_true(isinstance(data.labels, np.ndarray))
         assert_equal(len(data.labels), n_rois)
-        assert_true(data.labels[0].startswith("{}Networks".
+        assert_true(data.labels[0].astype(str).startswith("{}Networks".
                                               format(yeo_networks)))
         img = nibabel.load(data.maps)
         assert_equal(img.header.get_zooms()[0], resolution_mm)

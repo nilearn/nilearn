@@ -10,7 +10,6 @@ import shutil
 
 import nibabel as nb
 import numpy as np
-import pandas as pd
 from sklearn.datasets.base import Bunch
 
 from .utils import _get_dataset_dir, _fetch_files, _get_dataset_descr
@@ -1283,8 +1282,7 @@ def fetch_atlas_schaefer_2018(n_rois=100, yeo_networks=7, resolution_mm=1,
     labels_file, atlas_file = _fetch_files(data_dir, files, resume=resume,
                                            verbose=verbose)
 
-    labels = pd.read_csv(labels_file, sep="\t",usecols=[1],
-                         names=["name"]).name.tolist()
+    labels = np.genfromtxt(labels_file, usecols=1, dtype="S", delimiter="\t")
     fdescr = _get_dataset_descr(dataset_name)
 
     return Bunch(maps=atlas_file,
