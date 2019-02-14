@@ -34,7 +34,7 @@ def _read_events_table(table):
     ----------
     table: string
         Accepts the path to an events file
-
+    
     Returns
     -------
     loaded: pandas.Dataframe object
@@ -83,18 +83,18 @@ def _check_events_file_uses_tab_separators(events_files):
 
     Does not flag comma-separated-values-files for compatibility reasons;
     this may change in future as commas are not BIDS compliant.
-
+    
     parameters
     ----------
     events_files: str, List/Tuple[str]
         A single file's path or a collection of filepaths.
         Files are expected to be text files.
         Non-text files will raise ValueError.
-
+    
     Returns
     -------
     None
-
+    
     Raises
     ------
     ValueError:
