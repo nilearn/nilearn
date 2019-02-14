@@ -294,6 +294,6 @@ def _transfer_deprecated_param_vals_view_markers(kwargs):
     
     if coords is not None:
         kwargs['marker_coords'] = coords
-    if colors:
+    if colors is not None:
         kwargs['marker_color'] = colors
     return kwargs
