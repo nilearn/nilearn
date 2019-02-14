@@ -43,7 +43,7 @@ from .regression import (ARModel,
                          )
 from .utils import (_basestring,
                     _check_run_tables,
-                    _verify_events_file_uses_tab_separators,
+                    _check_events_file_uses_tab_separators,
                     get_bids_files,
                     parse_bids_filename,
                     )
@@ -356,7 +356,7 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         # Check arguments
         # Check imgs type
         if events is not None:
-            _verify_events_file_uses_tab_separators(
+            _check_events_file_uses_tab_separators(
                 events_files=events)
         if not isinstance(run_imgs, (list, tuple)):
             run_imgs = [run_imgs]

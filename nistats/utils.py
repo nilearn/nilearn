@@ -69,7 +69,7 @@ def _check_and_load_tables(tables_, var_name):
     return tables
 
  
-def _verify_events_file_uses_tab_separators(events_files):
+def _check_events_file_uses_tab_separators(events_files):
     """
     Raises a ValueError if provided list of text based data files
     (.csv, .tsv, etc) do not enforce the BIDS convention of using Tabs
