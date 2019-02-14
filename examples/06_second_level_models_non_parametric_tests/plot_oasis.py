@@ -87,29 +87,23 @@ second_level_model.fit(gray_matter_map_filenames,
                        design_matrix=design_matrix)
 
 ##########################################################################
-# Estimate the contrast is very simple. We can just provide the column
-# name of the design matrix.
-z_map = second_level_model.compute_contrast(second_level_contrast=[1, 0, 0],
-                                            output_type='z_score')
-
-##########################################################################
+# Computing the (corrected) p-values with parametric test
+from nilearn.image import math_img
 from nilearn.input_data import NiftiMasker
-from scipy.stats import norm
-masker = NiftiMasker(smoothing_fwhm=2.0, mask_img=mask_img).fit(z_map)
-stats = np.ravel(masker.transform(z_map))
-n_voxels = np.size(stats)
-pvals = 2 * norm.sf(np.abs(stats))
-pvals_corr = np.minimum(1, pvals * n_voxels)
-neg_log_pvals = - np.log10(pvals_corr)
-neg_log_pvals_unmasked = masker.inverse_transform(neg_log_pvals)
+p_val = second_level_model.compute_contrast(second_level_contrast='age',
+                                            output_type='p_value')
+masker = NiftiMasker(mask_img=mask_img).fit(p_val)
+n_voxel = np.size(masker.transform(p_val))
+# Correcting the p-values for multiple testing and taking neg log
+neg_log_pval = math_img("-np.log10(np.minimum(1,img*{}))".format(str(n_voxel)),
+                        img=p_val)
 
 ###########################################################################
-# Then plot it
+# Let us plot the second level contrast
 from nilearn import plotting
 cut_coords = [-4, 26]
 display = plotting.plot_stat_map(
-    neg_log_pvals_unmasked, colorbar=True, display_mode='z',
-    cut_coords=cut_coords)
+    neg_log_pval, colorbar=True, display_mode='z', cut_coords=cut_coords)
 plotting.show()
 
 ##############################################################################
@@ -117,16 +111,20 @@ from nistats.second_level_model import non_parametric_inference
 neg_log_pvals_permuted_ols_unmasked = \
     non_parametric_inference(gray_matter_map_filenames,
                              design_matrix=design_matrix,
-                             second_level_contrast=[1, 0, 0],
+                             second_level_contrast='age',
                              model_intercept=True, n_perm=1000,
-                             two_sided_test=True, mask=mask_img,
+                             two_sided_test=False, mask=mask_img,
                              smoothing_fwhm=2.0, n_jobs=1)
 
 ###########################################################################
-#Let us plot the second level contrast
+# Let us plot the second level contrast
 from nilearn import plotting
 display = plotting.plot_stat_map(
-    neg_log_pvals_permuted_ols_unmasked, colorbar=True,
-    display_mode='z', vmax=5,
-    cut_coords=cut_coords)
+    neg_log_pvals_permuted_ols_unmasked, colorbar=True, vmax=5,
+    display_mode='z', cut_coords=cut_coords)
 plotting.show()
+
+# The neg-log p-values obtained with non parametric testing are capped at 3
+# since the number of permutations is 1e3.
+# Otherwise it seems that the non parametric test produce more discoveries
+# and is then more powerfull than the usual parametric procedure.

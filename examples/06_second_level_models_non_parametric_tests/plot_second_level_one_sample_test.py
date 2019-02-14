@@ -21,7 +21,8 @@ import numpy as np
 # Fetch dataset
 # --------------
 # We download a list of left vs right button press contrasts from a
-# localizer dataset. Note that we fetc individual t-maps that represent the Bold activity estimate divided by the uncertainty about this estimate.
+# localizer dataset. Note that we fetc individual t-maps that represent the
+# Bold activity estimate divided by the uncertainty about this estimate.
 from nilearn.datasets import fetch_localizer_contrasts
 n_subjects = 16
 data = fetch_localizer_contrasts(["left vs right button press"], n_subjects,
@@ -63,27 +64,22 @@ second_level_model = second_level_model.fit(second_level_input,
                                             design_matrix=design_matrix)
 
 ##########################################################################
-# To estimate the contrast is very simple. We can just provide the column
-# name of the design matrix.
-z_map = second_level_model.compute_contrast(output_type='z_score')
-
-##########################################################################
+# Computing the (corrected) p-values with parametric test
+from nilearn.image import math_img
 from nilearn.input_data import NiftiMasker
-from scipy.stats import norm
-masker = NiftiMasker(smoothing_fwhm=8.0).fit(z_map)
-stats = np.ravel(masker.transform(z_map))
-n_voxels = np.size(stats)
-pvals = 2 * norm.sf(np.abs(stats))
-pvals_corr = np.minimum(1, pvals * n_voxels)
-neg_log_pvals = - np.log10(pvals_corr)
-neg_log_pvals_unmasked = masker.inverse_transform(neg_log_pvals)
+p_val = second_level_model.compute_contrast(output_type='p_value')
+masker = NiftiMasker().fit(p_val)
+n_voxel = np.size(masker.transform(p_val))
+# Correcting the p-values for multiple testing and taking neg log
+neg_log_pval = math_img("-np.log10(np.minimum(1,img*{}))".format(str(n_voxel)),
+                        img=p_val)
 
 ###########################################################################
 # We threshold the second level contrast at uncorrected p < 0.001 and plot
 from scipy.stats import norm
 cut_coords = [0]
 display = plotting.plot_glass_brain(
-    neg_log_pvals_unmasked, colorbar=True, display_mode='z', plot_abs=False,
+    neg_log_pval, colorbar=True, display_mode='z', plot_abs=False,
     cut_coords=cut_coords)
 plotting.show()
 
@@ -93,7 +89,7 @@ neg_log_pvals_permuted_ols_unmasked = \
     non_parametric_inference(second_level_input,
                              design_matrix=design_matrix,
                              model_intercept=True, n_perm=1000,
-                             two_sided_test=True,
+                             two_sided_test=False,
                              smoothing_fwhm=8.0, n_jobs=1)
 
 ###########################################################################

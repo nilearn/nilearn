@@ -71,26 +71,21 @@ second_level_model = SecondLevelModel().fit(
     second_level_input, design_matrix=design_matrix)
 
 ##########################################################################
-# Estimating the contrast is very simple. We can just provide the column
-# name of the design matrix.
-z_map = second_level_model.compute_contrast('vertical vs horizontal',
-                                            output_type='z_score')
-
-##########################################################################
+# Computing the (corrected) p-values with parametric test
+from nilearn.image import math_img
 from nilearn.input_data import NiftiMasker
-from scipy.stats import norm
-masker = NiftiMasker(mask_strategy='background').fit(z_map)
-stats = np.ravel(masker.transform(z_map))
-n_voxels = np.size(stats)
-pvals = 2 * norm.sf(np.abs(stats))
-pvals_corr = np.minimum(1, pvals * n_voxels)
-neg_log_pvals = - np.log10(pvals_corr)
-neg_log_pvals_unmasked = masker.inverse_transform(neg_log_pvals)
+p_val = second_level_model.compute_contrast('vertical vs horizontal',
+                                            output_type='p_value')
+masker = NiftiMasker(mask_strategy='background').fit(p_val)
+n_voxel = np.size(masker.transform(p_val))
+# Correcting the p-values for multiple testing and taking neg log
+neg_log_pval = math_img("-np.log10(np.minimum(1,img*{}))".format(str(n_voxel)),
+                        img=p_val)
 
 ###########################################################################
 # Then plot it
 display = plotting.plot_glass_brain(
-    neg_log_pvals_unmasked, colorbar=True, plot_abs=False)
+    neg_log_pval, colorbar=True, plot_abs=False)
 plotting.show()
 
 ##############################################################################
@@ -100,7 +95,7 @@ neg_log_pvals_permuted_ols_unmasked = \
                              design_matrix=design_matrix,
                              contrast='vertical vs horizontal',
                              model_intercept=True, n_perm=1000,
-                             two_sided_test=True,
+                             two_sided_test=False,
                              n_jobs=1)
 
 ###########################################################################

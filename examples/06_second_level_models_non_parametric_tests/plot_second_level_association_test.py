@@ -58,28 +58,22 @@ model = SecondLevelModel(smoothing_fwhm=5.0)
 model.fit(contrast_map_filenames, design_matrix=design_matrix)
 
 ##########################################################################
-# To estimate the contrast is very simple. We can just provide the column
-# name of the design matrix.
-z_map = model.compute_contrast('fluency', output_type='z_score')
-
-##########################################################################
+# Computing the (corrected) p-values with parametric test
+from nilearn.image import math_img
 from nilearn.input_data import NiftiMasker
-from scipy.stats import norm
-masker = NiftiMasker(smoothing_fwhm=5.0, mask_strategy='background').fit(z_map)
-stats = np.ravel(masker.transform(z_map))
-n_voxels = np.size(stats)
-pvals = 2 * norm.sf(np.abs(stats))
-pvals_corr = np.minimum(1, pvals * n_voxels)
-neg_log_pvals = - np.log10(pvals_corr)
-neg_log_pvals_unmasked = masker.inverse_transform(neg_log_pvals)
+p_val = model.compute_contrast('fluency', output_type='p_value')
+masker = NiftiMasker(mask_strategy='background').fit(p_val)
+n_voxel = np.size(masker.transform(p_val))
+# Correcting the p-values for multiple testing and taking neg log
+neg_log_pval = math_img("-np.log10(np.minimum(1,img*{}))".format(str(n_voxel)),
+                        img=p_val)
 
 ###########################################################################
 #Let us plot the second level contrast at the computed thresholds
 from nilearn import plotting
 cut_coords = [38, -17, -3]
 plotting.plot_stat_map(
-    neg_log_pvals_unmasked,  # threshold=threshold,
-    colorbar=True, cut_coords=cut_coords)
+    neg_log_pval, colorbar=True, cut_coords=cut_coords)
 plotting.show()
 
 ##############################################################################
@@ -87,9 +81,9 @@ from nistats.second_level_model import non_parametric_inference
 neg_log_pvals_permuted_ols_unmasked = \
     non_parametric_inference(contrast_map_filenames,
                              design_matrix=design_matrix,
-                             contrast='fluency',
+                             second_level_contrast='fluency',
                              model_intercept=True, n_perm=1000,
-                             two_sided_test=True, mask=None,
+                             two_sided_test=False, mask=None,
                              smoothing_fwhm=5.0, n_jobs=1)
 
 ###########################################################################
