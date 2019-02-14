@@ -85,16 +85,32 @@ def test_high_level_glm_with_data():
             np.eye(rk)[:2], output_type='effect_variance')
         assert_array_equal(z_image.get_data() == 0., load(mask).get_data() == 0.)
         assert_true(
-            (variance_image.get_data()[load(mask).get_data() > 0] > .001).all())
-
-    all_images = multi_session_model.compute_contrast(
-        np.eye(rk)[:2], output_type='all')
-
-    assert_array_equal(all_images['z_score'].get_data(), z_image.get_data())
-    assert_array_equal(all_images['p_value'].get_data(), p_value.get_data())
-    assert_array_equal(all_images['stat'].get_data(), stat_image.get_data())
-    assert_array_equal(all_images['effect_size'].get_data(), effect_image.get_data())
-    assert_array_equal(all_images['effect_variance'].get_data(), variance_image.get_data())
+                (variance_image.get_data()[load(mask).get_data() > 0] > .001).all())
+        
+        all_images = multi_session_model.compute_contrast(
+                np.eye(rk)[:2], output_type='all')
+        
+        assert_array_equal(all_images['z_score'].get_data(), z_image.get_data())
+        assert_array_equal(all_images['p_value'].get_data(), p_value.get_data())
+        assert_array_equal(all_images['stat'].get_data(), stat_image.get_data())
+        assert_array_equal(all_images['effect_size'].get_data(), effect_image.get_data())
+        assert_array_equal(all_images['effect_variance'].get_data(), variance_image.get_data())
+        # Delete objects attached to files to avoid WindowsError when deleting
+        # temporary directory (in Windows)
+        del (all_images,
+             design_matrices,
+             effect_image,
+             fmri_data,
+             mask,
+             multi_session_model,
+             n_voxels,
+             p_value,
+             rk,
+             shapes,
+             stat_image,
+             variance_image,
+             z_image,
+         )
 
 
 def test_high_level_glm_with_paths():
@@ -108,7 +124,7 @@ def test_high_level_glm_with_paths():
         assert_array_equal(z_image.affine, load(mask_file).affine)
         assert_true(z_image.get_data().std() < 3.)
         # Delete objects attached to files to avoid WindowsError when deleting
-        # temporary directory
+        # temporary directory (in Windows)
         del z_image, fmri_files, multi_session_model
 
 
@@ -205,6 +221,9 @@ def test_fmri_inputs():
             # confounds rows do not match n_scans
             assert_raises(
                 ValueError, FirstLevelModel(mask=None).fit, fi, d, conf)
+        # Delete objects attached to files to avoid WindowsError when deleting
+        # temporary directory (in Windows)
+        del fi, func_img, mask, d, des, FUNCFILE, _
 
 
 def basic_paradigm():
@@ -243,6 +262,9 @@ def test_first_level_model_design_creation():
         assert_array_equal(frame1, frame2)
         assert_array_equal(X1, X2)
         assert_array_equal(names1, names2)
+        # Delete objects attached to files to avoid WindowsError when deleting
+        # temporary directory (in Windows)
+        del FUNCFILE, mask, model, func_img
 
 
 def test_first_level_model_glm_computation():
@@ -260,14 +282,10 @@ def test_first_level_model_glm_computation():
                                 drift_model='polynomial', drift_order=3,
                                 minimize_memory=False)
         model = model.fit(func_img, events)
-        labels1 = model.labels_[0]
-        results1 = model.results_[0]
-        labels2, results2 = run_glm(
-            model.masker_.transform(func_img),
-            model.design_matrices_[0].values, 'ar1')
-        # ar not giving consistent results in python 3.4
-        # assert_almost_equal(labels1, labels2, decimal=2) ####FIX
-        # assert_equal(len(results1), len(results2)) ####FIX
+
+        # Delete objects attached to files to avoid WindowsError when deleting
+        # temporary directory (in Windows)
+        del mask, FUNCFILE, func_img, model
 
 
 def test_first_level_glm_computation_with_memory_caching():
@@ -286,6 +304,9 @@ def test_first_level_glm_computation_with_memory_caching():
                                 memory='nilearn_cache', memory_level=1,
                                 minimize_memory=False)
         model.fit(func_img, events)
+        # Delete objects attached to files to avoid WindowsError when deleting
+        # temporary directory (in Windows)
+        del mask, func_img, FUNCFILE, model
 
 
 def test_first_level_model_contrast_computation():
@@ -333,6 +354,9 @@ def test_first_level_model_contrast_computation():
         assert_raises(ValueError, model.compute_contrast, [c1, []])
         assert_raises(ValueError, model.compute_contrast, c1, '', '')
         assert_raises(ValueError, model.compute_contrast, c1, '', [])
+        # Delete objects attached to files to avoid WindowsError when deleting
+        # temporary directory (in Windows)
+        del func_img, FUNCFILE, model
 
 
 def test_first_level_models_from_bids():
