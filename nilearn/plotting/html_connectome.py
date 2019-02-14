@@ -7,7 +7,7 @@ from scipy import sparse
 from .. import datasets
 from . import cm
 
-from nilearn.plotting.js_plotting_utils import (add_js_lib, HTMLDocument, mesh_to_plotly,
+from .js_plotting_utils import (add_js_lib, HTMLDocument, mesh_to_plotly,
                                 encode, colorscale, get_html_template,
                                 to_color_strings)
 
