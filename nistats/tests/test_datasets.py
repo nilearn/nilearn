@@ -1,8 +1,6 @@
 import json
 import os
 
-from tempfile import NamedTemporaryFile
-
 import numpy as np
 import pandas as pd
 
@@ -176,18 +174,16 @@ def _mock_bids_compliant_localizer_first_level_events_file():
 def test_make_events_file_localizer_first_level_with_file_handle():
     data_for_tests = _mock_original_localizer_first_level_events_file()
     expected_data_from_test_file = _mock_bids_compliant_localizer_first_level_events_file()
-    with NamedTemporaryFile(mode='w+',
-                            dir=os.getcwd(),
-                            suffix='.csv') as temp_tsv_obj:
-        data_for_tests.to_csv(temp_tsv_obj,
+    temp_tsv_file = 'temp_file.tsv'
+    with InTemporaryDirectory():
+        data_for_tests.to_csv(temp_tsv_file,
                               index=False,
                               header=False,
                               sep=' ',
                               )
-        temp_tsv_obj.seek(0)
-        datasets._make_events_file_localizer_first_level(temp_tsv_obj)
-        temp_tsv_obj.seek(0)
-        data_from_test_file_post_mod = pd.read_csv(temp_tsv_obj, sep='\t')
+        datasets._make_events_file_localizer_first_level(temp_tsv_file)
+        data_from_test_file_post_mod = pd.read_csv(temp_tsv_file,
+                                                   sep='\t')
         assert_true(all(
                 expected_data_from_test_file == data_from_test_file_post_mod
                 )

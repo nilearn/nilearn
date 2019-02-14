@@ -1,8 +1,6 @@
-import csv
-import os
-from tempfile import NamedTemporaryFile
-
 import pandas as pd
+
+from nibabel.tmpdirs import InTemporaryDirectory
 from nose.tools import (assert_raises,
                         assert_true,
                         )
@@ -30,11 +28,9 @@ def make_data_for_test_runs():
 
 
 def _create_test_file(temp_csv, test_data, delimiter):
-    csv_writer = csv.writer(temp_csv, delimiter=delimiter)
-    for row in test_data:
-        csv_writer.writerow(row)
-    temp_csv.flush()
-
+    test_data = pd.DataFrame(test_data)
+    test_data.to_csv(temp_csv, sep=delimiter)
+    
 
 def _run_test_for_invalid_separator(filepath, delimiter_name):
     if delimiter_name not in ('tab', 'comma'):
@@ -48,15 +44,13 @@ def _run_test_for_invalid_separator(filepath, delimiter_name):
 def test_for_invalid_separator():
     data_for_temp_datafile, delimiters = make_data_for_test_runs()
     for delimiter_name, delimiter_char in delimiters.items():
-        tmp_file_prefix, temp_file_suffix = (
-            'tmp ', ' ' + delimiter_name + '.csv')
-        with NamedTemporaryFile(mode='w', dir=os.getcwd(),
-                                prefix=tmp_file_prefix,
-                                suffix=temp_file_suffix) as temp_csv_obj:
-            _create_test_file(temp_csv=temp_csv_obj,
+        with InTemporaryDirectory():
+            temp_tsv_file = 'tempfile.{} separated values'.format(
+                    delimiter_name)
+            _create_test_file(temp_csv=temp_tsv_file ,
                               test_data=data_for_temp_datafile,
                               delimiter=delimiter_char)
-            _run_test_for_invalid_separator(filepath=temp_csv_obj.name,
+            _run_test_for_invalid_separator(filepath=temp_tsv_file ,
                                             delimiter_name=delimiter_name)
 
 
@@ -92,23 +86,25 @@ def test_for_pandas_dataframe():
 def test_binary_opening_an_image():
     img_data = bytearray(
             b'GIF87a\x01\x00\x01\x00\xe7*\x00\x00\x00\x00\x01\x01\x01\x02\x02'
-            b'\x07\x08\x08\x08\t\t\t\n\n\n\x0b\x0b\x0b\x0c\x0c\x0c\r;')
-    with NamedTemporaryFile(mode='wb', suffix='.gif',
-                            dir=os.getcwd()) as temp_img_obj:
-        temp_img_obj.write(img_data)
+            b'\x07\x08\x08\x08\x0b\x0b\x0b\x0c\x0c\x0c\r;')
+    with InTemporaryDirectory():
+        temp_img_file = 'temp_img.gif'
+        with open(temp_img_file, 'wb') as temp_img_obj:
+            temp_img_obj.write(img_data)
         with assert_raises(ValueError):
             _verify_events_file_uses_tab_separators(
-                    events_files=temp_img_obj.name)
+                    events_files=temp_img_file)
 
 
 def test_binary_bytearray_of_ints_data():
     temp_data_bytearray_from_ints = bytearray([0, 1, 0, 11, 10])
-    with NamedTemporaryFile(mode='wb', dir=os.getcwd(),
-                            suffix='.bin') as temp_bin_obj:
-        temp_bin_obj.write(temp_data_bytearray_from_ints)
+    with InTemporaryDirectory():
+        temp_bin_file = 'temp_bin.bin'
+        with open(temp_bin_file, 'wb') as temp_bin_obj:
+            temp_bin_obj.write(temp_data_bytearray_from_ints)
         with assert_raises(ValueError):
-            result = _verify_events_file_uses_tab_separators(
-                    events_files=temp_bin_obj.name)
+            _verify_events_file_uses_tab_separators(
+                    events_files=temp_bin_file)
 
 
 if __name__ == '__main__':

@@ -101,23 +101,26 @@ def _verify_events_file_uses_tab_separators(events_files):
         If value separators are not Tabs (or commas)
     """
     valid_separators = [',', '\t']
-    events_files = [events_files] if not isinstance(events_files, (list, tuple)) else events_files
+    if not isinstance(events_files, (list, tuple)):
+        events_files = [events_files]
     for events_file_ in events_files:
         try:
             with open(events_file_, 'r') as events_file_obj:
                 events_file_sample = events_file_obj.readline()
-        except (TypeError, UnicodeDecodeError, IOError):
-            pass
             '''
-            TypeError: When events is Pandas dataframe.
-            UnicodeDecodeError:  Raised in Py3 if binary file is passed in.
-            IOError: When filepath is invalid or
-                        (in Windows) if file is being accessed elsewhere
-            These errors are not being handled here,
-                as they are handled elsewhere in the calling code.
+            The following errors are not being handled here,
+            as they are handled elsewhere in the calling code.
             Handling them here will beak the calling code,
-                and refactoring that is not straighforward.
+            and refactoring that is not straighforward.
             '''
+        except TypeError as type_err:  # events is Pandas dataframe.
+            pass
+        except UnicodeDecodeError as unicode_err:  # py3:if binary file
+            raise ValueError('The file does not seem to be '
+                             'a valid unicode text file.'
+                             )
+        except IOError as io_err:  # if invalid filepath.
+            pass
         else:
             try:
                 csv.Sniffer().sniff(sample=events_file_sample,
@@ -125,10 +128,12 @@ def _verify_events_file_uses_tab_separators(events_files):
                                     )
             except csv.Error:
                 raise ValueError(
-                    'The values in the events file are not separated by tabs; '
-                    'please enforce BIDS conventions',
-                    events_file_)
-    
+                        'The values in the events file '
+                        'are not separated by tabs; '
+                        'please enforce BIDS conventions',
+                        events_file_
+                        )
+            
 
 def _check_run_tables(run_imgs, tables_, tables_name):
     """Check fMRI runs and corresponding tables to raise error if necessary"""
