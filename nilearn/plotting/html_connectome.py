@@ -4,8 +4,8 @@ import warnings
 
 import numpy as np
 from scipy import sparse
-from nilearn import datasets
-from nilearn.plotting import cm
+from .. import datasets
+from . import cm
 
 from nilearn.plotting.js_plotting_utils import (add_js_lib, HTMLDocument, mesh_to_plotly,
                                 encode, colorscale, get_html_template,
@@ -79,9 +79,24 @@ def _make_connectome_html(connectome_info, embed_js=True):
     return ConnectomeView(as_html)
 
 
-def view_connectome(adjacency_matrix, coords, threshold=None,
-                    cmap=cm.cyan_orange, symmetric_cmap=True,
-                    linewidth=6., marker_size=3.):
+def _deprecate_params_view_connectome(func):
+    """ Decorator to deprecate specific parameters in view_connectome()
+     without modifying view_connectome().
+     """
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        _warn_deprecated_params_view_connectome(kwargs)
+        kwargs = _transfer_deprecated_param_vals_view_connectome(kwargs)
+        return func(*args, **kwargs)
+    
+    return wrapper
+
+
+@_deprecate_params_view_connectome
+def view_connectome(adjacency_matrix, node_coords, edge_threshold=None,
+                    edge_cmap=cm.bwr, symmetric_cmap=True,
+                    linewidth=6., node_size=3.,
+                    **kwargs):
     """
     Insert a 3d plot of a connectome into an HTML page.
 
@@ -90,10 +105,10 @@ def view_connectome(adjacency_matrix, coords, threshold=None,
     adjacency_matrix : ndarray, shape=(n_nodes, n_nodes)
         the weights of the edges.
 
-    coords : ndarray, shape=(n_nodes, 3)
+    node_coords : ndarray, shape=(n_nodes, 3)
         the coordinates of the nodes in MNI space.
 
-    threshold : str, number or None, optional (default=None)
+    edge_threshold : str, number or None, optional (default=None)
         If None, no thresholding.
         If it is a number only connections of amplitude greater
         than threshold will be shown.
@@ -101,7 +116,7 @@ def view_connectome(adjacency_matrix, coords, threshold=None,
         e.g. "25.3%", and only connections of amplitude above the
         given percentile will be shown.
 
-    cmap : str or matplotlib colormap, optional
+    edge_cmap : str or matplotlib colormap, optional
 
     symmetric_cmap : bool, optional (default=True)
         Make colormap symmetric (ranging from -vmax to vmax).
@@ -109,7 +124,7 @@ def view_connectome(adjacency_matrix, coords, threshold=None,
     linewidth : float, optional (default=6.)
         Width of the lines that show connections.
 
-    marker_size : float, optional (default=3.)
+    node_size : float, optional (default=3.)
         Size of the markers showing the seeds.
 
     Returns
@@ -136,11 +151,54 @@ def view_connectome(adjacency_matrix, coords, threshold=None,
 
     """
     connectome_info = _get_connectome(
-        adjacency_matrix, coords, threshold=threshold, cmap=cmap,
+        adjacency_matrix, node_coords, threshold=edge_threshold, cmap=edge_cmap,
         symmetric_cmap=symmetric_cmap)
     connectome_info["line_width"] = linewidth
-    connectome_info["marker_size"] = marker_size
+    connectome_info["marker_size"] = node_size
     return _make_connectome_html(connectome_info)
+
+
+def _warn_deprecated_params_view_connectome(kwargs):
+    """ For view_connectome(), raises warnings about deprecated parameters.
+    """
+    all_deprecated_params = {'coords': 'node_coords',
+                             'threshold': 'edge_threshold',
+                             'cmap': 'edge_cmap',
+                             'marker_size': 'node_size',
+                             }
+    used_deprecated_params = set(kwargs).intersection(all_deprecated_params)
+    for deprecated_param_ in used_deprecated_params:
+        replacement_param = all_deprecated_params[deprecated_param_]
+        param_deprecation_msg = (
+            'The parameter "{}" will be removed in Nilearn version 0.6.0. '
+            'Please use the parameter "{}" instead.'.format(deprecated_param_,
+                                                            replacement_param,
+                                                            )
+        )
+        warnings.filterwarnings('always', message=param_deprecation_msg)
+        warnings.warn(category=DeprecationWarning,
+                      message=param_deprecation_msg,
+                      stacklevel=3)
+
+
+def _transfer_deprecated_param_vals_view_connectome(kwargs):
+    """ For view_connectome(), reassigns new parameters the values passed
+    to their corresponding deprecated parameters.
+    """
+    coords = kwargs.get('coords', None)
+    threshold = kwargs.get('threshold', None)
+    cmap = kwargs.get('cmap', None)
+    marker_size = kwargs.get('marker_size', None)
+    
+    if coords is not None:
+        kwargs['node_coords'] = coords
+    if threshold:
+        kwargs['edge_threshold'] = threshold
+    if cmap:
+        kwargs['edge_cmap'] = cmap
+    if marker_size:
+        kwargs['node_size'] = marker_size
+    return kwargs
 
 
 def _deprecate_params_view_markers(func):
