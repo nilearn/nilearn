@@ -7,7 +7,8 @@ in experimental data and visualizing the results.
 More specifically:
 
 1. A sample of n=16 visual activity fMRIs are downloaded.
-2. A two-sample t-test is applied to the brain maps in order to see the effect of the contrast difference across subjects.
+2. A two-sample t-test is applied to the brain maps in order to see the effect
+of the contrast difference across subjects.
 
 The contrast is between responses to vertical versus horizontal
 checkerboards than are retinotopically distinct. At the individual
@@ -85,7 +86,7 @@ neg_log_pval = math_img("-np.log10(np.minimum(1,img*{}))".format(str(n_voxel)),
 ###########################################################################
 # Then plot it
 display = plotting.plot_glass_brain(
-    neg_log_pval, colorbar=True, plot_abs=False)
+    neg_log_pval, colorbar=True, plot_abs=False, vmax=3)
 plotting.show()
 
 ##############################################################################
@@ -93,7 +94,7 @@ from nistats.second_level_model import non_parametric_inference
 neg_log_pvals_permuted_ols_unmasked = \
     non_parametric_inference(second_level_input,
                              design_matrix=design_matrix,
-                             contrast='vertical vs horizontal',
+                             second_level_contrast='vertical vs horizontal',
                              model_intercept=True, n_perm=1000,
                              two_sided_test=False,
                              n_jobs=1)
@@ -103,5 +104,11 @@ neg_log_pvals_permuted_ols_unmasked = \
 from nilearn import plotting
 display = plotting.plot_glass_brain(
     neg_log_pvals_permuted_ols_unmasked,
-    colorbar=True, plot_abs=False)
+    colorbar=True, plot_abs=False, vmax=3)
 plotting.show()
+
+
+# The neg-log p-values obtained with non parametric testing are capped at 3
+# since the number of permutations is 1e3.
+# It seems that the non parametric test produce the same number of discoveries
+# and is then as powerfull as the usual parametric procedure.

@@ -94,3 +94,8 @@ plotting.plot_stat_map(
     neg_log_pvals_permuted_ols_unmasked,
     colorbar=True, cut_coords=cut_coords)
 plotting.show()
+
+# The neg-log p-values obtained with non parametric testing are capped at 3
+# since the number of permutations is 1e3.
+# It seems that the non parametric test produce much more discoveries
+# and is then more powerfull than the usual parametric procedure.

@@ -2,8 +2,8 @@
 Second-level fMRI model: one sample test
 ========================================
 
-Full step-by-step example of fitting a GLM to perform a second-level analysis (one-sample test)
-and visualizing the results.
+Full step-by-step example of fitting a GLM to perform a second-level analysis
+(one-sample test) and visualizing the results.
 
 More specifically:
 
@@ -11,7 +11,10 @@ More specifically:
 2. a mask of the useful brain volume is computed
 3. A one-sample t-test is applied to the brain maps
 
-We focus on a given contrast of the localizer dataset: the motor response to left versus right button press. Both at the ndividual and group level, this is expected to elicit activity in the motor cortex (positive in the right hemisphere, negative in the left hemisphere).
+We focus on a given contrast of the localizer dataset: the motor response to
+left versus right button press. Both at the ndividual and group level, this is
+expected to elicit activity in the motor cortex (positive in the right
+hemisphere, negative in the left hemisphere).
 
 """
 
@@ -79,7 +82,7 @@ neg_log_pval = math_img("-np.log10(np.minimum(1,img*{}))".format(str(n_voxel)),
 from scipy.stats import norm
 cut_coords = [0]
 display = plotting.plot_glass_brain(
-    neg_log_pval, colorbar=True, display_mode='z', plot_abs=False,
+    neg_log_pval, colorbar=True, display_mode='z', plot_abs=False, vmax=3,
     cut_coords=cut_coords)
 plotting.show()
 
@@ -96,7 +99,12 @@ neg_log_pvals_permuted_ols_unmasked = \
 #Let us plot the second level contrast
 from nilearn import plotting
 display = plotting.plot_glass_brain(
-    neg_log_pvals_permuted_ols_unmasked, colorbar=True,
+    neg_log_pvals_permuted_ols_unmasked, colorbar=True, vmax=3,
     display_mode='z', plot_abs=False,
     cut_coords=cut_coords)
 plotting.show()
+
+# The neg-log p-values obtained with non parametric testing are capped at 3
+# since the number of permutations is 1e3.
+# It seems that the non parametric test produce much more discoveries
+# and is then more powerfull than the usual parametric procedure.
