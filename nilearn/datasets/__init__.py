@@ -24,7 +24,8 @@ from .atlas import (fetch_atlas_craddock_2012, fetch_atlas_destrieux_2009,
                     fetch_atlas_allen_2011,
                     fetch_atlas_surf_destrieux,
                     fetch_atlas_talairach,
-                    fetch_atlas_pauli_2017)
+                    fetch_atlas_pauli_2017,
+                    fetch_atlas_schaefer_2018)
 
 from .utils import get_data_dirs
 from .neurovault import (fetch_neurovault,
@@ -41,6 +42,7 @@ __all__ = ['MNI152_FILE_PATH', 'fetch_icbm152_2009', 'load_mni152_template',
            'fetch_abide_pcp', 'fetch_localizer_calculation_task',
            'fetch_atlas_craddock_2012', 'fetch_atlas_destrieux_2009',
            'fetch_atlas_harvard_oxford', 'fetch_atlas_msdl',
+           'fetch_atlas_schaefer_2018',
            'fetch_coords_power_2011',
            'fetch_atlas_smith_2009',
            'fetch_atlas_allen_2011',
