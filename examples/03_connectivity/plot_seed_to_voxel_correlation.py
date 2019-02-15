@@ -45,8 +45,8 @@ print(confound_filename)
 # steps. First we will extract the mean signal within the **seed region of
 # interest**. Second, we will extract the **brain-wide voxel-wise time series**.
 #
-# We will be working with one seed sphere in the Posterior Cingulate Cortex,
-# considered part of the Default Mode Network.
+# We will be working with one seed sphere in the Posterior Cingulate Cortex
+# (PCC), considered part of the Default Mode Network.
 pcc_coords = [(0, -52, 18)]
 
 ##########################################################################
@@ -94,8 +94,8 @@ brain_time_series = brain_masker.fit_transform(func_filename,
 # series** is an array with shape n_volumes, 1), while the
 # **brain time series** is an array with shape (n_volumes, n_voxels).
 
-print("seed time series shape: (%s, %s)" % seed_time_series.shape)
-print("brain time series shape: (%s, %s)" % brain_time_series.shape)
+print("Seed time series shape: (%s, %s)" % seed_time_series.shape)
+print("Brain time series shape: (%s, %s)" % brain_time_series.shape)
 
 ##########################################################################
 # We can plot the **seed time series**.
@@ -141,9 +141,9 @@ seed_to_voxel_correlations = np.dot(brain_time_series.T, seed_time_series) / \
 # values between the signal in the **seed region** of interest and **each
 # voxel's signal**, and will be of shape (n_voxels, 1). The correlation
 # values can potentially range between -1 and 1.
-print("seed-to-voxel correlation shape: (%s, %s)" %
+print("Seed-to-voxel correlation shape: (%s, %s)" %
       seed_to_voxel_correlations.shape)
-print("seed-to-voxel correlation: min = %.3f; max = %.3f" % (
+print("Seed-to-voxel correlation: min = %.3f; max = %.3f" % (
     seed_to_voxel_correlations.min(), seed_to_voxel_correlations.max()))
 
 
@@ -151,7 +151,7 @@ print("seed-to-voxel correlation: min = %.3f; max = %.3f" % (
 # Plotting the seed-to-voxel correlation map
 # ---------------------------------------
 # We can now plot the seed-to-voxel correlation map and perform thresholding
-# to only show values more extreme than +/- 0.3. Before displaying,
+# to only show values more extreme than +/- 0.5. Before displaying,
 # we need to create an in memory Nifti image object.
 # Furthermore, we can display the location of the seed with a sphere and
 # set the cross to the center of the seed region of interest.
@@ -159,7 +159,7 @@ from nilearn import plotting
 seed_to_voxel_correlations_img = brain_masker.inverse_transform(
     seed_to_voxel_correlations.T)
 display = plotting.plot_stat_map(seed_to_voxel_correlations_img,
-                                 threshold=0.3, vmax=1,
+                                 threshold=0.5, vmax=1,
                                  cut_coords=pcc_coords[0],
                                  title=("Seed-to-voxel correlation "
                                        "(PCC seed)"))
