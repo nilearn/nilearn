@@ -1188,7 +1188,7 @@ def fetch_atlas_pauli_2017(version='prob', data_dir=None, verbose=1):
 
 
 
-def fetch_atlas_schaefer_2018(n_rois=100, yeo_networks=7, resolution_mm=1,
+def fetch_atlas_schaefer_2018(n_rois=400, yeo_networks=7, resolution_mm=1,
                               data_dir=None, base_url=None, resume=True,
                               verbose=1):
     """Download and return file names for the Schaefer 2018 parcellation
@@ -1200,7 +1200,7 @@ def fetch_atlas_schaefer_2018(n_rois=100, yeo_networks=7, resolution_mm=1,
     Parameters
     ----------
     n_rois: int
-        number of regions of interest {100 (default), 200, 300, 400, 500, 600,
+        number of regions of interest {100, 200, 300, 400 (default), 500, 600,
         800, 1000}
 
     yeo_networks: int
