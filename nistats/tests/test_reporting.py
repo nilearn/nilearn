@@ -10,11 +10,11 @@ from nose.tools import assert_true
 from numpy.testing import dec
 
 from nistats.design_matrix import make_first_level_design_matrix
-from nistats.reporting import (_local_max,
-                               get_clusters_table,
+from nistats.reporting import (get_clusters_table,
                                plot_contrast_matrix,
                                plot_design_matrix,
                                )
+from nistats.reporting._get_clusters_table import _local_max
 
 # Avoid making pyflakes unhappy
 _set_mpl_backend
