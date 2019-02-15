@@ -121,7 +121,7 @@ plt.tight_layout()
 
 
 ##########################################################################
-# Performing the seed-based correlation analysis
+# Performing the seed-to-voxel correlation analysis
 # ----------------------------------------------
 #
 # Now that we have two arrays (**sphere signal**: (n_volumes, 1),
@@ -133,38 +133,40 @@ plt.tight_layout()
 # series.
 import numpy as np
 
-seed_based_correlations = np.dot(brain_time_series.T, seed_time_series) / \
-                          seed_time_series.shape[0]
+seed_to_voxel_correlations = np.dot(brain_time_series.T, seed_time_series) / \
+                             seed_time_series.shape[0]
 
 ################################################
 # The resulting array will contain a value representing the correlation
 # values between the signal in the **seed region** of interest and **each
 # voxel's signal**, and will be of shape (n_voxels, 1). The correlation
 # values can potentially range between -1 and 1.
-print("seed-based correlation shape: (%s, %s)" % seed_based_correlations.shape)
-print("seed-based correlation: min = %.3f; max = %.3f" % (
-    seed_based_correlations.min(), seed_based_correlations.max()))
+print("seed-to-voxel correlation shape: (%s, %s)" %
+      seed_to_voxel_correlations.shape)
+print("seed-to-voxel correlation: min = %.3f; max = %.3f" % (
+    seed_to_voxel_correlations.min(), seed_to_voxel_correlations.max()))
 
 
 ##########################################################################
-# Plotting the seed-based correlation map
+# Plotting the seed-to-voxel correlation map
 # ---------------------------------------
-# We can now plot the seed-based correlation map and perform thresholding
+# We can now plot the seed-to-voxel correlation map and perform thresholding
 # to only show values more extreme than +/- 0.3. Before displaying,
 # we need to create an in memory Nifti image object.
 # Furthermore, we can display the location of the seed with a sphere and
 # set the cross to the center of the seed region of interest.
 from nilearn import plotting
-seed_based_correlations_img = brain_masker.inverse_transform(
-    seed_based_correlations.T)
-display = plotting.plot_stat_map(seed_based_correlations_img,
+seed_to_voxel_correlations_img = brain_masker.inverse_transform(
+    seed_to_voxel_correlations.T)
+display = plotting.plot_stat_map(seed_to_voxel_correlations_img,
                                  threshold=0.3, vmax=1,
                                  cut_coords=pcc_coords[0],
-                                 title="Seed-based correlation (PCC seed)")
+                                 title=("Seed-to-voxel correlation "
+                                       "(PCC seed)"))
 display.add_markers(marker_coords=pcc_coords, marker_color='g',
                     marker_size=300)
 # At last, we save the plot as pdf.
-display.savefig('pcc_based_correlation.pdf')
+display.savefig('pcc_seed_correlation.pdf')
 
 
 ##########################################################################
@@ -172,14 +174,14 @@ display.savefig('pcc_based_correlation.pdf')
 # --------------------------------------
 # Finally, we can Fisher-z transform the data to achieve a normal distribution.
 # The transformed array can now have values more extreme than +/- 1.
-seed_based_correlations_fisher_z = np.arctanh(seed_based_correlations)
-print("seed-based correlation Fisher-z transformed: min = %.3f; max = %.3f" % (
-    seed_based_correlations_fisher_z.min(),
-    seed_based_correlations_fisher_z.max()))
+seed_to_voxel_correlations_fisher_z = np.arctanh(seed_to_voxel_correlations)
+print("Seed-to-voxel correlation Fisher-z transformed: min = %.3f; max = %.3f"
+      % (seed_to_voxel_correlations_fisher_z.min(),
+         seed_to_voxel_correlations_fisher_z.max()))
 
 # Finally, we can tranform the correlation array back to a Nifti image
 # object, that we can save.
-seed_based_correlations_fisher_z_img = brain_masker.inverse_transform(
-    seed_based_correlations_fisher_z.T)
-seed_based_correlations_fisher_z_img.to_filename(
-    'pcc_based_correlation_z.nii.gz')
+seed_to_voxel_correlations_fisher_z_img = brain_masker.inverse_transform(
+    seed_to_voxel_correlations_fisher_z.T)
+seed_to_voxel_correlations_fisher_z_img.to_filename(
+    'pcc_seed_correlation_z.nii.gz')
