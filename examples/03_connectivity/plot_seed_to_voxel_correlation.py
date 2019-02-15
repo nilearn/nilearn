@@ -122,7 +122,7 @@ plt.tight_layout()
 
 ##########################################################################
 # Performing the seed-to-voxel correlation analysis
-# ----------------------------------------------
+# -------------------------------------------------
 #
 # Now that we have two arrays (**sphere signal**: (n_volumes, 1),
 # **brain-wide voxel-wise signal** (n_volumes, n_voxels)), we can correlate
@@ -149,7 +149,7 @@ print("Seed-to-voxel correlation: min = %.3f; max = %.3f" % (
 
 ##########################################################################
 # Plotting the seed-to-voxel correlation map
-# ---------------------------------------
+# ------------------------------------------
 # We can now plot the seed-to-voxel correlation map and perform thresholding
 # to only show values more extreme than +/- 0.5. Before displaying,
 # we need to create an in memory Nifti image object.
