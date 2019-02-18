@@ -177,8 +177,8 @@ def _warn_deprecated_params_view_connectome(kwargs):
         )
         warnings.filterwarnings('always', message=param_deprecation_msg)
         warnings.warn(category=DeprecationWarning,
-                  message=param_deprecation_msg,
-                  stacklevel=3)
+                      message=param_deprecation_msg,
+                      stacklevel=3)
 
 
 def _transfer_deprecated_param_vals_view_connectome(kwargs):
@@ -201,16 +201,30 @@ def _transfer_deprecated_param_vals_view_connectome(kwargs):
     return kwargs
 
 
-def view_markers(coords, colors=None, marker_size=5.):
+def _deprecate_params_view_markers(func):
+    """ Decorator to deprecate specific parameters in view_markers()
+     without modifying view_markers().
+     """
+
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        _warn_deprecated_params_view_markers(kwargs)
+        kwargs = _transfer_deprecated_param_vals_view_markers(kwargs)
+        return func(*args, **kwargs)
+    return wrapper
+
+
+@_deprecate_params_view_markers
+def view_markers(marker_coords, marker_color=None, marker_size=5., **kwargs):
     """
     Insert a 3d plot of markers in a brain into an HTML page.
 
     Parameters
     ----------
-    coords : ndarray, shape=(n_nodes, 3)
+    marker_coords : ndarray, shape=(n_nodes, 3)
         the coordinates of the nodes in MNI space.
 
-    colors : ndarray, shape=(n_nodes,)
+    marker_color : ndarray, shape=(n_nodes,)
         colors of the markers: list of strings, hex rgb or rgba strings, rgb
         triplets, or rgba triplets (i.e. formats accepted by matplotlib, see
         https://matplotlib.org/users/colors.html#specifying-colors)
@@ -241,8 +255,45 @@ def view_markers(coords, colors=None, marker_size=5.):
         surface.
 
     """
-    if colors is None:
-        colors = ['black' for i in range(len(coords))]
-    connectome_info = _get_markers(coords, colors)
+    if marker_color is None:
+        marker_color = ['red' for i in range(len(marker_coords))]
+    connectome_info = _get_markers(marker_coords, marker_color)
     connectome_info["marker_size"] = marker_size
     return _make_connectome_html(connectome_info)
+
+
+def _warn_deprecated_params_view_markers(kwargs):
+    """ For view_markers(), raises warnings about deprecated parameters.
+    """
+
+    all_deprecated_params = {'coords': 'marker_coords',
+                             'colors': 'marker_color',
+                             }
+    used_dperecated_params = set(kwargs).intersection(all_deprecated_params)
+    for deprecated_param_ in used_dperecated_params:
+        replacement_param = all_deprecated_params[deprecated_param_]
+        param_deprecation_msg = (
+            'The parameter "{}" will be removed in Nilearn version 0.6.0. '
+            'Please use the parameter "{}" instead.'.format(deprecated_param_,
+                                                            replacement_param,
+                                                            )
+        )
+        warnings.filterwarnings('always', message=param_deprecation_msg)
+        warnings.warn(category=DeprecationWarning,
+                      message=param_deprecation_msg,
+                      stacklevel=3,
+                      )
+
+
+def _transfer_deprecated_param_vals_view_markers(kwargs):
+    """ For view_markers(), reassigns new parameters the values passed
+    to their corresponding deprecated parameters.
+    """
+    coords = kwargs.get('coords', None)
+    colors = kwargs.get('colors', None)
+    
+    if coords is not None:
+        kwargs['marker_coords'] = coords
+    if colors is not None:
+        kwargs['marker_color'] = colors
+    return kwargs
