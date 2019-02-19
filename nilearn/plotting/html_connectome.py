@@ -27,7 +27,7 @@ def _prepare_line(edges, nodes):
 
 
 def _get_connectome(adjacency_matrix, coords, threshold=None,
-                    cmap=cm.cold_hot, symmetric_cmap=True):
+                    marker_size=None, cmap=cm.cold_hot, symmetric_cmap=True):
     connectome = {}
     coords = np.asarray(coords, dtype='<f4')
     adjacency_matrix = adjacency_matrix.copy()
@@ -46,11 +46,17 @@ def _get_connectome(adjacency_matrix, coords, threshold=None,
     path_edges, path_nodes = _prepare_line(edges, nodes)
     connectome["_con_w"] = encode(np.asarray(s.data, dtype='<f4')[path_edges])
     c = coords[path_nodes]
+    if np.ndim(marker_size) > 0:
+        marker_size = np.asarray(marker_size)
+        marker_size = marker_size[path_nodes]
     x, y, z = c.T
     for coord, cname in [(x, "x"), (y, "y"), (z, "z")]:
         connectome["_con_{}".format(cname)] = encode(
             np.asarray(coord, dtype='<f4'))
     connectome["markers_only"] = False
+    if hasattr(marker_size, 'tolist'):
+        marker_size = marker_size.tolist()
+    connectome['marker_size'] = marker_size
     return connectome
 
 
@@ -125,7 +131,7 @@ def view_connectome(adjacency_matrix, node_coords, edge_threshold=None,
         Width of the lines that show connections.
 
     node_size : float, optional (default=3.)
-        Size of the markers showing the seeds.
+        Size of the markers showing the seeds in pixels.
 
     Returns
     -------
@@ -152,9 +158,7 @@ def view_connectome(adjacency_matrix, node_coords, edge_threshold=None,
     """
     connectome_info = _get_connectome(
         adjacency_matrix, node_coords, threshold=edge_threshold, cmap=edge_cmap,
-        symmetric_cmap=symmetric_cmap)
-    connectome_info["line_width"] = linewidth
-    connectome_info["marker_size"] = node_size
+        symmetric_cmap=symmetric_cmap, marker_size=node_size)
     return _make_connectome_html(connectome_info)
 
 
@@ -192,11 +196,11 @@ def _transfer_deprecated_param_vals_view_connectome(kwargs):
     
     if coords is not None:
         kwargs['node_coords'] = coords
-    if threshold:
+    if threshold is not None:
         kwargs['edge_threshold'] = threshold
-    if cmap:
+    if cmap is not None:
         kwargs['edge_cmap'] = cmap
-    if marker_size:
+    if marker_size is not None:
         kwargs['node_size'] = marker_size
     return kwargs
 
@@ -229,8 +233,8 @@ def view_markers(marker_coords, marker_color=None, marker_size=5., **kwargs):
         triplets, or rgba triplets (i.e. formats accepted by matplotlib, see
         https://matplotlib.org/users/colors.html#specifying-colors)
 
-    marker_size : float, optional (default=3.)
-        Size of the markers showing the seeds.
+    marker_size : float or array-like, optional (default=3.)
+        Size of the markers showing the seeds in pixels.
 
     Returns
     -------
@@ -258,6 +262,8 @@ def view_markers(marker_coords, marker_color=None, marker_size=5., **kwargs):
     if marker_color is None:
         marker_color = ['red' for i in range(len(marker_coords))]
     connectome_info = _get_markers(marker_coords, marker_color)
+    if hasattr(marker_size, 'tolist'):
+        marker_size = marker_size.tolist()
     connectome_info["marker_size"] = marker_size
     return _make_connectome_html(connectome_info)
 

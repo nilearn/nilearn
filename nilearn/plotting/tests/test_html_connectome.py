@@ -58,6 +58,10 @@ def test_view_connectome():
     html = html_connectome.view_connectome(adj, coord, '85.3%',
                                            linewidth=8.5, node_size=4.2)
     check_html(html, False, 'connectome-plot')
+    html = html_connectome.view_connectome(
+        adj, coord, '85.3%', linewidth=8.5, marker_size=np.arange(len(coord)))
+    check_html(html, False, 'connectome-plot')
+
 
 
 def test_params_deprecation_view_connectome():
@@ -149,6 +153,12 @@ def test_view_markers():
     html = html_connectome.view_markers(coords)
     check_html(html, False, 'connectome-plot')
     html = html_connectome.view_markers(coords, marker_size=15)
+    check_html(html, False, 'connectome-plot')
+    html = html_connectome.view_markers(
+        coords, marker_size=np.arange(len(coords)))
+    check_html(html, False, 'connectome-plot')
+    html = html_connectome.view_markers(
+        coords, marker_size=list(range(len(coords))))
     check_html(html, False, 'connectome-plot')
 
 
