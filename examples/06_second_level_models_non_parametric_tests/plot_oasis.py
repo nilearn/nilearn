@@ -95,7 +95,8 @@ p_val = second_level_model.compute_contrast(second_level_contrast='age',
 masker = NiftiMasker(mask_img=mask_img).fit(p_val)
 n_voxel = np.size(masker.transform(p_val))
 # Correcting the p-values for multiple testing and taking neg log
-neg_log_pval = math_img("-np.log10(np.minimum(1,img*{}))".format(str(n_voxel)),
+neg_log_pval = math_img("-np.log10(np.minimum(1, img * {}))"
+                        .format(str(n_voxel)),
                         img=p_val)
 
 ###########################################################################
@@ -107,6 +108,7 @@ display = plotting.plot_stat_map(
 plotting.show()
 
 ##############################################################################
+# Computing the (corrected) p-values with permutation test
 from nistats.second_level_model import non_parametric_inference
 neg_log_pvals_permuted_ols_unmasked = \
     non_parametric_inference(gray_matter_map_filenames,
@@ -126,5 +128,5 @@ plotting.show()
 
 # The neg-log p-values obtained with non parametric testing are capped at 3
 # since the number of permutations is 1e3.
-# Otherwise it seems that the non parametric test produce more discoveries
-# and is then more powerfull than the usual parametric procedure.
+# Otherwise it seems that the non parametric test yields many more discoveries
+# and is then more powerful than the usual parametric procedure.

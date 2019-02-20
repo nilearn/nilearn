@@ -65,7 +65,8 @@ p_val = model.compute_contrast('fluency', output_type='p_value')
 masker = NiftiMasker(mask_strategy='background').fit(p_val)
 n_voxel = np.size(masker.transform(p_val))
 # Correcting the p-values for multiple testing and taking neg log
-neg_log_pval = math_img("-np.log10(np.minimum(1,img*{}))".format(str(n_voxel)),
+neg_log_pval = math_img("-np.log10(np.minimum(1, img * {}))"
+                        .format(str(n_voxel)),
                         img=p_val)
 
 ###########################################################################
@@ -77,6 +78,7 @@ plotting.plot_stat_map(
 plotting.show()
 
 ##############################################################################
+# Computing the (corrected) p-values with permutation test
 from nistats.second_level_model import non_parametric_inference
 neg_log_pvals_permuted_ols_unmasked = \
     non_parametric_inference(contrast_map_filenames,
@@ -97,5 +99,5 @@ plotting.show()
 
 # The neg-log p-values obtained with non parametric testing are capped at 3
 # since the number of permutations is 1e3.
-# It seems that the non parametric test produce much more discoveries
-# and is then more powerfull than the usual parametric procedure.
+# It seems that the non parametric test yields many more discoveries
+# and is then more powerful than the usual parametric procedure.
