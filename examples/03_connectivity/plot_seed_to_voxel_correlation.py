@@ -36,7 +36,6 @@ confound_filename = adhd_dataset.confounds[0]
 print(func_filename)
 print(confound_filename)
 
-
 ##########################################################################
 # Time series extraction
 # ----------------------
@@ -88,7 +87,6 @@ brain_masker = input_data.NiftiMasker(
 brain_time_series = brain_masker.fit_transform(func_filename,
                                                confounds=[confound_filename])
 
-
 ##########################################################################
 # We can now inspect the extracted time series. Note that the **seed time
 # series** is an array with shape n_volumes, 1), while the
@@ -118,8 +116,6 @@ plt.xlabel('Scan number')
 plt.ylabel('Normalized signal')
 plt.tight_layout()
 
-
-
 ##########################################################################
 # Performing the seed-to-voxel correlation analysis
 # -------------------------------------------------
@@ -133,8 +129,9 @@ plt.tight_layout()
 # series.
 import numpy as np
 
-seed_to_voxel_correlations = np.dot(brain_time_series.T, seed_time_series) / \
-                             seed_time_series.shape[0]
+seed_to_voxel_correlations = (np.dot(brain_time_series.T, seed_time_series) /
+                              seed_time_series.shape[0]
+                              )
 
 ################################################
 # The resulting array will contain a value representing the correlation
@@ -146,7 +143,6 @@ print("Seed-to-voxel correlation shape: (%s, %s)" %
 print("Seed-to-voxel correlation: min = %.3f; max = %.3f" % (
     seed_to_voxel_correlations.min(), seed_to_voxel_correlations.max()))
 
-
 ##########################################################################
 # Plotting the seed-to-voxel correlation map
 # ------------------------------------------
@@ -156,18 +152,18 @@ print("Seed-to-voxel correlation: min = %.3f; max = %.3f" % (
 # Furthermore, we can display the location of the seed with a sphere and
 # set the cross to the center of the seed region of interest.
 from nilearn import plotting
+
 seed_to_voxel_correlations_img = brain_masker.inverse_transform(
     seed_to_voxel_correlations.T)
 display = plotting.plot_stat_map(seed_to_voxel_correlations_img,
                                  threshold=0.5, vmax=1,
                                  cut_coords=pcc_coords[0],
-                                 title=("Seed-to-voxel correlation "
-                                       "(PCC seed)"))
+                                 title="Seed-to-voxel correlation (PCC seed)"
+                                 )
 display.add_markers(marker_coords=pcc_coords, marker_color='g',
                     marker_size=300)
 # At last, we save the plot as pdf.
 display.savefig('pcc_seed_correlation.pdf')
-
 
 ##########################################################################
 # Fisher-z transformation and save nifti
@@ -177,7 +173,9 @@ display.savefig('pcc_seed_correlation.pdf')
 seed_to_voxel_correlations_fisher_z = np.arctanh(seed_to_voxel_correlations)
 print("Seed-to-voxel correlation Fisher-z transformed: min = %.3f; max = %.3f"
       % (seed_to_voxel_correlations_fisher_z.min(),
-         seed_to_voxel_correlations_fisher_z.max()))
+         seed_to_voxel_correlations_fisher_z.max()
+         )
+      )
 
 # Finally, we can tranform the correlation array back to a Nifti image
 # object, that we can save.
