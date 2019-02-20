@@ -32,6 +32,11 @@ Changes
  - coords is now marker_coords
  - colors is now marker_color
 
+Fixes
+-----
+
+- Example plot_seed_to_voxel_correlation now really saves z-transformed maps.
+
 0.5.0
 =====
 
@@ -1257,4 +1262,3 @@ Contributors (from ``git shortlog -ns 0.1``)::
      1  Matthias Ekman
      1  Michael Waskom
      1  Vincent Michel
-
