@@ -154,7 +154,8 @@ def _check_output_type(output_type):
 
 def _check_design_matrix(design_matrix):
     """Checking design_matrix type"""
-    if not isinstance(design_matrix, pd.DataFrame):
+    if design_matrix is not None:
+        if not isinstance(design_matrix, pd.DataFrame):
             raise ValueError('design matrix must be a pandas DataFrame')
 
 
