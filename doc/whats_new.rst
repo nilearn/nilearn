@@ -32,10 +32,10 @@ Changes
  - coords is now marker_coords
  - colors is now marker_color
 
- Fixes
- -----
+Fixes
+-----
 
- - Example plot_seed_to_voxel_correlation now really saves z-transformed maps.
+- Example plot_seed_to_voxel_correlation now really saves z-transformed maps.
 
 0.5.0
 =====
