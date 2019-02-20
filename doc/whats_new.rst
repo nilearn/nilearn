@@ -56,6 +56,8 @@ Fixes
   half-transparent grey to maintain a 3D perception.
 - :func:`nilearn.plotting.view_surf` now accepts surface data provided as a file
   path.
+- plot_glass_brain now correctly displays the left 'l' orientation even when
+  the given images are completely masked (empty images).
 
 0.5.2
 =====
@@ -169,6 +171,7 @@ The following people contributed to this release::
    2  Elizabeth DuPre
    1  Eric Larson
    1  Pierre Bellec
+
 
 0.5.0
 =====
