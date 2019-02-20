@@ -23,6 +23,11 @@ Changes
  - cmap is now edge_cmap
  - threshold is now edge_threshold
 
+Fixes
+-----
+
+- Example plot_seed_to_voxel_correlation now really saves z-transformed maps.
+
 0.5.0
 =====
 
