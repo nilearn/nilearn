@@ -372,7 +372,8 @@ class GlassBrainAxes(BaseAxes):
         # This work around can be removed bumping matplotlib > 2.1.0. See #1815
         # in nilearn for the invention of this work around
 
-        if self.direction == 'l' and data_selection.min() is np.ma.masked:
+        if self.direction == 'l' and data_selection.min() is np.ma.masked and \
+                not (self.ax.get_xlim()[0] > self.ax.get_xlim()[1]):
             self.ax.invert_xaxis()
 
         return np.rot90(maximum_intensity_data)
