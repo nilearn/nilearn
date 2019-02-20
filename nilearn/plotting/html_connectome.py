@@ -27,7 +27,7 @@ def _prepare_line(edges, nodes):
 
 
 def _get_connectome(adjacency_matrix, coords, threshold=None,
-                    cmap=cm.cold_hot, symmetric_cmap=True):
+                    marker_size=None, cmap=cm.cold_hot, symmetric_cmap=True):
     connectome = {}
     coords = np.asarray(coords, dtype='<f4')
     adjacency_matrix = adjacency_matrix.copy()
@@ -46,11 +46,17 @@ def _get_connectome(adjacency_matrix, coords, threshold=None,
     path_edges, path_nodes = _prepare_line(edges, nodes)
     connectome["_con_w"] = encode(np.asarray(s.data, dtype='<f4')[path_edges])
     c = coords[path_nodes]
+    if np.ndim(marker_size) > 0:
+        marker_size = np.asarray(marker_size)
+        marker_size = marker_size[path_nodes]
     x, y, z = c.T
     for coord, cname in [(x, "x"), (y, "y"), (z, "z")]:
         connectome["_con_{}".format(cname)] = encode(
             np.asarray(coord, dtype='<f4'))
     connectome["markers_only"] = False
+    if hasattr(marker_size, 'tolist'):
+        marker_size = marker_size.tolist()
+    connectome['marker_size'] = marker_size
     return connectome
 
 
@@ -125,7 +131,7 @@ def view_connectome(adjacency_matrix, node_coords, edge_threshold=None,
         Width of the lines that show connections.
 
     node_size : float, optional (default=3.)
-        Size of the markers showing the seeds.
+        Size of the markers showing the seeds in pixels.
 
     Returns
     -------
@@ -152,9 +158,7 @@ def view_connectome(adjacency_matrix, node_coords, edge_threshold=None,
     """
     connectome_info = _get_connectome(
         adjacency_matrix, node_coords, threshold=edge_threshold, cmap=edge_cmap,
-        symmetric_cmap=symmetric_cmap)
-    connectome_info["line_width"] = linewidth
-    connectome_info["marker_size"] = node_size
+        symmetric_cmap=symmetric_cmap, marker_size=node_size)
     return _make_connectome_html(connectome_info)
 
 
@@ -177,8 +181,8 @@ def _warn_deprecated_params_view_connectome(kwargs):
         )
         warnings.filterwarnings('always', message=param_deprecation_msg)
         warnings.warn(category=DeprecationWarning,
-                  message=param_deprecation_msg,
-                  stacklevel=3)
+                      message=param_deprecation_msg,
+                      stacklevel=3)
 
 
 def _transfer_deprecated_param_vals_view_connectome(kwargs):
@@ -192,31 +196,45 @@ def _transfer_deprecated_param_vals_view_connectome(kwargs):
     
     if coords is not None:
         kwargs['node_coords'] = coords
-    if threshold:
+    if threshold is not None:
         kwargs['edge_threshold'] = threshold
-    if cmap:
+    if cmap is not None:
         kwargs['edge_cmap'] = cmap
-    if marker_size:
+    if marker_size is not None:
         kwargs['node_size'] = marker_size
     return kwargs
 
 
-def view_markers(coords, colors=None, marker_size=5.):
+def _deprecate_params_view_markers(func):
+    """ Decorator to deprecate specific parameters in view_markers()
+     without modifying view_markers().
+     """
+
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        _warn_deprecated_params_view_markers(kwargs)
+        kwargs = _transfer_deprecated_param_vals_view_markers(kwargs)
+        return func(*args, **kwargs)
+    return wrapper
+
+
+@_deprecate_params_view_markers
+def view_markers(marker_coords, marker_color=None, marker_size=5., **kwargs):
     """
     Insert a 3d plot of markers in a brain into an HTML page.
 
     Parameters
     ----------
-    coords : ndarray, shape=(n_nodes, 3)
+    marker_coords : ndarray, shape=(n_nodes, 3)
         the coordinates of the nodes in MNI space.
 
-    colors : ndarray, shape=(n_nodes,)
+    marker_color : ndarray, shape=(n_nodes,)
         colors of the markers: list of strings, hex rgb or rgba strings, rgb
         triplets, or rgba triplets (i.e. formats accepted by matplotlib, see
         https://matplotlib.org/users/colors.html#specifying-colors)
 
-    marker_size : float, optional (default=3.)
-        Size of the markers showing the seeds.
+    marker_size : float or array-like, optional (default=3.)
+        Size of the markers showing the seeds in pixels.
 
     Returns
     -------
@@ -241,8 +259,47 @@ def view_markers(coords, colors=None, marker_size=5.):
         surface.
 
     """
-    if colors is None:
-        colors = ['black' for i in range(len(coords))]
-    connectome_info = _get_markers(coords, colors)
+    if marker_color is None:
+        marker_color = ['red' for i in range(len(marker_coords))]
+    connectome_info = _get_markers(marker_coords, marker_color)
+    if hasattr(marker_size, 'tolist'):
+        marker_size = marker_size.tolist()
     connectome_info["marker_size"] = marker_size
     return _make_connectome_html(connectome_info)
+
+
+def _warn_deprecated_params_view_markers(kwargs):
+    """ For view_markers(), raises warnings about deprecated parameters.
+    """
+
+    all_deprecated_params = {'coords': 'marker_coords',
+                             'colors': 'marker_color',
+                             }
+    used_dperecated_params = set(kwargs).intersection(all_deprecated_params)
+    for deprecated_param_ in used_dperecated_params:
+        replacement_param = all_deprecated_params[deprecated_param_]
+        param_deprecation_msg = (
+            'The parameter "{}" will be removed in Nilearn version 0.6.0. '
+            'Please use the parameter "{}" instead.'.format(deprecated_param_,
+                                                            replacement_param,
+                                                            )
+        )
+        warnings.filterwarnings('always', message=param_deprecation_msg)
+        warnings.warn(category=DeprecationWarning,
+                      message=param_deprecation_msg,
+                      stacklevel=3,
+                      )
+
+
+def _transfer_deprecated_param_vals_view_markers(kwargs):
+    """ For view_markers(), reassigns new parameters the values passed
+    to their corresponding deprecated parameters.
+    """
+    coords = kwargs.get('coords', None)
+    colors = kwargs.get('colors', None)
+    
+    if coords is not None:
+        kwargs['marker_coords'] = coords
+    if colors is not None:
+        kwargs['marker_color'] = colors
+    return kwargs

@@ -666,7 +666,7 @@ def fetch_miyawaki2008(data_dir=None, url=None, resume=True, verbose=1):
 def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
                               get_masks=False, get_anats=False,
                               data_dir=None, url=None, resume=True, verbose=1):
-    """Download and load Brainomics Localizer dataset (94 subjects).
+    """Download and load Brainomics/Localizer dataset (94 subjects).
 
     "The Functional Localizer is a simple and fast acquisition
     procedure based on a 5-minute functional magnetic resonance
@@ -679,8 +679,11 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
     Functional Localizer page."
     (see http://brainomics.cea.fr/localizer/)
 
-    "Scientific results obtained using this dataset are described in
-    Pinel et al., 2007" [1]
+    You may cite Papadopoulos Orfanos, Dimitri, *et al.* when using this
+    dataset [1].
+
+    Scientific results obtained using this dataset are described in
+    Pinel *et al.*, 2007 [2].
 
     Parameters
     ----------
@@ -800,10 +803,14 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
 
     References
     ----------
-    Pinel, Philippe, et al.
+    [1] Papadopoulos Orfanos, Dimitri, et al.
+    "The Brainomics/Localizer database."
+    NeuroImage 144.B (2017): 309.
+
+    [2] Pinel, Philippe, et al.
     "Fast reproducible identification and large-scale databasing of
     individual functional cognitive networks."
-    BMC neuroscience 8.1 (2007): 91.
+    BMC Neuroscience 8.1 (2007): 91.
 
     See Also
     ---------

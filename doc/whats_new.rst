@@ -23,10 +23,19 @@ Changes
  - cmap is now edge_cmap
  - threshold is now edge_threshold
 
-Fixes
------
+- plotting.view_markers and plotting.view_connectome can accept different marker
+  sizes for each node / marker.
 
-- Example plot_seed_to_voxel_correlation now really saves z-transformed maps.
+- plotting.view_markers() default marker color is now 'red', consistent with add_markers().
+- plotting.view_markers() parameter names are consistent with add_markers():
+
+ - coords is now marker_coords
+ - colors is now marker_color
+
+ Fixes
+ -----
+
+ - Example plot_seed_to_voxel_correlation now really saves z-transformed maps.
 
 0.5.0
 =====
@@ -1253,4 +1262,3 @@ Contributors (from ``git shortlog -ns 0.1``)::
      1  Matthias Ekman
      1  Michael Waskom
      1  Vincent Michel
-

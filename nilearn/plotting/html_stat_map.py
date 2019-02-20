@@ -376,8 +376,7 @@ def view_img(stat_map_img, bg_img='MNI152',
         as transparent. If auto is given, the threshold is determined
         automatically.
     annotate : boolean (default=True)
-        If annotate is True, current cuts and value of the map are added to the
-        viewer.
+        If annotate is True, current cuts are added to the viewer.
     draw_cross : boolean (default=True)
         If draw_cross is True, a cross is drawn on the plot to
         indicate the cuts.
