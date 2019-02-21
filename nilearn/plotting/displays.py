@@ -1845,7 +1845,7 @@ class OrthoProjector(OrthoSlicer):
                               vmin=edge_vmin, vmax=edge_vmax,
                               **edge_kwargs)
             # To obtain the brain left view, we simply invert the x axis
-            if ax.direction == 'l':
+            if ax.direction == 'l' and not (ax.ax.get_xlim()[0] > ax.ax.get_xlim()[1]):
                 ax.ax.invert_xaxis()
 
         if colorbar:
