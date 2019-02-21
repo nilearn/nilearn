@@ -1258,7 +1258,9 @@ def fetch_atlas_schaefer_2018(n_rois=400, yeo_networks=7, resolution_mm=1,
                          "options: {}".format(yeo_networks,valid_yeo_networks))
     if resolution_mm not in valid_resolution_mm:
         raise ValueError("Requested resolution_mm={} not available. Valid "
-                         "options: {}".format(resolution_mm, valid_resolution_mm))
+                         "options: {}".format(resolution_mm,
+                                              valid_resolution_mm)
+                         )
 
     if base_url is None:
         base_url = ('https://raw.githubusercontent.com/ThomasYeoLab/CBIG/'
@@ -1269,7 +1271,8 @@ def fetch_atlas_schaefer_2018(n_rois=400, yeo_networks=7, resolution_mm=1,
 
     files = []
     labels_file_template = 'Schaefer2018_{}Parcels_{}Networks_order.txt'
-    img_file_template = 'Schaefer2018_{}Parcels_{}Networks_order_FSLMNI152_{}mm.nii.gz'
+    img_file_template = ('Schaefer2018_{}Parcels_'
+                         '{}Networks_order_FSLMNI152_{}mm.nii.gz')
     for f in [labels_file_template.format(n_rois, yeo_networks),
               img_file_template.format(n_rois, yeo_networks, resolution_mm)]:
         files.append((f, base_url + f, {}))
