@@ -5,11 +5,9 @@ Transformer for computing seeds signals
 Mask nifti images by spherical volumes for seed-region analyses
 """
 import numpy as np
-import sklearn
 import warnings
 from sklearn import neighbors
 from sklearn.externals.joblib import Memory
-from distutils.version import LooseVersion
 
 from ..image.resampling import coord_transform
 from .._utils.niimg_conversions import _safe_get_data
