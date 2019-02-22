@@ -92,6 +92,7 @@ uses.
    fetch_surf_fsaverage
    fetch_atlas_surf_destrieux
    fetch_atlas_talairach
+   fetch_atlas_schaefer_2018
    fetch_oasis_vbm
    fetch_megatrawls_netmats
    fetch_cobre

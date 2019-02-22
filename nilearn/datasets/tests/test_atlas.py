@@ -544,3 +544,32 @@ def test_fetch_atlas_pauli_2017():
 
     data = atlas.fetch_atlas_pauli_2017('prob', data_dir)
     assert_equal(nibabel.load(data.maps).shape[-1], 16)
+
+@with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
+def test_fetch_atlas_schaefer_2018():
+    valid_n_rois = [100, 200, 300, 400, 500, 600, 800, 1000]
+    valid_yeo_networks = [7, 17]
+    valid_resolution_mm = [1, 2]
+
+    assert_raises(ValueError, atlas.fetch_atlas_schaefer_2018, n_rois=44)
+    assert_raises(ValueError, atlas.fetch_atlas_schaefer_2018, yeo_networks=10)
+    assert_raises(ValueError, atlas.fetch_atlas_schaefer_2018, resolution_mm=3)
+
+    for n_rois, yeo_networks, resolution_mm in \
+            itertools.product(valid_n_rois, valid_yeo_networks,
+                              valid_resolution_mm):
+        data = atlas.fetch_atlas_schaefer_2018(n_rois=n_rois,
+                                               yeo_networks=yeo_networks,
+                                               resolution_mm=resolution_mm,
+                                               data_dir=tst.tmpdir,
+                                               verbose=0)
+        assert_not_equal(data.description, '')
+        assert_true(isinstance(data.maps, _basestring))
+        assert_true(isinstance(data.labels, np.ndarray))
+        assert_equal(len(data.labels), n_rois)
+        assert_true(data.labels[0].astype(str).startswith("{}Networks".
+                                              format(yeo_networks)))
+        img = nibabel.load(data.maps)
+        assert_equal(img.header.get_zooms()[0], resolution_mm)
+        assert_true(np.array_equal(np.unique(img.dataobj),
+                                   np.arange(n_rois+1)))

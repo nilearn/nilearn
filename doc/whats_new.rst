@@ -9,6 +9,7 @@ NEW
   (see :ref:`plotting`).
 - NiftiLabelsMasker now consumes less memory when extracting the signal from a 3D/4D
   image. This is especially noteworthy when extracting signals from large 4D images.
+- New function :func:`nilearn.datasets.fetch_atlas_schaefer_2018`
 
 Changes
 -------
