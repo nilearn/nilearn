@@ -144,6 +144,20 @@ def test_design_matrix0d():
     assert_equal(X.shape[1], 8)
 
 
+def test_design_matrix10():
+    # Check that the first column o FIR design matrix is OK
+    tr = 1.0
+    frame_times = np.linspace(0, 127 * tr, 128)
+    events = basic_paradigm()
+    events.duration *= 0 
+    hrf_model = 'FIR'
+    X, names = design_matrix_light(frame_times, events, hrf_model=hrf_model,
+                         drift_model='polynomial', drift_order=3,
+                         fir_delays=range(1, 5))
+    onset = events.onset[events.trial_type == 'c0'].astype(np.int)
+    assert_true(np.all((X[onset + 1, 0] == 1)))
+
+    
 def test_convolve_regressors():
     # tests for convolve_regressors helper function
     conditions = ['c0', 'c1']
@@ -264,19 +278,6 @@ def test_design_matrix9():
                             drift_model='polynomial', drift_order=3,
                             fir_delays=range(1, 5))
     assert_equal(len(names), 16)
-
-
-def test_design_matrix10():
-    # Check that the first column o FIR design matrix is OK
-    tr = 1.0
-    frame_times = np.linspace(0, 127 * tr, 128)
-    events = basic_paradigm()
-    hrf_model = 'FIR'
-    X, names = design_matrix_light(frame_times, events, hrf_model=hrf_model,
-                         drift_model='polynomial', drift_order=3,
-                         fir_delays=range(1, 5))
-    onset = events.onset[events.trial_type == 'c0'].astype(np.int)
-    assert_true(np.all((X[onset + 1, 0] == 1)))
 
 
 def test_design_matrix11():
@@ -442,10 +443,11 @@ def test_oversampling():
     X3 = make_first_level_design_matrix(
         frame_times, events, drift_model=None, oversampling=10)
 
-    # oversampling = 16 is the default so X2 = X1, X3 \neq X1, X3 close to X2
+    # oversampling = 50 by default so X2 = X1, X3 \neq X1, X3 close to X2
     assert_almost_equal(X1.values, X2.values)
     assert_almost_equal(X2.values, X3.values, 0)
-    assert_true(np.linalg.norm(X2.values - X3.values) / np.linalg.norm(X2.values) > 1.e-4)
+    assert_true(np.linalg.norm(X2.values - X3.values)
+                / np.linalg.norm(X2.values) > 1.e-4)
 
     # fir model, oversampling is forced to 1
     X4 = make_first_level_design_matrix(
@@ -453,7 +455,7 @@ def test_oversampling():
         fir_delays=range(0, 4), oversampling=1)
     X5 = make_first_level_design_matrix(
         frame_times, events, hrf_model='fir', drift_model=None,
-        fir_delays=range(0, 4), oversampling=3)
+        fir_delays=range(0, 4), oversampling=10)
     assert_almost_equal(X4.values, X5.values)
 
 def test_csv_io():

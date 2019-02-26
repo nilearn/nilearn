@@ -422,8 +422,8 @@ def _hrf_kernel(hrf_model, tr, oversampling=50, fir_delays=None):
                    glover_time_derivative(tr, oversampling),
                    glover_dispersion_derivative(tr, oversampling)]
     elif hrf_model == 'fir':
-        hkernel = [np.hstack((np.zeros(f * oversampling),
-                              np.ones(oversampling) * 1. / oversampling))
+        hkernel = [np.hstack((np.zeros((f) * oversampling),
+                              np.ones(oversampling)))
                    for f in fir_delays]
     elif hrf_model is None:
         hkernel = [np.hstack((1, np.zeros(oversampling - 1)))]
