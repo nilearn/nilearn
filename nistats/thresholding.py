@@ -38,7 +38,7 @@ def fdr_threshold(z_vals, alpha):
         return np.infty
 
 
-def map_threshold(stat_img=None, mask_img=None, level=.001,
+def map_threshold(stat_img=None, mask_img=None, alpha=.001, threshold=3.,
                   height_control='fpr', cluster_threshold=0):
     """ Compute the required threshold level and return the thresholded map
 
@@ -53,12 +53,14 @@ def map_threshold(stat_img=None, mask_img=None, level=.001,
     mask_img : Niimg-like object, optional,
         mask image
 
-    level: float, optional
-        number controling the thresholding (either a p-value or z-scale value).
-        Not to be confused with the z-scale threshold: level can be a p-values,
-        e.g. "0.05" or another type of number depending on the
-        height_control parameter. The z-scale threshold is actually returned by
-        the function.
+    alpha: float, optional
+        number controling the thresholding (either a p-value or q-value).
+        Its actual meaning depends on the height_control parameter.
+        This function translates alpha to a z-scale threshold.
+
+    threshold: float, optional
+       desired threshold in z-scale.
+       This is used only if height_control is None
 
     height_control: string, or None optional
         false positive control meaning of cluster forming
@@ -90,9 +92,7 @@ def map_threshold(stat_img=None, mask_img=None, level=.001,
     # if height_control is 'fpr' or None, we don't need to look at the data
     # to compute the threhsold
     if height_control == 'fpr':
-        threshold = norm.isf(level)
-    elif height_control is None:
-        threshold = level
+        threshold = norm.isf(alpha)
 
     # In this case, and is stat_img is None, we return
     if stat_img is None:
@@ -113,9 +113,9 @@ def map_threshold(stat_img=None, mask_img=None, level=.001,
 
     # Thresholding
     if height_control == 'fdr':
-        threshold = fdr_threshold(stats, level)
+        threshold = fdr_threshold(stats, alpha)
     elif height_control == 'bonferroni':
-        threshold = norm.isf(level / n_voxels)
+        threshold = norm.isf(alpha / n_voxels)
     stats *= (stats > threshold)
 
     # embed it back to 3D grid
