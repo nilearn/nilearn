@@ -86,7 +86,7 @@ def _cosine_drift(period_cut, frame_times):
     Parameters
     ----------
     period_cut : float
-        Cut period of the low-pass filter (in sec)
+        Cut period of the high-pass filter (in sec)
 
     frame_times : array of shape (n_scans,)
         The sampling times (in sec)
@@ -324,7 +324,7 @@ def make_first_level_design_matrix(
         Specifies the desired drift model,
 
     period_cut : float, optional
-        Cut period of the low-pass filter in seconds.
+        Cut period of the high-pass filter in seconds.
 
     drift_order : int, optional
         Order of the drift model (in case it is polynomial).
