@@ -149,7 +149,6 @@ def test_design_matrix10():
     tr = 1.0
     frame_times = np.linspace(0, 127 * tr, 128)
     events = basic_paradigm()
-    events.duration *= 0 
     hrf_model = 'FIR'
     X, names = design_matrix_light(frame_times, events, hrf_model=hrf_model,
                          drift_model='polynomial', drift_order=3,
@@ -330,7 +329,7 @@ def test_design_matrix14():
                          drift_model='polynomial', drift_order=3,
                          fir_delays=range(1, 5))
     onset = events.onset[events.trial_type == 'c0'].astype(np.int)
-    assert_true(np.all(X[onset + 1, 0] > .9))
+    assert_true(np.all(X[onset + 1, 0] > .5))
 
 
 def test_design_matrix15():

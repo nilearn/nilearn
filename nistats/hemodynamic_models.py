@@ -423,7 +423,7 @@ def _hrf_kernel(hrf_model, tr, oversampling=50, fir_delays=None):
                    glover_dispersion_derivative(tr, oversampling)]
     elif hrf_model == 'fir':
         hkernel = [np.hstack((np.zeros((f) * oversampling),
-                              np.ones(oversampling)))
+                              np.ones(oversampling) * 1. / oversampling))
                    for f in fir_delays]
     elif hrf_model is None:
         hkernel = [np.hstack((1, np.zeros(oversampling - 1)))]
@@ -506,9 +506,14 @@ def compute_regressor(exp_condition, hrf_model, frame_times, con_id='cond',
                          for h in hkernel])
 
     # 4. temporally resample the regressors
-    computed_regressors = _resample_regressor(
-        conv_reg, hr_frame_times, frame_times)
-
+    if hrf_model == 'fir' and oversampling > 1:
+        computed_regressors = _resample_regressor(
+            conv_reg[:, oversampling - 1:], hr_frame_times[: 1 - oversampling],
+            frame_times)
+    else:
+        computed_regressors = _resample_regressor(
+            conv_reg, hr_frame_times, frame_times)
+        
     # 5. ortogonalize the regressors
     if hrf_model != 'fir':
         computed_regressors = _orthogonalize(computed_regressors)
