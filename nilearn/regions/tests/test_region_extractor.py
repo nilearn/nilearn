@@ -159,6 +159,18 @@ def test_region_extractor_fit_and_transform():
     n_subjects = 5
     maps, mask_img = generate_maps((40, 40, 40), n_regions=n_regions)
 
+    # Test maps are zero in the mask
+    mask_data = mask_img.get_data()
+    mask_data[1, 1, 1] = 0
+    extractor_without_mask = RegionExtractor(maps)
+    extractor_without_mask.fit()
+    extractor_with_mask = RegionExtractor(maps, mask_img=mask_img)
+    extractor_with_mask.fit()
+    assert_false(np.all(
+        extractor_without_mask.regions_img_.get_data()[mask_data == 0] == 0.))
+    assert_true(np.all(
+        extractor_with_mask.regions_img_.get_data()[mask_data == 0] == 0.))
+
     # smoke test to RegionExtractor with thresholding_strategy='ratio_n_voxels'
     extract_ratio = RegionExtractor(maps, threshold=0.2,
                                     thresholding_strategy='ratio_n_voxels')
