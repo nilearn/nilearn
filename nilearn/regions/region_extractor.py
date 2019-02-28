@@ -55,7 +55,7 @@ def _threshold_maps_ratio(maps_img, threshold):
     else:
         ratio = threshold
 
-    maps_data = _safe_get_data(maps, ensure_finite=True).copy()
+    maps_data = _safe_get_data(maps, ensure_finite=True)
 
     abs_maps = np.abs(maps_data)
     # thresholding
