@@ -183,8 +183,8 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         matrices. It can be 'polynomial', 'cosine' or None.
 
     period_cut : float, optional
-        This parameter specifies the cut period of the low-pass filter in
-        seconds for the design matrices.
+        This parameter specifies the cut period of the high-pass filter in
+        seconds for the design matrices. Used only if drift_model is 'cosine'.
 
     drift_order : int, optional
         This parameter specifices the order of the drift model (in case it is
