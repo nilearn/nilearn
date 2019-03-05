@@ -85,19 +85,19 @@ def _make_connectome_html(connectome_info, embed_js=True):
     return ConnectomeView(as_html)
 
 
-def deprecate_params(replacement_params, end_version=None, lib_name=None):
-    def _deprecate_params_view_connectome(func):
+def replace_parameters(replacement_params, end_version, lib_name):
+    def _replace_params(func):
         """ Decorator to deprecate specific parameters in view_connectome()
          without modifying view_connectome().
          """
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
-            _warn_deprecated_params_view_connectome(kwargs)
+            _warn_deprecated_params_view_connectome(replacement_params, end_version, lib_name, kwargs)
             kwargs = _transfer_deprecated_param_vals(replacement_params, kwargs)
             return func(*args, **kwargs)
         
         return wrapper
-    return _deprecate_params_view_connectome
+    return _replace_params
 
 
 def _replacement_params_view_connectome():
@@ -108,7 +108,7 @@ def _replacement_params_view_connectome():
         'marker_size': 'node_size',
         }
 
-@deprecate_params(_replacement_params_view_connectome())
+@replace_parameters(_replacement_params_view_connectome(), end_version='0.6.0', lib_name='Nilearn')
 def view_connectome(adjacency_matrix, node_coords, edge_threshold=None,
                     edge_cmap=cm.bwr, symmetric_cmap=True,
                     linewidth=6., node_size=3.,
@@ -172,20 +172,17 @@ def view_connectome(adjacency_matrix, node_coords, edge_threshold=None,
     return _make_connectome_html(connectome_info)
 
 
-def _warn_deprecated_params_view_connectome(kwargs):
+def _warn_deprecated_params_view_connectome(replacement_params, end_version, lib_name, kwargs):
     """ For view_connectome(), raises warnings about deprecated parameters.
     """
-    all_deprecated_params = {'coords': 'node_coords',
-                             'threshold': 'edge_threshold',
-                             'cmap': 'edge_cmap',
-                             'marker_size': 'node_size',
-                             }
-    used_deprecated_params = set(kwargs).intersection(all_deprecated_params)
+    used_deprecated_params = set(kwargs).intersection(replacement_params)
     for deprecated_param_ in used_deprecated_params:
-        replacement_param = all_deprecated_params[deprecated_param_]
+        replacement_param = replacement_params[deprecated_param_]
         param_deprecation_msg = (
-            'The parameter "{}" will be removed in Nilearn version 0.6.0. '
+            'The parameter "{}" will be removed in {} version {}. '
             'Please use the parameter "{}" instead.'.format(deprecated_param_,
+                                                            lib_name,
+                                                            end_version,
                                                             replacement_param,
                                                             )
         )
