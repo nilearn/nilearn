@@ -86,10 +86,30 @@ def _make_connectome_html(connectome_info, embed_js=True):
 
 
 def replace_parameters(replacement_params, end_version, lib_name):
+    """
+    Decorator to deprecate & replace specificied parameters
+    in the decorated functions and methods.
+    
+    Add **kwargs as the last parameter in the decorated method/function.
+    
+    Parameters
+    ----------
+    replacement_params : Dict[string, string]
+        Dict where the key-value pairs represent the old parameters
+        and their corresponding new parameters.
+        Example: {old_param1: new_param1, old_param2: new_param2,...}
+        
+    end_version : str
+        Version when the deprecated parameters will cease functioning
+        and no more wrnings will be displayed.
+        Example: '0.6.0'
+        
+    lib_name: str
+        Name of the library to which the decoratee belongs.
+        Example: Nilearn, Nistats
+    """
+    
     def _replace_params(func):
-        """ Decorator to deprecate specific parameters in view_connectome()
-         without modifying view_connectome().
-         """
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
             _warn_deprecated_params_view_connectome(replacement_params, end_version, lib_name, kwargs)
@@ -101,6 +121,10 @@ def replace_parameters(replacement_params, end_version, lib_name):
 
 
 def _replacement_params_view_connectome():
+    """ Returns a dict containing deprecated & replacement parameters
+        as key-value pair.
+        Avoids cluttering the global namespace.
+    """
     return {
         'coords': 'node_coords',
         'threshold': 'edge_threshold',
@@ -173,7 +197,8 @@ def view_connectome(adjacency_matrix, node_coords, edge_threshold=None,
 
 
 def _warn_deprecated_params_view_connectome(replacement_params, end_version, lib_name, kwargs):
-    """ For view_connectome(), raises warnings about deprecated parameters.
+    """ For the decorator replace_parameters(),
+        raises warnings about deprecated parameters.
     """
     used_deprecated_params = set(kwargs).intersection(replacement_params)
     for deprecated_param_ in used_deprecated_params:
@@ -193,8 +218,8 @@ def _warn_deprecated_params_view_connectome(replacement_params, end_version, lib
 
 
 def _transfer_deprecated_param_vals(replacement_params, kwargs):
-    """ For view_connectome(), reassigns new parameters the values passed
-    to their corresponding deprecated parameters.
+    """ For the decorator replace_parameters(), reassigns new parameters
+    the values passed to their corresponding deprecated parameters.
     """
     for old_param, new_param in replacement_params.items():
         old_param_val = kwargs.setdefault(old_param, None)
