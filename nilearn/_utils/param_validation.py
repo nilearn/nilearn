@@ -1,6 +1,8 @@
 """
 Utilities to check for valid parameters
 """
+import functools
+
 import numpy as np
 import warnings
 import numbers
@@ -191,3 +193,71 @@ def check_feature_screening(screening_percentile, mask_img,
             screening_percentile, mask_img, verbose=verbose)
 
         return SelectPercentile(f_test, int(screening_percentile_))
+
+
+def replace_parameters(replacement_params, end_version, lib_name):
+    """
+    Decorator to deprecate & replace specificied parameters
+    in the decorated functions and methods.
+    
+    Add **kwargs as the last parameter in the decorated method/function.
+    
+    Parameters
+    ----------
+    replacement_params : Dict[string, string]
+        Dict where the key-value pairs represent the old parameters
+        and their corresponding new parameters.
+        Example: {old_param1: new_param1, old_param2: new_param2,...}
+        
+    end_version : str
+        Version when the deprecated parameters will cease functioning
+        and no more wrnings will be displayed.
+        Example: '0.6.0b'
+        
+    lib_name: str
+        Name of the library to which the decoratee belongs.
+        Example: 'Nilearn', 'Nistats'
+    """
+    
+    def _replace_params(func):
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            _warn_deprecated_params(replacement_params, end_version, lib_name, kwargs)
+            kwargs = _transfer_deprecated_param_vals(replacement_params, kwargs)
+            return func(*args, **kwargs)
+        
+        return wrapper
+    return _replace_params
+
+
+def _warn_deprecated_params(replacement_params, end_version, lib_name, kwargs):
+    """ For the decorator replace_parameters(),
+        raises warnings about deprecated parameters.
+    """
+    used_deprecated_params = set(kwargs).intersection(replacement_params)
+    for deprecated_param_ in used_deprecated_params:
+        replacement_param = replacement_params[deprecated_param_]
+        param_deprecation_msg = (
+            'The parameter "{}" will be removed in {} version {}. '
+            'Please use the parameter "{}" instead.'.format(deprecated_param_,
+                                                            lib_name,
+                                                            end_version,
+                                                            replacement_param,
+                                                            )
+        )
+        warnings.filterwarnings('always', message=param_deprecation_msg)
+        warnings.warn(category=DeprecationWarning,
+                      message=param_deprecation_msg,
+                      stacklevel=3)
+
+
+def _transfer_deprecated_param_vals(replacement_params, kwargs):
+    """ For the decorator replace_parameters(), reassigns new parameters
+    the values passed to their corresponding deprecated parameters.
+    """
+    for old_param, new_param in replacement_params.items():
+        old_param_val = kwargs.setdefault(old_param, None)
+        if old_param_val is not None:
+            kwargs[new_param] = old_param_val
+        kwargs.pop(old_param)
+    return kwargs
