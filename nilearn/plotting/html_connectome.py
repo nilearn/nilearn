@@ -89,7 +89,7 @@ def _make_connectome_html(connectome_info, embed_js=True):
 
 def _replacement_params_view_connectome():
     """ Returns a dict containing deprecated & replacement parameters
-        as key-value pair.
+        as key-value pair for view_connectome().
         Avoids cluttering the global namespace.
     """
     return {
@@ -163,19 +163,17 @@ def view_connectome(adjacency_matrix, node_coords, edge_threshold=None,
     return _make_connectome_html(connectome_info)
 
 
-def _deprecate_params_view_markers(func):
-    """ Decorator to deprecate specific parameters in view_markers()
-     without modifying view_markers().
-     """
-    @functools.wraps(func)
-    def wrapper(*args, **kwargs):
-        _warn_deprecated_params_view_markers(kwargs)
-        kwargs = _transfer_deprecated_param_vals_view_markers(kwargs)
-        return func(*args, **kwargs)
-    return wrapper
+def _replacement_params_view_markers():
+    """ Returns a dict containing deprecated & replacement parameters
+        as key-value pair for view_markers().
+        Avoids cluttering the global namespace.
+    """
+    return {'coords': 'marker_coords',
+            'colors': 'marker_color',
+            }
 
 
-@_deprecate_params_view_markers
+@replace_parameters(_replacement_params_view_markers(), '0.6.0', 'Nilearn')
 def view_markers(marker_coords, marker_color=None, marker_size=5., **kwargs):
     """
     Insert a 3d plot of markers in a brain into an HTML page.
@@ -223,40 +221,3 @@ def view_markers(marker_coords, marker_color=None, marker_size=5., **kwargs):
         marker_size = marker_size.tolist()
     connectome_info["marker_size"] = marker_size
     return _make_connectome_html(connectome_info)
-
-
-def _warn_deprecated_params_view_markers(kwargs):
-    """ For view_markers(), raises warnings about deprecated parameters.
-    """
-
-    all_deprecated_params = {'coords': 'marker_coords',
-                             'colors': 'marker_color',
-                             }
-    used_dperecated_params = set(kwargs).intersection(all_deprecated_params)
-    for deprecated_param_ in used_dperecated_params:
-        replacement_param = all_deprecated_params[deprecated_param_]
-        param_deprecation_msg = (
-            'The parameter "{}" will be removed in Nilearn version 0.6.0. '
-            'Please use the parameter "{}" instead.'.format(deprecated_param_,
-                                                            replacement_param,
-                                                            )
-        )
-        warnings.filterwarnings('always', message=param_deprecation_msg)
-        warnings.warn(category=DeprecationWarning,
-                      message=param_deprecation_msg,
-                      stacklevel=3,
-                      )
-
-
-def _transfer_deprecated_param_vals_view_markers(kwargs):
-    """ For view_markers(), reassigns new parameters the values passed
-    to their corresponding deprecated parameters.
-    """
-    coords = kwargs.get('coords', None)
-    colors = kwargs.get('colors', None)
-    
-    if coords is not None:
-        kwargs['marker_coords'] = coords
-    if colors is not None:
-        kwargs['marker_color'] = colors
-    return kwargs
