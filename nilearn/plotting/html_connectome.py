@@ -85,20 +85,30 @@ def _make_connectome_html(connectome_info, embed_js=True):
     return ConnectomeView(as_html)
 
 
-def _deprecate_params_view_connectome(func):
-    """ Decorator to deprecate specific parameters in view_connectome()
-     without modifying view_connectome().
-     """
-    @functools.wraps(func)
-    def wrapper(*args, **kwargs):
-        _warn_deprecated_params_view_connectome(kwargs)
-        kwargs = _transfer_deprecated_param_vals_view_connectome(kwargs)
-        return func(*args, **kwargs)
-    
-    return wrapper
+def deprecate_params(replacement_params, end_version=None, lib_name=None):
+    def _deprecate_params_view_connectome(func):
+        """ Decorator to deprecate specific parameters in view_connectome()
+         without modifying view_connectome().
+         """
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            _warn_deprecated_params_view_connectome(kwargs)
+            kwargs = _transfer_deprecated_param_vals(replacement_params, kwargs)
+            return func(*args, **kwargs)
+        
+        return wrapper
+    return _deprecate_params_view_connectome
 
 
-@_deprecate_params_view_connectome
+def _replacement_params_view_connectome():
+    return {
+        'coords': 'node_coords',
+        'threshold': 'edge_threshold',
+        'cmap': 'edge_cmap',
+        'marker_size': 'node_size',
+        }
+
+@deprecate_params(_replacement_params_view_connectome())
 def view_connectome(adjacency_matrix, node_coords, edge_threshold=None,
                     edge_cmap=cm.bwr, symmetric_cmap=True,
                     linewidth=6., node_size=3.,
@@ -185,23 +195,15 @@ def _warn_deprecated_params_view_connectome(kwargs):
                       stacklevel=3)
 
 
-def _transfer_deprecated_param_vals_view_connectome(kwargs):
+def _transfer_deprecated_param_vals(replacement_params, kwargs):
     """ For view_connectome(), reassigns new parameters the values passed
     to their corresponding deprecated parameters.
     """
-    coords = kwargs.get('coords', None)
-    threshold = kwargs.get('threshold', None)
-    cmap = kwargs.get('cmap', None)
-    marker_size = kwargs.get('marker_size', None)
-    
-    if coords is not None:
-        kwargs['node_coords'] = coords
-    if threshold is not None:
-        kwargs['edge_threshold'] = threshold
-    if cmap is not None:
-        kwargs['edge_cmap'] = cmap
-    if marker_size is not None:
-        kwargs['node_size'] = marker_size
+    for old_param, new_param in replacement_params.items():
+        old_param_val = kwargs.setdefault(old_param, None)
+        if old_param_val is not None:
+            kwargs[new_param] = old_param_val
+        kwargs.pop(old_param)
     return kwargs
 
 
@@ -209,7 +211,6 @@ def _deprecate_params_view_markers(func):
     """ Decorator to deprecate specific parameters in view_markers()
      without modifying view_markers().
      """
-
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
         _warn_deprecated_params_view_markers(kwargs)
