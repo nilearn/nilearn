@@ -99,7 +99,10 @@ def _replacement_params_view_connectome():
         'marker_size': 'node_size',
         }
 
-@replace_parameters(_replacement_params_view_connectome(), end_version='0.6.0', lib_name='Nilearn')
+@replace_parameters(replacement_params=_replacement_params_view_connectome(),
+                    end_version='0.6.0',
+                    lib_name='Nilearn',
+                    )
 def view_connectome(adjacency_matrix, node_coords, edge_threshold=None,
                     edge_cmap=cm.bwr, symmetric_cmap=True,
                     linewidth=6., node_size=3.,
@@ -173,7 +176,10 @@ def _replacement_params_view_markers():
             }
 
 
-@replace_parameters(_replacement_params_view_markers(), '0.6.0', 'Nilearn')
+@replace_parameters(replacement_params=_replacement_params_view_markers(),
+                    end_version='0.6.0',
+                    lib_name='Nilearn',
+                    )
 def view_markers(marker_coords, marker_color=None, marker_size=5., **kwargs):
     """
     Insert a 3d plot of markers in a brain into an HTML page.

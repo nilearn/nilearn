@@ -195,7 +195,7 @@ def check_feature_screening(screening_percentile, mask_img,
         return SelectPercentile(f_test, int(screening_percentile_))
 
 
-def replace_parameters(replacement_params, end_version, lib_name):
+def replace_parameters(replacement_params, end_version, lib_name='Nilearn'):
     """
     Decorator to deprecate & replace specificied parameters
     in the decorated functions and methods.
@@ -211,12 +211,13 @@ def replace_parameters(replacement_params, end_version, lib_name):
         
     end_version : str
         Version when the deprecated parameters will cease functioning
-        and no more wrnings will be displayed.
-        Example: '0.6.0b'
+        and no more warnings will be displayed.
+        Default: None / 'future'
+        Example: '0.6.0b', 'next'
         
     lib_name: str
         Name of the library to which the decoratee belongs.
-        Example: 'Nilearn', 'Nistats'
+        Default: 'Nilearn'
     """
     
     def _replace_params(func):
@@ -234,14 +235,19 @@ def _warn_deprecated_params(replacement_params, end_version, lib_name, kwargs):
     """ For the decorator replace_parameters(),
         raises warnings about deprecated parameters.
     """
+    if end_version is None or end_version == 'future':
+        lib_end_ver = 'a future {} version'.format(lib_name)
+    elif end_version == 'next':
+        lib_end_ver = 'the next {} version'.format(lib_name)
+    else:
+        lib_end_ver = '{} version {}'.format(lib_name, end_version)
     used_deprecated_params = set(kwargs).intersection(replacement_params)
     for deprecated_param_ in used_deprecated_params:
         replacement_param = replacement_params[deprecated_param_]
         param_deprecation_msg = (
-            'The parameter "{}" will be removed in {} version {}. '
+            'The parameter "{}" will be removed in {}. '
             'Please use the parameter "{}" instead.'.format(deprecated_param_,
-                                                            lib_name,
-                                                            end_version,
+                                                            lib_end_ver,
                                                             replacement_param,
                                                             )
         )
