@@ -51,8 +51,9 @@ def test_threshold_maps_ratio():
     # smoke test for function _threshold_maps_ratio with randomly
     # generated maps
 
-    # Check that the input maps are not changed
     maps, _ = generate_maps((6, 8, 10), n_regions=3)
+
+    # test that there is no side effect
     maps.get_data()[:3] = 100
     maps_data = maps.get_data().copy()
     thr_maps = _threshold_maps_ratio(maps, threshold=1.0)
