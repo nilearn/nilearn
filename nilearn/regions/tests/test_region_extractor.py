@@ -51,10 +51,15 @@ def test_threshold_maps_ratio():
     # smoke test for function _threshold_maps_ratio with randomly
     # generated maps
 
+    # Check that the input maps are not changed
+    maps, _ = generate_maps((6, 8, 10), n_regions=3)
+    maps.get_data()[:3] = 100
+    maps_data = maps.get_data().copy()
+    thr_maps = _threshold_maps_ratio(maps, threshold=1.0)
+    np.testing.assert_array_equal(maps.get_data(), maps_data)
+
     # make sure that n_regions (4th dimension) are kept same even
     # in thresholded image
-    maps, _ = generate_maps((6, 8, 10), n_regions=3)
-    thr_maps = _threshold_maps_ratio(maps, threshold=1.0)
     assert_true(thr_maps.shape[-1] == maps.shape[-1])
 
     # check that the size should be same for 3D image
