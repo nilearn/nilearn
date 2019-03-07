@@ -5,7 +5,7 @@ import warnings
 import numpy as np
 from scipy import sparse
 
-from nilearn._utils.param_validation import replace_parameters
+from nilearn._utils import replace_parameters
 from .. import datasets
 from . import cm
 
