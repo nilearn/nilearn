@@ -68,7 +68,7 @@ class SecondLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
     Parameters
     ----------
 
-    mask: Niimg-like, NiftiMasker or MultiNiftiMasker object, optional,
+    mask_img: Niimg-like, NiftiMasker or MultiNiftiMasker object, optional,
         Mask to be used on data. If an instance of masker is passed,
         then its mask will be used. If no mask is given,
         it will be computed automatically by a MultiNiftiMasker with default

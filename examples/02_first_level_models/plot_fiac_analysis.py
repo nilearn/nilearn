@@ -63,7 +63,7 @@ design_matrices = [pd.DataFrame(np.load(df)['X']) for df in design_files]
 # GLM specification. Note that the mask was provided in the dataset. So we use it.
 
 from nistats.first_level_model import FirstLevelModel
-fmri_glm = FirstLevelModel(mask=data['mask'], minimize_memory=True)
+fmri_glm = FirstLevelModel(mask_img=data['mask'], minimize_memory=True)
 
 #########################################################################
 # GLM fitting
