@@ -5,9 +5,8 @@ import warnings
 def replace_parameters(replacement_params, end_version, lib_name='Nilearn'):
     """
     Decorator to deprecate & replace specificied parameters
-    in the decorated functions and methods.
-    
-    Add **kwargs as the last parameter in the decorated method/function.
+    in the decorated functions and methods
+    without changing function definition or signature.
     
     Parameters
     ----------
@@ -16,14 +15,15 @@ def replace_parameters(replacement_params, end_version, lib_name='Nilearn'):
         and their corresponding new parameters.
         Example: {old_param1: new_param1, old_param2: new_param2,...}
         
-    end_version : str
-        Version when the deprecated parameters will cease functioning
-        and no more warnings will be displayed.
+    end_version : str (optional)
+        Version when using the deprecated parameters will raise an error.
+        For informational purpose in the warning text.
         Default: None / 'future'
         Example: '0.6.0b', 'next'
         
-    lib_name: str
+    lib_name: str (optional)
         Name of the library to which the decoratee belongs.
+        For informational purpose in the warning text.
         Default: 'Nilearn'
     """
     
@@ -41,6 +41,23 @@ def replace_parameters(replacement_params, end_version, lib_name='Nilearn'):
 def _warn_deprecated_params(replacement_params, end_version, lib_name, kwargs):
     """ For the decorator replace_parameters(),
         raises warnings about deprecated parameters.
+        
+    Parameters
+    ----------
+    replacement_params: Dict[str, str]
+    Dictionary of old_parameters as keys with replacement parameters
+    as their corresponding values.
+    
+    end_version: str
+    The version where use of the deprecated parameters will raise an error.
+    For informational purpose in the warning text.
+    
+    lib_name: str
+    Name of the library. For informational purpose in the warning text.
+    
+    kwargs: Dict[str, any]
+    Dictionary of all the keyword args passed on the decorated function.
+
     """
     if end_version is None or end_version == 'future':
         lib_end_ver = 'a future {} version'.format(lib_name)
@@ -67,6 +84,22 @@ def _warn_deprecated_params(replacement_params, end_version, lib_name, kwargs):
 def _transfer_deprecated_param_vals(replacement_params, kwargs):
     """ For the decorator replace_parameters(), reassigns new parameters
     the values passed to their corresponding deprecated parameters.
+    
+    Parameters
+    ----------
+    replacement_params: Dict[str, str]
+    Dictionary of old_parameters as keys with replacement parameters
+    as their corresponding values.
+    
+    kwargs: Dict[str, any]
+    Dictionary of all the keyword args passed on the decorated function.
+    
+    Returns
+    -------
+    kwargs: Dict[str, any]
+    Dictionary of all the keyword args to be passed on
+    to the decorated function, with old parameter names
+    replaced by new parameters, with their values intact.
     """
     for old_param, new_param in replacement_params.items():
         old_param_val = kwargs.setdefault(old_param, None)

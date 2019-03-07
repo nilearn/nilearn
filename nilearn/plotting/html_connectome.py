@@ -106,7 +106,7 @@ def _replacement_params_view_connectome():
 def view_connectome(adjacency_matrix, node_coords, edge_threshold=None,
                     edge_cmap=cm.bwr, symmetric_cmap=True,
                     linewidth=6., node_size=3.,
-                    **kwargs):
+                    ):
     """
     Insert a 3d plot of a connectome into an HTML page.
 
@@ -180,7 +180,7 @@ def _replacement_params_view_markers():
                     end_version='0.6.0',
                     lib_name='Nilearn',
                     )
-def view_markers(marker_coords, marker_color=None, marker_size=5., **kwargs):
+def view_markers(marker_coords, marker_color=None, marker_size=5.):
     """
     Insert a 3d plot of markers in a brain into an HTML page.
 
