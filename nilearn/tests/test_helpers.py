@@ -32,24 +32,6 @@ def test_transfer_deprecated_param_vals():
     assert actual_ouput == expected_output
     
 
-def test_none_warn_deprecated_params():
-    mock_input, replacement_params = _mock_args_for_testing_replace_parameter()
-    expected_warnings = [
-        ('The parameter "deprecated_param_0" will be removed in a future Nilearn version. Please use the parameter "replacement_param_0" instead.'),
-        ('The parameter "deprecated_param_1" will be removed in a future Nilearn version. Please use the parameter "replacement_param_1" instead.'),
-        ]
-    with warnings.catch_warnings(record=True) as raised_warnings:
-        helpers._warn_deprecated_params(
-                replacement_params,
-                end_version=None,
-                lib_name='Nilearn',
-                kwargs=mock_input,
-                )
-    raised_warnings.sort()
-    for raised_warning_, expected_warning_ in zip(raised_warnings, expected_warnings):
-        assert str(raised_warning_.message) == expected_warning_
-
-
 def test_future_warn_deprecated_params():
     mock_input, replacement_params = _mock_args_for_testing_replace_parameter()
     expected_warnings = [

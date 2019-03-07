@@ -2,7 +2,10 @@ import functools
 import warnings
 
 
-def replace_parameters(replacement_params, end_version, lib_name='Nilearn'):
+def replace_parameters(replacement_params,
+                       end_version='future',
+                       lib_name='Nilearn',
+                       ):
     """
     Decorator to deprecate & replace specificied parameters
     in the decorated functions and methods
@@ -15,16 +18,13 @@ def replace_parameters(replacement_params, end_version, lib_name='Nilearn'):
         and their corresponding new parameters.
         Example: {old_param1: new_param1, old_param2: new_param2,...}
         
-    end_version : str (optional)
+    end_version : str (optional) {'future' (default) | 'next' | <version>}
         Version when using the deprecated parameters will raise an error.
         For informational purpose in the warning text.
-        Default: None / 'future'
-        Example: '0.6.0b', 'next'
         
-    lib_name: str (optional)
+    lib_name: str (optional) (Default: 'Nilearn')
         Name of the library to which the decoratee belongs.
         For informational purpose in the warning text.
-        Default: 'Nilearn'
     """
     
     def _replace_params(func):
@@ -59,7 +59,7 @@ def _warn_deprecated_params(replacement_params, end_version, lib_name, kwargs):
     Dictionary of all the keyword args passed on the decorated function.
 
     """
-    if end_version is None or end_version == 'future':
+    if end_version == 'future':
         lib_end_ver = 'a future {} version'.format(lib_name)
     elif end_version == 'next':
         lib_end_ver = 'the next {} version'.format(lib_name)
