@@ -480,7 +480,9 @@ def test_param_mask_deprecation_FirstLevelModel():
     
     with assert_raises(AttributeError):
         flm1.mask == mask_filepath
+    with assert_raises(AttributeError):
         flm2.mask == mask_filepath
+    with assert_raises(AttributeError):
         flm3.mask == mask_filepath
     
     assert len(raised_warnings) == 2
