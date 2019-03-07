@@ -30,6 +30,7 @@ from .regression import SimpleRegressionResults
 from .contrasts import compute_contrast
 from .utils import _basestring
 from .design_matrix import make_second_level_design_matrix
+from nistats._utils.helpers import replace_parameters
 
 
 def _infer_effect_maps(second_level_input, contrast_def):
@@ -102,10 +103,11 @@ class SecondLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         on memory consumption. True by default.
 
     """
-    def __init__(self, mask=None, smoothing_fwhm=None,
+    @replace_parameters({'mask': 'mask_img'}, end_version='next')
+    def __init__(self, mask_img=None, smoothing_fwhm=None,
                  memory=Memory(None), memory_level=1, verbose=0,
                  n_jobs=1, minimize_memory=True):
-        self.mask = mask
+        self.mask_img = mask_img
         self.smoothing_fwhm = smoothing_fwhm
         if isinstance(memory, _basestring):
             self.memory = Memory(memory)
@@ -296,13 +298,13 @@ class SecondLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         self.design_matrix_ = design_matrix
 
         # Learn the mask. Assume the first level imgs have been masked.
-        if not isinstance(self.mask, NiftiMasker):
+        if not isinstance(self.mask_img, NiftiMasker):
             self.masker_ = NiftiMasker(
-                mask_img=self.mask, smoothing_fwhm=self.smoothing_fwhm,
+                mask_img=self.mask_img, smoothing_fwhm=self.smoothing_fwhm,
                 memory=self.memory, verbose=max(0, self.verbose - 1),
                 memory_level=self.memory_level)
         else:
-            self.masker_ = clone(self.mask)
+            self.masker_ = clone(self.mask_img)
             for param_name in ['smoothing_fwhm', 'memory', 'memory_level']:
                 our_param = getattr(self, param_name)
                 if our_param is None:
