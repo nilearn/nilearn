@@ -30,8 +30,12 @@ def replace_parameters(replacement_params,
     def _replace_params(func):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
-            _warn_deprecated_params(replacement_params, end_version, lib_name, kwargs)
-            kwargs = _transfer_deprecated_param_vals(replacement_params, kwargs)
+            _warn_deprecated_params(replacement_params, end_version, lib_name,
+                                    kwargs
+                                    )
+            kwargs = _transfer_deprecated_param_vals(replacement_params,
+                                                     kwargs
+                                                     )
             return func(*args, **kwargs)
         
         return wrapper
@@ -59,19 +63,14 @@ def _warn_deprecated_params(replacement_params, end_version, lib_name, kwargs):
     Dictionary of all the keyword args passed on the decorated function.
 
     """
-    if end_version == 'future':
-        lib_end_ver = 'a future {} version'.format(lib_name)
-    elif end_version == 'next':
-        lib_end_ver = 'the next {} version'.format(lib_name)
-    else:
-        lib_end_ver = '{} version {}'.format(lib_name, end_version)
     used_deprecated_params = set(kwargs).intersection(replacement_params)
     for deprecated_param_ in used_deprecated_params:
         replacement_param = replacement_params[deprecated_param_]
         param_deprecation_msg = (
-            'The parameter "{}" will be removed in {}. '
+            'The parameter "{}" will be removed in {} release of {}. '
             'Please use the parameter "{}" instead.'.format(deprecated_param_,
-                                                            lib_end_ver,
+                                                            end_version,
+                                                            lib_name,
                                                             replacement_param,
                                                             )
         )
