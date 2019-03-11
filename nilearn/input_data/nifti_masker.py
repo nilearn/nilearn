@@ -92,19 +92,19 @@ class NiftiMasker(BaseMasker, CacheMixin):
 
     detrend : boolean, optional
         This parameter is passed to signal.clean. Please see the related
-        documentation for details
+        documentation for details. [1]
 
     low_pass: None or float, optional
         This parameter is passed to signal.clean. Please see the related
-        documentation for details
+        documentation for details. [1]
 
     high_pass: None or float, optional
         This parameter is passed to signal.clean. Please see the related
-        documentation for details
+        documentation for details. [1]
 
     t_r : float, optional
         This parameter is passed to signal.clean. Please see the related
-        documentation for details
+        documentation for details. [1]
 
     target_affine : 3x3 or 4x4 matrix, optional
         This parameter is passed to image.resample_img. Please see the
@@ -169,6 +169,10 @@ class NiftiMasker(BaseMasker, CacheMixin):
     nilearn.image.resample_img
     nilearn.masking.apply_mask
     nilearn.signal.clean
+
+    References
+    ----------
+    .. [1] https://nilearn.github.io/modules/generated/nilearn.signal.clean.html
     """
 
     def __init__(self, mask_img=None, sessions=None, smoothing_fwhm=None,
