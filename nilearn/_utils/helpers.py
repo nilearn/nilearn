@@ -59,19 +59,14 @@ def _warn_deprecated_params(replacement_params, end_version, lib_name, kwargs):
     Dictionary of all the keyword args passed on the decorated function.
 
     """
-    if end_version == 'future':
-        lib_end_ver = 'a future {} version'.format(lib_name)
-    elif end_version == 'next':
-        lib_end_ver = 'the next {} version'.format(lib_name)
-    else:
-        lib_end_ver = '{} version {}'.format(lib_name, end_version)
     used_deprecated_params = set(kwargs).intersection(replacement_params)
     for deprecated_param_ in used_deprecated_params:
         replacement_param = replacement_params[deprecated_param_]
         param_deprecation_msg = (
-            'The parameter "{}" will be removed in {}. '
+            'The parameter "{}" will be removed in {} release of {}. '
             'Please use the parameter "{}" instead.'.format(deprecated_param_,
-                                                            lib_end_ver,
+                                                            end_version,
+                                                            lib_name,
                                                             replacement_param,
                                                             )
         )
