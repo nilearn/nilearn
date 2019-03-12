@@ -238,7 +238,7 @@ def test_param_mask_deprecation_SecondLevelModel():
     replacement parameter `mask_img` correctly.
     """
     deprecation_msg = (
-        'The parameter "mask" will be removed in the next Nistats version. '
+        'The parameter "mask" will be removed in next release of Nistats. '
         'Please use the parameter "mask_img" instead.'
     )
     mask_filepath = '~/masks/mask_01.nii.gz'
