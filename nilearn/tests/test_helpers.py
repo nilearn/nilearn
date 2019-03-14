@@ -82,8 +82,7 @@ def test_transfer_deprecated_param_vals():
     
 
 def test_future_warn_deprecated_params():
-    """ Unit test to check that the correct warning is displayed when
-    end_version is 'future'.
+    """ Unit test to check that the correct warning is displayed.
     """
     mock_input, replacement_params = _mock_args_for_testing_replace_parameter()
     expected_warnings = [
