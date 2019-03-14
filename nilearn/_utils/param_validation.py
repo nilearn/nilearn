@@ -1,6 +1,7 @@
 """
 Utilities to check for valid parameters
 """
+
 import numpy as np
 import warnings
 import numbers
@@ -191,3 +192,4 @@ def check_feature_screening(screening_percentile, mask_img,
             screening_percentile, mask_img, verbose=verbose)
 
         return SelectPercentile(f_test, int(screening_percentile_))
+

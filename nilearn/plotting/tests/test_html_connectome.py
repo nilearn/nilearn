@@ -71,7 +71,7 @@ def test_params_deprecation_view_connectome():
                          'marker_size': 'node_size',
                          }
     deprecation_msg = (
-        'The parameter "{}" will be removed in Nilearn version 0.6.0. '
+        'The parameter "{}" will be removed in 0.6.0 release of Nilearn. '
         'Please use the parameter "{}" instead.'
     )
     warning_msgs = {old_: deprecation_msg.format(old_, new_)
@@ -170,7 +170,7 @@ def test_params_deprecation_view_markers():
                          'colors': 'marker_color',
                          }
     deprecation_msg = (
-        'The parameter "{}" will be removed in Nilearn version 0.6.0. '
+        'The parameter "{}" will be removed in 0.6.0 release of Nilearn. '
         'Please use the parameter "{}" instead.'
     )
     warning_msgs = {old_: deprecation_msg.format(old_, new_)
