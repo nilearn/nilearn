@@ -47,6 +47,7 @@ from .utils import (_basestring,
                     get_bids_files,
                     parse_bids_filename,
                     )
+from nistats._utils.helpers import replace_parameters
 
 
 def mean_scaling(Y, axis=0):
@@ -199,7 +200,7 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         (in seconds). Events that start before (slice_time_ref * t_r +
         min_onset) are not considered.
 
-    mask : Niimg-like, NiftiMasker object or False, optional
+    mask_img : Niimg-like, NiftiMasker object or False, optional
         Mask to be used on data. If an instance of masker is passed,
         then its mask will be used. If no mask is given,
         it will be computed automatically by a NiftiMasker with default
@@ -271,9 +272,10 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         values are RegressionResults instances corresponding to the voxels
 
     """
+    @replace_parameters({'mask': 'mask_img'}, end_version='next')
     def __init__(self, t_r=None, slice_time_ref=0., hrf_model='glover',
                  drift_model='cosine', period_cut=128, drift_order=1,
-                 fir_delays=[0], min_onset=-24, mask=None, target_affine=None,
+                 fir_delays=[0], min_onset=-24, mask_img=None, target_affine=None,
                  target_shape=None, smoothing_fwhm=None, memory=Memory(None),
                  memory_level=1, standardize=False, signal_scaling=0,
                  noise_model='ar1', verbose=0, n_jobs=1,
@@ -288,7 +290,7 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         self.fir_delays = fir_delays
         self.min_onset = min_onset
         # glm parameters
-        self.mask = mask
+        self.mask_img = mask_img
         self.target_affine = target_affine
         self.target_shape = target_shape
         self.smoothing_fwhm = smoothing_fwhm
@@ -377,14 +379,14 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
             confounds = _check_run_tables(run_imgs, confounds, 'confounds')
 
         # Learn the mask
-        if self.mask is False:
+        if self.mask_img is False:
             # We create a dummy mask to preserve functionality of api
             ref_img = check_niimg(run_imgs[0])
-            self.mask = Nifti1Image(np.ones(ref_img.shape[:3]),
-                                                ref_img.affine)
-        if not isinstance(self.mask, NiftiMasker):
+            self.mask_img = Nifti1Image(np.ones(ref_img.shape[:3]),
+                                        ref_img.affine)
+        if not isinstance(self.mask_img, NiftiMasker):
             self.masker_ = NiftiMasker(
-                mask_img=self.mask, smoothing_fwhm=self.smoothing_fwhm,
+                mask_img=self.mask_img, smoothing_fwhm=self.smoothing_fwhm,
                 target_affine=self.target_affine,
                 standardize=self.standardize, mask_strategy='epi',
                 t_r=self.t_r, memory=self.memory,
@@ -393,8 +395,8 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
                 memory_level=self.memory_level)
             self.masker_.fit(run_imgs[0])
         else:
-            if self.mask.mask_img_ is None and self.masker_ is None:
-                self.masker_ = clone(self.mask)
+            if self.mask_img.mask_img_ is None and self.masker_ is None:
+                self.masker_ = clone(self.mask_img)
                 for param_name in ['target_affine', 'target_shape',
                                    'smoothing_fwhm', 't_r', 'memory',
                                    'memory_level']:
@@ -407,7 +409,7 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
                     setattr(self.masker_, param_name, our_param)
                 self.masker_.fit(run_imgs[0])
             else:
-                self.masker_ = self.mask
+                self.masker_ = self.mask_img
 
         # For each run fit the model and keep only the regression results.
         self.labels_, self.results_, self.design_matrices_ = [], [], []
@@ -581,11 +583,12 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         return outputs if output_type == 'all' else output
 
 
+@replace_parameters({'mask': 'mask_img'}, end_version='next')
 def first_level_models_from_bids(
         dataset_path, task_label, space_label, img_filters=None,
         t_r=None, slice_time_ref=0., hrf_model='glover', drift_model='cosine',
         period_cut=128, drift_order=1, fir_delays=[0], min_onset=-24,
-        mask=None, target_affine=None, target_shape=None, smoothing_fwhm=None,
+        mask_img=None, target_affine=None, target_shape=None, smoothing_fwhm=None,
         memory=Memory(None), memory_level=1, standardize=False,
         signal_scaling=0, noise_model='ar1', verbose=0, n_jobs=1,
         minimize_memory=True, derivatives_folder='derivatives'):
@@ -731,7 +734,7 @@ def first_level_models_from_bids(
             t_r=t_r, slice_time_ref=slice_time_ref, hrf_model=hrf_model,
             drift_model=drift_model, period_cut=period_cut,
             drift_order=drift_order, fir_delays=fir_delays,
-            min_onset=min_onset, mask=mask, target_affine=target_affine,
+            min_onset=min_onset, mask_img=mask_img, target_affine=target_affine,
             target_shape=target_shape, smoothing_fwhm=smoothing_fwhm,
             memory=memory, memory_level=memory_level, standardize=standardize,
             signal_scaling=signal_scaling, noise_model=noise_model,

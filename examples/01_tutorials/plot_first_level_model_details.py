@@ -449,7 +449,7 @@ resampled_icbm_mask = resample_to_img(icbm_mask, data_mask,
 #  Impact on the first-level model
 first_level_model = FirstLevelModel(
     t_r, hrf_model='spm + derivative', smoothing_fwhm=5, slice_time_ref=0.5,
-    mask=resampled_icbm_mask).fit(
+    mask_img=resampled_icbm_mask).fit(
         fmri_img, events=events, confounds=confounds)
 design_matrix = first_level_model.design_matrices_[0]
 plot_design_matrix(design_matrix)

@@ -9,6 +9,7 @@ import os
 
 import numpy as np
 import pandas as pd
+import warnings
 
 from nibabel import (load,
                      Nifti1Image,
@@ -41,7 +42,7 @@ def test_high_level_glm_with_paths():
         FUNCFILE = FUNCFILE[0]
         func_img = load(FUNCFILE)
         # Ordinary Least Squares case
-        model = SecondLevelModel(mask=mask)
+        model = SecondLevelModel(mask_img=mask)
         # asking for contrast before model fit gives error
         assert_raises(ValueError, model.compute_contrast, [])
         # fit model
@@ -93,7 +94,7 @@ def test_fmri_inputs():
 
         # smoke tests with correct input
         # First level models as input
-        SecondLevelModel(mask=mask).fit(flms)
+        SecondLevelModel(mask_img=mask).fit(flms)
         SecondLevelModel().fit(flms)
         # Note : the following one creates a singular design matrix
         SecondLevelModel().fit(flms, confounds)
@@ -145,7 +146,7 @@ def test_second_level_model_glm_computation():
         FUNCFILE = FUNCFILE[0]
         func_img = load(FUNCFILE)
         # Ordinary Least Squares case
-        model = SecondLevelModel(mask=mask)
+        model = SecondLevelModel(mask_img=mask)
         Y = [func_img] * 4
         X = pd.DataFrame([[1]] * 4, columns=['intercept'])
 
@@ -171,7 +172,7 @@ def test_second_level_model_contrast_computation():
         FUNCFILE = FUNCFILE[0]
         func_img = load(FUNCFILE)
         # Ordinary Least Squares case
-        model = SecondLevelModel(mask=mask)
+        model = SecondLevelModel(mask_img=mask)
         # asking for contrast before model fit gives error
         assert_raises(ValueError, model.compute_contrast, 'intercept')
         # fit model
@@ -215,7 +216,7 @@ def test_second_level_model_contrast_computation_with_memory_caching():
         FUNCFILE = FUNCFILE[0]
         func_img = load(FUNCFILE)
         # Ordinary Least Squares case
-        model = SecondLevelModel(mask=mask, memory='nilearn_cache')
+        model = SecondLevelModel(mask_img=mask, memory='nilearn_cache')
         # fit model
         Y = [func_img] * 4
         X = pd.DataFrame([[1]] * 4, columns=['intercept'])
@@ -229,3 +230,40 @@ def test_second_level_model_contrast_computation_with_memory_caching():
         # Delete objects attached to files to avoid WindowsError when deleting
         # temporary directory (in Windows)
         del func_img, FUNCFILE, model, X, Y
+
+
+def test_param_mask_deprecation_SecondLevelModel():
+    """ Tests whether use of deprecated keyword parameter `mask`
+    raises the correct warning & transfers its value to
+    replacement parameter `mask_img` correctly.
+    """
+    deprecation_msg = (
+        'The parameter "mask" will be removed in next release of Nistats. '
+        'Please use the parameter "mask_img" instead.'
+    )
+    mask_filepath = '~/masks/mask_01.nii.gz'
+    with warnings.catch_warnings(record=True) as raised_warnings:
+        slm1 = SecondLevelModel(mask=mask_filepath)
+        slm2 = SecondLevelModel(mask_img=mask_filepath)
+        slm3 = SecondLevelModel(mask_filepath)
+    assert slm1.mask_img == mask_filepath
+    assert slm2.mask_img == mask_filepath
+    assert slm3.mask_img == mask_filepath
+    
+    with assert_raises(AttributeError):
+        slm1.mask == mask_filepath
+    with assert_raises(AttributeError):
+        slm2.mask == mask_filepath
+    with assert_raises(AttributeError):
+        slm3.mask == mask_filepath
+    
+    raised_param_deprecation_warnings = [
+        raised_warning_ for raised_warning_
+        in raised_warnings if
+        str(raised_warning_.message).startswith('The parameter')
+        ]
+    
+    assert len(raised_param_deprecation_warnings) == 1
+    for param_warning_ in raised_param_deprecation_warnings:
+        assert str(param_warning_.message) == deprecation_msg
+        assert param_warning_.category is DeprecationWarning

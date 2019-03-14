@@ -7,6 +7,7 @@ from __future__ import with_statement
 
 import os
 import shutil
+import warnings
 
 import numpy as np
 import pandas as pd
@@ -47,12 +48,12 @@ def test_high_level_glm_one_session():
     shapes, rk = [(7, 8, 9, 15)], 3
     mask, fmri_data, design_matrices = _generate_fake_fmri_data(shapes, rk)
 
-    single_session_model = FirstLevelModel(mask=None).fit(
+    single_session_model = FirstLevelModel(mask_img=None).fit(
         fmri_data[0], design_matrices=design_matrices[0])
     assert_true(isinstance(single_session_model.masker_.mask_img_,
                            Nifti1Image))
 
-    single_session_model = FirstLevelModel(mask=mask).fit(
+    single_session_model = FirstLevelModel(mask_img=mask).fit(
         fmri_data[0], design_matrices=design_matrices[0])
     z1 = single_session_model.compute_contrast(np.eye(rk)[:1])
     assert_true(isinstance(z1, Nifti1Image))
@@ -63,7 +64,7 @@ def test_high_level_glm_with_data():
     with InTemporaryDirectory():
         shapes, rk = ((7, 8, 7, 15), (7, 8, 7, 16)), 3
         mask, fmri_data, design_matrices = _write_fake_fmri_data(shapes, rk)
-        multi_session_model = FirstLevelModel(mask=None).fit(
+        multi_session_model = FirstLevelModel(mask_img=None).fit(
             fmri_data, design_matrices=design_matrices)
         n_voxels = multi_session_model.masker_.mask_img_.get_data().sum()
         z_image = multi_session_model.compute_contrast(np.eye(rk)[1])
@@ -71,7 +72,7 @@ def test_high_level_glm_with_data():
         assert_true(z_image.get_data().std() < 3.)
         
         # with mask
-        multi_session_model = FirstLevelModel(mask=mask).fit(
+        multi_session_model = FirstLevelModel(mask_img=mask).fit(
             fmri_data, design_matrices=design_matrices)
         z_image = multi_session_model.compute_contrast(
             np.eye(rk)[:2], output_type='z_score')
@@ -118,7 +119,7 @@ def test_high_level_glm_with_paths():
     shapes, rk = ((7, 8, 7, 15), (7, 8, 7, 14)), 3
     with InTemporaryDirectory():
         mask_file, fmri_files, design_files = _write_fake_fmri_data(shapes, rk)
-        multi_session_model = FirstLevelModel(mask=None).fit(
+        multi_session_model = FirstLevelModel(mask_img=None).fit(
             fmri_files, design_matrices=design_files)
         z_image = multi_session_model.compute_contrast(np.eye(rk)[1])
         assert_array_equal(z_image.affine, load(mask_file).affine)
@@ -134,9 +135,9 @@ def test_high_level_glm_null_contrasts():
     shapes, rk = ((7, 8, 7, 15), (7, 8, 7, 19)), 3
     mask, fmri_data, design_matrices = _generate_fake_fmri_data(shapes, rk)
 
-    multi_session_model = FirstLevelModel(mask=None).fit(
+    multi_session_model = FirstLevelModel(mask_img=None).fit(
         fmri_data, design_matrices=design_matrices)
-    single_session_model = FirstLevelModel(mask=None).fit(
+    single_session_model = FirstLevelModel(mask_img=None).fit(
         fmri_data[0], design_matrices=design_matrices[0])
     z1 = multi_session_model.compute_contrast([np.eye(rk)[:1],
                                                np.zeros((1, rk))],
@@ -198,29 +199,29 @@ def test_fmri_inputs():
         for fi in func_img, FUNCFILE:
             for d in des, des_fname:
                 FirstLevelModel().fit(fi, design_matrices=d)
-                FirstLevelModel(mask=None).fit([fi], design_matrices=d)
-                FirstLevelModel(mask=mask).fit(fi, design_matrices=[d])
-                FirstLevelModel(mask=mask).fit([fi], design_matrices=[d])
-                FirstLevelModel(mask=mask).fit([fi, fi], design_matrices=[d, d])
-                FirstLevelModel(mask=None).fit((fi, fi), design_matrices=(d, d))
+                FirstLevelModel(mask_img=None).fit([fi], design_matrices=d)
+                FirstLevelModel(mask_img=mask).fit(fi, design_matrices=[d])
+                FirstLevelModel(mask_img=mask).fit([fi], design_matrices=[d])
+                FirstLevelModel(mask_img=mask).fit([fi, fi], design_matrices=[d, d])
+                FirstLevelModel(mask_img=None).fit((fi, fi), design_matrices=(d, d))
                 assert_raises(
-                    ValueError, FirstLevelModel(mask=None).fit, [fi, fi], d)
+                    ValueError, FirstLevelModel(mask_img=None).fit, [fi, fi], d)
                 assert_raises(
-                    ValueError, FirstLevelModel(mask=None).fit, fi, [d, d])
+                    ValueError, FirstLevelModel(mask_img=None).fit, fi, [d, d])
                 # At least paradigms or design have to be given
                 assert_raises(
-                    ValueError, FirstLevelModel(mask=None).fit, fi)
+                    ValueError, FirstLevelModel(mask_img=None).fit, fi)
                 # If paradigms are given then both tr and slice time ref were
                 # required
                 assert_raises(
-                    ValueError, FirstLevelModel(mask=None).fit, fi, d)
+                    ValueError, FirstLevelModel(mask_img=None).fit, fi, d)
                 assert_raises(
-                    ValueError, FirstLevelModel(mask=None, t_r=1.0).fit, fi, d)
+                    ValueError, FirstLevelModel(mask_img=None, t_r=1.0).fit, fi, d)
                 assert_raises(
-                    ValueError, FirstLevelModel(mask=None, slice_time_ref=0.).fit, fi, d)
+                    ValueError, FirstLevelModel(mask_img=None, slice_time_ref=0.).fit, fi, d)
             # confounds rows do not match n_scans
             assert_raises(
-                ValueError, FirstLevelModel(mask=None).fit, fi, d, conf)
+                ValueError, FirstLevelModel(mask_img=None).fit, fi, d, conf)
         # Delete objects attached to files to avoid WindowsError when deleting
         # temporary directory (in Windows)
         del fi, func_img, mask, d, des, FUNCFILE, _
@@ -247,7 +248,7 @@ def test_first_level_model_design_creation():
         t_r = 10.0
         slice_time_ref = 0.
         events = basic_paradigm()
-        model = FirstLevelModel(t_r, slice_time_ref, mask=mask,
+        model = FirstLevelModel(t_r, slice_time_ref, mask_img=mask,
                                 drift_model='polynomial', drift_order=3)
         model = model.fit(func_img, events)
         frame1, X1, names1 = check_design_matrix(model.design_matrices_[0])
@@ -278,7 +279,7 @@ def test_first_level_model_glm_computation():
         slice_time_ref = 0.
         events = basic_paradigm()
         # Ordinary Least Squares case
-        model = FirstLevelModel(t_r, slice_time_ref, mask=mask,
+        model = FirstLevelModel(t_r, slice_time_ref, mask_img=mask,
                                 drift_model='polynomial', drift_order=3,
                                 minimize_memory=False)
         model = model.fit(func_img, events)
@@ -299,7 +300,7 @@ def test_first_level_glm_computation_with_memory_caching():
         slice_time_ref = 0.
         events = basic_paradigm()
         # Ordinary Least Squares case
-        model = FirstLevelModel(t_r, slice_time_ref, mask=mask,
+        model = FirstLevelModel(t_r, slice_time_ref, mask_img=mask,
                                 drift_model='polynomial', drift_order=3,
                                 memory='nilearn_cache', memory_level=1,
                                 minimize_memory=False)
@@ -320,7 +321,7 @@ def test_first_level_model_contrast_computation():
         slice_time_ref = 0.
         events = basic_paradigm()
         # Ordinary Least Squares case
-        model = FirstLevelModel(t_r, slice_time_ref, mask=mask,
+        model = FirstLevelModel(t_r, slice_time_ref, mask_img=mask,
                                 drift_model='polynomial', drift_order=3,
                                 minimize_memory=False)
         c1, c2, cnull = np.eye(7)[0], np.eye(7)[1], np.zeros(7)
@@ -432,7 +433,7 @@ def test_first_level_models_with_no_signal_scaling():
     design_matrices = list()
     design_matrices.append(pd.DataFrame(np.ones((shapes[0][-1], rk)),
                                         columns=list('abcdefghijklmnopqrstuvwxyz')[:rk]))
-    first_level_model = FirstLevelModel(mask=False, noise_model='ols', signal_scaling=False)
+    first_level_model = FirstLevelModel(mask_img=False, noise_model='ols', signal_scaling=False)
     fmri_data.append(Nifti1Image(np.zeros((1, 1, 1, 2)) + 6, np.eye(4)))
 
     first_level_model.fit(fmri_data, design_matrices=design_matrices)
@@ -445,3 +446,84 @@ def test_first_level_models_with_no_signal_scaling():
     assert_true(first_level_model.results_[0][0].theta.shape == (1, 1))
     # assert that the theta is equal to the one voxel value
     assert_almost_equal(first_level_model.results_[0][0].theta[0, 0], 6.0, 2)
+
+
+def test_param_mask_deprecation_FirstLevelModel():
+    """ Tests whether use of deprecated keyword parameter `mask`
+    raises the correct warning & transfers its value to
+    replacement parameter `mask_img` correctly.
+    """
+    deprecation_msg = (
+        'The parameter "mask" will be removed in next release of Nistats. '
+        'Please use the parameter "mask_img" instead.'
+    )
+    mask_filepath = '~/masks/mask_01.nii.gz'
+    with warnings.catch_warnings(record=True) as raised_warnings:
+        flm1 = FirstLevelModel(2.5,
+                               1,
+                               mask=mask_filepath,
+                               target_shape=(2, 4, 4),
+                               )
+        
+        flm2 = FirstLevelModel(t_r=2.5,
+                               slice_time_ref=1,
+                               mask=mask_filepath,
+                               target_shape=(2, 4, 4),
+                               )
+        
+        flm3 = FirstLevelModel(2.5, 0., 'glover', 'cosine', 128, 1, [0], -24,
+                               mask_filepath, None, (2, 4, 4),
+                               )
+    assert flm1.mask_img == mask_filepath
+    assert flm2.mask_img == mask_filepath
+    assert flm3.mask_img == mask_filepath
+    
+    with assert_raises(AttributeError):
+        flm1.mask == mask_filepath
+    with assert_raises(AttributeError):
+        flm2.mask == mask_filepath
+    with assert_raises(AttributeError):
+        flm3.mask == mask_filepath
+    
+    assert len(raised_warnings) == 2
+    
+    raised_param_deprecation_warnings = [
+        raised_warning_ for raised_warning_
+        in raised_warnings if
+        str(raised_warning_.message).startswith('The parameter')
+        ]
+    
+    for param_warning_ in raised_param_deprecation_warnings:
+        assert str(param_warning_.message) == deprecation_msg
+        assert param_warning_.category is DeprecationWarning
+
+
+def test_param_mask_deprecation_first_level_models_from_bids():
+    deprecation_msg = (
+        'The parameter "mask" will be removed in next release of Nistats. '
+        'Please use the parameter "mask_img" instead.'
+    )
+    mask_filepath = '~/masks/mask_01.nii.gz'
+
+    with InTemporaryDirectory():
+        bids_path = _create_fake_bids_dataset(n_sub=10, n_ses=2,
+                                              tasks=['localizer', 'main'],
+                                              n_runs=[1, 3])
+        with warnings.catch_warnings(record=True) as raised_warnings:
+            first_level_models_from_bids(
+                    bids_path, 'main', 'MNI', [('variant', 'some')],
+                    mask=mask_filepath)
+            first_level_models_from_bids(
+                    bids_path, 'main', 'MNI', [('variant', 'some')],
+                    mask_img=mask_filepath)
+
+    raised_param_deprecation_warnings = [
+        raised_warning_ for raised_warning_
+        in raised_warnings if
+        str(raised_warning_.message).startswith('The parameter')
+        ]
+
+    assert len(raised_param_deprecation_warnings) == 1
+    for param_warning_ in raised_param_deprecation_warnings:
+        assert str(param_warning_.message) == deprecation_msg
+        assert param_warning_.category is DeprecationWarning
