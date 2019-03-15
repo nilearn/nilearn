@@ -24,22 +24,22 @@ def f(x):
 
 
 def test_check_memory():
-    # Test if _check_memory returns a memory object with the cachedir equal to
+    # Test if _check_memory returns a memory object with the location equal to
     # input path
     try:
         temp_dir = tempfile.mkdtemp()
 
-        mem_none = Memory(cachedir=None)
-        mem_temp = Memory(cachedir=temp_dir)
+        mem_none = Memory(location=None)
+        mem_temp = Memory(location=temp_dir)
 
         for mem in [None, mem_none]:
             memory = cache_mixin._check_memory(mem, verbose=False)
             assert_true(memory, Memory)
-            assert_equal(memory.cachedir, mem_none.cachedir)
+            assert_equal(memory.location, mem_none.location)
 
         for mem in [temp_dir, mem_temp]:
             memory = cache_mixin._check_memory(mem, verbose=False)
-            assert_equal(memory.cachedir, mem_temp.cachedir)
+            assert_equal(memory.location, mem_temp.location)
             assert_true(memory, Memory)
 
     finally:
@@ -53,7 +53,7 @@ def test__safe_cache_dir_creation():
     # cache if the nibabel version changes
     try:
         temp_dir = tempfile.mkdtemp()
-        mem = Memory(cachedir=temp_dir)
+        mem = Memory(location=temp_dir)
         version_file = os.path.join(temp_dir, 'joblib', 'module_versions.json')
         assert_false(os.path.exists(version_file))
         # First test that a version file get created
@@ -73,7 +73,7 @@ def test__safe_cache_flush():
     # cache if the nibabel version changes
     try:
         temp_dir = tempfile.mkdtemp()
-        mem = Memory(cachedir=temp_dir)
+        mem = Memory(location=temp_dir)
         version_file = os.path.join(temp_dir, 'joblib', 'module_versions.json')
         # Create an mock version_file with old module versions
         with open(version_file, 'w') as f:
@@ -106,10 +106,10 @@ def test_cache_memory_level():
     temp_dir = tempfile.mkdtemp()
     job_glob = os.path.join(temp_dir, 'joblib', 'nilearn', 'tests',
                             'test_cache_mixin', 'f', '*')
-    mem = Memory(cachedir=temp_dir, verbose=0)
+    mem = Memory(location=temp_dir, verbose=0)
     cache_mixin.cache(f, mem, func_memory_level=2, memory_level=1)(2)
     assert_equal(len(glob.glob(job_glob)), 0)
-    cache_mixin.cache(f, Memory(cachedir=None))(2)
+    cache_mixin.cache(f, Memory(location=None))(2)
     assert_equal(len(glob.glob(job_glob)), 0)
     cache_mixin.cache(f, mem, func_memory_level=2, memory_level=3)(2)
     assert_equal(len(glob.glob(job_glob)), 2)
@@ -186,7 +186,7 @@ def test_cache_shelving():
         temp_dir = tempfile.mkdtemp()
         job_glob = os.path.join(temp_dir, 'joblib', 'nilearn', 'tests',
                                 'test_cache_mixin', 'f', '*')
-        mem = Memory(cachedir=temp_dir, verbose=0)
+        mem = Memory(location=temp_dir, verbose=0)
         res = cache_mixin.cache(f, mem, shelve=True)(2)
         assert_equal(res.get(), 2)
         assert_equal(len(glob.glob(job_glob)), 1)

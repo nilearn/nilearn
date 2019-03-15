@@ -501,7 +501,7 @@ class GroupSparseCovariance(BaseEstimator, CacheMixin):
     """
 
     def __init__(self, alpha=0.1, tol=1e-3, max_iter=10, verbose=0,
-                 memory=Memory(cachedir=None), memory_level=0):
+                 memory=Memory(location=None), memory_level=0):
         self.alpha = alpha
         self.tol = tol
         self.max_iter = max_iter

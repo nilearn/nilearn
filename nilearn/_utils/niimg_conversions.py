@@ -88,7 +88,7 @@ def _resolve_globbing(path):
 
 def _iter_check_niimg(niimgs, ensure_ndim=None, atleast_4d=False,
                       target_fov=None, dtype=None,
-                      memory=Memory(cachedir=None),
+                      memory=Memory(location=None),
                       memory_level=0, verbose=0):
     """Iterate over a list of niimgs and do sanity checks and resampling
 
@@ -362,7 +362,7 @@ def check_niimg_4d(niimg, return_iterator=False, dtype=None):
 
 
 def concat_niimgs(niimgs, dtype=np.float32, ensure_ndim=None,
-                  memory=Memory(cachedir=None), memory_level=0,
+                  memory=Memory(location=None), memory_level=0,
                   auto_resample=False, verbose=0):
     """Concatenate a list of 3D/4D niimgs of varying lengths.
 

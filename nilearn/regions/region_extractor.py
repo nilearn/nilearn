@@ -367,7 +367,7 @@ class RegionExtractor(NiftiMapsMasker):
                  extractor='local_regions', smoothing_fwhm=6,
                  standardize=False, detrend=False,
                  low_pass=None, high_pass=None, t_r=None,
-                 memory=Memory(cachedir=None), memory_level=0, verbose=0):
+                 memory=Memory(location=None), memory_level=0, verbose=0):
         super(RegionExtractor, self).__init__(
             maps_img=maps_img, mask_img=mask_img,
             smoothing_fwhm=smoothing_fwhm,

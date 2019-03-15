@@ -185,7 +185,7 @@ class DictLearning(BaseDecomposition):
                  smoothing_fwhm=4, standardize=True, detrend=True,
                  low_pass=None, high_pass=None, t_r=None, target_affine=None,
                  target_shape=None, mask_strategy='epi', mask_args=None,
-                 n_jobs=1, verbose=0, memory=Memory(cachedir=None),
+                 n_jobs=1, verbose=0, memory=Memory(location=None),
                  memory_level=0):
         BaseDecomposition.__init__(self, n_components=n_components,
                                    random_state=random_state, mask=mask,

@@ -23,7 +23,7 @@ from .._utils.compat import _basestring
 
 def filter_and_extract(imgs, extraction_function,
                        parameters,
-                       memory_level=0, memory=Memory(cachedir=None),
+                       memory_level=0, memory=Memory(location=None),
                        verbose=0,
                        confounds=None,
                        copy=True,
