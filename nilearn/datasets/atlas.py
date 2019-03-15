@@ -1283,7 +1283,9 @@ def fetch_atlas_schaefer_2018(n_rois=400, yeo_networks=7, resolution_mm=1,
     labels_file, atlas_file = _fetch_files(data_dir, files, resume=resume,
                                            verbose=verbose)
 
-    labels = np.genfromtxt(labels_file, usecols=1, dtype="S", delimiter="\t")
+    labels = np.genfromtxt(labels_file, usecols=1, dtype="S", delimiter="\t",
+                           encoding=None,
+                           )
     fdescr = _get_dataset_descr(dataset_name)
 
     return Bunch(maps=atlas_file,
