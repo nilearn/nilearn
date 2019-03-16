@@ -37,6 +37,8 @@ Fixes
 -----
 
 - Example plot_seed_to_voxel_correlation now really saves z-transformed maps.
+- region_extractor.connected_regions and regions.RegionExtractor now correctly
+  use the provided mask_img.
 
 0.5.0
 =====

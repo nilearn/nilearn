@@ -4,7 +4,8 @@ import numpy as np
 import nibabel
 from scipy import ndimage
 
-from nose.tools import assert_equal, assert_true, assert_not_equal
+from nose.tools import (assert_equal, assert_true, assert_not_equal,
+                        assert_greater, assert_false)
 
 from nilearn.regions import (connected_regions, RegionExtractor,
                              connected_label_regions)
@@ -107,9 +108,15 @@ def test_connected_regions():
         assert_true(connected_extraction_3d_img.shape[-1] >= 1)
 
     # Test input mask_img
+    mask = mask_img.get_data()
+    mask[1, 1, 1] = 0
     extraction_with_mask_img, index = connected_regions(maps,
                                                         mask_img=mask_img)
     assert_true(extraction_with_mask_img.shape[-1] >= 1)
+
+    extraction_without_mask_img, index = connected_regions(maps)
+    assert_true(np.all(extraction_with_mask_img.get_data()[mask == 0] == 0.))
+    assert_false(np.all(extraction_without_mask_img.get_data()[mask == 0] == 0.))
 
     # mask_img with different shape
     mask = np.zeros(shape=(10, 11, 12), dtype=np.int)
@@ -123,6 +130,10 @@ def test_connected_regions():
                                                         mask_img=mask_img)
     assert_equal(maps.shape[:3], extraction_not_same_fov_mask.shape[:3])
     assert_not_equal(mask_img.shape, extraction_not_same_fov_mask.shape[:3])
+
+    extraction_not_same_fov, _ = connected_regions(maps)
+    assert_greater(np.sum(extraction_not_same_fov.get_data() == 0),
+                   np.sum(extraction_not_same_fov_mask.get_data() == 0))
 
 
 def test_invalid_threshold_strategies():
@@ -153,6 +164,18 @@ def test_region_extractor_fit_and_transform():
     n_regions = 9
     n_subjects = 5
     maps, mask_img = generate_maps((40, 40, 40), n_regions=n_regions)
+
+    # Test maps are zero in the mask
+    mask_data = mask_img.get_data()
+    mask_data[1, 1, 1] = 0
+    extractor_without_mask = RegionExtractor(maps)
+    extractor_without_mask.fit()
+    extractor_with_mask = RegionExtractor(maps, mask_img=mask_img)
+    extractor_with_mask.fit()
+    assert_false(np.all(
+        extractor_without_mask.regions_img_.get_data()[mask_data == 0] == 0.))
+    assert_true(np.all(
+        extractor_with_mask.regions_img_.get_data()[mask_data == 0] == 0.))
 
     # smoke test to RegionExtractor with thresholding_strategy='ratio_n_voxels'
     extract_ratio = RegionExtractor(maps, threshold=0.2,
