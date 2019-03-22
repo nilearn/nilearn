@@ -261,22 +261,16 @@ def test_fail_fetch_atlas_harvard_oxford():
 @with_setup(setup_mock, teardown_mock)
 @with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
 def test_fetch_atlas_craddock_2012():
-    bunch = atlas.fetch_atlas_craddock_2012(data_dir=tst.tmpdir,
-                                            verbose=0)
+    target_atlas = 'scorr_mean'
+    target_regions = 10
+    bunch = atlas.fetch_atlas_craddock_2012(atlas_name=target_atlas,
+                                            number_of_regions=target_regions,
+                                            data_dir=tst.tmpdir, url=None,
+                                            resume=True, verbose=0)
 
-    keys = ("scorr_mean", "tcorr_mean",
-            "scorr_2level", "tcorr_2level",
-            "random")
-    filenames = [
-        "scorr05_mean_all.nii.gz",
-        "tcorr05_mean_all.nii.gz",
-        "scorr05_2level_all.nii.gz",
-        "tcorr05_2level_all.nii.gz",
-        "random_all.nii.gz",
-    ]
     assert_equal(len(tst.mock_url_request.urls), 1)
-    for key, fn in zip(keys, filenames):
-        assert_equal(bunch[key], os.path.join(tst.tmpdir, 'craddock_2012', fn))
+    fn = target_atlas + '_' + str(target_regions) + '.nii.gz'
+    assert_equal(bunch.maps, os.path.join(tst.tmpdir, 'craddock_2012', fn))
     assert_not_equal(bunch.description, '')
 
 
