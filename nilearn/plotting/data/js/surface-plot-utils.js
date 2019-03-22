@@ -137,6 +137,7 @@ function addColorbar(colorscale, cmin, cmax, divId, layout, config) {
     // hack to get a colorbar
     let dummy = {
         "opacity": 0,
+        "colorbar": {"tickfont": {"size": 25}},
         "type": "mesh3d",
         "colorscale": colorscale,
         "x": [1, 0, 0],
