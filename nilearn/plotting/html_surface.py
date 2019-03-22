@@ -126,7 +126,7 @@ def _fill_html_template(info, embed_js=True):
 
 def view_img_on_surf(stat_map_img, surf_mesh='fsaverage5',
                      threshold=None, cmap=cm.cold_hot,
-                     black_bg=False, symmetric_cmap=True, vmax=None):
+                     black_bg=False, vmax=None, symmetric_cmap=True):
     """
     Insert a surface plot of a statistical map into an HTML page.
 
@@ -158,13 +158,13 @@ def view_img_on_surf(stat_map_img, surf_mesh='fsaverage5',
         If True, image is plotted on a black background. Otherwise on a
         white background.
 
-    symmetric_cmap : bool, optional (default=True)
-        Make colormap symmetric (ranging from -vmax to vmax).
-        You can set it to False if you are plotting only positive values.
-
     vmax : float or None, optional (default=None)
         upper bound for the colorbar. if None, use the absolute max of the
         brain map.
+
+    symmetric_cmap : bool, optional (default=True)
+        Make colormap symmetric (ranging from -vmax to vmax).
+        You can set it to False if you are plotting only positive values.
 
     Returns
     -------
