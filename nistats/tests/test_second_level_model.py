@@ -183,11 +183,20 @@ def test_second_level_model_contrast_computation():
         c1, cnull = np.eye(ncol)[0, :], np.zeros(ncol)
         # smoke test for different contrasts in fixed effects
         model.compute_contrast(c1)
-        model.compute_contrast(c1, output_type='z_score')
-        model.compute_contrast(c1, output_type='stat')
-        model.compute_contrast(c1, output_type='p_value')
-        model.compute_contrast(c1, output_type='effect_size')
-        model.compute_contrast(c1, output_type='effect_variance')
+        z_image = model.compute_contrast(c1, output_type='z_score')
+        stat_image = model.compute_contrast(c1, output_type='stat')
+        p_image = model.compute_contrast(c1, output_type='p_value')
+        effect_image = model.compute_contrast(c1, output_type='effect_size')
+        variance_image = model.compute_contrast(c1, output_type='effect_variance')
+
+        # Test output_type='all', and verify images are equivalent
+        all_images = model.compute_contrast(c1, output_type='all')
+        assert_array_equal(all_images['z_score'].get_fdata(), z_image.get_fdata())
+        assert_array_equal(all_images['stat'].get_fdata(), stat_image.get_fdata())
+        assert_array_equal(all_images['p_value'].get_fdata(), p_image.get_fdata())
+        assert_array_equal(all_images['effect_size_score'].get_fdata(), effect_image.get_fdata())
+        assert_array_equal(all_images['effect_variance_score'].get_fdata(), variance_image.get_fdata())
+
         # formula should work (passing variable name directly)
         model.compute_contrast('intercept')
         # or simply pass nothing
