@@ -122,7 +122,7 @@ def test_downloader():
     os.makedirs(datasetdir)
 
     # Create a dummy file. If sandboxing is successful, it won't be overwritten
-    dummy = open(os.path.join(datasetdir, 'random_all.nii.gz'), 'w')
+    dummy = open(os.path.join(datasetdir, 'random_10.nii.gz'), 'w')
     dummy.write('stuff')
     dummy.close()
 
@@ -137,7 +137,7 @@ def test_downloader():
     assert_raises(IOError, utils._fetch_files,
                   os.path.join(tst.tmpdir, 'craddock_2012'), files,
                   verbose=0)
-    dummy = open(os.path.join(datasetdir, 'random_all.nii.gz'), 'r')
+    dummy = open(os.path.join(datasetdir, 'random_10.nii.gz'), 'r')
     stuff = dummy.read(5)
     dummy.close()
     assert_equal(stuff, 'stuff')
@@ -148,8 +148,13 @@ def test_downloader():
     # Now, we use the regular downloading feature. This will override the dummy
     # file created before.
 
-    atlas.fetch_atlas_craddock_2012(data_dir=tst.tmpdir, url=local_url)
-    dummy = open(os.path.join(datasetdir, 'random_all.nii.gz'), 'r')
+    target_atlas = 'random'
+    target_regions = 10
+    atlas.fetch_atlas_craddock_2012(atlas_name=target_atlas,
+                                    number_of_regions=target_regions,
+                                    data_dir=tst.tmpdir, url=None, 
+                                    resume=True, verbose=0)
+    dummy = open(os.path.join(datasetdir, 'random_10.nii.gz'), 'r')
     stuff = dummy.read()
     dummy.close()
     assert_equal(stuff, '')
