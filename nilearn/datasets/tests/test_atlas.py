@@ -152,7 +152,7 @@ def test_downloader():
     target_regions = 10
     atlas.fetch_atlas_craddock_2012(atlas_name=target_atlas,
                                     number_of_regions=target_regions,
-                                    data_dir=tst.tmpdir, url=None, 
+                                    data_dir=tst.tmpdir, url=None,
                                     resume=True, verbose=0)
     dummy = open(os.path.join(datasetdir, 'random_10.nii.gz'), 'r')
     stuff = dummy.read()
