@@ -91,8 +91,8 @@ verbose=1):
     return Bunch(**params)
 
 
-def fetch_atlas_craddock_2012(atlas_name, number_of_regions, data_dir=None,
-                              url=None, resume=True, verbose=1):
+def fetch_atlas_craddock_2012(atlas_name=None, number_of_regions=None,
+                              data_dir=None, url=None, resume=True, verbose=1):
 
     """Download and return file names for the Craddock 2012 parcellation
 
