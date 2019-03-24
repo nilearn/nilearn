@@ -91,8 +91,11 @@ verbose=1):
     return Bunch(**params)
 
 
-def fetch_atlas_craddock_2012(atlas_name=None, number_of_regions=None,
-                              data_dir=None, url=None, resume=True, verbose=1):
+def fetch_atlas_craddock_2012(atlas_name=None,
+                              number_of_regions=None,
+                              data_dir=None,
+                              url=None, resume=True,
+                              verbose=1):
 
     """Download and return file names for the Craddock 2012 parcellation
 
@@ -147,15 +150,15 @@ def fetch_atlas_craddock_2012(atlas_name=None, number_of_regions=None,
     See http://www.nitrc.org/projects/cluster_roi/ for more information
     on this parcellation.
     """
-    if (atlas_name is None) or (number_of_regions is None):
+    if atlas_name is None or number_of_regions is None:
         with warnings.catch_warnings():
             warnings.simplefilter("always")
             warnings.warn("The new parameters 'atlas_name' and "
                           "'number_of_regions' are added in current version "
-                          "and will be mandatory in the future releases. The "
-                          "new implementation saves the atlas on your "
-                          "computer and returns the atlas path NOT "
-                          "Nifti.image.",
+                          "and will be mandatory in future releases."
+                          "The new implementation saves the atlas on your "
+                          "computer and returns the atlas path NOT a "
+                          "Nifti image.",
                           category=DeprecationWarning)
         return _fetch_atlas_craddock_2012(data_dir=data_dir, url=url,
                                           resume=resume, verbose=verbose)
