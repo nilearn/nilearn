@@ -274,8 +274,9 @@ def test_fetch_atlas_craddock_2012():
                                             resume=True, verbose=0)
 
     assert_equal(len(tst.mock_url_request.urls), 1)
-    fn = target_atlas + '_' + str(target_regions) + '.nii.gz'
-    assert_equal(bunch.maps, os.path.join(tst.tmpdir, 'craddock_2012', fn))
+    filename = target_atlas + '_' + str(target_regions) + '.nii.gz'
+    assert_equal(bunch.maps, os.path.join(tst.tmpdir, 'craddock_2012', 
+                                          filename))
     assert_not_equal(bunch.description, '')
 
 
