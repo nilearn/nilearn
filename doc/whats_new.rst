@@ -10,6 +10,9 @@ NEW
 - NiftiLabelsMasker now consumes less memory when extracting the signal from a 3D/4D
   image. This is especially noteworthy when extracting signals from large 4D images.
 - New function :func:`nilearn.datasets.fetch_atlas_schaefer_2018`
+- Rework of the standardize-options of :func:`nilearn.signal.clean` and the various Maskers
+  in `nilearn.input_data`. You can now set `standardize` to `zscore` or `psc`. `psc` stands
+  for `Percent Signal Change`, which can be a meaningful metric for BOLD.
 
 Changes
 -------
