@@ -33,6 +33,9 @@ Changes
  - coords is now marker_coords
  - colors is now marker_color
 
+- :func:`nilearn.plotting.view_img_on_surf` now accepts a `symmetric_cmap`
+  argument to control whether the colormap is centered around 0.
+
 Fixes
 -----
 
