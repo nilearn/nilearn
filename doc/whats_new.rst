@@ -34,7 +34,8 @@ Changes
  - colors is now marker_color
 
 - :func:`nilearn.plotting.view_img_on_surf` now accepts a `symmetric_cmap`
-  argument to control whether the colormap is centered around 0.
+  argument to control whether the colormap is centered around 0 and a `vmin`
+  argument.
 
 Fixes
 -----
