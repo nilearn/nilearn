@@ -133,8 +133,8 @@ def test_butterworth():
      causing it to fail tests.
      This hack prevents that and will be removed in future.
     '''
-    buggy_scipy = (LooseVersion(scipy.__version__) < LooseVersion('1.2') and
-                   LooseVersion(scipy.__version__) > LooseVersion('1.0')
+    buggy_scipy = (LooseVersion(scipy.__version__) < LooseVersion('1.2')
+                   and LooseVersion(scipy.__version__) > LooseVersion('1.0')
                    )
     if buggy_scipy:
         warnings.simplefilter('ignore')
@@ -218,8 +218,8 @@ def test_detrend():
 
     # Mean removal only (out-of-place)
     detrended = nisignal._detrend(x, inplace=False, type="constant")
-    assert_true(abs(detrended.mean(axis=0)).max() <
-                15. * np.finfo(np.float).eps)
+    assert_true(abs(detrended.mean(axis=0)).max()
+                < 15. * np.finfo(np.float).eps)
 
     # out-of-place detrending. Use scipy as a reference implementation
     detrended = nisignal._detrend(x, inplace=False)

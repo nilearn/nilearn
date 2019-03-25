@@ -58,8 +58,8 @@ def _standardize(signals, detrend=False, standardize='zscore'):
 
     if standardize:
         if signals.shape[0] == 1:
-            warnings.warn('Standardization of 3D signal has been requested but'
-                          ' would lead to zero values. Skipping.')
+            warnings.warn('Standardization of 3D signal has been requested but '
+                          'would lead to zero values. Skipping.')
             return signals
 
         elif (standardize == 'zscore') or (standardize is True):
@@ -203,7 +203,7 @@ def _check_wn(btype, freq, nyq):
             'nyquist frequency). It has been lowered to %.2f (nyquist '
             'frequency).' % (btype, wn))
 
-    if wn < 0.0:  # equal to 0.0 is okay
+    if wn < 0.0: # equal to 0.0 is okay
         wn = np.finfo(1.).eps
         warnings.warn(
             'The frequency specified for the %s pass filter is '
@@ -523,7 +523,7 @@ def clean(signals, sessions=None, detrend=True, standardize='zscore',
         if not len(sessions) == len(signals):
             raise ValueError(('The length of the session vector (%i) '
                               'does not match the length of the signals (%i)')
-                             % (len(sessions), len(signals)))
+                              % (len(sessions), len(signals)))
         for s in np.unique(sessions):
             session_confounds = None
             if confounds is not None:

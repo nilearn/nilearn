@@ -255,8 +255,8 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
                  "native space.\n")
 
         if not hasattr(self.seeds, '__iter__'):
-            raise ValueError(error + "Given seed list is of type: "
-                             + type(self.seeds))
+            raise ValueError(error + "Given seed list is of type: " +
+                             type(self.seeds))
 
         self.seeds_ = []
         # Check seeds and convert them to lists if needed
@@ -318,8 +318,8 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
         params = get_params(NiftiSpheresMasker, self)
 
         signals, _ = self._cache(
-            filter_and_extract,
-            ignore=['verbose', 'memory', 'memory_level'])(
+                filter_and_extract,
+                ignore=['verbose', 'memory', 'memory_level'])(
             # Images
             imgs, _ExtractionFunctor(self.seeds_, self.radius, self.mask_img,
                                      self.allow_overlap, self.dtype),
