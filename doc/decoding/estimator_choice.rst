@@ -115,7 +115,7 @@ not perform as well on new data.
    :scale: 60
 
 With scikit-learn nested cross-validation is done via
-:class:`sklearn.grid_search.GridSearchCV`. It is unfortunately time
+:class:`sklearn.model_selection.GridSearchCV`. It is unfortunately time
 consuming, but the ``n_jobs`` argument can spread the load on multiple
 CPUs.
 

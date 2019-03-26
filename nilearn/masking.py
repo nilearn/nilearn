@@ -14,7 +14,7 @@ from . import _utils
 from .image import new_img_like
 from ._utils.cache_mixin import cache
 from ._utils.ndimage import largest_connected_component, get_border_data
-from ._utils.niimg import _safe_get_data
+from ._utils.niimg import _safe_get_data, img_data_dtype
 
 
 class MaskWarning(UserWarning):
@@ -82,8 +82,9 @@ def _extrapolate_out_mask(data, mask, iterations=1):
     outer_shell[1:-1, 1:-1, 1:-1] = np.logical_xor(new_mask, mask)
     outer_shell_x, outer_shell_y, outer_shell_z = np.where(outer_shell)
     extrapolation = list()
-    for i, j, k in [(0, 1, 0), (0, -1, 0), (1, 0, 0), (-1, 0, 0),
-                    (1, 0, 0), (-1, 0, 0)]:
+    for i, j, k in [(1, 0, 0), (-1, 0, 0), 
+                    (0, 1, 0), (0, -1, 0),
+                    (0, 0, 1), (0, 0, -1)]:
         this_x = outer_shell_x + i
         this_y = outer_shell_y + j
         this_z = outer_shell_z + k
@@ -107,7 +108,7 @@ def intersect_masks(mask_imgs, threshold=0.5, connected=True):
     """ Compute intersection of several masks
 
     Given a list of input mask images, generate the output image which
-    is the the threshold-level intersection of the inputs
+    is the threshold-level intersection of the inputs
 
     Parameters
     ----------
@@ -321,7 +322,7 @@ def compute_multi_epi_mask(epi_imgs, lower_cutoff=0.2, upper_cutoff=0.85,
     upper_cutoff: float, optional
         upper fraction of the histogram to be discarded.
 
-    connected: boolean, optional
+    connected: bool, optional
         if connected is True, only the largest connect component is kept.
 
     exclude_zeros: boolean, optional
@@ -473,7 +474,7 @@ def compute_multi_background_mask(data_imgs, border_size=2, upper_cutoff=0.85,
         The size, in voxel of the border used on the side of the image
         to determine the value of the background.
 
-    connected: boolean, optional
+    connected: bool, optional
         if connected is True, only the largest connect component is kept.
 
     target_affine: 3x3 or 4x4 matrix, optional
@@ -510,6 +511,147 @@ def compute_multi_background_mask(data_imgs, border_size=2, upper_cutoff=0.85,
         for img in data_imgs)
 
     mask = intersect_masks(masks, connected=connected, threshold=threshold)
+    return mask
+
+
+def compute_gray_matter_mask(target_img, threshold=.5,
+                             connected=True, opening=2, memory=None,
+                             verbose=0):
+    """ Compute a mask corresponding to the gray matter part of the brain.
+    The gray matter part is calculated through the resampling of MNI152
+    template gray matter mask onto the target image
+
+    Parameters
+    ----------
+    target_img: Niimg-like object
+        See http://nilearn.github.io/manipulating_images/input_output.html
+        Images used to compute the mask. 3D and 4D images are accepted.
+        Only the shape and affine of target_img will be used here.
+
+    threshold: float, optional
+        The value under which the MNI template is cut off.
+        Default value is 0.5
+
+    connected: bool, optional
+        if connected is True, only the largest connected component is kept.
+        Default is True
+
+    opening: bool or int, optional
+        if opening is True, a morphological opening is performed, to keep
+        only large structures.
+        If opening is an integer `n`, it is performed via `n` erosions.
+        After estimation of the largest connected constituent, 2`n` closing
+        operations are performed followed by `n` erosions. This corresponds
+        to 1 opening operation of order `n` followed by a closing operator
+        of order `n`.
+
+    memory: instance of joblib.Memory or str
+        Used to cache the function call.
+
+    verbose: int, optional
+        Controls the amount of verbosity: higher numbers give
+        more messages
+
+    Returns
+    -------
+    mask: nibabel.Nifti1Image
+        The brain mask (3D image)
+    """
+    if verbose > 0:
+        print("Template mask computation")
+
+    target_img = _utils.check_niimg(target_img)
+
+    from .datasets import load_mni152_brain_mask
+    template = load_mni152_brain_mask()
+    dtype = img_data_dtype(target_img)
+    template = new_img_like(template,
+                            template.get_data().astype(dtype))
+
+    from .image.resampling import resample_to_img
+    resampled_template = cache(resample_to_img, memory)(template, target_img)
+
+    mask = resampled_template.get_data() >= threshold
+
+    mask, affine = _post_process_mask(mask, target_img.affine, opening=opening,
+                                      connected=connected,
+                                      warning_msg="Gray matter mask is empty, "
+                                                  "lower the threshold or "
+                                                  "check your input FOV")
+
+    return new_img_like(target_img, mask, affine)
+
+
+def compute_multi_gray_matter_mask(target_imgs, threshold=.5,
+                                   connected=True, opening=2,
+                                   memory=None, verbose=0, n_jobs=1, **kwargs):
+    """ Compute a mask corresponding to the gray matter part of the brain for
+    a list of images.
+    The gray matter part is calculated through the resampling of MNI152
+    template gray matter mask onto the target image
+
+    Parameters
+    ----------
+    target_imgs: list of Niimg-like object
+        See http://nilearn.github.io/manipulating_images/input_output.html
+        Images used to compute the mask. 3D and 4D images are accepted.
+        The images in this list must be of same shape and affine. The mask is
+        calculated with the first element of the list for only the shape/affine
+        of the image is used for this masking strategy
+
+    threshold: float, optional
+        The value under which the MNI template is cut off.
+        Default value is 0.5
+
+    connected: bool, optional
+        if connected is True, only the largest connect component is kept.
+        Default is True
+
+    opening: bool or int, optional
+        if opening is True, a morphological opening is performed, to keep
+        only large structures.
+        If opening is an integer `n`, it is performed via `n` erosions.
+        After estimation of the largest connected constituent, 2`n` closing
+        operations are performed followed by `n` erosions. This corresponds
+        to 1 opening operation of order `n` followed by a closing operator
+        of order `n`.
+
+    memory: instance of joblib.Memory or str
+        Used to cache the function call.
+
+    n_jobs: integer, optional
+        Argument not used but kept to fit the API
+
+    **kwargs: optional arguments
+        arguments such as 'target_affine' are used in the call of other
+        masking strategies, which then would raise an error for this function
+        which does not need such arguments.
+
+    verbose: int, optional
+        Controls the amount of verbosity: higher numbers give
+        more messages
+
+    Returns
+    -------
+    mask: nibabel.Nifti1Image
+        The brain mask (3D image)
+
+    See also
+    --------
+    nilearn.masking.compute_gray_matter_mask
+    """
+    if len(target_imgs) == 0:
+        raise TypeError('An empty object - %r - was passed instead of an '
+                        'image or a list of images' % target_imgs)
+
+    # Check images in the list have the same FOV without loading them in memory
+    imgs_generator = _utils.check_niimg(target_imgs, return_iterator=True)
+    for _ in imgs_generator:
+        pass
+
+    mask = compute_gray_matter_mask(target_imgs[0], threshold=threshold,
+                                    connected=connected, opening=opening,
+                                    memory=memory, verbose=verbose)
     return mask
 
 

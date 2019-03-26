@@ -11,7 +11,7 @@ import numpy as np
 import nibabel
 
 from nilearn.input_data.nifti_maps_masker import NiftiMapsMasker
-from nilearn._utils import testing, as_ndarray
+from nilearn._utils import testing, as_ndarray, data_gen
 from nilearn._utils.exceptions import DimensionError
 from nilearn._utils.testing import assert_less, assert_raises_regex
 
@@ -42,7 +42,7 @@ def test_nifti_maps_masker():
                                                  length=length)
 
     labels11_img, labels_mask_img = \
-        testing.generate_maps(shape1, n_regions, affine=affine1)
+        data_gen.generate_maps(shape1, n_regions, affine=affine1)
 
     # No exception raised here
     for create_files in (True, False):
@@ -124,8 +124,8 @@ def test_nifti_maps_masker_with_nans():
     n_regions = 8
     fmri_img, mask_img = generate_random_img((13, 11, 12),
                                              affine=np.eye(4), length=length)
-    maps_img, maps_mask_img = testing.generate_maps((13, 11, 12), n_regions,
-                                                    affine=np.eye(4))
+    maps_img, maps_mask_img = data_gen.generate_maps((13, 11, 12), n_regions,
+                                                     affine=np.eye(4))
 
     # nans
     maps_data = maps_img.get_data()
@@ -162,7 +162,7 @@ def test_nifti_maps_masker_2():
                                         length=length)
 
     maps33_img, _ = \
-        testing.generate_maps(shape3, n_regions, affine=affine)
+        data_gen.generate_maps(shape3, n_regions, affine=affine)
 
     mask_img_4d = nibabel.Nifti1Image(np.ones((2, 2, 2, 2), dtype=np.int8),
                                       affine=np.diag((4, 4, 4, 1)))
@@ -235,11 +235,11 @@ def test_nifti_maps_masker_2():
     length = 21
 
     fmri11_img, _ = generate_random_img(shape1, affine=affine1, length=length)
-    _, mask22_img = testing.generate_fake_fmri(shape2, length=1,
-                                               affine=affine2)
+    _, mask22_img = data_gen.generate_fake_fmri(shape2, length=1,
+                                                affine=affine2)
     # Target: maps
     maps33_img, _ = \
-        testing.generate_maps(shape3, n_regions, affine=affine1)
+        data_gen.generate_maps(shape3, n_regions, affine=affine1)
 
     masker = NiftiMapsMasker(maps33_img, mask_img=mask22_img,
                              resampling_target="maps")

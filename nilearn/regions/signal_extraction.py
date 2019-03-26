@@ -64,6 +64,8 @@ def img_to_signals_labels(imgs, labels_img, mask_img=None,
     --------
     nilearn.regions.signals_to_img_labels
     nilearn.regions.img_to_signals_maps
+    nilearn.input_data.NiftiLabelsMasker : Signal extraction on labels images 
+        e.g. clusters
     """
 
     labels_img = _utils.check_niimg_3d(labels_img)
@@ -99,7 +101,8 @@ def img_to_signals_labels(imgs, labels_img, mask_img=None,
         labels_data[np.logical_not(mask_data)] = background_label
 
     data = _safe_get_data(imgs)
-    signals = np.ndarray((data.shape[-1], len(labels)), order=order)
+    signals = np.ndarray((data.shape[-1], len(labels)), order=order,
+                         dtype=data.dtype)
     for n, img in enumerate(np.rollaxis(data, -1)):
         signals[n] = np.asarray(ndimage.measurements.mean(img,
                                                           labels=labels_data,
@@ -150,6 +153,8 @@ def signals_to_img_labels(signals, labels_img, mask_img=None,
     --------
     nilearn.regions.img_to_signals_labels
     nilearn.regions.signals_to_img_maps
+    nilearn.input_data.NiftiLabelsMasker : Signal extraction on labels
+        images e.g. clusters
     """
 
     labels_img = _utils.check_niimg_3d(labels_img)
@@ -235,6 +240,8 @@ def img_to_signals_maps(imgs, maps_img, mask_img=None):
     --------
     nilearn.regions.img_to_signals_labels
     nilearn.regions.signals_to_img_maps
+    nilearn.input_data.NiftiMapsMasker : Signal extraction on probabilistic 
+        maps e.g. ICA
     """
 
     maps_img = _utils.check_niimg_4d(maps_img)
@@ -302,6 +309,7 @@ def signals_to_img_maps(region_signals, maps_img, mask_img=None):
     --------
     nilearn.regions.signals_to_img_labels
     nilearn.regions.img_to_signals_maps
+    nilearn.input_data.NiftiMapsMasker
     """
 
     maps_img = _utils.check_niimg_4d(maps_img)

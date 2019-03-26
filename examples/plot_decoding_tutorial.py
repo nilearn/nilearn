@@ -179,11 +179,13 @@ print((prediction == conditions[-30:]).sum() / float(len(conditions[-30:])))
 #
 # We can split the data in train and test set repetitively in a `KFold`
 # strategy:
-from sklearn.cross_validation import KFold
+from sklearn.model_selection import KFold
 
-cv = KFold(n=len(fmri_masked), n_folds=5)
+cv = KFold(n_splits=5)
 
-for train, test in cv:
+# The "cv" object's split method can now accept data and create a
+# generator which can yield the splits.
+for train, test in cv.split(X=fmri_masked):
     conditions_masked = conditions.values[train]
     svc.fit(fmri_masked[train], conditions_masked)
     prediction = svc.predict(fmri_masked[test])
@@ -195,18 +197,13 @@ for train, test in cv:
 # ...................................
 #
 # Scikit-learn has tools to perform cross-validation easier:
-from sklearn.cross_validation import cross_val_score
+from sklearn.model_selection import cross_val_score
 cv_score = cross_val_score(svc, fmri_masked, conditions)
 print(cv_score)
 
 ###########################################################################
 # Note that we can speed things up to use all the CPUs of our computer
 # with the n_jobs parameter.
-#
-# By default, cross_val_score uses a 3-fold KFold. We can control this by
-# passing the "cv" object, here a 5-fold:
-cv_score = cross_val_score(svc, fmri_masked, conditions, cv=cv)
-print(cv_score)
 
 ###########################################################################
 # The best way to do cross-validation is to respect the structure of
@@ -215,13 +212,23 @@ print(cv_score)
 #
 # The number of the session is stored in the CSV file giving the
 # behavioral data. We have to apply our session mask, to select only cats
-# and faces. To leave a session out, we pass it to a
-# LeaveOneLabelOut object:
+# and faces.
 session_label = behavioral['chunks'][condition_mask]
 
-from sklearn.cross_validation import LeaveOneLabelOut
-cv = LeaveOneLabelOut(session_label)
+# By default, cross_val_score uses a 3-fold KFold. We can control this by
+# passing the "cv" object, here a 5-fold:
 cv_score = cross_val_score(svc, fmri_masked, conditions, cv=cv)
+print(cv_score)
+
+# To leave a session out, pass it to the groups parameter of cross_val_score.
+from sklearn.model_selection import LeaveOneGroupOut
+cv = LeaveOneGroupOut()
+cv_score = cross_val_score(svc,
+                           fmri_masked,
+                           conditions,
+                           cv=cv,
+                           groups=session_label,
+                           )
 print(cv_score)
 
 

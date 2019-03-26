@@ -97,6 +97,11 @@ different heuristics to find cutting coordinates.
                      |hack|
                      Plotting a connectome
 
+                     Functions for automatic extraction of coords based on
+                     brain parcellations useful for :func:`plot_connectome`
+                     are demonstrated in
+                     **Example:** :ref:`sphx_glr_auto_examples_03_connectivity_plot_atlas_comparison.py`
+
 |plot_prob_atlas|    :func:`plot_prob_atlas`
                      |hack|
                      Plotting 4D probabilistic atlas maps
@@ -161,6 +166,10 @@ Different display modes
      :target: ../auto_examples/01_plotting/plot_demo_more_plotting.html
      :scale: 50
 
+.. |plot_tiled| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_demo_more_plotting_009.png
+     :target: ../auto_examples/01_plotting/plot_demo_more_plotting.html
+     :scale: 50
+
 .. |plot_lzr| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_demo_glass_brain_extensive_006.png
      :target: ../auto_examples/01_plotting/plot_demo_glass_brain_extensive.html
      :scale: 50
@@ -211,6 +220,11 @@ Different display modes
                    Cutting in the y and z direction, with cuts manually
                    positionned
 
+|plot_tiled|       `display_mode='tiled', cut_coords=[36, -27, 60]`
+                   |hack|
+                   Tiled slicer: 3 cuts along the x, y, z directions,
+                   arranged in a 2x2 grid
+
 |plot_lzr|         `Glass brain display_mode='lzr'`
                    |hack|
                    Glass brain and Connectome provide additional display modes
@@ -226,10 +240,27 @@ Different display modes
 
 ================= =========================================================
 
+Available Colormaps
+===================
+
+Nilearn plotting library ships with a set of extra colormaps, as seen in the
+image below
+
+.. image:: ../auto_examples/01_plotting/images/sphx_glr_plot_colormaps_001.png
+     :target: ../auto_examples/01_plotting/plot_colormaps.html
+     :scale: 50
+
+These colormaps can be used as any other matplotlib colormap.
+
+.. image:: ../auto_examples/01_plotting/images/sphx_glr_plot_colormaps_002.png
+     :target: ../auto_examples/01_plotting/plot_colormaps.html
+     :scale: 50
+
+
 .. _display_modules:
 
-Adding overlays, edges, contours, contour fillings and markers
-==============================================================
+Adding overlays, edges, contours, contour fillings, markers, scale bar
+=======================================================================
 
 To add overlays, contours, or edges, use the return value of the plotting
 functions. Indeed, these return a display object, such as the
@@ -255,7 +286,11 @@ plot, and has methods to add overlays, contours or edge maps::
      :scale: 50
 
 .. |plot_overlay| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_overlay_002.png
-     :target: ../auto_examples/_01_plotting/plot_overlay.html
+     :target: ../auto_examples/01_plotting/plot_overlay.html
+     :scale: 50
+
+.. |plot_scalebar| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_demo_more_plotting_013.png
+     :target: ../auto_examples/01_plotting/plot_demo_more_plotting.html
      :scale: 50
 
 ================= =========================================================
@@ -295,6 +330,13 @@ plot, and has methods to add overlays, contours or edge maps::
                   |hack|
                   **Example:** :ref:`sphx_glr_auto_examples_03_connectivity_plot_seed_to_voxel_correlation.py`
 
+|plot_scalebar|   `display.annotate(scalebar=True)`
+                  |hack|
+                  Adds annotations such as a scale bar, or the cross of
+                  the cut coordinates
+                  |hack|
+                  **Example:** :ref:`sphx_glr_auto_examples_01_plotting_plot_demo_more_plotting.py`
+
 ================= =========================================================
 
 Displaying or saving to an image file
@@ -327,6 +369,8 @@ that can be used to save the plot to an image file::
     # Don't forget to close the display
     >>> display.close()     # doctest: +SKIP
 
+.. _surface-plotting:
+
 Surface plotting
 ================
 
@@ -334,9 +378,6 @@ Plotting functions required to plot surface data or statistical maps
 on a brain surface.
 
 .. versionadded:: 0.3
-
-NOTE: These functions works for only with matplotlib higher than 1.3.1.
-
 
 .. |plot_surf_roi| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_surf_atlas_001.png
      :target: ../auto_examples/01_plotting/plot_surf_atlas.html
@@ -363,3 +404,127 @@ NOTE: These functions works for only with matplotlib higher than 1.3.1.
                          :ref:`sphx_glr_auto_examples_01_plotting_plot_surf_stat_map.py`
 
 =====================   ===================================================================
+
+
+.. _interactive-plotting:
+
+Interactive plots
+=================
+
+Nilearn also has functions for making interactive plots that can be
+seen in a web browser.
+
+.. versionadded:: 0.5
+
+   Interactive plotting is new in nilearn 0.5
+
+For 3D surface plots of statistical maps or surface atlases, use
+:func:`view_img_on_surf` and :func:`view_surf`. Both produce a 3D plot on the
+cortical surface. The difference is that :func:`view_surf` takes as input a
+surface map and a cortical mesh, whereas :func:`view_img_on_surf` takes as input
+a volume statistical map, and projects it on the cortical surface before making
+the plot.
+
+For 3D plots of a connectome, use :func:`view_connectome`. To see only markers,
+use :func:`view_markers`.
+
+
+.. _interactive-surface-plotting:
+
+3D Plots of statistical maps or atlases on the cortical surface
+---------------------------------------------------------------
+
+:func:`view_img_on_surf`: Surface plot using a 3D statistical map::
+
+    >>> from nilearn import plotting, datasets     # doctest: +SKIP
+    >>> img = datasets.fetch_localizer_button_task()['tmap']     # doctest: +SKIP
+    >>> view = plotting.view_img_on_surf(img, threshold='90%', surf_mesh='fsaverage')     # doctest: +SKIP
+
+If you are running a notebook, displaying ``view`` will embed an interactive
+plot (this is the case for all interactive plots produced by nilearn's "view"
+functions):
+
+.. image:: ../images/plotly_surface_plot_notebook_screenshot.png
+
+If you are not using a notebook, you can open the plot in a browser like this::
+
+    >>> view.open_in_browser()     # doctest: +SKIP
+
+This will open this 3D plot in your web browser:
+
+.. image:: ../images/plotly_surface_plot.png
+
+
+Or you can save it to an html file::
+
+    >>> view.save_as_html("surface_plot.html")     # doctest: +SKIP
+
+
+:func:`view_surf`: Surface plot using a surface map and a cortical mesh::
+
+    >>> from nilearn import plotting, datasets     # doctest: +SKIP
+    >>> destrieux = datasets.fetch_atlas_surf_destrieux()     # doctest: +SKIP
+    >>> fsaverage = datasets.fetch_surf_fsaverage()     # doctest: +SKIP
+    >>> view = plotting.view_surf(fsaverage['infl_left'], destrieux['map_left'],     # doctest: +SKIP
+    ...                           cmap='gist_ncar', symmetric_cmap=False)     # doctest: +SKIP
+    ...
+    >>> view.open_in_browser()     # doctest: +SKIP
+
+
+.. image:: ../images/plotly_surface_atlas_plot.png
+
+.. _interactive-connectome-plotting:
+
+3D Plots of connectomes
+-----------------------
+
+:func:`view_connectome`: 3D plot of a connectome::
+
+      >>> view = plotting.view_connectome(correlation_matrix, coords, threshold='90%')    # doctest: +SKIP
+      >>> view.open_in_browser() # doctest: +SKIP
+
+
+.. image:: ../images/plotly_connectome_plot.png
+
+
+.. _interactive-markers-plotting:
+
+3D Plots of markers
+-------------------
+
+:func:`view_markers`: showing markers (e.g. seed locations) in 3D::
+
+    >>> from nilearn import plotting  # doctest: +SKIP
+    >>> dmn_coords = [(0, -52, 18), (-46, -68, 32), (46, -68, 32), (1, 50, -5)] # doctest: +SKIP
+    >>> view = plotting.view_markers( # doctest: +SKIP
+    >>>       dmn_coords, ['red', 'cyan', 'magenta', 'orange'], marker_size=10) # doctest: +SKIP
+    >>> view.open_in_browser() # doctest: +SKIP
+
+
+
+.. image:: ../images/plotly_markers_plot.png
+
+
+.. _interactive-stat-map-plotting:
+
+Interactive visualization of statistical map slices
+---------------------------------------------------
+
+:func:`view_img`: open stat map in a Brainsprite viewer (https://github.com/simexp/brainsprite.js)::
+
+    >>> from nilearn import plotting, datasets     # doctest: +SKIP
+    >>> img = datasets.fetch_localizer_button_task()['tmap']     # doctest: +SKIP
+    >>> html_view = plotting.view_img(img, threshold=2, vmax=4, cut_coords=[-42, -16, 52],
+    ...                                     title="Motor contrast")     # doctest: +SKIP
+
+in a Jupyter notebook, if `html_view` is not requested, the viewer will be inserted in the notebook:
+
+.. image:: ../images/view_img_screenshot_notebook.png
+
+Or you can open a viewer in your web browser if you are not in a notebook::
+
+    >>> html_view.open_in_browser()   # doctest: +SKIP
+
+Finally, you can also save the viewer as a stand-alone html file::
+
+    >>> html_view.save_as_html('viewer.html') # doctest: +SKIP

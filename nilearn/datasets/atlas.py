@@ -537,8 +537,8 @@ def fetch_atlas_yeo_2011(data_dir=None, url=None, resume=True, verbose=1):
     Licence: unknown.
     """
     if url is None:
-        url = "ftp://surfer.nmr.mgh.harvard.edu/" \
-              "pub/data/Yeo_JNeurophysiol11_MNI152.zip"
+        url = ('ftp://surfer.nmr.mgh.harvard.edu/pub/data/'
+               'Yeo_JNeurophysiol11_MNI152.zip')
     opts = {'uncompress': True}
 
     dataset_name = "yeo_2011"
@@ -851,17 +851,17 @@ def fetch_atlas_allen_2011(data_dir=None, url=None, resume=True, verbose=1):
     on this dataset.
     """
     if url is None:
-        url = "http://mialab.mrn.org/data/hcp/"
+        url = "https://osf.io/hrcku/download"
 
     dataset_name = "allen_rsn_2011"
     keys = ("maps",
             "rsn28",
             "comps")
 
-    opts = {}
-    files = ["ALL_HC_unthresholded_tmaps.nii",
-             "RSN_HC_unthresholded_tmaps.nii",
-             "rest_hcp_agg__component_ica_.nii"]
+    opts = {'uncompress': True}
+    files = ["ALL_HC_unthresholded_tmaps.nii.gz",
+             "RSN_HC_unthresholded_tmaps.nii.gz",
+             "rest_hcp_agg__component_ica_.nii.gz"]
 
     labels = [('Basal Ganglia', [21]),
               ('Auditory', [17]),
@@ -873,7 +873,7 @@ def fetch_atlas_allen_2011(data_dir=None, url=None, resume=True, verbose=1):
 
     networks = [[name] * len(idxs) for name, idxs in labels]
 
-    filenames = [(f, url + f, opts) for f in files]
+    filenames = [(os.path.join('allen_rsn_2011', f), url, opts) for f in files]
 
     data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
                                 verbose=verbose)
@@ -1116,3 +1116,176 @@ def fetch_atlas_talairach(level_name, data_dir=None, verbose=1):
     description = _get_dataset_descr(
         'talairach_atlas').decode('utf-8').format(level_name)
     return Bunch(maps=atlas_img, labels=labels, description=description)
+
+
+def fetch_atlas_pauli_2017(version='prob', data_dir=None, verbose=1):
+    """Download the Pauli et al. (2017) atlas with in total
+    12 subcortical nodes.
+
+    Parameters
+    ----------
+
+    version: str, optional (default='prob')
+        Which version of the atlas should be download. This can be 'prob'
+        for the probabilistic atlas or 'det' for the deterministic atlas.
+
+    data_dir : str, optional (default=None)
+        Path of the data directory. Used to force data storage in a specified
+        location.
+
+    verbose : int
+        verbosity level (0 means no message).
+
+    Returns
+    -------
+    sklearn.datasets.base.Bunch
+        Dictionary-like object, contains:
+
+        - maps: 3D Nifti image, values are indices in the list of labels.
+        - labels: list of strings. Starts with 'Background'.
+        - description: a short description of the atlas and some references.
+
+    References
+    ----------
+    https://osf.io/r2hvk/
+
+    `Pauli, W. M., Nili, A. N., & Tyszka, J. M. (2018). A high-resolution
+    probabilistic in vivo atlas of human subcortical brain nuclei.
+    Scientific Data, 5, 180063-13. http://doi.org/10.1038/sdata.2018.63``
+    """
+
+    if version == 'prob':
+        url_maps = 'https://osf.io/w8zq2/download'
+        filename = 'pauli_2017_labels.nii.gz'
+    elif version == 'labels':
+        url_maps = 'https://osf.io/5mqfx/download'
+        filename = 'pauli_2017_prob.nii.gz'
+    else:
+        raise NotImplementedError('{} is no valid version for '.format(version) + \
+                                  'the Pauli atlas')
+
+    url_labels = 'https://osf.io/6qrcb/download'
+    dataset_name = 'pauli_2017'
+
+    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
+                                verbose=verbose)
+
+    files = [(filename,
+              url_maps,
+              {'move':filename}),
+             ('labels.txt',
+              url_labels,
+              {'move':'labels.txt'})]
+    atlas_file, labels = _fetch_files(data_dir, files)
+
+    labels = np.loadtxt(labels, dtype=str)[:, 1].tolist()
+
+    fdescr = _get_dataset_descr(dataset_name)
+
+    return Bunch(maps=atlas_file,
+                 labels=labels,
+                 description=fdescr)
+
+
+
+def fetch_atlas_schaefer_2018(n_rois=400, yeo_networks=7, resolution_mm=1,
+                              data_dir=None, base_url=None, resume=True,
+                              verbose=1):
+    """Download and return file names for the Schaefer 2018 parcellation
+
+    .. versionadded:: 0.5.1
+
+    The provided images are in MNI152 space.
+
+    Parameters
+    ----------
+    n_rois: int
+        number of regions of interest {100, 200, 300, 400 (default), 500, 600,
+        800, 1000}
+
+    yeo_networks: int
+        ROI annotation according to yeo networks {7 (default), 17}
+
+    resolution_mm: int
+        Spatial resolution of atlas image in mm {1 (default), 2}
+
+    data_dir: string
+        directory where data should be downloaded and unpacked.
+
+    base_url: string
+        base_url of files to download (None results in default base_url).
+
+    resume: bool
+        whether to resumed download of a partly-downloaded file.
+
+    verbose: int
+        verbosity level (0 means no message).
+
+    Returns
+    -------
+    data: sklearn.datasets.base.Bunch
+        Dictionary-like object, contains:
+
+        - maps: 3D Nifti image, values are indices in the list of labels.
+        - labels: ROI labels including Yeo-network annotation,list of strings.
+        - description: A short description of the atlas and some references.
+
+    References
+    ----------
+    For more information on this dataset, see
+    https://github.com/ThomasYeoLab/CBIG/tree/v0.8.1-Schaefer2018_LocalGlobal/stable_projects/brain_parcellation/Schaefer2018_LocalGlobal
+
+    Schaefer A, Kong R, Gordon EM, Laumann TO, Zuo XN, Holmes AJ,
+    Eickhoff SB, Yeo BTT. Local-Global parcellation of the human
+    cerebral cortex from intrinsic functional connectivity MRI,
+    Cerebral Cortex, 29:3095-3114, 2018.
+
+    Yeo BT, Krienen FM, Sepulcre J, Sabuncu MR, Lashkari D, Hollinshead M,
+    Roffman JL, Smoller JW, Zollei L., Polimeni JR, Fischl B, Liu H,
+    Buckner RL. The organization of the human cerebral cortex estimated by
+    intrinsic functional connectivity. J Neurophysiol 106(3):1125-65, 2011.
+
+    Licence: MIT.
+    """
+    valid_n_rois = [100, 200, 300, 400, 500, 600, 800, 1000]
+    valid_yeo_networks = [7, 17]
+    valid_resolution_mm = [1, 2]
+    if n_rois not in valid_n_rois:
+        raise ValueError("Requested n_rois={} not available. Valid "
+                         "options: {}".format(n_rois, valid_n_rois))
+    if yeo_networks not in valid_yeo_networks:
+        raise ValueError("Requested yeo_networks={} not available. Valid "
+                         "options: {}".format(yeo_networks,valid_yeo_networks))
+    if resolution_mm not in valid_resolution_mm:
+        raise ValueError("Requested resolution_mm={} not available. Valid "
+                         "options: {}".format(resolution_mm,
+                                              valid_resolution_mm)
+                         )
+
+    if base_url is None:
+        base_url = ('https://raw.githubusercontent.com/ThomasYeoLab/CBIG/'
+                    'v0.8.1-Schaefer2018_LocalGlobal/stable_projects/'
+                    'brain_parcellation/Schaefer2018_LocalGlobal/'
+                    'Parcellations/MNI/'
+                    )
+
+    files = []
+    labels_file_template = 'Schaefer2018_{}Parcels_{}Networks_order.txt'
+    img_file_template = ('Schaefer2018_{}Parcels_'
+                         '{}Networks_order_FSLMNI152_{}mm.nii.gz')
+    for f in [labels_file_template.format(n_rois, yeo_networks),
+              img_file_template.format(n_rois, yeo_networks, resolution_mm)]:
+        files.append((f, base_url + f, {}))
+
+    dataset_name = 'schaefer_2018'
+    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
+                                verbose=verbose)
+    labels_file, atlas_file = _fetch_files(data_dir, files, resume=resume,
+                                           verbose=verbose)
+
+    labels = np.genfromtxt(labels_file, usecols=1, dtype="S", delimiter="\t")
+    fdescr = _get_dataset_descr(dataset_name)
+
+    return Bunch(maps=atlas_file,
+                 labels=labels,
+                 description=fdescr)

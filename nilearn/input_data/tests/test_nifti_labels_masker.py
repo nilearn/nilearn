@@ -11,7 +11,7 @@ import numpy as np
 import nibabel
 
 from nilearn.input_data.nifti_labels_masker import NiftiLabelsMasker
-from nilearn._utils import testing, as_ndarray
+from nilearn._utils import testing, as_ndarray, data_gen
 from nilearn._utils.exceptions import DimensionError
 from nilearn._utils.testing import assert_less
 
@@ -41,8 +41,8 @@ def test_nifti_labels_masker():
     fmri21_img, mask21_img = generate_random_img(shape2, affine=affine1,
                                                  length=length)
 
-    labels11_img = testing.generate_labeled_regions(shape1, affine=affine1,
-                                                    n_regions=n_regions)
+    labels11_img = data_gen.generate_labeled_regions(shape1, affine=affine1,
+                                                     n_regions=n_regions)
 
     mask_img_4d = nibabel.Nifti1Image(np.ones((2, 2, 2, 2), dtype=np.int8),
                                       affine=np.diag((4, 4, 4, 1)))
@@ -109,9 +109,9 @@ def test_nifti_labels_masker_with_nans_and_infs():
     n_regions = 9
     fmri_img, mask_img = generate_random_img((13, 11, 12),
                                              affine=np.eye(4), length=length)
-    labels_img = testing.generate_labeled_regions((13, 11, 12),
-                                                  affine=np.eye(4),
-                                                  n_regions=n_regions)
+    labels_img = data_gen.generate_labeled_regions((13, 11, 12),
+                                                   affine=np.eye(4),
+                                                   n_regions=n_regions)
     # nans
     mask_data = mask_img.get_data()
     mask_data[:, :, 7] = np.nan
@@ -144,8 +144,8 @@ def test_nifti_labels_masker_resampling():
     _, mask22_img = generate_random_img(shape2, affine=affine,
                                         length=length)
 
-    labels33_img = testing.generate_labeled_regions(shape3, n_regions,
-                                                    affine=affine)
+    labels33_img = data_gen.generate_labeled_regions(shape3, n_regions,
+                                                     affine=affine)
 
     # Test error checking
     assert_raises(ValueError, NiftiLabelsMasker, labels33_img,
@@ -191,8 +191,8 @@ def test_nifti_labels_masker_resampling():
                                         length=length)
 
     # Target: labels
-    labels33_img = testing.generate_labeled_regions(shape3, n_regions,
-                                                    affine=affine)
+    labels33_img = data_gen.generate_labeled_regions(shape3, n_regions,
+                                                     affine=affine)
 
     masker = NiftiLabelsMasker(labels33_img, mask_img=mask22_img,
                                resampling_target="labels")
@@ -239,3 +239,30 @@ def test_nifti_labels_masker_resampling():
     with testing.write_tmp_imgs(fmri22_img) as filename:
         masker = NiftiLabelsMasker(labels33_img, resampling_target='data')
         masker.fit_transform(filename)
+
+    # test labels masker with resampling target in 'data', 'labels' to return
+    # resampled labels having number of labels equal with transformed shape of
+    # 2nd dimension. This tests are added based on issue #1673 in Nilearn
+    shape = (13, 11, 12)
+    affine = np.eye(4) * 2
+
+    fmri_img, _ = generate_random_img(shape, affine=affine, length=21)
+    labels_img = data_gen.generate_labeled_regions((9, 8, 6), affine=np.eye(4),
+                                                   n_regions=10)
+    for resampling_target in ['data', 'labels']:
+        masker = NiftiLabelsMasker(labels_img=labels_img,
+                                   resampling_target=resampling_target)
+        transformed = masker.fit_transform(fmri_img)
+        resampled_labels_img = masker._resampled_labels_img_
+        n_resampled_labels = len(np.unique(resampled_labels_img.get_data()))
+        assert_equal(n_resampled_labels - 1, transformed.shape[1])
+        # inverse transform
+        compressed_img = masker.inverse_transform(transformed)
+
+        # Test that compressing the image a second time should yield an image
+        # with the same data as compressed_img.
+        transformed2 = masker.fit_transform(fmri_img)
+        # inverse transform again
+        compressed_img2 = masker.inverse_transform(transformed2)
+        np.testing.assert_array_equal(compressed_img.get_data(),
+                                      compressed_img2.get_data())

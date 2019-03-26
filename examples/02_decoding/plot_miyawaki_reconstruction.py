@@ -252,7 +252,7 @@ print("  - F1-score: %f" % np.mean([
 # ground truth
 
 from matplotlib import pyplot as plt
-
+from nilearn.plotting import show
 
 for i in range(6):
     j = 10 * i
@@ -274,4 +274,4 @@ for i in range(6):
                interpolation='nearest')
     plt.savefig('miyawaki2008_reconstruction_%d' % i)
 
-plt.show()
+show()

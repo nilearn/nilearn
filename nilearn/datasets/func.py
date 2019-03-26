@@ -17,6 +17,7 @@ from .utils import (_get_dataset_dir, _fetch_files, _get_dataset_descr,
 from .._utils import check_niimg
 from .._utils.compat import BytesIO, _basestring, _urllib
 from .._utils.numpy_conversions import csv_to_array
+from .._utils.exceptions import VisibleDeprecationWarning
 
 
 @deprecated("fetch_haxby_simple will be removed in future releases. "
@@ -39,7 +40,7 @@ def fetch_haxby_simple(data_dir=None, url=None, resume=True, verbose=1):
         target data.
         'mask': string. Path to nifti mask file.
         'session': list of string. Path to text file containing labels
-        (can be used for LeaveOneLabelOut cross validation for example).
+        (can be used for LeaveOneGroupOut cross validation for example).
 
     References
     ----------
@@ -108,7 +109,7 @@ def fetch_haxby(data_dir=None, n_subjects=None, subjects=(2,),
 
     fetch_stimuli: boolean, optional
         Indicate if stimuli images must be downloaded. They will be presented
-        as a dictionnary of categories.
+        as a dictionary of categories.
 
     Returns
     -------
@@ -151,7 +152,7 @@ def fetch_haxby(data_dir=None, n_subjects=None, subjects=(2,),
         warn_str = ("The parameter 'n_subjects' is deprecated from 0.2.6 and "
                     "will be removed in nilearn next release. Use parameter "
                     "'subjects' instead.")
-        warnings.warn(warn_str, np.VisibleDeprecationWarning, stacklevel=2)
+        warnings.warn(warn_str, VisibleDeprecationWarning, stacklevel=2)
         subjects = n_subjects
 
     if isinstance(subjects, numbers.Number) and subjects > 6:
@@ -665,7 +666,7 @@ def fetch_miyawaki2008(data_dir=None, url=None, resume=True, verbose=1):
 def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
                               get_masks=False, get_anats=False,
                               data_dir=None, url=None, resume=True, verbose=1):
-    """Download and load Brainomics Localizer dataset (94 subjects).
+    """Download and load Brainomics/Localizer dataset (94 subjects).
 
     "The Functional Localizer is a simple and fast acquisition
     procedure based on a 5-minute functional magnetic resonance
@@ -678,8 +679,11 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
     Functional Localizer page."
     (see http://brainomics.cea.fr/localizer/)
 
-    "Scientific results obtained using this dataset are described in
-    Pinel et al., 2007" [1]
+    You may cite Papadopoulos Orfanos, Dimitri, *et al.* when using this
+    dataset [1].
+
+    Scientific results obtained using this dataset are described in
+    Pinel *et al.*, 2007 [2].
 
     Parameters
     ----------
@@ -799,10 +803,14 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
 
     References
     ----------
-    Pinel, Philippe, et al.
+    [1] Papadopoulos Orfanos, Dimitri, et al.
+    "The Brainomics/Localizer database."
+    NeuroImage 144.B (2017): 309.
+
+    [2] Pinel, Philippe, et al.
     "Fast reproducible identification and large-scale databasing of
     individual functional cognitive networks."
-    BMC neuroscience 8.1 (2007): 91.
+    BMC Neuroscience 8.1 (2007): 91.
 
     See Also
     ---------
@@ -1062,16 +1070,14 @@ def fetch_localizer_calculation_task(n_subjects=1, data_dir=None, url=None,
     return data
 
 
-def fetch_localizer_button_task(n_subjects=[2, ], data_dir=None, url=None,
-                                get_anats=False, verbose=1):
+def fetch_localizer_button_task(data_dir=None, url=None, verbose=1):
     """Fetch left vs right button press contrast maps from the localizer.
+
+    This function ships only 2nd subject (S02) specific tmap and
+    its normalized T1 image.
 
     Parameters
     ----------
-    n_subjects: int or list, optional
-        The number or list of subjects to load. If None is given,
-        all 94 subjects are used.
-
     data_dir: string, optional
         Path of the data directory. Used to force data storage in a specified
         location.
@@ -1080,9 +1086,6 @@ def fetch_localizer_button_task(n_subjects=[2, ], data_dir=None, url=None,
         Override download URL. Used for test only (or if you setup a mirror of
         the data).
 
-    get_anats: boolean
-        Whether individual structural images should be fetched or not.
-
     verbose: int, optional
         verbosity level (0 means no message).
 
@@ -1090,7 +1093,8 @@ def fetch_localizer_button_task(n_subjects=[2, ], data_dir=None, url=None,
     -------
     data: Bunch
         Dictionary-like object, the interest attributes are :
-        'cmaps': string list, giving paths to nifti contrast maps
+        'tmap': string, giving paths to nifti contrast maps
+        'anat': string, giving paths to normalized anatomical image
 
     Notes
     ------
@@ -1105,12 +1109,30 @@ def fetch_localizer_button_task(n_subjects=[2, ], data_dir=None, url=None,
     nilearn.datasets.fetch_localizer_contrasts
 
     """
-    data = fetch_localizer_contrasts(["left vs right button press"],
-                                     n_subjects=n_subjects,
-                                     get_tmaps=True, get_masks=False,
-                                     get_anats=get_anats, data_dir=data_dir,
-                                     url=url, resume=True, verbose=verbose)
-    return data
+    # The URL can be retrieved from the nilearn account on OSF (Open
+    # Science Framework). Uploaded files specific to S02 from
+    # fetch_localizer_contrasts ['left vs right button press']
+    if url is None:
+        url = 'https://osf.io/dx9jn/download'
+
+    tmap = "t_map_left_auditory_&_visual_click_vs_right_auditory&visual_click.nii.gz"
+    anat = "normalized_T1_anat_defaced.nii.gz"
+
+    opts = {'uncompress': True}
+
+    options = ('tmap', 'anat')
+    filenames = [(os.path.join('localizer_button_task', name), url, opts)
+                 for name in (tmap, anat)]
+
+    dataset_name = 'brainomics'
+    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
+                                verbose=verbose)
+    files = _fetch_files(data_dir, filenames, verbose=verbose)
+
+    fdescr = _get_dataset_descr('brainomics_localizer')
+
+    params = dict([('description', fdescr)] + list(zip(options, files)))
+    return Bunch(**params)
 
 
 def fetch_abide_pcp(data_dir=None, n_subjects=None, pipeline='cpac',
@@ -1845,3 +1867,4 @@ def fetch_surf_nki_enhanced(n_subjects=10, data_dir=None,
     return Bunch(func_left=func_left, func_right=func_right,
                  phenotypic=phenotypic,
                  description=fdescr)
+

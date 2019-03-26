@@ -224,10 +224,10 @@ in a `K-Fold strategy
    >>> cv = 2
 
 There is a specific function,
-:func:`sklearn.cross_validation.cross_val_score` that computes for you
+:func:`sklearn.model_selection.cross_val_score` that computes for you
 the score for the different folds of cross-validation::
 
-  >>> from sklearn.cross_validation import cross_val_score  # doctest: +SKIP
+  >>> from sklearn.model_selection import cross_val_score  # doctest: +SKIP
   >>> cv_scores = cross_val_score(svc, fmri_masked, target, cv=5)  # doctest: +SKIP
 
 `cv=5` stipulates a 5-fold cross-validation. Note that this function is located
@@ -267,7 +267,7 @@ caveats, and guidelines*, Neuroimage 2017).
 Here, in the Haxby example, we are going to leave a session out, in order
 to have a test set independent from the train set. For this, we are going
 to use the session label, present in the behavioral data file, and
-:class:`sklearn.cross_validation.LeaveOneLabelOut`.
+:class:`sklearn.model_selection.LeaveOneGroupOut`.
 
 .. note::
 
@@ -320,9 +320,9 @@ at chance, is to use a *"dummy"* classifier,
 
 **Permutation testing**: A more controlled way, but slower, is to do
 permutation testing on the labels, with
-:func:`sklearn.cross_validation.permutation_test_score`::
+:func:`sklearn.model_selection.permutation_test_score`::
 
-  >>> from sklearn.cross_validation import permutation_test_score
+  >>> from sklearn.model_selection import permutation_test_score
   >>> null_cv_scores = permutation_test_score(svc, fmri_masked, target, cv=cv)  # doctest: +SKIP
 
 |

@@ -7,6 +7,7 @@ import nibabel
 import numpy as np
 
 from nilearn.plotting.displays import OrthoSlicer, XSlicer, OrthoProjector
+from nilearn.plotting.displays import TiledSlicer
 from nilearn.plotting.displays import LZRYProjector
 from nilearn.datasets import load_mni152_template
 
@@ -22,11 +23,29 @@ def test_demo_ortho_slicer():
     oslicer.close()
 
 
+def test_demo_tiled_slicer():
+    tslicer = TiledSlicer(cut_coords=(0, 0, 0))
+    img = load_mni152_template()
+    tslicer.add_overlay(img, cmap=plt.cm.gray)
+    tslicer.close()
+
+
 def test_stacked_slicer():
     # Test stacked slicers, like the XSlicer
     img = load_mni152_template()
     slicer = XSlicer.init_with_figure(img=img, cut_coords=3)
     slicer.add_overlay(img, cmap=plt.cm.gray)
+    # Forcing a layout here, to test the locator code
+    with tempfile.TemporaryFile() as fp:
+        slicer.savefig(fp)
+    slicer.close()
+
+
+def test_tiled_slicer():
+    img = load_mni152_template()
+    slicer = TiledSlicer.init_with_figure(img=img, cut_coords=(0, 0, 0),
+                                          colorbar=True)
+    slicer.add_overlay(img, cmap=plt.cm.gray,colorbar=True)
     # Forcing a layout here, to test the locator code
     with tempfile.TemporaryFile() as fp:
         slicer.savefig(fp)
@@ -99,6 +118,19 @@ def test_add_markers_cut_coords_is_none():
     # case is used when coords are placed on glass brain
     orthoslicer = OrthoSlicer(cut_coords=(None, None, None))
     orthoslicer.add_markers([(0, 0, 2)])
+    orthoslicer.close()
+
+
+def test_annotations():
+    # Check calls to display.annotate()
+    # In particular, exercise some of the keyword arguments for scale bars
+    orthoslicer = OrthoSlicer(cut_coords=(None, None, None))
+    orthoslicer.annotate(size=10, left_right=True, positions=False)
+    orthoslicer.annotate(size=12, left_right=False, positions=False,
+                         scalebar=True,
+                         scale_size=2.5,
+                         scale_units='cm',
+                         scale_loc=3)
     orthoslicer.close()
 
 

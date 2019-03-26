@@ -325,30 +325,14 @@ def test_fetch_localizer_calculation_task():
 @with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
 def test_fetch_localizer_button_task():
     local_url = "file://" + tst.datadir
-    ids = np.asarray(['S%2d' % i for i in range(94)])
-    ids = ids.view(dtype=[('subject_id', 'S3')])
-    tst.mock_fetch_files.add_csv('cubicwebexport.csv', ids)
-    tst.mock_fetch_files.add_csv('cubicwebexport2.csv', ids)
 
     # Disabled: cannot be tested without actually fetching covariates CSV file
-    # All subjects
+    # Only one subject
     dataset = func.fetch_localizer_button_task(data_dir=tst.tmpdir,
                                                url=local_url,
                                                verbose=0)
-    assert_true(isinstance(dataset.ext_vars, np.recarray))
-    assert_true(isinstance(dataset.cmaps[0], _basestring))
-    assert_equal(dataset.ext_vars.size, 1)
-    assert_equal(len(dataset.cmaps), 1)
-
-    # 20 subjects
-    dataset = func.fetch_localizer_button_task(n_subjects=20,
-                                               data_dir=tst.tmpdir,
-                                               url=local_url,
-                                               verbose=0)
-    assert_true(isinstance(dataset.ext_vars, np.recarray))
-    assert_true(isinstance(dataset.cmaps[0], _basestring))
-    assert_equal(dataset.ext_vars.size, 20)
-    assert_equal(len(dataset.cmaps), 20)
+    assert_true(isinstance(dataset.tmap, _basestring))
+    assert_true(isinstance(dataset.anat, _basestring))
     assert_not_equal(dataset.description, '')
 
 

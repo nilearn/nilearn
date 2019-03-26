@@ -21,12 +21,14 @@ import sklearn
 from sklearn.externals.joblib import Parallel, delayed, cpu_count
 from sklearn import svm
 from sklearn.base import BaseEstimator
+from sklearn.exceptions import ConvergenceWarning
 
 from .. import masking
 from ..image.resampling import coord_transform
 from ..input_data.nifti_spheres_masker import _apply_mask_and_get_affinity
 from .._utils.compat import _basestring
-from .._utils.fixes import cross_val_score
+from .._utils import check_niimg_4d
+from sklearn.model_selection import cross_val_score
 
 ESTIMATOR_CATALOG = dict(svc=svm.LinearSVC, svr=svm.SVR)
 
@@ -79,12 +81,14 @@ def search_light(X, y, estimator, A, groups=None, scoring=None,
         search_light scores
     """
     group_iter = GroupIterator(A.shape[0], n_jobs)
-    scores = Parallel(n_jobs=n_jobs, verbose=verbose)(
-        delayed(_group_iter_search_light)(
-            A.rows[list_i],
-            estimator, X, y, groups, scoring, cv,
-            thread_id + 1, A.shape[0], verbose)
-        for thread_id, list_i in enumerate(group_iter))
+    with warnings.catch_warnings():  # might not converge
+        warnings.simplefilter('ignore', ConvergenceWarning)
+        scores = Parallel(n_jobs=n_jobs, verbose=verbose)(
+            delayed(_group_iter_search_light)(
+                A.rows[list_i],
+                estimator, X, y, groups, scoring, cv,
+                thread_id + 1, A.shape[0], verbose)
+            for thread_id, list_i in enumerate(group_iter))
     return np.concatenate(scores)
 
 
@@ -136,8 +140,6 @@ def _group_iter_search_light(list_rows, estimator, X, y, groups,
 
     groups : array-like, optional
         group label for each sample for cross validation.
-        NOTE: will have no effect for scikit learn < 0.18
-
     scoring : string or callable, optional
         Scoring strategy to use. See the scikit-learn documentation.
         If callable, takes as arguments the fitted estimator, the
@@ -166,13 +168,8 @@ def _group_iter_search_light(list_rows, estimator, X, y, groups,
     t0 = time.time()
     for i, row in enumerate(list_rows):
         kwargs = dict()
-        if not LooseVersion(sklearn.__version__) < LooseVersion('0.15'):
-            kwargs['scoring'] = scoring
-            if LooseVersion(sklearn.__version__) >= LooseVersion('0.18'):
-                kwargs['groups'] = groups
-        elif scoring is not None:
-            warnings.warn('Scikit-learn version is too old. '
-                          'scoring argument ignored', stacklevel=2)
+        kwargs['scoring'] = scoring
+        kwargs['groups'] = groups
         par_scores[i] = np.mean(cross_val_score(estimator, X[:, row],
                                                 y, cv=cv, n_jobs=1,
                                                 **kwargs))
@@ -289,6 +286,9 @@ class SearchLight(BaseEstimator):
             NOTE: will have no effect for scikit learn < 0.18
 
         """
+
+        # check if image is 4D
+        imgs = check_niimg_4d(imgs)
 
         # Get the seeds
         process_mask_img = self.process_mask_img

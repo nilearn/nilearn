@@ -24,6 +24,8 @@ particular:
 * Andres Hoyos Idrobo
 * Salma Bougacha
 * Mehdi Rahim
+* Sylvain Lanuzel
+* `Kshitij Chawla <https://github.com/kchawla-pi>`_
 
 Many of also contributed outside of Parietal, notably:
 
@@ -42,6 +44,8 @@ Mehdi Rahim, Philippe Gervais where payed by the `NiConnect
 <https://team.inria.fr/parietal/18-2/spatial_patterns/niconnect>`_
 project, funded by the French `Investissement d'Avenir
 <http://www.gouvernement.fr/investissements-d-avenir-cgi>`_.
+
+NiLearn is also supported by `DigiCosme <https://digicosme.lri.fr>`_ |digicomse logo|
 
 .. _citing:
 
@@ -69,3 +73,7 @@ guarantee the future of the toolkit, if you use it, please cite it.
 See the scikit-learn documentation on `how to cite
 <http://scikit-learn.org/stable/about.html#citing-scikit-learn>`_.
 
+
+.. |digicomse logo| image:: logos/digi-saclay-logo-small.png
+    :height: 25
+    :alt: DigiComse Logo

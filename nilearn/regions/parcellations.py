@@ -11,6 +11,7 @@ from ..decomposition.multi_pca import MultiPCA
 from ..input_data import NiftiLabelsMasker
 from .._utils.compat import _basestring
 from .._utils.niimg import _safe_get_data
+from .._utils.niimg_conversions import _iter_check_niimg
 
 
 def _estimator_fit(data, estimator):
@@ -276,7 +277,7 @@ class Parcellations(MultiPCA):
             kmeans = MiniBatchKMeans(n_clusters=self.n_parcels,
                                      init='k-means++',
                                      random_state=self.random_state,
-                                     verbose=self.verbose)
+                                     verbose=max(0, self.verbose - 1))
             labels = self._cache(_estimator_fit,
                                  func_memory_level=1)(components.T, kmeans)
         else:
@@ -334,6 +335,9 @@ class Parcellations(MultiPCA):
         self._check_fitted()
         imgs, confounds, single_subject = _check_parameters_transform(
             imgs, confounds)
+        # Requires for special cases like extracting signals on list of
+        # 3D images
+        imgs_list = _iter_check_niimg(imgs, atleast_4d=True)
 
         masker = NiftiLabelsMasker(self.labels_img_,
                                    mask_img=self.masker_.mask_img_,
@@ -351,7 +355,7 @@ class Parcellations(MultiPCA):
             delayed(self._cache(_labels_masker_extraction,
                                 func_memory_level=2))
             (img, masker, confound)
-            for img, confound in zip(imgs, confounds))
+            for img, confound in zip(imgs_list, confounds))
 
         if single_subject:
             return region_signals[0]

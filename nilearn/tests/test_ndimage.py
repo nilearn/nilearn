@@ -8,7 +8,7 @@ import numpy as np
 
 from nilearn._utils.ndimage import (largest_connected_component,
                                     _peak_local_max)
-from nilearn._utils import testing
+from nilearn._utils import data_gen
 
 
 def test_largest_cc():
@@ -30,8 +30,8 @@ def test_largest_cc():
     np.testing.assert_equal(a, largest_connected_component(b_change_type))
 
     # Tests for correct errors, when an image or string are passed.
-    img = testing.generate_labeled_regions(shape=(10, 11, 12),
-                                           n_regions=2)
+    img = data_gen.generate_labeled_regions(shape=(10, 11, 12),
+                                            n_regions=2)
 
     assert_raises(ValueError, largest_connected_component, img)
     assert_raises(ValueError, largest_connected_component, "Test String")

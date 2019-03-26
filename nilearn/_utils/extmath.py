@@ -6,11 +6,7 @@ Extended math utilities
 
 import numpy as np
 
-try:
-    # partition is available only in numpy >= 1.8.0
-    from numpy import partition
-except ImportError:
-    partition = None
+from numpy import partition
 
 
 def fast_abs_percentile(data, percentile=80):

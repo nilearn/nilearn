@@ -1,0 +1,171 @@
+# quick-build rebuilds changes using the cached documentation.
+# The cache is emptied everyday, forcing a full build on the day's first push.
+# It doesn't operate on master branch. New branches are always built from scratch.
+# full-build always rebuilds from scratch, without any cache. Only for changes in master branch.
+
+version: 2
+
+jobs:
+  quick-build:
+    docker:
+      - image: circleci/python:3.6
+    environment:
+      DISTRIB: "conda"
+      PYTHON_VERSION: "3.6"
+      NUMPY_VERSION: "*"
+      SCIPY_VERSION: "*"
+      SCIKIT_LEARN_VERSION: "*"
+      MATPLOTLIB_VERSION: "*"
+
+    steps:
+      - checkout
+        # Get rid of existing virtualenvs on circle ci as they conflict with conda.
+        # Trick found here:
+        # https://discuss.circleci.com/t/disable-autodetection-of-project-or-application-of-python-venv/235/10
+      - run: cd && rm -rf ~/.pyenv && rm -rf ~/virtualenvs
+        # We need to remove conflicting texlive packages.
+      - run: sudo -E apt-get -yq remove texlive-binaries --purge
+        # Installing required packages for `make -C doc check command` to work.
+      - run: sudo -E apt-get -yq update
+      - run: sudo -E apt-get -yq --no-install-suggests --no-install-recommends --force-yes install dvipng texlive-latex-base texlive-latex-extra
+      - run:
+          name: Today & Week  # Saving today's date and current week of the year in files to generate daily & weekly new cache key respectively.
+          command: |
+            date +%F > today
+            date +%U > week_num
+      - restore_cache:
+          key: v1-packages+datasets-{{ checksum "week_num" }}
+      - restore_cache:
+          key: v1-docs-{{ .Branch }}-{{ checksum "today" }}-{{ checksum ".circleci/manual-cache-timestamp" }}
+
+      - run:
+          name: Download & install conda if absent
+          command: |
+            if
+              ls $HOME/miniconda3/bin | grep conda -q
+            then
+              echo "(Mini)Conda already present from the cache."
+            else
+              wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda.sh
+              chmod +x ~/miniconda.sh && ~/miniconda.sh -b
+            fi
+      - run:
+          name: Setup conda path in env variables
+          command: |
+            echo 'export PATH="$HOME/miniconda3/bin:$PATH"'  >> $BASH_ENV
+      - run:
+          name: Create new conda env
+          command: |
+            if
+              conda env list | grep testenv
+            then
+              echo "Conda env testenv already exists courtesy of the cache."
+            else
+              conda create -n testenv -yq
+            fi
+      - run:
+          name: Install packages in conda env
+          command: |
+            conda install -n testenv python=3.6 numpy scipy scikit-learn matplotlib pandas \
+            lxml mkl sphinx pillow pandas -yq
+            conda install -n testenv nibabel -c conda-forge -yq
+      - run:
+          name: Running CircleCI test (make html)
+          command: |
+            source activate testenv
+            pip install -e .
+            set -o pipefail && cd doc && make html-strict 2>&1 | tee log.txt
+          no_output_timeout: 7h
+      - save_cache:
+          key: v1-packages+datasets-{{ checksum "week_num" }}
+          paths:
+            - ../nilearn_data
+            - ../miniconda3
+      - save_cache:
+          key: v1-docs-{{ .Branch }}-{{ checksum "today" }}-{{ checksum ".circleci/manual-cache-timestamp" }}
+          paths:
+            - doc
+
+      - store_artifacts:
+          path: doc/_build/html
+      - store_artifacts:
+          path: coverage
+      - store_artifacts:
+          path: doc/log.txt
+
+
+  full-build:
+    docker:
+      - image: circleci/python:3.6
+    environment:
+      DISTRIB: "conda"
+      PYTHON_VERSION: "3.6"
+      NUMPY_VERSION: "*"
+      SCIPY_VERSION: "*"
+      SCIKIT_LEARN_VERSION: "*"
+      MATPLOTLIB_VERSION: "*"
+
+    steps:
+      - checkout
+        # Get rid of existing virtualenvs on circle ci as they conflict with conda.
+        # Trick found here:
+        # https://discuss.circleci.com/t/disable-autodetection-of-project-or-application-of-python-venv/235/10
+      - run: cd && rm -rf ~/.pyenv && rm -rf ~/virtualenvs
+        # We need to remove conflicting texlive packages.
+      - run: sudo -E apt-get -yq remove texlive-binaries --purge
+        # Installing required packages for `make -C doc check command` to work.
+      - run: sudo -E apt-get -yq update
+      - run: sudo -E apt-get -yq --no-install-suggests --no-install-recommends --force-yes install dvipng texlive-latex-base texlive-latex-extra
+      - run: wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda.sh
+      - run: chmod +x ~/miniconda.sh && ~/miniconda.sh -b
+      - run: echo 'export PATH="$HOME/miniconda3/bin:$PATH"'  >> $BASH_ENV
+      - run:
+          name: Install packages in conda env
+          command: |
+            conda create -n testenv python=3.6 numpy scipy scikit-learn matplotlib pandas \
+            lxml mkl sphinx pillow pandas -yq
+            conda install -n testenv nibabel -c conda-forge -yq
+      - run:
+          name: Running CircleCI test (make html)
+          command: |
+            source activate testenv
+            pip install -e .
+            set -o pipefail && cd doc && make html-strict 2>&1 | tee log.txt
+          no_output_timeout: 7h
+
+      - store_artifacts:
+          path: doc/_build/html
+      - store_artifacts:
+          path: coverage
+      - store_artifacts:
+          path: doc/log.txt
+
+
+workflows:
+  version: 2
+  push:
+    jobs:
+      - quick-build:
+          filters:
+            branches:
+              ignore:
+                - master
+                - test-circleci  # test branch to check if merges occur on master as expected.
+
+      - full-build:
+          filters:
+            branches:
+              only:
+                - master
+                - test-circleci  # test branch to check if merges occur on master as expected.
+
+  nightly:
+    triggers:
+      - schedule:
+          cron: "0 6 * * *"
+          filters:
+            branches:
+              only:
+                - master
+    jobs:
+      - full-build
