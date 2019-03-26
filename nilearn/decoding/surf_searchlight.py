@@ -30,7 +30,7 @@ from .. import surf_masking
 from .._utils import as_ndarray
 
 from .._utils.compat import _basestring
-from .._utils.fixes import cross_val_score
+from sklearn.model_selection import cross_val_score
 
 ESTIMATOR_CATALOG = dict(svc=svm.LinearSVC, svr=svm.SVR)
 
