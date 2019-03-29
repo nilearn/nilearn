@@ -1903,7 +1903,7 @@ def _fetch_main_participants(data_dir, url, verbose):
                                 verbose=verbose)
 
     if url is None:
-        url = 'https://osf.io/5nuc4/download'
+        url = 'https://osf.io/yr3av/download'
 
     files = [('participants.tsv', url, {'move': 'participants.tsv'})]
     path_to_participants = _fetch_files(data_dir, files, verbose=verbose)[0]
@@ -1956,17 +1956,17 @@ def _fetch_main_functional(participants, data_dir, url, verbose):
                                 verbose=verbose)
 
     if url is None:
-        url = 'https://osf.io/{}/download'
+        url = 'https://osf.io/download/{}'
 
-    confounds = '{}_task-pixar_run-001_ART_and_CompCor_nuisance_regressors.tsv'
-    func = 'downsampled_derivatives:fmriprep:{0}:{0}_task-pixar_run-001_swrf_bold.nii.gz'
+    confounds = '{}_task-pixar_desc-confounds_regressors.tsv'
+    func = '{0}_task-pixar_space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz'
 
     # The gzip contains unique download keys per Nifti file and confound
     # pre-extracted from OSF. Required for downloading files.
     package_directory = os.path.dirname(os.path.abspath(__file__))
-    dtype = [('key_regressor', 'U5'), ('participant_id', 'U12'),
-             ('key_bold', 'U5')]
-    names = ['key_r', 'participant_id', 'key_b']
+    dtype = [('participant_id', 'U12'), ('key_regressor', 'U24'),
+             ('key_bold', 'U24')]
+    names = ['participant_id', 'key_r', 'key_b']
     main_osf = csv_to_array(os.path.join(package_directory, "data",
                                          "MAIN_osf.csv"),
                             skip_header=True, dtype=dtype, names=names)
