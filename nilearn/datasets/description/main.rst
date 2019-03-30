@@ -3,7 +3,7 @@ Montreal Artificial Intelligence and Neuroscience conference 2018 datasets
 
 Notes
 -----
-This functional MRI datasets are used as part of teaching how to use
+This functional MRI datasets is used as part of teaching how to use
 machine learning to predict age from rs-fmri with Nilearn.
 
 The dataset consists of 50 children (ages 3-13) and 33 young adults (ages

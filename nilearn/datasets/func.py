@@ -1882,7 +1882,7 @@ def _fetch_main_participants(data_dir, url, verbose):
     ----------
     data_dir: str
         Path of the data directory. Used to force data storage in a specified
-        location. If None is given, data is stored in home directory.
+        location. If None is given, data are stored in home directory.
 
     url: str, optional
         Override download URL. Used for test only (or if you setup a mirror of
@@ -1934,7 +1934,7 @@ def _fetch_main_functional(participants, data_dir, url, verbose):
 
     data_dir: str
         Path of the data directory. Used to force data storage in a specified
-        location. If None is given, data is stored in home directory.
+        location. If None is given, data are stored in home directory.
 
     url: str, optional
         Override download URL. Used for test only (or if you setup a mirror of
@@ -2010,7 +2010,7 @@ def fetch_main(n_subjects=None, data_dir=None, resume=True, verbose=0):
 
     data_dir: str, optional (default None)
         Path of the data directory. Used to force data storage in a specified
-        location. If None, data is stored in home directory.
+        location. If None, data are stored in home directory.
 
     resume: bool, optional (default True)
         Whether to resume download of a partly-downloaded file.
@@ -2038,7 +2038,7 @@ def fetch_main(n_subjects=None, data_dir=None, resume=True, verbose=0):
     The original data is downloaded from OpenNeuro
     https://openneuro.org/datasets/ds000228/versions/1.0.0
 
-    This fetcher downloads downsampled data which is uploaded to Open
+    This fetcher downloads downsampled data that are available on Open
     Science Framework (OSF).
 
     References
