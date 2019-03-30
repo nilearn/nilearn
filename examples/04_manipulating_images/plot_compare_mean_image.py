@@ -12,7 +12,7 @@ could have been computed with nilearn :func:`nilearn.image.mean_img` function.
 ###############################################################################
 # Fetching 2 subject resting state functionnal MRI from datasets.
 from nilearn import datasets
-dataset = datasets.fetch_fetch_development_rsfmri(n_subjects=2)
+dataset = datasets.fetch_development_rsfmri(n_subjects=2)
 
 
 ###############################################################################
