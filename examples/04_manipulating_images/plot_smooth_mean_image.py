@@ -13,7 +13,7 @@ are expected.
 
 from nilearn import datasets, plotting, image
 
-data = datasets.fetch_main(n_subjects=1)
+data = datasets.fetch_development_rsfmri(n_subjects=1)
 
 # Print basic information on the dataset
 print('First subject functional nifti image (4D) are located at: %s' %

@@ -104,8 +104,8 @@ of the estimator::
 .. topic:: **Exercise: computing sparse inverse covariance**
    :class: green
 
-   Compute and visualize a connectome on the first subject of the ADHD
-   dataset downloaded with :func:`nilearn.datasets.fetch_adhd`
+   Compute and visualize a connectome on the first subject of the rest
+   dataset downloaded with :func:`nilearn.datasets.fetch_development_rsfmri`
 
    **Hints:** The example above has the solution
 
@@ -164,8 +164,8 @@ group analysis only on the non zero coefficients.
    :class: green
 
    Try using the information above to compute a connectome on the
-   first 5 subjects of the ADHD dataset downloaded with
-   :func:`nilearn.datasets.fetch_adhd`
+   first 5 subjects of the brain development dataset downloaded with
+   :func:`nilearn.datasets.fetch_development_rsfmri`
 
    **Hint:** The example above has the solution
 
@@ -255,8 +255,9 @@ Deviations from this mean in the tangent space are provided in the connectivitie
 .. topic:: **Exercise: computing connectivity in tangent space**
    :class: green
 
-   Compute and visualize the tangent group connectome based on the NYU, OHSU and NeuroImage sites of the ADHD
-   dataset downloaded with :func:`nilearn.datasets.fetch_adhd`
+   Compute and visualize the tangent group connectome based on the brain
+   development (rest)
+   dataset downloaded with :func:`nilearn.datasets.fetch_development_rsfmri`
 
    **Hints:** The example above has the solution
 

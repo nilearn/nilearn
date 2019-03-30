@@ -41,10 +41,10 @@ in the documentation section :ref:`parcellating_brain`.
 # Download a rest dataset and turn it to a data matrix
 # -----------------------------------------------------
 #
-# We download one subject of the MAIN conference dataset from Internet
+# We download one subject of the rest dataset from Internet
 
 from nilearn import datasets
-dataset = datasets.fetch_main(n_subjects=1)
+dataset = datasets.fetch_development_rsfmri(n_subjects=1)
 
 # print basic information on the dataset
 print('First subject functional nifti image (4D) is at: %s' %

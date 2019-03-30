@@ -1869,8 +1869,8 @@ def fetch_surf_nki_enhanced(n_subjects=10, data_dir=None,
                  description=fdescr)
 
 
-def _fetch_main_participants(data_dir, url, verbose):
-    """Helper function to fetch_main.
+def _fetch_development_rsfmri_participants(data_dir, url, verbose):
+    """Helper function to fetch_development_rsfmri.
 
     This function helps in downloading and loading participants data from .tsv
     uploaded on Open Science Framework (OSF).
@@ -1918,8 +1918,8 @@ def _fetch_main_participants(data_dir, url, verbose):
     return participants
 
 
-def _fetch_main_functional(participants, data_dir, url, verbose):
-    """Helper function to fetch_main.
+def _fetch_development_rsfmri_functional(participants, data_dir, url, verbose):
+    """Helper function to fetch_development_rsfmri.
 
     This function helps in downloading functional MRI data in Nifti
     and its confound corresponding to each subject.
@@ -1993,7 +1993,8 @@ def _fetch_main_functional(participants, data_dir, url, verbose):
     return funcs, regressors
 
 
-def fetch_main(n_subjects=None, data_dir=None, resume=True, verbose=0):
+def fetch_development_rsfmri(n_subjects=None, data_dir=None, resume=True,
+                             verbose=0):
     """Fetch Montreal Artificial Intelligence and Neuroscience (MAIN) 2018
        workshop data
 
@@ -2043,6 +2044,7 @@ def fetch_main(n_subjects=None, data_dir=None, resume=True, verbose=0):
 
     References
     ----------
+    Please cite this paper if you are using this dataset.
     Richardson, H., Lisandrelli, G., Riobueno-Naylor, A., & Saxe, R. (2018).
     Development of the social brain from age three to twelve years.
     Nature communications, 9(1), 1027.
@@ -2057,8 +2059,9 @@ def fetch_main(n_subjects=None, data_dir=None, resume=True, verbose=0):
     fdescr = _get_dataset_descr(dataset_name)
 
     # Participants data: ids, demographics, etc
-    participants = _fetch_main_participants(data_dir=data_dir, url=None,
-                                            verbose=verbose)
+    participants = _fetch_development_rsfmri_participants(data_dir=data_dir,
+                                                          url=None,
+                                                          verbose=verbose)
 
     max_subjects = len(participants)
     if n_subjects is None:
@@ -2087,8 +2090,10 @@ def fetch_main(n_subjects=None, data_dir=None, resume=True, verbose=0):
     participants = participants[np.in1d(participants['participant_id'],
                                         ids)]
 
-    funcs, regressors = _fetch_main_functional(participants, data_dir=data_dir,
-                                               url=None, verbose=verbose)
+    funcs, regressors = _fetch_development_rsfmri_functional(participants,
+                                                             data_dir=data_dir,
+                                                             url=None,
+                                                             verbose=verbose)
 
     return Bunch(func=funcs, confounds=regressors, phenotypic=participants,
                  description=fdescr)

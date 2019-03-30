@@ -5,7 +5,7 @@ Functional connectivity matrices for group analysis of connectomes
 This example compares different kinds of functional connectivity between
 regions of interest : correlation, partial correlation, as well as a kind
 called **tangent**. The resulting connectivity coefficients are used to
-discriminate ADHD patients from healthy controls and the **tangent kind**
+discriminate children from adults and the **tangent kind**
 **outperforms** the standard connectivity kinds.
 """
 # Matrix plotting from Nilearn: nilearn.plotting.plot_matrix
@@ -28,12 +28,12 @@ def plot_matrices(matrices, matrix_kind):
 
 
 ###############################################################################
-# Load MAIN dataset and MSDL atlas
-# --------------------------------
-# We study only 20 subjects from the MAIN dataset, to save computation time.
+# Load resting-state dataset and MSDL atlas
+# -----------------------------------------
+# We study only 20 subjects from the dataset, to save computation time.
 from nilearn import datasets
 
-main_data = datasets.fetch_main(n_subjects=20)
+rest_data = datasets.fetch_development_rsfmri(n_subjects=20)
 
 ###############################################################################
 # We use probabilistic regions of interest (ROIs) from the MSDL atlas.
@@ -61,7 +61,7 @@ children = []
 pooled_subjects = []
 groups = []  # child or adult
 for func_file, confound_file, phenotypic in zip(
-        main_data.func, main_data.confounds, main_data.phenotypic):
+        rest_data.func, rest_data.confounds, rest_data.phenotypic):
     time_series = masker.fit_transform(func_file, confounds=confound_file)
     pooled_subjects.append(time_series)
     is_child = phenotypic['Child_Adult'] == 'child'
@@ -185,7 +185,7 @@ from sklearn.model_selection import StratifiedKFold
 _, classes = np.unique(groups, return_inverse=True)
 cv = StratifiedKFold(n_splits=3)
 ###############################################################################
-# and use the connectivity coefficients to classify ADHD patients vs controls.
+# and use the connectivity coefficients to classify children vs adults.
 
 # Note that in cv.split(X, y),
 # providing y is sufficient to generate the splits and

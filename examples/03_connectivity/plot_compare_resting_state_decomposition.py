@@ -22,16 +22,16 @@ than ICA
     See the :ref:`section Inverse transform: unmasking data <unmasking_step>`.
 """
 ###############################################################################
-# Load ADHD rest dataset
-# -----------------------
+# Load rest dataset
+# -----------------
 from nilearn import datasets
 
-main_dataset = datasets.fetch_main(n_subjects=30)
-func_filenames = main_dataset.func  # list of 4D nifti files for each subject
+rest_dataset = datasets.fetch_development_rsfmri(n_subjects=30)
+func_filenames = rest_dataset.func  # list of 4D nifti files for each subject
 
 # print basic information on the dataset
 print('First functional nifti image (4D) is at: %s' %
-      main_dataset.func[0])  # 4D data
+      rest_dataset.func[0])  # 4D data
 
 ###############################################################################
 # Create two decomposition estimators
@@ -90,7 +90,7 @@ from nilearn.plotting import (plot_prob_atlas, find_xyz_cut_coords, show,
 from nilearn.image import index_img
 
 # Selecting specific maps to display: maps were manually chosen to be similar
-indices = {dict_learning: 24, canica: 32}
+indices = {dict_learning: 25, canica: 33}
 # We select relevant cut coordinates for displaying
 cut_component = index_img(components_imgs[0], indices[dict_learning])
 cut_coords = find_xyz_cut_coords(cut_component)

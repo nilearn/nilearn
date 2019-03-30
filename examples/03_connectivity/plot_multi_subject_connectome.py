@@ -38,11 +38,11 @@ def plot_matrices(cov, prec, title, labels):
 # ------------------
 from nilearn import datasets
 msdl_atlas_dataset = datasets.fetch_atlas_msdl()
-main_dataset = datasets.fetch_main(n_subjects=n_subjects)
+rest_dataset = datasets.fetch_development_rsfmri(n_subjects=n_subjects)
 
 # print basic information on the dataset
 print('First subject functional nifti image (4D) is at: %s' %
-      main_dataset.func[0])  # 4D data
+      rest_dataset.func[0])  # 4D data
 
 
 ##############################################################################
@@ -62,8 +62,8 @@ masker = input_data.NiftiMapsMasker(
 masker.fit()
 
 subject_time_series = []
-func_filenames = main_dataset.func
-confound_filenames = main_dataset.confounds
+func_filenames = rest_dataset.func
+confound_filenames = rest_dataset.confounds
 for func_filename, confound_filename in zip(func_filenames,
                                             confound_filenames):
     print("Processing file %s" % func_filename)

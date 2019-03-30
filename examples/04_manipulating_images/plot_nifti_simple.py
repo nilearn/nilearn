@@ -7,10 +7,10 @@ The mask is computed and visualized.
 """
 
 ###########################################################################
-# Retrieve the MAIN functional dataset
+# Retrieve the resting-state functional dataset
 
 from nilearn import datasets
-dataset = datasets.fetch_main(n_subjects=1)
+dataset = datasets.fetch_development_rsfmri(n_subjects=1)
 func_filename = dataset.func[0]
 
 # print basic information on the dataset

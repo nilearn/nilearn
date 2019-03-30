@@ -624,35 +624,37 @@ def _mock_participants_data(n_ids=5):
 
 @with_setup(setup_mock, teardown_mock)
 @with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
-def test_fetch_main_participants():
+def test_fetch_development_rsfmri_participants():
     csv = _mock_participants_data()
     tst.mock_fetch_files.add_csv('participants.tsv', csv)
     local_url = 'file://' + os.path.join(tst.datadir)
 
-    participants = func._fetch_main_participants(data_dir=tst.tmpdir,
-                                                 url=local_url,
-                                                 verbose=1)
+    participants = func._fetch_development_rsfmri_participants(data_dir=tst.tmpdir,
+                                                               url=local_url,
+                                                               verbose=1)
     assert_true(isinstance(participants, np.ndarray))
     assert_equal(participants.shape, (5,))
 
 
 @with_setup(setup_mock, teardown_mock)
 @with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
-def test_fetch_main_functional():
+def test_fetch_development_rsfmri_functional():
     csv = _mock_participants_data(n_ids=8)
     local_url = 'file://' + os.path.join(tst.datadir)
-    funcs, confounds = func._fetch_main_functional(csv, data_dir=tst.tmpdir,
-                                                   url=local_url, verbose=1)
+    funcs, confounds = func._fetch_development_rsfmri_functional(csv,
+                                                                 data_dir=tst.tmpdir,
+                                                                 url=local_url,
+                                                                 verbose=1)
     assert_equal(len(funcs), 8)
     assert_equal(len(confounds), 8)
 
 
 @with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
-def test_fetch_main():
-    main_data = func.fetch_main(n_subjects=2, data_dir=tst.tmpdir,
-                                verbose=1)
-    assert_equal(len(main_data.func), 2)
-    assert_equal(len(main_data.confounds), 2)
-    assert_true(isinstance(main_data.phenotypic, np.ndarray))
-    assert_equal(main_data.phenotypic.shape, (2,))
-    assert_not_equal(main_data.description, '')
+def test_fetch_development_rsfmri():
+    data = func.fetch_development_rsfmri(n_subjects=2,
+                                         data_dir=tst.tmpdir, verbose=1)
+    assert_equal(len(data.func), 2)
+    assert_equal(len(data.confounds), 2)
+    assert_true(isinstance(data.phenotypic, np.ndarray))
+    assert_equal(data.phenotypic.shape, (2,))
+    assert_not_equal(data.description, '')

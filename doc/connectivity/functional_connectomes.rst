@@ -104,13 +104,13 @@ regions, regressing out noise sources is indeed very important
    :class: green
 
    Try using the information above to compute the correlation matrix of
-   the first subject of the ADHD dataset downloaded with
-   :func:`nilearn.datasets.fetch_adhd`.
+   the first subject of the resting-state development dataset downloaded with
+   :func:`nilearn.datasets.fetch_development_rsfmri`.
 
    **Hints:**
 
    * Inspect the '.keys()' of the object returned by
-     :func:`nilearn.datasets.fetch_adhd`.
+     :func:`nilearn.datasets.fetch_development_rsfmri`.
 
    * :class:`nilearn.connectome.ConnectivityMeasure` can be used to compute
      a correlation matrix (check the shape of your matrices).
@@ -181,8 +181,9 @@ the same considerations on using confounds regressors apply.
 .. topic:: **Exercise: correlation matrix of rest fMRI on probabilistic atlas**
    :class: green
 
-   Try to compute the correlation matrix of the first subject of the ADHD
-   dataset downloaded with :func:`nilearn.datasets.fetch_adhd`
+   Try to compute the correlation matrix of the first subject of the
+   resting-state development
+   dataset downloaded with :func:`nilearn.datasets.fetch_development_rsfmri`
    with the MSDL atlas downloaded via
    :func:`nilearn.datasets.fetch_atlas_msdl`.
 

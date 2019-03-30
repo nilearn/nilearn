@@ -260,14 +260,14 @@ To loop over each individual volume of a 4D image, use :func:`image.iter_img`::
    :class: green
 
    Want to sharpen your skills with nilearn?
-   Compute the mean EPI for first subject of the ADHD
-   dataset downloaded with :func:`nilearn.datasets.fetch_adhd` and
+   Compute the mean EPI for first subject of the rest
+   dataset downloaded with :func:`nilearn.datasets.fetch_development_rsfmri` and
    smooth it with an FWHM varying from 0mm to 20mm in increments of 5mm
 
    **Hints:**
 
       * Inspect the '.keys()' of the object returned by
-        :func:`nilearn.datasets.fetch_adhd`
+        :func:`nilearn.datasets.fetch_development_rsfmri`
 
       * Look at the "reference" section of the documentation: there is a
         function to compute the mean of a 4D image

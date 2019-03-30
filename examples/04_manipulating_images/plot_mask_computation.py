@@ -60,8 +60,8 @@ plot_roi(masker.mask_img_, miyawaki_mean_img,
 # From raw EPI data, there is no uniform background, and a different
 # strategy is necessary
 
-# Load MAIN resting-state dataset
-dataset = datasets.fetch_main(n_subjects=1)
+# Load resting-state dataset
+dataset = datasets.fetch_development_rsfmri(n_subjects=1)
 epi_filename = dataset.func[0]
 
 # Restrict to 100 frames to speed up computation

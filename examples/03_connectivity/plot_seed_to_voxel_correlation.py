@@ -21,14 +21,14 @@ See also :ref:`for a similar example using cortical surface input data
 # Getting the data
 # ----------------
 
-# We will work with the first subject of the adhd data set.
-# adhd_dataset.func is a list of filenames. We select the 1st (0-based)
+# We will work with the first subject of the rest data set.
+# rest_dataset.func is a list of filenames. We select the 1st (0-based)
 # subject by indexing with [0]).
 from nilearn import datasets
 
-main_dataset = datasets.fetch_main(n_subjects=1)
-func_filename = main_dataset.func[0]
-confound_filename = main_dataset.confounds[0]
+rest_dataset = datasets.fetch_development_rsfmri(n_subjects=1)
+func_filename = rest_dataset.func[0]
+confound_filename = rest_dataset.confounds[0]
 
 ##########################################################################
 # Note that func_filename and confound_filename are strings pointing to

@@ -21,15 +21,15 @@ using fMRI.", 2010, Science 329, 1358-1361.
 # Load fMRI data and Power atlas
 # ------------------------------
 #
-# We are going to use a single subject from the MAIN dataset.
+# We are going to use a single subject from the rest dataset.
 from nilearn import datasets
 
-main = datasets.fetch_main(n_subjects=5)
+rest = datasets.fetch_development_rsfmri(n_subjects=5)
 
 ###############################################################################
 # We store the paths to its functional image and the confounds file.
-fmri_filename = main.func[0]
-confounds_filename = main.confounds[0]
+fmri_filename = rest.func[0]
+confounds_filename = rest.confounds[0]
 print('Functional image is {0},\nconfounds are {1}.'.format(fmri_filename,
       confounds_filename))
 

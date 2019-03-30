@@ -27,15 +27,16 @@ Multi-subject ICA: CanICA
 Data preparation: retrieving example data
 -----------------------------------------
 
-We will use sample data from the `ADHD 200 resting-state dataset
-<http://fcon_1000.projects.nitrc.org/indi/adhd200/>`_ has been
-preprocessed using `CPAC <http://fcp-indi.github.io/>`_. We use nilearn
+We will use down-sample data from the `children resting-state dataset
+<https://openneuro.org/datasets/ds000228/versions/1.0.0>`_ has been
+preprocessed using `FMRIPrep <https://github.com/poldracklab/fmriprep>`_.
+We use nilearn
 functions to fetch data from Internet and get the filenames (:ref:`more
 on data loading <loading_data>`):
 
 
 .. literalinclude:: ../../examples/03_connectivity/plot_canica_resting_state.py
-    :start-after: # First we load the ADHD200 data
+    :start-after: # First we load the resting-state data
     :end-before:  ####################################################################
 
 Applying CanICA

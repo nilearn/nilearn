@@ -37,7 +37,7 @@ print('Atlas ROIs are located in nifti image (4D) at: %s' %
       atlas_filename)  # 4D data
 
 # One subject of resting-state data
-data = datasets.fetch_main(n_subjects=1)
+data = datasets.fetch_development_rsfmri(n_subjects=1)
 fmri_filenames = data.func[0]
 
 ##############################################################################

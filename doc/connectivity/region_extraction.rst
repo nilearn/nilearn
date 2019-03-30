@@ -27,11 +27,11 @@ Region Extraction for better brain parcellations
 Fetching resting state functional datasets
 ==========================================
 
-We use ADHD resting state functional connectivity datasets of 20 subjects,
+We use resting state functional connectivity datasets of 20 subjects,
 which is already preprocessed and publicly available at
-`<http://fcon_1000.projects.nitrc.org/indi/adhd200/>`_. We use utilities
-:func:`fetch_adhd` implemented in nilearn for automatic fetching of these
-datasets.
+`<https://openneuro.org/datasets/ds000228/versions/1.0.0>`_. We use utilities
+:func:`fetch_development_rsfmri` implemented in nilearn for automatic fetching of these
+datasets which is downsampled to 4mm.
 
 
 .. literalinclude:: ../../examples/03_connectivity/plot_extract_regions_dictlearning_maps.py

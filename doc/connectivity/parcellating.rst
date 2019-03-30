@@ -28,7 +28,7 @@ Clustering is commonly applied to resting-state data, but any brain
 functional data will give rise of a functional parcellation, capturing
 intrinsic brain architecture in the case of resting-state data.
 In the examples, we use rest data downloaded with the function 
-:func:`fetch_adhd` (see :ref:`loading_data`).
+:func:`fetch_development_rsfmri` (see :ref:`loading_data`).
 
 Applying clustering
 ====================

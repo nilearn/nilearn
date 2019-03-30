@@ -6,8 +6,9 @@ This example shows how to use :class:`nilearn.regions.RegionExtractor`
 to extract spatially constrained brain regions from whole brain maps decomposed
 using dictionary learning and use them to build a functional connectome.
 
-We used 20 resting state MAIN functional datasets from :func:`nilearn.datasets.fetch_main`
-and :class:`nilearn.decomposition.DictLearning` for set of brain atlas maps.
+We used 20 resting state functional datasets from
+:func:`nilearn.datasets.fetch_development_rsfmri` and
+:class:`nilearn.decomposition.DictLearning` for set of brain atlas maps.
 
 This example can also be inspired to apply the same steps to even regions extraction
 using ICA maps. In that case, idea would be to replace dictionary learning to canonical
@@ -26,15 +27,15 @@ for more details.
 """
 
 ################################################################################
-# Fetch ADHD resting state functional datasets
-# ---------------------------------------------
+# Fetch resting state functional datasets
+# ---------------------------------------
 #
 # We use nilearn's datasets downloading utilities
 from nilearn import datasets
 
-main_dataset = datasets.fetch_main(n_subjects=20)
-func_filenames = main_dataset.func
-confounds = main_dataset.confounds
+rest_dataset = datasets.fetch_development_rsfmri(n_subjects=20)
+func_filenames = rest_dataset.func
+confounds = rest_dataset.confounds
 
 ################################################################################
 # Extract resting-state networks with DictionaryLearning

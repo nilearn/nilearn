@@ -80,6 +80,7 @@ uses.
    fetch_coords_dosenbach_2010
    fetch_abide_pcp
    fetch_adhd
+   fetch_development_rsfmri
    fetch_haxby
    fetch_icbm152_2009
    fetch_icbm152_brain_gm_mask
@@ -87,7 +88,6 @@ uses.
    fetch_localizer_contrasts
    fetch_localizer_calculation_task
    fetch_miyawaki2008
-   fetch_main
    fetch_nyu_rest
    fetch_surf_nki_enhanced
    fetch_surf_fsaverage
