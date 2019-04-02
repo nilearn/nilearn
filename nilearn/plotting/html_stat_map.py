@@ -439,8 +439,13 @@ def view_img(stat_map_img, bg_img='MNI152',
     """
 
     # Prepare the color map and thresholding
-    mask_img, stat_map_img, data, threshold = _mask_stat_map(
-        stat_map_img, threshold)
+    try:
+        mask_img, stat_map_img, data, threshold = _mask_stat_map(
+            stat_map_img, threshold)
+    except ValueError:
+        raise ValueError(
+            "No voxels found within the specified threshold "
+            "of {0}".format(threshold))
     colors = colorscale(cmap, data.ravel(), threshold=threshold,
                         symmetric_cmap=symmetric_cmap, vmax=vmax,
                         vmin=vmin)
