@@ -35,8 +35,8 @@ from sklearn.model_selection import cross_val_score
 ESTIMATOR_CATALOG = dict(svc=svm.LinearSVC, svr=svm.SVR)
 
 
-def surf_search_light(X, y, estimator, A, scoring=None, cv=None, n_jobs=-1,
-                 verbose=0):
+def surf_search_light(X, y, estimator, A, groups=None, scoring=None,
+                      cv=None, n_jobs=-1, verbose=0):
     """Function for computing a search_light on the cortical surface
 
     Parameters
@@ -53,6 +53,10 @@ def surf_search_light(X, y, estimator, A, scoring=None, cv=None, n_jobs=-1,
     A : scipy sparse matrix.
         adjacency matrix. Defines for each sample the neigbhoring samples
         following a given structure of the data.
+
+    groups : array-like, optional
+        group label for each sample for cross validation. default None
+        NOTE: will have no effect for scikit learn < 0.18
 
     scoring : string or callable, optional
         The scoring strategy to use. See the scikit-learn documentation
@@ -82,7 +86,7 @@ def surf_search_light(X, y, estimator, A, scoring=None, cv=None, n_jobs=-1,
     scores = Parallel(n_jobs=n_jobs, verbose=verbose)(
         delayed(_group_iter_surf_search_light)(
             A.rows[list_i],
-            estimator, X, y, scoring, cv,
+            estimator, X, y, groups, scoring, cv,
             thread_id + 1, A.shape[0], verbose)
         for thread_id, list_i in enumerate(group_iter))
     return np.concatenate(scores)
@@ -115,8 +119,8 @@ class GroupIterator(object):
             yield list_i
 
 
-def _group_iter_surf_search_light(list_rows, estimator, X, y,
-                             scoring, cv, thread_id, total, verbose=0):
+def _group_iter_surf_search_light(list_rows, estimator, X, y, groups,
+                                  scoring, cv, thread_id, total, verbose=0):
     """Function for grouped iterations of surf_search_light
 
     Parameters
@@ -133,6 +137,9 @@ def _group_iter_surf_search_light(list_rows, estimator, X, y,
 
     y : array-like
         target variable to predict.
+
+    groups : array-like, optional
+        group label for each sample for cross validation.
 
     scoring : string or callable, optional
         Scoring strategy to use. See the scikit-learn documentation.
@@ -162,11 +169,13 @@ def _group_iter_surf_search_light(list_rows, estimator, X, y,
     t0 = time.time()
     for i, row in enumerate(list_rows):
         kwargs = dict()
-        if not LooseVersion(sklearn.__version__) < LooseVersion('0.15'):
-            kwargs['scoring'] = scoring
-        elif scoring is not None:
-            warnings.warn('Scikit-learn version is too old. '
-                          'scoring argument ignored', stacklevel=2)
+        kwargs['scoring'] = scoring
+        kwargs['groups'] = groups
+        # if not LooseVersion(sklearn.__version__) < LooseVersion('0.15'):
+        #     kwargs['scoring'] = scoring
+        # elif scoring is not None:
+        #     warnings.warn('Scikit-learn version is too old. '
+        #                   'scoring argument ignored', stacklevel=2)
         par_scores[i] = np.mean(cross_val_score(estimator, X[:, row],
                                                 y, cv=cv, n_jobs=1,
                                                 **kwargs))
@@ -263,7 +272,7 @@ class SurfSearchLight(BaseEstimator):
         self.cv = cv
         self.verbose = verbose
 
-    def fit(self, giimgs, y):
+    def fit(self, giimgs, y, groups=None):
         """Fit the searchlight
 
         Parameters
@@ -274,6 +283,11 @@ class SurfSearchLight(BaseEstimator):
         y : 1D array-like
             Target variable to predict. Must have exactly as many elements as
             1D textures in giimgs.
+
+        groups : array-like, optional
+            group label for each sample for cross validation. Must have
+            exactly as many elements as 3D images in img. default None
+            NOTE: will have no effect for scikit learn < 0.18
 
         Attributes
         ----------
@@ -307,7 +321,7 @@ class SurfSearchLight(BaseEstimator):
 
         # scores is an 1D array of CV scores with length equals to the number
         # of voxels in processing mask (columns in process_mask)
-        scores = surf_search_light(X, y, estimator, A,
+        scores = surf_search_light(X, y, estimator, A, groups,
                                    self.scoring, self.cv, self.n_jobs,
                                    self.verbose)
                                    

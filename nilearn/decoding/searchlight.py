@@ -140,6 +140,7 @@ def _group_iter_search_light(list_rows, estimator, X, y, groups,
 
     groups : array-like, optional
         group label for each sample for cross validation.
+
     scoring : string or callable, optional
         Scoring strategy to use. See the scikit-learn documentation.
         If callable, takes as arguments the fitted estimator, the
