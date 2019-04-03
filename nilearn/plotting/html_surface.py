@@ -126,7 +126,7 @@ def _fill_html_template(info, embed_js=True):
 
 def view_img_on_surf(stat_map_img, surf_mesh='fsaverage5',
                      threshold=None, cmap=cm.cold_hot,
-                     black_bg=False, vmax=None):
+                     black_bg=False, vmax=None, title=None):
     """
     Insert a surface plot of a statistical map into an HTML page.
 
@@ -181,6 +181,8 @@ def view_img_on_surf(stat_map_img, surf_mesh='fsaverage5',
     info = full_brain_info(
         volume_img=stat_map_img, mesh=surf_mesh, threshold=threshold,
         cmap=cmap, black_bg=black_bg, vmax=vmax)
+    if title is not None:
+        info['title'] = title
     return _fill_html_template(info, embed_js=True)
 
 
@@ -261,4 +263,6 @@ def view_surf(surf_mesh, surf_map=None, bg_map=None, threshold=None,
         surf_map=surf_map, surf_mesh=surf_mesh, threshold=threshold,
         cmap=cmap, black_bg=black_bg, bg_map=bg_map,
         symmetric_cmap=symmetric_cmap, vmax=vmax)
+    if title is not None:
+        info['title'] = title
     return _fill_html_template(info, embed_js=True)

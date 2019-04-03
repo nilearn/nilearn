@@ -105,7 +105,7 @@ def _replacement_params_view_connectome():
                     )
 def view_connectome(adjacency_matrix, node_coords, edge_threshold=None,
                     edge_cmap=cm.bwr, symmetric_cmap=True,
-                    linewidth=6., node_size=3.,
+                    linewidth=6., node_size=3., title=None
                     ):
     """
     Insert a 3d plot of a connectome into an HTML page.
@@ -164,6 +164,8 @@ def view_connectome(adjacency_matrix, node_coords, edge_threshold=None,
         adjacency_matrix, node_coords, threshold=edge_threshold, cmap=edge_cmap,
         symmetric_cmap=symmetric_cmap, marker_size=node_size)
     connectome_info['line_width'] = linewidth
+    if title is not None:
+        connectome_info['title'] = title
     return _make_connectome_html(connectome_info)
 
 
@@ -181,7 +183,8 @@ def _replacement_params_view_markers():
                     end_version='0.6.0',
                     lib_name='Nilearn',
                     )
-def view_markers(marker_coords, marker_color=None, marker_size=5.):
+def view_markers(marker_coords, marker_color=None, marker_size=5.,
+                 title=None):
     """
     Insert a 3d plot of markers in a brain into an HTML page.
 
@@ -227,4 +230,6 @@ def view_markers(marker_coords, marker_color=None, marker_size=5.):
     if hasattr(marker_size, 'tolist'):
         marker_size = marker_size.tolist()
     connectome_info["marker_size"] = marker_size
+    if title is not None:
+        connectome_info['title'] = title
     return _make_connectome_html(connectome_info)

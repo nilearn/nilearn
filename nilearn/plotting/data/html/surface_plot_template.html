@@ -21,6 +21,10 @@
             info['lighting'] = getLighting();
             let layout = getLayout("surface-plot", "select-view",
                                    surfaceMapInfo["black_bg"]);
+            layout['title'] = {
+                text: surfaceMapInfo['title'],
+                yref: 'paper',
+                y: .9};
             let config = getConfig();
 
             Plotly.react(divId, data, layout, config);
