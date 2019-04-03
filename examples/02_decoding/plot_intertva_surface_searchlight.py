@@ -17,58 +17,50 @@ import os.path as op
 import os
 import sys
 import pandas
+import tarfile
+import glob
 
 from sklearn.linear_model import LogisticRegression
+
+### Getting the data ###
+# probably temporary until a better way to get the data is set up
+import urllib
+
+intertva_url = 'https://cloud.int.univ-amu.fr/index.php/s/Q8EPeXtcyyAm63N/download'
+tar_fname = 'surf_data.tar.gz'
+urllib.request.urlretrieve(intertva_url,tar_fname)
+
+# unpack the data
+tar = tarfile.open(tar_fname, "r:gz")
+tar.extractall()
+tar.close()
+
+# build list of beta maps
+subdir = 'InterTVA_sub-41_surfdata/'
+beta_flist = glob.glob(op.join(subdir,'fsaverage5.lh.beta*.gii'))
+beta_flist.sort()
+
 
 # to use dev version of nilearn...
 sys.path.insert(1,"/envau/userspace/takerkart/python/tmp_nilearn_surfsearchlight_test/nilearn")
 
 
-root_dir = '/hpc/banco/cagna.b/my_intertva/surf/data'
 
-#sub-30/glm/surf/usub-30_task-localizer_model-singletrial_denoised/
-
-#root_dir = '/riou/work/crise/takerkart/grabbr'
-#root_dir = '/hpc/crise/takerkart/oldgrabbr'
-#fs_db_dir = op.join(root_dir,'sanlm_fs_db')
-fs_db_dir = '/hpc/banco/cagna.b/my_intertva/surf/results/searchlight/surf'
-#surfsmooth = 3
-#volsmooth = 0
-
-verbose = 0
-
-preprocessing_prefix = 'u'
-glm_type = 'glm'
-modelname = 'model-singletrial_denoised'
-task = 'task-localizer'
-
-
-#n_sess = 5
-n_trials = 144
+n_trials = len(beta_flist)
 
 
 #def run_searchlight(subject,radius,hemroi):
 
 if True:
 
-    subject = 'sub-41'
-    radius = 12
-    hemroi = {'hem':'lh', 'roi':'fullbrain'}
 
-    #surfglm_dir = op.join(root_dir,subject,glm_type,modelname,'fsavg5.ss%02d_vs%02d' % (surfsmooth,volsmooth),'betas')
-    surfglm_dir = op.join(root_dir,subject,glm_type,'surf','{}{}_{}_{}'.format(preprocessing_prefix, subject, task, modelname))
-    print(surfglm_dir)
-    #sub-30/glm/surf/usub-30_task-localizer_model-singletrial_denoised/
-
-    labels_df = pandas.read_csv("/envau/work/banco/InterTVA/zenodo/labels_voicelocalizer_voice_vs_nonvoice.tsv", sep='\t')
+    labels_df = pandas.read_csv(op.join(subdir,'labels_voicelocalizer_voice_vs_nonvoice.tsv'), sep='\t')
     y = np.array(labels_df['label'])
 
     # load spherical mesh
     #mesh_path = op.join(fs_db_dir,'fsaverage_gii','%s.sphere.gii' % hemroi['hem'])
-    mesh_path = op.join('/hpc/soft/freesurfer/gifti_fsaverage_meshes/fsaverage5.%s.sphere.surf.gii' % hemroi['hem'])
+    mesh_path = op.join(subdir, 'fsaverage5.lh.sphere.surf.gii')
     orig_mesh = nb.load(mesh_path)
-    
-    print(hemroi['roi'])
     
     
     # if hemroi['roi'] != 'fullbrain':
@@ -90,11 +82,7 @@ if True:
     '''
     
     alldata_singletrials = []
-    sessions_singletrials = []
-    tex_path_list = []
-    single_counter = 0
-    for current_trial in range(n_trials):
-        tex_path = op.join(surfglm_dir, 'fsaverage5.{}.beta_{:04d}.gii'.format(hemroi['hem'],current_trial+1))
+    for tex_path in beta_flist:
         #print tex_path
         tex = nb.load(tex_path)
         alldata_singletrials.append(tex.darrays[0].data)
@@ -114,7 +102,7 @@ if True:
     surfmask_tex = nb.load(tex_path)
     surfmask_tex.darrays[0].data = surfmask
     print(np.flatnonzero(surfmask).size)
-    surfmask_path = op.join(surfglm_dir, 'fsaverage5.%s.brainmask.gii' % hemroi['hem'])
+    surfmask_path = op.join(subdir, 'fsaverage5.lh.brainmask.gii')
     ng.write(surfmask_tex,surfmask_path)
     
     ### Searchlight computation ###################################################
@@ -128,41 +116,32 @@ if True:
     #lolo = LeaveOneLabelOut(sessions_singletrials)
     
     from sklearn.model_selection import StratifiedShuffleSplit
-    sss = StratifiedShuffleSplit(n_splits=100, test_size=0.15)
+    sss = StratifiedShuffleSplit(n_splits=10, test_size=0.15)
     
     logreg = LogisticRegression()
 
     import nilearn.decoding
     # The radius is the one of the Searchlight sphere that will scan the volume
+    radius = 6
     
-    if hemroi['roi'] == 'fullbrain':
-        searchlight = nilearn.decoding.SurfSearchLight(orig_mesh,
-                                                       surfmask_tex,
-                                                       estimator=logreg,
-                                                       process_surfmask_tex=surfmask_tex,
-                                                       radius = radius,
-                                                       verbose = 1,
-                                                       n_jobs=n_jobs,
-                                                       cv=sss)
+    searchlight = nilearn.decoding.SurfSearchLight(orig_mesh,
+                                                   surfmask_tex,
+                                                   estimator=logreg,
+                                                   process_surfmask_tex=surfmask_tex,
+                                                   radius = radius,
+                                                   verbose = 1,
+                                                   n_jobs=n_jobs,
+                                                   cv=sss)
         #,
         #                                           cv = lolo)
         #n_jobs = n_jobs,
-    else:
-        searchlight = nilearn.decoding.SurfSearchLight(orig_mesh,
-                                                       surfmask_tex,
-                                                       process_surfmask_tex=roi_surfmask_tex,
-                                                       radius = radius,
-                                                       n_jobs = n_jobs,
-                                                       verbose = 1)
-        # ,
-        #                                                cv = lolo)
         
     searchlight.fit(data, y)
     
     # trick it: re-read the roi mask and copy the searchlight scores to save the gii object
     slscores_tex = nb.load(tex_path)
     slscores_tex.darrays[0].data = searchlight.scores_.astype(np.float32)
-    slscores_path = op.join(surfglm_dir, 'fsaverage5.%s.res.gii' % hemroi['hem'])
+    slscores_path = op.join(subdir, 'fsaverage5.lh.res.gii')
     ng.write(slscores_tex,slscores_path)
 
 
