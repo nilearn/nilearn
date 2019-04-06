@@ -1,8 +1,14 @@
 0.5.1
 =====
 
+**Released April 2019**
+
 NEW
 ---
+- **Support for Python2 & Pyton3.4 wil be removed in the next release.**
+  We recommend Python 3.6 and up.
+  Users with a Python2 or Python3.4 environment will be warned
+  at their first Nilearn import.
 
 - Calculate image data dtype from header information
 - New display mode 'tiled' which allows 2x2 plot arrangement when plotting three cuts
@@ -39,11 +45,22 @@ Fixes
 - Example plot_seed_to_voxel_correlation now really saves z-transformed maps.
 - region_extractor.connected_regions and regions.RegionExtractor now correctly
   use the provided mask_img.
+- load_niimg no longer drops header if dtype is changed.
+- NiftiSpheresMasker no longer silently ignores voxels if no `mask_img` is specified.
+- Interactive brainsprites generated from `view_img` are correctly rendered in Jupyter Book.
+
+Conrtibutors
+------------
+
+The following people contributed to this release::
+
+
+
 
 0.5.0
 =====
 
-    **Released November 2018**
+**Released November 2018**
 
 NEW
 ---
