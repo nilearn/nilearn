@@ -126,7 +126,8 @@ def _fill_html_template(info, embed_js=True):
 
 def view_img_on_surf(stat_map_img, surf_mesh='fsaverage5',
                      threshold=None, cmap=cm.cold_hot,
-                     black_bg=False, vmax=None, colorbar=True):
+                     black_bg=False, vmax=None, colorbar=True,
+                     cbar_height=.5, cbar_fontsize=25):
     """
     Insert a surface plot of a statistical map into an HTML page.
 
@@ -165,6 +166,12 @@ def view_img_on_surf(stat_map_img, surf_mesh='fsaverage5',
     colorbar : bool, optional (default=True)
         add a colorbar
 
+    cbar_height : float, optional (default=.5)
+        height of the colorbar, relative to the figure height
+
+    cbar_fontsize : int, optional (default=25)
+        fontsize of the colorbar tick labels
+
     Returns
     -------
     SurfaceView : plot of the stat map.
@@ -185,12 +192,15 @@ def view_img_on_surf(stat_map_img, surf_mesh='fsaverage5',
         volume_img=stat_map_img, mesh=surf_mesh, threshold=threshold,
         cmap=cmap, black_bg=black_bg, vmax=vmax)
     info['colorbar'] = colorbar
+    info['cbar_height'] = cbar_height
+    info['cbar_fontsize'] = cbar_fontsize
     return _fill_html_template(info, embed_js=True)
 
 
 def view_surf(surf_mesh, surf_map=None, bg_map=None, threshold=None,
               cmap=cm.cold_hot, black_bg=False, vmax=None,
-              symmetric_cmap=True, colorbar=True):
+              symmetric_cmap=True, colorbar=True, cbar_height=.5,
+              cbar_fontsize=25):
     """
     Insert a surface plot of a surface map into an HTML page.
 
@@ -242,6 +252,12 @@ def view_surf(surf_mesh, surf_map=None, bg_map=None, threshold=None,
     colorbar : bool, optional (default=True)
         add a colorbar
 
+    cbar_height : float, optional (default=.5)
+        height of the colorbar, relative to the figure height
+
+    cbar_fontsize : int, optional (default=25)
+        fontsize of the colorbar tick labels
+
     Returns
     -------
     SurfaceView : plot of the stat map.
@@ -268,6 +284,7 @@ def view_surf(surf_mesh, surf_map=None, bg_map=None, threshold=None,
         surf_map=surf_map, surf_mesh=surf_mesh, threshold=threshold,
         cmap=cmap, black_bg=black_bg, bg_map=bg_map,
         symmetric_cmap=symmetric_cmap, vmax=vmax)
-    if colorbar:
-        info['colorbar'] = True
+    info['colorbar'] = colorbar
+    info['cbar_height'] = cbar_height
+    info['cbar_fontsize'] = cbar_fontsize
     return _fill_html_template(info, embed_js=True)

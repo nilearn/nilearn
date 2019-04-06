@@ -9,6 +9,7 @@
     <script>
         var surfaceMapInfo = $INSERT_STAT_MAP_JSON_HERE;
 
+
         function makePlot(surface, hemisphere, divId) {
 
             decodeHemisphere(surfaceMapInfo, surface, hemisphere);
@@ -29,7 +30,9 @@
                 addColorbar(surfaceMapInfo["colorscale"],
                             surfaceMapInfo["cmin"],
                             surfaceMapInfo["cmax"],
-                            divId, layout, config);
+                            divId, layout, config,
+                            surfaceMapInfo["cbar_fontsize"],
+                            surfaceMapInfo["cbar_height"]);
             }
         }
 

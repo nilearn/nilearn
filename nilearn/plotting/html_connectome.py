@@ -105,7 +105,8 @@ def _replacement_params_view_connectome():
                     )
 def view_connectome(adjacency_matrix, node_coords, edge_threshold=None,
                     edge_cmap=cm.bwr, symmetric_cmap=True,
-                    linewidth=6., node_size=3., colorbar=True):
+                    linewidth=6., node_size=3., colorbar=True,
+                    cbar_height=.5, cbar_fontsize=25):
     """
     Insert a 3d plot of a connectome into an HTML page.
 
@@ -139,6 +140,12 @@ def view_connectome(adjacency_matrix, node_coords, edge_threshold=None,
     colorbar : bool, optional (default=True)
         add a colorbar
 
+    cbar_height : float, optional (default=.5)
+        height of the colorbar, relative to the figure height
+
+    cbar_fontsize : int, optional (default=25)
+        fontsize of the colorbar tick labels
+
     Returns
     -------
     ConnectomeView : plot of the connectome.
@@ -167,6 +174,8 @@ def view_connectome(adjacency_matrix, node_coords, edge_threshold=None,
         symmetric_cmap=symmetric_cmap, marker_size=node_size)
     connectome_info['line_width'] = linewidth
     connectome_info['colorbar'] = colorbar
+    connectome_info['cbar_height'] = cbar_height
+    connectome_info['cbar_fontsize'] = cbar_fontsize
     return _make_connectome_html(connectome_info)
 
 
