@@ -37,13 +37,15 @@
             if(connectomeInfo["connectome"]["markers_only"]){
                 return;
             }
-            addColorbar(
-                connectomeInfo["connectome"]["colorscale"],
-                connectomeInfo["connectome"]["cmin"],
-                connectomeInfo["connectome"]["cmax"],
-                "connectome-plot", getLayout("connectome-plot",
-                                             "select-view", false),
-                getConfig());
+            if(connectomeInfo["connectome"]["colorbar"]){
+                addColorbar(
+                    connectomeInfo["connectome"]["colorscale"],
+                    connectomeInfo["connectome"]["cmin"],
+                    connectomeInfo["connectome"]["cmax"],
+                    "connectome-plot", getLayout("connectome-plot",
+                                                 "select-view", false),
+                    getConfig());
+            }
         }
 
         function updateOpacity() {

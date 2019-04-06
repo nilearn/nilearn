@@ -25,10 +25,12 @@
 
             Plotly.react(divId, data, layout, config);
 
-            addColorbar(surfaceMapInfo["colorscale"],
-                        surfaceMapInfo["cmin"],
-                        surfaceMapInfo["cmax"],
-                        divId, layout, config);
+            if(surfaceMapInfo["colorbar"]){
+                addColorbar(surfaceMapInfo["colorscale"],
+                            surfaceMapInfo["cmin"],
+                            surfaceMapInfo["cmax"],
+                            divId, layout, config);
+            }
         }
 
         function addPlot() {

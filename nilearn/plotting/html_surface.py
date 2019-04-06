@@ -126,7 +126,7 @@ def _fill_html_template(info, embed_js=True):
 
 def view_img_on_surf(stat_map_img, surf_mesh='fsaverage5',
                      threshold=None, cmap=cm.cold_hot,
-                     black_bg=False, vmax=None):
+                     black_bg=False, vmax=None, colorbar=True):
     """
     Insert a surface plot of a statistical map into an HTML page.
 
@@ -162,6 +162,9 @@ def view_img_on_surf(stat_map_img, surf_mesh='fsaverage5',
         upper bound for the colorbar. if None, use the absolute max of the
         brain map.
 
+    colorbar : bool, optional (default=True)
+        add a colorbar
+
     Returns
     -------
     SurfaceView : plot of the stat map.
@@ -181,12 +184,13 @@ def view_img_on_surf(stat_map_img, surf_mesh='fsaverage5',
     info = full_brain_info(
         volume_img=stat_map_img, mesh=surf_mesh, threshold=threshold,
         cmap=cmap, black_bg=black_bg, vmax=vmax)
+    info['colorbar'] = colorbar
     return _fill_html_template(info, embed_js=True)
 
 
 def view_surf(surf_mesh, surf_map=None, bg_map=None, threshold=None,
               cmap=cm.cold_hot, black_bg=False, vmax=None,
-              symmetric_cmap=True):
+              symmetric_cmap=True, colorbar=True):
     """
     Insert a surface plot of a surface map into an HTML page.
 
@@ -235,6 +239,9 @@ def view_surf(surf_mesh, surf_map=None, bg_map=None, threshold=None,
         upper bound for the colorbar. if None, use the absolute max of the
         brain map.
 
+    colorbar : bool, optional (default=True)
+        add a colorbar
+
     Returns
     -------
     SurfaceView : plot of the stat map.
@@ -261,4 +268,6 @@ def view_surf(surf_mesh, surf_map=None, bg_map=None, threshold=None,
         surf_map=surf_map, surf_mesh=surf_mesh, threshold=threshold,
         cmap=cmap, black_bg=black_bg, bg_map=bg_map,
         symmetric_cmap=symmetric_cmap, vmax=vmax)
+    if colorbar:
+        info['colorbar'] = True
     return _fill_html_template(info, embed_js=True)
