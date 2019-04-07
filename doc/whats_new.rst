@@ -55,7 +55,7 @@ Conrtibutors
 The following people contributed to this release::
 
    2  Bertrand Thirion
-  89  Kshitij Chawla (kchawla-pi)
+  90  Kshitij Chawla (kchawla-pi)
   22  fliem
   16  Jerome Dockes
   11  Gael Varoquaux
