@@ -54,7 +54,16 @@ Conrtibutors
 
 The following people contributed to this release::
 
-
+   2  Bertrand Thirion
+  89  Kshitij Chawla (kchawla-pi)
+  22  fliem
+  16  Jerome Dockes
+  11  Gael Varoquaux
+   8  Salma Bougacha
+   7  himanshupathak21061998
+   2  Elizabeth DuPre
+   1  Eric Larson
+   1  Pierre Bellec
 
 
 0.5.0
