@@ -10,7 +10,6 @@ import shutil
 
 import nibabel as nb
 import numpy as np
-from numpy.lib import recfunctions
 from sklearn.datasets.base import Bunch
 
 from .utils import _get_dataset_dir, _fetch_files, _get_dataset_descr
