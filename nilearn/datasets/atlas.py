@@ -817,6 +817,8 @@ def fetch_coords_seitzman_2018(ordered_regions=True):
     have a regional label (cortexL, cortexR, cerebellum, thalamus, hippocampus,
     basalGanglia, amygdala, cortexMid).
 
+    .. versionadded:: 0.5.1
+
     Parameters
     ----------
     ordered_regions : bool, optional
