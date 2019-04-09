@@ -10,6 +10,7 @@ import shutil
 
 import nibabel as nb
 import numpy as np
+from numpy.lib import recfunctions
 from sklearn.datasets.base import Bunch
 
 from .utils import _get_dataset_dir, _fetch_files, _get_dataset_descr
@@ -804,6 +805,55 @@ def fetch_coords_dosenbach_2010(ordered_regions=True):
     params = dict(rois=out_csv[['x', 'y', 'z']],
                   labels=labels,
                   networks=out_csv['network'], description=fdescr)
+
+    return Bunch(**params)
+
+
+def fetch_coords_seitzman_2018(ordered_regions=True):
+    """Load the Seitzman et al. 300 ROIs. These ROIs cover cortical,
+    subcortical and cerebellar regions and are assigned to one of 13
+    networks (Auditory, CinguloOpercular, DefaultMode, DorsalAttention,
+    FrontoParietal, MedialTemporalLobe, ParietoMedial, Reward, Salience,
+    SomatomotorDorsal, SomatomotorLateral, VentralAttention, Visual) and
+    have a regional label (cortexL, cortexR, cerebellum, thalamus, hippocampus,
+    basalGanglia, amygdala, cortexMid).
+
+    Parameters
+    ----------
+    ordered_regions : bool, optional
+        ROIs from same networks are grouped together and ordered with respect
+        to their locations (anterior to posterior).
+
+    Returns
+    -------
+    data: sklearn.datasets.base.Bunch
+        dictionary-like object, contains:
+        - "rois": Coordinates of 300 ROIs in MNI space
+        - "radius": Radius of each ROI in mm
+        - "networks": Network names
+        - "regions": Region names
+
+    References
+    ----------
+    Seitzman, B. A., Gratton, C., Marek, S., Raut, R. V., Dosenbach, N. U.,
+    Schlaggar, B. L., et al. (2018). A set of functionally-defined brain
+    regions with improved representation of the subcortex and cerebellum.
+    bioRxiv, 450452. http://doi.org/10.1101/450452
+    """
+    dataset_name = 'seitzman_2018'
+    fdescr = _get_dataset_descr(dataset_name)
+    package_directory = os.path.dirname(os.path.abspath(__file__))
+    csv_file = os.path.join(package_directory, "data", "seitzman_2018",
+                            "seitzman_2018_rois.csv")
+    out_csv = np.recfromcsv(csv_file)
+
+    if ordered_regions:
+        out_csv = np.sort(out_csv, order=['network', 'y'])
+
+    params = dict(rois=out_csv[['x', 'y', 'z']],
+                  radius=out_csv['radius'],
+                  networks=out_csv['network'],
+                  regions=out_csv['region'], description=fdescr)
 
     return Bunch(**params)
 
