@@ -3,7 +3,8 @@ Extract signals on spheres from an atlas and plot a connectome
 ==============================================================
 
 This example shows how to extract signals from spherical regions
-centered on coordinates from Power-264 atlas [1] and Dosenbach-160 [2].
+centered on coordinates from the Power-264 atlas [1], the Dosenbach-160
+atlas [2], and the Seitzman-300 atlas [3].
 We estimate connectome using **sparse inverse covariance**, to recover
 the functional brain **networks structure**.
 
@@ -15,6 +16,9 @@ human brain." Neuron 72.4 (2011): 665-678.
 [2] Dosenbach N.U., Nardos B., et al. "Prediction of individual brain maturity
 using fMRI.", 2010, Science 329, 1358-1361.
 
+[3] Seitzman, B. A., et al. "A set of functionally-defined brain regions with
+improved representation of the subcortex and cerebellum.", 2018, bioRxiv,
+450452. http://doi.org/10.1101/450452
 """
 
 ###############################################################################
@@ -145,4 +149,53 @@ plotting.plot_connectome(matrix, coords, title='Dosenbach correlation graph',
 # We can easily identify the Dosenbach's networks from the matrix blocks.
 print('Dosenbach networks names are {0}'.format(np.unique(dosenbach.networks)))
 
+plotting.show()
+
+
+###############################################################################
+# Connectome extracted from Seitzman's atlas
+# -----------------------------------------------------
+# We repeat the same steps for Seitzman's atlas.
+seitzman = datasets.fetch_coords_seitzman_2018()
+
+coords = np.vstack((
+    seitzman.rois['x'],
+    seitzman.rois['y'],
+    seitzman.rois['z'],
+)).T
+
+###############################################################################
+# Before calculating the connectivity matrix, let's look at the distribution
+# of the regions of the default mode network.
+dmn_rois = seitzman.networks == b"DefaultMode"
+dmn_coords = coords[dmn_rois]
+zero_matrix = np.zeros((len(dmn_coords), len(dmn_coords)))
+plotting.plot_connectome(zero_matrix, dmn_coords,
+                         title='Seitzman default mode network',
+                         node_color='darkred', node_size=20)
+
+###############################################################################
+# Now let's calculate connectivity for the Seitzman atlas.
+spheres_masker = input_data.NiftiSpheresMasker(
+    seeds=coords, smoothing_fwhm=4, radius=4,
+    detrend=True, standardize=True, low_pass=0.1, high_pass=0.01, t_r=2.5,
+    allow_overlap=True)
+
+timeseries = spheres_masker.fit_transform(fmri_filename,
+                                          confounds=confounds_filename)
+
+covariance_estimator = GraphLassoCV()
+covariance_estimator.fit(timeseries)
+matrix = covariance_estimator.covariance_
+
+plotting.plot_matrix(matrix, vmin=-1., vmax=1., colorbar=True,
+                     title='Seitzman correlation matrix')
+
+plotting.plot_connectome(matrix, coords, title='Seitzman correlation graph',
+                         edge_threshold="99.7%", node_size=20, colorbar=True)
+
+
+###############################################################################
+# We can easily identify the networks from the matrix blocks.
+print('Seitzman networks names are {0}'.format(np.unique(seitzman.networks)))
 plotting.show()
