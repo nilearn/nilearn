@@ -77,6 +77,36 @@ plotting.plot_surf_roi(fsaverage['infl_left'], roi_map=parcellation,
                        darkness=.5)
 plotting.show()
 
+###############################################################################
+# Display connectome from surface parcellation
+
+import numpy as np
+from nilearn import surface
+
+def find_fsaverage_cut_coords(atlas):
+    atlas = destrieux_atlas
+    coordinates = []
+    labels = atlas['labels']
+    for hemi in ['left', 'right']:
+        vert = destrieux_atlas['map_%s' % hemi]
+        rr, _ = surface.load_surf_mesh(fsaverage['pial_%s' % hemi])
+        for k, label in enumerate(labels):
+            if "Unknown" not in str(label):
+                coordinates.append(np.mean(rr[vert == k], axis=0))
+
+    return np.array(coordinates)
+
+coordinates = find_fsaverage_cut_coords(destrieux_atlas)
+n_parcels = len(coordinates)
+corr = np.zeros((n_parcels, n_parcels))
+n_parcels_hemi = n_parcels // 2
+corr[np.arange(n_parcels_hemi), np.arange(n_parcels_hemi) + n_parcels_hemi] = 1
+corr = corr + corr.T
+
+plotting.plot_connectome(corr, coordinates,
+                         edge_threshold="90%",
+                         title='fsaverage Destrieux atlas')
+plotting.show()
 
 ##############################################################################
 # 3D visualization in a web browser
