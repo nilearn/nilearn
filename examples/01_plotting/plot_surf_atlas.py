@@ -83,20 +83,18 @@ plotting.show()
 import numpy as np
 from nilearn import surface
 
-def find_fsaverage_cut_coords(atlas):
-    atlas = destrieux_atlas
-    coordinates = []
-    labels = atlas['labels']
-    for hemi in ['left', 'right']:
-        vert = destrieux_atlas['map_%s' % hemi]
-        rr, _ = surface.load_surf_mesh(fsaverage['pial_%s' % hemi])
-        for k, label in enumerate(labels):
-            if "Unknown" not in str(label):
-                coordinates.append(np.mean(rr[vert == k], axis=0))
+atlas = destrieux_atlas
+coordinates = []
+labels = destrieux_atlas['labels']
+for hemi in ['left', 'right']:
+    vert = destrieux_atlas['map_%s' % hemi]
+    rr, _ = surface.load_surf_mesh(fsaverage['pial_%s' % hemi])
+    for k, label in enumerate(labels):
+        if "Unknown" not in str(label):
+            coordinates.append(np.mean(rr[vert == k], axis=0))
 
-    return np.array(coordinates)
+coordinates = np.array(coordinates)
 
-coordinates = find_fsaverage_cut_coords(destrieux_atlas)
 n_parcels = len(coordinates)
 corr = np.zeros((n_parcels, n_parcels))
 n_parcels_hemi = n_parcels // 2
@@ -125,4 +123,13 @@ view = plotting.view_surf(fsaverage.infl_left, parcellation,
 # In a Jupyter notebook, if ``view`` is the output of a cell, it will
 # be displayed below the cell
 
+view
+
+##############################################################################
+# you can also use :func:`nilearn.plotting.view_connectome` to open an
+# interactive view of the connectome.
+
+view = plotting.view_connectome(corr, coordinates, edge_threshold='90%')
+# uncomment this to open the plot in a web browser:
+# view.open_in_browser()
 view
