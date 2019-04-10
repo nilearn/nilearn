@@ -2078,6 +2078,7 @@ def fetch_development_rsfmri(n_subjects=None, data_dir=None, resume=True,
     child_count = participants['Child_Adult'].tolist().count('child')
     adult_count = participants['Child_Adult'].tolist().count('adult')
 
+    # To keep the proportion of children versus adults
     n_child = np.round(float(n_subjects) / max_subjects * child_count).astype(int)
     n_adult = np.round(float(n_subjects) / max_subjects * adult_count).astype(int)
 
