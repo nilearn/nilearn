@@ -32,7 +32,7 @@ install:
 #  - "conda install nilearn -c conda-forge -y -q"
 
   # Install other nistats dependencies
-  - "pip install --prefer-binaries nibabel nilearn coverage nose-timer"
+  - "pip install --prefer-binary nibabel nilearn coverage nose-timer"
   - "python setup.py bdist_wheel"
   - ps: "ls dist"
 
