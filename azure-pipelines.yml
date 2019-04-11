@@ -58,17 +58,9 @@ jobs:
         python.version: '2.7'
       Python35:
         python.version: '3.5'
-#      Python36:
-#        python.version: '3.6'
-#      Python37:
-#        python.version: '3.7'
     maxParallel: 4
 
-
   steps:
-#  - bash: echo "##vso[task.prependpath]$CONDA/bin"
-#    displayName: Add conda to PATH
-
   - task: UsePythonVersion@0
     inputs:
       versionSpec: '$(python.version)'
@@ -99,11 +91,7 @@ jobs:
         python.version: '3.7'
     maxParallel: 4
 
-
   steps:
-#  - bash: echo "##vso[task.prependpath]$CONDA/bin"
-#    displayName: Add conda to PATH
-
   - task: UsePythonVersion@0
     inputs:
       versionSpec: '$(python.version)'
@@ -113,18 +101,17 @@ jobs:
     displayName: 'Install dependencies'
 
   - script: |
-#      pip install pytest
       pip install .
-#      pytest ./nistats/tests --doctest-modules --junitxml=junit/test-results.xml
       cd doc
       make html-strict
+    condition: succeededOrFailed()
     displayName: 'make html-strict'
 
-  - task: PublishTestResults@2
-    inputs:
-      testResultsFiles: '**/test-results.xml'
-      testRunTitle: 'Python $(python.version)'
-    condition: succeededOrFailed()
+#  - task: PublishTestResults@2
+#    inputs:
+#      testResultsFiles: '**/test-results.xml'
+#      testRunTitle: 'Python $(python.version)'
+#    condition: succeededOrFailed()
 
 #- job: 'Publish'
 #  dependsOn: 'Test'
