@@ -10,6 +10,7 @@ import shutil
 
 import nibabel as nb
 import numpy as np
+from numpy.lib import recfunctions
 from sklearn.datasets.base import Bunch
 
 from .utils import _get_dataset_dir, _fetch_files, _get_dataset_descr
@@ -844,17 +845,38 @@ def fetch_coords_seitzman_2018(ordered_regions=True):
     dataset_name = 'seitzman_2018'
     fdescr = _get_dataset_descr(dataset_name)
     package_directory = os.path.dirname(os.path.abspath(__file__))
-    csv_file = os.path.join(package_directory, "data", "seitzman_2018",
-                            "seitzman_2018_rois.csv")
-    out_csv = np.recfromcsv(csv_file)
+    roi_file = os.path.join(package_directory, "data",
+                            "seitzman_2018_ROIs_300inVol_MNI_allInfo.txt")
+    anatomical_file = os.path.join(package_directory, "data",
+                                   "seitzman_2018_ROIs_anatomicalLabels.txt")
+
+    rois = np.recfromcsv(roi_file, delimiter=" ")
+    rois = recfunctions.rename_fields(rois, {"netname": "network",
+                                             "radiusmm": "radius"})
+
+    # get integer regional labels and convert to text labels with mapping
+    # from header line
+    with open(anatomical_file, 'r') as fi:
+        header = fi.readline()
+    region_mapping = {}
+    for r in header.strip().split(","):
+        i, region = r.split("=")
+        region_mapping[int(i)] = region
+
+    anatomical = np.genfromtxt(anatomical_file, skip_header=1)
+    anatomical_names = np.array([region_mapping[a] for a in anatomical],
+                                dtype=[('region', '<S18')])
+
+    rois = recfunctions.merge_arrays((rois, anatomical_names),
+                                     asrecarray=True, flatten=True)
 
     if ordered_regions:
-        out_csv = np.sort(out_csv, order=['network', 'y'])
+        rois = np.sort(rois, order=['network', 'y'])
 
-    params = dict(rois=out_csv[['x', 'y', 'z']],
-                  radius=out_csv['radius'],
-                  networks=out_csv['network'],
-                  regions=out_csv['region'], description=fdescr)
+    params = dict(rois=rois[['x', 'y', 'z']],
+                  radius=rois['radius'],
+                  networks=rois['network'],
+                  regions=rois['region'], description=fdescr)
 
     return Bunch(**params)
 

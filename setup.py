@@ -86,9 +86,9 @@ if __name__ == "__main__":
               'Programming Language :: Python :: 3.7',
           ],
           packages=find_packages(),
-          package_data={'nilearn.datasets.data': ['*.nii.gz', '*.csv'],
+          package_data={'nilearn.datasets.data': ['*.nii.gz', '*.csv', '*.txt'
+                                                  ],
                         'nilearn.datasets.data.fsaverage5': ['*.gz'],
-                        'nilearn.datasets.data.seitzman_2018': ['*.csv'],
                         'nilearn.surface.data': ['*.csv'],
                         'nilearn.plotting.data.js': ['*.js'],
                         'nilearn.plotting.data.html': ['*.html'],
