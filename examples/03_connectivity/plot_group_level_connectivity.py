@@ -4,9 +4,13 @@ Functional connectivity matrices for group analysis of connectomes
 
 This example compares different kinds of functional connectivity between
 regions of interest : correlation, partial correlation, as well as a kind
-called **tangent**. The resulting connectivity coefficients are used to
-discriminate children from adults and the **tangent kind**
-**outperforms** the standard connectivity kinds.
+called **tangent**.
+
+The resulting connectivity coefficients can be used to
+discriminate children from adults. In general, the **tangent kind**
+**outperforms** the standard correlations: see `Dadi et al 2019
+<https://www.sciencedirect.com/science/article/pii/S1053811919301594>`_
+for a careful study.
 """
 # Matrix plotting from Nilearn: nilearn.plotting.plot_matrix
 import numpy as np
@@ -30,10 +34,10 @@ def plot_matrices(matrices, matrix_kind):
 ###############################################################################
 # Load resting-state dataset and MSDL atlas
 # -----------------------------------------
-# We study only 20 subjects from the dataset, to save computation time.
+# We study only 30 subjects from the dataset, to save computation time.
 from nilearn import datasets
 
-rest_data = datasets.fetch_development_rsfmri(n_subjects=20)
+rest_data = datasets.fetch_development_rsfmri(n_subjects=30)
 
 ###############################################################################
 # We use probabilistic regions of interest (ROIs) from the MSDL atlas.
@@ -97,20 +101,21 @@ mean_correlation_matrix = correlation_measure.mean_
 print('Mean correlation has shape {0}.'.format(mean_correlation_matrix.shape))
 
 ###############################################################################
-# We display the connectomes of the first 4 children and the mean
-# correlation matrix over all children.
+# We display the connectome matrices of the first 4 children
 from nilearn import plotting
 
 plot_matrices(correlation_matrices[:4], 'correlation')
+###############################################################################
+# The blocks structure that reflect functional networks are visible.
+
+###############################################################################
+# Now we display as a connectome the mean correlation matrix over all children.
 plotting.plot_connectome(mean_correlation_matrix, msdl_coords,
-                         title='mean correlation over 12 childrens')
+                         title='mean correlation over all childrens')
 
 ###############################################################################
-# Look at blocks structure, reflecting functional networks.
-
-###############################################################################
-# Examine partial correlations
-# ----------------------------
+# Studying partial correlations
+# -----------------------------
 # We can also study **direct connections**, revealed by partial correlation
 # coefficients. We just change the `ConnectivityMeasure` kind
 partial_correlation_measure = ConnectivityMeasure(kind='partial correlation')
@@ -121,16 +126,19 @@ partial_correlation_matrices = partial_correlation_measure.fit_transform(
     children)
 
 ###############################################################################
-# Most of direct connections are weaker than full connections, resulting
-# in a sparse mean connectome graph.
+# Most of direct connections are weaker than full connections,
 plot_matrices(partial_correlation_matrices[:4], 'partial')
-plotting.plot_connectome(
-    partial_correlation_measure.mean_, msdl_coords,
-    title='mean partial correlation over 12 children')
 
 ###############################################################################
-# Extract subjects variabilities around a robust group connectivity
-# -----------------------------------------------------------------
+# Compared to a connectome computed on correlations, the connectome graph
+# with partial correlations is more sparse:
+plotting.plot_connectome(
+    partial_correlation_measure.mean_, msdl_coords,
+    title='mean partial correlation over all children')
+
+###############################################################################
+# Extract subjects variabilities around a group connectivity
+# ----------------------------------------------------------
 # We can use **both** correlations and partial correlations to capture
 # reproducible connectivity patterns at the group-level and build a **robust**
 # **group connectivity matrix**. This is done by the **tangent** kind.
@@ -149,13 +157,10 @@ tangent_matrices = tangent_measure.fit_transform(children)
 # straight reflect individual brain connections. For instance negative
 # coefficients can not be interpreted as anticorrelated regions.
 plot_matrices(tangent_matrices[:4], 'tangent variability')
-plotting.plot_connectome(
-    tangent_measure.mean_, msdl_coords,
-    title='mean tangent connectivity over 12 children')
 
 ###############################################################################
-# The mean connectome graph is not as sparse as partial correlations graph,
-# yet it is less dense than correlations graph.
+# The average tangent matrix cannot be interpreted, as the average
+# variation is expected to be zero
 
 ###############################################################################
 # What kind of connectivity is most powerful for classification?
@@ -209,6 +214,8 @@ for kind in kinds:
 ###############################################################################
 # Finally, we can display the classification scores.
 
+###############################################################################
+# Finally, we can display the classification scores.
 from nilearn.plotting import show
 
 plt.figure(figsize=(6, 4))
@@ -219,5 +226,12 @@ plt.yticks(positions, yticks)
 plt.xlabel('Classification accuracy')
 plt.grid(True)
 plt.tight_layout()
+
+###############################################################################
+# While the comparison is not fully conclusive on this small dataset,
+# `Dadi et al 2019
+# <https://www.sciencedirect.com/science/article/pii/S1053811919301594>`_
+# Showed that across many cohorts and clinical questions, the tangent
+# kind should be preferred.
 
 show()
