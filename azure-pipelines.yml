@@ -8,7 +8,7 @@ trigger:
 
 jobs:
 
-- job: 'Test'
+- job: 'TestLinux'
   pool:
     vmImage: 'Ubuntu-16.04'
   strategy:
@@ -22,6 +22,22 @@ jobs:
       Python37:
         python.version: '3.7'
     maxParallel: 4
+
+- job: 'TestWindows'
+  pool:
+    vmImage: 'vs2017-win2016'
+  strategy:
+    matrix:
+      Python27:
+        python.version: '2.7'
+      Python35:
+        python.version: '3.5'
+#      Python36:
+#        python.version: '3.6'
+#      Python37:
+#        python.version: '3.7'
+    maxParallel: 4
+
 
   steps:
 #  - bash: echo "##vso[task.prependpath]$CONDA/bin"
