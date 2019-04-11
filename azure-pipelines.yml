@@ -116,8 +116,8 @@ jobs:
 #      pip install pytest
       pip install .
 #      pytest ./nistats/tests --doctest-modules --junitxml=junit/test-results.xml
-    cd doc
-    make html-strict
+      cd doc
+      make html-strict
     displayName: 'make html-strict'
 
   - task: PublishTestResults@2
