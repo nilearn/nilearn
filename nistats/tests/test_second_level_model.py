@@ -31,6 +31,7 @@ from nistats.second_level_model import SecondLevelModel
 from nistats._utils.testing import _write_fake_fmri_data
 
 # This directory path
+# BASEDIR = '/home/jerome/nistats/nistats/tests'
 BASEDIR = os.path.dirname(os.path.abspath(__file__))
 FUNCFILE = os.path.join(BASEDIR, 'functional.nii.gz')
 
@@ -56,6 +57,25 @@ def test_high_level_glm_with_paths():
         # Delete objects attached to files to avoid WindowsError when deleting
         # temporary directory (in Windows)
         del Y, FUNCFILE, func_img, model
+
+
+def test_high_level_non_parametric_inference_with_paths():
+    with InTemporaryDirectory():
+        shapes = ((7, 8, 9, 1),)
+        mask, FUNCFILE, _ = write_fake_fmri_data(shapes)
+        FUNCFILE = FUNCFILE[0]
+        func_img = load(FUNCFILE)
+        Y = [func_img] * 4
+        X = pd.DataFrame([[1]] * 4, columns=['intercept'])
+        c1 = np.eye(len(X.columns))[0]
+        neg_log_pvals_img = non_parametric_inference(Y, design_matrix=X,
+                                                     second_level_contrast=c1,
+                                                     mask=mask)
+        assert_true(isinstance(neg_log_pvals_img, Nifti1Image))
+        assert_array_equal(neg_log_pvals_img.affine, load(mask).affine)
+        # Delete objects attached to files to avoid WindowsError when deleting
+        # temporary directory
+        del neg_log_pvals_img, FUNCFILE, func_img
 
 
 def test_fmri_inputs():
@@ -129,6 +149,65 @@ def test_fmri_inputs():
                       None, [])
 
 
+def test_fmri_inputs_for_non_parametric_inference():
+    # Test processing of FMRI inputs
+    with InTemporaryDirectory():
+        # prepare fake data
+        p, q = 80, 10
+        X = np.random.randn(p, q)
+        shapes = ((7, 8, 9, 10),)
+        mask, FUNCFILE, _ = write_fake_fmri_data(shapes)
+        FUNCFILE = FUNCFILE[0]
+        func_img = load(FUNCFILE)
+        T = func_img.shape[-1]
+        des = pd.DataFrame(np.ones((T, 1)), columns=['a'])
+        des_fname = 'design.csv'
+        des.to_csv(des_fname)
+
+        # prepare correct input first level models
+        flm = FirstLevelModel(subject_label='01').fit(FUNCFILE,
+                                                      design_matrices=des)
+        # prepare correct input dataframe and lists
+        shapes = ((7, 8, 9, 1),)
+        _, FUNCFILE, _ = write_fake_fmri_data(shapes)
+        FUNCFILE = FUNCFILE[0]
+
+        dfcols = ['subject_label', 'map_name', 'effects_map_path']
+        dfrows = [['01', 'a', FUNCFILE], ['02', 'a', FUNCFILE],
+                  ['03', 'a', FUNCFILE]]
+        niidf = pd.DataFrame(dfrows, columns=dfcols)
+        niimgs = [FUNCFILE, FUNCFILE, FUNCFILE]
+        niimg_4d = concat_imgs(niimgs)
+        confounds = pd.DataFrame([['01', 1], ['02', 2], ['03', 3]],
+                                 columns=['subject_label', 'conf1'])
+        sdes = pd.DataFrame(X[:3, :3], columns=['intercept', 'b', 'c'])
+
+        # test missing second-level contrast
+        # niimgs as input
+        assert_raises(ValueError, non_parametric_inference, niimgs, None, sdes)
+        assert_raises(ValueError, non_parametric_inference, niimgs, confounds,
+                      sdes)
+        # 4d niimg as input
+        assert_raises(ValueError, non_parametric_inference, niimg_4d, None,
+                      sdes)
+
+        # test wrong input errors
+        # test first level model
+        assert_raises(ValueError, non_parametric_inference, flm)
+        # test list of less than two niimgs
+        assert_raises(ValueError, non_parametric_inference, [FUNCFILE])
+        # test dataframe
+        assert_raises(ValueError, non_parametric_inference, niidf)
+        # test niimgs requirements
+        assert_raises(ValueError, non_parametric_inference, niimgs)
+        assert_raises(ValueError, non_parametric_inference, niimgs + [[]],
+                      confounds)
+        assert_raises(ValueError, non_parametric_inference, [FUNCFILE])
+        # test other objects
+        assert_raises(ValueError, non_parametric_inference,
+                      'random string object')
+
+
 def _first_level_dataframe():
     names = ['con_01', 'con_01', 'con_01']
     subjects = ['01', '02', '03']
@@ -163,6 +242,22 @@ def test_second_level_model_glm_computation():
         # temporary directory (in Windows)
         del func_img, FUNCFILE, model, X, Y
 
+
+
+def test_non_parametric_inference_permutation_computation():
+    with InTemporaryDirectory():
+        shapes = ((7, 8, 9, 1),)
+        mask, FUNCFILE, _ = write_fake_fmri_data(shapes)
+        FUNCFILE = FUNCFILE[0]
+        func_img = load(FUNCFILE)
+
+        Y = [func_img] * 4
+        X = pd.DataFrame([[1]] * 4, columns=['intercept'])
+
+        neg_log_pvals_img = non_parametric_inference(Y, design_matrix=X,
+                                                     mask=mask, n_perm=100)
+
+        assert_equal(neg_log_pvals_img.get_data().shape, shapes[0][:3])
 
 
 def test_second_level_model_contrast_computation():
@@ -208,8 +303,8 @@ def test_second_level_model_contrast_computation():
         assert_raises(ValueError, model.compute_contrast, c1, None, '')
         assert_raises(ValueError, model.compute_contrast, c1, None, [])
         assert_raises(ValueError, model.compute_contrast, c1, None, None, '')
-        # check that passing no explicit contrast when the dsign
-        # matrix has morr than one columns raises an error
+        # check that passing no explicit contrast when the design
+        # matrix has more than one columns raises an error
         X = pd.DataFrame(np.random.rand(4, 2), columns=['r1', 'r2'])
         model = model.fit(Y, design_matrix=X)
         assert_raises(ValueError, model.compute_contrast, None)
@@ -217,7 +312,49 @@ def test_second_level_model_contrast_computation():
         # temporary directory (in Windows)
         del func_img, FUNCFILE, model, X, Y
 
-        
+
+def test_non_parametric_inference_contrast_computation():
+    with InTemporaryDirectory():
+        shapes = ((7, 8, 9, 1),)
+        mask, FUNCFILE, _ = write_fake_fmri_data(shapes)
+        FUNCFILE = FUNCFILE[0]
+        func_img = load(FUNCFILE)
+        # asking for contrast before model fit gives error
+        assert_raises(ValueError, non_parametric_inference, None, None, None,
+                      'intercept', mask)
+        # fit model
+        Y = [func_img] * 4
+        X = pd.DataFrame([[1]] * 4, columns=['intercept'])
+        # formula should work without second-level contrast
+        neg_log_pvals_img = non_parametric_inference(Y, design_matrix=X,
+                                                     mask=mask, n_perm=100)
+
+        ncol = len(X.columns)
+        c1, cnull = np.eye(ncol)[0, :], np.zeros(ncol)
+        # formula should work with second-level contrast
+        neg_log_pvals_img = non_parametric_inference(Y, design_matrix=X,
+                                                     second_level_contrast=c1,
+                                                     mask=mask, n_perm=100)
+        # formula should work passing variable name directly
+        neg_log_pvals_img = \
+            non_parametric_inference(Y, design_matrix=X,
+                                     second_level_contrast='intercept',
+                                     mask=mask, n_perm=100)
+
+        # passing null contrast should give back a value error
+        assert_raises(ValueError, non_parametric_inference, Y, X, cnull,
+                      'intercept', mask)
+        # passing wrong parameters
+        assert_raises(ValueError, non_parametric_inference, Y, X, [],
+                      'intercept', mask)
+        # check that passing no explicit contrast when the design
+        # matrix has more than one columns raises an error
+        X = pd.DataFrame(np.random.rand(4, 2), columns=['r1', 'r2'])
+        assert_raises(ValueError, non_parametric_inference, Y, X, None)
+
+        del neg_log_pvals_img
+
+
 def test_second_level_model_contrast_computation_with_memory_caching():
     with InTemporaryDirectory():
         shapes = ((7, 8, 9, 1),)
