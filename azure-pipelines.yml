@@ -24,6 +24,9 @@ jobs:
     maxParallel: 4
 
   steps:
+  - bash: echo "##vso[task.prependpath]$CONDA/bin"
+    displayName: Add conda to PATH
+
   - task: UsePythonVersion@0
     inputs:
       versionSpec: '$(python.version)'
