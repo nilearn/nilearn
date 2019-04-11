@@ -24,8 +24,8 @@ jobs:
     maxParallel: 4
 
   steps:
-  - bash: echo "##vso[task.prependpath]$CONDA/bin"
-    displayName: Add conda to PATH
+#  - bash: echo "##vso[task.prependpath]$CONDA/bin"
+#    displayName: Add conda to PATH
 
   - task: UsePythonVersion@0
     inputs:
@@ -38,7 +38,7 @@ jobs:
   - script: |
       pip install pytest
       pip install .
-      pytest --doctest-modules --junitxml=junit/test-results.xml
+      pytest ./nistats/tests --doctest-modules --junitxml=junit/test-results.xml
     displayName: 'pytest'
 
   - task: PublishTestResults@2
