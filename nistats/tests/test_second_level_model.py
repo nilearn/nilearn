@@ -27,7 +27,9 @@ from numpy.testing import (assert_almost_equal,
 from nistats.first_level_model import (FirstLevelModel,
                                        run_glm,
                                        )
-from nistats.second_level_model import SecondLevelModel
+from nistats.second_level_model import (SecondLevelModel,
+                                        non_parametric_inference,
+                                        )
 from nistats._utils.testing import _write_fake_fmri_data
 
 # This directory path
@@ -62,7 +64,7 @@ def test_high_level_glm_with_paths():
 def test_high_level_non_parametric_inference_with_paths():
     with InTemporaryDirectory():
         shapes = ((7, 8, 9, 1),)
-        mask, FUNCFILE, _ = write_fake_fmri_data(shapes)
+        mask, FUNCFILE, _ = _write_fake_fmri_data(shapes)
         FUNCFILE = FUNCFILE[0]
         func_img = load(FUNCFILE)
         Y = [func_img] * 4
@@ -75,7 +77,7 @@ def test_high_level_non_parametric_inference_with_paths():
         assert_array_equal(neg_log_pvals_img.affine, load(mask).affine)
         # Delete objects attached to files to avoid WindowsError when deleting
         # temporary directory
-        del neg_log_pvals_img, FUNCFILE, func_img
+        del X, Y, FUNCFILE, func_img, neg_log_pvals_img
 
 
 def test_fmri_inputs():
@@ -156,7 +158,7 @@ def test_fmri_inputs_for_non_parametric_inference():
         p, q = 80, 10
         X = np.random.randn(p, q)
         shapes = ((7, 8, 9, 10),)
-        mask, FUNCFILE, _ = write_fake_fmri_data(shapes)
+        mask, FUNCFILE, _ = _write_fake_fmri_data(shapes)
         FUNCFILE = FUNCFILE[0]
         func_img = load(FUNCFILE)
         T = func_img.shape[-1]
@@ -169,7 +171,7 @@ def test_fmri_inputs_for_non_parametric_inference():
                                                       design_matrices=des)
         # prepare correct input dataframe and lists
         shapes = ((7, 8, 9, 1),)
-        _, FUNCFILE, _ = write_fake_fmri_data(shapes)
+        _, FUNCFILE, _ = _write_fake_fmri_data(shapes)
         FUNCFILE = FUNCFILE[0]
 
         dfcols = ['subject_label', 'map_name', 'effects_map_path']
@@ -206,6 +208,7 @@ def test_fmri_inputs_for_non_parametric_inference():
         # test other objects
         assert_raises(ValueError, non_parametric_inference,
                       'random string object')
+        del X, FUNCFILE, func_img
 
 
 def _first_level_dataframe():
@@ -243,11 +246,10 @@ def test_second_level_model_glm_computation():
         del func_img, FUNCFILE, model, X, Y
 
 
-
 def test_non_parametric_inference_permutation_computation():
     with InTemporaryDirectory():
         shapes = ((7, 8, 9, 1),)
-        mask, FUNCFILE, _ = write_fake_fmri_data(shapes)
+        mask, FUNCFILE, _ = _write_fake_fmri_data(shapes)
         FUNCFILE = FUNCFILE[0]
         func_img = load(FUNCFILE)
 
@@ -258,6 +260,7 @@ def test_non_parametric_inference_permutation_computation():
                                                      mask=mask, n_perm=100)
 
         assert_equal(neg_log_pvals_img.get_data().shape, shapes[0][:3])
+        del func_img, FUNCFILE, neg_log_pvals_img, X, Y
 
 
 def test_second_level_model_contrast_computation():
@@ -316,7 +319,7 @@ def test_second_level_model_contrast_computation():
 def test_non_parametric_inference_contrast_computation():
     with InTemporaryDirectory():
         shapes = ((7, 8, 9, 1),)
-        mask, FUNCFILE, _ = write_fake_fmri_data(shapes)
+        mask, FUNCFILE, _ = _write_fake_fmri_data(shapes)
         FUNCFILE = FUNCFILE[0]
         func_img = load(FUNCFILE)
         # asking for contrast before model fit gives error
@@ -351,8 +354,7 @@ def test_non_parametric_inference_contrast_computation():
         # matrix has more than one columns raises an error
         X = pd.DataFrame(np.random.rand(4, 2), columns=['r1', 'r2'])
         assert_raises(ValueError, non_parametric_inference, Y, X, None)
-
-        del neg_log_pvals_img
+        del func_img, FUNCFILE, neg_log_pvals_img, X, Y
 
 
 def test_second_level_model_contrast_computation_with_memory_caching():
@@ -395,20 +397,20 @@ def test_param_mask_deprecation_SecondLevelModel():
     assert slm1.mask_img == mask_filepath
     assert slm2.mask_img == mask_filepath
     assert slm3.mask_img == mask_filepath
-    
+
     with assert_raises(AttributeError):
         slm1.mask == mask_filepath
     with assert_raises(AttributeError):
         slm2.mask == mask_filepath
     with assert_raises(AttributeError):
         slm3.mask == mask_filepath
-    
+
     raised_param_deprecation_warnings = [
         raised_warning_ for raised_warning_
         in raised_warnings if
         str(raised_warning_.message).startswith('The parameter')
         ]
-    
+
     assert len(raised_param_deprecation_warnings) == 1
     for param_warning_ in raised_param_deprecation_warnings:
         assert str(param_warning_.message) == deprecation_msg

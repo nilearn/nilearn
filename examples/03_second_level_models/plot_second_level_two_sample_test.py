@@ -1,4 +1,4 @@
-"""Second-level fMRI model: a two-sample test 
+"""Second-level fMRI model: a two-sample test
 ==========================================
 
 Full step-by-step example of fitting a GLM to perform a second level analysis
@@ -7,7 +7,8 @@ in experimental data and visualizing the results.
 More specifically:
 
 1. A sample of n=16 visual activity fMRIs are downloaded.
-2. A two-sample t-test is applied to the brain maps in order to see the effect of the contrast difference across subjects.
+2. A two-sample t-test is applied to the brain maps in order to see the effect
+   of the contrast difference across subjects.
 
 The contrast is between responses to vertical versus horizontal
 checkerboards than are retinotopically distinct. At the individual
@@ -84,6 +85,51 @@ display = plotting.plot_glass_brain(
     title='vertical vs horizontal checkerboard (unc p<0.001')
 
 ###########################################################################
-# Unsurprisingly, we see activity in the primary visual cortex, both positive and negative.
+# Unsurprisingly, we see activity in the primary visual cortex, both positive
+# and negative.
 
 plotting.show()
+
+##########################################################################
+# Computing the (corrected) p-values with parametric test to compare with
+# non parametric test
+from nilearn.image import math_img
+from nilearn.input_data import NiftiMasker
+p_val = second_level_model.compute_contrast('vertical vs horizontal',
+                                            output_type='p_value')
+masker = NiftiMasker(mask_strategy='background').fit(p_val)
+n_voxel = np.size(masker.transform(p_val))
+# Correcting the p-values for multiple testing and taking neg log
+neg_log_pval = math_img("-np.log10(np.minimum(1, img * {}))"
+                        .format(str(n_voxel)),
+                        img=p_val)
+
+###########################################################################
+# Then plot it
+display = plotting.plot_glass_brain(
+    neg_log_pval, colorbar=True, plot_abs=False, vmax=3)
+plotting.show()
+
+##############################################################################
+# Computing the (corrected) p-values with permutation test
+from nistats.second_level_model import non_parametric_inference
+neg_log_pvals_permuted_ols_unmasked = \
+    non_parametric_inference(second_level_input,
+                             design_matrix=design_matrix,
+                             second_level_contrast='vertical vs horizontal',
+                             model_intercept=True, n_perm=1000,
+                             two_sided_test=False,
+                             n_jobs=1)
+
+###########################################################################
+# Let us plot the second level contrast
+from nilearn import plotting
+display = plotting.plot_glass_brain(
+    neg_log_pvals_permuted_ols_unmasked,
+    colorbar=True, plot_abs=False, vmax=3)
+plotting.show()
+
+# The neg-log p-values obtained with non parametric testing are capped at 3
+# since the number of permutations is 1e3.
+# It seems that the non parametric test yields the same number of discoveries
+# and is then as powerful as the usual parametric procedure.
