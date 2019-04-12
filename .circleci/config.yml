@@ -38,7 +38,7 @@ jobs:
       - restore_cache:
           key: v1-packages+datasets-{{ checksum "week_num" }}
       - restore_cache:
-          key: v1-docs-master-{{ checksum "today" }}-{{ checksum ".circleci/manual-cache-timestamp" }}
+          key: key: master-docs-{{ .Environment.CIRCLE_PREVIOUS_BUILD_NUM }}
       - restore_cache:
           key: v1-docs-{{ .Branch }}-{{ checksum "today" }}-{{ checksum ".circleci/manual-cache-timestamp" }}
 
@@ -121,6 +121,11 @@ jobs:
       - run: sudo -E apt-get -yq update
       - run: sudo -E apt-get -yq --no-install-suggests --no-install-recommends --force-yes install dvipng texlive-latex-base texlive-latex-extra
       - run:
+          name: Generate new cache from master build
+          command: |
+            python .circleci/clean-cache.py
+
+      - run:
           name: Today & Week  # Fixing the date and week of the year in files to generate & preserve cache key.
           command: |
             echo 2019-04-12 > today
@@ -149,7 +154,7 @@ jobs:
             - ../nilearn_data
             - ../miniconda3
       - save_cache:
-          key: v1-docs-{{ .Branch }}-{{ checksum "today" }}-{{ checksum ".circleci/manual-cache-timestamp" }}
+          key: master-docs-{{ .Environment.CIRCLE_BUILD_NUM }}
           paths:
             - doc
 
