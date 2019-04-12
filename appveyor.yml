@@ -31,7 +31,7 @@ install:
   - "conda install pip numpy scipy scikit-learn nose wheel matplotlib boto3 pandas patsy -y -q"
 
   # Install other nistats dependencies
-  - "pip install --prefer-binary nilearn coverage nose-timer"
+  - "pip install nilearn coverage nose-timer"
   - "python setup.py bdist_wheel"
   - ps: "ls dist"
 

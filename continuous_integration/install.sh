@@ -107,7 +107,7 @@ elif [[ "$DISTRIB" == "conda" ]]; then
     if [ -n "$NIBABEL_VERSION" ]; then
         pip install --prefer-binary nibabel=="$NIBABEL_VERSION"
     fi
-    pip install  --prefer-binary boto3 patsy nilearn
+    pip install boto3 patsy nilearn
 
 
 else
