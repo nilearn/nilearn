@@ -29,9 +29,10 @@ jobs:
       - run: sudo -E apt-get -yq update
       - run: sudo -E apt-get -yq --no-install-suggests --no-install-recommends --force-yes install dvipng texlive-latex-base texlive-latex-extra
       - run:
-          name: Today & Week  # Saving today's date and current week of the year in files to generate daily & weekly new cache key respectively.
+          name: Today & Week  # Fixing the date and week of the year in files to generate & preserve cache key.
           command: |
-            date
+            echo 2019-04-12 > today
+            echo 14 > week_num
 #            date +%F > today
 #            date +%U > week_num
       - restore_cache:
@@ -120,10 +121,12 @@ jobs:
       - run: sudo -E apt-get -yq update
       - run: sudo -E apt-get -yq --no-install-suggests --no-install-recommends --force-yes install dvipng texlive-latex-base texlive-latex-extra
       - run:
-          name: Today & Week  # Saving today's date and current week of the year in files to generate daily & weekly new cache key respectively.
+          name: Today & Week  # Fixing the date and week of the year in files to generate & preserve cache key.
           command: |
-            date +%F > today
-            date +%U > week_num
+            echo 2019-04-12 > today
+            echo 14 > week_num
+#            date +%F > today
+#            date +%U > week_num
       - run: wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda.sh
       - run: chmod +x ~/miniconda.sh && ~/miniconda.sh -b
       - run: echo 'export PATH="$HOME/miniconda3/bin:$PATH"'  >> $BASH_ENV
