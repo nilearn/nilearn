@@ -57,7 +57,7 @@ Known Issues
   when using help() and similar features.
   Please refer to the docstring for this information.
 
-Conrtibutors
+Contributors
 ------------
 
 The following people contributed to this release::
