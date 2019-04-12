@@ -122,7 +122,6 @@ jobs:
       - run:
           name: Today & Week  # Saving today's date and current week of the year in files to generate daily & weekly new cache key respectively.
           command: |
-#            date
             date +%F > today
             date +%U > week_num
       - run: wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda.sh
