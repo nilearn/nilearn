@@ -22,22 +22,22 @@ Changes
 
 - Lighting used for interactive surface plots changed; plots may look a bit
   different.
-- plotting.view_connectome default colormap is `bwr`, consistent with plot_connectome.
-- plotting.view_connectome parameter names are consistent with plot_connectome:
+- :func:`nilearn.plotting.view_connectome` default colormap is `bwr`, consistent with plot_connectome.
+- :func:`nilearn.plotting.view_connectome` parameter names are consistent with plot_connectome:
 
- - coords is now node_coord
- - marker_size is noe node_size
- - cmap is now edge_cmap
- - threshold is now edge_threshold
+  - coords is now node_coord
+  - marker_size is noe node_size
+  - cmap is now edge_cmap
+  - threshold is now edge_threshold
 
-- plotting.view_markers and plotting.view_connectome can accept different marker
+- :func:`nilearn.plotting.view_markers` and :func:`nilearn.plotting.view_connectome` can accept different marker
   sizes for each node / marker.
 
-- plotting.view_markers() default marker color is now 'red', consistent with add_markers().
-- plotting.view_markers() parameter names are consistent with add_markers():
+- :func:`nilearn.plotting.view_markers()` default marker color is now 'red', consistent with add_markers().
+- :func:`nilearn.plotting.view_markers` parameter names are consistent with add_markers():
 
- - coords is now marker_coords
- - colors is now marker_color
+  - coords is now marker_coords
+  - colors is now marker_color
 
 Fixes
 -----
