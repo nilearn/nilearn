@@ -84,6 +84,7 @@ The following people contributed to this release::
    1  Eric Larson
    1  Pierre Bellec
 
+=======
 
 0.5.0
 =====
