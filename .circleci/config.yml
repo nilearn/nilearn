@@ -41,7 +41,6 @@ jobs:
           key: master-docs-{{ .Environment.CIRCLE_PREVIOUS_BUILD_NUM }}
       - restore_cache:
           key: v1-docs-{{ .Branch }}-{{ checksum "today" }}-{{ checksum ".circleci/manual-cache-timestamp" }}
-
       - run:
           name: Download & install conda if absent
           command: |
@@ -120,13 +119,6 @@ jobs:
         # Installing required packages for `make -C doc check command` to work.
       - run: sudo -E apt-get -yq update
       - run: sudo -E apt-get -yq --no-install-suggests --no-install-recommends --force-yes install dvipng texlive-latex-base texlive-latex-extra
-      - restore_cache:
-          key: v1-packages+datasets-{{ checksum "week_num" }}
-      - run:
-          name: Generate new cache from master build
-          command: |
-            python .circleci/clean-cache.py
-
       - run:
           name: Today & Week  # Fixing the date and week of the year in files to generate & preserve cache key.
           command: |
@@ -134,8 +126,19 @@ jobs:
             echo 14 > week_num
 #            date +%F > today
 #            date +%U > week_num
-      - run: wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda.sh
-      - run: chmod +x ~/miniconda.sh && ~/miniconda.sh -b
+      - restore_cache:
+          key: v1-packages+datasets-{{ checksum "week_num" }}
+      - run:
+          name: Download & install conda if absent
+          command: |
+            if
+              ls $HOME/miniconda3/bin | grep conda -q
+            then
+              echo "(Mini)Conda already present from the cache."
+            else
+              wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda.sh
+              chmod +x ~/miniconda.sh && ~/miniconda.sh -b
+            fi
       - run: echo 'export PATH="$HOME/miniconda3/bin:$PATH"'  >> $BASH_ENV
       - run:
           name: Install packages in conda env
@@ -185,14 +188,3 @@ workflows:
               only:
                 - master
                 - test-circleci  # test branch to check if merges occur on master as expected.
-
-#  nightly:
-#    triggers:
-#      - schedule:
-#          cron: "0 6 * * *"
-#          filters:
-#            branches:
-#              only:
-#                - master
-#    jobs:
-#      - full-build
