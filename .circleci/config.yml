@@ -120,6 +120,8 @@ jobs:
         # Installing required packages for `make -C doc check command` to work.
       - run: sudo -E apt-get -yq update
       - run: sudo -E apt-get -yq --no-install-suggests --no-install-recommends --force-yes install dvipng texlive-latex-base texlive-latex-extra
+      - restore_cache:
+          key: v1-packages+datasets-{{ checksum "week_num" }}
       - run:
           name: Generate new cache from master build
           command: |
