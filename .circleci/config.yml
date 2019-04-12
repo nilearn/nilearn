@@ -38,7 +38,7 @@ jobs:
       - restore_cache:
           key: v1-packages+datasets-{{ checksum "week_num" }}
       - restore_cache:
-          key: key: master-docs-{{ .Environment.CIRCLE_PREVIOUS_BUILD_NUM }}
+          key: master-docs-{{ .Environment.CIRCLE_PREVIOUS_BUILD_NUM }}
       - restore_cache:
           key: v1-docs-{{ .Branch }}-{{ checksum "today" }}-{{ checksum ".circleci/manual-cache-timestamp" }}
 
