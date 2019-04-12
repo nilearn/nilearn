@@ -49,13 +49,21 @@ Fixes
 - NiftiSpheresMasker no longer silently ignores voxels if no `mask_img` is specified.
 - Interactive brainsprites generated from `view_img` are correctly rendered in Jupyter Book.
 
+Known Issues
+------------
+
+- On Python2, ``plotting.view_connectome()`` & ``plotting.view_markers()``
+  do not show parameters names in function signature
+  when using help() and similar features.
+  Please refer to the docstring for this information.
+
 Conrtibutors
 ------------
 
 The following people contributed to this release::
 
    2  Bertrand Thirion
-  90  Kshitij Chawla (kchawla-pi)
+  91  Kshitij Chawla (kchawla-pi)
   22  fliem
   16  Jerome Dockes
   11  Gael Varoquaux
