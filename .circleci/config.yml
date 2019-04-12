@@ -119,6 +119,7 @@ jobs:
         # Installing required packages for `make -C doc check command` to work.
       - run: sudo -E apt-get -yq update
       - run: sudo -E apt-get -yq --no-install-suggests --no-install-recommends --force-yes install dvipng texlive-latex-base texlive-latex-extra
+      - run:
           name: Today & Week  # Saving today's date and current week of the year in files to generate daily & weekly new cache key respectively.
           command: |
 #            date
