@@ -31,12 +31,10 @@ jobs:
       - run:
           name: Today & Week  # Saving today's date and current week of the year in files to generate daily & weekly new cache key respectively.
           command: |
-#            date +%F > today
-#            date +%U > week_num
+            date +%F > today
+            date +%U > week_num
       - restore_cache:
           key: v1-packages+datasets-{{ checksum "week_num" }}
-      - restore_cache:
-          key: v1-docs-master-{{ checksum "today" }}-{{ checksum ".circleci/manual-cache-timestamp" }}
       - restore_cache:
           key: v1-docs-{{ .Branch }}-{{ checksum "today" }}-{{ checksum ".circleci/manual-cache-timestamp" }}
 
@@ -84,7 +82,7 @@ jobs:
             - ../nilearn_data
             - ../miniconda3
       - save_cache:
-          key: v1-docs-master-{{ checksum "today" }}-{{ checksum ".circleci/manual-cache-timestamp" }}
+          key: v1-docs-{{ .Branch }}-{{ checksum "today" }}-{{ checksum ".circleci/manual-cache-timestamp" }}
           paths:
             - doc
 
@@ -132,17 +130,8 @@ jobs:
           command: |
             source activate testenv
             pip install -e .
-            set -o pipefail && cd doc && make html-strict SPHINXOPTS="-j auto" 2>&1 | tee log.txt
+            set -o pipefail && cd doc && make html-strict 2>&1 | tee log.txt
           no_output_timeout: 7h
-      - save_cache:
-          key: v1-packages+datasets-{{ checksum "week_num" }}
-          paths:
-            - ../nilearn_data
-            - ../miniconda3
-      - save_cache:
-          key: v1-docs-{{ .Branch }}-{{ checksum "today" }}-{{ checksum ".circleci/manual-cache-timestamp" }}
-          paths:
-            - doc
 
       - store_artifacts:
           path: doc/_build/html
@@ -170,13 +159,13 @@ workflows:
                 - master
                 - test-circleci  # test branch to check if merges occur on master as expected.
 
-#  nightly:
-#    triggers:
-#      - schedule:
-#          cron: "0 6 * * *"
-#          filters:
-#            branches:
-#              only:
-#                - master
-#    jobs:
-#      - full-build
+  nightly:
+    triggers:
+      - schedule:
+          cron: "0 6 * * *"
+          filters:
+            branches:
+              only:
+                - master
+    jobs:
+      - full-build
