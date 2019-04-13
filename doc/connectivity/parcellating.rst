@@ -19,7 +19,7 @@ into homogeneous regions from functional imaging data.
     <http://journal.frontiersin.org/article/10.3389/fnins.2014.00167/full>`_
     Frontiers in neuroscience 8.167 (2014): 13.
 
-Data loading: Resting-state data
+Data loading: movie-watching data
 =================================
 
 .. currentmodule:: nilearn.datasets
@@ -27,8 +27,9 @@ Data loading: Resting-state data
 Clustering is commonly applied to resting-state data, but any brain
 functional data will give rise of a functional parcellation, capturing
 intrinsic brain architecture in the case of resting-state data.
-In the examples, we use rest data downloaded with the function 
-:func:`fetch_development_rsfmri` (see :ref:`loading_data`).
+In the examples, we use naturalistic stimuli-based movie watching
+brain functional data downloaded with the function 
+:func:`fetch_development_fmri` (see :ref:`loading_data`).
 
 Applying clustering
 ====================

@@ -1869,8 +1869,8 @@ def fetch_surf_nki_enhanced(n_subjects=10, data_dir=None,
                  description=fdescr)
 
 
-def _fetch_development_rsfmri_participants(data_dir, url, verbose):
-    """Helper function to fetch_development_rsfmri.
+def _fetch_development_fmri_participants(data_dir, url, verbose):
+    """Helper function to fetch_development_fmri.
 
     This function helps in downloading and loading participants data from .tsv
     uploaded on Open Science Framework (OSF).
@@ -1898,7 +1898,7 @@ def _fetch_development_rsfmri_participants(data_dir, url, verbose):
         gender, handedness.
 
     """
-    dataset_name = 'main'
+    dataset_name = 'development_fmri'
     data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
                                 verbose=verbose)
 
@@ -1918,8 +1918,8 @@ def _fetch_development_rsfmri_participants(data_dir, url, verbose):
     return participants
 
 
-def _fetch_development_rsfmri_functional(participants, data_dir, url, verbose):
-    """Helper function to fetch_development_rsfmri.
+def _fetch_development_fmri_functional(participants, data_dir, url, verbose):
+    """Helper function to fetch_development_fmri.
 
     This function helps in downloading functional MRI data in Nifti
     and its confound corresponding to each subject.
@@ -1951,7 +1951,7 @@ def _fetch_development_rsfmri_functional(participants, data_dir, url, verbose):
     regressors: list of str (tsv files)
         Paths to regressors related to each subject.
     """
-    dataset_name = 'main'
+    dataset_name = 'development_fmri'
     data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
                                 verbose=verbose)
 
@@ -1967,15 +1967,16 @@ def _fetch_development_rsfmri_functional(participants, data_dir, url, verbose):
     dtype = [('participant_id', 'U12'), ('key_regressor', 'U24'),
              ('key_bold', 'U24')]
     names = ['participant_id', 'key_r', 'key_b']
-    main_osf = csv_to_array(os.path.join(package_directory, "data",
-                                         "MAIN_osf.csv"),
+    # csv file contains download information related to OpenScience(osf)
+    osf_data = csv_to_array(os.path.join(package_directory, "data",
+                                         "development_fmri.csv"),
                             skip_header=True, dtype=dtype, names=names)
 
     funcs = []
     regressors = []
 
     for participant_id in participants['participant_id']:
-        this_osf_id = main_osf[main_osf['participant_id'] == participant_id]
+        this_osf_id = osf_data[osf_data['participant_id'] == participant_id]
         # Download regressors
         confound_url = url.format(this_osf_id['key_r'][0])
         regressor_file = [(confounds.format(participant_id),
@@ -1993,15 +1994,14 @@ def _fetch_development_rsfmri_functional(participants, data_dir, url, verbose):
     return funcs, regressors
 
 
-def fetch_development_rsfmri(n_subjects=None, data_dir=None, resume=True,
-                             verbose=0):
-    """Fetch Montreal Artificial Intelligence and Neuroscience (MAIN) 2018
-       workshop data
+def fetch_development_fmri(n_subjects=None, data_dir=None, resume=True,
+                           verbose=0):
+    """Fetch movie watching based brain development dataset (fMRI)
 
     The data is downsampled to 4mm resolution for convenience. The origin of
     the data is coming from OpenNeuro. See Notes below.
 
-    .. versionadded:: 0.5.1
+    .. versionadded:: 0.5.2
 
     Parameters
     ----------
@@ -2040,7 +2040,9 @@ def fetch_development_rsfmri(n_subjects=None, data_dir=None, resume=True,
     https://openneuro.org/datasets/ds000228/versions/1.0.0
 
     This fetcher downloads downsampled data that are available on Open
-    Science Framework (OSF).
+    Science Framework (OSF). Located here: https://osf.io/5hju4/files/
+
+    Preprocessing details: https://osf.io/wjtyq/
 
     References
     ----------
@@ -2051,7 +2053,7 @@ def fetch_development_rsfmri(n_subjects=None, data_dir=None, resume=True,
     https://www.nature.com/articles/s41467-018-03399-2
     """
 
-    dataset_name = 'main'
+    dataset_name = 'development_fmri'
     data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
                                 verbose=1)
 
@@ -2059,9 +2061,9 @@ def fetch_development_rsfmri(n_subjects=None, data_dir=None, resume=True,
     fdescr = _get_dataset_descr(dataset_name)
 
     # Participants data: ids, demographics, etc
-    participants = _fetch_development_rsfmri_participants(data_dir=data_dir,
-                                                          url=None,
-                                                          verbose=verbose)
+    participants = _fetch_development_fmri_participants(data_dir=data_dir,
+                                                        url=None,
+                                                        verbose=verbose)
 
     max_subjects = len(participants)
     if n_subjects is None:
@@ -2091,10 +2093,10 @@ def fetch_development_rsfmri(n_subjects=None, data_dir=None, resume=True,
     participants = participants[np.in1d(participants['participant_id'],
                                         ids)]
 
-    funcs, regressors = _fetch_development_rsfmri_functional(participants,
-                                                             data_dir=data_dir,
-                                                             url=None,
-                                                             verbose=verbose)
+    funcs, regressors = _fetch_development_fmri_functional(participants,
+                                                           data_dir=data_dir,
+                                                           url=None,
+                                                           verbose=verbose)
 
     return Bunch(func=funcs, confounds=regressors, phenotypic=participants,
                  description=fdescr)

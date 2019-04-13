@@ -2,8 +2,10 @@
 Group analysis of resting-state fMRI with ICA: CanICA
 =====================================================
 
-An example applying CanICA to resting-state data. This example applies it
-to 30 subjects of the resting-state development datasets (children).
+An example applying CanICA to naturalistic stimuli based movie watching fmri
+data. This example applies it to 30 subjects of the brain development datasets
+which includes combination of adults and children.
+
 Then it plots a map with all the
 components together and an axial cut for each of the components separately.
 
@@ -32,11 +34,11 @@ Pre-prints for both papers are available on hal
 """
 
 ####################################################################
-# First we load the resting-state data
-# ------------------------------------
+# First we load the brain development fmri data
+# ----------------------------------------------
 from nilearn import datasets
 
-dataset = datasets.fetch_development_rsfmri(n_subjects=30)
+dataset = datasets.fetch_development_fmri(n_subjects=30)
 func_filenames = dataset.func  # list of 4D nifti files for each subject
 
 # print basic information on the dataset

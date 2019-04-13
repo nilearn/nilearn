@@ -6,8 +6,8 @@ This example shows how to use :class:`nilearn.regions.RegionExtractor`
 to extract spatially constrained brain regions from whole brain maps decomposed
 using dictionary learning and use them to build a functional connectome.
 
-We used 20 resting state functional datasets from
-:func:`nilearn.datasets.fetch_development_rsfmri` and
+We used 20 naturalistic stimuli based movie watching functional datasets from
+:func:`nilearn.datasets.fetch_development_fmri` and
 :class:`nilearn.decomposition.DictLearning` for set of brain atlas maps.
 
 This example can also be inspired to apply the same steps to even regions extraction
@@ -27,19 +27,19 @@ for more details.
 """
 
 ################################################################################
-# Fetch resting state functional datasets
-# ---------------------------------------
+# Fetch brain development functional datasets (movie watching)
+# ------------------------------------------------------------
 #
 # We use nilearn's datasets downloading utilities
 from nilearn import datasets
 
-rest_dataset = datasets.fetch_development_rsfmri(n_subjects=20)
+rest_dataset = datasets.fetch_development_fmri(n_subjects=20)
 func_filenames = rest_dataset.func
 confounds = rest_dataset.confounds
 
 ################################################################################
-# Extract resting-state networks with DictionaryLearning
-# -------------------------------------------------------
+# Extract movie stimuli based functional networks with DictionaryLearning
+# -----------------------------------------------------------------------
 
 # Import dictionary learning algorithm from decomposition module and call the
 # object and fit the model to the functional datasets
@@ -56,7 +56,7 @@ dict_learn.fit(func_filenames)
 # For older versions, see the note section above for details.
 components_img = dict_learn.components_img_
 
-# Visualization of resting state networks
+# Visualization of functional networks
 # Show networks using plotting utilities
 from nilearn import plotting
 

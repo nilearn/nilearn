@@ -28,9 +28,10 @@ Connectome extraction: inverse covariance for direct connections
 Sparse inverse covariance for functional connectomes
 =====================================================
 
-Resting-state functional connectivity can be obtained by estimating a
-covariance (or correlation) matrix for signals from different brain
-regions. The same information can be represented as a weighted graph,
+Functional connectivity can be obtained by estimating a covariance
+(or correlation) matrix for signals from different brain
+regions decomposed, for example on resting-state or movie-watching datasets.
+The same information can be represented as a weighted graph,
 vertices being brain regions, weights on edges being covariances
 (gaussian graphical model). However, coefficients in a covariance matrix
 reflect direct as well as indirect connections. Covariance matrices form
@@ -104,8 +105,8 @@ of the estimator::
 .. topic:: **Exercise: computing sparse inverse covariance**
    :class: green
 
-   Compute and visualize a connectome on the first subject of the rest
-   dataset downloaded with :func:`nilearn.datasets.fetch_development_rsfmri`
+   Compute and visualize a connectome on the first subject of the brain
+   development dataset downloaded with :func:`nilearn.datasets.fetch_development_fmri`
 
    **Hints:** The example above has the solution
 
@@ -165,9 +166,10 @@ group analysis only on the non zero coefficients.
 
    Try using the information above to compute a connectome on the
    first 5 subjects of the brain development dataset downloaded with
-   :func:`nilearn.datasets.fetch_development_rsfmri`
+   :func:`nilearn.datasets.fetch_development_fmri`
 
-   **Hint:** The example above has the solution
+   **Hint:** The example above has the solution replace brain development with
+   adhd.
 
 
 .. topic:: **Reference**
@@ -256,8 +258,8 @@ Deviations from this mean in the tangent space are provided in the connectivitie
    :class: green
 
    Compute and visualize the tangent group connectome based on the brain
-   development (rest)
-   dataset downloaded with :func:`nilearn.datasets.fetch_development_rsfmri`
+   development (movie-watching)
+   dataset downloaded with :func:`nilearn.datasets.fetch_development_fmri`
 
    **Hints:** The example above has the solution
 

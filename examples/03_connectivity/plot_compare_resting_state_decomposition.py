@@ -1,8 +1,9 @@
 """
-Dictionary Learning and ICA for doing group analysis of resting-state fMRI
-==========================================================================
+Dictionary Learning and ICA for doing group analysis of fMRI
+============================================================
 
-This example applies dictionary learning and ICA to resting-state data,
+This example applies dictionary learning and ICA to naturalistic stimuli
+based movie watching fmri data,
 visualizing resulting components using atlas plotting tools.
 
 Dictionary learning is a sparsity based decomposition method for extracting
@@ -22,11 +23,11 @@ than ICA
     See the :ref:`section Inverse transform: unmasking data <unmasking_step>`.
 """
 ###############################################################################
-# Load rest dataset
-# -----------------
+# Load brain development fmri dataset
+# -----------------------------------
 from nilearn import datasets
 
-rest_dataset = datasets.fetch_development_rsfmri(n_subjects=30)
+rest_dataset = datasets.fetch_development_fmri(n_subjects=30)
 func_filenames = rest_dataset.func  # list of 4D nifti files for each subject
 
 # print basic information on the dataset

@@ -24,13 +24,13 @@ Region Extraction for better brain parcellations
 
 .. currentmodule:: nilearn.datasets
 
-Fetching resting state functional datasets
-==========================================
+Fetching movie-watching based functional datasets
+=================================================
 
-We use resting state functional connectivity datasets of 20 subjects,
-which is already preprocessed and publicly available at
-`<https://openneuro.org/datasets/ds000228/versions/1.0.0>`_. We use utilities
-:func:`fetch_development_rsfmri` implemented in nilearn for automatic fetching of these
+We use naturalistic stimuli based movie watching functional connectivity datasets
+of 20 subjects, which is already preprocessed and publicly available at
+`<https://osf.io/5hju4/files/>`_. We use utilities
+:func:`fetch_development_fmri` implemented in nilearn for automatic fetching of these
 datasets which is downsampled to 4mm.
 
 
@@ -51,7 +51,7 @@ necessarily converting each file to Nifti1Image object.
 
 .. literalinclude:: ../../examples/03_connectivity/plot_extract_regions_dictlearning_maps.py
     :start-after: # object and fit the model to the functional datasets
-    :end-before: # Visualization of resting state networks
+    :end-before: # Visualization of functional networks
 
 .. currentmodule:: nilearn.plotting
 
@@ -167,7 +167,7 @@ Validating results
 
 Showing only one specific network regions before and after region extraction.
 
-Left image displays the regions of one specific resting network without region extraction
+Left image displays the regions of one specific movie-watching network without region extraction
 and right image displays the regions split apart after region extraction. Here, we can
 validate that regions are nicely separated identified by each extracted region in different
 color.

@@ -8,8 +8,8 @@ In this example, the Nifti masker is used to automatically compute a mask.
 
 * Another option is to use a template.
 
-* For raw EPI, as in resting-state time series, we need to use the
-  'epi' strategy of the NiftiMasker.
+* For raw EPI, as in resting-state or movie watching time series, we need to
+  use the 'epi' strategy of the NiftiMasker.
 
 In addition, we show here how to tweak the different parameters of the
 underlying routine that extract masks from EPI
@@ -60,8 +60,8 @@ plot_roi(masker.mask_img_, miyawaki_mean_img,
 # From raw EPI data, there is no uniform background, and a different
 # strategy is necessary
 
-# Load resting-state dataset
-dataset = datasets.fetch_development_rsfmri(n_subjects=1)
+# Load movie watching based brain development fmri dataset
+dataset = datasets.fetch_development_fmri(n_subjects=1)
 epi_filename = dataset.func[0]
 
 # Restrict to 100 frames to speed up computation

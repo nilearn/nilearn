@@ -38,7 +38,7 @@ def plot_matrices(cov, prec, title, labels):
 # ------------------
 from nilearn import datasets
 msdl_atlas_dataset = datasets.fetch_atlas_msdl()
-rest_dataset = datasets.fetch_development_rsfmri(n_subjects=n_subjects)
+rest_dataset = datasets.fetch_development_fmri(n_subjects=n_subjects)
 
 # print basic information on the dataset
 print('First subject functional nifti image (4D) is at: %s' %

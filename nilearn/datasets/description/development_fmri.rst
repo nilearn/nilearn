@@ -1,22 +1,25 @@
-Montreal Artificial Intelligence and Neuroscience conference 2018 datasets
+The movie watching based brain development dataset (fMRI)
 
 
 Notes
 -----
 This functional MRI datasets is used for teaching how to use
-machine learning to predict age from rs-fmri with Nilearn.
+machine learning to predict age from naturalistic stimuli (movie)
+watching with Nilearn.
 
 The dataset consists of 50 children (ages 3-13) and 33 young adults (ages
-18-39). This rs-fmri data can be used to try to predict who are adults and
+18-39). This dataset can be used to try to predict who are adults and
 who are children.
 
 The data is downsampled to 4mm resolution for convenience. The original
 data is downloaded from OpenNeuro.
 
-Here: https://openneuro.org/datasets/ds000228/versions/1.0.0
+For full information about pre-processing steps on raw-fMRI data, have a look
+at README at https://osf.io/wjtyq/
 
-Track issue for more information:
-https://github.com/nilearn/nilearn/issues/1864
+Full pre-processed data: https://osf.io/5hju4/files/
+
+Raw data can be accessed from : https://openneuro.org/datasets/ds000228/versions/1.0.0
 
 Content
 -------

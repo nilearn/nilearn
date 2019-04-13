@@ -10,10 +10,10 @@ connectome from them.
 """
 
 ##########################################################################
-# Retrieve the dataset
-# ---------------------
+# Retrieve the brain development fmri dataset
+# -------------------------------------------
 from nilearn import datasets
-dataset = datasets.fetch_development_rsfmri(n_subjects=1)
+dataset = datasets.fetch_development_fmri(n_subjects=1)
 
 # print basic information on the dataset
 print('First subject functional nifti image (4D) is at: %s' %

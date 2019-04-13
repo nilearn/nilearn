@@ -1,13 +1,14 @@
 .. _extracting_rsn:
 
 ==================================================
-Extracting resting-state networks: ICA and related
+Extracting functional brain networks: ICA and related
 ==================================================
 
 .. topic:: **Page summary**
 
    This page demonstrates the use of multi-subject Independent Component
-   Analysis (ICA) of resting-state fMRI data to extract brain networks in
+   Analysis (ICA) of naturalistic stimuli based movie watching fMRI data
+   to extract brain networks in
    an data-driven way. Here we use the 'CanICA' approach, that implements
    a multivariate random effects model across subjects. A newer technique,
    based on dictionary learning, is then described.
@@ -27,17 +28,17 @@ Multi-subject ICA: CanICA
 Data preparation: retrieving example data
 -----------------------------------------
 
-We will use down-sample data from the `children resting-state dataset
-<https://openneuro.org/datasets/ds000228/versions/1.0.0>`_ has been
-preprocessed using `FMRIPrep <https://github.com/poldracklab/fmriprep>`_.
+We will use down-sampled data from the `adults and children watching movie dataset
+<https://osf.io/5hju4/files/>`_ has been
+preprocessed using `FMRIPrep and Nilearn <https://osf.io/wjtyq/>`_.
 We use nilearn
 functions to fetch data from Internet and get the filenames (:ref:`more
 on data loading <loading_data>`):
 
 
 .. literalinclude:: ../../examples/03_connectivity/plot_canica_resting_state.py
-    :start-after: # First we load the resting-state data
-    :end-before:  ####################################################################
+    :start-after: # First we load the brain development fmri data
+    :end-before:  ###############################################
 
 Applying CanICA
 ---------------

@@ -21,10 +21,10 @@ using fMRI.", 2010, Science 329, 1358-1361.
 # Load fMRI data and Power atlas
 # ------------------------------
 #
-# We are going to use a single subject from the rest dataset.
+# We are going to use a single subject from the movie watching fmri dataset.
 from nilearn import datasets
 
-rest = datasets.fetch_development_rsfmri(n_subjects=5)
+rest = datasets.fetch_development_fmri(n_subjects=5)
 
 ###############################################################################
 # We store the paths to its functional image and the confounds file.

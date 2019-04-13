@@ -3,8 +3,9 @@ Producing single subject maps of seed-to-voxel correlation
 ==========================================================
 
 This example shows how to produce seed-to-voxel correlation maps for a single
-subject based on resting-state fMRI scans. These maps depict the temporal
-correlation of a **seed region** with the **rest of the brain**.
+subject based on naturalistic stimuli based movie watching fMRI scans.
+These maps depict the temporal correlation of a **seed region** with the
+**rest of the brain**.
 
 This example is an advanced one that requires manipulating the data with numpy.
 Note the difference between images, that lie in brain space, and the
@@ -21,14 +22,14 @@ See also :ref:`for a similar example using cortical surface input data
 # Getting the data
 # ----------------
 
-# We will work with the first subject of the rest data set.
-# rest_dataset.func is a list of filenames. We select the 1st (0-based)
+# We will work with the first subject of the brain development fmri data set.
+# dataset.func is a list of filenames. We select the 1st (0-based)
 # subject by indexing with [0]).
 from nilearn import datasets
 
-rest_dataset = datasets.fetch_development_rsfmri(n_subjects=1)
-func_filename = rest_dataset.func[0]
-confound_filename = rest_dataset.confounds[0]
+dataset = datasets.fetch_development_fmri(n_subjects=1)
+func_filename = dataset.func[0]
+confound_filename = dataset.confounds[0]
 
 ##########################################################################
 # Note that func_filename and confound_filename are strings pointing to

@@ -32,12 +32,12 @@ def plot_matrices(matrices, matrix_kind):
 
 
 ###############################################################################
-# Load resting-state dataset and MSDL atlas
-# -----------------------------------------
+# Load brain development fmri dataset (movie watching) and MSDL atlas
+# -------------------------------------------------------------------
 # We study only 30 subjects from the dataset, to save computation time.
 from nilearn import datasets
 
-rest_data = datasets.fetch_development_rsfmri(n_subjects=30)
+rest_data = datasets.fetch_development_fmri(n_subjects=30)
 
 ###############################################################################
 # We use probabilistic regions of interest (ROIs) from the MSDL atlas.
@@ -111,7 +111,7 @@ plot_matrices(correlation_matrices[:4], 'correlation')
 ###############################################################################
 # Now we display as a connectome the mean correlation matrix over all children.
 plotting.plot_connectome(mean_correlation_matrix, msdl_coords,
-                         title='mean correlation over all childrens')
+                         title='mean correlation over all children')
 
 ###############################################################################
 # Studying partial correlations

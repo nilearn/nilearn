@@ -7,10 +7,10 @@ The mask is computed and visualized.
 """
 
 ###########################################################################
-# Retrieve the resting-state functional dataset
+# Retrieve the brain development functional dataset
 
 from nilearn import datasets
-dataset = datasets.fetch_development_rsfmri(n_subjects=1)
+dataset = datasets.fetch_development_fmri(n_subjects=1)
 func_filename = dataset.func[0]
 
 # print basic information on the dataset
@@ -20,8 +20,9 @@ print('First functional nifti image (4D) is at: %s' % func_filename)
 # Compute the mask
 from nilearn.input_data import NiftiMasker
 
-# As this is raw resting-state EPI, the background is noisy and we cannot
-# rely on the 'background' masking strategy. We need to use the 'epi' one
+# As this is raw movie watching based EPI, the background is noisy and we
+# cannot rely on the 'background' masking strategy. We need to use the 'epi'
+# one
 nifti_masker = NiftiMasker(standardize=True, mask_strategy='epi',
                            memory="nilearn_cache", memory_level=2,
                            smoothing_fwhm=8)
