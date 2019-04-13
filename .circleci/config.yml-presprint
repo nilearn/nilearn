@@ -29,26 +29,15 @@ jobs:
       - run: sudo -E apt-get -yq update
       - run: sudo -E apt-get -yq --no-install-suggests --no-install-recommends --force-yes install dvipng texlive-latex-base texlive-latex-extra
       - run:
-          name: Today & Week  # Fixing the date and week of the year in files to generate & preserve cache key.
+          name: Today & Week  # Saving today's date and current week of the year in files to generate daily & weekly new cache key respectively.
           command: |
-            echo 2019-04-13 > today
-            echo 14 > week_num
-#            date +%F > today
-#            date +%U > week_num
+            date +%F > today
+            date +%U > week_num
       - restore_cache:
           key: v1-packages+datasets-{{ checksum "week_num" }}
       - restore_cache:
           key: v1-docs-{{ .Branch }}-{{ checksum "today" }}-{{ checksum ".circleci/manual-cache-timestamp" }}
-      - run:
-          name: If branch cache has cached docs, don't restore docs from master cache
-          command: |
-            if
-              ls doc/_build/html
-            then
-              date > .circleci/automatic-cache-timestamp
-            fi
-      - restore_cache:
-          key: master-docs-{{ checksum ".circleci/automatic-cache-timestamp" }}
+
       - run:
           name: Download & install conda if absent
           command: |
@@ -127,41 +116,13 @@ jobs:
         # Installing required packages for `make -C doc check command` to work.
       - run: sudo -E apt-get -yq update
       - run: sudo -E apt-get -yq --no-install-suggests --no-install-recommends --force-yes install dvipng texlive-latex-base texlive-latex-extra
-      - run:
-          name: Today & Week  # Fixing the date and week of the year in files to generate & preserve cache key.
-          command: |
-            echo 2019-04-12 > today
-            echo 14 > week_num
-#            date +%F > today
-#            date +%U > week_num
-      - restore_cache:
-          key: v1-packages+datasets-{{ checksum "week_num" }}
-      - run:
-          name: Download & install conda if absent
-          command: |
-            if
-              ls $HOME/miniconda3/bin | grep conda -q
-            then
-              echo "(Mini)Conda already present from the cache."
-            else
-              wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda.sh
-              chmod +x ~/miniconda.sh && ~/miniconda.sh -b
-            fi
+      - run: wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda.sh
+      - run: chmod +x ~/miniconda.sh && ~/miniconda.sh -b
       - run: echo 'export PATH="$HOME/miniconda3/bin:$PATH"'  >> $BASH_ENV
-      - run:
-          name: Create new conda env
-          command: |
-            if
-              conda env list | grep testenv
-            then
-              echo "Conda env testenv already exists courtesy of the cache."
-            else
-              conda create -n testenv -yq
-            fi
       - run:
           name: Create conda env
           command: |
-            conda install -n testenv python=3.6 numpy scipy scikit-learn matplotlib pandas \
+            conda create -n testenv python=3.6 numpy scipy scikit-learn matplotlib pandas \
             flake8 lxml nose cython mkl sphinx coverage patsy boto3 pillow pandas -yq
             conda install -n testenv nibabel nilearn nose-timer -c conda-forge -yq
       - run:
@@ -171,24 +132,6 @@ jobs:
             pip install -e .
             set -o pipefail && cd doc && make html 2>&1 | tee log.txt
           no_output_timeout: 5h
-      - run:
-          name: Build an inheritable save-key to cache docs built on master branch
-          command: |
-            pwd
-            date > ../.circleci/automatic-cache-timestamp
-            git add ../.circleci/automatic-cache-timestamp
-            git commit -m "Updated cache key for caching docs built on master [skip ci]"
-            git push origin CIRCLE_BRANCH
-
-      - save_cache:
-          key: v1-packages+datasets-{{ checksum "week_num" }}
-          paths:
-            - ../nilearn_data
-            - ../miniconda3
-      - save_cache:
-          key: master-docs-{{ checksum ".circleci/automatic-cache-timestamp" }}
-          paths:
-            - doc
 
       - store_artifacts:
           path: doc/_build/html
@@ -216,3 +159,13 @@ workflows:
                 - master
                 - test-circleci
 
+  nightly:
+    triggers:
+      - schedule:
+          cron: "0 6 * * *"
+          filters:
+            branches:
+              only:
+                - master
+    jobs:
+      - full-build
