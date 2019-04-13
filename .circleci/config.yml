@@ -38,7 +38,7 @@ jobs:
       - restore_cache:
           key: v1-packages+datasets-{{ checksum "week_num" }}
       - restore_cache:
-          key: master-docs-{{ .Environment.CIRCLE_PREVIOUS_BUILD_NUM }}
+          key: master-docs-{{ checksum ".circleci/auto-cache-timestamp" }}
       - restore_cache:
           key: v1-docs-{{ .Branch }}-{{ checksum "today" }}-{{ checksum ".circleci/manual-cache-timestamp" }}
       - run:
@@ -153,13 +153,21 @@ jobs:
             pip install -e .
             set -o pipefail && cd doc && make html-strict 2>&1 | tee log.txt
           no_output_timeout: 7h
+      - run:
+          name: Build an inheritable save-key to cache docs built on master branch
+          command: |
+            date > ../.circleci/auto-cache-timestamp
+            git add ../.circleci/auto-cache-timestamp
+            git commit -m "Updated cache key for caching docs built on master [skip ci]"
+            git push origin CIRCLE_BRANCH
+
       - save_cache:
           key: v1-packages+datasets-{{ checksum "week_num" }}
           paths:
             - ../nilearn_data
             - ../miniconda3
       - save_cache:
-          key: master-docs-{{ .Environment.CIRCLE_BUILD_NUM }}
+          key: master-docs-{{ checksum ".circleci/auto-cache-timestamp" }}
           paths:
             - doc
 
