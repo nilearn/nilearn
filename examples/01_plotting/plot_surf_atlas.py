@@ -79,6 +79,11 @@ plotting.show()
 
 ###############################################################################
 # Display connectome from surface parcellation
+#
+# The following code extracts 3D coordinates of surface parcels (a.k.a. labels
+# in the Freesurfer naming convention). To do so we load the pial surface
+# of fsaverage subject, get the vertices contained in each parcel and compute
+# the mean location to obtain the coordinates.
 
 import numpy as np
 from nilearn import surface
@@ -90,11 +95,14 @@ for hemi in ['left', 'right']:
     vert = destrieux_atlas['map_%s' % hemi]
     rr, _ = surface.load_surf_mesh(fsaverage['pial_%s' % hemi])
     for k, label in enumerate(labels):
-        if "Unknown" not in str(label):
+        if "Unknown" not in str(label):  # Omit the Unknown label.
+            # Compute mean location of vertices in label of index k
             coordinates.append(np.mean(rr[vert == k], axis=0))
 
-coordinates = np.array(coordinates)
+coordinates = np.array(coordinates)  # 3D coordinates of parcels
 
+# We now make a synthetic connectivity matrix that connects labels
+# between left and right hemispheres.
 n_parcels = len(coordinates)
 corr = np.zeros((n_parcels, n_parcels))
 n_parcels_hemi = n_parcels // 2
