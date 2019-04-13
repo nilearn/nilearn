@@ -152,10 +152,12 @@ jobs:
           name: Download Brainomics data necessary for examples from alternate location if primary server.
           command: |
             if
-              ls $HOME/nilearn_data | grep brainomics*
+              ls $HOME/nilearn_data/brainomics* -d
+            then
+              echo ""
             else
               wget https://osf.io/nsm8j/download -O $HOME/nilearn_data/brainomics_data.tar.gz
-              tar xvzf vrainomics_data.tar.gz
+              tar xvzf $HOME/nilearn_data/brainomics_data.tar.gz
             fi
 
       - run:
