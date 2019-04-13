@@ -41,7 +41,7 @@ jobs:
           key: v1-docs-{{ .Branch }}-{{ checksum "today" }}-{{ checksum ".circleci/manual-cache-timestamp" }}
       - run:
           name: If branch cache has cached docs, don't restore docs from master cache
-          commadn: |
+          command: |
             if
               ls doc/_build/html
             then
