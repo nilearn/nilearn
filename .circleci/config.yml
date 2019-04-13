@@ -28,6 +28,7 @@ jobs:
         # Installing required packages for `make -C doc check command` to work.
       - run: sudo -E apt-get -yq update
       - run: sudo -E apt-get -yq --no-install-suggests --no-install-recommends --force-yes install dvipng texlive-latex-base texlive-latex-extra
+
       - run:
           name: Today & Week  # Fixing the date and week of the year in files to generate & preserve cache key.
           command: |
@@ -37,6 +38,7 @@ jobs:
           key: v1-packages+datasets-{{ checksum "week_num" }}
       - restore_cache:
           key: v1-docs-{{ .Branch }}-{{ checksum "today" }}-{{ checksum ".circleci/manual-cache-timestamp" }}
+
       - run:
           name: If branch cache has cached docs, don't restore docs from master cache
           command: |
@@ -45,8 +47,19 @@ jobs:
             then
               date > .circleci/auto-cache-timestamp
             fi
+
       - restore_cache:
           key: master-docs-{{ checksum ".circleci/auto-cache-timestamp" }}
+
+      - run:
+          name: Download Brainomics data necessary for examples from alternate location if primary server.
+          command: |
+            if
+              ls $HOME/nilearn_data | grep brainomics*
+            else
+              wget BRAINOMICS_ALT_URL -O $HOME/nilearn_data/brainomics_data.tar.gz
+              tar xvzf vrainomics_data.tar.gz
+            fi
       - run:
           name: Download & install conda if absent
           command: |
@@ -134,6 +147,17 @@ jobs:
             echo 14 > week_num
       - restore_cache:
           key: v1-packages+datasets-{{ checksum "week_num" }}
+
+      - run:
+          name: Download Brainomics data necessary for examples from alternate location if primary server.
+          command: |
+            if
+              ls $HOME/nilearn_data | grep brainomics*
+            else
+              wget BRAINOMICS_ALT_URL -O $HOME/nilearn_data/brainomics_data.tar.gz
+              tar xvzf vrainomics_data.tar.gz
+            fi
+
       - run:
           name: Download & install conda if absent
           command: |
@@ -203,6 +227,7 @@ workflows:
   push:
     jobs:
       - quick-build:
+          context: data-urls
           filters:
             branches:
               ignore:
@@ -210,6 +235,7 @@ workflows:
                 - test-circleci  # test branch to check if merges occur on master as expected.
 
       - full-build:
+          context: data-urls
           filters:
             branches:
               only:
