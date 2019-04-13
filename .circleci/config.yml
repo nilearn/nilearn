@@ -33,8 +33,6 @@ jobs:
           command: |
             echo 2019-04-13 > today
             echo 14 > week_num
-#            date +%F > today
-#            date +%U > week_num
       - restore_cache:
           key: v1-packages+datasets-{{ checksum "week_num" }}
       - restore_cache:
@@ -45,10 +43,10 @@ jobs:
             if
               ls doc/_build/html
             then
-              date > .circleci/automatic-cache-timestamp
+              date > .circleci/auto-cache-timestamp
             fi
       - restore_cache:
-          key: master-docs-{{ checksum ".circleci/automatic-cache-timestamp" }}
+          key: master-docs-{{ checksum ".circleci/auto-cache-timestamp" }}
       - run:
           name: Download & install conda if absent
           command: |
@@ -130,10 +128,8 @@ jobs:
       - run:
           name: Today & Week  # Fixing the date and week of the year in files to generate & preserve cache key.
           command: |
-            echo 2019-04-12 > today
+            echo 2019-04-13 > today
             echo 14 > week_num
-#            date +%F > today
-#            date +%U > week_num
       - restore_cache:
           key: v1-packages+datasets-{{ checksum "week_num" }}
       - run:
@@ -175,8 +171,8 @@ jobs:
           name: Build an inheritable save-key to cache docs built on master branch
           command: |
             pwd
-            date > ../.circleci/automatic-cache-timestamp
-            git add ../.circleci/automatic-cache-timestamp
+            date > .circleci/auto-cache-timestamp
+            git add .circleci/auto-cache-timestamp
             git commit -m "Updated cache key for caching docs built on master [skip ci]"
             git push origin CIRCLE_BRANCH
 
@@ -186,7 +182,7 @@ jobs:
             - ../nilearn_data
             - ../miniconda3
       - save_cache:
-          key: master-docs-{{ checksum ".circleci/automatic-cache-timestamp" }}
+          key: master-docs-{{ checksum ".circleci/auto-cache-timestamp" }}
           paths:
             - doc
 
