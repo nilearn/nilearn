@@ -103,6 +103,8 @@ jobs:
           path: coverage
       - store_artifacts:
           path: doc/log.txt
+      - store_artifacts:
+          path: .circleci
 
 
   full-build:
@@ -196,7 +198,7 @@ jobs:
           path: coverage
       - store_artifacts:
           path: doc/log.txt
-      - store_artofacts:
+      - store_artifacts:
           path: .circleci
 
 
