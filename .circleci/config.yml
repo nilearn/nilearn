@@ -192,6 +192,8 @@ jobs:
           path: coverage
       - store_artifacts:
           path: doc/log.txt
+      - store_artofacts:
+          path: .circleci
 
 
 workflows:
