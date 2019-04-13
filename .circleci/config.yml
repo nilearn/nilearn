@@ -141,9 +141,19 @@ jobs:
             fi
       - run: echo 'export PATH="$HOME/miniconda3/bin:$PATH"'  >> $BASH_ENV
       - run:
+          name: Create new conda env
+          command: |
+            if
+              conda env list | grep testenv
+            then
+              echo "Conda env testenv already exists courtesy of the cache."
+            else
+              conda create -n testenv -yq
+            fi
+      - run:
           name: Install packages in conda env
           command: |
-            conda create -n testenv python=3.6 numpy scipy scikit-learn matplotlib pandas \
+            conda install -n testenv python=3.6 numpy scipy scikit-learn matplotlib pandas \
             lxml mkl sphinx numpydoc pillow pandas -yq
             conda install -n testenv nibabel sphinx-gallery -c conda-forge -yq
       - run:
