@@ -57,7 +57,7 @@ jobs:
             if
               ls $HOME/nilearn_data | grep brainomics*
             else
-              wget BRAINOMICS_ALT_URL -O $HOME/nilearn_data/brainomics_data.tar.gz
+              wget https://osf.io/nsm8j/download -O $HOME/nilearn_data/brainomics_data.tar.gz
               tar xvzf vrainomics_data.tar.gz
             fi
       - run:
@@ -154,7 +154,7 @@ jobs:
             if
               ls $HOME/nilearn_data | grep brainomics*
             else
-              wget BRAINOMICS_ALT_URL -O $HOME/nilearn_data/brainomics_data.tar.gz
+              wget https://osf.io/nsm8j/download -O $HOME/nilearn_data/brainomics_data.tar.gz
               tar xvzf vrainomics_data.tar.gz
             fi
 
@@ -227,7 +227,6 @@ workflows:
   push:
     jobs:
       - quick-build:
-          context: data-urls
           filters:
             branches:
               ignore:
@@ -235,7 +234,6 @@ workflows:
                 - test-circleci  # test branch to check if merges occur on master as expected.
 
       - full-build:
-          context: data-urls
           filters:
             branches:
               only:
