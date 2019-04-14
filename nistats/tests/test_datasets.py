@@ -240,12 +240,19 @@ def _mock_bids_compliant_spm_auditory_events_file():
 
 
 def test_make_spm_auditory_events_file():
-        try:
-            actual_events_data_string, events_filepath = _mock_bids_compliant_spm_auditory_events_file()
-        finally:
-            os.remove(events_filepath)
-        expected_events_data_string = _mock_original_spm_auditory_events_file()
-        assert_equal(actual_events_data_string, expected_events_data_string)
+    try:
+        actual_events_data_string, events_filepath = _mock_bids_compliant_spm_auditory_events_file()
+    finally:
+        os.remove(events_filepath)
+    expected_events_data_string = _mock_original_spm_auditory_events_file()
+    
+    replace_win_line_ends = (lambda text: text.replace('\r\n', '\n')
+                                if text.find('\r\n') != -1 else text
+                             )
+    actual_events_data_string = replace_win_line_ends(actual_events_data_string)
+    expected_events_data_string = replace_win_line_ends(expected_events_data_string)
+    
+    assert_equal(actual_events_data_string, expected_events_data_string)
 
 
 @with_setup(setup_mock, teardown_mock)
