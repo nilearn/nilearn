@@ -42,17 +42,31 @@ from nilearn.image import mean_img
 background_img = mean_img(func_filenames)
 
 ##############################################################################
+# Parameters for SpaceNetClassifier
+# ---------------------------------
+
+# The regularization values `alphas` for solvers are tuned on same
+# 2nd subject from haxby dataset. We use them to save computational time.
+
+# Graph-net
+alphas_graphnet = [35.81, 0.078, 0.077, 0.073, 0.078, 0.077, 0.788, 0.172]
+
+# TV-l1
+alphas_tvl1 = [7.715, 0.078, 0.077, 0.073, 0.078, 0.077, 0.36, 0.08]
+cv = 3
+##############################################################################
 # Fit SpaceNet with a Graph-Net penalty
 # --------------------------------------
 from nilearn.decoding import SpaceNetClassifier
 
 # Fit model on train data and predict on test data
-decoder = SpaceNetClassifier(memory="nilearn_cache", penalty='graph-net')
+decoder = SpaceNetClassifier(memory="nilearn_cache", penalty='graph-net',
+                             alphas=alphas_graphnet, cv=cv)
 decoder.fit(X_train, y_train)
 y_pred = decoder.predict(X_test)
 accuracy = (y_pred == y_test).mean() * 100.
 print("Graph-net classification accuracy : %g%%" % accuracy)
-
+print(decoder.best_model_params_)
 #############################################################################
 # Visualization of Graph-net weights
 # ------------------------------------
@@ -69,11 +83,13 @@ coef_img.to_filename('haxby_graph-net_weights.nii')
 ##############################################################################
 # Now Fit SpaceNet with a TV-l1 penalty
 # --------------------------------------
-decoder = SpaceNetClassifier(memory="nilearn_cache", penalty='tv-l1')
+decoder = SpaceNetClassifier(memory="nilearn_cache", penalty='tv-l1',
+                             alphas=alphas_tvl1, cv=cv)
 decoder.fit(X_train, y_train)
 y_pred = decoder.predict(X_test)
 accuracy = (y_pred == y_test).mean() * 100.
 print("TV-l1 classification accuracy : %g%%" % accuracy)
+print(decoder.best_model_params_)
 
 #############################################################################
 # Visualization of TV-L1 weights
