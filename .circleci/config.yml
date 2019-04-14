@@ -137,22 +137,18 @@ jobs:
         # Trick found here:
         # https://discuss.circleci.com/t/disable-autodetection-of-project-or-application-of-python-venv/235/10
 
+
       - run:
           name: Build an inheritable save-key to cache docs built on master branch
           when: always
           command: |
             pwd
-#            git config credential.helper 'cache --timeout=120'
             git config user.email "nistats@circlecici.com"
             git config user.name "Deployment Bot"
-#            Push quietly to prevent showing the token in log
-#            git push -q https://${DOCS_GITHUB_TOKEN}@github.com/giantswarm/docs.git master
-
             date > .circleci/auto-cache-timestamp
             git add .circleci/auto-cache-timestamp
             git commit -m "TEST OF Updated cache key for caching docs built on master [skip ci]"
             git push origin CIRCLE_BRANCH
-
 
 
       - run: cd && rm -rf ~/.pyenv && rm -rf ~/virtualenvs
