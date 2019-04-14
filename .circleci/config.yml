@@ -33,8 +33,6 @@ jobs:
           command: |
             echo 2019-04-12 > today
             echo 14 > week_num
-#            date +%F > today
-#            date +%U > week_num
       - restore_cache:
           key: v1-packages+datasets-{{ checksum "week_num" }}
       - restore_cache:
@@ -134,8 +132,6 @@ jobs:
           command: |
             echo 2019-04-12 > today
             echo 14 > week_num
-#            date +%F > today
-#            date +%U > week_num
       - restore_cache:
           key: v1-packages+datasets-{{ checksum "week_num" }}
       - run:
@@ -173,14 +169,6 @@ jobs:
             pip install -e .
             set -o pipefail && cd doc && make html-strict 2>&1 | tee log.txt
           no_output_timeout: 7h
-      - run:
-          name: Build an inheritable save-key to cache docs built on master branch
-          command: |
-            pwd
-            date > .circleci/auto-cache-timestamp
-            git add .circleci/auto-cache-timestamp
-            git commit -m "Updated cache key for caching docs built on master [skip ci]"
-            git push origin CIRCLE_BRANCH
 
       - save_cache:
           key: v1-packages+datasets-{{ checksum "week_num" }}
