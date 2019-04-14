@@ -31,7 +31,7 @@ jobs:
   - script: |
       pip install pytest
       pip install .
-      pytest ./nistats/tests --doctest-modules --junitxml=junit/test-results.xml
+      pytest ./nilearn --doctest-modules --junitxml=junit/test-results.xml
     displayName: 'pytest'
 
   - task: PublishTestResults@2
