@@ -20,14 +20,19 @@ zmap_filenames = data.zmaps
 behavioral_target = data.gain
 mask_filename = data.mask_img
 
-
+# The choices of regularization terms `alphas` are pre-trained by
+# cross-validation to save computation time (n_subjects=16) 768 z-maps
+alphas = [51.35, 106.90, 57.24, 118.87, 55.72, 57.33, 80.49, 51.29]
 ##########################################################################
 # Fit TV-L1
 # ----------
 # Here we're using the regressor object given that the task is to predict a
 # continuous variable, the gain of the gamble.
 from nilearn.decoding import SpaceNetRegressor
+
+# Cross-validation folds are set to 3 to save computation time
 decoder = SpaceNetRegressor(mask=mask_filename, penalty="tv-l1",
+                            alphas=alphas, cv=3,
                             eps=1e-1,  # prefer large alphas
                             memory="nilearn_cache")
 
