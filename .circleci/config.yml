@@ -28,6 +28,7 @@ jobs:
         # Installing required packages for `make -C doc check command` to work.
       - run: sudo -E apt-get -yq update
       - run: sudo -E apt-get -yq --no-install-suggests --no-install-recommends --force-yes install dvipng texlive-latex-base texlive-latex-extra
+
       - run:
           name: Today & Week  # Fixing the date and week of the year in files to generate & preserve cache key.
           command: |
@@ -37,6 +38,7 @@ jobs:
           key: v1-packages+datasets-{{ checksum "week_num" }}
       - restore_cache:
           key: v1-docs-{{ .Branch }}-{{ checksum "today" }}-{{ checksum ".circleci/manual-cache-timestamp" }}
+
       - run:
           name: If branch cache has cached docs, don't restore docs from master cache
           command: |
@@ -45,8 +47,21 @@ jobs:
             then
               date > .circleci/auto-cache-timestamp
             fi
+
       - restore_cache:
           key: master-docs-{{ checksum ".circleci/auto-cache-timestamp" }}
+
+      - run:
+          name: Download Brainomics data necessary for examples from alternate location if primary server.
+          command: |
+            if
+              ls $HOME/nilearn_data/brainomics* -d
+            then
+              echo ""
+            else
+              wget https://osf.io/nsm8j/download -O $HOME/nilearn_data/brainomics_data.tar.gz
+              tar xvzf $HOME/nilearn_data/brainomics_data.tar.gz
+            fi
       - run:
           name: Download & install conda if absent
           command: |
@@ -134,6 +149,19 @@ jobs:
             echo 14 > week_num
       - restore_cache:
           key: v1-packages+datasets-{{ checksum "week_num" }}
+
+      - run:
+          name: Download Brainomics data necessary for examples from alternate location if primary server.
+          command: |
+            if
+              ls $HOME/nilearn_data/brainomics* -d
+            then
+              echo ""
+            else
+              wget https://osf.io/nsm8j/download -O $HOME/nilearn_data/brainomics_data.tar.gz
+              tar xvzf $HOME/nilearn_data/brainomics_data.tar.gz
+            fi
+
       - run:
           name: Download & install conda if absent
           command: |
@@ -169,15 +197,6 @@ jobs:
             pip install -e .
             set -o pipefail && cd doc && make html 2>&1 | tee log.txt
           no_output_timeout: 5h
-      - run:
-          name: Build an inheritable save-key to cache docs built on master branch
-          command: |
-            pwd
-            date > .circleci/auto-cache-timestamp
-            git add .circleci/auto-cache-timestamp
-            git commit -m "Updated cache key for caching docs built on master [skip ci]"
-            git push origin CIRCLE_BRANCH
-
       - save_cache:
           key: v1-packages+datasets-{{ checksum "week_num" }}
           paths:
