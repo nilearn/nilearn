@@ -65,6 +65,7 @@ jobs:
       - run:
           name: Download & install conda if absent
           command: |
+            set +e
             if
               ls $HOME/Desktop | grep brainomics
             then
@@ -153,6 +154,7 @@ jobs:
       - run:
           name: Download Brainomics data necessary for examples from alternate location if primary server is down.
           command: |
+            set +e
             if
               ls $HOME/nilearn_data | grep brainomics
             then
