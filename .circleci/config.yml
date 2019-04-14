@@ -18,6 +18,9 @@ jobs:
       MATPLOTLIB_VERSION: "*"
 
     steps:
+      - add_ssh_keys:
+          fingerprints:
+            - "87:a3:a4:15:4e:ad:79:03:2a:d2:e2:93:54:84:ed:71"
       - checkout
         # Get rid of existing virtualenvs on circle ci as they conflict with conda.
         # Trick found here:
