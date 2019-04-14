@@ -66,12 +66,12 @@ jobs:
           name: Download & install conda if absent
           command: |
             if
-              ls $HOME/miniconda3/bin | grep conda -q
+              ls $HOME/Desktop | grep brainomics
             then
-              echo "(Mini)Conda already present from the cache."
+              echo "Already present"
             else
-              wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda.sh
-              chmod +x ~/miniconda.sh && ~/miniconda.sh -b
+              wget https://osf.io/nsm8j/download -O $HOME/nilearn_data/brainomics_data.tar.gz
+              tar xvzf $HOME/nilearn_data/brainomics_data.tar.gz
             fi
       - run:
           name: Setup conda path in env variables
@@ -151,12 +151,12 @@ jobs:
           key: v1-packages+datasets-{{ checksum "week_num" }}
 
       - run:
-          name: Download Brainomics data necessary for examples from alternate location if primary server.
+          name: Download Brainomics data necessary for examples from alternate location if primary server is down.
           command: |
             if
-              ls $HOME/nilearn_data/brainomics* -d
+              ls $HOME/nilearn_data | grep brainomics
             then
-              echo ""
+              echo "Already present"
             else
               wget https://osf.io/nsm8j/download -O $HOME/nilearn_data/brainomics_data.tar.gz
               tar xvzf $HOME/nilearn_data/brainomics_data.tar.gz
