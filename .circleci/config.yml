@@ -217,13 +217,9 @@ jobs:
           when: always
           command: |
             pwd
-
-#            git config credential.helper 'cache --timeout=120'
             git config user.email "nistats@circlecici.com"
             git config user.name "Deployment Bot"
             # Push quietly to prevent showing the token in log
-#            git push -q https://${DOCS_GITHUB_TOKEN}@github.com/giantswarm/docs.git master
-
             date > .circleci/auto-cache-timestamp
             git add .circleci/auto-cache-timestamp
             git commit -m "Updated cache key for caching docs built on master [skip ci]"
