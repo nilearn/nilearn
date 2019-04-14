@@ -32,7 +32,7 @@ jobs:
           when: always
           command: |
             pwd
-            git config user.email "nistats@circlecici.com"
+            git config user.email "kc.insight.pi@gmail.com"
             git config user.name "Deployment Bot"
             date > .circleci/auto-cache-timestamp
             git add .circleci/auto-cache-timestamp
