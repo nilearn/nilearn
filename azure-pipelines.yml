@@ -29,10 +29,9 @@ jobs:
     displayName: 'Install dependencies'
 
   - script: |
-#      pip install pytest
       pip install .
-      nosetests ./nilearn #--junitxml=junit/test-results.xml
-    displayName: 'pytest'
+      nosetests ./nilearn -v
+    displayName: 'test'
 
   - task: PublishTestResults@2
     inputs:
