@@ -379,6 +379,9 @@ def path_scores(solver, X, y, mask, alphas, l1_ratios, train, test,
             if best_alpha is None:
                 best_alpha = alphas_[0]
             init = None
+            path_solver_params = solver_params.copy()
+            # Use a lighter tol during the path
+            path_solver_params['tol'] *= 2
             for alpha in alphas_:
                 # setup callback mechanism for early stopping
                 early_stopper = _EarlyStoppingCallback(
@@ -387,7 +390,7 @@ def path_scores(solver, X, y, mask, alphas, l1_ratios, train, test,
                 w, _, init = solver(
                     X_train, y_train, alpha, l1_ratio, mask=mask, init=init,
                     callback=early_stopper, verbose=max(verbose - 1, 0.),
-                    **solver_params)
+                    **path_solver_params)
 
                 # We use 2 scores for model selection: the second one is to
                 # disambiguate between regions of equivalent Spearman
