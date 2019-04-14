@@ -213,7 +213,7 @@ htmlhelp_basename = 'PythonScientic'
 # [howto/manual]).
 latex_documents = [
   ('index', 'nistats.tex', u'functional MRI in python',
-   ur"""Bertrand Thirion"""
+   """Bertrand Thirion"""
    + r"\\\relax ~\\\relax http://nistats.github.io",
    'manual'),
 
