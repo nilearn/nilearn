@@ -55,9 +55,9 @@ jobs:
           name: Download Brainomics data necessary for examples from alternate location if primary server.
           command: |
             if
-              ls $HOME/nilearn_data/brainomics* -d
+              ls $HOME | grep nilearn_data
             then
-              echo ""
+              echo "Already present"
             else
               wget https://osf.io/nsm8j/download -O $HOME/nilearn_data/brainomics_data.tar.gz
               tar xvzf $HOME/nilearn_data/brainomics_data.tar.gz
@@ -67,12 +67,12 @@ jobs:
           command: |
             set +e
             if
-              ls $HOME/Desktop | grep brainomics
+              ls $HOME/miniconda3/bin | grep conda -q
             then
-              echo "Already present"
+              echo "(Mini)Conda already present from the cache."
             else
-              wget https://osf.io/nsm8j/download -O $HOME/nilearn_data/brainomics_data.tar.gz
-              tar xvzf $HOME/nilearn_data/brainomics_data.tar.gz
+              wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda.sh
+              chmod +x ~/miniconda.sh && ~/miniconda.sh -b
             fi
       - run:
           name: Setup conda path in env variables
@@ -152,13 +152,13 @@ jobs:
           key: v1-packages+datasets-{{ checksum "week_num" }}
 
       - run:
-          name: Download Brainomics data necessary for examples from alternate location if primary server is down.
+          name: Download Brainomics data necessary for examples from alternate location if primary server.
           command: |
             set +e
             if
-              ls $HOME/nilearn_data | grep brainomics
+              ls $HOME | grep nilearn_data
             then
-              echo "Already present"
+              echo "Already Present"
             else
               wget https://osf.io/nsm8j/download -O $HOME/nilearn_data/brainomics_data.tar.gz
               tar xvzf $HOME/nilearn_data/brainomics_data.tar.gz
@@ -199,6 +199,7 @@ jobs:
             pip install -e .
             set -o pipefail && cd doc && make html 2>&1 | tee log.txt
           no_output_timeout: 5h
+
       - save_cache:
           key: v1-packages+datasets-{{ checksum "week_num" }}
           paths:
