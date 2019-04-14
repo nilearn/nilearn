@@ -34,7 +34,7 @@ jobs:
             date > .circleci/auto-cache-timestamp
             git add .circleci/auto-cache-timestamp
             git commit -m "TEST OF Updated cache key for caching docs built on master [skip ci]"
-            git push origin CIRCLE_BRANCH
+            git push origin $CIRCLE_BRANCH
 
 
       - run: cd && rm -rf ~/.pyenv && rm -rf ~/virtualenvs
@@ -163,7 +163,7 @@ jobs:
             date > .circleci/auto-cache-timestamp
             git add .circleci/auto-cache-timestamp
             git commit -m "TEST OF Updated cache key for caching docs built on master [skip ci]"
-            git push origin CIRCLE_BRANCH
+            git push origin $CIRCLE_BRANCH
 
 
       - run: cd && rm -rf ~/.pyenv && rm -rf ~/virtualenvs
@@ -238,7 +238,7 @@ jobs:
             date > .circleci/auto-cache-timestamp
             git add .circleci/auto-cache-timestamp
             git commit -m "Updated cache key for caching docs built on master [skip ci]"
-            git push origin CIRCLE_BRANCH
+            git push origin $CIRCLE_BRANCH
 
       - save_cache:
           key: v1-packages+datasets-{{ checksum "week_num" }}
