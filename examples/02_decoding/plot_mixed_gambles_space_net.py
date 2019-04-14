@@ -48,7 +48,15 @@ plot_stat_map(decoder.coef_img_, title="tv-l1", display_mode="yz",
 ##########################################################################
 # Fit Graph-Net
 # --------------
+
+# We use `alphas` for "graph-net" solver which are pre-trained on jimura z-maps
+# of 16 subjects, total 768 z-maps. This is to save computation time.
+
+alphas = [307.85, 384.19, 443.21, 71.26, 200.25, 266.11, 289.29, 238.08]
+cv = 3
+
 decoder = SpaceNetRegressor(mask=mask_filename, penalty="graph-net",
+                            alphas=alphas, cv=3,
                             eps=1e-1,  # prefer large alphas
                             memory="nilearn_cache")
 decoder.fit(zmap_filenames, behavioral_target)
