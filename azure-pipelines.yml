@@ -39,32 +39,3 @@ jobs:
       testResultsFiles: '**/test-results.xml'
       testRunTitle: 'Python $(python.version)'
     condition: succeededOrFailed()
-
-
-- job: 'BuildDocs'
-  pool:
-    vmImage: 'Ubuntu-16.04'
-  strategy:
-    matrix:
-      Python36:
-        python.version: '3.6'
-    maxParallel: 4
-
-  steps:
-  - task: UsePythonVersion@0
-    inputs:
-      versionSpec: '$(python.version)'
-      architecture: 'x64'
-
-  - script: |
-      sudo -E apt-get -yq update
-      sudo -E apt-get -yq --no-install-suggests --no-install-recommends --force-yes install dvipng texlive-latex-base texlive-latex-extra
-      python -m pip install --upgrade pip && pip install --prefer-binary -r requirements-build-docs.txt
-    displayName: 'Install dependencies'
-
-  - script: |
-      pip install .
-      cd doc
-      make html-strict
-    condition: succeededOrFailed()
-    displayName: 'make html-strict'
