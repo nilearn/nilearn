@@ -381,7 +381,7 @@ def path_scores(solver, X, y, mask, alphas, l1_ratios, train, test,
             init = None
             path_solver_params = solver_params.copy()
             # Use a lighter tol during the path
-            path_solver_params['tol'] *= 2
+            path_solver_params['tol'] = 2 * path_solver_params.get('tol', 1e-4)
             for alpha in alphas_:
                 # setup callback mechanism for early stopping
                 early_stopper = _EarlyStoppingCallback(
