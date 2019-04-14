@@ -54,10 +54,10 @@ jobs:
       - run:
           name: Download Brainomics data necessary for examples from alternate location if primary server.
           command: |
-              mkdir -p $HOME/nilearn_data
-              wget https://osf.io/nsm8j/download -O $HOME/nilearn_data/brainomics_data.tar.gz
-              cd $HOME/nilearn_data
-              tar xvzf $HOME/nilearn_data/brainomics_data.tar.gz
+            mkdir -p $HOME/nilearn_data
+            wget https://osf.io/nsm8j/download -O $HOME/nilearn_data/brainomics_data.tar.gz
+            cd $HOME/nilearn_data
+            tar xvzf $HOME/nilearn_data/brainomics_data.tar.gz
       - run:
           name: Download & install conda if absent
           command: |
@@ -149,10 +149,10 @@ jobs:
       - run:
           name: Download Brainomics data necessary for examples from alternate location if primary server.
           command: |
-              mkdir -p $HOME/nilearn_data
-              wget https://osf.io/nsm8j/download -O $HOME/nilearn_data/brainomics_data.tar.gz
-              cd $HOME/nilearn_data
-              tar xvzf $HOME/nilearn_data/brainomics_data.tar.gz
+            mkdir -p $HOME/nilearn_data
+            wget https://osf.io/nsm8j/download -O $HOME/nilearn_data/brainomics_data.tar.gz
+            cd $HOME/nilearn_data
+            tar xvzf $HOME/nilearn_data/brainomics_data.tar.gz
       - run:
           name: Download & install conda if absent
           command: |
