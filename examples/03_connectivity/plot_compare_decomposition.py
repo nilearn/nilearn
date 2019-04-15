@@ -1,8 +1,9 @@
 """
-Dictionary Learning and ICA for doing group analysis of resting-state fMRI
-==========================================================================
+Dictionary Learning and ICA for doing group analysis of fMRI
+============================================================
 
-This example applies dictionary learning and ICA to resting-state data,
+This example applies dictionary learning and ICA to
+movie-watching fMRI data,
 visualizing resulting components using atlas plotting tools.
 
 Dictionary learning is a sparsity based decomposition method for extracting
@@ -22,16 +23,16 @@ than ICA
     See the :ref:`section Inverse transform: unmasking data <unmasking_step>`.
 """
 ###############################################################################
-# Load ADHD rest dataset
-# -----------------------
+# Load brain development fmri dataset
+# -----------------------------------
 from nilearn import datasets
 
-adhd_dataset = datasets.fetch_adhd(n_subjects=30)
-func_filenames = adhd_dataset.func  # list of 4D nifti files for each subject
+rest_dataset = datasets.fetch_development_fmri(n_subjects=30)
+func_filenames = rest_dataset.func  # list of 4D nifti files for each subject
 
 # print basic information on the dataset
 print('First functional nifti image (4D) is at: %s' %
-      adhd_dataset.func[0])  # 4D data
+      rest_dataset.func[0])  # 4D data
 
 ###############################################################################
 # Create two decomposition estimators
@@ -43,7 +44,7 @@ n_components = 40
 ###############################################################################
 # Dictionary learning
 # --------------------
-# 
+#
 # We use as "template" as a strategy to compute the mask, as this leads
 # to slightly faster and more reproducible results. However, the images
 # need to be in MNI template space
