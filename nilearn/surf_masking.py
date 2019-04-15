@@ -79,14 +79,3 @@ def _load_surfmask_tex(surfmask_tex, allow_empty=False):
 
     surfmask = _utils.as_ndarray(surfmask, dtype=bool)
     return surfmask
-
-
-def _apply_surfmask_fmri(giimgs, surfmask):
-    """Same as apply_mask().
-
-    The only difference with apply_mask is that some costly checks on mask_img
-    are not performed: mask_img is assumed to contain only two different
-    values (this is checked for in apply_mask, not in this function).
-    """
-
-    return giimgs[surfmask,:].T
