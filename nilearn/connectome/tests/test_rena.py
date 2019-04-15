@@ -1,7 +1,7 @@
 from nose.tools import assert_equal, assert_not_equal, assert_raises
 from sklearn.externals.joblib import Memory
-from nilearn._utils.testing import generate_fake_fmri
-from nilearn.connectome import ReNA
+from nilearn._utils.data_gen import generate_fake_fmri
+from nilearn.connectome.rena_clustering import ReNA
 from nilearn.input_data import NiftiMasker
 from nilearn.image import index_img
 
@@ -21,18 +21,20 @@ def test_rena_clusterings():
     assert_equal(data.shape, data_compress.shape)
 
     memory = Memory(cachedir=None)
-    rena2 = ReNA(n_clusters=-2, mask=nifti_masker, memory=memory)
-    assert_raises(ValueError, rena2.fit, data)
+    rena = ReNA(n_clusters=-2, mask=nifti_masker, memory=memory)
+    assert_raises(ValueError, rena.fit, data)
 
-    rena3 = ReNA(n_clusters=10, mask=None, scaling=True)
-    data_red2 = rena3.fit_transform(index_img(data, 0))
-    data_compress2 = rena3.inverse_transform(data_red2)
+    rena = ReNA(n_clusters=10, mask=None, scaling=True)
+    data_red = rena.fit_transform(index_img(data, 0))
+    data_compress = rena.inverse_transform(data_red)
 
     for n_iter in [-2, 0]:
-        rena4 = ReNA(n_iter=n_iter, mask=nifti_masker, memory=memory)
-        assert_raises(ValueError, rena4.fit, data)
+        rena = ReNA(n_iter=n_iter, mask=nifti_masker, memory=memory)
+        assert_raises(ValueError, rena.fit, data)
 
     for n_clusters in [1, 2, 4, 8]:
-        rena5 = ReNA(n_clusters=n_clusters, n_iter=1, mask=nifti_masker,
+        rena = ReNA(n_clusters=n_clusters, n_iter=1, mask=nifti_masker,
                     memory=memory).fit(data)
-        assert_not_equal(n_clusters, rena5.n_clusters_)
+        assert_not_equal(n_clusters, rena.n_clusters_)
+
+    del n_voxels, data_compress
