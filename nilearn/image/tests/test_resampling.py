@@ -18,6 +18,7 @@ from nilearn.image.resampling import resample_img, resample_to_img, reorder_img
 from nilearn.image.resampling import from_matrix_vector, coord_transform
 from nilearn.image.resampling import get_bounds
 from nilearn.image.resampling import BoundingBoxError
+from nilearn.image.image import pad
 from nilearn._utils import testing
 
 
@@ -35,37 +36,6 @@ def rotation(theta, phi):
                   [0, cos(phi), -sin(phi)],
                   [0, sin(phi), cos(phi)]])
     return np.dot(a1, a2)
-
-
-def pad(array, *args):
-    """Pad an ndarray with zeros of quantity specified
-    in args as follows args = (x1minpad, x1maxpad, x2minpad,
-    x2maxpad, x3minpad, ...)
-    """
-
-    if len(args) % 2 != 0:
-        raise ValueError("Please specify as many max paddings as min"
-                         " paddings. You have specified %d arguments" %
-                         len(args))
-
-    all_paddings = np.zeros([array.ndim, 2], dtype=np.int64)
-    all_paddings[:len(args) // 2] = np.array(args).reshape(-1, 2)
-
-    lower_paddings, upper_paddings = all_paddings.T
-    new_shape = np.array(array.shape) + upper_paddings + lower_paddings
-
-    padded = np.zeros(new_shape, dtype=array.dtype)
-    source_slices = [slice(max(-lp, 0), min(s + up, s))
-                     for lp, up, s in zip(lower_paddings,
-                                          upper_paddings,
-                                          array.shape)]
-    target_slices = [slice(max(lp, 0), min(s - up, s))
-                     for lp, up, s in zip(lower_paddings,
-                                          upper_paddings,
-                                          new_shape)]
-
-    padded[target_slices] = array[source_slices].copy()
-    return padded
 
 
 ###############################################################################

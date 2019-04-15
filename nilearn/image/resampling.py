@@ -495,6 +495,7 @@ def resample_img(img, target_affine=None, target_shape=None,
             b = np.dot(linalg.inv(A), b)
         A = np.diag(A)
 
+
     data_shape = list(data.shape)
     # Make sure that we have a list here
     if isinstance(target_shape, np.ndarray):
@@ -532,6 +533,18 @@ def resample_img(img, target_affine=None, target_shape=None,
 
     all_img = (slice(None), ) * 3
 
+#   if (A == I OR some combination of permutation(I) and sign-flipped(I)) AND
+#      all(b == integers):
+#       ... special case: can be solved with padding alone
+#       crop source image and keep track of N voxels offset before/after volume
+#       flip along sign-flipped dimensions
+#       shuffle the permuted dimensions
+#       for each dimension:
+#           Save index as translation + offset
+#             (if not flipped: offset before, else: offset after)
+#       Insert cropped image into zero matrix at set indices
+
+#     if np.all(np.eye())
     # Iterate over a set of 3D volumes, as the interpolation problem is
     # separable in the extra dimensions. This reduces the
     # computational cost

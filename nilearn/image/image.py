@@ -327,7 +327,7 @@ def _crop_img_to(img, slices, copy=True):
     return new_img_like(img, cropped_data, new_affine)
 
 
-def crop_img(img, rtol=1e-8, copy=True):
+def crop_img(img, rtol=1e-8, copy=True, return_offset=False):
     """Crops img as much as possible
 
     Will crop img, removing as many zero entries as possible
@@ -349,10 +349,19 @@ def crop_img(img, rtol=1e-8, copy=True):
     copy: boolean
         Specifies whether cropped data is copied or not.
 
+    return_offset: boolean
+        Specifies whether to return a tuple of the removed padding.
+
     Returns
     -------
     cropped_img: image
         Cropped version of the input image
+
+    offset: list (optional)
+        List of tuples representing the number of voxels removed (before, after)
+        the cropped volumes, i.e.:
+          [(x1_pre, x1_post), (x2_pre, x2_post), ..., (xN_pre, xN_post)]
+
     """
 
     img = check_niimg(img)
@@ -374,6 +383,37 @@ def crop_img(img, rtol=1e-8, copy=True):
     slices = [slice(s, e) for s, e in zip(start, end)]
 
     return _crop_img_to(img, slices, copy=copy)
+
+
+def pad(array, *args):
+    """Pad an ndarray with zeros of quantity specified
+    in args as follows args = (x1minpad, x1maxpad, x2minpad,
+    x2maxpad, x3minpad, ...)
+    """
+
+    if len(args) % 2 != 0:
+        raise ValueError("Please specify as many max paddings as min"
+                         " paddings. You have specified %d arguments" %
+                         len(args))
+
+    all_paddings = np.zeros([array.ndim, 2], dtype=np.int64)
+    all_paddings[:len(args) // 2] = np.array(args).reshape(-1, 2)
+
+    lower_paddings, upper_paddings = all_paddings.T
+    new_shape = np.array(array.shape) + upper_paddings + lower_paddings
+
+    padded = np.zeros(new_shape, dtype=array.dtype)
+    source_slices = [slice(max(-lp, 0), min(s + up, s))
+                     for lp, up, s in zip(lower_paddings,
+                                          upper_paddings,
+                                          array.shape)]
+    target_slices = [slice(max(lp, 0), min(s - up, s))
+                     for lp, up, s in zip(lower_paddings,
+                                          upper_paddings,
+                                          new_shape)]
+
+    padded[target_slices] = array[source_slices].copy()
+    return padded
 
 
 def _compute_mean(imgs, target_affine=None,
