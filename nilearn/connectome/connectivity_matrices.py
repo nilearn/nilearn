@@ -476,7 +476,8 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
         self._fit_transform(X, do_fit=True)
         return self
 
-    def _fit_transform(self, X, do_transform=False, do_fit=False):
+    def _fit_transform(self, X, do_transform=False, do_fit=False,
+                       confounds=None):
         """ Internal function to avoid duplication of computation
         """
         self._check_input(X)
@@ -529,9 +530,35 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
                 connectivities = sym_matrix_to_vec(
                     connectivities, discard_diagonal=self.discard_diagonal)
 
+        if confounds is not None:
+            connectivities = signal.clean(connectivities, confounds=confounds)
+
         return connectivities
 
-    def fit_transform(self, X, y=None):
+    def fit_transform(self, X, y=None, confounds=None):
+        """Fit the covariance estimator to the given time series for each
+        subject. Then apply transform to covariance matrices for the chosen
+        kind.
+
+        Parameters
+        ----------
+        X : list of n_subjects numpy.ndarray with shapes \
+            (n_samples, n_features)
+            The input subjects time series. The number of samples may differ
+            from one subject to another.
+
+        confounds : CSV file or array-like, optional
+            This parameter is passed to signal.clean. Please see the related
+            documentation for details.
+            shape: (number of scans, number of confounds)
+
+        Returns
+        -------
+        output : numpy.ndarray, shape (n_subjects, n_features, n_features) or \
+            (n_subjects, n_features * (n_features + 1) / 2) if vectorize \
+            is set to True.
+            The transformed individual connectivities, as matrices or vectors.
+        """
         if self.kind == 'tangent':
             # Check that people are applying fit_transform to a group of
             # subject
@@ -542,10 +569,11 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
                     "be applied to a group of subjects, as it returns "
                     "deviations to the mean. You provided %r" % X
                     )
-        return self._fit_transform(X, do_fit=True, do_transform=True)
+        return self._fit_transform(X, do_fit=True, do_transform=True,
+                                   confounds=confounds)
 
 
-    def transform(self, X):
+    def transform(self, X, confounds=None):
         """Apply transform to covariances matrices to get the connectivity
         matrices for the chosen kind.
 
@@ -556,6 +584,11 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
             The input subjects time series. The number of samples may differ
             from one subject to another.
 
+        confounds : CSV file or array-like, optional
+            This parameter is passed to signal.clean. Please see the related
+            documentation for details.
+            shape: (number of scans, number of confounds)
+
         Returns
         -------
         output : numpy.ndarray, shape (n_subjects, n_features, n_features) or \
@@ -564,7 +597,7 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
             The transformed individual connectivities, as matrices or vectors.
         """
         self._check_fitted()
-        return self._fit_transform(X, do_transform=True)
+        return self._fit_transform(X, do_transform=True, confounds=confounds)
 
     def _check_fitted(self):
         if not hasattr(self, "cov_estimator_"):
