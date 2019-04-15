@@ -258,7 +258,7 @@ Deviations from this mean in the tangent space are provided in the connectivitie
    :class: green
 
    Compute and visualize the tangent group connectome based on the brain
-   development (movie-watching)
+   development
    dataset downloaded with :func:`nilearn.datasets.fetch_development_fmri`
 
    **Hints:** The example above has the solution
