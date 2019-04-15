@@ -20,7 +20,7 @@ import numpy as np
 import sklearn
 from sklearn.externals.joblib import Parallel, delayed, cpu_count
 from sklearn import svm
-from sklearn.cross_validation import cross_val_score
+from sklearn.model_selection import cross_val_score
 from sklearn.base import BaseEstimator
 from sklearn import neighbors
 
