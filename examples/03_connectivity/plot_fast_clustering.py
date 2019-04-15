@@ -2,9 +2,10 @@
 ReNA clustering to learn a brain parcellation from rest fMRI
 ====================================================================
 
-We use ReNA clustering to create a set of parcels. These parcels are
-particularly interesting for creating a 'compressed' representation of the
-data, replacing the data in the fMRI images by mean on the parcellation.
+We use Recursive Neighbor Agglomeration (ReNA) clustering to create a set of
+parcels. These parcels are particularly interesting for creating a 'compressed'
+representation of the data, replacing the data in the fMRI images by mean on
+the parcellation.
 
 This parcellation may be useful in a supervised learning, see for
 instance: `A supervised clustering approach for fMRI-based inference of
@@ -146,4 +147,3 @@ plot_epi(compressed_img_rena, cut_coords=cut_coords,
          display_mode='xz')
 
 show()
-
