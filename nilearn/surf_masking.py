@@ -90,20 +90,3 @@ def _apply_surfmask_fmri(giimgs, surfmask):
     """
 
     return giimgs[surfmask,:].T
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
