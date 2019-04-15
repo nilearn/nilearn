@@ -3,7 +3,7 @@ Dictionary Learning and ICA for doing group analysis of fMRI
 ============================================================
 
 This example applies dictionary learning and ICA to naturalistic stimuli
-based movie watching fmri data,
+movie-watching fMRI data,
 visualizing resulting components using atlas plotting tools.
 
 Dictionary learning is a sparsity based decomposition method for extracting
