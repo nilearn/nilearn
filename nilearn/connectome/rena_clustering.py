@@ -1,4 +1,4 @@
-"""Recursive nearest agglomeration (ReNA):
+"""Recursive Neighbor Agglomeration (ReNA):
     fastclustering for approximation of structured signals
 """
 # Author: Andres Hoyos idrobo, Gael Varoquaux, Jonas Kahn and  Bertrand Thirion
@@ -9,17 +9,14 @@ import scipy
 
 import numpy as np
 import warnings
+from scipy.sparse import csgraph, coo_matrix, dia_matrix
 from sklearn.externals.joblib import Memory
 from sklearn.externals import six
 from sklearn.base import TransformerMixin, ClusterMixin
-from scipy.sparse import csgraph, coo_matrix, dia_matrix
 from sklearn.base import BaseEstimator
-try:
-    from sklearn.utils import atleast2d_or_csr
-except ImportError: # sklearn 0.15
-    from sklearn.utils import check_array as atleast2d_or_csr
+from sklearn.utils.validation import check_is_fitted
+from sklearn.utils import check_array
 from ..input_data.masker_validation import check_embedded_nifti_masker
-from .._utils.fixes import check_is_fitted
 
 
 def _compute_weights(masker, masked_data):
@@ -120,14 +117,14 @@ def _make_edges_and_weights(masker, masked_data):
     # Indexing each voxel
     vertices = np.arange(n_features).reshape(shape)
 
-    weights = _compute_weights(masker, masked_data)
+    weights_unmasked = _compute_weights(masker, masked_data)
 
-    edges = _make_3d_edges(vertices, is_mask=False)
+    edges_unmasked = _make_3d_edges(vertices, is_mask=False)
     edges_mask = _make_3d_edges(mask, is_mask=True)
 
     # Apply mask to edges and weights
-    weights = weights[edges_mask]
-    edges = edges[:, edges_mask]
+    weights = np.copy(weights_unmasked[edges_mask])
+    edges = np.copy(edges_unmasked[:, edges_mask])
 
     # Reorder the indices of the graph
     max_index = edges.max()
@@ -153,7 +150,7 @@ def weighted_connectivity_graph(masker, masked_data):
     connectivity : a sparse COO matrix
         sparse matrix representation of the weighted adjacency graph
     """
-    n_features = masker.mask_img_.get_data().sum()
+    n_features = int(masker.mask_img_.get_data().sum())
 
     edges, weight = _make_edges_and_weights(masker, masked_data)
 
@@ -209,8 +206,8 @@ def _nn_connectivity(connectivity, threshold=1e-7):
     return nn_connectivity
 
 
-def _reduce_data_and_connectivity(labels, n_labels, connectivity, masked_data,
-                                  threshold=1e-7):
+def _reduce_data_and_connectivity(labels, n_components, connectivity,
+                                  masked_data, threshold=1e-7):
     """Perform feature grouping and reduce the connectivity matrix: during the
     reduction step one changes the value of each cluster by their mean.
     In addition, connected nodes are merged.
@@ -220,7 +217,7 @@ def _reduce_data_and_connectivity(labels, n_labels, connectivity, masked_data,
     labels : array like
         Containts the label assignation for each voxel.
 
-    n_labels : int
+    n_components : int
         The number of clusters in the current iteration.
 
     connectivity : a sparse matrix in COOrdinate format.
@@ -244,11 +241,11 @@ def _reduce_data_and_connectivity(labels, n_labels, connectivity, masked_data,
 
     incidence = coo_matrix(
         (np.ones(n_features), (labels, np.arange(n_features))),
-        shape=(n_labels, n_features), dtype=np.float32).tocsc()
+        shape=(n_components, n_features), dtype=np.float32).tocsc()
 
     inv_sum_col = dia_matrix(
         (np.array(1. / incidence.sum(axis=1)).squeeze(), 0),
-        shape=(n_labels, n_labels))
+        shape=(n_components, n_components))
 
     incidence = inv_sum_col * incidence
 
@@ -303,9 +300,9 @@ def nearest_neighbor_grouping(connectivity, masked_data, n_clusters,
     # Nearest neighbor conenctivity
     nn_connectivity = _nn_connectivity(connectivity, threshold)
     n_features = connectivity.shape[0]
-    n_labels = n_features - (nn_connectivity + nn_connectivity.T).nnz / 2
+    n_components = n_features - (nn_connectivity + nn_connectivity.T).nnz / 2
 
-    if n_labels < n_clusters:
+    if n_components < n_clusters:
         # remove edges so that the final number of clusters is not less than
         # n_clusters (to achieve the desired number of clusters)
         n_edges = n_features - n_clusters
@@ -324,11 +321,11 @@ def nearest_neighbor_grouping(connectivity, masked_data, n_clusters,
                                      (n_features, n_features))
 
     # Clustering step: getting the connected components of the nn matrix
-    n_labels, labels = csgraph.connected_components(nn_connectivity)
+    n_components, labels = csgraph.connected_components(nn_connectivity)
 
     # Reduction step: reduction by averaging
     reduced_connectivity, reduced_masked_data = _reduce_data_and_connectivity(
-        labels, n_labels, connectivity, masked_data, threshold)
+        labels, n_components, connectivity, masked_data, threshold)
 
     return reduced_connectivity, reduced_masked_data, labels
 
@@ -357,7 +354,7 @@ def recursive_neighbor_agglomeration(masker, masked_data, n_clusters,
 
     Returns
     -------
-    n_labels : int
+    n_components : int
         Number of clusters.
 
     labels : array
@@ -367,23 +364,23 @@ def recursive_neighbor_agglomeration(masker, masked_data, n_clusters,
 
     # Initialization
     labels = np.arange(connectivity.shape[0])
-    n_labels = connectivity.shape[0]
+    n_components = connectivity.shape[0]
 
     for i in range(n_iter):
         connectivity, masked_data, reduced_labels = nearest_neighbor_grouping(
             connectivity, masked_data, n_clusters, threshold)
 
         labels = reduced_labels[labels]
-        n_labels = connectivity.shape[0]
+        n_components = connectivity.shape[0]
 
-        if n_labels <= n_clusters:
+        if n_components <= n_clusters:
             break
 
-    return n_labels, labels
+    return n_components, labels
 
 
 class ReNA(BaseEstimator, ClusterMixin, TransformerMixin):
-    """Recursive nearest agglomeration (ReNA):
+    """Recursive Neighbor Agglomeration (ReNA):
     Recursively merges the pair of clusters according to 1-nearest neighbors
     criterion.
 
@@ -518,7 +515,7 @@ class ReNA(BaseEstimator, ClusterMixin, TransformerMixin):
         self.masker_ = check_embedded_nifti_masker(self, multi_subject=False)
         X = self.masker_.fit_transform(X)
 
-        X = atleast2d_or_csr(X)
+        X = check_array(X)
         n_features = X.shape[1]
 
         if self.n_clusters > n_features:
@@ -527,7 +524,7 @@ class ReNA(BaseEstimator, ClusterMixin, TransformerMixin):
                           "features. Taking n_clusters = %s instead."
                           % str(n_features))
 
-        n_labels, labels = self.memory_.cache(
+        n_components, labels = self.memory_.cache(
             recursive_neighbor_agglomeration)(self.masker_, X, self.n_clusters,
                                               n_iter=self.n_iter,
                                               threshold=self.threshold)
@@ -623,4 +620,3 @@ def _get_max_connectivity(connectivity):
             max_connectivity[i] = connectivity.getrow(i).max()
 
     return max_connectivity
-
