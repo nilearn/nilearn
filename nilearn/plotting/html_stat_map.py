@@ -3,6 +3,7 @@ Visualizing 3D stat maps in a Brainsprite viewer
 """
 import os
 import json
+import warnings
 from io import BytesIO
 
 import numpy as np
@@ -75,6 +76,10 @@ def _threshold_data(data, threshold=None):
     # if all values above threshold, np.ma returns np.bool_(False) ;
     # this will fail our shape check, so we'll convert to an array
     if not np.ndim(data.mask):
+        value_check = data.min()
+        warnings.warn("The given float value must not be less than {0}. "
+                      "But, you have given threshold={1} ".format(value_check,
+                                                                  threshold))
         data.mask = np.full(data.shape, False)
     return data, threshold
 
