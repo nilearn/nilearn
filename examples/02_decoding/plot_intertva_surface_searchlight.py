@@ -13,13 +13,18 @@ from the InterTVA experiment: https://openneuro.org/datasets/ds001771/
 """
 
 import numpy as np
-import nibabel.gifti as ng
-import nibabel as nb
-import nilearn.surface as ns
 import os.path as op
 import pandas
 import tarfile
 import glob
+
+from sklearn.model_selection import StratifiedShuffleSplit
+from sklearn.linear_model import LogisticRegression
+import nibabel.gifti as ng
+import nibabel as nb
+
+import nilearn.surface as ns
+import nilearn.decoding
 
 
 ### Getting the data ###
@@ -66,17 +71,21 @@ X = np.array(alldata_singletrials).T
 print(X.shape)
 
 
-### Compute the analysis mask
-
-# compute a "brain" mask (i.e the set of vertices where there is data)
-surfmask = X.sum(1).astype(np.float32)
-surfmask[surfmask!=0] = 1.
-# save this brain mask (this is a dirty way to do it, to be changed...)
-surfmask_tex = nb.load(tex_path)
-surfmask_tex.darrays[0].data = surfmask
-print(np.flatnonzero(surfmask).size)
-#surfmask_path = op.join(subdir, 'fsaverage5.lh.brainmask.gii')
-#ng.write(surfmask_tex,surfmask_path)
+### Define the analysis mask
+fullbrain = True
+if fullbrain:
+    # compute a "brain" mask (i.e the set of vertices where there is data)
+    surfmask = X.sum(1).astype(np.float32)
+    surfmask[surfmask!=0] = 1.
+    # save this brain mask (this is a dirty way to do it, to be changed...)
+    surfmask_tex = nb.load(tex_path)
+    surfmask_tex.darrays[0].data = surfmask
+    #print(np.flatnonzero(surfmask).size)
+    #surfmask_path = op.join(subdir, 'fsaverage5.lh.brainmask.gii')
+    #ng.write(surfmask_tex,surfmask_path)
+else:
+    surfmask_path = op.join(subdir,'fsaverage5.lh.temporal_roi.gii')
+    surfmask_tex = nb.load(surfmask_path)
 
 ### Setting up the surfacic searchlight ###
 
@@ -84,18 +93,15 @@ print(np.flatnonzero(surfmask).size)
 n_jobs = 2
 
 # Define the cross-validation scheme used for validation.
-from sklearn.model_selection import StratifiedShuffleSplit
 sss = StratifiedShuffleSplit(n_splits=2, test_size=0.15)
 
 # Define the classifier
-from sklearn.linear_model import LogisticRegression
 logreg = LogisticRegression()
 
 # Set the radius of the searchlight sphere that will scan the mesh
 radius = 3
 
 # Define the searchlight "estimator"
-import nilearn.decoding
 searchlight = nilearn.decoding.SurfSearchLight(mesh,
                                                surfmask_tex,
                                                estimator=logreg,
