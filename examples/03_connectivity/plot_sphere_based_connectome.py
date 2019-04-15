@@ -167,7 +167,7 @@ coords = np.vstack((
 ###############################################################################
 # Before calculating the connectivity matrix, let's look at the distribution
 # of the regions of the default mode network.
-dmn_rois = seitzman.networks == b"DefaultMode"
+dmn_rois = seitzman.networks == "DefaultMode"
 dmn_coords = coords[dmn_rois]
 zero_matrix = np.zeros((len(dmn_coords), len(dmn_coords)))
 plotting.plot_connectome(zero_matrix, dmn_coords,
