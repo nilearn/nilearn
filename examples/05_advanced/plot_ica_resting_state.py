@@ -5,7 +5,7 @@ Multivariate decompositions: Independent component analysis of fMRI
 
 This example is meant to demonstrate nilearn as a low-level tools used to
 combine feature extraction with a multivariate decomposition algorithm
-for naturalistic stimuli based movie watching state.
+for movie-watching.
 
 This example is a toy. To apply ICA to fmri timeseries data, it is advised
 to look at the example
