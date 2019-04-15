@@ -51,13 +51,14 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
     hemi : {'left', 'right'}, default is 'left'
         Hemisphere to display.
 
-    view: {'lateral', 'medial', 'dorsal', 'ventral', 'anterior', 'posterior'}, default is 'lateral'
+    view: {'lateral', 'medial', 'dorsal', 'ventral', 'anterior', 'posterior'},
+        default is 'lateral'
         View of the surface that is rendered.
 
     cmap: matplotlib colormap, str or colormap object, default is None
         To use for plotting of the stat_map. Either a string
         which is a name of a matplotlib colormap, or a matplotlib
-        colormap object. If None, matplolib default will be chosen
+        colormap object. If None, matplotlib default will be chosen
 
     colorbar : bool, optional, default is False
         If True, a colorbar of surf_map is displayed.
@@ -349,7 +350,7 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
         values below the threshold (in absolute value) are plotted
         as transparent.
 
-    cmap : matplotlib colormap in str or colormap object, default 'coolwarm'
+    cmap : matplotlib colormap in str or colormap object, default 'cold_hot'
         To use for plotting of the stat_map. Either a string
         which is a name of a matplotlib colormap, or a matplotlib
         colormap object.
@@ -444,9 +445,7 @@ def plot_surf_roi(surf_mesh, roi_map, bg_map=None,
         ROI map to be displayed on the surface mesh, can be a file
         (valid formats are .gii, .mgz, .nii, .nii.gz, or Freesurfer specific
         files such as .annot or .label), or
-        a Numpy array containing a value for each vertex, or
-        a list of Numpy arrays, one array per ROI which contains indices
-        of all vertices included in that ROI.
+        a Numpy array
 
     hemi : {'left', 'right'}, default is 'left'
         Hemisphere to display.
@@ -456,10 +455,11 @@ def plot_surf_roi(surf_mesh, roi_map, bg_map=None,
         stat_map in greyscale, most likely a sulcal depth map for
         realistic shading.
 
-    view: {'lateral', 'medial', 'dorsal', 'ventral', 'anterior', 'posterior'}, default is 'lateral'
+    view: {'lateral', 'medial', 'dorsal', 'ventral', 'anterior', 'posterior'},
+        default is 'lateral'
         View of the surface that is rendered.
 
-    cmap : matplotlib colormap str or colormap object, default 'coolwarm'
+    cmap : matplotlib colormap str or colormap object, default 'gist_ncar'
         To use for plotting of the rois. Either a string which is a name
         of a matplotlib colormap, or a matplotlib colormap object.
 
@@ -502,35 +502,9 @@ def plot_surf_roi(surf_mesh, roi_map, bg_map=None,
 
     nilearn.plotting.plot_surf: For brain surface visualization.
     """
+    roi = load_surf_data(roi_map)
+    vmin, vmax = np.min(roi), 1 + np.max(roi)
 
-    v, _ = load_surf_mesh(surf_mesh)
-
-    # if roi_map is a list of arrays with indices for different rois
-    if isinstance(roi_map, list):
-        roi_list = roi_map[:]
-        roi_map = np.zeros(v.shape[0])
-        idx = 1
-        for arr in roi_list:
-            roi_map[arr] = idx
-            idx += 1
-
-    elif isinstance(roi_map, np.ndarray):
-        # if roi_map is an array with values for all surface nodes
-        roi_data = load_surf_data(roi_map)
-        # or a single array with indices for a single roi
-        if roi_data.shape[0] != v.shape[0]:
-            roi_map = np.zeros(v.shape[0], dtype=int)
-            roi_map[roi_data] = 1
-
-    else:
-        raise ValueError('Invalid input for roi_map. Input can be a file '
-                         '(valid formats are .gii, .mgz, .nii, '
-                         '.nii.gz, or Freesurfer specific files such as '
-                         '.annot or .label), or a Numpy array containing a '
-                         'value for each vertex, or a list of Numpy arrays, '
-                         'one array per ROI which contains indices of all '
-                         'vertices included in that ROI')
-    vmin, vmax = np.min(roi_map), 1 + np.max(roi_map)
     display = plot_surf(surf_mesh, surf_map=roi_map, bg_map=bg_map,
                         hemi=hemi, view=view, avg_method='median',
                         cmap=cmap, alpha=alpha, bg_on_data=bg_on_data,
