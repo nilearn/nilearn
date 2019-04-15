@@ -17,17 +17,13 @@ from distutils.version import LooseVersion
 
 import numpy as np
 
-import sklearn
 from sklearn.externals.joblib import Parallel, delayed, cpu_count
 from sklearn import svm
-from sklearn.model_selection import cross_val_score
 from sklearn.base import BaseEstimator
-from sklearn import neighbors
 
-import nibabel
 
 from .. import surf_masking
-from .._utils import as_ndarray
+from ..input_data.gifti_spheres_masker import _apply_surfmask_and_get_affinity
 
 from .._utils.compat import _basestring
 from sklearn.model_selection import cross_val_score
@@ -303,15 +299,8 @@ class SurfSearchLight(BaseEstimator):
         process_surfmask = surf_masking._load_surfmask_tex(self.process_surfmask_tex)
         process_surfmask_coords = mesh_coords[process_surfmask,:]
         
-        clf = neighbors.NearestNeighbors(radius=self.radius)
-        A = clf.fit(surfmask_coords).radius_neighbors_graph(process_surfmask_coords)
-        del process_surfmask_coords, surfmask_coords
-        A = A.tolil()
-
-        print(surfmask.shape)
-        print(giimgs.shape)
-
-        X = surf_masking._apply_surfmask_fmri(giimgs, surfmask)
+        X, A = _apply_surfmask_and_get_affinity(
+            surfmask_coords, giimgs, self.radius, True)
         
         print(X.shape)
 
