@@ -41,7 +41,7 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
         Data to be displayed on the surface mesh. Can be a file (valid formats
         are .gii, .mgz, .nii, .nii.gz, or Freesurfer specific files such as
         .thickness, .curv, .sulc, .annot, .label) or
-        a Numpy array
+        a Numpy array with a value for each vertex of the surf_mesh.
 
     bg_map: Surface data object (to be defined), optional,
         Background image to be plotted on the mesh underneath the
@@ -331,7 +331,7 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
         be a file (valid formats are .gii, .mgz, .nii, .nii.gz, or
         Freesurfer specific files such as .thickness, .curv, .sulc, .annot,
         .label) or
-        a Numpy array
+        a Numpy array with a value for each vertex of the surf_mesh.
 
     bg_map : Surface data object (to be defined), optional,
         Background image to be plotted on the mesh underneath the
@@ -445,7 +445,9 @@ def plot_surf_roi(surf_mesh, roi_map, bg_map=None,
         ROI map to be displayed on the surface mesh, can be a file
         (valid formats are .gii, .mgz, .nii, .nii.gz, or Freesurfer specific
         files such as .annot or .label), or
-        a Numpy array
+        a Numpy array with a value for each vertex of the surf_mesh.
+        The value at each vertex one inside the ROI and zero inside ROI, or an
+        integer giving the label number for atlases.
 
     hemi : {'left', 'right'}, default is 'left'
         Hemisphere to display.
