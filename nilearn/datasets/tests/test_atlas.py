@@ -319,6 +319,10 @@ def test_fetch_coords_seitzman_2018():
     np.testing.assert_array_equal(bunch.networks, np.sort(bunch.networks))
     assert_not_equal(bunch.description, '')
 
+    r1 = bunch.regions[0]
+    r1 = r1.decode("utf-8") if isinstance(r1, bytes) else r1
+    assert r1 == "cortexL"
+
     bunch = atlas.fetch_coords_seitzman_2018(ordered_regions=False)
     assert_true(np.any(bunch.networks != np.sort(bunch.networks)))
 
