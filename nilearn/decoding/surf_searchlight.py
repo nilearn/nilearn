@@ -297,10 +297,10 @@ class SurfSearchLight(BaseEstimator):
         surfmask = surf_masking._load_surfmask_tex(self.surfmask_tex)
         surfmask_coords = mesh_coords[surfmask,:]
         process_surfmask = surf_masking._load_surfmask_tex(self.process_surfmask_tex)
-        process_surfmask_coords = mesh_coords[process_surfmask,:]
-        
+
         X, A = _apply_surfmask_and_get_affinity(
-            surfmask_coords, giimgs, self.radius, True)
+            surfmask_coords, giimgs, mesh_coords, self.radius, True,
+            process_surfmask=process_surfmask)
         
         print(X.shape)
 
