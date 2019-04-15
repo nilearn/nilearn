@@ -1,18 +1,21 @@
 """
-Cortical surface-based searchlight decoding of vocal vs. non-vocal
-stimuli in InterTVA experiment
-https://openneuro.org/datasets/ds001771/
-=================================================================
+Cortical surface-based searchlight decoding
+===========================================
 
 This is a demo for surface-based searchlight decoding, as described in:
 Chen, Y., Namburi, P., Elliott, L.T., Heinzle, J., Soon, C.S., 
 Chee, M.W.L., and Haynes, J.-D. (2011). Cortical surface-based 
 searchlight decoding. NeuroImage 56, 582–592.
+
+The decoding question addressed here aims at guessing whether the audio
+stimulus heard by the subject was vocal or non-vocal. The data is taken
+from the InterTVA experiment: https://openneuro.org/datasets/ds001771/
 """
 
 import numpy as np
 import nibabel.gifti as ng
 import nibabel as nb
+import nilearn.surface as ns
 import os.path as op
 import pandas
 import tarfile
@@ -21,7 +24,6 @@ import glob
 
 ### Getting the data ###
 # probably temporary until a better way to get the data is set up
-
 # get the archive
 import urllib
 intertva_url = 'https://cloud.int.univ-amu.fr/index.php/s/j8Z84GRXRGBMqec/download'
@@ -32,10 +34,9 @@ urllib.request.urlretrieve(intertva_url,tar_fname)
 tar = tarfile.open(tar_fname, "r:gz")
 tar.extractall()
 tar.close()
-subdir = 'InterTVA_sub-41_surfdata/'
-
 
 ### Define the labels to be decoded ###
+subdir = 'InterTVA_sub-41_surfdata/'
 labels_df = pandas.read_csv(op.join(subdir,'labels_voicelocalizer_voice_vs_nonvoice.tsv'), sep='\t')
 y = np.array(labels_df['label'])
 
@@ -57,8 +58,10 @@ beta_flist.sort()
 # each beta was computed to estimate the amplitude of the response for a single trial
 alldata_singletrials = []
 for tex_path in beta_flist:
-    tex = nb.load(tex_path)
-    alldata_singletrials.append(tex.darrays[0].data)
+    # tex = nb.load(tex_path)
+    # alldata_singletrials.append(tex.darrays[0].data)
+    tex_data = ns.load_surf_data(tex_path)
+    alldata_singletrials.append(tex_data)
 X = np.array(alldata_singletrials).T
 print(X.shape)
 
@@ -72,24 +75,24 @@ surfmask[surfmask!=0] = 1.
 surfmask_tex = nb.load(tex_path)
 surfmask_tex.darrays[0].data = surfmask
 print(np.flatnonzero(surfmask).size)
-surfmask_path = op.join(subdir, 'fsaverage5.lh.brainmask.gii')
-ng.write(surfmask_tex,surfmask_path)
+#surfmask_path = op.join(subdir, 'fsaverage5.lh.brainmask.gii')
+#ng.write(surfmask_tex,surfmask_path)
 
 ### Setting up the surfacic searchlight ###
 
 # Make processing parallel
-n_jobs = 12
+n_jobs = 2
 
 # Define the cross-validation scheme used for validation.
 from sklearn.model_selection import StratifiedShuffleSplit
-sss = StratifiedShuffleSplit(n_splits=10, test_size=0.15)
+sss = StratifiedShuffleSplit(n_splits=2, test_size=0.15)
 
 # Define the classifier
 from sklearn.linear_model import LogisticRegression
 logreg = LogisticRegression()
 
 # Set the radius of the searchlight sphere that will scan the mesh
-radius = 6
+radius = 3
 
 # Define the searchlight "estimator"
 import nilearn.decoding
@@ -119,4 +122,5 @@ ng.write(slscores_tex,slscores_path)
 
 ### Plot the results with nilearn surface tools ###
 # to be written...
+
 
