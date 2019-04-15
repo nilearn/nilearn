@@ -6,7 +6,7 @@ NEW
 
 - New brain development fMRI dataset fetcher
   :func:`nilearn.datasets.fetch_development_fmri` can be used to download
-  naturalistic stimuli movie-watching data. A light-weight dataset implemented
+  movie-watching data in children and adults. A light-weight dataset implemented
   for teaching and usage in the examples.
 
 Changes
