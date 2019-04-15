@@ -7,6 +7,8 @@ lxml
 nose
 mkl
 sphinx
+sphinx_gallery
+numpydoc
 coverage
 patsy
 boto3
