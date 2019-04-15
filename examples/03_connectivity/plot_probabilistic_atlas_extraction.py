@@ -7,7 +7,7 @@ atlas, to construct a functional connectome.
 
 We use the `MSDL atlas
 <https://team.inria.fr/parietal/18-2/spatial_patterns/spatial-patterns-in-resting-state/>`_
-of functional regions in naturalistic stimuli based movie watching.
+of functional regions in movie-watching.
 
 The key to extract signals is to use the
 :class:`nilearn.input_data.NiftiMapsMasker` that can transform nifti
