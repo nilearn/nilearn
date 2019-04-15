@@ -6,7 +6,7 @@ This example shows how to use :class:`nilearn.regions.RegionExtractor`
 to extract spatially constrained brain regions from whole brain maps decomposed
 using dictionary learning and use them to build a functional connectome.
 
-We used 20 naturalistic stimuli based movie watching functional datasets from
+We used 20 movie-watching functional datasets from
 :func:`nilearn.datasets.fetch_development_fmri` and
 :class:`nilearn.decomposition.DictLearning` for set of brain atlas maps.
 
