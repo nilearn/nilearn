@@ -92,7 +92,7 @@ Custom data loading: loading only the first 100 time points
 ------------------------------------------------------------
 
 Suppose we want to restrict a dataset to the first 100 frames. Below, we load
-a naturalistic stimuli based movie watching dataset with :func:`fetch_development_fmri()
+a movie-watching dataset with :func:`fetch_development_fmri()
 <nilearn.datasets.fetch_development_fmri>`, restrict it to 100 frames and
 build a new niimg object that we can give to the masker. Although
 possible, there is no need to save your data to a file to pass it to a
