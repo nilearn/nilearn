@@ -3,7 +3,7 @@ Producing single subject maps of seed-to-voxel correlation
 ==========================================================
 
 This example shows how to produce seed-to-voxel correlation maps for a single
-subject based on naturalistic stimuli based movie watching fMRI scans.
+subject based on movie-watching fMRI scans.
 These maps depict the temporal correlation of a **seed region** with the
 **rest of the brain**.
 
