@@ -22,11 +22,7 @@ from sklearn.base import RegressorMixin
 from sklearn.linear_model.base import LinearModel
 from sklearn.utils.extmath import safe_sparse_dot
 from sklearn import clone
-
-try:
-    from sklearn.grid_search import ParameterGrid
-except ImportError: # sklearn 0.18
-    from sklearn.model_selection import ParameterGrid
+from sklearn.model_selection import ParameterGrid
 
 from ..input_data.masker_validation import check_embedded_nifti_masker
 from .._utils.param_validation import _adjust_screening_percentile
@@ -122,7 +118,7 @@ def _parallel_fit(estimator, X, y, train, test, param_grid, is_classif, scorer,
             if hasattr(estimator, 'predict_proba'):
                 y_prob = estimator.predict_proba(X_test)
                 y_prob = y_prob[:, 1]
-                neg_prob = 1 - y_prob # the complement of the probability
+                neg_prob = 1 - y_prob  # the complement of the probability
             else:
                 decision = estimator.decision_function(X_test)
                 if decision.ndim == 2:
@@ -130,7 +126,7 @@ def _parallel_fit(estimator, X, y, train, test, param_grid, is_classif, scorer,
                     neg_prob = np.abs(decision[:, 0])
                 else:
                     y_prob = decision
-                    neg_prob = -decision # negative decision function
+                    neg_prob = -decision  # negative decision function
             score = scorer(estimator, X_test, y_test)
             if np.all(estimator.coef_ == 0):
                 score = 0
@@ -273,9 +269,10 @@ class BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
     See Also
     ------------
     nilearn.decoding.DecoderRegressor - regression strategies for Neuroimaging.
-    nilearn.decoding.Decoder - classification strategies for Neuroimaging.
+    nilearn.decoding.Decoder - classification strategies for Neuroimaging.  
 
     """
+
     def __init__(self, estimator='svc', mask=None, cv=10, param_grid=None,
                  screening_percentile=20, scoring=None, smoothing_fwhm=None,
                  standardize=True, target_affine=None, target_shape=None,
@@ -674,6 +671,7 @@ class Decoder(BaseDecoder):
     nilearn.decoding.Decoder - classification strategies for Neuroimaging.
 
     """
+
     def __init__(self, estimator='svc', mask=None, cv=10, param_grid=None,
                  screening_percentile=20, scoring='roc_auc',
                  smoothing_fwhm=None, standardize=True, target_affine=None,
@@ -808,6 +806,7 @@ class DecoderRegressor(BaseDecoder):
     nilearn.decoding.Decoder - classification strategies for Neuroimaging.
 
     """
+
     def __init__(self, estimator='svr', mask=None, cv=10, param_grid=None,
                  screening_percentile=20, scoring='r2',
                  smoothing_fwhm=None, standardize=True, target_affine=None,
