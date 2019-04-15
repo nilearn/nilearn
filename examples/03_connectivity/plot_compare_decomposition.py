@@ -2,7 +2,7 @@
 Dictionary Learning and ICA for doing group analysis of fMRI
 ============================================================
 
-This example applies dictionary learning and ICA to naturalistic stimuli
+This example applies dictionary learning and ICA to
 movie-watching fMRI data,
 visualizing resulting components using atlas plotting tools.
 
