@@ -30,7 +30,7 @@ Fetching movie-watching based functional datasets
 We use a naturalistic stimuli based movie-watching functional connectivity dataset
 of 20 subjects, which is already preprocessed and publicly available at
 `<https://osf.io/5hju4/files/>`_. We use utilities
-:func:`fetch_development_fmri` implemented in nilearn for automatic fetching of these
+:func:`fetch_development_fmri` implemented in nilearn for automatic fetching of this
 datasets which is downsampled to 4mm.
 
 
