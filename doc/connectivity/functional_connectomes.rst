@@ -104,7 +104,7 @@ regions, regressing out noise sources is indeed very important
    :class: green
 
    Try using the information above to compute the correlation matrix of
-   the first subject of the movie watching-based brain development dataset
+   the first subject of the brain development dataset
    downloaded with :func:`nilearn.datasets.fetch_development_fmri`.
 
    **Hints:**
