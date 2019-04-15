@@ -30,7 +30,7 @@ Sparse inverse covariance for functional connectomes
 
 Functional connectivity can be obtained by estimating a covariance
 (or correlation) matrix for signals from different brain
-regions decomposed, for example on resting-state or movie-watching datasets.
+regions decomposed, for example on resting-state or naturalistic-stimuli datasets.
 The same information can be represented as a weighted graph,
 vertices being brain regions, weights on edges being covariances
 (gaussian graphical model). However, coefficients in a covariance matrix
