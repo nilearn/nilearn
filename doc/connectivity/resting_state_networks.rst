@@ -28,7 +28,7 @@ Multi-subject ICA: CanICA
 Data preparation: retrieving example data
 -----------------------------------------
 
-We will use down-sampled data from the `adults and children watching movie dataset
+We will use down-sampled data from the `brain development dataset
 <https://osf.io/5hju4/files/>`_ has been
 preprocessed using `FMRIPrep and Nilearn <https://osf.io/wjtyq/>`_.
 We use nilearn
