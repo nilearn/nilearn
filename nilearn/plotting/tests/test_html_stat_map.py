@@ -87,6 +87,12 @@ def test_threshold_data():
     gtruth = np.array([False, False, False, True, False, False, False])
     assert (data_t.mask == gtruth).all()
 
+    # Check that overly lenient threshold returns array
+    data = np.arange(3, 10)
+    data_t, thresh = html_stat_map._threshold_data(data, threshold=2)
+    gtruth = np.full(7, False)
+    assert (data_t.mask == gtruth).all()
+
 
 def test_save_sprite():
     """This test covers _save_sprite as well as _bytesIO_to_base64
@@ -306,6 +312,8 @@ def test_view_img():
         img_4d = image.new_img_like(img, img.get_data()[:, :, :, np.newaxis])
         assert len(img_4d.shape) == 4
         html_view = html_stat_map.view_img(img_4d, threshold=2., vmax=4.)
+        _check_html(html_view)
+        html_view = html_stat_map.view_img(img_4d, threshold=1e6)
         _check_html(html_view)
 
     # Check that all warnings were expected
