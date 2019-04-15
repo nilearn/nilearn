@@ -1,3 +1,28 @@
+0.5.2
+=====
+
+NEW
+---
+
+- New brain development fMRI dataset fetcher
+  :func:`nilearn.datasets.fetch_development_fmri` can be used to download
+  movie-watching data in children and adults. A light-weight dataset implemented
+  for teaching and usage in the examples.
+
+Changes
+-------
+
+- All the connectivity examples are changed from ADHD to brain development
+  fmri dataset.
+
+Fixes
+-----
+
+- :func:`nilearn.plotting.plot_glass_brain` with colorbar=True does not crash when
+  images have NaNs.
+- add_contours now accepts `threshold` argument for filled=False. Now
+  `threshold` is equally applied when asked for fillings in the contours.
+
 0.5.1
 =====
 
@@ -22,22 +47,22 @@ Changes
 
 - Lighting used for interactive surface plots changed; plots may look a bit
   different.
-- plotting.view_connectome default colormap is `bwr`, consistent with plot_connectome.
-- plotting.view_connectome parameter names are consistent with plot_connectome:
+- :func:`nilearn.plotting.view_connectome` default colormap is `bwr`, consistent with plot_connectome.
+- :func:`nilearn.plotting.view_connectome` parameter names are consistent with plot_connectome:
 
- - coords is now node_coord
- - marker_size is noe node_size
- - cmap is now edge_cmap
- - threshold is now edge_threshold
+  - coords is now node_coord
+  - marker_size is noe node_size
+  - cmap is now edge_cmap
+  - threshold is now edge_threshold
 
-- plotting.view_markers and plotting.view_connectome can accept different marker
+- :func:`nilearn.plotting.view_markers` and :func:`nilearn.plotting.view_connectome` can accept different marker
   sizes for each node / marker.
 
-- plotting.view_markers() default marker color is now 'red', consistent with add_markers().
-- plotting.view_markers() parameter names are consistent with add_markers():
+- :func:`nilearn.plotting.view_markers()` default marker color is now 'red', consistent with add_markers().
+- :func:`nilearn.plotting.view_markers` parameter names are consistent with add_markers():
 
- - coords is now marker_coords
- - colors is now marker_color
+  - coords is now marker_coords
+  - colors is now marker_color
 
 Fixes
 -----
@@ -49,6 +74,17 @@ Fixes
 - NiftiSpheresMasker no longer silently ignores voxels if no `mask_img` is specified.
 - Interactive brainsprites generated from `view_img` are correctly rendered in Jupyter Book.
 
+Known Issues
+-------------------
+
+- On Python2, :func:`nilearn.plotting.view_connectome()` &
+  :func:`nilearn.plotting.view_markers()`
+  do not show parameters names in function signature
+  when using help() and similar features.
+  Please refer to their docstrings for this information.
+
+
+Contributors
 Known Issues
 ------------
 
@@ -73,6 +109,7 @@ The following people contributed to this release::
    1  Eric Larson
    1  Pierre Bellec
 
+=======
 
 0.5.0
 =====

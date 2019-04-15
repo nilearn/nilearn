@@ -30,11 +30,11 @@
 .. |oasis_weights| image:: auto_examples/02_decoding/images/sphx_glr_plot_oasis_vbm_002.png
    :target: auto_examples/02_decoding/plot_oasis_vbm.html
 
-.. |rest_parcellations| image:: auto_examples/03_connectivity/images/sphx_glr_plot_rest_parcellations_001.png
-   :target: auto_examples/03_connectivity/plot_rest_parcellations.html
+.. |rest_parcellations| image:: auto_examples/03_connectivity/images/sphx_glr_plot_data_driven_parcellations_001.png
+   :target: auto_examples/03_connectivity/plot_data_driven_parcellations.html
 
-.. |canica| image:: auto_examples/03_connectivity/images/sphx_glr_plot_canica_resting_state_011.png
-   :target: auto_examples/03_connectivity/plot_canica_resting_state.html
+.. |canica| image:: auto_examples/03_connectivity/images/sphx_glr_plot_canica_analysis_011.png
+   :target: auto_examples/03_connectivity/plot_canica_analysis.html
 
 .. |tvl1_haxby| image:: auto_examples/02_decoding/images/sphx_glr_plot_haxby_space_net_002.png
    :target: auto_examples/02_decoding/plot_haxby_space_net.html
