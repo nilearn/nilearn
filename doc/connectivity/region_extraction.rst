@@ -31,7 +31,7 @@ We use a naturalistic stimuli based movie-watching functional connectivity datas
 of 20 subjects, which is already preprocessed and publicly available at
 `<https://osf.io/5hju4/files/>`_. We use utilities
 :func:`fetch_development_fmri` implemented in nilearn for automatic fetching of this
-datasets which is downsampled to 4mm.
+dataset.
 
 
 .. literalinclude:: ../../examples/03_connectivity/plot_extract_regions_dictlearning_maps.py
