@@ -130,7 +130,7 @@ Probabilistic atlases
 The definition of regions as by a continuous probability map captures
 better our imperfect knowledge of boundaries in brain images (notably
 because of inter-subject registration errors). One example of such an
-atlas well suited to resting-state or movie-watching data analysis is
+atlas well suited to resting-state or naturalistic-stimuli data analysis is
 the `MSDL atlas
 <https://team.inria.fr/parietal/18-2/spatial_patterns/spatial-patterns-in-resting-state/>`_
 (:func:`nilearn.datasets.fetch_atlas_msdl`).
