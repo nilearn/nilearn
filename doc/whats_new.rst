@@ -15,6 +15,12 @@ Changes
 - All the connectivity examples are changed from ADHD to brain development
   fmri dataset.
 
+- :func:`nilearn.plotting.view_img_on_surf`, :func:`nilearn.plotting.view_surf`
+  and :func:`nilearn.plotting.view_connectome` now allow disabling the colorbar,
+  and setting its height and the fontsize of its ticklabels.
+
+
+
 Fixes
 -----
 
@@ -63,10 +69,6 @@ Changes
 
   - coords is now marker_coords
   - colors is now marker_color
-
-- :func:`nilearn.plotting.view_img_on_surf`, :func:`nilearn.plotting.view_surf`
-  and :func:`nilearn.plotting.view_connectome` now allow disabling the colorbar,
-  and setting its height and the fontsize of its ticklabels.
 
 
 Fixes
