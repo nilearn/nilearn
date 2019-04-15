@@ -7,15 +7,18 @@ import numpy as np
 from scipy import ndimage
 from sklearn.datasets.base import Bunch
 
-from .utils import _get_dataset_dir, _fetch_files, _get_dataset_descr
+from .utils import (_get_dataset_dir, _fetch_files,
+                    _get_dataset_descr, _uncompress_file)
 
 from .._utils import check_niimg, niimg
+from .._utils.exceptions import VisibleDeprecationWarning
 from ..image import new_img_like
 
 _package_directory = os.path.dirname(os.path.abspath(__file__))
 # Useful for the very simple examples
 MNI152_FILE_PATH = os.path.join(_package_directory, "data",
-                             "avg152T1_brain.nii.gz")
+                                "avg152T1_brain.nii.gz")
+FSAVERAGE5_PATH = os.path.join(_package_directory, "data", "fsaverage5")
 
 
 def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
@@ -60,28 +63,34 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
     -----
     For more information about this dataset's structure:
     http://www.bic.mni.mcgill.ca/ServicesAtlases/ICBM152NLin2009
+
+    The original download URL is
+    http://www.bic.mni.mcgill.ca/~vfonov/icbm/2009/mni_icbm152_nlin_sym_09a_nifti.zip
     """
     if url is None:
-        url = "http://www.bic.mni.mcgill.ca/~vfonov/icbm/2009/" \
-              "mni_icbm152_nlin_sym_09a_nifti.zip"
+        # The URL can be retrieved from the nilearn account on OSF (Open
+        # Science Framework), https://osf.io/4r3jt/quickfiles/
+        # Clicking on the "share" button gives the root of the URL.
+        url = "https://osf.io/7pj92/download"
     opts = {'uncompress': True}
 
     keys = ("csf", "gm", "wm",
             "pd", "t1", "t2", "t2_relax",
             "eye_mask", "face_mask", "mask")
     filenames = [(os.path.join("mni_icbm152_nlin_sym_09a", name), url, opts)
-                 for name in ("mni_icbm152_csf_tal_nlin_sym_09a.nii",
-                              "mni_icbm152_gm_tal_nlin_sym_09a.nii",
-                              "mni_icbm152_wm_tal_nlin_sym_09a.nii",
+                 for name in (
+                    "mni_icbm152_csf_tal_nlin_sym_09a.nii.gz",
+                    "mni_icbm152_gm_tal_nlin_sym_09a.nii.gz",
+                    "mni_icbm152_wm_tal_nlin_sym_09a.nii.gz",
 
-                              "mni_icbm152_pd_tal_nlin_sym_09a.nii",
-                              "mni_icbm152_t1_tal_nlin_sym_09a.nii",
-                              "mni_icbm152_t2_tal_nlin_sym_09a.nii",
-                              "mni_icbm152_t2_relx_tal_nlin_sym_09a.nii",
+                    "mni_icbm152_pd_tal_nlin_sym_09a.nii.gz",
+                    "mni_icbm152_t1_tal_nlin_sym_09a.nii.gz",
+                    "mni_icbm152_t2_tal_nlin_sym_09a.nii.gz",
+                    "mni_icbm152_t2_relx_tal_nlin_sym_09a.nii.gz",
 
-                              "mni_icbm152_t1_tal_nlin_sym_09a_eye_mask.nii",
-                              "mni_icbm152_t1_tal_nlin_sym_09a_face_mask.nii",
-                              "mni_icbm152_t1_tal_nlin_sym_09a_mask.nii")]
+                    "mni_icbm152_t1_tal_nlin_sym_09a_eye_mask.nii.gz",
+                    "mni_icbm152_t1_tal_nlin_sym_09a_face_mask.nii.gz",
+                    "mni_icbm152_t1_tal_nlin_sym_09a_mask.nii.gz")]
 
     dataset_name = 'icbm152_2009'
     data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
@@ -421,3 +430,144 @@ def fetch_oasis_vbm(n_subjects=None, dartel_version=True, data_dir=None,
         ext_vars=csv_data,
         data_usage_agreement=data_usage_agreement,
         description=fdescr)
+
+
+def fetch_surf_fsaverage(mesh='fsaverage5', data_dir=None):
+    """ Download a Freesurfer fsaverage surface
+
+    Parameters
+    ----------
+    mesh: str, optional (default='fsaverage5')
+        Which mesh to fetch.
+        'fsaverage5': the low-resolution fsaverage5 mesh (10242 nodes)
+        'fsaverage': the high-resolution fsaverage mesh (163842 nodes)
+        (high-resolution fsaverage will result in
+        more computation time and memory usage)
+
+    data_dir: str, optional (default=None)
+        Path of the data directory. Used to force data storage in a specified
+        location.
+
+    Returns
+    -------
+    data: sklearn.datasets.base.Bunch
+        Dictionary-like object, the interest attributes are :
+         - 'pial_left': Gifti file, left hemisphere pial surface mesh
+         - 'pial_right': Gifti file, right hemisphere pial surface mesh
+         - 'infl_left': Gifti file, left hemisphere inflated pial surface mesh
+         - 'infl_right': Gifti file, right hemisphere inflated pial
+                         surface mesh
+         - 'sulc_left': Gifti file, left hemisphere sulcal depth data
+         - 'sulc_right': Gifti file, right hemisphere sulcal depth data
+
+    References
+    ----------
+    Fischl et al, (1999). High-resolution intersubject averaging and a
+    coordinate system for the cortical surface. Hum Brain Mapp 8, 272-284.
+
+    """
+    meshes = {'fsaverage5': _fetch_surf_fsaverage5,
+              'fsaverage': _fetch_surf_fsaverage}
+    if mesh not in meshes:
+        raise ValueError(
+            "'mesh' should be one of {}; {!r} was provided".format(
+                list(meshes.keys()), mesh))
+    return meshes[mesh](data_dir=data_dir)
+
+
+def _fetch_surf_fsaverage(data_dir=None):
+    dataset_dir = _get_dataset_dir('fsaverage', data_dir=data_dir)
+    url = 'https://www.nitrc.org/frs/download.php/10846/fsaverage.tar.gz'
+    if not os.path.isdir(os.path.join(dataset_dir, 'fsaverage')):
+        _fetch_files(dataset_dir, [('fsaverage.tar.gz', url, {})])
+        _uncompress_file(os.path.join(dataset_dir, 'fsaverage.tar.gz'))
+    result = {
+        name: os.path.join(dataset_dir, 'fsaverage', '{}.gii'.format(name))
+        for name in ['pial_right', 'sulc_right', 'sulc_left', 'pial_left']}
+    result['infl_left'] = os.path.join(
+        dataset_dir, 'fsaverage', 'inflated_left.gii')
+    result['infl_right'] = os.path.join(
+        dataset_dir, 'fsaverage', 'inflated_right.gii')
+
+    result['description'] = str(_get_dataset_descr('fsaverage'))
+    return Bunch(**result)
+
+
+def fetch_surf_fsaverage5(data_dir=None, url=None, resume=True, verbose=1):
+    """ Deprecated since version 0.4.3
+
+    Use fetch_surf_fsaverage instead.
+
+    Parameters
+    ----------
+    data_dir: str, optional (default=None)
+        Path of the data directory. Used to force data storage in a specified
+        location.
+
+    Returns
+    -------
+    data: sklearn.datasets.base.Bunch
+        Dictionary-like object, the interest attributes are :
+         - 'pial_left': Gifti file, left hemisphere pial surface mesh
+         - 'pial_right': Gifti file, right hemisphere pial surface mesh
+         - 'infl_left': Gifti file, left hemisphere inflated pial surface mesh
+         - 'infl_right': Gifti file, right hemisphere inflated pial
+                         surface mesh
+         - 'sulc_left': Gifti file, left hemisphere sulcal depth data
+         - 'sulc_right': Gifti file, right hemisphere sulcal depth data
+
+    References
+    ----------
+    Fischl et al, (1999). High-resolution intersubject averaging and a
+    coordinate system for the cortical surface. Hum Brain Mapp 8, 272-284.
+
+    """
+    warnings.warn("fetch_surf_fsaverage5 has been deprecated and will "
+                  "be removed in a future release. "
+                  "Use fetch_surf_fsaverage(mesh='fsaverage5')",
+                  VisibleDeprecationWarning, stacklevel=2)
+    return fetch_surf_fsaverage(mesh='fsaverage5', data_dir=data_dir)
+
+
+def _fetch_surf_fsaverage5(data_dir=None, url=None, resume=True, verbose=1):
+    """Helper function to ship fsaverage5 surfaces and sulcal information
+    with Nilearn.
+
+    The source of the data is coming from nitrc based on this PR #1016.
+    Manually downloaded gzipped and shipped with this function.
+
+    Shipping is done with Nilearn based on issue #1705.
+    """
+
+    dataset_name = 'fsaverage5'
+
+    # Dataset description
+    fdescr = _get_dataset_descr(dataset_name)
+
+    # Download fsaverage surfaces and sulcal information
+    surface_file = '%s.%s.gii.gz'
+    surface_path = os.path.join(FSAVERAGE5_PATH, surface_file)
+
+    pials = []
+    infls = []
+    sulcs = []
+    for hemi in ['left', 'right']:
+        # pial
+        pial_path = surface_path % ('pial', hemi)
+        pials.append(pial_path)
+
+        # pial_inflated
+        pial_infl_path = surface_path % ('pial_inflated', hemi)
+        infls.append(pial_infl_path)
+
+        # sulcal
+        sulc = surface_path % ('sulc', hemi)
+        sulcs.append(sulc)
+
+    return Bunch(pial_left=pials[0],
+                 pial_right=pials[1],
+                 infl_left=infls[0],
+                 infl_right=infls[1],
+                 sulc_left=sulcs[0],
+                 sulc_right=sulcs[1],
+                 description=fdescr)

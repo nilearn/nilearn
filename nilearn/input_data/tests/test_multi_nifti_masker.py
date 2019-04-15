@@ -133,34 +133,66 @@ def test_joblib_cache():
 
 
 def test_shelving():
-    if LooseVersion(sklearn.__version__) >= LooseVersion('0.15'):
-        mask_img = Nifti1Image(np.ones((2, 2, 2), dtype=np.int8),
-                               affine=np.diag((4, 4, 4, 1)))
-        epi_img1 = Nifti1Image(np.ones((2, 2, 2)),
-                               affine=np.diag((4, 4, 4, 1)))
-        epi_img2 = Nifti1Image(np.ones((2, 2, 2)),
-                               affine=np.diag((2, 2, 2, 1)))
-        cachedir = mkdtemp()
-        try:
-            masker_shelved = MultiNiftiMasker(mask_img=mask_img,
-                                              memory=Memory(cachedir=cachedir,
-                                                            mmap_mode='r',
-                                                            verbose=0))
-            masker_shelved._shelving = True
-            masker = MultiNiftiMasker(mask_img=mask_img)
-            epis_shelved = masker_shelved.fit_transform([epi_img1, epi_img2])
-            epis = masker.fit_transform([epi_img1, epi_img2])
-            for epi_shelved, epi in zip(epis_shelved, epis):
-                epi_shelved = epi_shelved.get()
-                assert_array_equal(epi_shelved, epi)
 
-            epi = masker.fit_transform(epi_img1)
-            epi_shelved = masker_shelved.fit_transform(epi_img1)
+    mask_img = Nifti1Image(np.ones((2, 2, 2), dtype=np.int8),
+                           affine=np.diag((4, 4, 4, 1)))
+    epi_img1 = Nifti1Image(np.ones((2, 2, 2)),
+                           affine=np.diag((4, 4, 4, 1)))
+    epi_img2 = Nifti1Image(np.ones((2, 2, 2)),
+                           affine=np.diag((2, 2, 2, 1)))
+    cachedir = mkdtemp()
+    try:
+        masker_shelved = MultiNiftiMasker(mask_img=mask_img,
+                                          memory=Memory(cachedir=cachedir,
+                                                        mmap_mode='r',
+                                                        verbose=0))
+        masker_shelved._shelving = True
+        masker = MultiNiftiMasker(mask_img=mask_img)
+        epis_shelved = masker_shelved.fit_transform([epi_img1, epi_img2])
+        epis = masker.fit_transform([epi_img1, epi_img2])
+        for epi_shelved, epi in zip(epis_shelved, epis):
             epi_shelved = epi_shelved.get()
             assert_array_equal(epi_shelved, epi)
-        finally:
-            # enables to delete "filename" on windows
-            del masker
-            shutil.rmtree(cachedir, ignore_errors=True)
-    else:
-        pass
+
+        epi = masker.fit_transform(epi_img1)
+        epi_shelved = masker_shelved.fit_transform(epi_img1)
+        epi_shelved = epi_shelved.get()
+        assert_array_equal(epi_shelved, epi)
+    finally:
+        # enables to delete "filename" on windows
+        del masker
+        shutil.rmtree(cachedir, ignore_errors=True)
+
+
+def test_compute_multi_gray_matter_mask():
+    # Check mask is correctly is correctly calculated
+    imgs = [Nifti1Image(np.random.rand(9, 9, 5), np.eye(4)),
+            Nifti1Image(np.random.rand(9, 9, 5), np.eye(4))]
+
+    masker = MultiNiftiMasker(mask_strategy='template')
+    masker.fit(imgs)
+
+    # Check that the order of the images does not change the output
+    masker2 = MultiNiftiMasker(mask_strategy='template')
+    masker2.fit(imgs[::-1])
+
+    mask = masker.mask_img_
+    mask2 = masker2.mask_img_
+
+    mask_ref = np.zeros((9, 9, 5))
+    mask_ref[2:7, 2:7, 2] = 1
+
+    np.testing.assert_array_equal(mask.get_data(), mask_ref)
+    np.testing.assert_array_equal(mask2.get_data(), mask_ref)
+
+
+def test_dtype():
+    data = np.zeros((9, 9, 9), dtype=np.float64)
+    data[2:-2, 2:-2, 2:-2] = 10
+    img = Nifti1Image(data, np.eye(4))
+
+    masker = MultiNiftiMasker(dtype='auto')
+    masker.fit([[img]])
+
+    masked_img = masker.transform([[img]])
+    assert(masked_img[0].dtype == np.float32)

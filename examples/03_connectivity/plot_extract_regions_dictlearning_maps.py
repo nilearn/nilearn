@@ -15,6 +15,14 @@ ICA decomposition using :class:`nilearn.decomposition.CanICA`
 
 Please see the related documentation of :class:`nilearn.regions.RegionExtractor`
 for more details.
+
+.. note::
+
+    The use of the attribute `components_img_` from dictionary learning
+    estimator is implemented from version 0.4.1. For older versions,
+    unmask the deprecated attribute `components_` to get the components
+    image using attribute `masker_` embedded in estimator.
+    See the :ref:`section Inverse transform: unmasking data <unmasking_step>`.
 """
 
 ################################################################################
@@ -42,8 +50,10 @@ dict_learn = DictLearning(n_components=5, smoothing_fwhm=6.,
                           random_state=0)
 # Fit to the data
 dict_learn.fit(func_filenames)
-# Resting state networks/maps
-components_img = dict_learn.masker_.inverse_transform(dict_learn.components_)
+# Resting state networks/maps in attribute `components_img_`
+# Note that this attribute is implemented from version 0.4.1.
+# For older versions, see the note section above for details.
+components_img = dict_learn.components_img_
 
 # Visualization of resting state networks
 # Show networks using plotting utilities
@@ -111,17 +121,17 @@ mean_correlations = np.mean(correlations, axis=0).reshape(n_regions_extracted,
 ###############################################################################
 # Plot resulting connectomes
 # ----------------------------
-import matplotlib.pyplot as plt
-from nilearn import image
 
-regions_imgs = image.iter_img(regions_extracted_img)
-coords_connectome = [plotting.find_xyz_cut_coords(img) for img in regions_imgs]
-title = 'Correlation interactions between %d regions' % n_regions_extracted
-plt.figure()
-plt.imshow(mean_correlations, interpolation="nearest",
-           vmax=1, vmin=-1, cmap=plt.cm.bwr)
-plt.colorbar()
-plt.title(title)
+title = 'Correlation between %d regions' % n_regions_extracted
+
+# First plot the matrix
+display = plotting.plot_matrix(mean_correlations, vmax=1, vmin=-1,
+                               colorbar=True, title=title)
+
+# Then find the center of the regions and plot a connectome
+regions_img = regions_extracted_img
+coords_connectome = plotting.find_probabilistic_atlas_cut_coords(regions_img)
+
 plotting.plot_connectome(mean_correlations, coords_connectome,
                          edge_threshold='90%', title=title)
 
@@ -130,6 +140,8 @@ plotting.plot_connectome(mean_correlations, coords_connectome,
 # ----------------------------------------------------
 
 # First, we plot a network of index=4 without region extraction (left plot)
+from nilearn import image
+
 img = image.index_img(components_img, 4)
 coords = plotting.find_xyz_cut_coords(img)
 display = plotting.plot_stat_map(img, cut_coords=coords, colorbar=False,

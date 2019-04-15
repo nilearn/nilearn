@@ -89,7 +89,18 @@ def _safe_cache(memory, func, **kwargs):
     """ A wrapper for mem.cache that flushes the cache if the version
         number of nibabel has changed.
     """
-    cachedir = memory.cachedir
+    ''' Workaround for
+     https://github.com/scikit-learn-contrib/imbalanced-learn/issues/482
+    joblib throws a spurious warning with newer scikit-learn.
+    This code uses the recommended method first and the deprecated one
+    if that fails, ensuring th warning is not generated in any case.
+    '''
+    try:
+        cachedir = os.path.join(memory.location, 'joblib')
+    except AttributeError:
+        cachedir = memory.cachedir
+    except TypeError:
+        cachedir = None
 
     if cachedir is None or cachedir in __CACHE_CHECKED:
         return memory.cache(func, **kwargs)
@@ -230,9 +241,6 @@ def cache(func, memory, func_memory_level=None, memory_level=None,
         memory = Memory(cachedir=None, verbose=verbose)
     cached_func = _safe_cache(memory, func, **kwargs)
     if shelve:
-        if LooseVersion(sklearn.__version__) < LooseVersion('0.15'):
-            raise ValueError('Shelving is only available if'
-                             ' scikit-learn >= 0.15 is installed.')
         cached_func = _ShelvedFunc(cached_func)
     return cached_func
 

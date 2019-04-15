@@ -156,9 +156,9 @@ def _chunk_read_(response, local_file, chunk_size=8192, report_hook=None,
         bytes_so_far += len(chunk)
         time_last_read = time.time()
         if (report_hook and
-                # Refresh report every half second or when download is
+                # Refresh report every second or when download is
                 # finished.
-                (time_last_read > time_last_display + 0.5 or not chunk)):
+                (time_last_read > time_last_display + 1. or not chunk)):
             _chunk_report_(bytes_so_far,
                            total_size, initial_size, t0)
             time_last_display = time_last_read
@@ -328,8 +328,11 @@ def _uncompress_file(file_, delete_archive=True, verbose=1):
         processed = False
         if zipfile.is_zipfile(file_):
             z = zipfile.ZipFile(file_)
-            z.extractall(data_dir)
+            z.extractall(path=data_dir)
             z.close()
+            if delete_archive:
+                os.remove(file_)
+            file_ = filename
             processed = True
         elif ext == '.gz' or header.startswith(b'\x1f\x8b'):
             import gzip
@@ -344,17 +347,17 @@ def _uncompress_file(file_, delete_archive=True, verbose=1):
             if delete_archive:
                 os.remove(file_)
             file_ = filename
-            filename, ext = os.path.splitext(file_)
             processed = True
-        if tarfile.is_tarfile(file_):
+        if os.path.isfile(file_) and tarfile.is_tarfile(file_):
             with contextlib.closing(tarfile.open(file_, "r")) as tar:
                 tar.extractall(path=data_dir)
+            if delete_archive:
+                os.remove(file_)
             processed = True
         if not processed:
             raise IOError(
                     "[Uncompress] unknown archive file format: %s" % file_)
-        if delete_archive:
-            os.remove(file_)
+
         if verbose > 0:
             sys.stderr.write('.. done.\n')
     except Exception as e:
@@ -572,14 +575,9 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False,
             # Complete the reporting hook
             sys.stderr.write(' ...done. ({0:.0f} seconds, {1:.0f} min)\n'
                              .format(dt, dt // 60))
-    except (_urllib.error.HTTPError, _urllib.error.URLError) as e:
-        if 'Error while fetching' not in str(e):
-            # For some odd reason, the error message gets doubled up
-            #   (possibly from the re-raise), so only add extra info
-            #   if it's not already there.
-            e.reason = ("%s| Error while fetching file %s; "
-                          "dataset fetching aborted." % (
-                            str(e.reason), file_name))
+    except (_urllib.error.HTTPError, _urllib.error.URLError):
+        sys.stderr.write("Error while fetching file %s; dataset "
+                         "fetching aborted." % (file_name))
         raise
     finally:
         if local_file is not None:
@@ -598,8 +596,8 @@ def _get_dataset_descr(ds_name):
     fname = ds_name
 
     try:
-        with open(os.path.join(module_path, 'description', fname + '.rst'))\
-                as rst_file:
+        with open(os.path.join(module_path, 'description', fname + '.rst'),
+                  'rb') as rst_file:
             descr = rst_file.read()
     except IOError:
         descr = ''

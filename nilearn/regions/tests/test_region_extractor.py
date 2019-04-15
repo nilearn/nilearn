@@ -4,15 +4,16 @@ import numpy as np
 import nibabel
 from scipy import ndimage
 
-from nose.tools import assert_equal, assert_true, assert_not_equal
+from nose.tools import (assert_equal, assert_true, assert_not_equal,
+                        assert_greater, assert_false)
 
 from nilearn.regions import (connected_regions, RegionExtractor,
                              connected_label_regions)
 from nilearn.regions.region_extractor import (_threshold_maps_ratio,
                                               _remove_small_regions)
 
-from nilearn._utils import testing
-from nilearn._utils.testing import assert_raises_regex, generate_maps
+from nilearn._utils.testing import assert_raises_regex
+from nilearn._utils.data_gen import generate_maps, generate_labeled_regions
 from nilearn._utils.exceptions import DimensionError
 
 
@@ -51,10 +52,16 @@ def test_threshold_maps_ratio():
     # smoke test for function _threshold_maps_ratio with randomly
     # generated maps
 
+    maps, _ = generate_maps((6, 8, 10), n_regions=3)
+
+    # test that there is no side effect
+    maps.get_data()[:3] = 100
+    maps_data = maps.get_data().copy()
+    thr_maps = _threshold_maps_ratio(maps, threshold=1.0)
+    np.testing.assert_array_equal(maps.get_data(), maps_data)
+
     # make sure that n_regions (4th dimension) are kept same even
     # in thresholded image
-    maps, _ = generate_maps((6, 8, 10), n_regions=3)
-    thr_maps = _threshold_maps_ratio(maps, threshold=1.0)
     assert_true(thr_maps.shape[-1] == maps.shape[-1])
 
     # check that the size should be same for 3D image
@@ -101,9 +108,15 @@ def test_connected_regions():
         assert_true(connected_extraction_3d_img.shape[-1] >= 1)
 
     # Test input mask_img
+    mask = mask_img.get_data()
+    mask[1, 1, 1] = 0
     extraction_with_mask_img, index = connected_regions(maps,
                                                         mask_img=mask_img)
     assert_true(extraction_with_mask_img.shape[-1] >= 1)
+
+    extraction_without_mask_img, index = connected_regions(maps)
+    assert_true(np.all(extraction_with_mask_img.get_data()[mask == 0] == 0.))
+    assert_false(np.all(extraction_without_mask_img.get_data()[mask == 0] == 0.))
 
     # mask_img with different shape
     mask = np.zeros(shape=(10, 11, 12), dtype=np.int)
@@ -117,6 +130,10 @@ def test_connected_regions():
                                                         mask_img=mask_img)
     assert_equal(maps.shape[:3], extraction_not_same_fov_mask.shape[:3])
     assert_not_equal(mask_img.shape, extraction_not_same_fov_mask.shape[:3])
+
+    extraction_not_same_fov, _ = connected_regions(maps)
+    assert_greater(np.sum(extraction_not_same_fov.get_data() == 0),
+                   np.sum(extraction_not_same_fov_mask.get_data() == 0))
 
 
 def test_invalid_threshold_strategies():
@@ -148,6 +165,18 @@ def test_region_extractor_fit_and_transform():
     n_subjects = 5
     maps, mask_img = generate_maps((40, 40, 40), n_regions=n_regions)
 
+    # Test maps are zero in the mask
+    mask_data = mask_img.get_data()
+    mask_data[1, 1, 1] = 0
+    extractor_without_mask = RegionExtractor(maps)
+    extractor_without_mask.fit()
+    extractor_with_mask = RegionExtractor(maps, mask_img=mask_img)
+    extractor_with_mask.fit()
+    assert_false(np.all(
+        extractor_without_mask.regions_img_.get_data()[mask_data == 0] == 0.))
+    assert_true(np.all(
+        extractor_with_mask.regions_img_.get_data()[mask_data == 0] == 0.))
+
     # smoke test to RegionExtractor with thresholding_strategy='ratio_n_voxels'
     extract_ratio = RegionExtractor(maps, threshold=0.2,
                                     thresholding_strategy='ratio_n_voxels')
@@ -173,13 +202,37 @@ def test_region_extractor_fit_and_transform():
         signal = extractor.transform(img)
         assert_equal(expected_signal_shape, signal.shape)
 
+    # smoke test with high resolution image
+    maps, mask_img = generate_maps((20, 20, 20), n_regions=n_regions,
+                                   affine=.2 * np.eye(4))
+
+    extract_ratio = RegionExtractor(maps,
+                                    thresholding_strategy='ratio_n_voxels',
+                                    smoothing_fwhm=.6,
+                                    min_region_size=.4)
+    extract_ratio.fit()
+    assert_not_equal(extract_ratio.regions_img_, '')
+    assert_true(extract_ratio.regions_img_.shape[-1] >= 9)
+
+    # smoke test with zeros on the diagonal of the affine
+    affine = np.eye(4)
+    affine[[0, 1]] = affine[[1, 0]]  # permutes first and second lines
+    maps, mask_img = generate_maps((40, 40, 40), n_regions=n_regions,
+                                   affine=affine)
+
+    extract_ratio = RegionExtractor(maps, threshold=0.2,
+                                    thresholding_strategy='ratio_n_voxels')
+    extract_ratio.fit()
+    assert_not_equal(extract_ratio.regions_img_, '')
+    assert_true(extract_ratio.regions_img_.shape[-1] >= 9)
+
 
 def test_error_messages_connected_label_regions():
     shape = (13, 11, 12)
     affine = np.eye(4)
     n_regions = 2
-    labels_img = testing.generate_labeled_regions(shape, affine=affine,
-                                                  n_regions=n_regions)
+    labels_img = generate_labeled_regions(shape, affine=affine,
+                                          n_regions=n_regions)
     assert_raises_regex(ValueError,
                         "Expected 'min_size' to be specified as integer.",
                         connected_label_regions,
@@ -209,8 +262,7 @@ def test_remove_small_regions():
     # data can be act as mask_data to identify regions in label_map because
     # features in label_map are built upon non-zeros in data
     index = np.arange(n_labels + 1)
-    removed_data = _remove_small_regions(label_map, data, index,
-                                         affine, min_size)
+    removed_data = _remove_small_regions(label_map, index, affine, min_size)
     sum_removed_data = np.sum(removed_data)
 
     assert_true(sum_removed_data < sum_label_data)
@@ -220,8 +272,8 @@ def test_connected_label_regions():
     shape = (13, 11, 12)
     affine = np.eye(4)
     n_regions = 9
-    labels_img = testing.generate_labeled_regions(shape, affine=affine,
-                                                  n_regions=n_regions)
+    labels_img = generate_labeled_regions(shape, affine=affine,
+                                          n_regions=n_regions)
     labels_data = labels_img.get_data()
     n_labels_wo_reg_ext = len(np.unique(labels_data))
 
@@ -330,8 +382,8 @@ def test_connected_label_regions():
     # Test if labels (or names to regions) given is a string without a list.
     # Then, we expect it to be split to regions extracted and returned as list.
     labels_in_str = 'region_a'
-    labels_img_in_str = testing.generate_labeled_regions(shape, affine=affine,
-                                                         n_regions=1)
+    labels_img_in_str = generate_labeled_regions(shape, affine=affine,
+                                                 n_regions=1)
     extract_regions, new_labels = connected_label_regions(labels_img_in_str,
                                                           labels=labels_in_str)
     assert_true(isinstance(new_labels, list))

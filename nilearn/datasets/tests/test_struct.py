@@ -16,7 +16,7 @@ from . import test_utils as tst
 from nilearn.datasets import utils, struct
 from nilearn._utils.testing import assert_raises_regex
 
-from nilearn._utils.compat import _basestring, get_header
+from nilearn._utils.compat import _basestring
 
 
 def setup_mock():
@@ -141,7 +141,7 @@ def test_load_mni152_template():
     # All subjects
     template_nii = struct.load_mni152_template()
     assert_equal(template_nii.shape, (91, 109, 91))
-    assert_equal(get_header(template_nii).get_zooms(), (2.0, 2.0, 2.0))
+    assert_equal(template_nii.header.get_zooms(), (2.0, 2.0, 2.0))
 
 
 def test_load_mni152_brain_mask():
@@ -159,3 +159,19 @@ def test_fetch_icbm152_brain_gm_mask():
     grey_matter_img = struct.fetch_icbm152_brain_gm_mask(data_dir=tst.tmpdir,
                                                          verbose=0)
     assert_true(isinstance(grey_matter_img, nibabel.Nifti1Image))
+
+
+@with_setup(setup_mock, teardown_mock)
+@with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
+def test_fetch_surf_fsaverage():
+    # for mesh in ['fsaverage5', 'fsaverage']:
+    for mesh in ['fsaverage']:
+
+        dataset = struct.fetch_surf_fsaverage(
+            mesh, data_dir=tst.tmpdir)
+
+        keys = {'pial_left', 'pial_right', 'infl_left', 'infl_right',
+                'sulc_left', 'sulc_right'}
+
+        assert keys.issubset(set(dataset.keys()))
+        assert_not_equal(dataset.description, '')

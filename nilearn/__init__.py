@@ -28,15 +28,62 @@ mass_univariate         --- Defines a Massively Univariate Linear Model
                             estimated with OLS and permutation test
 plotting                --- Plotting code for nilearn
 region                  --- Set of functions for extracting region-defined
-                            signals
+                            signals, clustering methods, connected regions extraction
 signal                  --- Set of preprocessing functions for time series
 """
 
 import gzip
+import sys
+import warnings
+
+from distutils.version import LooseVersion
 
 from .version import _check_module_dependencies, __version__
 
+
+def _py2_deprecation_warning():
+    py2_warning = ('Python2 support is deprecated and will be removed in '
+                   'the next release. Consider switching to Python 3.6 or 3.7.'
+                   )
+    warnings.filterwarnings('once', message=py2_warning)
+    warnings.warn(message=py2_warning,
+                  category=DeprecationWarning,
+                  stacklevel=3,
+                  )
+
+def _py34_deprecation_warning():
+    py34_warning = ('Python 3.4 support is deprecated and will be removed in '
+                   'the next release. Consider switching to Python 3.6 or 3.7.'
+                   )
+    warnings.filterwarnings('once', message=py34_warning)
+    warnings.warn(message=py34_warning,
+                  category=DeprecationWarning,
+                  stacklevel=3,
+                  )
+
+
+def _python_deprecation_warnings():
+    if sys.version_info.major == 2:
+        _py2_deprecation_warning()
+    elif sys.version_info.major == 3 and sys.version_info.minor == 4:
+        _py34_deprecation_warning()
+
+
 _check_module_dependencies()
+_python_deprecation_warnings()
+
+# Temporary work around to address formatting issues in doc tests
+# with NumPy 1.14. NumPy had made more consistent str/repr formatting
+# of numpy arrays. Hence we print the options to old versions.
+import numpy as np
+if LooseVersion(np.__version__) >= LooseVersion("1.14"):
+    # See issue #1600 in nilearn for reason to add try and except
+    try:
+        from ._utils.testing import is_nose_running
+        if is_nose_running():
+            np.set_printoptions(legacy='1.13')
+    except ImportError:
+        pass
 
 # Monkey-patch gzip to have faster reads on large gzip files
 if hasattr(gzip.GzipFile, 'max_read_chunk'):
@@ -58,4 +105,5 @@ CHECK_CACHE_VERSION = True
 # list all submodules available in nilearn and version
 __all__ = ['datasets', 'decoding', 'decomposition', 'connectome',
            'image', 'input_data', 'masking', 'mass_univariate', 'plotting',
-           'region', 'signal', '__version__']
+           'region', 'signal', 'surface', 'parcellations', '__version__']
+

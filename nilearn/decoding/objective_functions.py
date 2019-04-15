@@ -206,7 +206,7 @@ def _gradient_id(img, l1_ratio=.5):
     # with dimension i stop at -1
     slice_all = [0, slice(None, -1)]
     for d in range(img.ndim):
-        gradient[slice_all] = np.diff(img, axis=d)
+        gradient[tuple(slice_all)] = np.diff(img, axis=d)
         slice_all[0] = d + 1
         slice_all.insert(1, slice(None))
 

@@ -59,10 +59,10 @@ print('First subject functional nifti image (4D) is located at: %s' %
 print('Labels of haxby dataset (text file) is located at: %s' %
       haxby_dataset.session_target[0])
 
-# Second, load the labels stored in a text file into array using numpy
-import numpy as np
+# Second, load the labels stored in a text file into array using pandas
+import pandas as pd
 
-session_target = np.recfromcsv(haxby_dataset.session_target[0], delimiter=" ")
+session_target = pd.read_csv(haxby_dataset.session_target[0], sep=" ")
 # Now, we have the labels and will be useful while computing student's t-test
 haxby_labels = session_target['labels']
 
@@ -129,14 +129,15 @@ print(fmri_data.shape)
 # distribution is similar in the two conditions, then the voxel is not very
 # interesting to discriminate the condition.
 
+import numpy as np
 from scipy import stats
 
 # This test returns p-values that represent probabilities that the two
 # time-series were not drawn from the same distribution. The lower the
 # p-value, the more discriminative is the voxel in distinguishing the two
 # conditions (faces and houses).
-_, p_values = stats.ttest_ind(fmri_data[..., haxby_labels == b'face'],
-                              fmri_data[..., haxby_labels == b'house'],
+_, p_values = stats.ttest_ind(fmri_data[..., haxby_labels == 'face'],
+                              fmri_data[..., haxby_labels == 'house'],
                               axis=-1)
 
 # Use a log scale for p-values
@@ -306,8 +307,8 @@ masker = NiftiLabelsMasker(labels_img, resampling_target=None,
 masker.fit()
 # Preparing for data extraction: setting number of conditions, size, etc from
 # haxby dataset
-condition_names = list(set(haxby_labels))
-n_cond_img = fmri_data[..., haxby_labels == b'house'].shape[-1]
+condition_names = haxby_labels.unique()
+n_cond_img = fmri_data[..., haxby_labels == 'house'].shape[-1]
 n_conds = len(condition_names)
 
 X1, X2 = np.zeros((n_cond_img, n_conds)), np.zeros((n_cond_img, n_conds))
@@ -319,7 +320,7 @@ for i, cond in enumerate(condition_names):
         fmri_img, fmri_data[..., haxby_labels == cond][..., :n_cond_img])
     mask_data = masker.transform(cond_maps)
     X1[:, i], X2[:, i] = mask_data[:, 0], mask_data[:, 1]
-condition_names[condition_names.index(b'scrambledpix')] = b'scrambled'
+condition_names[np.where(condition_names == 'scrambledpix')] = 'scrambled'
 
 ##############################################################################
 # save the ROI 'atlas' to a Nifti file
@@ -338,5 +339,3 @@ for i in np.arange(2):
     plt.title('Boxplots of data in ROI%i per condition' % (i + 1))
 
 show()
-
-

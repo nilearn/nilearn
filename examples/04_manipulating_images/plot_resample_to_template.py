@@ -10,34 +10,32 @@ Function :func:`nilearn.image.resample_img` could also be used to achieve this.
 
 ###############################################################################
 # First we load the required datasets using the nilearn datasets module.
-from nilearn.datasets import fetch_localizer_button_task
+from nilearn.datasets import fetch_neurovault_motor_task
 from nilearn.datasets import load_mni152_template
 
 template = load_mni152_template()
 
-localizer_dataset = fetch_localizer_button_task(get_anats=True)
-
-localizer_tmap_filename = localizer_dataset.tmaps[0]
-localizer_anat_filename = localizer_dataset.anats[0]
+motor_images = fetch_neurovault_motor_task()
+stat_img = motor_images.images[0]
 
 ###############################################################################
 # Now, the localizer t-map image can be resampled to the MNI template image.
 from nilearn.image import resample_to_img
 
-resampled_localizer_tmap = resample_to_img(localizer_tmap_filename, template)
+resampled_stat_img = resample_to_img(stat_img, template)
 
 ###############################################################################
 # Let's check the shape and affine have been correctly updated.
 
 # First load the original t-map in memory:
 from nilearn.image import load_img
-tmap_img = load_img(localizer_dataset.tmaps[0])
+tmap_img = load_img(stat_img)
 
 original_shape = tmap_img.shape
 original_affine = tmap_img.affine
 
-resampled_shape = resampled_localizer_tmap.shape
-resampled_affine = resampled_localizer_tmap.affine
+resampled_shape = resampled_stat_img.shape
+resampled_affine = resampled_stat_img.affine
 
 template_img = load_img(template)
 template_shape = template_img.shape
@@ -58,14 +56,14 @@ print("""Affine comparison:
 # Finally, result images are displayed using nilearn plotting module.
 from nilearn import plotting
 
-plotting.plot_stat_map(localizer_tmap_filename,
-                       bg_img=localizer_anat_filename,
-                       cut_coords=(36, -27, 66),
-                       threshold=3,
-                       title="t-map on original anat")
-plotting.plot_stat_map(resampled_localizer_tmap,
+plotting.plot_stat_map(stat_img,
                        bg_img=template,
                        cut_coords=(36, -27, 66),
                        threshold=3,
-                       title="Resampled t-map on MNI template anat")
+                       title="t-map in original resolution")
+plotting.plot_stat_map(resampled_stat_img,
+                       bg_img=template,
+                       cut_coords=(36, -27, 66),
+                       threshold=3,
+                       title="Resampled t-map")
 plotting.show()

@@ -18,7 +18,7 @@ from ..image import new_img_like, resample_img
 from ..image.image import _smooth_array, threshold_img
 from .._utils.niimg_conversions import concat_niimgs, _check_same_fov
 from .._utils.niimg import _safe_get_data
-from .._utils.compat import _basestring, get_affine
+from .._utils.compat import _basestring
 from .._utils.ndimage import _peak_local_max
 from .._utils.segmentation import _random_walker
 
@@ -55,7 +55,7 @@ def _threshold_maps_ratio(maps_img, threshold):
     else:
         ratio = threshold
 
-    maps_data = _safe_get_data(maps, ensure_finite=True)
+    maps_data = _safe_get_data(maps, ensure_finite=True).copy()
 
     abs_maps = np.abs(maps_data)
     # thresholding
@@ -68,8 +68,7 @@ def _threshold_maps_ratio(maps_img, threshold):
     return threshold_maps_img
 
 
-def _remove_small_regions(input_data, mask_data, index,
-                          affine, min_size):
+def _remove_small_regions(input_data, index, affine, min_size):
     """Remove small regions in volume from input_data of specified min_size.
 
     min_size should be specified in mm^3 (region size in volume).
@@ -80,11 +79,6 @@ def _remove_small_regions(input_data, mask_data, index,
         Values inside the regions defined by labels contained in input_data
         are summed together to get the size and compare with given min_size.
         For example, see scipy.ndimage.label
-
-    mask_data : numpy.ndarray
-        Data should contains labels assigned to the regions contained in given
-        input_data to tag values to work on. The data must be of same shape of
-        input_data.
 
     index : numpy.ndarray
         A sequence of label numbers of the regions to be measured corresponding
@@ -190,8 +184,8 @@ def connected_regions(maps_img, min_region_size=1350,
     index_of_each_map = []
     maps_img = check_niimg(maps_img, atleast_4d=True)
     maps = _safe_get_data(maps_img).copy()
-    affine = get_affine(maps_img)
-    min_region_size = min_region_size / np.prod(np.diag(abs(affine[:3])))
+    affine = maps_img.affine
+    min_region_size = min_region_size / np.abs(np.linalg.det(affine[:3, :3]))
 
     allowed_extract_types = ['connected_components', 'local_regions']
     if extract_type not in allowed_extract_types:
@@ -202,12 +196,12 @@ def connected_regions(maps_img, min_region_size=1350,
     if mask_img is not None:
         if not _check_same_fov(maps_img, mask_img):
             mask_img = resample_img(mask_img,
-                                    target_affine=get_affine(maps_img),
+                                    target_affine=maps_img.affine,
                                     target_shape=maps_img.shape[:3],
                                     interpolation="nearest")
-            mask_data, _ = masking._load_mask_img(mask_img)
-            # Set as 0 to the values which are outside of the mask
-            maps[mask_data == 0.] = 0.
+        mask_data, _ = masking._load_mask_img(mask_img)
+        # Set as 0 to the values which are outside of the mask
+        maps[mask_data == 0.] = 0.
 
     for index in range(maps.shape[-1]):
         regions = []
@@ -266,7 +260,7 @@ class RegionExtractor(NiftiMapsMasker):
         Mask to be applied to input data, passed to NiftiMapsMasker.
         If None, no masking is applied.
 
-    min_region_size: int, default 1350 mm^3, optional
+    min_region_size: float, default 1350 mm^3, optional
         Minimum volume in mm3 for a region to be kept. For example, if
         the voxel size is 3x3x3 mm then the volume of the voxel is
         27mm^3. By default, it is 1350mm^3 which means we take minimum
@@ -299,6 +293,12 @@ class RegionExtractor(NiftiMapsMasker):
         their maximum peak value to define a seed marker and then using
         random walker segementation algorithm on these markers for region
         separation.
+
+    smoothing_fwhm: scalar, default 6mm, optional
+        To smooth an image to extract most sparser regions. This parameter
+        is passed to `connected_regions` and exists only for extractor
+        'local_regions'. Please set this parameter according to maps
+        resolution, otherwise extraction will fail.
 
     standardize: bool, True or False, default False, optional
         If True, the time series signals are centered and normalized by
@@ -364,11 +364,13 @@ class RegionExtractor(NiftiMapsMasker):
     """
     def __init__(self, maps_img, mask_img=None, min_region_size=1350,
                  threshold=1., thresholding_strategy='ratio_n_voxels',
-                 extractor='local_regions', standardize=False, detrend=False,
+                 extractor='local_regions', smoothing_fwhm=6,
+                 standardize=False, detrend=False,
                  low_pass=None, high_pass=None, t_r=None,
                  memory=Memory(cachedir=None), memory_level=0, verbose=0):
         super(RegionExtractor, self).__init__(
             maps_img=maps_img, mask_img=mask_img,
+            smoothing_fwhm=smoothing_fwhm,
             standardize=standardize, detrend=detrend, low_pass=low_pass,
             high_pass=high_pass, t_r=t_r, memory=memory,
             memory_level=memory_level, verbose=verbose)
@@ -377,6 +379,7 @@ class RegionExtractor(NiftiMapsMasker):
         self.thresholding_strategy = thresholding_strategy
         self.threshold = threshold
         self.extractor = extractor
+        self.smoothing_fwhm = smoothing_fwhm
 
     def fit(self, X=None, y=None):
         """ Prepare the data and setup for the region extraction
@@ -406,7 +409,9 @@ class RegionExtractor(NiftiMapsMasker):
         # connected component extraction
         self.regions_img_, self.index_ = connected_regions(threshold_maps,
                                                            self.min_region_size,
-                                                           self.extractor)
+                                                           self.extractor,
+                                                           self.smoothing_fwhm,
+                                                           mask_img=self.mask_img)
 
         self.maps_img = self.regions_img_
         super(RegionExtractor, self).fit()
@@ -448,7 +453,7 @@ def connected_label_regions(labels_img, min_size=None, connect_diag=True,
 
         NOTE: The order of the names given in labels should be appropriately
         matched with the unique labels (integers) assigned to each region
-        given in labels_img.
+        given in labels_img (also excluding 'Background' label).
 
     Returns
     -------
@@ -473,7 +478,7 @@ def connected_label_regions(labels_img, min_size=None, connect_diag=True,
     """
     labels_img = check_niimg_3d(labels_img)
     labels_data = _safe_get_data(labels_img, ensure_finite=True)
-    affine = labels_img.get_affine()
+    affine = labels_img.affine
 
     check_unique_labels = np.unique(labels_data)
 
@@ -527,9 +532,8 @@ def connected_label_regions(labels_img, min_size=None, connect_diag=True,
 
         if min_size is not None:
             index = np.arange(this_n_labels + 1)
-            this_label_mask = this_label_mask.astype(np.int)
-            regions = _remove_small_regions(regions, this_label_mask,
-                                            index, affine, min_size=min_size)
+            regions = _remove_small_regions(regions, index, affine,
+                                            min_size=min_size)
             this_n_labels = regions.max()
 
         cur_regions = regions[regions != 0] + current_max_label

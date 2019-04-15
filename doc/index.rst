@@ -21,14 +21,17 @@
 .. |connectome| image:: auto_examples/03_connectivity/images/sphx_glr_plot_inverse_covariance_connectome_004.png
      :target: auto_examples/03_connectivity/plot_inverse_covariance_connectome.html
 
+.. |surface_plot| image:: auto_examples/01_plotting/images/sphx_glr_plot_3d_map_to_surface_projection_001.png
+     :target: auto_examples/01_plotting/plot_3d_map_to_surface_projection.html
+
 .. |haxby_weights| image:: auto_examples/images/sphx_glr_plot_decoding_tutorial_002.png
    :target: auto_examples/plot_decoding_tutorial.html
 
 .. |oasis_weights| image:: auto_examples/02_decoding/images/sphx_glr_plot_oasis_vbm_002.png
    :target: auto_examples/02_decoding/plot_oasis_vbm.html
 
-.. |rest_clustering| image:: auto_examples/03_connectivity/images/sphx_glr_plot_rest_clustering_001.png
-   :target: auto_examples/03_connectivity/plot_rest_clustering.html
+.. |rest_parcellations| image:: auto_examples/03_connectivity/images/sphx_glr_plot_rest_parcellations_001.png
+   :target: auto_examples/03_connectivity/plot_rest_parcellations.html
 
 .. |canica| image:: auto_examples/03_connectivity/images/sphx_glr_plot_canica_resting_state_011.png
    :target: auto_examples/03_connectivity/plot_canica_resting_state.html
@@ -58,17 +61,19 @@
 
 * |glass_brain|
 
-* |haxby_weights|
+* |surface_plot|
 
 * |oasis_weights|
 
 * |connectome|
 
-* |rest_clustering|
+* |rest_parcellations|
 
 * |canica|
 
 * |tvl1_haxby|
+
+* |haxby_weights|
 
 * |searchlight|
 

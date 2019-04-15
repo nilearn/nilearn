@@ -11,6 +11,7 @@ connectome from them.
 
 ##########################################################################
 # Retrieve the dataset
+# ---------------------
 from nilearn import datasets
 adhd_dataset = datasets.fetch_adhd(n_subjects=1)
 
@@ -21,6 +22,7 @@ print('First subject functional nifti image (4D) is at: %s' %
 
 ##########################################################################
 # Coordinates of Default Mode Network
+# ------------------------------------
 dmn_coords = [(0, -52, 18), (-46, -68, 32), (46, -68, 32), (1, 50, -5)]
 labels = [
           'Posterior Cingulate Cortex',
@@ -32,6 +34,7 @@ labels = [
 
 ##########################################################################
 # Extracts signal from sphere around DMN seeds
+# ---------------------------------------------
 from nilearn import input_data
 
 masker = input_data.NiftiSpheresMasker(
@@ -48,6 +51,7 @@ time_series = masker.fit_transform(func_filename,
 
 ##########################################################################
 # Display time series
+# --------------------
 import matplotlib.pyplot as plt
 for time_serie, label in zip(time_series.T, labels):
     plt.plot(time_serie, label=label)
@@ -60,9 +64,11 @@ plt.tight_layout()
 
 
 ##########################################################################
-# Compute partial correlation matrix using object
-# :class:`nilearn.connectome.ConnectivityMeasure`: Its default covariance
-# estimator is Ledoit-Wolf, allowing to obtain accurate partial correlations.
+# Compute partial correlation matrix
+# -----------------------------------
+# Using object :class:`nilearn.connectome.ConnectivityMeasure`: Its
+# default covariance estimator is Ledoit-Wolf, allowing to obtain accurate
+# partial correlations.
 from nilearn.connectome import ConnectivityMeasure
 connectivity_measure = ConnectivityMeasure(kind='partial correlation')
 partial_correlation_matrix = connectivity_measure.fit_transform(
@@ -70,6 +76,7 @@ partial_correlation_matrix = connectivity_measure.fit_transform(
 
 ##########################################################################
 # Display connectome
+# -------------------
 from nilearn import plotting
 
 plotting.plot_connectome(partial_correlation_matrix, dmn_coords,
@@ -83,3 +90,23 @@ plotting.plot_connectome(partial_correlation_matrix, dmn_coords,
                          display_mode='lyrz')
 
 plotting.show()
+
+##############################################################################
+# 3D visualization in a web browser
+# ---------------------------------
+# An alternative to :func:`nilearn.plotting.plot_connectome` is to use
+# :func:`nilearn.plotting.view_connectome` that gives more interactive
+# visualizations in a web browser. See :ref:`interactive-connectome-plotting`
+# for more details.
+
+
+view = plotting.view_connectome(partial_correlation_matrix, dmn_coords)
+
+# uncomment this to open the plot in a web browser:
+# view.open_in_browser()
+
+##############################################################################
+# In a Jupyter notebook, if ``view`` is the output of a cell, it will
+# be displayed below the cell
+
+view

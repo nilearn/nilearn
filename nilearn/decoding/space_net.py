@@ -18,81 +18,25 @@ import sys
 from functools import partial
 import numpy as np
 from scipy import stats, ndimage
-from sklearn.base import RegressorMixin, clone
+from sklearn.base import RegressorMixin
 from sklearn.utils.extmath import safe_sparse_dot
-try:
-    from sklearn.utils import atleast2d_or_csr
-except ImportError: # sklearn 0.15
-    from sklearn.utils import check_array as atleast2d_or_csr
-from sklearn.linear_model.base import LinearModel, center_data
+from sklearn.utils import check_array
+from sklearn.linear_model.base import LinearModel
 from sklearn.feature_selection import (SelectPercentile, f_regression,
                                        f_classif)
 from sklearn.externals.joblib import Memory, Parallel, delayed
-from sklearn.cross_validation import check_cv
 from sklearn.preprocessing import LabelBinarizer
 from sklearn.metrics import accuracy_score
-from .._utils.fixes import check_X_y
-from .._utils.compat import _basestring, get_header
+from ..input_data.masker_validation import check_embedded_nifti_masker
+from .._utils.param_validation import _adjust_screening_percentile
+from sklearn.utils import check_X_y
+from sklearn.model_selection import check_cv
+from sklearn.linear_model.base import _preprocess_data as center_data
+from .._utils.compat import _basestring
 from .._utils.cache_mixin import CacheMixin
-from ..input_data import NiftiMasker
 from .objective_functions import _unmask
 from .space_net_solvers import (tvl1_solver, _graph_net_logistic,
                                 _graph_net_squared_loss)
-
-
-# Volume of a standard (MNI152) brain mask in mm^3
-MNI152_BRAIN_VOLUME = 1827243.
-
-
-def _get_mask_volume(mask_img):
-    """Computes the volume of a brain mask in mm^3
-
-    Parameters
-    ----------
-    mask_img : nibabel image object
-        Input image whose voxel dimensions are to be computed.
-
-    Returns
-    -------
-    vol : float
-        The computed volume.
-    """
-    vox_dims = get_header(mask_img).get_zooms()[:3]
-    return 1. * np.prod(vox_dims) * mask_img.get_data().astype(np.bool).sum()
-
-
-def _adjust_screening_percentile(screening_percentile, mask_img,
-                                 verbose=0):
-    original_screening_percentile = screening_percentile
-    # correct screening_percentile according to the volume of the data mask
-    mask_volume = _get_mask_volume(mask_img)
-    if mask_volume > MNI152_BRAIN_VOLUME:
-        warnings.warn(
-            "Brain mask is bigger than the volume of a standard "
-            "human brain. SpaceNet is probably not tuned to "
-            "be used on such data.", stacklevel=2)
-    elif mask_volume < .005 * MNI152_BRAIN_VOLUME:
-        warnings.warn(
-            "Brain mask is smaller than .5% of the volume "
-            "human brain. SpaceNet is probably not tuned to"
-            "be used on such data.", stacklevel=2)
-
-    if screening_percentile < 100:
-        screening_percentile = screening_percentile * (
-            MNI152_BRAIN_VOLUME / mask_volume)
-        screening_percentile = min(screening_percentile, 100)
-    # if screening_percentile is 100, we don't do anything
-
-    if verbose > 1:
-        print("Mask volume = %gmm^3 = %gcm^3" % (
-            mask_volume, mask_volume / 1.e3))
-        print("Standard brain volume = %gmm^3 = %gcm^3" % (
-            MNI152_BRAIN_VOLUME, MNI152_BRAIN_VOLUME / 1.e3))
-        print("Original screening-percentile: %g" % (
-            original_screening_percentile))
-        print("Volume-corrected screening-percentile: %g" % (
-            screening_percentile))
-    return screening_percentile
 
 
 def _crop_mask(mask):
@@ -435,6 +379,9 @@ def path_scores(solver, X, y, mask, alphas, l1_ratios, train, test,
             if best_alpha is None:
                 best_alpha = alphas_[0]
             init = None
+            path_solver_params = solver_params.copy()
+            # Use a lighter tol during the path
+            path_solver_params['tol'] = 2 * path_solver_params.get('tol', 1e-4)
             for alpha in alphas_:
                 # setup callback mechanism for early stopping
                 early_stopper = _EarlyStoppingCallback(
@@ -443,7 +390,7 @@ def path_scores(solver, X, y, mask, alphas, l1_ratios, train, test,
                 w, _, init = solver(
                     X_train, y_train, alpha, l1_ratio, mask=mask, init=init,
                     callback=early_stopper, verbose=max(verbose - 1, 0.),
-                    **solver_params)
+                    **path_solver_params)
 
                 # We use 2 scores for model selection: the second one is to
                 # disambiguate between regions of equivalent Spearman
@@ -515,7 +462,7 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
     penalty : string, optional (default 'graph-net')
         Penalty to used in the model. Can be 'graph-net' or 'tv-l1'.
 
-    loss : string, optional (default "mse")
+    loss : string, optional (default None)
         Loss to be used in the model. Must be an one of "mse", or "logistic".
 
     is_classif : bool, optional (default False)
@@ -542,7 +489,7 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
         Length of the path. For example, ``eps=1e-3`` means that
         ``alpha_min / alpha_max = 1e-3``
 
-    mask : filename, niimg, NiftiMasker instance, optional default None)
+    mask : filename, niimg, NiftiMasker instance, optional (default None)
         Mask to be used on data. If an instance of masker is passed,
         then its mask will be used. If no mask is it will be computed
         automatically by a NiftiMasker.
@@ -572,7 +519,7 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
     screening_percentile : float in the interval [0, 100]; Optional (
     default 20)
         Percentile value for ANOVA univariate feature selection. A value of
-        100 means 'keep all features'. This percentile is is expressed
+        100 means 'keep all features'. This percentile is expressed
         w.r.t the volume of a standard (MNI152) brain, and so is corrected
         at runtime to correspond to the volume of the user-supplied mask
         (which is typically smaller). If '100' is given, all the features
@@ -586,7 +533,7 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
     fit_intercept : bool, optional (default True)
         Fit or not an intercept.
 
-    max_iter : int (default 1000)
+    max_iter : int (default 200)
         Defines the iterations for the solver.
 
     tol : float, optional (default 5e-4)
@@ -618,11 +565,33 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
 
     Attributes
     ----------
-    `alpha_` : float
-         Best alpha found by cross-validation.
+    `all_coef_` : ndarray, shape (n_l1_ratios, n_folds, n_features)
+        Coefficients for all folds and features.
 
-    `coef_` : ndarray, shape (n_classes-1, n_features)
+    `alpha_grids_` : ndarray, shape (n_folds, n_alphas)
+        Alpha values considered for selection of the best ones
+        (saved in `best_model_params_`)
+
+    `best_model_params_` : ndarray, shape (n_folds, n_parameter)
+        Best model parameters (alpha, l1_ratio) saved for the different
+        cross-validation folds.
+
+    `classes_` : ndarray of labels (`n_classes_`)
+        Labels of the classes (for classification problems)
+
+    `n_classes_` : int
+        Number of classes (for classification problems)
+
+    `coef_` : ndarray, shape
+        (1, n_features) for 2 class classification problems (i.e n_classes = 2)
+        (n_classes, n_features) for n_classes > 2
         Coefficient of the features in the decision function.
+
+    `coef_img_` : nifti image
+        Masked model coefficients
+
+    `mask_` : ndarray 3D
+        An array contains values of the mask image.
 
     `masker_` : instance of NiftiMasker
         The nifti masker used to mask the data.
@@ -632,21 +601,39 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
         this attribute is the mask image computed automatically from the
         data `X`.
 
-    `intercept_` : narray, shape (nclasses -1,)
-         Intercept (a.k.a. bias) added to the decision function.
-         It is available only when parameter intercept is set to True.
+    `memory_` : joblib memory cache
+
+    `intercept_` : narray, shape
+        (1,) for 2 class classification problems (i.e n_classes = 2)
+        (n_classes,) for n_classes > 2
+        Intercept (a.k.a. bias) added to the decision function.
+        It is available only when parameter intercept is set to True.
 
     `cv_` : list of pairs of lists
-         List of the (n_folds,) folds. For the corresponding fold,
-         each pair is composed of two lists of indices,
-         one for the train samples and one for the test samples.
+        Each pair is the list of indices for the train and test samples
+        for the corresponding fold.
 
-    `cv_scores_` : ndarray, shape (n_alphas, n_folds) or (n_l1_ratios, n_alphas, n_folds)
+    `cv_scores_` : ndarray, shape (n_folds, n_alphas) or (n_l1_ratios, n_folds, n_alphas)
         Scores (misclassification) for each alpha, and on each fold
 
     `screening_percentile_` : float
         Screening percentile corrected according to volume of mask,
         relative to the volume of standard brain.
+
+    `w_` : ndarray, shape
+        (1, n_features + 1) for 2 class classification problems (i.e n_classes = 2)
+        (n_classes, n_features + 1) for n_classes > 2, and (n_features,) for
+        regression
+        Model weights
+
+    `ymean_` : array, shape (n_samples,)
+        Mean of prediction targets
+
+    `Xmean_` : array, shape (n_features,)
+        Mean of X across samples
+
+    `Xstd_` : array, shape (n_features,)
+        Standard deviation of X across samples
     """
     SUPPORTED_PENALTIES = ["graph-net", "tv-l1"]
     SUPPORTED_LOSSES = ["mse", "logistic"]
@@ -654,11 +641,11 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
     def __init__(self, penalty="graph-net", is_classif=False, loss=None,
                  l1_ratios=.5, alphas=None, n_alphas=10, mask=None,
                  target_affine=None, target_shape=None, low_pass=None,
-                 high_pass=None, t_r=None, max_iter=1000, tol=5e-4,
-                 memory=Memory(None), memory_level=1,
-                 standardize=True, verbose=1, n_jobs=1, eps=1e-3,
-                 cv=8, fit_intercept=True, screening_percentile=20.,
-                 debias=False):
+                 high_pass=None, t_r=None, max_iter=200, tol=5e-4,
+                 memory=None, memory_level=1, standardize=True, verbose=1,
+                 mask_args=None,
+                 n_jobs=1, eps=1e-3, cv=8, fit_intercept=True,
+                 screening_percentile=20., debias=False):
         self.penalty = penalty
         self.is_classif = is_classif
         self.loss = loss
@@ -683,6 +670,7 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
         self.t_r = t_r
         self.target_affine = target_affine
         self.target_shape = target_shape
+        self.mask_args = mask_args
 
         # sanity check on params
         self.check_params()
@@ -766,21 +754,16 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
             tic = time.time()
 
         # nifti masking
-        if isinstance(self.mask, NiftiMasker):
-            self.masker_ = clone(self.mask)
-        else:
-            self.masker_ = NiftiMasker(mask_img=self.mask,
-                                       target_affine=self.target_affine,
-                                       target_shape=self.target_shape,
-                                       standardize=self.standardize,
-                                       low_pass=self.low_pass,
-                                       high_pass=self.high_pass,
-                                       mask_strategy='epi', t_r=self.t_r,
-                                       memory=self.memory_)
+        self.masker_ = check_embedded_nifti_masker(self, multi_subject=False)
         X = self.masker_.fit_transform(X)
 
         X, y = check_X_y(X, y, ['csr', 'csc', 'coo'], dtype=np.float,
-                         multi_output=True, y_numeric=True)
+                         multi_output=True, y_numeric=not self.is_classif)
+
+        if not self.is_classif and np.all(np.diff(y) == 0.):
+            raise ValueError("The given input y must have atleast 2 targets"
+                             " to do regression analysis. You provided only"
+                             " one target {0}".format(np.unique(y)))
 
         # misc
         self.Xmean_ = X.mean(axis=0)
@@ -819,8 +802,8 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
         case1 = (None in [alphas, l1_ratios]) and self.n_alphas > 1
         case2 = (alphas is not None) and min(len(l1_ratios), len(alphas)) > 1
         if case1 or case2:
-            self.cv_ = list(check_cv(self.cv, X=X, y=y,
-                                     classifier=self.is_classif))
+            self.cv_ = list(check_cv(
+                self.cv, y=y, classifier=self.is_classif).split(X, y))
         else:
             # no cross-validation needed, user supplied all params
             self.cv_ = [(np.arange(n_samples), [])]
@@ -847,8 +830,7 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
         self.all_coef_ = np.ndarray((n_problems, n_folds, X.shape[1]))
 
         self.screening_percentile_ = _adjust_screening_percentile(
-                self.screening_percentile, self.mask_img_,
-                verbose=self.verbose)
+            self.screening_percentile, self.mask_img_, verbose=self.verbose)
 
         # main loop: loop on classes and folds
         solver_params = dict(tol=self.tol, max_iter=self.max_iter)
@@ -858,12 +840,13 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
              y_train_mean, (cls, fold)) in Parallel(
             n_jobs=self.n_jobs, verbose=2 * self.verbose)(
                 delayed(self._cache(path_scores, func_memory_level=2))(
-                solver, X, y[:, cls] if n_problems > 1 else y, self.mask_,
-                alphas, l1_ratios, self.cv_[fold][0], self.cv_[fold][1],
-                solver_params, n_alphas=self.n_alphas, eps=self.eps,
-                is_classif=self.loss == "logistic", key=(cls, fold),
-                debias=self.debias, verbose=self.verbose,
-                screening_percentile=self.screening_percentile_,
+                    solver, X, y[:, cls] if n_problems > 1 else y,
+                    self.mask_, alphas, l1_ratios, self.cv_[fold][0],
+                    self.cv_[fold][1], solver_params, n_alphas=self.n_alphas,
+                    eps=self.eps, is_classif=self.loss == "logistic",
+                    key=(cls, fold), debias=self.debias,
+                    verbose=self.verbose,
+                    screening_percentile=self.screening_percentile_,
                 ) for cls in range(n_problems) for fold in range(n_folds)):
             self.best_model_params_.append((best_alpha, best_l1_ratio))
             self.alpha_grids_.append(alphas)
@@ -876,6 +859,7 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
 
         # misc
         self.cv_scores_ = np.array(self.cv_scores_)
+        self.best_model_params_ = np.array(self.best_model_params_)
         self.alpha_grids_ = np.array(self.alpha_grids_)
         self.ymean_ /= n_folds
         if not self.is_classif:
@@ -922,7 +906,7 @@ class BaseSpaceNet(LinearModel, RegressorMixin, CacheMixin):
         if not self.is_classif:
             return LinearModel.decision_function(self, X)
 
-        X = atleast2d_or_csr(X)
+        X = check_array(X)
         n_features = self.coef_.shape[1]
         if X.shape[1] != n_features:
             raise ValueError("X has %d features per sample; expecting %d"
@@ -1003,7 +987,7 @@ class SpaceNetClassifier(BaseSpaceNet):
         Length of the path. For example, ``eps=1e-3`` means that
         ``alpha_min / alpha_max = 1e-3``.
 
-    mask : filename, niimg, NiftiMasker instance, optional default None)
+    mask : filename, niimg, NiftiMasker instance, optional (default None)
         Mask to be used on data. If an instance of masker is passed,
         then its mask will be used. If no mask is it will be computed
         automatically by a MultiNiftiMasker with default parameters.
@@ -1044,7 +1028,7 @@ class SpaceNetClassifier(BaseSpaceNet):
     fit_intercept : bool, optional (default True)
         Fit or not an intercept.
 
-    max_iter : int (default 1000)
+    max_iter : int (default 200)
         Defines the iterations for the solver.
 
     tol : float
@@ -1076,40 +1060,80 @@ class SpaceNetClassifier(BaseSpaceNet):
 
     Attributes
     ----------
-    `alpha_` : float
-        Best alpha found by cross-validation.
+    `all_coef_` : ndarray, shape (n_l1_ratios, n_folds, n_features)
+        Coefficients for all folds and features.
 
-    `coef_` : array, shape = [n_classes-1, n_features]
+    `alpha_grids_` : ndarray, shape (n_folds, n_alphas)
+        Alpha values considered for selection of the best ones
+        (saved in `best_model_params_`)
+
+    `best_model_params_` : ndarray, shape (n_folds, n_parameter)
+        Best model parameters (alpha, l1_ratio) saved for the different
+        cross-validation folds.
+
+    `classes_` : ndarray of labels (`n_classes_`)
+        Labels of the classes
+
+    `n_classes_` : int
+        Number of classes
+
+    `coef_` : ndarray, shape
+        (1, n_features) for 2 class classification problems (i.e n_classes = 2)
+        (n_classes, n_features) for n_classes > 2
         Coefficient of the features in the decision function.
+
+    `coef_img_` : nifti image
+        Masked model coefficients
+
+    `mask_` : ndarray 3D
+        An array contains values of the mask image.
 
     `masker_` : instance of NiftiMasker
         The nifti masker used to mask the data.
 
     `mask_img_` : Nifti like image
-        The mask of the data. If no mask was given at masker creation, contains
-        the automatically computed mask.
+        The mask of the data. If no mask was supplied by the user,
+        this attribute is the mask image computed automatically from the
+        data `X`.
 
-    `intercept_` : array, shape = [n_classes-1]
+    `memory_` : joblib memory cache
+
+    `intercept_` : narray, shape
+        (1, ) for 2 class classification problems (i.e n_classes = 2)
+        (n_classes, ) for n_classes > 2
         Intercept (a.k.a. bias) added to the decision function.
         It is available only when parameter intercept is set to True.
 
     `cv_` : list of pairs of lists
-        Each pair are the list of indices for the train and test
+        Each pair is the list of indices for the train and test
         samples for the corresponding fold.
 
-    `cv_scores_` : 2d array of shape (n_alphas, n_folds)
-        Scores (misclassification) for each alpha, and on each fold.
+    `cv_scores_` : ndarray, shape (n_folds, n_alphas) or (n_l1_ratios, n_folds, n_alphas)
+        Scores (misclassification) for each alpha, and on each fold
 
     `screening_percentile_` : float
         Screening percentile corrected according to volume of mask,
         relative to the volume of standard brain.
 
+    `w_` : ndarray, shape
+        (1, n_features + 1) for 2 class classification problems (i.e n_classes = 2)
+        (n_classes, n_features + 1) for n_classes > 2
+        Model weights
+
+    `ymean_` : array, shape (n_samples,)
+        Mean of prediction targets
+
+    `Xmean_` : array, shape (n_features,)
+        Mean of X across samples
+
+    `Xstd_` : array, shape (n_features,)
+        Standard deviation of X across samples
     """
 
     def __init__(self, penalty="graph-net", loss="logistic",
                  l1_ratios=.5, alphas=None, n_alphas=10, mask=None,
                  target_affine=None, target_shape=None, low_pass=None,
-                 high_pass=None, t_r=None, max_iter=1000, tol=1e-4,
+                 high_pass=None, t_r=None, max_iter=200, tol=1e-4,
                  memory=Memory(None), memory_level=1, standardize=True,
                  verbose=1, n_jobs=1, eps=1e-3,
                  cv=8, fit_intercept=True, screening_percentile=20.,
@@ -1160,7 +1184,7 @@ class SpaceNetClassifier(BaseSpaceNet):
 class SpaceNetRegressor(BaseSpaceNet):
     """Regression learners with sparsity and spatial priors.
 
-    `SpaceNetClassifier` implements Graph-Net and TV-L1 priors / penalties
+    `SpaceNetRegressor` implements Graph-Net and TV-L1 priors / penalties
     for regression problems. Thus, the penalty is a sum an L1 term and a
     spatial term. The aim of such a hybrid prior is to obtain weights maps
     which are structured (due to the spatial prior) and sparse (enforced
@@ -1191,7 +1215,7 @@ class SpaceNetRegressor(BaseSpaceNet):
         Length of the path. For example, ``eps=1e-3`` means that
         ``alpha_min / alpha_max = 1e-3``
 
-    mask : filename, niimg, NiftiMasker instance, optional default None)
+    mask : filename, niimg, NiftiMasker instance, optional (default None)
         Mask to be used on data. If an instance of masker is passed,
         then its mask will be used. If no mask is it will be computed
         automatically by a MultiNiftiMasker with default parameters.
@@ -1231,7 +1255,7 @@ class SpaceNetRegressor(BaseSpaceNet):
     fit_intercept : bool, optional (default True)
         Fit or not an intercept.
 
-    max_iter : int (default 1000)
+    max_iter : int (default 200)
         Defines the iterations for the solver.
 
     tol : float
@@ -1263,35 +1287,67 @@ class SpaceNetRegressor(BaseSpaceNet):
 
     Attributes
     ----------
-    `alpha_` : float
-        Best alpha found by cross-validation
+    `all_coef_` : ndarray, shape (n_l1_ratios, n_folds, n_features)
+        Coefficients for all folds and features.
 
-    `coef_` : array, shape = [n_classes-1, n_features]
+    `alpha_grids_` : ndarray, shape (n_folds, n_alphas)
+        Alpha values considered for selection of the best ones
+        (saved in `best_model_params_`)
+
+    `best_model_params_` : ndarray, shape (n_folds, n_parameter)
+        Best model parameters (alpha, l1_ratio) saved for the different
+        cross-validation folds.
+
+    `coef_` : ndarray, shape (n_features,)
         Coefficient of the features in the decision function.
+
+    `coef_img_` : nifti image
+        Masked model coefficients
+
+    `mask_` : ndarray 3D
+        An array contains values of the mask image.
 
     `masker_` : instance of NiftiMasker
         The nifti masker used to mask the data.
 
     `mask_img_` : Nifti like image
-        The mask of the data. If no mask was given at masker creation, contains
-        the automatically computed mask.
+        The mask of the data. If no mask was supplied by the user, this
+        attribute is the mask image computed automatically from the data `X`.
 
-    `intercept_` : array, shape = [n_classes-1]
+    `memory_` : joblib memory cache
+
+    `intercept_` : narray, shape (1)
         Intercept (a.k.a. bias) added to the decision function.
         It is available only when parameter intercept is set to True.
 
-    `cv_scores_` : 2d array of shape (n_alphas, n_folds)
+    `cv_` : list of pairs of lists
+        Each pair is the list of indices for the train and test
+        samples for the corresponding fold.
+
+    `cv_scores_` : ndarray, shape (n_folds, n_alphas) or (n_l1_ratios, n_folds, n_alphas)
         Scores (misclassification) for each alpha, and on each fold
 
     `screening_percentile_` : float
         Screening percentile corrected according to volume of mask,
         relative to the volume of standard brain.
+
+    `w_` : ndarray, shape (n_features,)
+        Model weights
+
+    `ymean_` : array, shape (n_samples,)
+        Mean of prediction targets
+
+    `Xmean_` : array, shape (n_features,)
+        Mean of X across samples
+
+    `Xstd_` : array, shape (n_features,)
+        Standard deviation of X across samples
     """
 
     def __init__(self, penalty="graph-net", l1_ratios=.5, alphas=None,
                  n_alphas=10, mask=None, target_affine=None,
                  target_shape=None, low_pass=None, high_pass=None, t_r=None,
-                 max_iter=1000, tol=1e-4, memory=Memory(None), memory_level=1,
+                 max_iter=200, tol=1e-4, memory=Memory(None), memory_level=1,
                  standardize=True, verbose=1, n_jobs=1, eps=1e-3, cv=8,
                  fit_intercept=True, screening_percentile=20., debias=False):
         super(SpaceNetRegressor, self).__init__(

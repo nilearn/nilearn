@@ -35,7 +35,7 @@ datasets.
 
 
 .. literalinclude:: ../../examples/03_connectivity/plot_extract_regions_dictlearning_maps.py
-    :start-after: # utilities
+    :start-after: # We use nilearn's datasets downloading utilities
     :end-before: ################################################################################
 
 .. currentmodule:: nilearn.decomposition
@@ -135,7 +135,7 @@ The third step, we compute the mean correlation across all subjects.
 
 .. literalinclude:: ../../examples/03_connectivity/plot_extract_regions_dictlearning_maps.py
     :start-after: # To estimate correlation matrices we import connectome utilities from nilearn
-    :end-before: # Visualization
+    :end-before: #################################################################
 
 .. currentmodule:: nilearn.plotting
 
@@ -149,7 +149,7 @@ Left image is the correlations in a matrix form and right image is the
 connectivity relations to brain regions plotted using :func:`plot_connectome`
 
 .. literalinclude:: ../../examples/03_connectivity/plot_extract_regions_dictlearning_maps.py
-    :start-after: # Plotting connectome results
+    :start-after: # Plot resulting connectomes
     :end-before: ################################################################################
 
 .. |matrix| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_extract_regions_dictlearning_maps_003.png
@@ -173,7 +173,7 @@ validate that regions are nicely separated identified by each extracted region i
 color.
 
 .. literalinclude:: ../../examples/03_connectivity/plot_extract_regions_dictlearning_maps.py
-    :start-after: # Plotting regions extracted for only one specific network
+    :start-after: # First, we plot a network of index=4 without region extraction
 
 .. |dmn| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_extract_regions_dictlearning_maps_005.png
    :target: ../auto_examples/03_connectivity/plot_extract_regions_dictlearning_maps.html

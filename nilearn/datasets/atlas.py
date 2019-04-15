@@ -2,17 +2,22 @@
 Downloading NeuroImaging datasets: atlas datasets
 """
 import os
+import warnings
 import xml.etree.ElementTree
-import numpy as np
+from tempfile import mkdtemp
+import json
+import shutil
 
+import nibabel as nb
+import numpy as np
 from sklearn.datasets.base import Bunch
 
-#from . import utils
 from .utils import _get_dataset_dir, _fetch_files, _get_dataset_descr
-
 from .._utils import check_niimg
+from .._utils.compat import _basestring
 from ..image import new_img_like
-from .._utils.compat import _basestring, get_affine
+
+_TALAIRACH_LEVELS = ['hemisphere', 'lobe', 'gyrus', 'tissue', 'ba']
 
 
 def fetch_atlas_craddock_2012(data_dir=None, url=None, resume=True, verbose=1):
@@ -146,11 +151,14 @@ def fetch_atlas_destrieux_2009(lateralized=True, data_dir=None, url=None,
 def fetch_atlas_harvard_oxford(atlas_name, data_dir=None,
                                symmetric_split=False,
                                resume=True, verbose=1):
-    """Load Harvard-Oxford parcellation from FSL if installed or download it.
+    """Load Harvard-Oxford parcellations from FSL.
 
-    This function looks up for Harvard Oxford atlas in the system and load it
-    if present. If not, it downloads it and stores it in NILEARN_DATA
-    directory.
+    This function downloads Harvard Oxford atlas packaged from FSL 5.0
+    and stores atlases in NILEARN_DATA folder in home directory.
+
+    This function can also load Harvard Oxford atlas from your local directory
+    specified by your FSL installed path given in `data_dir` argument.
+    See documentation for details.
 
     Parameters
     ----------
@@ -166,13 +174,20 @@ def fetch_atlas_harvard_oxford(atlas_name, data_dir=None,
         sub-prob-1mm, sub-prob-2mm
 
     data_dir: string, optional
-        Path of data directory. It can be FSL installation directory
-        (which is dependent on your installation).
+        Path of data directory where data will be stored. Optionally,
+        it can also be a FSL installation directory (which is dependent
+        on your installation).
+        Example, if FSL is installed in /usr/share/fsl/ then
+        specifying as '/usr/share/' can get you Harvard Oxford atlas
+        from your installed directory. Since we mimic same root directory
+        as FSL to load it easily from your installation.
 
-    symmetric_split: bool, optional
-        If True, split every symmetric region in left and right parts.
-        Effectively doubles the number of regions. Default: False.
-        Not implemented for probabilistic atlas (*-prob-* atlases)
+    symmetric_split: bool, optional, (default False).
+        If True, lateralized atlases of cort or sub with maxprob will be
+        returned. For subcortical types (sub-maxprob), we split every
+        symmetric region in left and right parts. Effectively doubles the
+        number of regions.
+        NOTE Not implemented for full probabilistic atlas (*-prob-* atlases).
 
     Returns
     -------
@@ -198,27 +213,31 @@ def fetch_atlas_harvard_oxford(atlas_name, data_dir=None,
                          "among:\n{1}".format(
                              atlas_name, '\n'.join(atlas_items)))
 
-    url = 'http://www.nitrc.org/frs/download.php/7700/HarvardOxford.tgz'
+    url = 'http://www.nitrc.org/frs/download.php/9902/HarvardOxford.tgz'
 
     # For practical reasons, we mimic the FSL data directory here.
     dataset_name = 'fsl'
-    # Environment variables
-    default_paths = []
-    for env_var in ['FSL_DIR', 'FSLDIR']:
-        path = os.getenv(env_var)
-        if path is not None:
-            default_paths.extend(path.split(':'))
     data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
-                                default_paths=default_paths, verbose=verbose)
+                                verbose=verbose)
     opts = {'uncompress': True}
     root = os.path.join('data', 'atlases')
-    atlas_file = os.path.join(root, 'HarvardOxford',
-                              'HarvardOxford-' + atlas_name + '.nii.gz')
+
     if atlas_name[0] == 'c':
-        label_file = 'HarvardOxford-Cortical.xml'
+        if 'cort-maxprob' in atlas_name and symmetric_split:
+            split_name = atlas_name.split('cort')
+            atlas_name = 'cortl' + split_name[1]
+            label_file = 'HarvardOxford-Cortical-Lateralized.xml'
+            lateralized = True
+        else:
+            label_file = 'HarvardOxford-Cortical.xml'
+            lateralized = False
     else:
         label_file = 'HarvardOxford-Subcortical.xml'
+        lateralized = False
     label_file = os.path.join(root, label_file)
+
+    atlas_file = os.path.join(root, 'HarvardOxford',
+                              'HarvardOxford-' + atlas_name + '.nii.gz')
 
     atlas_img, label_file = _fetch_files(
         data_dir,
@@ -241,6 +260,9 @@ def fetch_atlas_harvard_oxford(atlas_name, data_dir=None,
                          "atlases")
 
     atlas_img = check_niimg(atlas_img)
+    if lateralized:
+        return Bunch(maps=atlas_img, labels=names)
+
     atlas = atlas_img.get_data()
 
     labels = np.unique(atlas)
@@ -274,7 +296,7 @@ def fetch_atlas_harvard_oxford(atlas_name, data_dir=None,
         new_atlas[left_atlas == label] = new_label
         new_names.append(name + ', right part')
 
-    atlas_img = new_img_like(atlas_img, new_atlas, get_affine(atlas_img))
+    atlas_img = new_img_like(atlas_img, new_atlas, atlas_img.affine)
     return Bunch(maps=atlas_img, labels=new_names)
 
 
@@ -334,7 +356,11 @@ def fetch_atlas_msdl(data_dir=None, url=None, resume=True, verbose=1):
     files = _fetch_files(data_dir, files, resume=resume, verbose=verbose)
     csv_data = np.recfromcsv(files[0])
     labels = [name.strip() for name in csv_data['name'].tolist()]
-    region_coords = csv_data[['x', 'y', 'z']].tolist()
+    labels = [label.decode("utf-8") for label in labels]
+    with warnings.catch_warnings():
+        warnings.filterwarnings('ignore', module='numpy',
+                                category=FutureWarning)
+        region_coords = csv_data[['x', 'y', 'z']].tolist()
     net_names = [net_name.strip() for net_name in csv_data['net_name'].tolist()]
     fdescr = _get_dataset_descr(dataset_name)
 
@@ -511,8 +537,8 @@ def fetch_atlas_yeo_2011(data_dir=None, url=None, resume=True, verbose=1):
     Licence: unknown.
     """
     if url is None:
-        url = "ftp://surfer.nmr.mgh.harvard.edu/" \
-              "pub/data/Yeo_JNeurophysiol11_MNI152.zip"
+        url = ('ftp://surfer.nmr.mgh.harvard.edu/pub/data/'
+               'Yeo_JNeurophysiol11_MNI152.zip')
     opts = {'uncompress': True}
 
     dataset_name = "yeo_2011"
@@ -814,7 +840,6 @@ def fetch_atlas_allen_2011(data_dir=None, url=None, resume=True, verbose=1):
 
     References
     ----------
-
     E. Allen, et al, "A baseline for the multivariate comparison of resting
     state networks," Frontiers in Systems Neuroscience, vol. 5, p. 12, 2011.
 
@@ -826,17 +851,17 @@ def fetch_atlas_allen_2011(data_dir=None, url=None, resume=True, verbose=1):
     on this dataset.
     """
     if url is None:
-        url = "http://mialab.mrn.org/data/hcp/"
+        url = "https://osf.io/hrcku/download"
 
     dataset_name = "allen_rsn_2011"
     keys = ("maps",
             "rsn28",
             "comps")
 
-    opts = {}
-    files = ["ALL_HC_unthresholded_tmaps.nii",
-             "RSN_HC_unthresholded_tmaps.nii",
-             "rest_hcp_agg__component_ica_.nii"]
+    opts = {'uncompress': True}
+    files = ["ALL_HC_unthresholded_tmaps.nii.gz",
+             "RSN_HC_unthresholded_tmaps.nii.gz",
+             "rest_hcp_agg__component_ica_.nii.gz"]
 
     labels = [('Basal Ganglia', [21]),
               ('Auditory', [17]),
@@ -848,7 +873,7 @@ def fetch_atlas_allen_2011(data_dir=None, url=None, resume=True, verbose=1):
 
     networks = [[name] * len(idxs) for name, idxs in labels]
 
-    filenames = [(f, url + f, opts) for f in files]
+    filenames = [(os.path.join('allen_rsn_2011', f), url, opts) for f in files]
 
     data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
                                 verbose=verbose)
@@ -863,3 +888,404 @@ def fetch_atlas_allen_2011(data_dir=None, url=None, resume=True, verbose=1):
     params.extend(list(zip(keys, sub_files)))
 
     return Bunch(**dict(params))
+
+
+def fetch_atlas_surf_destrieux(data_dir=None, url=None,
+                               resume=True, verbose=1):
+    """Download and load Destrieux et al, 2010 cortical atlas.
+
+    This atlas returns 76 labels per hemisphere based on sulco-gryal pattnerns
+    as distributed with Freesurfer in fsaverage5 surface space.
+
+    .. versionadded:: 0.3
+
+    Parameters
+    ----------
+    data_dir: str, optional
+        Path of the data directory. Use to force data storage in a non-
+        standard location. Default: None
+
+    url: str, optional
+        Download URL of the dataset. Overwrite the default URL.
+
+    resume: bool, optional (default True)
+        If True, try resuming download if possible.
+
+    verbose: int, optional (default 1)
+        Defines the level of verbosity of the output.
+
+    Returns
+    -------
+    data: sklearn.datasets.base.Bunch
+        dictionary-like object, contains:
+
+        - "labels": list
+                     Contains region labels
+
+        - "map_left": numpy.ndarray
+                      Index into 'labels' for each vertex on the
+                      left hemisphere of the fsaverage5 surface
+
+        - "map_right": numpy.ndarray
+                       Index into 'labels' for each vertex on the
+                       right hemisphere of the fsaverage5 surface
+
+        - "description": str
+                         Details about the dataset
+
+
+    References
+    ----------
+    Destrieux et al. (2010), Automatic parcellation of human cortical gyri and
+    sulci using standard anatomical nomenclature. NeuroImage 53, 1-15.
+    """
+
+    if url is None:
+        url = "https://www.nitrc.org/frs/download.php/"
+
+    dataset_name = 'destrieux_surface'
+    fdescr = _get_dataset_descr(dataset_name)
+    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
+                                verbose=verbose)
+
+    # Download annot files, fsaverage surfaces and sulcal information
+    annot_file = '%s.aparc.a2009s.annot'
+    annot_url = url + '%i/%s.aparc.a2009s.annot'
+    annot_nids = {'lh annot': 9343, 'rh annot': 9342}
+
+    annots = []
+    for hemi in [('lh', 'left'), ('rh', 'right')]:
+
+        annot = _fetch_files(data_dir,
+                             [(annot_file % (hemi[1]),
+                               annot_url % (annot_nids['%s annot' % hemi[0]],
+                                            hemi[0]),
+                              {'move': annot_file % (hemi[1])})],
+                             resume=resume, verbose=verbose)[0]
+        annots.append(annot)
+
+    annot_left = nb.freesurfer.read_annot(annots[0])
+    annot_right = nb.freesurfer.read_annot(annots[1])
+
+    return Bunch(labels=annot_left[2],  map_left=annot_left[0],
+                 map_right=annot_right[0], description=fdescr)
+
+
+def _separate_talairach_levels(atlas_img, labels, verbose=1):
+    """Separate the multiple annotation levels in talairach raw atlas.
+
+    The Talairach atlas has five levels of annotation: hemisphere, lobe, gyrus,
+    tissue, brodmann area. They are mixed up in the original atlas: each label
+    in the atlas corresponds to a 5-tuple containing, for each of these levels,
+    a value or the string '*' (meaning undefined, background).
+
+    This function disentangles the levels, and stores each on an octet in an
+    int64 image (the level with most labels, ba, has 72 labels).
+    This way, any subset of these levels can be accessed by applying a bitwise
+    mask.
+
+    In the created image, the least significant octet contains the hemisphere,
+    the next one the lobe, then gyrus, tissue, and ba. Background is 0.
+    The labels contain
+    [('level name', ['labels', 'for', 'this', 'level' ...]), ...],
+    where the levels are in the order mentionned above.
+
+    The label '*' is replaced by 'Background' for clarity.
+
+    """
+    labels = np.asarray(labels)
+    if verbose:
+        print(
+            'Separating talairach atlas levels: {}'.format(_TALAIRACH_LEVELS))
+    levels = []
+    new_img = np.zeros(atlas_img.shape, dtype=np.int64)
+    for pos, level in enumerate(_TALAIRACH_LEVELS):
+        if verbose:
+            print(level)
+        level_img = np.zeros(atlas_img.shape, dtype=np.int64)
+        level_labels = {'*': 0}
+        for region_nb, region in enumerate(labels[:, pos]):
+            level_labels.setdefault(region, len(level_labels))
+            level_img[atlas_img.get_data() == region_nb] = level_labels[
+                region]
+        # shift this level to its own octet and add it to the new image
+        level_img <<= 8 * pos
+        new_img |= level_img
+        # order the labels so that image values are indices in the list of
+        # labels for each level
+        level_labels = list(list(
+            zip(*sorted(level_labels.items(), key=lambda t: t[1])))[0])
+        # rename '*' -> 'Background'
+        level_labels[0] = 'Background'
+        levels.append((level, level_labels))
+    new_img = new_img_like(atlas_img, data=new_img)
+    return new_img, levels
+
+
+def _get_talairach_all_levels(data_dir=None, verbose=1):
+    """Get the path to Talairach atlas and labels
+
+    The atlas is downloaded and the files are created if necessary.
+
+    The image contains all five levels of the atlas, each encoded on 8 bits
+    (least significant octet contains the hemisphere, the next one the lobe,
+    then gyrus, tissue, and ba).
+
+    The labels json file contains
+    [['level name', ['labels', 'for', 'this', 'level' ...]], ...],
+    where the levels are in the order mentionned above.
+
+    """
+    data_dir = _get_dataset_dir(
+        'talairach_atlas', data_dir=data_dir, verbose=verbose)
+    img_file = os.path.join(data_dir, 'talairach.nii')
+    labels_file = os.path.join(data_dir, 'talairach_labels.json')
+    if os.path.isfile(img_file) and os.path.isfile(labels_file):
+        return img_file, labels_file
+    atlas_url = 'http://www.talairach.org/talairach.nii'
+    temp_dir = mkdtemp()
+    try:
+        temp_file = _fetch_files(
+            temp_dir, [('talairach.nii', atlas_url, {})], verbose=verbose)[0]
+        atlas_img = nb.load(temp_file, mmap=False)
+        atlas_img = check_niimg(atlas_img)
+    finally:
+        shutil.rmtree(temp_dir)
+    labels = atlas_img.header.extensions[0].get_content()
+    labels = labels.strip().decode('utf-8').split('\n')
+    labels = [l.split('.') for l in labels]
+    new_img, level_labels = _separate_talairach_levels(
+        atlas_img, labels, verbose=verbose)
+    new_img.to_filename(img_file)
+    with open(labels_file, 'w') as fp:
+        json.dump(level_labels, fp)
+    return img_file, labels_file
+
+
+def fetch_atlas_talairach(level_name, data_dir=None, verbose=1):
+    """Download the Talairach atlas.
+
+    .. versionadded:: 0.4.0
+
+    Parameters
+    ----------
+    level_name : {'hemisphere', 'lobe', 'gyrus', 'tissue', 'ba'}
+        Which level of the atlas to use: the hemisphere, the lobe, the gyrus,
+          the tissue type or the Brodmann area.
+
+    data_dir : str, optional (default=None)
+        Path of the data directory. Used to force data storage in a specified
+        location.
+
+    verbose : int
+        verbosity level (0 means no message).
+
+    Returns
+    -------
+    sklearn.datasets.base.Bunch
+        Dictionary-like object, contains:
+
+        - maps: 3D Nifti image, values are indices in the list of labels.
+        - labels: list of strings. Starts with 'Background'.
+        - description: a short description of the atlas and some references.
+
+    References
+    ----------
+    http://talairach.org/about.html#Labels
+
+    `Lancaster JL, Woldorff MG, Parsons LM, Liotti M, Freitas CS, Rainey L,
+    Kochunov PV, Nickerson D, Mikiten SA, Fox PT, "Automated Talairach Atlas
+    labels for functional brain mapping". Human Brain Mapping 10:120-131,
+    2000.`
+
+    `Lancaster JL, Rainey LH, Summerlin JL, Freitas CS, Fox PT, Evans AC, Toga
+    AW, Mazziotta JC. Automated labeling of the human brain: A preliminary
+    report on the development and evaluation of a forward-transform method. Hum
+    Brain Mapp 5, 238-242, 1997.`
+    """
+    if level_name not in _TALAIRACH_LEVELS:
+        raise ValueError('"level_name" should be one of {}'.format(
+            _TALAIRACH_LEVELS))
+    position = _TALAIRACH_LEVELS.index(level_name)
+    atlas_file, labels_file = _get_talairach_all_levels(data_dir, verbose)
+    atlas_img = check_niimg(atlas_file)
+    with open(labels_file) as fp:
+        labels = json.load(fp)[position][1]
+    level_data = (atlas_img.get_data() >> 8 * position) & 255
+    atlas_img = new_img_like(atlas_img, data=level_data)
+    description = _get_dataset_descr(
+        'talairach_atlas').decode('utf-8').format(level_name)
+    return Bunch(maps=atlas_img, labels=labels, description=description)
+
+
+def fetch_atlas_pauli_2017(version='prob', data_dir=None, verbose=1):
+    """Download the Pauli et al. (2017) atlas with in total
+    12 subcortical nodes.
+
+    Parameters
+    ----------
+
+    version: str, optional (default='prob')
+        Which version of the atlas should be download. This can be 'prob'
+        for the probabilistic atlas or 'det' for the deterministic atlas.
+
+    data_dir : str, optional (default=None)
+        Path of the data directory. Used to force data storage in a specified
+        location.
+
+    verbose : int
+        verbosity level (0 means no message).
+
+    Returns
+    -------
+    sklearn.datasets.base.Bunch
+        Dictionary-like object, contains:
+
+        - maps: 3D Nifti image, values are indices in the list of labels.
+        - labels: list of strings. Starts with 'Background'.
+        - description: a short description of the atlas and some references.
+
+    References
+    ----------
+    https://osf.io/r2hvk/
+
+    `Pauli, W. M., Nili, A. N., & Tyszka, J. M. (2018). A high-resolution
+    probabilistic in vivo atlas of human subcortical brain nuclei.
+    Scientific Data, 5, 180063-13. http://doi.org/10.1038/sdata.2018.63``
+    """
+
+    if version == 'prob':
+        url_maps = 'https://osf.io/w8zq2/download'
+        filename = 'pauli_2017_labels.nii.gz'
+    elif version == 'labels':
+        url_maps = 'https://osf.io/5mqfx/download'
+        filename = 'pauli_2017_prob.nii.gz'
+    else:
+        raise NotImplementedError('{} is no valid version for '.format(version) + \
+                                  'the Pauli atlas')
+
+    url_labels = 'https://osf.io/6qrcb/download'
+    dataset_name = 'pauli_2017'
+
+    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
+                                verbose=verbose)
+
+    files = [(filename,
+              url_maps,
+              {'move':filename}),
+             ('labels.txt',
+              url_labels,
+              {'move':'labels.txt'})]
+    atlas_file, labels = _fetch_files(data_dir, files)
+
+    labels = np.loadtxt(labels, dtype=str)[:, 1].tolist()
+
+    fdescr = _get_dataset_descr(dataset_name)
+
+    return Bunch(maps=atlas_file,
+                 labels=labels,
+                 description=fdescr)
+
+
+
+def fetch_atlas_schaefer_2018(n_rois=400, yeo_networks=7, resolution_mm=1,
+                              data_dir=None, base_url=None, resume=True,
+                              verbose=1):
+    """Download and return file names for the Schaefer 2018 parcellation
+
+    .. versionadded:: 0.5.1
+
+    The provided images are in MNI152 space.
+
+    Parameters
+    ----------
+    n_rois: int
+        number of regions of interest {100, 200, 300, 400 (default), 500, 600,
+        800, 1000}
+
+    yeo_networks: int
+        ROI annotation according to yeo networks {7 (default), 17}
+
+    resolution_mm: int
+        Spatial resolution of atlas image in mm {1 (default), 2}
+
+    data_dir: string
+        directory where data should be downloaded and unpacked.
+
+    base_url: string
+        base_url of files to download (None results in default base_url).
+
+    resume: bool
+        whether to resumed download of a partly-downloaded file.
+
+    verbose: int
+        verbosity level (0 means no message).
+
+    Returns
+    -------
+    data: sklearn.datasets.base.Bunch
+        Dictionary-like object, contains:
+
+        - maps: 3D Nifti image, values are indices in the list of labels.
+        - labels: ROI labels including Yeo-network annotation,list of strings.
+        - description: A short description of the atlas and some references.
+
+    References
+    ----------
+    For more information on this dataset, see
+    https://github.com/ThomasYeoLab/CBIG/tree/v0.8.1-Schaefer2018_LocalGlobal/stable_projects/brain_parcellation/Schaefer2018_LocalGlobal
+
+    Schaefer A, Kong R, Gordon EM, Laumann TO, Zuo XN, Holmes AJ,
+    Eickhoff SB, Yeo BTT. Local-Global parcellation of the human
+    cerebral cortex from intrinsic functional connectivity MRI,
+    Cerebral Cortex, 29:3095-3114, 2018.
+
+    Yeo BT, Krienen FM, Sepulcre J, Sabuncu MR, Lashkari D, Hollinshead M,
+    Roffman JL, Smoller JW, Zollei L., Polimeni JR, Fischl B, Liu H,
+    Buckner RL. The organization of the human cerebral cortex estimated by
+    intrinsic functional connectivity. J Neurophysiol 106(3):1125-65, 2011.
+
+    Licence: MIT.
+    """
+    valid_n_rois = [100, 200, 300, 400, 500, 600, 800, 1000]
+    valid_yeo_networks = [7, 17]
+    valid_resolution_mm = [1, 2]
+    if n_rois not in valid_n_rois:
+        raise ValueError("Requested n_rois={} not available. Valid "
+                         "options: {}".format(n_rois, valid_n_rois))
+    if yeo_networks not in valid_yeo_networks:
+        raise ValueError("Requested yeo_networks={} not available. Valid "
+                         "options: {}".format(yeo_networks,valid_yeo_networks))
+    if resolution_mm not in valid_resolution_mm:
+        raise ValueError("Requested resolution_mm={} not available. Valid "
+                         "options: {}".format(resolution_mm,
+                                              valid_resolution_mm)
+                         )
+
+    if base_url is None:
+        base_url = ('https://raw.githubusercontent.com/ThomasYeoLab/CBIG/'
+                    'v0.8.1-Schaefer2018_LocalGlobal/stable_projects/'
+                    'brain_parcellation/Schaefer2018_LocalGlobal/'
+                    'Parcellations/MNI/'
+                    )
+
+    files = []
+    labels_file_template = 'Schaefer2018_{}Parcels_{}Networks_order.txt'
+    img_file_template = ('Schaefer2018_{}Parcels_'
+                         '{}Networks_order_FSLMNI152_{}mm.nii.gz')
+    for f in [labels_file_template.format(n_rois, yeo_networks),
+              img_file_template.format(n_rois, yeo_networks, resolution_mm)]:
+        files.append((f, base_url + f, {}))
+
+    dataset_name = 'schaefer_2018'
+    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
+                                verbose=verbose)
+    labels_file, atlas_file = _fetch_files(data_dir, files, resume=resume,
+                                           verbose=verbose)
+
+    labels = np.genfromtxt(labels_file, usecols=1, dtype="S", delimiter="\t")
+    fdescr = _get_dataset_descr(dataset_name)
+
+    return Bunch(maps=atlas_file,
+                 labels=labels,
+                 description=fdescr)
