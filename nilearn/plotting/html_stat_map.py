@@ -77,9 +77,9 @@ def _threshold_data(data, threshold=None):
     # this will fail our shape check, so we'll convert to an array
     if not np.ndim(data.mask):
         value_check = data.min()
-        warnings.warn("The given float value must not be less than {0}. "
-                      "But, you have given threshold={1} ".format(value_check,
-                                                                  threshold))
+        warnings.warn("Threshold given was {0}, "
+                      "but the data has no values above {1}. ".format(threshold,
+                                                                      value_check))
         data.mask = np.full(data.shape, False)
     return data, threshold
 
