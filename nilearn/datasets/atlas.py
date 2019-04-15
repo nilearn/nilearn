@@ -850,7 +850,7 @@ def fetch_coords_seitzman_2018(ordered_regions=True):
     anatomical_file = os.path.join(package_directory, "data",
                                    "seitzman_2018_ROIs_anatomicalLabels.txt")
 
-    rois = np.recfromcsv(roi_file, delimiter=" ")
+    rois = np.recfromcsv(roi_file, delimiter=" ", encoding="ascii")
     rois = recfunctions.rename_fields(rois, {"netname": "network",
                                              "radiusmm": "radius"})
 
@@ -863,9 +863,10 @@ def fetch_coords_seitzman_2018(ordered_regions=True):
         i, region = r.split("=")
         region_mapping[int(i)] = region
 
-    anatomical = np.genfromtxt(anatomical_file, skip_header=1)
+    anatomical = np.genfromtxt(anatomical_file, skip_header=1,
+                               encoding="ascii")
     anatomical_names = np.array([region_mapping[a] for a in anatomical],
-                                dtype=[('region', '<S18')])
+                                dtype=[('region', np.dtype((str, 20)))])
 
     rois = recfunctions.merge_arrays((rois, anatomical_names),
                                      asrecarray=True, flatten=True)
