@@ -3,7 +3,7 @@ The movie watching based brain development dataset (fMRI)
 
 Notes
 -----
-This functional MRI datasets is used for teaching how to use
+This functional MRI dataset is used for teaching how to use
 machine learning to predict age from naturalistic stimuli (movie)
 watching with Nilearn.
 
