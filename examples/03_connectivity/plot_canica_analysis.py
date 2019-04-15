@@ -2,7 +2,7 @@
 Group analysis of resting-state fMRI with ICA: CanICA
 =====================================================
 
-An example applying CanICA to naturalistic stimuli based movie watching fmri
+An example applying CanICA to movie-watching fMRI
 data. This example applies it to 30 subjects of the brain development datasets
 which includes combination of adults and children.
 
