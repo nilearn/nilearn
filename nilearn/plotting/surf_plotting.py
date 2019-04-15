@@ -512,7 +512,7 @@ def plot_surf_roi(surf_mesh, roi_map, bg_map=None,
     mesh = load_surf_mesh(surf_mesh)
 
     if len(roi.shape) is not 1:
-        raise ValueError('roi_map can only have one dimension but has'
+        raise ValueError('roi_map can only have one dimension but has '
                          '%i dimensions' % len(roi.shape))
     if roi.shape[0] != mesh[0].shape[0]:
         raise ValueError('roi_map does not have the same number of vertices '
