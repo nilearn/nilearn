@@ -27,7 +27,7 @@ for more details.
 """
 
 ################################################################################
-# Fetch brain development functional datasets (movie watching)
+# Fetch brain development functional datasets
 # ------------------------------------------------------------
 #
 # We use nilearn's datasets downloading utilities
