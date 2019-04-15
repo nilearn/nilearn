@@ -9,7 +9,7 @@ from datetime import datetime as dt
 def update_cache_timestamp(timestamp_filename):
     """ Updates the contents of the manual-cache-timestamp file
     with current timestamp.
-    
+
     Returns
     -------
     None
