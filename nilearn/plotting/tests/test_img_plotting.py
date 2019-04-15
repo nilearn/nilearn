@@ -999,3 +999,13 @@ def test_display_methods_with_display_mode_tiled():
     display.add_edges(img, color='c')
     display.add_contours(img, contours=2, linewidth=4,
                          colors=['limegreen', 'yellow'])
+
+
+def test_plot_glass_brain_colorbar_having_nans():
+    img = _generate_img()
+    data = img.get_data()
+
+    data[6, 5, 2] = np.inf
+    img = nibabel.Nifti1Image(data, np.eye(4))
+    plot_glass_brain(img, colorbar=True)
+    plt.close()

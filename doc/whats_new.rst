@@ -1,3 +1,12 @@
+0.5.2
+=====
+
+Fixes
+-----
+
+- `:func:nilearn.plotting.plot_glass_brain` with colorbar=True does not crash when
+  images have NaNs.
+
 0.5.1
 =====
 
