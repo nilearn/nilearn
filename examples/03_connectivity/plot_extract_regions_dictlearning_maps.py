@@ -38,7 +38,7 @@ func_filenames = rest_dataset.func
 confounds = rest_dataset.confounds
 
 ################################################################################
-# Extract movie stimuli based functional networks with DictionaryLearning
+# Extract functional networks with DictionaryLearning
 # -----------------------------------------------------------------------
 
 # Import dictionary learning algorithm from decomposition module and call the
