@@ -7,7 +7,7 @@ Extracting functional brain networks: ICA and related
 .. topic:: **Page summary**
 
    This page demonstrates the use of multi-subject Independent Component
-   Analysis (ICA) of naturalistic stimuli based movie watching fMRI data
+   Analysis (ICA) of movie-watching fMRI data
    to extract brain networks in
    an data-driven way. Here we use the 'CanICA' approach, that implements
    a multivariate random effects model across subjects. A newer technique,
