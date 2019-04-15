@@ -502,10 +502,26 @@ def plot_surf_roi(surf_mesh, roi_map, bg_map=None,
 
     nilearn.plotting.plot_surf: For brain surface visualization.
     """
+
+    # preload roi and mesh to determine vmin, vmax and give more useful error
+    # messages in case of wrong inputs
+
     roi = load_surf_data(roi_map)
     vmin, vmax = np.min(roi), 1 + np.max(roi)
 
-    display = plot_surf(surf_mesh, surf_map=roi_map, bg_map=bg_map,
+    mesh = load_surf_mesh(surf_mesh)
+
+    if len(roi.shape) is not 1:
+        raise ValueError('roi_map can only have one dimension but has'
+                         '%i dimensions' % len(roi.shape))
+    if roi.shape[0] != mesh[0].shape[0]:
+        raise ValueError('roi_map does not have the same number of vertices '
+                         'as the mesh. If you have a list of indices for the '
+                         'ROI you can convert them into a ROI map like this:\n'
+                         'roi_map = np.zeros(n_vertices)\n'
+                         'roi_map[roi_idx] = 1')
+
+    display = plot_surf(mesh, surf_map=roi, bg_map=bg_map,
                         hemi=hemi, view=view, avg_method='median',
                         cmap=cmap, alpha=alpha, bg_on_data=bg_on_data,
                         darkness=darkness, vmin=vmin, vmax=vmax,
