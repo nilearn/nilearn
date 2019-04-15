@@ -167,7 +167,7 @@ Validating results
 
 Showing only one specific network regions before and after region extraction.
 
-Left image displays the regions of one specific movie-watching network without region extraction
+Left image displays the regions of one specific functional network without region extraction
 and right image displays the regions split apart after region extraction. Here, we can
 validate that regions are nicely separated identified by each extracted region in different
 color.
