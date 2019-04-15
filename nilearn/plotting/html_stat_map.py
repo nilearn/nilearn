@@ -71,6 +71,11 @@ def _threshold_data(data, threshold=None):
         data = np.ma.masked_equal(data, 0, copy=False)
     else:
         data = np.ma.masked_inside(data, -threshold, threshold, copy=False)
+
+    # if all values above threshold, np.ma returns np.bool_(False) ;
+    # this will fail our shape check, so we'll convert to an array
+    if not np.ndim(data.mask):
+        data.mask = np.full(data.shape, False)
     return data, threshold
 
 
@@ -439,16 +444,17 @@ def view_img(stat_map_img, bg_img='MNI152',
     """
 
     # Prepare the color map and thresholding
-    try:
-        mask_img, stat_map_img, data, threshold = _mask_stat_map(
-            stat_map_img, threshold)
-    except ValueError:
-        raise ValueError(
-            "No voxels found within the specified threshold "
-            "of {0}".format(threshold))
+    mask_img, stat_map_img, data, threshold = _mask_stat_map(
+        stat_map_img, threshold)
     colors = colorscale(cmap, data.ravel(), threshold=threshold,
                         symmetric_cmap=symmetric_cmap, vmax=vmax,
                         vmin=vmin)
+
+    # odd isinstance() behavior, see:
+    # https://stackoverflow.com/questions/25009055/numpy-maskedconstant-gives-inconsistent-conversion-to-bool
+    if colors['vmin'] is np.ma.masked:
+        colorbar = False
+        colors['vmin'], colors['vmax'] = 0, 0
 
     # Prepare the data for the cuts
     bg_img, bg_min, bg_max, black_bg = _load_bg_img(stat_map_img, bg_img,
@@ -460,10 +466,12 @@ def view_img(stat_map_img, bg_img='MNI152',
     # Now create a json-like object for the viewer, and converts in html
     json_view = _json_view_data(bg_img, stat_map_img, mask_img, bg_min, bg_max,
                                 colors, cmap, colorbar)
+
     json_view['params'] = _json_view_params(
         stat_map_img.shape, stat_map_img.affine, colors['vmin'],
         colors['vmax'], cut_slices, black_bg, opacity, draw_cross, annotate,
         title, colorbar, value=False)
+
     html_view = _json_view_to_html(json_view)
 
     return html_view
