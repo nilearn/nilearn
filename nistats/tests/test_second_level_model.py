@@ -194,8 +194,8 @@ def test_second_level_model_contrast_computation():
         assert_array_equal(all_images['z_score'].get_fdata(), z_image.get_fdata())
         assert_array_equal(all_images['stat'].get_fdata(), stat_image.get_fdata())
         assert_array_equal(all_images['p_value'].get_fdata(), p_image.get_fdata())
-        assert_array_equal(all_images['effect_size_score'].get_fdata(), effect_image.get_fdata())
-        assert_array_equal(all_images['effect_variance_score'].get_fdata(), variance_image.get_fdata())
+        assert_array_equal(all_images['effect_size'].get_fdata(), effect_image.get_fdata())
+        assert_array_equal(all_images['effect_variance'].get_fdata(), variance_image.get_fdata())
 
         # formula should work (passing variable name directly)
         model.compute_contrast('intercept')
