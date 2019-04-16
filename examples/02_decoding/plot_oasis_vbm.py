@@ -59,7 +59,7 @@ age = dataset_files.ext_vars['age'].astype(float)
 gm_imgs = dataset_files.gray_matter_maps
 
 # Split data into training set and test set
-from sklearn.cross_validation import train_test_split
+from sklearn.model_selection import train_test_split
 gm_imgs_train, gm_imgs_test, age_train, age_test = train_test_split(
     gm_imgs, age, train_size=.6, random_state=0)
 
@@ -130,6 +130,8 @@ bg_filename = gm_imgs[0]
 display = plot_stat_map(weight_img, bg_img=bg_filename,
                         display_mode='z', cut_coords=[-6],
                         title="Decoder r2: %g" % prediction_score)
+
+show()
 
 ######################################################################
 # Visualize the quality of predictions

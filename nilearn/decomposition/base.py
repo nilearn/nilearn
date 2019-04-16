@@ -5,19 +5,22 @@ reduction of group data
 from __future__ import division
 from math import ceil
 import itertools
+import glob
 from distutils.version import LooseVersion
 
 import numpy as np
 
 from scipy import linalg
 import sklearn
-from sklearn.base import BaseEstimator
+import nilearn
+from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.externals.joblib import Memory, Parallel, delayed
 from sklearn.linear_model import LinearRegression
 from sklearn.utils import check_random_state
 from sklearn.utils.extmath import randomized_svd, svd_flip
 from .._utils.cache_mixin import CacheMixin, cache
 from .._utils.niimg import _safe_get_data
+from .._utils.niimg_conversions import _resolve_globbing
 from .._utils.compat import _basestring
 from ..input_data import NiftiMapsMasker
 from ..input_data.masker_validation import check_embedded_nifti_masker
@@ -72,10 +75,8 @@ def fast_svd(X, n_components, random_state=None):
         S = S[:n_components]
         V = V[:n_components].copy()
     else:
-        if LooseVersion(sklearn.__version__) >= LooseVersion('0.17'):
-            n_iter = 'auto'
-        else:
-            n_iter = 3
+        n_iter = 'auto'
+
         U, S, V = randomized_svd(X, n_components=n_components,
                                  n_iter=n_iter,
                                  flip_sign=True,
@@ -179,8 +180,10 @@ def mask_and_reduce(masker, imgs,
 
     n_samples = np.sum(subject_n_samples)
     n_voxels = int(np.sum(_safe_get_data(masker.mask_img_)))
+    dtype = (np.float64 if data_list[0].dtype.type is np.float64
+             else np.float32)
     data = np.empty((n_samples, n_voxels), order='F',
-                    dtype='float64')
+                    dtype=dtype)
 
     current_position = 0
     for i, next_position in enumerate(np.cumsum(subject_n_samples)):
@@ -224,7 +227,7 @@ def _mask_and_reduce_single(masker,
     return U
 
 
-class BaseDecomposition(BaseEstimator, CacheMixin):
+class BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
     """Base class for matrix factorization based decomposition estimators.
 
     Handles mask logic, provides transform and inverse_transform methods
@@ -277,12 +280,15 @@ class BaseDecomposition(BaseEstimator, CacheMixin):
         This parameter is passed to image.resample_img. Please see the
         related documentation for details.
 
-    mask_strategy: {'background', 'epi'}, optional
+    mask_strategy: {'background', 'epi' or 'template'}, optional
         The strategy used to compute the mask: use 'background' if your
-        images present a clear homogeneous background, and 'epi' if they
-        are raw EPI images. Depending on this value, the mask will be
-        computed from masking.compute_background_mask or
-        masking.compute_epi_mask. Default is 'background'.
+        images present a clear homogeneous background, 'epi' if they
+        are raw EPI images, or you could use 'template' which will
+        extract the gray matter part of your data by resampling the MNI152
+        brain mask for your data's field of view.
+        Depending on this value, the mask will be computed from
+        masking.compute_background_mask, masking.compute_epi_mask or
+        masking.compute_gray_matter_mask. Default is 'epi'.
 
     mask_args: dict, optional
         If mask is None, these are additional parameters passed to
@@ -345,7 +351,7 @@ class BaseDecomposition(BaseEstimator, CacheMixin):
         self.verbose = verbose
 
     def fit(self, imgs, y=None, confounds=None):
-        """Base fit for decomposition estimators : compute the embedded masker
+        """Compute the mask and the components across subjects
 
         Parameters
         ----------
@@ -354,12 +360,30 @@ class BaseDecomposition(BaseEstimator, CacheMixin):
             Data on which the mask is calculated. If this is a list,
             the affine is considered the same for all.
 
+        confounds : list of CSV file paths or 2D matrices
+            This parameter is passed to nilearn.signal.clean. Please see the
+            related documentation for details. Should match with the list
+            of imgs given.
+
+         Returns
+         -------
+         self : object
+            Returns the instance itself. Contains attributes listed
+            at the object level.
+
         """
+        # Base fit for decomposition estimators : compute the embedded masker
+
+        if isinstance(imgs, _basestring):
+            if nilearn.EXPAND_PATH_WILDCARDS and glob.has_magic(imgs):
+                imgs = _resolve_globbing(imgs)
+
         if isinstance(imgs, _basestring) or not hasattr(imgs, '__iter__'):
             # these classes are meant for list of 4D images
             # (multi-subject), we want it to work also on a single
             # subject, so we hack it.
             imgs = [imgs, ]
+
         if len(imgs) == 0:
             # Common error that arises from a null glob. Capture
             # it early and raise a helpful message
@@ -375,19 +399,26 @@ class BaseDecomposition(BaseEstimator, CacheMixin):
             self.masker_.fit()
         self.mask_img_ = self.masker_.mask_img_
 
+        # mask_and_reduce step for decomposition estimators i.e.
+        # MultiPCA, CanICA and Dictionary Learning
+        if self.verbose:
+            print("[{0}] Loading data".format(self.__class__.__name__))
+        data = mask_and_reduce(
+            self.masker_, imgs, confounds=confounds,
+            n_components=self.n_components,
+            random_state=self.random_state,
+            memory=self.memory,
+            memory_level=max(0, self.memory_level + 1),
+            n_jobs=self.n_jobs)
+        self._raw_fit(data)
+
         return self
 
     def _check_components_(self):
         if not hasattr(self, 'components_'):
-            if self.__class__.__name__ == 'BaseDecomposition':
-                raise ValueError("Object has no components_ attribute. "
-                                 "This may be because "
-                                 "BaseDecomposition is directly "
-                                 "being used.")
-            else:
-                raise ValueError("Object has no components_ attribute. "
-                                 "This is probably because fit has not "
-                                 "been called.")
+            raise ValueError("Object has no components_ attribute. "
+                             "This is probably because fit has not "
+                             "been called.")
 
     def transform(self, imgs, confounds=None):
         """Project the data into a reduced representation

@@ -156,9 +156,9 @@ def _chunk_read_(response, local_file, chunk_size=8192, report_hook=None,
         bytes_so_far += len(chunk)
         time_last_read = time.time()
         if (report_hook and
-                # Refresh report every half second or when download is
+                # Refresh report every second or when download is
                 # finished.
-                (time_last_read > time_last_display + 0.5 or not chunk)):
+                (time_last_read > time_last_display + 1. or not chunk)):
             _chunk_report_(bytes_so_far,
                            total_size, initial_size, t0)
             time_last_display = time_last_read
@@ -575,14 +575,9 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False,
             # Complete the reporting hook
             sys.stderr.write(' ...done. ({0:.0f} seconds, {1:.0f} min)\n'
                              .format(dt, dt // 60))
-    except (_urllib.error.HTTPError, _urllib.error.URLError) as e:
-        if 'Error while fetching' not in str(e):
-            # For some odd reason, the error message gets doubled up
-            #   (possibly from the re-raise), so only add extra info
-            #   if it's not already there.
-            e.reason = ("%s| Error while fetching file %s; "
-                          "dataset fetching aborted." % (
-                            str(e.reason), file_name))
+    except (_urllib.error.HTTPError, _urllib.error.URLError):
+        sys.stderr.write("Error while fetching file %s; dataset "
+                         "fetching aborted." % (file_name))
         raise
     finally:
         if local_file is not None:

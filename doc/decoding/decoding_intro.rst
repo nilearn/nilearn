@@ -8,6 +8,9 @@
     >>> session = np.ones_like(target)
     >>> n_samples = len(target)
 
+.. Remove doctest: +SKIP at LDA while dropping support for sklearn older than
+    versions 0.17
+
 .. _decoding_intro:
 
 =============================
@@ -221,10 +224,10 @@ in a `K-Fold strategy
    >>> cv = 2
 
 There is a specific function,
-:func:`sklearn.cross_validation.cross_val_score` that computes for you
+:func:`sklearn.model_selection.cross_val_score` that computes for you
 the score for the different folds of cross-validation::
 
-  >>> from sklearn.cross_validation import cross_val_score  # doctest: +SKIP
+  >>> from sklearn.model_selection import cross_val_score  # doctest: +SKIP
   >>> cv_scores = cross_val_score(svc, fmri_masked, target, cv=5)  # doctest: +SKIP
 
 `cv=5` stipulates a 5-fold cross-validation. Note that this function is located
@@ -264,7 +267,7 @@ caveats, and guidelines*, Neuroimage 2017).
 Here, in the Haxby example, we are going to leave a session out, in order
 to have a test set independent from the train set. For this, we are going
 to use the session label, present in the behavioral data file, and
-:class:`sklearn.cross_validation.LeaveOneLabelOut`.
+:class:`sklearn.model_selection.LeaveOneGroupOut`.
 
 .. note::
 
@@ -317,9 +320,9 @@ at chance, is to use a *"dummy"* classifier,
 
 **Permutation testing**: A more controlled way, but slower, is to do
 permutation testing on the labels, with
-:func:`sklearn.cross_validation.permutation_test_score`::
+:func:`sklearn.model_selection.permutation_test_score`::
 
-  >>> from sklearn.cross_validation import permutation_test_score
+  >>> from sklearn.model_selection import permutation_test_score
   >>> null_cv_scores = permutation_test_score(svc, fmri_masked, target, cv=cv)  # doctest: +SKIP
 
 |
@@ -415,14 +418,13 @@ To visualize the results, we need to:
 - then, as before, inverse the masking process to retrieve the weights
   and plot them.
 
-.. figure:: ../auto_examples/02_decoding/images/sphx_glr_plot_haxby_anova_svm_001.png
-   :target: ../auto_examples/02_decoding/plot_haxby_anova_svm.html
-   :align: right
-   :scale: 65
-
 .. literalinclude:: ../../examples/02_decoding/plot_haxby_anova_svm.py
     :start-after: # Visualize the results
-    :end-before: # Obtain prediction scores via cross validation
+    :end-before: # Saving the results as a Nifti file may also be important
+
+.. figure:: ../auto_examples/02_decoding/images/sphx_glr_plot_haxby_anova_svm_001.png
+   :target: ../auto_examples/02_decoding/plot_haxby_anova_svm.html
+   :scale: 65
 
 .. seealso::
 
@@ -464,13 +466,17 @@ We can try Fisher's `Linear Discriminant Analysis (LDA)
 
 Import the module::
 
-    >>> from sklearn.lda import LDA
+    >>> from sklearn.discriminant_analysis import LinearDiscriminantAnalysis  # doctest: +SKIP
 
 Construct the new estimator object and use it in a pipeline::
 
     >>> from sklearn.pipeline import Pipeline
-    >>> lda = LDA()
-    >>> anova_lda = Pipeline([('anova', feature_selection), ('LDA', lda)])
+    >>> lda = LinearDiscriminantAnalysis()  # doctest: +SKIP
+    >>> anova_lda = Pipeline([('anova', feature_selection), ('LDA', lda)])  # doctest: +SKIP
+
+.. note::
+  Import Linear Discriminant Analysis method in "sklearn.lda.LDA" if you are using
+  scikit-learn older than version 0.17.
 
 and recompute the cross-validation score::
 

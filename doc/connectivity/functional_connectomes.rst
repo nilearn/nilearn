@@ -104,13 +104,13 @@ regions, regressing out noise sources is indeed very important
    :class: green
 
    Try using the information above to compute the correlation matrix of
-   the first subject of the ADHD dataset downloaded with
-   :func:`nilearn.datasets.fetch_adhd`.
+   the first subject of the brain development dataset
+   downloaded with :func:`nilearn.datasets.fetch_development_fmri`.
 
    **Hints:**
 
    * Inspect the '.keys()' of the object returned by
-     :func:`nilearn.datasets.fetch_adhd`.
+     :func:`nilearn.datasets.fetch_development_fmri`.
 
    * :class:`nilearn.connectome.ConnectivityMeasure` can be used to compute
      a correlation matrix (check the shape of your matrices).
@@ -130,8 +130,9 @@ Probabilistic atlases
 The definition of regions as by a continuous probability map captures
 better our imperfect knowledge of boundaries in brain images (notably
 because of inter-subject registration errors). One example of such an
-atlas well suited to resting-state data analysis is the `MSDL atlas
-<https://team.inria.fr/parietal/research/spatial_patterns/spatial-patterns-in-resting-state/>`_
+atlas well suited to resting-state or naturalistic-stimuli data analysis is
+the `MSDL atlas
+<https://team.inria.fr/parietal/18-2/spatial_patterns/spatial-patterns-in-resting-state/>`_
 (:func:`nilearn.datasets.fetch_atlas_msdl`).
 
 Probabilistic atlases are represented as a set of continuous maps, in a
@@ -181,8 +182,9 @@ the same considerations on using confounds regressors apply.
 .. topic:: **Exercise: correlation matrix of rest fMRI on probabilistic atlas**
    :class: green
 
-   Try to compute the correlation matrix of the first subject of the ADHD
-   dataset downloaded with :func:`nilearn.datasets.fetch_adhd`
+   Try to compute the correlation matrix of the first subject of the
+   brain development
+   dataset downloaded with :func:`nilearn.datasets.fetch_development_fmri`
    with the MSDL atlas downloaded via
    :func:`nilearn.datasets.fetch_atlas_msdl`.
 
@@ -205,29 +207,37 @@ In the case of the MSDL atlas
 with MNI coordinates for each region (see for instance example:
 :ref:`sphx_glr_auto_examples_03_connectivity_plot_probabilistic_atlas_extraction.py`).
 
+.. image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_probabilistic_atlas_extraction_002.png
+   :target: ../auto_examples/03_connectivity/plot_probabilistic_atlas_extraction.html
+
 ..
     For doctesting
 
     >>> from nilearn import datasets
     >>> atlas_filename = datasets.fetch_atlas_msdl().maps # doctest: +SKIP
 
-For another atlas this information can be computed for each region with
-the :func:`nilearn.plotting.find_xyz_cut_coords` function
-(see example:
-:ref:`sphx_glr_auto_examples_03_connectivity_plot_multi_subject_connectome.py`)::
-
- >>> from nilearn import image, plotting
- >>> atlas_region_coords = [plotting.find_xyz_cut_coords(img) for img in image.iter_img(atlas_filename)] # doctest: +SKIP
-
-
-
-.. image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_probabilistic_atlas_extraction_002.png
-   :target: ../auto_examples/03_connectivity/plot_probabilistic_atlas_extraction.html
-
 As you can see, the correlation matrix gives a very "full" graph: every
 node is connected to every other one. This is because it also captures
 indirect connections. In the next section we will see how to focus on
-only direct connections.
+direct connections only.
+
+A functional connectome: extracting coordinates of regions
+==========================================================
+For atlases without readily available label coordinates, center coordinates
+can be computed for each region on hard parcellation or probabilistic atlases.
+
+ * For hard parcellation atlases (eg. :func:`nilearn.datasets.fetch_atlas_destrieux_2009`),
+   use the :func:`nilearn.plotting.find_parcellation_cut_coords`
+   function. See example:
+   :ref:`sphx_glr_auto_examples_03_connectivity_plot_atlas_comparison.py`
+
+ * For probabilistic atlases (eg. :func:`nilearn.datasets.fetch_atlas_msdl`), use the
+   :func:`nilearn.plotting.find_probabilistic_atlas_cut_coords` function.
+   See example: :ref:`sphx_glr_auto_examples_03_connectivity_plot_multi_subject_connectome.py`::
+
+        >>> from nilearn import plotting
+        >>> atlas_region_coords = plotting.find_probabilistic_atlas_cut_coords(atlas_filename) # doctest: +SKIP
+
 
 |
 

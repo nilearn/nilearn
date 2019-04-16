@@ -14,11 +14,11 @@ from tempfile import mkdtemp
 import nibabel
 import numpy as np
 from nibabel import Nifti1Image
-from nose import SkipTest
 from nose.tools import assert_true, assert_false, assert_raises
 from numpy.testing import assert_array_equal, assert_equal
 
 from nilearn._utils import testing
+from nilearn._utils import data_gen
 from nilearn._utils.class_inspect import get_params
 from nilearn._utils.exceptions import DimensionError
 from nilearn._utils.testing import assert_raises_regex
@@ -55,6 +55,19 @@ def test_detrend():
     mask = data.astype(np.int)
     mask_img = Nifti1Image(mask, np.eye(4))
     masker = NiftiMasker(mask_img=mask_img, detrend=True)
+    # Smoke test the fit
+    X = masker.fit_transform(img)
+    assert_true(np.any(X != 0))
+
+
+def test_resample():
+    # Check that target_affine triggers the right resampling
+    data = np.zeros((9, 9, 9))
+    data[3:-3, 3:-3, 3:-3] = 10
+    img = Nifti1Image(data, np.eye(4))
+    mask = data.astype(np.int)
+    mask_img = Nifti1Image(mask, np.eye(4))
+    masker = NiftiMasker(mask_img=mask_img, target_affine=2 * np.eye(3))
     # Smoke test the fit
     X = masker.fit_transform(img)
     assert_true(np.any(X != 0))
@@ -100,7 +113,7 @@ def test_matrix_orientation():
     # the "step" kind generate heavyside-like signals for each voxel.
     # all signals being identical, standardizing along the wrong axis
     # would leave a null signal. Along the correct axis, the step remains.
-    fmri, mask = testing.generate_fake_fmri(shape=(40, 41, 42), kind="step")
+    fmri, mask = data_gen.generate_fake_fmri(shape=(40, 41, 42), kind="step")
     masker = NiftiMasker(mask_img=mask, standardize=True, detrend=True)
     timeseries = masker.fit_transform(fmri)
     assert(timeseries.shape[0] == fmri.shape[3])
@@ -300,6 +313,30 @@ def test_compute_epi_mask():
                              mask4.get_data()[3:12, 3:12]))
 
 
+def test_compute_gray_matter_mask():
+    # Check masker for template masking strategy
+
+    img = np.random.rand(9, 9, 5)
+    img = Nifti1Image(img, np.eye(4))
+
+    masker = NiftiMasker(mask_strategy='template')
+
+    masker.fit(img)
+    mask1 = masker.mask_img_
+
+    masker2 = NiftiMasker(mask_strategy='template',
+                          mask_args=dict(threshold=0.))
+
+    masker2.fit(img)
+    mask2 = masker2.mask_img_
+
+    mask_ref = np.zeros((9, 9, 5))
+    mask_ref[2:7, 2:7, 2] = 1
+
+    np.testing.assert_array_equal(mask1.get_data(), mask_ref)
+    np.testing.assert_array_equal(mask2.get_data(), mask_ref)
+
+
 def test_filter_and_mask_error():
     data = np.zeros([20, 30, 40, 5])
     mask = np.zeros([20, 30, 40, 2])
@@ -332,3 +369,24 @@ def test_filter_and_mask():
     # Test return_affine = False
     data = filter_and_mask(data_img, mask_img, params)
     assert_equal(data.shape, (5, 24000))
+
+
+def test_dtype():
+    data_32 = np.zeros((9, 9, 9), dtype=np.float32)
+    data_64 = np.zeros((9, 9, 9), dtype=np.float64)
+    data_32[2:-2, 2:-2, 2:-2] = 10
+    data_64[2:-2, 2:-2, 2:-2] = 10
+
+    affine_32 = np.eye(4, dtype=np.float32)
+    affine_64 = np.eye(4, dtype=np.float64)
+
+    img_32 = Nifti1Image(data_32, affine_32)
+    img_64 = Nifti1Image(data_64, affine_64)
+
+    masker_1 = NiftiMasker(dtype='auto')
+    assert(masker_1.fit_transform(img_32).dtype == np.float32)
+    assert(masker_1.fit_transform(img_64).dtype == np.float32)
+
+    masker_2 = NiftiMasker(dtype='float64')
+    assert(masker_2.fit_transform(img_32).dtype == np.float64)
+    assert(masker_2.fit_transform(img_64).dtype == np.float64)

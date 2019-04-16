@@ -7,13 +7,14 @@ See http://nilearn.github.io/manipulating_images/input_output.html
 
 import warnings
 from distutils.version import LooseVersion
+import numbers
 
 import numpy as np
 import scipy
 from scipy import ndimage, linalg
 
 from .. import _utils
-from .._utils.compat import _basestring, get_affine
+from .._utils.compat import _basestring
 
 ###############################################################################
 # Affine utils
@@ -90,38 +91,56 @@ def coord_transform(x, y, z, affine):
     """ Convert the x, y, z coordinates from one image space to another
         space.
 
-        Parameters
-        ----------
-        x : number or ndarray
-            The x coordinates in the input space
-        y : number or ndarray
-            The y coordinates in the input space
-        z : number or ndarray
-            The z coordinates in the input space
-        affine : 2D 4x4 ndarray
-            affine that maps from input to output space.
+    Parameters
+    ----------
+    x : number or ndarray (any shape)
+        The x coordinates in the input space
+    y : number or ndarray (same shape as x)
+        The y coordinates in the input space
+    z : number or ndarray
+        The z coordinates in the input space
+    affine : 2D 4x4 ndarray
+        affine that maps from input to output space.
 
-        Returns
-        -------
-        x : number or ndarray
-            The x coordinates in the output space
-        y : number or ndarray
-            The y coordinates in the output space
-        z : number or ndarray
-            The z coordinates in the output space
+    Returns
+    -------
+    x : number or ndarray (same shape as input)
+        The x coordinates in the output space
+    y : number or ndarray (same shape as input)
+        The y coordinates in the output space
+    z : number or ndarray (same shape as input)
+        The z coordinates in the output space
 
-        Warning: The x, y and z have their Talairach ordering, not 3D
-        numy image ordering.
+    Warning: The x, y and z have their output space (e.g. MNI) coordinate
+    ordering, not 3D numpy image ordering.
+
+    Examples
+    --------
+    Transform data from coordinates to brain space. The "affine" matrix
+    can be found as the ".affine" attribute of a nifti image, or using
+    the "get_affine()" method for older nibabel installations::
+
+        >>> from nilearn import datasets, image
+        >>> niimg = datasets.load_mni152_template()
+        >>> # Find the MNI coordinates of the voxel (50, 50, 50)
+        >>> image.coord_transform(50, 50, 50, niimg.affine)
+        (-10.0, -26.0, 28.0)
+
     """
     squeeze = (not hasattr(x, '__iter__'))
+    return_number = isinstance(x, numbers.Number)
+    x = np.asanyarray(x)
+    shape = x.shape
     coords = np.c_[np.atleast_1d(x).flat,
                    np.atleast_1d(y).flat,
                    np.atleast_1d(z).flat,
                    np.ones_like(np.atleast_1d(z).flat)].T
     x, y, z, _ = np.dot(affine, coords)
+    if return_number:
+        return x.item(), y.item(), z.item()
     if squeeze:
         return x.squeeze(), y.squeeze(), z.squeeze()
-    return x, y, z
+    return np.reshape(x, shape), np.reshape(y, shape), np.reshape(z, shape)
 
 
 def get_bounds(shape, affine):
@@ -188,7 +207,7 @@ def get_mask_bounds(img):
     """
     img = _utils.check_niimg_3d(img)
     mask = _utils.numpy_conversions._asarray(img.get_data(), dtype=np.bool)
-    affine = get_affine(img)
+    affine = img.affine
     (xmin, xmax), (ymin, ymax), (zmin, zmax) = get_bounds(mask.shape, affine)
     slices = ndimage.find_objects(mask)
     if len(slices) == 0:
@@ -219,7 +238,8 @@ class BoundingBoxError(ValueError):
 # Resampling
 
 def _resample_one_img(data, A, b, target_shape,
-                      interpolation_order, out, copy=True):
+                      interpolation_order, out, copy=True,
+                      fill_value=0):
     "Internal function for resample_img, do not use"
     if data.dtype.kind in ('i', 'u'):
         # Integers are always finite
@@ -241,38 +261,35 @@ def _resample_one_img(data, A, b, target_shape,
         data = _extrapolate_out_mask(data, np.logical_not(not_finite),
                                      iterations=2)[0]
 
-    # See https://github.com/nilearn/nilearn/issues/346 Copying the
-    # array makes it C continuous and as such the int32 index in the C
-    # code is a lot less likely to overflow
-    if (LooseVersion(scipy.__version__) < LooseVersion('0.14.1')):
-        data = data.copy()
-
-    # The resampling itself
-    ndimage.affine_transform(data, A,
-                             offset=b,
-                             output_shape=target_shape,
-                             output=out,
-                             order=interpolation_order)
-
-    # Bug in ndimage.affine_transform when out does not have native endianness
-    # see https://github.com/nilearn/nilearn/issues/275
-    # Bug was fixed in scipy 0.15
-    if (LooseVersion(scipy.__version__) < LooseVersion('0.15') and
-        not out.dtype.isnative):
-        out.byteswap(True)
+    # Suppresses warnings in https://github.com/nilearn/nilearn/issues/1363
+    with warnings.catch_warnings():
+        if LooseVersion(scipy.__version__) >= LooseVersion('0.18'):
+            warnings.simplefilter("ignore", UserWarning)
+        # The resampling itself
+        ndimage.affine_transform(data, A,
+                                 offset=b,
+                                 output_shape=target_shape,
+                                 output=out,
+                                 cval=fill_value,
+                                 order=interpolation_order)
 
     if has_not_finite:
-        # We need to resample the mask of not_finite values
-        not_finite = ndimage.affine_transform(not_finite, A,
-                                            offset=b,
-                                            output_shape=target_shape,
-                                            order=0)
+        # Suppresses warnings in https://github.com/nilearn/nilearn/issues/1363
+        with warnings.catch_warnings():
+            if LooseVersion(scipy.__version__) >= LooseVersion('0.18'):
+                warnings.simplefilter("ignore", UserWarning)
+            # We need to resample the mask of not_finite values
+            not_finite = ndimage.affine_transform(not_finite, A,
+                                                offset=b,
+                                                output_shape=target_shape,
+                                                order=0)
         out[not_finite] = np.nan
     return out
 
 
 def resample_img(img, target_affine=None, target_shape=None,
-                 interpolation='continuous', copy=True, order="F"):
+                 interpolation='continuous', copy=True, order="F",
+                 clip=True, fill_value=0):
     """Resample a Niimg-like object
 
     Parameters
@@ -292,7 +309,7 @@ def resample_img(img, target_affine=None, target_shape=None,
         must also be given. (See notes)
 
     interpolation: str, optional
-        Can be 'continuous' (default) or 'nearest'. Indicates the resample
+        Can be 'continuous' (default), 'linear', or 'nearest'. Indicates the resample
         method.
 
     copy: bool, optional
@@ -303,6 +320,16 @@ def resample_img(img, target_affine=None, target_shape=None,
     order: "F" or "C"
         Data ordering in output array. This function is slightly faster with
         Fortran ordering.
+
+    clip: bool, optional
+        If True (default) all resampled image values above max(img) and
+        under min(img) are clipped to min(img) and max(img). Note that
+        0 is added as an image value for clipping, and it is the padding
+        value when extrapolating out of field of view.
+        If False no clip is preformed.
+
+    fill_value: float, optional
+        Use a fill value for points outside of input volume (default 0).
 
     Returns
     -------
@@ -375,10 +402,12 @@ def resample_img(img, target_affine=None, target_shape=None,
 
     if interpolation == 'continuous':
         interpolation_order = 3
+    elif interpolation == 'linear':
+        interpolation_order = 1
     elif interpolation == 'nearest':
         interpolation_order = 0
     else:
-        message = ("interpolation must be either 'continuous' "
+        message = ("interpolation must be either 'continuous', 'linear' "
                    "or 'nearest' but it was set to '{0}'").format(interpolation)
         raise ValueError(message)
 
@@ -399,7 +428,7 @@ def resample_img(img, target_affine=None, target_shape=None,
         target_affine = np.asarray(target_affine)
 
     shape = img.shape
-    affine = get_affine(img)
+    affine = img.affine
 
     if (np.all(np.array(target_shape) == shape[:3]) and
             np.allclose(target_affine, affine)):
@@ -483,19 +512,18 @@ def resample_img(img, target_affine=None, target_shape=None,
     else:
         resampled_data_dtype = data.dtype
 
-    if LooseVersion(scipy.__version__) >= LooseVersion('0.18'):
-        # Since the release of 0.18, resampling nifti images have some issues
-        # when affine is passed as 1D array and if data is of non-native
-        # endianess.
-        # See issue https://github.com/nilearn/nilearn/issues/1445.
-        # If affine is passed as 1D, scipy uses _nd_image.zoom_shift rather
-        # than _geometric_transform (2D) where _geometric_transform is able
-        # to swap byte order in scipy later than 0.15 for nonnative endianess.
+    # Since the release of 0.17, resampling nifti images have some issues
+    # when affine is passed as 1D array and if data is of non-native
+    # endianess.
+    # See issue https://github.com/nilearn/nilearn/issues/1445.
+    # If affine is passed as 1D, scipy uses _nd_image.zoom_shift rather
+    # than _geometric_transform (2D) where _geometric_transform is able
+    # to swap byte order in scipy later than 0.15 for nonnative endianess.
 
-        # We convert to 'native' order to not have any issues either with
-        # 'little' or 'big' endian data dtypes (non-native endians).
-        if len(A.shape) == 1 and not resampled_data_dtype.isnative:
-            resampled_data_dtype = resampled_data_dtype.newbyteorder('N')
+    # We convert to 'native' order to not have any issues either with
+    # 'little' or 'big' endian data dtypes (non-native endians).
+    if len(A.shape) == 1 and not resampled_data_dtype.isnative:
+        resampled_data_dtype = resampled_data_dtype.newbyteorder('N')
 
     # Code is generic enough to work for both 3D and 4D images
     other_shape = data_shape[3:]
@@ -504,20 +532,31 @@ def resample_img(img, target_affine=None, target_shape=None,
 
     all_img = (slice(None), ) * 3
 
-    # Iter overr a set of 3D volumes, as the interpolation problem is
+    # Iterate over a set of 3D volumes, as the interpolation problem is
     # separable in the extra dimensions. This reduces the
     # computational cost
     for ind in np.ndindex(*other_shape):
         _resample_one_img(data[all_img + ind], A, b, target_shape,
                           interpolation_order,
                           out=resampled_data[all_img + ind],
-                          copy=not input_img_is_string)
+                          copy=not input_img_is_string,
+                          fill_value=fill_value)
+
+    if clip:
+        # force resampled data to have a range contained in the original data
+        # preventing ringing artefact
+        # We need to add zero as a value considered for clipping, as it
+        # appears in padding images.
+        vmin = min(data.min(), 0)
+        vmax = max(data.max(), 0)
+        resampled_data.clip(vmin, vmax, out=resampled_data)
 
     return new_img_like(img, resampled_data, target_affine)
 
 
 def resample_to_img(source_img, target_img,
-                    interpolation='continuous', copy=True, order='F'):
+                    interpolation='continuous', copy=True, order='F',
+                    clip=False, fill_value=0):
     """Resample a Niimg-like source image on a target Niimg-like image
     (no registration is performed: the image should already be aligned).
 
@@ -534,7 +573,7 @@ def resample_to_img(source_img, target_img,
         Reference image taken for resampling.
 
     interpolation: str, optional
-        Can be 'continuous' (default) or 'nearest'. Indicates the resample
+        Can be 'continuous' (default), 'linear', or 'nearest'. Indicates the resample
         method.
 
     copy: bool, optional
@@ -545,6 +584,14 @@ def resample_to_img(source_img, target_img,
     order: "F" or "C"
         Data ordering in output array. This function is slightly faster with
         Fortran ordering.
+
+    clip: bool, optional
+        If False (default) no clip is preformed.
+        If True all resampled image values above max(img) and under min(img) are
+        clipped to min(img) and max(img)
+
+    fill_value: float, optional
+        Use a fill value for points outside of input volume (default 0).
 
     Returns
     -------
@@ -560,15 +607,16 @@ def resample_to_img(source_img, target_img,
     target = _utils.check_niimg(target_img)
     target_shape = target.shape
 
-    # When target shape is greater than 3, we reduce to 3, ti be compatible
-    # with uniderlying call to resample_img
+    # When target shape is greater than 3, we reduce to 3, to be compatible
+    # with underlying call to resample_img
     if len(target_shape) > 3:
         target_shape = target.shape[:3]
 
     return resample_img(source_img,
-                        target_affine=get_affine(target),
+                        target_affine=target.affine,
                         target_shape=target_shape,
-                        interpolation=interpolation, copy=copy, order=order)
+                        interpolation=interpolation, copy=copy, order=order,
+                        clip=clip, fill_value=fill_value)
 
 
 def reorder_img(img, resample=None):
@@ -583,7 +631,7 @@ def reorder_img(img, resample=None):
             See http://nilearn.github.io/manipulating_images/input_output.html
             Image to reorder.
 
-        resample: None or string in {'continuous', 'nearest'}, optional
+        resample: None or string in {'continuous', 'linear', 'nearest'}, optional
             If resample is None (default), no resampling is performed, the
             axes are only permuted.
             Otherwise resampling is performed and 'resample' will
@@ -596,7 +644,7 @@ def reorder_img(img, resample=None):
     img = _utils.check_niimg(img)
     # The copy is needed in order not to modify the input img affine
     # see https://github.com/nilearn/nilearn/issues/325 for a concrete bug
-    affine = get_affine(img).copy()
+    affine = img.affine.copy()
     A, b = to_matrix_vector(affine)
 
     if not np.all((np.abs(A) > 0.001).sum(axis=0) == 1):
@@ -636,13 +684,13 @@ def reorder_img(img, resample=None):
     else:
         slice1 = slice(None, None, None)
     if pixdim[1] < 0:
-        b[1] = b[1] + 1 + pixdim[1]*(data.shape[1] - 1)
+        b[1] = b[1] + pixdim[1]*(data.shape[1] - 1)
         pixdim[1] = -pixdim[1]
         slice2 = slice(None, None, -1)
     else:
         slice2 = slice(None, None, None)
     if pixdim[2] < 0:
-        b[2] = b[2] + 1 + pixdim[2]*(data.shape[2] - 1)
+        b[2] = b[2] + pixdim[2]*(data.shape[2] - 1)
         pixdim[2] = -pixdim[2]
         slice3 = slice(None, None, -1)
     else:

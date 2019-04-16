@@ -1,13 +1,13 @@
 """
-Extracting signals of a probabilistic atlas of rest functional regions
-========================================================================
+Extracting signals of a probabilistic atlas of movie watching functional regions
+================================================================================
 
 This example extracts the signal on regions defined via a probabilistic
 atlas, to construct a functional connectome.
 
 We use the `MSDL atlas
-<https://team.inria.fr/parietal/research/spatial_patterns/spatial-patterns-in-resting-state/>`_
-of functional regions in rest.
+<https://team.inria.fr/parietal/18-2/spatial_patterns/spatial-patterns-in-resting-state/>`_
+of functional regions in movie-watching.
 
 The key to extract signals is to use the
 :class:`nilearn.input_data.NiftiMapsMasker` that can transform nifti
@@ -21,6 +21,7 @@ with the highest values.
 """
 ############################################################################
 # Retrieve the atlas and the data
+# --------------------------------
 from nilearn import datasets
 atlas = datasets.fetch_atlas_msdl()
 # Loading atlas image stored in 'maps'
@@ -29,13 +30,14 @@ atlas_filename = atlas['maps']
 labels = atlas['labels']
 
 # Load the functional datasets
-data = datasets.fetch_adhd(n_subjects=1)
+data = datasets.fetch_development_fmri(n_subjects=1)
 
 print('First subject resting-state nifti image (4D) is located at: %s' %
       data.func[0])
 
 ############################################################################
 # Extract the time series
+# ------------------------
 from nilearn.input_data import NiftiMapsMasker
 masker = NiftiMapsMasker(maps_img=atlas_filename, standardize=True,
                          memory='nilearn_cache', verbose=5)
@@ -50,25 +52,21 @@ print(time_series.shape)
 
 ############################################################################
 # Build and display a correlation matrix
+# ---------------------------------------
 from nilearn.connectome import ConnectivityMeasure
 correlation_measure = ConnectivityMeasure(kind='correlation')
 correlation_matrix = correlation_measure.fit_transform([time_series])[0]
 
 # Display the correlation matrix
 import numpy as np
-from matplotlib import pyplot as plt
-plt.figure(figsize=(10, 10))
+from nilearn import plotting
 # Mask out the major diagonal
 np.fill_diagonal(correlation_matrix, 0)
-plt.imshow(correlation_matrix, interpolation="nearest", cmap="RdBu_r",
-           vmax=0.8, vmin=-0.8)
-plt.colorbar()
-# And display the labels
-x_ticks = plt.xticks(range(len(labels)), labels, rotation=90)
-y_ticks = plt.yticks(range(len(labels)), labels)
-
+plotting.plot_matrix(correlation_matrix, labels=labels, colorbar=True,
+                     vmax=0.8, vmin=-0.8)
 ############################################################################
 # And now display the corresponding graph
+# ----------------------------------------
 from nilearn import plotting
 coords = atlas.region_coords
 
@@ -78,3 +76,23 @@ plotting.plot_connectome(correlation_matrix, coords,
                          edge_threshold="80%", colorbar=True)
 
 plotting.show()
+
+##############################################################################
+# 3D visualization in a web browser
+# ---------------------------------
+# An alternative to :func:`nilearn.plotting.plot_connectome` is to use
+# :func:`nilearn.plotting.view_connectome` that gives more interactive
+# visualizations in a web browser. See :ref:`interactive-connectome-plotting`
+# for more details.
+
+
+view = plotting.view_connectome(correlation_matrix, coords, threshold='80%')
+
+# uncomment this to open the plot in a web browser:
+# view.open_in_browser()
+
+##############################################################################
+# In a Jupyter notebook, if ``view`` is the output of a cell, it will
+# be displayed below the cell
+
+view

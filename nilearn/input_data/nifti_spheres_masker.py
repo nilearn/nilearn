@@ -5,16 +5,16 @@ Transformer for computing seeds signals
 Mask nifti images by spherical volumes for seed-region analyses
 """
 import numpy as np
-import sklearn
+import warnings
 from sklearn import neighbors
 from sklearn.externals.joblib import Memory
-from distutils.version import LooseVersion
 
 from ..image.resampling import coord_transform
+from .._utils.niimg_conversions import _safe_get_data
 from .._utils import CacheMixin
+from .._utils.niimg import img_data_dtype
 from .._utils.niimg_conversions import check_niimg_4d, check_niimg_3d
 from .._utils.class_inspect import get_params
-from .._utils.compat import get_affine
 from .. import image
 from .. import masking
 from .base_masker import filter_and_extract, BaseMasker
@@ -23,7 +23,7 @@ from .base_masker import filter_and_extract, BaseMasker
 def _apply_mask_and_get_affinity(seeds, niimg, radius, allow_overlap,
                                  mask_img=None):
     seeds = list(seeds)
-    affine = get_affine(niimg)
+    affine = niimg.affine
 
     # Compute world coordinates of all in-mask voxels.
 
@@ -37,8 +37,13 @@ def _apply_mask_and_get_affinity(seeds, niimg, radius, allow_overlap,
 
         X = masking._apply_mask_fmri(niimg, mask_img)
     else:
+        if np.isnan(np.sum(_safe_get_data(niimg))):
+            warnings.warn('The imgs you have fed into fit_transform() contains'
+                          ' NaN values which will be converted to zeroes ')
+            X = _safe_get_data(niimg, True).reshape([-1, niimg.shape[3]]).T
+        else:
+            X = _safe_get_data(niimg).reshape([-1, niimg.shape[3]]).T
         mask_coords = list(np.ndindex(niimg.shape[:3]))
-        X = niimg.get_data().reshape([-1, niimg.shape[3]]).T
 
     # For each seed, get coordinates of nearest voxel
     nearests = []
@@ -55,12 +60,6 @@ def _apply_mask_and_get_affinity(seeds, niimg, radius, allow_overlap,
     mask_coords = coord_transform(mask_coords[0], mask_coords[1],
                                   mask_coords[2], affine)
     mask_coords = np.asarray(mask_coords).T
-
-    if (radius is not None and
-            LooseVersion(sklearn.__version__) < LooseVersion('0.16')):
-        # Fix for scikit learn versions below 0.16. See
-        # https://github.com/scikit-learn/scikit-learn/issues/4072
-        radius += 1e-6
 
     clf = neighbors.NearestNeighbors(radius=radius)
     A = clf.fit(mask_coords).radius_neighbors_graph(seeds)
@@ -120,22 +119,22 @@ class _ExtractionFunctor(object):
 
     func_name = 'nifti_spheres_masker_extractor'
 
-    def __init__(self, seeds_, radius, mask_img, allow_overlap):
+    def __init__(self, seeds_, radius, mask_img, allow_overlap, dtype):
         self.seeds_ = seeds_
         self.radius = radius
         self.mask_img = mask_img
         self.allow_overlap = allow_overlap
+        self.dtype = dtype
 
     def __call__(self, imgs):
         n_seeds = len(self.seeds_)
-        imgs = check_niimg_4d(imgs)
+        imgs = check_niimg_4d(imgs, dtype=self.dtype)
 
-        signals = np.empty((imgs.shape[3], n_seeds))
+        signals = np.empty((imgs.shape[3], n_seeds), dtype=img_data_dtype(imgs))
         for i, sphere in enumerate(_iter_signals_from_spheres(
                 self.seeds_, imgs, self.radius, self.allow_overlap,
                 mask_img=self.mask_img)):
             signals[:, i] = np.mean(sphere, axis=1)
-
         return signals, None
 
 
@@ -188,6 +187,11 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
         This parameter is passed to signal.clean. Please see the related
         documentation for details.
 
+    dtype: {dtype, "auto"}
+        Data type toward which the data should be converted. If "auto", the
+        data will be converted to int32 if dtype is discrete and float32 if it
+        is continuous.
+
     memory: joblib.Memory or str, optional
         Used to cache the region extraction process.
         By default, no caching is done. If a string is given, it is the
@@ -208,7 +212,7 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
 
     def __init__(self, seeds, radius=None, mask_img=None, allow_overlap=False,
                  smoothing_fwhm=None, standardize=False, detrend=False,
-                 low_pass=None, high_pass=None, t_r=None,
+                 low_pass=None, high_pass=None, t_r=None, dtype=None,
                  memory=Memory(cachedir=None, verbose=0), memory_level=1,
                  verbose=0):
         self.seeds = seeds
@@ -225,6 +229,7 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
         self.low_pass = low_pass
         self.high_pass = high_pass
         self.t_r = t_r
+        self.dtype = dtype
 
         # Parameters for joblib
         self.memory = memory
@@ -311,10 +316,11 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
                 ignore=['verbose', 'memory', 'memory_level'])(
             # Images
             imgs, _ExtractionFunctor(self.seeds_, self.radius, self.mask_img,
-                                     self.allow_overlap),
+                                     self.allow_overlap, self.dtype),
             # Pre-processing
             params,
             confounds=confounds,
+            dtype=self.dtype,
             # Caching
             memory=self.memory,
             memory_level=self.memory_level,

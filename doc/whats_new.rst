@@ -1,5 +1,633 @@
+0.5.2
+=====
+
+NEW
+---
+
+- New brain development fMRI dataset fetcher
+  :func:`nilearn.datasets.fetch_development_fmri` can be used to download
+  movie-watching data in children and adults. A light-weight dataset implemented
+  for teaching and usage in the examples.
+
+Changes
+-------
+
+- All the connectivity examples are changed from ADHD to brain development
+  fmri dataset.
+
+Fixes
+-----
+
+- :func:`nilearn.plotting.plot_glass_brain` with colorbar=True does not crash when
+  images have NaNs.
+- add_contours now accepts `threshold` argument for filled=False. Now
+  `threshold` is equally applied when asked for fillings in the contours.
+
+0.5.1
+=====
+
+**Released April 2019**
+
+NEW
+---
+- **Support for Python2 & Pyton3.4 wil be removed in the next release.**
+  We recommend Python 3.6 and up.
+  Users with a Python2 or Python3.4 environment will be warned
+  at their first Nilearn import.
+
+- Calculate image data dtype from header information
+- New display mode 'tiled' which allows 2x2 plot arrangement when plotting three cuts
+  (see :ref:`plotting`).
+- NiftiLabelsMasker now consumes less memory when extracting the signal from a 3D/4D
+  image. This is especially noteworthy when extracting signals from large 4D images.
+- New function :func:`nilearn.datasets.fetch_atlas_schaefer_2018`
+
+Changes
+-------
+
+- Lighting used for interactive surface plots changed; plots may look a bit
+  different.
+- :func:`nilearn.plotting.view_connectome` default colormap is `bwr`, consistent with plot_connectome.
+- :func:`nilearn.plotting.view_connectome` parameter names are consistent with plot_connectome:
+
+  - coords is now node_coord
+  - marker_size is noe node_size
+  - cmap is now edge_cmap
+  - threshold is now edge_threshold
+
+- :func:`nilearn.plotting.view_markers` and :func:`nilearn.plotting.view_connectome` can accept different marker
+  sizes for each node / marker.
+
+- :func:`nilearn.plotting.view_markers()` default marker color is now 'red', consistent with add_markers().
+- :func:`nilearn.plotting.view_markers` parameter names are consistent with add_markers():
+
+  - coords is now marker_coords
+  - colors is now marker_color
+
+Fixes
+-----
+
+- Example plot_seed_to_voxel_correlation now really saves z-transformed maps.
+- region_extractor.connected_regions and regions.RegionExtractor now correctly
+  use the provided mask_img.
+- load_niimg no longer drops header if dtype is changed.
+- NiftiSpheresMasker no longer silently ignores voxels if no `mask_img` is specified.
+- Interactive brainsprites generated from `view_img` are correctly rendered in Jupyter Book.
+
+Known Issues
+-------------------
+
+- On Python2, :func:`nilearn.plotting.view_connectome()` &
+  :func:`nilearn.plotting.view_markers()`
+  do not show parameters names in function signature
+  when using help() and similar features.
+  Please refer to their docstrings for this information.
+
+
+Contributors
+------------
+
+The following people contributed to this release::
+
+   2  Bertrand Thirion
+  90  Kshitij Chawla (kchawla-pi)
+  22  fliem
+  16  Jerome Dockes
+  11  Gael Varoquaux
+   8  Salma Bougacha
+   7  himanshupathak21061998
+   2  Elizabeth DuPre
+   1  Eric Larson
+   1  Pierre Bellec
+
+=======
+
+0.5.0
+=====
+
+**Released November 2018**
+
+NEW
+---
+
+  :ref:`interactive plotting functions <interactive-plotting>`,
+  eg for use in a notebook.
+
+- New functions :func:`nilearn.plotting.view_surf` and
+  :func:`nilearn.plotting.view_img_on_surf` for interactive visualization of
+  maps on the cortical surface in a web browser.
+
+- New functions :func:`nilearn.plotting.view_connectome` and
+  :func:`nilearn.plotting.view_markers` for interactive visualization of
+  connectomes and seed locations in 3D
+
+- New function :func:`nilearn.plotting.view_img` for interactive
+  visualization of volumes with 3 orthogonal cuts.
+
+:Note: :func:`nilearn.plotting.view_img` was `nilearn.plotting.view_stat_map` in alpha and beta releases.
+
+- :func:`nilearn.plotting.find_parcellation_cut_coords` for
+  extraction of coordinates on brain parcellations denoted as labels.
+
+- Added :func:`nilearn.plotting.find_probabilistic_atlas_cut_coords` for
+  extraction of coordinates on brain probabilistic maps.
+
+
+**Minimum supported versions of packages have been bumped up.**
+  - scikit-learn -- v0.18
+  - scipy -- v0.17
+  - pandas -- v0.18
+  - numpy -- v1.11
+  - matplotlib -- v1.5.1
+
+**Nilearn Python2 support is being removed in the near future.**
+  Users with a Python2 environment will be warned
+  at their first Nilearn import.
+
+**Additional dataset downloaders for examples and tutorials.**
+
+- :func:`nilearn.datasets.fetch_surf_fsaverage`
+- :func:`nilearn.datasets.fetch_atlas_pauli_2017`
+- :func:`nilearn.datasets.fetch_neurovault_auditory_computation_task`
+- :func:`nilearn.datasets.fetch_neurovault_motor_task`
+
+
+ENHANCEMENTS
+------------
+
+ :func:`nilearn.image.clean_img` now accepts a mask to restrict
+ the cleaning of the image, reducing memory load and computation time.
+
+ NiftiMaskers now have a `dtype` parameter, by default keeping the same data type as the input data.
+
+ Displays by plotting functions can now add a scale bar (see :ref:`plotting`)
+
+
+IMPROVEMENTS
+------------
+
+ - Lots of other fixes in documentation and examples.
+ - A cleaner layout and improved navigation for the website, with a better introduction.
+ - Dataset fetchers are now  more reliable, less verbose.
+ - Searchlight().fit() now accepts 4D niimgs.
+ - Anaconda link in the installation documentation updated.
+ - Scipy is listed as a dependency for Nilearn installation.
+
+Notable Changes
+---------------
+
+ Default value of `t_r` in :func:`nilearn.signal.clean` and
+ :func:`nilearn.image.clean_img` is None
+ and cannot be None if `low_pass` or `high_pass` is specified.
+
+Lots of changes and improvements. Detailed change list for each release follows.
+
+0.5.0 rc
+========
+
+Highlights
+----------
+
+:func:`nilearn.plotting.view_img` (formerly `nilearn.plotting.view_stat_map` in
+Nilearn 0.5.0 pre-release versions) generates significantly smaller notebooks
+and HTML pages while getting a more consistent look and feel with Nilearn's
+plotting functions. Huge shout out to Pierre Bellec (pbellec) for
+making a great feature awesome and for sportingly accommodating all our feedback.
+
+:func:`nilearn.image.clean_img` now accepts a mask to restrict the cleaning of
+  the image. This approach can help to reduce the memory load and computation time.
+  Big thanks to Michael Notter (miykael).
+
+Enhancements
+------------
+
+- :func:`nilearn.plotting.view_img` is now using the brainsprite.js library,
+  which results in much smaller notebooks or html pages. The interactive viewer
+  also looks more similar to the plots generated by
+  :func:`nilearn.plotting.plot_stat_map`, and most parameters found in
+  `plot_stat_map` are now supported in `view_img`.
+- :func:`nilearn.image.clean_img` now accepts a mask to restrict the cleaning of
+  the image. This approach can help to reduce the memory load and computation time.
+- :func:`nilearn.decoding.SpaceNetRegressor.fit` raises a meaningful error in regression tasks
+  if the target Y contains all 1s.
+
+Changes
+-------
+
+- Default value of `t_r` in :func:`nilearn.signal.clean` and
+  :func:`nilearn.image.clean_img` is changed from 2.5 to None. If `low_pass` or
+  `high_pass` is specified, then `t_r` needs to be specified as well otherwise
+  it will raise an error.
+- Order of filters in :func:`nilearn.signal.clean` and :func:`nilearn.image.clean_img`
+  has changed to detrend, low- and high-pass filter, remove confounds and
+  standardize. To ensure orthogonality between temporal filter and confound
+  removal, an additional temporal filter will be applied on the confounds before
+  removing them. This is according to Lindquist et al. (2018).
+- :func:`nilearn.image.clean_img` now accepts a mask to restrict the cleaning of
+  the image. This approach can help to reduce the memory load and computation time.
+- :func:`nilearn.plotting.view_img` is now using the brainsprite.js library,
+  which results in much smaller notebooks or html pages. The interactive viewer
+  also looks more similar to the plots generated by
+  :func:`nilearn.plotting.plot_stat_map`, and most parameters found in
+  `plot_stat_map` are now supported in `view_img`.
+
+
+Contributors
+-------------
+
+The following people contributed to this release::
+
+  15 Gael Varoquaux
+  114 Pierre Bellec
+  30 Michael Notter
+  28 Kshitij Chawla (kchawla-pi)
+  4 Kamalakar Daddy
+  4 himanshupathak21061998
+  1 Horea Christian
+  7 Jerome Dockes
+
+0.5.0 beta
+==========
+
+Highlights
+----------
+
+**Nilearn Python2 support is being removed in the near future.
+Users with a Python2 environment will be warned at their first Nilearn import.**
+
+Enhancements
+------------
+
+Displays created by plotting functions can now add a scale bar
+ to indicate the size in mm or cm (see :ref:`plotting`),
+ contributed by Oscar Esteban
+
+Colorbars in plotting functions now have a middle gray background
+ suitable for use with custom colormaps with a non-unity alpha channel.
+ Contributed by Eric Larson (larsoner)
+
+Loads of fixes and quality of life improvements
+
+- A cleaner layout and improved navigation for the website, with a better introduction.
+- Less warnings and verbosity while using certain functions and during dataset downloads.
+- Improved backend for the dataset fetchers means more reliable dataset downloads.
+- Some datasets, such as the ICBM, are now compressed to take up less disk space.
+
+
+Fixes
+-----
+
+- Searchlight().fit() now accepts 4D niimgs. Contributed by Dan Gale (danjgale).
+- plotting.view_markers.open_in_browser() in js_plotting_utils fixed
+- Brainomics dataset has been replaced in several examples.
+- Lots of other fixes in documentation and examples.
+
+
+Changes
+-------
+
+- In nilearn.regions.img_to_signals_labels, the See Also section in documentation now also points to NiftiLabelsMasker and NiftiMapsMasker
+- Scipy is listed as a dependency for Nilearn installation.
+- Anaconda link in the installation documentation updated.
+
+Contributors
+-------------
+
+The following people contributed to this release::
+
+  58  Gael Varoquaux
+  115  Kshitij Chawla (kchawla-pi)
+  15  Jerome Dockes
+  14  oesteban
+  10  Eric Larson
+  6  Kamalakar Daddy
+  3  Bertrand Thirion
+  5  Alexandre Abadie
+  4  Sourav Singh
+  3  Alex Rothberg
+  3  AnaLu
+  3  Demian Wassermann
+  3  Horea Christian
+  3  Jason Gors
+  3  Jean Remi King
+  3  MADHYASTHA Meghana
+  3  SRSteinkamp
+  3  Simon Steinkamp
+  3  jerome-alexis_chevalier
+  3  salma
+  3  sfvnMAC
+  2  Akshay
+  2  Daniel Gomez
+  2  Guillaume Lemaitre
+  2  Pierre Bellec
+  2  arokem
+  2  erramuzpe
+  2  foucault
+  2  jehane
+  1  Sylvain LANNUZEL
+  1  Aki Nikolaidis
+  1  Christophe Bedetti
+  1  Dan Gale
+  1  Dillon Plunkett
+  1  Dimitri Papadopoulos Orfanos
+  1  Greg Operto
+  1  Ivan Gonzalez
+  1  Yaroslav Halchenko
+  1  dtyulman
+
+0.5.0 alpha
+===========
+
+This is an alpha release: to download it, you need to explicitly ask for
+the version number::
+
+   pip install nilearn==0.5.0a0
+
+Highlights
+----------
+
+    - **Minimum supported versions of packages have been bumped up.**
+        - scikit-learn -- v0.18
+        - scipy -- v0.17
+        - pandas -- v0.18
+        - numpy -- v1.11
+        - matplotlib -- v1.5.1
+
+    - New :ref:`interactive plotting functions <interactive-plotting>`,
+      eg for use in a notebook.
+
+Enhancements
+------------
+
+    - All NiftiMaskers now have a `dtype` argument. For now the default behaviour
+      is to keep the same data type as the input data.
+
+    - Displays created by plotting functions can now add a scale bar to
+      indicate the size in mm or cm (see :ref:`plotting`), contributed by
+      Oscar Esteban
+
+    - New functions :func:`nilearn.plotting.view_surf` and
+      :func:`nilearn.plotting.view_surf` and
+      :func:`nilearn.plotting.view_img_on_surf` for interactive visualization of
+      maps on the cortical surface in a web browser.
+
+    - New functions :func:`nilearn.plotting.view_connectome` and
+      :func:`nilearn.plotting.view_markers` to visualize connectomes and
+      seed locations in 3D
+
+    - New function `nilearn.plotting.view_stat_map` (renamed to
+      :func:`nilearn.plotting.view_img` in stable release) for interactive
+      visualization of volumes with 3 orthogonal cuts.
+
+    - Add :func:`nilearn.datasets.fetch_surf_fsaverage` to download either
+      fsaverage or fsaverage 5 (Freesurfer cortical meshes).
+
+    - Added :func:`nilearn.datasets.fetch_atlas_pauli_2017` to download a
+      recent subcortical neuroimaging atlas.
+
+    - Added :func:`nilearn.plotting.find_parcellation_cut_coords` for
+      extraction of coordinates on brain parcellations denoted as labels.
+
+    - Added :func:`nilearn.plotting.find_probabilistic_atlas_cut_coords` for
+      extraction of coordinates on brain probabilistic maps.
+
+    - Added :func:`nilearn.datasets.fetch_neurovault_auditory_computation_task`
+      and :func:`nilearn.datasets.fetch_neurovault_motor_task` for simple example data.
+
+Changes
+-------
+
+    - `nilearn.datasets.fetch_surf_fsaverage5` is deprecated and will be
+      removed in a future release. Use :func:`nilearn.datasets.fetch_surf_fsaverage`,
+      with the parameter mesh="fsaverage5" (the default) instead.
+
+    - fsaverage5 surface data files are now shipped directly with Nilearn.
+      Look to issue #1705 for discussion.
+
+    - `sklearn.cross_validation` and `sklearn.grid_search` have been
+      replaced by `sklearn.model_selection` in all the examples.
+
+    - Colorbars in plotting functions now have a middle gray background
+      suitable for use with custom colormaps with a non-unity alpha channel.
+
+
+Contributors
+------------
+
+The following people contributed to this release::
+
+    49  Gael Varoquaux
+    180  Jerome Dockes
+    57  Kshitij Chawla (kchawla-pi)
+    38  SylvainLan
+    36  Kamalakar Daddy
+    10  Gilles de Hollander
+    4  Bertrand Thirion
+    4  MENUET Romuald
+    3  Moritz Boos
+    1  Peer Herholz
+    1  Pierre Bellec
+
+0.4.2
+=====
+Few important bugs fix release for OHBM conference.
+
+Changes
+-------
+    - Default colormaps for surface plotting functions have changed to be more
+      consistent with slice plotting.
+      :func:`nilearn.plotting.plot_surf_stat_map` now uses "cold_hot", as
+      :func:`nilearn.plotting.plot_stat_map` does, and
+      :func:`nilearn.plotting.plot_surf_roi` now uses "gist_ncar", as
+      :func:`nilearn.plotting.plot_roi` does.
+
+    - Improve 3D surface plotting: lock the aspect ratio of the plots and
+      reduce the whitespace around the plots.
+
+Bug fixes
+---------
+
+    - Fix bug with input repetition time (TR) which had no effect in signal
+      cleaning. Fixed by Pradeep Raamana.
+
+    - Fix issues with signal extraction on list of 3D images in
+      :class:`nilearn.regions.Parcellations`.
+
+    - Fix issues with raising AttributeError rather than HTTPError in datasets
+      fetching utilities. By Jerome Dockes.
+
+    - Fix issues in datasets testing function uncompression of files. By Pierre Glaser.
+
+0.4.1
+=====
+
+This bug fix release is focussed on few bug fixes and minor developments.
+
+Enhancements
+------------
+
+    - :class:`nilearn.decomposition.CanICA` and
+      :class:`nilearn.decomposition.DictLearning` has new attribute
+      `components_img_` providing directly the components learned as
+      a Nifti image. This avoids the step of unmasking the attribute
+      `components_` which is true for older versions.
+
+    - New object :class:`nilearn.regions.Parcellations` for learning brain
+      parcellations on fmri data.
+
+    - Add optional reordering of the matrix using a argument `reorder`
+      with :func:`nilearn.plotting.plot_matrix`.
+
+      .. note::
+        This feature is usable only if SciPy version is >= 1.0.0
+
+Changes
+-------
+
+    - Using output attribute `components_` which is an extracted components
+      in :class:`nilearn.decomposition.CanICA` and
+      :class:`nilearn.decomposition.DictLearning` is deprecated and will
+      be removed in next two releases. Use `components_img_` instead.
+
+Bug fixes
+---------
+
+    - Fix issues using :func:`nilearn.plotting.plot_connectome` when string is
+      passed in `node_color` with display modes left and right hemispheric cuts
+      in the glass brain.
+
+    - Fix bug while plotting only coordinates using add_markers on glass brain.
+      See issue #1595
+
+    - Fix issues with estimators in decomposition module when input images are
+      given in glob patterns.
+
+    - Fix bug loading Nifti2Images.
+
+    - Fix bug while adjusting contrast of the background template while using
+      :func:`nilearn.plotting.plot_prob_atlas`
+
+    - Fix colormap bug with recent matplotlib 2.2.0
+
+0.4.0
+=====
+
+**Highlights**:
+
+    - :func:`nilearn.surface.vol_to_surf` to project volume data to the
+      surface.
+
+    - :func:`nilearn.plotting.plot_matrix` to display matrices, eg connectomes
+
+Enhancements
+-------------
+
+    - New function :func:`nilearn.surface.vol_to_surf` to project a 3d or
+      4d brain volume on the cortical surface.
+
+    - New matrix plotting function, eg to display connectome matrices:
+      :func:`nilearn.plotting.plot_matrix`
+
+    - Expose :func:`nilearn.image.coord_transform` for end users. Useful
+      to transform coordinates (x, y, z) from one image space to
+      another space.
+
+    - :func:`nilearn.image.resample_img` now takes a linear resampling
+      option (implemented by Joe Necus)
+
+    - :func:`nilearn.datasets.fetch_atlas_talairach` to fetch the Talairach
+      atlas (http://talairach.org)
+
+    - Enhancing new surface plotting functions, added new parameters
+      "axes" and "figure" to accept user-specified instances in
+      :func:`nilearn.plotting.plot_surf` and
+      :func:`nilearn.plotting.plot_surf_stat_map` and
+      :func:`nilearn.plotting.plot_surf_roi`
+
+    - :class:`nilearn.decoding.SearchLight` has new parameter "groups" to
+      do LeaveOneGroupOut type cv with new scikit-learn module model selection.
+
+    - Enhancing the glass brain plotting in back view 'y' direction.
+
+    - New parameter "resampling_interpolation" is added in most used
+      plotting functions to have user control for faster visualizations.
+
+    - Upgraded to Sphinx-Gallery 0.1.11
+
+Bug fixes
+----------
+
+    - Dimming factor applied to background image in plotting
+      functions with "dim" parameter will no longer accepts as
+      string ('-1'). An error will be raised.
+
+    - Fixed issues with matplotlib 2.1.0.
+
+    - Fixed issues with SciPy 1.0.0.
+
+Changes
+---------
+
+    - **Backward incompatible change**: :func:`nilearn.plotting.find_xyz_cut_coords`
+      now takes a `mask_img` argument which is a niimg, rather than a `mask`
+      argument, which used to be a numpy array.
+
+    - The minimum required version for scipy is now 0.14
+
+    - Dropped support for Nibabel older than 2.0.2.
+
+    - :func:`nilearn.image.smooth_img` no longer accepts smoothing
+      parameter fwhm as 0. Behavior is changed in according to the
+      issues with recent SciPy version 1.0.0.
+
+    - "dim" factor range is slightly increased to -2 to 2 from -1 to 1.
+      Range exceeding -1 meaning more increase in constrast should be
+      cautiously set.
+
+    - New 'anterior' and 'posterior' view added to the plot_surf family views
+
+    - Using argument `anat_img` for placing background image in
+      :func:`nilearn.plotting.plot_prob_atlas` is deprecated. Use argument
+      `bg_img` instead.
+
+    - The examples now use pandas for the behavioral information.
+
+Contributors
+-------------
+
+The following people contributed to this release::
+
+   127  Jerome Dockes
+    62  Gael Varoquaux
+    36  Kamalakar Daddy
+    11  Jeff Chiang
+     9  Elizabeth DuPre
+     9  Jona Sassenhagen
+     7  Sylvain Lan
+     6  J Necus
+     5  Pierre-Olivier Quirion
+     3  AnaLu
+     3  Jean Remi King
+     3  MADHYASTHA Meghana
+     3  Salma Bougacha
+     3  sfvnMAC
+     2  Eric Larson
+     2  Horea Christian
+     2  Moritz Boos
+     1  Alex Rothberg
+     1  Bertrand Thirion
+     1  Christophe Bedetti
+     1  John Griffiths
+     1  Mehdi Rahim
+     1  Sylvain LANNUZEL
+     1  Yaroslav Halchenko
+     1  clfs
+
+
 0.3.1
 =====
+
+This is a minor release for BrainHack.
 
 Highlights
 ----------
@@ -12,6 +640,22 @@ Changelog
 
     - The function sym_to_vec is deprecated and will be removed in
       release 0.4. Use :func:`nilearn.connectome.sym_matrix_to_vec` instead.
+
+    - Added argument `smoothing_fwhm` to
+      :class:`nilearn.regions.RegionExtractor` to control smoothing according
+      to the resolution of atlas images.
+
+Bug fix
+-------
+
+    - The helper function `largest_connected_component` should now work with
+      inputs of non-native data dtypes.
+
+    - Fix plotting issues when non-finite values are present in background
+      anatomical image.
+
+    - A workaround to handle non-native endianess in the Nifti images passed
+      to resampling the image.
 
 Enhancements
 -------------
@@ -31,9 +675,15 @@ Enhancements
       connectivity coefficients to connectivity matrices. Also, it allows to
       recover the covariance matrices for the "tangent" kind.
 
-    - Reworking and renaming of connectivity measures example. 
+    - Reworking and renaming of connectivity measures example. Renamed from
+      plot_connectivity_measures to plot_group_level_connectivity.
 
     - Tighter bounding boxes when using add_contours for plotting.
+
+    - Function :func:`nilearn.image.largest_connected_component_img` to
+      directly extract the largest connected component from Nifti images.
+
+    - Improvements in plotting, decoding and functional connectivity examples.
 
 0.3.0
 ======
@@ -100,8 +750,8 @@ Highlights
 Changelog
 ---------
 
-    -  A helper function _safe_get_data as a nilearn utility now safely
-       removes NAN values in the images with argument ensure_finite=True.
+    - A helper function _safe_get_data as a nilearn utility now safely
+      removes NAN values in the images with argument ensure_finite=True.
 
     - Connectome functions :func:`nilearn.connectome.cov_to_corr` and
       :func:`nilearn.connectome.prec_to_partial` can now be used.
@@ -138,7 +788,7 @@ Enhancements
     - A function :func:`nilearn.plotting.plot_surf_roi` can be used for
       plotting statistical maps rois onto brain surface.
 
-    - A function :func:`nilearn.datasets.fetch_surf_fsaverage5` can be used
+    - A function `nilearn.datasets.fetch_surf_fsaverage5` can be used
       for surface data object to be as background map for the above plotting
       functions.
 

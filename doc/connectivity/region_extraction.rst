@@ -24,18 +24,18 @@ Region Extraction for better brain parcellations
 
 .. currentmodule:: nilearn.datasets
 
-Fetching resting state functional datasets
-==========================================
+Fetching movie-watching based functional datasets
+=================================================
 
-We use ADHD resting state functional connectivity datasets of 20 subjects,
-which is already preprocessed and publicly available at
-`<http://fcon_1000.projects.nitrc.org/indi/adhd200/>`_. We use utilities
-:func:`fetch_adhd` implemented in nilearn for automatic fetching of these
-datasets.
+We use a naturalistic stimuli based movie-watching functional connectivity dataset
+of 20 subjects, which is already preprocessed, downsampled to 4mm isotropic resolution, and publicly available at
+`<https://osf.io/5hju4/files/>`_. We use utilities
+:func:`fetch_development_fmri` implemented in nilearn for automatic fetching of this
+dataset.
 
 
 .. literalinclude:: ../../examples/03_connectivity/plot_extract_regions_dictlearning_maps.py
-    :start-after: # utilities
+    :start-after: # We use nilearn's datasets downloading utilities
     :end-before: ################################################################################
 
 .. currentmodule:: nilearn.decomposition
@@ -51,7 +51,7 @@ necessarily converting each file to Nifti1Image object.
 
 .. literalinclude:: ../../examples/03_connectivity/plot_extract_regions_dictlearning_maps.py
     :start-after: # object and fit the model to the functional datasets
-    :end-before: # Visualization of resting state networks
+    :end-before: # Visualization of functional networks
 
 .. currentmodule:: nilearn.plotting
 
@@ -135,7 +135,7 @@ The third step, we compute the mean correlation across all subjects.
 
 .. literalinclude:: ../../examples/03_connectivity/plot_extract_regions_dictlearning_maps.py
     :start-after: # To estimate correlation matrices we import connectome utilities from nilearn
-    :end-before: # Visualization
+    :end-before: #################################################################
 
 .. currentmodule:: nilearn.plotting
 
@@ -149,7 +149,7 @@ Left image is the correlations in a matrix form and right image is the
 connectivity relations to brain regions plotted using :func:`plot_connectome`
 
 .. literalinclude:: ../../examples/03_connectivity/plot_extract_regions_dictlearning_maps.py
-    :start-after: # Plotting connectome results
+    :start-after: # Plot resulting connectomes
     :end-before: ################################################################################
 
 .. |matrix| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_extract_regions_dictlearning_maps_003.png
@@ -167,13 +167,13 @@ Validating results
 
 Showing only one specific network regions before and after region extraction.
 
-Left image displays the regions of one specific resting network without region extraction
+Left image displays the regions of one specific functional network without region extraction
 and right image displays the regions split apart after region extraction. Here, we can
 validate that regions are nicely separated identified by each extracted region in different
 color.
 
 .. literalinclude:: ../../examples/03_connectivity/plot_extract_regions_dictlearning_maps.py
-    :start-after: # Plotting regions extracted for only one specific network
+    :start-after: # First, we plot a network of index=4 without region extraction
 
 .. |dmn| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_extract_regions_dictlearning_maps_005.png
    :target: ../auto_examples/03_connectivity/plot_extract_regions_dictlearning_maps.html

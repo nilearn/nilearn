@@ -23,15 +23,14 @@ from sklearn.linear_model.base import LinearModel
 from sklearn.utils.extmath import safe_sparse_dot
 from sklearn import clone
 from sklearn.model_selection import ParameterGrid
+from sklearn.utils.validation import check_is_fitted, check_X_y
+from sklearn.metrics import check_scoring
+from sklearn.model_selection import check_cv
 
 from ..input_data.masker_validation import check_embedded_nifti_masker
 from .._utils.param_validation import _adjust_screening_percentile
-from .._utils.fixes import check_scoring
-from .._utils.fixes import check_X_y
-from .._utils.fixes import check_is_fitted
 from .._utils.compat import _basestring
 from .._utils.cache_mixin import _check_memory
-from .._utils.fixes import check_cv
 from .._utils.param_validation import check_feature_screening
 from .._utils import CacheMixin
 
@@ -39,7 +38,7 @@ from .._utils import CacheMixin
 SUPPORTED_ESTIMATORS = dict(
     svc_l1=LinearSVC(penalty='l1', dual=False),
     svc_l2=LinearSVC(penalty='l2'),
-    svc=LinearSVC(penalty='l2'),
+    svc=LinearSVC(penalty='l2'),  # TODO: remove svc as the option is the same with svc_l2
     logistic_l1=LogisticRegression(penalty='l1'),
     logistic_l2=LogisticRegression(penalty='l2'),
     logistic=LogisticRegression(penalty='l2'),
@@ -379,8 +378,7 @@ class BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
         X = self.masker_.fit_transform(X)
         self.mask_img_ = self.masker_.mask_img_
 
-        X, y = check_X_y(X, y, dtype=np.float, multi_output=True,
-                         y_numeric=True)
+        X, y = check_X_y(X, y, dtype=np.float, multi_output=True)
         # Setup model
         if not isinstance(self.estimator, _basestring):
             warnings.warn('Use a custom estimator at your own risk.')
@@ -394,16 +392,9 @@ class BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
 
         scorer = check_scoring(estimator, self.scoring)
 
-        # Setup cv
-        if LooseVersion(sklearn.__version__) >= LooseVersion('0.18'):
-            # scikit-learn >= 0.18
-            self.cv_ = list(check_cv(
-                self.cv, y=y, classifier=self.is_classif).split(X, y))
-        else:
-            # scikit-learn < 0.18
-            self.cv_ = list(check_cv(self.cv, X=X, y=y,
-                                     classifier=self.is_classif))
-
+        self.cv_ = list(check_cv(
+            self.cv, y=y, classifier=self.is_classif).split(X, y))
+        
         # Define the number problems to solve. In case of classification this
         # number corresponds to the number of binary problems to solve
         if self.is_classif:

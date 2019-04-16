@@ -26,8 +26,6 @@ See also :ref:`for a similar example but using volumetric input data
 
 See :ref:`plotting` for more details on plotting tools.
 
-NOTE: This example needs matplotlib version higher than 1.3.1.
-
 References
 ----------
 
@@ -69,7 +67,7 @@ parcellation = destrieux_atlas['map_left']
 labels = destrieux_atlas['labels']
 
 # Fsaverage5 surface template
-fsaverage = datasets.fetch_surf_fsaverage5()
+fsaverage = datasets.fetch_surf_fsaverage()
 
 # The fsaverage dataset contains file names pointing to
 # the file locations
@@ -85,9 +83,9 @@ print('Fsaverage5 sulcal depth map of left hemisphere is at: %s' %
 # --------------------------------
 
 # Load resting state time series from nilearn
-from nilearn import plotting
+from nilearn import surface
 
-timeseries = plotting.surf_plotting.load_surf_data(nki_dataset['func_left'][0])
+timeseries = surface.load_surf_data(nki_dataset['func_left'][0])
 
 # Extract seed region via label
 pcc_region = b'G_cingul-Post-dorsal'
@@ -115,6 +113,9 @@ stat_map[np.where(np.mean(timeseries, axis=1) == 0)] = 0
 
 ###############################################################################
 # Display ROI on surface
+
+from nilearn import plotting
+
 plotting.plot_surf_roi(fsaverage['pial_left'], roi_map=pcc_labels,
                        hemi='left', view='medial',
                        bg_map=fsaverage['sulc_left'], bg_on_data=True,
@@ -123,7 +124,7 @@ plotting.plot_surf_roi(fsaverage['pial_left'], roi_map=pcc_labels,
 ###############################################################################
 # Display unthresholded stat map  with dimmed background
 plotting.plot_surf_stat_map(fsaverage['pial_left'], stat_map=stat_map,
-                            hemi='left', view='medial',
+                            hemi='left', view='medial', colorbar=True,
                             bg_map=fsaverage['sulc_left'], bg_on_data=True,
                             darkness=.5, title='Correlation map')
 
@@ -131,14 +132,14 @@ plotting.plot_surf_stat_map(fsaverage['pial_left'], stat_map=stat_map,
 # Display unthresholded stat map without background map, transparency is
 # automatically set to .5, but can also be controlled with the alpha parameter
 plotting.plot_surf_stat_map(fsaverage['pial_left'], stat_map=stat_map,
-                            hemi='left', view='medial',
+                            hemi='left', view='medial', colorbar=True,
                             title='Plotting without background')
 
 ###############################################################################
 # Many different options are available for plotting, for example thresholding,
 # or using custom colormaps
 plotting.plot_surf_stat_map(fsaverage['pial_left'], stat_map=stat_map,
-                            hemi='left', view='medial',
+                            hemi='left', view='medial', colorbar=True,
                             bg_map=fsaverage['sulc_left'], bg_on_data=True,
                             cmap='Spectral', threshold=.5,
                             title='Threshold and colormap')
@@ -148,7 +149,7 @@ plotting.plot_surf_stat_map(fsaverage['pial_left'], stat_map=stat_map,
 # creating the figure
 plotting.plot_surf_stat_map(fsaverage['infl_left'], stat_map=stat_map,
                             hemi='left', bg_map=fsaverage['sulc_left'],
-                            bg_on_data=True, threshold=.6,
+                            bg_on_data=True, threshold=.6, colorbar=True,
                             output_file='plot_surf_stat_map.png')
 
 plotting.show()

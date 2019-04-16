@@ -57,6 +57,8 @@ def test_demo_plot_roi():
     demo_plot_roi()
     # Test the black background code path
     demo_plot_roi(black_bg=True)
+    # Test whether the function accepts a threshold argument
+    demo_plot_roi(threshold=0.2)
 
     # Save execution time and memory
     plt.close()
@@ -123,10 +125,11 @@ def test_plot_glass_brain():
     img = _generate_img()
 
     # test plot_glass_brain with colorbar
-    plot_glass_brain(img, colorbar=True)
+    plot_glass_brain(img, colorbar=True, resampling_interpolation='nearest')
 
     # test plot_glass_brain with negative values
-    plot_glass_brain(img, colorbar=True, plot_abs=False)
+    plot_glass_brain(img, colorbar=True, plot_abs=False,
+                     resampling_interpolation='nearest')
 
     # Save execution time and memory
     plt.close()
@@ -176,13 +179,13 @@ def test_plot_stat_map_threshold_for_affine_with_rotation():
                        [0., 0., 3., 3.],
                        [0., 0., 0., 1.]])
     img = nibabel.Nifti1Image(data, affine)
-    display = plot_stat_map(img, bg_img=None, threshold=1e6,
+    display = plot_stat_map(img, bg_img=None, threshold=1.,
                             display_mode='z', cut_coords=1)
     # Next two lines retrieve the numpy array from the plot
     ax = list(display.axes.values())[0].ax
     plotted_array = ax.images[0].get_array()
-    # Given the high threshold the array should be entirely masked
-    assert_true(plotted_array.mask.all())
+    # Given the high threshold the array should be partly masked
+    assert_true(plotted_array.mask.any())
 
     # Save execution time and memory
     plt.close()
@@ -437,6 +440,9 @@ def test_plot_connectome():
     plt.close()
 
     # NaN matrix support
+    node_color = ['green', 'blue', 'k']
+    # Overriding 'node_color' for 3  elements of size 3.
+    kwargs['node_color'] = node_color
     nan_adjacency_matrix = np.array([[1., np.nan, 0.],
                                      [np.nan, 1., 2.],
                                      [np.nan, 2., 1.]])
@@ -455,6 +461,12 @@ def test_plot_connectome():
 
     # smoke-test with hemispheric saggital cuts
     plot_connectome(*args, display_mode='lzry')
+    plt.close()
+
+    # test node_color as a string with display_mode='lzry'
+    plot_connectome(*args, node_color='red', display_mode='lzry')
+    plt.close()
+    plot_connectome(*args, node_color=['red'], display_mode='lzry')
     plt.close()
 
 
@@ -860,6 +872,30 @@ def test_invalid_in_display_mode_cut_coords_all_plots():
                             img, display_mode='ortho', cut_coords=2)
 
 
+def test_invalid_in_display_mode_tiled_cut_coords_single_all_plots():
+    img = _generate_img()
+
+    for plot_func in [plot_img, plot_anat, plot_roi, plot_epi,
+                      plot_stat_map,plot_prob_atlas]:
+        assert_raises_regex(ValueError,
+                            "The input given for display_mode='tiled' needs to "
+                            "be a list of 3d world coordinates.",
+                            plot_func,
+                            img, display_mode='tiled', cut_coords=2)
+
+
+def test_invalid_in_display_mode_tiled_cut_coords_all_plots():
+    img = _generate_img()
+
+    for plot_func in [plot_img, plot_anat, plot_roi, plot_epi,
+                      plot_stat_map,plot_prob_atlas]:
+        assert_raises_regex(ValueError,
+                            "The number cut_coords passed does not "
+                            "match the display_mode",
+                            plot_func,
+                            img, display_mode='tiled', cut_coords=(2,2))
+
+
 def test_outlier_cut_coords():
     """ Test to plot a subset of a large set of cuts found for a small area."""
     bg_img = load_mni152_template()
@@ -902,8 +938,6 @@ def test_plot_stat_map_with_nans():
 
 def test_plotting_functions_with_cmaps():
     img = load_mni152_template()
-    # some cmaps such as 'viridis' (the new default in 2.0), 'magma', 'plasma',
-    # and 'inferno' are not supported for older matplotlib version from < 1.5
     cmaps = ['Paired', 'Set1', 'Set2', 'Set3']
     for cmap in cmaps:
         plot_roi(img, cmap=cmap, colorbar=True)
@@ -913,4 +947,65 @@ def test_plotting_functions_with_cmaps():
     if LooseVersion(matplotlib.__version__) >= LooseVersion('2.0.0'):
         plot_stat_map(img, cmap='viridis', colorbar=True)
 
+    plt.close()
+
+
+def test_plotting_functions_with_nans_in_bg_img():
+    bg_img = _generate_img()
+    bg_data = bg_img.get_data()
+
+    bg_data[6, 5, 1] = np.nan
+    bg_data[1, 5, 2] = np.nan
+    bg_data[1, 3, 2] = np.nan
+    bg_data[6, 5, 2] = np.inf
+
+    bg_img = nibabel.Nifti1Image(bg_data, mni_affine)
+    plot_anat(bg_img)
+    # test with plot_roi passing background image which contains nans values
+    # in it
+    roi_img = _generate_img()
+    plot_roi(roi_img=roi_img, bg_img=bg_img)
+    stat_map_img = _generate_img()
+    plot_stat_map(stat_map_img=stat_map_img, bg_img=bg_img)
+
+    plt.close()
+
+
+def test_plotting_functions_with_dim_invalid_input():
+    # Test whether error raises with bad error to input
+    img = _generate_img()
+    assert_raises(ValueError, plot_stat_map, img, dim='-10')
+
+
+def test_add_markers_using_plot_glass_brain():
+    fig = plot_glass_brain(None)
+    coords = [(-34, -39, -9)]
+    fig.add_markers(coords)
+    fig.close()
+
+
+def test_plotting_functions_with_display_mode_tiled():
+    img = _generate_img()
+    plot_stat_map(img, display_mode='tiled')
+    plot_anat(display_mode='tiled')
+    plot_img(img, display_mode='tiled')
+    plt.close()
+
+
+def test_display_methods_with_display_mode_tiled():
+    img = _generate_img()
+    display = plot_img(img, display_mode='tiled')
+    display.add_overlay(img, threshold=0)
+    display.add_edges(img, color='c')
+    display.add_contours(img, contours=2, linewidth=4,
+                         colors=['limegreen', 'yellow'])
+
+
+def test_plot_glass_brain_colorbar_having_nans():
+    img = _generate_img()
+    data = img.get_data()
+
+    data[6, 5, 2] = np.inf
+    img = nibabel.Nifti1Image(data, np.eye(4))
+    plot_glass_brain(img, colorbar=True)
     plt.close()

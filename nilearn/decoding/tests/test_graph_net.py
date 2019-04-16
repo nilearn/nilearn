@@ -16,7 +16,6 @@ from nilearn.decoding.space_net_solvers import (
     _logistic_derivative_lipschitz_constant,
     mfista)
 from nilearn.decoding.space_net import BaseSpaceNet
-from nilearn._utils.compat import get_affine
 
 # Data used in almost all tests
 import nibabel
@@ -30,7 +29,7 @@ def _make_data(task="regression", size=4):
         task=task)
     X_, _ = to_niimgs(X, [size] * 3)
     mask_ = nibabel.Nifti1Image(mask.astype(np.float),
-                                get_affine(X_))
+                                X_.affine)
     return X, y, w, mask, mask_, X_
 
 X, y, w, mask, mask_, X_ = _make_data()

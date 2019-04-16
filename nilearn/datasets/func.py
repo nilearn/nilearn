@@ -15,8 +15,9 @@ from sklearn.utils import deprecated
 from .utils import (_get_dataset_dir, _fetch_files, _get_dataset_descr,
                     _read_md5_sum_file, _tree, _filter_columns)
 from .._utils import check_niimg
-from .._utils.compat import BytesIO, _basestring, _urllib, get_affine
+from .._utils.compat import BytesIO, _basestring, _urllib
 from .._utils.numpy_conversions import csv_to_array
+from .._utils.exceptions import VisibleDeprecationWarning
 
 
 @deprecated("fetch_haxby_simple will be removed in future releases. "
@@ -39,7 +40,7 @@ def fetch_haxby_simple(data_dir=None, url=None, resume=True, verbose=1):
         target data.
         'mask': string. Path to nifti mask file.
         'session': list of string. Path to text file containing labels
-        (can be used for LeaveOneLabelOut cross validation for example).
+        (can be used for LeaveOneGroupOut cross validation for example).
 
     References
     ----------
@@ -108,7 +109,7 @@ def fetch_haxby(data_dir=None, n_subjects=None, subjects=(2,),
 
     fetch_stimuli: boolean, optional
         Indicate if stimuli images must be downloaded. They will be presented
-        as a dictionnary of categories.
+        as a dictionary of categories.
 
     Returns
     -------
@@ -148,9 +149,10 @@ def fetch_haxby(data_dir=None, n_subjects=None, subjects=(2,),
     The anatomical image for subject 6 is unavailable.
     """
     if n_subjects is not None:
-        warnings.warn("The parameter 'n_subjects' is deprecated from 0.2.6 "
-                      "and will be removed in nilearn next release. Use "
-                      "parameter 'subjects' instead.")
+        warn_str = ("The parameter 'n_subjects' is deprecated from 0.2.6 and "
+                    "will be removed in nilearn next release. Use parameter "
+                    "'subjects' instead.")
+        warnings.warn(warn_str, VisibleDeprecationWarning, stacklevel=2)
         subjects = n_subjects
 
     if isinstance(subjects, numbers.Number) and subjects > 6:
@@ -664,7 +666,7 @@ def fetch_miyawaki2008(data_dir=None, url=None, resume=True, verbose=1):
 def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
                               get_masks=False, get_anats=False,
                               data_dir=None, url=None, resume=True, verbose=1):
-    """Download and load Brainomics Localizer dataset (94 subjects).
+    """Download and load Brainomics/Localizer dataset (94 subjects).
 
     "The Functional Localizer is a simple and fast acquisition
     procedure based on a 5-minute functional magnetic resonance
@@ -677,8 +679,11 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
     Functional Localizer page."
     (see http://brainomics.cea.fr/localizer/)
 
-    "Scientific results obtained using this dataset are described in
-    Pinel et al., 2007" [1]
+    You may cite Papadopoulos Orfanos, Dimitri, *et al.* when using this
+    dataset [1].
+
+    Scientific results obtained using this dataset are described in
+    Pinel *et al.*, 2007 [2].
 
     Parameters
     ----------
@@ -798,10 +803,14 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
 
     References
     ----------
-    Pinel, Philippe, et al.
+    [1] Papadopoulos Orfanos, Dimitri, et al.
+    "The Brainomics/Localizer database."
+    NeuroImage 144.B (2017): 309.
+
+    [2] Pinel, Philippe, et al.
     "Fast reproducible identification and large-scale databasing of
     individual functional cognitive networks."
-    BMC neuroscience 8.1 (2007): 91.
+    BMC Neuroscience 8.1 (2007): 91.
 
     See Also
     ---------
@@ -1061,16 +1070,14 @@ def fetch_localizer_calculation_task(n_subjects=1, data_dir=None, url=None,
     return data
 
 
-def fetch_localizer_button_task(n_subjects=[2, ], data_dir=None, url=None,
-                                get_anats=False, verbose=1):
+def fetch_localizer_button_task(data_dir=None, url=None, verbose=1):
     """Fetch left vs right button press contrast maps from the localizer.
+
+    This function ships only 2nd subject (S02) specific tmap and
+    its normalized T1 image.
 
     Parameters
     ----------
-    n_subjects: int or list, optional
-        The number or list of subjects to load. If None is given,
-        all 94 subjects are used.
-
     data_dir: string, optional
         Path of the data directory. Used to force data storage in a specified
         location.
@@ -1079,9 +1086,6 @@ def fetch_localizer_button_task(n_subjects=[2, ], data_dir=None, url=None,
         Override download URL. Used for test only (or if you setup a mirror of
         the data).
 
-    get_anats: boolean
-        Whether individual structural images should be fetched or not.
-
     verbose: int, optional
         verbosity level (0 means no message).
 
@@ -1089,7 +1093,8 @@ def fetch_localizer_button_task(n_subjects=[2, ], data_dir=None, url=None,
     -------
     data: Bunch
         Dictionary-like object, the interest attributes are :
-        'cmaps': string list, giving paths to nifti contrast maps
+        'tmap': string, giving paths to nifti contrast maps
+        'anat': string, giving paths to normalized anatomical image
 
     Notes
     ------
@@ -1104,12 +1109,30 @@ def fetch_localizer_button_task(n_subjects=[2, ], data_dir=None, url=None,
     nilearn.datasets.fetch_localizer_contrasts
 
     """
-    data = fetch_localizer_contrasts(["left vs right button press"],
-                                     n_subjects=n_subjects,
-                                     get_tmaps=True, get_masks=False,
-                                     get_anats=get_anats, data_dir=data_dir,
-                                     url=url, resume=True, verbose=verbose)
-    return data
+    # The URL can be retrieved from the nilearn account on OSF (Open
+    # Science Framework). Uploaded files specific to S02 from
+    # fetch_localizer_contrasts ['left vs right button press']
+    if url is None:
+        url = 'https://osf.io/dx9jn/download'
+
+    tmap = "t_map_left_auditory_&_visual_click_vs_right_auditory&visual_click.nii.gz"
+    anat = "normalized_T1_anat_defaced.nii.gz"
+
+    opts = {'uncompress': True}
+
+    options = ('tmap', 'anat')
+    filenames = [(os.path.join('localizer_button_task', name), url, opts)
+                 for name in (tmap, anat)]
+
+    dataset_name = 'brainomics'
+    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
+                                verbose=verbose)
+    files = _fetch_files(data_dir, filenames, verbose=verbose)
+
+    fdescr = _get_dataset_descr('brainomics_localizer')
+
+    params = dict([('description', fdescr)] + list(zip(options, files)))
+    return Bunch(**params)
 
 
 def fetch_abide_pcp(data_dir=None, n_subjects=None, pipeline='cpac',
@@ -1303,7 +1326,7 @@ def _load_mixed_gambles(zmap_imgs):
     for zmap_img in zmap_imgs:
         # load subject data
         this_X = zmap_img.get_data()
-        affine = get_affine(zmap_img)
+        affine = zmap_img.affine
         finite_mask = np.all(np.isfinite(this_X), axis=-1)
         this_mask = np.logical_and(np.all(this_X != 0, axis=-1),
                                    finite_mask)
@@ -1843,4 +1866,237 @@ def fetch_surf_nki_enhanced(n_subjects=10, data_dir=None,
 
     return Bunch(func_left=func_left, func_right=func_right,
                  phenotypic=phenotypic,
+                 description=fdescr)
+
+
+def _fetch_development_fmri_participants(data_dir, url, verbose):
+    """Helper function to fetch_development_fmri.
+
+    This function helps in downloading and loading participants data from .tsv
+    uploaded on Open Science Framework (OSF).
+
+    The original .tsv file contains many columns but this function picks only
+    those columns that are relevant.
+
+    Parameters
+    ----------
+    data_dir: str
+        Path of the data directory. Used to force data storage in a specified
+        location. If None is given, data are stored in home directory.
+
+    url: str, optional
+        Override download URL. Used for test only (or if you setup a mirror of
+        the data). Default: None
+
+    verbose: int
+        Defines the level of verbosity of the output.
+
+    Returns
+    -------
+    participants : numpy.ndarray
+        Contains data of each subject age, age group, child or adult,
+        gender, handedness.
+
+    """
+    dataset_name = 'development_fmri'
+    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
+                                verbose=verbose)
+
+    if url is None:
+        url = 'https://osf.io/yr3av/download'
+
+    files = [('participants.tsv', url, {'move': 'participants.tsv'})]
+    path_to_participants = _fetch_files(data_dir, files, verbose=verbose)[0]
+
+    # Load path to participants
+    dtype = [('participant_id', 'U12'), ('Age', '<f8'), ('AgeGroup', 'U6'),
+             ('Child_Adult', 'U5'), ('Gender', 'U4'), ('Handedness', 'U4')]
+    names = ['participant_id', 'Age', 'AgeGroup', 'Child_Adult', 'Gender',
+             'Handedness']
+    participants = csv_to_array(path_to_participants, skip_header=True,
+                                dtype=dtype, names=names)
+    return participants
+
+
+def _fetch_development_fmri_functional(participants, data_dir, url, verbose):
+    """Helper function to fetch_development_fmri.
+
+    This function helps in downloading functional MRI data in Nifti
+    and its confound corresponding to each subject.
+
+    The files are downloaded from Open Science Framework (OSF).
+
+    Parameters
+    ----------
+    participants : numpy.ndarray
+        Should contain column participant_id which represents subjects id. The
+        number of files are fetched based on ids in this column.
+
+    data_dir: str
+        Path of the data directory. Used to force data storage in a specified
+        location. If None is given, data are stored in home directory.
+
+    url: str, optional
+        Override download URL. Used for test only (or if you setup a mirror of
+        the data). Default: None
+
+    verbose: int
+        Defines the level of verbosity of the output.
+
+    Returns
+    -------
+    func: list of str (Nifti files)
+        Paths to functional MRI data (4D) for each subject.
+
+    regressors: list of str (tsv files)
+        Paths to regressors related to each subject.
+    """
+    dataset_name = 'development_fmri'
+    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
+                                verbose=verbose)
+
+    if url is None:
+        url = 'https://osf.io/download/{}'
+
+    confounds = '{}_task-pixar_desc-confounds_regressors.tsv'
+    func = '{0}_task-pixar_space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz'
+
+    # The gzip contains unique download keys per Nifti file and confound
+    # pre-extracted from OSF. Required for downloading files.
+    package_directory = os.path.dirname(os.path.abspath(__file__))
+    dtype = [('participant_id', 'U12'), ('key_regressor', 'U24'),
+             ('key_bold', 'U24')]
+    names = ['participant_id', 'key_r', 'key_b']
+    # csv file contains download information related to OpenScience(osf)
+    osf_data = csv_to_array(os.path.join(package_directory, "data",
+                                         "development_fmri.csv"),
+                            skip_header=True, dtype=dtype, names=names)
+
+    funcs = []
+    regressors = []
+
+    for participant_id in participants['participant_id']:
+        this_osf_id = osf_data[osf_data['participant_id'] == participant_id]
+        # Download regressors
+        confound_url = url.format(this_osf_id['key_r'][0])
+        regressor_file = [(confounds.format(participant_id),
+                           confound_url,
+                           {'move': confounds.format(participant_id)})]
+        path_to_regressor = _fetch_files(data_dir, regressor_file,
+                                         verbose=verbose)[0]
+        regressors.append(path_to_regressor)
+        # Download bold images
+        func_url = url.format(this_osf_id['key_b'][0])
+        func_file = [(func.format(participant_id, participant_id), func_url,
+                      {'move': func.format(participant_id)})]
+        path_to_func = _fetch_files(data_dir, func_file, verbose=verbose)[0]
+        funcs.append(path_to_func)
+    return funcs, regressors
+
+
+def fetch_development_fmri(n_subjects=None, data_dir=None, resume=True,
+                           verbose=0):
+    """Fetch movie watching based brain development dataset (fMRI)
+
+    The data is downsampled to 4mm resolution for convenience. The origin of
+    the data is coming from OpenNeuro. See Notes below.
+
+    .. versionadded:: 0.5.2
+
+    Parameters
+    ----------
+    n_subjects: int, optional (default None)
+        The number of subjects to load. If None, all the subjects are
+        loaded.
+
+    data_dir: str, optional (default None)
+        Path of the data directory. Used to force data storage in a specified
+        location. If None, data are stored in home directory.
+
+    resume: bool, optional (default True)
+        Whether to resume download of a partly-downloaded file.
+
+    verbose: int, optional (default 0)
+        Defines the level of verbosity of the output.
+
+    Returns
+    -------
+    data: Bunch
+        Dictionary-like object, the interest attributes are :
+
+        - 'func': list of str (Nifti files)
+            Paths to downsampled functional MRI data (4D) for each subject.
+
+        - 'confounds': list of str (tsv files)
+            Paths to confounds related to each subject.
+
+        - 'phenotypic': numpy.ndarray
+            Contains each subject age, age group, child or adult, gender,
+            handedness.
+
+    Notes
+    -----
+    The original data is downloaded from OpenNeuro
+    https://openneuro.org/datasets/ds000228/versions/1.0.0
+
+    This fetcher downloads downsampled data that are available on Open
+    Science Framework (OSF). Located here: https://osf.io/5hju4/files/
+
+    Preprocessing details: https://osf.io/wjtyq/
+
+    References
+    ----------
+    Please cite this paper if you are using this dataset.
+    Richardson, H., Lisandrelli, G., Riobueno-Naylor, A., & Saxe, R. (2018).
+    Development of the social brain from age three to twelve years.
+    Nature communications, 9(1), 1027.
+    https://www.nature.com/articles/s41467-018-03399-2
+    """
+
+    dataset_name = 'development_fmri'
+    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
+                                verbose=1)
+
+    # Dataset description
+    fdescr = _get_dataset_descr(dataset_name)
+
+    # Participants data: ids, demographics, etc
+    participants = _fetch_development_fmri_participants(data_dir=data_dir,
+                                                        url=None,
+                                                        verbose=verbose)
+
+    max_subjects = len(participants)
+    if n_subjects is None:
+        n_subjects = max_subjects
+
+    if (isinstance(n_subjects, numbers.Number) and
+            ((n_subjects > max_subjects) or (n_subjects < 1))):
+        warnings.warn("Wrong value for n_subjects={0}. The maximum "
+                      "value will be used instead n_subjects={1}"
+                      .format(n_subjects, max_subjects))
+        n_subjects = max_subjects
+
+    # Download functional and regressors based on participants
+    child_count = participants['Child_Adult'].tolist().count('child')
+    adult_count = participants['Child_Adult'].tolist().count('adult')
+
+    # To keep the proportion of children versus adults
+    n_child = np.round(float(n_subjects) / max_subjects * child_count).astype(int)
+    n_adult = np.round(float(n_subjects) / max_subjects * adult_count).astype(int)
+
+    # First, restrict the csv files to the adequate number of subjects
+    child_ids = participants[participants['Child_Adult'] ==
+                             'child']['participant_id'][:n_child]
+    adult_ids = participants[participants['Child_Adult'] ==
+                             'adult']['participant_id'][:n_adult]
+    ids = np.hstack([child_ids, adult_ids])
+    participants = participants[np.in1d(participants['participant_id'],
+                                        ids)]
+
+    funcs, regressors = _fetch_development_fmri_functional(participants,
+                                                           data_dir=data_dir,
+                                                           url=None,
+                                                           verbose=verbose)
+
+    return Bunch(func=funcs, confounds=regressors, phenotypic=participants,
                  description=fdescr)

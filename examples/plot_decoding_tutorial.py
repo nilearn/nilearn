@@ -63,10 +63,10 @@ plotting.plot_roi(mask_filename, bg_img=haxby_dataset.anat[0],
 #
 # The behavioral labels are stored in a CSV file, separated by spaces.
 #
-# We use numpy to load them in an array.
-import numpy as np
+# We use pandas to load them in an array.
+import pandas as pd
 # Load behavioral information
-behavioral = np.recfromcsv(haxby_dataset.session_target[0], delimiter=" ")
+behavioral = pd.read_csv(haxby_dataset.session_target[0], sep=" ")
 print(behavioral)
 
 ###########################################################################
@@ -84,7 +84,7 @@ print(conditions)
 #
 # To keep only data corresponding to faces or cats, we create a
 # mask of the samples belonging to the condition.
-condition_mask = np.logical_or(conditions == b'face', conditions == b'cat')
+condition_mask = conditions.isin(['face', 'cat'])
 
 # We apply this mask in the sampe direction to restrict the
 # classification to the face vs cat discrimination
@@ -96,6 +96,8 @@ fmri_niimgs = index_img(fmri_filename, condition_mask)
 ###########################################################################
 # We apply the same mask to the targets
 conditions = conditions[condition_mask]
+# Convert to numpy array
+conditions = conditions.values
 print(conditions.shape)
 
 ###########################################################################
@@ -143,6 +145,7 @@ print((prediction == conditions).sum() / float(len(conditions)))
 #
 # Let's leave out the 30 last data points during training, and test the
 # prediction on these 30 last points:
+import numpy as np
 n_samples = len(conditions)
 fmri_niimgs_train = index_img(fmri_niimgs, np.arange(0, n_samples - 30))
 fmri_niimgs_test = index_img(fmri_niimgs, np.arange(n_samples - 30, n_samples))
@@ -152,7 +155,8 @@ conditions_test = conditions[-30:]
 decoder.fit(fmri_niimgs_train, conditions_train)
 
 prediction = decoder.predict(fmri_niimgs_test)
-print((prediction == conditions_test).sum() / float(len(conditions_test)))
+print("Prediction Accuracy: {:.3f}".format(
+    (prediction == conditions_test).sum() / float(len(conditions_test))))
 
 ###########################################################################
 # Implementing a KFold loop
@@ -160,14 +164,18 @@ print((prediction == conditions_test).sum() / float(len(conditions_test)))
 #
 # We can split the data in train and test set repetitively in a `KFold`
 # strategy:
+from sklearn.model_selection import KFold
+cv = KFold(n_splits=5)
 
-from sklearn.cross_validation import KFold
-cv = KFold(n=n_samples, n_folds=5)
-
-for train, test in cv:
+# The "cv" object's split method can now accept data and create a
+# generator which can yield the splits.
+fold = 0
+for train, test in cv.split(conditions):
+    fold += 1
     decoder.fit(index_img(fmri_niimgs, train), conditions[train])
     prediction = decoder.predict(index_img(fmri_niimgs, test))
-    print((prediction == conditions[test]).sum() / float(len(conditions[test])))
+    print("CV Fold {:01d} | Prediction Accuracy: {:.3f}".format(fold, 
+        (prediction == conditions[test]).sum() / float(len(conditions[test]))))
 
 ###########################################################################
 # Cross-validation with the decoder
@@ -181,10 +189,8 @@ decoder.fit(fmri_niimgs, conditions)
 print(decoder.cv_scores_['face'])
 print(decoder.cv_scores_['cat'])
 
-
 # The decoder also gives the best performing parameters per fold.
 print(decoder.cv_params_['face'])
-
 
 ###########################################################################
 # The best way to do cross-validation is to respect the structure of
@@ -193,15 +199,14 @@ print(decoder.cv_params_['face'])
 #
 # The number of the session is stored in the CSV file giving the
 # behavioral data. We have to apply our session mask, to select only cats
-# and faces. To leave a session out, we pass it to a
-# LeaveOneLabelOut object:
+# and faces.
 session_label = behavioral['chunks'][condition_mask]
 
-from sklearn.cross_validation import LeaveOneLabelOut
-cv = LeaveOneLabelOut(session_label)
+from sklearn.model_selection import LeaveOneGroupOut
+cv = LeaveOneGroupOut()
 
 decoder = Decoder(estimator='svc', mask=mask_filename, standardize=True, cv=cv)
-decoder.fit(fmri_niimgs, conditions)
+decoder.fit(fmri_niimgs, conditions, groups=session_label)
 
 print(decoder.cv_scores_)
 
@@ -244,4 +249,3 @@ show()
 # * :ref:`space_net`
 #
 # ______________
-

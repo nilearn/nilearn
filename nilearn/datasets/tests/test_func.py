@@ -325,30 +325,14 @@ def test_fetch_localizer_calculation_task():
 @with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
 def test_fetch_localizer_button_task():
     local_url = "file://" + tst.datadir
-    ids = np.asarray(['S%2d' % i for i in range(94)])
-    ids = ids.view(dtype=[('subject_id', 'S3')])
-    tst.mock_fetch_files.add_csv('cubicwebexport.csv', ids)
-    tst.mock_fetch_files.add_csv('cubicwebexport2.csv', ids)
 
     # Disabled: cannot be tested without actually fetching covariates CSV file
-    # All subjects
+    # Only one subject
     dataset = func.fetch_localizer_button_task(data_dir=tst.tmpdir,
                                                url=local_url,
                                                verbose=0)
-    assert_true(isinstance(dataset.ext_vars, np.recarray))
-    assert_true(isinstance(dataset.cmaps[0], _basestring))
-    assert_equal(dataset.ext_vars.size, 1)
-    assert_equal(len(dataset.cmaps), 1)
-
-    # 20 subjects
-    dataset = func.fetch_localizer_button_task(n_subjects=20,
-                                               data_dir=tst.tmpdir,
-                                               url=local_url,
-                                               verbose=0)
-    assert_true(isinstance(dataset.ext_vars, np.recarray))
-    assert_true(isinstance(dataset.cmaps[0], _basestring))
-    assert_equal(dataset.ext_vars.size, 20)
-    assert_equal(len(dataset.cmaps), 20)
+    assert_true(isinstance(dataset.tmap, _basestring))
+    assert_true(isinstance(dataset.anat, _basestring))
     assert_not_equal(dataset.description, '')
 
 
@@ -390,7 +374,7 @@ def test__load_mixed_gambles():
         assert_equal(len(zmaps), len(gain))
 
 
-@with_setup(setup_mock)
+@with_setup(setup_mock, teardown_mock)
 @with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
 def test_fetch_mixed_gambles():
     local_url = "file://" + os.path.join(tst.datadir,
@@ -615,3 +599,62 @@ def test_fetch_surf_nki_enhanced(data_dir=tst.tmpdir, verbose=0):
     assert_true(isinstance(nki_data.phenotypic, np.ndarray))
     assert_equal(nki_data.phenotypic.shape, (10,))
     assert_not_equal(nki_data.description, '')
+
+
+def _mock_participants_data(n_ids=5):
+    """Maximum 8 ids are allowed to mock
+    """
+    ids = ['sub-pixar052', 'sub-pixar073', 'sub-pixar074', 'sub-pixar110',
+           'sub-pixar042', 'sub-pixar109', 'sub-pixar068', 'sub-pixar007']
+    array_ids = np.asarray(ids[:n_ids], dtype='|U12')
+
+    age = np.ones(len(array_ids), dtype='<f8')
+    age_group = np.asarray(len(array_ids) * ['2yo'], dtype='U3')
+    child_adult = np.asarray(len(array_ids) * ['c'], dtype='U1')
+    gender = np.asarray(len(array_ids) * ['m'], dtype='U1')
+    handedness = np.asarray(len(array_ids) * ['r'], dtype='U1')
+    csv = np.rec.array([array_ids, age, age_group, child_adult, gender,
+                        handedness],
+                       dtype=[('participant_id', '|U12'),
+                              ('Age', '<f8'), ('AgeGroup', 'U3'),
+                              ('Child_Adult', 'U1'), ('Gender', 'U1'),
+                              ('Handedness', 'U1')])
+    return csv
+
+
+@with_setup(setup_mock, teardown_mock)
+@with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
+def test_fetch_development_fmri_participants():
+    csv = _mock_participants_data()
+    tst.mock_fetch_files.add_csv('participants.tsv', csv)
+    local_url = 'file://' + os.path.join(tst.datadir)
+
+    participants = func._fetch_development_fmri_participants(data_dir=tst.tmpdir,
+                                                             url=local_url,
+                                                             verbose=1)
+    assert_true(isinstance(participants, np.ndarray))
+    assert_equal(participants.shape, (5,))
+
+
+@with_setup(setup_mock, teardown_mock)
+@with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
+def test_fetch_development_fmri_functional():
+    csv = _mock_participants_data(n_ids=8)
+    local_url = 'file://' + os.path.join(tst.datadir)
+    funcs, confounds = func._fetch_development_fmri_functional(csv,
+                                                               data_dir=tst.tmpdir,
+                                                               url=local_url,
+                                                               verbose=1)
+    assert_equal(len(funcs), 8)
+    assert_equal(len(confounds), 8)
+
+
+@with_setup(tst.setup_tmpdata, tst.teardown_tmpdata)
+def test_fetch_development_fmri():
+    data = func.fetch_development_fmri(n_subjects=2,
+                                       data_dir=tst.tmpdir, verbose=1)
+    assert_equal(len(data.func), 2)
+    assert_equal(len(data.confounds), 2)
+    assert_true(isinstance(data.phenotypic, np.ndarray))
+    assert_equal(data.phenotypic.shape, (2,))
+    assert_not_equal(data.description, '')

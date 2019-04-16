@@ -14,7 +14,7 @@ from sklearn.externals.joblib import Memory
 
 from .cache_mixin import cache
 from .niimg import _safe_get_data, load_niimg
-from .compat import _basestring, izip, get_affine
+from .compat import _basestring, izip
 
 from .exceptions import DimensionError
 
@@ -25,7 +25,7 @@ def _check_fov(img, affine, shape):
     """
     img = check_niimg(img)
     return (img.shape[:3] == shape and
-            np.allclose(get_affine(img), affine))
+            np.allclose(img.affine, affine))
 
 
 def _check_same_fov(*args, **kwargs):
@@ -57,7 +57,7 @@ def _check_same_fov(*args, **kwargs):
             kwargs.items(), 2):
         if not a_img.shape[:3] == b_img.shape[:3]:
             errors.append((a_name, b_name, 'shape'))
-        if not np.allclose(get_affine(a_img), get_affine(b_img)):
+        if not np.allclose(a_img.affine, b_img.affine):
             errors.append((a_name, b_name, 'affine'))
     if len(errors) > 0 and raise_error:
         raise ValueError('Following field of view errors were detected:\n' +
@@ -71,7 +71,7 @@ def _index_img(img, index):
 
     """Helper function for check_niimg_4d."""
     return new_img_like(
-        img, img.get_data()[:, :, :, index], get_affine(img),
+        img, img.get_data()[:, :, :, index], img.affine,
         copy_header=True)
 
 
@@ -134,7 +134,7 @@ def _iter_check_niimg(niimgs, ensure_ndim=None, atleast_4d=False,
             if i == 0:
                 ndim_minus_one = len(niimg.shape)
                 if ref_fov is None:
-                    ref_fov = (get_affine(niimg), niimg.shape[:3])
+                    ref_fov = (niimg.affine, niimg.shape[:3])
                     resample_to_first_img = True
 
             if not _check_fov(niimg, ref_fov[0], ref_fov[1]):
@@ -155,7 +155,7 @@ def _iter_check_niimg(niimgs, ensure_ndim=None, atleast_4d=False,
                         "reference FOV.\n"
                         "Reference affine:\n%r\nImage affine:\n%r\n"
                         "Reference shape:\n%r\nImage shape:\n%r\n"
-                        % (i, ref_fov[0], get_affine(niimg), ref_fov[1],
+                        % (i, ref_fov[0], niimg.affine, ref_fov[1],
                            niimg.shape))
             yield niimg
         except DimensionError as exc:
@@ -273,12 +273,12 @@ def check_niimg(niimg, ensure_ndim=None, atleast_4d=False, dtype=None,
     if ensure_ndim == 3 and len(niimg.shape) == 4 and niimg.shape[3] == 1:
         # "squeeze" the image.
         data = _safe_get_data(niimg)
-        affine = get_affine(niimg)
+        affine = niimg.affine
         niimg = new_img_like(niimg, data[:, :, :, 0], affine)
     if atleast_4d and len(niimg.shape) == 3:
         data = niimg.get_data().view()
         data.shape = data.shape + (1, )
-        niimg = new_img_like(niimg, data, get_affine(niimg))
+        niimg = new_img_like(niimg, data, niimg.affine)
 
     if ensure_ndim is not None and len(niimg.shape) != ensure_ndim:
         raise DimensionError(len(niimg.shape), ensure_ndim)
@@ -473,4 +473,4 @@ def concat_niimgs(niimgs, dtype=np.float32, ensure_ndim=None,
         data[..., cur_4d_index:cur_4d_index + size] = niimg.get_data()
         cur_4d_index += size
 
-    return new_img_like(first_niimg, data, get_affine(first_niimg), copy_header=True)
+    return new_img_like(first_niimg, data, first_niimg.affine, copy_header=True)

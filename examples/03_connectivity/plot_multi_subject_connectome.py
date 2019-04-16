@@ -6,16 +6,14 @@ This example shows how to estimate a connectome on a group of subjects
 using the group sparse inverse covariance estimate.
 
 """
-import matplotlib.pyplot as plt
 import numpy as np
 
 from nilearn import plotting
 
-
 n_subjects = 4  # subjects to consider for group-sparse covariance (max: 40)
 
 
-def plot_matrices(cov, prec, title):
+def plot_matrices(cov, prec, title, labels):
     """Plot covariance and precision matrices, for a given processing. """
 
     prec = prec.copy()  # avoid side effects
@@ -26,34 +24,30 @@ def plot_matrices(cov, prec, title):
     span = max(abs(prec.min()), abs(prec.max()))
 
     # Display covariance matrix
-    plt.figure()
-    plt.imshow(cov, interpolation="nearest",
-               vmin=-1, vmax=1, cmap=plotting.cm.bwr)
-    plt.colorbar()
-    plt.title("%s / covariance" % title)
-
+    plotting.plot_matrix(cov, cmap=plotting.cm.bwr,
+                         vmin=-1, vmax=1, title="%s / covariance" % title,
+                         labels=labels)
     # Display precision matrix
-    plt.figure()
-    plt.imshow(prec, interpolation="nearest",
-               vmin=-span, vmax=span,
-               cmap=plotting.cm.bwr)
-    plt.colorbar()
-    plt.title("%s / precision" % title)
+    plotting.plot_matrix(prec, cmap=plotting.cm.bwr,
+                         vmin=-span, vmax=span, title="%s / precision" % title,
+                         labels=labels)
 
 
 ##############################################################################
 # Fetching datasets
+# ------------------
 from nilearn import datasets
 msdl_atlas_dataset = datasets.fetch_atlas_msdl()
-adhd_dataset = datasets.fetch_adhd(n_subjects=n_subjects)
+rest_dataset = datasets.fetch_development_fmri(n_subjects=n_subjects)
 
 # print basic information on the dataset
 print('First subject functional nifti image (4D) is at: %s' %
-      adhd_dataset.func[0])  # 4D data
+      rest_dataset.func[0])  # 4D data
 
 
 ##############################################################################
 # Extracting region signals
+# --------------------------
 from nilearn import image
 from nilearn import input_data
 
@@ -68,8 +62,8 @@ masker = input_data.NiftiMapsMasker(
 masker.fit()
 
 subject_time_series = []
-func_filenames = adhd_dataset.func
-confound_filenames = adhd_dataset.confounds
+func_filenames = rest_dataset.func
+confound_filenames = rest_dataset.confounds
 for func_filename, confound_filename in zip(func_filenames,
                                             confound_filenames):
     print("Processing file %s" % func_filename)
@@ -85,6 +79,7 @@ for func_filename, confound_filename in zip(func_filenames,
 
 ##############################################################################
 # Computing group-sparse precision matrices
+# ------------------------------------------
 from nilearn.connectome import GroupSparseCovarianceCV
 gsc = GroupSparseCovarianceCV(verbose=2)
 gsc.fit(subject_time_series)
@@ -96,8 +91,10 @@ gl.fit(np.concatenate(subject_time_series))
 
 ##############################################################################
 # Displaying results
-atlas_imgs = image.iter_img(msdl_atlas_dataset.maps)
-atlas_region_coords = [plotting.find_xyz_cut_coords(img) for img in atlas_imgs]
+# -------------------
+atlas_img = msdl_atlas_dataset.maps
+atlas_region_coords = plotting.find_probabilistic_atlas_cut_coords(atlas_img)
+labels = msdl_atlas_dataset.labels
 
 plotting.plot_connectome(gl.covariance_,
                          atlas_region_coords, edge_threshold='90%',
@@ -108,7 +105,7 @@ plotting.plot_connectome(-gl.precision_, atlas_region_coords,
                          title="Sparse inverse covariance (GraphLasso)",
                          display_mode="lzr",
                          edge_vmax=.5, edge_vmin=-.5)
-plot_matrices(gl.covariance_, gl.precision_, "GraphLasso")
+plot_matrices(gl.covariance_, gl.precision_, "GraphLasso", labels)
 
 title = "GroupSparseCovariance"
 plotting.plot_connectome(-gsc.precisions_[..., 0],
@@ -117,6 +114,6 @@ plotting.plot_connectome(-gsc.precisions_[..., 0],
                          display_mode="lzr",
                          edge_vmax=.5, edge_vmin=-.5)
 plot_matrices(gsc.covariances_[..., 0],
-              gsc.precisions_[..., 0], title)
+              gsc.precisions_[..., 0], title, labels)
 
 plotting.show()

@@ -21,15 +21,15 @@ using fMRI.", 2010, Science 329, 1358-1361.
 # Load fMRI data and Power atlas
 # ------------------------------
 #
-# We are going to use a single subject from the ADHD dataset.
+# We are going to use a single subject from the movie watching fmri dataset.
 from nilearn import datasets
 
-adhd = datasets.fetch_adhd(n_subjects=1)
+rest = datasets.fetch_development_fmri(n_subjects=5)
 
 ###############################################################################
 # We store the paths to its functional image and the confounds file.
-fmri_filename = adhd.func[0]
-confounds_filename = adhd.confounds[0]
+fmri_filename = rest.func[0]
+confounds_filename = rest.confounds[0]
 print('Functional image is {0},\nconfounds are {1}.'.format(fmri_filename,
       confounds_filename))
 
@@ -54,10 +54,10 @@ print('Stacked power coordinates in array of shape {0}.'.format(coords.shape))
 
 ###############################################################################
 # and define spheres masker, with small enough radius to avoid regions overlap.
-from nilearn import  input_data
+from nilearn import input_data
 
 spheres_masker = input_data.NiftiSpheresMasker(
-    seeds=coords, smoothing_fwhm=4, radius=5.,
+    seeds=coords, smoothing_fwhm=6, radius=5.,
     detrend=True, standardize=True, low_pass=0.1, high_pass=0.01, t_r=2.5)
 
 ###############################################################################
@@ -80,7 +80,7 @@ print('time series has {0} samples'.format(timeseries.shape[0]))
 # estimator captures well the covariance **structure**.
 from sklearn.covariance import GraphLassoCV
 
-covariance_estimator = GraphLassoCV(verbose=1)
+covariance_estimator = GraphLassoCV(cv=3, verbose=1)
 
 ###############################################################################
 # We just fit our regions signals into the `GraphLassoCV` object
@@ -95,14 +95,12 @@ print('Covariance matrix has shape {0}.'.format(matrix.shape))
 # Plot matrix and graph
 # ---------------------
 #
-# We use `matplotlib` plotting functions to visualize our correlation matrix
+# We use nilearn.plotting.plot_matrix to visualize our correlation matrix
 # and display the graph of connections with `nilearn.plotting.plot_connectome`.
-import matplotlib.pyplot as plt
 from nilearn import plotting
 
-plt.imshow(matrix, vmin=-1., vmax=1., cmap='RdBu_r', interpolation='nearest')
-plt.colorbar()
-plt.title('Power correlation matrix')
+plotting.plot_matrix(matrix, vmin=-1., vmax=1., colorbar=True,
+                     title='Power correlation matrix')
 
 # Tweak edge_threshold to keep only the strongest connections.
 plotting.plot_connectome(matrix, coords, title='Power correlation graph',
@@ -137,10 +135,8 @@ covariance_estimator = GraphLassoCV()
 covariance_estimator.fit(timeseries)
 matrix = covariance_estimator.covariance_
 
-plt.figure()
-plt.imshow(matrix, vmin=-1., vmax=1., cmap='RdBu_r', interpolation='nearest')
-plt.colorbar()
-plt.title('Dosenbach correlation matrix')
+plotting.plot_matrix(matrix, vmin=-1., vmax=1., colorbar=True,
+                     title='Dosenbach correlation matrix')
 
 plotting.plot_connectome(matrix, coords, title='Dosenbach correlation graph',
                          edge_threshold="99.7%", node_size=20, colorbar=True)

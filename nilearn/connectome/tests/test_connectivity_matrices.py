@@ -15,7 +15,7 @@ from nilearn.tests.test_signal import generate_signals
 from nilearn.connectome.connectivity_matrices import (
     _check_square, _check_spd, _map_eigenvalues, _form_symmetric,
     _geometric_mean, sym_matrix_to_vec, vec_to_sym_matrix, prec_to_partial,
-    cov_to_corr, ConnectivityMeasure)
+    ConnectivityMeasure)
 
 
 def grad_geometric_mean(mats, init=None, max_iter=10, tol=1e-7):
@@ -416,6 +416,13 @@ def test_connectivity_measure_errors():
                   [np.ones((100, 40)), np.ones((100, 41))])
 
 
+    # Raising an error for fit_transform with a single subject and
+    # kind=tangent
+    conn_measure = ConnectivityMeasure(kind='tangent')
+    assert_raises(ValueError, conn_measure.fit_transform,
+                  [np.ones((100, 40)), ])
+
+
 def test_connectivity_measure_outputs():
     n_subjects = 10
     n_features = 49
@@ -489,6 +496,17 @@ def test_connectivity_measure_outputs():
         conn_measure = ConnectivityMeasure(kind=kind)
         conn_measure.fit_transform(signals)
         assert_equal((conn_measure.mean_).shape, (n_features, n_features))
+        if kind != 'tangent':
+            assert_array_almost_equal(
+                conn_measure.mean_,
+                np.mean(conn_measure.transform(signals), axis=0))
+
+    # Check that the mean isn't modified in transform
+    conn_measure = ConnectivityMeasure(kind='covariance')
+    conn_measure.fit(signals[:1])
+    mean = conn_measure.mean_
+    conn_measure.transform(signals[1:])
+    assert_array_equal(mean, conn_measure.mean_)
 
     # Check vectorization option
     for kind in kinds:

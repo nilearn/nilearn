@@ -33,18 +33,17 @@ print('First subject functional nifti image (4D) is located at: %s' %
 from nilearn.input_data import NiftiMasker
 
 # load labels
-import numpy as np
-labels = np.recfromcsv(haxby_dataset.session_target[0], delimiter=" ")
+import pandas as pd
+labels = pd.read_csv(haxby_dataset.session_target[0], sep=" ")
 stimuli = labels['labels']
-
 # identify resting state labels in order to be able to remove them
-resting_state = stimuli == b"rest"
+task_mask = (stimuli != 'rest')
 
 # find names of remaining active labels
-categories = np.unique(stimuli[np.logical_not(resting_state)])
+categories = stimuli[task_mask].unique()
 
 # extract tags indicating to which acquisition run a tag belongs
-session_labels = labels["chunks"][np.logical_not(resting_state)]
+session_labels = labels["chunks"][task_mask]
 
 
 ##########################################################################
@@ -60,8 +59,8 @@ from sklearn.dummy import DummyClassifier
 dummy_classifier = DummyClassifier()
 
 # Make a data splitting object for cross validation
-from sklearn.cross_validation import LeaveOneLabelOut, cross_val_score
-cv = LeaveOneLabelOut(session_labels)
+from sklearn.model_selection import LeaveOneGroupOut, cross_val_score
+cv = LeaveOneGroupOut()
 
 mask_names = ['mask_vt', 'mask_face', 'mask_house']
 
@@ -74,26 +73,31 @@ for mask_name in mask_names:
     mask_filename = haxby_dataset[mask_name][0]
     masker = NiftiMasker(mask_img=mask_filename, standardize=True)
     masked_timecourses = masker.fit_transform(
-        func_filename)[np.logical_not(resting_state)]
+        func_filename)[task_mask]
 
     mask_scores[mask_name] = {}
     mask_chance_scores[mask_name] = {}
 
     for category in categories:
         print("Processing %s %s" % (mask_name, category))
-        task_mask = np.logical_not(resting_state)
         classification_target = (stimuli[task_mask] == category)
         mask_scores[mask_name][category] = cross_val_score(
             classifier,
             masked_timecourses,
             classification_target,
-            cv=cv, scoring="roc_auc")
+            cv=cv,
+            groups=session_labels,
+            scoring="roc_auc",
+        )
 
         mask_chance_scores[mask_name][category] = cross_val_score(
             dummy_classifier,
             masked_timecourses,
             classification_target,
-            cv=cv, scoring="roc_auc")
+            cv=cv,
+            groups=session_labels,
+            scoring="roc_auc",
+        )
 
         print("Scores: %1.2f +- %1.2f" % (
             mask_scores[mask_name][category].mean(),
@@ -101,11 +105,12 @@ for mask_name in mask_names:
 
 
 ##########################################################################
-# Visualization
-##########################################################################
-
 # We make a simple bar plot to summarize the results
+# ---------------------------------------------------
+import numpy as np
 import matplotlib.pyplot as plt
+from nilearn.plotting import show
+
 plt.figure()
 
 tick_position = np.arange(len(categories))
@@ -132,4 +137,4 @@ plt.title('Category-specific classification accuracy for different masks')
 plt.tight_layout()
 
 
-plt.show()
+show()

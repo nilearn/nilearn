@@ -1,13 +1,14 @@
 .. _extracting_rsn:
 
 ==================================================
-Extracting resting-state networks: ICA and related
+Extracting functional brain networks: ICA and related
 ==================================================
 
 .. topic:: **Page summary**
 
    This page demonstrates the use of multi-subject Independent Component
-   Analysis (ICA) of resting-state fMRI data to extract brain networks in
+   Analysis (ICA) of movie-watching fMRI data
+   to extract brain networks in
    an data-driven way. Here we use the 'CanICA' approach, that implements
    a multivariate random effects model across subjects. A newer technique,
    based on dictionary learning, is then described.
@@ -27,16 +28,17 @@ Multi-subject ICA: CanICA
 Data preparation: retrieving example data
 -----------------------------------------
 
-We will use sample data from the `ADHD 200 resting-state dataset
-<http://fcon_1000.projects.nitrc.org/indi/adhd200/>`_ has been
-preprocessed using `CPAC <http://fcp-indi.github.io/>`_. We use nilearn
+We will use down-sampled data from the `brain development dataset
+<https://osf.io/5hju4/files/>`_ has been
+preprocessed using `FMRIPrep and Nilearn <https://osf.io/wjtyq/>`_.
+We use nilearn
 functions to fetch data from Internet and get the filenames (:ref:`more
 on data loading <loading_data>`):
 
 
-.. literalinclude:: ../../examples/03_connectivity/plot_canica_resting_state.py
-    :start-after: # First we load the ADHD200 data
-    :end-before:  ####################################################################
+.. literalinclude:: ../../examples/03_connectivity/plot_canica_analysis.py
+    :start-after: # First we load the brain development fmri data
+    :end-before:  ###############################################
 
 Applying CanICA
 ---------------
@@ -47,12 +49,19 @@ perform a multi-subject ICA decomposition following the CanICA model.
 As with every object in nilearn, we give its parameters at construction,
 and then fit it on the data.
 
-.. literalinclude:: ../../examples/03_connectivity/plot_canica_resting_state.py
+.. literalinclude:: ../../examples/03_connectivity/plot_canica_analysis.py
     :start-after: # Here we apply CanICA on the data
     :end-before: ####################################################################
 
-The components estimated are found as the `components_` attribute of the
-object.
+The components estimated are found as the `components_img_` attribute
+of the object. A 4D Nifti image.
+
+.. note::
+    The `components_img_` attribute is implemented from version 0.4.1 which
+    is easy for visualization without any additional step to unmask to image.
+    For users who have older versions, components image can be done by
+    unmasking attribute `components_`. See :ref:`section Inverse transform:
+    unmasking data <unmasking_step>`.
 
 Visualizing the results
 -----------------------
@@ -61,23 +70,23 @@ We can visualize the components as in the previous examples. The first plot
 shows a map generated from all the components. Then we plot an axial cut for
 each component separately.
 
-.. literalinclude:: ../../examples/03_connectivity/plot_canica_resting_state.py
+.. literalinclude:: ../../examples/03_connectivity/plot_canica_analysis.py
     :start-after: # To visualize we plot the outline of all components on one figure
     :end-before: ####################################################################
 
-.. figure:: ../auto_examples/03_connectivity/images/sphx_glr_plot_canica_resting_state_001.png
+.. figure:: ../auto_examples/03_connectivity/images/sphx_glr_plot_canica_analysis_001.png
    :align: center
-   :target: ../auto_examples/03_connectivity/plot_canica_resting_state.html
+   :target: ../auto_examples/03_connectivity/plot_canica_analysis.html
 
 Finally, we can plot the map for different ICA components separately:
 
-.. literalinclude:: ../../examples/03_connectivity/plot_canica_resting_state.py
+.. literalinclude:: ../../examples/03_connectivity/plot_canica_analysis.py
     :start-after: # Finally, we plot the map for each ICA component separately
 
-.. |left_img| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_canica_resting_state_003.png
+.. |left_img| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_canica_analysis_003.png
    :width: 23%
 
-.. |right_img| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_canica_resting_state_004.png
+.. |right_img| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_canica_analysis_004.png
    :width: 23%
 
 .. centered:: |left_img| |right_img|
@@ -85,7 +94,7 @@ Finally, we can plot the map for different ICA components separately:
 .. seealso::
 
    The full code can be found as an example:
-   :ref:`sphx_glr_auto_examples_03_connectivity_plot_canica_resting_state.py`
+   :ref:`sphx_glr_auto_examples_03_connectivity_plot_canica_analysis.py`
 
 .. note::
 
@@ -116,13 +125,13 @@ Applying DictLearning
 Sparsity of output map is controlled by a parameter alpha: using a
 larger alpha yields sparser maps.
 
-.. literalinclude:: ../../examples/03_connectivity/plot_compare_resting_state_decomposition.py
+.. literalinclude:: ../../examples/03_connectivity/plot_compare_decomposition.py
     :start-after: # Dictionary learning
     :end-before: ###############################################################################
 
 We can fit both estimators to compare them
 
-.. literalinclude:: ../../examples/03_connectivity/plot_compare_resting_state_decomposition.py
+.. literalinclude:: ../../examples/03_connectivity/plot_compare_decomposition.py
     :start-after: # Fit both estimators
     :end-before: ###############################################################################
 
@@ -131,21 +140,21 @@ Visualizing the results
 
 4D plotting offers an efficient way to compare both resulting outputs
 
-.. literalinclude:: ../../examples/03_connectivity/plot_compare_resting_state_decomposition.py
+.. literalinclude:: ../../examples/03_connectivity/plot_compare_decomposition.py
     :start-after: # Visualize the results
 
-.. |left_img_decomp| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_compare_resting_state_decomposition_001.png
-   :target: ../auto_examples/03_connectivity/plot_compare_resting_state_decomposition.html
+.. |left_img_decomp| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_compare_decomposition_001.png
+   :target: ../auto_examples/03_connectivity/plot_compare_decomposition.html
    :width: 50%
-.. |right_img_decomp| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_compare_resting_state_decomposition_003.png
-   :target: ../auto_examples/03_connectivity/plot_compare_resting_state_decomposition.html
+.. |right_img_decomp| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_compare_decomposition_003.png
+   :target: ../auto_examples/03_connectivity/plot_compare_decomposition.html
    :width: 50%
 
-.. |left_img_decomp_single| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_compare_resting_state_decomposition_002.png
-   :target: ../auto_examples/03_connectivity/plot_compare_resting_state_decomposition.html
+.. |left_img_decomp_single| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_compare_decomposition_002.png
+   :target: ../auto_examples/03_connectivity/plot_compare_decomposition.html
    :width: 50%
-.. |right_img_decomp_single| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_compare_resting_state_decomposition_004.png
-   :target: ../auto_examples/03_connectivity/plot_compare_resting_state_decomposition.html
+.. |right_img_decomp_single| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_compare_decomposition_004.png
+   :target: ../auto_examples/03_connectivity/plot_compare_decomposition.html
    :width: 50%
 
 
@@ -162,4 +171,4 @@ classification tasks.
 .. seealso::
 
    The full code can be found as an example:
-   :ref:`sphx_glr_auto_examples_03_connectivity_plot_compare_resting_state_decomposition.py`
+   :ref:`sphx_glr_auto_examples_03_connectivity_plot_compare_decomposition.py`
