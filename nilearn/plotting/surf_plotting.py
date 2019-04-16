@@ -205,20 +205,21 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
     face_colors = np.ones((faces.shape[0], 4))
 
     if bg_map is None:
-        bg_map = np.ones(coords.shape[0]) * 0.5
+        bg_data = np.ones(coords.shape[0]) * 0.5
 
     else:
         bg_data = load_surf_data(bg_map)
         if bg_data.shape[0] != coords.shape[0]:
             raise ValueError('The bg_map does not have the same number '
                              'of vertices as the mesh.')
-        bg_faces = np.mean(bg_data[faces], axis=1)
-        if bg_faces.min() != bg_faces.max():
-            bg_faces = bg_faces - bg_faces.min()
-            bg_faces = bg_faces / bg_faces.max()
-        # control background darkness
-        bg_faces *= darkness
-        face_colors = plt.cm.gray_r(bg_faces)
+
+    bg_faces = np.mean(bg_data[faces], axis=1)
+    if bg_faces.min() != bg_faces.max():
+        bg_faces = bg_faces - bg_faces.min()
+        bg_faces = bg_faces / bg_faces.max()
+    # control background darkness
+    bg_faces *= darkness
+    face_colors = plt.cm.gray_r(bg_faces)
 
     # modify alpha values of background
     face_colors[:, 3] = alpha * face_colors[:, 3]
