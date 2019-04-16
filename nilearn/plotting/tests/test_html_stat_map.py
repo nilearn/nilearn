@@ -77,7 +77,7 @@ def test_threshold_data():
 
     # Check that threshold=None keeps everything
     data_t, mask, thresh = html_stat_map._threshold_data(data, threshold=None)
-    assert np.all(~mask)
+    assert np.all(np.logical_not(mask))
     assert np.all(data_t == data)
 
     # Check positive threshold works
