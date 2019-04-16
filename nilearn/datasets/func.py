@@ -2007,7 +2007,7 @@ def fetch_development_fmri(n_subjects=None, data_dir=None, resume=True,
     ----------
     n_subjects: int, optional (default None)
         The number of subjects to load. If None, all the subjects are
-        loaded.
+        loaded. Total 155 subjects.
 
     data_dir: str, optional (default None)
         Path of the data directory. Used to force data storage in a specified
