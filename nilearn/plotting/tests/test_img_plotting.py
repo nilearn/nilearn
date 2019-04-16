@@ -52,6 +52,14 @@ def demo_plot_roi(**kwargs):
     return plot_roi(img, title="Broca's area", **kwargs)
 
 
+def test_plot_roi_view_types():
+    # This is only a smoke test contours rois
+    demo_plot_roi(view_type='contours')
+    # This is only a smoke test contours rois
+    demo_plot_roi(view_type='continuous')
+    plt.close()
+
+
 def test_demo_plot_roi():
     # This is only a smoke test
     demo_plot_roi()
