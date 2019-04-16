@@ -193,7 +193,7 @@ class FirstLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
 
     fir_delays : array of shape(n_onsets) or list, optional
         In case of FIR design, yields the array of delays used in the FIR
-        model, in seconds.
+        model, in scans.
 
     min_onset : float, optional
         This parameter specifies the minimal onset relative to the design

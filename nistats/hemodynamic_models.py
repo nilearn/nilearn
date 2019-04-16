@@ -110,8 +110,8 @@ def glover_hrf(tr, oversampling=50, time_length=32., onset=0.):
          hrf sampling on the oversampled time grid
     """
     return _gamma_difference_hrf(tr, oversampling, time_length, onset,
-                                delay=6, undershoot=12., dispersion=.9,
-                                u_dispersion=.9, ratio=.35)
+                                 delay=6, undershoot=12., dispersion=.9,
+                                 u_dispersion=.9, ratio=.35)
 
 
 def spm_time_derivative(tr, oversampling=50, time_length=32., onset=0.):
@@ -244,7 +244,7 @@ def _sample_condition(exp_condition, frame_times, oversampling=50,
     frame_times : array of shape(n_scans)
         sample time points
 
-    over_sampling : int, optional
+    oversampling : int, optional
         factor for oversampling event regressor
 
     min_onset : float, optional
@@ -339,10 +339,11 @@ def _orthogonalize(X):
     """
     if X.size == X.shape[0]:
         return X
-    from scipy.linalg import pinv, norm
+
+    from scipy.linalg import pinv
     for i in range(1, X.shape[1]):
         X[:, i] -= np.dot(np.dot(X[:, i], X[:, :i]), pinv(X[:, :i]))
-        # X[:, i] /= norm(X[:, i])
+
     return X
 
 
@@ -358,7 +359,7 @@ def _regressor_names(con_name, hrf_model, fir_delays=None):
        hrf model chosen
 
     fir_delays: 1D array_like, optional,
-        Delays used in case of an FIR model
+        Delays (in scans) used in case of an FIR model
 
     Returns
     -------
@@ -391,8 +392,8 @@ def _hrf_kernel(hrf_model, tr, oversampling=50, fir_delays=None):
     oversampling : int, optional
         temporal oversampling factor to have a smooth hrf
 
-    fir_delays : list of floats,
-        list of delays for finite impulse response models
+    fir_delays : 1D-array-like, optional,
+        list of delays (in scans) for finite impulse response models
 
     Returns
     -------
@@ -457,7 +458,7 @@ def compute_regressor(exp_condition, hrf_model, frame_times, con_id='cond',
         oversampling factor to perform the convolution
 
     fir_delays : 1D-array-like, optional
-        delays (in seconds) used in case of a finite impulse reponse model
+        delays (in scans) used in case of a finite impulse reponse model
 
     min_onset : float, optional
         minimal onset relative to frame_times[0] (in seconds)

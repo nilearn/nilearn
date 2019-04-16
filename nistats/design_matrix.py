@@ -189,7 +189,7 @@ def _convolve_regressors(events, hrf_model, frame_times, fir_delays=[0],
 
     fir_delays : array-like of shape (n_onsets,), optional,
         In case of FIR design, yields the array of delays
-        used in the FIR model.
+        used in the FIR model (in scans).
 
     min_onset : float, optional (default: -24),
         Minimal onset relative to frame_times[0] (in seconds) events
@@ -323,7 +323,7 @@ def make_first_level_design_matrix(
 
     fir_delays : array of shape(n_onsets) or list, optional,
         In case of FIR design, yields the array of delays used in the FIR
-        model.
+        model (in scans).
 
     add_regs : array of shape(n_frames, n_add_reg), optional
         additional user-supplied regressors, e.g. data driven noise regressors
