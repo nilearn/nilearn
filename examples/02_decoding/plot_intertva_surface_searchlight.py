@@ -72,7 +72,7 @@ print(X.shape)
 
 
 ### Define the analysis mask
-fullbrain = True
+fullbrain = False
 if fullbrain:
     # compute a "brain" mask (i.e the set of vertices where there is data)
     surfmask = X.sum(1).astype(np.float32)
@@ -84,8 +84,16 @@ if fullbrain:
     #surfmask_path = op.join(subdir, 'fsaverage5.lh.brainmask.gii')
     #ng.write(surfmask_tex,surfmask_path)
 else:
+    # reading ROI surface mask
     surfmask_path = op.join(subdir,'fsaverage5.lh.temporal_roi.gii')
     surfmask_tex = nb.load(surfmask_path)
+    # with random mask of 1000 vertices
+    #inds = np.random.permutation(X.shape[0])[np.arange(1000)]
+    #surfmask_data = np.zeros(X.shape[0])
+    #surfmask_data[inds] = 1
+    #darray = ng.GiftiDataArray(data=surfmask_data)
+    #surfmask_tex = ng.GiftiImage(darrays=[darray])
+
 
 ### Setting up the surfacic searchlight ###
 
@@ -93,13 +101,13 @@ else:
 n_jobs = 2
 
 # Define the cross-validation scheme used for validation.
-sss = StratifiedShuffleSplit(n_splits=2, test_size=0.15)
+sss = StratifiedShuffleSplit(n_splits=10, test_size=0.15)
 
 # Define the classifier
 logreg = LogisticRegression()
 
 # Set the radius of the searchlight sphere that will scan the mesh
-radius = 3
+radius = 9
 
 # Define the searchlight "estimator"
 searchlight = nilearn.decoding.SurfSearchLight(mesh,
@@ -127,6 +135,11 @@ ng.write(slscores_tex,slscores_path)
 
 
 ### Plot the results with nilearn surface tools ###
-# to be written...
+from nilearn import datasets
+fsaverage = datasets.fetch_surf_fsaverage()
+from nilearn import plotting
+plotting.plot_surf_stat_map(fsaverage.infl_left, searchlight.scores_, hemi='left',
+                            title='Accuracy map, left hemisphere', colorbar=True,
+                            threshold=0.4, bg_map=fsaverage.sulc_right)
 
 
