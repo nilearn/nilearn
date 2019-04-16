@@ -13,7 +13,6 @@ from nose.tools import assert_true, assert_raises
 from nilearn._utils.testing import assert_raises_regex, assert_warns
 
 import numpy as np
-from scipy.spatial import Delaunay
 import sklearn
 
 import nibabel as nb
@@ -27,16 +26,10 @@ from nilearn.surface import surface
 from nilearn.surface import load_surf_data, load_surf_mesh, vol_to_surf
 from nilearn.surface.surface import (_gifti_img_to_mesh,
                                      _load_surf_files_gifti_gzip)
+from nilearn.surface.testing import (_generate_surf, _flat_mesh, _z_const_img)
 
 currdir = os.path.dirname(os.path.abspath(__file__))
 datadir = os.path.join(currdir, 'data')
-
-
-def _generate_surf():
-    rng = np.random.RandomState(42)
-    coords = rng.rand(20, 3)
-    faces = rng.randint(coords.shape[0], size=(30, 3))
-    return [coords, faces]
 
 
 def test_load_surf_data_array():
@@ -268,21 +261,6 @@ def test_load_surf_mesh_file_error():
                             'input type is not recognized',
                             load_surf_data, filename_wrong)
         os.remove(filename_wrong)
-
-
-def _flat_mesh(x_s, y_s, z=0):
-    x, y = np.mgrid[:x_s, :y_s]
-    x, y = x.ravel(), y.ravel()
-    z = np.ones(len(x)) * z
-    vertices = np.asarray([x, y, z]).T
-    triangulation = Delaunay(vertices[:, :2]).simplices
-    mesh = [vertices, triangulation]
-    return mesh
-
-
-def _z_const_img(x_s, y_s, z_s):
-    hslice = np.arange(x_s * y_s).reshape((x_s, y_s))
-    return np.ones((x_s, y_s, z_s)) * hslice[:, :, np.newaxis]
 
 
 def test_vertex_outer_normals():
