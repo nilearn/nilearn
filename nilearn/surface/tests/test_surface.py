@@ -266,8 +266,30 @@ def test_load_surf_mesh_file_error():
         nb.freesurfer.write_geometry(filename_wrong, mesh[0], mesh[1])
         assert_raises_regex(ValueError,
                             'input type is not recognized',
-                            load_surf_data, filename_wrong)
+                            load_surf_mesh, filename_wrong)
         os.remove(filename_wrong)
+
+
+def test_load_surf_mesh_file_glob():
+     mesh = _generate_surf()
+     fname1 = tempfile.mktemp(suffix='.pial')
+     nb.freesurfer.write_geometry(fname1, mesh[0], mesh[1])
+     fname2 = tempfile.mktemp(suffix='.pial')
+     nb.freesurfer.write_geometry(fname2, mesh[0], mesh[1])
+
+     assert_raises_regex(ValueError, 'More than one file matching path',
+                         load_surf_mesh,
+                         os.path.join(os.path.dirname(fname1),"*.pial"))
+     assert_raises_regex(ValueError, 'No files matching path',
+                         load_surf_mesh,
+                         os.path.join(os.path.dirname(fname1),
+                         "*.unlikelysuffix" ))
+     assert_equal(len(load_surf_mesh(fname1)), 2)
+     assert_array_almost_equal(load_surf_mesh(fname1)[0], mesh[0])
+     assert_array_almost_equal(load_surf_mesh(fname1)[1], mesh[1])
+
+     os.remove(fname1)
+     os.remove(fname2)
 
 
 def _flat_mesh(x_s, y_s, z=0):
