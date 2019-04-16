@@ -414,7 +414,7 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
     display = plot_surf(
         surf_mesh, surf_map=stat_map, bg_map=bg_map, hemi=hemi, view=view,
         avg_method='mean', threshold=threshold, cmap=cmap, colorbar=colorbar,
-        alpha=alpha, bg_on_data=bg_on_data, darkness=1, vmax=vmax, vmin=vmin,
+        alpha=alpha, bg_on_data=bg_on_data, darkness=darkness, vmax=vmax, vmin=vmin,
         title=title, output_file=output_file, axes=axes, figure=figure,
         cbar_vmin=cbar_vmin, cbar_vmax=cbar_vmax, **kwargs)
 
