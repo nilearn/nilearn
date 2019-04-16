@@ -2116,13 +2116,11 @@ def fetch_development_fmri(n_subjects=None, reduce_confounds=True,
         for in_file in regressors:
             out_file = os.path.splitext(in_file)[0] + '_reduced.tsv'
             if not os.path.isfile(out_file):
-                confounds = np.recfromcsv(in_file, delimiter='\t',
-                                          encoding='ascii')
+                confounds = np.recfromcsv(in_file, delimiter='\t')
                 selected_confounds = confounds[keep_confounds]
                 header = '\t'.join(selected_confounds.dtype.names)
                 np.savetxt(out_file, np.array(selected_confounds.tolist()),
-                           header=header, delimiter='\t', comments='',
-                           encoding='ascii')
+                           header=header, delimiter='\t', comments='')
             reduced_regressors.append(out_file)
         regressors = reduced_regressors
 

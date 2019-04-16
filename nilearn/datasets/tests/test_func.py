@@ -660,13 +660,11 @@ def test_fetch_development_fmri():
     assert_not_equal(data.description, '')
 
     # check reduced confounds
-    confounds = np.recfromcsv(data.confounds[0], delimiter='\t',
-                              encoding='ascii')
+    confounds = np.recfromcsv(data.confounds[0], delimiter='\t')
     assert_equal(len(confounds[0]), 15)
 
     # check full confounds
     data = func.fetch_development_fmri(n_subjects=2, reduce_confounds=False,
                                   verbose=1)
-    confounds = np.recfromcsv(data.confounds[0], delimiter='\t',
-                              encoding='ascii')
+    confounds = np.recfromcsv(data.confounds[0], delimiter='\t')
     assert_equal(len(confounds[0]), 28)
