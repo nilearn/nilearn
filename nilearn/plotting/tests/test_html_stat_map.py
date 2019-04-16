@@ -70,12 +70,15 @@ def test_threshold_data():
 
     # Check that an 'auto' threshold leaves at least one element
     data_t, mask, thresh = html_stat_map._threshold_data(data, threshold='auto')
-    gtruth = np.array([False, True, True, True, True, True, False])
-    assert (mask == gtruth).all()
+    gtruth_m = np.array([False, True, True, True, True, True, False])
+    gtruth_d = np.array([-3, 0, 0, 0, 0, 0, 3])
+    assert (mask == gtruth_m).all()
+    assert (data_t == gtruth_d).all()
 
     # Check that threshold=None keeps everything
     data_t, mask, thresh = html_stat_map._threshold_data(data, threshold=None)
-    assert np.all(mask)
+    assert np.all(~mask)
+    assert np.all(data_t == data)
 
     # Check positive threshold works
     data_t, mask, thresh = html_stat_map._threshold_data(data, threshold=1)

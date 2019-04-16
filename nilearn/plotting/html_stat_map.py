@@ -54,7 +54,7 @@ def _threshold_data(data, threshold=None):
     """
     # If threshold is None, do nothing
     if threshold is None:
-        mask = np.full(data.shape, True)
+        mask = np.full(data.shape, False)
         return data, mask, threshold
 
     # Deal with automatic settings of plot parameters
@@ -71,10 +71,10 @@ def _threshold_data(data, threshold=None):
     # Mask data
     if threshold == 0:
         mask = (data == 0)
-        data = data * mask
+        data = data * np.logical_not(mask)
     else:
         mask = (data >= -threshold) & (data <= threshold)
-        data = data * mask
+        data = data * np.logical_not(mask)
 
     if not np.any(mask):
         warnings.warn("Threshold given was {0}, but "
