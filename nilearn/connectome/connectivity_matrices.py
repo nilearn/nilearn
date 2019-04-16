@@ -436,7 +436,7 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
         self.vectorize = vectorize
         self.discard_diagonal = discard_diagonal
 
-    def _check_input(self, X):
+    def _check_input(self, X, confounds=None):
         if not hasattr(X, "__iter__"):
             raise ValueError("'subjects' input argument must be an iterable. "
                              "You provided {0}".format(X.__class__))
@@ -457,6 +457,12 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
             raise ValueError("All subjects must have the same number of "
                              "features.\nYou provided: "
                              "{0}".format(str(features_dims)))
+
+        if confounds is not None:
+            if not hasattr(confounds, "__iter__"):
+                raise ValueError("'confounds' input argument must be an "
+                                 "iterable. You provided {0}"
+                                 .format(confounds.__class__))
 
     def fit(self, X, y=None):
         """Fit the covariance estimator to the given time series for each
@@ -480,7 +486,7 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
                        confounds=None):
         """ Internal function to avoid duplication of computation
         """
-        self._check_input(X)
+        self._check_input(X, confounds=confounds)
         if do_fit:
             self.cov_estimator_ = clone(self.cov_estimator)
 
@@ -529,9 +535,17 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
             if self.vectorize:
                 connectivities = sym_matrix_to_vec(
                     connectivities, discard_diagonal=self.discard_diagonal)
-
-        if confounds is not None:
-            connectivities = signal.clean(connectivities, confounds=confounds)
+                if confounds is not None:
+                    if not self.vectorize:
+                        error_message = ("'confounds' are provided but "
+                                         "vectorize=False. Confounds are only "
+                                         "cleaned on vectorized matrices as "
+                                         "second level connectome regression "
+                                         "but not on symmetric matrices.")
+                        raise ValueError(error_message)
+                    else:
+                        connectivities = signal.clean(connectivities,
+                                                      confounds=confounds)
 
         return connectivities
 
@@ -547,10 +561,12 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
             The input subjects time series. The number of samples may differ
             from one subject to another.
 
-        confounds : CSV file or array-like, optional
+        confounds : np.ndarray with shape (n_samples) or \
+                    (n_samples, n_confounds), optional
+            Confounds to be cleaned on the vectorized matrices. Only takes
+            into effect when vetorize=True.
             This parameter is passed to signal.clean. Please see the related
             documentation for details.
-            shape: (number of scans, number of confounds)
 
         Returns
         -------
@@ -558,6 +574,7 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
             (n_subjects, n_features * (n_features + 1) / 2) if vectorize \
             is set to True.
             The transformed individual connectivities, as matrices or vectors.
+            Vectors are cleaned when vectorize=True and confounds are provided.
         """
         if self.kind == 'tangent':
             # Check that people are applying fit_transform to a group of
@@ -584,10 +601,12 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
             The input subjects time series. The number of samples may differ
             from one subject to another.
 
-        confounds : CSV file or array-like, optional
+        confounds : numpy.ndarray with shape (n_samples) or \
+                    (n_samples, n_confounds), optional
+            Confounds to be cleaned on the vectorized matrices. Only takes
+            into effect when vetorize=True.
             This parameter is passed to signal.clean. Please see the related
             documentation for details.
-            shape: (number of scans, number of confounds)
 
         Returns
         -------
@@ -595,6 +614,7 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
             (n_subjects, n_features * (n_features + 1) / 2) if vectorize \
             is set to True.
             The transformed individual connectivities, as matrices or vectors.
+            Vectors are cleaned when vectorize=True and confounds are provided.
         """
         self._check_fitted()
         return self._fit_transform(X, do_transform=True, confounds=confounds)
