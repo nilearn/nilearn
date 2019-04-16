@@ -2007,7 +2007,7 @@ def fetch_development_fmri(n_subjects=None, reduce_confounds=True,
     ----------
     n_subjects: int, optional (default None)
         The number of subjects to load. If None, all the subjects are
-        loaded.
+        loaded. Total 155 subjects.
 
     reduce_confounds: bool, optional (default True)
         If True, the returned confounds only include 6 motion parameters,
