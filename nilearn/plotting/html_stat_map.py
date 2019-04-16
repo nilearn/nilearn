@@ -50,11 +50,12 @@ def _data_to_sprite(data):
 
 def _threshold_data(data, threshold=None):
     """ Threshold a data array.
-        Returns: data (masked array), threshold (updated)
+        Returns: data (array), mask (boolean array) threshold (updated)
     """
     # If threshold is None, do nothing
     if threshold is None:
-        return data, threshold
+        mask = np.full(data.shape, True)
+        return data, mask, threshold
 
     # Deal with automatic settings of plot parameters
     if threshold == 'auto':
@@ -69,19 +70,17 @@ def _threshold_data(data, threshold=None):
 
     # Mask data
     if threshold == 0:
-        data = np.ma.masked_equal(data, 0, copy=False)
+        mask = (data == 0)
+        data = data * mask
     else:
-        data = np.ma.masked_inside(data, -threshold, threshold, copy=False)
+        mask = (data >= -threshold) & (data <= threshold)
+        data = data * mask
 
-    # if all values above threshold, np.ma returns np.bool_(False) ;
-    # this will fail our shape check, so we'll convert to an array
-    if not np.ndim(data.mask):
-        value_check = data.min()
-        warnings.warn("Threshold given was {0}, "
-                      "but the data has no values above {1}. ".format(threshold,
-                                                                      value_check))
-        data.mask = np.full(data.shape, False)
-    return data, threshold
+    if not np.any(mask):
+        warnings.warn("Threshold given was {0}, but "
+                      "the data has no values below {1}. ".format(threshold,
+                                                                  data.min()))
+    return data, mask, threshold
 
 
 def _save_sprite(data, output_sprite, vmax, vmin, mask=None, cmap='Greys',
@@ -140,8 +139,8 @@ def _mask_stat_map(stat_map_img, threshold=None):
 
     # threshold the stat_map
     if threshold is not None:
-        data, threshold = _threshold_data(data, threshold)
-        mask_img = new_img_like(stat_map_img, data.mask, stat_map_img.affine)
+        data, mask, threshold = _threshold_data(data, threshold)
+        mask_img = new_img_like(stat_map_img, mask, stat_map_img.affine)
     else:
         mask_img = new_img_like(stat_map_img, np.zeros(data.shape),
                                 stat_map_img.affine)
@@ -454,12 +453,6 @@ def view_img(stat_map_img, bg_img='MNI152',
     colors = colorscale(cmap, data.ravel(), threshold=threshold,
                         symmetric_cmap=symmetric_cmap, vmax=vmax,
                         vmin=vmin)
-
-    # odd isinstance() behavior, see:
-    # https://stackoverflow.com/questions/25009055/numpy-maskedconstant-gives-inconsistent-conversion-to-bool
-    if colors['vmin'] is np.ma.masked:
-        colorbar = False
-        colors['vmin'], colors['vmax'] = 0, 0
 
     # Prepare the data for the cuts
     bg_img, bg_min, bg_max, black_bg = _load_bg_img(stat_map_img, bg_img,
