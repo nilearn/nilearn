@@ -266,8 +266,8 @@ def _reduce_data_and_connectivity(labels, n_components, connectivity,
 
 def nearest_neighbor_grouping(connectivity, masked_data, n_clusters,
                               threshold=1e-7):
-    """Cluster using nearest agglomeration: merge clusters according to their
-    nearest neighbors, then the data and the connectivity are reduced.
+    """Cluster using nearest neighbor agglomeration: merge clusters according
+    to their nearest neighbors, then the data and the connectivity are reduced.
 
     Parameters
     ----------
@@ -329,8 +329,8 @@ def nearest_neighbor_grouping(connectivity, masked_data, n_clusters,
 
 def recursive_neighbor_agglomeration(masker, masked_data, n_clusters,
                                      n_iter=10, threshold=1e-7):
-    """Recursive neighbor agglomeration: it performs iteratively the nearest
-    neighbor grouping.
+    """Recursive neighbor agglomeration (ReNA): it performs iteratively
+    the nearest neighbor grouping [1]_.
 
     Parameters
     ----------
@@ -356,6 +356,14 @@ def recursive_neighbor_agglomeration(masker, masked_data, n_clusters,
 
     labels : array
         Cluster assignation.
+
+    References
+    ----------
+    .. [1] A. Hoyos-Idrobo, G. Varoquaux, J. Kahn and B. Thirion, "Recursive
+           Nearest Agglomeration (ReNA): Fast Clustering for Approximation of
+           Structured Signals," in IEEE Transactions on Pattern Analysis and
+           Machine Intelligence, vol. 41, no. 3, pp. 669-681, 1 March 2019.
+           https://hal.archives-ouvertes.fr/hal-01366651/
     """
     connectivity = weighted_connectivity_graph(masker, masked_data)
 
@@ -379,7 +387,7 @@ def recursive_neighbor_agglomeration(masker, masked_data, n_clusters,
 class ReNA(BaseEstimator, ClusterMixin, TransformerMixin):
     """Recursive Neighbor Agglomeration (ReNA):
     Recursively merges the pair of clusters according to 1-nearest neighbors
-    criterion.
+    criterion [1]_.
 
     Parameters
     ----------
@@ -461,6 +469,14 @@ class ReNA(BaseEstimator, ClusterMixin, TransformerMixin):
         The mask of the data. If no mask was supplied by the user,
         this attribute is the mask image computed automatically from the
         data `X`.
+
+    References
+    ----------
+    .. [1] A. Hoyos-Idrobo, G. Varoquaux, J. Kahn and B. Thirion, "Recursive
+           Nearest Agglomeration (ReNA): Fast Clustering for Approximation of
+           Structured Signals," in IEEE Transactions on Pattern Analysis and
+           Machine Intelligence, vol. 41, no. 3, pp. 669-681, 1 March 2019.
+           https://hal.archives-ouvertes.fr/hal-01366651/
     """
     def __init__(self, n_clusters=2, mask=None, smoothing_fwhm=None,
                  standardize=True, target_affine=None, target_shape=None,
