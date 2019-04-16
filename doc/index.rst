@@ -34,7 +34,7 @@
    :target: auto_examples/03_connectivity/plot_data_driven_parcellations.html
 
 .. |canica| image:: auto_examples/03_connectivity/images/sphx_glr_plot_canica_analysis_011.png
-   :target: auto_examples/03_connectivity/plot_canica_analysis.html
+   :target: auto_examples/03_connectivity/plot_compare_decomposition.html
 
 .. |tvl1_haxby| image:: auto_examples/02_decoding/images/sphx_glr_plot_haxby_space_net_002.png
    :target: auto_examples/02_decoding/plot_haxby_space_net.html

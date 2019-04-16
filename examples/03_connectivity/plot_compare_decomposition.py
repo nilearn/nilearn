@@ -63,7 +63,8 @@ canica = CanICA(n_components=20,
                 threshold=3.,
                 n_init=1,
                 verbose=10,
-                mask_strategy='template')
+                mask_strategy='template',
+                random_state=0)
 canica.fit(func_filenames)
 
 # Retrieve the independent components in brain space. Directly
@@ -103,11 +104,13 @@ show()
 # -------------------------------------------------------------
 # Dictionary learning is a sparsity based decomposition method for extracting
 # spatial maps. It extracts maps that are naturally sparse and usually cleaner
-# than ICA. Here, we will compare Dictionary learning to CanICA.
+# than ICA. Here, we will compare networks built with CanICA to networks built
+# with Dictionary Learning.
 #
 #   * Arthur Mensch et al. `Compressed online dictionary learning for fast resting-state fMRI decomposition
 #    <https://hal.archives-ouvertes.fr/hal-01271033/>`_,
 #    ISBI 2016, Lecture Notes in Computer Science
+#
 
 
 ###############################################################################
@@ -162,5 +165,5 @@ show()
 #     To see how to extract subject-level timeseries' from regions
 #     created using Dictionary Learning, see :ref:`example Regions 
 #     extraction using Dictionary Learning and functional connectomes
-#     <sphx_glr_auto_examples_03_connectivitiy_plot_extract_regions_dictlearning_maps.py>'.
+#     <sphx_glr_auto_examples_03_connectivitiy_plot_extract_regions_dictlearning_maps.py>`.
 #
