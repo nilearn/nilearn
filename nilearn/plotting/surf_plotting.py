@@ -66,7 +66,7 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
         How to average vertex values to derive the face value, mean results
         in smooth, median in sharp boundaries.
 
-    threshold : a number, None, or 'auto', default is None.
+    threshold : a number or None, default is None.
         If None is given, the image is not thresholded.
         If a number is given, it is used to threshold the image, values
         below the threshold (in absolute value) are plotted as transparent.
@@ -344,7 +344,7 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
     view: {'lateral', 'medial', 'dorsal', 'ventral', 'anterior', 'posterior'}, default is 'lateral'
         View of the surface that is rendered.
 
-    threshold : a number, None, or 'auto', default is None
+    threshold : a number or None, default is None
         If None is given, the image is not thresholded.
         If a number is given, it is used to threshold the image,
         values below the threshold (in absolute value) are plotted
@@ -423,8 +423,8 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
 
 
 def plot_surf_roi(surf_mesh, roi_map, bg_map=None,
-                  hemi='left', view='lateral', alpha='auto',
-                  vmin=None, vmax=None, cmap='gist_ncar',
+                  hemi='left', view='lateral', threshold=1e-14,
+                  alpha='auto', vmin=None, vmax=None, cmap='gist_ncar',
                   bg_on_data=False, darkness=1, title=None,
                   output_file=None, axes=None, figure=None, **kwargs):
     """ Plotting ROI on a surface mesh with optional background
@@ -457,8 +457,13 @@ def plot_surf_roi(surf_mesh, roi_map, bg_map=None,
         stat_map in greyscale, most likely a sulcal depth map for
         realistic shading.
 
-    view: {'lateral', 'medial', 'dorsal', 'ventral', 'anterior', 'posterior'}, default is 'lateral'
+    view: {'lateral', 'medial', 'dorsal', 'ventral', 'anterior', 'posterior'},
+        default is 'lateral'
         View of the surface that is rendered.
+
+    threshold: a number or None
+        default is 1e-14 to threshold regions that are labelled 0. If you want
+        to use 0 as a label, set threshold to None.
 
     cmap : matplotlib colormap str or colormap object, default 'coolwarm'
         To use for plotting of the rois. Either a string which is a name
@@ -534,9 +539,10 @@ def plot_surf_roi(surf_mesh, roi_map, bg_map=None,
     vmin, vmax = np.min(roi_map), 1 + np.max(roi_map)
     display = plot_surf(surf_mesh, surf_map=roi_map, bg_map=bg_map,
                         hemi=hemi, view=view, avg_method='median',
-                        cmap=cmap, alpha=alpha, bg_on_data=bg_on_data,
-                        darkness=darkness, vmin=vmin, vmax=vmax,
-                        title=title, output_file=output_file,
-                        axes=axes, figure=figure, **kwargs)
+                        threshold=threshold, cmap=cmap, alpha=alpha,
+                        bg_on_data=bg_on_data, darkness=darkness,
+                        vmin=vmin, vmax=vmax, title=title,
+                        output_file=output_file, axes=axes,
+                        figure=figure, **kwargs)
 
     return display
