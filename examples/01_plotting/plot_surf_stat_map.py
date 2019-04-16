@@ -122,11 +122,11 @@ plotting.plot_surf_roi(fsaverage['pial_left'], roi_map=pcc_labels,
                        title='PCC Seed')
 
 ###############################################################################
-# Display unthresholded stat map  with dimmed background
+# Display unthresholded stat map with a slightly dimmed background
 plotting.plot_surf_stat_map(fsaverage['pial_left'], stat_map=stat_map,
                             hemi='left', view='medial', colorbar=True,
                             bg_map=fsaverage['sulc_left'], bg_on_data=True,
-                            darkness=.2, title='Correlation map')
+                            darkness=.3, title='Correlation map')
 
 ###############################################################################
 # Many different options are available for plotting, for example thresholding,
@@ -138,11 +138,22 @@ plotting.plot_surf_stat_map(fsaverage['pial_left'], stat_map=stat_map,
                             title='Threshold and colormap')
 
 ###############################################################################
+# Here the surface is plotted in a lateral view without a background map.
+# To capture 3D structure without depth information, the default is to plot a
+# half transparent surface.
+# Note that you can also control the transparency with a background map using
+# the alpha parameter.
+plotting.plot_surf_stat_map(fsaverage['pial_left'], stat_map=stat_map,
+                            hemi='left', view='lateral', colorbar=True,
+                            cmap='Spectral', threshold=.5,
+                            title='Plotting without background')
+
+###############################################################################
 # The plots can be saved to file, in which case the display is closed after
 # creating the figure
 plotting.plot_surf_stat_map(fsaverage['infl_left'], stat_map=stat_map,
                             hemi='left', bg_map=fsaverage['sulc_left'],
-                            bg_on_data=True, threshold=.6, colorbar=True,
+                            bg_on_data=True, threshold=.5, colorbar=True,
                             output_file='plot_surf_stat_map.png')
 
 plotting.show()
