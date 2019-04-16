@@ -2012,7 +2012,9 @@ def fetch_development_fmri(n_subjects=None, reduce_confounds=True,
     reduce_confounds: bool, optional (default True)
         If True, the returned confounds only include 6 motion parameters,
         mean framewise displacement, signal from white matter, csf, and
-        6 anatomical compcor parameters.
+        6 anatomical compcor parameters. This selection only serves the
+        purpose of having realistic examples. Depending on your research
+        question, other confounds might be more appropriate.
         If False, returns all fmriprep confounds.
 
     data_dir: str, optional (default None)
@@ -2116,11 +2118,11 @@ def fetch_development_fmri(n_subjects=None, reduce_confounds=True,
             if not os.path.isfile(out_file):
                 confounds = np.recfromcsv(in_file, delimiter='\t',
                                           encoding='ascii')
-
                 selected_confounds = confounds[keep_confounds]
-                header = "\t".join(selected_confounds.dtype.names)
-                np.savetxt(out_file, selected_confounds, header=header,
-                           delimiter='\t', comments='')
+                header = '\t'.join(selected_confounds.dtype.names)
+                np.savetxt(out_file, np.array(selected_confounds.tolist()),
+                           header=header, delimiter='\t', comments='',
+                           encoding='ascii')
             reduced_regressors.append(out_file)
         regressors = reduced_regressors
 
