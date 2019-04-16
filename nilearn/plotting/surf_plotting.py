@@ -214,8 +214,9 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
                 raise ValueError('The bg_map does not have the same number '
                                  'of vertices as the mesh.')
             bg_faces = np.mean(bg_data[faces], axis=1)
-            bg_faces = bg_faces - bg_faces.min()
-            bg_faces = bg_faces / bg_faces.max()
+            if bg_faces.min() != bg_faces.max():
+                bg_faces = bg_faces - bg_faces.min()
+                bg_faces = bg_faces / bg_faces.max()
             # control background darkness
             bg_faces *= darkness
             face_colors = plt.cm.gray_r(bg_faces)
