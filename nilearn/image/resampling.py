@@ -13,6 +13,7 @@ import numpy as np
 import scipy
 from scipy import ndimage, linalg
 
+from .image import pad_img
 from .. import _utils
 from .._utils.compat import _basestring
 
@@ -533,27 +534,39 @@ def resample_img(img, target_affine=None, target_shape=None,
 
     all_img = (slice(None), ) * 3
 
-#   if (A == I OR some combination of permutation(I) and sign-flipped(I)) AND
-#      all(b == integers):
-#       ... special case: can be solved with padding alone
-#       crop source image and keep track of N voxels offset before/after volume
-#       flip along sign-flipped dimensions
-#       shuffle the permuted dimensions
-#       for each dimension:
-#           Save index as translation + offset
-#             (if not flipped: offset before, else: offset after)
-#       Insert cropped image into zero matrix at set indices
+    # if (A == I OR some combination of permutation(I) and sign-flipped(I)) AND
+    # all(b == integers):
+    if np.all(np.eye(A) == A) and all(bt == np.round(bt) for bt in b):
+        # TODO: also check for sign flips
+        # TODO: also check for permutations of I
 
-#     if np.all(np.eye())
-    # Iterate over a set of 3D volumes, as the interpolation problem is
-    # separable in the extra dimensions. This reduces the
-    # computational cost
-    for ind in np.ndindex(*other_shape):
-        _resample_one_img(data[all_img + ind], A, b, target_shape,
-                          interpolation_order,
-                          out=resampled_data[all_img + ind],
-                          copy=not input_img_is_string,
-                          fill_value=fill_value)
+        # ... special case: can be solved with padding alone
+        # crop source image and keep N voxels offset before/after volume
+        cropped_img, offsets = crop_img(img, pad=False, return_offset=True)
+
+        # TODO: flip axes that are flipped
+        # TODO: un-shuffle permuted dimensions
+
+        indices = []
+        for tmpo, tmpb in zip(offsets[:3], b):
+            indices.append()
+        slices=1
+        # for each dimension:
+        #     Save index as translation + offset
+        #       (if not flipped: offset before, else: offset after)
+        # Insert cropped image into zero matrix at set indices
+   #     resampled_data[slices] = cropped_data
+
+    if True:
+        # Iterate over a set of 3D volumes, as the interpolation problem is
+        # separable in the extra dimensions. This reduces the
+        # computational cost
+        for ind in np.ndindex(*other_shape):
+            _resample_one_img(data[all_img + ind], A, b, target_shape,
+                              interpolation_order,
+                              out=resampled_data[all_img + ind],
+                              copy=not input_img_is_string,
+                              fill_value=fill_value)
 
     if clip:
         # force resampled data to have a range contained in the original data

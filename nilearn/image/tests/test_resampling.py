@@ -18,7 +18,7 @@ from nilearn.image.resampling import resample_img, resample_to_img, reorder_img
 from nilearn.image.resampling import from_matrix_vector, coord_transform
 from nilearn.image.resampling import get_bounds
 from nilearn.image.resampling import BoundingBoxError
-from nilearn.image.image import pad
+from nilearn.image.image import pad_img, crop_img
 from nilearn._utils import testing
 
 
@@ -441,8 +441,8 @@ def test_resampling_result_axis_permutation():
         offset_cropping = np.vstack([-offset[ap][np.newaxis, :],
                                      np.zeros([1, 3])]
                                     ).T.ravel().astype(int)
-        what_resampled_data_should_be = pad(full_data.transpose(ap),
-                                            *list(offset_cropping))
+        what_resampled_data_should_be = pad_img(full_data.transpose(ap),
+                                                *list(offset_cropping))
 
         assert_array_almost_equal(resampled_data,
                                   what_resampled_data_should_be)
@@ -527,6 +527,38 @@ def test_resample_to_img():
     x, y, z = downsampled.shape[:3]
     np.testing.assert_almost_equal(downsampled,
                                    result_img.get_data()[:x, :y, :z, ...])
+
+def test_crop():
+    shape = (4, 6, 2)
+    data = np.ones(shape)
+    padded = pad_img(data, 3, 2, 4, 4, 5, 7)
+    padd_nii = Nifti1Image(padded, np.eye(4))
+
+    cropped = crop_img(padd_nii, pad=False)
+    np.testing.assert_equal(cropped.get_data(), data)
+
+
+def test_resample_identify_affine_int_translation():
+    # Testing resample to img function
+    rand_gen = np.random.RandomState(0)
+    shape = (6, 3, 6)
+    data = rand_gen.random_sample(shape)
+
+    source_affine = np.eye(4)
+    source_img = Nifti1Image(data, source_affine)
+
+    target_affine = 2 * source_affine
+    target_img = Nifti1Image(data, target_affine)
+
+
+    result_img = resample_to_img(source_img, target_img,
+                                 interpolation='nearest')
+
+    downsampled = data[::2, ::2, ::2, ...]
+    x, y, z = downsampled.shape[:3]
+    np.testing.assert_almost_equal(downsampled,
+                                   result_img.get_data()[:x, :y, :z, ...])
+
 
 def test_resample_clip():
     # Resample and image and get larger and smaller

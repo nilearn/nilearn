@@ -327,7 +327,7 @@ def _crop_img_to(img, slices, copy=True):
     return new_img_like(img, cropped_data, new_affine)
 
 
-def crop_img(img, rtol=1e-8, copy=True, return_offset=False):
+def crop_img(img, rtol=1e-8, copy=True, pad=True, return_offset=False):
     """Crops img as much as possible
 
     Will crop img, removing as many zero entries as possible
@@ -348,6 +348,9 @@ def crop_img(img, rtol=1e-8, copy=True, return_offset=False):
 
     copy: boolean
         Specifies whether cropped data is copied or not.
+
+    pad: boolean
+        Toggles adding 1-voxel of 0s around the border. Recommended.
 
     return_offset: boolean
         Specifies whether to return a tuple of the removed padding.
@@ -377,15 +380,15 @@ def crop_img(img, rtol=1e-8, copy=True, return_offset=False):
     end = coords.max(axis=1) + 1
 
     # pad with one voxel to avoid resampling problems
-    start = np.maximum(start - 1, 0)
-    end = np.minimum(end + 1, data.shape[:3])
+    if pad:
+        start = np.maximum(start - 1, 0)
+        end = np.minimum(end + 1, data.shape[:3])
 
     slices = [slice(s, e) for s, e in zip(start, end)]
+    cropped_im = _crop_img_to(img, slices, copy=copy)
+    return cropped_im if not return_offset else (cropped_im, tuple(slices))
 
-    return _crop_img_to(img, slices, copy=copy)
-
-
-def pad(array, *args):
+def pad_img(array, *args):
     """Pad an ndarray with zeros of quantity specified
     in args as follows args = (x1minpad, x1maxpad, x2minpad,
     x2maxpad, x3minpad, ...)
@@ -412,7 +415,7 @@ def pad(array, *args):
                                           upper_paddings,
                                           new_shape)]
 
-    padded[target_slices] = array[source_slices].copy()
+    padded[tuple(target_slices)] = array[source_slices].copy()
     return padded
 
 
