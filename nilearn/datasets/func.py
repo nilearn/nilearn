@@ -1994,8 +1994,8 @@ def _fetch_development_fmri_functional(participants, data_dir, url, verbose):
     return funcs, regressors
 
 
-def fetch_development_fmri(n_subjects=None, data_dir=None, resume=True,
-                           verbose=0):
+def fetch_development_fmri(n_subjects=None, reduce_confounds=True,
+                           data_dir=None, resume=True, verbose=0):
     """Fetch movie watching based brain development dataset (fMRI)
 
     The data is downsampled to 4mm resolution for convenience. The origin of
@@ -2008,6 +2008,12 @@ def fetch_development_fmri(n_subjects=None, data_dir=None, resume=True,
     n_subjects: int, optional (default None)
         The number of subjects to load. If None, all the subjects are
         loaded.
+
+    reduce_confounds: bool, optional (default True)
+        If True, the returned confounds only include 6 motion parameters,
+        mean framewise displacement, signal from white matter, csf, and
+        6 anatomical compcor parameters.
+        If False, returns all fmriprep confounds.
 
     data_dir: str, optional (default None)
         Path of the data directory. Used to force data storage in a specified
@@ -2056,6 +2062,11 @@ def fetch_development_fmri(n_subjects=None, data_dir=None, resume=True,
     dataset_name = 'development_fmri'
     data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
                                 verbose=1)
+    keep_confounds = ['trans_x', 'trans_y', 'trans_z', 'rot_x', 'rot_y',
+                      'rot_z', 'framewise_displacement', 'a_comp_cor_00',
+                      'a_comp_cor_01', 'a_comp_cor_02', 'a_comp_cor_03',
+                      'a_comp_cor_04', 'a_comp_cor_05', 'csf',
+                      'white_matter']
 
     # Dataset description
     fdescr = _get_dataset_descr(dataset_name)
@@ -2097,6 +2108,21 @@ def fetch_development_fmri(n_subjects=None, data_dir=None, resume=True,
                                                            data_dir=data_dir,
                                                            url=None,
                                                            verbose=verbose)
+
+    if reduce_confounds:
+        reduced_regressors = []
+        for in_file in regressors:
+            out_file = os.path.splitext(in_file)[0] + '_reduced.tsv'
+            if not os.path.isfile(out_file):
+                confounds = np.recfromcsv(in_file, delimiter='\t',
+                                          encoding='ascii')
+
+                selected_confounds = confounds[keep_confounds]
+                header = "\t".join(selected_confounds.dtype.names)
+                np.savetxt(out_file, selected_confounds, header=header,
+                           delimiter='\t', comments='')
+            reduced_regressors.append(out_file)
+        regressors = reduced_regressors
 
     return Bunch(func=funcs, confounds=regressors, phenotypic=participants,
                  description=fdescr)
