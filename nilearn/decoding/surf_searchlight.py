@@ -137,7 +137,8 @@ class SurfSearchLight(BaseEstimator):
             surfmask_coords, giimgs, mesh_coords, self.radius, True,
             process_surfmask=process_surfmask)
         
-        print(X.shape)
+        print("Shape of seeds (surfmask_coords), X and A matrices: ",
+              surfmask_coords.shape, X.shape, A.shape)
 
         estimator = self.estimator
         if isinstance(estimator, _basestring):
