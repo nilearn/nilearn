@@ -22,6 +22,7 @@ from nibabel import gifti
 from ..image import load_img
 from ..image import resampling
 from .._utils.compat import _basestring
+from .._utils.path_finding import _resolve_globbing
 from .. import _utils
 
 
@@ -617,7 +618,7 @@ def _gifti_img_to_mesh(gifti_img):
     error_message = ('The surf_mesh input is not recognized. Valid Freesurfer '
                      'surface mesh inputs are .pial, .inflated, .sphere, '
                      '.orig, .white. You provided input which have no '
-                     '{0} or of empty value={1}') 
+                     '{0} or of empty value={1}')
     if LooseVersion(nibabel.__version__) >= LooseVersion('2.1.0'):
         try:
             coords = gifti_img.get_arrays_from_intent(
@@ -674,6 +675,16 @@ def load_surf_mesh(surf_mesh):
     """
     # if input is a filename, try to load it
     if isinstance(surf_mesh, _basestring):
+        # resolve globbing
+        file_list = _resolve_globbing(surf_mesh)
+        if len(file_list) == 1:
+            surf_mesh = file_list[0]
+        elif len(file_list) > 1:
+        #empty list is handled inside _resolve_globbing function
+            raise ValueError(("More than one file matching path: %s \n"
+                             "load_surf_mesh can only load one file at a time")
+                             % surf_mesh)
+
         if (surf_mesh.endswith('orig') or surf_mesh.endswith('pial') or
                 surf_mesh.endswith('white') or surf_mesh.endswith('sphere') or
                 surf_mesh.endswith('inflated')):
