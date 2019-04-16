@@ -77,17 +77,6 @@ Fixes
 Known Issues
 -------------------
 
-- On Python2, :func:`nilearn.plotting.view_connectome()` &
-  :func:`nilearn.plotting.view_markers()`
-  do not show parameters names in function signature
-  when using help() and similar features.
-  Please refer to their docstrings for this information.
-
-
-Contributors
-Known Issues
-------------
-
 - On Python2, ``plotting.view_connectome()`` & ``plotting.view_markers()``
   do not show parameters names in function signature
   when using help() and similar features.
