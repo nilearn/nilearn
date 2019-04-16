@@ -21,15 +21,15 @@ using fMRI.", 2010, Science 329, 1358-1361.
 # Load fMRI data and Power atlas
 # ------------------------------
 #
-# We are going to use a single subject from the ADHD dataset.
+# We are going to use a single subject from the movie watching fmri dataset.
 from nilearn import datasets
 
-adhd = datasets.fetch_adhd(n_subjects=1)
+rest = datasets.fetch_development_fmri(n_subjects=5)
 
 ###############################################################################
 # We store the paths to its functional image and the confounds file.
-fmri_filename = adhd.func[0]
-confounds_filename = adhd.confounds[0]
+fmri_filename = rest.func[0]
+confounds_filename = rest.confounds[0]
 print('Functional image is {0},\nconfounds are {1}.'.format(fmri_filename,
       confounds_filename))
 
@@ -80,7 +80,7 @@ print('time series has {0} samples'.format(timeseries.shape[0]))
 # estimator captures well the covariance **structure**.
 from sklearn.covariance import GraphLassoCV
 
-covariance_estimator = GraphLassoCV(verbose=1)
+covariance_estimator = GraphLassoCV(cv=3, verbose=1)
 
 ###############################################################################
 # We just fit our regions signals into the `GraphLassoCV` object
