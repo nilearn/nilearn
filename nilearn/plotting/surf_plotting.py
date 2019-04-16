@@ -247,7 +247,7 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
 
             # treshold if inidcated
             if threshold is None:
-                kept_indices = np.where(surf_map_faces)[0]
+                kept_indices = np.arange(surf_map_faces.shape[0])
             else:
                 kept_indices = np.where(np.abs(surf_map_faces) >= threshold)[0]
 
