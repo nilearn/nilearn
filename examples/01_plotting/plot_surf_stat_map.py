@@ -126,14 +126,7 @@ plotting.plot_surf_roi(fsaverage['pial_left'], roi_map=pcc_labels,
 plotting.plot_surf_stat_map(fsaverage['pial_left'], stat_map=stat_map,
                             hemi='left', view='medial', colorbar=True,
                             bg_map=fsaverage['sulc_left'], bg_on_data=True,
-                            darkness=.5, title='Correlation map')
-
-###############################################################################
-# Display unthresholded stat map without background map, transparency is
-# automatically set to .5, but can also be controlled with the alpha parameter
-plotting.plot_surf_stat_map(fsaverage['pial_left'], stat_map=stat_map,
-                            hemi='left', view='medial', colorbar=True,
-                            title='Plotting without background')
+                            darkness=.2, title='Correlation map')
 
 ###############################################################################
 # Many different options are available for plotting, for example thresholding,
