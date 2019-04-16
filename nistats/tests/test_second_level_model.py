@@ -147,8 +147,7 @@ def test_fmri_inputs():
         assert_raises(ValueError, SecondLevelModel().fit, flms, [])
         assert_raises(ValueError, SecondLevelModel().fit, flms,
                       confounds['conf1'])
-        assert_raises(ValueError, SecondLevelModel().fit, flms,
-                      None, [])
+        assert_raises(ValueError, SecondLevelModel().fit, flms, None, [])
 
 
 def test_fmri_inputs_for_non_parametric_inference():
