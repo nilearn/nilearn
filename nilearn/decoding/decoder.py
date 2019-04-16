@@ -38,14 +38,15 @@ from .._utils import CacheMixin
 SUPPORTED_ESTIMATORS = dict(
     svc_l1=LinearSVC(penalty='l1', dual=False),
     svc_l2=LinearSVC(penalty='l2'),
-    svc=LinearSVC(penalty='l2'),  # TODO: remove svc as the option is the same with svc_l2
-    logistic_l1=LogisticRegression(penalty='l1'),
-    logistic_l2=LogisticRegression(penalty='l2'),
+    svc=LinearSVC(penalty='l2'),
+    logistic_l1=LogisticRegression(penalty='l1', solver='liblinear'),
+    logistic_l2=LogisticRegression(penalty='l2', solver='liblinear'),
     logistic=LogisticRegression(penalty='l2'),
     ridge_classifier=RidgeClassifier(),
     ridge_regression=Ridge(),
     ridge=Ridge(),
-    svr=SVR(kernel='linear'),)
+    svr=SVR(kernel='linear'),
+)
 
 
 def _check_param_grid(estimator, X, y, param_grid):
@@ -298,7 +299,7 @@ class BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
         self.n_jobs = n_jobs
         self.verbose = verbose
 
-    def fit(self, X, y):
+    def fit(self, X, y, groups=None):
         """Fit the decoder (learner).
 
         Parameters
@@ -393,8 +394,9 @@ class BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
         scorer = check_scoring(estimator, self.scoring)
 
         self.cv_ = list(check_cv(
-            self.cv, y=y, classifier=self.is_classif).split(X, y))
-        
+            self.cv, y=y, classifier=self.is_classif).split(X, y,
+                                                            groups=groups))
+
         # Define the number problems to solve. In case of classification this
         # number corresponds to the number of binary problems to solve
         if self.is_classif:
