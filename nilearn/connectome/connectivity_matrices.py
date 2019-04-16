@@ -532,20 +532,21 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
                                     for cov in connectivities]
 
             connectivities = np.array(connectivities)
+
+            if confounds is not None and not self.vectorize:
+                error_message = ("'confounds' are provided but "
+                                 "vectorize=False. Confounds are only "
+                                 "cleaned on vectorized matrices as "
+                                 "second level connectome regression "
+                                 "but not on symmetric matrices.")
+                raise ValueError(error_message)
+
             if self.vectorize:
                 connectivities = sym_matrix_to_vec(
                     connectivities, discard_diagonal=self.discard_diagonal)
                 if confounds is not None:
-                    if not self.vectorize:
-                        error_message = ("'confounds' are provided but "
-                                         "vectorize=False. Confounds are only "
-                                         "cleaned on vectorized matrices as "
-                                         "second level connectome regression "
-                                         "but not on symmetric matrices.")
-                        raise ValueError(error_message)
-                    else:
-                        connectivities = signal.clean(connectivities,
-                                                      confounds=confounds)
+                    connectivities = signal.clean(connectivities,
+                                                  confounds=confounds)
 
         return connectivities
 
