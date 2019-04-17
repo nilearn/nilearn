@@ -18,6 +18,7 @@ except ImportError:
 
 import nibabel
 from nibabel import gifti
+from nibabel import freesurfer as fs
 
 from ..image import load_img
 from ..image import resampling
@@ -562,8 +563,10 @@ def load_surf_data(surf_data):
     surf_data : str or numpy.ndarray
         Either a file containing surface data (valid format are .gii,
         .gii.gz, .mgz, .nii, .nii.gz, or Freesurfer specific files such as
-        .thickness, .curv, .sulc, .annot, .label) or
+        .thickness, .curv, .sulc, .annot, .label), lists of 1D data files are
+        returned as 2D arrays, or
         a Numpy array containing surface data.
+
     Returns
     -------
     data : numpy.ndarray
@@ -571,42 +574,59 @@ def load_surf_data(surf_data):
     """
     # if the input is a filename, load it
     if isinstance(surf_data, _basestring):
-        if (surf_data.endswith('nii') or surf_data.endswith('nii.gz') or
-                surf_data.endswith('mgz')):
-            data = np.squeeze(nibabel.load(surf_data).get_data())
-        elif (surf_data.endswith('curv') or surf_data.endswith('sulc') or
-                surf_data.endswith('thickness')):
-            data = nibabel.freesurfer.io.read_morph_data(surf_data)
-        elif surf_data.endswith('annot'):
-            data = nibabel.freesurfer.io.read_annot(surf_data)[0]
-        elif surf_data.endswith('label'):
-            data = nibabel.freesurfer.io.read_label(surf_data)
-        elif surf_data.endswith('gii'):
-            if LooseVersion(nibabel.__version__) >= LooseVersion('2.1.0'):
-                gii = nibabel.load(surf_data)
+
+        # resolve globbing
+        file_list = _resolve_globbing(surf_data)
+        # _resolve_globbing handles empty lists
+
+        for f in range(len(file_list)):
+            surf_data = file_list[f]
+            if (surf_data.endswith('nii') or surf_data.endswith('nii.gz') or
+                    surf_data.endswith('mgz')):
+                data1D = np.squeeze(nibabel.load(surf_data).get_data())
+            elif (surf_data.endswith('curv') or surf_data.endswith('sulc') or
+                    surf_data.endswith('thickness')):
+                data1D = fs.io.read_morph_data(surf_data)
+            elif surf_data.endswith('annot'):
+                data1D = fs.io.read_annot(surf_data)[0]
+            elif surf_data.endswith('label'):
+                data1D = fs.io.read_label(surf_data)
+            elif surf_data.endswith('gii'):
+                if LooseVersion(nibabel.__version__) >= LooseVersion('2.1.0'):
+                    gii = nibabel.load(surf_data)
+                else:
+                    gii = gifti.read(surf_data)
+                data1D = _gifti_img_to_data(gii)
+            elif surf_data.endswith('gii.gz'):
+                gii = _load_surf_files_gifti_gzip(surf_data)
+                data1D = _gifti_img_to_data(gii)
             else:
-                gii = gifti.read(surf_data)
-            data = _gifti_img_to_data(gii)
-        elif surf_data.endswith('gii.gz'):
-            gii = _load_surf_files_gifti_gzip(surf_data)
-            data = _gifti_img_to_data(gii)
-        else:
-            raise ValueError(('The input type is not recognized. %r was given '
-                              'while valid inputs are a Numpy array or one of '
-                              'the following file formats: .gii, .gii.gz, '
-                              '.mgz, .nii, .nii.gz, Freesurfer specific files '
-                              'such as .curv, .sulc, .thickness, .annot, '
-                              '.label') % surf_data)
+                raise ValueError(('The input type is not recognized. %r was '
+                                  'given while valid inputs are a Numpy array '
+                                  'or one of the following file formats: .gii,'
+                                  ' .gii.gz, .mgz, .nii, .nii.gz, Freesurfer '
+                                  'specific files such as .curv, .sulc, '
+                                  '.thickness, .annot, .label') % surf_data)
+            # for the first loaded file make an empty data array
+            if f == 0:
+                data = np.empty((data1D.shape[0], len(file_list)))
+            # fill all data in the data file
+            try:
+                data[:, f] = data1D
+            except ValueError:
+                raise ValueError('When more than one file is given as input, '
+                                 'all files must have the same shape.')
+
     # if the input is a numpy array
     elif isinstance(surf_data, np.ndarray):
-        data = np.squeeze(surf_data)
+        data = surf_data
     else:
         raise ValueError('The input type is not recognized. '
                          'Valid inputs are a Numpy array or one of the '
                          'following file formats: .gii, .gii.gz, .mgz, .nii, '
                          '.nii.gz, Freesurfer specific files such as .curv, '
                          '.sulc, .thickness, .annot, .label')
-    return data
+    return np.squeeze(data)
 
 
 def _gifti_img_to_mesh(gifti_img):
@@ -688,7 +708,7 @@ def load_surf_mesh(surf_mesh):
         if (surf_mesh.endswith('orig') or surf_mesh.endswith('pial') or
                 surf_mesh.endswith('white') or surf_mesh.endswith('sphere') or
                 surf_mesh.endswith('inflated')):
-            coords, faces = nibabel.freesurfer.io.read_geometry(surf_mesh)
+            coords, faces = fs.io.read_geometry(surf_mesh)
         elif surf_mesh.endswith('gii'):
             if LooseVersion(nibabel.__version__) >= LooseVersion('2.1.0'):
                 gifti_img = nibabel.load(surf_mesh)
