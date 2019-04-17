@@ -10,7 +10,10 @@ The resulting connectivity coefficients can be used to
 discriminate children from adults. In general, the tangent space embedding
 **outperforms** the standard correlations: see `Dadi et al 2019
 <https://www.sciencedirect.com/science/article/pii/S1053811919301594>`_
-for a careful study.
+and
+`Rahim et al. 2019
+<https://hal.inria.fr/hal-02068389>`_
+for two systematic studies on multiple large samples.
 """
 
 ###############################################################################
@@ -33,8 +36,8 @@ print('MSDL has {0} ROIs, part of the following networks :\n{1}.'.format(
 # Region signals extraction
 # -------------------------
 # To extract regions time series, we instantiate a
-# :class:`nilearn.input_data.NiftiMapsMasker` object and pass the atlas the
-# file name to it, as well as filtering band-width and detrending option.
+# :class:`nilearn.input_data.NiftiMapsMasker` object and pass it the file name
+# of the atlas, as well as filtering band-width and detrending option.
 from nilearn import input_data
 
 masker = input_data.NiftiMapsMasker(
@@ -42,7 +45,7 @@ masker = input_data.NiftiMapsMasker(
     low_pass=.1, high_pass=.01, memory='nilearn_cache', memory_level=1).fit()
 
 ###############################################################################
-# Then we compute region signals and extract useful phenotypic informations.
+# Then we compute region signals and extract useful phenotypic information.
 children = []
 pooled_subjects = []
 groups = []  # child or adult
@@ -61,7 +64,7 @@ print('Data has {0} children.'.format(len(children)))
 ###############################################################################
 # ROI-to-ROI correlations of children
 # -----------------------------------
-# The simpler and most commonly used kind of connectivity is correlation. It
+# The simplest and most commonly used kind of connectivity is correlation. It
 # models the full (marginal) connectivity between pairwise ROIs. We can
 # estimate it using :class:`nilearn.connectome.ConnectivityMeasure`.
 from nilearn.connectome import ConnectivityMeasure
@@ -73,12 +76,14 @@ correlation_measure = ConnectivityMeasure(kind='correlation')
 # `correlation_measure` computes individual correlation matrices.
 correlation_matrices = correlation_measure.fit_transform(children)
 
-# All individual coefficients are stacked in a unique 2D matrix.
+###############################################################################
+# The individual coefficients are stored in 2D matrices and are stacked into a
+# 3D array.
 print('Correlations of children are stacked in an array of shape {0}'
       .format(correlation_matrices.shape))
 
 ###############################################################################
-# as well as the average correlation across all fitted subjects.
+# We also can see the average correlation across all fitted subjects.
 mean_correlation_matrix = correlation_measure.mean_
 print('Mean correlation has shape {0}.'.format(mean_correlation_matrix.shape))
 
@@ -92,10 +97,10 @@ for i, (matrix, ax) in enumerate(zip(correlation_matrices, axes)):
     plotting.plot_matrix(matrix, tri='lower', colorbar=False, axes=ax,
                          title='correlation, child {}'.format(i))
 ###############################################################################
-# The blocks structure that reflect functional networks are visible.
+# Function networks can be seen as blocks of connectivity.
 
 ###############################################################################
-# Now we display as a connectome the mean correlation matrix over all children.
+# Now we display the mean correlation matrix over all children as a connectome.
 plotting.plot_connectome(mean_correlation_matrix, msdl_coords,
                          title='mean correlation over all children')
 
@@ -121,8 +126,8 @@ plotting.plot_connectome(
     title='mean partial correlation over all children')
 
 ###############################################################################
-# Extract subjects variabilities around a group connectivity
-# ----------------------------------------------------------
+# Extract connectivity with tangent embedding
+# -----------------------------------------------------------------------
 # We can use **both** correlations and partial correlations to capture
 # reproducible connectivity patterns at the group-level.
 # This is done by the tangent space embedding.
@@ -136,7 +141,7 @@ tangent_matrices = tangent_measure.fit_transform(children)
 
 ###############################################################################
 # `tangent_matrices` model individual connectivities as
-# **perturbations** of the group connectivity matrix `tangent_measure.mean_`.
+# **perturbations** of the group connectivity matrix `tangent_measure.mean_` .
 # Keep in mind that these subjects-to-group variability matrices do not
 # directly reflect individual brain connections. For instance negative
 # coefficients can not be interpreted as anticorrelated regions.
@@ -149,6 +154,21 @@ for i, (matrix, ax) in enumerate(zip(tangent_matrices, axes)):
 ###############################################################################
 # The average tangent matrix cannot be interpreted, as individual matrices
 # represent deviations from the mean, which is set to 0.
+
+###############################################################################
+# Extract subjects via PoSCE
+# --------------------------
+# Next, we use the population shrinkage of covariance estimator
+# :class:`nilearn.connectome.PopulationShrunkCovariance` .
+# It uses the correlation of a group to better estimate connectivity of a
+# single subject.
+from nilearn.connectome import PopulationShrunkCovariance, vec_to_sym_matrix
+
+posce_measure = PopulationShrunkCovariance(shrinkage=1e-2)
+posce_embeddings = posce_measure.fit_transform(pooled_subjects)
+posce_matrices = vec_to_sym_matrix(posce_embeddings)
+
+plot_matrices(posce_matrices[:4], 'PoSCE')
 
 ###############################################################################
 # What kind of connectivity is most powerful for classification?
@@ -164,7 +184,7 @@ from sklearn.model_selection import StratifiedShuffleSplit
 from sklearn.metrics import accuracy_score
 import numpy as np
 
-kinds = ['correlation', 'partial correlation', 'tangent']
+kinds = ['correlation', 'partial correlation', 'tangent', 'PoSCE']
 _, classes = np.unique(groups, return_inverse=True)
 cv = StratifiedShuffleSplit(n_splits=15, random_state=0, test_size=5)
 pooled_subjects = np.asarray(pooled_subjects)
@@ -175,7 +195,10 @@ for kind in kinds:
     for train, test in cv.split(pooled_subjects, classes):
         # *ConnectivityMeasure* can output the estimated subjects coefficients
         # as a 1D arrays through the parameter *vectorize*.
-        connectivity = ConnectivityMeasure(kind=kind, vectorize=True)
+        if kind == 'PoSCE':
+            connectivity = PopulationShrunkCovariance(shrinkage=1e-2)
+        else:
+            connectivity = ConnectivityMeasure(kind=kind, vectorize=True)
         # build vectorized connectomes for subjects in the train set
         connectomes = connectivity.fit_transform(pooled_subjects[train])
         # fit the classifier
@@ -211,7 +234,10 @@ plt.tight_layout()
 # datasets.
 # `Dadi et al 2019
 # <https://www.sciencedirect.com/science/article/pii/S1053811919301594>`_
-# Showed that across many cohorts and clinical questions, the tangent
-# kind should be preferred.
+# and
+# Rahim et al. 2019
+# <https://hal.inria.fr/hal-02068389>`_ ,
+#  across many cohorts and clinical questions, the tangent
+# and PoSCE estimators should be preferred.
 
 plotting.show()
