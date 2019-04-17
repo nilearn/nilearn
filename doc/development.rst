@@ -24,8 +24,8 @@ not add graphical user interfaces, but we want our code to be as easy to
 understand as possible, with easy prototyping and debugging, even for
 beginners in Python.
 
-We are parsimonious in the way we adding features to the project, as it puts on weight. Criteria include:
-
+We are parsimonious in the way we adding features to the project, as it
+puts on weight. Criteria include:
 
 * It must be in the scope of the project
 * It must correspond to an established practice (typically as used in
@@ -38,6 +38,7 @@ features or ease of use for the users) with the cost (i.e., complexity of
 the code, runtime of the examples).
 
 In practice:
+
 * The new feature must be demoed in an example in a way that shows its
   benefit to new users.
 * Because our infrastructure is limited, running all the examples must
@@ -48,6 +49,7 @@ In practice:
 * The new feature may not introduce a new dependency
 
 Special cases:
+
 * A downloader for a new atlas: we are currently being very lenient here:
   if the atlas is published and can be used in an example, we will accept
   the pull request.
