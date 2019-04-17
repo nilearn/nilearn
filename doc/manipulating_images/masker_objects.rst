@@ -425,4 +425,4 @@ seed position is used.
 
 .. topic:: **Examples**
 
-  * :ref:`sphx_glr_auto_examples_03_connectivity_plot_adhd_spheres.py`
+  * :ref:`sphx_glr_auto_examples_03_connectivity_plot_sphere_based_connectome.py`

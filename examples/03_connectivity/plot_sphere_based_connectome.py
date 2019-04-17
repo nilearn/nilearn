@@ -286,5 +286,7 @@ plotting.show()
 #
 #     :ref:`sphx_glr_auto_examples_03_connectivity_plot_atlas_comparison.py`
 #
+# .. seealso::
+#
 #     :ref:`sphx_glr_auto_examples_03_connectivity_plot_multi_subject_connectome.py`
 
