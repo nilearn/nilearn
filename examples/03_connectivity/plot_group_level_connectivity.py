@@ -4,9 +4,13 @@ Functional connectivity matrices for group analysis of connectomes
 
 This example compares different kinds of functional connectivity between
 regions of interest : correlation, partial correlation, as well as a kind
-called **tangent**. The resulting connectivity coefficients are used to
-discriminate ADHD patients from healthy controls and the **tangent kind**
-**outperforms** the standard connectivity kinds.
+called **tangent**.
+
+The resulting connectivity coefficients can be used to
+discriminate children from adults. In general, the **tangent kind**
+**outperforms** the standard correlations: see `Dadi et al 2019
+<https://www.sciencedirect.com/science/article/pii/S1053811919301594>`_
+for a careful study.
 """
 # Matrix plotting from Nilearn: nilearn.plotting.plot_matrix
 import numpy as np
@@ -28,12 +32,12 @@ def plot_matrices(matrices, matrix_kind):
 
 
 ###############################################################################
-# Load ADHD dataset and MSDL atlas
-# --------------------------------
-# We study only 20 subjects from the ADHD dataset, to save computation time.
+# Load brain development fMRI dataset and MSDL atlas
+# -------------------------------------------------------------------
+# We study only 30 subjects from the dataset, to save computation time.
 from nilearn import datasets
 
-adhd_data = datasets.fetch_adhd(n_subjects=20)
+rest_data = datasets.fetch_development_fmri(n_subjects=30)
 
 ###############################################################################
 # We use probabilistic regions of interest (ROIs) from the MSDL atlas.
@@ -57,26 +61,24 @@ masker = input_data.NiftiMapsMasker(
 
 ###############################################################################
 # Then we compute region signals and extract useful phenotypic informations.
-adhd_subjects = []
+children = []
 pooled_subjects = []
-site_names = []
-adhd_labels = []  # 1 if ADHD, 0 if control
+groups = []  # child or adult
 for func_file, confound_file, phenotypic in zip(
-        adhd_data.func, adhd_data.confounds, adhd_data.phenotypic):
+        rest_data.func, rest_data.confounds, rest_data.phenotypic):
     time_series = masker.fit_transform(func_file, confounds=confound_file)
     pooled_subjects.append(time_series)
-    is_adhd = phenotypic['adhd']
-    if is_adhd:
-        adhd_subjects.append(time_series)
+    is_child = phenotypic['Child_Adult'] == 'child'
+    if is_child:
+        children.append(time_series)
 
-    site_names.append(phenotypic['site'])
-    adhd_labels.append(is_adhd)
+    groups.append(phenotypic['Child_Adult'])
 
-print('Data has {0} ADHD subjects.'.format(len(adhd_subjects)))
+print('Data has {0} children.'.format(len(children)))
 
 ###############################################################################
-# ROI-to-ROI correlations of ADHD patients
-# ----------------------------------------
+# ROI-to-ROI correlations of children
+# -----------------------------------
 # The simpler and most commonly used kind of connectivity is correlation. It
 # models the full (marginal) connectivity between pairwise ROIs. We can
 # estimate it using :class:`nilearn.connectome.ConnectivityMeasure`.
@@ -85,12 +87,12 @@ from nilearn.connectome import ConnectivityMeasure
 correlation_measure = ConnectivityMeasure(kind='correlation')
 
 ###############################################################################
-# From the list of ROIs time-series for ADHD subjects, the
+# From the list of ROIs time-series for children, the
 # `correlation_measure` computes individual correlation matrices.
-correlation_matrices = correlation_measure.fit_transform(adhd_subjects)
+correlation_matrices = correlation_measure.fit_transform(children)
 
 # All individual coefficients are stacked in a unique 2D matrix.
-print('Correlations of ADHD patients are stacked in an array of shape {0}'
+print('Correlations of children are stacked in an array of shape {0}'
       .format(correlation_matrices.shape))
 
 ###############################################################################
@@ -99,20 +101,21 @@ mean_correlation_matrix = correlation_measure.mean_
 print('Mean correlation has shape {0}.'.format(mean_correlation_matrix.shape))
 
 ###############################################################################
-# We display the connectomes of the first 3 ADHD subjects and the mean
-# correlation matrix over all ADHD patients.
+# We display the connectome matrices of the first 4 children
 from nilearn import plotting
 
 plot_matrices(correlation_matrices[:4], 'correlation')
+###############################################################################
+# The blocks structure that reflect functional networks are visible.
+
+###############################################################################
+# Now we display as a connectome the mean correlation matrix over all children.
 plotting.plot_connectome(mean_correlation_matrix, msdl_coords,
-                         title='mean correlation over 13 ADHD subjects')
+                         title='mean correlation over all children')
 
 ###############################################################################
-# Look at blocks structure, reflecting functional networks.
-
-###############################################################################
-# Examine partial correlations
-# ----------------------------
+# Studying partial correlations
+# -----------------------------
 # We can also study **direct connections**, revealed by partial correlation
 # coefficients. We just change the `ConnectivityMeasure` kind
 partial_correlation_measure = ConnectivityMeasure(kind='partial correlation')
@@ -120,29 +123,32 @@ partial_correlation_measure = ConnectivityMeasure(kind='partial correlation')
 ###############################################################################
 # and repeat the previous operation.
 partial_correlation_matrices = partial_correlation_measure.fit_transform(
-    adhd_subjects)
+    children)
 
 ###############################################################################
-# Most of direct connections are weaker than full connections, resulting
-# in a sparse mean connectome graph.
+# Most of direct connections are weaker than full connections,
 plot_matrices(partial_correlation_matrices[:4], 'partial')
+
+###############################################################################
+# Compared to a connectome computed on correlations, the connectome graph
+# with partial correlations is more sparse:
 plotting.plot_connectome(
     partial_correlation_measure.mean_, msdl_coords,
-    title='mean partial correlation over 13 ADHD subjects')
+    title='mean partial correlation over all children')
 
 ###############################################################################
-# Extract subjects variabilities around a robust group connectivity
-# -----------------------------------------------------------------
+# Extract subjects variabilities around a group connectivity
+# ----------------------------------------------------------
 # We can use **both** correlations and partial correlations to capture
 # reproducible connectivity patterns at the group-level and build a **robust**
 # **group connectivity matrix**. This is done by the **tangent** kind.
 tangent_measure = ConnectivityMeasure(kind='tangent')
 
 ###############################################################################
-# We fit our ADHD group and get the group connectivity matrix stored as
+# We fit our children group and get the group connectivity matrix stored as
 # in `tangent_measure.mean_`, and individual deviation matrices of each subject
 # from it.
-tangent_matrices = tangent_measure.fit_transform(adhd_subjects)
+tangent_matrices = tangent_measure.fit_transform(children)
 
 ###############################################################################
 # `tangent_matrices` model individual connectivities as
@@ -151,13 +157,10 @@ tangent_matrices = tangent_measure.fit_transform(adhd_subjects)
 # straight reflect individual brain connections. For instance negative
 # coefficients can not be interpreted as anticorrelated regions.
 plot_matrices(tangent_matrices[:4], 'tangent variability')
-plotting.plot_connectome(
-    tangent_measure.mean_, msdl_coords,
-    title='mean tangent connectivity over 13 ADHD subjects')
 
 ###############################################################################
-# The mean connectome graph is not as sparse as partial correlations graph,
-# yet it is less dense than correlations graph.
+# The average tangent matrix cannot be interpreted, as the average
+# variation is expected to be zero
 
 ###############################################################################
 # What kind of connectivity is most powerful for classification?
@@ -184,11 +187,10 @@ print('{0} correlation biomarkers for each subject.'.format(
 # proportion of each class as in the whole cohort
 from sklearn.model_selection import StratifiedKFold
 
-classes = ['{0}{1}'.format(site_name, adhd_label)
-           for site_name, adhd_label in zip(site_names, adhd_labels)]
+_, classes = np.unique(groups, return_inverse=True)
 cv = StratifiedKFold(n_splits=3)
 ###############################################################################
-# and use the connectivity coefficients to classify ADHD patients vs controls.
+# and use the connectivity coefficients to classify children vs adults.
 
 # Note that in cv.split(X, y),
 # providing y is sufficient to generate the splits and
@@ -202,9 +204,9 @@ for kind in kinds:
     svc = LinearSVC(random_state=0)
     cv_scores = cross_val_score(svc,
                                 connectivity_biomarkers[kind],
-                                y=adhd_labels,
+                                y=classes,
                                 cv=cv,
-                                groups=adhd_labels,
+                                groups=groups,
                                 scoring='accuracy',
                                 )
     mean_scores.append(cv_scores.mean())
@@ -212,6 +214,8 @@ for kind in kinds:
 ###############################################################################
 # Finally, we can display the classification scores.
 
+###############################################################################
+# Finally, we can display the classification scores.
 from nilearn.plotting import show
 
 plt.figure(figsize=(6, 4))
@@ -222,5 +226,12 @@ plt.yticks(positions, yticks)
 plt.xlabel('Classification accuracy')
 plt.grid(True)
 plt.tight_layout()
+
+###############################################################################
+# While the comparison is not fully conclusive on this small dataset,
+# `Dadi et al 2019
+# <https://www.sciencedirect.com/science/article/pii/S1053811919301594>`_
+# Showed that across many cohorts and clinical questions, the tangent
+# kind should be preferred.
 
 show()

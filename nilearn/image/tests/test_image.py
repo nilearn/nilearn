@@ -653,3 +653,9 @@ def test_largest_cc_img():
 
     out_non_native = largest_connected_component_img(img1_change_dtype)
     np.testing.assert_equal(out_native.get_data(), out_non_native.get_data())
+
+
+def test_new_img_like_mgh_image():
+    data = np.zeros((5, 5, 5), dtype=np.uint8)
+    niimg = nibabel.freesurfer.MGHImage(dataobj=data, affine=np.eye(4))
+    new_img_like(niimg, data.astype(float), niimg.affine, copy_header=True)

@@ -80,6 +80,7 @@ uses.
    fetch_coords_dosenbach_2010
    fetch_abide_pcp
    fetch_adhd
+   fetch_development_fmri
    fetch_haxby
    fetch_icbm152_2009
    fetch_icbm152_brain_gm_mask
