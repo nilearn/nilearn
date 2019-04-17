@@ -156,29 +156,61 @@ for i, (matrix, ax) in enumerate(zip(tangent_matrices, axes)):
 # represent deviations from the mean, which is set to 0.
 
 ###############################################################################
-# Extract subjects via PoSCE
+# Extract connectivity via PoSCE
 # --------------------------
 # Next, we use the population shrinkage of covariance estimator
 # :class:`nilearn.connectome.PopulationShrunkCovariance` .
 # It uses the correlation of a group to better estimate connectivity of a
 # single subject.
-from nilearn.connectome import PopulationShrunkCovariance, vec_to_sym_matrix
+from nilearn.connectome import PopulationShrunkCovariance
 
 posce_measure = PopulationShrunkCovariance(shrinkage=1e-2)
-posce_embeddings = posce_measure.fit_transform(pooled_subjects)
-posce_matrices = vec_to_sym_matrix(posce_embeddings)
+posce_matrices = posce_measure.fit_transform(children)
 
 plot_matrices(posce_matrices[:4], 'PoSCE')
 
 ###############################################################################
 # What kind of connectivity is most powerful for classification?
 # --------------------------------------------------------------
+<<<<<<< HEAD
 # We will use connectivity matrices as features to distinguish children from
 # adults. We use cross-validation and measure classification accuracy to
 # compare the different kinds of connectivity matrices.
 # We use random splits of the subjects into training/testing sets.
 # StratifiedShuffleSplit allows preserving the proportion of children in the
 # test set.
+=======
+# *ConnectivityMeasure* can output the estimated subjects coefficients
+# as 1D arrays through the parameter *vectorize*.
+connectivity_biomarkers = {}
+kinds = ['correlation', 'partial correlation', 'tangent', 'PoSCE']
+for kind in kinds:
+    if kind == 'PoSCE':
+        posce_measure = PopulationShrunkCovariance(shrinkage=1e-2,
+                                                  vectorize=True)
+        connectivity_biomarkers[kind] = posce_measure.\
+            fit_transform(pooled_subjects)
+    else:
+        conn_measure = ConnectivityMeasure(kind=kind, vectorize=True)
+        connectivity_biomarkers[kind] = conn_measure.fit_transform(pooled_subjects)
+
+# For each kind, all individual coefficients are stacked in a 2D
+# matrix (subject x connectivity features). This will be the input matrix for
+# the classifier.
+print('Correlation biomarker features for all subject of shape {0}'.format(
+    connectivity_biomarkers['correlation'].shape))
+
+###############################################################################
+# Note that we use the **pooled groups** that includes data from children
+# and adults.
+
+
+###############################################################################
+# We now aim to predict the group label ('child' or 'adult') from the
+# connectivity data using a support vector classifier (SVC). To evaluate
+# the models' performance, we use stratified 3-fold-cross-validation,
+# which keeps the ratio of children and adults constant in all folds.
+>>>>>>> added vectorize flag in example
 from sklearn.svm import LinearSVC
 from sklearn.model_selection import StratifiedShuffleSplit
 from sklearn.metrics import accuracy_score
