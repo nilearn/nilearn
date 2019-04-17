@@ -160,10 +160,10 @@ for estimator, components in zip(estimators, components_imgs):
                   title="%s" % names[estimator],
                   cut_coords=cut_coords, colorbar=False)
 show()
-
+################################################################################
 # .. note::
 #     To see how to extract subject-level timeseries' from regions
 #     created using Dictionary Learning, see :ref:`example Regions 
 #     extraction using Dictionary Learning and functional connectomes
 #     <sphx_glr_auto_examples_03_connectivitiy_plot_extract_regions_dictlearning_maps.py>`.
-#
+
