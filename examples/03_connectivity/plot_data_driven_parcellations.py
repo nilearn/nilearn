@@ -221,7 +221,7 @@ print("ReNA 2000 clusters: %.2fs" % (time.time() - start))
 # We notice that, at the first computation (without using precomputed data),
 # for 1000 clusters, the computation time is almost divided by 2 comparing to
 # Ward clustering. This is due to the interesting algorithmic properties of
-# ReNA. In some cases (higher number of features), this reduction in time
+# ReNA. In some cases (higher number of voxels), this reduction in time
 # computation can be much more significant.
 
 ##################################################################
@@ -235,10 +235,10 @@ print("ReNA 2000 clusters: %.2fs" % (time.time() - start))
 # inverse_transform method.
 
 # Avoid 0 label
-labels = rena.labels_ + 1
+labels = rena.labels_
 # Shuffling the labels for visualization
-permutation = np.random.permutation(labels.shape[0])
-labels = permutation[labels]
+permutation = np.random.permutation(np.unique(labels).shape[0])
+labels = 1 + permutation[labels]
 # Obtain the masker
 nifti_masker = rena.masker_
 # Unmask the labels
