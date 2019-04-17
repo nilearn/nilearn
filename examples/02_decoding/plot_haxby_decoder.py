@@ -1,8 +1,8 @@
 """
-Decoding with decoder metaestimator: face vs house recognition
+Decoding with :class:`nilearn.decoding.Decoder`: face vs house recognition
 ==============================================================
 
-Here is a simple example of decoding with the decoder metaestimator,
+Here is a simple example of decoding with the decoder meta-estimator,
 reproducing a face vs house discrimination task on the study Haxby 2001.
 
     * J.V. Haxby et al. "Distributed and Overlapping Representations of Faces
@@ -12,7 +12,7 @@ reproducing a face vs house discrimination task on the study Haxby 2001.
 """
 ######################################################################
 # Loading the data
-######################################################################
+# -----------------
 
 # First, we load the Haxby dataset
 from nilearn.datasets import fetch_haxby
@@ -52,7 +52,7 @@ y_test = target[condition_mask_test]
 
 ######################################################################
 # Fit and predict with the decoder
-######################################################################
+# ---------------------------------
 
 # Note that for this classification task both classes contain the same number
 # of samples (is balanced). Then, we can use the accuracy to measure the
@@ -63,7 +63,7 @@ decoder = Decoder(estimator='svc', mask_strategy='epi', smoothing_fwhm=4,
                   scoring='accuracy')
 
 decoder.fit(X_train, y_train)
-accuracy = np.mean(decoder.cv_scores_['house']) * 100
+accuracy = np.mean(decoder.cv_scores_[b"house"]) * 100
 print("Decoder cross-validation accuracy : %f%%" % accuracy)
 
 # Testing on out-of-sample data
@@ -73,7 +73,7 @@ print("Decoder classification accuracy : %f%%" % accuracy)
 
 ######################################################################
 # Visualization
-######################################################################
+# --------------
 
 weight_img = decoder.coef_img_[b"face"]
 
