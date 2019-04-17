@@ -181,7 +181,6 @@ kmeans = Parcellations(method='kmeans', n_parcels=2000,
                        verbose=1)
 # Call fit on functional dataset: single subject (less samples)
 kmeans.fit(dataset.func)
-print("KMeans 2000 clusters: %.2fs" % (time.time() - start))
 
 ###########################################################################
 # Visualize: Brain parcellations (KMeans)
