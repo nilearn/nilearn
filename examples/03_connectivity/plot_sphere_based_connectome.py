@@ -72,10 +72,10 @@ masker = input_data.NiftiSpheresMasker(
 # signal is cleaned from counfounds.
 
 func_filename = dataset.func[0]
-confound_filename = dataset.confounds[0]
+confounds_filename = dataset.confounds[0]
 
 time_series = masker.fit_transform(func_filename,
-                                   confounds=[confound_filename])
+                                   confounds=[confounds_filename])
 
 ##########################################################################
 # Display time series
@@ -166,8 +166,7 @@ print('Power atlas comes with {0}.'.format(power.keys()))
 #########################################################################
 # .. Note ::
 #     You can retrieve the coordinates for any atlas, including atlases
-#     not included in nilearn, using 
-# `:func: nilearn.plotting.find_parcellation_cut_coords`.
+#     not included in nilearn, using :func: `nilearn.plotting.find_parcellation_cut_coords`.
 
 
 ###############################################################################
@@ -189,7 +188,7 @@ spheres_masker = input_data.NiftiSpheresMasker(
     seeds=coords, smoothing_fwhm=4, radius=5.,
     detrend=True, standardize=True, low_pass=0.1, high_pass=0.01, t_r=2.5)
 
-timeseries = spheres_masker.fit_transform(fmri_filename,
+timeseries = spheres_masker.fit_transform(func_filename,
                                           confounds=confounds_filename)
 
 
@@ -262,7 +261,7 @@ spheres_masker = input_data.NiftiSpheresMasker(
     seeds=coords, smoothing_fwhm=4, radius=4.5,
     detrend=True, standardize=True, low_pass=0.1, high_pass=0.01, t_r=2.5)
 
-timeseries = spheres_masker.fit_transform(fmri_filename,
+timeseries = spheres_masker.fit_transform(func_filename,
                                           confounds=confounds_filename)
 
 covariance_estimator = GraphLassoCV()
@@ -282,4 +281,10 @@ print('Dosenbach networks names are {0}'.format(np.unique(dosenbach.networks)))
 
 plotting.show()
 
+###############################################################################
+# .. seealso::
+#
+#     :ref:`sphx_glr_auto_examples_03_connectivity_plot_atlas_comparison.py`
+#
+#     :ref:`sphx_glr_auto_examples_03_connectivity_plot_multi_subject_connectome.py`
 
