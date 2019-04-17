@@ -625,30 +625,30 @@ def _gifti_img_to_mesh(gifti_img):
                 nibabel.nifti1.intent_codes['NIFTI_INTENT_POINTSET'])[0].data
         except IndexError:
             raise ValueError(error_message.format(
-                     'NIFTI_INTENT_POINTSET', gifti_img.get_arrays_from_intent(
-                        nibabel.nifti1.intent_codes['NIFTI_INTENT_POINTSET'])))
+                'NIFTI_INTENT_POINTSET', gifti_img.get_arrays_from_intent(
+                    nibabel.nifti1.intent_codes['NIFTI_INTENT_POINTSET'])))
         try:
             faces = gifti_img.get_arrays_from_intent(
                 nibabel.nifti1.intent_codes['NIFTI_INTENT_TRIANGLE'])[0].data
         except IndexError:
             raise ValueError(error_message.format(
-                     'NIFTI_INTENT_TRIANGLE', gifti_img.get_arrays_from_intent(
-                        nibabel.nifti1.intent_codes['NIFTI_INTENT_TRIANGLE'])))
+                'NIFTI_INTENT_TRIANGLE', gifti_img.get_arrays_from_intent(
+                    nibabel.nifti1.intent_codes['NIFTI_INTENT_TRIANGLE'])))
     else:
         try:
             coords = gifti_img.getArraysFromIntent(
                 nibabel.nifti1.intent_codes['NIFTI_INTENT_POINTSET'])[0].data
         except IndexError:
             raise ValueError(error_message.format(
-                        'NIFTI_INTENT_POINTSET', gifti_img.getArraysFromIntent(
-                        nibabel.nifti1.intent_codes['NIFTI_INTENT_POINTSET'])))
+                'NIFTI_INTENT_POINTSET', gifti_img.getArraysFromIntent(
+                    nibabel.nifti1.intent_codes['NIFTI_INTENT_POINTSET'])))
         try:
             faces = gifti_img.getArraysFromIntent(
                 nibabel.nifti1.intent_codes['NIFTI_INTENT_TRIANGLE'])[0].data
         except IndexError:
             raise ValueError(error_message.format(
-                        'NIFTI_INTENT_TRIANGLE', gifti_img.getArraysFromIntent(
-                        nibabel.nifti1.intent_codes['NIFTI_INTENT_TRIANGLE'])))
+                'NIFTI_INTENT_TRIANGLE', gifti_img.getArraysFromIntent(
+                    nibabel.nifti1.intent_codes['NIFTI_INTENT_TRIANGLE'])))
 
     return coords, faces
 
@@ -680,7 +680,7 @@ def load_surf_mesh(surf_mesh):
         if len(file_list) == 1:
             surf_mesh = file_list[0]
         elif len(file_list) > 1:
-        #empty list is handled inside _resolve_globbing function
+            # empty list is handled inside _resolve_globbing function
             raise ValueError(("More than one file matching path: %s \n"
                              "load_surf_mesh can only load one file at a time")
                              % surf_mesh)
@@ -701,10 +701,10 @@ def load_surf_mesh(surf_mesh):
         else:
             raise ValueError(('The input type is not recognized. %r was given '
                               'while valid inputs are one of the following '
-                              'file formats: .gii, .gii.gz, Freesurfer specific'
-                              ' files such as .orig, .pial, .sphere, .white, '
-                              '.inflated or a list containing two Numpy '
-                              'arrays [vertex coordinates, face indices]'
+                              'file formats: .gii, .gii.gz, Freesurfer '
+                              'specific files such as .orig, .pial, .sphere, '
+                              '.white, .inflated or a list containing two '
+                              'Numpy arrays [vertex coordinates, face indices]'
                               ) % surf_mesh)
     elif isinstance(surf_mesh, (list, tuple)):
         try:
