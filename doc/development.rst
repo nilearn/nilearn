@@ -22,7 +22,7 @@ developers).
 Nilearn targets ease of use, but as Python code. In other words, we will
 not add graphical user interfaces, but we want our code to be as easy to
 understand as possible, with easy prototyping and debugging, even for
-beginners in Python. Criterions to include features
+beginners in Python.
 
 We are parsimonious in the way we adding features to the project, as it puts on weight. Criteria include:
 
