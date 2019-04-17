@@ -8,7 +8,7 @@ decoding task.
 
 #############################################################################
 # Loading the data
-#############################################################################
+# -----------------
 
 # We start by loading data using nilearn dataset fetcher
 from nilearn import datasets
@@ -54,7 +54,7 @@ classification_target = stimuli[task_mask]
 
 #############################################################################
 # Training the decoder
-#############################################################################
+# ---------------------
 
 # Then we define the various classifiers that we use
 classifiers = ['svc_l2', 'svc_l1', 'logistic_l1', 'logistic_l2']
@@ -63,7 +63,7 @@ classifiers = ['svc_l2', 'svc_l1', 'logistic_l1', 'logistic_l2']
 # classifiers
 import time
 from nilearn.decoding import Decoder
-from sklearn.model_selection import LeaveOneGroupOut, cross_val_score
+from sklearn.model_selection import LeaveOneGroupOut
 
 cv = LeaveOneGroupOut()
 cv.get_n_splits(groups=session_labels)
@@ -99,7 +99,7 @@ for classifier_name in sorted(classifiers):
 
 ###############################################################################
 # Visualization
-#############################################################################
+# --------------
 
 # Then we make a rudimentary diagram
 import matplotlib.pyplot as plt
@@ -133,9 +133,9 @@ plt.tight_layout()
 
 ###############################################################################
 # Visualizing the face vs house map
+# ---------------------------------
 
 # Finally, we plot the face vs house map for the different classifiers
-
 # Use the average EPI as a background
 from nilearn.image import mean_img
 mean_epi_img = mean_img(func_filename)
