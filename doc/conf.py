@@ -302,7 +302,8 @@ extlinks = {
 sphinx_gallery_conf = {
     'doc_module': 'nilearn',
     'backreferences_dir': os.path.join('modules', 'generated'),
-    'reference_url': {'nilearn': None}
+    'reference_url': {'nilearn': None},
+    'filename_pattern': '/plot_compare_decomposition.py'
     }
 
 # Get rid of spurious warnings due to some interaction between

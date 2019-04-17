@@ -114,9 +114,13 @@ stat_map[np.where(np.mean(timeseries, axis=1) == 0)] = 0
 ###############################################################################
 # Display ROI on surface
 
+# Transform ROI indices in ROI map
+pcc_map = np.zeros(parcellation.shape[0], dtype=int)
+pcc_map[pcc_labels] = 1
+
 from nilearn import plotting
 
-plotting.plot_surf_roi(fsaverage['pial_left'], roi_map=pcc_labels,
+plotting.plot_surf_roi(fsaverage['pial_left'], roi_map=pcc_map,
                        hemi='left', view='medial',
                        bg_map=fsaverage['sulc_left'], bg_on_data=True,
                        title='PCC Seed')

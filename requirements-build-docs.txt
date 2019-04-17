@@ -7,7 +7,7 @@ lxml
 nose
 mkl
 sphinx
-sphinx_gallery
+sphinx-gallery
 numpydoc
 coverage
 patsy
