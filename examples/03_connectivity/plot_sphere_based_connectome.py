@@ -3,7 +3,7 @@ Extract signals on spheres and plot a connectome
 ==============================================================
 
 This example shows how to extract signals from spherical regions.
-We show how to build spheres around user-defined coordinates, as well as  
+We show how to build spheres around user-defined coordinates, as well as
 centered on coordinates from Power-264 atlas [1] and Dosenbach-160 [2].
 
 **References**
@@ -14,8 +14,8 @@ human brain." Neuron 72.4 (2011): 665-678.
 [2] Dosenbach N.U., Nardos B., et al. "Prediction of individual brain maturity
 using fMRI.", 2010, Science 329, 1358-1361.
 
-We estimate connectomes using two different methods: **sparse inverse 
-covariance** and **partial_correlation**, to recover the functional brain 
+We estimate connectomes using two different methods: **sparse inverse
+covariance** and **partial_correlation**, to recover the functional brain
 **networks structure**.
 
 We'll start by extracting signals from Default Mode Network regions and computing a
@@ -186,7 +186,7 @@ print('Stacked power coordinates in array of shape {0}.'.format(coords.shape))
 
 spheres_masker = input_data.NiftiSpheresMasker(
     seeds=coords, smoothing_fwhm=4, radius=5.,
-    detrend=True, standardize=True, low_pass=0.1, high_pass=0.01, t_r=2.5)
+    detrend=True, standardize=True, low_pass=0.1, high_pass=0.01, t_r=2)
 
 timeseries = spheres_masker.fit_transform(func_filename,
                                           confounds=confounds_filename)
@@ -259,7 +259,7 @@ coords = np.vstack((
 
 spheres_masker = input_data.NiftiSpheresMasker(
     seeds=coords, smoothing_fwhm=4, radius=4.5,
-    detrend=True, standardize=True, low_pass=0.1, high_pass=0.01, t_r=2.5)
+    detrend=True, standardize=True, low_pass=0.1, high_pass=0.01, t_r=2)
 
 timeseries = spheres_masker.fit_transform(func_filename,
                                           confounds=confounds_filename)
