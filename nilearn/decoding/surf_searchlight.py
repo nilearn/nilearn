@@ -7,6 +7,7 @@ neighborhood of each location of a domain.
 # Authors : Vincent Michel (vm.michel@gmail.com)
 #           Alexandre Gramfort (alexandre.gramfort@inria.fr)
 #           Philippe Gervais (philippe.gervais@inria.fr)
+#           Sylvain Takerkart (Sylvain.Takerkart@univ-amu.fr
 #
 # License: simplified BSD
 
@@ -17,25 +18,52 @@ from distutils.version import LooseVersion
 
 import numpy as np
 
-from sklearn import svm
+from sklearn import svm, neighbors
 from sklearn.base import BaseEstimator
 
 
 from .. import surf_masking
-from ..input_data.gifti_spheres_masker import _apply_surfmask_and_get_affinity
 from .._utils.compat import _basestring
 from .searchlight import search_light
 
 
 ESTIMATOR_CATALOG = dict(svc=svm.LinearSVC, svr=svm.SVR)
 
+def _apply_surfmask_and_get_affinity(mesh_coords, giimgs_data, radius, surfmask=None):
+    """Utility function used for searchlight decoding.
+    Parameters
+    ----------
+    mesh_coords: 2D array. n_vertex x 3
+        Coordinates of the vertices of the mesh.
+        We here recommand using a sphere.
+    giimgs_data: 2D array, n_vertex x n_sample
+        Surface textures to process, as e.g extracted by
+        nilearn.surface.load_surf_data("*.gii")
+    radius: float
+        Indicates, in millimeters, the radius for the sphere around the seed.
+    surfmask: 1D array, optional
+        Mask to apply to regions before extracting signals.
+        Should have two values, one of them being zero.
+    """
+
+
+    clf = neighbors.NearestNeighbors(radius=radius)
+    A = clf.fit(mesh_coords).radius_neighbors_graph(mesh_coords)
+    A = A.tolil()
+
+    if surfmask is not None:
+        A = A[surfmask != 0,:]
+
+    X = giimgs_data.T
+
+    return X, A
 
 
 ##############################################################################
-### Class for search_light ###################################################
+### Class for surface searchlight ############################################
 ##############################################################################
 class SurfSearchLight(BaseEstimator):
-    """Implement surf_search_light analysis using an arbitrary type of classifier.
+    """Implements surface searchlight decoding.
 
     Parameters
     -----------
@@ -103,13 +131,14 @@ class SurfSearchLight(BaseEstimator):
         self.cv = cv
         self.verbose = verbose
 
-    def fit(self, giimgs, y, groups=None):
+    def fit(self, giimgs_data, y, groups=None):
         """Fit the searchlight
 
         Parameters
         ----------
-        giimgs : giimg
-            2D texture (nbr of nodes x nbr of samples).
+        giimgs_data: 2D array, n_vertex x n_sample
+            Surface textures to process, as e.g extracted by
+            nilearn.surface.load_surf_data("*.gii")
 
         y : 1D array-like
             Target variable to predict. Must have exactly as many elements as
@@ -127,6 +156,7 @@ class SurfSearchLight(BaseEstimator):
             process_mask_img.
         """
 
+        '''
         # Get world coordinates
         mesh_coords = surf_masking._get_mesh_coords(self.orig_mesh)
         surfmask = surf_masking._load_surfmask_tex(self.surfmask_tex)
@@ -139,13 +169,25 @@ class SurfSearchLight(BaseEstimator):
         
         print("Shape of seeds (surfmask_coords), X and A matrices: ",
               surfmask_coords.shape, X.shape, A.shape)
+        '''
+
+        mesh_coords = surf_masking._get_mesh_coords(self.orig_mesh)
+        process_surfmask = surf_masking._load_surfmask_tex(self.process_surfmask_tex)
+        X, A = _apply_surfmask_and_get_affinity(mesh_coords, giimgs_data,
+                                                self.radius,
+                                                surfmask = process_surfmask)
+
+        if process_surfmask is not None:
+            print("Number of elements in the mask:", np.sum(process_surfmask!=0))
+        print("Shape of X and A matrices: ", X.shape, A.shape)
 
         estimator = self.estimator
         if isinstance(estimator, _basestring):
             estimator = ESTIMATOR_CATALOG[estimator]()
 
+
         # scores is an 1D array of CV scores with length equals to the number
-        # of voxels in processing mask (columns in process_mask)
+        # of vertices in the processing mask
         scores = search_light(X, y, estimator, A, groups,
                               self.scoring, self.cv, self.n_jobs,
                               self.verbose)
@@ -155,4 +197,7 @@ class SurfSearchLight(BaseEstimator):
         scores_3D = np.zeros(process_surfmask.shape)
         scores_3D[process_surfmask] = scores
         self.scores_ = scores_3D
+
+        print("Scores 3D: ", scores_3D.shape)
+
         return self
