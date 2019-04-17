@@ -4,6 +4,11 @@
 NEW
 ---
 
+- Optimization to image resampling
+  :func:`nilearn.image.resample_img` has been optimized to pad rather than
+  resample images in the special case when there is only a translation
+  between two spaces. This is a common case in :func:`nilearn.input_data.NiftiMasker`
+  when using the `mask_strategy="template` option for brains in MNI space.
 - New brain development fMRI dataset fetcher
   :func:`nilearn.datasets.fetch_development_fmri` can be used to download
   movie-watching data in children and adults. A light-weight dataset implemented
