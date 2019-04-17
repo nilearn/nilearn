@@ -2,16 +2,16 @@
 Deriving spatial maps from group fMRI data using ICA and Dictionary Learning```
 ===============================================================================
 
-Various approaches exist to derive spatial maps or networks from 
-group fmr data. The methods extract distributed brain regions that 
+Various approaches exist to derive spatial maps or networks from
+group fmr data. The methods extract distributed brain regions that
 exhibit similar BOLD fluctuations over time. Decomposition
-methods allow for generation of many independent maps simultaneously 
-without the need to provide a priori information (e.g. seeds or priors.) 
+methods allow for generation of many independent maps simultaneously
+without the need to provide a priori information (e.g. seeds or priors.)
 
-This example will apply two popular decomposition methods, ICA and 
-Dictionary Learning, to fMRI data measured while children and young adults 
-watch movies. The resulting maps will be visualized using atlas plotting 
-tools. 
+This example will apply two popular decomposition methods, ICA and
+Dictionary Learning, to fMRI data measured while children and young adults
+watch movies. The resulting maps will be visualized using atlas plotting
+tools.
 
 CanICA is an ICA method for group-level analysis of fMRI data. Compared
 to other strategies, it brings a well-controlled group model, as well as a
@@ -148,6 +148,7 @@ for estimator, components in zip(estimators, components_imgs):
 show()
 ################################################################################
 # .. note::
+#
 #     To see how to extract subject-level timeseries' from regions
 #     created using Dictionary Learning, see :ref:`example Regions 
 #     extraction using Dictionary Learning and functional connectomes
