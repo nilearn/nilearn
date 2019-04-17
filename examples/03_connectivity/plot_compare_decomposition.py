@@ -86,8 +86,6 @@ for i, cur_img in enumerate(iter_img(canica_components_img)):
     plot_stat_map(cur_img, display_mode="z", title="IC %d" % i,
                   cut_coords=1, colorbar=False)
 
-show()
-
 
 ####################################################################
 # Compare CanICA to dictionary learning
