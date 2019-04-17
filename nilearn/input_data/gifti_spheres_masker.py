@@ -25,3 +25,6 @@ def _apply_surfmask_and_get_affinity(seeds, giimgs, mesh_coords, radius, allow_o
             raise ValueError('Overlap detected between spheres')
 
     return X, A
+
+
+

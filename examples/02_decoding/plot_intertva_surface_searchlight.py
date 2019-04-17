@@ -85,7 +85,7 @@ if fullbrain:
     #ng.write(surfmask_tex,surfmask_path)
 else:
     # reading ROI surface mask
-    surfmask_path = op.join(subdir,'fsaverage5.lh.temporal_roi.gii')
+    surfmask_path = op.join(subdir,'fsaverage5.lh.stg_sts.gii')
     surfmask_tex = nb.load(surfmask_path)
     # with random mask of 1000 vertices
     #inds = np.random.permutation(X.shape[0])[np.arange(1000)]
@@ -101,13 +101,13 @@ else:
 n_jobs = 2
 
 # Define the cross-validation scheme used for validation.
-sss = StratifiedShuffleSplit(n_splits=10, test_size=0.15)
+sss = StratifiedShuffleSplit(n_splits=20, test_size=0.15)
 
 # Define the classifier
 logreg = LogisticRegression()
 
 # Set the radius of the searchlight sphere that will scan the mesh
-radius = 9
+radius = 8
 
 # Define the searchlight "estimator"
 searchlight = nilearn.decoding.SurfSearchLight(mesh,
@@ -123,16 +123,6 @@ searchlight = nilearn.decoding.SurfSearchLight(mesh,
 
 # this can take time, depending mostly on the size of the mesh, the number of cross-validation splits and the radius
 searchlight.fit(X, y)
-
-
-### Save the searchlight accuracy map ###
-
-# here also, this is a dirty way to do it, to be changed...
-slscores_tex = nb.load(tex_path)
-slscores_tex.darrays[0].data = searchlight.scores_.astype(np.float32)
-slscores_path = op.join(subdir, 'fsaverage5.lh.searchlight_accuracy_map.gii')
-ng.write(slscores_tex,slscores_path)
-
 
 ### Plot the results with nilearn surface tools ###
 from nilearn import datasets
