@@ -21,8 +21,6 @@ import numpy as np
 from sklearn import svm, neighbors
 from sklearn.base import BaseEstimator
 
-
-from .. import surf_masking
 from .._utils.compat import _basestring
 from .searchlight import search_light
 
@@ -46,9 +44,9 @@ def _apply_surfmask_and_get_affinity(mesh_coords, giimgs_data, radius, surfmask=
         Should have two values, one of them being zero.
     """
 
-
     clf = neighbors.NearestNeighbors(radius=radius)
-    A = clf.fit(mesh_coords).radius_neighbors_graph(mesh_coords)
+    clf.fit(mesh_coords)
+    A = clf.radius_neighbors_graph(mesh_coords)
     A = A.tolil()
 
     if surfmask is not None:
@@ -156,48 +154,23 @@ class SurfSearchLight(BaseEstimator):
             process_mask_img.
         """
 
-        '''
-        # Get world coordinates
-        mesh_coords = surf_masking._get_mesh_coords(self.orig_mesh)
-        surfmask = surf_masking._load_surfmask_tex(self.surfmask_tex)
-        surfmask_coords = mesh_coords[surfmask,:]
-        process_surfmask = surf_masking._load_surfmask_tex(self.process_surfmask_tex)
-
-        X, A = _apply_surfmask_and_get_affinity(
-            surfmask_coords, giimgs, mesh_coords, self.radius, True,
-            process_surfmask=process_surfmask)
-        
-        print("Shape of seeds (surfmask_coords), X and A matrices: ",
-              surfmask_coords.shape, X.shape, A.shape)
-        '''
-
-        mesh_coords = surf_masking._get_mesh_coords(self.orig_mesh)
-        process_surfmask = surf_masking._load_surfmask_tex(self.process_surfmask_tex)
+        mesh_coords = self.orig_mesh[0]
         X, A = _apply_surfmask_and_get_affinity(mesh_coords, giimgs_data,
                                                 self.radius,
-                                                surfmask = process_surfmask)
-
-        if process_surfmask is not None:
-            print("Number of elements in the mask:", np.sum(process_surfmask!=0))
-        print("Shape of X and A matrices: ", X.shape, A.shape)
+                                                surfmask = self.process_surfmask_tex)
 
         estimator = self.estimator
         if isinstance(estimator, _basestring):
             estimator = ESTIMATOR_CATALOG[estimator]()
-
 
         # scores is an 1D array of CV scores with length equals to the number
         # of vertices in the processing mask
         scores = search_light(X, y, estimator, A, groups,
                               self.scoring, self.cv, self.n_jobs,
                               self.verbose)
-                                   
-        print(scores.shape)
-                                   
-        scores_3D = np.zeros(process_surfmask.shape)
-        scores_3D[process_surfmask] = scores
-        self.scores_ = scores_3D
 
-        print("Scores 3D: ", scores_3D.shape)
+        scores_fullbrain = np.zeros(self.process_surfmask_tex.shape)
+        scores_fullbrain[self.process_surfmask_tex!=0] = scores
+        self.scores_ = scores_fullbrain
 
         return self
