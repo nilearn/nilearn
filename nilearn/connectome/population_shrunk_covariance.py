@@ -265,4 +265,4 @@ class PopulationShrunkCovariance(BaseEstimator, TransformerMixin):
             )
             for c in connectivities
         ]
-        return shrunk_connectivities
+        return np.array(shrunk_connectivities)
