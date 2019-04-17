@@ -533,8 +533,7 @@ def resample_img(img, target_affine=None, target_shape=None,
     print(b)
     # if (A == I OR some combination of permutation(I) and sign-flipped(I)) AND
     # all(b == integers):
-    if ( (np.all(np.eye(3) == A) and all(bt == np.round(bt) for bt in b)) and
-        not False):
+    if np.all(np.eye(3) == A) and all(bt == np.round(bt) for bt in b):
         # TODO: also check for sign flips
         # TODO: also check for permutations of I
 
@@ -547,14 +546,21 @@ def resample_img(img, target_affine=None, target_shape=None,
 
         # offset the original un-cropped image indices by the relative
         # translation, b.
-        # TODO: add check that off.stop + b  <= shape ; place image in location
-        # but throw warning that the affine may be wrong because the image is
-        # being put outside the FOV and is non recoverable.
-        indices = tuple(slice(int(off.start - dim_b), int(off.stop - dim_b))
-                        for off, dim_b in zip(offsets[:3], b[:3]))
-        print(offsets)
-        print(indices)
-        resampled_data[indices] = data[offsets]
+        indices = [(int(off.start - dim_b), int(off.stop - dim_b))
+                   for off, dim_b in zip(offsets[:3], b[:3])]
+
+        # If image are not fully overlapping, place only portion of image.
+        slices = []
+        for dimsize, index in zip(resampled_data.shape, indices):
+            print(0, index[0], np.max((0, index[0])))
+            print(dimsize, index[1], np.min((dimsize, index[1])))
+            slices.append(slice(np.max((0, index[0])),
+                                np.min((dimsize, index[1]))))
+        slices = tuple(slices)
+
+        # ensure the source image being placed isn't larger than the dest
+        subset_indices = tuple(slice(0, d) for d in resampled_data.shape)
+        resampled_data[slices] = cropped_img.get_data()[subset_indices]
         print('did it here')
     else:
         # If A is diagonal, ndimage.affine_transform is clever enough to use a
