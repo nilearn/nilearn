@@ -108,9 +108,7 @@ print(conditions.shape)
 # machine-learning toolbox on the fmri_masked data.
 #
 # As a decoder, we use a Support Vector Classification, with a linear
-# kernel.
-#
-# We first create it:
+# kernel. We first create it using by using :class:`nilearn.decoding.Decoder`.
 from nilearn.decoding import Decoder
 decoder = Decoder(estimator='svc', mask=mask_filename, standardize=True)
 
@@ -155,6 +153,8 @@ conditions_test = conditions[-30:]
 decoder.fit(fmri_niimgs_train, conditions_train)
 
 prediction = decoder.predict(fmri_niimgs_test)
+
+# The prediction accuracy is calculated on the test data.
 print("Prediction Accuracy: {:.3f}".format(
     (prediction == conditions_test).sum() / float(len(conditions_test))))
 
