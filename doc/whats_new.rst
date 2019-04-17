@@ -9,6 +9,12 @@ NEW
   movie-watching data in children and adults. A light-weight dataset implemented
   for teaching and usage in the examples.
 
+Enhancements
+------------
+
+- The decomposition estimators will now accept argument `per_component`
+  with `score` method to explain the variance for each component.
+
 Changes
 -------
 
@@ -22,6 +28,8 @@ Fixes
   images have NaNs.
 - add_contours now accepts `threshold` argument for filled=False. Now
   `threshold` is equally applied when asked for fillings in the contours.
+- Fix decomposition estimators returning explained variance score as 0.
+  when asked for all components when per_component=False.
 
 0.5.1
 =====
@@ -99,23 +107,6 @@ The following people contributed to this release::
    2  Elizabeth DuPre
    1  Eric Larson
    1  Pierre Bellec
-
-=======
-=======
-0.5.1
-=====
-
-Fixes
------
-
-- Fix decomposition estimators returning explained variance score as 0.
-  when asked for all components when per_component=False.
-
-Enhancements
-------------
-
-- The decomposition estimators will now accept argument `per_component`
-  with `score` method to explain the variance for each component.
 
 0.5.0
 =====
