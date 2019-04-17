@@ -10,14 +10,14 @@ connectome from them.
 """
 
 ##########################################################################
-# Retrieve the dataset
-# ---------------------
+# Retrieve the brain development fmri dataset
+# -------------------------------------------
 from nilearn import datasets
-adhd_dataset = datasets.fetch_adhd(n_subjects=1)
+dataset = datasets.fetch_development_fmri(n_subjects=1)
 
 # print basic information on the dataset
 print('First subject functional nifti image (4D) is at: %s' %
-      adhd_dataset.func[0])  # 4D data
+      dataset.func[0])  # 4D data
 
 
 ##########################################################################
@@ -43,8 +43,8 @@ masker = input_data.NiftiSpheresMasker(
     low_pass=0.1, high_pass=0.01, t_r=2.5,
     memory='nilearn_cache', memory_level=1, verbose=2)
 
-func_filename = adhd_dataset.func[0]
-confound_filename = adhd_dataset.confounds[0]
+func_filename = dataset.func[0]
+confound_filename = dataset.confounds[0]
 
 time_series = masker.fit_transform(func_filename,
                                    confounds=[confound_filename])
