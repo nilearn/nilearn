@@ -541,23 +541,29 @@ def test_crop():
 def test_resample_identify_affine_int_translation():
     # Testing resample to img function
     rand_gen = np.random.RandomState(0)
-    shape = (6, 3, 6)
-    data = rand_gen.random_sample(shape)
 
+    source_shape = (6, 4, 6)
     source_affine = np.eye(4)
-    source_img = Nifti1Image(data, source_affine)
+    source_affine[:, 3] = np.append(np.random.randint(0, 4, 3), 1)
+    source_data = rand_gen.random_sample(source_shape)
+    source_img = Nifti1Image(source_data, source_affine)
 
-    target_affine = 2 * source_affine
-    target_img = Nifti1Image(data, target_affine)
-
+    target_shape = (11, 10, 9)
+    target_data = np.zeros(target_shape)
+    target_affine = source_affine
+    target_affine[:3, 3] -= 3  # make the affine 3 larger in x, y, z
+    target_data[3:9, 3:7, 3:9] = source_data  # put the data at the offset loca
+    target_img = Nifti1Image(target_data, target_affine)
 
     result_img = resample_to_img(source_img, target_img,
                                  interpolation='nearest')
+    np.testing.assert_almost_equal(target_img.get_data(),
+                                   result_img.get_data())
 
-    downsampled = data[::2, ::2, ::2, ...]
-    x, y, z = downsampled.shape[:3]
-    np.testing.assert_almost_equal(downsampled,
-                                   result_img.get_data()[:x, :y, :z, ...])
+    result_img_2 = resample_to_img(result_img, source_img,
+                                   interpolation='nearest')
+    np.testing.assert_almost_equal(source_img.get_data(),
+                                   result_img_2.get_data())
 
 
 def test_resample_clip():

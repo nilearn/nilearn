@@ -419,17 +419,18 @@ def resample_img(img, target_affine=None, target_shape=None,
         input_img_is_string = False
 
     img = _utils.check_niimg(img)
+    shape = img.shape
+    affine = img.affine
 
     # noop cases
     if target_affine is None and target_shape is None:
         if copy and not input_img_is_string:
             img = _utils.copy_img(img)
         return img
+    if target_affine is affine and target_shape is shape:
+        return img
     if target_affine is not None:
         target_affine = np.asarray(target_affine)
-
-    shape = img.shape
-    affine = img.affine
 
     if (np.all(np.array(target_shape) == shape[:3]) and
             np.allclose(target_affine, affine)):
@@ -452,6 +453,8 @@ def resample_img(img, target_affine=None, target_shape=None,
     else:
         missing_offset = False
         target_affine = target_affine.copy()
+    print(affine)
+    print(target_affine)
     transform_affine = np.linalg.inv(target_affine).dot(affine)
     (xmin, xmax), (ymin, ymax), (zmin, zmax) = get_bounds(
         data.shape[:3], transform_affine)
@@ -536,7 +539,7 @@ def resample_img(img, target_affine=None, target_shape=None,
 
     # if (A == I OR some combination of permutation(I) and sign-flipped(I)) AND
     # all(b == integers):
-    if np.all(np.eye(A) == A) and all(bt == np.round(bt) for bt in b):
+    if np.all(np.eye(4) == A) and all(bt == np.round(bt) for bt in b):
         # TODO: also check for sign flips
         # TODO: also check for permutations of I
 
@@ -547,17 +550,16 @@ def resample_img(img, target_affine=None, target_shape=None,
         # TODO: flip axes that are flipped
         # TODO: un-shuffle permuted dimensions
 
-        indices = []
-        for tmpo, tmpb in zip(offsets[:3], b):
-            indices.append()
-        slices=1
-        # for each dimension:
-        #     Save index as translation + offset
-        #       (if not flipped: offset before, else: offset after)
-        # Insert cropped image into zero matrix at set indices
-   #     resampled_data[slices] = cropped_data
+        # offset the original un-cropped image indices by the relative
+        # translation, b.
+        # TODO: add check that off.stop + b  <= shape ; place image in location
+        # but throw warning that the affine may be wrong because the image is
+        # being put outside the FOV and is non recoverable.
+        indices = tuple(slice(off.start + dim_b, off.stop + dim_b)
+                        for off, dim_b in zip(offsets[:3], b[:3]))
+        resampled_data[indices] = cropped_img.get_data()
 
-    if True:
+    else:
         # Iterate over a set of 3D volumes, as the interpolation problem is
         # separable in the extra dimensions. This reduces the
         # computational cost
