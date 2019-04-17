@@ -1,3 +1,31 @@
+0.5.2
+=====
+
+**Released April 2019**
+
+NEW
+---
+
+.. warning::
+
+ | This is the **last** release supporting Python2 and 3.4 .
+ | The lowest Python version supported is now Python3.5.
+ | We recommend switching to Python3.6 .
+
+Fixes
+-----
+
+- Plotting ``.mgz`` files in MNE broke in ``0.5.1`` and has been fixed.
+
+Contributors
+------------
+
+The following people contributed to this release::
+
+    11  Kshitij Chawla (kchawla-pi)
+     3  Gael Varoquaux
+     2  Alexandre Gramfort
+
 0.5.1
 =====
 
@@ -5,7 +33,7 @@
 
 NEW
 ---
-- **Support for Python2 & Pyton3.4 wil be removed in the next release.**
+- **Support for Python2 & Python3.4 wil be removed in the next release.**
   We recommend Python 3.6 and up.
   Users with a Python2 or Python3.4 environment will be warned
   at their first Nilearn import.
@@ -57,7 +85,7 @@ Known Issues
   do not show parameters names in function signature
   when using help() and similar features.
   Please refer to their docstrings for this information.
-
+- Plotting ``.mgz`` files in MNE is broken.
 
 Contributors
 ------------
