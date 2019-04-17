@@ -14,7 +14,7 @@ import nibabel as nb
 from nibabel import gifti
 
 
-from ...surface.tests.test_surface import _generate_surf
+from nilearn.surface.tests.test_surface import _generate_surf
 from nilearn.decoding.surf_searchlight import SurfSearchLight
 
 def _create_toy_mesh():
@@ -43,8 +43,9 @@ def test_surf_searchlight():
 
     face_array = gifti.GiftiDataArray(data=mesh[1])
     face_array.intent = nb.nifti1.intent_codes['NIFTI_INTENT_TRIANGLE']
-
     gii_mesh = gifti.GiftiImage(darrays=[coord_array, face_array])
+
+    mesh = [gii_mesh.darrays[0].data, gii_mesh.darrays[1].data]
 
     # Generate a surface mask for a ROI
     data = np.ones(n_vertex,dtype=int)
@@ -57,10 +58,13 @@ def test_surf_searchlight():
                                                  intent='t test')
     gii_mask_tex = gifti.GiftiImage(darrays=[darray])
 
+    surfmask_data = gii_mask_tex.darrays[0].data
+
     # Create searchlight object
-    searchlight = SurfSearchLight(gii_mesh,
-                                  gii_mask_tex,
-                                  process_surfmask_tex=gii_mask_tex,
+    print(mesh[0].shape)
+    searchlight = SurfSearchLight(mesh,
+                                  surfmask_data,
+                                  process_surfmask_tex=surfmask_data,
                                   cv=4)
 
     # Generate functional data on this mesh
@@ -86,6 +90,8 @@ def test_surf_searchlight():
 
     gii_mesh = gifti.GiftiImage(darrays=[coord_array, face_array])
 
+    mesh = [gii_mesh.darrays[0].data, gii_mesh.darrays[1].data]
+
     # Generate full-mesh mask
     data = np.zeros(n_vertex,dtype=int)
     data[np.arange(n_vertex) > n_vertex / 2] = 1
@@ -98,10 +104,12 @@ def test_surf_searchlight():
                                                  intent='t test')
     gii_mask_tex = gifti.GiftiImage(darrays=[darray])
 
+    surfmask_data = gii_mask_tex.darrays[0].data
+
     # Create searchlight object
-    searchlight = SurfSearchLight(gii_mesh,
-                                  gii_mask_tex,
-                                  process_surfmask_tex=gii_mask_tex,
+    searchlight = SurfSearchLight(mesh,
+                                  surfmask_data,
+                                  process_surfmask_tex=surfmask_data,
                                   cv=4)
 
     # Generate functional data on this mesh
@@ -114,6 +122,3 @@ def test_surf_searchlight():
 
     # Run searchlight decoding
     scores = searchlight.fit(X, y)
-
-
-
