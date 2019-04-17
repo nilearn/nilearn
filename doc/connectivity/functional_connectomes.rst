@@ -104,13 +104,13 @@ regions, regressing out noise sources is indeed very important
    :class: green
 
    Try using the information above to compute the correlation matrix of
-   the first subject of the ADHD dataset downloaded with
-   :func:`nilearn.datasets.fetch_adhd`.
+   the first subject of the brain development dataset
+   downloaded with :func:`nilearn.datasets.fetch_development_fmri`.
 
    **Hints:**
 
    * Inspect the '.keys()' of the object returned by
-     :func:`nilearn.datasets.fetch_adhd`.
+     :func:`nilearn.datasets.fetch_development_fmri`.
 
    * :class:`nilearn.connectome.ConnectivityMeasure` can be used to compute
      a correlation matrix (check the shape of your matrices).
@@ -130,7 +130,8 @@ Probabilistic atlases
 The definition of regions as by a continuous probability map captures
 better our imperfect knowledge of boundaries in brain images (notably
 because of inter-subject registration errors). One example of such an
-atlas well suited to resting-state data analysis is the `MSDL atlas
+atlas well suited to resting-state or naturalistic-stimuli data analysis is
+the `MSDL atlas
 <https://team.inria.fr/parietal/18-2/spatial_patterns/spatial-patterns-in-resting-state/>`_
 (:func:`nilearn.datasets.fetch_atlas_msdl`).
 
@@ -181,8 +182,9 @@ the same considerations on using confounds regressors apply.
 .. topic:: **Exercise: correlation matrix of rest fMRI on probabilistic atlas**
    :class: green
 
-   Try to compute the correlation matrix of the first subject of the ADHD
-   dataset downloaded with :func:`nilearn.datasets.fetch_adhd`
+   Try to compute the correlation matrix of the first subject of the
+   brain development
+   dataset downloaded with :func:`nilearn.datasets.fetch_development_fmri`
    with the MSDL atlas downloaded via
    :func:`nilearn.datasets.fetch_atlas_msdl`.
 

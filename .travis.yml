@@ -2,7 +2,7 @@ sudo: required
 dist: xenial
 
 language: python
-python: "2.7"
+python: "3.5"
 
 virtualenv:
   system_site_packages: true
@@ -17,20 +17,13 @@ matrix:
   fast_finish: true
   allow_failures:
     # allow_failures seems to be keyed on the python version.
-    - python: 2.7
+    - python: 3.5
   include:
-    - env: DISTRIB="conda" PYTHON_VERSION="2.7"
-           NUMPY_VERSION="1.11.2" SCIPY_VERSION="0.17"
-           SCIKIT_LEARN_VERSION="0.18" MATPLOTLIB_VERSION="1.5.1"
-           PANDAS_VERSION="0.18.0" NIBABEL_VERSION="2.0.2" COVERAGE="true"
-    # Oldest supported versions without matplotlib
-    - env: DISTRIB="conda" PYTHON_VERSION="2.7"
-           NUMPY_VERSION="1.11.2" SCIPY_VERSION="0.17"
-           SCIKIT_LEARN_VERSION="0.18"
-    - env: DISTRIB="conda" PYTHON_VERSION="3.4"
-           NUMPY_VERSION="1.11.2" SCIPY_VERSION="0.17"
-           SCIKIT_LEARN_VERSION="0.18" MATPLOTLIB_VERSION="1.5.1"
-    # Most recent versions
+    # without matplotlib
+    - env: DISTRIB="conda" PYTHON_VERSION="3.5"
+           NUMPY_VERSION="*" SCIPY_VERSION="*" PANDAS_VERSION="*"
+           SCIKIT_LEARN_VERSION="*" COVERAGE="true"
+           LXML_VERSION="*"
     - env: DISTRIB="conda" PYTHON_VERSION="3.5"
            NUMPY_VERSION="*" SCIPY_VERSION="*" PANDAS_VERSION="*"
            SCIKIT_LEARN_VERSION="*" MATPLOTLIB_VERSION="*" COVERAGE="true"
@@ -46,8 +39,8 @@ matrix:
 
   # FLAKE8 linting on diff wrt common ancestor with upstream/master
     # Note: the python value is only there to trigger allow_failures
-    - python: 2.7
-      env: DISTRIB="conda" PYTHON_VERSION="2.7" FLAKE8_VERSION="*" SKIP_TESTS="true"
+    - python: 3.5
+      env: DISTRIB="conda" PYTHON_VERSION="3.5" FLAKE8_VERSION="*" SKIP_TESTS="true"
 
 install: source continuous_integration/install.sh
 
