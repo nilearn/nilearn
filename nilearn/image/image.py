@@ -376,17 +376,23 @@ def crop_img(img, rtol=1e-8, copy=True, pad=True, return_offset=False):
     if data.ndim == 4:
         passes_threshold = np.any(passes_threshold, axis=-1)
     coords = np.array(np.where(passes_threshold))
-    start = coords.min(axis=1)
-    end = coords.max(axis=1) + 1
+
+    # Sets full range if no data are found along the axis
+    if coords.shape[1] == 0:
+        start, end = [0, 0, 0], list(data.shape)
+    else:
+        start = coords.min(axis=1)
+        end = coords.max(axis=1) + 1
 
     # pad with one voxel to avoid resampling problems
     if pad:
         start = np.maximum(start - 1, 0)
         end = np.minimum(end + 1, data.shape[:3])
 
-    slices = [slice(s, e) for s, e in zip(start, end)]
+    slices = [slice(s, e) for s, e in zip(start, end)][:3]
     cropped_im = _crop_img_to(img, slices, copy=copy)
     return cropped_im if not return_offset else (cropped_im, tuple(slices))
+
 
 def pad_img(array, *args):
     """Pad an ndarray with zeros of quantity specified

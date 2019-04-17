@@ -13,7 +13,7 @@ import numpy as np
 import scipy
 from scipy import ndimage, linalg
 
-from .image import pad_img
+from .image import pad_img, crop_img
 from .. import _utils
 from .._utils.compat import _basestring
 
@@ -453,8 +453,6 @@ def resample_img(img, target_affine=None, target_shape=None,
     else:
         missing_offset = False
         target_affine = target_affine.copy()
-    print(affine)
-    print(target_affine)
     transform_affine = np.linalg.inv(target_affine).dot(affine)
     (xmin, xmax), (ymin, ymax), (zmin, zmax) = get_bounds(
         data.shape[:3], transform_affine)
@@ -490,15 +488,6 @@ def resample_img(img, target_affine=None, target_shape=None,
     else:
         transform_affine = np.dot(linalg.inv(affine), target_affine)
     A, b = to_matrix_vector(transform_affine)
-    # If A is diagonal, ndimage.affine_transform is clever enough to use a
-    # better algorithm.
-    if np.all(np.diag(np.diag(A)) == A):
-        if LooseVersion(scipy.__version__) < LooseVersion('0.18'):
-            # Before scipy 0.18, ndimage.affine_transform was applying a
-            # different logic to the offset for diagonal affine
-            b = np.dot(linalg.inv(A), b)
-        A = np.diag(A)
-
 
     data_shape = list(data.shape)
     # Make sure that we have a list here
@@ -532,14 +521,20 @@ def resample_img(img, target_affine=None, target_shape=None,
 
     # Code is generic enough to work for both 3D and 4D images
     other_shape = data_shape[3:]
-    resampled_data = np.empty(list(target_shape) + other_shape,
+    resampled_data = np.zeros(list(target_shape) + other_shape,
                               order=order, dtype=resampled_data_dtype)
 
     all_img = (slice(None), ) * 3
 
+    print(target_shape)
+    print(data_shape)
+    print(resampled_data.shape)
+    print(A)
+    print(b)
     # if (A == I OR some combination of permutation(I) and sign-flipped(I)) AND
     # all(b == integers):
-    if np.all(np.eye(4) == A) and all(bt == np.round(bt) for bt in b):
+    if ( (np.all(np.eye(3) == A) and all(bt == np.round(bt) for bt in b)) and
+        not False):
         # TODO: also check for sign flips
         # TODO: also check for permutations of I
 
@@ -555,11 +550,21 @@ def resample_img(img, target_affine=None, target_shape=None,
         # TODO: add check that off.stop + b  <= shape ; place image in location
         # but throw warning that the affine may be wrong because the image is
         # being put outside the FOV and is non recoverable.
-        indices = tuple(slice(off.start + dim_b, off.stop + dim_b)
+        indices = tuple(slice(int(off.start - dim_b), int(off.stop - dim_b))
                         for off, dim_b in zip(offsets[:3], b[:3]))
-        resampled_data[indices] = cropped_img.get_data()
-
+        print(offsets)
+        print(indices)
+        resampled_data[indices] = data[offsets]
+        print('did it here')
     else:
+        # If A is diagonal, ndimage.affine_transform is clever enough to use a
+        # better algorithm.
+        if np.all(np.diag(np.diag(A)) == A):
+            if LooseVersion(scipy.__version__) < LooseVersion('0.18'):
+                # Before scipy 0.18, ndimage.affine_transform was applying a
+                # different logic to the offset for diagonal affine
+                b = np.dot(linalg.inv(A), b)
+            A = np.diag(A)
         # Iterate over a set of 3D volumes, as the interpolation problem is
         # separable in the extra dimensions. This reduces the
         # computational cost
