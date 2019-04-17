@@ -40,7 +40,7 @@ Pull Requests
 =============
 
 We welcome pull requests from all community members.
-You can find our recommended process for opening a pull request in the
+We follow the same conventions as scikit-learn. You can find the recommended process to submit code in the
 `scikit-learn guide to contributing code
 <https://scikit-learn.org/stable/developers/contributing.html#contributing-code>`_.
 
