@@ -52,8 +52,6 @@ from nilearn.decomposition import CanICA
 
 canica = CanICA(n_components=20,
                 memory="nilearn_cache", memory_level=2,
-                threshold=3.,
-                n_init=1,
                 verbose=10,
                 mask_strategy='template',
                 random_state=0)
