@@ -2,8 +2,8 @@
 Clustering methods to learn a brain parcellation from fMRI
 ==========================================================
 
-We use spatially-constrained Ward-clustering and KMeans to create a set
-of parcels.
+We use spatially-constrained Ward-clustering, KMeans and Recursive Neighbor
+Agglomeration (ReNA) to create a set of parcels.
 
 In a high dimensional regime, these methods can be interesting
 to create a 'compressed' representation of the data, replacing the data
@@ -32,6 +32,14 @@ instance
       for fMRI-based inference of brain states.
       <http://dx.doi.org/10.1016/j.patcog.2011.04.006>`_.
       Pattern Recognition, Elsevier, 2011.
+
+More about ReNA clustering algorithm in the original paper
+
+    * A. Hoyos-Idrobo, G. Varoquaux, J. Kahn and B. Thirion, "Recursive
+      Nearest Agglomeration (ReNA): Fast Clustering for Approximation of
+      Structured Signals," in IEEE Transactions on Pattern Analysis and
+      Machine Intelligence, vol. 41, no. 3, pp. 669-681, 1 March 2019.
+      https://hal.archives-ouvertes.fr/hal-01366651/
 
 The big picture discussion corresponding to this example can be found
 in the documentation section :ref:`parcellating_brain`.
@@ -110,6 +118,7 @@ first_plot = plotting.plot_roi(ward_labels_img, title="Ward parcellation",
 
 # Grab cut coordinates from this plot to use as a common for all plots
 cut_coords = first_plot.cut_coords
+
 ###########################################################################
 # Compressed representation of Ward clustering
 # --------------------------------------------
@@ -165,13 +174,15 @@ plotting.plot_epi(index_img(fmri_compressed, 0),
 
 # This object uses method='kmeans' for KMeans clustering with 10mm smoothing
 # and standardization ON
-kmeans = Parcellations(method='kmeans', n_parcels=50,
+start = time.time()
+kmeans = Parcellations(method='kmeans', n_parcels=2000,
                        standardize=True, smoothing_fwhm=10.,
                        memory='nilearn_cache', memory_level=1,
                        verbose=1)
 # Call fit on functional dataset: single subject (less samples)
 kmeans.fit(dataset.func)
-print("KMeans 50 clusters: %.2fs" % (time.time() - start))
+print("KMeans 2000 clusters: %.2fs" % (time.time() - start))
+
 ###########################################################################
 # Visualize: Brain parcellations (KMeans)
 # ---------------------------------------
@@ -188,6 +199,100 @@ plotting.plot_roi(kmeans_labels_img, mean_func_img,
 kmeans_labels_img.to_filename('kmeans_parcellation.nii.gz')
 
 ##################################################################
-# Finally show them
+# Brain parcellations with ReNA Clustering
+# ----------------------------------------
+# The spatial constraints are implemented inside the ReNA object.
+#
+# We use caching. As a result, the clustering doesn't have
+# to be recomputed later.
+from nilearn.connectome import ReNA
+start = time.time()
+rena = ReNA(scaling=True, n_clusters=1000, memory='nilearn_cache')
 
-plotting.show()
+rena.fit_transform(dataset.func[0])
+print("ReNA 1000 clusters: %.2fs" % (time.time() - start))
+
+start = time.time()
+rena = ReNA(scaling=True, n_clusters=2000, memory='nilearn_cache')
+
+rena.fit_transform(dataset.func[0])
+print("ReNA 2000 clusters: %.2fs" % (time.time() - start))
+
+# We notice that, at the first computation (without using precomputed data),
+# for 1000 clusters, the computation time is almost divided by 2 comparing to
+# Ward clustering. This is due to the interesting algorithmic properties of
+# ReNA. In some cases (higher number of features), this reduction in time
+# computation can be much more significant.
+
+##################################################################
+# Visualize: Brain parcellations (ReNA)
+# -------------------------------------
+#
+# First we display the labels of the clustering in the brain.
+#
+# To visualize results, we need to transform the clustering's labels back
+# to a neuroimaging volume. For this, we use the NiftiMasker's
+# inverse_transform method.
+
+# Avoid 0 label
+labels = rena.labels_ + 1
+# Shuffling the labels for visualization
+permutation = np.random.permutation(labels.shape[0])
+labels = permutation[labels]
+# Obtain the masker
+nifti_masker = rena.masker_
+# Unmask the labels
+labels_img = nifti_masker.inverse_transform(labels)
+
+##################################################################
+# labels_img is a Nifti1Image object, it can be saved to file with the
+# following code:
+labels_img.to_filename('rena_parcellation.nii.gz')
+
+
+from nilearn.image import mean_img
+
+plotting.plot_roi(labels_img, mean_func_img, title="ReNA parcellation",
+                  display_mode='xz')
+
+# common cut coordinates for all plots
+cut_coords = first_plot.cut_coords
+
+##################################################################
+# Compressed representation of ReNA clustering
+# --------------------------------------------
+#
+# We illustrate the effect that the clustering has on the signal.
+# We show the original data, and the approximation provided by
+# the clustering by averaging the signal on each parcel.
+#
+# We can then compare the results with the compressed representation
+# obtained with Ward.
+
+# Display the original data
+plotting.plot_epi(mean_func_img, cut_coords=cut_coords,
+                  title='Original (%i voxels)' % original_voxels,
+                  vmax=vmax, vmin=vmin, display_mode='xz')
+
+# A reduced data can be created by taking the parcel-level average:
+# Note that, as many scikit-learn objects, the ReNA object exposes
+# a transform method that modifies input features. Here it reduces their
+# dimension.
+# However, the data are in one single large 4D image, we need to use
+# index_img to do the split easily:
+from nilearn.image import index_img
+fmri_reduced_rena = rena.transform(index_img(dataset.func[0], 0))
+
+# Display the corresponding data compression using the parcellation
+compressed_img_rena = rena.inverse_transform(fmri_reduced_rena)
+
+plotting.plot_epi(compressed_img_rena, cut_coords=cut_coords,
+                  title='Ward compressed representation (2000 parcels)',
+                  vmin=vmin, vmax=vmax, display_mode='xz')
+
+# Even if the compressed signal is relatively close
+# to the original signal, we can notice that Ward Clustering
+# gives a slightly more accurate compressed representation.
+# However, as said in the previous section, the computation time is
+# reduced which could still make ReNA more relevant than Ward in
+# some cases.
