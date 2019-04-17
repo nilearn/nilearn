@@ -23,8 +23,8 @@ Fixes
 - add_contours now accepts `threshold` argument for filled=False. Now
   `threshold` is equally applied when asked for fillings in the contours.
 - :func:`nilearn.plotting.plot_surf` and
-  :func:`nilearn.plotting.plot_surf_map` no longer threshold zero values when
-  no threshold is given.
+  :func:`nilearn.plotting.plot_surf_stat_map` no longer threshold zero values
+  when no threshold is given.
 - When :func:`nilearn.plotting.plot_surf_map` is used with a thresholded map
   but without a background map, the surface mesh is displayed in
   half-transparent grey to maintain a 3D perception.
