@@ -22,13 +22,13 @@ usage.
 Note that for an actual predictive modeling study of aging, the study
 should be ran on the full set of subjects. Also, all parameters should be set
 by cross-validation. This includes the smoothing applied to the data and the
-number of features selected by the Anova step. Indeed, even these
+number of features selected by the ANOVA step. Indeed, even these
 data-preparation parameter impact significantly the prediction score.
 
 
 Also, parameters such as the
 smoothing should be applied to the data and the number of features selected
-by the Anova step should be set by nested cross-validation, as they impact
+by the ANOVA step should be set by nested cross-validation, as they impact
 significantly the prediction score.
 
 Brain mapping with mass univariate
@@ -79,7 +79,7 @@ gm_maps_masked = variance_threshold.inverse_transform(gm_maps_thresholded)
 mask = nifti_masker.inverse_transform(variance_threshold.get_support())
 ###############################################################################
 # Training the decoder
-######################################################################
+# ---------------------
 
 # To save time (because these are anat images with many voxels), we include
 # only the 5-percent voxels most correlated with the age variable to fit.
@@ -120,7 +120,7 @@ print("")
 
 ######################################################################
 # Visualization
-######################################################################
+# --------------
 weight_img = decoder.coef_img_['beta']
 
 # Create the figure
@@ -135,6 +135,7 @@ show()
 
 ######################################################################
 # Visualize the quality of predictions
+# -------------------------------------
 import matplotlib.pyplot as plt
 plt.figure(figsize=(6, 4.5))
 plt.suptitle("Decoder: Mean Absolute Error %.2f years" % prediction_score)
@@ -152,7 +153,7 @@ plt.xlabel("subject")
 plt.legend(loc="best")
 ###############################################################################
 # Comparing to massi-univariate analysis
-###############################################################################
+# ---------------------------------------
 print("Massively univariate model")
 
 # First, we have to use the mask that we obtained after the variance
