@@ -440,7 +440,7 @@ def test_vol_to_surf():
     mni = datasets.load_mni152_template()
     mesh = _generate_surf()
     _check_vol_to_surf_results(mni, mesh)
-    fsaverage = datasets.fetch_surf_fsaverage5().pial_left
+    fsaverage = datasets.fetch_surf_fsaverage().pial_left
     _check_vol_to_surf_results(mni, fsaverage)
 
 
