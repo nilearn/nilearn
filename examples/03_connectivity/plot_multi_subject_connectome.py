@@ -57,7 +57,7 @@ mem = Memory('nilearn_cache')
 
 masker = input_data.NiftiMapsMasker(
     msdl_atlas_dataset.maps, resampling_target="maps", detrend=True,
-    low_pass=None, high_pass=0.01, t_r=2.5, standardize=True,
+    low_pass=None, high_pass=0.01, t_r=2, standardize=True,
     memory='nilearn_cache', memory_level=1, verbose=2)
 masker.fit()
 
