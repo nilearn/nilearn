@@ -4,8 +4,8 @@ from sklearn.base import BaseEstimator, TransformerMixin, clone
 from sklearn.datasets.base import Bunch
 from sklearn.covariance import LedoitWolf
 from nilearn.connectome.connectivity_matrices import (
-    _check_spd,
     sym_matrix_to_vec,
+    vec_to_sym_matrix,
     _geometric_mean,
     _map_eigenvalues,
 )
@@ -133,6 +133,10 @@ class PopulationShrunkCovariance(BaseEstimator, TransformerMixin):
             Threshold of the cumulative ratio of the variance explained by the
             components of the eigenvalue decomposition
 
+        vectorize : bool, optional
+            If True, connectivity matrices are reshaped into 1D arrays and only
+            their flattened lower triangular parts are returned.
+
         Attributes
         ----------
         `cov_estimator_` : estimator object
@@ -160,11 +164,14 @@ class PopulationShrunkCovariance(BaseEstimator, TransformerMixin):
         prior_mean_type="geometric",
         shrinkage=0.5,
         explained_variance_threshold=0.7,
+        vectorize=False
     ):
         self.cov_estimator = cov_estimator
         self.prior_mean_type = prior_mean_type
         self.shrinkage = shrinkage
         self.explained_variance_threshold = explained_variance_threshold
+        self.vectorize = vectorize
+
 
     def fit(self, X, y=None):
         """Fit PoSCE to the given time series for each subject
@@ -257,12 +264,15 @@ class PopulationShrunkCovariance(BaseEstimator, TransformerMixin):
         connectivities = np.array(connectivities)
         connectivities = sym_matrix_to_vec(connectivities)
 
-        shrunk_connectivities = [
+        shrunk_connectivities = np.array([
             shrunk_covariance_embedding(
                 cov_embedding=c,
                 prior_cov_approx=self.prior_cov_approx_,
                 shrinkage=self.shrinkage,
             )
             for c in connectivities
-        ]
-        return np.array(shrunk_connectivities)
+        ])
+
+        if not self.vectorize:
+            shrunk_connectivities = vec_to_sym_matrix(shrunk_connectivities)
+        return shrunk_connectivities
