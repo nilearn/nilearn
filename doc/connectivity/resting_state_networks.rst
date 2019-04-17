@@ -32,9 +32,11 @@ regions or networks that share similar BOLD signal across time. The
 CanICA incorporates information both within-subjects and across subjects
 to arrive at consensus components.
 
-We can demonstrate this technique using down-sampled data from the 
+.. topic:: Nilearn data for examples
+
+Nilearn provides easy-to-analyze data to explore functional connectivity and resting: the
 `brain development dataset <https://osf.io/5hju4/files/>`_, which
-has been preprocessed using `FMRIPrep and Nilearn <https://osf.io/wjtyq/>`_.
+has been preprocessed using `FMRIPrep and Nilearn <https://osf.io/wjtyq/>`_
 We use nilearn functions to fetch data from Internet and get the 
 filenames (:ref:`more on data loading <loading_data>`).
 
