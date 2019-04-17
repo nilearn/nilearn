@@ -21,7 +21,8 @@ from nilearn.plotting.img_plotting import (MNI152TEMPLATE, plot_anat, plot_img,
                                            plot_roi, plot_stat_map, plot_epi,
                                            plot_glass_brain, plot_connectome,
                                            plot_prob_atlas,
-                                           _get_colorbar_and_data_ranges)
+                                           _get_colorbar_and_data_ranges,
+                                           _plot_roi_contours)
 
 mni_affine = np.array([[-2.,    0.,    0.,   90.],
                        [0.,    2.,    0., -126.],
@@ -57,6 +58,24 @@ def test_plot_roi_view_types():
     demo_plot_roi(view_type='contours')
     # This is only a smoke test contours rois
     demo_plot_roi(view_type='continuous')
+
+    # Test error message for invalid view_type
+    assert_raises_regex(ValueError,
+                        'Unknown view type:',
+                        demo_plot_roi, view_type='flled')
+    plt.close()
+
+
+def test_plot_roi_contours():
+    display = plot_roi(None)
+    data = np.zeros((91, 109, 91))
+    x, y, z = -52, 10, 22
+    x_map, y_map, z_map = coord_transform(x, y, z,
+                                          np.linalg.inv(mni_affine))
+    data[int(x_map) - 5:int(x_map) + 5, int(y_map) - 3:int(y_map) + 3,
+         int(z_map) - 10:int(z_map) + 10] = 1
+    img = nibabel.Nifti1Image(data, mni_affine)
+    _plot_roi_contours(display, img, 'RdBu', 0.1, 2.)
     plt.close()
 
 
@@ -884,7 +903,7 @@ def test_invalid_in_display_mode_tiled_cut_coords_single_all_plots():
     img = _generate_img()
 
     for plot_func in [plot_img, plot_anat, plot_roi, plot_epi,
-                      plot_stat_map,plot_prob_atlas]:
+                      plot_stat_map, plot_prob_atlas]:
         assert_raises_regex(ValueError,
                             "The input given for display_mode='tiled' needs to "
                             "be a list of 3d world coordinates.",
@@ -896,7 +915,7 @@ def test_invalid_in_display_mode_tiled_cut_coords_all_plots():
     img = _generate_img()
 
     for plot_func in [plot_img, plot_anat, plot_roi, plot_epi,
-                      plot_stat_map,plot_prob_atlas]:
+                      plot_stat_map, plot_prob_atlas]:
         assert_raises_regex(ValueError,
                             "The number cut_coords passed does not "
                             "match the display_mode",

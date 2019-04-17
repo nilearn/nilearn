@@ -626,6 +626,11 @@ def _plot_roi_contours(display, roi_img, cmap, alpha, linewidths):
     linewidths : float
         This option can be used to set the boundary thickness of the
         contours.
+
+    Returns
+    -------
+    display : nilearn.plotting.displays.OrthoSlicer, object
+        Contours displayed on the background image.
     """
     roi_img = _utils.check_niimg_3d(roi_img)
     roi_data = roi_img.get_data()
