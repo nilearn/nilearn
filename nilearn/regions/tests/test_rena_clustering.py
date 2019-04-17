@@ -1,12 +1,12 @@
 from nose.tools import assert_equal, assert_not_equal, assert_raises
 from sklearn.externals.joblib import Memory
 from nilearn._utils.data_gen import generate_fake_fmri
-from nilearn.connectome.rena_clustering import ReNA
+from nilearn.regions.rena_clustering import ReNA
 from nilearn.input_data import NiftiMasker
 from nilearn.image import index_img
 
 
-def test_rena_clusterings():
+def test_rena_clustering():
     data, mask_img = generate_fake_fmri(shape=(10, 11, 12), length=5)
 
     nifti_masker = NiftiMasker(mask_img=mask_img).fit()

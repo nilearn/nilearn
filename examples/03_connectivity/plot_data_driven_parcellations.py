@@ -204,7 +204,7 @@ kmeans_labels_img.to_filename('kmeans_parcellation.nii.gz')
 #
 # We use caching. As a result, the clustering doesn't have
 # to be recomputed later.
-from nilearn.connectome import ReNA
+from nilearn.regions import ReNA
 start = time.time()
 rena = ReNA(scaling=True, n_clusters=1000, memory='nilearn_cache')
 
