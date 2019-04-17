@@ -178,7 +178,7 @@ plotting.plot_connectome(zero_matrix, dmn_coords,
 # Now let's calculate connectivity for the Seitzman atlas.
 spheres_masker = input_data.NiftiSpheresMasker(
     seeds=coords, smoothing_fwhm=4, radius=4,
-    detrend=True, standardize=True, low_pass=0.1, high_pass=0.01, t_r=2.5,
+    detrend=True, standardize=True, low_pass=0.1, high_pass=0.01, t_r=2,
     allow_overlap=True)
 
 timeseries = spheres_masker.fit_transform(fmri_filename,
