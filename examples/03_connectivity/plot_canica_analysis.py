@@ -38,8 +38,8 @@ Pre-prints for both papers are available on hal
 # ----------------------------------------------
 from nilearn import datasets
 
-adhd_dataset = datasets.fetch_adhd(n_subjects=15)
-func_filenames = adhd_dataset.func  # list of 4D nifti files for each subject
+dataset = datasets.fetch_development_fmri(n_subjects=30)
+func_filenames = dataset.func  # list of 4D nifti files for each subject
 
 # print basic information on the dataset
 print('First functional nifti image (4D) is at: %s' %
