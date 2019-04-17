@@ -182,7 +182,7 @@ def _nn_connectivity(connectivity, threshold=1e-7):
         (1. / connectivity.data, connectivity.nonzero()),
         (n_features, n_features)).tocsr()
 
-    max_connectivity = connectivity.max(axis=0).toarray()[0]
+    max_connectivity = _get_max_connectivity(connectivity_)
     inv_max = dia_matrix((1. / max_connectivity, 0),
                          shape=(n_features, n_features))
 
@@ -328,7 +328,8 @@ def nearest_neighbor_grouping(connectivity, masked_data, n_clusters,
 
 
 def recursive_neighbor_agglomeration(masker, masked_data, n_clusters,
-                                     n_iter=10, threshold=1e-7):
+                                     n_iter=10, threshold=1e-7,
+                                     verbose=0):
     """Recursive neighbor agglomeration (ReNA): it performs iteratively
     the nearest neighbor grouping [1]_.
 
@@ -348,6 +349,9 @@ def recursive_neighbor_agglomeration(masker, masked_data, n_clusters,
     threshold : float in the close interval [0, 1], optional (default 1e-7)
         The treshold is setted to handle eccentricities.
         In practice it is 1e-7.
+
+    verbose : int, optional (default 1)
+        Verbosity level.
 
     Returns
     -------
@@ -372,11 +376,17 @@ def recursive_neighbor_agglomeration(masker, masked_data, n_clusters,
     n_components = connectivity.shape[0]
 
     for i in range(n_iter):
+
         connectivity, masked_data, reduced_labels = nearest_neighbor_grouping(
             connectivity, masked_data, n_clusters, threshold)
 
         labels = reduced_labels[labels]
         n_components = connectivity.shape[0]
+
+        if verbose > 0:
+            print('After iteration number %s, features are '
+                  ' grouped into %s clusters'
+                  % (str(i + 1), str(n_components)))
 
         if n_components <= n_clusters:
             break
@@ -481,7 +491,7 @@ class ReNA(BaseEstimator, ClusterMixin, TransformerMixin):
     def __init__(self, n_clusters=2, mask=None, smoothing_fwhm=None,
                  standardize=True, target_affine=None, target_shape=None,
                  mask_strategy='background', memory=None, memory_level=1,
-                 verbose=False, scaling=False, n_iter=10, threshold=1e-7,):
+                 verbose=0, scaling=False, n_iter=10, threshold=1e-7,):
         self.n_clusters = n_clusters
         self.scaling = scaling
         self.n_iter = n_iter
@@ -540,7 +550,8 @@ class ReNA(BaseEstimator, ClusterMixin, TransformerMixin):
         n_components, labels = self.memory_.cache(
             recursive_neighbor_agglomeration)(self.masker_, X, self.n_clusters,
                                               n_iter=self.n_iter,
-                                              threshold=self.threshold)
+                                              threshold=self.threshold,
+                                              verbose=self.verbose)
 
         sizes = np.bincount(labels)
         sizes = sizes[sizes > 0]
@@ -609,3 +620,18 @@ class ReNA(BaseEstimator, ClusterMixin, TransformerMixin):
         X_inv = Xred[..., inverse]
 
         return self.masker_.inverse_transform(X_inv)
+
+
+def _get_max_connectivity(connectivity):
+    """This function calculate of the maximum on the axis=0.
+    It is applied to the connectivity matrix.
+    This matrix is sparse and symetric.
+    """
+    max_connectivity = connectivity.max(axis=0).toarray()[0]
+
+    N = connectivity.shape[0]
+    max_connectivity = np.zeros((N))
+    for i in range(N):
+        max_connectivity[i] = connectivity.getrow(i).max()
+
+    return max_connectivity
