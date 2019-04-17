@@ -26,11 +26,10 @@ Multi-subject ICA: CanICA
 
 Objective
 ----------
-ICA is a useful approach for finding independent sources of fMRI
-timeseries covariance without needing to define any priors. ICA
-and similar techniques can be therefore used to define regions or
-networks that share similar BOLD signal across time. The CanICA
-incorporates information both within-subjects and across subjects
+ICA is a useful approach for finding independent sources from fMRI
+images. ICA and similar techniques can be therefore used to define 
+regions or networks that share similar BOLD signal across time. The 
+CanICA incorporates information both within-subjects and across subjects
 to arrive at consensus components.
 
 We can demonstrate this technique using down-sampled data from the 
@@ -52,15 +51,6 @@ here: :ref:`sphx_glr_auto_examples_03_connectivity_plot_compare_decomposition.py
 Once an ICA object has been fit to an fMRI dataset, the individual 
 components can be accessed as a 4D Nifti object using the 
 `components_img_`attribute.
-
-.. note::
-
-    The use of the attribute `components_img_` from decomposition
-    estimators is implemented from version 0.4.1.
-    For older versions, unmask the deprecated attribute `components_`
-    to get the components image using attribute `masker_` embedded in
-    estimator.
-    See the :ref:`section Inverse transform: unmasking data <unmasking_step>`
 
 Visualizing results
 --------------------
@@ -92,8 +82,8 @@ We can also plot the map for different components separately:
    a fair representation, you should display all components and
    investigate which one resemble those displayed above.
 
-Comparing ICA to Dictionary learning
-====================================
+An alternative to ICA: Dictionary learning
+===========================================
 Recent work has shown that dictionary learning based techniques outperform
 ICA in term of stability and constitutes a better first step in a statistical
 analysis pipeline.

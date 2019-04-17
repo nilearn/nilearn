@@ -1,10 +1,10 @@
 """
-Deriving spatial maps from group fMRI data using Dictionary Learning and ICA
-============================================================================
+Deriving spatial maps from group fMRI data using ICA and Dictionary Learning```
+===============================================================================
 
-Many different approaches exist to derive spatial maps or networks from 
-group fmri data. The methods seek to find distributed brain regions that 
-exhibit similar changes in BOLD fluctuations over time. Decomposition
+Various approaches exist to derive spatial maps or networks from 
+group fmr data. The methods extract distributed brain regions that 
+exhibit similar BOLD fluctuations over time. Decomposition
 methods allow for generation of many independent maps simultaneously 
 without the need to provide a priori information (e.g. seeds or priors.) 
 
@@ -27,14 +27,6 @@ an explicit model of the signal. The reference papers are:
 Pre-prints for both papers are available on hal
 (http://hal.archives-ouvertes.fr)
 
-.. note::
-
-    The use of the attribute `components_img_` from decomposition
-    estimators is implemented from version 0.4.1.
-    For older versions, unmask the deprecated attribute `components_`
-    to get the components image using attribute `masker_` embedded in
-    estimator.
-    See the :ref:`section Inverse transform: unmasking data <unmasking_step>`
 """
 ###############################################################################
 # Load brain development fmri dataset
@@ -68,9 +60,7 @@ canica = CanICA(n_components=20,
 canica.fit(func_filenames)
 
 # Retrieve the independent components in brain space. Directly
-# accesible through attribute `components_img_`. Note that this
-# attribute is implemented from version 0.4.1. For older versions,
-# see note section above for details.
+# accesible through attribute `components_img_`.
 canica_components_img = canica.components_img_
 # components_img is a Nifti Image object, and can be saved to a file with
 # the following line:
