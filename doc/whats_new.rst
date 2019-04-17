@@ -1,4 +1,4 @@
-0.5.2
+0.6.0
 =====
 
 NEW
@@ -23,6 +23,34 @@ Fixes
 - add_contours now accepts `threshold` argument for filled=False. Now
   `threshold` is equally applied when asked for fillings in the contours.
 
+0.5.2
+=====
+
+**Released April 2019**
+
+NEW
+---
+
+.. warning::
+
+ | This is the **last** release supporting Python2 and 3.4 .
+ | The lowest Python version supported is now Python3.5.
+ | We recommend switching to Python3.6 .
+
+Fixes
+-----
+
+- Plotting ``.mgz`` files in MNE broke in ``0.5.1`` and has been fixed.
+
+Contributors
+------------
+
+The following people contributed to this release::
+
+    11  Kshitij Chawla (kchawla-pi)
+     3  Gael Varoquaux
+     2  Alexandre Gramfort
+
 0.5.1
 =====
 
@@ -30,7 +58,7 @@ Fixes
 
 NEW
 ---
-- **Support for Python2 & Pyton3.4 wil be removed in the next release.**
+- **Support for Python2 & Python3.4 wil be removed in the next release.**
   We recommend Python 3.6 and up.
   Users with a Python2 or Python3.4 environment will be warned
   at their first Nilearn import.
@@ -83,7 +111,7 @@ Known Issues
   do not show parameters names in function signature
   when using help() and similar features.
   Please refer to their docstrings for this information.
-
+- Plotting ``.mgz`` files in MNE is broken.
 
 Contributors
 ------------
@@ -100,8 +128,6 @@ The following people contributed to this release::
    2  Elizabeth DuPre
    1  Eric Larson
    1  Pierre Bellec
-
-=======
 
 0.5.0
 =====
@@ -1328,3 +1354,4 @@ Contributors (from ``git shortlog -ns 0.1``)::
      1  Matthias Ekman
      1  Michael Waskom
      1  Vincent Michel
+
