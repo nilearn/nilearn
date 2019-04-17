@@ -171,7 +171,8 @@ def test_fetch_surf_fsaverage():
             mesh, data_dir=tst.tmpdir)
 
         keys = {'pial_left', 'pial_right', 'infl_left', 'infl_right',
-                'sulc_left', 'sulc_right'}
+                'sphere_left', 'sphere_right', 'sulc_left', 'sulc_right',
+                }
 
         assert keys.issubset(set(dataset.keys()))
         assert_not_equal(dataset.description, '')
