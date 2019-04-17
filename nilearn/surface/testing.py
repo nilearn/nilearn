@@ -3,11 +3,13 @@
 import numpy as np
 from scipy.spatial import Delaunay
 
+
 def _generate_surf():
     rng = np.random.RandomState(42)
     coords = rng.rand(20, 3)
     faces = rng.randint(coords.shape[0], size=(30, 3))
     return [coords, faces]
+
 
 def _flat_mesh(x_s, y_s, z=0):
     x, y = np.mgrid[:x_s, :y_s]
