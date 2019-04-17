@@ -2114,7 +2114,8 @@ def fetch_development_fmri(n_subjects=None, reduce_confounds=True,
     if reduce_confounds:
         reduced_regressors = []
         for in_file in regressors:
-            out_file = os.path.splitext(in_file)[0] + '_reducedConfounds.tsv'
+            out_file = in_file.replace('desc-confounds',
+                                       'desc-reducedConfounds')
             if not os.path.isfile(out_file):
                 confounds = np.recfromcsv(in_file, delimiter='\t')
                 selected_confounds = confounds[keep_confounds]
