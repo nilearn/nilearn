@@ -33,8 +33,8 @@ def test_rena_clustering():
         assert_raises(ValueError, rena.fit, data)
 
     for n_clusters in [1, 2, 4, 8]:
-        rena = ReNA(n_clusters=n_clusters, n_iter=1, mask=nifti_masker,
-                    memory=memory).fit(data)
+        rena = ReNA(n_clusters=n_clusters, n_iter=1,
+                    mask=nifti_masker, memory=memory).fit(data)
         assert_not_equal(n_clusters, rena.n_clusters_)
 
     del n_voxels, data_compress
