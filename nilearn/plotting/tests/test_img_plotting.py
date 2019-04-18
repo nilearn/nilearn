@@ -587,6 +587,8 @@ def test_connectome_strength():
     # passing node args
     plot_connectome_strength(*args, node_size=10, cmap='RdBu')
     plt.close()
+    plot_connectome_strength(*args, node_size=10, cmap=plt.cm.RdBu)
+    plt.close()
 
     # masked array support
     masked_adjacency_matrix = np.ma.masked_array(
