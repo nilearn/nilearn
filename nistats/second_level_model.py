@@ -500,6 +500,7 @@ class SecondLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
             mem_glm = run_glm
         labels, results = mem_glm(Y, self.design_matrix_.values,
                                   n_jobs=self.n_jobs, noise_model='ols')
+
         # We save memory if inspecting model details is not necessary
         if self.minimize_memory:
             for key in results:
