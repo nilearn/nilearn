@@ -850,9 +850,11 @@ def fetch_coords_seitzman_2018(ordered_regions=True):
     anatomical_file = os.path.join(package_directory, "data",
                                    "seitzman_2018_ROIs_anatomicalLabels.txt")
 
-    rois = np.recfromcsv(roi_file, delimiter=" ", encoding="ascii")
+    #rois = np.recfromcsv(roi_file, delimiter=" ", encoding="ascii")
+    rois = np.recfromcsv(roi_file, delimiter=" ")
     rois = recfunctions.rename_fields(rois, {"netname": "network",
                                              "radiusmm": "radius"})
+    rois.network = rois.network.astype(str)
 
     # get integer regional labels and convert to text labels with mapping
     # from header line
@@ -863,20 +865,21 @@ def fetch_coords_seitzman_2018(ordered_regions=True):
         i, region = r.split("=")
         region_mapping[int(i)] = region
 
-    anatomical = np.genfromtxt(anatomical_file, skip_header=1,
-                               encoding="ascii")
-    anatomical_names = np.array([region_mapping[a] for a in anatomical],
-                                dtype=[('region', np.dtype((str, 20)))])
+    #anatomical = np.genfromtxt(anatomical_file, skip_header=1,
+    #                           encoding="ascii")
+    anatomical = np.genfromtxt(anatomical_file, skip_header=1)
+    anatomical_names = np.array([region_mapping[a] for a in anatomical])
 
     rois = recfunctions.merge_arrays((rois, anatomical_names),
                                      asrecarray=True, flatten=True)
+    rois.dtype.names = rois.dtype.names[:-1] + ("region",)
 
     if ordered_regions:
         rois = np.sort(rois, order=['network', 'y'])
 
     params = dict(rois=rois[['x', 'y', 'z']],
                   radius=rois['radius'],
-                  networks=rois['network'],
+                  networks=rois['network'].astype(str),
                   regions=rois['region'], description=fdescr)
 
     return Bunch(**params)
