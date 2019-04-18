@@ -13,10 +13,11 @@ Regression with spatial priors like TV-L1 and Graph-Net.
 
 from math import sqrt
 import numpy as np
+from nilearn.masking import _unmask_from_to_3d_array
 from .objective_functions import (spectral_norm_squared,
                                   _gradient_id,
                                   _logistic_loss_lipschitz_constant,
-                                  _squared_loss, _squared_loss_grad, _unmask,
+                                  _squared_loss, _squared_loss_grad,
                                   _logistic_loss_grad,
                                   _logistic as _logistic_loss)
 from .objective_functions import _gradient, _div
@@ -400,7 +401,8 @@ def _tvl1_objective(X, y, w, alpha, l1_ratio, mask, loss="mse"):
         out = _logistic_loss(X, y, w)
         w = w[:-1]
 
-    grad_id = _gradient_id(_unmask(w, mask), l1_ratio=l1_ratio)
+    grad_id = _gradient_id(
+        _unmask_from_to_3d_array(w, mask), l1_ratio=l1_ratio)
     out += alpha * _tvl1_objective_from_gradient(grad_id)
 
     return out
@@ -488,9 +490,9 @@ def tvl1_solver(X, y, alpha, l1_ratio, mask, loss=None, max_iter=100,
 
     def unmaskvec(w):
         if loss == "mse":
-            return _unmask(w, mask)
+            return _unmask_from_to_3d_array(w, mask)
         else:
-            return np.append(_unmask(w[:-1], mask), w[-1])
+            return np.append(_unmask_from_to_3d_array(w[:-1], mask), w[-1])
 
     def maskvec(w):
         if loss == "mse":
@@ -528,7 +530,7 @@ def tvl1_solver(X, y, alpha, l1_ratio, mask, loss=None, max_iter=100,
         def f2_prox(w, stepsize, dgap_tol, init=None):
             out, info = _prox_tvl1_with_intercept(
                 unmaskvec(w), volume_shape, l1_ratio, alpha * stepsize,
-                dgap_tol, prox_max_iter, init=_unmask(
+                dgap_tol, prox_max_iter, init=_unmask_from_to_3d_array(
                     init[:-1], mask) if init is not None else None,
                 verbose=verbose)
             return maskvec(out.ravel()), info
