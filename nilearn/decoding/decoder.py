@@ -49,10 +49,42 @@ SUPPORTED_ESTIMATORS = dict(
 )
 
 
-def _check_param_grid(estimator, X, y, param_grid):
-    """Check param_grid and return sensible default if none is given.
-    For more information, see the documentation:
-    <http://http://scikit-learn.org/stable/modules/generated/sklearn.svm.l1_min_c>
+def _check_param_grid(estimator, X, y, param_grid=None):
+    """Check param_grid and return sensible default if param_grid is None.
+
+    Parameters
+    -----------
+    estimator : str, optional
+        The estimator to choose among: 'svc', 'svc_l2', 'svc_l1', 'logistic',
+        'logistic_l1', 'ridge_classifier', 'ridge_regression',
+        and 'svr'. Note that the 'svc' and 'svc_l2' correspond to the same
+        estimator. Default 'svc'.
+
+    X : list of Niimg-like objects
+        See http://nilearn.github.io/manipulating_images/input_output.html
+        Data on which model is to be fitted. If this is a list,
+        the affine is considered the same for all.
+
+    y : array or list of length n_samples
+        The dependent variable (age, sex, IQ, yes/no, etc.).
+        Target variable to predict. Must have exactly as many elements as
+        3D images in niimg.
+
+    param_grid : dict of str to sequence, or sequence of such. Default None
+        The parameter grid to explore, as a dictionary mapping estimator
+        parameters to sequences of allowed values.
+
+        An empty dict signifies default parameters.
+
+        A sequence of dicts signifies a sequence of grids to search, and is
+        useful to avoid exploring parameter combinations that make no sense
+        or have no effect. See scikit-learn documentation for more information.
+
+    Returns
+    -------
+    param_grid : dict of str to sequence, or sequence of such. Sensible default
+    dict has size 1.
+
     """
     if param_grid is None:
         param_grid = {}
@@ -65,11 +97,6 @@ def _check_param_grid(estimator, X, y, param_grid):
             raise ValueError("%s is an unknown estimator."
                              "The supported estimators are: %s" %
                              (estimator, list(SUPPORTED_ESTIMATORS.keys())))
-
-        # loss = l2 was deprecated after version 0.17
-        if LooseVersion(sklearn.__version__) <= LooseVersion('0.17'):
-            if loss == 'squared_hinge':
-                loss = 'l2'
 
         if hasattr(estimator, 'penalty') and (estimator.penalty == 'l1'):
             min_c = l1_min_c(X, y, loss=loss)
@@ -87,9 +114,10 @@ def _check_param_grid(estimator, X, y, param_grid):
 def _parallel_fit(estimator, X, y, train, test, param_grid, is_classif, scorer,
                   mask_img, class_index, screening_percentile=None):
     """Find the best estimator for a fold within a job.
-    This function performs the fitting of several estimators, saving the best
-    performing ones per cross-validation fold. These models are used afterwards
-    to build the averaged model.
+    This function tries several parameters for the estimator for the train and
+    test fold provided and save the ones that performs best. These models are
+    used afterwards to build the averaged model.
+
     """
     n_features = X.shape[1]
     # Checking if the size of the mask image allow us to perform feature
@@ -104,8 +132,8 @@ def _parallel_fit(estimator, X, y, train, test, param_grid, is_classif, scorer,
     y_test = y[test].copy()
 
     if (selector is not None) and do_screening:
-        X_train = selector.fit_transform(X[train], y[train])
-        X_test = selector.transform(X[test])
+        X_train = selector.fit_transform(X_train, y_train)
+        X_test = selector.transform(X_test)
 
     # If there is none parameter grid, then we use a suitable grid (by default)
     param_grid = _check_param_grid(estimator, X_train, y_train, param_grid)
@@ -147,11 +175,6 @@ def _parallel_fit(estimator, X, y, train, test, param_grid, is_classif, scorer,
 
     if (selector is not None) and do_screening:
         best_coef = selector.inverse_transform(best_coef)
-
-    if LooseVersion(sklearn.__version__) <= LooseVersion('0.17'):
-        # scikit-learn > 0.17
-        if isinstance(estimator, SVR):
-            best_coef = -best_coef
 
     return (class_index, best_coef, best_intercept, best_y, best_param,
             best_score)
@@ -212,7 +235,7 @@ class BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
 
         For regression: 'r2', 'mean_absolute_error', or 'mean_squared_error'.
             Default 'r2'.
-        For classification: 'accuracy', 'f1', 'precision', or 'recall'.
+        For classification: 'accuracy', 'f1', 'precision', 'recall' or 'roc_auc'
             Default 'roc_auc'.
 
     smoothing_fwhm : float, optional. Default: None
@@ -314,6 +337,12 @@ class BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
             Target variable to predict. Must have exactly as many elements as
             3D images in niimg.
 
+        groups: None or bool, optional
+            Must be specify in multi-label classification settings.
+            Group labels for the samples used while splitting the dataset into
+            train/test set. This ‘groups’ parameter must always be specified to
+            calculate the number of splits.
+
         Attributes
         ----------
         `masker_` : instance of NiftiMasker or MultiNiftiMasker
@@ -392,7 +421,6 @@ class BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
                              list(SUPPORTED_ESTIMATORS.keys()))
 
         scorer = check_scoring(estimator, self.scoring)
-
         self.cv_ = list(check_cv(
             self.cv, y=y, classifier=self.is_classif).split(X, y,
                                                             groups=groups))
@@ -423,38 +451,39 @@ class BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
 
         parallel = Parallel(n_jobs=self.n_jobs, verbose=2 * self.verbose)
 
-        for i, (c, coef, intercept, y_info, params, scores) in enumerate(
-            parallel(
-                delayed(self._cache(_parallel_fit))(
-                    estimator, X, y[:, class_index], train, test,
-                    self.param_grid, self.is_classif, scorer, self.mask_img_,
-                    class_index, self.screening_percentile_)
-                for class_index, (train, test) in itertools.product(
+        for i, (class_index, coef, intercept, y_info, params, scores) \
+                in enumerate(parallel(delayed(self._cache(_parallel_fit))(
+                    estimator, X, y[:, c], train, test,
+                    self.param_grid, self.is_classif, scorer,
+                    self.mask_img_, c, self.screening_percentile_)
+                for c, (train, test) in itertools.product(
                     range(n_problems), self.cv_))):
 
             # Fetch the models to aggregate
-            coefs.setdefault(classes[c], []).append(coef)
-            intercepts.setdefault(classes[c], []).append(intercept)
+            coefs.setdefault(classes[class_index], []).append(coef)
+            intercepts.setdefault(classes[class_index], []).append(intercept)
 
-            cv_y_prob.setdefault(classes[c], []).append(y_info['y_prob'])
-            cv_indices.setdefault(classes[c], []).extend(
+            cv_y_prob.setdefault(
+                classes[class_index], []).append(y_info['y_prob'])
+            cv_indices.setdefault(classes[class_index], []).extend(
                 [i] * len(y_info['y_prob']))
-            cv_scores.setdefault(classes[c], []).append(scores)
+            cv_scores.setdefault(classes[class_index], []).append(scores)
 
-            self.cv_params_.setdefault(classes[c], {})
+            self.cv_params_.setdefault(classes[class_index], {})
             for k in params:
-                self.cv_params_[classes[c]].setdefault(k, []).append(params[k])
+                self.cv_params_[classes[class_index]].setdefault(
+                    k, []).append(params[k])
 
             if self.is_classif:
-                cv_y_true.setdefault(classes[c], []).extend(
+                cv_y_true.setdefault(classes[class_index], []).extend(
                     self._enc.inverse_transform(y[y_info['y_true_indices']]))
             else:
-                cv_y_true.setdefault(classes[c], []).extend(
+                cv_y_true.setdefault(classes[class_index], []).extend(
                     y[y_info['y_true_indices']])
 
             if (n_problems <= 2) and self.is_classif:
                 # Binary classification
-                other_class = np.setdiff1d(classes, classes[c])[0]
+                other_class = np.setdiff1d(classes, classes[class_index])[0]
                 coefs.setdefault(other_class, []).append(-coef)
                 intercepts.setdefault(other_class, []).append(-intercept)
                 cv_y_prob.setdefault(other_class, []).append(y_info['inverse'])
@@ -462,7 +491,8 @@ class BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
                 cv_scores.setdefault(other_class, []).append(scores)
                 cv_y_true.setdefault(other_class, []).extend(
                     self._enc.inverse_transform(y[y_info['y_true_indices']]))
-                self.cv_params_[other_class] = self.cv_params_[classes[c]]
+                self.cv_params_[other_class] = self.cv_params_[
+                    classes[class_index]]
 
         self.cv_scores_ = cv_scores
         self.cv_y_true_ = np.array(cv_y_true[list(cv_y_true.keys())[0]])
@@ -481,15 +511,17 @@ class BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
             self.cv_y_pred_ = self.cv_y_prob_
 
         # Build the final model (the aggregated one)
-        self.coef_ = np.vstack([np.mean(coefs[c], axis=0) for c in classes])
-        std_coef = np.vstack([np.std(coefs[c], axis=0) for c in classes])
-        self.intercept_ = np.hstack([np.mean(intercepts[c], axis=0)
-                                     for c in classes])
+        self.coef_ = np.vstack([np.mean(coefs[class_index], axis=0)
+                                for class_index in classes])
+        std_coef = np.vstack([np.std(coefs[class_index], axis=0)
+                              for class_index in classes])
+        self.intercept_ = np.hstack([np.mean(intercepts[class_index], axis=0)
+                                     for class_index in classes])
         coef_img = {}
         std_coef_img = {}
-        for c, coef, std in zip(classes, self.coef_, std_coef):
-            coef_img[c] = self.masker_.inverse_transform(coef)
-            std_coef_img[c] = self.masker_.inverse_transform(std)
+        for class_index, coef, std in zip(classes, self.coef_, std_coef):
+            coef_img[class_index] = self.masker_.inverse_transform(coef)
+            std_coef_img[class_index] = self.masker_.inverse_transform(std)
 
         if self.is_classif and (self.n_classes_ == 2):
             self.coef_ = self.coef_[0, :][np.newaxis, :]
@@ -605,7 +637,7 @@ class Decoder(BaseDecoder):
         not None.
         e.g. scorer(estimator, X_test, y_test)
 
-        For classification: 'accuracy', 'f1', 'precision', or 'recall'.
+        For classification: 'accuracy', 'f1', 'precision', 'recall' or 'roc_auc'
             Default 'roc_auc'.
 
     smoothing_fwhm : float, optional. Default: None
@@ -671,7 +703,7 @@ class Decoder(BaseDecoder):
                  target_shape=None, mask_strategy='background',
                  low_pass=None, high_pass=None, t_r=None, memory=None,
                  memory_level=0, n_jobs=1, verbose=0):
-        super(Decoder, self).__init__(
+        super().__init__(
             estimator=estimator, mask=mask, cv=cv, param_grid=param_grid,
             screening_percentile=screening_percentile, scoring=scoring,
             smoothing_fwhm=smoothing_fwhm, standardize=standardize,
@@ -808,7 +840,7 @@ class DecoderRegressor(BaseDecoder):
                  memory_level=0, n_jobs=1, verbose=0):
         self.classes_ = ['beta']
 
-        super(DecoderRegressor, self).__init__(
+        super().__init__(
             estimator=estimator, mask=mask, cv=cv, param_grid=param_grid,
             screening_percentile=screening_percentile, scoring=scoring,
             smoothing_fwhm=smoothing_fwhm, standardize=standardize,
