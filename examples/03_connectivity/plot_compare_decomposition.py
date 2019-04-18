@@ -21,9 +21,6 @@ an explicit model of the signal. The reference papers are:
     * G. Varoquaux et al. "A group model for stable multi-subject ICA on
       fMRI datasets", NeuroImage Vol 51 (2010), p. 288-299
 
-    * G. Varoquaux et al. "ICA-based sparse features recovery from fMRI
-      datasets", IEEE ISBI 2010, p. 1177
-
 Pre-prints for both papers are available on hal
 (http://hal.archives-ouvertes.fr)
 
@@ -93,9 +90,9 @@ for i, cur_img in enumerate(iter_img(canica_components_img)):
 # than ICA. Here, we will compare networks built with CanICA to networks built
 # with Dictionary Learning.
 #
-#   * Arthur Mensch et al. `Compressed online dictionary learning for fast resting-state fMRI decomposition
-#    <https://hal.archives-ouvertes.fr/hal-01271033/>`_,
-#    ISBI 2016, Lecture Notes in Computer Science
+#    * Arthur Mensch et al. `Compressed online dictionary learning for fast resting-state fMRI decomposition
+#      <https://hal.archives-ouvertes.fr/hal-01271033/>`_,
+#      ISBI 2016, Lecture Notes in Computer Science
 #
 
 

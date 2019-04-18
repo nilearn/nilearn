@@ -95,8 +95,8 @@ good extracted maps.
 
 .. topic:: **References**
 
-   * Arthur Mensch et al. `Compressed online dictionary learning for fast resting-state fMRI decomposition <https://hal.archives-ouvertes.fr/hal-01271033/>`_,
-     ISBI 2016, Lecture Notes in Computer Science
+    * Arthur Mensch et al. `Compressed online dictionary learning for fast resting-state fMRI decomposition <https://hal.archives-ouvertes.fr/hal-01271033/>`_,
+      ISBI 2016, Lecture Notes in Computer Science
 
 :class:`DictLearning` is a ready-to-use class with the same interface as CanICA.
 Sparsity of output map is controlled by a parameter alpha: using a
