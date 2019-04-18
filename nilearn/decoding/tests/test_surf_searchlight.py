@@ -13,7 +13,7 @@ import nibabel as nb
 from nibabel import gifti
 
 
-from nilearn.surface.tests.test_surface import _generate_surf
+from ...surface.tests.test_surface import _generate_surf
 from nilearn.decoding.surf_searchlight import SurfSearchLight, _apply_surfmask_and_get_affinity
 
 def _create_toy_mesh():
