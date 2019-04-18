@@ -27,9 +27,7 @@ connectome from them.
 # Retrieve the brain development fmri dataset
 # -------------------------------------------
 #
-# We are going to use subjects from the movie watching fmri dataset.
-# We'll pull data from five subjects, but start out looking at just
-# one.
+# We are going to use a subject from the movie watching fmri dataset.
 
 from nilearn import datasets
 dataset = datasets.fetch_development_fmri(n_subjects=1)
@@ -165,6 +163,7 @@ print('Power atlas comes with {0}.'.format(power.keys()))
 
 #########################################################################
 # .. Note ::
+#
 #     You can retrieve the coordinates for any atlas, including atlases
 #     not included in nilearn, using :func: `nilearn.plotting.find_parcellation_cut_coords`.
 
