@@ -21,12 +21,12 @@ improved representation of the subcortex and cerebellum.", 2018, bioRxiv,
 450452
 <http://doi.org/10.1101/450452>`_
 
-
 """
 
 ###############################################################################
 # Load fMRI data and Power atlas
 # ------------------------------
+#
 # We are going to use a single subject from the movie watching fmri dataset.
 from nilearn import datasets
 
