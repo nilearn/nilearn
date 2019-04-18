@@ -27,7 +27,8 @@ connectome from them.
 # Retrieve the brain development fmri dataset
 # -------------------------------------------
 #
-# We are going to use a subject from the movie watching fmri dataset.
+# We are going to use a subject from the development functional
+# connectivity dataset.
 
 from nilearn import datasets
 dataset = datasets.fetch_development_fmri(n_subjects=1)
