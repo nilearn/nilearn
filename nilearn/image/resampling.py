@@ -495,6 +495,11 @@ def resample_img(img, target_affine=None, target_shape=None,
         target_shape = target_shape.tolist()
     target_shape = tuple(target_shape)
 
+    if LooseVersion(scipy.__version__) < LooseVersion('0.20'):
+        # Before scipy 0.20, force native data types due to endian issues
+        # that caused instability.
+        data = data.astype(data.dtype.newbyteorder('N'))
+
     if interpolation == 'continuous' and data.dtype.kind == 'i':
         # cast unsupported data types to closest support dtype
         aux = data.dtype.name.replace('int', 'float')

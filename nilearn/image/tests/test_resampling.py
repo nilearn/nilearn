@@ -86,6 +86,7 @@ def test_downsample():
     affine = np.eye(4)
     rot_img = resample_img(Nifti1Image(data, affine),
                            target_affine=2 * affine, interpolation='nearest')
+    # import pdb; pdb.set_trace()
     downsampled = data[::2, ::2, ::2, ...]
     x, y, z = downsampled.shape[:3]
     np.testing.assert_almost_equal(downsampled,
@@ -102,6 +103,7 @@ def test_downsample():
                                target_affine=2 * affine,
                                interpolation='nearest',
                                copy=copy)
+        print(downsampled - rot_img.get_data()[:x, :y, :z, ...])
         np.testing.assert_almost_equal(downsampled,
                                        rot_img.get_data()[:x, :y, :z, ...])
 
