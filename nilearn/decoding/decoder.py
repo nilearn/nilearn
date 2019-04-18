@@ -7,33 +7,32 @@ feature selection, and integrated hyper-parameter selection.
 #
 # License: simplified BSD
 
-import sklearn
 import itertools
 import warnings
-import numpy as np
 from distutils.version import LooseVersion
-from sklearn.externals.joblib import Parallel, delayed
-from sklearn.linear_model.ridge import Ridge, RidgeClassifier, _BaseRidge
-from sklearn.linear_model import LogisticRegression
-from sklearn.svm import LinearSVC, SVR
-from sklearn.preprocessing import LabelBinarizer
-from sklearn.svm.bounds import l1_min_c
-from sklearn.base import RegressorMixin
-from sklearn.linear_model.base import LinearModel
-from sklearn.utils.extmath import safe_sparse_dot
+
+import numpy as np
+import sklearn
 from sklearn import clone
-from sklearn.model_selection import ParameterGrid
-from sklearn.utils.validation import check_is_fitted, check_X_y
+from sklearn.base import RegressorMixin
+from sklearn.externals.joblib import Parallel, delayed
+from sklearn.linear_model import LogisticRegression
+from sklearn.linear_model.base import LinearModel
+from sklearn.linear_model.ridge import Ridge, RidgeClassifier, _BaseRidge
 from sklearn.metrics import check_scoring
-from sklearn.model_selection import check_cv
+from sklearn.model_selection import ParameterGrid, check_cv
+from sklearn.preprocessing import LabelBinarizer
+from sklearn.svm import SVR, LinearSVC
+from sklearn.svm.bounds import l1_min_c
+from sklearn.utils.extmath import safe_sparse_dot
+from sklearn.utils.validation import check_is_fitted, check_X_y
 
-from ..input_data.masker_validation import check_embedded_nifti_masker
-from .._utils.param_validation import _adjust_screening_percentile
-from .._utils.compat import _basestring
-from .._utils.cache_mixin import _check_memory
-from .._utils.param_validation import check_feature_screening
 from .._utils import CacheMixin
-
+from .._utils.cache_mixin import _check_memory
+from .._utils.compat import _basestring
+from .._utils.param_validation import (_adjust_screening_percentile,
+                                       check_feature_screening)
+from ..input_data.masker_validation import check_embedded_nifti_masker
 
 SUPPORTED_ESTIMATORS = dict(
     svc_l1=LinearSVC(penalty='l1', dual=False),
