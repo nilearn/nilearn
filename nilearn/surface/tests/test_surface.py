@@ -311,8 +311,30 @@ def test_load_surf_data_file_glob():
     assert_array_equal(load_surf_data(os.path.join(os.path.dirname(fnames[0]),
                                                    "glob*.gii")), data2D)
 
-    # make one more gii file that has a different shape
+    # make one more gii file that has more than one dimension
     fnames.append(tempfile.mktemp(prefix='glob_3_', suffix='.gii'))
+    if LooseVersion(nb.__version__) > LooseVersion('2.0.2'):
+        darray1 = gifti.GiftiDataArray(data=np.ones((20, )))
+        darray2 = gifti.GiftiDataArray(data=np.ones((20, )))
+        darray3 = gifti.GiftiDataArray(data=np.ones((20, )))
+    else:
+        # Avoid a bug in nibabel 1.2.0 where GiftiDataArray were not
+        # initialized properly:
+        darray1 = gifti.GiftiDataArray.from_array(np.ones((20, )),
+                                                  intent='t test')
+        darray2 = gifti.GiftiDataArray.from_array(np.ones((20, )),
+                                                  intent='t test')
+        darray3 = gifti.GiftiDataArray.from_array(np.ones((20, )),
+                                                  intent='t test')
+    gii = gifti.GiftiImage(darrays=[darray1, darray2, darray3])
+    gifti.write(gii, fnames[-1])
+
+    data2D = np.concatenate((data2D, np.ones((20, 3))), axis=1)
+    assert_array_equal(load_surf_data(os.path.join(os.path.dirname(fnames[0]),
+                                                   "glob*.gii")), data2D)
+
+    # make one more gii file that has a different shape in axis=0
+    fnames.append(tempfile.mktemp(prefix='glob_4_', suffix='.gii'))
     if LooseVersion(nb.__version__) > LooseVersion('2.0.2'):
         darray = gifti.GiftiDataArray(data=np.ones((15, 1)))
     else:
@@ -324,7 +346,7 @@ def test_load_surf_data_file_glob():
     gifti.write(gii, fnames[-1])
 
     assert_raises_regex(ValueError,
-                        'all files must cotain data of the same shape',
+                        'files must contain data with the same shape',
                         load_surf_data,
                         os.path.join(os.path.dirname(fnames[0]), "*.gii"))
     for f in fnames:

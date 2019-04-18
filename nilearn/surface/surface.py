@@ -583,23 +583,23 @@ def load_surf_data(surf_data):
             surf_data = file_list[f]
             if (surf_data.endswith('nii') or surf_data.endswith('nii.gz') or
                     surf_data.endswith('mgz')):
-                data1D = np.squeeze(nibabel.load(surf_data).get_data())
+                data_part = np.squeeze(nibabel.load(surf_data).get_data())
             elif (surf_data.endswith('curv') or surf_data.endswith('sulc') or
                     surf_data.endswith('thickness')):
-                data1D = fs.io.read_morph_data(surf_data)
+                data_part = fs.io.read_morph_data(surf_data)
             elif surf_data.endswith('annot'):
-                data1D = fs.io.read_annot(surf_data)[0]
+                data_part = fs.io.read_annot(surf_data)[0]
             elif surf_data.endswith('label'):
-                data1D = fs.io.read_label(surf_data)
+                data_part = fs.io.read_label(surf_data)
             elif surf_data.endswith('gii'):
                 if LooseVersion(nibabel.__version__) >= LooseVersion('2.1.0'):
                     gii = nibabel.load(surf_data)
                 else:
                     gii = gifti.read(surf_data)
-                data1D = _gifti_img_to_data(gii)
+                data_part = _gifti_img_to_data(gii)
             elif surf_data.endswith('gii.gz'):
                 gii = _load_surf_files_gifti_gzip(surf_data)
-                data1D = _gifti_img_to_data(gii)
+                data_part = _gifti_img_to_data(gii)
             else:
                 raise ValueError(('The input type is not recognized. %r was '
                                   'given while valid inputs are a Numpy array '
@@ -607,16 +607,18 @@ def load_surf_data(surf_data):
                                   ' .gii.gz, .mgz, .nii, .nii.gz, Freesurfer '
                                   'specific files such as .curv, .sulc, '
                                   '.thickness, .annot, .label') % surf_data)
-            # for the first loaded file make an empty data array
+
+            if len(data_part.shape) == 1:
+                data_part = data_part[:, np.newaxis]
             if f == 0:
-                data = np.empty((data1D.shape[0], len(file_list)))
-            # fill all data in the data file
-            try:
-                data[:, f] = data1D
-            except ValueError:
-                raise ValueError('When more than one file is given as input, '
-                                 'all files must cotain data of the same '
-                                 'shape.')
+                data = data_part
+            elif f > 0:
+                try:
+                    data = np.concatenate((data, data_part), axis=1)
+                except ValueError:
+                    raise ValueError('When more than one file is input, all '
+                                     'files must contain data with the same '
+                                     'shape in axis=0')
 
     # if the input is a numpy array
     elif isinstance(surf_data, np.ndarray):
