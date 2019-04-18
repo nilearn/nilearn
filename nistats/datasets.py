@@ -311,7 +311,7 @@ def _make_events_file_localizer_first_level(events_file):
     events.to_csv(events_file, sep='\t', index=False)
 
 
-def fetch_localizer_first_level(data_dir=None, verbose=1):
+def fetch_localizer_first_level(data_dir=None, url=None, verbose=1):
     """ Download a first-level localizer fMRI dataset
 
     Parameters
@@ -326,28 +326,24 @@ def fetch_localizer_first_level(data_dir=None, verbose=1):
         epi_img: the input 4D image
         events: a csv file describing the paardigm
     """
-    url = 'ftp://ftp.cea.fr/pub/dsv/madic/download/nipy'
+
+    if url is None:
+        url = 'https://osf.io/2bqxn/download'
+
+    epi_img = "sub-12069_task-localizer_space-MNI305.nii.gz"
+    events = "sub-12069_task-localizer_events.tsv"
+    opts = {'uncompress': True}
+    options = ('epi_img', 'events')
+    dir_ = 'localizer_first_level'
+    filenames = [(os.path.join(dir_, name), url, opts)
+                  for name in [epi_img, events]]
 
     dataset_name = "localizer_first_level"
-    files = dict(epi_img="s12069_swaloc1_corr.nii.gz",
-                 events="localizer_paradigm.csv")
-    # The options needed for _fetch_files
-    options = [(filename, os.path.join(url, filename), {})
-               for _, filename in sorted(files.items())]
-
     data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
                                 verbose=verbose)
-    sub_files = _fetch_files(data_dir, options, resume=True,
-                             verbose=verbose)
+    files = _fetch_files(data_dir, filenames, verbose=verbose)
 
-    params = dict(zip(sorted(files.keys()), sub_files))
-    try:
-        _check_events_file_uses_tab_separators(params['events'])
-    except ValueError:
-        _make_events_file_localizer_first_level(events_file=
-                                                             params['events']
-                                                )
-    
+    params = dict(list(zip(options, files)))
     return Bunch(**params)
 
 

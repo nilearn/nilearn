@@ -55,16 +55,16 @@ fmri_img = data.epi_img
 # 
 # This task comprises 10 conditions:
 #
-# * clicGaudio: Left-hand three-times button press, indicated by visual instruction
-# * clicDaudio: Right-hand three-times button press, indicated by visual instruction
-# * clicGvideo: Left-hand three-times button press, indicated by auditory instruction
-# * clicDvideo:  Right-hand three-times button press, indicated by auditory instruction
-# * damier_H: Visualization of flashing horizontal checkerboards
-# * damier_V: Visualization of flashing vertical checkerboards
-# * phraseaudio: Listen to narrative sentences
-# * phrasevideo: Read narrative sentences
-# * calculaudio: Mental subtraction, indicated by auditory instruction
-# * calculvideo: Mental subtraction, indicated by visual instruction
+# * audio_left_hand_button_press: Left-hand three-times button press, indicated by visual instruction
+# * audio_right_hand_button_press: Right-hand three-times button press, indicated by visual instruction
+# * visual_left_hand_button_press: Left-hand three-times button press, indicated by auditory instruction
+# * visual_right_hand_button_press:  Right-hand three-times button press, indicated by auditory instruction
+# * horizontal_checkerboard: Visualization of flashing horizontal checkerboards
+# * vertical_checkerboard: Visualization of flashing vertical checkerboards
+# * sentence_listening: Listen to narrative sentences
+# * sentence_reading: Read narrative sentences
+# * audio_computation: Mental subtraction, indicated by auditory instruction
+# * visual_computation: Mental subtraction, indicated by visual instruction
 #
 
 t_r = 2.4
@@ -107,32 +107,41 @@ def make_localizer_contrasts(design_matrix):
     contrasts = dict([(column, contrast_matrix[i])
                       for i, column in enumerate(design_matrix.columns)])
 
-    # Add more complex contrasts
-    contrasts['audio'] = (contrasts['clicDaudio']
-                          + contrasts['clicGaudio']
-                          + contrasts['calculaudio']
-                          + contrasts['phraseaudio']
-                          )
-    contrasts['video'] = (contrasts['clicDvideo']
-                          + contrasts['clicGvideo']
-                          + contrasts['calculvideo']
-                          + contrasts['phrasevideo']
-                          )
-    contrasts['computation'] = contrasts['calculaudio'] + contrasts['calculvideo']
-    contrasts['sentences'] = contrasts['phraseaudio'] + contrasts['phrasevideo']
+    contrasts["audio"] = (
+        contrasts["audio_left_hand_button_press"]
+        + contrasts["audio_right_hand_button_press"]
+        + contrasts["audio_computation"]
+        + contrasts["sentence_listening"])
+    
+    # one contrast adding all conditions involving instructions reading
+    contrasts["visual"] = (
+        contrasts["visual_left_hand_button_press"]
+        + contrasts["visual_right_hand_button_press"]
+        + contrasts["visual_computation"]
+        + contrasts["sentence_reading"])
 
+    # one contrast adding all conditions involving computation
+    contrasts["computation"] = (contrasts["visual_computation"]
+                                      + contrasts["audio_computation"])
+
+    # one contrast adding all conditions involving sentences
+    contrasts["sentences"] = (contrasts["sentence_listening"]
+                                    + contrasts["sentence_reading"])
+    
     # Short dictionary of more relevant contrasts
     contrasts = {
-        'left-right': (contrasts['clicGaudio']
-                       + contrasts['clicGvideo']
-                       - contrasts['clicDaudio']
-                       - contrasts['clicDvideo']
-                       ),
-        'H-V': contrasts['damier_H'] - contrasts['damier_V'],
-        'audio-video': contrasts['audio'] - contrasts['video'],
-        'computation-sentences': (contrasts['computation'] -
-                                  contrasts['sentences']
-                                  ),
+        "left - right button press": (
+            contrasts["audio_left_hand_button_press"]
+            - contrasts["audio_right_hand_button_press"]
+            + contrasts["visual_left_hand_button_press"]
+            - contrasts["visual_right_hand_button_press"]
+        ),
+        "audio - visual": contrasts["audio"] - contrasts["visual"],
+        "computation - sentences": (contrasts["computation"] -
+                                    contrasts["sentences"]
+        ),
+        "horizontal-vertical": (contrasts["horizontal_checkerboard"] -
+                                contrasts["vertical_checkerboard"])
     }
     return contrasts
 
@@ -140,8 +149,8 @@ def make_localizer_contrasts(design_matrix):
 # So let's look at these computed contrasts
 #
 # * "left - right button press" probes motor activity in left versus right button presses
-# * 'H-V': probes the differential activity in viewing a horizontal vs vertical checkerboard
-# * "audio - video" probes the difference of activity between listening to some content or reading the same type of content (instructions, stories)
+# * 'horizontal-vertical': probes the differential activity in viewing a horizontal vs vertical checkerboard
+# * "audio - visual" probes the difference of activity between listening to some content or reading the same type of content (instructions, stories)
 # * "computation - sentences" looks at the activity when performing a mental comptation task  versus simply reading sentences.
 #
 contrasts = make_localizer_contrasts(design_matrix)
