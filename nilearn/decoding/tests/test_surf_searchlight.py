@@ -5,6 +5,7 @@ Test the surface searchlight
 # License: simplified BSD
 
 import numpy as np
+from numpy.testing import assert_equal, assert_array_equal
 
 from distutils.version import LooseVersion
 
@@ -13,7 +14,7 @@ from nibabel import gifti
 
 
 from nilearn.surface.tests.test_surface import _generate_surf
-from nilearn.decoding.surf_searchlight import SurfSearchLight
+from nilearn.decoding.surf_searchlight import SurfSearchLight, _apply_surfmask_and_get_affinity
 
 def _create_toy_mesh():
     pi = np.pi
@@ -32,7 +33,53 @@ def _create_toy_mesh():
 
 
 def test__apply_surfmask_and_get_affinity():
-    pass
+    # Create a toy mesh
+    mesh = _create_toy_mesh()
+    n_vertex = mesh[0].shape[0]
+    assert_equal(n_vertex, 7)
+
+    # Generate functional data on this mesh
+    n_sample = 2
+    func_data = np.ones((n_vertex,n_sample))
+
+    # Prepare inputs to the function to be tested
+    mesh_coords = mesh[0]
+    giimgs_data = func_data
+
+    # Test with full-mesh mask, small radius
+    # each sphere should contain one vertex
+    radius = 0.2
+    X, A = _apply_surfmask_and_get_affinity(mesh_coords, giimgs_data, radius)
+    assert_array_equal(X,func_data.T)
+    assert_array_equal(A.toarray(),np.eye(n_vertex))
+
+    # Test with full-mesh mask, large radius
+    # each sphere should contain all vertices of the mesh
+    radius = 2
+    X, A = _apply_surfmask_and_get_affinity(mesh_coords, giimgs_data, radius)
+    assert_array_equal(X,func_data.T)
+    assert_array_equal(A.toarray(),np.ones([n_vertex, n_vertex]))
+
+
+    # Create mask covering only partially the mesh (i.e a ROI)
+    surfmask = np.zeros(n_vertex)
+    surfmask[np.arange(0,n_vertex/2,dtype=int)] = 1
+
+    # Test with ROI mask, small radius
+    # each sphere should contain one vertex
+    radius = 0.2
+    X, A = _apply_surfmask_and_get_affinity(mesh_coords, giimgs_data, radius, surfmask=surfmask)
+    assert_array_equal(X,func_data.T)
+    assert_array_equal(A.toarray(),np.eye(n_vertex)[np.arange(0,n_vertex/2,dtype=int)])
+
+    # Test with ROI mask, large radius
+    # each sphere should contain all vertices of the mesh
+    radius = 2
+    X, A = _apply_surfmask_and_get_affinity(mesh_coords, giimgs_data, radius, surfmask=surfmask)
+    assert_array_equal(X,func_data.T)
+    assert_array_equal(A.toarray(),np.ones([n_vertex, n_vertex])[np.arange(0,n_vertex/2,dtype=int)])
+
+
 
 
 
