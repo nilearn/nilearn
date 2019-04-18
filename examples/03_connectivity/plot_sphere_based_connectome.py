@@ -58,7 +58,7 @@ from nilearn import input_data
 
 spheres_masker = input_data.NiftiSpheresMasker(
     seeds=coords, smoothing_fwhm=4, radius=5.,
-    detrend=True, standardize=True, low_pass=0.1, high_pass=0.01, t_r=2.5)
+    detrend=True, standardize=True, low_pass=0.1, high_pass=0.01, t_r=2)
 
 ###############################################################################
 # Voxel-wise time-series within each sphere are averaged. The resulting signal
@@ -126,7 +126,7 @@ coords = np.vstack((
 
 spheres_masker = input_data.NiftiSpheresMasker(
     seeds=coords, smoothing_fwhm=4, radius=4.5,
-    detrend=True, standardize=True, low_pass=0.1, high_pass=0.01, t_r=2.5)
+    detrend=True, standardize=True, low_pass=0.1, high_pass=0.01, t_r=2)
 
 timeseries = spheres_masker.fit_transform(fmri_filename,
                                           confounds=confounds_filename)
