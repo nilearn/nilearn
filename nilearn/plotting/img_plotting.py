@@ -1339,7 +1339,8 @@ def plot_connectome_strength(adjacency_matrix, node_coords, node_size="auto",
     """
 
     cmap = plt.cm.viridis_r if cmap is None else cmap
-    node_size = 1 / len(node_coords) * 1e4 if node_size=='auto' else node_size
+    node_size = (1 / len(node_coords) * 1e4
+                 if node_size == 'auto' else node_size)
 
     region_strength = np.sum(np.abs(adjacency_matrix), axis=0)
     region_strength /= np.sum(region_strength)
@@ -1348,7 +1349,7 @@ def plot_connectome_strength(adjacency_matrix, node_coords, node_size="auto",
     strength_sorted = region_strength[region_idx_sorted]
     coords_sorted = node_coords[region_idx_sorted]
 
-    display = plotting.plot_glass_brain(
+    display = plot_glass_brain(
         None, display_mode=display_mode, figure=figure, axes=axes, title=title
     )
 

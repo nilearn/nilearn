@@ -92,8 +92,8 @@ matrix = covariance_estimator.covariance_
 print('Covariance matrix has shape {0}.'.format(matrix.shape))
 
 ###############################################################################
-# Plot matrix and graph
-# ---------------------
+# Plot matrix, graph, and strength
+# --------------------------------
 #
 # We use nilearn.plotting.plot_matrix to visualize our correlation matrix
 # and display the graph of connections with `nilearn.plotting.plot_connectome`.
@@ -110,6 +110,34 @@ plotting.plot_connectome(matrix, coords, title='Power correlation graph',
 # Note the 1. on the matrix diagonal: These are the signals variances, set to
 # 1. by the `spheres_masker`. Hence the covariance of the signal is a
 # correlation matrix
+
+###############################################################################
+# Sometimes, the information in the correlation matrix is overwhelming and
+# aggregating edge strength from the graph would help. Use the function
+# `nilearn.plotting.plot_connectome_strength` to visualize this information.
+
+plotting.plot_connectome_strength(
+    matrix, coords, title='Connectome strength for Power atlas'
+)
+
+###############################################################################
+# From the correlation matrix, we observe that there is a positive and negative
+# structure. We could make two different plots by plotting these strengths
+# separately.
+
+from matplotlib.pyplot import cm
+
+# plot the positive part of of the matrix
+plotting.plot_connectome_strength(
+    np.clip(matrix, 0, matrix.max()), coords, cmap=cm.YlOrRd,
+    title='Strength of the positive edges of the Power correlation matrix'
+)
+
+# plot the negative part of of the matrix
+plotting.plot_connectome_strength(
+    np.clip(matrix, matrix.min(), 0), coords, cmap=cm.PuBu,
+    title='Strength of the negative edges of the Power correlation matrix'
+)
 
 ###############################################################################
 # Connectome extracted from Dosenbach's atlas
@@ -140,6 +168,17 @@ plotting.plot_matrix(matrix, vmin=-1., vmax=1., colorbar=True,
 
 plotting.plot_connectome(matrix, coords, title='Dosenbach correlation graph',
                          edge_threshold="99.7%", node_size=20, colorbar=True)
+plotting.plot_connectome_strength(
+    matrix, coords, title='Connectome strength for Power atlas'
+)
+plotting.plot_connectome_strength(
+    np.clip(matrix, 0, matrix.max()), coords, cmap=cm.YlOrRd,
+    title='Strength of the positive edges of the Power correlation matrix'
+)
+plotting.plot_connectome_strength(
+    np.clip(matrix, matrix.min(), 0), coords, cmap=cm.PuBu,
+    title='Strength of the negative edges of the Power correlation matrix'
+)
 
 ###############################################################################
 # We can easily identify the Dosenbach's networks from the matrix blocks.
