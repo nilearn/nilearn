@@ -13,7 +13,6 @@ from nose.tools import assert_true, assert_raises
 from nilearn._utils.testing import assert_raises_regex, assert_warns
 
 import numpy as np
-import sklearn
 
 import nibabel as nb
 from nibabel import gifti
@@ -26,7 +25,8 @@ from nilearn.surface import surface
 from nilearn.surface import load_surf_data, load_surf_mesh, vol_to_surf
 from nilearn.surface.surface import (_gifti_img_to_mesh,
                                      _load_surf_files_gifti_gzip)
-from nilearn.surface.testing import (_generate_surf, _flat_mesh, _z_const_img)
+from nilearn.surface.testing_utils import (generate_surf, flat_mesh,
+                                           z_const_img)
 
 currdir = os.path.dirname(os.path.abspath(__file__))
 datadir = os.path.join(currdir, 'data')
@@ -144,7 +144,7 @@ def test_load_surf_data_file_error():
 
 def test_load_surf_mesh_list():
     # test if correct list is returned
-    mesh = _generate_surf()
+    mesh = generate_surf()
     assert_equal(len(load_surf_mesh(mesh)), 2)
     assert_array_equal(load_surf_mesh(mesh)[0], mesh[0])
     assert_array_equal(load_surf_mesh(mesh)[1], mesh[1])
@@ -163,7 +163,7 @@ def test_load_surf_mesh_list():
 
 
 def test_gifti_img_to_mesh():
-    mesh = _generate_surf()
+    mesh = generate_surf()
 
     coord_array = gifti.GiftiDataArray(data=mesh[0])
     coord_array.intent = nb.nifti1.intent_codes['NIFTI_INTENT_POINTSET']
@@ -196,7 +196,7 @@ def test_load_surf_mesh_file_gii():
     if not LooseVersion(nb.__version__) >= LooseVersion('2.1.0'):
         raise SkipTest
 
-    mesh = _generate_surf()
+    mesh = generate_surf()
 
     # test if correct gii is loaded into correct list
     filename_gii_mesh = tempfile.mktemp(suffix='.gii')
@@ -235,7 +235,7 @@ def test_load_surf_mesh_file_freesurfer():
     if LooseVersion(nb.__version__) <= LooseVersion('1.2.0'):
         raise SkipTest
 
-    mesh = _generate_surf()
+    mesh = generate_surf()
     for suff in ['.pial', '.inflated', '.white', '.orig', 'sphere']:
         filename_fs_mesh = tempfile.mktemp(suffix=suff)
         nb.freesurfer.write_geometry(filename_fs_mesh, mesh[0], mesh[1])
@@ -252,7 +252,7 @@ def test_load_surf_mesh_file_error():
         raise SkipTest
 
     # test if files with unexpected suffixes raise errors
-    mesh = _generate_surf()
+    mesh = generate_surf()
     wrong_suff = ['.vtk', '.obj', '.mnc', '.txt']
     for suff in wrong_suff:
         filename_wrong = tempfile.mktemp(suffix=suff)
@@ -265,7 +265,7 @@ def test_load_surf_mesh_file_error():
 
 def test_vertex_outer_normals():
     # compute normals for a flat horizontal mesh, they should all be (0, 0, 1)
-    mesh = _flat_mesh(5, 7)
+    mesh = flat_mesh(5, 7)
     computed_normals = surface._vertex_outer_normals(mesh)
     true_normals = np.zeros((len(mesh[0]), 3))
     true_normals[:, 2] = 1
@@ -289,7 +289,7 @@ def test_load_uniform_ball_cloud():
 def test_sample_locations():
     # check positions of samples on toy example, with an affine != identity
     # flat horizontal mesh
-    mesh = _flat_mesh(5, 7)
+    mesh = flat_mesh(5, 7)
     affine = np.diagflat([10, 20, 30, 1])
     inv_affine = np.linalg.inv(affine)
     # transform vertices to world space
@@ -329,8 +329,8 @@ def test_masked_indices():
 
 
 def test_projection_matrix():
-    mesh = _flat_mesh(5, 7, 4)
-    img = _z_const_img(5, 7, 13)
+    mesh = flat_mesh(5, 7, 4)
+    img = z_const_img(5, 7, 13)
     proj = surface._projection_matrix(
         mesh, np.eye(4), img.shape, radius=2., n_points=10)
     # proj matrix has shape (n_vertices, img_size)
@@ -338,7 +338,7 @@ def test_projection_matrix():
     # proj.dot(img) should give the values of img at the vertices' locations
     values = proj.dot(img.ravel()).reshape((5, 7))
     assert_array_almost_equal(values, img[:, :, 0])
-    mesh = _flat_mesh(5, 7)
+    mesh = flat_mesh(5, 7)
     proj = surface._projection_matrix(
         mesh, np.eye(4), (5, 7, 1), radius=.1, n_points=10)
     assert_array_almost_equal(proj.toarray(), np.eye(proj.shape[0]))
@@ -372,8 +372,8 @@ def test_sampling_affine():
 
 
 def test_sampling():
-    mesh = _flat_mesh(5, 7, 4)
-    img = _z_const_img(5, 7, 13)
+    mesh = flat_mesh(5, 7, 4)
+    img = z_const_img(5, 7, 13)
     mask = np.ones(img.shape, dtype=int)
     mask[0] = 0
     projectors = [surface._nearest_voxel_sampling,
@@ -394,7 +394,7 @@ def test_vol_to_surf():
     # test 3d niimg to cortical surface projection and invariance to a change
     # of affine
     mni = datasets.load_mni152_template()
-    mesh = _generate_surf()
+    mesh = generate_surf()
     _check_vol_to_surf_results(mni, mesh)
     fsaverage = datasets.fetch_surf_fsaverage().pial_left
     _check_vol_to_surf_results(mni, fsaverage)
@@ -427,7 +427,7 @@ def _check_vol_to_surf_results(img, mesh):
 
 
 def test_check_mesh_and_data():
-    mesh = _generate_surf()
+    mesh = generate_surf()
     data = mesh[0][:, 0]
     m, d = surface.check_mesh_and_data(mesh, data)
     assert (m[0] == mesh[0]).all()
