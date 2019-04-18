@@ -52,7 +52,7 @@ here: :ref:`sphx_glr_auto_examples_03_connectivity_plot_compare_decomposition.py
 
 Once an ICA object has been fit to an fMRI dataset, the individual 
 components can be accessed as a 4D Nifti object using the 
-`components_img`_ attribute.
+``components_img_`` attribute.
 
 Visualizing results
 --------------------
