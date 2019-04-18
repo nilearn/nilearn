@@ -28,30 +28,46 @@ from .searchlight import search_light
 ESTIMATOR_CATALOG = dict(svc=svm.LinearSVC, svr=svm.SVR)
 
 def _apply_surfmask_and_get_affinity(mesh_coords, giimgs_data, radius, surfmask=None):
-    """Utility function used for searchlight decoding.
+    """Utility function used for searchlight decoding. Computes the affinity matrix
+    and get the data matrix ready.
+
     Parameters
     ----------
-    mesh_coords: 2D array. n_vertex x 3
+    mesh_coords: 2D array, shape (n_vertex, 3)
         Coordinates of the vertices of the mesh.
-        We here recommand using a sphere.
-    giimgs_data: 2D array, n_vertex x n_sample
+        We here recommend using a sphere.
+
+    giimgs_data: 2D array, shape (n_vertex, n_sample)
         Surface textures to process, as e.g extracted by
         nilearn.surface.load_surf_data("*.gii")
+
     radius: float
         Indicates, in millimeters, the radius for the sphere around the seed.
+
     surfmask: 1D array, optional
         Mask to apply to regions before extracting signals.
-        Should have two values, one of them being zero.
+        Should have zeros (outside the mask) and anything else (outside)
+
+    Returns
+    -------
+    X: 2D numpy array, shape (n_sample, n_vertex)
+        Data matrix ready to be sent to the SurfSearchLight.fit function
+
+    A: 2D numpy array, shape (n_vertex_in_mask, n_vertex)
+        Affinity matrix that encodes the spherical neighborhoods to be used
+        in the SurfSearchLight
     """
 
+    # Compute the affinity matrix
     clf = neighbors.NearestNeighbors(radius=radius)
-    clf.fit(mesh_coords)
-    A = clf.radius_neighbors_graph(mesh_coords)
+    A = clf.fit(mesh_coords).radius_neighbors_graph(mesh_coords)
     A = A.tolil()
 
+    # Restrict the affinity matrix to the mask, if one was given
     if surfmask is not None:
         A = A[surfmask != 0,:]
 
+    # Get the data ready to go into the SurfSearchLight.fit function
     X = giimgs_data.T
 
     return X, A
