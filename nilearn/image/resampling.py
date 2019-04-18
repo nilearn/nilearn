@@ -13,7 +13,7 @@ import numpy as np
 import scipy
 from scipy import ndimage, linalg
 
-from .image import pad_img, crop_img
+from .image import crop_img
 from .. import _utils
 from .._utils.compat import _basestring
 

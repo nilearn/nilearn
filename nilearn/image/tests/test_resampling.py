@@ -18,7 +18,7 @@ from nilearn.image.resampling import resample_img, resample_to_img, reorder_img
 from nilearn.image.resampling import from_matrix_vector, coord_transform
 from nilearn.image.resampling import get_bounds
 from nilearn.image.resampling import BoundingBoxError
-from nilearn.image.image import pad_img, crop_img
+from nilearn.image.image import pad_array, crop_img
 from nilearn._utils import testing
 
 
@@ -441,8 +441,8 @@ def test_resampling_result_axis_permutation():
         offset_cropping = np.vstack([-offset[ap][np.newaxis, :],
                                      np.zeros([1, 3])]
                                     ).T.ravel().astype(int)
-        what_resampled_data_should_be = pad_img(full_data.transpose(ap),
-                                                *list(offset_cropping))
+        what_resampled_data_should_be = pad_array(full_data.transpose(ap),
+                                                  list(offset_cropping))
 
         assert_array_almost_equal(resampled_data,
                                   what_resampled_data_should_be)
@@ -531,7 +531,7 @@ def test_resample_to_img():
 def test_crop():
     shape = (4, 6, 2)
     data = np.ones(shape)
-    padded = pad_img(data, 3, 2, 4, 4, 5, 7)
+    padded = pad_array(data, [3, 2, 4, 4, 5, 7])
     padd_nii = Nifti1Image(padded, np.eye(4))
 
     cropped = crop_img(padd_nii, pad=False)
