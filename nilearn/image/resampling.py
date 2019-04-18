@@ -552,7 +552,7 @@ def resample_img(img, target_affine=None, target_shape=None,
         slices = tuple(slices)
 
         # ensure the source image being placed isn't larger than the dest
-        subset_indices = tuple(slice(0, d - 1) for d in resampled_data.shape)
+        subset_indices = tuple(slice(0, s.stop-s.start) for s in slices)
         resampled_data[slices] = cropped_img.get_data()[subset_indices]
     else:
         # If A is diagonal, ndimage.affine_transform is clever enough to use a
