@@ -45,6 +45,10 @@ different heuristics to find cutting coordinates.
      :target: ../auto_examples/03_connectivity/plot_adhd_spheres.html
      :scale: 50
 
+.. |plot_strength| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_sphere_based_connectome_004.png
+     :target: ../auto_examples/03_connectivity/plot_sphere_based_connectome.html
+     :scale: 50
+
 .. |plot_anat| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_demo_plotting_003.png
      :target: ../auto_examples/01_plotting/plot_demo_plotting.html
      :scale: 50
@@ -96,6 +100,15 @@ different heuristics to find cutting coordinates.
 |plot_connectome|    :func:`plot_connectome`
                      |hack|
                      Plotting a connectome
+
+                     Functions for automatic extraction of coords based on
+                     brain parcellations useful for :func:`plot_connectome`
+                     are demonstrated in
+                     **Example:** :ref:`sphx_glr_auto_examples_03_connectivity_plot_atlas_comparison.py`
+
+|plot_strength|     :func:`plot_connectome_strength`
+                     |hack|
+                     Plotting a connectome strength
 
                      Functions for automatic extraction of coords based on
                      brain parcellations useful for :func:`plot_connectome`

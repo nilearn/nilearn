@@ -322,6 +322,7 @@ uses.
    plot_stat_map
    plot_glass_brain
    plot_connectome
+   plot_connectome_strength
    plot_prob_atlas
    plot_surf
    plot_surf_roi
