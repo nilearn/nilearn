@@ -394,7 +394,7 @@ def crop_img(img, rtol=1e-8, copy=True, pad=True, return_offset=False):
     return cropped_im if not return_offset else (cropped_im, tuple(slices))
 
 
-def pad_img(array, *args):
+def pad_img(array, pad_sizes):
     """Pad an ndarray with zeros of quantity specified
     in args as follows args = (x1minpad, x1maxpad, x2minpad,
     x2maxpad, x3minpad, ...)
