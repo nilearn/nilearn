@@ -292,11 +292,16 @@ class NiftiMasker(BaseMasker, CacheMixin, ReportMixin):
         if hasattr(self, 'mask_img_'):
             display = plotting.plot_epi(self.input_, black_bg=False)
             display.add_contours(self.mask_img_, levels=[.5], colors='r')
-            img_str = _embed_img(display)
+            display = _embed_img(display)
+            description = ('This NiftiMasker report shows the input Nifti '
+                           'image overlaid with the outlines of the '
+                           'mask.'
+                           'Please inspect the report for the overlap '
+                           'between the mask and its input image.')
 
         report = self.update_template(title='NiftiMasker',
-                                      content=img_str,
-                                      description='Inspect for alignment.')
+                                      content=display,
+                                      description=description)
         return report
 
     def transform_single_imgs(self, imgs, confounds=None, copy=True):

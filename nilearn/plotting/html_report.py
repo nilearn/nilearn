@@ -1,7 +1,6 @@
 import os
 import io
 import base64
-# import matplotlib.pyplot as plt
 
 from nilearn.externals import tempita
 from . import js_plotting_utils as plot_utils
