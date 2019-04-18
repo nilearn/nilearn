@@ -291,6 +291,46 @@ def test_load_surf_mesh_file_glob():
     os.remove(fname2)
 
 
+def test_load_surf_data_file_glob():
+
+    data2D = np.ones((20, 3))
+    fnames = []
+    for f in range(3):
+        fnames.append(tempfile.mktemp(prefix='glob_%s_' % f, suffix='.gii'))
+        data2D[:, f] *= f
+        if LooseVersion(nb.__version__) > LooseVersion('2.0.2'):
+            darray = gifti.GiftiDataArray(data=data2D[:, f])
+        else:
+            # Avoid a bug in nibabel 1.2.0 where GiftiDataArray were not
+            # initialized properly:
+            darray = gifti.GiftiDataArray.from_array(data2D[:, f],
+                                                     intent='t test')
+        gii = gifti.GiftiImage(darrays=[darray])
+        gifti.write(gii, fnames[f])
+
+    assert_array_equal(load_surf_data(os.path.join(os.path.dirname(fnames[0]),
+                                                   "glob*.gii")), data2D)
+
+    # make one more gii file that has a different shape
+    fnames.append(tempfile.mktemp(prefix='glob_3_', suffix='.gii'))
+    if LooseVersion(nb.__version__) > LooseVersion('2.0.2'):
+        darray = gifti.GiftiDataArray(data=np.ones((15, 1)))
+    else:
+        # Avoid a bug in nibabel 1.2.0 where GiftiDataArray were not
+        # initialized properly:
+        darray = gifti.GiftiDataArray.from_array(np.ones(15, 1),
+                                                 intent='t test')
+    gii = gifti.GiftiImage(darrays=[darray])
+    gifti.write(gii, fnames[-1])
+
+    assert_raises_regex(ValueError,
+                        'all files must cotain data of the same shape',
+                        load_surf_data,
+                        os.path.join(os.path.dirname(fnames[0]), "*.gii"))
+    for f in fnames:
+        os.remove(f)
+
+
 def _flat_mesh(x_s, y_s, z=0):
     x, y = np.mgrid[:x_s, :y_s]
     x, y = x.ravel(), y.ravel()

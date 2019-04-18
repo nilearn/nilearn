@@ -615,7 +615,8 @@ def load_surf_data(surf_data):
                 data[:, f] = data1D
             except ValueError:
                 raise ValueError('When more than one file is given as input, '
-                                 'all files must have the same shape.')
+                                 'all files must cotain data of the same '
+                                 'shape.')
 
     # if the input is a numpy array
     elif isinstance(surf_data, np.ndarray):
