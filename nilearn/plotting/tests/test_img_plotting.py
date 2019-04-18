@@ -519,7 +519,8 @@ def test_plot_connectome_exceptions():
                         **kwargs)
 
     wrong_adjacency_matrix = np.zeros((3, 3))
-    assert_raises_regex(ValueError, r'Shape mismatch.+\(3L?, 3L?\).+\(2L?, 3L?\)',
+    assert_raises_regex(ValueError,
+                        r'Shape mismatch.+\(3L?, 3L?\).+\(2L?, 3L?\)',
                         plot_connectome,
                         wrong_adjacency_matrix, node_coords, **kwargs)
 

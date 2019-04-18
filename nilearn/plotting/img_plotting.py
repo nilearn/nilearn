@@ -1327,7 +1327,8 @@ def plot_connectome_strength(adjacency_matrix, node_coords, node_size="auto",
     figure : integer or matplotlib figure, optional
         Matplotlib figure used or its number. If None is given, a
         new figure is created.
-    axes : matplotlib axes or 4 tuple of float: (xmin, ymin, width, height), optional
+    axes : matplotlib axes or 4 tuple of float: (xmin, ymin, width, height), \
+optional
         The axes, or the coordinates, in matplotlib figure space,
         of the axes used to display the plot. If None, the complete
         figure is used.
@@ -1370,8 +1371,8 @@ def plot_connectome_strength(adjacency_matrix, node_coords, node_size="auto",
             "Invalid shape for 'node_coords'. You passed an "
             "'adjacency_matrix' of shape {0} therefore "
             "'node_coords' should be a array with shape ({0[0]}, 3) "
-            'while its shape was {1}').format(adjacency_matrix_shape,
-                                                node_coords_shape)
+            "while its shape was {1}").format(adjacency_matrix_shape,
+                                              node_coords_shape)
 
         raise ValueError(message)
 
