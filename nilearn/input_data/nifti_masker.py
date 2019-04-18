@@ -15,7 +15,7 @@ from .. import image
 from .. import masking
 from nilearn import plotting
 from .._utils import CacheMixin
-from ..plotting import ReportMixin
+from ..plotting import (_embed_img, ReportMixin)
 from .._utils.class_inspect import get_params
 from .._utils.niimg import img_data_dtype
 from .._utils.niimg_conversions import _check_same_fov
@@ -290,13 +290,13 @@ class NiftiMasker(BaseMasker, CacheMixin, ReportMixin):
             return
 
         if hasattr(self, 'mask_img_'):
-            display = plotting.plot_epi(self.input_)
+            display = plotting.plot_epi(self.input_, black_bg=False)
             display.add_contours(self.mask_img_, levels=[.5], colors='r')
+            img_str = _embed_img(display)
 
-        report = self._update_template(name='NiftiMasker',
-                                       content=display,
-                                       description='Inspect for alignment '
-                                                   'between EPI and mask.')
+        report = self.update_template(title='NiftiMasker',
+                                      content=img_str,
+                                      description='Inspect for alignment.')
         return report
 
     def transform_single_imgs(self, imgs, confounds=None, copy=True):
