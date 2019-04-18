@@ -363,7 +363,7 @@ def crop_img(img, rtol=1e-8, copy=True, pad=True, return_offset=False):
     offset: list (optional)
         List of tuples representing the number of voxels removed (before, after)
         the cropped volumes, i.e.:
-          [(x1_pre, x1_post), (x2_pre, x2_post), ..., (xN_pre, xN_post)]
+        [(x1_pre, x1_post), (x2_pre, x2_post), ..., (xN_pre, xN_post)]
 
     """
 
