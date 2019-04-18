@@ -29,6 +29,7 @@ import nilearn.decoding
 # get the archive
 import urllib
 intertva_url = 'https://cloud.int.univ-amu.fr/index.php/s/j8Z84GRXRGBMqec/download'
+# future url: https://osf.io/eaq9j/download
 tar_fname = 'surf_data.tar.gz'
 urllib.request.urlretrieve(intertva_url,tar_fname)
 
