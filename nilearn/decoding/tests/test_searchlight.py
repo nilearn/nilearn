@@ -19,7 +19,7 @@ def test_searchlight():
     data = rand.rand(5, 5, 5, frames)
     mask = np.ones((5, 5, 5), np.bool)
     mask_img = nibabel.Nifti1Image(mask.astype(np.int), np.eye(4))
-    # Create a condition array
+    # Create a condition array, with balanced classes
     cond = np.arange(frames, dtype=int) >= (frames // 2)
 
     # Create an activation pixel.
