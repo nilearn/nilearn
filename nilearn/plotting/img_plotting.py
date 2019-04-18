@@ -18,6 +18,7 @@ import warnings
 # delayed, so that the part module can be used without them).
 import numpy as np
 from scipy import ndimage
+from scipy import sparse
 from nibabel.spatialimages import SpatialImage
 
 from .._utils.numpy_conversions import as_ndarray
@@ -1310,7 +1311,7 @@ def plot_connectome_strength(adjacency_matrix, node_coords, node_size="auto",
     node_size : 'auto' or scalar
         size(s) of the nodes in points^2. By default the size of the node is
         inversely propertionnal to the number of nodes.
-    cmap : colormap
+    cmap : str or colormap
         colormap used to represent the strength of a node.
     output_file : string, or None, optional
         The name of an image file to export the plot to. Valid extensions
@@ -1338,10 +1339,60 @@ def plot_connectome_strength(adjacency_matrix, node_coords, node_size="auto",
     The plotted image should in MNI space for this function to work properly.
     """
 
-    cmap = plt.cm.viridis_r if cmap is None else cmap
+    # input validation
+    if cmap is None:
+        cmap = plt.cm.viridis_r
+    elif isinstance(cmap, str):
+        cmap = plt.get_cmap(cmap)
+    else:
+        cmap = cmap
+
     node_size = (1 / len(node_coords) * 1e4
                  if node_size == 'auto' else node_size)
 
+    node_coords = np.asarray(node_coords)
+
+    if sparse.issparse(adjacency_matrix):
+        adjacency_matrix = adjacency_matrix.toarray()
+
+    adjacency_matrix = np.nan_to_num(adjacency_matrix)
+
+    adjacency_matrix_shape = adjacency_matrix.shape
+    if (len(adjacency_matrix_shape) != 2 or
+            adjacency_matrix_shape[0] != adjacency_matrix_shape[1]):
+        raise ValueError(
+            "'adjacency_matrix' is supposed to have shape (n, n)."
+            ' Its shape was {0}'.format(adjacency_matrix_shape))
+
+    node_coords_shape = node_coords.shape
+    if len(node_coords_shape) != 2 or node_coords_shape[1] != 3:
+        message = (
+            "Invalid shape for 'node_coords'. You passed an "
+            "'adjacency_matrix' of shape {0} therefore "
+            "'node_coords' should be a array with shape ({0[0]}, 3) "
+            'while its shape was {1}').format(adjacency_matrix_shape,
+                                                node_coords_shape)
+
+        raise ValueError(message)
+
+    if node_coords_shape[0] != adjacency_matrix_shape[0]:
+        raise ValueError(
+            "Shape mismatch between 'adjacency_matrix' "
+            "and 'node_coords'"
+            "'adjacency_matrix' shape is {0}, 'node_coords' shape is {1}"
+            .format(adjacency_matrix_shape, node_coords_shape))
+
+    if not np.allclose(adjacency_matrix, adjacency_matrix.T, rtol=1e-3):
+        raise ValueError("'adjacency_matrix' should be symmetric")
+
+    # For a masked array, masked values are replaced with zeros
+    if hasattr(adjacency_matrix, 'mask'):
+        if not (adjacency_matrix.mask == adjacency_matrix.mask.T).all():
+            raise ValueError(
+                "'adjacency_matrix' was masked with a non symmetric mask")
+        adjacency_matrix = adjacency_matrix.filled(0)
+
+    # plotting
     region_strength = np.sum(np.abs(adjacency_matrix), axis=0)
     region_strength /= np.sum(region_strength)
 

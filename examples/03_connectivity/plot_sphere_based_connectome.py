@@ -24,12 +24,14 @@ using fMRI.", 2010, Science 329, 1358-1361.
 # We are going to use a single subject from the movie watching fmri dataset.
 from nilearn import datasets
 
-rest = datasets.fetch_development_fmri(n_subjects=5)
+# global signal - contrast the matrix
+rest = datasets.fetch_development_fmri(n_subjects=100)
 
 ###############################################################################
 # We store the paths to its functional image and the confounds file.
-fmri_filename = rest.func[0]
-confounds_filename = rest.confounds[0]
+subject_idx = 15
+fmri_filename = rest.func[subject_idx]
+confounds_filename = rest.confounds[subject_idx]
 print('Functional image is {0},\nconfounds are {1}.'.format(fmri_filename,
       confounds_filename))
 
