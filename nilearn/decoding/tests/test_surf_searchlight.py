@@ -1,14 +1,12 @@
 """
-Test the searchlight module
+Test the surface searchlight
 """
-# Author: Alexandre Abraham
+# Author: Sylvain Takerkart
 # License: simplified BSD
 
 import numpy as np
-import nibabel
-import sklearn
+
 from distutils.version import LooseVersion
-from nose.tools import assert_equal
 
 import nibabel as nb
 from nibabel import gifti
@@ -30,6 +28,12 @@ def _create_toy_mesh():
             faces.append([0, angle_ind, angle_ind + 1])
     faces.append([0, angle_ind + 1, 1])
     return [np.array(coords), np.array(faces)]
+
+
+
+def test__apply_surfmask_and_get_affinity():
+    pass
+
 
 
 def test_surf_searchlight():
