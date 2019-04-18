@@ -191,11 +191,11 @@ def test_second_level_model_contrast_computation():
 
         # Test output_type='all', and verify images are equivalent
         all_images = model.compute_contrast(c1, output_type='all')
-        assert_array_equal(all_images['z_score'].get_fdata(), z_image.get_fdata())
-        assert_array_equal(all_images['stat'].get_fdata(), stat_image.get_fdata())
-        assert_array_equal(all_images['p_value'].get_fdata(), p_image.get_fdata())
-        assert_array_equal(all_images['effect_size'].get_fdata(), effect_image.get_fdata())
-        assert_array_equal(all_images['effect_variance'].get_fdata(), variance_image.get_fdata())
+        assert_array_equal(all_images['z_score'].get_data(), z_image.get_data())
+        assert_array_equal(all_images['stat'].get_data(), stat_image.get_data())
+        assert_array_equal(all_images['p_value'].get_data(), p_image.get_data())
+        assert_array_equal(all_images['effect_size'].get_data(), effect_image.get_data())
+        assert_array_equal(all_images['effect_variance'].get_data(), variance_image.get_data())
 
         # formula should work (passing variable name directly)
         model.compute_contrast('intercept')
