@@ -238,7 +238,7 @@ plotting.plot_connectome(matrix, coords, title='Power correlation graph',
 
 
 ###############################################################################
-# .. Note :: 
+# .. note:: 
 # 
 #     Note the 1. on the matrix diagonal: These are the signals variances, set to
 #     1. by the `spheres_masker`. Hence the covariance of the signal is a
