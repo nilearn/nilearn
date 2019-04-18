@@ -13,10 +13,8 @@ from nose.tools import assert_true, assert_raises
 from nilearn._utils.testing import assert_raises_regex, assert_warns
 
 import numpy as np
-<<<<<<< HEAD
 from scipy.spatial import Delaunay
-=======
->>>>>>> master
+
 
 import nibabel as nb
 from nibabel import gifti
@@ -268,7 +266,7 @@ def test_load_surf_mesh_file_error():
 
 
 def test_load_surf_mesh_file_glob():
-    mesh = _generate_surf()
+    mesh = generate_surf()
     fname1 = tempfile.mktemp(suffix='.pial')
     nb.freesurfer.write_geometry(fname1, mesh[0], mesh[1])
     fname2 = tempfile.mktemp(suffix='.pial')
