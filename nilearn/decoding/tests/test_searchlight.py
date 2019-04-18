@@ -20,7 +20,7 @@ def test_searchlight():
     mask = np.ones((5, 5, 5), np.bool)
     mask_img = nibabel.Nifti1Image(mask.astype(np.int), np.eye(4))
     # Create a condition array
-    cond = np.arange(frames, dtype=int) > (frames // 2)
+    cond = np.arange(frames, dtype=int) >= (frames // 2)
 
     # Create an activation pixel.
     data[2, 2, 2, :] = 0
