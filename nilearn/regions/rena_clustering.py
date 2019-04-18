@@ -13,10 +13,11 @@ from sklearn.base import TransformerMixin, ClusterMixin
 from sklearn.base import BaseEstimator
 from sklearn.utils.validation import check_is_fitted
 from sklearn.utils import check_array
-from ..input_data.masker_validation import check_embedded_nifti_masker
+from nilearn.masking import _unmask_from_to_3d_array
+from nibabel import Nifti1Image
 
 
-def _compute_weights(masker, masked_data):
+def _compute_weights(X, mask_img):
     """Compute the weights in the direction of each axis using the Euclidean
     distance --i.e. weights = (weight_deep, weights_right, weight_down).
 
@@ -24,11 +25,10 @@ def _compute_weights(masker, masked_data):
 
     Parameters
     ----------
-    masker : NiftiMasker
-        The nifti masker used to mask the data.
+    X : array-like, shape = [n_samples, n_features]
+        Training data.
 
-    masked_data : numpy array of shape [n_samples, n_features]
-        Image in brain space transformed into 2D data matrix.
+    mask_img : Niimg-like object used for masking the data.
 
     Returns
     -------
@@ -36,7 +36,16 @@ def _compute_weights(masker, masked_data):
         Weights corresponding to all edges in the mask.
         shape: (n_edges,)
     """
-    data = masker.inverse_transform(masked_data).get_data()
+
+    n_samples, n_features = X.shape
+
+    mask = mask_img.get_data().astype('bool')
+    shape = mask.shape
+
+    data = np.empty((shape[0], shape[1], shape[2], n_samples))
+    for sample in range(n_samples):
+        data[:, :, :, sample] = \
+            _unmask_from_to_3d_array(X[sample].copy(), mask)
 
     weights_deep = np.sum(np.diff(data, axis=2) ** 2, axis=-1).ravel()
     weights_right = np.sum(np.diff(data, axis=1) ** 2, axis=-1).ravel()
@@ -87,16 +96,15 @@ def _make_3d_edges(vertices, is_mask):
     return edges
 
 
-def _make_edges_and_weights(masker, masked_data):
+def _make_edges_and_weights(X, mask_img):
     """Compute the weights to all edges in the mask.
 
     Parameters
     ----------
-    masker : NiftiMasker
-        The nifti masker used to mask the data.
+    X : array-like, shape = [n_samples, n_features]
+        Training data.
 
-    masked_data : numpy array of shape [n_samples, n_features]
-        Image in brain space transformed into 2D data matrix.
+    mask_img : Niimg-like object used for masking the data.
 
     Returns
     -------
@@ -107,14 +115,14 @@ def _make_edges_and_weights(masker, masked_data):
         Weights corresponding to all edges in the mask.
         shape: (n_edges,)
     """
-    mask = masker.mask_img_.get_data()
+    mask = mask_img.get_data()
     shape = mask.shape
-    n_features = np.prod(shape)
+    n_vertices = np.prod(shape)
 
     # Indexing each voxel
-    vertices = np.arange(n_features).reshape(shape)
+    vertices = np.arange(n_vertices).reshape(shape)
 
-    weights_unmasked = _compute_weights(masker, masked_data)
+    weights_unmasked = _compute_weights(X, mask_img)
 
     edges_unmasked = _make_3d_edges(vertices, is_mask=False)
     edges_mask = _make_3d_edges(mask, is_mask=True)
@@ -131,25 +139,25 @@ def _make_edges_and_weights(masker, masked_data):
     return edges, weights
 
 
-def weighted_connectivity_graph(masker, masked_data):
+def weighted_connectivity_graph(X, mask_img):
     """ Creating symmetric weighted graph: data and topology are encoded by a
     connectivity matrix.
 
     Parameters
     ----------
-    masker : NiftiMasker instance
+    X : array-like, shape = [n_samples, n_features]
+        Training data.
 
-    masked_data : numpy array of shape [n_samples, n_features]
-        Image in brain space transformed into 2D data matrix
+    mask_img : Niimg-like object used for masking the data.
 
     Returns
     -------
     connectivity : a sparse COO matrix
         sparse matrix representation of the weighted adjacency graph
     """
-    n_features = int(masker.mask_img_.get_data().sum())
+    n_features = X.shape[1]
 
-    edges, weight = _make_edges_and_weights(masker, masked_data)
+    edges, weight = _make_edges_and_weights(X, mask_img)
 
     connectivity = coo_matrix((weight, edges),
                               (n_features, n_features)).tocsr()
@@ -204,14 +212,17 @@ def _nn_connectivity(connectivity, threshold=1e-7):
     return nn_connectivity
 
 
-def _reduce_data_and_connectivity(labels, n_components, connectivity,
-                                  masked_data, threshold=1e-7):
+def _reduce_data_and_connectivity(X, labels, n_components, connectivity,
+                                  threshold=1e-7):
     """Perform feature grouping and reduce the connectivity matrix: during the
     reduction step one changes the value of each cluster by their mean.
     In addition, connected nodes are merged.
 
     Parameters
     ----------
+    X : array-like, shape = [n_samples, n_features]
+        Training data.
+
     labels : array like
         Containts the label assignation for each voxel.
 
@@ -221,9 +232,6 @@ def _reduce_data_and_connectivity(labels, n_components, connectivity,
     connectivity : a sparse matrix in COOrdinate format.
         sparse matrix representation of the weighted adjacency graph
 
-    masked_data : array like
-        2D data matrix.
-
     threshold : float in the close interval [0, 1], optional (default 1e-7)
         The treshold is setted to handle eccentricities.
         In practice it is 1e-7.
@@ -232,7 +240,7 @@ def _reduce_data_and_connectivity(labels, n_components, connectivity,
     -------
     reduced_connectivity : a sparse matrix in COOrdinate format.
 
-    reduced_masked_data: array like
+    reduced_X: array like
         2D data matrix.
     """
     n_features = len(labels)
@@ -247,7 +255,7 @@ def _reduce_data_and_connectivity(labels, n_components, connectivity,
 
     incidence = inv_sum_col * incidence
 
-    reduced_masked_data = (incidence * masked_data.T).T
+    reduced_X = (incidence * X.T).T
     reduced_connectivity = (incidence * connectivity) * incidence.T
 
     reduced_connectivity = reduced_connectivity - dia_matrix(
@@ -257,26 +265,25 @@ def _reduce_data_and_connectivity(labels, n_components, connectivity,
     i_idx, j_idx = reduced_connectivity.nonzero()
 
     weights_ = np.sum(
-        (reduced_masked_data[:, i_idx] - reduced_masked_data[:, j_idx]) ** 2,
+        (reduced_X[:, i_idx] - reduced_X[:, j_idx]) ** 2,
         axis=0)
     weights_ = np.maximum(threshold, weights_)
     reduced_connectivity.data = weights_
 
-    return reduced_connectivity, reduced_masked_data
+    return reduced_connectivity, reduced_X
 
 
-def nearest_neighbor_grouping(connectivity, masked_data, n_clusters,
-                              threshold=1e-7):
+def nearest_neighbor_grouping(X, connectivity, n_clusters, threshold=1e-7):
     """Cluster using nearest neighbor agglomeration: merge clusters according
     to their nearest neighbors, then the data and the connectivity are reduced.
 
     Parameters
     ----------
+    X : array-like, shape = [n_samples, n_features]
+        Training data.
+
     connectivity : a sparse matrix in COOrdinate format.
         sparse matrix representation of the weighted adjacency graph
-
-    masked_data : numpy array of shape [n_samples, n_features]
-        Image in brain space transformed into 2D data matrix
 
     n_clusters : int
         The number of clusters to find.
@@ -289,7 +296,7 @@ def nearest_neighbor_grouping(connectivity, masked_data, n_clusters,
     -------
     reduced_connectivity : a sparse matrix in COOrdinate format.
 
-    reduced_masked_data :  array like
+    reduced_X :  array like
         2D data matrix.
 
     labels : array like
@@ -322,13 +329,13 @@ def nearest_neighbor_grouping(connectivity, masked_data, n_clusters,
     n_components, labels = csgraph.connected_components(nn_connectivity)
 
     # Reduction step: reduction by averaging
-    reduced_connectivity, reduced_masked_data = _reduce_data_and_connectivity(
-        labels, n_components, connectivity, masked_data, threshold)
+    reduced_connectivity, reduced_X = _reduce_data_and_connectivity(
+        X, labels, n_components, connectivity, threshold)
 
-    return reduced_connectivity, reduced_masked_data, labels
+    return reduced_connectivity, reduced_X, labels
 
 
-def recursive_neighbor_agglomeration(masker, masked_data, n_clusters,
+def recursive_neighbor_agglomeration(X, mask_img, n_clusters,
                                      n_iter=10, threshold=1e-7,
                                      verbose=0):
     """Recursive neighbor agglomeration (ReNA): it performs iteratively
@@ -336,10 +343,10 @@ def recursive_neighbor_agglomeration(masker, masked_data, n_clusters,
 
     Parameters
     ----------
-    masker : NiftiMasker instance
+    X : array-like, shape = [n_samples, n_features]
+        Training data.
 
-    masked_data : numpy array of shape [n_samples, n_features]
-        Image in brain space transformed into 2D data matrix
+    mask_img : Niimg-like object used for masking the data.
 
     n_clusters : int
         The number of clusters to find.
@@ -370,7 +377,7 @@ def recursive_neighbor_agglomeration(masker, masked_data, n_clusters,
            Machine Intelligence, vol. 41, no. 3, pp. 669-681, 1 March 2019.
            https://hal.archives-ouvertes.fr/hal-01366651/
     """
-    connectivity = weighted_connectivity_graph(masker, masked_data)
+    connectivity = weighted_connectivity_graph(X, mask_img)
 
     # Initialization
     labels = np.arange(connectivity.shape[0])
@@ -378,8 +385,8 @@ def recursive_neighbor_agglomeration(masker, masked_data, n_clusters,
 
     for i in range(n_iter):
 
-        connectivity, masked_data, reduced_labels = nearest_neighbor_grouping(
-            connectivity, masked_data, n_clusters, threshold)
+        connectivity, X, reduced_labels = nearest_neighbor_grouping(
+            X, connectivity, n_clusters, threshold)
 
         labels = reduced_labels[labels]
         n_components = connectivity.shape[0]
@@ -402,6 +409,8 @@ class ReNA(BaseEstimator, ClusterMixin, TransformerMixin):
 
     Parameters
     ----------
+    mask_img : Niimg-like object used for masking the data.
+
     n_clusters : int, optional (default 2)
         The number of clusters to find.
 
@@ -427,41 +436,6 @@ class ReNA(BaseEstimator, ClusterMixin, TransformerMixin):
     verbose : int, optional (default 1)
         Verbosity level.
 
-    mask : filename, niimg, NiftiMasker instance, optional default None)
-        Mask to be used on data. If an instance of masker is passed,
-        then its mask will be used. If no mask is passed, it will be computed
-        automatically by a NiftiMasker.
-
-    smoothing_fwhm : float, optional
-        If smoothing_fwhm is not None, it gives the size in millimeters of the
-        spatial smoothing to apply to the signal.
-
-    standardize : boolean, optional
-        If standardize is True, the time-series are centered and normed:
-        their variance is put to 1 in the time dimension.
-
-    target_affine : 3x3 or 4x4 matrix, optional (default None)
-        This parameter is passed to image.resample_img. An important use-case
-        of this parameter is for downsampling the input data to a coarser
-        resolution (to speed of the model fit). Please see the related
-        documentation for details.
-
-    target_shape : 3-tuple of integers, optional (default None)
-        This parameter is passed to image.resample_img. Please see the
-        related documentation for details.
-
-    low_pass : None or float, optional
-        This parameter is passed to signal.clean. Please see the related
-        documentation for details
-
-    high_pass : None or float, optional
-        This parameter is passed to signal.clean. Please see the related
-        documentation for details
-
-    t_r : float, optional (default None)
-        This parameter is passed to signal.clean. Please see the related
-        documentation for details.
-
     Attributes
     ----------
     `labels_ ` : array-like, (n_features,)
@@ -473,14 +447,6 @@ class ReNA(BaseEstimator, ClusterMixin, TransformerMixin):
     `sizes_` : array-like (n_features,)
         It contains the size of each cluster.
 
-    `masker_` : instance of NiftiMasker
-        The nifti masker used to mask the data.
-
-    `mask_img_` : Nifti like image
-        The mask of the data. If no mask was supplied by the user,
-        this attribute is the mask image computed automatically from the
-        data `X`.
-
     References
     ----------
     .. [1] A. Hoyos-Idrobo, G. Varoquaux, J. Kahn and B. Thirion, "Recursive
@@ -489,20 +455,13 @@ class ReNA(BaseEstimator, ClusterMixin, TransformerMixin):
            Machine Intelligence, vol. 41, no. 3, pp. 669-681, 1 March 2019.
            https://hal.archives-ouvertes.fr/hal-01366651/
     """
-    def __init__(self, n_clusters=2, mask=None, smoothing_fwhm=None,
-                 standardize=True, target_affine=None, target_shape=None,
-                 mask_strategy='background', memory=None, memory_level=1,
-                 verbose=0, scaling=False, n_iter=10, threshold=1e-7,):
+    def __init__(self, mask_img, n_clusters=2, scaling=False, n_iter=10,
+                 threshold=1e-7, memory=None, memory_level=1, verbose=0):
+        self.mask_img = mask_img
         self.n_clusters = n_clusters
         self.scaling = scaling
         self.n_iter = n_iter
-        self.mask = mask
         self.threshold = threshold
-        self.smoothing_fwhm = smoothing_fwhm
-        self.standardize = standardize
-        self.target_affine = target_affine
-        self.target_shape = target_shape
-        self.mask_strategy = mask_strategy
         self.memory = memory
         self.memory_level = memory_level
         self.verbose = verbose
@@ -512,15 +471,23 @@ class ReNA(BaseEstimator, ClusterMixin, TransformerMixin):
 
         Parameters
         ----------
-        X : list of Niimg-like objects
-            See http://nilearn.github.io/manipulating_images/input_output.html
-            Data on which model is to be fitted. If this is a list,
-            the affine is considered the same for all.
+        X : array-like, shape = [n_samples, n_features]
+            Training data.
+        y : Ignored
 
         Returns
         -------
         self : `ReNA` object
         """
+
+        X = check_array(X, ensure_min_features=2, ensure_min_samples=2,
+                        estimator=self)
+        n_features = X.shape[1]
+
+        if not isinstance(self.mask_img, (str, Nifti1Image)):
+            raise ValueError("The mask image should be a Niimg-like"
+                             "object. Instead a %s object was provided."
+                             % type(self.mask_img))
 
         if self.memory is None or isinstance(self.memory, six.string_types):
             self.memory_ = Memory(cachedir=self.memory,
@@ -536,12 +503,6 @@ class ReNA(BaseEstimator, ClusterMixin, TransformerMixin):
             raise ValueError("n_iter should be an integer greater than 0."
                              " %s was provided." % str(self.n_iter))
 
-        self.masker_ = check_embedded_nifti_masker(self, multi_subject=False)
-        X = self.masker_.fit_transform(X)
-
-        X = check_array(X)
-        n_features = X.shape[1]
-
         if self.n_clusters > n_features:
             self.n_clusters = n_features
             warnings.warn("n_clusters should be at most the number of "
@@ -549,7 +510,8 @@ class ReNA(BaseEstimator, ClusterMixin, TransformerMixin):
                           % str(n_features))
 
         n_components, labels = self.memory_.cache(
-            recursive_neighbor_agglomeration)(self.masker_, X, self.n_clusters,
+            recursive_neighbor_agglomeration)(X, self.mask_img,
+                                              self.n_clusters,
                                               n_iter=self.n_iter,
                                               threshold=self.threshold,
                                               verbose=self.verbose)
@@ -568,21 +530,16 @@ class ReNA(BaseEstimator, ClusterMixin, TransformerMixin):
 
         Parameters
         ----------
-        X : list of Niimg-like objects
-            See http://nilearn.github.io/manipulating_images/input_output.html
-            Data on which model is to be fitted. If this is a list,
-            the affine is considered the same for all.
+        X : array-like, shape = [n_samples, n_features]
+            Data to transform with the fitted clustering.
 
         Returns
         -------
-        Xred : numpy array
-            2D data matrix of shape [n_sampels, n_clusters]
+        X_red : numpy array
+            2D data matrix of shape [n_samples, n_clusters]
         """
 
-        check_is_fitted(self, "masker_")
         check_is_fitted(self, "labels_")
-
-        X = self.masker_.transform(X)
 
         unique_labels = np.unique(self.labels_)
 
@@ -590,20 +547,20 @@ class ReNA(BaseEstimator, ClusterMixin, TransformerMixin):
         for label in unique_labels:
             mean_cluster.append(np.mean(X[:, self.labels_ == label], axis=1))
 
-        Xred = np.array(mean_cluster).T
+        X_red = np.array(mean_cluster).T
 
         if self.scaling:
-            Xred = Xred * np.sqrt(self.sizes_)
+            X_red = X_red * np.sqrt(self.sizes_)
 
-        return Xred
+        return X_red
 
-    def inverse_transform(self, Xred):
+    def inverse_transform(self, X_red):
         """Transform the reduced 2D data matrix back to an image in brain
         space.
 
         Parameters
         ----------
-        Xred : numpy array
+        X_red : numpy array
             2D data matrix of shape [n_samples, n_clusters]
 
         Returns
@@ -617,7 +574,7 @@ class ReNA(BaseEstimator, ClusterMixin, TransformerMixin):
         _, inverse = np.unique(self.labels_, return_inverse=True)
 
         if self.scaling:
-            Xred = Xred / np.sqrt(self.sizes_)
-        X_inv = Xred[..., inverse]
+            X_red = X_red / np.sqrt(self.sizes_)
+        X_inv = X_red[..., inverse]
 
         return self.masker_.inverse_transform(X_inv)
