@@ -192,8 +192,8 @@ class Contrast(object):
                 np.maximum(self.variance, self.tiny))
         else:
             raise ValueError('Unknown statistic type')
-        self.stat_ = stat
-        return stat.ravel()
+        self.stat_ = stat.ravel()
+        return self.stat_
 
     def p_value(self, baseline=0.0):
         """Return a parametric estimate of the p-value associated
