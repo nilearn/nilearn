@@ -1,6 +1,6 @@
 """
-Clustering methods to learn a brain parcellation from rest fMRI
-====================================================================
+Clustering methods to learn a brain parcellation from fMRI
+==========================================================
 
 We use spatially-constrained Ward-clustering and KMeans to create a set
 of parcels.
@@ -37,14 +37,14 @@ The big picture discussion corresponding to this example can be found
 in the documentation section :ref:`parcellating_brain`.
 """
 
-##################################################################
-# Download a rest dataset and turn it to a data matrix
-# -----------------------------------------------------
+########################################################################
+# Download a brain development fmri dataset and turn it to a data matrix
+# -----------------------------------------------------------------------
 #
-# We download one subject of the ADHD dataset from Internet
+# We download one subject of the movie watching dataset from Internet
 
 from nilearn import datasets
-dataset = datasets.fetch_adhd(n_subjects=1)
+dataset = datasets.fetch_development_fmri(n_subjects=1)
 
 # print basic information on the dataset
 print('First subject functional nifti image (4D) is at: %s' %
