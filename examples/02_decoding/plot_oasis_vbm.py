@@ -62,20 +62,26 @@ gm_imgs = dataset_files.gray_matter_maps
 from sklearn.model_selection import train_test_split
 gm_imgs_train, gm_imgs_test, age_train, age_test = train_test_split(
     gm_imgs, age, train_size=.6, random_state=0)
+######################################################################
+# Preprocess the mask
+# --------------------
 
-# Preprocess the mask: remove features with too low between-subject variance
-from sklearn.feature_selection import VarianceThreshold
+# First we use the :class:`nilearn.input_data.NiftiMasker` to extract 
+# fMRI data on a mask and convert it to data series.
 from nilearn.input_data import NiftiMasker
-variance_threshold = VarianceThreshold(threshold=.01)
 nifti_masker = NiftiMasker(standardize=False, smoothing_fwhm=2,
                            memory='nilearn_cache')
-
 gm_maps_masked = nifti_masker.fit_transform(gm_imgs_train)
 
-# Fit the masker again to remove features with too low between-subject variance
+# The features with too low between-subject variance are removed using
+# :class:`sklearn.feature_selection.VarianceThreshold`.
+from sklearn.feature_selection import VarianceThreshold
+variance_threshold = VarianceThreshold(threshold=.01)
 gm_maps_thresholded = variance_threshold.fit_transform(gm_maps_masked)
 gm_maps_masked = variance_threshold.inverse_transform(gm_maps_thresholded)
 
+# Then we convert the data back to the mask image in order to use it for 
+# decoding process
 mask = nifti_masker.inverse_transform(variance_threshold.get_support())
 ###############################################################################
 # Training the decoder
@@ -85,12 +91,13 @@ mask = nifti_masker.inverse_transform(variance_threshold.get_support())
 # only the 5-percent voxels most correlated with the age variable to fit.
 # Also, we set memory_level=2 so that more of the intermediate computations
 # are cached. Also, you may pass and n_jobs=<some_high_value> to the
-# DecoderRegressor class, to take advantage of a multi-core system.
+# DecoderRegressor class, to take advantage of a multi-core system. We also
+# want to set mask hyperparameter to be the mask we just obtained above.
 from nilearn.decoding import DecoderRegressor
 decoder = DecoderRegressor(estimator='svr', mask=mask,
                            screening_percentile=5,
                            memory_level=2,
-                           memory='nilearn_cache') # cache options
+                           memory='nilearn_cache')  # cache options
 # Fit and predict with the decoder
 decoder.fit(gm_imgs_train, age_train)
 
