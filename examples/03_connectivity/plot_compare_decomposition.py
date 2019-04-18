@@ -1,5 +1,5 @@
 """
-Deriving spatial maps from group fMRI data using ICA and Dictionary Learning```
+Deriving spatial maps from group fMRI data using ICA and Dictionary Learning
 ===============================================================================
 
 Various approaches exist to derive spatial maps or networks from
