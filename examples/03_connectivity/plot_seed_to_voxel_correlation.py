@@ -3,8 +3,9 @@ Producing single subject maps of seed-to-voxel correlation
 ==========================================================
 
 This example shows how to produce seed-to-voxel correlation maps for a single
-subject based on resting-state fMRI scans. These maps depict the temporal
-correlation of a **seed region** with the **rest of the brain**.
+subject based on movie-watching fMRI scans.
+These maps depict the temporal correlation of a **seed region** with the
+**rest of the brain**.
 
 This example is an advanced one that requires manipulating the data with numpy.
 Note the difference between images, that lie in brain space, and the
@@ -21,14 +22,14 @@ See also :ref:`for a similar example using cortical surface input data
 # Getting the data
 # ----------------
 
-# We will work with the first subject of the adhd data set.
-# adhd_dataset.func is a list of filenames. We select the 1st (0-based)
+# We will work with the first subject of the brain development fmri data set.
+# dataset.func is a list of filenames. We select the 1st (0-based)
 # subject by indexing with [0]).
 from nilearn import datasets
 
-adhd_dataset = datasets.fetch_adhd(n_subjects=1)
-func_filename = adhd_dataset.func[0]
-confound_filename = adhd_dataset.confounds[0]
+dataset = datasets.fetch_development_fmri(n_subjects=1)
+func_filename = dataset.func[0]
+confound_filename = dataset.confounds[0]
 
 ##########################################################################
 # Note that func_filename and confound_filename are strings pointing to
@@ -61,7 +62,7 @@ from nilearn import input_data
 seed_masker = input_data.NiftiSpheresMasker(
     pcc_coords, radius=8,
     detrend=True, standardize=True,
-    low_pass=0.1, high_pass=0.01, t_r=2.,
+    low_pass=0.1, high_pass=0.01, t_r=2,
     memory='nilearn_cache', memory_level=1, verbose=0)
 
 ##########################################################################
@@ -78,7 +79,7 @@ seed_time_series = seed_masker.fit_transform(func_filename,
 brain_masker = input_data.NiftiMasker(
     smoothing_fwhm=6,
     detrend=True, standardize=True,
-    low_pass=0.1, high_pass=0.01, t_r=2.,
+    low_pass=0.1, high_pass=0.01, t_r=2,
     memory='nilearn_cache', memory_level=1, verbose=0)
 
 ##########################################################################

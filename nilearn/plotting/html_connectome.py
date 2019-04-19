@@ -163,6 +163,7 @@ def view_connectome(adjacency_matrix, node_coords, edge_threshold=None,
     connectome_info = _get_connectome(
         adjacency_matrix, node_coords, threshold=edge_threshold, cmap=edge_cmap,
         symmetric_cmap=symmetric_cmap, marker_size=node_size)
+    connectome_info['line_width'] = linewidth
     return _make_connectome_html(connectome_info)
 
 

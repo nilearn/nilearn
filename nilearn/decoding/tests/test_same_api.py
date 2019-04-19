@@ -9,9 +9,10 @@ import numpy as np
 import nibabel
 from sklearn.datasets import load_iris
 from sklearn.utils import check_random_state
+from nilearn.masking import _unmask_from_to_3d_array
 from nilearn.decoding.objective_functions import (
     _squared_loss, _squared_loss_grad, _logistic_loss_lipschitz_constant,
-    spectral_norm_squared, _unmask)
+    spectral_norm_squared)
 from nilearn.decoding.space_net_solvers import (
     _squared_loss_and_spatial_grad,
     _logistic_derivative_lipschitz_constant,
@@ -52,7 +53,8 @@ def to_niimgs(X, dim):
     mask[:X.shape[-1]] = 1
     assert_equal(mask.sum(), X.shape[1])
     mask = mask.reshape(dim)
-    X = np.rollaxis(np.array([_unmask(x, mask) for x in X]), 0, start=4)
+    X = np.rollaxis(
+        np.array([_unmask_from_to_3d_array(x, mask) for x in X]), 0, start=4)
     affine = np.eye(4)
     return nibabel.Nifti1Image(X, affine), nibabel.Nifti1Image(
         mask.astype(np.float), affine)

@@ -199,9 +199,9 @@ def connected_regions(maps_img, min_region_size=1350,
                                     target_affine=maps_img.affine,
                                     target_shape=maps_img.shape[:3],
                                     interpolation="nearest")
-            mask_data, _ = masking._load_mask_img(mask_img)
-            # Set as 0 to the values which are outside of the mask
-            maps[mask_data == 0.] = 0.
+        mask_data, _ = masking._load_mask_img(mask_img)
+        # Set as 0 to the values which are outside of the mask
+        maps[mask_data == 0.] = 0.
 
     for index in range(maps.shape[-1]):
         regions = []
@@ -410,7 +410,8 @@ class RegionExtractor(NiftiMapsMasker):
         self.regions_img_, self.index_ = connected_regions(threshold_maps,
                                                            self.min_region_size,
                                                            self.extractor,
-                                                           self.smoothing_fwhm)
+                                                           self.smoothing_fwhm,
+                                                           mask_img=self.mask_img)
 
         self.maps_img = self.regions_img_
         super(RegionExtractor, self).fit()
