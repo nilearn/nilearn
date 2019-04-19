@@ -13,7 +13,7 @@ NEW
   :class:`nilearn.decoding.DecoderRegressor` (for regression) implement a model
   selection scheme that averages the best models within a cross validation loop.
   The resulting average model is the one used as a classifier or a regressor.
-  These two objects also leverages the `NiftiMaskers` to provide a direct
+  These two objects also leverage the `NiftiMaskers` to provide a direct
   interface with the Nifti files on disk.
 
 Changes
