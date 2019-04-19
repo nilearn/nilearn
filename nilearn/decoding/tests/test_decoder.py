@@ -132,7 +132,7 @@ def test_decoder_classification():
     y_pred = model.predict(X)
     assert_true(accuracy_score(y, y_pred) > 0.95)
 
-    # check differnet screening_percentile value
+    # check different screening_percentile value
     for screening_percentile in [100, 20]:
         model = Decoder(mask=mask, screening_percentile=screening_percentile)
         model.fit(X, y)
@@ -144,7 +144,7 @@ def test_decoder_classification():
         model = Decoder(estimator='svc', mask=mask,
                         standardize=True, cv=cv)
         if isinstance(cv, LeaveOneGroupOut):
-            groups = np.random.binomial(2, 0.3, size=len(y))
+            groups = rand.binomial(2, 0.3, size=len(y))
         else:
             groups = None
         model.fit(X, y, groups=groups)
