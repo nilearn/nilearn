@@ -14,13 +14,10 @@ body {
     padding: 10px 20px 10px 20px;
 }
 
-.pure-g .pure-g--gutter > div > * {
-    margin: 0 2em 0 2em;
-}
-
 summary::-webkit-details-marker {
 margin-right: 2px;
 }
+
 summary:focus {
  outline-style: none;
 }
@@ -36,15 +33,47 @@ thead th {
 }
 
 tbody tr:nth-child(even) {
-   background-color: #dddddd;
+   background-color: #ddd;
+}
 
+/* Tooltip container */
+.tooltip {
+  position: relative;
+  display: inline-block;
+  border-bottom: 1px dotted black; /* If you want dots under the hoverable text */
+}
+
+/* Tooltip text */
+.tooltip .tooltiptext {
+  visibility: hidden;
+  max-width: 50em;
+  width: 100%;
+  background-color: rgba(24,24,24,0.85);
+  color: #fff;
+  text-align: left;
+  font-size: 14pt;
+  font-weight: 300;
+  padding: 5px 0;
+  border-radius: 6px;
+
+  /* Position the tooltip text - see examples below! */
+  position: absolute;
+  z-index: 1;
+}
+
+/* Show the tooltip text when you mouse over the tooltip container */
+.tooltip:hover .tooltiptext {
+  visibility: visible;
 }
 
 </style>
 </head>
 
 <body>
-  <h1 class="report-title">{{title}}</h1>
+  <h1 class="tooltip">
+    {{title}}
+    <span class="tooltiptext">{{docstring}}</span>
+  </h1>
 
   <div class="pure-g">
   <div class="pure-u-2-3">
@@ -63,7 +92,7 @@ tbody tr:nth-child(even) {
         </thead>
 
         <tbody>
-          {{py:params = parameters.items()}}
+          {{py: params = parameters.items()}}
           {{for p, v in params}}
             <tr>
               <td data-column="Parameter">{{p}}</td>

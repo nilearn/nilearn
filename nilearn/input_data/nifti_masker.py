@@ -15,7 +15,8 @@ from .. import image
 from .. import masking
 from nilearn import plotting
 from .._utils import CacheMixin
-from ..plotting import (_embed_img, ReportMixin)
+from ..plotting import (_str_params,
+                        _embed_img, ReportMixin)
 from .._utils.class_inspect import get_params
 from .._utils.niimg import img_data_dtype
 from .._utils.niimg_conversions import _check_same_fov
@@ -290,17 +291,24 @@ class NiftiMasker(BaseMasker, CacheMixin, ReportMixin):
             return
 
         if hasattr(self, 'mask_img_'):
-            display = plotting.plot_epi(self.input_, black_bg=False)
-            display.add_contours(self.mask_img_, levels=[.5], colors='r')
-            display = _embed_img(display)
+            display = None
+            try:
+                display = plotting.plot_epi(self.input_, black_bg=False)
+                display.add_contours(self.mask_img_, levels=[.5], colors='r')
+                embed = _embed_img(display)
+            finally:
+                if display is not None:
+                    display.close()
+            parameters = _str_params(self.get_params())
             description = 'This report shows the input Nifti ' \
                           'image overlaid with the outlines of the mask. ' \
                           'We recommend to inspect the report for the ' \
                           'overlap between the mask and its input image.'
-
+        docstring = self.__doc__.partition('Parameters\n    ----------\n')[0]
         report = self.update_template(title=self.__class__.__name__,
-                                      content=display,
-                                      parameters=self.get_params(),
+                                      docstring=docstring,
+                                      content=embed,
+                                      parameters=parameters,
                                       description=description)
         return report
 

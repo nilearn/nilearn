@@ -1,9 +1,37 @@
 import os
 import io
 import base64
+import matplotlib as mpl
+from contextlib import contextmanager
 
 from nilearn.externals import tempita
 from . import js_plotting_utils as plot_utils
+
+
+@contextmanager
+def _update_mpl_backend():
+    """
+    Safely, temporarily set matplotlib backend to 'Agg'
+    """
+    backend = mpl.get_backend()
+    mpl.use('Agg')
+    try:
+        yield
+    finally:
+        mpl.use(backend)
+
+
+def _str_params(params):
+    """
+    Parameters
+    ----------
+    params: dict
+        A dictionary of input values to a function
+    """
+    for k, v in params.items():
+        if v is None:
+            params[k] = 'None'
+    return params
 
 
 def _embed_img(display):
@@ -21,6 +49,7 @@ def _embed_img(display):
 
     io_buffer = io.BytesIO()
     display.savefig(io_buffer)
+    display.close()
 
     io_buffer.seek(0)
     data = base64.b64encode(io_buffer.read())
@@ -41,7 +70,7 @@ class ReportMixin():
     report : HTML report with embedded content
     """
 
-    def update_template(self, title, content,
+    def update_template(self, title, docstring, content,
                         parameters, description=None):
         """
         Populate a report with content.
@@ -66,6 +95,7 @@ class ReportMixin():
                                                  encoding='utf-8')
 
         html = tpl.substitute(title=title, content=content,
+                              docstring=docstring,
                               parameters=parameters,
                               description=description)
         return plot_utils.HTMLDocument(html)
