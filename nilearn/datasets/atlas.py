@@ -124,7 +124,6 @@ def fetch_atlas_destrieux_2009(lateralized=True, data_dir=None, url=None,
     Destrieux, C., et al. "A sulcal depth-based anatomical parcellation
     of the cerebral cortex." NeuroImage 47 (2009): S151.
     """
-    print('TEST!!!')
     if url is None:
         url = "https://www.nitrc.org/frs/download.php/7739/"
 
