@@ -440,6 +440,7 @@ def fetch_surf_fsaverage(mesh='fsaverage5', data_dir=None):
     mesh: str, optional (default='fsaverage5')
         Which mesh to fetch.
         'fsaverage5': the low-resolution fsaverage5 mesh (10242 nodes)
+        'fsaverage5_sphere': the low-resolution fsaverage5 spheres (10242 nodes)
         'fsaverage': the high-resolution fsaverage mesh (163842 nodes)
         (high-resolution fsaverage will result in
         more computation time and memory usage)
@@ -467,6 +468,7 @@ def fetch_surf_fsaverage(mesh='fsaverage5', data_dir=None):
 
     """
     meshes = {'fsaverage5': _fetch_surf_fsaverage5,
+              'fsaverage5_sphere': _fetch_surf_fsaverage5_sphere,
               'fsaverage': _fetch_surf_fsaverage}
     if mesh not in meshes:
         raise ValueError(
@@ -571,3 +573,21 @@ def _fetch_surf_fsaverage5(data_dir=None, url=None, resume=True, verbose=1):
                  sulc_left=sulcs[0],
                  sulc_right=sulcs[1],
                  description=fdescr)
+
+def _fetch_surf_fsaverage5_sphere(data_dir=None):
+    fsaverage_dir = _get_dataset_dir('fsaverage', data_dir=data_dir)
+    dataset_dir = _get_dataset_dir('fsaverage5_sphere', data_dir=fsaverage_dir)
+    print("bouh", dataset_dir)
+    url = 'https://osf.io/b79fy/download'
+    opts = {'uncompress': True}
+    names = ['sphere_right', 'sphere_left']
+    filenames = [('{}.gii'.format(name), url, opts)
+                 for name in names]
+    #if not os.path.isdir(dataset_dir):
+    _fetch_files(dataset_dir, filenames)
+    result = {
+        name: os.path.join(dataset_dir, '{}.gii'.format(name))
+        for name in names}
+
+    result['description'] = str(_get_dataset_descr('fsaverage'))
+    return Bunch(**result)
