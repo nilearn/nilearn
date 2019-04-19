@@ -2094,12 +2094,7 @@ def fetch_development_fmri(n_subjects=None, reduce_confounds=True,
     child_adult = participants['Child_Adult'].tolist()
     child_count = child_adult.count('child') if adults_or_children != 'adults' else 0
     adult_count = child_adult.count('adult') if adults_or_children != 'children' else 0
-    if adults_or_children == 'both':
-        max_subjects = len(participants)
-    elif adults_or_children == 'children':
-        max_subjects = child_count
-    elif adults_or_children == 'adults':
-        max_subjects = adult_count
+    max_subjects = adult_count + child_count
 
     # Check validity of n_subjects 
     if n_subjects is None:
