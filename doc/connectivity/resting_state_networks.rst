@@ -94,7 +94,7 @@ Interpreting such components
 -----------------------------
 
 ICA, and related algorithms, extract patterns that coactivate in the
-signal. As a result, it find functional networks, but also patterns of
+signal. As a result, it finds functional networks, but also patterns of
 non neural activity, ie confounding signals. Both are visible in the
 plots of the components.
 
