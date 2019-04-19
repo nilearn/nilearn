@@ -41,7 +41,8 @@ class ReportMixin():
     report : HTML report with embedded content
     """
 
-    def update_template(self, title, content, description=None):
+    def update_template(self, title, content,
+                        parameters, description=None):
         """
         Populate a report with content.
 
@@ -65,5 +66,6 @@ class ReportMixin():
                                                  encoding='utf-8')
 
         html = tpl.substitute(title=title, content=content,
+                              parameters=parameters,
                               description=description)
         return plot_utils.HTMLDocument(html)

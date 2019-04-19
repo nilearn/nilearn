@@ -293,14 +293,14 @@ class NiftiMasker(BaseMasker, CacheMixin, ReportMixin):
             display = plotting.plot_epi(self.input_, black_bg=False)
             display.add_contours(self.mask_img_, levels=[.5], colors='r')
             display = _embed_img(display)
-            description = ('This NiftiMasker report shows the input Nifti '
-                           'image overlaid with the outlines of the '
-                           'mask.'
-                           'Please inspect the report for the overlap '
-                           'between the mask and its input image.')
+            description = 'This report shows the input Nifti ' \
+                          'image overlaid with the outlines of the mask. ' \
+                          'We recommend to inspect the report for the ' \
+                          'overlap between the mask and its input image.'
 
-        report = self.update_template(title='NiftiMasker',
+        report = self.update_template(title=self.__class__.__name__,
                                       content=display,
+                                      parameters=self.get_params(),
                                       description=description)
         return report
 

@@ -18,20 +18,26 @@ body {
     margin: 0 2em 0 2em;
 }
 
-[tooltip]:hover:before {
- background:rgba(0,0,0,.8);
- border-radius:5px;
- color:#fff;
- content:attr(tooltip);
- left:50%;
- padding:5px 15px;
- position:absolute;
- z-index:98;
- width:50px;
- margin-left:-40px;
- bottom:100%;
- display:inline-block;
- text-align:center
+summary::-webkit-details-marker {
+margin-right: 2px;
+}
+summary:focus {
+ outline-style: none;
+}
+
+table {
+    max-width: 100%;
+    border-collapse: collapse;
+    margin:50px auto;
+}
+
+thead th {
+  text-align: center;
+}
+
+tbody tr:nth-child(even) {
+   background-color: #dddddd;
+
 }
 
 </style>
@@ -46,13 +52,28 @@ body {
   </div>
   <div class="pure-u-1-3">
     <p class="elem-desc">{{description}}<p>
-    <!-- Input parameters supplied to the function -->
-    <div class="expandable">
-      <label class="pure-button">
-        <strong>Parameters</strong>
-      </label>
-      <div class=box>
-      </div>
+    <details>
+      <summary class="pure-button">Parameters</summary>
+      <table class="pure-table">
+        <thead>
+          <tr>
+            <th>Parameter</th>
+            <th>Value</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {{py:params = parameters.items()}}
+          {{for p, v in params}}
+            <tr>
+              <td data-column="Parameter">{{p}}</td>
+              <td data-column="Value">{{v}}</td>
+            </tr>
+          {{endfor}}
+        </tbody>
+      </table>
+
+    </details>
     </div>
   </div>
 </body>
