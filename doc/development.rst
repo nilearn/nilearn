@@ -105,13 +105,13 @@ atlases):
   more than one maps, a description of each map.
 - ``labels`` (list): a list of string labels corresponding to each atlas
   label, in the same (numerical) order as the atlas labels
-- maps (list or string): the path to the nifti image, or a list of paths
+- ``maps`` (list or string): the path to the nifti image, or a list of paths
 
-In addition, the atlas will need to be called by a fetcher. For example, see here <https://github.com/nilearn/nilearn/blob/master/nilearn/datasets/atlas.py>_.
+In addition, the atlas will need to be called by a fetcher. For example, see `here <https://github.com/nilearn/nilearn/blob/master/nilearn/datasets/atlas.py>`_.
 
 Finally, as with other features, please provide a test for your atlas.
-Examples can be found here
-<https://github.com/nilearn/nilearn/blob/master/nilearn/datasets/tests/test_atlas.py>_
+Examples can be found `here
+<https://github.com/nilearn/nilearn/blob/master/nilearn/datasets/tests/test_atlas.py>`_
 
 Who makes decisions
 --------------------
