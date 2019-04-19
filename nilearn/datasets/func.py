@@ -2083,7 +2083,8 @@ def fetch_development_fmri(n_subjects=None, reduce_confounds=True,
     # Participants data: ids, demographics, etc
     participants = _fetch_development_fmri_participants(data_dir=data_dir,
                                                         url=None,
-                                                        verbose=verbose)
+                                                        verbose=verbose
+                                                        )[::-1] # so adults come first
 
     # Download functional and regressors based on participants
     if adults_or_children not in ['both', 'children', 'adults']:
@@ -2109,8 +2110,8 @@ def fetch_development_fmri(n_subjects=None, reduce_confounds=True,
         n_subjects = max_subjects
 
     # To keep the proportion of children versus adults
-    n_child = np.round(float(n_subjects) / max_subjects * child_count).astype(int)
-    n_adult = np.round(float(n_subjects) / max_subjects * adult_count).astype(int)
+    n_child = (np.round(float(n_subjects) / max_subjects * child_count).astype(int)) if n_subjects>1 else 0
+    n_adult = (np.round(float(n_subjects) / max_subjects * adult_count).astype(int)) if n_subjects>1 else 1
 
     # First, restrict the csv files to the adequate number of subjects
     child_ids = participants[participants['Child_Adult'] ==
@@ -2118,13 +2119,8 @@ def fetch_development_fmri(n_subjects=None, reduce_confounds=True,
     adult_ids = participants[participants['Child_Adult'] ==
                              'adult']['participant_id'][:n_adult]
     ids = np.hstack([adult_ids, child_ids])
-    # this doesn't sort by ids!
-    # participants = participants[np.in1d(participants['participant_id'],
-    #                                     ids)]
-
-    # but this is ugly. Is there a better way?
-    inds = [np.where(participants['participant_id']==x)[0][0] for x in ids]
-    participants = participants[inds]
+    participants = participants[np.in1d(participants['participant_id'],
+                                         ids)]
 
     funcs, regressors = _fetch_development_fmri_functional(participants,
                                                            data_dir=data_dir,
