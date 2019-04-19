@@ -208,12 +208,11 @@ def test_make_events_file_localizer_first_level_with_file_path():
                 )
 
 
-@with_setup(setup_mock, teardown_mock)
 def test_fetch_localizer():
     dataset = datasets.fetch_localizer_first_level()
     assert_true(isinstance(dataset['events'], _basestring))
     assert_true(isinstance(dataset.epi_img, _basestring))
-
+    
 
 def _mock_original_spm_auditory_events_file():
     expected_events_data = {
