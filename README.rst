@@ -38,7 +38,7 @@ Dependencies
 
 The required dependencies to use the software are:
 
-* Python >= 2.7,
+* Python >= 3.5,
 * setuptools
 * Numpy >= 1.11
 * SciPy >= 0.17
