@@ -2102,7 +2102,7 @@ def fetch_development_fmri(n_subjects=None, reduce_confounds=True,
                              'child']['participant_id'][:n_child]
     adult_ids = participants[participants['Child_Adult'] ==
                              'adult']['participant_id'][:n_adult]
-    ids = np.hstack([child_ids, adult_ids])
+    ids = np.hstack([adult_ids, child_ids])
     participants = participants[np.in1d(participants['participant_id'],
                                         ids)]
 
