@@ -41,8 +41,8 @@ different heuristics to find cutting coordinates.
      :target: ../auto_examples/01_plotting/plot_demo_glass_brain_extensive.html
      :scale: 50
 
-.. |plot_connectome| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_adhd_spheres_003.png
-     :target: ../auto_examples/03_connectivity/plot_adhd_spheres.html
+.. |plot_connectome| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_sphere_based_connectome_003.png
+     :target: ../auto_examples/03_connectivity/plot_sphere_based_connectome.html
      :scale: 50
 
 .. |plot_strength| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_sphere_based_connectome_004.png
