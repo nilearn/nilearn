@@ -396,14 +396,14 @@ def crop_img(img, rtol=1e-8, copy=True, pad=True, return_offset=False):
 
 def _pad_array(array, pad_sizes):
     """Pad an ndarray with zeros of quantity specified
-    in args as follows args = (x1minpad, x1maxpad, x2minpad,
-    x2maxpad, x3minpad, ...)
+    as follows pad_sizes = [x1minpad, x1maxpad, x2minpad,
+    x2maxpad, x3minpad, ...]
     """
 
     if len(pad_sizes) % 2 != 0:
         raise ValueError("Please specify as many max paddings as min"
                          " paddings. You have specified %d arguments" %
-                         len(args))
+                         len(pad_sizes))
 
     all_paddings = np.zeros([array.ndim, 2], dtype=np.int64)
     all_paddings[:len(pad_sizes) // 2] = np.array(pad_sizes).reshape(-1, 2)
