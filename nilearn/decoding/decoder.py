@@ -1,21 +1,19 @@
 """High-level decoding object that exposes standard classification and
 regression strategies such as SVM, LogisticRegression and Ridge, with optional
-feature selection, and integrated hyper-parameter selection.
+feature selection, integrated hyper-parameter selection and aggregation method.
 """
 # Authors : Yannick Schwartz
 #           Andres Hoyos-Idrobo
+#           Binh Nguyen <tuan-binh.nguyen@inria.fr>
 #
 # License: simplified BSD
 
 import itertools
 import warnings
-from distutils.version import LooseVersion
 
 import numpy as np
-import sklearn
 from sklearn import clone
 from sklearn.base import RegressorMixin
-from sklearn.externals.joblib import Parallel, delayed
 from sklearn.linear_model import LogisticRegression
 from sklearn.linear_model.base import LinearModel
 from sklearn.linear_model.ridge import Ridge, RidgeClassifier, _BaseRidge
@@ -25,6 +23,12 @@ from sklearn.svm import SVR, LinearSVC
 from sklearn.svm.bounds import l1_min_c
 from sklearn.utils.extmath import safe_sparse_dot
 from sklearn.utils.validation import check_is_fitted, check_X_y
+
+try:
+    from sklearn.externals.joblib import Parallel, delayed
+except ImportError:
+    # Scikit-learn will soon stop vendoring joblib
+    from joblib import Parallel, delayed
 
 from .._utils import CacheMixin
 from .._utils.cache_mixin import _check_memory
@@ -119,7 +123,7 @@ def _parallel_fit(estimator, X, y, train, test, param_grid, is_classif, scorer,
 
     """
     n_features = X.shape[1]
-    # Checking if the size of the mask image allow us to perform feature
+    # Checking if the size of the mask image allows us to perform feature
     # screening
     selector = check_feature_screening(screening_percentile, mask_img,
                                        is_classif)
@@ -233,9 +237,9 @@ class BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
         e.g. scorer(estimator, X_test, y_test)
 
         For regression: 'r2', 'mean_absolute_error', or 'mean_squared_error'.
-            Default 'r2'.
+        Default 'r2'.
         For classification: 'accuracy', 'f1', 'precision', 'recall' or 'roc_auc'
-            Default 'roc_auc'.
+        Default 'roc_auc'.
 
     smoothing_fwhm : float, optional. Default: None
         If smoothing_fwhm is not None, it gives the size in millimeters of the
@@ -291,7 +295,9 @@ class BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
     See Also
     ------------
     nilearn.decoding.DecoderRegressor - regression strategies for Neuroimaging.
-    nilearn.decoding.Decoder - classification strategies for Neuroimaging.  
+    nilearn.decoding.Decoder - classification strategies for Neuroimaging.
+    nilearn.decoding.SpaceNetClassifier - Graph-Net and TV-L1 priors/penalties
+    for classification problems.
 
     """
 
@@ -361,6 +367,11 @@ class BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
             Contains the mean of the models weight vector across
             fold for each class.
 
+        `coef_img_` : dict of Nifti1Image
+            Dictionary containing `coef_` with class names as keys,
+            and `coef_` transformed in Nifti1Images as values. In the case
+            of a regression, it contains a single Nifti1Image at the key 'beta'.
+
         `intercept_` : narray, shape (nclasses -1,)
             Intercept (a.k.a. bias) added to the decision function.
             It is available only when parameter intercept is set to True.
@@ -373,11 +384,6 @@ class BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
         `std_coef_` : numpy.ndarray, shape=(n_classes, n_features)
             Contains the standard deviation of the models weight vector across
             fold for each class.
-
-        `coef_img_` : dict of Nifti1Image
-            Dictionary containing `coef_` with class names as keys,
-            and `coef_` transformed in Nifti1Images as values. In the case
-            of a regression, it contains a single Nifti1Image at the key 'beta'.
 
         `std_coef_img_` : dict of Nifti1Image
             Dictionary containing `std_coef_` with class names as keys,
@@ -636,8 +642,8 @@ class Decoder(BaseDecoder):
         not None.
         e.g. scorer(estimator, X_test, y_test)
 
-        For classification: 'accuracy', 'f1', 'precision', 'recall' or 'roc_auc'
-            Default 'roc_auc'.
+        For classification: 'accuracy', 'f1', 'precision', 'recall' or 'roc_auc'.
+        Default 'roc_auc'.
 
     smoothing_fwhm : float, optional. Default: None
         If smoothing_fwhm is not None, it gives the size in millimeters of the
@@ -692,7 +698,9 @@ class Decoder(BaseDecoder):
 
     See Also
     ------------
-    nilearn.decoding.Decoder - classification strategies for Neuroimaging.
+    nilearn.decoding.DecoderRegressor - regression strategies for Neuroimaging.
+    nilearn.decoding.SpaceNetClassifier - Graph-Net and TV-L1 priors/penalties
+    for classification problems.
 
     """
 
@@ -707,7 +715,8 @@ class Decoder(BaseDecoder):
             screening_percentile=screening_percentile, scoring=scoring,
             smoothing_fwhm=smoothing_fwhm, standardize=standardize,
             target_affine=target_affine, target_shape=target_shape,
-            mask_strategy=mask_strategy, memory=memory, is_classif=True,
+            mask_strategy=mask_strategy, low_pass=low_pass, high_pass=high_pass,
+            t_r=t_r, memory=memory, is_classif=True,
             memory_level=memory_level, verbose=verbose, n_jobs=n_jobs)
 
     def _binarize_y(self, y):
@@ -772,7 +781,7 @@ class DecoderRegressor(BaseDecoder):
         e.g. scorer(estimator, X_test, y_test)
 
         For regression: 'r2', 'mean_absolute_error', or 'mean_squared_error'.
-            Default 'r2'.
+        Default 'r2'.
 
     smoothing_fwhm : float, optional. Default: None
         If smoothing_fwhm is not None, it gives the size in millimeters of the
@@ -828,6 +837,8 @@ class DecoderRegressor(BaseDecoder):
     See Also
     ------------
     nilearn.decoding.Decoder - classification strategies for Neuroimaging.
+    nilearn.decoding.SpaceNetClassifier - Graph-Net and TV-L1 priors/penalties
+    for classification problems.
 
     """
 
