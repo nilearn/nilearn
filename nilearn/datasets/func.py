@@ -1995,7 +1995,8 @@ def _fetch_development_fmri_functional(participants, data_dir, url, verbose):
 
 
 def fetch_development_fmri(n_subjects=None, reduce_confounds=True,
-                           data_dir=None, resume=True, verbose=0):
+                           data_dir=None, resume=True, verbose=0,
+                           adults_or_children = 'both'):
     """Fetch movie watching based brain development dataset (fMRI)
 
     The data is downsampled to 4mm resolution for convenience. The origin of
@@ -2026,6 +2027,12 @@ def fetch_development_fmri(n_subjects=None, reduce_confounds=True,
 
     verbose: int, optional (default 0)
         Defines the level of verbosity of the output.
+
+    adults_or_children: str, optional (default 'both')
+        Whether to fetch only adults, only chilren, or both
+        - 'adults' = fetch adults only (n=33, ages 18-39)
+        - 'children' = fetch children only (n=122, ages 3-12)
+        - 'both' = fetch full sample (n=155) 
 
     Returns
     -------
@@ -2077,21 +2084,34 @@ def fetch_development_fmri(n_subjects=None, reduce_confounds=True,
     participants = _fetch_development_fmri_participants(data_dir=data_dir,
                                                         url=None,
                                                         verbose=verbose)
-
-    max_subjects = len(participants)
+    
+    # Download functional and regressors based on participants
+    if adults_or_children not in ['both', 'children', 'adults']:
+        raise ValueError("Wrong value for adults_or_children={0}. "
+                         "Valid arguments are 'adults', 'children' "
+                         "or 'both'".format(adults_or_children))
+    
+    child_adult = participants['Child_Adult'].tolist()
+    child_count = child_adult.count('child') if adults_or_children != 'adults' else 0
+    adult_count = child_adult.count('adult') if adults_or_children != 'children' else 0
+    if adults_or_children == 'both':
+        max_subjects = len(participants)
+    elif adults_or_children == 'children':
+        max_subjects = child_count
+    elif adults_or_children == 'adults':
+        max_subjects = adult_count
+    
+    # Check validity of n_subjects 
     if n_subjects is None:
         n_subjects = max_subjects
 
     if (isinstance(n_subjects, numbers.Number) and
             ((n_subjects > max_subjects) or (n_subjects < 1))):
         warnings.warn("Wrong value for n_subjects={0}. The maximum "
-                      "value will be used instead n_subjects={1}"
-                      .format(n_subjects, max_subjects))
+                      "value (for Child_Adult={1}) will be used instead: "
+                      "n_subjects={2}"
+                      .format(n_subjects, adults_or_children, max_subjects))
         n_subjects = max_subjects
-
-    # Download functional and regressors based on participants
-    child_count = participants['Child_Adult'].tolist().count('child')
-    adult_count = participants['Child_Adult'].tolist().count('adult')
 
     # To keep the proportion of children versus adults
     n_child = np.round(float(n_subjects) / max_subjects * child_count).astype(int)
