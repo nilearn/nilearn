@@ -14,6 +14,7 @@ from sklearn.externals.joblib import Memory
 
 from .cache_mixin import cache
 from .niimg import _safe_get_data, load_niimg
+from .path_finding import _resolve_globbing
 from .compat import _basestring, izip
 
 from .exceptions import DimensionError
@@ -73,17 +74,6 @@ def _index_img(img, index):
     return new_img_like(
         img, img.get_data()[:, :, :, index], img.affine,
         copy_header=True)
-
-
-def _resolve_globbing(path):
-    if isinstance(path, _basestring):
-        path_list = sorted(glob.glob(os.path.expanduser(path)))
-        # Raise an error in case the niimgs list is empty.
-        if len(path_list) == 0:
-            raise ValueError("No files matching path: %s" % path)
-        path = path_list
-
-    return path
 
 
 def _iter_check_niimg(niimgs, ensure_ndim=None, atleast_4d=False,

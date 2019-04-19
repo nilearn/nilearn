@@ -13,6 +13,8 @@ from nose.tools import assert_true, assert_raises
 from nilearn._utils.testing import assert_raises_regex, assert_warns
 
 import numpy as np
+from scipy.spatial import Delaunay
+
 
 import nibabel as nb
 from nibabel import gifti
@@ -259,8 +261,107 @@ def test_load_surf_mesh_file_error():
         nb.freesurfer.write_geometry(filename_wrong, mesh[0], mesh[1])
         assert_raises_regex(ValueError,
                             'input type is not recognized',
-                            load_surf_data, filename_wrong)
+                            load_surf_mesh, filename_wrong)
         os.remove(filename_wrong)
+
+
+def test_load_surf_mesh_file_glob():
+    mesh = generate_surf()
+    fname1 = tempfile.mktemp(suffix='.pial')
+    nb.freesurfer.write_geometry(fname1, mesh[0], mesh[1])
+    fname2 = tempfile.mktemp(suffix='.pial')
+    nb.freesurfer.write_geometry(fname2, mesh[0], mesh[1])
+
+    assert_raises_regex(ValueError, 'More than one file matching path',
+                        load_surf_mesh,
+                        os.path.join(os.path.dirname(fname1), "*.pial"))
+    assert_raises_regex(ValueError, 'No files matching path',
+                        load_surf_mesh,
+                        os.path.join(os.path.dirname(fname1),
+                                     "*.unlikelysuffix"))
+    assert_equal(len(load_surf_mesh(fname1)), 2)
+    assert_array_almost_equal(load_surf_mesh(fname1)[0], mesh[0])
+    assert_array_almost_equal(load_surf_mesh(fname1)[1], mesh[1])
+
+    os.remove(fname1)
+    os.remove(fname2)
+
+
+def test_load_surf_data_file_glob():
+
+    data2D = np.ones((20, 3))
+    fnames = []
+    for f in range(3):
+        fnames.append(tempfile.mktemp(prefix='glob_%s_' % f, suffix='.gii'))
+        data2D[:, f] *= f
+        if LooseVersion(nb.__version__) > LooseVersion('2.0.2'):
+            darray = gifti.GiftiDataArray(data=data2D[:, f])
+        else:
+            # Avoid a bug in nibabel 1.2.0 where GiftiDataArray were not
+            # initialized properly:
+            darray = gifti.GiftiDataArray.from_array(data2D[:, f],
+                                                     intent='t test')
+        gii = gifti.GiftiImage(darrays=[darray])
+        gifti.write(gii, fnames[f])
+
+    assert_array_equal(load_surf_data(os.path.join(os.path.dirname(fnames[0]),
+                                                   "glob*.gii")), data2D)
+
+    # make one more gii file that has more than one dimension
+    fnames.append(tempfile.mktemp(prefix='glob_3_', suffix='.gii'))
+    if LooseVersion(nb.__version__) > LooseVersion('2.0.2'):
+        darray1 = gifti.GiftiDataArray(data=np.ones((20, )))
+        darray2 = gifti.GiftiDataArray(data=np.ones((20, )))
+        darray3 = gifti.GiftiDataArray(data=np.ones((20, )))
+    else:
+        # Avoid a bug in nibabel 1.2.0 where GiftiDataArray were not
+        # initialized properly:
+        darray1 = gifti.GiftiDataArray.from_array(np.ones((20, )),
+                                                  intent='t test')
+        darray2 = gifti.GiftiDataArray.from_array(np.ones((20, )),
+                                                  intent='t test')
+        darray3 = gifti.GiftiDataArray.from_array(np.ones((20, )),
+                                                  intent='t test')
+    gii = gifti.GiftiImage(darrays=[darray1, darray2, darray3])
+    gifti.write(gii, fnames[-1])
+
+    data2D = np.concatenate((data2D, np.ones((20, 3))), axis=1)
+    assert_array_equal(load_surf_data(os.path.join(os.path.dirname(fnames[0]),
+                                                   "glob*.gii")), data2D)
+
+    # make one more gii file that has a different shape in axis=0
+    fnames.append(tempfile.mktemp(prefix='glob_4_', suffix='.gii'))
+    if LooseVersion(nb.__version__) > LooseVersion('2.0.2'):
+        darray = gifti.GiftiDataArray(data=np.ones((15, 1)))
+    else:
+        # Avoid a bug in nibabel 1.2.0 where GiftiDataArray were not
+        # initialized properly:
+        darray = gifti.GiftiDataArray.from_array(np.ones(15, 1),
+                                                 intent='t test')
+    gii = gifti.GiftiImage(darrays=[darray])
+    gifti.write(gii, fnames[-1])
+
+    assert_raises_regex(ValueError,
+                        'files must contain data with the same shape',
+                        load_surf_data,
+                        os.path.join(os.path.dirname(fnames[0]), "*.gii"))
+    for f in fnames:
+        os.remove(f)
+
+
+def _flat_mesh(x_s, y_s, z=0):
+    x, y = np.mgrid[:x_s, :y_s]
+    x, y = x.ravel(), y.ravel()
+    z = np.ones(len(x)) * z
+    vertices = np.asarray([x, y, z]).T
+    triangulation = Delaunay(vertices[:, :2]).simplices
+    mesh = [vertices, triangulation]
+    return mesh
+
+
+def _z_const_img(x_s, y_s, z_s):
+    hslice = np.arange(x_s * y_s).reshape((x_s, y_s))
+    return np.ones((x_s, y_s, z_s)) * hslice[:, :, np.newaxis]
 
 
 def test_vertex_outer_normals():
