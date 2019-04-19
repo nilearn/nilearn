@@ -24,7 +24,7 @@ not add graphical user interfaces, but we want our code to be as easy to
 understand as possible, with easy prototyping and debugging, even for
 beginners in Python.
 
-We are parsimonious in the way we adding features to the project, as it
+We are parsimonious in the way we add features to the project, as it
 puts on weight. Criteria include:
 
 * It must be in the scope of the project
