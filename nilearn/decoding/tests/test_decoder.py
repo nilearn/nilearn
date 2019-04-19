@@ -15,39 +15,40 @@ from sklearn.model_selection import KFold, LeaveOneGroupOut
 from sklearn.svm import SVR, LinearSVC
 
 from nilearn.decoding.decoder import (BaseDecoder, Decoder, DecoderRegressor,
-                                      _check_param_grid)
+                                      _check_param_grid, _parallel_fit)
 from nilearn.decoding.tests.test_same_api import to_niimgs
 from nilearn.input_data import NiftiMasker
+
+# Regression
+ridge = Ridge()
+svr = SVR(kernel='linear')
+# Classification
+svc = LinearSVC()
+logistic_l1 = LogisticRegression(penalty='l1')
+logistic_l2 = LogisticRegression(penalty='l2')
+ridge_classifier = RidgeClassifier()
+random_forest = RandomForestClassifier()
+
+regressors = {'ridge': (ridge, 'alpha'),
+              'svr': (svr, 'C')}
+classifiers = {'svc': (svc, 'C'),
+               'logistic_l1': (logistic_l1, 'C'),
+               'logistic_l2': (logistic_l2, 'C'),
+               'ridge_classifier': (ridge_classifier, 'alpha')}
+# Create a test dataset
+rand = np.random.RandomState(0)
+X = rand.rand(100, 10)
+# Create different targets
+y_regression = rand.rand(100)
+y_classif = np.hstack([[-1] * 50, [1] * 50])
+y_classif_str = np.hstack([['face'] * 50, ['house'] * 50])
+y_multiclass = np.hstack([[0] * 35, [1] * 30, [2] * 35])
 
 
 def test_check_param_grid():
     # testing several estimators, each one with its specific regularization
     # parameter
-    # Regression
-    ridge = Ridge()
-    svr = SVR(kernel='linear')
-    # Classification
-    svc = LinearSVC()
-    logistic_l1 = LogisticRegression(penalty='l1')
-    logistic_l2 = LogisticRegression(penalty='l2')
-    ridge_classifier = RidgeClassifier()
-    random_forest = RandomForestClassifier()
-
-    regressors = {'ridge': (ridge, 'alpha'),
-                  'svr': (svr, 'C')}
-    classifiers = {'svc': (svc, 'C'),
-                   'logistic_l1': (logistic_l1, 'C'),
-                   'logistic_l2': (logistic_l2, 'C'),
-                   'ridge_classifier': (ridge_classifier, 'alpha')}
-    # Create a test dataset
-    rand = np.random.RandomState(0)
-    X = rand.rand(100, 10)
-    # Create different targets
-    y_regression = rand.rand(100)
-    y_classif = np.hstack([[-1] * 50, [1] * 50])
-    y_classif_str = np.hstack([['face'] * 50, ['house'] * 50])
-    y_multiclass = np.hstack([[0] * 35, [1] * 30, [2] * 35])
-
+    
     # Regression
     for _, (regressor, param) in regressors.items():
         param_grid = _check_param_grid(regressor, X, y_regression, None)
@@ -85,6 +86,39 @@ def test_check_estimator():
 
     for estimator in ['log_l1', 'log_l2', 'ridgo']:
         assert_raises(ValueError, BaseDecoder(estimator=estimator).fit, X_, y)
+
+
+def test_parallel_fit():
+    # The goal of this test is to check that results of _parallel_fit is the 
+    # same for differnet controlled param_grid
+    from sklearn.metrics import check_scoring
+    train = range(80)
+    test = range(80, len(y_regression))
+    outputs = []
+    estimator = ridge
+    # define a scorer
+    scorer = check_scoring(estimator, 'r2')
+    # check two params lists for ridge
+    for params in [[1e-1, 1, 10], [10, 1e-1, 0, 1]]:
+        param_grid = {}
+        param_grid['alpha'] = np.array(params)
+        outputs.append(list(_parallel_fit(estimator=estimator, X=X,
+                                          y=y_regression,
+                                          train=train, test=test,
+                                          param_grid=param_grid,
+                                          is_classif=False, scorer=scorer,
+                                          mask_img=None, class_index=1,
+                                          screening_percentile=None)))
+    # check that every element of the output tuple is the same for both tries.
+    # Its tiresome because output is complicated.
+    for a, b in zip(outputs[0], outputs[1]):
+        if isinstance(a, np.ndarray):
+            np.testing.assert_array_almost_equal(a, b)
+        elif isinstance(a, dict) and 'y_prob' in a.keys():
+            np.testing.assert_array_almost_equal(a['y_prob'], b['y_prob'])
+            assert_equal(a['y_true_indices'], b['y_true_indices'])
+        else:
+            assert_equal(a, b)
 
 
 def test_decoder_classification():
