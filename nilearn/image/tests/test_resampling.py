@@ -18,6 +18,7 @@ from nilearn.image.resampling import resample_img, resample_to_img, reorder_img
 from nilearn.image.resampling import from_matrix_vector, coord_transform
 from nilearn.image.resampling import get_bounds
 from nilearn.image.resampling import BoundingBoxError
+from nilearn.image.image import _pad_array, crop_img
 from nilearn._utils import testing
 
 
@@ -35,37 +36,6 @@ def rotation(theta, phi):
                   [0, cos(phi), -sin(phi)],
                   [0, sin(phi), cos(phi)]])
     return np.dot(a1, a2)
-
-
-def pad(array, *args):
-    """Pad an ndarray with zeros of quantity specified
-    in args as follows args = (x1minpad, x1maxpad, x2minpad,
-    x2maxpad, x3minpad, ...)
-    """
-
-    if len(args) % 2 != 0:
-        raise ValueError("Please specify as many max paddings as min"
-                         " paddings. You have specified %d arguments" %
-                         len(args))
-
-    all_paddings = np.zeros([array.ndim, 2], dtype=np.int64)
-    all_paddings[:len(args) // 2] = np.array(args).reshape(-1, 2)
-
-    lower_paddings, upper_paddings = all_paddings.T
-    new_shape = np.array(array.shape) + upper_paddings + lower_paddings
-
-    padded = np.zeros(new_shape, dtype=array.dtype)
-    source_slices = [slice(max(-lp, 0), min(s + up, s))
-                     for lp, up, s in zip(lower_paddings,
-                                          upper_paddings,
-                                          array.shape)]
-    target_slices = [slice(max(lp, 0), min(s - up, s))
-                     for lp, up, s in zip(lower_paddings,
-                                          upper_paddings,
-                                          new_shape)]
-
-    padded[target_slices] = array[source_slices].copy()
-    return padded
 
 
 ###############################################################################
@@ -121,6 +91,11 @@ def test_downsample():
     np.testing.assert_almost_equal(downsampled,
                                    rot_img.get_data()[:x, :y, :z, ...])
 
+    rot_img_2 = resample_img(Nifti1Image(data, affine),
+                             target_affine=2 * affine, interpolation='nearest',
+                             force_resample=True)
+    np.testing.assert_almost_equal(rot_img_2.get_data(),
+                                   rot_img.get_data())
     # Test with non native endian data
 
     # Test to check that if giving non native endian data as input should
@@ -471,8 +446,8 @@ def test_resampling_result_axis_permutation():
         offset_cropping = np.vstack([-offset[ap][np.newaxis, :],
                                      np.zeros([1, 3])]
                                     ).T.ravel().astype(int)
-        what_resampled_data_should_be = pad(full_data.transpose(ap),
-                                            *list(offset_cropping))
+        what_resampled_data_should_be = _pad_array(full_data.transpose(ap),
+                                                   list(offset_cropping))
 
         assert_array_almost_equal(resampled_data,
                                   what_resampled_data_should_be)
@@ -557,6 +532,56 @@ def test_resample_to_img():
     x, y, z = downsampled.shape[:3]
     np.testing.assert_almost_equal(downsampled,
                                    result_img.get_data()[:x, :y, :z, ...])
+
+def test_crop():
+    # Testing that padding of arrays and cropping of images work symmetrically
+    shape = (4, 6, 2)
+    data = np.ones(shape)
+    padded = _pad_array(data, [3, 2, 4, 4, 5, 7])
+    padd_nii = Nifti1Image(padded, np.eye(4))
+
+    cropped = crop_img(padd_nii, pad=False)
+    np.testing.assert_equal(cropped.get_data(), data)
+
+
+def test_resample_identify_affine_int_translation():
+    # Testing resample to img function
+    rand_gen = np.random.RandomState(0)
+
+    source_shape = (6, 4, 6)
+    source_affine = np.eye(4)
+    source_affine[:, 3] = np.append(np.random.randint(0, 4, 3), 1)
+    source_data = rand_gen.random_sample(source_shape)
+    source_img = Nifti1Image(source_data, source_affine)
+
+    target_shape = (11, 10, 9)
+    target_data = np.zeros(target_shape)
+    target_affine = source_affine
+    target_affine[:3, 3] -= 3  # add an offset of 3 in x, y, z
+    target_data[3:9, 3:7, 3:9] = source_data  # put the data at the offset location
+    target_img = Nifti1Image(target_data, target_affine)
+
+    result_img = resample_to_img(source_img, target_img,
+                                 interpolation='nearest')
+    np.testing.assert_almost_equal(target_img.get_data(),
+                                   result_img.get_data())
+
+    result_img_2 = resample_to_img(result_img, source_img,
+                                   interpolation='nearest')
+    np.testing.assert_almost_equal(source_img.get_data(),
+                                   result_img_2.get_data())
+
+    result_img_3 = resample_to_img(result_img, source_img,
+                                   interpolation='nearest',
+                                   force_resample=True)
+    np.testing.assert_almost_equal(result_img_2.get_data(),
+                                   result_img_3.get_data())
+
+    result_img_4 = resample_to_img(source_img, target_img,
+                                   interpolation='nearest',
+                                   force_resample=True)
+    np.testing.assert_almost_equal(target_img.get_data(),
+                                   result_img_4.get_data())
 
 def test_resample_clip():
     # Resample and image and get larger and smaller
