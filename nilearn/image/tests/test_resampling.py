@@ -91,6 +91,11 @@ def test_downsample():
     np.testing.assert_almost_equal(downsampled,
                                    rot_img.get_data()[:x, :y, :z, ...])
 
+    rot_img_2 = resample_img(Nifti1Image(data, affine),
+                             target_affine=2 * affine, interpolation='nearest',
+                             force_resample=True)
+    np.testing.assert_almost_equal(rot_img_2.get_data(),
+                                   rot_img.get_data())
     # Test with non native endian data
 
     # Test to check that if giving non native endian data as input should
@@ -566,6 +571,17 @@ def test_resample_identify_affine_int_translation():
     np.testing.assert_almost_equal(source_img.get_data(),
                                    result_img_2.get_data())
 
+    result_img_3 = resample_to_img(result_img, source_img,
+                                   interpolation='nearest',
+                                   force_resample=True)
+    np.testing.assert_almost_equal(result_img_2.get_data(),
+                                   result_img_3.get_data())
+
+    result_img_4 = resample_to_img(source_img, target_img,
+                                   interpolation='nearest',
+                                   force_resample=True)
+    np.testing.assert_almost_equal(target_img.get_data(),
+                                   result_img_4.get_data())
 
 def test_resample_clip():
     # Resample and image and get larger and smaller

@@ -290,7 +290,7 @@ def _resample_one_img(data, A, b, target_shape,
 
 def resample_img(img, target_affine=None, target_shape=None,
                  interpolation='continuous', copy=True, order="F",
-                 clip=True, fill_value=0):
+                 clip=True, fill_value=0, force_resample=False):
     """Resample a Niimg-like object
 
     Parameters
@@ -331,6 +331,9 @@ def resample_img(img, target_affine=None, target_shape=None,
 
     fill_value: float, optional
         Use a fill value for points outside of input volume (default 0).
+
+    force_resample: bool, optional
+        Intended for testing, this prevents the use of a padding optimzation
 
     Returns
     -------
@@ -533,7 +536,8 @@ def resample_img(img, target_affine=None, target_shape=None,
 
     # if (A == I OR some combination of permutation(I) and sign-flipped(I)) AND
     # all(b == integers):
-    if np.all(np.eye(3) == A) and all(bt == np.round(bt) for bt in b):
+    if (np.all(np.eye(3) == A) and all(bt == np.round(bt) for bt in b) and
+        not force_resample):
         # TODO: also check for sign flips
         # TODO: also check for permutations of I
 
@@ -592,7 +596,7 @@ def resample_img(img, target_affine=None, target_shape=None,
 
 def resample_to_img(source_img, target_img,
                     interpolation='continuous', copy=True, order='F',
-                    clip=False, fill_value=0):
+                    clip=False, fill_value=0, force_resample=False):
     """Resample a Niimg-like source image on a target Niimg-like image
     (no registration is performed: the image should already be aligned).
 
@@ -629,6 +633,9 @@ def resample_to_img(source_img, target_img,
     fill_value: float, optional
         Use a fill value for points outside of input volume (default 0).
 
+    force_resample: bool, optional
+        Intended for testing, this prevents the use of a padding optimzation
+
     Returns
     -------
     resampled: nibabel.Nifti1Image
@@ -652,7 +659,8 @@ def resample_to_img(source_img, target_img,
                         target_affine=target.affine,
                         target_shape=target_shape,
                         interpolation=interpolation, copy=copy, order=order,
-                        clip=clip, fill_value=fill_value)
+                        clip=clip, fill_value=fill_value,
+                        force_resample=force_resample)
 
 
 def reorder_img(img, resample=None):
