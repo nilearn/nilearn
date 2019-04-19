@@ -553,7 +553,7 @@ def test_resample_identify_affine_int_translation():
     target_shape = (11, 10, 9)
     target_data = np.zeros(target_shape)
     target_affine = source_affine
-    target_affine[:3, 3] -= 3  # make the affine 3 larger in x, y, z
+    target_affine[:3, 3] -= 3  # add an offset of 3 in x, y, z
     target_data[3:9, 3:7, 3:9] = source_data  # put the data at the offset location
     target_img = Nifti1Image(target_data, target_affine)
 
