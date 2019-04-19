@@ -16,13 +16,11 @@ tools.
 CanICA is an ICA method for group-level analysis of fMRI data. Compared
 to other strategies, it brings a well-controlled group model, as well as a
 thresholding algorithm controlling for specificity and sensitivity with
-an explicit model of the signal. The reference papers are:
+an explicit model of the signal. The reference paper is:
 
     * G. Varoquaux et al. "A group model for stable multi-subject ICA on
       fMRI datasets", NeuroImage Vol 51 (2010), p. 288-299
-
-Pre-prints for both papers are available on hal
-(http://hal.archives-ouvertes.fr)
+      `preprint <https://hal.inria.fr/hal-00489507/>`_
 
 """
 ###############################################################################
@@ -39,7 +37,7 @@ print('First functional nifti image (4D) is at: %s' %
 
 
 ####################################################################
-# Here we apply CanICA on the data
+# Apply CanICA on the data
 # ---------------------------------
 # We use as "template" as a strategy to compute the mask, as this leads
 # to slightly faster and more reproducible results. However, the images
@@ -64,7 +62,6 @@ canica_components_img.to_filename('canica_resting_state.nii.gz')
 
 ####################################################################
 # To visualize we plot the outline of all components on one figure
-# -----------------------------------------------------------------
 from nilearn.plotting import plot_prob_atlas
 
 # Plot all ICA components together
@@ -73,7 +70,6 @@ plot_prob_atlas(canica_components_img, title='All ICA components')
 
 ####################################################################
 # Finally, we plot the map for each ICA component separately
-# -----------------------------------------------------------
 from nilearn.image import iter_img
 from nilearn.plotting import plot_stat_map, show
 
@@ -98,7 +94,6 @@ for i, cur_img in enumerate(iter_img(canica_components_img)):
 
 ###############################################################################
 # Create a dictionary learning estimator
-# ---------------------------------------------------------------
 from nilearn.decomposition import DictLearning
 
 dict_learning = DictLearning(n_components=20,
@@ -120,28 +115,21 @@ dictlearning_components_img.to_filename('dictionary_learning_resting_state.nii.g
 
 ###############################################################################
 # Visualize the results
-# ----------------------
-from nilearn.plotting import find_xyz_cut_coords
-from nilearn.image import index_img
+#
+# First plot all DictLearning components together
+plot_prob_atlas(dictlearning_components_img,
+                title='All DictLearning components')
 
-names = {dict_learning: 'DictionaryLearning', canica: 'CanICA'}
-estimators = [canica, dict_learning]
-components_imgs = [canica_components_img, dictlearning_components_img]
 
-# Selecting specific maps to display: maps were manually chosen to be similar
-indices = {dict_learning: 8, canica: 14}
-# We select relevant cut coordinates for displaying
-cut_component = index_img(components_imgs[0], indices[dict_learning])
-cut_coords = find_xyz_cut_coords(cut_component)
-for estimator, components in zip(estimators, components_imgs):
-    # 4D plotting
-    plot_prob_atlas(components, view_type="filled_contours",
-                    title="%s" % names[estimator],
-                    cut_coords=cut_coords, colorbar=False)
-    # 3D plotting
-    plot_stat_map(index_img(components, indices[estimator]),
-                  title="%s" % names[estimator],
-                  cut_coords=cut_coords, colorbar=False)
+
+###############################################################################
+# One plot of each component
+
+for i, cur_img in enumerate(iter_img(dictlearning_components_img)):
+    plot_stat_map(cur_img, display_mode="z", title="Comp %d" % i,
+                  cut_coords=1, colorbar=False)
+
+
 show()
 ################################################################################
 # .. note::
