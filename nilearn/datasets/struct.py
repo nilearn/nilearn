@@ -477,7 +477,7 @@ def fetch_surf_fsaverage(mesh='fsaverage5', data_dir=None):
 
 def _fetch_surf_fsaverage(data_dir=None):
     dataset_dir = _get_dataset_dir('fsaverage', data_dir=data_dir)
-    url = 'https://osf.io/q7a5k/download'
+    url = 'https://www.nitrc.org/frs/download.php/10846/fsaverage.tar.gz'
     if not os.path.isdir(os.path.join(dataset_dir, 'fsaverage')):
         _fetch_files(dataset_dir, [('fsaverage.tar.gz', url, {})])
         _uncompress_file(os.path.join(dataset_dir, 'fsaverage.tar.gz'))
