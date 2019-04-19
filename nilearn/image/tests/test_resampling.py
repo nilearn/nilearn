@@ -18,7 +18,7 @@ from nilearn.image.resampling import resample_img, resample_to_img, reorder_img
 from nilearn.image.resampling import from_matrix_vector, coord_transform
 from nilearn.image.resampling import get_bounds
 from nilearn.image.resampling import BoundingBoxError
-from nilearn.image.image import pad_array, crop_img
+from nilearn.image.image import _pad_array, crop_img
 from nilearn._utils import testing
 
 
@@ -86,7 +86,6 @@ def test_downsample():
     affine = np.eye(4)
     rot_img = resample_img(Nifti1Image(data, affine),
                            target_affine=2 * affine, interpolation='nearest')
-    # import pdb; pdb.set_trace()
     downsampled = data[::2, ::2, ::2, ...]
     x, y, z = downsampled.shape[:3]
     np.testing.assert_almost_equal(downsampled,
@@ -103,7 +102,6 @@ def test_downsample():
                                target_affine=2 * affine,
                                interpolation='nearest',
                                copy=copy)
-        print(downsampled - rot_img.get_data()[:x, :y, :z, ...])
         np.testing.assert_almost_equal(downsampled,
                                        rot_img.get_data()[:x, :y, :z, ...])
 
@@ -443,8 +441,8 @@ def test_resampling_result_axis_permutation():
         offset_cropping = np.vstack([-offset[ap][np.newaxis, :],
                                      np.zeros([1, 3])]
                                     ).T.ravel().astype(int)
-        what_resampled_data_should_be = pad_array(full_data.transpose(ap),
-                                                  list(offset_cropping))
+        what_resampled_data_should_be = _pad_array(full_data.transpose(ap),
+                                                   list(offset_cropping))
 
         assert_array_almost_equal(resampled_data,
                                   what_resampled_data_should_be)
@@ -531,9 +529,10 @@ def test_resample_to_img():
                                    result_img.get_data()[:x, :y, :z, ...])
 
 def test_crop():
+    # Testing that padding of arrays and cropping of images work symmetrically
     shape = (4, 6, 2)
     data = np.ones(shape)
-    padded = pad_array(data, [3, 2, 4, 4, 5, 7])
+    padded = _pad_array(data, [3, 2, 4, 4, 5, 7])
     padd_nii = Nifti1Image(padded, np.eye(4))
 
     cropped = crop_img(padd_nii, pad=False)
