@@ -128,7 +128,7 @@ plt.tight_layout()
 
 # We can see that for a fixed penalty the results are similar between the svc
 # and the logistic regression. The main difference relies on the penalty
-# ($\ell_1$ and $\ell_2$). The sparse penaly works better because we are in an
+# ($\ell_1$ and $\ell_2$). The sparse penalty works better because we are in an
 # intra-subject setting.
 
 ###############################################################################

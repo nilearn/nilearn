@@ -1,7 +1,6 @@
 """
 Decoding with :class:`nilearn.decoding.Decoder`: face vs house recognition
-==============================================================
-
+===========================================================================
 Here is a simple example of decoding with the decoder meta-estimator,
 reproducing a face vs house discrimination task on the study Haxby 2001.
 
@@ -55,7 +54,7 @@ y_test = target[condition_mask_test]
 # ---------------------------------
 
 # Note that for this classification task both classes contain the same number
-# of samples (is balanced). Then, we can use the accuracy to measure the
+# of samples (the problem is balanced). Then, we can use accuracy to measure the
 # performance of the decoder. This is done by defining accuracy as the
 # `scoring`.
 from nilearn.decoding import Decoder

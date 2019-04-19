@@ -110,7 +110,7 @@ age_pred = decoder.predict(gm_imgs_test)
 prediction_score = np.mean(decoder.cv_scores_['beta'])
 
 print("=== DECODER ===")
-print("r2 for the cross-validation: %f" % prediction_score)
+print("explained variance for the cross-validation: %f" % prediction_score)
 print("")
 
 ######################################################################
@@ -122,7 +122,8 @@ cv_y_true = decoder.cv_y_true_
 prediction_score = mean_absolute_error(cv_y_true, cv_y_pred)
 
 print("=== DECODER ===")
-print("cross-validation score: %f years" % prediction_score)
+print("cross-validation score: %f years (mean absolute error)" %
+      prediction_score)
 print("")
 
 ######################################################################
