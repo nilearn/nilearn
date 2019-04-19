@@ -85,6 +85,11 @@ jobs:
             pip install -e .
             set -o pipefail && cd doc && make html-strict SPHINXOPTS="-v" 2>&1 | tee log.txt
           no_output_timeout: 7h
+      - store_test_results:
+          path: doc/_build/test-results
+      - store_artifacts:
+          path: doc/_build/test-results
+
       - save_cache:
           key: v1-packages+datasets-{{ checksum "week_num" }}
           paths:
@@ -169,6 +174,10 @@ jobs:
             pip install -e .
             set -o pipefail && cd doc && make html-strict SPHINXOPTS="-v" 2>&1 | tee log.txt
           no_output_timeout: 7h
+      - store_test_results:
+          path: doc/_build/test-results
+      - store_artifacts:
+          path: doc/_build/test-results
 
       - save_cache:
           key: v1-packages+datasets-{{ checksum "week_num" }}
