@@ -52,7 +52,7 @@ Special cases:
 
 * A downloader for a new atlas: we are currently being very lenient here:
   if the atlas is published and can be used in an example, we will accept
-  the pull request.
+  the pull request (but see below for specifics).
 * A downloader for a new dataset: the larger the dataset is, the less
   likely we are to consider including it. Datasets are meant to demo and
   teach features, rather than be the basis of research.
