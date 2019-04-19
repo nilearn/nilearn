@@ -71,7 +71,7 @@ Who makes decisions
 --------------------
 
 We strongly aim to be a community oriented project where decisions are
-made based on consensus according to the criterions described above.
+made based on consensus according to the criteria described above.
 Decisions are made public, through discussion on issues and pull requests
 in Github.
 
