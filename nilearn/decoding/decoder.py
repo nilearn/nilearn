@@ -30,10 +30,15 @@ except ImportError:
     # Scikit-learn will soon stop vendoring joblib
     from joblib import Parallel, delayed
 
+try:
+    from sklearn.metrics import check_scoring
+except ImportError:
+    # for scikit-learn 0.18 and 0.19
+    from sklearn.metrics.scorer import check_scoring
+
 from .._utils import CacheMixin
 from .._utils.cache_mixin import _check_memory
 from .._utils.compat import _basestring
-from .._utils.fixes import check_scoring
 from .._utils.param_validation import (_adjust_screening_percentile,
                                        check_feature_screening)
 from ..input_data.masker_validation import check_embedded_nifti_masker

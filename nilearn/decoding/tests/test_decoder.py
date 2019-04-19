@@ -17,7 +17,12 @@ from sklearn.metrics import accuracy_score, r2_score
 from sklearn.model_selection import KFold, LeaveOneGroupOut
 from sklearn.svm import SVR, LinearSVC
 
-from nilearn._utils.fixes import check_scoring
+try:
+    from sklearn.metrics import check_scoring
+except ImportError:
+    # for scikit-learn 0.18 and 0.19
+    from sklearn.metrics.scorer import check_scoring
+
 from nilearn.decoding.decoder import (BaseDecoder, Decoder, DecoderRegressor,
                                       _check_param_grid, _parallel_fit)
 from nilearn.decoding.tests.test_same_api import to_niimgs
