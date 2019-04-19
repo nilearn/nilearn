@@ -1996,7 +1996,7 @@ def _fetch_development_fmri_functional(participants, data_dir, url, verbose):
 
 def fetch_development_fmri(n_subjects=None, reduce_confounds=True,
                            data_dir=None, resume=True, verbose=0,
-                           adults_or_children = 'both'):
+                           adults_or_children='both'):
     """Fetch movie watching based brain development dataset (fMRI)
 
     The data is downsampled to 4mm resolution for convenience. The origin of
