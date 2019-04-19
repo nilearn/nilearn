@@ -1868,3 +1868,262 @@ def fetch_surf_nki_enhanced(n_subjects=10, data_dir=None,
                  phenotypic=phenotypic,
                  description=fdescr)
 
+
+def _fetch_development_fmri_participants(data_dir, url, verbose):
+    """Helper function to fetch_development_fmri.
+
+    This function helps in downloading and loading participants data from .tsv
+    uploaded on Open Science Framework (OSF).
+
+    The original .tsv file contains many columns but this function picks only
+    those columns that are relevant.
+
+    Parameters
+    ----------
+    data_dir: str
+        Path of the data directory. Used to force data storage in a specified
+        location. If None is given, data are stored in home directory.
+
+    url: str, optional
+        Override download URL. Used for test only (or if you setup a mirror of
+        the data). Default: None
+
+    verbose: int
+        Defines the level of verbosity of the output.
+
+    Returns
+    -------
+    participants : numpy.ndarray
+        Contains data of each subject age, age group, child or adult,
+        gender, handedness.
+
+    """
+    dataset_name = 'development_fmri'
+    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
+                                verbose=verbose)
+
+    if url is None:
+        url = 'https://osf.io/yr3av/download'
+
+    files = [('participants.tsv', url, {'move': 'participants.tsv'})]
+    path_to_participants = _fetch_files(data_dir, files, verbose=verbose)[0]
+
+    # Load path to participants
+    dtype = [('participant_id', 'U12'), ('Age', '<f8'), ('AgeGroup', 'U6'),
+             ('Child_Adult', 'U5'), ('Gender', 'U4'), ('Handedness', 'U4')]
+    names = ['participant_id', 'Age', 'AgeGroup', 'Child_Adult', 'Gender',
+             'Handedness']
+    participants = csv_to_array(path_to_participants, skip_header=True,
+                                dtype=dtype, names=names)
+    return participants
+
+
+def _fetch_development_fmri_functional(participants, data_dir, url, verbose):
+    """Helper function to fetch_development_fmri.
+
+    This function helps in downloading functional MRI data in Nifti
+    and its confound corresponding to each subject.
+
+    The files are downloaded from Open Science Framework (OSF).
+
+    Parameters
+    ----------
+    participants : numpy.ndarray
+        Should contain column participant_id which represents subjects id. The
+        number of files are fetched based on ids in this column.
+
+    data_dir: str
+        Path of the data directory. Used to force data storage in a specified
+        location. If None is given, data are stored in home directory.
+
+    url: str, optional
+        Override download URL. Used for test only (or if you setup a mirror of
+        the data). Default: None
+
+    verbose: int
+        Defines the level of verbosity of the output.
+
+    Returns
+    -------
+    func: list of str (Nifti files)
+        Paths to functional MRI data (4D) for each subject.
+
+    regressors: list of str (tsv files)
+        Paths to regressors related to each subject.
+    """
+    dataset_name = 'development_fmri'
+    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
+                                verbose=verbose)
+
+    if url is None:
+        url = 'https://osf.io/download/{}'
+
+    confounds = '{}_task-pixar_desc-confounds_regressors.tsv'
+    func = '{0}_task-pixar_space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz'
+
+    # The gzip contains unique download keys per Nifti file and confound
+    # pre-extracted from OSF. Required for downloading files.
+    package_directory = os.path.dirname(os.path.abspath(__file__))
+    dtype = [('participant_id', 'U12'), ('key_regressor', 'U24'),
+             ('key_bold', 'U24')]
+    names = ['participant_id', 'key_r', 'key_b']
+    # csv file contains download information related to OpenScience(osf)
+    osf_data = csv_to_array(os.path.join(package_directory, "data",
+                                         "development_fmri.csv"),
+                            skip_header=True, dtype=dtype, names=names)
+
+    funcs = []
+    regressors = []
+
+    for participant_id in participants['participant_id']:
+        this_osf_id = osf_data[osf_data['participant_id'] == participant_id]
+        # Download regressors
+        confound_url = url.format(this_osf_id['key_r'][0])
+        regressor_file = [(confounds.format(participant_id),
+                           confound_url,
+                           {'move': confounds.format(participant_id)})]
+        path_to_regressor = _fetch_files(data_dir, regressor_file,
+                                         verbose=verbose)[0]
+        regressors.append(path_to_regressor)
+        # Download bold images
+        func_url = url.format(this_osf_id['key_b'][0])
+        func_file = [(func.format(participant_id, participant_id), func_url,
+                      {'move': func.format(participant_id)})]
+        path_to_func = _fetch_files(data_dir, func_file, verbose=verbose)[0]
+        funcs.append(path_to_func)
+    return funcs, regressors
+
+
+def fetch_development_fmri(n_subjects=None, reduce_confounds=True,
+                           data_dir=None, resume=True, verbose=0):
+    """Fetch movie watching based brain development dataset (fMRI)
+
+    The data is downsampled to 4mm resolution for convenience. The origin of
+    the data is coming from OpenNeuro. See Notes below.
+
+    .. versionadded:: 0.5.2
+
+    Parameters
+    ----------
+    n_subjects: int, optional (default None)
+        The number of subjects to load. If None, all the subjects are
+        loaded. Total 155 subjects.
+
+    reduce_confounds: bool, optional (default True)
+        If True, the returned confounds only include 6 motion parameters,
+        mean framewise displacement, signal from white matter, csf, and
+        6 anatomical compcor parameters. This selection only serves the
+        purpose of having realistic examples. Depending on your research
+        question, other confounds might be more appropriate.
+        If False, returns all fmriprep confounds.
+
+    data_dir: str, optional (default None)
+        Path of the data directory. Used to force data storage in a specified
+        location. If None, data are stored in home directory.
+
+    resume: bool, optional (default True)
+        Whether to resume download of a partly-downloaded file.
+
+    verbose: int, optional (default 0)
+        Defines the level of verbosity of the output.
+
+    Returns
+    -------
+    data: Bunch
+        Dictionary-like object, the interest attributes are :
+
+        - 'func': list of str (Nifti files)
+            Paths to downsampled functional MRI data (4D) for each subject.
+
+        - 'confounds': list of str (tsv files)
+            Paths to confounds related to each subject.
+
+        - 'phenotypic': numpy.ndarray
+            Contains each subject age, age group, child or adult, gender,
+            handedness.
+
+    Notes
+    -----
+    The original data is downloaded from OpenNeuro
+    https://openneuro.org/datasets/ds000228/versions/1.0.0
+
+    This fetcher downloads downsampled data that are available on Open
+    Science Framework (OSF). Located here: https://osf.io/5hju4/files/
+
+    Preprocessing details: https://osf.io/wjtyq/
+
+    References
+    ----------
+    Please cite this paper if you are using this dataset.
+    Richardson, H., Lisandrelli, G., Riobueno-Naylor, A., & Saxe, R. (2018).
+    Development of the social brain from age three to twelve years.
+    Nature communications, 9(1), 1027.
+    https://www.nature.com/articles/s41467-018-03399-2
+    """
+
+    dataset_name = 'development_fmri'
+    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
+                                verbose=1)
+    keep_confounds = ['trans_x', 'trans_y', 'trans_z', 'rot_x', 'rot_y',
+                      'rot_z', 'framewise_displacement', 'a_comp_cor_00',
+                      'a_comp_cor_01', 'a_comp_cor_02', 'a_comp_cor_03',
+                      'a_comp_cor_04', 'a_comp_cor_05', 'csf',
+                      'white_matter']
+
+    # Dataset description
+    fdescr = _get_dataset_descr(dataset_name)
+
+    # Participants data: ids, demographics, etc
+    participants = _fetch_development_fmri_participants(data_dir=data_dir,
+                                                        url=None,
+                                                        verbose=verbose)
+
+    max_subjects = len(participants)
+    if n_subjects is None:
+        n_subjects = max_subjects
+
+    if (isinstance(n_subjects, numbers.Number) and
+            ((n_subjects > max_subjects) or (n_subjects < 1))):
+        warnings.warn("Wrong value for n_subjects={0}. The maximum "
+                      "value will be used instead n_subjects={1}"
+                      .format(n_subjects, max_subjects))
+        n_subjects = max_subjects
+
+    # Download functional and regressors based on participants
+    child_count = participants['Child_Adult'].tolist().count('child')
+    adult_count = participants['Child_Adult'].tolist().count('adult')
+
+    # To keep the proportion of children versus adults
+    n_child = np.round(float(n_subjects) / max_subjects * child_count).astype(int)
+    n_adult = np.round(float(n_subjects) / max_subjects * adult_count).astype(int)
+
+    # First, restrict the csv files to the adequate number of subjects
+    child_ids = participants[participants['Child_Adult'] ==
+                             'child']['participant_id'][:n_child]
+    adult_ids = participants[participants['Child_Adult'] ==
+                             'adult']['participant_id'][:n_adult]
+    ids = np.hstack([child_ids, adult_ids])
+    participants = participants[np.in1d(participants['participant_id'],
+                                        ids)]
+
+    funcs, regressors = _fetch_development_fmri_functional(participants,
+                                                           data_dir=data_dir,
+                                                           url=None,
+                                                           verbose=verbose)
+
+    if reduce_confounds:
+        reduced_regressors = []
+        for in_file in regressors:
+            out_file = in_file.replace('desc-confounds',
+                                       'desc-reducedConfounds')
+            if not os.path.isfile(out_file):
+                confounds = np.recfromcsv(in_file, delimiter='\t')
+                selected_confounds = confounds[keep_confounds]
+                header = '\t'.join(selected_confounds.dtype.names)
+                np.savetxt(out_file, np.array(selected_confounds.tolist()),
+                           header=header, delimiter='\t', comments='')
+            reduced_regressors.append(out_file)
+        regressors = reduced_regressors
+
+    return Bunch(func=funcs, confounds=regressors, phenotypic=participants,
+                 description=fdescr)

@@ -1,16 +1,16 @@
 .. _extracting_rsn:
 
-==================================================
-Extracting resting-state networks: ICA and related
-==================================================
+=====================================================
+Extracting functional brain networks: ICA and related
+=====================================================
 
 .. topic:: **Page summary**
 
-   This page demonstrates the use of multi-subject Independent Component
-   Analysis (ICA) of resting-state fMRI data to extract brain networks in
-   an data-driven way. Here we use the 'CanICA' approach, that implements
-   a multivariate random effects model across subjects. A newer technique,
-   based on dictionary learning, is then described.
+   This page demonstrates the use of multi-subject decompositions models
+   to extract brain-networks from fMRI data in a data-driven way.
+   Specifically, we will apply Independent Component Analysis (ICA), which 
+   implements a multivariate random effects model across subjects. We will
+   then compare ICA to a newer technique, based on dictionary learning.
 
 
 .. currentmodule:: nilearn.decomposition
@@ -24,75 +24,64 @@ Multi-subject ICA: CanICA
       fMRI datasets", `NeuroImage Vol 51 (2010)
       <http://www.sciencedirect.com/science/article/pii/S1053811910001618>`_, p. 288-299
 
-Data preparation: retrieving example data
------------------------------------------
+Objective
+----------
+ICA is a useful approach for finding independent sources from fMRI
+images. ICA and similar techniques can be therefore used to define 
+regions or networks that share similar BOLD signal across time. The 
+CanICA incorporates information both within-subjects and across subjects
+to arrive at consensus components.
 
-We will use sample data from the `ADHD 200 resting-state dataset
-<http://fcon_1000.projects.nitrc.org/indi/adhd200/>`_ has been
-preprocessed using `CPAC <http://fcp-indi.github.io/>`_. We use nilearn
-functions to fetch data from Internet and get the filenames (:ref:`more
-on data loading <loading_data>`):
+.. topic:: **Nilearn data for examples**
+
+   Nilearn provides easy-to-analyze data to explore functional connectivity and resting: the
+   `brain development dataset <https://osf.io/5hju4/files/>`_, which
+   has been preprocessed using `FMRIPrep and Nilearn <https://osf.io/wjtyq/>`_
+   We use nilearn functions to fetch data from Internet and get the 
+   filenames (:ref:`more on data loading <loading_data>`).
 
 
-.. literalinclude:: ../../examples/03_connectivity/plot_canica_resting_state.py
-    :start-after: # First we load the ADHD200 data
-    :end-before:  ####################################################################
-
-Applying CanICA
----------------
-
+Fitting CanICA model with nilearn
+---------------------------------
 :class:`CanICA` is a ready-to-use object that can be applied to
 multi-subject Nifti data, for instance presented as filenames, and will
 perform a multi-subject ICA decomposition following the CanICA model.
 As with every object in nilearn, we give its parameters at construction,
-and then fit it on the data.
+and then fit it on the data. For examples of this process, see
+here: :ref:`sphx_glr_auto_examples_03_connectivity_plot_compare_decomposition.py`
 
-.. literalinclude:: ../../examples/03_connectivity/plot_canica_resting_state.py
-    :start-after: # Here we apply CanICA on the data
-    :end-before: ####################################################################
+Once an ICA object has been fit to an fMRI dataset, the individual 
+components can be accessed as a 4D Nifti object using the 
+``components_img_`` attribute.
 
-The components estimated are found as the `components_img_` attribute
-of the object. A 4D Nifti image.
+Visualizing results
+--------------------
+We can visualize each component outlined over the brain:
 
-.. note::
-    The `components_img_` attribute is implemented from version 0.4.1 which
-    is easy for visualization without any additional step to unmask to image.
-    For users who have older versions, components image can be done by
-    unmasking attribute `components_`. See :ref:`section Inverse transform:
-    unmasking data <unmasking_step>`.
-
-Visualizing the results
------------------------
-
-We can visualize the components as in the previous examples. The first plot
-shows a map generated from all the components. Then we plot an axial cut for
-each component separately.
-
-.. literalinclude:: ../../examples/03_connectivity/plot_canica_resting_state.py
-    :start-after: # To visualize we plot the outline of all components on one figure
-    :end-before: ####################################################################
-
-.. figure:: ../auto_examples/03_connectivity/images/sphx_glr_plot_canica_resting_state_001.png
+.. figure:: ../auto_examples/03_connectivity/images/sphx_glr_plot_compare_decomposition_001.png
    :align: center
-   :target: ../auto_examples/03_connectivity/plot_canica_resting_state.html
+   :target: ../auto_examples/03_connectivity/plot_compare_decomposition.html
 
-Finally, we can plot the map for different ICA components separately:
+We can also plot the map for different components separately:
 
-.. literalinclude:: ../../examples/03_connectivity/plot_canica_resting_state.py
-    :start-after: # Finally, we plot the map for each ICA component separately
-
-.. |left_img| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_canica_resting_state_003.png
+.. |ic1| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_compare_decomposition_002.png
    :width: 23%
 
-.. |right_img| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_canica_resting_state_004.png
+.. |ic2| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_compare_decomposition_003.png
    :width: 23%
 
-.. centered:: |left_img| |right_img|
+.. |ic3| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_compare_decomposition_004.png
+   :width: 23%
+
+.. |ic4| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_compare_decomposition_005.png
+   :width: 23%
+
+.. centered:: |ic1| |ic2| |ic3| |ic4|
 
 .. seealso::
 
    The full code can be found as an example:
-   :ref:`sphx_glr_auto_examples_03_connectivity_plot_canica_resting_state.py`
+   :ref:`sphx_glr_auto_examples_03_connectivity_plot_compare_decomposition.py`
 
 .. note::
 
@@ -101,9 +90,16 @@ Finally, we can plot the map for different ICA components separately:
    a fair representation, you should display all components and
    investigate which one resemble those displayed above.
 
-Beyond ICA : Dictionary learning
-================================
+Interpreting such components
+-----------------------------
 
+ICA, and related algorithms, extract patterns that coactivate in the
+signal. As a result, it finds functional networks, but also patterns of
+non neural activity, ie confounding signals. Both are visible in the
+plots of the components.
+
+An alternative to ICA: Dictionary learning
+===========================================
 Recent work has shown that dictionary learning based techniques outperform
 ICA in term of stability and constitutes a better first step in a statistical
 analysis pipeline.
@@ -113,55 +109,44 @@ good extracted maps.
 
 .. topic:: **References**
 
-   * Arthur Mensch et al. `Compressed online dictionary learning for fast resting-state fMRI decomposition <https://hal.archives-ouvertes.fr/hal-01271033/>`_,
-     ISBI 2016, Lecture Notes in Computer Science
-
-Applying DictLearning
----------------------
+    * Arthur Mensch et al. `Compressed online dictionary learning for fast resting-state fMRI decomposition <https://hal.archives-ouvertes.fr/hal-01271033/>`_,
+      ISBI 2016, Lecture Notes in Computer Science
 
 :class:`DictLearning` is a ready-to-use class with the same interface as CanICA.
 Sparsity of output map is controlled by a parameter alpha: using a
 larger alpha yields sparser maps.
 
-.. literalinclude:: ../../examples/03_connectivity/plot_compare_resting_state_decomposition.py
-    :start-after: # Dictionary learning
-    :end-before: ###############################################################################
+We can fit both estimators to compare them. 4D plotting (using
+:func:`nilearn.plotting.plot_prob_atlas`) offers an efficient way to
+compare both resulting outputs.
 
-We can fit both estimators to compare them
+.. figure:: ../auto_examples/03_connectivity/images/sphx_glr_plot_compare_decomposition_022.png
+   :target: ../auto_examples/03_connectivity/plot_compare_decomposition.html
+   :align: center
 
-.. literalinclude:: ../../examples/03_connectivity/plot_compare_resting_state_decomposition.py
-    :start-after: # Fit both estimators
-    :end-before: ###############################################################################
-
-Visualizing the results
------------------------
-
-4D plotting offers an efficient way to compare both resulting outputs
-
-.. literalinclude:: ../../examples/03_connectivity/plot_compare_resting_state_decomposition.py
-    :start-after: # Visualize the results
-
-.. |left_img_decomp| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_compare_resting_state_decomposition_001.png
-   :target: ../auto_examples/03_connectivity/plot_compare_resting_state_decomposition.html
-   :width: 50%
-.. |right_img_decomp| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_compare_resting_state_decomposition_003.png
-   :target: ../auto_examples/03_connectivity/plot_compare_resting_state_decomposition.html
-   :width: 50%
-
-.. |left_img_decomp_single| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_compare_resting_state_decomposition_002.png
-   :target: ../auto_examples/03_connectivity/plot_compare_resting_state_decomposition.html
-   :width: 50%
-.. |right_img_decomp_single| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_compare_resting_state_decomposition_004.png
-   :target: ../auto_examples/03_connectivity/plot_compare_resting_state_decomposition.html
-   :width: 50%
+.. figure:: ../auto_examples/03_connectivity/images/sphx_glr_plot_compare_decomposition_001.png
+   :target: ../auto_examples/03_connectivity/plot_compare_decomposition.html
+   :align: center
 
 
-.. centered:: |left_img_decomp| |right_img_decomp|
-.. centered:: |left_img_decomp_single| |right_img_decomp_single|
-
-Maps obtained with dictionary leaning are often easier to exploit as they are
-less noisy than ICA maps, with blobs usually better defined. Typically,
+Maps obtained with dictionary learning are often easier to exploit as they are
+more contrasted than ICA maps, with blobs usually better defined. Typically,
 *smoothing can be lower than when doing ICA*.
+
+.. |dl1| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_compare_decomposition_023.png
+   :width: 23%
+
+.. |dl2| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_compare_decomposition_024.png
+   :width: 23%
+
+.. |dl3| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_compare_decomposition_025.png
+   :width: 23%
+
+.. |dl4| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_compare_decomposition_026.png
+   :width: 23%
+
+.. centered:: |dl1| |dl2| |dl3| |dl4|
+
 While dictionary learning computation time is comparable to CanICA, obtained
 atlases have been shown to outperform ICA in a variety of
 classification tasks.
@@ -169,4 +154,12 @@ classification tasks.
 .. seealso::
 
    The full code can be found as an example:
-   :ref:`sphx_glr_auto_examples_03_connectivity_plot_compare_resting_state_decomposition.py`
+   :ref:`sphx_glr_auto_examples_03_connectivity_plot_compare_decomposition.py`
+
+.. seealso::
+
+   Learn how to extract fMRI data from regions created with 
+   dictionary learning with this example:
+   :ref:`sphx_glr_auto_examples_03_connectivity_plot_extract_regions_dictlearning_maps.py`
+
+

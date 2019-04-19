@@ -43,7 +43,8 @@ from .version import _check_module_dependencies, __version__
 
 def _py2_deprecation_warning():
     py2_warning = ('Python2 support is deprecated and will be removed in '
-                   'a future release. Consider switching to Python3.')
+                   'the next release. Consider switching to Python 3.6 or 3.7.'
+                   )
     warnings.filterwarnings('once', message=py2_warning)
     warnings.warn(message=py2_warning,
                   category=DeprecationWarning,
@@ -52,7 +53,7 @@ def _py2_deprecation_warning():
 
 def _py34_deprecation_warning():
     py34_warning = ('Python 3.4 support is deprecated and will be removed in '
-                   'a future release. Consider switching to Python 3.6 or 3.7.'
+                   'the next release. Consider switching to Python 3.6 or 3.7.'
                    )
     warnings.filterwarnings('once', message=py34_warning)
     warnings.warn(message=py34_warning,
