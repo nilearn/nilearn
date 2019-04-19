@@ -34,7 +34,7 @@ from sklearn.model_selection import check_cv
 from sklearn.linear_model.base import _preprocess_data as center_data
 from .._utils.compat import _basestring
 from .._utils.cache_mixin import CacheMixin
-from .objective_functions import _unmask
+from nilearn.masking import _unmask_from_to_3d_array
 from .space_net_solvers import (tvl1_solver, _graph_net_logistic,
                                 _graph_net_squared_loss)
 
@@ -103,9 +103,9 @@ def _univariate_feature_screening(
         sX = np.empty(X.shape)
         for sample in range(sX.shape[0]):
             sX[sample] = ndimage.gaussian_filter(
-                _unmask(X[sample].copy(),  # avoid modifying X
-                        mask), (smoothing_fwhm, smoothing_fwhm,
-                                smoothing_fwhm))[mask]
+                _unmask_from_to_3d_array(X[sample].copy(),  # avoid modifying X
+                                         mask), (smoothing_fwhm, smoothing_fwhm,
+                                                 smoothing_fwhm))[mask]
     else:
         sX = X
 
