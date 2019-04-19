@@ -6,6 +6,31 @@ Nilearn development process
     :depth: 2
     :local:
 
+How to help?
+=============
+
+* You are new to python and you don't know how to do xy
+
+   - Create a question on `neurostars <https://neurostars.org/>`_
+
+* If you discovered a bug, but don't know how to fix it
+
+   - Create `an issue <https://github.com/nilearn/nilearn/issues>`_
+
+* If you discovered a bug and know how to fix it, but don't know how to
+  get your code onto github (ie, you have some Python experience but have
+  never have used git/github, or have never written tests)
+
+    - Learn git and github: http://try.github.io/
+    - Learn what tests are how to run them locally
+      (https://docs.pytest.org)
+    - Learn how to write doc/examples and build them locally
+      https://sphinx-gallery.github.io/
+
+* You want to contribute code
+
+    - See below
+
 
 How do we decide what codes goes in?
 =====================================
@@ -66,6 +91,27 @@ this feature. Once agreed on the feature, send us a pull request.
 
 There are specific guidelines about how to write code for the project.
 They can be found in the contributors guide, below.
+
+Special case: How to contribute an atlas
+.............................................
+
+We want atlases in nilearn to be internally consistent. Specifically,
+your atlas object should have three attributes (as with the existing
+atlases):
+
+- ``description`` (bytes): A text description of the atlas. This should be
+  brief but thorough, describing the source (paper), relevant information
+  related to its construction (modality, dataset, method), and if there are
+  more than one maps, a description of each map.
+- ``labels`` (list): a list of string labels corresponding to each atlas
+  label, in the same (numerical) order as the atlas labels
+- maps (list or string): the path to the nifti image, or a list of paths
+
+In addition, the atlas will need to be called by a fetcher. For example, see here <https://github.com/nilearn/nilearn/blob/master/nilearn/datasets/atlas.py>_.
+
+Finally, as with other features, please provide a test for your atlas.
+Examples can be found here
+<https://github.com/nilearn/nilearn/blob/master/nilearn/datasets/tests/test_atlas.py>_
 
 Who makes decisions
 --------------------
