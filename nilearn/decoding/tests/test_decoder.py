@@ -14,6 +14,7 @@ from sklearn.metrics import accuracy_score, r2_score
 from sklearn.model_selection import KFold, LeaveOneGroupOut
 from sklearn.svm import SVR, LinearSVC
 
+from nilearn._utils.fixes import check_scoring
 from nilearn.decoding.decoder import (BaseDecoder, Decoder, DecoderRegressor,
                                       _check_param_grid, _parallel_fit)
 from nilearn.decoding.tests.test_same_api import to_niimgs
@@ -91,7 +92,6 @@ def test_check_estimator():
 def test_parallel_fit():
     # The goal of this test is to check that results of _parallel_fit is the 
     # same for differnet controlled param_grid
-    from sklearn.metrics import check_scoring
     train = range(80)
     test = range(80, len(y_regression))
     outputs = []
