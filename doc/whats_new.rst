@@ -22,6 +22,12 @@ Fixes
   images have NaNs.
 - add_contours now accepts `threshold` argument for filled=False. Now
   `threshold` is equally applied when asked for fillings in the contours.
+- :func:`nilearn.plotting.plot_surf` and
+  :func:`nilearn.plotting.plot_surf_stat_map` no longer threshold zero values
+  when no threshold is given.
+- When :func:`nilearn.plotting.plot_surf_stat_map` is used with a thresholded map
+  but without a background map, the surface mesh is displayed in
+  half-transparent grey to maintain a 3D perception.
 
 0.5.2
 =====
@@ -1354,4 +1360,3 @@ Contributors (from ``git shortlog -ns 0.1``)::
      1  Matthias Ekman
      1  Michael Waskom
      1  Vincent Michel
-

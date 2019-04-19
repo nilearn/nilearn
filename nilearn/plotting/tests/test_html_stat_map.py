@@ -69,23 +69,32 @@ def test_threshold_data():
     data = np.arange(-3, 4)
 
     # Check that an 'auto' threshold leaves at least one element
-    data_t, thresh = html_stat_map._threshold_data(data, threshold='auto')
-    gtruth = np.array([False, True, True, True, True, True, False])
-    assert (data_t.mask == gtruth).all()
+    data_t, mask, thresh = html_stat_map._threshold_data(data, threshold='auto')
+    gtruth_m = np.array([False, True, True, True, True, True, False])
+    gtruth_d = np.array([-3, 0, 0, 0, 0, 0, 3])
+    assert (mask == gtruth_m).all()
+    assert (data_t == gtruth_d).all()
 
     # Check that threshold=None keeps everything
-    data_t, thresh = html_stat_map._threshold_data(data, threshold=None)
-    assert ~np.ma.is_masked(data_t)
+    data_t, mask, thresh = html_stat_map._threshold_data(data, threshold=None)
+    assert np.all(np.logical_not(mask))
+    assert np.all(data_t == data)
 
     # Check positive threshold works
-    data_t, thresh = html_stat_map._threshold_data(data, threshold=1)
+    data_t, mask, thresh = html_stat_map._threshold_data(data, threshold=1)
     gtruth = np.array([False, False, True, True, True, False, False])
-    assert (data_t.mask == gtruth).all()
+    assert (mask == gtruth).all()
 
     # Check 0 threshold works
-    data_t, thresh = html_stat_map._threshold_data(data, threshold=0)
+    data_t, mask, thresh = html_stat_map._threshold_data(data, threshold=0)
     gtruth = np.array([False, False, False, True, False, False, False])
-    assert (data_t.mask == gtruth).all()
+    assert (mask == gtruth).all()
+
+    # Check that overly lenient threshold returns array
+    data = np.arange(3, 10)
+    data_t, mask, thresh = html_stat_map._threshold_data(data, threshold=2)
+    gtruth = np.full(7, False)
+    assert (mask == gtruth).all()
 
 
 def test_save_sprite():
@@ -306,6 +315,8 @@ def test_view_img():
         img_4d = image.new_img_like(img, img.get_data()[:, :, :, np.newaxis])
         assert len(img_4d.shape) == 4
         html_view = html_stat_map.view_img(img_4d, threshold=2., vmax=4.)
+        _check_html(html_view)
+        html_view = html_stat_map.view_img(img_4d, threshold=1e6)
         _check_html(html_view)
 
     # Check that all warnings were expected
