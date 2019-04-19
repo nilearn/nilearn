@@ -8,12 +8,23 @@ NEW
   :func:`nilearn.datasets.fetch_development_fmri` can be used to download
   movie-watching data in children and adults. A light-weight dataset implemented
   for teaching and usage in the examples.
+- New decoder object
+  :class:`nilearn.decoding.Decoder` (for classification) and
+  :class:`nilearn.decoding.DecoderRegressor` (for regression) implement a model
+  selection scheme that averages the best models within a cross validation loop.
+  The resulting average model is the one used as a classifier or a regressor.
+  These two objects also leverages the `NiftiMaskers` to provide a direct
+  interface with the Nifti files on disk.
 
 Changes
 -------
 
 - All the connectivity examples are changed from ADHD to brain development
   fmri dataset.
+- Examples plot_decoding_tutorial, plot_haxby_decoder, 
+  plot_haxby_different_estimators, plot_haxby_full_analysis, plot_oasis_vbm now 
+  use :class:`nilearn.decoding.Decoder` and :class:`nilearn.decoding.DecoderRegressor`
+  instead of sklearn SVC and SVR.
 
 Fixes
 -----
