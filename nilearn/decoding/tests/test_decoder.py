@@ -3,6 +3,9 @@ Test the decoder module
 """
 
 # Author: Andres Hoyos-Idrobo
+#         Binh Nguyen
+#         Thomas Bazeiile
+#
 # License: simplified BSD
 
 import numpy as np
