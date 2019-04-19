@@ -668,3 +668,13 @@ def test_fetch_development_fmri():
                                        verbose=1)
     confounds = np.recfromcsv(data.confounds[0], delimiter='\t')
     assert_equal(len(confounds[0]), 28)
+
+    # check first subject is an adult
+    age_group = data.phenotypic['Child_Adult'][0]
+    assert_equal(age_group,'adult')
+
+    # check adults_or_children
+    data = func.fetch_development_fmri(n_subjects=2, reduce_confounds=False,
+                                       verbose=1, adults_or_children='children')
+    assert(all([x=='child' for x in data.phenotypic['Child_Adult']]))
+

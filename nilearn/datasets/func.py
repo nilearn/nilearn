@@ -2032,7 +2032,7 @@ def fetch_development_fmri(n_subjects=None, reduce_confounds=True,
         Whether to fetch only adults, only chilren, or both
         - 'adults' = fetch adults only (n=33, ages 18-39)
         - 'children' = fetch children only (n=122, ages 3-12)
-        - 'both' = fetch full sample (n=155) 
+        - 'both' = fetch full sample (n=155)
 
     Returns
     -------
@@ -2084,13 +2084,13 @@ def fetch_development_fmri(n_subjects=None, reduce_confounds=True,
     participants = _fetch_development_fmri_participants(data_dir=data_dir,
                                                         url=None,
                                                         verbose=verbose)
-    
+
     # Download functional and regressors based on participants
     if adults_or_children not in ['both', 'children', 'adults']:
         raise ValueError("Wrong value for adults_or_children={0}. "
                          "Valid arguments are 'adults', 'children' "
                          "or 'both'".format(adults_or_children))
-    
+
     child_adult = participants['Child_Adult'].tolist()
     child_count = child_adult.count('child') if adults_or_children != 'adults' else 0
     adult_count = child_adult.count('adult') if adults_or_children != 'children' else 0
@@ -2100,7 +2100,7 @@ def fetch_development_fmri(n_subjects=None, reduce_confounds=True,
         max_subjects = child_count
     elif adults_or_children == 'adults':
         max_subjects = adult_count
-    
+
     # Check validity of n_subjects 
     if n_subjects is None:
         n_subjects = max_subjects
@@ -2123,8 +2123,13 @@ def fetch_development_fmri(n_subjects=None, reduce_confounds=True,
     adult_ids = participants[participants['Child_Adult'] ==
                              'adult']['participant_id'][:n_adult]
     ids = np.hstack([adult_ids, child_ids])
-    participants = participants[np.in1d(participants['participant_id'],
-                                        ids)]
+    # this doesn't sort by ids!
+    # participants = participants[np.in1d(participants['participant_id'],
+    #                                     ids)]
+
+    # but this is ugly. Is there a better way?
+    inds = [np.where(participants['participant_id']==x)[0][0] for x in ids]
+    participants = participants[inds]
 
     funcs, regressors = _fetch_development_fmri_functional(participants,
                                                            data_dir=data_dir,
