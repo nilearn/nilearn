@@ -44,9 +44,9 @@ SUPPORTED_ESTIMATORS = dict(
     svc=LinearSVC(penalty='l2'),
     logistic_l1=LogisticRegression(penalty='l1', solver='liblinear'),
     logistic_l2=LogisticRegression(penalty='l2', solver='liblinear'),
-    logistic=LogisticRegression(penalty='l2'),
+    logistic=LogisticRegression(penalty='l2', solver='liblinear'),
     ridge_classifier=RidgeClassifier(),
-    ridge_regression=Ridge(),
+    ridge_regressor=Ridge(),
     ridge=Ridge(),
     svr=SVR(kernel='linear'),
 )
@@ -59,9 +59,10 @@ def _check_param_grid(estimator, X, y, param_grid=None):
     -----------
     estimator : str, optional
         The estimator to choose among: 'svc', 'svc_l2', 'svc_l1', 'logistic',
-        'logistic_l1', 'ridge_classifier', 'ridge_regression',
-        and 'svr'. Note that the 'svc' and 'svc_l2' correspond to the same
-        estimator. Default 'svc'.
+        'logistic_l1', 'logistic_l2', 'ridge', 'ridge_classifier',
+        'ridge_regressor', and 'svr'. Note that the 'svc' and 'svc_l2';
+        'logistic' and 'logistic_l2'; 'ridge' and 'ridge_regressor' correspond
+        to the same estimator. Default 'svc'.
 
     X : list of Niimg-like objects
         See http://nilearn.github.io/manipulating_images/input_output.html
@@ -100,7 +101,7 @@ def _check_param_grid(estimator, X, y, param_grid=None):
             raise ValueError("%s is an unknown estimator."
                              "The supported estimators are: %s" %
                              (estimator, list(SUPPORTED_ESTIMATORS.keys())))
-
+        # define sensible default for different types of estimators
         if hasattr(estimator, 'penalty') and (estimator.penalty == 'l1'):
             min_c = l1_min_c(X, y, loss=loss)
         else:
@@ -138,7 +139,7 @@ def _parallel_fit(estimator, X, y, train, test, param_grid, is_classif, scorer,
         X_train = selector.fit_transform(X_train, y_train)
         X_test = selector.transform(X_test)
 
-    # If there is none parameter grid, then we use a suitable grid (by default)
+    # If there is no parameter grid, then we use a suitable grid (by default)
     param_grid = _check_param_grid(estimator, X_train, y_train, param_grid)
     best_score = None
     for param in ParameterGrid(param_grid):
@@ -190,17 +191,17 @@ class BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
     The `BaseDecoder` object supports classification and regression methods.
     It implements a model selection scheme that averages the best models
     within a cross validation loop. The resulting average model is the
-    one used as a classifier or a regressor. The `Decoder` object also
-    leverages the `NiftiMaskers` to provide a direct interface with the
-    Nifti files on disk.
+    one used as a classifier or a regressor. This object also leverages the
+    `NiftiMaskers` to provide a direct interface with the Nifti files on disk.
 
     Parameters
     -----------
     estimator : str, optional
         The estimator to choose among: 'svc', 'svc_l2', 'svc_l1', 'logistic',
-        'logistic_l1', 'ridge_classifier', 'ridge_regression',
-        and 'svr'. Note that the 'svc' and 'svc_l2' correspond to the same
-        estimator. Default 'svc'.
+        'logistic_l1', 'logistic_l2', 'ridge', 'ridge_classifier',
+        'ridge_regressor', and 'svr'. Note that the 'svc' and 'svc_l2';
+        'logistic' and 'logistic_l2'; 'ridge' and 'ridge_classifier' correspond
+        to the same estimator. Default 'svc'.
 
     mask : filename, Nifti1Image, NiftiMasker, or MultiNiftiMasker, optional
         Mask to be used on data. If an instance of masker is passed,
@@ -225,7 +226,7 @@ class BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
         or have no effect. See scikit-learn documentation for more information.
 
     screening_percentile : int, float, optional, in the closed interval [0, 100]
-        Perform an univariate feature selection based on the Anova F-value for
+        Perform a univariate feature selection based on the Anova F-value for
         the input data. A float according to a percentile of the highest
         scores. Default: 20.
 
@@ -541,7 +542,7 @@ class BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
         Parameters
         ----------
         X : list of Niimg-like objects
-            See http://nilearn.github.io/manipulating_images/input_output.html
+            See <http://nilearn.github.io/manipulating_images/input_output.html>
             Data on prediction is to be made. If this is a list,
             the affine is considered the same for all.
 
@@ -570,7 +571,7 @@ class BaseDecoder(LinearModel, RegressorMixin, CacheMixin):
         X : {array-like, sparse matrix}, shape = (n_samples, n_features)
             Samples.
 
-        Retruns
+        Returns
         -------
         array, shape=(n_samples,) if n_classes == 2 else (n_samples, n_classes)
             Confidence scores per (sample, class) combination. In the binary
@@ -599,15 +600,16 @@ class Decoder(BaseDecoder):
     The `Decoder` object supports classification methods.
     It implements a model selection scheme that averages the best models
     within a cross validation loop. The resulting average model is the
-    one used as a classifier. The `Decoder` object also leverages the
-    `NiftiMaskers` to provide a direct interface with the Nifti files on disk.
+    one used as a classifier. This object also leverages the`NiftiMaskers` to
+    provide a direct interface with the Nifti files on disk.
 
     Parameters
     -----------
     estimator : str, optional
         The estimator to choose among: 'svc', 'svc_l2', 'svc_l1', 'logistic',
-        'logistic_l1', and 'ridge_classifier'. Note  that the 'svc' and 'svc_l2'
-        correspond to the same estimator. Default 'svc'.
+        'logistic_l1', 'logistic_l2' and 'ridge_classifier'. Note that
+        'svc' and 'svc_l2'; 'logistic' and 'logistic_l2' correspond to the same
+         estimator. Default 'svc'.
 
     mask : filename, Nifti1Image, NiftiMasker, or MultiNiftiMasker, optional
         Mask to be used on data. If an instance of masker is passed,
@@ -737,14 +739,14 @@ class DecoderRegressor(BaseDecoder):
     The `DecoderRegressor` object supports regression methods.
     It implements a model selection scheme that averages the best models
     within a cross validation loop. The resulting average model is the
-    one used as a regressor. The `Decoder` object also leverages the
-    `NiftiMaskers` to provide a direct interface with the Nifti files on disk.
+    one used as a regressor. This object also leverages the `NiftiMaskers`
+    to provide a direct interface with the Nifti files on disk.
 
     Parameters
     -----------
     estimator : str, optional
-        The estimator to choose among: 'ridge', 'ridge_regression', and 'svr'.
-        Note that the 'ridge' and 'ridge_regression' correspond to the same
+        The estimator to choose among: 'ridge', 'ridge_regressor', and 'svr'.
+        Note that the 'ridge' and 'ridge_regressor' correspond to the same
         estimator. Default 'svr'.
 
     mask : filename, Nifti1Image, NiftiMasker, or MultiNiftiMasker, optional
@@ -769,7 +771,7 @@ class DecoderRegressor(BaseDecoder):
         or have no effect. See scikit-learn documentation for more information.
 
     screening_percentile : int, float, optional, in the closed interval [0, 100]
-        Perform an univariate feature selection based on the Anova F-value for
+        Perform a univariate feature selection based on the Anova F-value for
         the input data. A float according to a percentile of the highest
         scores. Default: 20.
 
