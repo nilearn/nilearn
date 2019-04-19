@@ -99,9 +99,11 @@ def fetch_atlas_destrieux_2009(lateralized=True, data_dir=None, url=None,
     lateralized: boolean, optional
         If True, returns an atlas with distinct regions for right and left
         hemispheres.
+
     data_dir: string, optional
         Path of the data directory. Use to forec data storage in a non-
         standard location. Default: None (meaning: default)
+
     url: string, optional
         Download URL of the dataset. Overwrite the default URL.
 
@@ -109,8 +111,9 @@ def fetch_atlas_destrieux_2009(lateralized=True, data_dir=None, url=None,
     -------
     data: sklearn.datasets.base.Bunch
         dictionary-like object, contains:
-        - Cortical ROIs, lateralized or not (maps)
-        - Labels of the ROIs (labels)
+        - maps: str, path to atlas, lateralized or not
+        - labels: list, labesl for ROIs
+        - labels_index: list, index corresponding to atlas labels 
 
     References
     ----------
@@ -121,6 +124,7 @@ def fetch_atlas_destrieux_2009(lateralized=True, data_dir=None, url=None,
     Destrieux, C., et al. "A sulcal depth-based anatomical parcellation
     of the cerebral cortex." NeuroImage 47 (2009): S151.
     """
+    print('TEST!!!')
     if url is None:
         url = "https://www.nitrc.org/frs/download.php/7739/"
 
@@ -140,7 +144,10 @@ def fetch_atlas_destrieux_2009(lateralized=True, data_dir=None, url=None,
     files_ = _fetch_files(data_dir, files, resume=resume,
                           verbose=verbose)
 
-    params = dict(maps=files_[1], labels=np.recfromcsv(files_[0]))
+    labels = np.recfromcsv(files_[0])
+    params = dict(maps=files_[1],
+                  labels_index=labels.field(0).tolist(),
+                  labels = labels.field(1).tolist())
 
     with open(files_[2], 'r') as rst_file:
         params['description'] = rst_file.read()
