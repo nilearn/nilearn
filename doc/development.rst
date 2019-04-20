@@ -75,7 +75,7 @@ In practice:
 
 Special cases:
 
-* A downloader for a new atlas: we are currently being very lenient here:
+* A downloader for a new atlas: we are currently being very lenient for this:
   if the atlas is published and can be used in an example, we will accept
   the pull request (but see below for specifics).
 * A downloader for a new dataset: the larger the dataset is, the less
@@ -107,11 +107,11 @@ atlases):
   label, in the same (numerical) order as the atlas labels
 - ``maps`` (list or string): the path to the nifti image, or a list of paths
 
-In addition, the atlas will need to be called by a fetcher. For example, see `here <https://github.com/nilearn/nilearn/blob/master/nilearn/datasets/atlas.py>`_.
+In addition, the atlas will need to be called by a fetcher. For example, see `here <https://github.com/nilearn/nilearn/blob/master/nilearn/datasets/atlas.py>`__.
 
 Finally, as with other features, please provide a test for your atlas.
 Examples can be found `here
-<https://github.com/nilearn/nilearn/blob/master/nilearn/datasets/tests/test_atlas.py>`_
+<https://github.com/nilearn/nilearn/blob/master/nilearn/datasets/tests/test_atlas.py>`__
 
 Who makes decisions
 --------------------
@@ -123,7 +123,7 @@ in Github.
 
 The decisions are made by the core-contributors, ie people with write
 access to the repository, as listed `here
-<https://github.com/orgs/nilearn/people>`_
+<https://github.com/orgs/nilearn/people>`__
 
 If there are open questions, final decisions are made by the Temporary
 Benevolent Dictator, currently Gaël Varoquaux.
