@@ -972,7 +972,7 @@ def fetch_atlas_surf_destrieux(data_dir=None, url=None,
         url = "https://www.nitrc.org/frs/download.php/"
 
     dataset_name = 'destrieux_surface'
-    fdescr = _get_dataset_descr(dataset_name)
+    fdescr = _get_dataset_descr(dataset_name).decode('utf-8')
     data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
                                 verbose=verbose)
 
@@ -1185,7 +1185,7 @@ def fetch_atlas_pauli_2017(version='prob', data_dir=None, verbose=1):
     if version == 'prob':
         url_maps = 'https://osf.io/w8zq2/download'
         filename = 'pauli_2017_labels.nii.gz'
-    elif version == 'labels':
+    elif version == 'det':
         url_maps = 'https://osf.io/5mqfx/download'
         filename = 'pauli_2017_prob.nii.gz'
     else:
