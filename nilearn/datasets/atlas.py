@@ -507,11 +507,11 @@ def fetch_atlas_smith_2009(data_dir=None, mirror='origin', url=None,
     files_ = _fetch_files(data_dir, files, resume=resume,
                           verbose=verbose)
 
-    fdescr = _get_dataset_descr(dataset_name)
+    fdescr = _get_dataset_descr(dataset_name).decode('utf-8')
 
     keys = ['rsn20', 'rsn10', 'rsn70', 'bm20', 'bm10', 'bm70']
     params = dict(zip(keys, files_))
-    params['description'] = fdescr.decode('utf-8')
+    params['description'] = fdescr
 
     return Bunch(**params)
 
@@ -666,19 +666,19 @@ def fetch_atlas_aal(version='SPM12', data_dir=None, url=None, resume=True,
     atlas_img, labels_file = _fetch_files(data_dir, filenames, resume=resume,
                                           verbose=verbose)
 
-    fdescr = _get_dataset_descr(dataset_name)
+    fdescr = _get_dataset_descr(dataset_name).decode('utf-8')
 
     # We return the labels contained in the xml file as a dictionary
     xml_tree = xml.etree.ElementTree.parse(labels_file)
     root = xml_tree.getroot()
-    labels = []
-    indices = []
+    labels = ['Background']
+    indices = [0]
     for label in root.getiterator('label'):
         indices.append(label.find('index').text)
         labels.append(label.find('name').text)
 
     params = {'description': fdescr, 'maps': atlas_img,
-              'labels': labels, 'indices': indices}
+              'labels': labels, 'labels_index': indices}
 
     return Bunch(**params)
 
