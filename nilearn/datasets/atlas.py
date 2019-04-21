@@ -511,7 +511,7 @@ def fetch_atlas_smith_2009(data_dir=None, mirror='origin', url=None,
 
     keys = ['rsn20', 'rsn10', 'rsn70', 'bm20', 'bm10', 'bm70']
     params = dict(zip(keys, files_))
-    params['description'] = fdescr
+    params['description'] = fdescr.decode('utf-8')
 
     return Bunch(**params)
 
