@@ -287,6 +287,8 @@ def fetch_atlas_harvard_oxford(atlas_name, data_dir=None,
     if lateralized:
         return Bunch(maps=atlas_img, labels=names, labels_index=labels_idx)
 
+
+    atlas_img = check_niimg(atlas_img)
     # Build a mask of both halves of the brain
     middle_ind = (atlas.shape[0] - 1) // 2
     # Put zeros on the median plane
@@ -301,8 +303,10 @@ def fetch_atlas_harvard_oxford(atlas_name, data_dir=None,
     new_atlas = atlas.copy()
     # Assumes that the background label is zero.
     new_names = [names[0]]
-    for label, name in zip(labels[1:], names[1:]):
+    new_labels = [0]
+    for label, name in zip(labels_idx[1:], names[1:]):
         new_label += 1
+        new_labels.append(new_label)
         left_elements = (left_atlas == label).sum()
         right_elements = (right_atlas == label).sum()
         n_elements = float(left_elements + right_elements)
@@ -314,11 +318,12 @@ def fetch_atlas_harvard_oxford(atlas_name, data_dir=None,
         new_atlas[right_atlas == label] = new_label
         new_names.append(name + ', left part')
         new_label += 1
+        new_labels.append(new_label)
         new_atlas[left_atlas == label] = new_label
         new_names.append(name + ', right part')
 
     atlas_img = new_img_like(atlas_img, new_atlas, atlas_img.affine)
-    return Bunch(maps=atlas_img, labels=new_names)
+    return Bunch(maps=atlas_img, labels=new_names, labels_index=new_labels)
 
 
 def fetch_atlas_msdl(data_dir=None, url=None, resume=True, verbose=1):
