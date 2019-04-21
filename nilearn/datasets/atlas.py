@@ -1311,9 +1311,13 @@ def fetch_atlas_schaefer_2018(n_rois=400, yeo_networks=7, resolution_mm=1,
     labels_file, atlas_file = _fetch_files(data_dir, files, resume=resume,
                                            verbose=verbose)
 
-    labels = np.genfromtxt(labels_file, usecols=1, dtype="S", delimiter="\t")
-    fdescr = _get_dataset_descr(dataset_name)
+    labels = np.genfromtxt(labels_file, usecols=1, dtype="S", delimiter="\t"
+        ).tolist()
+    labels.insert(0,'Background')
+    labels_idx = range(len(labels))
+    fdescr = _get_dataset_descr(dataset_name).decode('utf-8')
 
     return Bunch(maps=atlas_file,
                  labels=labels,
-                 description=fdescr)
+                 description=fdescr,
+                 labels_index=labels_idx)
