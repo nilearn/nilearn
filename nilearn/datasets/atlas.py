@@ -678,7 +678,9 @@ def fetch_atlas_aal(version='SPM12', data_dir=None, url=None, resume=True,
         labels.append(label.find('name').text)
 
     params = {'description': fdescr, 'maps': atlas_img,
-              'labels': labels, 'labels_index': indices}
+              'labels': labels, 'labels_index': indices,
+              'indices': indices # for legacy calls
+              } 
 
     return Bunch(**params)
 
