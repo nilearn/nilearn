@@ -257,21 +257,36 @@ def fetch_atlas_harvard_oxford(atlas_name, data_dir=None,
         names[int(label.get('index')) + 1] = label.text
     names = list(names.values())
 
+    # address missing names
+    if atlas_name == 'cortl-maxprob-thr50-1mm':
+        if symmetric_split:
+            to_remove = ['Left Superior Temporal Gyrus, posterior division',
+                         'Right Superior Temporal Gyrus, posterior division',
+                         'Left Supracalcarine Cortex']
+            [names.remove(x) for x in to_remove]
+        else:
+            names.remove('Superior Temporal Gyrus, posterior division')
+    if atlas_name == 'cortl-maxprob-thr50-2mm' and symmetric_split:
+        to_remove = ['Left Supracalcarine Cortex',
+                     'Right Supracalcarine Cortex']
+        [names.remove(x) for x in to_remove]
+    
+    # Retreive index labels
+    atlas_nii = check_niimg(atlas_img)
+    atlas = atlas_nii.get_data()
+    labels_idx = np.unique(atlas)
+
     if not symmetric_split:
-        return Bunch(maps=atlas_img, labels=names)
+        return Bunch(maps=atlas_img, labels=names, labels_index=labels_idx)
 
     if atlas_name in ("cort-prob-1mm", "cort-prob-2mm",
                       "sub-prob-1mm", "sub-prob-2mm"):
         raise ValueError("Region splitting not supported for probabilistic "
                          "atlases")
 
-    atlas_img = check_niimg(atlas_img)
     if lateralized:
-        return Bunch(maps=atlas_img, labels=names)
+        return Bunch(maps=atlas_img, labels=names, labels_index=labels_idx)
 
-    atlas = atlas_img.get_data()
-
-    labels = np.unique(atlas)
     # Build a mask of both halves of the brain
     middle_ind = (atlas.shape[0] - 1) // 2
     # Put zeros on the median plane
