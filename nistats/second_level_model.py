@@ -619,7 +619,7 @@ def non_parametric_inference(
 
     Returns
     -------
-    neg_log_pvals_permuted_ols_image: Nifti1Image
+    neg_log_corrected_pvals_img: Nifti1Image
         The image which contains negative logarithm of the
         corrected p-values
     """
@@ -676,7 +676,7 @@ def non_parametric_inference(
         tested_var, target_vars, model_intercept=model_intercept,
         n_perm=n_perm, two_sided_test=two_sided_test,
         random_state=random_state, n_jobs=n_jobs, verbose=max(0, verbose - 1))
-    neg_log_pvals_permuted_ols_image = masker.inverse_transform(
+    neg_log_corrected_pvals_img = masker.inverse_transform(
         np.ravel(neg_log_pvals_permuted_ols))
 
-    return neg_log_pvals_permuted_ols_image
+    return neg_log_corrected_pvals_img
