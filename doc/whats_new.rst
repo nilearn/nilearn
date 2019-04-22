@@ -4,6 +4,11 @@
 NEW
 ---
 
+- Optimization to image resampling
+  :func:`nilearn.image.resample_img` has been optimized to pad rather than
+  resample images in the special case when there is only a translation
+  between two spaces. This is a common case in :class:`nilearn.input_data.NiftiMasker`
+  when using the `mask_strategy="template"` option for brains in MNI space.
 - New brain development fMRI dataset fetcher
   :func:`nilearn.datasets.fetch_development_fmri` can be used to download
   movie-watching data in children and adults. A light-weight dataset implemented
@@ -22,6 +27,12 @@ Fixes
   images have NaNs.
 - add_contours now accepts `threshold` argument for filled=False. Now
   `threshold` is equally applied when asked for fillings in the contours.
+- :func:`nilearn.plotting.plot_surf` and
+  :func:`nilearn.plotting.plot_surf_stat_map` no longer threshold zero values
+  when no threshold is given.
+- When :func:`nilearn.plotting.plot_surf_stat_map` is used with a thresholded map
+  but without a background map, the surface mesh is displayed in
+  half-transparent grey to maintain a 3D perception.
 
 0.5.2
 =====
@@ -1354,4 +1365,3 @@ Contributors (from ``git shortlog -ns 0.1``)::
      1  Matthias Ekman
      1  Michael Waskom
      1  Vincent Michel
-
