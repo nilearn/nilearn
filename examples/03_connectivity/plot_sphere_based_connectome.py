@@ -2,12 +2,6 @@
 Extract signals on spheres and plot a connectome
 ==============================================================
 
-This example shows how to extract signals from spherical regions
-centered on coordinates from the Power-264 atlas [1], the Dosenbach-160
-atlas [2], and the Seitzman-300 atlas [3].
-We estimate connectome using **sparse inverse covariance**, to recover
-the functional brain **networks structure**.
-
 This example shows how to extract signals from spherical regions.
 We show how to build spheres around user-defined coordinates, as well as
 centered on coordinates from the Power-264 atlas [1], the Dosenbach-160
@@ -198,7 +192,7 @@ print('Stacked power coordinates in array of shape {0}.'.format(coords.shape))
 # and define spheres masker, with small enough radius to avoid regions overlap.
 
 spheres_masker = input_data.NiftiSpheresMasker(
-    seeds=coords, smoothing_fwhm=4, radius=5.,
+    seeds=coords, smoothing_fwhm=6, radius=5.,
     detrend=True, standardize=True, low_pass=0.1, high_pass=0.01, t_r=2)
 
 timeseries = spheres_masker.fit_transform(func_filename,
@@ -271,7 +265,7 @@ coords = np.vstack((
 )).T
 
 spheres_masker = input_data.NiftiSpheresMasker(
-    seeds=coords, smoothing_fwhm=4, radius=4.5,
+    seeds=coords, smoothing_fwhm=6, radius=4.5,
     detrend=True, standardize=True, low_pass=0.1, high_pass=0.01, t_r=2)
 
 timeseries = spheres_masker.fit_transform(func_filename,
@@ -324,7 +318,7 @@ spheres_masker = input_data.NiftiSpheresMasker(
     detrend=True, standardize=True, low_pass=0.1, high_pass=0.01, t_r=2,
     allow_overlap=True)
 
-timeseries = spheres_masker.fit_transform(fmri_filename,
+timeseries = spheres_masker.fit_transform(func_filename,
                                           confounds=confounds_filename)
 
 covariance_estimator = GraphLassoCV()
