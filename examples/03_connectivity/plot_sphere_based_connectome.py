@@ -76,7 +76,7 @@ from nilearn import input_data
 masker = input_data.NiftiSpheresMasker(
     dmn_coords, radius=8,
     detrend=True, standardize=True,
-    low_pass=0.1, high_pass=0.01, t_r=2.5,
+    low_pass=0.1, high_pass=0.01, t_r=2,
     memory='nilearn_cache', memory_level=1, verbose=2)
 
 # Additionally, we pass confound information so ensure our extracted 
