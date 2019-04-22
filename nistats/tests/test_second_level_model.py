@@ -33,7 +33,6 @@ from nistats.second_level_model import (SecondLevelModel,
 from nistats._utils.testing import _write_fake_fmri_data
 
 # This directory path
-# BASEDIR = '/home/jerome/nistats/nistats/tests'
 BASEDIR = os.path.dirname(os.path.abspath(__file__))
 FUNCFILE = os.path.join(BASEDIR, 'functional.nii.gz')
 

@@ -77,7 +77,7 @@ p_val = 0.001
 p001_unc = norm.isf(p_val)
 display = plotting.plot_glass_brain(
     z_map, threshold=p001_unc, colorbar=True, display_mode='z', plot_abs=False,
-    title='group left-right button press (unc p<0.001')
+    title='group left-right button press (unc p<0.001)')
 
 ###########################################################################
 # As expected, we find the motor cortex
@@ -90,20 +90,26 @@ import numpy as np
 from nilearn.image import math_img
 from nilearn.input_data import NiftiMasker
 p_val = second_level_model.compute_contrast(output_type='p_value')
-masker = NiftiMasker().fit(p_val)
-n_voxel = np.size(masker.transform(p_val))
+n_voxel = np.count_nonzero(z_map.get_data())
 # Correcting the p-values for multiple testing and taking neg log
 neg_log_pval = math_img("-np.log10(np.minimum(1, img * {}))"
                         .format(str(n_voxel)),
                         img=p_val)
 
 ###########################################################################
-# We threshold the second level contrast at uncorrected p < 0.001 and plot
-from scipy.stats import norm
+# Let us plot the (corrected) neg log  p-values for the parametric test
 cut_coords = [0]
+# Since we are plotting neg log p-values and using a threshold equal to 1,
+# it corresponds to corrected p-values lower than 10%, meaning that there
+# is less than 10% probability to make a single false discovery
+# (90% chance that we make no false discoveries at all).
+# This threshold is much more conservative than the previous one.
+threshold = 1
+title = ('Group left-right button press: \n'
+         'parametric test (FWER < 10%)')
 display = plotting.plot_glass_brain(
     neg_log_pval, colorbar=True, display_mode='z', plot_abs=False, vmax=3,
-    cut_coords=cut_coords)
+    cut_coords=cut_coords, threshold=threshold, title=title)
 plotting.show()
 
 ###########################################################################
@@ -117,11 +123,13 @@ neg_log_pvals_permuted_ols_unmasked = \
                              smoothing_fwhm=8.0, n_jobs=1)
 
 ###########################################################################
-# Let us plot the second level contrast
+# Let us plot the (corrected) neg log  p-values
+title = ('Group left-right button press: \n'
+         'permutation test (FWER < 10%)')
 display = plotting.plot_glass_brain(
     neg_log_pvals_permuted_ols_unmasked, colorbar=True, vmax=3,
-    display_mode='z', plot_abs=False,
-    cut_coords=cut_coords)
+    display_mode='z', plot_abs=False, cut_coords=cut_coords,
+    threshold=threshold, title=title)
 plotting.show()
 
 # The neg-log p-values obtained with non parametric testing are capped at 3
