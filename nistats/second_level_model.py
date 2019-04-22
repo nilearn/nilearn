@@ -138,18 +138,10 @@ def _check_first_level_contrast(second_level_input, first_level_contrast):
                              'compute_contrast method of FirstLevelModel')
 
 
-def _check_output_type(output_type):
-    if isinstance(output_type, _basestring):
-        # 'all' is assumed to be the final entry;
-        # if adding more, place before 'all'
-        if output_type not in ['z_score', 'stat', 'p_value', 'effect_size',
-                               'effect_variance', 'all']:
-            raise ValueError(
-                'output_type must be one of "z_score", "stat"'
-                ', "p_value", "effect_size" or "effect_variance"')
-    else:
-        raise ValueError('output_type must be one of "z_score", "stat",'
-                         ' "p_value", "effect_size" or "effect_variance"')
+def _check_output_type(output_type, valid_types):
+    if output_type not in valid_types:
+            raise ValueError('output_type must be one of {}'
+                             .format(valid_types))
 
 
 def _check_design_matrix(design_matrix):
@@ -484,7 +476,11 @@ class SecondLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
         con_val = _get_con_val(second_level_contrast, self.design_matrix_)
 
         # check output type
-        _check_output_type(output_type)
+        # 'all' is assumed to be the final entry;
+        # if adding more, place before 'all'
+        valid_types = ['z_score', 'stat', 'p_value', 'effect_size',
+                       'effect_variance', 'all']
+        _check_output_type(output_type, valid_types)
 
         # Get effect_maps appropriate for chosen contrast
         effect_maps = _infer_effect_maps(self.second_level_input_,
@@ -529,6 +525,8 @@ class SecondLevelModel(BaseEstimator, TransformerMixin, CacheMixin):
             output.header['descrip'] = (
                 '%s of contrast %s' % (output_type, contrast_name))
             outputs[output_type_] = output
+
+        return outputs if output_type == 'all' else output
 
 
 def non_parametric_inference(
