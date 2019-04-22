@@ -24,7 +24,6 @@ Note that more power would be obtained from using a larger sample of subjects.
 #          Elvis Dhomatob, <elvis.dohmatob@inria.fr>, Apr. 2014
 #          Virgile Fritsch, <virgile.fritsch@inria.fr>, Apr 2014
 #          Gael Varoquaux, Apr 2014
-#          Jerome-Alexis Chevalier, Apr 2019
 
 
 n_subjects = 100  # more subjects requires more memory
@@ -102,7 +101,7 @@ _, threshold = map_threshold(
 print('The FDR=.05-corrected threshold is: %.3g' % threshold)
 
 ###########################################################################
-# The plot it
+# Then plot it
 from nilearn import plotting
 display = plotting.plot_stat_map(
     z_map, threshold=threshold, colorbar=True, display_mode='z',
@@ -125,47 +124,3 @@ plotting.plot_stat_map(
 ###########################################################################
 # Note that there does not seem to be any significant effect of sex on
 # grey matter density on that dataset.
-
-##########################################################################
-# Computing the (corrected) p-values with parametric test to compare with
-# non parametric test
-from nilearn.image import math_img
-from nilearn.input_data import NiftiMasker
-p_val = second_level_model.compute_contrast(second_level_contrast='age',
-                                            output_type='p_value')
-masker = NiftiMasker(mask_img=mask_img).fit(p_val)
-n_voxel = np.size(masker.transform(p_val))
-# Correcting the p-values for multiple testing and taking neg log
-neg_log_pval = math_img("-np.log10(np.minimum(1, img * {}))"
-                        .format(str(n_voxel)),
-                        img=p_val)
-
-###########################################################################
-# Let us plot the second level contrast
-cut_coords = [-4, 26]
-display = plotting.plot_stat_map(
-    neg_log_pval, colorbar=True, display_mode='z', cut_coords=cut_coords)
-plotting.show()
-
-##############################################################################
-# Computing the (corrected) p-values with permutation test
-from nistats.second_level_model import non_parametric_inference
-neg_log_pvals_permuted_ols_unmasked = \
-    non_parametric_inference(gray_matter_map_filenames,
-                             design_matrix=design_matrix,
-                             second_level_contrast='age',
-                             model_intercept=True, n_perm=1000,
-                             two_sided_test=False, mask=mask_img,
-                             smoothing_fwhm=2.0, n_jobs=1)
-
-###########################################################################
-# Let us plot the second level contrast
-display = plotting.plot_stat_map(
-    neg_log_pvals_permuted_ols_unmasked, colorbar=True, vmax=5,
-    display_mode='z', cut_coords=cut_coords)
-plotting.show()
-
-# The neg-log p-values obtained with non parametric testing are capped at 3
-# since the number of permutations is 1e3.
-# Otherwise it seems that the non parametric test yields many more discoveries
-# and is then more powerful than the usual parametric procedure.
