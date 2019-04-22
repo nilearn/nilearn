@@ -2029,7 +2029,7 @@ def fetch_development_fmri(n_subjects=None, reduce_confounds=True,
         Defines the level of verbosity of the output.
 
     adults_or_children: str, optional (default 'both')
-        Whether to fetch only adults, only chilren, or both
+        Whether to fetch only adults, only children, or both
         - 'adults' = fetch adults only (n=33, ages 18-39)
         - 'children' = fetch children only (n=122, ages 3-12)
         - 'both' = fetch full sample (n=155)
