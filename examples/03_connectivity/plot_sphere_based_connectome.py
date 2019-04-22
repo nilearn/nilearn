@@ -80,7 +80,7 @@ masker = input_data.NiftiSpheresMasker(
     memory='nilearn_cache', memory_level=1, verbose=2)
 
 # Additionally, we pass confound information so ensure our extracted 
-# signal is cleaned from counfounds.
+# signal is cleaned from confounds.
 
 func_filename = dataset.func[0]
 confounds_filename = dataset.confounds[0]
