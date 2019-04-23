@@ -33,14 +33,6 @@ instance
       <http://dx.doi.org/10.1016/j.patcog.2011.04.006>`_.
       Pattern Recognition, Elsevier, 2011.
 
-More about ReNA clustering algorithm in the original paper
-
-    * A. Hoyos-Idrobo, G. Varoquaux, J. Kahn and B. Thirion, "Recursive
-      Nearest Agglomeration (ReNA): Fast Clustering for Approximation of
-      Structured Signals," in IEEE Transactions on Pattern Analysis and
-      Machine Intelligence, vol. 41, no. 3, pp. 669-681, 1 March 2019.
-      https://hal.archives-ouvertes.fr/hal-01366651/
-
 The big picture discussion corresponding to this example can be found
 in the documentation section :ref:`parcellating_brain`.
 """
@@ -175,7 +167,7 @@ plotting.plot_epi(index_img(fmri_compressed, 0),
 # This object uses method='kmeans' for KMeans clustering with 10mm smoothing
 # and standardization ON
 start = time.time()
-kmeans = Parcellations(method='kmeans', n_parcels=2000,
+kmeans = Parcellations(method='kmeans', n_parcels=50,
                        standardize=True, smoothing_fwhm=10.,
                        memory='nilearn_cache', memory_level=1,
                        verbose=1)
@@ -200,28 +192,28 @@ kmeans_labels_img.to_filename('kmeans_parcellation.nii.gz')
 ##################################################################
 # Brain parcellations with ReNA Clustering
 # ----------------------------------------
-# The spatial constraints are implemented inside the ReNA object.
 #
-# We use caching. As a result, the clustering doesn't have
-# to be recomputed later.
+# The spatial constraints are implemented inside the ReNA object.
+# One interesting algorithmic property of ReNA is that it is very
+# fast for a large number of parcels (notably faster than Ward).
+#
+# References
+# ----------
+#
+# More about ReNA clustering algorithm in the original paper
+#
+#     * A. Hoyos-Idrobo, G. Varoquaux, J. Kahn and B. Thirion, "Recursive
+#       Nearest Agglomeration (ReNA): Fast Clustering for Approximation of
+#       Structured Signals," in IEEE Transactions on Pattern Analysis and
+#       Machine Intelligence, vol. 41, no. 3, pp. 669-681, 1 March 2019.
+#       https://hal.archives-ouvertes.fr/hal-01366651/
+
 from nilearn.regions import ReNA
 start = time.time()
-rena = ReNA(scaling=True, n_clusters=1000, memory='nilearn_cache')
+rena = ReNA(n_clusters=5000, scaling=True)
 
 rena.fit_transform(dataset.func[0])
-print("ReNA 1000 clusters: %.2fs" % (time.time() - start))
-
-start = time.time()
-rena = ReNA(scaling=True, n_clusters=2000, memory='nilearn_cache')
-
-rena.fit_transform(dataset.func[0])
-print("ReNA 2000 clusters: %.2fs" % (time.time() - start))
-
-# We notice that, at the first computation (without using precomputed data),
-# for 1000 clusters, the computation time is almost divided by 2 comparing to
-# Ward clustering. This is due to the interesting algorithmic properties of
-# ReNA. In some cases (higher number of voxels), this reduction in time
-# computation can be much more significant.
+print("ReNA 5000 clusters: %.2fs" % (time.time() - start))
 
 ##################################################################
 # Visualize: Brain parcellations (ReNA)
@@ -247,10 +239,6 @@ labels_img = nifti_masker.inverse_transform(labels)
 # labels_img is a Nifti1Image object, it can be saved to file with the
 # following code:
 labels_img.to_filename('rena_parcellation.nii.gz')
-
-
-from nilearn.image import mean_img
-
 plotting.plot_roi(labels_img, mean_func_img, title="ReNA parcellation",
                   display_mode='xz')
 
@@ -286,9 +274,10 @@ fmri_reduced_rena = rena.transform(index_img(dataset.func[0], 0))
 compressed_img_rena = rena.inverse_transform(fmri_reduced_rena)
 
 plotting.plot_epi(compressed_img_rena, cut_coords=cut_coords,
-                  title='Ward compressed representation (2000 parcels)',
+                  title='ReNA compressed representation (5000 parcels)',
                   vmin=vmin, vmax=vmax, display_mode='xz')
 
+####################################################################
 # Even if the compressed signal is relatively close
 # to the original signal, we can notice that Ward Clustering
 # gives a slightly more accurate compressed representation.
