@@ -6,8 +6,6 @@ Extended math utilities
 
 import numpy as np
 
-from numpy import partition
-
 
 def fast_abs_percentile(data, percentile=80):
     """ A fast version of the percentile of the absolute value.
@@ -36,11 +34,8 @@ def fast_abs_percentile(data, percentile=80):
     data = np.abs(data)
     data = data.ravel()
     index = int(data.size * .01 * percentile)
-    if partition is not None:
-        # Partial sort: faster than sort
-        data = partition(data, index)
-    else:
-        data.sort()
+    # Partial sort: faster than sort
+    data = np.partition(data, index)
     return data[index]
 
 
