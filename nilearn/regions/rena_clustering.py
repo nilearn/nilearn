@@ -25,14 +25,14 @@ def _compute_weights(X, mask_img):
 
     Parameters
     ----------
-    X : array-like, shape = [n_samples, n_features]
+    X : ndarray, shape = [n_samples, n_features]
         Training data.
 
     mask_img : Niimg-like object used for masking the data.
 
     Returns
     -------
-    weights : numpy array
+    weights : ndarray
         Weights corresponding to all edges in the mask.
         shape: (n_edges,)
     """
@@ -61,7 +61,7 @@ def _make_3d_edges(vertices, is_mask):
 
     Parameters
     ----------
-    vertices : numpy.ndarray
+    vertices : ndarray
         The indices of the voxels.
 
     is_mask : boolean
@@ -70,7 +70,7 @@ def _make_3d_edges(vertices, is_mask):
 
     Returns
     -------
-    edges : numpy array
+    edges : ndarray
         Edges corresponding to the image or mask.
         shape: (1, n_edges) if_mask,
                (2, n_edges) otherwise.
@@ -101,17 +101,17 @@ def _make_edges_and_weights(X, mask_img):
 
     Parameters
     ----------
-    X : array-like, shape = [n_samples, n_features]
+    X : ndarray, shape = [n_samples, n_features]
         Training data.
 
     mask_img : Niimg-like object used for masking the data.
 
     Returns
     -------
-    edges : numpy array
+    edges : ndarray
         Array containing [edges_deep, edges_right, edges_down]
 
-    weights : numpy array
+    weights : ndarray
         Weights corresponding to all edges in the mask.
         shape: (n_edges,)
     """
@@ -145,7 +145,7 @@ def weighted_connectivity_graph(X, mask_img):
 
     Parameters
     ----------
-    X : array-like, shape = [n_samples, n_features]
+    X : ndarray, shape = [n_samples, n_features]
         Training data.
 
     mask_img : Niimg-like object used for masking the data.
@@ -220,10 +220,10 @@ def _reduce_data_and_connectivity(X, labels, n_components, connectivity,
 
     Parameters
     ----------
-    X : array-like, shape = [n_samples, n_features]
+    X : ndarray, shape = [n_samples, n_features]
         Training data.
 
-    labels : array like
+    labels : ndarray
         Containts the label assignation for each voxel.
 
     n_components : int
@@ -240,8 +240,8 @@ def _reduce_data_and_connectivity(X, labels, n_components, connectivity,
     -------
     reduced_connectivity : a sparse matrix in COOrdinate format.
 
-    reduced_X: array like
-        2D data matrix.
+    reduced_X : ndarray
+        Data reduced with agglomerated signal for each cluster
     """
     n_features = len(labels)
 
@@ -279,7 +279,7 @@ def nearest_neighbor_grouping(X, connectivity, n_clusters, threshold=1e-7):
 
     Parameters
     ----------
-    X : array-like, shape = [n_samples, n_features]
+    X : ndarray, shape = [n_samples, n_features]
         Training data.
 
     connectivity : a sparse matrix in COOrdinate format.
@@ -296,10 +296,10 @@ def nearest_neighbor_grouping(X, connectivity, n_clusters, threshold=1e-7):
     -------
     reduced_connectivity : a sparse matrix in COOrdinate format.
 
-    reduced_X :  array like
-        2D data matrix.
+    reduced_X : ndarray
+        Data reduced with agglomerated signal for each cluster
 
-    labels : array like
+    labels : ndarray, shape = [n_features]
         It contains the clusters assignation.
     """
     # Nearest neighbor conenctivity
@@ -343,7 +343,7 @@ def recursive_neighbor_agglomeration(X, mask_img, n_clusters,
 
     Parameters
     ----------
-    X : array-like, shape = [n_samples, n_features]
+    X : ndarray, shape = [n_samples, n_features]
         Training data.
 
     mask_img : Niimg-like object used for masking the data.
@@ -366,7 +366,7 @@ def recursive_neighbor_agglomeration(X, mask_img, n_clusters,
     n_components : int
         Number of clusters.
 
-    labels : array
+    labels : ndarray, shape = [n_features]
         Cluster assignation.
 
     References
@@ -438,13 +438,13 @@ class ReNA(BaseEstimator, ClusterMixin, TransformerMixin):
 
     Attributes
     ----------
-    `labels_ ` : array-like, (n_features,)
+    `labels_ ` : ndarray, shape = [n_features]
         cluster labels for each feature.
 
     `n_clusters_` : int
         Number of clusters.
 
-    `sizes_` : array-like (n_features,)
+    `sizes_` : ndarray, shape = [n_features]
         It contains the size of each cluster.
 
     References
@@ -471,7 +471,7 @@ class ReNA(BaseEstimator, ClusterMixin, TransformerMixin):
 
         Parameters
         ----------
-        X : array-like, shape = [n_samples, n_features]
+        X : ndarray, shape = [n_samples, n_features]
             Training data.
         y : Ignored
 
@@ -530,13 +530,13 @@ class ReNA(BaseEstimator, ClusterMixin, TransformerMixin):
 
         Parameters
         ----------
-        X : array-like, shape = [n_samples, n_features]
+        X : ndarray, shape = [n_samples, n_features]
             Data to transform with the fitted clustering.
 
         Returns
         -------
-        X_red : numpy array
-            2D data matrix of shape [n_samples, n_clusters]
+        X_red : ndarray, shape = [n_samples, n_clusters]
+            Data reduced with agglomerated signal for each cluster
         """
 
         check_is_fitted(self, "labels_")
@@ -555,18 +555,18 @@ class ReNA(BaseEstimator, ClusterMixin, TransformerMixin):
         return X_red
 
     def inverse_transform(self, X_red):
-        """Transform the reduced 2D data matrix back to an image in brain
-        space.
+        """Send the reduced 2D data matrix back to the original feature
+        space (voxels).
 
         Parameters
         ----------
-        X_red : numpy array
-            2D data matrix of shape [n_samples, n_clusters]
+        X_red : ndarray , shape = [n_samples, n_clusters]
+            Data reduced with agglomerated signal for each cluster
 
         Returns
         -------
-        X_inv : nibabel.Nifti1Image
-            shape: (n_x, n_y, n_z, n_samples)
+        X_inv : ndarray, shape = [n_samples, n_features]
+            Data reduced expanded to the original feature space
         """
 
         check_is_fitted(self, "labels_")
@@ -577,4 +577,4 @@ class ReNA(BaseEstimator, ClusterMixin, TransformerMixin):
             X_red = X_red / np.sqrt(self.sizes_)
         X_inv = X_red[..., inverse]
 
-        return self.masker_.inverse_transform(X_inv)
+        return X_inv
