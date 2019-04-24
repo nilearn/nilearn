@@ -3,6 +3,11 @@
 
 NEW
 ---
+- Parcellation method ReNA: Fast agglomerative clustering based on recursive
+  nearest neighbor grouping.
+  Yields very fast & accurate models, without creation of giant
+  clusters.
+  :class:`nilearn.regions.rena_clustering.ReNA`
 
 - Optimization to image resampling
   :func:`nilearn.image.resample_img` has been optimized to pad rather than
