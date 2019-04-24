@@ -582,6 +582,9 @@ def _fetch_surf_fsaverage5(data_dir=None, url=None, resume=True, verbose=1):
 def _fetch_surf_fsaverage5_sphere(data_dir=None):
     """Helper function to ship fsaverage5 spherical meshes.
 
+    These meshes can be used for visualization purposes, but also to run
+    cortical surface-based searchlight decoding.
+
     The source of the data is downloaded from OSF.
     """
 
