@@ -110,10 +110,13 @@ def _labels_masker_extraction(img, masker, confound):
 class Parcellations(MultiPCA):
     """Learn parcellations on fMRI images.
 
-    Four different types of clustering methods can be used such as kmeans,
-    ward, complete, average. Kmeans will call MiniBatchKMeans whereas
-    ward, complete, average are used within in Agglomerative Clustering.
-    All methods are leveraged from scikit-learn.
+    Five different types of clustering methods can be used:
+    kmeans, ward, complete, average and rena.
+    kmeans will call MiniBatchKMeans whereas
+    ward, complete, average are used within in Agglomerative Clustering and
+    rena will call ReNA.
+    kmeans, ward, complete, average are leveraged from scikit-learn.
+    rena is buit into nilearn.
 
     .. versionadded:: 0.4.1
 
