@@ -7,6 +7,7 @@ from sklearn.base import clone
 from sklearn.feature_extraction import image
 from sklearn.externals.joblib import Memory, delayed, Parallel
 
+from .rena_clustering import ReNA
 from ..decomposition.multi_pca import MultiPCA
 from ..input_data import NiftiLabelsMasker
 from .._utils.compat import _basestring
@@ -14,7 +15,7 @@ from .._utils.niimg import _safe_get_data
 from .._utils.niimg_conversions import _iter_check_niimg
 
 
-def _estimator_fit(data, estimator):
+def _estimator_fit(data, estimator, method=None):
     """ Estimator to fit on the data matrix
 
     Parameters
@@ -25,15 +26,32 @@ def _estimator_fit(data, estimator):
     estimator : instance of estimator from sklearn
         MiniBatchKMeans or AgglomerativeClustering
 
+    method : str, {'kmeans', 'ward', 'complete', 'average', 'rena'}
+        A method to choose between for brain parcellations.
+
     Returns
     -------
     labels_ : numpy.ndarray
         labels_ estimated from estimator
     """
-    estimator = clone(estimator)
-    estimator.fit(data.T)
+    if method == 'rena':
+        rena = ReNA(mask_img=estimator.mask_img,
+                    n_clusters=estimator.n_clusters,
+                    scaling=estimator.scaling,
+                    n_iter=estimator.n_iter,
+                    threshold=estimator.threshold,
+                    memory=estimator.memory,
+                    memory_level=estimator.memory_level,
+                    verbose=estimator.verbose)
+        rena.fit(data)
+        labels_ = rena.labels_
 
-    return estimator.labels_
+    else:
+        estimator = clone(estimator)
+        estimator.fit(data.T)
+        labels_ = estimator.labels_
+
+    return labels_
 
 
 def _check_parameters_transform(imgs, confounds):
@@ -101,7 +119,7 @@ class Parcellations(MultiPCA):
 
     Parameters
     ----------
-    method : str, {'kmeans', 'ward', 'complete', 'average'}
+    method : str, {'kmeans', 'ward', 'complete', 'average', 'rena'}
         A method to choose between for brain parcellations.
 
     n_parcels : int, default=50
@@ -153,6 +171,35 @@ class Parcellations(MultiPCA):
         This parameter is passed to image.resample_img. Please see the
         related documentation for details.
 
+    mask_strategy: {'background', 'epi' or 'template'}, optional
+        The strategy used to compute the mask: use 'background' if your
+        images present a clear homogeneous background, 'epi' if they
+        are raw EPI images, or you could use 'template' which will
+        extract the gray matter part of your data by resampling the MNI152
+        brain mask for your data's field of view.
+        Depending on this value, the mask will be computed from
+        masking.compute_background_mask, masking.compute_epi_mask or
+        masking.compute_gray_matter_mask. Default is 'epi'.
+
+    mask_args: dict, optional
+        If mask is None, these are additional parameters passed to
+        masking.compute_background_mask or masking.compute_epi_mask
+        to fine-tune mask computation. Please see the related documentation
+        for details.
+
+    scaling : bool, optional (default False)
+        Used only when the method selected is 'rena'. If scaling is True, each
+        cluster is scaled by the square root of its size, preserving the
+        l2-norm of the image.
+
+    n_iter : int, optional (default 10)
+        Used only when the method selected is 'rena'. Number of iterations of
+        the recursive neighbor agglomeration.
+
+    threshold : float in the open interval (0., 1.), optional (default 1e-7)
+        Used only when the method selected is 'rena'.
+        Threshold used to handle eccentricities.
+
     memory : instance of joblib.Memory or str
         Used to cache the masking process.
         By default, no caching is done. If a string is given, it is the
@@ -189,12 +236,13 @@ class Parcellations(MultiPCA):
           parcellations using KMeans or various Agglomerative methods.
 
         * This object uses spatially-constrained AgglomerativeClustering for
-          method='ward' or 'complete' or 'average'. Spatial connectivity matrix
+          method='ward' or 'complete' or 'average' and spatially-constrained
+          ReNA clustering for method='rena'. Spatial connectivity matrix
           (voxel-to-voxel) is built-in object which means no need of explicitly
           giving the matrix.
 
     """
-    VALID_METHODS = ['kmeans', 'ward', 'complete', 'average']
+    VALID_METHODS = ['kmeans', 'ward', 'complete', 'average', 'rena']
 
     def __init__(self, method, n_parcels=50,
                  random_state=0, mask=None, smoothing_fwhm=4.,
@@ -202,10 +250,15 @@ class Parcellations(MultiPCA):
                  low_pass=None, high_pass=None, t_r=None,
                  target_affine=None, target_shape=None,
                  mask_strategy='epi', mask_args=None,
+                 scaling=False, n_iter=10, threshold=1e-7,
                  memory=Memory(cachedir=None),
                  memory_level=0, n_jobs=1, verbose=1):
+
         self.method = method
         self.n_parcels = n_parcels
+        self.scaling = scaling
+        self.n_iter = n_iter
+        self.threshold = threshold
 
         MultiPCA.__init__(self, n_components=200,
                           random_state=random_state,
@@ -262,7 +315,7 @@ class Parcellations(MultiPCA):
         # happening in Travis
         try:
             from nilearn import plotting
-        except:
+        except Exception:
             pass
 
         components = MultiPCA._raw_fit(self, data)
@@ -280,6 +333,18 @@ class Parcellations(MultiPCA):
                                      verbose=max(0, self.verbose - 1))
             labels = self._cache(_estimator_fit,
                                  func_memory_level=1)(components.T, kmeans)
+
+        elif self.method == 'rena':
+            rena = ReNA(mask_img_, n_clusters=self.n_parcels,
+                        scaling=self.scaling, n_iter=self.n_iter,
+                        threshold=self.threshold, memory=self.memory,
+                        memory_level=self.memory_level,
+                        verbose=max(0, self.verbose - 1))
+            method = 'rena'
+            labels = \
+                self._cache(_estimator_fit, func_memory_level=1)(components.T,
+                                                                 rena, method)
+
         else:
             mask_ = _safe_get_data(mask_img_).astype(np.bool)
             shape = mask_.shape
@@ -387,8 +452,7 @@ class Parcellations(MultiPCA):
             Example, for single image shape will be
             (number of scans, number of labels)
         """
-        return self.fit(imgs, confounds=confounds).transform(imgs,
-                                                             confounds=confounds)
+        return self.fit(imgs, confounds=confounds).transform(imgs, confounds)
 
     def inverse_transform(self, signals):
         """Transform signals extracted from parcellations back to brain
