@@ -227,12 +227,10 @@ htmlhelp_basename = 'PythonScientic'
 # (source start file, target name, title, author, documentclass
 # [howto/manual]).
 latex_documents = [
-  ('index', 'nilearn.tex', u'NeuroImaging with scikit-learn',
-   ur"""Gaël Varoquaux and Alexandre Abraham"""
-   + r"\\\relax ~\\\relax http://nilearn.github.io",
-   'manual'),
-
-]
+  ('index', 'nilearn.tex', 'NeuroImaging with scikit-learn',
+   'Gaël Varoquaux and Alexandre Abraham'
+   + r"\\\relax ~\\\relax http://nilearn.github.io", 'manual'),
+    ]
 
 # The name of an image file (relative to this directory) to place at the top of
 # the title page.
