@@ -193,9 +193,10 @@ kmeans_labels_img.to_filename('kmeans_parcellation.nii.gz')
 # Brain parcellations with ReNA Clustering
 # ----------------------------------------
 #
-# The spatial constraints are implemented inside the ReNA object.
-# One interesting algorithmic property of ReNA is that it is very
-# fast for a large number of parcels (notably faster than Ward).
+# One interesting algorithmic property of ReNA (see References) is that
+# it is very fast for a large number of parcels (notably faster than Ward).
+# As before, the parcellation is done with a Parcellations object.
+# The spatial constraints are implemented inside the Parcellations object.
 #
 # References
 # ----------
@@ -207,43 +208,27 @@ kmeans_labels_img.to_filename('kmeans_parcellation.nii.gz')
 #       Structured Signals," in IEEE Transactions on Pattern Analysis and
 #       Machine Intelligence, vol. 41, no. 3, pp. 669-681, 1 March 2019.
 #       https://hal.archives-ouvertes.fr/hal-01366651/
-
-from nilearn.regions import ReNA
 start = time.time()
-rena = ReNA(n_clusters=5000, scaling=True)
+rena = Parcellations(method='rena', n_parcels=5000, standardize=False,
+                     smoothing_fwhm=2., scaling=True)
 
-rena.fit_transform(dataset.func[0])
+rena.fit_transform(dataset.func)
 print("ReNA 5000 clusters: %.2fs" % (time.time() - start))
 
 ##################################################################
 # Visualize: Brain parcellations (ReNA)
 # -------------------------------------
 #
-# First we display the labels of the clustering in the brain.
-#
-# To visualize results, we need to transform the clustering's labels back
-# to a neuroimaging volume. For this, we use the NiftiMasker's
-# inverse_transform method.
+# First, we display the parcellations of the brain image stored in attribute
+# `labels_img_`
+rena_labels_img = rena.labels_img_
 
-# Avoid 0 label
-labels = rena.labels_
-# Shuffling the labels for visualization
-permutation = np.random.permutation(np.unique(labels).shape[0])
-labels = 1 + permutation[labels]
-# Obtain the masker
-nifti_masker = rena.masker_
-# Unmask the labels
-labels_img = nifti_masker.inverse_transform(labels)
+# Now, rena_labels_img are Nifti1Image object, it can be saved to file
+# with the following code:
+rena_labels_img.to_filename('rena_parcellation.nii.gz')
 
-##################################################################
-# labels_img is a Nifti1Image object, it can be saved to file with the
-# following code:
-labels_img.to_filename('rena_parcellation.nii.gz')
-plotting.plot_roi(labels_img, mean_func_img, title="ReNA parcellation",
-                  display_mode='xz')
-
-# common cut coordinates for all plots
-cut_coords = first_plot.cut_coords
+plotting.plot_roi(ward_labels_img, title="ReNA parcellation",
+                  display_mode='xz', cut_coords=cut_coords)
 
 ##################################################################
 # Compressed representation of ReNA clustering
@@ -267,13 +252,12 @@ plotting.plot_epi(mean_func_img, cut_coords=cut_coords,
 # dimension.
 # However, the data are in one single large 4D image, we need to use
 # index_img to do the split easily:
-from nilearn.image import index_img
-fmri_reduced_rena = rena.transform(index_img(dataset.func[0], 0))
+fmri_reduced_rena = rena.transform(dataset.func)
 
 # Display the corresponding data compression using the parcellation
 compressed_img_rena = rena.inverse_transform(fmri_reduced_rena)
 
-plotting.plot_epi(compressed_img_rena, cut_coords=cut_coords,
+plotting.plot_epi(index_img(compressed_img_rena, 0), cut_coords=cut_coords,
                   title='ReNA compressed representation (5000 parcels)',
                   vmin=vmin, vmax=vmax, display_mode='xz')
 
