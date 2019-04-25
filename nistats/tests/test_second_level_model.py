@@ -62,6 +62,7 @@ def test_high_level_glm_with_paths():
 
 def test_high_level_non_parametric_inference_with_paths():
     with InTemporaryDirectory():
+        n_perm = 100
         shapes = ((7, 8, 9, 1),)
         mask, FUNCFILE, _ = _write_fake_fmri_data(shapes)
         FUNCFILE = FUNCFILE[0]
@@ -71,9 +72,14 @@ def test_high_level_non_parametric_inference_with_paths():
         c1 = np.eye(len(X.columns))[0]
         neg_log_pvals_img = non_parametric_inference(Y, design_matrix=X,
                                                      second_level_contrast=c1,
-                                                     mask=mask)
+                                                     mask=mask, n_perm=n_perm)
+        neg_log_pvals = neg_log_pvals_img.get_data()
+
         assert_true(isinstance(neg_log_pvals_img, Nifti1Image))
         assert_array_equal(neg_log_pvals_img.affine, load(mask).affine)
+
+        assert_true(np.all(neg_log_pvals <= - np.log10(1.0 / (n_perm + 1))))
+        assert_true(np.all(0 <= neg_log_pvals))
         # Delete objects attached to files to avoid WindowsError when deleting
         # temporary directory
         del X, Y, FUNCFILE, func_img, neg_log_pvals_img
