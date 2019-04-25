@@ -73,7 +73,7 @@ from nilearn import plotting
 plotting.plot_stat_map(
     z_map, threshold=threshold, colorbar=True,
     title='Group-level association between motor activity \n'
-    'and reading fluency (fdr<0.05)')
+    'and reading fluency (fdr=0.05)')
 
 plotting.show()
 
@@ -83,16 +83,16 @@ plotting.show()
 from nilearn.image import math_img
 from nilearn.input_data import NiftiMasker
 p_val = model.compute_contrast('fluency', output_type='p_value')
-n_voxel = np.count_nonzero(z_map.get_data())
-# Correcting the p-values for multiple testing and taking neg log
+n_voxels = np.sum(model.masker_.mask_img_.get_data())
+# Correcting the p-values for multiple testing and taking negative logarithm
 neg_log_pval = math_img("-np.log10(np.minimum(1, img * {}))"
-                        .format(str(n_voxel)),
+                        .format(str(n_voxels)),
                         img=p_val)
 
 ###########################################################################
-# Let us plot the (corrected) neg log  p-values for the parametric test
+# Let us plot the (corrected) negative log  p-values for the parametric test
 cut_coords = [38, -17, -3]
-# Since we are plotting neg log p-values and using a threshold equal to 1,
+# Since we are plotting negative log p-values and using a threshold equal to 1,
 # it corresponds to corrected p-values lower than 10%, meaning that there
 # is less than 10% probability to make a single false discovery
 # (90% chance that we make no false discoveries at all).
@@ -105,7 +105,7 @@ plotting.plot_stat_map(neg_log_pval, colorbar=True, cut_coords=cut_coords,
 plotting.show()
 
 ##############################################################################
-# Computing the (corrected) neg log p-values with permutation test
+# Computing the (corrected) negative log p-values with permutation test
 from nistats.second_level_model import non_parametric_inference
 neg_log_pvals_permuted_ols_unmasked = \
     non_parametric_inference(contrast_map_filenames,
@@ -116,7 +116,7 @@ neg_log_pvals_permuted_ols_unmasked = \
                              smoothing_fwhm=5.0, n_jobs=1)
 
 ###########################################################################
-# Let us plot the (corrected) neg log  p-values
+# Let us plot the (corrected) negative log  p-values
 title = ('Group-level association between motor activity and reading: \n'
          'neg-log of non-parametric corrected p-values (FWER < 10%)')
 plotting.plot_stat_map(neg_log_pvals_permuted_ols_unmasked, colorbar=True,
@@ -126,5 +126,5 @@ plotting.show()
 
 # The neg-log p-values obtained with non parametric testing are capped at 3
 # since the number of permutations is 1e3.
-# It seems that the non parametric test yields a few more discoveries
+# The non parametric test yields a few more discoveries
 # and is then more powerful than the usual parametric procedure.

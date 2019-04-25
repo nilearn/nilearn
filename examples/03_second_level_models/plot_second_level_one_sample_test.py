@@ -90,19 +90,19 @@ import numpy as np
 from nilearn.image import math_img
 from nilearn.input_data import NiftiMasker
 p_val = second_level_model.compute_contrast(output_type='p_value')
-n_voxel = np.count_nonzero(z_map.get_data())
-# Correcting the p-values for multiple testing and taking neg log
+n_voxels = np.sum(second_level_model.masker_.mask_img_.get_data())
+# Correcting the p-values for multiple testing and taking negative logarithm
 neg_log_pval = math_img("-np.log10(np.minimum(1, img * {}))"
-                        .format(str(n_voxel)),
+                        .format(str(n_voxels)),
                         img=p_val)
 
 ###########################################################################
-# Let us plot the (corrected) neg log  p-values for the parametric test
+# Let us plot the (corrected) negative log p-values for the parametric test
 cut_coords = [0]
-# Since we are plotting neg log p-values and using a threshold equal to 1,
+# Since we are plotting negative log p-values and using a threshold equal to 1,
 # it corresponds to corrected p-values lower than 10%, meaning that there
 # is less than 10% probability to make a single false discovery
-# (90% chance that we make no false discoveries at all).
+# (90% chance that we make no false discovery at all).
 # This threshold is much more conservative than the previous one.
 threshold = 1
 title = ('Group left-right button press: \n'
@@ -123,7 +123,7 @@ neg_log_pvals_permuted_ols_unmasked = \
                              smoothing_fwhm=8.0, n_jobs=1)
 
 ###########################################################################
-# Let us plot the (corrected) neg log  p-values
+# Let us plot the (corrected) negative log  p-values
 title = ('Group left-right button press: \n'
          'permutation test (FWER < 10%)')
 display = plotting.plot_glass_brain(
@@ -134,5 +134,5 @@ plotting.show()
 
 # The neg-log p-values obtained with non parametric testing are capped at 3
 # since the number of permutations is 1e3.
-# It seems that the non parametric test yields many more discoveries
+# The non parametric test yields many more discoveries
 # and is then more powerful than the usual parametric procedure.
