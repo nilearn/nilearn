@@ -194,11 +194,8 @@ def _get_contrast(second_level_contrast, design_matrix):
             else:
                 raise ValueError('No second-level contrast is specified.')
         elif (np.nonzero(second_level_contrast)[0]).size != 1:
-            raise ValueError('second_level_contrast must be a list of 0s'
-                             ' and 1 where 1 appears one time')
-        elif sum(second_level_contrast) != 1:
-            raise ValueError('second_level_contrast must be a list of 0s'
-                             ' and 1 where 1 appears one time')
+            raise ValueError('second_level_contrast must be '
+                             'a list of 0s and 1s')
         if isinstance(second_level_contrast, np.ndarray):
             con_val = np.asarray(second_level_contrast, dtype=bool)
         else:
@@ -535,7 +532,7 @@ def non_parametric_inference(
         model_intercept=True, n_perm=10000, two_sided_test=False,
         random_state=None, n_jobs=1, verbose=0):
     """Generate p-values corresponding to the contrasts provided
-    based on permutation testing. This fuction reuse the 'permuted_ols'
+    based on permutation testing. This fuction reuses the 'permuted_ols'
     function Nilearn.
 
     Parameters
@@ -608,7 +605,7 @@ def non_parametric_inference(
 
     n_jobs : int,
       Number of parallel workers.
-      If 0 is provided, all CPUs are used.
+      If -1 is provided, all CPUs are used.
       A negative number indicates that all the CPUs except (abs(n_jobs) - 1)
       ones will be used.
 
