@@ -2083,8 +2083,7 @@ def fetch_development_fmri(n_subjects=None, reduce_confounds=True,
     # Participants data: ids, demographics, etc
     participants = _fetch_development_fmri_participants(data_dir=data_dir,
                                                         url=None,
-                                                        verbose=verbose
-                                                        )[::-1] # so adults come first
+                                                        verbose=verbose)
 
     # Download functional and regressors based on participants
     if adults_or_children not in ['both', 'children', 'adults']:
@@ -2121,6 +2120,7 @@ def fetch_development_fmri(n_subjects=None, reduce_confounds=True,
                              'adult']['participant_id'][:n_adult]
     ids = np.hstack([adult_ids, child_ids])
     participants = participants[np.in1d(participants['participant_id'], ids)]
+    participants = participants[np.argsort(participants, order='Child_Adult')]
 
     funcs, regressors = _fetch_development_fmri_functional(participants,
                                                            data_dir=data_dir,
