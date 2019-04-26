@@ -117,7 +117,7 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
     nilearn.plotting.plot_surf_roi : For plotting statistical maps on brain
         surfaces.
 
-    nilearn.plotting.plot_surf_stat_map for plotting statistical maps on
+    nilearn.plotting.plot_surf_stat_map : for plotting statistical maps on
         brain surfaces.
     """
 
@@ -403,10 +403,10 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
 
     See Also
     --------
-    nilearn.datasets.fetch_surf_fsaverage : For surface data object to be
+    nilearn.datasets.fetch_surf_fsaverage: For surface data object to be
         used as background map for this plotting function.
 
-    nilearn.plotting.plot_surf : For brain surface visualization.
+    nilearn.plotting.plot_surf: For brain surface visualization.
     """
 
     # Call _get_colorbar_and_data_ranges to derive symmetric vmin, vmax

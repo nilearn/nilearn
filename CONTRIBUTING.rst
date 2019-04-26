@@ -1,8 +1,7 @@
 .. _contributing:
 
-============
-Contributing
-============
+How to contribute to nilearn
+=============================
 
 This project is a community effort, and everyone is welcome to
 contribute.
@@ -19,7 +18,7 @@ you first open an `issue <https://github.com/nilearn/nilearn/issues>`_ before
 sending a :ref:`pull request`.
 
 Opening an issue
-================
+------------------
 
 Nilearn uses issues for tracking bugs, requesting potential features, and
 holding project discussions.
@@ -37,7 +36,7 @@ Labels can be assigned a variety of issues, such as:
 .. _pull request:
 
 Pull Requests
-=============
+---------------
 
 We welcome pull requests from all community members.
 We follow the same conventions as scikit-learn. You can find the recommended process to submit code in the
@@ -47,7 +46,7 @@ We follow the same conventions as scikit-learn. You can find the recommended pro
 .. _git_repo:
 
 Retrieving the latest code
-==========================
+---------------------------
 
 We use `Git <http://git-scm.com/>`_ for version control and
 `GitHub <https://github.com/>`_ for hosting our main repository. If you are
@@ -64,7 +63,7 @@ or if you have write privileges::
     git clone git@github.com:nilearn/nilearn.git
 
 Coding guidelines
-=================
+------------------
 
 Nilearn follows the coding conventions used by scikit-learn. `Please read them
 <http://scikit-learn.org/stable/developers/contributing.html#coding-guidelines>`_
