@@ -146,7 +146,7 @@ def load_mni152_brain_mask():
 
     See Also
     --------
-    nilearn.datasets.load_mni152_template for details about version of the
+    nilearn.datasets.load_mni152_template : for details about version of the
         MNI152 T1 template and related.
     """
     # Load MNI template
