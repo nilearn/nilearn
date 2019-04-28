@@ -107,51 +107,51 @@ def make_localizer_contrasts(design_matrix):
     contrasts = dict([(column, contrast_matrix[i])
                       for i, column in enumerate(design_matrix.columns)])
 
-    contrasts["audio"] = (
-        contrasts["audio_left_hand_button_press"]
-        + contrasts["audio_right_hand_button_press"]
-        + contrasts["audio_computation"]
-        + contrasts["sentence_listening"])
+    contrasts['audio'] = (
+        contrasts['audio_left_hand_button_press']
+        + contrasts['audio_right_hand_button_press']
+        + contrasts['audio_computation']
+        + contrasts['sentence_listening'])
     
     # one contrast adding all conditions involving instructions reading
-    contrasts["visual"] = (
-        contrasts["visual_left_hand_button_press"]
-        + contrasts["visual_right_hand_button_press"]
-        + contrasts["visual_computation"]
-        + contrasts["sentence_reading"])
+    contrasts['visual'] = (
+        contrasts['visual_left_hand_button_press']
+        + contrasts['visual_right_hand_button_press']
+        + contrasts['visual_computation']
+        + contrasts['sentence_reading'])
 
     # one contrast adding all conditions involving computation
-    contrasts["computation"] = (contrasts["visual_computation"]
-                                      + contrasts["audio_computation"])
+    contrasts['computation'] = (contrasts['visual_computation']
+                                      + contrasts['audio_computation'])
 
     # one contrast adding all conditions involving sentences
-    contrasts["sentences"] = (contrasts["sentence_listening"]
-                                    + contrasts["sentence_reading"])
+    contrasts['sentences'] = (contrasts['sentence_listening']
+                                    + contrasts['sentence_reading'])
     
     # Short dictionary of more relevant contrasts
     contrasts = {
-        "left - right button press": (
-            contrasts["audio_left_hand_button_press"]
-            - contrasts["audio_right_hand_button_press"]
-            + contrasts["visual_left_hand_button_press"]
-            - contrasts["visual_right_hand_button_press"]
+        'left - right button press': (
+            contrasts['audio_left_hand_button_press']
+            - contrasts['audio_right_hand_button_press']
+            + contrasts['visual_left_hand_button_press']
+            - contrasts['visual_right_hand_button_press']
         ),
-        "audio - visual": contrasts["audio"] - contrasts["visual"],
-        "computation - sentences": (contrasts["computation"] -
-                                    contrasts["sentences"]
+        'audio - visual': contrasts['audio'] - contrasts['visual'],
+        'computation - sentences': (contrasts['computation'] -
+                                    contrasts['sentences']
         ),
-        "horizontal-vertical": (contrasts["horizontal_checkerboard"] -
-                                contrasts["vertical_checkerboard"])
+        'horizontal-vertical': (contrasts['horizontal_checkerboard'] -
+                                contrasts['vertical_checkerboard'])
     }
     return contrasts
 
 #########################################################################
 # So let's look at these computed contrasts
 #
-# * "left - right button press" probes motor activity in left versus right button presses
+# * 'left - right button press' probes motor activity in left versus right button presses
 # * 'horizontal-vertical': probes the differential activity in viewing a horizontal vs vertical checkerboard
-# * "audio - visual" probes the difference of activity between listening to some content or reading the same type of content (instructions, stories)
-# * "computation - sentences" looks at the activity when performing a mental comptation task  versus simply reading sentences.
+# * 'audio - visual' probes the difference of activity between listening to some content or reading the same type of content (instructions, stories)
+# * 'computation - sentences' looks at the activity when performing a mental comptation task  versus simply reading sentences.
 #
 contrasts = make_localizer_contrasts(design_matrix)
 plt.figure(figsize=(5, 9))

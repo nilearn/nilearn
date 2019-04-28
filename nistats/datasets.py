@@ -283,7 +283,7 @@ def fetch_openneuro_dataset(
     return data_dir, sorted(downloaded)
 
 
-def fetch_localizer_first_level(data_dir=None, url=None, verbose=1):
+def fetch_localizer_first_level(data_dir=None, verbose=1):
     """ Download a first-level localizer fMRI dataset
 
     Parameters
@@ -298,10 +298,7 @@ def fetch_localizer_first_level(data_dir=None, url=None, verbose=1):
         epi_img: the input 4D image
         events: a csv file describing the paardigm
     """
-
-    if url is None:
-        url = 'https://osf.io/2bqxn/download'
-
+    url = 'https://osf.io/2bqxn/download'
     epi_img = "sub-12069_task-localizer_space-MNI305.nii.gz"
     events = "sub-12069_task-localizer_events.tsv"
     opts = {'uncompress': True}
