@@ -7,7 +7,7 @@ NEW
   nearest neighbor grouping.
   Yields very fast & accurate models, without creation of giant
   clusters.
-  :class:`nilearn.regions.rena_clustering.ReNA`
+  :class:`nilearn.regions.ReNA`
 
 - Optimization to image resampling
   :func:`nilearn.image.resample_img` has been optimized to pad rather than
@@ -15,7 +15,7 @@ NEW
   between two spaces. This is a common case in :class:`nilearn.input_data.NiftiMasker`
   when using the `mask_strategy="template"` option for brains in MNI space.
 - New brain development fMRI dataset fetcher
-  :func:`nilearn.datasets.fetch_development_fmri` can be used to download
+  :func:`nilearn.datashets.fetch_development_fmri` can be used to download
   movie-watching data in children and adults. A light-weight dataset implemented
   for teaching and usage in the examples.
 
