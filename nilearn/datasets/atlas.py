@@ -91,7 +91,7 @@ verbose=1):
     return Bunch(**params)
 
 
-def fetch_atlas_craddock_2012(atlas_name=None,
+def fetch_atlas_craddock_2012(atlas_name='tcorr_2level',
                               number_of_regions=None,
                               data_dir=None,
                               url=None, resume=True,
@@ -103,7 +103,7 @@ def fetch_atlas_craddock_2012(atlas_name=None,
 
     Parameters
     ----------
-    atlas_name: string
+    atlas_name: string, (default is 'tcorr_2level')
         Name of atlas to load. The name can be:
         scorr_mean: group-mean parcellation results when emphasizing spatial
                     homogeneity
@@ -171,11 +171,20 @@ def fetch_atlas_craddock_2012(atlas_name=None,
     dataset_name = "craddock_2012"
     atlas_items = ("scorr_mean", "tcorr_mean", "scorr_2level", "tcorr_2level",
                    "random")
-    filenames = [("scorr05_mean_all.nii.gz", url, opts),
-                 ("tcorr05_mean_all.nii.gz", url, opts),
-                 ("scorr05_2level_all.nii.gz", url, opts),
-                 ("tcorr05_2level_all.nii.gz", url, opts),
-                 ("random_all.nii.gz", url, opts)]
+
+    filenames_dict = {"scorr_mean": [("scorr05_mean_all.nii.gz", url, opts)],
+                      "tcorr_mean": [("tcorr05_mean_all.nii.gz", url, opts)],
+                      "scorr_2level": [("scorr05_2level_all.nii.gz", url,
+                                        opts)],
+                      "tcorr_2level": [("tcorr05_2level_all.nii.gz", url,
+                                        opts)],
+                      "random": [("random_all.nii.gz", url, opts)]}
+
+    # filenames = [("scorr05_mean_all.nii.gz", url, opts),
+    #              ("tcorr05_mean_all.nii.gz", url, opts),
+    #              ("scorr05_2level_all.nii.gz", url, opts),
+    #              ("tcorr05_2level_all.nii.gz", url, opts),
+    #              ("random_all.nii.gz", url, opts)]
 
     if atlas_name not in atlas_items:
         raise ValueError("Invalid atlas name: {0}. Please chose an atlas "
@@ -184,9 +193,11 @@ def fetch_atlas_craddock_2012(atlas_name=None,
 
     data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
                                 verbose=verbose)
-    sub_files = _fetch_files(data_dir, filenames, resume=resume,
-                             verbose=verbose)
-    atlas_name_file = dict(zip(atlas_items, sub_files))
+    # sub_files = _fetch_files(data_dir, filenames, resume=resume,
+    #                          verbose=verbose)
+    sub_file = _fetch_files(data_dir, filenames_dict[atlas_name],
+                             resume=resume, verbose=verbose)
+    atlas_name_file = dict(zip(atlas_name, sub_file))
 
     # select indicated atlas file
     selected_atlas = atlas_name_file[atlas_name]
