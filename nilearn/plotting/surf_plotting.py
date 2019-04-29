@@ -67,7 +67,7 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
         How to average vertex values to derive the face value, mean results
         in smooth, median in sharp boundaries.
 
-    threshold : a number, None, or 'auto', default is None.
+    threshold : a number or None, default is None.
         If None is given, the image is not thresholded.
         If a number is given, it is used to threshold the image, values
         below the threshold (in absolute value) are plotted as transparent.
@@ -76,7 +76,7 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
         If 'auto' is chosen, alpha will default to .5 when no bg_map
         is passed and to 1 if a bg_map is passed.
 
-    bg_on_stat: bool, default is False
+    bg_on_data: bool, default is False
         If True, and a bg_map is specified, the surf_data data is multiplied
         by the background image, so that e.g. sulcal depth is visible beneath
         the surf_data.
@@ -117,7 +117,7 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
     nilearn.plotting.plot_surf_roi : For plotting statistical maps on brain
         surfaces.
 
-    nilearn.plotting.plot_surf_stat_map for plotting statistical maps on
+    nilearn.plotting.plot_surf_stat_map : for plotting statistical maps on
         brain surfaces.
     """
 
@@ -201,97 +201,98 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
     # reduce viewing distance to remove space around mesh
     axes.dist = 8
 
-    # If depth_map and/or surf_map are provided, map these onto the surface
     # set_facecolors function of Poly3DCollection is used as passing the
     # facecolors argument to plot_trisurf does not seem to work
-    if bg_map is not None or surf_map is not None:
+    face_colors = np.ones((faces.shape[0], 4))
 
-        face_colors = np.ones((faces.shape[0], 4))
-        # face_colors[:, :3] = .5*face_colors[:, :3]  # why this?
+    if bg_map is None:
+        bg_data = np.ones(coords.shape[0]) * 0.5
 
-        if bg_map is not None:
-            bg_data = load_surf_data(bg_map)
-            if bg_data.shape[0] != coords.shape[0]:
-                raise ValueError('The bg_map does not have the same number '
-                                 'of vertices as the mesh.')
-            bg_faces = np.mean(bg_data[faces], axis=1)
-            bg_faces = bg_faces - bg_faces.min()
-            bg_faces = bg_faces / bg_faces.max()
-            # control background darkness
-            bg_faces *= darkness
-            face_colors = plt.cm.gray_r(bg_faces)
+    else:
+        bg_data = load_surf_data(bg_map)
+        if bg_data.shape[0] != coords.shape[0]:
+            raise ValueError('The bg_map does not have the same number '
+                             'of vertices as the mesh.')
 
-        # modify alpha values of background
-        face_colors[:, 3] = alpha * face_colors[:, 3]
-        # should it be possible to modify alpha of surf data as well?
+    bg_faces = np.mean(bg_data[faces], axis=1)
+    if bg_faces.min() != bg_faces.max():
+        bg_faces = bg_faces - bg_faces.min()
+        bg_faces = bg_faces / bg_faces.max()
+    # control background darkness
+    bg_faces *= darkness
+    face_colors = plt.cm.gray_r(bg_faces)
 
-        if surf_map is not None:
-            surf_map_data = load_surf_data(surf_map)
-            if len(surf_map_data.shape) is not 1:
-                raise ValueError('surf_map can only have one dimension but has'
-                                 '%i dimensions' % len(surf_map_data.shape))
-            if surf_map_data.shape[0] != coords.shape[0]:
-                raise ValueError('The surf_map does not have the same number '
-                                 'of vertices as the mesh.')
+    # modify alpha values of background
+    face_colors[:, 3] = alpha * face_colors[:, 3]
+    # should it be possible to modify alpha of surf data as well?
 
-            # create face values from vertex values by selected avg methods
-            if avg_method == 'mean':
-                surf_map_faces = np.mean(surf_map_data[faces], axis=1)
-            elif avg_method == 'median':
-                surf_map_faces = np.median(surf_map_data[faces], axis=1)
+    if surf_map is not None:
+        surf_map_data = load_surf_data(surf_map)
+        if len(surf_map_data.shape) is not 1:
+            raise ValueError('surf_map can only have one dimension but has'
+                             '%i dimensions' % len(surf_map_data.shape))
+        if surf_map_data.shape[0] != coords.shape[0]:
+            raise ValueError('The surf_map does not have the same number '
+                             'of vertices as the mesh.')
 
-            # if no vmin/vmax are passed figure them out from data
-            if vmin is None:
-                vmin = np.nanmin(surf_map_faces)
-            if vmax is None:
-                vmax = np.nanmax(surf_map_faces)
+        # create face values from vertex values by selected avg methods
+        if avg_method == 'mean':
+            surf_map_faces = np.mean(surf_map_data[faces], axis=1)
+        elif avg_method == 'median':
+            surf_map_faces = np.median(surf_map_data[faces], axis=1)
 
-            # treshold if inidcated
-            if threshold is None:
-                kept_indices = np.where(surf_map_faces)[0]
-            else:
-                kept_indices = np.where(np.abs(surf_map_faces) >= threshold)[0]
+        # if no vmin/vmax are passed figure them out from data
+        if vmin is None:
+            vmin = np.nanmin(surf_map_faces)
+        if vmax is None:
+            vmax = np.nanmax(surf_map_faces)
 
-            surf_map_faces = surf_map_faces - vmin
-            surf_map_faces = surf_map_faces / (vmax - vmin)
+        # treshold if inidcated
+        if threshold is None:
+            kept_indices = np.arange(surf_map_faces.shape[0])
+        else:
+            kept_indices = np.where(np.abs(surf_map_faces) >= threshold)[0]
 
-            # multiply data with background if indicated
-            if bg_on_data:
-                face_colors[kept_indices] = cmap(surf_map_faces[kept_indices])\
-                    * face_colors[kept_indices]
-            else:
-                face_colors[kept_indices] = cmap(surf_map_faces[kept_indices])
+        surf_map_faces = surf_map_faces - vmin
+        surf_map_faces = surf_map_faces / (vmax - vmin)
 
-            if colorbar:
-                our_cmap = get_cmap(cmap)
-                norm = Normalize(vmin=vmin, vmax=vmax)
+        # multiply data with background if indicated
+        if bg_on_data:
+            face_colors[kept_indices] = cmap(surf_map_faces[kept_indices])\
+                * face_colors[kept_indices]
+        else:
+            face_colors[kept_indices] = cmap(surf_map_faces[kept_indices])
 
-                nb_ticks = 5
-                ticks = np.linspace(vmin, vmax, nb_ticks)
-                bounds = np.linspace(vmin, vmax, our_cmap.N)
+        if colorbar:
+            our_cmap = get_cmap(cmap)
+            norm = Normalize(vmin=vmin, vmax=vmax)
 
-                if threshold is not None:
-                    cmaplist = [our_cmap(i) for i in range(our_cmap.N)]
-                    # set colors to grey for absolute values < threshold
-                    istart = int(norm(-threshold, clip=True) *
-                                 (our_cmap.N - 1))
-                    istop = int(norm(threshold, clip=True) *
-                                (our_cmap.N - 1))
-                    for i in range(istart, istop):
-                        cmaplist[i] = (0.5, 0.5, 0.5, 1.)
-                    our_cmap = LinearSegmentedColormap.from_list(
-                        'Custom cmap', cmaplist, our_cmap.N)
+            nb_ticks = 5
+            ticks = np.linspace(vmin, vmax, nb_ticks)
+            bounds = np.linspace(vmin, vmax, our_cmap.N)
 
-                # we need to create a proxy mappable
-                proxy_mappable = ScalarMappable(cmap=our_cmap, norm=norm)
-                proxy_mappable.set_array(surf_map_faces)
-                cax, kw = make_axes(axes, location='right', fraction=.1,
-                                    shrink=.6, pad=.0)
-                cbar = figure.colorbar(
-                    proxy_mappable, cax=cax, ticks=ticks,
-                    boundaries=bounds, spacing='proportional',
-                    format='%.2g', orientation='vertical')
-                _crop_colorbar(cbar, cbar_vmin, cbar_vmax)
+            if threshold is not None:
+                cmaplist = [our_cmap(i) for i in range(our_cmap.N)]
+                # set colors to grey for absolute values < threshold
+                istart = int(norm(-threshold, clip=True) *
+                             (our_cmap.N - 1))
+                istop = int(norm(threshold, clip=True) *
+                            (our_cmap.N - 1))
+                for i in range(istart, istop):
+                    cmaplist[i] = (0.5, 0.5, 0.5, 1.)
+                our_cmap = LinearSegmentedColormap.from_list(
+                    'Custom cmap', cmaplist, our_cmap.N)
+
+            # we need to create a proxy mappable
+            proxy_mappable = ScalarMappable(cmap=our_cmap, norm=norm)
+            proxy_mappable.set_array(surf_map_faces)
+            cax, kw = make_axes(axes, location='right', fraction=.1,
+                                shrink=.6, pad=.0)
+            cbar = figure.colorbar(
+                proxy_mappable, cax=cax, ticks=ticks,
+                boundaries=bounds, spacing='proportional',
+                format='%.2g', orientation='vertical')
+            _crop_colorbar(cbar, cbar_vmin, cbar_vmax)
 
         p3dcollec.set_facecolors(face_colors)
 
@@ -341,10 +342,11 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
     hemi : {'left', 'right'}, default is 'left'
         Hemispere to display.
 
-    view: {'lateral', 'medial', 'dorsal', 'ventral', 'anterior', 'posterior'}, default is 'lateral'
+    view: {'lateral', 'medial', 'dorsal', 'ventral', 'anterior', 'posterior'},
+        default is 'lateral'
         View of the surface that is rendered.
 
-    threshold : a number, None, or 'auto', default is None
+    threshold : a number or None, default is None
         If None is given, the image is not thresholded.
         If a number is given, it is used to threshold the image,
         values below the threshold (in absolute value) are plotted
@@ -401,10 +403,10 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
 
     See Also
     --------
-    nilearn.datasets.fetch_surf_fsaverage : For surface data object to be
+    nilearn.datasets.fetch_surf_fsaverage: For surface data object to be
         used as background map for this plotting function.
 
-    nilearn.plotting.plot_surf : For brain surface visualization.
+    nilearn.plotting.plot_surf: For brain surface visualization.
     """
 
     # Call _get_colorbar_and_data_ranges to derive symmetric vmin, vmax
@@ -415,16 +417,16 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
     display = plot_surf(
         surf_mesh, surf_map=stat_map, bg_map=bg_map, hemi=hemi, view=view,
         avg_method='mean', threshold=threshold, cmap=cmap, colorbar=colorbar,
-        alpha=alpha, bg_on_data=bg_on_data, darkness=1, vmax=vmax, vmin=vmin,
-        title=title, output_file=output_file, axes=axes, figure=figure,
-        cbar_vmin=cbar_vmin, cbar_vmax=cbar_vmax, **kwargs)
+        alpha=alpha, bg_on_data=bg_on_data, darkness=darkness, vmax=vmax,
+        vmin=vmin, title=title, output_file=output_file, axes=axes,
+        figure=figure, cbar_vmin=cbar_vmin, cbar_vmax=cbar_vmax, **kwargs)
 
     return display
 
 
 def plot_surf_roi(surf_mesh, roi_map, bg_map=None,
-                  hemi='left', view='lateral', alpha='auto',
-                  vmin=None, vmax=None, cmap='gist_ncar',
+                  hemi='left', view='lateral', threshold=1e-14,
+                  alpha='auto', vmin=None, vmax=None, cmap='gist_ncar',
                   bg_on_data=False, darkness=1, title=None,
                   output_file=None, axes=None, figure=None, **kwargs):
     """ Plotting ROI on a surface mesh with optional background
@@ -460,6 +462,10 @@ def plot_surf_roi(surf_mesh, roi_map, bg_map=None,
     view: {'lateral', 'medial', 'dorsal', 'ventral', 'anterior', 'posterior'},
         default is 'lateral'
         View of the surface that is rendered.
+
+    threshold: a number or None
+        default is 1e-14 to threshold regions that are labelled 0. If you want
+        to use 0 as a label, set threshold to None.
 
     cmap : matplotlib colormap str or colormap object, default 'gist_ncar'
         To use for plotting of the rois. Either a string which is a name
@@ -525,9 +531,10 @@ def plot_surf_roi(surf_mesh, roi_map, bg_map=None,
 
     display = plot_surf(mesh, surf_map=roi, bg_map=bg_map,
                         hemi=hemi, view=view, avg_method='median',
-                        cmap=cmap, alpha=alpha, bg_on_data=bg_on_data,
-                        darkness=darkness, vmin=vmin, vmax=vmax,
-                        title=title, output_file=output_file,
-                        axes=axes, figure=figure, **kwargs)
+                        threshold=threshold, cmap=cmap, alpha=alpha,
+                        bg_on_data=bg_on_data, darkness=darkness,
+                        vmin=vmin, vmax=vmax, title=title,
+                        output_file=output_file, axes=axes,
+                        figure=figure, **kwargs)
 
     return display

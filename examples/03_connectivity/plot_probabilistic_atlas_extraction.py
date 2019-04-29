@@ -1,6 +1,6 @@
 """
-Extracting signals of a probabilistic atlas of movie watching functional regions
-================================================================================
+Extracting signals of a probabilistic atlas of functional regions
+=================================================================
 
 This example extracts the signal on regions defined via a probabilistic
 atlas, to construct a functional connectome.
