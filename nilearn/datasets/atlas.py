@@ -180,12 +180,6 @@ def fetch_atlas_craddock_2012(atlas_name='tcorr_2level',
                                         opts)],
                       "random": [("random_all.nii.gz", url, opts)]}
 
-    # filenames = [("scorr05_mean_all.nii.gz", url, opts),
-    #              ("tcorr05_mean_all.nii.gz", url, opts),
-    #              ("scorr05_2level_all.nii.gz", url, opts),
-    #              ("tcorr05_2level_all.nii.gz", url, opts),
-    #              ("random_all.nii.gz", url, opts)]
-
     if atlas_name not in atlas_items:
         raise ValueError("Invalid atlas name: {0}. Please chose an atlas "
                          "among:\n{1}".format(
@@ -193,13 +187,11 @@ def fetch_atlas_craddock_2012(atlas_name='tcorr_2level',
 
     data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
                                 verbose=verbose)
-    # sub_files = _fetch_files(data_dir, filenames, resume=resume,
-    #                          verbose=verbose)
+
     sub_file = _fetch_files(data_dir, filenames_dict[atlas_name],
                              resume=resume, verbose=verbose)
-    atlas_name_file = dict(zip(atlas_name, sub_file))
+    atlas_name_file = dict(zip([atlas_name], sub_file))
 
-    # select indicated atlas file
     selected_atlas = atlas_name_file[atlas_name]
     img = check_niimg(selected_atlas)
     data = img.get_data()
