@@ -135,7 +135,7 @@ The :class:`NiftiMasker` can be seen as a *tube* that transforms data
 from 4D images to 2D arrays, but first it needs to 'fit' this data in
 order to learn simple parameters from it, such as its shape:
 
-.. code-block:: python
+.. code-block::
     #
     # We first create a masker, giving it the options that we care
     # about. Here we use standardizing of the data, as it is often important
@@ -171,7 +171,7 @@ scikit-learn, using its `fit`, `predict` or `transform` methods.
 Here, we use scikit-learn Support Vector Classification to learn how to
 predict the category of picture seen by the subject:
 
-.. code-block:: python
+.. code-block::
     svc.fit(fmri_masked, conditions)
 
     ###########################################################################
@@ -195,7 +195,7 @@ masked but also the results of an algorithm), the masker is clever and
 can take data of dimension 1D (resp. 2D) to convert it back to 3D
 (resp. 4D).
 
-.. code-block:: python
+.. code-block::
     coef_img = masker.inverse_transform(coef_)
     print(coef_img)
 
@@ -209,7 +209,7 @@ Again the visualization code is simple. We can use an fMRI slice as a
 background and plot the weights. Brighter points have a higher
 discriminating weight.
 
-.. code-block:: python
+.. code-block::
     from nilearn.plotting import plot_stat_map, show
 
     plot_stat_map(coef_img, bg_img=haxby_dataset.anat[0],
