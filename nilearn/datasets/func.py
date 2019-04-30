@@ -2127,3 +2127,93 @@ def fetch_development_fmri(n_subjects=None, reduce_confounds=True,
 
     return Bunch(func=funcs, confounds=regressors, phenotypic=participants,
                  description=fdescr)
+
+def fetch_surf_tva_localizer(data_dir=None, verbose=1):
+    """Download the data from one subject of the InterTVA dataset,
+        for the event-related voice localizer run.
+        The data provided here is a set of beta maps each estimated
+        for one of the 144 audio stimuli presented to the subject,
+        and projected onto the cortical surface in the fsaverage5
+        template space, for the left hemisphere.
+        It is used for the example of the cortex-based searchlight decoding.
+
+    Parameters
+    ----------
+    data_dir: str, optional
+        Path of the data directory. Used to force data storage in a specified
+        location. Default: None
+
+    verbose: int, optional (default 1)
+        Defines the level of verbosity of the output.
+
+    Returns
+    -------
+    data: sklearn.datasets.base.Bunch
+        Dictionary-like object, the interest attributes are :
+         - 'func_left': Paths to Gifti files containing resting state
+                        time series left hemisphere
+         - 'phenotypic': array containing tuple with subject ID, age,
+                         dominant hand and sex for each subject.
+         - 'description': data description of the release and references.
+
+    References
+    ----------
+    :Download: https://openneuro.org/datasets/ds001771/
+
+    """
+
+    # Preliminary checks and declarations
+    dataset_name = 'intertva_localizer_surface'
+    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
+                                verbose=verbose)
+
+    ######## STOPPED HERE... TO BE CONTINUED
+    # Dataset description
+    fdescr = _get_dataset_descr(dataset_name)
+
+    # First, get the metadata
+    phenotypic_file = 'labels_voicelocalizer_voice_vs_nonvoice.tsv'
+    phenotypic = (phenotypic_file, url + '8470/pheno_nki_nilearn.csv',
+                  {'move': phenotypic_file})
+
+    phenotypic = _fetch_files(data_dir, [phenotypic], resume=resume,
+                              verbose=verbose)[0]
+
+    # Load the csv file
+    phenotypic = np.genfromtxt(phenotypic, skip_header=True,
+                               names=['Subject', 'Age',
+                                      'Dominant Hand', 'Sex'],
+                               delimiter=',', dtype=['U9', '<f8',
+                                                     'U1', 'U1'])
+
+    # Keep phenotypic information for selected subjects
+    int_ids = np.asarray(ids)
+    phenotypic = phenotypic[[np.where(phenotypic['Subject'] == i)[0][0]
+                             for i in int_ids]]
+
+    # Download subjects' datasets
+    func_right = []
+    func_left = []
+    for i in range(len(ids)):
+
+        archive = url + '%i/%s_%s_preprocessed_fsaverage5_fwhm6.gii'
+        func = os.path.join('%s', '%s_%s_preprocessed_fwhm6.gii')
+        rh = _fetch_files(data_dir,
+                          [(func % (ids[i], ids[i], 'right'),
+                           archive % (nitrc_ids[i], ids[i], 'rh'),
+                           {'move': func % (ids[i], ids[i], 'right')}
+                            )],
+                          resume=resume, verbose=verbose)
+        lh = _fetch_files(data_dir,
+                          [(func % (ids[i], ids[i], 'left'),
+                           archive % (nitrc_ids[i], ids[i], 'lh'),
+                           {'move': func % (ids[i], ids[i], 'left')}
+                            )],
+                          resume=resume, verbose=verbose)
+
+        func_right.append(rh[0])
+        func_left.append(lh[0])
+
+    return Bunch(func_left=func_left, func_right=func_right,
+                 phenotypic=phenotypic,
+                 description=fdescr)
