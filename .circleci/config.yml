@@ -29,24 +29,15 @@ jobs:
       - run: sudo -E apt-get -yq update
       - run: sudo -E apt-get -yq --no-install-suggests --no-install-recommends --force-yes install dvipng texlive-latex-base texlive-latex-extra
       - run:
-          name: Today & Week  # Fixing the date and week of the year in files to generate & preserve cache key.
+          name: Today & Week  # Saving today's date and current week of the year in files to generate daily & weekly new cache key respectively.
           command: |
-            echo 2019-04-12 > today
-            echo 14 > week_num
+            date +%F > today
+            date +%U > week_num
       - restore_cache:
           key: v1-packages+datasets-{{ checksum "week_num" }}
       - restore_cache:
           key: v1-docs-{{ .Branch }}-{{ checksum "today" }}-{{ checksum ".circleci/manual-cache-timestamp" }}
-      - run:
-          name: If branch cache has cached docs, don't restore docs from master cache
-          command: |
-            if
-              ls doc/_build/html
-            then
-              date > .circleci/auto-cache-timestamp
-            fi
-      - restore_cache:
-          key: master-docs-{{ checksum ".circleci/auto-cache-timestamp" }}
+
       - run:
           name: Download & install conda if absent
           command: |
@@ -76,15 +67,20 @@ jobs:
           name: Install packages in conda env
           command: |
             conda install -n testenv python=3.6 numpy scipy scikit-learn matplotlib pandas \
-            lxml mkl sphinx=1.8 numpydoc pillow pandas -yq
-            conda install -n testenv nibabel sphinx-gallery -c conda-forge -yq
+            lxml mkl sphinx numpydoc pillow pandas -yq
+            conda install -n testenv nibabel sphinx-gallery junit-xml -c conda-forge -yq
       - run:
           name: Running CircleCI test (make html)
           command: |
             source activate testenv
             pip install -e .
-            set -o pipefail && cd doc && make html-strict SPHINXOPTS="-v" 2>&1 | tee log.txt
+            set -o pipefail && cd doc && make html-strict 2>&1 | tee log.txt
           no_output_timeout: 7h
+      - store_test_results:
+          path: doc/_build/test-results
+      - store_artifacts:
+          path: doc/_build/test-results
+
       - save_cache:
           key: v1-packages+datasets-{{ checksum "week_num" }}
           paths:
@@ -101,8 +97,6 @@ jobs:
           path: coverage
       - store_artifacts:
           path: doc/log.txt
-      - store_artifacts:
-          path: .circleci
 
 
   full-build:
@@ -127,58 +121,26 @@ jobs:
         # Installing required packages for `make -C doc check command` to work.
       - run: sudo -E apt-get -yq update
       - run: sudo -E apt-get -yq --no-install-suggests --no-install-recommends --force-yes install dvipng texlive-latex-base texlive-latex-extra
-      - run:
-          name: Today & Week  # Fixing the date and week of the year in files to generate & preserve cache key.
-          command: |
-            echo 2019-04-12 > today
-            echo 14 > week_num
-      - restore_cache:
-          key: v1-packages+datasets-{{ checksum "week_num" }}
-      - run:
-          name: Download & install conda if absent
-          command: |
-            if
-              ls $HOME/miniconda3/bin | grep conda -q
-            then
-              echo "(Mini)Conda already present from the cache."
-            else
-              wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda.sh
-              chmod +x ~/miniconda.sh && ~/miniconda.sh -b
-            fi
+      - run: wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda.sh
+      - run: chmod +x ~/miniconda.sh && ~/miniconda.sh -b
       - run: echo 'export PATH="$HOME/miniconda3/bin:$PATH"'  >> $BASH_ENV
-      - run:
-          name: Create new conda env
-          command: |
-            if
-              conda env list | grep testenv
-            then
-              echo "Conda env testenv already exists courtesy of the cache."
-            else
-              conda create -n testenv -yq
-            fi
       - run:
           name: Install packages in conda env
           command: |
-            conda install -n testenv python=3.6 numpy scipy scikit-learn matplotlib pandas \
-            lxml mkl sphinx=1.8 numpydoc pillow pandas -yq
-            conda install -n testenv nibabel sphinx-gallery -c conda-forge -yq
+            conda create -n testenv python=3.6 numpy scipy scikit-learn matplotlib pandas \
+            lxml mkl sphinx numpydoc pillow pandas -yq
+            conda install -n testenv nibabel sphinx-gallery junit-xml -c conda-forge -yq
       - run:
           name: Running CircleCI test (make html)
           command: |
             source activate testenv
             pip install -e .
-            set -o pipefail && cd doc && make html-strict SPHINXOPTS="-v" 2>&1 | tee log.txt
+            set -o pipefail && cd doc && make html-strict 2>&1 | tee log.txt
           no_output_timeout: 7h
-
-      - save_cache:
-          key: v1-packages+datasets-{{ checksum "week_num" }}
-          paths:
-            - ../nilearn_data
-            - ../miniconda3
-      - save_cache:
-          key: master-docs-{{ checksum ".circleci/auto-cache-timestamp" }}
-          paths:
-            - doc
+      - store_test_results:
+          path: doc/_build/test-results
+      - store_artifacts:
+          path: doc/_build/test-results
 
       - store_artifacts:
           path: doc/_build/html
@@ -186,8 +148,6 @@ jobs:
           path: coverage
       - store_artifacts:
           path: doc/log.txt
-      - store_artifacts:
-          path: .circleci
 
 
 workflows:
@@ -207,3 +167,14 @@ workflows:
               only:
                 - master
                 - test-circleci  # test branch to check if merges occur on master as expected.
+
+  nightly:
+    triggers:
+      - schedule:
+          cron: "0 6 * * *"
+          filters:
+            branches:
+              only:
+                - master
+    jobs:
+      - full-build
