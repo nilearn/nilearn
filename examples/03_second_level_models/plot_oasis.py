@@ -101,7 +101,7 @@ _, threshold = map_threshold(
 print('The FDR=.05-corrected threshold is: %.3g' % threshold)
 
 ###########################################################################
-# The plot it
+# Then plot it
 from nilearn import plotting
 display = plotting.plot_stat_map(
     z_map, threshold=threshold, colorbar=True, display_mode='z',
@@ -124,4 +124,3 @@ plotting.plot_stat_map(
 ###########################################################################
 # Note that there does not seem to be any significant effect of sex on
 # grey matter density on that dataset.
-

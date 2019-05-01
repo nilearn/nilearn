@@ -74,7 +74,7 @@ def _check_events_file_uses_tab_separators(events_files):
     Raises a ValueError if provided list of text based data files
     (.csv, .tsv, etc) do not enforce the BIDS convention of using Tabs
     as separators.
-    
+
     Only scans their first row.
     Does nothing if:
         If the separator used is BIDS compliant.
@@ -133,7 +133,7 @@ def _check_events_file_uses_tab_separators(events_files):
                         'please enforce BIDS conventions',
                         events_file_
                         )
-            
+
 
 def _check_run_tables(run_imgs, tables_, tables_name):
     """Check fMRI runs and corresponding tables to raise error if necessary"""
