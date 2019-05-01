@@ -1,60 +1,58 @@
-<?xml version="1.0" encoding="utf-8" ?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
-
-<head>
-<title>HTML report</title>
-<meta name = "viewport" content = "width = device-width, initial-scale = 1">
+<!-- CSS for the report -->
 <link rel="stylesheet" href="https://unpkg.com/purecss@1.0.0/build/pure-min.css" integrity="sha384-nn4HPE8lTHyVtfCBi5yW9d20FjT8BJwUXyWZT9InLYax14RDjBj46LmSztkmNP9w" crossorigin="anonymous">
+<link rel="stylesheet" href="https://unpkg.com/purecss@1.0.0/build/grids-responsive-min.css">
 <style type="text/css">
 
-h1 { padding-top: 15px; }
-
-body {
-    padding: 10px 20px 10px 20px;
+div.nilearn_report {
+    padding-top: 5px;
 }
 
-summary::-webkit-details-marker {
-margin-right: 2px;
+div.nilearn_report h1 {
+    padding-top: 15px;
 }
 
-summary:focus {
- outline-style: none;
+div.nilearn_report summary::-webkit-details-marker {
+    margin-right: 2px;
 }
 
-table {
+div.nilearn_report summary:focus {
+    outline-style: none;
+}
+
+div.nilearn_report table {
     max-width: 100%;
     border-collapse: collapse;
     margin:50px auto;
 }
 
-thead th {
+div.nilearn_report thead th {
   text-align: center;
 }
 
-tbody tr:nth-child(even) {
+div.nilearn_report tbody tr:nth-child(even) {
    background-color: #ddd;
 }
 
 /* Tooltip container */
-.tooltip {
+div.nilearn_report .withtooltip {
   position: relative;
-  display: inline-block;
   border-bottom: 1px dotted black; /* If you want dots under the hoverable text */
 }
 
 /* Tooltip text */
-.tooltip .tooltiptext {
+div.nilearn_report .withtooltip .tooltiptext {
   visibility: hidden;
-  max-width: 50em;
-  width: 100%;
+  max-width: 35em;
+  width: 90%;
   background-color: rgba(24,24,24,0.85);
   color: #fff;
   text-align: left;
-  font-size: 14pt;
-  font-weight: 300;
-  padding: 5px 0;
+  font-size: 12pt;
+  font-weight: 200;
   border-radius: 6px;
+  padding: 5px;
+  margin-left: 3pt;
+  margin-top: -5pt;
 
   /* Position the tooltip text - see examples below! */
   position: absolute;
@@ -62,24 +60,22 @@ tbody tr:nth-child(even) {
 }
 
 /* Show the tooltip text when you mouse over the tooltip container */
-.tooltip:hover .tooltiptext {
+div.nilearn_report .withtooltip:hover .tooltiptext {
   visibility: visible;
 }
 
 </style>
-</head>
-
-<body>
-  <h1 class="tooltip">
+<div class="nilearn_report">
+  <h1 class="withtooltip">
     {{title}}
     <span class="tooltiptext">{{docstring}}</span>
   </h1>
 
   <div class="pure-g">
-  <div class="pure-u-2-3">
+  <div class="pure-u-1 pure-u-md-2-3">
       <img class="pure-img" src="data:image/png;base64,{{content}}" alt="image"/>
   </div>
-  <div class="pure-u-1-3">
+  <div class="pure-u-1 pure-u-md-1-3">
     <p class="elem-desc">{{description}}<p>
     <details>
       <summary class="pure-button">Parameters</summary>
@@ -105,5 +101,4 @@ tbody tr:nth-child(even) {
     </details>
     </div>
   </div>
-</body>
-</html>
+</div>
