@@ -56,7 +56,7 @@ print('MSDL has {0} ROIs, part of the following networks :\n{1}.'.format(
 from nilearn import input_data
 
 masker = input_data.NiftiMapsMasker(
-    msdl_data.maps, resampling_target="data", t_r=2.5, detrend=True,
+    msdl_data.maps, resampling_target="data", t_r=2, detrend=True,
     low_pass=.1, high_pass=.01, memory='nilearn_cache', memory_level=1)
 
 ###############################################################################
