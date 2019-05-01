@@ -1,8 +1,10 @@
 import os
 import io
 import base64
-import matplotlib as mpl
 from contextlib import contextmanager
+from string import Template
+
+import matplotlib as mpl
 
 from nilearn.externals import tempita
 from . import js_plotting_utils as plot_utils
@@ -57,6 +59,59 @@ def _embed_img(display):
     return '{}'.format(data.decode())
 
 
+class HTMLReport():
+    """ A report written as html
+    """
+    def __init__(self, head_tpl, body):
+        """ The head_tpl is meant for display as a full page, eg writing on
+            disk. The body is used for embedding in an existing page.
+        """
+        self.head_tpl = head_tpl
+        self.body = body
+
+    def _repr_html_(self):
+        """
+        Used by the Jupyter notebook.
+
+        Users normally won't call this method explicitely.
+        """
+        return self.body
+
+    def __str__(self):
+        return self.body
+
+    def get_standalone(self):
+        return self.head_tpl.substitute(body=self.body)
+
+    def save_as_html(self, file_name):
+        """
+        Save the plot in an HTML file, that can later be opened in a browser.
+        """
+        html_document = plot_utils.HTMLDocument(self.get_standalone())
+        html_document.save_as_html(file_name)
+        return html_document
+
+    def open_in_browser(self, file_name=None, temp_file_lifetime=30):
+        """
+        Save to a temporary HTML file and open it in a browser.
+
+        Parameters
+        ----------
+
+        file_name : str, optional
+            .html file to use as temporary file
+
+        temp_file_lifetime : float, optional (default=30.)
+            Time, in seconds, after which the temporary file is removed.
+            If None, it is never removed.
+
+        """
+        html_document = plot_utils.HTMLDocument(self.get_standalone())
+        html_document.open_in_browser(file_name=file_name,
+                                      temp_file_lifetime=temp_file_lifetime)
+        return html_document
+
+
 class ReportMixin():
     """
     Generate a report for Nilearn objects.
@@ -88,14 +143,19 @@ class ReportMixin():
         -------
         html : populated HTML report
         """
-        template_name = 'report_template.html'
-        template_path = os.path.join(
-            os.path.dirname(__file__), 'data', 'html', template_name)
-        tpl = tempita.HTMLTemplate.from_filename(template_path,
+        body_template_name = 'report_body_template.html'
+        body_template_path = os.path.join(
+            os.path.dirname(__file__), 'data', 'html', body_template_name)
+        tpl = tempita.HTMLTemplate.from_filename(body_template_path,
                                                  encoding='utf-8')
 
-        html = tpl.substitute(title=title, content=content,
+        body = tpl.substitute(title=title, content=content,
                               docstring=docstring,
                               parameters=parameters,
                               description=description)
-        return plot_utils.HTMLDocument(html)
+        head_template_name = 'report_head_template.html'
+        head_template_path = os.path.join(
+            os.path.dirname(__file__), 'data', 'html', head_template_name)
+        with open(head_template_path, 'r') as head_file:
+            head_tpl = Template(head_file.read())
+        return HTMLReport(body=body, head_tpl=head_tpl)
