@@ -59,7 +59,7 @@ def _embed_img(display):
     return '{}'.format(data.decode())
 
 
-class HTMLReport():
+class HTMLReport(plot_utils.HTMLDocument):
     """ A report written as html
     """
     def __init__(self, head_tpl, body):
@@ -83,33 +83,7 @@ class HTMLReport():
     def get_standalone(self):
         return self.head_tpl.substitute(body=self.body)
 
-    def save_as_html(self, file_name):
-        """
-        Save the plot in an HTML file, that can later be opened in a browser.
-        """
-        html_document = plot_utils.HTMLDocument(self.get_standalone())
-        html_document.save_as_html(file_name)
-        return html_document
-
-    def open_in_browser(self, file_name=None, temp_file_lifetime=30):
-        """
-        Save to a temporary HTML file and open it in a browser.
-
-        Parameters
-        ----------
-
-        file_name : str, optional
-            .html file to use as temporary file
-
-        temp_file_lifetime : float, optional (default=30.)
-            Time, in seconds, after which the temporary file is removed.
-            If None, it is never removed.
-
-        """
-        html_document = plot_utils.HTMLDocument(self.get_standalone())
-        html_document.open_in_browser(file_name=file_name,
-                                      temp_file_lifetime=temp_file_lifetime)
-        return html_document
+    # save_as_html, open_in_browser are inherited from HTMLDocument
 
 
 class ReportMixin():

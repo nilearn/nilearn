@@ -147,7 +147,7 @@ class HTMLDocument(object):
         Save the plot in an HTML file, that can later be opened in a browser.
         """
         with open(file_name, 'wb') as f:
-            f.write(self.html.encode('utf-8'))
+            f.write(self.get_standalone().encode('utf-8'))
 
     def open_in_browser(self, file_name=None, temp_file_lifetime=30):
         """

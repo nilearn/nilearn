@@ -3,44 +3,44 @@
 <link rel="stylesheet" href="https://unpkg.com/purecss@1.0.0/build/grids-responsive-min.css">
 <style type="text/css">
 
-span.nilearn_report {
+div.nilearn_report {
     padding-top: 5px;
 }
 
-span.nilearn_report h1 {
+div.nilearn_report h1 {
     padding-top: 15px;
 }
 
-span.nilearn_report summary::-webkit-details-marker {
+div.nilearn_report summary::-webkit-details-marker {
     margin-right: 2px;
 }
 
-span.nilearn_report summary:focus {
+div.nilearn_report summary:focus {
     outline-style: none;
 }
 
-span.nilearn_report table {
+div.nilearn_report table {
     max-width: 100%;
     border-collapse: collapse;
     margin:50px auto;
 }
 
-span.nilearn_report thead th {
+div.nilearn_report thead th {
   text-align: center;
 }
 
-span.nilearn_report tbody tr:nth-child(even) {
+div.nilearn_report tbody tr:nth-child(even) {
    background-color: #ddd;
 }
 
 /* Tooltip container */
-span.nilearn_report .withtooltip {
+div.nilearn_report .withtooltip {
   position: relative;
   border-bottom: 1px dotted black; /* If you want dots under the hoverable text */
 }
 
 /* Tooltip text */
-span.nilearn_report .withtooltip .tooltiptext {
+div.nilearn_report .withtooltip .tooltiptext {
   visibility: hidden;
   max-width: 35em;
   width: 90%;
@@ -60,12 +60,12 @@ span.nilearn_report .withtooltip .tooltiptext {
 }
 
 /* Show the tooltip text when you mouse over the tooltip container */
-span.nilearn_report .withtooltip:hover .tooltiptext {
+div.nilearn_report .withtooltip:hover .tooltiptext {
   visibility: visible;
 }
 
 </style>
-<span class="nilearn_report">
+<div class="nilearn_report">
   <h1 class="withtooltip">
     {{title}}
     <span class="tooltiptext">{{docstring}}</span>
@@ -101,4 +101,4 @@ span.nilearn_report .withtooltip:hover .tooltiptext {
     </details>
     </div>
   </div>
-</span>
+</div>
