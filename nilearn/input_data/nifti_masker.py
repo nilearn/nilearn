@@ -279,10 +279,10 @@ class NiftiMasker(BaseMasker, CacheMixin):
             img = image.index_img(imgs, dim[-1] // 2)
             self.input_ = img
             self.description_ = 'This report shows the input Nifti '        \
-                               'image overlaid with the outlines of the '  \
-                               'mask. We recommend to inspect the report ' \
-                               'for the overlap between the mask and its ' \
-                               'input image.'
+                                'image overlaid with the outlines of the '  \
+                                'mask. We recommend to inspect the report ' \
+                                'for the overlap between the mask and its ' \
+                                'input image.'
 
         return self
 

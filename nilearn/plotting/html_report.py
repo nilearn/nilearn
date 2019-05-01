@@ -1,11 +1,8 @@
 import os
 import io
 import base64
-from contextlib import contextmanager
-from string import Template
 import warnings
-
-import matplotlib as mpl
+from string import Template
 
 from nilearn.externals import tempita
 from . import js_plotting_utils as plot_utils
@@ -50,28 +47,37 @@ def update_template(title, docstring, content,
 
     Parameters
     ----------
-    title: str
+    title : str
         The title for the report
-    content: img
+    docstring : str
+        The introductory docstring for the reported object
+    content : img
         The content to display
-    description: str
+    parameters : dict
+        A dictionary of object parameters and their values
+    description : str
         An optional description of the content
 
     Returns
     -------
-    html : populated HTML report
+    HTMLReport : an instance of a populated HTML report
     """
-    template_name = 'report_template.html'
-    template_path = os.path.join(
-        os.path.dirname(__file__), 'data', 'html', template_name)
-    tpl = tempita.HTMLTemplate.from_filename(template_path,
+    body_template_name = 'report_body_template.html'
+    body_template_path = os.path.join(
+        os.path.dirname(__file__), 'data', 'html', body_template_name)
+    tpl = tempita.HTMLTemplate.from_filename(body_template_path,
                                              encoding='utf-8')
 
-    html = tpl.substitute(title=title, content=content,
+    body = tpl.substitute(title=title, content=content,
                           docstring=docstring,
                           parameters=parameters,
                           description=description)
-    return plot_utils.HTMLDocument(html)
+    head_template_name = 'report_head_template.html'
+    head_template_path = os.path.join(
+        os.path.dirname(__file__), 'data', 'html', head_template_name)
+    with open(head_template_path, 'r') as head_file:
+        head_tpl = Template(head_file.read())
+    return HTMLReport(body=body, head_tpl=head_tpl)
 
 
 def _str_params(params):
@@ -142,52 +148,3 @@ class HTMLReport(plot_utils.HTMLDocument):
         return self.head_tpl.substitute(body=self.body)
 
     # save_as_html, open_in_browser are inherited from HTMLDocument
-
-
-class ReportMixin():
-    """
-    Generate a report for Nilearn objects.
-
-    Report is useful to visualize steps in a processing pipeline.
-    Example use case: visualize the overlap of a mask and reference image
-    in NiftiMasker.
-
-    Returns
-    -------
-    report : HTML report with embedded content
-    """
-
-    def update_template(self, title, docstring, content,
-                        parameters, description=None):
-        """
-        Populate a report with content.
-
-        Parameters
-        ----------
-        title: str
-            The title for the report
-        content: img
-            The content to display
-        description: str
-            An optional description of the content
-
-        Returns
-        -------
-        html : populated HTML report
-        """
-        body_template_name = 'report_body_template.html'
-        body_template_path = os.path.join(
-            os.path.dirname(__file__), 'data', 'html', body_template_name)
-        tpl = tempita.HTMLTemplate.from_filename(body_template_path,
-                                                 encoding='utf-8')
-
-        body = tpl.substitute(title=title, content=content,
-                              docstring=docstring,
-                              parameters=parameters,
-                              description=description)
-        head_template_name = 'report_head_template.html'
-        head_template_path = os.path.join(
-            os.path.dirname(__file__), 'data', 'html', head_template_name)
-        with open(head_template_path, 'r') as head_file:
-            head_tpl = Template(head_file.read())
-        return HTMLReport(body=body, head_tpl=head_tpl)
