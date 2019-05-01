@@ -1,9 +1,14 @@
-0.5.2
-=====
+0.6.0a
+======
 
 NEW
 ---
 
+- Optimization to image resampling
+  :func:`nilearn.image.resample_img` has been optimized to pad rather than
+  resample images in the special case when there is only a translation
+  between two spaces. This is a common case in :class:`nilearn.input_data.NiftiMasker`
+  when using the `mask_strategy="template"` option for brains in MNI space.
 - New brain development fMRI dataset fetcher
   :func:`nilearn.datasets.fetch_development_fmri` can be used to download
   movie-watching data in children and adults. A light-weight dataset implemented
@@ -22,6 +27,40 @@ Fixes
   images have NaNs.
 - add_contours now accepts `threshold` argument for filled=False. Now
   `threshold` is equally applied when asked for fillings in the contours.
+- :func:`nilearn.plotting.plot_surf` and
+  :func:`nilearn.plotting.plot_surf_stat_map` no longer threshold zero values
+  when no threshold is given.
+- When :func:`nilearn.plotting.plot_surf_stat_map` is used with a thresholded map
+  but without a background map, the surface mesh is displayed in
+  half-transparent grey to maintain a 3D perception.
+
+0.5.2
+=====
+
+**Released April 2019**
+
+NEW
+---
+
+.. warning::
+
+ | This is the **last** release supporting Python2 and 3.4 .
+ | The lowest Python version supported is now Python3.5.
+ | We recommend switching to Python3.6 .
+
+Fixes
+-----
+
+- Plotting ``.mgz`` files in MNE broke in ``0.5.1`` and has been fixed.
+
+Contributors
+------------
+
+The following people contributed to this release::
+
+    11  Kshitij Chawla (kchawla-pi)
+     3  Gael Varoquaux
+     2  Alexandre Gramfort
 
 0.5.1
 =====
@@ -30,7 +69,7 @@ Fixes
 
 NEW
 ---
-- **Support for Python2 & Pyton3.4 wil be removed in the next release.**
+- **Support for Python2 & Python3.4 wil be removed in the next release.**
   We recommend Python 3.6 and up.
   Users with a Python2 or Python3.4 environment will be warned
   at their first Nilearn import.
@@ -82,7 +121,7 @@ Known Issues
   do not show parameters names in function signature
   when using help() and similar features.
   Please refer to their docstrings for this information.
-
+- Plotting ``.mgz`` files in MNE is broken.
 
 Contributors
 ------------
@@ -99,8 +138,6 @@ The following people contributed to this release::
    2  Elizabeth DuPre
    1  Eric Larson
    1  Pierre Bellec
-
-=======
 
 0.5.0
 =====

@@ -4,7 +4,6 @@ Transformer used to apply basic transformations on MRI data.
 # Author: Gael Varoquaux, Alexandre Abraham
 # License: simplified BSD
 
-import warnings
 from copy import copy as copy_object
 
 from sklearn.externals.joblib import Memory
@@ -13,10 +12,8 @@ from .base_masker import BaseMasker, filter_and_extract
 from .. import _utils
 from .. import image
 from .. import masking
-from nilearn import plotting
+from .. import plotting
 from .._utils import CacheMixin
-from ..plotting import (_str_params,
-                        _embed_img, ReportMixin)
 from .._utils.class_inspect import get_params
 from .._utils.niimg import img_data_dtype
 from .._utils.niimg_conversions import _check_same_fov
@@ -67,7 +64,7 @@ def filter_and_mask(imgs, mask_img_, parameters,
     return data
 
 
-class NiftiMasker(BaseMasker, CacheMixin, ReportMixin):
+class NiftiMasker(BaseMasker, CacheMixin):
     """Applying a mask to extract time-series from Niimg-like objects.
 
     NiftiMasker is useful when preprocessing (detrending, standardization,
@@ -208,6 +205,11 @@ class NiftiMasker(BaseMasker, CacheMixin, ReportMixin):
 
         self._shelving = False
 
+    def _reporting(self):
+        display = plotting.plot_epi(self.input_, black_bg=False)
+        display.add_contours(self.mask_img_, levels=[.5], colors='r')
+        return display
+
     def _check_fitted(self):
         if not hasattr(self, 'mask_img_'):
             raise ValueError('It seems that %s has not been fitted. '
@@ -276,41 +278,13 @@ class NiftiMasker(BaseMasker, CacheMixin, ReportMixin):
             dim = image.load_img(imgs).shape
             img = image.index_img(imgs, dim[-1] // 2)
             self.input_ = img
+            self.description_ = 'This report shows the input Nifti '        \
+                               'image overlaid with the outlines of the '  \
+                               'mask. We recommend to inspect the report ' \
+                               'for the overlap between the mask and its ' \
+                               'input image.'
+
         return self
-
-    def generate_report(self):
-        """Generates a report for NiftiMasker
-
-        Returns
-        -------
-        report : HTMLDocument
-        """
-        if not hasattr(self, 'input_'):
-            warnings.warn('Report generation not enabled !'
-                          'No visual outputs will be created.')
-            return
-
-        if hasattr(self, 'mask_img_'):
-            display = None
-            try:
-                display = plotting.plot_epi(self.input_, black_bg=False)
-                display.add_contours(self.mask_img_, levels=[.5], colors='r')
-                embed = _embed_img(display)
-            finally:
-                if display is not None:
-                    display.close()
-            parameters = _str_params(self.get_params())
-            description = 'This report shows the input Nifti ' \
-                          'image overlaid with the outlines of the mask. ' \
-                          'We recommend to inspect the report for the ' \
-                          'overlap between the mask and its input image.'
-        docstring = self.__doc__.partition('Parameters\n    ----------\n')[0]
-        report = self.update_template(title=self.__class__.__name__,
-                                      docstring=docstring,
-                                      content=embed,
-                                      parameters=parameters,
-                                      description=description)
-        return report
 
     def transform_single_imgs(self, imgs, confounds=None, copy=True):
         """Apply mask, spatial and temporal preprocessing
