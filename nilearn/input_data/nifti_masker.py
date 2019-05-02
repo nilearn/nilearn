@@ -12,7 +12,6 @@ from .base_masker import BaseMasker, filter_and_extract
 from .. import _utils
 from .. import image
 from .. import masking
-from .. import plotting
 from .._utils import CacheMixin
 from .._utils.class_inspect import get_params
 from .._utils.niimg import img_data_dtype
@@ -202,10 +201,17 @@ class NiftiMasker(BaseMasker, CacheMixin):
         self.memory_level = memory_level
         self.verbose = verbose
         self.reports = reports
+        self._report_description = ('This report shows the input Nifti '
+                                    'image overlaid with the outlines of the '
+                                    'mask. We recommend to inspect the report '
+                                    'for the overlap between the mask and its '
+                                    'input image.')
 
         self._shelving = False
 
     def _reporting(self):
+        from .. import plotting
+
         display = plotting.plot_epi(self.input_, black_bg=False)
         display.add_contours(self.mask_img_, levels=[.5], colors='r')
         return display
@@ -272,17 +278,13 @@ class NiftiMasker(BaseMasker, CacheMixin):
         self.mask_img_.get_data()
         if self.verbose > 10:
             print("[%s.fit] Finished fit" % self.__class__.__name__)
-
-        # Optionally retain input data for report generation
-        if self.reports:
-            dim = image.load_img(imgs).shape
-            img = image.index_img(imgs, dim[-1] // 2)
-            self.input_ = img
-            self.description_ = 'This report shows the input Nifti '        \
-                                'image overlaid with the outlines of the '  \
-                                'mask. We recommend to inspect the report ' \
-                                'for the overlap between the mask and its ' \
-                                'input image.'
+        if self.reports:  # save inputs for reporting
+            try:
+                dim = image.load_img(imgs).shape
+                img = image.index_img(imgs, dim[-1] // 2)
+                self.input_ = img
+            except TypeError:  # mask already provided
+                self.input_ = self.mask_img_
 
         return self
 

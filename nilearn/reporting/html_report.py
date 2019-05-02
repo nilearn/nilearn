@@ -2,10 +2,11 @@ import os
 import io
 import base64
 import warnings
+from pathlib import Path
 from string import Template
 
 from nilearn.externals import tempita
-from . import js_plotting_utils as plot_utils
+from nilearn.plotting import js_plotting_utils as plot_utils
 
 
 def generate_report(obj):
@@ -29,7 +30,7 @@ def generate_report(obj):
                                  parameters=dict())
 
     else:
-        description = obj.description_
+        description = obj._report_description
         parameters = _str_params(obj.get_params())
         docstring = obj.__doc__.partition('Parameters\n    ----------\n')[0]
         report = update_template(title=obj.__class__.__name__,
@@ -62,21 +63,21 @@ def update_template(title, docstring, content,
     -------
     HTMLReport : an instance of a populated HTML report
     """
+    template_path = Path(__file__).resolve().parent.joinpath('data', 'html')
     body_template_name = 'report_body_template.html'
-    body_template_path = os.path.join(
-        os.path.dirname(__file__), 'data', 'html', body_template_name)
+    body_template_path = template_path.joinpath(body_template_name)
     tpl = tempita.HTMLTemplate.from_filename(body_template_path,
                                              encoding='utf-8')
-
     body = tpl.substitute(title=title, content=content,
                           docstring=docstring,
                           parameters=parameters,
                           description=description)
+
     head_template_name = 'report_head_template.html'
-    head_template_path = os.path.join(
-        os.path.dirname(__file__), 'data', 'html', head_template_name)
+    head_template_path = template_path.joinpath(head_template_name)
     with open(head_template_path, 'r') as head_file:
         head_tpl = Template(head_file.read())
+
     return HTMLReport(body=body, head_tpl=head_tpl)
 
 
