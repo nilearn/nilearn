@@ -2,7 +2,7 @@
 Clustering methods to learn a brain parcellation from fMRI
 ==========================================================
 
-We use spatially-constrained Ward-clustering, KMeans and Recursive Neighbor
+We use spatially-constrained Ward-clustering, KMeans, and Recursive Neighbor
 Agglomeration (ReNA) to create a set of parcels.
 
 In a high dimensional regime, these methods can be interesting
@@ -92,7 +92,7 @@ print("Ward agglomeration 2000 clusters: %.2fs" % (time.time() - start))
 
 ###########################################################################
 # Visualize: Brain parcellations (Ward)
-# -------------------------------------
+# .....................................
 #
 # First, we display the parcellations of the brain image stored in attribute
 # `labels_img_`
@@ -113,7 +113,7 @@ cut_coords = first_plot.cut_coords
 
 ###########################################################################
 # Compressed representation of Ward clustering
-# --------------------------------------------
+# ............................................
 #
 # Second, we illustrate the effect that the clustering has on the signal.
 # We show the original data, and the approximation provided by the
@@ -176,7 +176,7 @@ kmeans.fit(dataset.func)
 
 ###########################################################################
 # Visualize: Brain parcellations (KMeans)
-# ---------------------------------------
+# .......................................
 #
 # Grab parcellations of brain image stored in attribute `labels_img_`
 kmeans_labels_img = kmeans.labels_img_
@@ -199,7 +199,7 @@ kmeans_labels_img.to_filename('kmeans_parcellation.nii.gz')
 # The spatial constraints are implemented inside the Parcellations object.
 #
 # References
-# ----------
+# ..........
 #
 # More about ReNA clustering algorithm in the original paper
 #
@@ -217,7 +217,7 @@ print("ReNA 5000 clusters: %.2fs" % (time.time() - start))
 
 ##################################################################
 # Visualize: Brain parcellations (ReNA)
-# -------------------------------------
+# .....................................
 #
 # First, we display the parcellations of the brain image stored in attribute
 # `labels_img_`
@@ -232,7 +232,7 @@ plotting.plot_roi(ward_labels_img, title="ReNA parcellation",
 
 ##################################################################
 # Compressed representation of ReNA clustering
-# --------------------------------------------
+# ............................................
 #
 # We illustrate the effect that the clustering has on the signal.
 # We show the original data, and the approximation provided by
