@@ -106,7 +106,7 @@ def test_save_sprite():
     sprite_base64 = html_stat_map._bytesIO_to_base64(sprite_io)
 
     # Check the sprite is correct
-    assert sprite_base64 == '////AP////8=\n'
+    assert sprite_base64 == '////AP////8='
 
 
 def test_save_cmap():
@@ -121,7 +121,7 @@ def test_save_cmap():
     cmap_base64 = html_stat_map._bytesIO_to_base64(cmap_io)
 
     # Check the colormap is correct
-    assert cmap_base64 == '//////////8=\n'
+    assert cmap_base64 == '//////////8='
 
 
 def test_mask_stat_map():
